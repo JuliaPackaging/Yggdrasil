@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libexif"
-version = v"0.6.21"
+version = v"0.6.24"
 
 # Collection of sources required to complete build
 sources = [
-    "https://jaist.dl.sourceforge.net/project/libexif/libexif/0.6.21/libexif-0.6.21.tar.gz" =>
-    "edb7eb13664cf950a6edd132b75e99afe61c5effe2f16494e6d27bc404b287bf",
+    GitSource("https://github.com/libexif/libexif.git", 
+    "a7121eb4075df87c95004ca0c9d5385f23e6d777"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,11 +24,12 @@ update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 
 
 # The products that we will ensure are always built
@@ -41,4 +42,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
