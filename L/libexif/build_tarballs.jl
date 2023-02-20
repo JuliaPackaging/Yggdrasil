@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libexif-*/
+cd $WORKSPACE/srcdir/libexif/
 if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-freebsd* ]]; then
     # Install `autopoint` and other tools needed by `autoreconf`
     apk add gettext-dev
