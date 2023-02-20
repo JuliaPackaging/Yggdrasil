@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ReadStat"
-version = v"1.1.8"
+version = v"1.1.9"
 
 sources = [
     GitSource("https://github.com/WizardMac/ReadStat.git",
-              "f0b31497d69ec1b0585a73eeede3048a4ed15cbc"),
+              "104ba03a8da116eb8c094abc18bc2530b733eda9"),
 ]
 
 # Bash recipe for building across all platforms
