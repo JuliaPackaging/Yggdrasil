@@ -27,9 +27,6 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     \
-    -D CMAKE_CXX_COMPILER:FILEPATH=${CXX} \
-    -D CMAKE_C_COMPILER:FILEPATH=${CC} \
-    -D CMAKE_Fortran_COMPILER:FILEPATH=${FC} \
     -D CMAKE_CXX_FLAGS="-Wall -Wunused -pedantic" \
     -D CMAKE_C_FLAGS="-Wall -Wunused -pedantic -std=c11" \
     -D CMAKE_Fortran_FLAGS="" \
