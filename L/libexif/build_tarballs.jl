@@ -7,8 +7,8 @@ version = v"0.6.24"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libexif/libexif.git", 
-    "a7121eb4075df87c95004ca0c9d5385f23e6d777"),
+    ArchiveSource("https://github.com/libexif/libexif/releases/download/v0.6.24/libexif-0.6.24.tar.bz2", 
+    "d47564c433b733d83b6704c70477e0a4067811d184ec565258ac563d8223f6ae"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
