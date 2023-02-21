@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/form/
 
 autoreconf -i
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-parform --enable_native=no
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-parform --disable-native
 
 make -j${nproc}
 make install
