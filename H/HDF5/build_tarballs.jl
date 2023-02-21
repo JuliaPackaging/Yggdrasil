@@ -9,7 +9,6 @@ sources = [
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.0-3-any.pkg.tar.zst",
                   "b7fd69d444a9d1f71335c53ab6bfd1449eed9023133758130a042ed3f2c4504a";
                   unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-libaec-1.0.6-2-any.pkg.tar.zst", "c6cff1a6f8a9f75e986589d8debc35e8076a7af38aa32cbda78bb6c2fbbbe58c"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.2.13-3-any.pkg.tar.zst",
                   "ed62c6f77f9cce488aed15726349d5d4537689583caab46bace8d41173db48b7";
                   unpack_target="i686-w64-mingw32"),
@@ -23,7 +22,6 @@ sources = [
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.14.0-3-any.pkg.tar.zst",
                   "c4a889e09b43e0ec1f9a872acbfc62f34291ee935c26ea90ca9911104f9627d3";
                   unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libaec-1.0.6-2-any.pkg.tar.zst", "d970bd71e55fc5bd4a55e95ef22355d8c479631973860f2a9c37b49c931c5f35"; unpack_target="x86_64-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.2.13-3-any.pkg.tar.zst",
                   "7fc6ac1629180e205f0fdbe7abd04353136a44d73d16924f0c64fd10828329a7";
                   unpack_target="x86_64-w64-mingw32"),
@@ -36,9 +34,6 @@ sources = [
     # See discussion following https://github.com/JuliaPackaging/Yggdrasil/issues/4511#issuecomment-1198134988
     ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.14.0/download/linux-64/hdf5-1.14.0-nompi_h5231ba7_102.conda",
                   "d64e2e691205920a0d0f15876d4bcade18f98ef126959d21316a297516476c7c";
-                  unpack_target="x86_64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/conda-forge/libaec/1.0.6/download/linux-64/libaec-1.0.6-hcb278e6_1.conda",
-                  "4df6a29b71264fb25462065e8cddcf5bca60776b1801974af8cbd26b7425fcda";
                   unpack_target="x86_64-linux-gnu"),
     ArchiveSource("https://anaconda.org/conda-forge/hdf5/1.14.0/download/linux-aarch64/hdf5-1.14.0-nompi_h4e7b029_102.conda",
                   "127b4b6a0323c504b197f1ee8e05f9857a57bd51331de15937c8a9cb7b3a302c";
@@ -106,6 +101,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("LibCURL_jll"),
+    Dependency("libaec_jll"; compat="1.0.6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
