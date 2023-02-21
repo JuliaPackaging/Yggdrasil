@@ -32,7 +32,7 @@ cmake \
     -D CMAKE_Fortran_FLAGS="" \
     -D Seacas_ENABLE_STRONG_C_COMPILE_WARNINGS="" \
     -D Seacas_ENABLE_STRONG_CXX_COMPILE_WARNINGS="" \
-    -D CMAKE_INSTALL_RPATH:PATH=${prefix}/lib \
+    -D CMAKE_INSTALL_RPATH:PATH="${libdir}" \
     -D BUILD_SHARED_LIBS:BOOL=YES \
     -D Seacas_ENABLE_SEACASExodus=YES \
     -D Seacas_ENABLE_SEACASExodus_for=NO \
