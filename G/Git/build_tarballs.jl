@@ -69,7 +69,29 @@ if [[ "${target}" == *-apple-* ]]; then
     cat > "${bindir}/git" << 'EOF'
 #!/bin/bash
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+# We need to canonicalize symlinks, but older versions of `readlink` on macOS don't have the
+# `-f` option, so we need to cook up our own.  Adapted from
+# <https://stackoverflow.com/a/1116890/2442087>.
+readlink_f() {
+    TARGET_FILE="${1}"
+
+    cd "$(dirname "${TARGET_FILE}")"
+    TARGET_FILE="$(basename ${TARGET_FILE})"
+
+    # Iterate down a (possible) chain of symlinks
+    while [ -L "${TARGET_FILE}" ]; do
+        TARGET_FILE="$(readlink "${TARGET_FILE}")"
+        cd "$(dirname "${TARGET_FILE}")"
+        TARGET_FILE="$(basename "${TARGET_FILE}")"
+    done
+
+    # Compute the canonicalized name by finding the physical path 
+    # for the directory we're in and appending the target file.
+    PHYS_DIR="$(pwd -P)"
+    echo "${PHYS_DIR}/${TARGET_FILE}"
+}
+
+SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink_f "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 export DYLD_FALLBACK_LIBRARY_PATH="${JLL_DYLD_FALLBACK_LIBRARY_PATH}"
 exec -a "${BASH_SOURCE[0]}" "${SCRIPT_DIR}/_git" "$@"
 EOF
