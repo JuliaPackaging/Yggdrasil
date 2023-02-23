@@ -69,7 +69,7 @@ if [[ "${target}" == *-apple-* ]]; then
     cat > "${bindir}/git" << 'EOF'
 #!/bin/bash
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export DYLD_FALLBACK_LIBRARY_PATH="${JLL_DYLD_FALLBACK_LIBRARY_PATH}"
 exec -a "${BASH_SOURCE[0]}" "${SCRIPT_DIR}/_git" "$@"
 EOF
