@@ -3,29 +3,47 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"10.7.2"
+version = v"11.1.1"
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource("https://github.com/Geant4/geant4/archive/v$(version).tar.gz",
-                  "43a11da475e4b9fd3719a5e589003c1f79c0c6f2cd78bcfe3cea2fe6cd12823b"),
+    ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v11.1.1/geant4-v$(version).tar.gz",
+                  "c5878634da9ba6765ce35a469b2893044f4a6598aa948733da8436cdbfeef7d2"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/geant4-*/
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    popd
+fi
+
 mkdir build && cd build
 FLAGS=()
 if [[ "${target}" != *-apple-* ]]; then
     FLAGS=(-DGEANT4_USE_OPENGL_X11=ON)
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-     "${FLAGS[@]}" \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_STANDARD=17 \
+      -DGEANT4_INSTALL_DATA=ON \
+      -DGEANT4_USE_GDML=ON \
+      "${FLAGS[@]}" \
     ..
 make -j${nproc}
 make install
+
+install_license ${WORKSPACE}/srcdir/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -65,15 +83,17 @@ products = [
     LibraryProduct("libG4global", :libG4Global),
     LibraryProduct("libG4tracking", :libG4Tracking),
     LibraryProduct("libG4intercoms", :libG4Intercoms),
+    FileProduct("share/data", :data_dir),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Expat_jll"; compat="2.4.8"),
     Dependency("Xorg_libXmu_jll"),
     Dependency("Libglvnd_jll"),
+    Dependency("Xerces_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.6")
