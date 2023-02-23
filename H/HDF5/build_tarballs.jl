@@ -65,6 +65,7 @@ if [[ ${target} == *mingw* ]]; then
     
     mv -v lib/libhdf5*.dll.a ${prefix}/lib
     mv -v bin/*.dll ${libdir}
+    mv -v include/openssl include/openssl3
     mv -v include/* ${includedir}
 
     install_license share/doc/hdf5/COPYING
