@@ -60,7 +60,6 @@ products = [
     LibraryProduct("libG4analysis", :libG4Analysis),
     LibraryProduct("libG4digits_hits", :libG4Digits),
     LibraryProduct("libG4run", :libG4Run),
-    LibraryProduct("libG4visXXX", :libG4VisXXX),
     LibraryProduct("libG4clhep", :libG4CLHEP),
     LibraryProduct("libG4GMocren", :libG4Mocren),
     LibraryProduct("libG4particles", :libG4Particles),
@@ -84,6 +83,8 @@ products = [
     LibraryProduct("libG4global", :libG4Global),
     LibraryProduct("libG4tracking", :libG4Tracking),
     LibraryProduct("libG4intercoms", :libG4Intercoms),
+    LibraryProduct("libG4particles.so", :libG4Particles),
+    LibraryProduct("libG4ptl.so", :libG4Ptl),
     FileProduct("share/Geant4/data", :data_dir),
 ]
 
