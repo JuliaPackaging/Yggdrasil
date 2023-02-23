@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "NOMAD"
-version = v"4.2.0"
+version = v"4.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bbopt/nomad.git", "cf824ea62defeeff558ab91ab3f5ecd00e08aa00"),
+    GitSource("https://github.com/bbopt/nomad.git", "b74f6c5f63c79fe0c10fa8b41411de4fe2b9da38"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,8 +15,6 @@ mkdir "${WORKSPACE}/path"
 export PATH="${WORKSPACE}/path:$PATH}"
 export WADF=${WORKSPACE}/srcdir/nomad/src/Attribute/WriteAttributeDefinitionFile.cpp
 ${CXX_FOR_BUILD} ${WADF} -o ${WORKSPACE}/path/WriteAttributeDefinitionFile
-
-sed s/'set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR} CACHE PATH "..." FORCE)'// -i CMakeLists.txt
 
 mkdir build
 cd build
@@ -46,9 +44,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", 
-        uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version=v"8", julia_compat="v1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="v1.6")

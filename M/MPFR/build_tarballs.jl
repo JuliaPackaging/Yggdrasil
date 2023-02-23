@@ -4,12 +4,12 @@ using BinaryBuilder
 using BinaryBuilderBase: sanitize
 
 name = "MPFR"
-version = v"4.1.0"
+version = v"4.2.0"
 
 # Collection of sources required to build MPFR
 sources = [
     ArchiveSource("https://www.mpfr.org/mpfr-$(version)/mpfr-$(version).tar.xz",
-                  "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"),
+                  "06a378df13501248c1b2db5aa977a2c8126ae849a9d9b7be2546fb4a9c26d993"),
 ]
 
 # Bash recipe for building across all platforms
@@ -45,8 +45,5 @@ dependencies = [
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)), 
 ]
 
-# Note: we explicitly lie about this because we don't have the new
-# versioning APIs worked out in BB yet.
-version = v"4.1.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
 

@@ -9,14 +9,14 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1200.000"
-gap_lib_version = v"400.1200.000"
+gap_version = v"400.1200.200"
+gap_lib_version = v"400.1201.200"
 name = "JuliaInterface"
-upstream_version = v"0.8.2" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "0.8.2" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to build this JLL
 sources = [
@@ -46,7 +46,7 @@ platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
 julia_platforms = []
 for p in platforms
     for jv in julia_versions
-        if jv == v"1.6.0" && Sys.isapple(p) && arch(p) == "aarch64"
+        if jv == v"1.6.3" && Sys.isapple(p) && arch(p) == "aarch64"
             continue
         end
         p = deepcopy(p)

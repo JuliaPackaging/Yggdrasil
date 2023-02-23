@@ -11,7 +11,8 @@ version and changes to the JLL which retain the same upstream version.
 When the `upstream` version is changed, `offset` version numbers should be reset
 to `v"0.0.0"` and incremented following semantic versioning.
 """
-function offset_version(upstream, offset)
+function offset_version(upstream_str, offset)
+    upstream = VersionNumber(replace(upstream_str, "-" => "."))
     return VersionNumber(
         upstream.major * 100 + offset.major,
         upstream.minor * 100 + offset.minor,
@@ -30,7 +31,7 @@ end
 
 function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionNumber = gap_version)
 
-    platforms = supported_platforms(; experimental=true)
+    platforms = supported_platforms()
     filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
     filter!(!Sys.iswindows, platforms)      # Windows is not supported
 
@@ -38,13 +39,6 @@ function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionN
         Dependency("GAP_jll", gap_version; compat="~$(gap_version)"),
         Dependency("GAP_lib_jll", gap_lib_version; compat="~$(gap_lib_version)"),
     ]
-
-    global script
-    script = raw"""
-    # HACK WORKAROUND GAP_jll deficiencies
-    # must add -lgap to the linker flags used by gac
-    perl -pi -e 's/c_addlibs=""/c_addlibs="-lgap"/' ${prefix}/bin/gac
-    """ * script
 
     return platforms, dependencies
 end

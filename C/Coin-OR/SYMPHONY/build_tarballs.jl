@@ -1,3 +1,9 @@
+# In addition to coin-or-common.jl, we need to modify this file to trigger a
+# rebuild.
+#
+# Last updated: 2022-10-27
+
+
 include("../coin-or-common.jl")
 
 # Collection of sources required to build SYMPHONY
@@ -29,7 +35,8 @@ cd build
     --disable-dependency-tracking \
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
-    --with-coindepend-lib="-lOsi -lCoinUtils" \
+    --with-coinutils-lib="-lCoinUtils" \
+    --with-osi-lib="-lOsi" \
     --with-clp-lib="-lClp -lOsiClp" \
     --with-cgl-lib="-lCgl"
 make -j${nproc}

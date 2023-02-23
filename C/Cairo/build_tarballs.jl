@@ -25,11 +25,20 @@ if [[ "${target}" == *-mingw* ]]; then
     #     /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld: .libs/cairo-pdf-interchange.o: in function `strcat':
     #     /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/string.h:234: undefined reference to `__strcat_chk'
     atomic_patch -p1 ../patches/mingw-libssp.patch
+    # autoreconf needs gtkdocize, install it
+    apk update
+    apk add gtk-doc
     autoreconf -fiv
+elif [[ "${target}" == "${MACHTYPE}" ]]; then
+    # Remove system libexpat to avoid confusion
+    rm /usr/lib/libexpat.so*
 fi
 
 # Because `zlib` doesn't have a proper `.pc` file, configure fails to find.
 export CPPFLAGS="-I${includedir}"
+
+# Delete old misleading libtool files
+rm -f ${prefix}/lib/*.la
 
 if [[ "${target}" == *-apple-* ]]; then
     BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
@@ -80,6 +89,10 @@ dependencies = [
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
     Dependency("LZO_jll"),
     Dependency("Zlib_jll"),
+    # libcairo needs libssp on Windows, which is provided by CSL, but not in all versions of
+    # Julia.  Note that above we're copying libssp to libdir for the versions of Julia where
+    # this wasn't available.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

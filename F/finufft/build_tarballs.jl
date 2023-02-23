@@ -21,6 +21,9 @@ CFLAGS="-fopenmp -fPIC -O3 -funroll-loops -Iinclude"
 if [[ "${target}" != *-freebsd* ]] && [[ "${target}" != *-apple-* ]]; then
     CFLAGS="${CFLAGS} -fcx-limited-range"
 fi
+if [[ "${proc_family}" == *intel* ]]; then
+    CFLAGS="${CFLAGS} -mno-avx512f"
+fi
 
 # Overwrite LIBSFFT such that we do not require fftw3_threads or fftw3_omp for OMP support. Since the libraries in FFTW_jll already provide for threading, we do not loose anything.
 # Make use of the -DFFTW_PLAN_SAFE flag to allow for multiple threads using finufft at the same time.
@@ -36,7 +39,7 @@ install -Dvm 0755 "lib/libfinufft.${dlext}" "${libdir}/libfinufft.${dlext}"
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
 # Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
-platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]); skip=!Sys.iswindows)
+platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"]); skip=!Sys.iswindows)
 
 augment_platform_block = """
     $(MicroArchitectures.augment)

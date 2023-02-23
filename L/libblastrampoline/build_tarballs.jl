@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libblastrampoline"
-version = v"5.2.0"
+version = v"5.4.0"
 
 # Collection of sources required to build libblastrampoline
 sources = [
     GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
-              "4a934fd00056c6d351e9b9a445c3b05bf8a0669d")
+              "d00e6ca235bb747faae4c9f3a297016cae6959ed"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 make -j${nproc} prefix=${prefix} install
-install_license /usr/share/licenses/MIT
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -41,5 +41,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.8",
+               julia_compat="1.9",
 )

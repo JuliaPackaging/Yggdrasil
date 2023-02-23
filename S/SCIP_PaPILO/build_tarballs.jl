@@ -4,15 +4,19 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"800.0.200"
+version = v"800.0.301"
 
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.2.tgz", "1cfc8d31b4ef9c12fae535f5c911616491439bb79cdfa39a30e4d035f4919d96"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz", "5ad50eb42254c825d96f5747d8f3568dcbff0284dfbd1a727910c5a7c2899091"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd scipoptsuite*
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findbliss.patch
+
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
@@ -22,9 +26,14 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DUG=0\
   -DAMPL=0\
   -DGCG=0\
+  -DBOOST=ON\
   -DSYM=bliss\
   -DTPI=tny\
-  -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
+  -DIPOPT_DIR=${prefix} \
+  -DIPOPT_LIBRARIES=${libdir} \
+  -DBLISS_INCLUDE_DIR=${includedir} \
+  -DBLISS_LIBRARY=bliss \
+  ..
 make -j${nproc} scip
 make papilo-executable
 
@@ -32,10 +41,10 @@ make install
 cp bin/papilo "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
-for dir in papilo scip soplex; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
+for dir in scip soplex gcg; do
+    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
 done
-cp $WORKSPACE/srcdir/scipoptsuite*/gcg/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_gcg
+cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_papilo
 """
 
 # These are the platforms we will build for by default, unless further

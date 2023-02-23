@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "RadeonProRender"
-version = v"2.2.15"
+version = v"2.2.17"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "e284dfac04ee3a142603ba955a2bf8d11a78d945")
+    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "3135b69b525f026458c2dfd2874aacca217ef0c5")
 ]
 
 # TODO, also ship headers for Clang.jl generation!?

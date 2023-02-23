@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Svg"
-version = v"6.3.0"
+version = v"6.4.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtsvg-everywhere-src-$version.tar.xz",
-                  "3164504d7e3f640439308235739b112605ab5fc9cc517ca0b28f9fb93a8db0e3"),
+                  "b746af3cb1793621d8ed7eae38d9ad5a15541dc2742031069f2ae3fe87590314"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
 ]
@@ -20,9 +20,9 @@ mkdir build
 cd build/
 qtsrcdir=`ls -d ../qtsvg-*`
 
-case "$target" in
+case "$bb_full_target" in
 
-    x86_64-linux-musl*)
+    x86_64-linux-musl-libgfortran5-cxx11)
         cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_BUILD_TYPE=Release $qtsrcdir
     ;;
 
@@ -48,7 +48,7 @@ esac
 
 cmake --build . --parallel ${nproc}
 cmake --install .
-install_license $WORKSPACE/srcdir/qt*-src-*/LICENSE.LGPL3
+install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 """
 
 # These are the platforms we will build for by default, unless further
