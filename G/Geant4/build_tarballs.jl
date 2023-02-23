@@ -38,6 +38,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_CXX_STANDARD=17 \
       -DGEANT4_INSTALL_DATA=ON \
       -DGEANT4_USE_GDML=ON \
+      -DGEANT4_BUILD_TLS_MODEL=global-dynamic \
       "${FLAGS[@]}" \
     ..
 make -j${nproc}
@@ -83,7 +84,7 @@ products = [
     LibraryProduct("libG4global", :libG4Global),
     LibraryProduct("libG4tracking", :libG4Tracking),
     LibraryProduct("libG4intercoms", :libG4Intercoms),
-    FileProduct("share/data", :data_dir),
+    FileProduct("share/Geant4/data", :data_dir),
 ]
 
 # Dependencies that must be installed before this package can be built
