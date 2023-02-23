@@ -43,7 +43,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc}
 make install
 
-install_license ${WORKSPACE}/srcdir/LICENSE
+install_license ${WORKSPACE}/srcdir/geant4-*/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
