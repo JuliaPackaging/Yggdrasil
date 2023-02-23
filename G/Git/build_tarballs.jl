@@ -95,6 +95,10 @@ SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink_f "${BASH_SOURCE[0]}") )" &> /dev/
 export DYLD_FALLBACK_LIBRARY_PATH="${JLL_DYLD_FALLBACK_LIBRARY_PATH}"
 exec -a "${BASH_SOURCE[0]}" "${SCRIPT_DIR}/_git" "$@"
 EOF
+
+# Make the script executable
+    chmod +x "${bindir}/git"
+fi
 """
 
 platforms = supported_platforms()
