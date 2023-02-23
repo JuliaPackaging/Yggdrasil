@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "gitoxide"
 # Note: upstream doesn't seem to tag new versions of `gitoxide` recently, but
@@ -10,12 +10,16 @@ version = v"0.11.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Byron/gitoxide",
-              "7e76796d5c2956961bd998286bec05fca1ba8fc4"),
+              "fb6e4b4d36c89de56a181e5ba5ae940bd62fb076"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gitoxide*/
+if [[ "${target}" == *-apple-* ]]; then
+    # Help the linker find `libclang_rt.osx.a`
+    export RUSTFLAGS="-Clink-args=-L${libdir}/darwin"
+fi
 cargo build --release
 install -Dvm 755 "target/${rust_target}/release/ein${exeext}" "${bindir}/ein${exeext}"
 install -Dvm 755 "target/${rust_target}/release/gix${exeext}" "${bindir}/gix${exeext}"
@@ -25,12 +29,10 @@ install_license LICENSE-*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# 32-bit systems don't seem to be supported at the moment
-filter!(p -> nbits(p) == 64, platforms)
-# macOS builds require libclang_rt.osx.a static library, which isn't in the SDK
-filter!(!Sys.isapple, platforms)
-# PowerPC not supported by sha1-asm
-filter!(p -> arch(p) != "powerpc64le", platforms)
+# PowerPC and 32-bit ARM not supported by sha1-asm
+filter!(p -> arch(p) ∉ ("powerpc64le", "armv6l", "armv7l"), platforms)
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -39,7 +41,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    # We need libclang_rt.osx.a for linking the program.
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"12.0.0"); platforms=filter(Sys.isapple, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

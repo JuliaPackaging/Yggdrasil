@@ -2,11 +2,11 @@ using Pkg
 using BinaryBuilder
 
 name = "SCS_GPU"
-version = v"3.2.0"
+version = v"3.2.1"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "ac6840a3b3264950e6c300264cbf3937e0bcc6c5")
+    GitSource("https://github.com/cvxgrp/scs.git", "f2da64d314d86a97ebb8e957f215f27f9e2a7b79")
 ]
 
 # Bash recipe for building across all platforms

@@ -3,19 +3,23 @@
 using BinaryBuilder
 
 name = "hyper"
-version = v"0.14.17"
+version = v"0.14.19"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/hyperium/hyper/archive/refs/tags/v$(version).tar.gz",
-                  "64420fd550f43af09b0722b3504d4fd919de642d63f01ad54108aa854f5f5470"),
+                  "fb455f0ce68d209556285f971d275a72cd1873619699d44369c46874920af436"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/hyper*/
-cargo build --release
-install -Dm 755 target/${rust_target}/release/*hyper.${dlext} "${libdir}/libhyper.${dlext}"
+# Revert https://github.com/hyperium/hyper/commit/1c6637060e36654ddb2fdfccb0d146c7ad527476
+# which prevents building shared libraries with the stable channel.
+atomic_patch -p1 ../patches/revert-dont-build-c-lib.patch
+RUSTFLAGS="--cfg hyper_unstable_ffi" cargo rustc --release --features client,http1,http2,ffi
+install -Dvm 755 target/${rust_target}/release/*hyper.${dlext} "${libdir}/libhyper.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further

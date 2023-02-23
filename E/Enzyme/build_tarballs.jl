@@ -8,13 +8,17 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.28"
+auto_version = "refs/tags/v0.0.49"
 version = VersionNumber(split(auto_version, "/")[end])
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1"]
+llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2", v"15.0.7"]
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "f3bd406b008d8120bffc49242ff3f440730ddfb6")]
+sources = [
+    GitSource(repo, "7d85a8743f15f4e48a8aae097c545a80aee7dc68"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -23,9 +27,39 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 # Bash recipe for building across all platforms
 script = raw"""
 cd Enzyme
-# install_license LICENSE.TXT
+
+if [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+15.asserts* ]]; then
+    # LLVM 15 requires macOS SDK 10.14.
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
+
+# 1. Build HOST
+NATIVE_CMAKE_FLAGS=()
+NATIVE_CMAKE_FLAGS+=(-DENZYME_CLANG=ON)
+NATIVE_CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
+NATIVE_CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
+# Install things into $host_prefix
+NATIVE_CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+NATIVE_CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${host_prefix})
+# Tell CMake where LLVM is
+NATIVE_CMAKE_FLAGS+=(-DLLVM_DIR="${host_prefix}/lib/cmake/llvm")
+NATIVE_CMAKE_FLAGS+=(-DBC_LOAD_FLAGS="-target ${target} --sysroot=/opt/${target}/${target}/sys-root --gcc-toolchain=/opt/${target}")
+
+cmake -B build-native -S enzyme -GNinja "${NATIVE_CMAKE_FLAGS[@]}"
+
+# Only build blasheaders and tblgen
+ninja -C build-native -j ${nproc} blasheaders enzyme-tblgen
+
+# 2. Cross-compile
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DENZYME_EXTERNAL_SHARED_LIB=ON)
+CMAKE_FLAGS+=(-DBC_LOAD_HEADER=`pwd`/build-native/BCLoad/gsl/blas_headers.h)
+CMAKE_FLAGS+=(-DEnzyme_TABLEGEN_EXE=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
 CMAKE_FLAGS+=(-DENZYME_CLANG=OFF)
 # RelWithDebInfo for decent performance, with debugability
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
@@ -43,7 +77,9 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 if [[ "${target}" == x86_64-apple* ]]; then
   CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.12)
 fi
+
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
+
 ninja -C build -j ${nproc} install
 """
 
@@ -57,16 +93,26 @@ augment_platform_block = """
 # determine exactly which tarballs we should build
 builds = []
 for llvm_version in llvm_versions, llvm_assertions in (false, true)
+    if llvm_version == v"11.0.1" && llvm_assertions
+        continue # Does not have Clang available
+    end
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
+        HostBuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
     ]
 
     # The products that we will ensure are always built
     products = Product[
         LibraryProduct(["libEnzyme-$(llvm_version.major)", "libEnzyme"], :libEnzyme, dont_dlopen=true),
+        LibraryProduct(["libEnzymeBCLoad-$(llvm_version.major)", "libEnzymeBCLoad"], :libEnzymeBCLoad, dont_dlopen=true),
     ]
+
+    if llvm_version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl.
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)

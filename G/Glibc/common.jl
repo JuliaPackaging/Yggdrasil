@@ -12,6 +12,10 @@ function glibc_sources(version)
             ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz",
                           "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
         ],
+        v"2.33" => [
+            ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.33.tar.xz",
+                          "2e2556000e105dbd57f0b6b2a32ff2cf173bde4f0d85dffccfd8b7e51a0677ff"),
+        ],
         v"2.34" => [
             ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.34.tar.xz",
                           "44d26a1fe20b8853a48f470ead01e4279e869ac149b195dda4e44a195d981ab2"),
@@ -41,12 +45,29 @@ function glibc_script()
     # Various configure overrides
     GLIBC_CONFIGURE_OVERRIDES=( libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes )
 
+    mkdir -p $WORKSPACE/srcdir/glibc_build
+
+    if [[ -d ../debian ]]; then
+        echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories
+        apk update
+        apk add quilt
+        QUILT_PATCHES=$PWD/../debian/patches quilt push
+        echo "libdir = /usr/lib/${target}" >> $WORKSPACE/srcdir/glibc_build/configparms
+        echo "slibdir = /lib/${target}" >> $WORKSPACE/srcdir/glibc_build/configparms
+        echo "rtlddir = /lib" >> $WORKSPACE/srcdir/glibc_build/configparms
+        if [[ ${target} == aarch64-linux-gnu ]]; then
+            # At the moment -moutline-atomics (as used in the official debian binaries)
+            # intermittently causes binaries that are incompatible with rr. Forcing ARM
+            # 8.3 will result in inlined LSE atomics, working around the issue.
+            GLIBC_CONFIGURE_OVERRIDES+=( CFLAGS="-march=armv8.3-a -mno-outline-atomics -O2")
+        fi
+    fi
+
     # We have problems with libssp on ppc64le
     if [[ ${COMPILER_TARGET} == powerpc64le-* ]]; then
         GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
     fi
-    
-    mkdir -p $WORKSPACE/srcdir/glibc_build
+
     cd $WORKSPACE/srcdir/glibc_build
     $WORKSPACE/srcdir/glibc-*/configure \
         --prefix=/usr \
@@ -54,10 +75,10 @@ function glibc_script()
         --host=${target} \
         --disable-multilib \
         --disable-werror \
-        ${GLIBC_CONFIGURE_OVERRIDES[@]}
-    
+        "${GLIBC_CONFIGURE_OVERRIDES[@]}"
+
     make -j${nproc}
-    
+
     # Install to the main prefix and also to the sysroot.
     make install install_root=${prefix}
     """

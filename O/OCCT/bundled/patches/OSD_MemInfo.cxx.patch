@@ -1,0 +1,56 @@
+--- /dev/null
++++ b/src/OSD/OSD_MemInfo.cxx
+@@ -160,20 +160,20 @@
+    || IsActive (MemWorkingSet)
+    || IsActive (MemWorkingSetPeak))
+   {
+-    // /proc/%d/status is not emulated - get more info from mallinfo()
+-    const struct mallinfo aMI = mallinfo();
+-    if (IsActive (MemHeapUsage))
+-    {
+-      myCounters[MemHeapUsage] = aMI.uordblks;
+-    }
+-    if (IsActive (MemWorkingSet))
+-    {
+-      myCounters[MemWorkingSet] = aMI.uordblks;
+-    }
+-    if (IsActive (MemWorkingSetPeak))
+-    {
+-      myCounters[MemWorkingSetPeak] = aMI.usmblks;
+-    }
++    //// /proc/%d/status is not emulated - get more info from mallinfo()
++    //const struct mallinfo aMI = mallinfo();
++    //if (IsActive (MemHeapUsage))
++    //{
++    //  myCounters[MemHeapUsage] = aMI.uordblks;
++    //}
++    //if (IsActive (MemWorkingSet))
++    //{
++    //  myCounters[MemWorkingSet] = aMI.uordblks;
++    //}
++    //if (IsActive (MemWorkingSetPeak))
++    //{
++    //  myCounters[MemWorkingSetPeak] = aMI.usmblks;
++    //}
+   }
+   if (IsActive (MemVirtual))
+   {
+@@ -188,12 +188,12 @@
+     #endif
+   #endif
+ 
+-  #ifdef HAS_MALLINFO2
+-    const struct mallinfo2 aMI = mallinfo2();
+-  #else
+-    const struct mallinfo aMI = mallinfo();
+-  #endif
+-    myCounters[MemHeapUsage] = aMI.uordblks;
++  //#ifdef HAS_MALLINFO2
++  //  const struct mallinfo2 aMI = mallinfo2();
++  //#else
++  //  const struct mallinfo aMI = mallinfo();
++  //#endif
++  //  myCounters[MemHeapUsage] = aMI.uordblks;
+   }
+ 
+   if (!IsActive (MemVirtual)

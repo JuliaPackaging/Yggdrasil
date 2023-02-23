@@ -1,7 +1,0 @@
-35a36
-> #include <sys/auxv.h>
-38a40,43
-> 	const int HWCAP_SVE = 1 << 22;
-> 	if (!(getauxval( AT_HWCAP ) & HWCAP_SVE))
-> 		return;
-> 

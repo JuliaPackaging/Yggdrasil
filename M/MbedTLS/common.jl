@@ -34,26 +34,23 @@ sources = sources_by_version[version]
 
 # Bash recipe for building across all platforms
 script = raw"""
+shopt -s nullglob
 cd $WORKSPACE/srcdir/mbedtls
 
 # llvm-ranlib gets confused, use the binutils one
 if [[ "${target}" == *apple* ]]; then
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/ranlib
     ln -sf /opt/${target}/bin/${target}-ranlib /opt/bin/${target}-ranlib
-    atomic_patch -p1 ../patches/0001-Remove-flags-not-sopported-by-ranlib.patch
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/conditional/0001-Remove-flags-not-supported-by-ranlib.patch"
 fi
-
-# MbedTLS 2.24.0 needs a patch for platforms where `char` is unsigned
-P=${WORKSPACE}/srcdir/patches/0002-fix-incorrect-eof-check.patch
-if [[ -f ${P} ]]; then
-    atomic_patch -p1 ${P}
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
-
-# MbedTLS 2.24.0 also needs a patch for platforms that build with Clang 12
-P=${WORKSPACE}/srcdir/patches/0003-Prevent-triggering-Clang-12--Wstring-concatenation.patch
-if [[ -f ${P} ]]; then
-    atomic_patch -p1 ${P}
-fi
+# Apply patches that differ depending on the version of MbedTLS that we're building
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 "${f}"
+done
 
 # enable MD4
 sed "s|//#define MBEDTLS_MD4_C|#define MBEDTLS_MD4_C|" -i include/mbedtls/config.h
@@ -63,6 +60,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_C_STANDARD=99 \
     -DUSE_SHARED_MBEDTLS_LIBRARY=On \
+    -DMBEDTLS_FATAL_WARNINGS=OFF \
     -DENABLE_TESTING=OFF \
     ..
 make -j${nproc}
@@ -80,6 +78,7 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -89,6 +88,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 

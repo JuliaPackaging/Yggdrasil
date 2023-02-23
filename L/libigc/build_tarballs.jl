@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.10395"
+version = v"1.0.12812"#.26
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -12,15 +12,24 @@ version = v"1.0.10395"
 
 # Collection of sources required to build IGC
 # NOTE: these hashes are taken from the release notes in GitHub,
-#       https://github.com/intel/intel-graphics-compiler/releases
+#       https://github.com/intel/intel-graphics-compiler/releases.
+#
+#       however, it seems like their Ubuntu build instrictions,
+#       as well as the CI build infrastructure, uses way newer
+#       sources, directly checking out upstream branches
+#       see https://github.com/intel/intel-graphics-compiler/blob/master/documentation/build_ubuntu.md
+#
+#       only the SPIRV-Tools and SPIRV-Headers versions are hard-coded,
+#       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
+#
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "775a850f9b0c2d7249503b47ad6bd39a4eb9b3d7"),
-    GitSource("https://github.com/intel/opencl-clang.git", "50bf6d7524bea3e3d595b7c252c9ad2f91340231"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "cf681c88ea3f0c40d1a85677232fe6102b7e084f"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "eeb973f5020a5f0e92ad6da879bc4df9f5985a1c"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "ae217c17809fadb232ec94b29304b4afcd417bb4"),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "5066d947985dd0c5107765daec5f24f735f3259a"),
-    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312"),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "492c11b739568f3ef5f5a33952cfd841a44ae8b5"),
+    GitSource("https://github.com/intel/opencl-clang.git", "ee31812ea8b89d08c2918f045d11a19bd33525c5" #= branch ocl-open-110 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "9991d09a15f6cc0d331d800e6ddefe6c778e5fb6" #= branch llvm_release_110 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "45dd184c790d6bfc78a5a74a10c37e888b1823fa" #= tag sdk-1.3.204.1 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "b42ba6d92faf6b4938e6f22ddd186dbdacc98d78" #= tag sdk-1.3.204.1 =#),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "dd72efa3b4aafdbbf599e6f3c6f8c55450e348de" #= latest version: v0.11.0 =#),
+    GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312" #= branch llvmorg-11.1.0 =#),
     # patches
     DirectorySource("./bundled"),
 ]
@@ -71,7 +80,6 @@ ninja -C build -j ${nproc} install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("i686", "linux", libc="glibc"),
     Platform("x86_64", "linux", libc="glibc"),
 ]
 platforms = expand_cxxstring_abis(platforms)

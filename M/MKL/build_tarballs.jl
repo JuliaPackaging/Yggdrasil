@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2022.0.0"
+version = v"2022.2.0"
 
 # Bash recipes for building across all platforms
 script = read(joinpath(@__DIR__, "script.sh"), String)
@@ -13,8 +13,8 @@ platform_sources = [
     (
         platform = Platform("x86_64", "linux"; libc="glibc"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.0.1/download/linux-64/mkl-2022.0.1-intel_117.tar.bz2",
-            "62a3567efd4fa413181753dfc36c15bdfc8ec500eae4e5dcb104ed0d24136cfa";
+            "https://anaconda.org/intel/mkl/2022.2.0/download/linux-64/mkl-2022.2.0-intel_8748.tar.bz2",
+            "1f3f5e6f4c2d8ea3b4792d2d9a116492e4dac4914373c415ea1272d0f55491ff";
             unpack_target = "mkl-x86_64-linux-gnu"
         ),
         # We need to run autofix on Linux, because here libmkl_rt doesn't
@@ -26,8 +26,8 @@ platform_sources = [
     (
         platform = Platform("i686", "linux"; libc="glibc"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.0.1/download/linux-32/mkl-2022.0.1-intel_117.tar.bz2",
-            "fd800f09432a214dfffe9b973f24fdfd374aa013d6b92fbd570c744aa7eef5b2";
+            "https://anaconda.org/intel/mkl/2022.2.0/download/linux-32/mkl-2022.2.0-intel_8748.tar.bz2",
+            "f14784822632cff8a926998c1779833f8dd6b86219b7e8744ccb535cad15023d";
             unpack_target = "mkl-i686-linux-gnu"
         ),
         autofix = true,
@@ -36,8 +36,8 @@ platform_sources = [
     (
         platform = Platform("x86_64", "macos"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.0.0/download/osx-64/mkl-2022.0.0-intel_105.tar.bz2",
-            "fc026812458fd2053a6327bb5a42f47f97258147c39111bd6376dfabe51d05f5";
+            "https://anaconda.org/intel/mkl/2022.2.0/download/osx-64/mkl-2022.2.0-intel_8687.tar.bz2",
+            "d47572cf4fb018ce8e5db8a4732055b46bcc50cc4d2f8dc2d7d5ae83ca227c69";
             unpack_target = "mkl-x86_64-apple-darwin14"
         ),
         # Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
@@ -49,8 +49,8 @@ platform_sources = [
     (
         platform = Platform("i686", "windows"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.0.0/download/win-32/mkl-2022.0.0-intel_115.tar.bz2",
-            "045c6f3ca31eca1e07785980152ad6a74513bead1f20beab440eded9596452a9";
+            "https://anaconda.org/intel/mkl/2022.2.0/download/win-32/mkl-2022.2.0-intel_9563.tar.bz2",
+            "60435411e0ca283b2b45f979f16520f390ca28588d1d6d2c0682cbda55e6b61f";
             unpack_target = "mkl-i686-w64-mingw32"
         ),
         autofix = false,
@@ -59,8 +59,8 @@ platform_sources = [
     (
         platform = Platform("x86_64", "windows"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.0.0/download/win-64/mkl-2022.0.0-intel_115.tar.bz2",
-            "ba5a1f936b4e9fec0e3b5ae3ce44b56d06a6645a7c9456aa298c7d7373fd34c2";
+            "https://anaconda.org/intel/mkl/2022.2.0/download/win-64/mkl-2022.2.0-intel_9563.tar.bz2",
+            "59e89f45c6d604d18dfef972a973e3ec4a5d69d02d0fc173d20637fa6e8b59e9";
             unpack_target = "mkl-x86_64-w64-mingw32"
         ),
         autofix = false,

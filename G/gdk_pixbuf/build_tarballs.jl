@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gdk_pixbuf"
-version = v"2.42.6"
+version = v"2.42.8"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
-                  "8a76cffe6a85f2602cf246c1c974eb475aea41c363a932f0c34695fa968f01fd"),
+                  "d122cb5d0ef32349c52c37f1dfd936c734886643b49a37706acccfe3af6aba77"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,13 +16,30 @@ script = raw"""
 cd $WORKSPACE/srcdir/gdk-pixbuf-*/
 mkdir build && cd build
 
+# As seen in the GTK4 build, llvm-ar seems to generate corrupted static archives:
+#
+#   [119/165] Linking target gdk-pixbuf/pixops/timescale
+#   ninja: job failed: [...]
+#   ld: warning: ignoring file gdk-pixbuf/pixops/libpixops.a, building for macOS-arm64 but attempting to link with file built for unknown-unsupported file format ( 0x21 0x3C 0x74 0x68 0x69 0x6E 0x3E 0x0A 0x2F 0x20 0x20 0x20 0x20 0x20 0x20 0x20 )
+#   Undefined symbols for architecture arm64:
+#     "__pixops_composite", referenced from:
+#         _main in timescale.c.o
+#     "__pixops_composite_color", referenced from:
+#         _main in timescale.c.o
+#     "__pixops_scale", referenced from:
+#         _main in timescale.c.o
+#   ld: symbol(s) not found for architecture arm64
+
+if [[ "${target}" == *apple* ]]; then
+    sed -i "s?^ar = .*?ar = '/opt/${target}/bin/${target}-ar'?g" "${MESON_TARGET_TOOLCHAIN}"
+fi
+
 FLAGS=()
-if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-mingw* ]]; then
-    FLAGS+=(-Dx11=false)
+if [[ "${target}" == x86_64-linux-gnu ]]; then
+    FLAGS+=(-Dintrospection=enabled)
 fi
 
 meson .. \
-    -Dgir=false \
     -Dman=false \
     -Dinstalled_tests=false \
     -Dgio_sniffing=false \
@@ -49,19 +66,23 @@ products = [
 # Some dependencies are needed only on Linux and FreeBSD
 linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 
+# gobject_introspection is needed only on x86_64-linux-gnu
+introspect_platform = filter(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) == "x86_64", platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     # Need a host glib for glib-compile-resources
     HostBuildDependency("Glib_jll"),
-    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("Glib_jll"; compat="2.68.3"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
+    BuildDependency("gobject_introspection_jll"; platforms=introspect_platform)
 ]
 
 # Build the tarballs.

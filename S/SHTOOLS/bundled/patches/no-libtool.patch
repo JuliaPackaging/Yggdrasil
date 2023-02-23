@@ -1,6 +1,6 @@
---- src/Makefile.orig	2021-02-16 19:24:29.000000000 -0500
-+++ src/Makefile	2021-02-16 19:24:46.000000000 -0500
-@@ -80,10 +80,10 @@
+--- src/Makefile
++++ src/Makefile
+@@ -79,10 +79,10 @@
  	@echo "--> Compilation of source files successful"
  	@echo
  	@rm -f $(PROG)
