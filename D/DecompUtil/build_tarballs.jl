@@ -12,30 +12,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-apk add eigen-dev
-cd DecompUtil_C/
+cd $WORKSPACE/srcdir/DecompUtil_C
 mkdir build && cd build
-Eigen3_DIR=/usr/share/cmake/Modules cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .. 
-make install -j
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .. 
+make -j{nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; )
-]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -43,7 +29,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = BuildDependency[
+    BuildDependency("Eigen_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
