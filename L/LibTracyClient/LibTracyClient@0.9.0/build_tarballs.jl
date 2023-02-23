@@ -7,8 +7,8 @@ version = v"0.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wolfpld/tracy/archive/refs/tags/v0.9.tar.gz",
-                  "93a91544e3d88f3bc4c405bad3dbc916ba951cdaadd5fcec1139af6fa56e6bfc"),
+    GitSource("https://github.com/wolfpld/tracy.git",
+              "5a1f5371b792c12aea324213e1dc738b2923ae21"), # v0.9
     DirectorySource("./bundled"),
 ]
 
@@ -21,12 +21,13 @@ else
     echo "target_compile_definitions(TracyClient PUBLIC WINVER=0x0602 _WIN32_WINNT=0x0602)" >> CMakeLists.txt
 fi
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libTracyClient-freebsd-elfw.patch
-cmake -B static -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DTRACY_FIBERS=ON .
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libTracyClient-no-crash-handler.patch
+cmake -B static -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DTRACY_FIBERS=ON -DTRACY_NO_BROADCAST=ON -DTRACY_ONLY_LOCALHOST=ON -DTRACY_NO_CODE_TRANSFER=ON -DTRACY_NO_FRAME_IMAGE=ON -DTRACY_NO_CRASH_HANDLER=ON -DTRACY_ON_DEMAND=ON .
 cd static
 make -j${nproc}
 make install
 cd ..
-cmake -B shared -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DTRACY_FIBERS=ON .
+cmake -B shared -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DTRACY_FIBERS=ON -DTRACY_NO_BROADCAST=ON -DTRACY_ONLY_LOCALHOST=ON -DTRACY_NO_CODE_TRANSFER=ON -DTRACY_NO_FRAME_IMAGE=ON -DTRACY_NO_CRASH_HANDLER=ON -DTRACY_ON_DEMAND=ON .
 cd shared
 make -j${nproc}
 make install
