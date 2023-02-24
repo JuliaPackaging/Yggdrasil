@@ -7,12 +7,12 @@ version = v"1.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/google/woff2/archive/v$(version)/woff2-$(version).tar.gz", "add272bb09e6384a4833ffca4896350fdb16e0ca22df68c0384773c67a175594")
+    GitSource("https://github.com/google/woff2.git", "1bccf208bca986e53a647dfe4811322adb06ecf8")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/woff2-*
+cd $WORKSPACE/srcdir/woff2
 install_license LICENSE
 mkdir out
 cd out
