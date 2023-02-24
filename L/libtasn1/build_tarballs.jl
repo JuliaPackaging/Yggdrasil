@@ -12,11 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-install_license libtasn1-*/COPYING
-cd libtasn1-*
+cd $WORKSPACE/srcdir/libtasn1-*
+install_license COPYING
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
