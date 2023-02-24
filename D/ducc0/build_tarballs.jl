@@ -6,7 +6,7 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "ducc0"
-version = v"0.29.1"
+version = v"0.29.0"
 
 # Collection of sources required to complete build
 sources = [
