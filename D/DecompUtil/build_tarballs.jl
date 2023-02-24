@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DecompUtil"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dev10110/DecompUtil_C.git", "982449a84f620488fe9d954eb9a6d301dddfff3f")
+    GitSource("https://github.com/dev10110/DecompUtil_C.git", "97ec11c300f0dd28f74199d09d5d0952ca21f384")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if p.tags["os"] != "windows"]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -29,7 +29,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = BuildDependency[
+dependencies = [
     BuildDependency("Eigen_jll")
 ]
 
