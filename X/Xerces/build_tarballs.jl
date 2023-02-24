@@ -8,14 +8,12 @@ version = v"3.2.4"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://dlcdn.apache.org//xerces/c/3/sources/xerces-c-3.2.4.tar.gz", "3d8ec1c7f94e38fee0e4ca5ad1e1d9db23cbf3a10bba626f6b4afa2dedafe5ab"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd xerces-c-3.2.3/
-atomic_patch -p1 "${WORKSPACE}/srcdir/ThreadTest.patch"
+cd xerces-c-3.2.4/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -Dnetwork:BOOL=OFF
 make -j${nproc}
 make install
