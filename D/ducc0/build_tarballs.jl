@@ -6,7 +6,7 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "ducc0"
-version = v"0.29.0"
+version = v"0.29.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -38,8 +38,11 @@ install -Dvm 0755 "libducc_julia.${dlext}" "${libdir}/libducc_julia.${dlext}"
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
 # Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
-platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]); skip=!Sys.iswindows)
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]))
+filter!(platforms) do cur_p
+    # On Windows, we want to avoid AVX/AVX2
+    cur_p.tags["os"] != "windows" || ! contains(get(cur_p.tags, "march", ""), "avx") 
+end
 
 augment_platform_block = """
     $(MicroArchitectures.augment)
