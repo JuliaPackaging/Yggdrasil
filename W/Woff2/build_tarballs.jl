@@ -12,13 +12,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-install_license woff2-*/LICENSE
-cd woff2-*
+cd $WORKSPACE/srcdir/woff2-*
+install_license LICENSE
 mkdir out
 cd out
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j${nproc}
 make install
 """
 
@@ -36,7 +35,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="brotli_jll", uuid="4611771a-a7d2-5e23-8d00-b1becdba1aae"))
+    Dependency(PackageSpec(name="brotli_jll", uuid="4611771a-a7d2-5e23-8d00-b1becdba1aae")),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
