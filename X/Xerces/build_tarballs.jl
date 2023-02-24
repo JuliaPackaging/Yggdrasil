@@ -12,11 +12,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd xerces-c-3.2.4/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -Dnetwork:BOOL=OFF
+cd $WORKSPACE/srcdir/xerces-c-3.2.4
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -Dnetwork:BOOL=OFF \
+      ..
 make -j${nproc}
 make install
+
 install_license ${WORKSPACE}/srcdir/xerces-c-3.2.4/LICENSE
 """
 
