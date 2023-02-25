@@ -6,14 +6,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"1.2.1"
+version = v"1.2.2"
 
 PETSc_COMPAT_VERSION = "3.16.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bitbucket.org/bkaus/lamem.git", 
-    "4c7d3a4474f9bf3d1d1cd251c81b25fd8fd8eafe")
+    "9bfd15fa11c3fd70b2d6e31812a8bd6c08299026")
 ]
 
 # Bash recipe for building across all platforms
