@@ -1,24 +1,17 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.5.0"
+version = v"1.6.0"
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "fbea439d4b6fc91c6b619d01b85ab3b7746e4c19"),
-    DirectorySource("./bundled"),
+              "f7325c448053bfcd1a32ec319ed392f525480634")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
-
-# https://github.com/libgit2/libgit2/issues/3866
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
-# https://github.com/libgit2/libgit2/pull/6377
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-lowercase-windows-h.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
