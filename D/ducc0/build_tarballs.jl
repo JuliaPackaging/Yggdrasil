@@ -41,7 +41,7 @@ install -Dvm 0755 "libducc_julia.${dlext}" "${libdir}/libducc_julia.${dlext}"
 platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]))
 filter!(platforms) do p
     # On Windows, we want to avoid AVX/AVX2
-    Sys.iswindows(p) || ! contains(get(BinaryBuilderBase.march(p), "avx") 
+    Sys.iswindows(p) || ! contains(BinaryBuilderBase.march(p), "avx") 
 end
 
 augment_platform_block = """
