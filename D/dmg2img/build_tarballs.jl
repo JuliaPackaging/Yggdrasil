@@ -33,7 +33,7 @@ dependencies = [
     # Future versions of bzip2 should allow a more relaxed compat because the
     # soname of the macOS library shouldn't change at every patch release.
     Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.20"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

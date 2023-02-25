@@ -64,7 +64,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="PDAL_jll", uuid="a8197b14-d70b-5660-b10f-8b1ebb62825c"))
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.20")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
