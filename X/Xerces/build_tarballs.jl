@@ -7,7 +7,7 @@ version = v"3.2.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dlcdn.apache.org//xerces/c/3/sources/xerces-c-3.2.4.tar.gz", "3d8ec1c7f94e38fee0e4ca5ad1e1d9db23cbf3a10bba626f6b4afa2dedafe5ab"),
+    ArchiveSource("https://dlcdn.apache.org/xerces/c/3/sources/xerces-c-$(version).tar.gz", "3d8ec1c7f94e38fee0e4ca5ad1e1d9db23cbf3a10bba626f6b4afa2dedafe5ab"),
     DirectorySource("./bundled"),
 ]
 
