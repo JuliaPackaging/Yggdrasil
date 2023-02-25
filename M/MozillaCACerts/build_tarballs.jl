@@ -4,13 +4,13 @@ using BinaryBuilder
 
 name = "MozillaCACerts"
 # Info and new versions here: https://curl.haxx.se/docs/caextract.html
-cacert_version = "2022-10-11"
+cacert_version = "2023-01-10"
 version = VersionNumber(replace(cacert_version, '-'=>'.'))
 
 # Collection of sources required to build MozillaCACerts
 sources = [
     FileSource("https://curl.haxx.se/ca/cacert-$cacert_version.pem", 
-               "2cff03f9efdaf52626bd1b451d700605dc1ea000c5da56bd0fc59f8f43071040",
+               "fb1ecd641d0a02c01bc9036d513cb658bbda62a75e246bedbc01764560a639f0",
                filename="cacert.pem"),
 ]
 
@@ -30,7 +30,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
