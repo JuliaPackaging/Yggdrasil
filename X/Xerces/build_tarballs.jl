@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/xerces-c-3.2.4
+cd $WORKSPACE/srcdir/xerces-*/
 atomic_patch -p1 "${WORKSPACE}/srcdir/ThreadTest.patch"
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
