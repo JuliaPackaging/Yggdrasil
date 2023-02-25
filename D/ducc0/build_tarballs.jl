@@ -37,12 +37,9 @@ install -Dvm 0755 "libducc_julia.${dlext}" "${libdir}/libducc_julia.${dlext}"
 """
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
-platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]))
-filter!(platforms) do p
-    # On Windows, we want to avoid AVX/AVX2
-    !Sys.iswindows(p) || !contains(something(BinaryBuilderBase.march(p), ""), "avx") 
-end
+# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that.
+# Also, on Windows we want to avoid AVX/AVX2.
+platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]; filter=!Sys.iswindows))
 
 augment_platform_block = """
     $(MicroArchitectures.augment)
