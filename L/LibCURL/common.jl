@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 function build_libcurl(ARGS, name::String)
-    version = v"7.87.0"
-    hash = "8a063d664d1c23d35526b87a2bf15514962ffdd8ef7fd40519191b3c23e39548"
+    version = v"7.88.1"
+    hash = "cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded82bbf3c7"
 
     if name == "CURL"
         this_is_curl_jll = true
