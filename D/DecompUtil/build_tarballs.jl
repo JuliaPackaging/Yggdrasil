@@ -2,25 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libaec"
-version = v"1.0.6"
+name = "DecompUtil"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.dkrz.de/k202009/libaec/-/archive/v$(version)/libaec-v$(version).tar.bz2", "31fb65b31e835e1a0f3b682d64920957b6e4407ee5bbf42ca49549438795a288")
+    GitSource("https://github.com/dev10110/DecompUtil_C.git", "97ec11c300f0dd28f74199d09d5d0952ca21f384")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libaec*/
-
+cd $WORKSPACE/srcdir/DecompUtil_C
 mkdir build && cd build
-cmake \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    ..
-
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .. 
 make -j${nproc}
 make install
 """
@@ -31,13 +25,12 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsz", :libsz),
-    LibraryProduct("libaec", :libaec),
-    ExecutableProduct("aec", :aec)
+    LibraryProduct("libdecomputil", :libdecomputil)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency("Eigen_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
