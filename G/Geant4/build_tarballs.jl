@@ -49,7 +49,8 @@ install_license ${WORKSPACE}/srcdir/geant4-*/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && arch(p) != "armv6l", supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms())
+platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && arch(p) != "armv6l" && cxxstring_abi(p) != "cxx03", platforms)
 
 
 # The products that we will ensure are always built
