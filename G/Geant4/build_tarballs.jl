@@ -49,8 +49,8 @@ install_license ${WORKSPACE}/srcdir/geant4-*/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
+platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && arch(p) != "armv6l", supported_platforms())
+
 
 # The products that we will ensure are always built
 products = [
@@ -84,6 +84,7 @@ products = [
     LibraryProduct("libG4tracking", :libG4Tracking),
     LibraryProduct("libG4intercoms", :libG4Intercoms),
     LibraryProduct("libG4particles", :libG4Particles),
+    LibraryProduct("libG4ptl", :libG4Ptl),
     FileProduct("share/Geant4/data", :data_dir),
 ]
 
