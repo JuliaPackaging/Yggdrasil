@@ -67,7 +67,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency("Libiconv_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.20"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Readline_jll"),
     Dependency("Zlib_jll"),
     Dependency("Gdbm_jll"),

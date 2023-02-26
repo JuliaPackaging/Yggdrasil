@@ -54,7 +54,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="1.1.20"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     "MPIR_jll",
     "cryptopp_jll",
 ]
