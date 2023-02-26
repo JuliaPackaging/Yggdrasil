@@ -1,0 +1,39 @@
+diff --git a/makefile b/makefile
+index 99fd138..f3d07a9 100644
+--- a/makefile
++++ b/makefile
+@@ -79,12 +79,10 @@ $(info *** Unspecified platform w/o extensions ***)
+ 	SIMD=NONE
+ else ifeq ($(PLATFORM), arm8)
+ $(info *** ARMv8 with NEON extensions ***)
+-	COMMON_FLAGS := -march=armv8-a
+ 	DEFINE_FLAGS := $(DEFINE_FLAGS) -DSIMD=$(SIMD_NEON)
+ 	SIMD=NEON
+ else ifeq ($(PLATFORM), m1)
+ $(info *** Apple M1 with NEON extensions ***)
+-	COMMON_FLAGS := -march=armv8.4-a
+ 	DEFINE_FLAGS := $(DEFINE_FLAGS) -DSIMD=$(SIMD_NEON)
+ 	SIMD=NEON
+ else ifeq ($(PLATFORM), sse4)
+@@ -97,9 +95,9 @@ $(info *** x86-64 with AVX extensions***)
+ 	COMMON_FLAGS := -msse4
+ 	DEFINE_FLAGS := $(DEFINE_FLAGS) -DSIMD=$(SIMD_AVX1)
+ 	SIMD=AVX1
+-else ifeq ($(PLATFORM), native)
+-$(info *** x86-64 with AVX2 extensions and native architecture ***)
+-	COMMON_FLAGS := -mavx2 -march=native
++else ifeq ($(PLATFORM), avx2)
++$(info *** x86-64 with AVX2 extensions ***)
++	COMMON_FLAGS := -mavx2
+ 	DEFINE_FLAGS := $(DEFINE_FLAGS) -DSIMD=$(SIMD_AVX2)
+ 	SIMD=AVX2
+ else
+@@ -151,7 +149,7 @@ COMMON_OBJS := src/msa.o \
+ 	src/core/sequence.o \
+ 	src/core/queues.o \
+ 	libs/mimalloc/static.o
+-		
++
+ src/lcs/lcsbp_classic.o : src/lcs/lcsbp_classic.cpp
+ 	$(CXX) $(CXXFLAGS) -c src/lcs/lcsbp_classic.cpp -o $@
+ 
