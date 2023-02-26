@@ -7,7 +7,7 @@ version = v"11.1.1"
 
 # Collection of sources required to build
 sources = [
-    ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v11.1.1/geant4-v$(version).tar.gz",
+    ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v$(version)/geant4-v$(version).tar.gz",
                   "c5878634da9ba6765ce35a469b2893044f4a6598aa948733da8436cdbfeef7d2"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
@@ -44,7 +44,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc}
 make install
 
-install_license ${WORKSPACE}/srcdir/geant4-*/LICENSE
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
