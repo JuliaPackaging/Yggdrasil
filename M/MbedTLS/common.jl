@@ -30,17 +30,13 @@ sources_by_version = Dict(
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
     v"2.28.1" => [
-        ArchiveSource(
-            "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.1.tar.gz",
-            "6797a7b6483ef589deeab8d33d401ed235d7be25eeecda1be8ddfed406d40ff4"
-        ),
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "dd79db10014d85b26d11fe57218431f2e5ede6f2"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
     v"2.28.2" => [
-        ArchiveSource(
-            "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.2.tar.gz",
-            "bc55232bf71fd66045122ba9050a29ea7cb2e8f99b064a9e6334a82f715881a0"
-        ),
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "89f040a5c938985c5f30728baed21e49d0846a53"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
 )
