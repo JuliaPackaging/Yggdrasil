@@ -30,7 +30,7 @@ sources_by_version = Dict(
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
     v"2.28.1" => [
-        ArchiveSoruce(
+        ArchiveSource(
             "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.1.tar.gz",
             "6797a7b6483ef589deeab8d33d401ed235d7be25eeecda1be8ddfed406d40ff4"
         ),
