@@ -6,7 +6,14 @@ version = v"2.2.2"
 # url = "https://github.com/refresh-bio/FAMSA"
 # description = "Algorithm for ultra-scale multiple sequence alignments"
 
-# Compilation failures
+# Compilation failures (gcc-10)
+# - disabled all arch except ["x86_64", "aarch64", "powerpc64le"]
+# - failed builds (fail with gcc-10, works with gcc-11):
+#   armv6l-linux-*
+#   armv7l-linux-*
+#   i686-linux-*
+
+# Compilation failures (gcc-11)
 #
 # - x86_64-w64-mingw32-cxx11
 #
@@ -66,7 +73,9 @@ install -Dvm 755 "famsa${exeext}" "${bindir}/famsa${exeext}"
 install_license LICENSE
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p))
+platforms = supported_platforms(;
+    exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || (arch(p) ∉ ["x86_64", "aarch64", "powerpc64le"])
+)
 platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
 
 products = [
