@@ -61,12 +61,7 @@ if [[ ${target} == *-apple-darwin* ]]; then
     UNAME_S=Darwin
 fi
 
-DEFINE_FLAGS=
-if [[ ${target} == *-linux-* ]]; then
-    DEFINE_FLAGS="DEFINE_FLAGS=-DUSE_NATIVE_BARRIERS"
-fi
-
-make -j${nproc} CC=${CC} CXX=${CXX} PLATFORM=${PLATFORM} UNAME_S=${UNAME_S} ${DEFINE_FLAGS}
+make -j${nproc} CC=${CC} CXX=${CXX} PLATFORM=${PLATFORM} UNAME_S=${UNAME_S}
 install -Dvm 755 "famsa${exeext}" "${bindir}/famsa${exeext}"
 install_license LICENSE
 """
