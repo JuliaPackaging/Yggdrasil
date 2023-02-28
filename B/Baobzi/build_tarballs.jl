@@ -7,7 +7,7 @@ version = v"0.9.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flatironinstitute/baobzi.git", "7b602bed96e504c927fa3adc619a1d748a07dad8")
+    GitSource("https://github.com/flatironinstitute/baobzi.git", "dab45ba8bc0f08fc9cb364f3d1c776550940ac14")
 ]
 
 # Bash recipe for building across all platforms
