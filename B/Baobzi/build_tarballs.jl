@@ -20,29 +20,13 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBAOBZI_BUILD_EXAMPLES=OFF \
       -DBAOBZI_SET_ARCH=OFF \
       baobzi
-make -j4
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; ),
-    # Platform("i686", "windows"; ),
-    # Platform("x86_64", "windows"; )
-]
+platforms = supported_platforms(; exclude=Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
