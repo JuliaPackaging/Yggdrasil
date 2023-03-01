@@ -27,6 +27,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 products = [
     LibraryProduct("libprotoc", :libprotoc),
     LibraryProduct("libprotobuf", :libprotobuf),
+    LibraryProduct("libprotobuf-lite", :libprotobuf_lite),
     ExecutableProduct("protoc", :protoc)
 ]
 
