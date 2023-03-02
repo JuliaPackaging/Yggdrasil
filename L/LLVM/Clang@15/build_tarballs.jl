@@ -37,3 +37,4 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, julia_compat="1.9",
                    augment_platform_block)
 end
+#Rebuild!
