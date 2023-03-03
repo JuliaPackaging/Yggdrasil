@@ -3,24 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "GMT"
-version = v"6.2.0"
+version = v"6.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/GenericMappingTools/gmt/releases/download/$(version)/gmt-$(version)-src.tar.gz",
-                  "ab7062912aeead1021770fad4756e0a99860fde8ea9b428fb00c22fa15a3bbfc"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/GenericMappingTools/gmt", 
+    "d6951f02c0922d53741da0d5d3ed7659c285b350")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-if [[ "${target}" == *-mingw* ]]; then
-    for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-        atomic_patch -p1 ${f}
-    done
-fi
-cd gmt-6.2.0
+#if [[ "${target}" == *-mingw* ]]; then
+#    for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+#        atomic_patch -p1 ${f}
+#    done
+#fi
+cd gmt
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
