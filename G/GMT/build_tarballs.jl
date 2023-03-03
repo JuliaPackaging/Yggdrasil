@@ -33,9 +33,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc} 
 make install 
 
-install -Dvm 755 gmt${exeext} "${bindir}/gmt${exeext}"
-install -Dvm 755 libgmt${dlext} "${libdir}/libgmt${dlext}"
-
+#install -Dvm 755 /workspace/destdir/bin/gmt.${dlext} "${libdir}/libgmt.${dlext}"
+#install -Dvm 755 /workspace/destdir/bin/postscriptlight.${dlext} "${libdir}/libpostscriptlight.${dlext}"
 
 """
 
@@ -53,8 +52,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpostscriptlight", :libpostscriptlight),
-    LibraryProduct("libgmt", :libgmt),
+    LibraryProduct("postscriptlight", :libpostscriptlight),
+    LibraryProduct("gmt", :libgmt),
     ExecutableProduct("gmt", :gmt)
 ]
 
