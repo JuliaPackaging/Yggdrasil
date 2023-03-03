@@ -8,7 +8,7 @@ version = v"6.4.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "d6951f02c0922d53741da0d5d3ed7659c285b350")
+    "d47edab8c750729e2334cebd5420a93800cb43be")
 ]
 
 # Bash recipe for building across all platforms
