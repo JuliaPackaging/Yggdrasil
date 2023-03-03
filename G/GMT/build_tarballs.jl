@@ -8,7 +8,7 @@ version = v"6.4.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "d47edab8c750729e2334cebd5420a93800cb43be")
+    "19413d486888ebdc3c01aeed3707bcc88eb727df")
 ]
 
 # Bash recipe for building across all platforms
@@ -32,6 +32,11 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     .. 
 make -j${nproc} 
 make install 
+
+install -Dvm 755 gmt${exeext} "${bindir}/gmt${exeext}"
+install -Dvm 755 libgmt${dlext} "${libdir}/libgmt${dlext}"
+
+
 """
 
 # These are the platforms we will build for by default, unless further
