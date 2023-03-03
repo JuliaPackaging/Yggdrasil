@@ -4,6 +4,11 @@ using BinaryBuilder, Pkg
 
 name = "GMT"
 version = v"6.4.0"
+GSHHG_VERSION="2.3.7"
+DCW_VERSION="2.1.1"
+GSHHG="gshhg-gmt-$GSHHG_VERSION"
+DCW="dcw-gmt-$DCW_VERSION"
+EXT="tar.gz"
 
 # Collection of sources required to complete build
 sources = [
@@ -14,14 +19,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-#if [[ "${target}" == *-mingw* ]]; then
-#    for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-#        atomic_patch -p1 ${f}
-#    done
-#fi
 cd gmt
 mkdir build
 cd build/
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -29,6 +30,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DHAVE___BUILTIN_BSWAP16=False \
     -DHAVE___BUILTIN_BSWAP32=False \
     -DHAVE___BUILTIN_BSWAP64=False \
+    -DGMT_ENABLE_OPENMP=True \
     .. 
 make -j${nproc} 
 make install 
@@ -38,6 +40,16 @@ if [[ "${target}" == *-mingw* ]]; then
     install -Dvm 755 /workspace/destdir/bin/postscriptlight.${dlext} "${libdir}/libpostscriptlight.${dlext}"
 fi
 
+
+# Download GSHHG and DCW from GitHub
+curl -SLO https://github.com/GenericMappingTools/gshhg-gmt/releases/download/${GSHHG_VERSION}/${GSHHG}.${EXT}
+curl -SLO https://github.com/GenericMappingTools/dcw-gmt/releases/download/${DCW_VERSION}/${DCW}.${EXT}
+
+tar -xvf ${GSHHG}.${EXT}
+tar -xvf ${DCW}.${EXT}
+
+mv ${GSHHG} ${destdir}/share/gshhg-gmt
+mv ${DCW} ${destdir}/share/dcw-gmt
 
 """
 
@@ -55,8 +67,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("postscriptlight", :libpostscriptlight),
-    LibraryProduct("gmt", :libgmt),
+    LibraryProduct("libpostscriptlight", :libpostscriptlight),
+    LibraryProduct("libgmt", :libgmt),
     ExecutableProduct("gmt", :gmt)
 ]
 
