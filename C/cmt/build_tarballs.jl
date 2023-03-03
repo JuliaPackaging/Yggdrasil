@@ -8,11 +8,11 @@ using Base.BinaryPlatforms
 
 name = "cmt"
 repo = "https://github.com/JuliaGPU/Metal.jl"
-version = v"0.1"
+version = v"0.2"
 
 # Collection of sources required to build cmd
 sources = [
-    GitSource(repo, "aef4cd6ba7360a1487adb2415c1b0fec3cd10000"),
+    GitSource(repo, "23184baad0e70fc4437774db91bf7c75caa62e81"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
 ]
