@@ -33,8 +33,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc} 
 make install 
 
-#install -Dvm 755 /workspace/destdir/bin/gmt.${dlext} "${libdir}/libgmt.${dlext}"
-#install -Dvm 755 /workspace/destdir/bin/postscriptlight.${dlext} "${libdir}/libpostscriptlight.${dlext}"
+install -Dvm 755 /workspace/destdir/bin/gmt.${dlext} "${libdir}/libgmt.${dlext}"
+install -Dvm 755 /workspace/destdir/bin/postscriptlight.${dlext} "${libdir}/libpostscriptlight.${dlext}"
 
 """
 
