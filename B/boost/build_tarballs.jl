@@ -1,15 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.76.0"
+version = v"1.79.0"
 
 # Collection of sources required to build boost
 sources = [
-    ArchiveSource("https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41"),
-    DirectorySource("./bundled"),
+    ArchiveSource(
+        "https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+        "475d589d51a7f8b3ba2ba4eda022b170e562ca3b760ee922c146b6c65856ef39"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,11 +17,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/boost*/
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
-
-# Patch adapted from
-# https://svnweb.freebsd.org/ports/head/devel/boost-libs/files/patch-boost_math_tools_config.hpp?revision=439932&view=markup
-# to be able to build long double math libraries
-atomic_patch -p1 ../patches/boost_math_tools_config_hpp.patch
 
 rm project-config.jam
 toolset=gcc
@@ -57,7 +52,7 @@ elif [[ $target == *freebsd* ]]; then
     extraargs="address-model=64 link=shared"
     echo "using clang : 6.0 : $CXX : <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
 fi
-./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system install
+./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
 
 install_license LICENSE_1_0.txt
 """
@@ -99,7 +94,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

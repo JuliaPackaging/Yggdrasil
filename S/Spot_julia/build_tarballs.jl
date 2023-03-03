@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Spot_julia"
 version = v"2.9.7"
-julia_version = v"1.6.0"
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [
@@ -12,7 +12,12 @@ sources = [
     GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128")
     ]
     
-    # Bash recipe for building across all platforms
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
+# Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/spot-2.9.7/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
@@ -46,11 +51,8 @@ install_license $WORKSPACE/srcdir/spot_julia/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "macos")
-]
+include("../../L/libjulia/common.jl")
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # # uncomment when pushing to yggdrasil
@@ -88,7 +90,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
-    BuildDependency(PackageSpec(name="libjulia_jll", version=julia_version))
+    BuildDependency("libjulia_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

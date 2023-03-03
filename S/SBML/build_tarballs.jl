@@ -2,18 +2,15 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.19.5"
+version = v"5.19.7"
 sources = [
     ArchiveSource(
         "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
-        "6c0ec766e76bc6ad0c8626f3d208b4d9e826b36c816dff0c55e228206c82cb36"),
-    DirectorySource("./bundled"),
+        "61cbdf1a86aefbc002ac5a0cf9c0f3f91eca2ae8aa5c3e7ef78be0f5a84426c5"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
-
-atomic_patch -p1 ../patches/0001-User-lowercase-name-for-Windows-library.patch
 
 mkdir build
 cd build

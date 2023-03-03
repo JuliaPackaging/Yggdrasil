@@ -7,13 +7,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "Metal_LLVM_Tools"
 repo = "https://github.com/JuliaGPU/llvm-metal"
-version = v"0.1"
+version = v"0.3"
 
-llvm_versions = [v"13.0.1"]
+llvm_versions = [v"13.0.1", v"14.0.2"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"13.0.1" => [GitSource(repo, "c7e15c7e199a2019b39633906b3acaf964916bd2")],
+    v"13.0.1" => [GitSource(repo, "ccbd19019272cda3fe2296f5df8ec39f4828be05")],
+    v"14.0.2" => [GitSource(repo, "fa7eef519540e8c79b2b2f908f4d15427c5285c8")],
 )
 
 # These are the platforms we will build for by default, unless further
@@ -70,6 +71,17 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 # Only build the Metal back-end
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD=Metal)
 
+# Turn on ZLIB
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
+# Turn off XML2
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
+
+# Disable useless things like docs, terminfo, etc....
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=Off)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_TERMINFO=Off)
+CMAKE_FLAGS+=(-DHAVE_HISTEDIT_H=Off)
+CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
+
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 ninja -j${nproc} \
     tools/metallib-as/install \
@@ -97,7 +109,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
+        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
+        Dependency("Zlib_jll")
     ]
 
     for platform in platforms

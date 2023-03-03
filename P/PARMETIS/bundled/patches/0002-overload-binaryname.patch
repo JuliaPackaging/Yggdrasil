@@ -1,0 +1,24 @@
+From d994e52bfe99092ed57d034211ca00a79ad501e3 Mon Sep 17 00:00:00 2001
+From: Will Kimmerer <kimmerer@mit.edu>
+Date: Mon, 7 Nov 2022 18:22:37 -0500
+Subject: [PATCH 2/3] overload binaryname
+
+---
+ libparmetis/CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libparmetis/CMakeLists.txt b/libparmetis/CMakeLists.txt
+index 4ce21ed..ddb79fe 100644
+--- a/libparmetis/CMakeLists.txt
++++ b/libparmetis/CMakeLists.txt
+@@ -4,6 +4,7 @@ include_directories(.)
+ file(GLOB parmetis_sources *.c)
+ # Create libparmetis
+ add_library(parmetis ${ParMETIS_LIBRARY_TYPE} ${parmetis_sources})
++set_target_properties(parmetis PROPERTIES OUTPUT_NAME "${BINARY_NAME}")
+ # Link with metis and MPI libraries.
+ target_link_libraries(parmetis ${METIS_LIBRARY} ${MPI_LIBRARIES})
+ set_target_properties(parmetis PROPERTIES LINK_FLAGS "${MPI_LINK_FLAGS}")
+-- 
+2.37.2
+

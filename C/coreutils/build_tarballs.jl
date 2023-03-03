@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "coreutils"
-version = v"9.0"
+version = v"9.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz", "ce30acdf4a41bc5bb30dd955e9eaa75fa216b4e3deb08889ed32433c7b3b97ce")
+    ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz",
+                  "61a1f410d78ba7e7f37a5a4f50e6d1320aca33375484a3255eddf17a38580423")
 ]
 
 # Bash recipe for building across all platforms

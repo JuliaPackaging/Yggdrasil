@@ -1,0 +1,11 @@
+diff --git a/src/heuristics/maxcut/burer2002.cpp b/src/heuristics/maxcut/burer2002.cpp
+index b54e793..edeeebd 100644
+--- a/src/heuristics/maxcut/burer2002.cpp
++++ b/src/heuristics/maxcut/burer2002.cpp
+@@ -1,3 +1,6 @@
++#ifdef _WIN32
++#define _USE_MATH_DEFINES
++#endif
+ #include <math.h>
+ #include <string.h>
+ #include <algorithm>

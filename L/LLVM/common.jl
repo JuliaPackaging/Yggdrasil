@@ -1,6 +1,6 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 using BinaryBuilder, Pkg, LibGit2
-using BinaryBuilderBase: get_addable_spec
+using BinaryBuilderBase: get_addable_spec, sanitize
 
 # Everybody is just going to use the same set of platforms
 
@@ -13,15 +13,36 @@ const llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
-    v"13.0.1" => "4743f8ded72e15f916fa1d4cc198bdfd7bfb2193", # julia-13.0.1-0
-    v"14.0.2" => "465c166c5422079185c3289cdc2613420d8d6c51", # julia-14.0.2-1
+    v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
+    v"14.0.6" => "ad0184c1a2ee9508319db7c97d635a75d5336cf8", # julia-14.0.6-2
+    v"15.0.7" => "90e1c629f21fe3a8d66d06ebdc5dde62aa6203be", # julia-15.0.7-0
 )
 
 const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
 
+if [[ ("${target}" == x86_64-apple-darwin*) && ("${LLVM_MAJ_VER}" -ge "15") ]]; then
+    # LLVM 15 requires macOS SDK 10.14, see
+    # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
+    # references therein.
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
+
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 if [[ ${target} == *mingw32* ]]; then
+    # Build system for Windows is plagued by race conditions.
+    # We disable Ccache for this platform to avoid caching
+    # possibly badly compiled racey code.
     export CCACHE_DISABLE=true
 fi
 
@@ -69,6 +90,11 @@ for f in $WORKSPACE/srcdir/patches/*.patch; do
 done
 fi
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 # The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
@@ -81,9 +107,9 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;mlir')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra;mlir')
 else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra')
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
@@ -99,6 +125,9 @@ if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} mlir-linalg-ods-yaml-gen
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+    ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
 fi
 popd
 
@@ -160,7 +189,7 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
 
-if [[ "${target}" == *linux* || "${target}" == *mingw* ]]; then
+if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* || "${target}" == *mingw* ) ]]; then
     # https://bugs.llvm.org/show_bug.cgi?id=48221
     CMAKE_CXX_FLAGS+="-fno-gnu-unique"
 fi
@@ -187,6 +216,11 @@ if [[ ${target} == *linux* ]]; then # TODO only LLVM12
     CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
+
+if [[ "${LLVM_MAJ_VER}" -ge "14" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_WINDOWS_PREFER_FORWARD_SLASH=False)
+fi
+
 # Tell LLVM where our pre-built tblgen tools are
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
@@ -199,6 +233,11 @@ if [[ ("${LLVM_MAJ_VER}" -eq "12") || ("${LLVM_MAJ_VER}" -eq "13") ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     CMAKE_FLAGS+=(-DMLIR_LINALG_ODS_YAML_GEN=${WORKSPACE}/bootstrap/bin/mlir-linalg-ods-yaml-gen)
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+    CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
+    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
+    CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
 fi
 
 # Explicitly use our cmake toolchain file
@@ -214,10 +253,18 @@ CMAKE_TARGET=${target}
 if [[ "${target}" == *apple* ]]; then
     # On OSX, we need to override LLVM's looking around for our SDK
     CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
-    CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
+    if [[ "${LLVM_MAJ_VER}" -ge "15" ]]; then
+        CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING="${MACOSX_DEPLOYMENT_TARGET}")
+    else
+        CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
+    fi
 
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
+
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_IOS=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_WATCHOS=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_TVOS=OFF)
 
     # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
     # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
@@ -326,7 +373,21 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
-const mlirscript = raw"""
+const mlirscript_v13 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+# Copy over `libMLIR` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
+mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
+const mlirscript_v14 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
@@ -337,6 +398,23 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
+const mlirscript_v15 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over `libMLIR` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
+mv -v ${LLVM_ARTIFACT_DIR}/bin/mlir* ${prefix}/bin/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
@@ -355,17 +433,38 @@ mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
 if [[ -f ${LLVM_ARTIFACT_DIR}/bin/lld* ]]; then
     mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/wasm-ld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/bin/dsymutil* ${prefix}/tools/
 else
     mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/wasm-ld* ${prefix}/tools/
+    mv -v ${LLVM_ARTIFACT_DIR}/tools/dsymutil* ${prefix}/tools/
 fi
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
-const llvmscript = raw"""
+const llvmscript_v13 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+# Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
+mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
+rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
+rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${libdir}/libclang*.${dlext}*
+rm -vrf ${libdir}/*LLVM*.${dlext}*
+rm -vrf ${libdir}/*MLIR*.${dlext}*
+rm -vrf ${prefix}/lib/*LLVM*.a
+rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${prefix}/lib/clang
+rm -vrf ${prefix}/lib/mlir
+# Move lld to tools/
+mv -v "${bindir}/lld${exeext}" "${prefix}/tools/lld${exeext}"
+"""
+
+const llvmscript_v14 = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 
@@ -375,8 +474,8 @@ rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
 rm -vrf ${prefix}/include/{*lld*,clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
 rm -vrf ${libdir}/libclang*.${dlext}*
 rm -vrf ${libdir}/*LLD*.${dlext}*
 rm -vrf ${libdir}/*LLVM*.${dlext}*
@@ -404,6 +503,17 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     ]
 
     platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    if version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl, see
+        # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1430063957>:
+        #     In file included from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_flags.h:16:0,
+        #                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_common.h:18,
+        #                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp:173:
+        #     /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h:352:30: error: static assertion failed
+        #      #define COMPILER_CHECK(pred) static_assert(pred, "")
+        #                                   ^
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
     if platform_filter !== nothing
         platforms = filter(platform_filter, platforms)
     end
@@ -430,10 +540,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
         push!(products, ExecutableProduct("lld", :lld, "tools"))
-        push!(products, ExecutableProduct("ld.lld", :ld_lld, "tools"))
-        push!(products, ExecutableProduct("ld64.lld", :ld64_lld, "tools"))
-        push!(products, ExecutableProduct("lld-link", :lld_link, "tools"))
-        push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
+        push!(products, ExecutableProduct("dsymutil", :dsymutil, "tools"))
     end
 
     name = "LLVM_full"
@@ -450,9 +557,16 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     end
     # Dependencies that must be installed before this package can be built
     # TODO: LibXML2
-    dependencies = Dependency[
+    dependencies = [
         Dependency("Zlib_jll"), # for LLD&LTO
+        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
+    if version >= v"15"
+        push!(sources,
+              ArchiveSource(
+                  "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+    end
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
@@ -479,7 +593,13 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
-        script = mlirscript
+        script = if version < v"14"
+            mlirscript_v13
+        elseif version < v"15"            
+            mlirscript_v14
+        else
+            mlirscript_v15
+        end
         products = [
             LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
         ]
@@ -490,14 +610,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         script = lldscript
         products = [
             ExecutableProduct("lld", :lld, "tools"),
-            ExecutableProduct("ld.lld", :ld_lld, "tools"),
-            ExecutableProduct("ld64.lld", :ld64_lld, "tools"),
-            ExecutableProduct("lld-link", :lld_link, "tools"),
-            ExecutableProduct("wasm-ld", :wasm_ld, "tools"),
+            ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
         
     elseif name == "LLVM"
-        script = llvmscript
+        script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
             LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
             ExecutableProduct("opt", :opt, "tools"),
@@ -514,7 +631,14 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             push!(products, ExecutableProduct("wasm-ld", :wasm_ld, "tools"))
         end
     end
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+
+    platforms = supported_platforms(;experimental=experimental_platforms)
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+    if version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl.
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    platforms = expand_cxxstring_abis(platforms)
 
     if augmentation
         augmented_platforms = Platform[]

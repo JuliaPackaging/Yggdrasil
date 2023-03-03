@@ -6,26 +6,26 @@ name = "IVerilog"
 version = v"12.0.0"
 
 # Collection of sources required to complete build
-# This is a patched master including https://github.com/steveicarus/iverilog/pull/511/
-# to allow for cross compilation 
-# TODO use upstream + stable once available
 sources = [
-   GitSource("https://github.com/sjkelly/iverilog.git", "1f09b041f1060116840b901c21938ad31d79bb98")
+   GitSource("https://github.com/steveicarus/iverilog.git", "2693dd32b075243cca20400cf3a808cef119477e")
 ]
 
 dependencies = [
     HostBuildDependency("Bison_jll"),
-    Dependency("Readline_jll"; compat="8.1.1"),
     HostBuildDependency("gperf_jll"),
-    Dependency("Zlib_jll"; compat="~1.2.11"),
+    Dependency("Readline_jll"; compat="8.1.1"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd iverilog
-export CPPFLAGS="-I${includedir}"
+export CFLAGS="-O2"
+export CXXFLAGS="-O2"
 sh ./autoconf.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-zlib=${prefix}
+# The generated configure script is replacing a variable incorrectly
+sed -i 's/EXEEXT=$ac_cv_build_exeext/BUILD_EXEEXT=$ac_cv_build_exeext/' configure
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -38,7 +38,8 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("iverilog", :iverilog),
-    ExecutableProduct("iverilog-vpi", :iverilog_vpi)
+    ExecutableProduct("iverilog-vpi", :iverilog_vpi),
+    ExecutableProduct("vvp", :vvp)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SoapyRTLSDR"
-version = v"0.3.2"
+version = v"0.3.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pothosware/SoapyRTLSDR.git", "e4b963926012399904aceb57690df3a4f293ce67")
+    GitSource("https://github.com/pothosware/SoapyRTLSDR.git", "80c93fbe189def3ab68d47a6ad3f813f96d3cb99")
 ]
 
 dependencies = [

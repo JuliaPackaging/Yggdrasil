@@ -1,0 +1,39 @@
+From 5ea8e64add70623307c9e3939e90f0d5247e901d Mon Sep 17 00:00:00 2001
+From: Will Kimmerer <kimmerer@mit.edu>
+Date: Mon, 7 Nov 2022 18:38:45 -0500
+Subject: [PATCH 3/3] include old patch
+
+---
+ CMakeLists.txt             | 2 +-
+ libparmetis/CMakeLists.txt | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ca945dd..1bf94e9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -33,7 +33,7 @@ include_directories(${GKLIB_PATH})
+ include_directories(${METIS_PATH}/include)
+ 
+ # List of directories that cmake will look for CMakeLists.txt
+-add_subdirectory(${METIS_PATH}/libmetis ${CMAKE_BINARY_DIR}/libmetis)
++#add_subdirectory(${METIS_PATH}/libmetis ${CMAKE_BINARY_DIR}/libmetis)
+ add_subdirectory(include)
+ add_subdirectory(libparmetis)
+ add_subdirectory(programs)
+diff --git a/libparmetis/CMakeLists.txt b/libparmetis/CMakeLists.txt
+index ddb79fe..cb85cf9 100644
+--- a/libparmetis/CMakeLists.txt
++++ b/libparmetis/CMakeLists.txt
+@@ -6,7 +6,7 @@ file(GLOB parmetis_sources *.c)
+ add_library(parmetis ${ParMETIS_LIBRARY_TYPE} ${parmetis_sources})
+ set_target_properties(parmetis PROPERTIES OUTPUT_NAME "${BINARY_NAME}")
+ # Link with metis and MPI libraries.
+-target_link_libraries(parmetis ${METIS_LIBRARY} ${MPI_LIBRARIES})
++target_link_libraries(parmetis ${METIS_LIBRARY} ${MPI_LIBRARIES} "-lm")
+ set_target_properties(parmetis PROPERTIES LINK_FLAGS "${MPI_LINK_FLAGS}")
+ 
+ install(TARGETS parmetis
+-- 
+2.37.2
+

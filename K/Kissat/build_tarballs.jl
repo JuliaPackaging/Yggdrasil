@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Kissat"
-version = v"2.0.0"
+version = v"3.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/arminbiere/kissat.git", "00a3a338e3433b54478efb0f7be0a694b01f0eb9"),
+    GitSource("https://github.com/arminbiere/kissat.git", "c25429fbce1b5c74d5372e39d681826b33ddaf18"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,7 @@ cp build/libkissat.so "$libdir/libkissat.${dlext}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows, experimental=true)
+platforms = supported_platforms(; exclude=Sys.iswindows)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("kissat", :kissat),

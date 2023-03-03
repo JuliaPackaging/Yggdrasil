@@ -47,7 +47,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("alsa_jll"; platforms=filter(Sys.islinux, platforms)),
-    Dependency("FLAC_jll"),
+    Dependency("FLAC_jll"; compat="~1.3.4"),
     Dependency("libvorbis_jll"),
     Dependency("Ogg_jll"),
     Dependency("Opus_jll"),

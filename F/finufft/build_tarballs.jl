@@ -6,11 +6,11 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
-version = v"2.0.4"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "2434f694b4fbdbeb65c77f65d784a1712852130b9c61e15999555a2e2cf1a9fa")
+    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "042a96cab8a3c17a544125b7890616b1dd5eacd1b50ce0464617903b01bddd54")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +20,9 @@ cd $WORKSPACE/srcdir/finufft*/
 CFLAGS="-fopenmp -fPIC -O3 -funroll-loops -Iinclude"
 if [[ "${target}" != *-freebsd* ]] && [[ "${target}" != *-apple-* ]]; then
     CFLAGS="${CFLAGS} -fcx-limited-range"
+fi
+if [[ "${proc_family}" == *intel* ]]; then
+    CFLAGS="${CFLAGS} -mno-avx512f"
 fi
 
 # Overwrite LIBSFFT such that we do not require fftw3_threads or fftw3_omp for OMP support. Since the libraries in FFTW_jll already provide for threading, we do not loose anything.
@@ -36,7 +39,7 @@ install -Dvm 0755 "lib/libfinufft.${dlext}" "${libdir}/libfinufft.${dlext}"
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
 # Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
-platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]); skip=!Sys.iswindows)
+platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"]); skip=!Sys.iswindows)
 
 augment_platform_block = """
     $(MicroArchitectures.augment)

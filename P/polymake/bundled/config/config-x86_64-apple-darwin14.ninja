@@ -7,7 +7,7 @@ app.includes=-I${root}/include/app-wrappers -I${root}/include/apps -I${root}/inc
 CC = clang -target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root
 CXX = clang++ -target x86_64-apple-darwin14 --sysroot /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root
 CFLAGS = -mmacosx-version-min=10.8 -I/workspace/destdir/deps/GMP_jll/include -I/workspace/destdir/deps/MPFR_jll/include
-CXXFLAGS = -stdlib=libc++ -std=c++14 -mmacosx-version-min=10.8 -I/workspace/destdir/deps/GMP_jll/include -I/workspace/destdir/deps/MPFR_jll/include -I/workspace/destdir/deps/boost_jll/include -I/workspace/destdir/deps/FLINT_jll/include -DPOLYMAKE_WITH_FLINT
+CXXFLAGS = -stdlib=libc++ -std=c++14 -mmacosx-version-min=10.8 -fopenmp -I/workspace/destdir/deps/GMP_jll/include -I/workspace/destdir/deps/MPFR_jll/include -I/workspace/destdir/deps/boost_jll/include -I/workspace/destdir/deps/FLINT_jll/include -DPOLYMAKE_WITH_FLINT
 ARCHFLAGS = 
 CsharedFLAGS = -fPIC -pipe
 CXXOPT = -O3
@@ -20,14 +20,14 @@ CPPStd = 201402
 DlExt = bundle
 So = dylib
 XcodeVersion = 9.1.0
-LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/Perl_jll/lib -Wl,-rpath,/workspace/destdir/deps/Perl_jll/lib -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++
+LDFLAGS = -mmacosx-version-min=10.8 -L/workspace/destdir/deps/Perl_jll/lib -Wl,-rpath,/workspace/destdir/deps/Perl_jll/lib -L/workspace/destdir/deps/GMP_jll/lib -Wl,-rpath,/workspace/destdir/deps/GMP_jll/lib -L/workspace/destdir/deps/MPFR_jll/lib -Wl,-rpath,/workspace/destdir/deps/MPFR_jll/lib -L/workspace/destdir/deps/FLINT_jll/lib -Wl,-rpath,/workspace/destdir/deps/FLINT_jll/lib -stdlib=libc++ -fopenmp
 LDsharedFLAGS = -bundle -mmacosx-version-min=10.8 -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -undefined dynamic_lookup -fstack-protector-strong
 LDcallableFLAGS = -mmacosx-version-min=10.8  -L/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib -dynamiclib -undefined dynamic_lookup -fstack-protector-strong  -mmacosx-version-min=10.8 -fstack-protector-strong
 LDsonameFLAGS = -install_name /workspace/destdir/lib/
 LIBS =  -lc++ -lflint -lmpfr -lgmp -lpthread
 ExternalHeaders =  permlib TOSimplex Miniball
 Arch = darwin.x86_64
-BundledExts = cdd atint bliss flint libnormaliz lrs ppl sympol
+BundledExts = cdd atint bliss flint libnormaliz lrs ppl sympol scip soplex
 BuildModes = Opt Debug
 InstallTop = /workspace/destdir/share/polymake
 InstallArch = /workspace/destdir/lib/polymake
@@ -66,3 +66,13 @@ bundled.ppl.RequireExtensions=
 bundled.sympol.UseBundled = 1
 bundled.sympol.CXXFLAGS = -I${root}/bundled/sympol/external/sympol -DPOLYMAKE_WITH_PPL
 bundled.sympol.RequireExtensions=lrs cdd ppl
+bundled.scip.CXXFLAGS = -I/workspace/destdir/deps/SCIP_jll/include -Wno-class-memaccess
+bundled.scip.LDFLAGS = -L/workspace/destdir/deps/SCIP_jll/lib -Wl,-rpath,/workspace/destdir/deps/SCIP_jll/lib
+bundled.scip.LIBS = -lscip -lz
+bundled.scip.INCLUDEDIR = /workspace/destdir/deps/SCIP_jll/include
+bundled.scip.RequireExtensions=
+bundled.soplex.CXXFLAGS = -I/workspace/destdir/deps/SCIP_jll/include -Wno-class-memaccess
+bundled.soplex.LDFLAGS = -L/workspace/destdir/deps/SCIP_jll/lib -Wl,-rpath,/workspace/destdir/deps/SCIP_jll/lib
+bundled.soplex.LIBS = -lscip -lz -lsoplexshared
+bundled.soplex.INCLUDEDIR = /workspace/destdir/deps/SCIP_jll/include
+bundled.soplex.RequireExtensions=scip

@@ -3,27 +3,23 @@
 using BinaryBuilder
 
 name = "libcap"
-version = v"2.27"
+version = v"2.51"
 
-# Collection of sources required to build libcap-ng
+# NOTE: v2.52 and higher requires objcopy with --dump-sections support
+# (but also doesn't require -std=c99 anymore, so remove that below when upgrading)
+
+# Collection of sources required to build libcap
 sources = [
-    "https://mirrors.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$(version.major).$(version.minor).tar.gz" =>
-    "260b549c154b07c3cdc16b9ccc93c04633c39f4fb6a4a3b8d1fa5b8a9c3f5fe8",
+    ArchiveSource("https://mirrors.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$(version.major).$(version.minor).tar.gz",
+                  "f146cf1fa282483673df969b76ccd392697b903ac27ab7924c0fda103f5a0d26")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libcap-*/
 
-# GNU (not musl) 64-bit archs put their loader in `/lib64`
-if [[ ${target} == *gnu* ]] && [[ ${nbits} == 64 ]]; then
-    LOADER_DIR=lib64
-else
-    LOADER_DIR=lib
-fi
-
-make -j${nproc} BUILD_CC=${BUILD_CC}
-make install DESTDIR=${prefix} prefix=/ lib=${LOADER_DIR} RAISE_SETFCAP=no
+make -j${nproc} BUILD_CC=${BUILD_CC} COPTS="-O2 -std=c99"
+make install DESTDIR=${prefix} prefix=/ lib=lib
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,4 +38,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
