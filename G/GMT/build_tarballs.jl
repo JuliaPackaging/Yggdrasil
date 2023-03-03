@@ -4,11 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GMT"
 version = v"6.4.0"
-GSHHG_VERSION="2.3.7"
-DCW_VERSION="2.1.1"
-GSHHG="gshhg-gmt-$GSHHG_VERSION"
-DCW="dcw-gmt-$DCW_VERSION"
-EXT="tar.gz"
+
 
 # Collection of sources required to complete build
 sources = [
@@ -18,6 +14,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+GSHHG_VERSION="2.3.7"
+DCW_VERSION="2.1.1"
+GSHHG="gshhg-gmt-${GSHHG_VERSION}"
+DCW="dcw-gmt-${DCW_VERSION}"
+EXT="tar.gz"
+
 cd $WORKSPACE/srcdir
 cd gmt
 mkdir build
@@ -41,15 +43,15 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 
-# Download GSHHG and DCW from GitHub
+# Download GSHHG and DCW from GitHub, which should be shipped as well
 curl -SLO https://github.com/GenericMappingTools/gshhg-gmt/releases/download/${GSHHG_VERSION}/${GSHHG}.${EXT}
 curl -SLO https://github.com/GenericMappingTools/dcw-gmt/releases/download/${DCW_VERSION}/${DCW}.${EXT}
 
 tar -xvf ${GSHHG}.${EXT}
 tar -xvf ${DCW}.${EXT}
 
-mv ${GSHHG} ${destdir}/share/gshhg-gmt
-mv ${DCW} ${destdir}/share/dcw-gmt
+mv ${GSHHG} ${prefix}/share/gshhg-gmt
+mv ${DCW} ${prefix}/share/dcw-gmt
 
 """
 
