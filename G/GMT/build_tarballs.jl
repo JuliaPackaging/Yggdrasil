@@ -23,6 +23,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
+GSHHG_VERSION="2.3.7"
+GSHHG_VERSION_numeric=2.3.7     # this can likely be reconstructed from the above, but I'm a bash beginner..
+DCW_VERSION="2.1.1"
+GSSHG="gshhg-gmt-${GSSHG_VERSION}
+DCW="dcw-gmt-${DCW_VERSION}
+EXT="tar.gz"
+
 cd $WORKSPACE/srcdir
 cd gmt
 mkdir build
@@ -36,6 +43,9 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DHAVE___BUILTIN_BSWAP32=False \
     -DHAVE___BUILTIN_BSWAP64=False \
     -DGMT_ENABLE_OPENMP=True \
+    -DGSHHG_PATH=/workspace/srcdir/${GSSHG} \
+    -DGSHHG_VERSION=${GSHHG_VERSION_numeric} \
+    -DDCW_PATH=/workspace/srcdir/${DCW} \
     .. 
 make -j${nproc} 
 make install 
