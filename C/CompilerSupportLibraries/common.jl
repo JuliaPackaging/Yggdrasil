@@ -159,6 +159,7 @@ install_license /usr/share/licenses/GPL-3.0+
                                  FileProduct("lib/libgcc.a", :libgcc_a),
                                  FileProduct("lib/libgcc_s.a", :libgcc_s_a),
                                  FileProduct("lib/libssp.dll.a", :libssp_dll_a),
+                                 FileProduct("lib/libmsvcr120.a", :libmsvcr120_a),
                                  ])
             end
             if libc(platform) != "musl"
