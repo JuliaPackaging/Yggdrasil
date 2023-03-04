@@ -5,20 +5,23 @@ using BinaryBuilder, Pkg
 name = "GMT"
 version = v"6.4.0"
 
+GSHHG_VERSION="2.3.7"
+DCW_VERSION="2.1.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "19413d486888ebdc3c01aeed3707bcc88eb727df")
+    "19413d486888ebdc3c01aeed3707bcc88eb727df"),
+
+    ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
+        "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
+
+    ArchiveSource("https://github.com/GenericMappingTools/dcw-gmt/releases/download/$DCW_VERSION/dcw-gmt-$DCW_VERSION.tar.gz",
+        "d4e208dca88fbf42cba1bb440fbd96ea2f932185c86001f327ed0c7b65d27af1")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-GSHHG_VERSION="2.3.7"
-DCW_VERSION="2.1.1"
-GSHHG="gshhg-gmt-${GSHHG_VERSION}"
-DCW="dcw-gmt-${DCW_VERSION}"
-EXT="tar.gz"
 
 cd $WORKSPACE/srcdir
 cd gmt
@@ -40,18 +43,12 @@ make install
 if [[ "${target}" == *-mingw* ]]; then
     install -Dvm 755 /workspace/destdir/bin/gmt.${dlext} "${libdir}/libgmt.${dlext}"
     install -Dvm 755 /workspace/destdir/bin/postscriptlight.${dlext} "${libdir}/libpostscriptlight.${dlext}"
+    install -Dvm 755 /workspace/destdir/bin/gmt_plugins/supplement.* "${libdir}/"
+
+else
+    # supplements is an *.so file on *ix systems; which is installed with
+    install -Dvm 755 /workspace/destdir/lib/gmt/plugins/supplements.* "${libdir}/"
 fi
-
-
-# Download GSHHG and DCW from GitHub, which should be shipped as well
-curl -SLO https://github.com/GenericMappingTools/gshhg-gmt/releases/download/${GSHHG_VERSION}/${GSHHG}.${EXT}
-curl -SLO https://github.com/GenericMappingTools/dcw-gmt/releases/download/${DCW_VERSION}/${DCW}.${EXT}
-
-tar -xvf ${GSHHG}.${EXT}
-tar -xvf ${DCW}.${EXT}
-
-mv ${GSHHG} ${prefix}/share/gshhg-gmt
-mv ${DCW} ${prefix}/share/dcw-gmt
 
 """
 
@@ -71,7 +68,8 @@ platforms = [
 products = [
     LibraryProduct("libpostscriptlight", :libpostscriptlight),
     LibraryProduct("libgmt", :libgmt),
-    ExecutableProduct("gmt", :gmt)
+    ExecutableProduct("gmt", :gmt),
+    FileProduct("lib/supplements.so", :supplements)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -86,6 +84,8 @@ dependencies = [
     Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"))
     Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"))
     Dependency(PackageSpec(name="Ghostscript_jll", uuid="61579ee1-b43e-5ca0-a5da-69d92c66a64b"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms))
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
