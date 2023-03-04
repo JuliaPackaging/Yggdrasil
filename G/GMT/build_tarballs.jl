@@ -26,8 +26,8 @@ script = raw"""
 GSHHG_VERSION="2.3.7"
 GSHHG_VERSION_numeric=2.3.7     # this can likely be reconstructed from the above, but I'm a bash beginner..
 DCW_VERSION="2.1.1"
-GSSHG="gshhg-gmt-${GSSHG_VERSION}
-DCW="dcw-gmt-${DCW_VERSION}
+GSSHG="gshhg-gmt-${GSSHG_VERSION}"
+DCW="dcw-gmt-${DCW_VERSION}"
 EXT="tar.gz"
 
 cd $WORKSPACE/srcdir
