@@ -22,7 +22,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-GSHHG_VERSION=2.3.7     
+
+GSHHG_VERSION_numeric=2.3.7     
 GSSHG="gshhg-gmt-2.3.7"
 DCW="dcw-gmt-2.1.1"
 EXT="tar.gz"
@@ -41,7 +42,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DHAVE___BUILTIN_BSWAP64=False \
     -DGMT_ENABLE_OPENMP=True \
     -DGSHHG_PATH=/workspace/srcdir/${GSSHG} \
-    -DGSHHG_VERSION=${GSHHG_VERSION} \
+    -DGSHHG_VERSION=${GSHHG_VERSION_numeric} \
     -DDCW_PATH=/workspace/srcdir/${DCW} \
     .. 
 make -j${nproc} 
@@ -50,11 +51,14 @@ make install
 if [[ "${target}" == *-mingw* ]]; then
     install -Dvm 755 /workspace/destdir/bin/gmt.${dlext} "${libdir}/libgmt.${dlext}"
     install -Dvm 755 /workspace/destdir/bin/postscriptlight.${dlext} "${libdir}/libpostscriptlight.${dlext}"
-    install -Dvm 755 /workspace/destdir/bin/gmt_plugins/supplement.* "${libdir}/"
+
+    # note that this removes the *.dll: 
+    install -Dvm 755 /workspace/destdir/bin/gmt_plugins/supplements.* "${libdir}/supplements"
 
 else
-    # supplements is an *.so file on *ix systems; which is installed with
-    install -Dvm 755 /workspace/destdir/lib/gmt/plugins/supplements.* "${libdir}/"
+    # supplements is an *.so file on *ix systems; which is installed with (note that this removes the extension):
+    install -Dvm 755 /workspace/destdir/lib/gmt/plugins/supplements.* "${libdir}/supplements"
+
 fi
 
 """
@@ -76,7 +80,7 @@ products = [
     LibraryProduct("libpostscriptlight", :libpostscriptlight),
     LibraryProduct("libgmt", :libgmt),
     ExecutableProduct("gmt", :gmt),
-    FileProduct("lib/supplements.so", :supplements)
+    FileProduct("bin/supplements", :supplements)
 ]
 
 # Dependencies that must be installed before this package can be built
