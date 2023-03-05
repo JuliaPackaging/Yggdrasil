@@ -67,7 +67,7 @@ products = [
     LibraryProduct("libpostscriptlight", :libpostscriptlight),
     LibraryProduct("libgmt", :libgmt),
     ExecutableProduct("gmt", :gmt),
-    FileProduct("supplements", :supplements)
+    #LibraryProduct("supplements", :supplements)
 ]
 
 # Dependencies that must be installed before this package can be built
