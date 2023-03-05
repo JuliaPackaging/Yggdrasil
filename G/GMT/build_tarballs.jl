@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg
 
 name = "GMT"
 version = v"6.4.0"
-
 GSHHG_VERSION="2.3.7"
 DCW_VERSION="2.1.1"
 
@@ -21,11 +20,12 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
+script = """
+GSSHG_VERSION="$(GSHHG_VERSION)"
+GSSHG="gshhg-gmt-$(GSHHG_VERSION)"
+DCW="dcw-gmt-$(DCW_VERSION)"
+""" * raw"""
 
-GSHHG_VERSION_numeric=2.3.7     
-GSSHG="gshhg-gmt-2.3.7"
-DCW="dcw-gmt-2.1.1"
 EXT="tar.gz"
 
 cd $WORKSPACE/srcdir
@@ -48,19 +48,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc} 
 make install 
 
-if [[ "${target}" == *-mingw* ]]; then
-    install -Dvm 755 /workspace/destdir/bin/gmt.${dlext} "${libdir}/libgmt.${dlext}"
-    install -Dvm 755 /workspace/destdir/bin/postscriptlight.${dlext} "${libdir}/libpostscriptlight.${dlext}"
-
-    # note that this removes the *.dll: 
-    install -Dvm 755 /workspace/destdir/bin/gmt_plugins/supplements.* "${libdir}/supplements"
-
-else
-    # supplements is an *.so file on *ix systems; which is installed with (note that this removes the extension):
-    install -Dvm 755 /workspace/destdir/lib/gmt/plugins/supplements.* "${bindir}/supplements"
-
-fi
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -80,7 +67,7 @@ products = [
     LibraryProduct("libpostscriptlight", :libpostscriptlight),
     LibraryProduct("libgmt", :libgmt),
     ExecutableProduct("gmt", :gmt),
-    FileProduct("bin/supplements", :supplements)
+    FileProduct("supplements", :supplements)
 ]
 
 # Dependencies that must be installed before this package can be built
