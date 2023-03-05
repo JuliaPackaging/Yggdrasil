@@ -26,7 +26,6 @@ GSSHG="gshhg-gmt-$(GSHHG_VERSION)"
 DCW="dcw-gmt-$(DCW_VERSION)"
 """ * raw"""
 
-EXT="tar.gz"
 
 cd $WORKSPACE/srcdir
 cd gmt
