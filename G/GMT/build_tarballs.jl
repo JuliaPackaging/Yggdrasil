@@ -64,7 +64,7 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libpostscriptlight", :libpostscriptlight),
-    LibraryProduct("libgmt", :libgmt),
+    LibraryProduct(["libgmt", "gmt"], :libgmt),
     ExecutableProduct("gmt", :gmt),
     #LibraryProduct("supplements", :supplements)
 ]
