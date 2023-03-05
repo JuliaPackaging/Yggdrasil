@@ -48,7 +48,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc} 
 make install 
 
-boe
 if [[ "${target}" == *-mingw* ]]; then
     install -Dvm 755 /workspace/destdir/bin/gmt.${dlext} "${libdir}/libgmt.${dlext}"
     install -Dvm 755 /workspace/destdir/bin/postscriptlight.${dlext} "${libdir}/libpostscriptlight.${dlext}"
@@ -58,7 +57,7 @@ if [[ "${target}" == *-mingw* ]]; then
 
 else
     # supplements is an *.so file on *ix systems; which is installed with (note that this removes the extension):
-    install -Dvm 755 /workspace/destdir/lib/gmt/plugins/supplements.* "${binlibdir}/supplements"
+    install -Dvm 755 /workspace/destdir/lib/gmt/plugins/supplements.* "${libdir}/supplements"
 
 fi
 
@@ -81,7 +80,7 @@ products = [
     LibraryProduct("libpostscriptlight", :libpostscriptlight),
     LibraryProduct("libgmt", :libgmt),
     ExecutableProduct("gmt", :gmt),
-    FileProduct("bin/supplements", :supplements)
+    FileProduct("supplements", :supplements)
 ]
 
 # Dependencies that must be installed before this package can be built
