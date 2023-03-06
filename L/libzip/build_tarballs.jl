@@ -37,7 +37,7 @@ dependencies = [
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"))
     Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"))
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4"))
-    Dependency(PackageSpec(name="MbedTLS_jll", uuid="c8ffd9c3-330d-5841-b78e-0817d7145fa1"))
+    Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d"); platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
