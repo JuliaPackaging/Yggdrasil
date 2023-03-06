@@ -7,10 +7,10 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/
-install_license ${WORKSPACE}/srcdir/algoim/LICENSE
+cd ${WORKSPACE}/srcdir/algoim
+install_license LICENSE
 mkdir -p "${includedir}"
-cp -vr algoim/algoim/* "${includedir}/."
+cp -vr algoim "${includedir}/."
 """
 
 platforms = [AnyPlatform()]
