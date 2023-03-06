@@ -47,6 +47,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc} 
 make install 
 
+# copy license
+mkdir ${prefix}/share/licenses/GMT
+cp ../LICENSE.TXT ${prefix}/share/licenses/GMT/LICENSE.TXT
+
 """
 
 # These are the platforms we will build for by default, unless further
@@ -63,10 +67,9 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpostscriptlight", :libpostscriptlight),
+    LibraryProduct(["libpostscriptlight", "postscriptlight"], :libpostscriptlight),
     LibraryProduct(["libgmt", "gmt"], :libgmt),
     ExecutableProduct("gmt", :gmt),
-    #LibraryProduct("supplements", :supplements)
 ]
 
 # Dependencies that must be installed before this package can be built
