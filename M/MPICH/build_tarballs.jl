@@ -4,14 +4,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version_str = "4.0.2"
+version_str = "4.1"
 version = VersionNumber(version_str)
 
 # build trigger
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
+                  "8b1ec63bc44c7caa2afbb457bc5b3cd4a70dbe46baba700123d67c48dc5ab6a0"),
 ]
 
 script = raw"""
@@ -65,11 +65,16 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
+# Do not install doc and man files which contain files which clashing names on
+# case-insensitive file systems:
+# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
+# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared=yes --enable-static=no \
     --with-device=ch3 --disable-dependency-tracking \
     --enable-fast=all,O3 \
     --docdir=/tmp \
+    --mandir=/tmp \
     --disable-opencl \
     "${EXTRA_FLAGS[@]}"
 
