@@ -11,7 +11,7 @@ version = v"1.3.0"
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
                     "eb15fb6a6b633e0a4ff5c50ad963d90a552b3a33")
-        ]
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
