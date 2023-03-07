@@ -71,7 +71,7 @@ fi
 # * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared=yes --enable-static=no \
-    --with-device=ch3 --disable-dependency-tracking \
+    --disable-dependency-tracking \
     --enable-fast=all,O3 \
     --docdir=/tmp \
     --mandir=/tmp \
