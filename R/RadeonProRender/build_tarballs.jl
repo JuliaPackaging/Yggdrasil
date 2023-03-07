@@ -22,7 +22,8 @@ elif [[ ${target} == *-mingw* ]]; then
     cp binWin64/* ${libdir}/
 fi
 
-cp inc/* ${prefix}/include
+mkdir -p "${includedir}"
+cp -v inc/* "${includedir}"
 """
 
 # TODO, can we add centos7?
