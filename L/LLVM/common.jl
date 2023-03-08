@@ -304,6 +304,9 @@ if [[ "${target}" == *freebsd* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
 
+#This breaks things on LLVM15 and above, but probably should be off everywhere because we only build one runtime per run
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF)
+
 # Tell LLVM which compiler target to use, because it loses track for some reason
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
@@ -595,7 +598,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     elseif name == "MLIR"
         script = if version < v"14"
             mlirscript_v13
-        elseif version < v"15"            
+        elseif version < v"15"
             mlirscript_v14
         else
             mlirscript_v15
@@ -612,7 +615,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("lld", :lld, "tools"),
             ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
-        
+
     elseif name == "LLVM"
         script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
