@@ -5,7 +5,6 @@ using BinaryBuilder, Pkg
 name = "Cares"
 version = v"1.19.0"
 
-
 # url = "https://c-ares.org/"
 # description = "C library for asynchronous DNS requests (including name resolves)"
 
@@ -35,7 +34,7 @@ products = [
     ExecutableProduct("acountry", :acountry),
     ExecutableProduct("adig", :adig),
     ExecutableProduct("ahost", :ahost),
-    LibraryProduct("libcares", :libcares)
+    LibraryProduct("libcares", :libcares),
 ]
 
 dependencies = Dependency[
