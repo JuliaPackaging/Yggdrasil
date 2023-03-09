@@ -33,6 +33,7 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
              -DNOPENMP=YES \
              -DNPARTITION=YES \
              -DNSTATIC=YES \
+             -DSUITESPARSE_CUDA=NO \
              -DBLAS_FOUND=1 \
              -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
              -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
@@ -75,3 +76,5 @@ install_license LICENSE.txt
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+
+# Build trigger: 1
