@@ -35,7 +35,7 @@ fi
 COMPONENTS=()
 if [[ -d "${prefix}/cuda" ]]; then
     export PAPI_CUDA_ROOT="${prefix}/cuda"
-    COMPONENTS+=(cuda)
+    COMPONENTS+=(cuda nvml)
 fi
 
 if [[ ${target} == powerpc64le-* ]]; then
