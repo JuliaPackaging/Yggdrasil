@@ -113,9 +113,9 @@ for cuda_version in cuda_versions_to_build, platform in platforms
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     ]
     if cuda_version != "none"
-        if arch(platform) in cuda_platforms
+        if platform in cuda_platforms
             push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                                            version=cuda_full_versions[cuda_version])))
+                                                            version=cuda_versions[cuda_version])))
         end
     end
 
