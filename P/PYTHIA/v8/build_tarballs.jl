@@ -7,8 +7,8 @@ version = v"8.309.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://pythia.org/download/pythia83/pythia8309.tar" =>
-    "94ce746ba5154a661758c3cfbb77c253324467304fdc6837142ec44708ef6494",
+    "https://pythia.org/download/pythia83/pythia8309.tgz" =>
+    "5bdafd9f2c4a1c47fd8a4e82fb9f0d8fcfba4de1003b8e14be4e0347436d6c33",
 ]
 
 # Bash recipe for building across all platforms
