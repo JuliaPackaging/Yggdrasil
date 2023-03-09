@@ -14,7 +14,7 @@ sources = [
 
 # Adapted from the justfile of the repo
 script = raw"""
-install -Dvm 0755 "winit.h" "${includedir}/winit.h"
+install -Dvm 0644 "winit.h" "${includedir}/winit.h"
 cd $WORKSPACE/srcdir/libwinit
 cargo build --release
 install_license LICENSE
