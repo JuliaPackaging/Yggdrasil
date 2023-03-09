@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PYTHIA"
-version = v"8.244.0"
+version = v"8.309.0"
 
 # Collection of sources required to complete build
 sources = [
-    "http://home.thep.lu.se/~torbjorn/pythia8/pythia8244.tgz" =>
-    "e34880f999daf19cdd893a187123927ba77d1bf851e30f6ea9ec89591f4c92ca",
+    "https://pythia.org/download/pythia83/pythia8309.tar" =>
+    "94ce746ba5154a661758c3cfbb77c253324467304fdc6837142ec44708ef6494",
 ]
 
 # Bash recipe for building across all platforms
