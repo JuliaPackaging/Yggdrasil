@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.4.2"
+version = v"1.5.1"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "f797c1ab602004004186d745cbfce83f50d39932",
+        "93f1876e453eeec2d16e2a0c95874d0ef12c5b23",
     ),
 ]
 
