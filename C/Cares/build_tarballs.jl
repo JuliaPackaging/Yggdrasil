@@ -13,6 +13,7 @@ sources = [
                   "bfceba37e23fd531293829002cac0401ef49a6dc55923f7f92236585b7ad1dd3"),
 ]
 
+
 script = raw"""
 cd $WORKSPACE/srcdir/c-ares-*/
 
@@ -34,7 +35,7 @@ products = [
     ExecutableProduct("acountry", :acountry),
     ExecutableProduct("adig", :adig),
     ExecutableProduct("ahost", :ahost),
-    LibraryProduct("libcares", :libcares)
+    LibraryProduct("libcares", :libcares),
 ]
 
 dependencies = Dependency[
