@@ -32,9 +32,9 @@ if [[ "${target}" == *-musl* ]]; then
     CFLAGS="-D_GNU_SOURCE"
 fi
 
-export PAPI_CUDA_ROOT="${prefix}/cuda"
 COMPONENTS=()
 if [[ -d "${prefix}/cuda" ]]; then
+    export PAPI_CUDA_ROOT="${prefix}/cuda"
     COMPONENTS+=(cuda)
 fi
 
@@ -45,8 +45,8 @@ elif [[ ${target} == x86_64-* || ${target} == i686-* ]]; then
 else
   CPU=arm
 fi
-  
 
+echo "Building components: ${COMPONENTS[@]}"
 export CFLAGS
 bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-ffsll \
