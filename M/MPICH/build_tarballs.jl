@@ -70,9 +70,10 @@ fi
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
 # * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared=yes --enable-static=no \
+    --enable-shared=yes \
+    --enable-static=no \
     --disable-dependency-tracking \
-    --enable-fast=all \
+    --enable-fast=O3,ndebug \
     --docdir=/tmp \
     --mandir=/tmp \
     --disable-opencl \
