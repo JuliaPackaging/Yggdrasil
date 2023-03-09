@@ -72,6 +72,7 @@ fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared=yes \
     --enable-static=no \
+    --with-device=ch4 \
     --disable-dependency-tracking \
     --enable-fast=O3,ndebug \
     --docdir=/tmp \
