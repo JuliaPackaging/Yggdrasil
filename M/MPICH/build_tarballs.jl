@@ -72,8 +72,7 @@ fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared=yes --enable-static=no \
     --disable-dependency-tracking \
-    --enable-fast=all,O3 \
-    --enable-g=dbg \
+    --enable-fast=all \
     --docdir=/tmp \
     --mandir=/tmp \
     --disable-opencl \
