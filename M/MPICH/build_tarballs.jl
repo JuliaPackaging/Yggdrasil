@@ -73,6 +73,7 @@ fi
     --enable-shared=yes --enable-static=no \
     --disable-dependency-tracking \
     --enable-fast=all,O3 \
+    --enable-g=dbg \
     --docdir=/tmp \
     --mandir=/tmp \
     --disable-opencl \
