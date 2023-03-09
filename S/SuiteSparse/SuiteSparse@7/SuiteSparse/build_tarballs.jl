@@ -29,9 +29,10 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
              -DCMAKE_INSTALL_PREFIX=${prefix} \
              -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
              -DENABLE_CUDA=NO \
-             -DNOPENMP=YES \
              -DNFORTRAN=YES \
+             -DNOPENMP=YES \
              -DNPARTITION=YES \
+             -DNSTATIC=YES \
              -DBLAS_FOUND=1 \
              -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
              -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
