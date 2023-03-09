@@ -7,7 +7,7 @@ version = v"3.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://hepmc.web.cern.ch/hepmc/releases/HepMC3-3.2.5.tar.gz", "cd0f75c80f75549c59cc2a829ece7601c77de97cb2a5ab75790cac8e1d585032")
+    ArchiveSource("http://hepmc.web.cern.ch/hepmc/releases/HepMC3-$(version).tar.gz", "cd0f75c80f75549c59cc2a829ece7601c77de97cb2a5ab75790cac8e1d585032")
 ]
 
 # Bash recipe for building across all platforms
