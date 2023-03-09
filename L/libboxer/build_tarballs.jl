@@ -1,23 +1,21 @@
-
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
 name = "libboxer"
-version = v"0.2.0"
+version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/feenkcom/libboxer/archive/refs/tags/v$(version).tar.gz",
-                  "57d25e5339b0c7b1d8c8242484ce2c4baca05fbea035c8e2d8aab05573eed0c9"),
+    GitSource("https://github.com/feenkcom/libboxer.git", "0f5344e155c932d8ab625cdd6b0296382bf2564d"),
     FileSource("https://github.com/feenkcom/libboxer/releases/download/v$(version)/boxer.h", 
-               "f7e679d2faddca7a99399a03a1fa21c49c0780cf2b73be2c4dd2f70d7a963637"),
+               "0d9cbd8e8c3cc0f0679d88d5ae17790d7b4dc8c70ab45e6959e031a5ec863072"),
 ]
 
 # Adapted from the justfile of the repo
 script = raw"""
 install -Dvm 0755 "boxer.h" "${includedir}/boxer.h"
-cd $WORKSPACE/srcdir/libboxer-*
+cd $WORKSPACE/srcdir/libboxer
 cargo build --release
 install_license LICENSE
 if [[ "${target}" == *-mingw* ]]; then
