@@ -123,6 +123,7 @@ function get_products(platform)
         LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
         LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
         LibraryProduct(["libcublas", "cublas64_11"], :libcublas),
+        LibraryProduct(["libcublasLt", "cublasLt64_11"], :libcublasLt),
         LibraryProduct(["libcusparse", "cusparse64_11"], :libcusparse),
         LibraryProduct(["libcusolver", "cusolver64_11"], :libcusolver),
         LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
