@@ -107,7 +107,7 @@ for cuda_version in cuda_versions_to_build, platform in platforms
     augmented_platform = Platform(arch(platform), os(platform);
                                   libc=libc(platform),
                                   cuda=tag)
-    if platform == Platform("powerpc64le", "linux"; libc = "glibc") && cuda_version = v"11.0"
+    if platform == Platform("powerpc64le", "linux"; libc = "glibc") && cuda_version == v"11.0"
         continue
     end
     should_build_platform(triplet(augmented_platform)) || continue
