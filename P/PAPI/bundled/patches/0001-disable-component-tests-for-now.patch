@@ -1,0 +1,28 @@
+From 24afe9c84bc04793ebd94417bced0a1247a637ae Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Fri, 10 Mar 2023 10:29:57 -0500
+Subject: [PATCH] disable component tests for now
+
+---
+ src/Makefile.inc | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/src/Makefile.inc b/src/Makefile.inc
+index 8cd6b6a54..8925e1873 100644
+--- a/src/Makefile.inc
++++ b/src/Makefile.inc
+@@ -261,11 +261,6 @@ ftests: $(LIBS) testlib
+ 
+ # compile tests added to components
+ comp_tests:	$(LIBS) testlib
+-ifneq (${COMPONENTS},)
+-	@set -ex; for comp in ${COMPONENTS} ; do \
+-		$(SETPATH) $(MAKE) -C components/$$comp/tests ; \
+-	done
+-endif
+ 
+ clean: comp_tests_clean native_clean
+ 	rm -rf $(LIBRARY) $(SHLIB) libpapi.so libpapi.so.$(PAPISOVER) $(OBJECTS) core rii_files genpapifdef *~ so_locations papi_fwrappers_.c papi_fwrappers__.c upper_PAPI_FWRAPPERS.c
+-- 
+2.37.2
+
