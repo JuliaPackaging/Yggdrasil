@@ -21,7 +21,7 @@ if [[ "${target}" == *-linux-* ]]; then
     CFLAGS="-fPIC"
     LIBS="-ldl"
 fi
-${CC} -std=c99 -O2 ${CFLAGS} -shared ${LIBS} -I${WORKSPACE}/srcdir/NVTX/c/include -o ${libdir}/libnvToolsExt.${dlext} nvtx.c
+${CC} -std=c99 -O2 ${CFLAGS} -shared ${LIBS} -I${prefix}/cuda/include -I${WORKSPACE}/srcdir/NVTX/c/include -o ${libdir}/libnvToolsExt.${dlext} nvtx.c
 install_license ${WORKSPACE}/srcdir/NVTX/LICENSE.txt
 """
 
