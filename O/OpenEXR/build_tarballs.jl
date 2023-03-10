@@ -7,7 +7,7 @@ version = v"3.1.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.1.6.tar.gz", "daa33d93a7b706e27368a162060df0246a7750c39a01a122d33b13f5c45d2029")
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "fd9d1ff55f340152ff3764617a2caef796142fc2")
 ]
 
 
@@ -44,7 +44,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Imath_jll"; compat="=3.1.2"),
+    Dependency("Imath_jll"; compat="=3.1.7"),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 
