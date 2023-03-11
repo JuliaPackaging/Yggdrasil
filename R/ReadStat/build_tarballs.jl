@@ -27,7 +27,7 @@ export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="-L${libdir}"
 
 cd $WORKSPACE/srcdir/ReadStat/
-./autogen.sh
+autoreconf -i -f
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
