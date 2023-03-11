@@ -18,6 +18,8 @@ apk add gettext-dev
 # GCC builds complain about string truncation, but we don't care
 if [[ ${target} != *apple* ]] && [[ ${target} != *freebsd* ]]; then
     export CFLAGS="${CFLAGS} -Wno-stringop-truncation"
+    # Flag added for v1.1.9
+    export CFLAGS="${CFLAGS} -D_spawnv=spawnv"
 fi
 
 # Windows doesn't search ${prefix}/include?
@@ -50,4 +52,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
