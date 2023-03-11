@@ -15,10 +15,8 @@ script = raw"""
 apk update
 apk add gettext-dev
 
-# GCC builds complain about string truncation, but we don't care
+# Flag added for v1.1.9
 if [[ ${target} != *apple* ]] && [[ ${target} != *freebsd* ]]; then
-    export CFLAGS="${CFLAGS} -Wno-stringop-truncation"
-    # Flag added for v1.1.9
     export CFLAGS="${CFLAGS} -D_spawnv=spawnv"
 fi
 
