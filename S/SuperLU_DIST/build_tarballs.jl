@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
-version = v"8.1.2"
-superlu_dist_version = v"8.1.2"
+version = v"8.0.2"
+superlu_dist_version = v"8.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "58e4171dda309255b3b66b0923cd04124f4c0c01"),
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "4459a89719b982dd47af5bb2494a011bb267195f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -93,6 +93,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+platforms = expand_gfortran_versions(platforms)
+
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32, ["\$libdir/superlu_dist/Int32/lib", "\$libdir/superlu_dist/Int32/bin"]),
@@ -108,6 +111,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+
 ]
 append!(dependencies, platform_dependencies)
 
