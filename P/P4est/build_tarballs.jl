@@ -88,8 +88,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-platforms = expand_gfortran_versions(platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libp4est", :libp4est),
