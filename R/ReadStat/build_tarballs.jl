@@ -15,11 +15,6 @@ script = raw"""
 apk update
 apk add gettext-dev
 
-# Flag added for v1.1.9
-if [[ ${target} != *apple* ]] && [[ ${target} != *freebsd* ]]; then
-    export CFLAGS="${CFLAGS} -D_spawnv=spawnv"
-fi
-
 # Windows doesn't search ${prefix}/include?
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 
