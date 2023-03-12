@@ -14,7 +14,6 @@ script = raw"""
 # Add `gettext` for `autogen.sh`
 apk update
 apk add gettext-dev
-apk add libiconv-devel
 
 # Windows doesn't search ${prefix}/include?
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
