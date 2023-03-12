@@ -14,6 +14,7 @@ script = raw"""
 # Add `gettext` for `autogen.sh`
 apk update
 apk add gettext-dev
+apk add libiconv-devel
 
 # Windows doesn't search ${prefix}/include?
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
@@ -45,4 +46,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
