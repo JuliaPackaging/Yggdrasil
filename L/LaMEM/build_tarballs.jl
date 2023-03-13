@@ -83,7 +83,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("PETSc_jll"; compat=PETSc_COMPAT_VERSION),
-    Dependency("CompilerSupportLibraries_jll", compat="1.0.2")
+    Dependency("CompilerSupportLibraries_jll")
 ]
 append!(dependencies, platform_dependencies)
 
