@@ -65,7 +65,7 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
                                                                   Platform("i686", "linux"; libc = "musl")]))
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms, MPICH_compat="4.0.2", OpenMPI_compat="4.1.3")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -73,7 +73,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpich"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -84,10 +83,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("PETSc_jll"; compat=PETSc_COMPAT_VERSION),
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll", compat="1.0.2")
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+                augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"10.2.0")
