@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenEXR"
-version = v"3.1.6"
+version = v"3.1.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "fd9d1ff55f340152ff3764617a2caef796142fc2")
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "3c3074026309dca667247e2544c4645b6fedeeca")
 ]
 
 
@@ -49,4 +49,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"12", julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat = "1.6")
