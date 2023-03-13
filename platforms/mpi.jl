@@ -63,20 +63,19 @@ function augment_platforms(platforms;
     all_platforms = AbstractPlatform[]
     dependencies = []
     for (abi, pkg, compat, f) in mpi_abis
-        compat_version = compat;
         
         # set specific versions of MPI packages
-        if (abi=="OpenMPI" && !isnothing(OpenMPI_compat)) compat_version = OpenMPI_compat; end
-        if (abi=="MPICH" && !isnothing(MPICH_compat)) compat_version = MPICH_compat; end
-        if (abi=="MicrosoftMPI" && !isnothing(MicrosoftMPI_compat)) compat_version = MicrosoftMPI_compat; end
-        if (abi=="MPItrampoline" && !isnothing(MPItrampoline_compat)) compat_version = MPItrampoline_compat; end
+        if (abi=="OpenMPI" && !isnothing(OpenMPI_compat)) compat = OpenMPI_compat; end
+        if (abi=="MPICH" && !isnothing(MPICH_compat)) compat = MPICH_compat; end
+        if (abi=="MicrosoftMPI" && !isnothing(MicrosoftMPI_compat)) compat = MicrosoftMPI_compat; end
+        if (abi=="MPItrampoline" && !isnothing(MPItrampoline_compat)) compat = MPItrampoline_compat; end
         
         pkg_platforms = deepcopy(filter(f, platforms))
         foreach(pkg_platforms) do p
             p[tag_name] = abi
         end
         append!(all_platforms, pkg_platforms)
-        push!(dependencies, Dependency(pkg; compat=compat_version, platforms=pkg_platforms))
+        push!(dependencies, Dependency(pkg; compat, platforms=pkg_platforms))
     end
     # NOTE: packages using this platform tag, must depend on MPIPreferences otherwise
     #       they will not be invalidated when the Preference changes.
