@@ -90,7 +90,7 @@ dependencies = BinaryBuilder.AbstractDependency[
 
 for cuda_version in cuda_versions_to_build, platform in platforms
     # powerpc64le not supported until CUDA 11.0
-    if arch(platform) == "powerpc64le" && cuda_version < v"11.0"
+    if arch(platform) == "powerpc64le" && !isnothing(cuda_version) && cuda_version < v"11.0"
         continue
     end
 
