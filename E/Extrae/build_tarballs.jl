@@ -54,25 +54,19 @@ make -j${nproc}
 make install
 """
 
-platforms = [
+platforms = expand_cxxstring_abis([
     Platform("x86_64", "Linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
-]
+])
 
-platforms = expand_cxxstring_abis(platforms)
+cuda_versions_to_build = Any[v"10.2", v"11.8", v"12.1", nothing]
 
-cuda_versions = [v"10.2.89", v"11.0.3"]
-cuda_platforms =
-    Iterators.filter(Iterators.product(cuda_versions, platforms)) do (cuda_version, platform)
-        if arch(platform) == "powerpc64le" && cuda_version < v"11.0"
-            return false
-        end
-
-        true
-    end |> x -> Iterators.map(x) do (cuda_version, platform)
-        Platform(arch(platform), os(platform); cxxstring_abi=cxxstring_abi(platform), libc=libc(platform), cuda=CUDA.platform(cuda_version))
-    end |> collect
+cuda_versions = Dict(
+    v"10.2" => v"10.2.89",
+    v"11.8" => v"11.8.0",
+    v"12.1" => v"12.1.0"
+)
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
@@ -91,33 +85,25 @@ dependencies = BinaryBuilder.AbstractDependency[
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"),
     Dependency("XML2_jll"),
-]
-
-cuda_dependencies = [
-    BuildDependency("CUDA_full_jll"),
     RuntimeDependency("CUDA_Runtime_jll"),
 ]
 
-# from 'fancy_toys.jl'
-requested_platforms = parse.(Platform, filter(arg -> !occursin(r"^--.*", arg), ARGS))
-
-if iszero(length(requested_platforms)) || (isone(length(requested_platforms)) &&
-                                           only(requested_platforms) |> tags |> keys |> (!∋)("cuda"))
-    for platform in platforms
-        !should_build_platform(platform) && continue
-
-        build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies; julia_compat="1.6")
+for cuda_version in cuda_versions_to_build, platform in platforms
+    # powerpc64le not supported until CUDA 11.0
+    if arch(platform) == "powerpc64le" && cuda_version < v"11.0"
+        continue
     end
-end
 
-if iszero(length(requested_platforms)) || (isone(length(requested_platforms)) &&
-                                           only(requested_platforms) |> tags |> keys |> ∋("cuda"))
-    for cuda_platform in cuda_platforms
-        !should_build_platform(cuda_platform) && continue
+    tags = filter(((k, v),) -> k ∉ ("arch", "os"), tags(platform))
+    augmented_platform = Platform(arch(platform), os(platform);
+        tags...,
+        cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
+    )
+    should_build_platform(triplet(augmented_platform)) || continue
 
-        let dependencies = vcat(dependencies, cuda_dependencies), products = vcat(products, cuda_products)
-            build_tarballs(ARGS, name, version, sources, script, [cuda_platform], products, dependencies; julia_compat="1.6", CUDA.augment)
-        end
+    if !isnothing(cuda_version)
+        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_versions[cuda_version])))
     end
-end
 
+    build_tarballs(ARGS, name, version, sources, script, [augmented_platform], products, dependencies; julia_compat="1.6", CUDA.augment)
+end
