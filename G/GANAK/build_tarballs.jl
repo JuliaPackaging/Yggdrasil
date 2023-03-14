@@ -16,10 +16,11 @@ cd ganak/
 mkdir build; cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
 make -j${nproc}
-install -c ganak -Dt $bindir 
-install -c src/libganak* -Dt $libdir
-install -c src/clhash/libclhash* -Dt $libdir
-install -c src/component_types/libcomponent_types* -Dt $libdir
+install -vc ganak -Dt $bindir 
+install -vc src/libganak.${dlext}.* -Dt $libdir
+cp -d src/libganak.${dlext} $libdir
+install -vc src/clhash/libclhash* -Dt $libdir
+install -vc src/component_types/libcomponent_types* -Dt $libdir
 patchelf --remove-rpath $libdir/libganak*
 patchelf --remove-rpath $bindir/ganak
 """
@@ -41,8 +42,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
-    Dependency(PackageSpec(name="MPC_jll", uuid="2ce0c516-f11f-5db3-98ad-e0e1048fbd70"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
