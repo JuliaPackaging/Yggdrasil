@@ -15,10 +15,13 @@ script = raw"""
 cd ganak/
 mkdir build; cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
-make
+make -j${nproc}
 install -c ganak -Dt $bindir 
-install -c src/libganak.so.1.0 -Dt $libdir
-ln -s $libdir/libganak.so.1.0 $libdir/libganak.so
+install -c src/libganak* -Dt $libdir
+install -c src/clhash/libclhash* -Dt $libdir
+install -c src/component_types/libcomponent_types* -Dt $libdir
+patchelf --remove-rpath $libdir/libganak*
+patchelf --remove-rpath $bindir/ganak
 """
 
 # These are the platforms we will build for by default, unless further
@@ -27,6 +30,7 @@ platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("x86_64", "linux"; libc = "musl")
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 
 # The products that we will ensure are always built
