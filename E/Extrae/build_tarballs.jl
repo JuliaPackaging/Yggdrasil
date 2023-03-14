@@ -28,7 +28,7 @@ if [[ $bb_target = powerpc64le* ]]; then
     export ENABLE_POWERPC64LE=1
 fi
 
-if [[ $bb_full_target = *cuda* ]]; then
+if [[ $bb_full_target = *cuda\+[0-9]* ]]; then
     export ENABLE_CUDA=1
 fi
 
