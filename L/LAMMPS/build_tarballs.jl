@@ -6,17 +6,18 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.3.0" # Equivalent to 23Jun2022_update1
+version = v"2.3.2" # Equivalent to 23Jun2022_update3
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
 # 2.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021
 # 2.2.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021_update2
 # 2.3.0 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update1
+# 2.3.2 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update3
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "d618b0ffc05dfd86915c0d148c0a72fba995eba4")
+    GitSource("https://github.com/lammps/lammps.git", "83ba1c9d20a7370b629bbebe88238a2c3c8194b3")
 ]
 
 # Bash recipe for building across all platforms
