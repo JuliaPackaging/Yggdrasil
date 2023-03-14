@@ -14,15 +14,13 @@ sources = [
 script = raw"""
 cd ganak/
 mkdir build; cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_SKIP_BUILD_RPATH=TRUE ..
 make -j${nproc}
 install -vc ganak -Dt $bindir 
 install -vc src/libganak.${dlext}.* -Dt $libdir
 cp -d src/libganak.${dlext} $libdir
 install -vc src/clhash/libclhash* -Dt $libdir
 install -vc src/component_types/libcomponent_types* -Dt $libdir
-patchelf --remove-rpath $libdir/libganak*
-patchelf --remove-rpath $bindir/ganak
 """
 
 # These are the platforms we will build for by default, unless further
