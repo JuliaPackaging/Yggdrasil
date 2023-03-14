@@ -94,9 +94,9 @@ for cuda_version in cuda_versions_to_build, platform in platforms
         continue
     end
 
-    tags = filter(((k, v),) -> k ∉ ("arch", "os"), tags(platform))
+    platform_tags = filter(((k, v),) -> k ∉ ("arch", "os"), tags(platform))
     augmented_platform = Platform(arch(platform), os(platform);
-        tags...,
+        platform_tags...,
         cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
     )
     should_build_platform(triplet(augmented_platform)) || continue
