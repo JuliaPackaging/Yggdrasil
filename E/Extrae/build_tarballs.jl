@@ -94,6 +94,11 @@ for cuda_version in cuda_versions_to_build, platform in platforms
         continue
     end
 
+    # TODO PAPI_jll 7.0.0+2 does not support CUDA on aarch64 (only x86_64, powerpc64le with glibc)
+    if arch(platform) == "aarch64" && !isnothing(cuda_version)
+        continue
+    end
+
     platform_tags = [Symbol(k) => v for (k, v) in tags(platform) if k ∉ ("arch", "os")]
     augmented_platform = Platform(arch(platform), os(platform);
         platform_tags...,
