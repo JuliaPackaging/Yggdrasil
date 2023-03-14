@@ -18,7 +18,7 @@ sources = [
 #
 script = raw"""
 cd $WORKSPACE/srcdir/shtns/
-export CFLAGS=" -DFFTW_PLAN_SAFE"
+export CFLAGS="-fPIC -DFFTW_PLAN_SAFE"
 sed -i -e '4908,4957d' configure #removes openmp fftw checks, this is fine as we link to FFTW_jll
 ./configure --prefix=${prefix} --host=${target} --enable-openmp
 make -j${nproc}
