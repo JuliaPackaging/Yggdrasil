@@ -25,10 +25,7 @@ GSSHG_VERSION="$(GSHHG_VERSION)"
 GSSHG="gshhg-gmt-$(GSHHG_VERSION)"
 DCW="dcw-gmt-$(DCW_VERSION)"
 """ * raw"""
-
-
-cd $WORKSPACE/srcdir
-cd gmt
+cd ${WORKSPACE}/srcdir/gmt
 mkdir build
 cd build/
 
@@ -40,17 +37,15 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DHAVE___BUILTIN_BSWAP32=False \
     -DHAVE___BUILTIN_BSWAP64=False \
     -DGMT_ENABLE_OPENMP=True \
-    -DGSHHG_PATH=/workspace/srcdir/${GSSHG} \
+    -DGSHHG_PATH=${WORKSPACE}/srcdir/${GSSHG} \
     -DGSHHG_VERSION=${GSHHG_VERSION_numeric} \
-    -DDCW_PATH=/workspace/srcdir/${DCW} \
+    -DDCW_PATH=${WORKSPACE}/srcdir/${DCW} \
     .. 
 make -j${nproc} 
 make install 
 
 # copy license
-mkdir ${prefix}/share/licenses/GMT
-cp ../LICENSE.TXT ${prefix}/share/licenses/GMT/LICENSE.TXT
-
+install_license ../LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
