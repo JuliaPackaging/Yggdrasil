@@ -4,6 +4,10 @@ set -e
 
 export JULIA_PROJECT="${BUILDKITE_BUILD_CHECKOUT_PATH}/.ci"
 
+# Add our shared depot cache to the end of JULIA_DEPOT_PATH which is already
+# filled out by `julia-buildkite-plugin` to our agent/pipeline-specific depot path.
+export JULIA_DEPOT_PATH="${JULIA_DEPOT_PATH}:/sharedcache/depot"
+
 echo "--- Setup Julia packages"
 julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
 
