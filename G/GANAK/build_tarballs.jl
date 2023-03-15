@@ -34,11 +34,11 @@ cmake $disablepcc \
       -DCMAKE_SKIP_BUILD_RPATH=TRUE \
       ..
 make -j${nproc}
-install -vc ganak -Dt $bindir 
-install -vc src/libganak* -Dt $libdir
+install -v ganak -Dt $bindir 
+install -v src/libganak* -Dt $libdir
 cp -d src/libganak.${dlext} $libdir
-install -vc src/clhash/libclhash* -Dt $libdir
-install -vc src/component_types/libcomponent_types* -Dt $libdir
+install -v src/clhash/libclhash* -Dt $libdir
+install -v src/component_types/libcomponent_types* -Dt $libdir
 """
 
 # These are the platforms we will build for by default, unless further
