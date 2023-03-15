@@ -23,7 +23,7 @@ elif [[ ${target} == *-mingw* ]]; then
 fi
 
 mkdir -p "${includedir}"
-cp -v inc/* "${includedir}"
+cp -Rv inc/* "${includedir}"
 """
 
 # TODO, can we add centos7?
