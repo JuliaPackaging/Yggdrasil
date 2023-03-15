@@ -26,8 +26,8 @@
  $CONF_STATIC ${CONF_STATIC_GCC:+-static-libgcc}"
  
  eval setflags CXXFLAGS "\
--${CXXFLAGS-${CONF_DEBUG:--O3 -g} -fomit-frame-pointer -ffast-math -Wall} \
-+${CXXFLAGS-${CONF_DEBUG:--O3 -g} -fomit-frame-pointer -Wall} \
+-${CXXFLAGS-${CONF_DEBUG:--O3 -g} -fomit-frame-pointer -ffast-math -fPIC -Wall} \
++${CXXFLAGS-${CONF_DEBUG:--O3 -g} -fomit-frame-pointer -fPIC -Wall} \
  $CONF_STATIC ${CONF_STATIC_GCC:+-static-libstdc++ -static-libgcc}"
  
  
@@ -39,7 +39,10 @@
 -int uscore_ = 95;
 -int uscore = 59;
 -_EOF_
--
++# We know the compiler appends underscores
++echo "yes" 1>&3
++CONF_NOUNDERSCORE=0
+ 
 -for CONF_BITS in ${CONF_BITS:--m64 -m32} "" ; do
 -  eval $CONF_CC$CONF_CFLAGS $CONF_BITS -c $test-c.c 1>&2 || continue
 -  eval $CONF_FC$CONF_FFLAGS -o $test$CONF_EXE $test.f $test-c.o $CONF_LDFLAGS 1>&2 && break
@@ -58,14 +61,10 @@
 -  exit 1 ;;
 -esac
 -
-+# We know the compiler appends underscores
-+echo "yes" 1>&3
-+CONF_NOUNDERSCORE=0
-+  
  CONF_CFLAGS+=" $CONF_BITS"
  CONF_CXXFLAGS+=" $CONF_BITS"
  
-@@ -278,27 +259,14 @@
+@@ -278,27 +259,15 @@
  
  echo -n "does $CONF_FC support REAL*$CONF_QUADSIZE... " 1>&3
  
@@ -86,7 +85,7 @@
 -	if( a .eq. b ) call exit(1)
 -	end
 -_EOF_
--
+ 
 -eval $CONF_FC$CONF_FFLAGS -o $test$CONF_EXE $test.f 1>&2
 -
 -./$test$CONF_EXE 1>&2 && {
@@ -100,7 +99,7 @@
  ## does Fortran need 'external' for U77 routines?
  
  echo -n "does $CONF_FC need 'external' for U77 routines... " 1>&3
-@@ -325,28 +288,9 @@
+@@ -325,27 +294,9 @@
  
  echo -n "are we big-endian... " 1>&3
  
@@ -125,10 +124,9 @@
 -  echo "yes" 1>&3
 -  CONF_BIGENDIAN=1
 -}
--
 +# We know we are little-endian
 +echo "no" 1>&3
 +CONF_BIGENDIAN=0
  
- ## can we do MathLink compilations
  
+ ## can we do MathLink compilations

@@ -28,6 +28,7 @@ version = merged["version"]
 # the JLL packages.
 dependencies = Dependency[dep for dep in merged["dependencies"] if !(isa(dep, BuildDependency) || isa(dep, HostBuildDependency))]
 lazy_artifacts = merged["lazy_artifacts"]
+augment_platform_block = merged["augment_platform_block"]
 build_version = BinaryBuilder.get_next_wrapper_version(name, version)
 repo = "JuliaBinaryWrappers/$(name)_jll.jl"
 code_dir = joinpath(Pkg.devdir(), "$(name)_jll")
@@ -47,19 +48,21 @@ function reset_downloader()
     end
 end
 
-function download_cached_binaries(download_dir, platforms)
-    # Grab things out of the aether for maximum consistency
-    bb_hash = ENV["BB_HASH"]
-    proj_hash = ENV["PROJ_HASH"]
-
-    for platform in platforms
-        url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform)).tar.gz"
-        filename = "$(name).v$(version).$(triplet(platform)).tar.gz"
-        reset_downloader()
-        println("Downloading $url...")
-        Downloads.download(url, joinpath(download_dir, filename))
-        println()
+function mvdir(src, dest)
+    for file in readdir(src)
+        mv(joinpath(src, file), joinpath(dest, file))
     end
+end
+
+function download_cached_binaries(download_dir)
+    NAME = ENV["NAME"]
+    PROJECT = ENV["PROJECT"]
+    artifacts = "$(PROJECT)/products/$(NAME)*.tar.gz"
+    cmd = `buildkite-agent artifact download $artifacts $download_dir`
+    if !success(pipeline(cmd; stderr))
+        error("Download failed")
+    end
+    mvdir(joinpath(download_dir, PROJECT, "products"), download_dir)
 end
 
 function download_binaries_from_release(download_dir)
@@ -73,7 +76,7 @@ function download_binaries_from_release(download_dir)
         println("done")
     end
 
-    # Doownload the tarballs reading the information in the current `Artifacts.toml`.
+    # Download the tarballs reading the information in the current `Artifacts.toml`.
     artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))[name]
     if artifacts isa Dict
         # If it's a Dict, that means this is an AnyPlatform artifact, act accordingly.
@@ -102,7 +105,7 @@ mktempdir() do download_dir
     else
         # We are going to publish the new binaries we've just baked, take them
         # out of the cache while they're hot.
-        download_cached_binaries(download_dir, merged["platforms"])
+        download_cached_binaries(download_dir)
     end
 
     # Push up the JLL package (pointing to as-of-yet missing tarballs)
@@ -114,7 +117,7 @@ mktempdir() do download_dir
     # This loop over the unmerged objects necessary in the event that we have multiple packages being built by a single build_tarballs.jl
     for (i,json_obj) in enumerate(objs_unmerged)
         from_scratch = (i == 1)
-        BinaryBuilder.rebuild_jll_package(json_obj; download_dir=download_dir, upload_prefix=upload_prefix, verbose=verbose, lazy_artifacts=json_obj["lazy_artifacts"], from_scratch=from_scratch)
+        BinaryBuilder.rebuild_jll_package(json_obj; download_dir, upload_prefix, verbose, from_scratch)
     end
 
     # Restore Artifacts.toml
@@ -131,5 +134,6 @@ mktempdir() do download_dir
     end
 end
 
-# Sub off to Registrator to create a PR to General
-BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; lazy_artifacts=lazy_artifacts)
+# Sub off to Registrator to create a PR to General.  Note: it's important to pass both
+# `augment_platform_block` and `lazy_artifacts` to build the right Project dictionary
+BinaryBuilder.register_jll(name, build_version, dependencies, julia_compat; augment_platform_block, lazy_artifacts)

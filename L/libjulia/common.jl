@@ -18,17 +18,27 @@ function libjulia_platforms(julia_version)
         filter!(p -> arch(p) != "armv6l", platforms)
     end
 
+    if julia_version == v"1.9.0" || julia_version == v"1.10.0"
+        # 32bit ARM seems broken, see https://github.com/JuliaLang/julia/issues/47345
+        filter!(p -> arch(p) != "armv6l", platforms)
+        filter!(p -> arch(p) != "armv7l", platforms)
+    end
+
     for p in platforms
         p["julia_version"] = string(julia_version)
     end
 
-    # While the "official" Julia kernel ABI itself does not involve any C++
-    # symbols on the linker level, `libjulia` still exports "unofficial" symbols
+    # While the "official" Julia kernel ABI does not involve any C++ linker
+    # symbols before Julia 1.6, `libjulia` exported "unofficial" symbols
     # dependent on the C++ strings ABI (coming from LLVM related code). This
     # doesn't matter if the client code is pure C, but as soon as there are
     # other (actual) C++ dependencies, we must make sure to use the matching C++
     # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    platforms = expand_cxxstring_abis(platforms)
+    #
+    # In Julia >= 1.6, these C++ symbols all moved into `libjulia-internal`.
+    if julia_version < v"1.6"
+        platforms = expand_cxxstring_abis(platforms)
+    end
 
     return platforms
 end
@@ -40,16 +50,13 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     checksums = Dict(
         v"1.6.3" => "2593def8cc9ef81663d1c6bfb8addc3f10502dd9a1d5a559728316a11dea2594",
         v"1.7.0" => "8e870dbef71bc72469933317a1a18214fd1b4b12f1080784af7b2c56177efcb4",
+        v"1.8.2" => "3e2cea35bf5df963ed7b75a83e8febfc000acf1e664ecd657a0772508eb1fb5d",
+        v"1.9.0-beta2" => "3119d91b3f856131a0c8fbf00cdea275086f7a99cb098baf53f020d1351c9ac7",
     )
 
-    if version == v"1.8.0-DEV"
+    if version == v"1.10.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "7a1c20e6dea50291b364452996d3d4d71a6133dc"),
-            DirectorySource("./bundled"),
-        ]
-    elseif version == v"1.9.0-DEV"
-        sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "6409a8a8ebe8a6d648ad1739e7ac589721646e2d"),
+            GitSource("https://github.com/JuliaLang/julia.git", "d020702dbbc627abfdf0b880dfbd185b0904715a"),
             DirectorySource("./bundled"),
         ]
     else
@@ -70,6 +77,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # Bash recipe for building across all platforms
     script = raw"""
     apk add coreutils libuv-dev utf8proc
+
+    # WORKAROUND for mingw: remove the fake `uname` binary, it throws off the
+    # Julia buildsystem
+    if [[ "${target}" == *mingw* ]]; then
+      rm -f /usr/bin/uname
+    fi
 
     cd $WORKSPACE/srcdir/julia*
     version=$(cat VERSION)
@@ -138,7 +151,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         if [[ "${version}" == 1.8.* ]]; then
             LLVMLINK="-L${prefix}/bin -lLLVM-13jl"
         elif [[ "${version}" == 1.9.* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM-13jl"
+            LLVMLINK="-L${prefix}/bin -lLLVM-14jl"
+        elif [[ "${version}" == 1.10.* ]]; then
+            LLVMLINK="-L${prefix}/bin -lLLVM-14jl"
         else
             LLVMLINK="-L${prefix}/bin -lLLVM"
         fi
@@ -154,7 +169,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         elif [[ "${version}" == 1.8.* ]]; then
             LLVMLINK="-L${prefix}/lib -lLLVM-13jl"
         elif [[ "${version}" == 1.9.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-13jl"
+            LLVMLINK="-L${prefix}/lib -lLLVM-14jl"
+        elif [[ "${version}" == 1.10.* ]]; then
+            LLVMLINK="-L${prefix}/lib -lLLVM-14jl"
         else
             echo "Error, LLVM version not specified"
             exit 1
@@ -169,6 +186,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     cat << EOM >Make.user
     USE_SYSTEM_LLVM=1
+    USE_SYSTEM_LLD=1
     USE_SYSTEM_LIBUNWIND=1
 
     USE_SYSTEM_PCRE=1
@@ -260,9 +278,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     # choose make targets which compile libjulia but don't try to build a sysimage
     if [[ "${version}" == 1.[0-5].* ]]; then
-        MAKE_TARGET=julia-ui-release
+        MAKE_TARGET="julia-ui-release julia-ui-debug"
     else
-        MAKE_TARGET="julia-src-release julia-cli-release"
+        MAKE_TARGET="julia-src-release julia-cli-release julia-src-debug julia-cli-debug"
     fi
 
     # Start the actual build. We pass DSYMUTIL='true -ignore' to skip the
@@ -302,13 +320,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # The products that we will ensure are always built
     products = [
         LibraryProduct("libjulia", :libjulia; dont_dlopen=true),
+        LibraryProduct("libjulia-debug", :libjulia_debug; dont_dlopen=true),
     ]
 
     # Dependencies that must be installed before this package can be built/used
 
     dependencies = BinaryBuilder.AbstractDependency[
-        Dependency("LibUnwind_jll"),
-        Dependency("LibUV_jll"),
         BuildDependency("OpenLibm_jll"),
         BuildDependency("dSFMT_jll"),
         BuildDependency("utf8proc_jll"),
@@ -320,7 +337,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         BuildDependency("MPFR_jll"),
         BuildDependency("GMP_jll"),
         BuildDependency("Objconv_jll"),
-        BuildDependency("SuiteSparse_jll"),
+        BuildDependency("SuiteSparse_jll"), # MUST BE LAST, see v1.6 section below
     ]
 
     # HACK: we can't install LLVM 12 JLLs for Julia 1.7 from within Julia 1.6. Similar
@@ -329,18 +346,33 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # This means the resulting package has fewer dependencies declared, but at least it
     # will work and allow people to build JLL binaries ready for Julia 1.7
     if version.major == 1 && version.minor == 6
+        pop!(dependencies) # remove generic SuiteSparse_jll and replace with a specific version next:
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"v5.4.1+1")))
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"11.0.1+3")))
         push!(dependencies, BuildDependency(get_addable_spec("OpenBLAS_jll", v"0.3.10+10")))
         push!(dependencies, BuildDependency(get_addable_spec("LibGit2_jll", v"1.2.3+0")))
     elseif version.major == 1 && version.minor == 7
+        push!(dependencies, Dependency("LibUV_jll"))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+3")))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1")))
     elseif version.major == 1 && version.minor == 8
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.0+3")))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
+        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+3")))
     elseif version.major == 1 && version.minor == 9
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+0")))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+13")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+0")))
+    elseif version.major == 1 && version.minor == 10
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+13")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+0")))
     else
         error("Unsupported Julia version")
     end

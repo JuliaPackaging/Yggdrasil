@@ -2,20 +2,15 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.19.2"
+version = v"5.19.7"
 sources = [
     ArchiveSource(
         "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
-        "ac75218f6477945bd58ee0bf3c115ddec083d2d26c8df7b3fdf8caaf69a6b608"),
-    DirectorySource("./bundled"),
+        "61cbdf1a86aefbc002ac5a0cf9c0f3f91eca2ae8aa5c3e7ef78be0f5a84426c5"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/libsbml-*
-
-for p in ../patches/*.patch; do
-    atomic_patch -p1 "${p}"
-done
 
 mkdir build
 cd build
@@ -45,7 +40,7 @@ make install
 rm ${prefix}/lib/libsbml-static.a
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct("libsbml", :libsbml),

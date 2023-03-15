@@ -3,23 +3,23 @@ using BinaryBuilder
 include("../../../fancy_toys.jl")
 
 name = "CUDA_full"
-version = v"11.5.1"
+version = v"11.5.2"
 
 sources_linux = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.5.1/local_installers/cuda_11.5.1_495.29.05_linux.run",
-               "60bea2fc0fac95574015f865355afbf599422ec2c85554f5f052b292711a4bca", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.5.2/local_installers/cuda_11.5.2_495.29.05_linux.run",
+               "74959abf02bcba526f0a3aae322c7641b25da040ccd6236d07038f81997b73a6", "installer.run")
 ]
 sources_linux_ppc64le = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.5.1/local_installers/cuda_11.5.1_495.29.05_linux_ppc64le.run",
-               "9e0e494d945634fe8ad3e12d7b91806aa4220ed27487bb211030d651b27c67a9", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.5.2/local_installers/cuda_11.5.2_495.29.05_linux_ppc64le.run",
+               "45c468f430436b3e95d5e485a6ba0ec1fa2b23dc6c551c1307b79996ecf0a7ed", "installer.run")
 ]
 sources_linux_aarch64 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.5.1/local_installers/cuda_11.5.1_495.29.05_linux_sbsa.run",
-               "73e1d0e97c7fa686efe7e00fb1e5f179372c4eec8e14d4f44ab58d5f6cf57f63", "installer.run")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.5.2/local_installers/cuda_11.5.2_495.29.05_linux_sbsa.run",
+               "31337c8bdc224fa1bd07bc4b6a745798392428118cc8ea0fa4446ee4ad47dd30", "installer.run")
 ]
 sources_win10 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/11.5.1/local_installers/cuda_11.5.1_496.13_windows.exe",
-               "538cda98841f8f9ba704682253562138c3d455fae49610c9625e0dff6b91807e", "installer.exe")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.5.2/local_installers/cuda_11.5.2_496.13_windows.exe",
+               "56df108c56efed72241777b34aba8f6dcea540fb56a9d8545679225dd3c1950d", "installer.exe")
 ]
 
 script = raw"""
@@ -41,7 +41,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     for project in cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
-                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
+                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api cuda_thrust \
                    libcublas libcufft libcurand libcusolver libcusparse \
                    libnpp libnvjpeg; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
@@ -50,8 +50,13 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     cp -a integration/Sanitizer/* ${prefix}/cuda/bin
 
-    # HACK: remove static libraries to get past GitHub's 2GB limit
-    rm ${prefix}/cuda/lib64/*_static.a
+    # HACK: remove most static libraries to get past GitHub's 2GB limit
+    for lib in ${prefix}/cuda/lib64/*.a; do
+        [[ ${lib} == *libcudadevrt.a ]] && continue
+        [[ ${lib} == *libnvptxcompiler_static.a ]] && continue
+        [[ ${lib} == *libcudart_static.a ]] && continue
+        rm ${lib}
+    done
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     apk add p7zip
 
@@ -63,23 +68,20 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     for project in cuda_cudart cuda_cuobjdump cuda_cupti \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
-                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
+                   cuda_nvrtc cuda_nvtx cuda_sanitizer_api cuda_thrust \
                    libcublas libcufft libcurand libcusolver libcusparse  \
                    libnpp libnvjpeg; do
         [[ -d ${project} ]] || { echo "${project} does not exist!"; exit 1; }
         cp -a ${project}/*/* ${prefix}/cuda
     done
 
-    # NVIDIA Tools Extension Library
-    7z x "nsight_nvtx/nsight_nvtx/NVIDIA NVTX Installer.x86_64".*.msi -o${temp}/nvtx_installer
-    find nvtx_installer
-    for file in nvtx_installer/*.*_*; do
-        mv $file $(echo $file | sed 's/\.\(\w*\)_.*/.\1/')
+    # HACK: remove most static libraries to get past GitHub's 2GB limit
+    for lib in ${prefix}/cuda/lib/x64/*.lib; do
+        [[ ${lib} == *cudadevrt.lib ]] && continue
+        [[ ${lib} == *nvptxcompiler_static.lib ]] && continue
+        [[ ${lib} == *cudart_static.lib ]] && continue
+        rm ${lib}
     done
-    mv nvtx_installer/*.dll ${prefix}/cuda/bin
-    mv nvtx_installer/*64_*.lib ${prefix}/cuda/lib/x64
-    mv nvtx_installer/*32_*.lib ${prefix}/cuda/lib/Win32
-    mv nvtx_installer/*.h ${prefix}/cuda/include
 
     # fixup
     chmod +x ${prefix}/cuda/bin/*.{exe,dll}
@@ -125,5 +127,3 @@ if should_build_platform("x86_64-w64-mingw32")
                    [Platform("x86_64", "windows")], products, dependencies;
                    skip_audit=true)
 end
-
-# bump

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "RadeonProRender"
-version = v"2.2.9"
+version = v"2.2.17"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "5916c58f9cc037899e0aa85e5f5a67c6e1ee7b29")
+    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "3135b69b525f026458c2dfd2874aacca217ef0c5")
 ]
 
 # TODO, also ship headers for Clang.jl generation!?
@@ -16,9 +16,9 @@ echo ${target}
 cd $WORKSPACE/srcdir/RadeonProRenderSDK/RadeonProRender
 if [[ ${target} == x86_64-linux-gnu ]]; then
     cp binUbuntu18/* ${libdir}/
-elif [[ ${target} == x86_64-apple-darwin* ]]; then
+elif [[ ${target} == *-apple-darwin* ]]; then
     cp binMacOS/* ${libdir}/
-elif [[ ${target} == x86_64-w64-mingw32 ]]; then
+elif [[ ${target} == *-mingw* ]]; then
     cp binWin64/* ${libdir}/
 fi
 """
@@ -27,6 +27,7 @@ fi
 platforms = [
     Platform("x86_64", "linux"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     Platform("x86_64", "windows")
 ]
 
@@ -68,4 +69,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

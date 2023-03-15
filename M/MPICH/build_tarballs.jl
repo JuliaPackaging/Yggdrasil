@@ -1,16 +1,17 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version_str = "4.0.1"
+version_str = "4.0.2"
 version = VersionNumber(version_str)
 
+# build trigger
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "66a1fe8052734af2eb52f47808c4dfef4010ceac461cb93c42b99acfb1a43687"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
-                  "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
-    DirectorySource("./bundled"),
+                  "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
 ]
 
 script = raw"""
@@ -20,8 +21,6 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
-
-atomic_patch -p1 ../patches/musl-mpl-thread-posix.patch
 
 EXTRA_FLAGS=()
 # Define some obscure undocumented variables needed for cross compilation of
@@ -34,11 +33,18 @@ export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
 export CROSS_F77_TRUE_VALUE=1
 export CROSS_F77_FALSE_VALUE=0
 
-export CROSS_F90_ADDRESS_KIND=8
+if [[ ${nbits} == 32 ]]; then
+    export CROSS_F90_ADDRESS_KIND=4
+else
+    export CROSS_F90_ADDRESS_KIND=8
+fi
 export CROSS_F90_OFFSET_KIND=8
 export CROSS_F90_INTEGER_KIND=4
-export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_INTEGER_MODEL=9
 export CROSS_F90_REAL_MODEL=6,37
+export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
+export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
 
 if [[ "${target}" == i686-linux-musl ]]; then
     # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
@@ -81,48 +87,22 @@ make -j${nproc}
 make install
 
 ################################################################################
-# Install MPIconstants
-################################################################################
-
-cd ${WORKSPACE}/srcdir/MPIconstants*
-mkdir build
-cd build
-# Yes, this is tedious. No, without being this explicit, cmake will
-# not properly auto-detect the MPI libraries.
-if [ -f ${prefix}/lib/libpmpi.${dlext} ]; then
-    cmake \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH=${prefix} \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_C_LIB_NAMES='mpi;pmpi' \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/libpmpi.${dlext} \
-        ..
-else
-    cmake \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH=${prefix} \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_C_LIB_NAMES='mpi' \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/libmpi.${dlext} \
-        ..
-fi
-
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
-
-################################################################################
 # Install licenses
 ################################################################################
 
-install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT $WORKSPACE/srcdir/MPIconstants-*/LICENSE.md
+install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT
+"""
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
+
+# Add `mpi+mpich` platform tag
+foreach(p -> (p["mpi"] = "MPICH"), platforms)
 
 products = [
     # MPICH
@@ -130,14 +110,13 @@ products = [
     LibraryProduct("libmpifort", :libmpifort),
     LibraryProduct("libmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
-    # MPIconstants
-    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
-    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6")

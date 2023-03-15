@@ -22,20 +22,18 @@ using BinaryBuilder, Pkg
 #
 
 # WARNING WARNING WARNING: any change to the the version of this JLL should be carefully
-# coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
+# coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"2.8.4"
-build_for_julia16_or_newer = true
-version_offset = build_for_julia16_or_newer ? v"0.0.1" : v"0.0.0"
+upstream_version = v"2.9.0"
+version_offset = v"0.0.4"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git", "432ce475efb1fa846518abf98a182ff5fa3bce4c"), # git tag v2.8.4
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/flintlib/flint2.git", "fe4ecf8a99b9b7c52ad2b861e79c9c9aac5c1a0a"), # v2.9.0 + bugfixes
 ]
 
 # Bash recipe for building across all platforms
@@ -48,10 +46,6 @@ elif [[ ${target} == *mingw* ]]; then
    extraflags=--reentrant
 fi
 
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
-
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
 make -j${nproc}
 make install LIBDIR=$(basename ${libdir})
@@ -59,7 +53,7 @@ make install LIBDIR=$(basename ${libdir})
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=build_for_julia16_or_newer)
+platforms = supported_platforms(; experimental = true)
 
 # The products that we will ensure are always built
 products = [
@@ -68,14 +62,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", build_for_julia16_or_newer ? v"6.2.0" : v"6.1.2"),
-    Dependency("MPFR_jll", build_for_julia16_or_newer ? v"4.1.1" : v"4.0.2"),
+    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS32_jll", v"0.3.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = build_for_julia16_or_newer ? "1.6" : "~1.0, ~1.1, ~1.2, ~1.3, ~1.4, ~1.5",
+               julia_compat = "1.6",
                init_block = """
   if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
     #to match the global gmp ones

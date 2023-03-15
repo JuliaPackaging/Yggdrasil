@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.64.0"
+version = v"0.71.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "08c185a6ee3fc0ceaebb9b92017def13131bff22"),
+    GitSource("https://github.com/sciapp/gr.git", "8a02b5bc66301c1d31726f1bf946063435934911"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "5d5f80104639a51e40b8fc35b741f5a12291f90c33cfd4d90075ecbd393352e2", "gr.js")
+               "98995772c2b25b3157e13c142ac43f8eb86e3ab53e073f0f1f7ada69eba4751a", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
@@ -73,10 +73,10 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGR", :libGR),
-    LibraryProduct("libGR3", :libGR3),
-    LibraryProduct("libGRM", :libGRM),
-    LibraryProduct("libGKS", :libGKS),
+    LibraryProduct("libGR", :libGR, dont_dlopen=true),
+    LibraryProduct("libGR3", :libGR3, dont_dlopen=true),
+    LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
+    LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
 ]
 

@@ -1,0 +1,47 @@
+diff --git a/Makefile b/Makefile
+index b389bed..d5ce6e2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -327,8 +327,6 @@ no_dep_targets := clean archclean distclean help
+ 
+ include make/dll.mak
+ include make/bin.mak
+-include make/matlab.mak
+-include make/octave.mak
+ include make/doc.mak
+ include make/dist.mak
+ 
+diff --git a/make/dll.mak b/make/dll.mak
+index cfda8c2..be909fe 100644
+--- a/make/dll.mak
++++ b/make/dll.mak
+@@ -72,6 +72,16 @@ ifeq ($(ARCH),glnxa64)
+ DLL_SUFFIX := so
+ endif
+ 
++# Windows-32
++ifeq ($(ARCH),win32)
++DLL_SUFFIX := dll
++endif
++
++# Windows-64
++ifeq ($(ARCH),win64)
++DLL_SUFFIX := dll
++endif
++
+ # --------------------------------------------------------------------
+ #                                                                Build
+ # --------------------------------------------------------------------
+@@ -131,6 +141,12 @@ ifdef BIN_RELINK_OMP
+ 	make/macos_relink_omp.sh "$(@)"
+ endif
+ 
++$(BINDIR)/lib$(DLL_NAME).dll : $(dll_obj)
++	$(call C,CC) -shared                                    \
++	    $(^)                                                \
++	    $(DLL_LDFLAGS)	                                \
++	    -o "$(@)"
++
+ $(BINDIR)/lib$(DLL_NAME).so : $(dll_obj)
+ 	$(call C,CC) -shared                                    \
+ 	    $(^)                                                \

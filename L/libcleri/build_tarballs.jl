@@ -7,19 +7,21 @@ version = v"0.12.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/transceptor-technology/libcleri.git", "a8a1adc9dcf4e889a4d44c17acb20d74d0c6cfe5")
+    GitSource("https://github.com/transceptor-technology/libcleri.git",
+              "a8a1adc9dcf4e889a4d44c17acb20d74d0c6cfe5"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir/libcleri/
+atomic_patch -p1 ../patches/cc-compiler.patch
 export CFLAGS=$(pcre2-config --cflags)
 export LDFLAGS=$(pcre2-config --libs8)
-cd $WORKSPACE/srcdir
-cd libcleri/
 make -C Release FN="libcleri.${dlext}"
 make -C Release FN="libcleri.${dlext}" install INSTALL_PATH=${prefix}
 if [[ "${target}" == *-apple-* ]]; then
-    install_name_tool -id @rpath/libcleri.dylib.0 ${prefix}/lib/libcleri.dylib
+    install_name_tool -id @rpath/libcleri.dylib.0 ${libdir}/libcleri.dylib
 fi
 if [[ "${target}" == *-mingw* ]]; then
     chmod a+x ${prefix}/lib/libcleri.${dlext}
@@ -28,8 +30,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

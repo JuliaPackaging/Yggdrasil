@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = "VERSION=$(version.major).$(version.minor)\n" * raw"""
 cd $WORKSPACE/srcdir/libiconv-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-extra-encodings
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static --enable-extra-encodings
 make -j${nproc}
 make install
 

@@ -1,10 +1,13 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os
 
-include("../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.11.4"
+version = v"2.15.1"
+build = 1
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -18,24 +21,28 @@ mv lib/libnccl*.so* ${libdir}
 mv include/* ${prefix}/include
 """
 
+augment_platform_block = CUDA.augment
+
 products = [
-    LibraryProduct("libnccl", :libnccl, dont_dlopen = true),
+    LibraryProduct("libnccl", :libnccl),
 ]
 
-# XXX: CUDA_loader_jll's CUDA tag should match the library's CUDA version compatibility.
-#      lacking that, we can't currently dlopen the library
+dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
-dependencies = [Dependency(PackageSpec(name="CUDA_loader_jll"))]
-
-cuda_versions = [v"10.2", v"11.0", v"11.4"]
-for cuda_version in cuda_versions
-    cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
-    include("build_$(cuda_tag).jl")
+# TODO: how does compatibility work here exactly? do we support 11.1-11.7?
+#       are we correctly selecting artifacts in that case?
+builds = ["10.2", "11.0", "11.8"]
+for build in builds
+    include("build_$(build).jl")
+    cuda_version = VersionNumber(build)
 
     for (platform, sources) in platforms_and_sources
-        augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
+        augmented_platform = Platform(arch(platform), os(platform);
+                                      cuda=CUDA.platform(cuda_version))
         should_build_platform(triplet(augmented_platform)) || continue
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
-                       products, dependencies; lazy_artifacts=true)
+                       products, dependencies; lazy_artifacts=true,
+                       julia_compat="1.6", augment_platform_block,
+                       skip_audit=true, dont_dlopen=true)
     end
 end

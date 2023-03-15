@@ -3,27 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"0.3.2"
+version = v"0.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "88aa81c6b1b851c538145e6431ea766a6e0ef435"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/duckdb/duckdb.git", "919cad22e8090087ae33625661f26a5fc78d188b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb*/
 
-atomic_patch -p1 ../patches/0001-right-case-for-winsock2.h.patch
+mkdir build && cd build
 
-mkdir build
-cd build
+if [[ "${target}" == *86*-linux-gnu ]]; then
+    export LDFLAGS="-lrt";
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_PARQUET_EXTENSION=TRUE \
-      -DCMAKE_BUILD_TYPE=Release -DDISABLE_UNITY=TRUE \
-      -DENABLE_SANITIZER=FALSE -DBUILD_UNITTESTS=FALSE ..
+      -DCMAKE_BUILD_TYPE=Release \
+      -DDISABLE_UNITY=TRUE \
+      -DENABLE_SANITIZER=FALSE \
+      -DBUILD_UNITTESTS=FALSE ..
 make -j${nproc}
 make install
 

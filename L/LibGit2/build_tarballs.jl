@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.3.0"
+version = v"1.5.0"
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "b7bad55e4bb0a285b073ba5e02b01d3f522fc95d"),
+              "fbea439d4b6fc91c6b619d01b85ab3b7746e4c19"),
     DirectorySource("./bundled"),
 ]
 
@@ -14,16 +14,26 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libgit2*/
 
+# https://github.com/libgit2/libgit2/issues/3866
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
+# https://github.com/libgit2/libgit2/pull/6377
+atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-lowercase-windows-h.patch
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
-    -DTHREADSAFE=ON
+    -DUSE_THREADS=ON
     -DUSE_BUNDLED_ZLIB=ON
+    -DUSE_SSH=ON
+    -DBUILD_CLI=OFF
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
     "-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 )
+
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
 
 # Special windows flags
 if [[ ${target} == *-mingw* ]]; then
@@ -36,9 +46,8 @@ if [[ ${target} == *-mingw* ]]; then
     BUILD_FLAGS+=(-Dssh2_RESOLVED=${bindir}/libssh2.dll)
 elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
     # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
-    BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DSHA1_BACKEND=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
+    BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DUSE_SHA1=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
-export CFLAGS="-I${prefix}/include"
 
 mkdir build && cd build
 
@@ -50,6 +59,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -60,8 +70,8 @@ products = [
 dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
     Dependency("LibSSH2_jll"; compat="1.10.1"),
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")

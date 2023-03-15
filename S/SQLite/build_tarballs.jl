@@ -3,13 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.38.0"
+version = v"3.40.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.sqlite.org/2022/sqlite-autoconf-3380000.tar.gz", "1c76e25dc63d9f3935e0f406aec520a33ee77cf54ea5147dffe1fae8369eff68"),
-    FileSource("https://git.archlinux.org/svntogit/packages.git/plain/trunk/license.txt?h=packages/sqlite&id=33cad63ddb1ba86b7c5a47430c98083ce2b4d86b",
-               "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d"; filename="LICENSE"),
+    ArchiveSource("https://www.sqlite.org/2022/sqlite-autoconf-3400000.tar.gz",
+                  "0333552076d2700c75352256e91c78bf5cd62491589ba0c69aed0a81868980e7"),
+    FileSource("https://raw.githubusercontent.com/archlinux/svntogit-community/cf0a3337bd854104252dc1ff711e95cc8bc7ffb3/trunk/license.txt",
+               "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d";
+               filename="LICENSE"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,10 +24,13 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
                  -DSQLITE_ENABLE_UNLOCK_NOTIFY \
                  -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
                  -DSQLITE_ENABLE_FTS3_TOKENIZER=1 \
+                 -DSQLITE_ENABLE_FTS3_PARENTHESIS \
                  -DSQLITE_SECURE_DELETE \
                  -DSQLITE_ENABLE_STMTVTAB \
                  -DSQLITE_MAX_VARIABLE_NUMBER=250000 \
-                 -DSQLITE_MAX_EXPR_DEPTH=10000"
+                 -DSQLITE_MAX_EXPR_DEPTH=10000 \
+                 -DSQLITE_ENABLE_MATH_FUNCTIONS \
+                 -DSQLITE_USE_URI"
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \

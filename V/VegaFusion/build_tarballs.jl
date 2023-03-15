@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "VegaFusion"
-version = v"0.0.4"
+version = v"0.10.0"
 
 sources = [
     GitSource("https://github.com/vegafusion/vegafusion.git",
-              "c0927268fc7544878c58a606e01503ba3fed615e"),
+              "4e2a93bbc70e3262007e544252ebd1bbf947c48e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,6 +19,10 @@ platforms = supported_platforms()
 # Our Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
+# i686 Linux currently blocked by "undefined reference to `__atomic_load'" eror, see https://github.com/vegafusion/vegafusion/issues/92
+filter!(p -> !(Sys.islinux(p) && (arch(p) == "i686")), platforms)
+
+
 # PowerPC not supported https://github.com/briansmith/ring/issues/389
 filter!(p -> arch(p) != "powerpc64le", platforms)
 
@@ -28,7 +32,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    HostBuildDependency("protoc_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

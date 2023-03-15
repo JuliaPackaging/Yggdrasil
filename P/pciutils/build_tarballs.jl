@@ -7,7 +7,8 @@ version = v"3.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pciutils/pciutils.git", "864aecdea9c7db626856d8d452f6c784316a878c")
+    GitSource("https://github.com/pciutils/pciutils.git",
+              "864aecdea9c7db626856d8d452f6c784316a878c")
 ]
 
 dependencies = Dependency[
@@ -16,7 +17,14 @@ dependencies = Dependency[
 # Bash recipe for building across all platforms
 script = raw"""
 cd pciutils
-make install PREFIX=${prefix} SHARED=yes SBINDIR=${bindir}
+FLAGS=(
+    PREFIX=${prefix}
+    SHARED=yes
+    SBINDIR=${bindir}
+    -j${nproc}
+)
+make ${FLAGS[@]} install
+make ${FLAGS[@]} install-lib
 """
 
 # These are the platforms we will build for by default, unless further

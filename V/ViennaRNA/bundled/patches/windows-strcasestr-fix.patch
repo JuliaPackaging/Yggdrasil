@@ -1,0 +1,56 @@
+diff --git a/src/ViennaRNA/io/file_formats.c b/src/ViennaRNA/io/file_formats.c
+index adf31f8d..0a51861d 100644
+--- a/src/ViennaRNA/io/file_formats.c
++++ b/src/ViennaRNA/io/file_formats.c
+@@ -28,6 +28,51 @@
+ #endif
+ #include "ViennaRNA/io/file_formats.h"
+ 
++
++#ifdef __MINGW32__
++/* Naive strcasestr implementation for windows.
++   (strcasestr is not available on windows as it is a GNU extension)
++
++   According to the manpage, strcasestr is equivalent to the strstr
++   function (which is standard), but ignores the case of the haystack
++   and needle strings.
++
++   This function is kept very simple, as it just converts the two
++   strings to lower-case and then calls strstr().  This means that it
++   is a bit less efficient than it could be.
++ */
++char *strcasestr(const char *haystack, const char *needle) {
++    /* Note: we don't use strdup as we want to use vrna_alloc instead
++             of malloc.  This is a small ineffiency as the string gets
++             traversed twice, first in strlen and then again in
++             strcpy */
++    size_t len_haystack = strlen(haystack);
++    size_t len_needle = strlen(needle);
++    char *lower_haystack = vrna_alloc(len_haystack + 1);
++    char *lower_needle = vrna_alloc(len_needle + 1);
++    strcpy(lower_haystack, haystack);
++    strcpy(lower_needle, needle);
++    /* convert lower_haystack and lower_needle to lower-case */
++    for (size_t i = 0; i < len_haystack; i++) {
++        lower_haystack[i] = tolower(haystack[i]);
++    }
++    for (size_t i = 0; i < len_needle; i++) {
++        lower_needle[i] = tolower(needle[i]);
++    }
++
++    char *res = strstr(lower_haystack, lower_needle);
++    /* res is a pointer into l_haystack, make it a pointer into
++       haystack */
++    if (res != NULL) {
++        res = haystack + (res - lower_haystack);
++    }
++    free(lower_haystack);
++    free(lower_needle);
++    return res;
++}
++#endif
++
++
+ #ifdef __GNUC__
+ # define INLINE inline
+ #else

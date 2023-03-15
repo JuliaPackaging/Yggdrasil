@@ -3,17 +3,18 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.9.12"
+version = v"2.10.3"
 
 # Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://github.com/GNOME/libxml2/archive/v$(version).tar.gz",
-                  "8a4ddd706419c210b30b8978a51388937fd9362c34fc9a3d69e4fcc6f8055ee0"),
+                  "3f9fb74bb02049f3454892c88d3e57a23e30a88a7d444a80064625af2f543898"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libxml2-*
+
 ./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --without-python \
     --disable-static \
@@ -28,7 +29,7 @@ rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

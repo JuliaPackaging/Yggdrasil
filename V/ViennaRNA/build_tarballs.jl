@@ -3,18 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "ViennaRNA"
-version = v"2.5.0"
+version = v"2.5.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ViennaRNA/ViennaRNA/releases/download/v$(version)/ViennaRNA-$(version).tar.gz",
-                  "feb2af9457a1818e71d8610608edf2382b4bbb71c0f9109812ea144ca6d8e9ca"),
+                  "be4414d574825ef7236533e2885b2bd795f6e833487236ad1ff45cdd4b7e44b7"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 # Build issues
-# - openmp not found on darwin, possible with CompilerSupportLibraries?
 # - powerpc64le: build fails in vectorisation routines of dlib
 script = raw"""
 cd $WORKSPACE/srcdir/ViennaRNA-*/
@@ -38,6 +37,9 @@ if [[ $target == *-w64-mingw32* ]]; then
 
     # needed for compilation of dlib on windows
     export LIBS="-lwinmm"
+
+    # fix for missing nonstandard strcasestr function on windows
+    atomic_patch -p1 ../patches/windows-strcasestr-fix.patch
 fi
 
 # configure script fails (only in sandbox) without
@@ -47,6 +49,7 @@ ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --disable-c11 \
     --with-mpfr --with-json --with-svm --with-gsl \
+    --enable-openmp \
     --with-cluster --with-kinwalker \
     --without-perl --without-python --without-python3 \
     --without-doc --without-tutorial --without-cla
@@ -55,7 +58,7 @@ make -j${nproc}
 make install
 
 # create and install a shared library libRNA
-ldflags="$LDFLAGS -g -O2 -fno-strict-aliasing -ftree-vectorize -pthread"
+ldflags="$LDFLAGS -g -O2 -fno-strict-aliasing -ftree-vectorize -pthread -fopenmp"
 libs="-lpthread -lmpfr -lgmp -lstdc++ -lgsl -lgslcblas -lm $LIBS"
 
 # TODO: setting -flto -ffat-lto-objects assumes we are using gcc
@@ -65,9 +68,6 @@ elif [[ $target == *-w64-mingw32* ]]; then
     ldflags="$ldflags -flto -ffat-lto-objects"
     # needed for dlib
     libs="$libs -lws2_32"
-fi
-if [[ $target != *-darwin* ]]; then
-    ldflags="$ldflags -fopenmp"
 fi
 
 $CC -shared -o "${libdir}/libRNA.${dlext}" \
@@ -100,7 +100,7 @@ products = [
     ExecutableProduct("b2ct", :b2ct),
     ExecutableProduct("ct2db", :ct2db),
     ExecutableProduct("Kinfold", :Kinfold),
-    ExecutableProduct("kinwalker", :Kinfold),
+    ExecutableProduct("kinwalker", :kinwalker),
     ExecutableProduct("popt", :popt),
     ExecutableProduct("RNA2Dfold", :RNA2Dfold),
     ExecutableProduct("RNAaliduplex", :RNAaliduplex),
@@ -134,9 +134,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-    Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"))
+    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3")),
+    Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+               platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

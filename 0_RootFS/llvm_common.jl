@@ -32,6 +32,7 @@ llvm_tags = Dict(
     v"10.0.1" => "ef32c611aa214dea855364efd7ba451ec5ec3f74",
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
+    v"13.0.1" => "75e33f71c2dae584b13a7d1186ae0a038ba98838",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -49,6 +50,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     LLVM_BUILD_TYPE=$(llvm_build_type)
     """ *
     raw"""
+    apk update
     apk add build-base python3 python3-dev linux-headers musl-dev zlib-dev
 
     # We need the XML2, iconv, Zlib libraries in our LLVMBootstrap artifact,
@@ -69,7 +71,9 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so.1
 
     # Include ${prefix}/${target}/lib64 in our linker search path explicitly
-    export LDFLAGS="${LDFLAGS} -L${prefix}/${target}/lib64"
+    export LDFLAGS="-L${prefix}/${target}/lib64 -Wl,-rpath-link,${prefix}/${target}/lib64"
+    # We will also need to run programs which require these libraries, so let them available to the dynamic loader
+    export LD_LIBRARY_PATH="${prefix}/${target}/lib64"
 
     cd ${WORKSPACE}/srcdir/llvm-project
     # Apply all our patches

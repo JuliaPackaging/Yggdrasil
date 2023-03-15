@@ -23,15 +23,16 @@ import Pkg.Types: VersionSpec
 
 name = "Calcium"
 upstream_version = v"0.4.1"
-version_offset = v"0.0.2" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.1.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/fredrik-johansson/calcium/archive/refs/tags/$(upstream_version).tar.gz",
-                  "5fbc997e8c9e76c88cd85c12a86f0f14c4ebe602e9f7f11e11f0ca1f89c5d81c"),
+    GitSource("https://github.com/fredrik-johansson/calcium.git", "59a61324a9a113e269d646691a59273b7e784d04"),
+#    ArchiveSource("https://github.com/fredrik-johansson/calcium/archive/refs/tags/$(upstream_version).tar.gz",
+#                  "5fbc997e8c9e76c88cd85c12a86f0f14c4ebe602e9f7f11e11f0ca1f89c5d81c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -65,9 +66,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 
 dependencies = [
-    Dependency("FLINT_jll"; compat = "~200.800.401"),
-    Dependency("Arb_jll", compat = "~200.2200.000"),
-    Dependency("Antic_jll", compat = "~0.200.501"),
+    Dependency("FLINT_jll"; compat = "~200.900.000"),
+    Dependency("Arb_jll", compat = "~200.2300.000"),
+    Dependency("Antic_jll", compat = "~0.201.500"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]

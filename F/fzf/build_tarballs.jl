@@ -3,24 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "fzf"
-version = v"0.29.0"
+version = v"0.35.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/junegunn/fzf.git", "dc975e8974c4f569980676d9f605226368e20711")
+    GitSource("https://github.com/junegunn/fzf.git", "b55f5554871e548c9c00a49df7a92f980c0191c2")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd fzf/
+cd $WORKSPACE/srcdir/fzf/
 mkdir -p ${bindir}
 go build -o ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

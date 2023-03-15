@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 function build_libcurl(ARGS, name::String)
-    version = v"7.81.0"
-    hash = "ac8e1087711084548d788ef18b9b732c8de887457b81f616fc681d1044b32f98"
+    version = v"7.87.0"
+    hash = "8a063d664d1c23d35526b87a2bf15514962ffdd8ef7fd40519191b3c23e39548"
 
     if name == "CURL"
         this_is_curl_jll = true
@@ -27,18 +27,23 @@ function build_libcurl(ARGS, name::String)
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
-        --without-ssl --without-gnutls --without-gssapi
-        --without-libidn --without-libidn2 --without-librtmp
-        --without-nss --without-polarssl
-        --without-spnego --without-libpsl --disable-ares --disable-manual
+        --without-gnutls
+        --without-libidn2 --without-librtmp
+        --without-nss --without-libpsl
+        --disable-ares --disable-manual
         --disable-ldap --disable-ldaps --without-zsh-functions-dir
         --disable-static --without-libgsasl
+        --without-brotli
 
         # A few things we actually enable
         --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
         --enable-versioned-symbols
     )
 
+    if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+        cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+    fi
 
     if [[ ${target} == *mingw* ]]; then
         # We need to tell it where to find libssh2 on windows
@@ -60,6 +65,18 @@ function build_libcurl(ARGS, name::String)
         FLAGS+=(--with-mbedtls=${prefix})
     fi
 
+    if false; then
+        # Use gssapi on Linux and FreeBSD
+        FLAGS+=(--with-gssapi=${prefix})
+        if [[ "${target}" == *-freebsd* ]]; then
+            # Only for FreeBSD we need to hint that we need to link to libkrb5 and
+            # libcom_err to resolve some undefined symbols.
+            export LIBS="-lkrb5 -lcom_err"
+        fi
+    else
+        FLAGS+=(--without-gssapi)
+    fi
+
     ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} "${FLAGS[@]}"
     make -j${nproc}
     if [[ "${THIS_IS_CURL}" == true ]]; then
@@ -77,7 +94,7 @@ function build_libcurl(ARGS, name::String)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = supported_platforms()
-
+    push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     # The products that we will ensure are always built
     if this_is_curl_jll
         # CURL_jll only provides the executable
@@ -99,6 +116,8 @@ function build_libcurl(ARGS, name::String)
         # Note that while we unconditionally list MbedTLS as a dependency,
         # we default to schannel/SecureTransport on Windows/MacOS.
         Dependency("MbedTLS_jll"; compat="~2.28.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     ]
 
     if this_is_curl_jll

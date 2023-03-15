@@ -41,6 +41,7 @@ function prepare_deps_tree(targetdir::String)
             polymake_jll.MPFR_jll,
             polymake_jll.PPL_jll,
             polymake_jll.Perl_jll,
+            polymake_jll.SCIP_jll,
             polymake_jll.bliss_jll,
             polymake_jll.boost_jll,
             polymake_jll.cddlib_jll,

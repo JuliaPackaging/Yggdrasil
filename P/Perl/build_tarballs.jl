@@ -103,7 +103,7 @@ else
                -Dccflags="-DPERL_FPU_INIT -I${prefix}/include $extraflags" \
                -Dldflags="-L${libdir}" \
                -Dlddlflags="-shared -L${libdir}" \
-               -Adefine:libswanted="pthread dl m crypt util c"
+               -Adefine:libswanted="pthread dl m util c"
 fi
 
 make -j${nproc} $extramakeargs
