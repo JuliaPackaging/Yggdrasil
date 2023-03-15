@@ -11,12 +11,3 @@ index fb867b9..f02194d 100644
  
  if (NOT WIN32)
      set_target_properties(ganak PROPERTIES
-@@ -64,7 +64,7 @@ add_executable (ganak-bin
- )
- 
- target_link_libraries (ganak-bin
--ganak
-+ganak ${LIB}
- ${GMP_LIB} ${GMPXX_LIB}
- )
- 
