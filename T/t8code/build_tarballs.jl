@@ -14,20 +14,44 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd t8code/
+
+# Set default preprocessor and linker flags
+# Note: This is *crucial* for Windows builds as otherwise the wrong libraries are picked up!
+export CPPFLAGS="-I${includedir}"
+export LDFLAGS="-L${libdir}"
+export CFLAGS="-O3 -std=c99"
+export CXXFLAGS="-O3 -std=c++11"
+
+# Set necessary flags for FreeBSD
 if [[ "${target}" == *-freebsd* ]]; then
   export LIBS="-lm"
 fi
-# Set default preprocessor and linker flags
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-# Use MPI including MPI I/O on all other platforms
-export CC="mpicc"
-export CXX="mpicxx"
-mpiopts="--enable-mpi"
-# Configure, build, install
-# Note: BLAS is disabled since it is only needed for SC if it is used outside of p4est
-./configure --disable-static --without-blas ${mpiopts} CFLAGS='-O3 -std=c99' CXXFLAGS='-O3 -std=c++11' --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
+
+# Set necessary flags for Windows and non-Windodws systems
+FLAGS=()
+if [[ "${target}" == *-mingw* ]]; then
+  # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
+  FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
+  # Configure does not find the correct Fortran compiler
+  export F77="f77"
+  # Link against ws2_32 to use the htonl function from winsock2.h
+  export LIBS="-lmsmpi -lws2_32"
+  # Disable MPI I/O on Windows since it causes p4est to crash
+  mpiopts="--enable-mpi --disable-mpiio"
+  # Linker looks for libmsmpi instead of msmpi, copy existing symlink
+  cp -d ${libdir}/msmpi.dll ${libdir}/libmsmpi.dll
+else
+  # Use MPI including MPI I/O on all other platforms
+  export CC="mpicc"
+  export CXX="mpicxx"
+  mpiopts="--enable-mpi"
+fi
+
+# Run configure
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --without-blas ${mpiopts}
+
+# Build & install
+make -j${nproc} "${FLAGS[@]}"
 make install
 """
 
