@@ -33,7 +33,7 @@ plugins() = Pair{String, Union{Nothing, Dict}}[
     "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
         "version" => "1.7",
-        "depot_hard_size_limit" => "268435456000", #250GB
+        "depot_hard_size_limit" => "214748364800", # 200 GiB
     ),
     "JuliaCI/merge-commit" => nothing
 ]
