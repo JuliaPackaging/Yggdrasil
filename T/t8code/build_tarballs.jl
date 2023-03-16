@@ -7,7 +7,7 @@ version = v"1.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz", "fcacc0ab511b38a607e05ec6b7c28333937bee86e1472107078382f22b03938e")
+    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz", "561f7e24238b2c81dc8299351e2643be29648cd01b6dcf960bb12f8cec9e0c15")
 ]
 
 # Bash recipe for building across all platforms
