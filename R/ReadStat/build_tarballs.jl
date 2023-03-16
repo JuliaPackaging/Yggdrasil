@@ -19,6 +19,8 @@ apk add gettext-dev
 # Fix "Undefined symbols for architecture arm64: "_libiconv","
 export LDFLAGS="-L${libdir}"
 
+export CPPFLAGS="-I${includedir}"
+
 cd $WORKSPACE/srcdir/ReadStat/
 # Revert spawnv non-sense.
 atomic_patch ../patches/mingw-no-spawnv.patch
