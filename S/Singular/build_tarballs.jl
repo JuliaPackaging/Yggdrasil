@@ -35,7 +35,7 @@ version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + 
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "5cc997784cbce4c118fa8bc8c2a902459d4068d4"),
+    GitSource("https://github.com/Singular/Singular.git", "a800fe4b3e9d37a38c5a10cc0ae9dfa0c15a4ee6"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
