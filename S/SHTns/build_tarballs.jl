@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
+
 name = "SHTns"
 version = v"3.5.2"
 
@@ -18,7 +20,7 @@ export CFLAGS="-fPIC -O3" #only -fPIC produces slow code on linux x86 and MacOS 
 #remove lfftw3_omp library references, as FFTW_jll does not provide it
 sed -i -e 's/lfftw3_omp/lfftw3/' configure
 
-./configure --prefix=${prefix} --host=${target} --enable-openmp
+./configure --prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc
 make -j${nproc}
 make install
 
@@ -31,7 +33,21 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+
+# Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
+platforms = expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+
+augment_platform_block = """
+    $(MicroArchitectures.augment)
+    function augment_platform!(platform::Platform)
+        # We augment only x86_64
+        @static if Sys.ARCH === :x86_64
+            augment_microarchitecture!(platform)
+        else
+            platform
+        end
+    end
+    """
 
 # The products that we will ensure are always built
 products = [
@@ -49,6 +65,7 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-                    julia_compat="1.6", 
-                    lock_microarchitecture=false,
-                    )
+                julia_compat="1.6", 
+                preferred_gcc_version=v"12",
+                augment_platform_block)
+
