@@ -7,9 +7,9 @@ include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
 
 
 name = "Extrae"
-version = v"4.0.3"
+version = v"4.0.2"
 sources = [
-    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "b5139a07dbb1f4aa9758c1d62d54e42c01125bcfa9aa0cb9ee4f863afae93db1"),
+    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "6f81f4e0335ece97a936ef6cbd30387d67a1a4484f3e42b3e74c42ef06e865d9"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
