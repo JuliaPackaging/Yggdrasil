@@ -7,19 +7,12 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/meelgroup/ganak.git", "36fa4b35c8e3cb588a3a76a87624d97ae7f18285")
-    DirectorySource("bundled")
+    GitSource("https://github.com/meelgroup/ganak.git", "1aa12a37aa2e65043948a986abe55911aaa5d2fb")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ganak/
-
-# add all dependencies for linking without 'allow undefined'
-atomic_patch -p1 ../patches/alllibs.patch
-
-# make sure char in LogTable is signed on all platforms (needed for storing -1)
-atomic_patch -p1 ../patches/logtab_signed.patch
 
 mkdir build; cd build
 
