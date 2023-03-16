@@ -7,6 +7,7 @@ version = v"1.1.9"
 sources = [
     GitSource("https://github.com/WizardMac/ReadStat.git",
               "104ba03a8da116eb8c094abc18bc2530b733eda9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,14 +16,13 @@ script = raw"""
 apk update
 apk add gettext-dev
 
-# Windows doesn't search ${prefix}/include?
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-
 # Fix "Undefined symbols for architecture arm64: "_libiconv","
 export LDFLAGS="-L${libdir}"
 
 cd $WORKSPACE/srcdir/ReadStat/
-autoreconf -i -f
+# Revert spawnv non-sense.
+atomic_patch ../patches/mingw-no-spawnv.patch
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
