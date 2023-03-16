@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Imath"
-version = v"3.1.2"
+version = v"3.1.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v3.1.2.tar.gz", "f21350efdcc763e23bffd4ded9bbf822e630c15ece6b0697e2fcb42737c08c2d")
+    GitSource("https://github.com/AcademySoftwareFoundation/Imath.git", "a4f9d5c6205482e1f1a86c84bb97bafa247fb774")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,4 +39,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat = "1.6")
