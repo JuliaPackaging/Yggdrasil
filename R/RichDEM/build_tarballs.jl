@@ -8,13 +8,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "RichDEM"
-version = v"2.3.2"
+version = v"2.3.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://github.com/Cervest/richdem/releases/download/v$(version)/richdem-$(version).zip",
-        "84595de9cf2a3bcc459839a2b1b69d996b0039190641a181cef2c04a5b8bce80",
+        "7f6ae065f92847d0a4bd17c9bbc689e03417ecfc78afc1bd0d4792f434ec0c47",
     ),
 ]
 
@@ -57,7 +57,11 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+julia_compat = join(
+    "~" .* string.(getfield.(julia_versions, :major)) .* "." .*
+    string.(getfield.(julia_versions, :minor)),
+    ", ",
+)
 
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
