@@ -75,7 +75,7 @@ platforms = supported_platforms(; experimental=true)
 # p4est with MPI enabled does not compile for 32 bit Windows
 platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Disable OpenMPI since it doesn't build. This could probably be fixed
 # via more explicit MPI configuraiton options.
@@ -97,6 +97,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 append!(dependencies, platform_dependencies)
 
