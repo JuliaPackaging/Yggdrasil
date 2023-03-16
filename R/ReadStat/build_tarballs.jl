@@ -2,11 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ReadStat"
-version = v"1.1.8"
+version = v"1.1.9"
 
 sources = [
     GitSource("https://github.com/WizardMac/ReadStat.git",
-              "f0b31497d69ec1b0585a73eeede3048a4ed15cbc"),
+              "104ba03a8da116eb8c094abc18bc2530b733eda9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,18 +16,14 @@ script = raw"""
 apk update
 apk add gettext-dev
 
-# GCC builds complain about string truncation, but we don't care
-if [[ ${target} != *apple* ]] && [[ ${target} != *freebsd* ]]; then
-    export CFLAGS="${CFLAGS} -Wno-stringop-truncation"
-fi
-
-# Windows doesn't search ${prefix}/include?
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-
 # Fix "Undefined symbols for architecture arm64: "_libiconv","
 export LDFLAGS="-L${libdir}"
 
+export CPPFLAGS="-I${includedir}"
+
 cd $WORKSPACE/srcdir/ReadStat/
+# Revert spawnv non-sense.
+atomic_patch ../patches/mingw-no-spawnv.patch
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
@@ -50,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
