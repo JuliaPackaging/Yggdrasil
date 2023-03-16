@@ -27,8 +27,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-upstream_version = v"4.3.1-5" # 4.3.1 plus some changes
-version_offset = v"0.1.0"
+upstream_version = v"4.3.2-0" # 4.3.2p1 plus some changes
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
                         Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
