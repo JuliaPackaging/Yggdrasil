@@ -16,7 +16,6 @@ cd swiftshader
 
 # Remove architecture-specific flags.
 atomic_patch -p1 ${WORKSPACE}/srcdir/remove_march.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/include_unistd.patch
 
 CXX_FLAGS=()
 CMAKE_FLAGS=()
