@@ -71,6 +71,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("macos"; os_version = v"10.15"),
     # TODO: Build on Windows.
+    # Might want to take some inspiration from https://github.com/google/gfbuild-swiftshader/blob/master/build.sh
     # Platform("x86_64", "windows"),
 ]
 
