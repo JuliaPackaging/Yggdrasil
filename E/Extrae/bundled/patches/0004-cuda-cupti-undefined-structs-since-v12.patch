@@ -1,0 +1,27 @@
+diff --git src/tracer/wrappers/CUDA/cuda_wrapper_cupti.c src/tracer/wrappers/CUDA/cuda_wrapper_cupti.c
+index c07e14f7..f19dfabe 100644
+--- src/tracer/wrappers/CUDA/cuda_wrapper_cupti.c
++++ src/tracer/wrappers/CUDA/cuda_wrapper_cupti.c
+@@ -43,6 +43,7 @@
+ #include <cupti.h>
+ #include "cuda_common.h"
+ #include "cuda_probe.h"
++#include "cuda_wrapper_cupti.h"
+ 
+ #define LOG_UNTRACKED_CALLBACKS 0
+ #define LOG_OTHER_DOMAIN_UNTRACKED_CALLBACKS 0
+diff --git src/tracer/wrappers/CUDA/cuda_wrapper_cupti.h src/tracer/wrappers/CUDA/cuda_wrapper_cupti.h
+index 164531e8..23718f7f 100644
+--- src/tracer/wrappers/CUDA/cuda_wrapper_cupti.h
++++ src/tracer/wrappers/CUDA/cuda_wrapper_cupti.h
+@@ -36,6 +36,10 @@ typedef struct cudaConfigureCall_v3020_params_st {
+ typedef struct cudaStreamDestroy_v3020_params_st {
+     cudaStream_t stream;
+ } cudaStreamDestroy_v3020_params;
++
++typedef struct cudaLaunch_v3020_params_st {
++    const char *func;
++} cudaLaunch_v3020_params;
+ #endif /* CUPTI_API_VERSION > 12 */
+ 
+ void Extrae_CUDA_init (int rank);
