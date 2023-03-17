@@ -83,7 +83,7 @@ cuda_products = [
 dependencies = BinaryBuilder.AbstractDependency[
     Dependency("Binutils_jll"),
     Dependency("LibUnwind_jll"),
-    Dependency("PAPI_jll"; compat="6.0"),
+    Dependency("PAPI_jll"),
     Dependency("XML2_jll"),
     RuntimeDependency("CUDA_Runtime_jll"),
 ]
