@@ -38,8 +38,6 @@ FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
   # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
   FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
-  # Configure does not find the correct Fortran compiler
-  export F77="f77"
   # Link against ws2_32 to use the htonl function from winsock2.h
   export LIBS="-lmsmpi -lws2_32"
   # Disable MPI I/O on Windows since it causes p4est to crash
