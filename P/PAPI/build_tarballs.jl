@@ -12,7 +12,7 @@ version = v"7.0.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bitbucket.org/icl/papi.git", "de96060998cd9fc77396c5e100e52e0ea1cdc3c3"),
-    DirectorySource("./bundled")
+    DirectorySource(joinpath(@__DIR__, "bundled"))
 ]
 
 # Bash recipe for building across all platforms
