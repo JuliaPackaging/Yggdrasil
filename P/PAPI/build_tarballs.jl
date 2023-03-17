@@ -99,6 +99,7 @@ cuda_versions = Dict(
 cuda_platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
 ]
 
 for cuda_version in cuda_versions_to_build, platform in platforms
