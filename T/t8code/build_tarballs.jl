@@ -57,13 +57,6 @@ fi
 # Build & install
 make -j${nproc} "${FLAGS[@]}"
 make install
-
-# On Windows: copy DLLs to make them findable by BinaryBuilder
-if [[ "${target}" == *-mingw* ]]; then
-  cp ${libdir}/libp4est*.dll ${libdir}/libp4est.dll
-  cp ${libdir}/libsc*.dll ${libdir}/libsc.dll
-  cp ${libdir}/libt8*.dll ${libdir}/libt8.dll
-fi
 """
 
 augment_platform_block = """
@@ -92,10 +85,11 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), pla
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
+# Note: the additional, non-canonical library names are required for the Windows build
 products = [
-    LibraryProduct("libt8", :libt8),
-    LibraryProduct("libsc", :libsc),
-    LibraryProduct("libp4est", :libp4est)
+    LibraryProduct(["libt8", "libt8-1-1-0-207-d6a74"], :libt8),
+    LibraryProduct(["libsc", "libsc-2-8-1-5-0b70"], :libsc),
+    LibraryProduct(["libp4est", "libp4est-2-2-259-ec120"], :libp4est)
 ]
 
 # Dependencies that must be installed before this package can be built
