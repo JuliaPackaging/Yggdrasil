@@ -25,7 +25,7 @@ make -j${nproc}
 make install
 
 mkdir -p ${libdir}
-cc -fopenmp -shared -o "${libdir}/libshtns.${dlext}" *.o -lfftw3     
+cc -fopenmp -shared -o "${libdir}/libshtns.${dlext}" *.o -lfftw3
 rm "${prefix}/lib/libshtns_omp.a"
 
 install_license LICENSE
@@ -64,8 +64,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-                julia_compat="1.6", 
-                preferred_gcc_version=v"7",
-                augment_platform_block)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6",
+               preferred_gcc_version=v"10",
+               augment_platform_block)
