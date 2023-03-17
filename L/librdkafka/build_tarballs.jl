@@ -7,8 +7,10 @@ version = v"2.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/confluentinc/librdkafka/archive/refs/tags/v$(version).tar.gz",
-                  "f321bcb1e015a34114c83cf1aa7b99ee260236aab096b85c003170c90a47ca9d"),
+    # git rev-list -n 1 v2.0.2
+    GitSource("https://github.com/confluentinc/librdkafka.git",
+              "292d2a66b9921b783f08147807992e603c7af059",
+    ),
 ]
 
 # Bash recipe for building across all platforms
