@@ -55,7 +55,7 @@ make install
 """
 
 platforms = expand_cxxstring_abis([
-    Platform("x86_64", "Linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
 ])
