@@ -61,12 +61,12 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
 ]
 
-cuda_versions_to_build = Any[v"10.2", v"11.0", v"12.1", nothing]
+cuda_versions_to_build = Any[v"10.2", v"11.0", nothing] #= v"12.1", =#
 
 cuda_versions = Dict(
     v"10.2" => v"10.2.89",
     v"11.0" => v"11.0.3",
-    v"12.1" => v"12.1.0"
+    # v"12.1" => v"12.1.0"
 )
 
 products = [
