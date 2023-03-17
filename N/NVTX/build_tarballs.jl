@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "NVTX"
 version = v"3.1.0"
@@ -21,7 +21,7 @@ if [[ "${target}" == *-linux-* ]]; then
     CFLAGS="-fPIC"
     LIBS="-ldl"
 fi
-${CC} -std=c99 -O2 ${CFLAGS} -shared ${LIBS} -I${WORKSPACE}/srcdir/NVTX/c/include -o ${libdir}/libnvToolsExt.${dlext} nvtx.c
+${CC} -std=c99 -O2 ${CFLAGS} -shared ${LIBS} -I${prefix}/cuda/include -I${WORKSPACE}/srcdir/NVTX/c/include -o ${libdir}/libnvToolsExt.${dlext} nvtx.c
 install_license ${WORKSPACE}/srcdir/NVTX/LICENSE.txt
 """
 
@@ -38,7 +38,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency("CUDA_full_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
