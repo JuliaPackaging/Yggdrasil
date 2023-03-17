@@ -13,6 +13,10 @@ sources_linux_ppc64le = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda_11.2.2_460.32.03_linux_ppc64le.run",
                "2304ec235fe5d1f8bf75f00dc2c2d11473759dc23428dbbd5fb5040bc8c757e3", "installer.run")
 ]
+sources_linux_aarch64 = [
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda_11.2.2_460.32.03_linux_sbsa.run",
+               "2f915ad631331eebdafaabd971723a60290ae8bb090d771075b9e6a0b28cbae6", "installer.run")
+]
 sources_win10 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda_11.2.2_461.33_win10.exe",
                "e572654ac90ea720b73cf72f14af6b175dddf4ff282af822e32c19d63f0284c4", "installer.exe")
@@ -109,6 +113,12 @@ end
 if should_build_platform("powerpc64le-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_ppc64le, script,
                    [Platform("powerpc64le", "linux")], products, dependencies;
+                   skip_audit=true)
+end
+
+if should_build_platform("aarch64-linux-gnu")
+    build_tarballs(non_reg_ARGS, name, version, sources_linux_aarch64, script,
+                   [Platform("aarch64", "linux")], products, dependencies;
                    skip_audit=true)
 end
 
