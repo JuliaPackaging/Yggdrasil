@@ -11,12 +11,14 @@ sources = [
     DirectorySource("./patches"),
 ]
 
-linux_script = raw"""
+script = raw"""
 cd swiftshader
 
 # Remove architecture-specific flags.
 atomic_patch -p1 ${WORKSPACE}/srcdir/remove_march.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/include_unistd.patch
 
+CXX_FLAGS=()
 CMAKE_FLAGS=()
 
 # Release build for best performance
@@ -29,23 +31,47 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
 # Work around undefined `cinttypes` printing macros.
-CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS")
+CXX_FLAGS+="-D__STDC_FORMAT_MACROS"
 
 # Do not enable the -Werror flag (builds fine without it).
 CMAKE_FLAGS+=(-DSWIFTSHADER_WARNINGS_AS_ERRORS=FALSE)
 
-cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+# Don't build unit tests (they currently error the build because of yet unindentified libc++ issues).
+CMAKE_FLAGS+=(-DSWIFTSHADER_BUILD_TESTS=FALSE)
+
+# Handle Mac SDK <10.12 errors.
+if [[ "${target}" == *-apple-* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.12
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    find . -type f -exec sed -i 's/include <Windows\.h>/include <windows\.h>/g' {} +
+    CXX_FLAGS+=" -DHAVE_UNISTD"
+fi
+
+cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CXX_FLAGS}"
 ninja -C build -j ${nproc} install
 
-mv build/Linux/* ${libdir}
+folderName=""
+if [[ "${target}" == *-apple-* ]]; then
+    echo "hello"
+    folderName=Darwin
+elif [[ "${target}" == *-linux-* ]]; then
+    folderName=Linux
+elif [[ "${target}" == *-mingw* ]]; then
+    folderName=Windows
+fi
+
+mv build/$folderName/* ${libdir}
 
 install_license LICENSE.txt
 """
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    # TODO: Build on these platforms.
-    # Platform("x86_64", "macos"),
+    Platform("macos"; os_version = v"10.15"),
+    # TODO: Build on Windows.
     # Platform("x86_64", "windows"),
 ]
 
@@ -57,4 +83,4 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, linux_script, platforms, products, dependencies, preferred_gcc_version=v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"11")
