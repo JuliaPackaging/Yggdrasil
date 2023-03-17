@@ -54,11 +54,11 @@ make -j${nproc}
 make install
 """
 
-platforms = expand_cxxstring_abis([
+platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
-])
+]
 
 cuda_versions_to_build = Any[v"10.2", v"11.0", v"12.1", nothing]
 
