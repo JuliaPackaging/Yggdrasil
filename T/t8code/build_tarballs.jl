@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "t8code"
-version = v"1.1.1"
+version = v"1.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz", "561f7e24238b2c81dc8299351e2643be29648cd01b6dcf960bb12f8cec9e0c15")
+    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz", "0bd4bee6694735d14fb4274275fb8c4bdeacdbd29b257220c308be63e98be8f7")
 ]
 
 # Bash recipe for building across all platforms
@@ -86,6 +86,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"))
+    Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 
