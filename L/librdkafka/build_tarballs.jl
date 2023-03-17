@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "librdkafka"
-version = v"1.8.2"
+version = v"2.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/edenhill/librdkafka/archive/v$(version).tar.gz",
-                  "6a747d293a7a4613bd2897e28e8791476fbe1ae7361f2530a876e0fd483482a6"),
+    ArchiveSource("https://github.com/confluentinc/librdkafka/archive/refs/tags/v$(version).tar.gz",
+                  "f321bcb1e015a34114c83cf1aa7b99ee260236aab096b85c003170c90a47ca9d"),
 ]
 
 # Bash recipe for building across all platforms
