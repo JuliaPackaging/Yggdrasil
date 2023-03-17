@@ -53,6 +53,13 @@ fi
 # Build & install
 make -j${nproc} "${FLAGS[@]}"
 make install
+
+# On Windows: copy DLLs to make them findable by BinaryBuilder
+if [[ "${target}" == *-mingw* ]]; then
+  cp ${libdir}/libp4est*.dll ${libdir}/libp4est.dll
+  cp ${libdir}/libsc*.dll ${libdir}/libsc.dll
+  cp ${libdir}/libt8*.dll ${libdir}/libt8.dll
+fi
 """
 
 # These are the platforms we will build for by default, unless further
