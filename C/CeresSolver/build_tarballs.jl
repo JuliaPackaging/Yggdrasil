@@ -1,17 +1,15 @@
 using BinaryBuilder
 
 name = "CeresSolver"
-version = v"1.14.0"
+version = v"2.1.0"
 
 sources = [
-    ArchiveSource("http://ceres-solver.org/ceres-solver-$(version).tar.gz",
-                  "4744005fc3b902fed886ea418df70690caa8e2ff6b5a90f3dd88a3d291ef8e8e")
+    GitSource("https://github.com/ceres-solver/ceres-solver.git",
+              "f68321e7de8929fbcdb95dd42877531e64f72f66")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ceres-solver-1.14.0
-
 mkdir cmake_build
 cd cmake_build/
 
@@ -70,4 +68,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
