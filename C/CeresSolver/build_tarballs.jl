@@ -13,7 +13,6 @@ script = raw"""
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
               -DCMAKE_BUILD_TYPE=Release
-              -DCMAKE_CXX_STANDARD=17
               -DBUILD_SHARED_LIBS=ON
               -DBUILD_EXAMPLES=OFF
               -DBUILD_TESTING=OFF
@@ -32,8 +31,6 @@ cd ..
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
-# Build for all platforms with cxx03 ABI fails
-filter!(p->cxxstring_abi(p) !== "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = Product[
