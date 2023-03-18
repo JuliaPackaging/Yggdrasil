@@ -10,12 +10,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-FLAGS=()
-# Cannot find Windows.h
-if [[ ${target} == *-mingw32 ]]; then
-    FLAGS+=(-DWIN32=TRUE)
-fi
-
 cd $WORKSPACE/srcdir/glog
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -23,7 +17,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
       -DBUILD_TESTING=OFF \
-      "${FLAGS[@]}" \
       ..
 make -j${nproc}
 make install
