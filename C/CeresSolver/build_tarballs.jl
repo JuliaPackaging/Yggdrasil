@@ -10,9 +10,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir cmake_build
-cd cmake_build/
-
 if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
   # Clang doesn't play nicely with OpenMP and
   # compilation fails with glog due to a c++11 error
@@ -42,8 +39,9 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.${dlext}"
               )
 
-cmake ${CMAKE_FLAGS[@]} ..
-
+cd $WORKSPACE/srcdir/ceres-solver/
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${CMAKE_FLAGS[@]}
 make -j${nproc}
 make install
 
