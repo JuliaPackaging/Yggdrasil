@@ -21,13 +21,13 @@ else
 fi
 
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
+              -DCMAKE_CXX_FLAGS="-std=c++17"
               -DBUILD_SHARED_LIBS=ON
               -DBUILD_EXAMPLES=OFF
               -DBUILD_TESTING=OFF
               -DBLAS_LIBRARIES=${libdir}/libopenblas.${dlext}
               -DLAPACK_LIBRARIES=${libdir}/libopenblas.${dlext}
               -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
-              -DSUITESPARSE_INCLUDE_DIR_HINTS=${prefix}/include
               )
 
 cd $WORKSPACE/srcdir/ceres-solver/
