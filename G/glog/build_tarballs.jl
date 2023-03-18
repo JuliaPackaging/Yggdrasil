@@ -11,6 +11,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glog
+# Fix a typo in glog v0.6.0 release that has been removed on master
+sed -i 's/Windows.h/windows.h/' src/glog/logging.h.in
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
