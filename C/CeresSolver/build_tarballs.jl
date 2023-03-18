@@ -40,6 +40,8 @@ cd ..
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
+# Build for all platforms with cxx03 ABI fails
+filter!(p->cxxstring_abi(p) === :cxx11, platforms)
 
 # The products that we will ensure are always built
 products = Product[
