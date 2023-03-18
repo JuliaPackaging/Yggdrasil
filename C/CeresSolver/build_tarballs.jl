@@ -54,8 +54,7 @@ dependencies = [
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
     Dependency("OpenBLAS32_jll"),
-    Dependency("SuiteSparse_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("SuiteSparse_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
