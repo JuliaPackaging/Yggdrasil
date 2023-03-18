@@ -10,18 +10,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
-  # Clang doesn't play nicely with OpenMP and
-  # compilation fails with glog due to a c++11 error
-  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
-               -DMINIGLOG=ON)
-else
-  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-               -DGLOG_INCLUDE_DIR_HINTS=${prefix}/include)
-fi
-
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
-              -DCMAKE_CXX_FLAGS="-std=c++17"
+              -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+              -DCMAKE_BUILD_TYPE=Release
+              -DCMAKE_CXX_STANDARD=17
               -DBUILD_SHARED_LIBS=ON
               -DBUILD_EXAMPLES=OFF
               -DBUILD_TESTING=OFF
@@ -32,7 +24,7 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
 
 cd $WORKSPACE/srcdir/ceres-solver/
 mkdir build && cd build
-cmake .. ${CMAKE_FLAGS[@]} -DCMAKE_BUILD_TYPE=Release
+cmake .. ${CMAKE_FLAGS[@]}
 make -j${nproc}
 make install
 
@@ -41,7 +33,7 @@ cd ..
 
 platforms = expand_cxxstring_abis(supported_platforms())
 # Build for all platforms with cxx03 ABI fails
-filter!(p->cxxstring_abi(p) === :cxx11, platforms)
+filter!(p->cxxstring_abi(p) !== "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -50,7 +42,15 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Eigen_jll"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll",
+        uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+        platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll",
+        uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+        platforms=filter(Sys.isbsd, platforms)),
+    BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
     Dependency("OpenBLAS32_jll"),
