@@ -139,11 +139,8 @@ if [[ "${target}" == aarch64-apple-* ]]; then
 fi
 
 # Do not install doc and man files which contain files which clashing names on
-
 # case-insensitive file systems:
-
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
-
 # * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure \
     --build=${MACHTYPE} \
