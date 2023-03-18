@@ -19,7 +19,8 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DBLAS_LIBRARIES=${libdir}/libopenblas.${dlext}
               -DLAPACK_LIBRARIES=${libdir}/libopenblas.${dlext}
               -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
-              -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.*.${dlext}
+              -DSUITESPARSE=ON
+              -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.*.${dlext}"
               )
 
 cd $WORKSPACE/srcdir/ceres-solver/
