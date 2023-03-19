@@ -13,6 +13,10 @@ sources_linux_ppc64le = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/11.1.1/local_installers/cuda_11.1.1_455.32.00_linux_ppc64le.run",
                "023e571fe26ee829c98138dfc305a92279854aac7d184d255fd58c06c6af3c17", "installer.run")
 ]
+sources_linux_aarch64 = [
+    FileSource("https://developer.download.nvidia.com/compute/cuda/11.1.1/local_installers/cuda_11.1.1_455.32.00_linux_sbsa.run",
+               "9ab1dbafba205c06bea8c88e38cdadb3038af19cb56e7b3ba734d3d7a84b8f02", "installer.run")
+]
 sources_win10 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/11.1.1/local_installers/cuda_11.1.1_456.81_win10.exe",
                "c05b81319a272a8edd7a5e26bddcb4719071837c438be76e586da289b50ef853", "installer.exe")
@@ -35,7 +39,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     cp cuda_documentation/EULA.txt ${prefix}/cuda
 
-    for project in cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb cuda_memcheck \
+    for project in cuda_cudart cuda_cuobjdump cuda_cupti cuda_gdb \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
                    cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
                    libcublas libcufft libcurand libcusolver libcusparse \
@@ -62,7 +66,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     mv cuda_documentation/Doc/EULA.txt ${prefix}/cuda
 
-    for project in cuda_cudart cuda_cuobjdump cuda_cupti cuda_memcheck \
+    for project in cuda_cudart cuda_cuobjdump cuda_cupti \
                    cuda_nvcc cuda_nvdisasm cuda_nvml_dev cuda_nvprof cuda_nvprune \
                    cuda_nvrtc cuda_nvtx cuda_sanitizer_api \
                    libcublas libcufft libcurand libcusolver libcusparse  \
@@ -109,6 +113,12 @@ end
 if should_build_platform("powerpc64le-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_ppc64le, script,
                    [Platform("powerpc64le", "linux")], products, dependencies;
+                   skip_audit=true)
+end
+
+if should_build_platform("aarch64-linux-gnu")
+    build_tarballs(non_reg_ARGS, name, version, sources_linux_aarch64, script,
+                   [Platform("aarch64", "linux")], products, dependencies;
                    skip_audit=true)
 end
 
