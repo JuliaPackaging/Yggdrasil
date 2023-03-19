@@ -53,7 +53,8 @@ dependencies = [
     #    platforms=filter(Sys.isbsd, platforms)),
     BuildDependency("Eigen_jll"; platforms=filter(!ispowerpc64le, platforms)),
     # Eigen v3.4.0 does not work on powerpc64le
-    BuildDependency("Eigen_jll", v"3.3.9"; platforms=filter(ispowerpc64le, platforms)),
+    BuildDependency(PackageSpec(name="Eigen_jll", version=v"3.3.9");
+        platforms=filter(ispowerpc64le, platforms)),
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
     Dependency("OpenBLAS32_jll"),
