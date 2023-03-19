@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "CeresSolver"
 version = v"2.1.0"
@@ -39,7 +39,7 @@ products = Product[
 dependencies = [
     # CeresSolver is removing OpenMP and dependencies for OpenMP are dropped
     # https://github.com/ceres-solver/ceres-solver/issues/886
-    # Eigen_jll v0.3.4 throws error on powerpc64le with older GCC versions
+    # Eigen_jll v0.3.4 throws errors on powerpc64le with older GCC versions
     BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
     # Metis replaces SuiteSparse on Windows
