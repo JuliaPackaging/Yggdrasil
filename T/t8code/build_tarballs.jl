@@ -36,7 +36,7 @@ fi
 # Set necessary flags for Windows and non-Windodws systems
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
-  # Pass -lmsmpi explicitly to linker as the absolute library path gets lost sometimes
+  # Pass -lmsmpi explicitly to linker as the absolute library path specified in LIBS below is not always propagated properly
   export LDFLAGS="$LDFLAGS -Wl,-lmsmpi"
   # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
   FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
