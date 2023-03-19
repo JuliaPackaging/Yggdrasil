@@ -23,7 +23,6 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
 
 cd $WORKSPACE/srcdir/ceres-solver/
 mkdir build && cd build
-export OPENBLAS_NUM_THREADS=1
 cmake .. ${CMAKE_FLAGS[@]}
 make -j${nproc}
 make install
@@ -40,6 +39,7 @@ products = Product[
 dependencies = [
     # CeresSolver is removing OpenMP and dependencies for OpenMP are dropped
     # https://github.com/ceres-solver/ceres-solver/issues/886
+    # Eigen_jll v0.3.4 throws error on powerpc64le with older GCC versions
     BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
     # Metis replaces SuiteSparse on Windows
