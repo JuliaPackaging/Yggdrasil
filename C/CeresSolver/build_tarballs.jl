@@ -27,6 +27,10 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DCOLAMD_LIBRARY="${libdir}/libcolamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
               -DSUITESPARSEQR_LIBRARY="${libdir}/libspqr.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
               -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.${dlext}"
+              -DSuiteSparse_VERSION=7.0.1
+              -DSuiteSparse_VERSION_MAJOR=7
+              -DSuiteSparse_VERSION_MINOR=0
+              -DSuiteSparse_VERSION_PATCH=1
               )
 
 cd $WORKSPACE/srcdir/ceres-solver/
