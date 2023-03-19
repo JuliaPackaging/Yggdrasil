@@ -62,7 +62,7 @@ elif [[ "${target}" == *-mingw* ]]; then
     folderName=Windows
 fi
 
-mv build/$folderName/* ${libdir}
+mv -v build/$folderName/* ${libdir}
 
 install_license LICENSE.txt
 """
