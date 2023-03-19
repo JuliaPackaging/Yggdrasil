@@ -17,9 +17,7 @@ cd $WORKSPACE/srcdir/oxigraph
 git submodule update --init --recursive
 
 cd server
-export LIBCLANG_PATH=${libdir}
-cargo build --release
-
+cargo build --release --features=speedb
 install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
 
 cp ../target/${rust_target}/release/oxigraph_server${exeext} ${bindir}/
@@ -40,7 +38,6 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenSSL_jll"),
-    BuildDependency("LLVMCompilerRT_jll"), 
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
