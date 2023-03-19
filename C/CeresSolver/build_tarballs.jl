@@ -36,15 +36,11 @@ products = Product[
     LibraryProduct("libceres", :libceres),
 ]
 
-ispowerpc64le(x) = arch(x) == "powerpc64le"
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # CeresSolver prefers CXX_THREADS over OpenMP and dependencies for OpenMP are removed
-    BuildDependency("Eigen_jll"; platforms=filter(!ispowerpc64le, platforms)),
-    # Eigen v3.4.0 does not work on powerpc64le
-    BuildDependency(PackageSpec(name="Eigen_jll", version=v"3.3.9");
-        platforms=filter(ispowerpc64le, platforms)),
+    # CeresSolver is removing OpenMP and dependencies for OpenMP are dropped
+    # https://github.com/ceres-solver/ceres-solver/issues/886
+    BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
     # Metis replaces SuiteSparse on Windows
     Dependency("METIS_jll"),
@@ -54,4 +50,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")
