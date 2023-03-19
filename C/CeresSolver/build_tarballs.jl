@@ -60,7 +60,7 @@ dependencies = [
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
     Dependency("OpenBLAS_jll"),
-    Dependency("SuiteSparse_jll", build_version=v"5.10.1")
+    Dependency("SuiteSparse_jll", v"5.10.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
