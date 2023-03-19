@@ -152,7 +152,7 @@ fi
 TARGETS=(host NVPTX AMDGPU)
 # Add WASM and BPF for LLVM >6
 if [[ "${LLVM_MAJ_VER}" != "6" ]]; then
-    TARGETS+=(WebAssembly BPF)
+    TARGETS+=(WebAssembly BPF AVR)
 fi
 LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
@@ -306,6 +306,8 @@ fi
 
 #This breaks things on LLVM15 and above, but probably should be off everywhere because we only build one runtime per run
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF)
+#For some reason clang doesn't install it's symlinks without this
+CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="${prefix}/tools")
 
 # Tell LLVM which compiler target to use, because it loses track for some reason
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
