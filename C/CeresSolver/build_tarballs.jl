@@ -27,8 +27,6 @@ export OPENBLAS_NUM_THREADS=1
 cmake .. ${CMAKE_FLAGS[@]}
 make -j${nproc}
 make install
-
-cd ..
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -42,22 +40,16 @@ ispowerpc64le(x) = arch(x) == "powerpc64le"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # CeresSolver prefers CXX_THREADS over OpenMP and OpenMP is not used
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-    #Dependency(PackageSpec(name="CompilerSupportLibraries_jll",
-    #    uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
-    #    platforms=filter(!Sys.isbsd, platforms)),
-    #Dependency(PackageSpec(name="LLVMOpenMP_jll",
-    #    uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
-    #    platforms=filter(Sys.isbsd, platforms)),
+    # CeresSolver prefers CXX_THREADS over OpenMP and dependencies for OpenMP are removed
     BuildDependency("Eigen_jll"; platforms=filter(!ispowerpc64le, platforms)),
     # Eigen v3.4.0 does not work on powerpc64le
     BuildDependency(PackageSpec(name="Eigen_jll", version=v"3.3.9");
         platforms=filter(ispowerpc64le, platforms)),
     Dependency("glog_jll"),
+    # Metis replaces SuiteSparse on Windows
     Dependency("METIS_jll"),
     Dependency("OpenBLAS32_jll"),
+    # Hard code the version now as the latest v7.0.1 does not get recognized
     Dependency("SuiteSparse_jll", v"5.10.1")
 ]
 
