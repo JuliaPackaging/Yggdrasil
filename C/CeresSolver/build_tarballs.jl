@@ -35,6 +35,7 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
 
 cd $WORKSPACE/srcdir/ceres-solver/
 mkdir build && cd build
+export OPENBLAS_NUM_THREADS=1
 cmake .. ${CMAKE_FLAGS[@]}
 make -j${nproc}
 make install
