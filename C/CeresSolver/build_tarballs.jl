@@ -24,7 +24,7 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DCAMD_LIBRARY="${libdir}/libcamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
               -DCCOLAMD_LIBRARY="${libdir}/libccolamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
               -DCHOLMOD_LIBRARY="${libdir}/libcholmod.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-              -DCOLAMD_LIBRARY="${libdir}/libcolamd.${dlext} ${libdir}/libsuitepsarseconfig.${dlext}"
+              -DCOLAMD_LIBRARY="${libdir}/libcolamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
               -DSUITESPARSEQR_LIBRARY="${libdir}/libspqr.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
               -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.${dlext}"
               )
