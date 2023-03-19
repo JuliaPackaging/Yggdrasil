@@ -7,7 +7,7 @@ version = v"0.3.8"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oxigraph/oxigraph.git", "825b330132ebfc0f1669b4c2ec2529a96a9a11dd"),
+    GitSource("https://github.com/oxigraph/oxigraph.git", "dcfeadc01a1aa88ed0458f4a6d94111b8d2c5e8a"),
 ]
 
 # Bash recipe for building across all platforms
