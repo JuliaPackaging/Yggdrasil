@@ -59,6 +59,7 @@ dependencies = [
     BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
+    Dependency("OpenBLAS32_jll"),
     Dependency("OpenBLAS_jll"),
     Dependency("SuiteSparse_jll", v"5.10.1")
 ]
