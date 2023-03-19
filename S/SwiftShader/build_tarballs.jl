@@ -75,6 +75,8 @@ platforms = [
     # Platform("x86_64", "windows"),
 ]
 
+platforms = expand_cxxstring_abis(platforms)
+
 products = [
     LibraryProduct("libvulkan", :libvulkan),
     LibraryProduct("libvk_swiftshader", :libvk_swiftshader),
