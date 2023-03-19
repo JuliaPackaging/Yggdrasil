@@ -36,14 +36,14 @@ fi
 # Set necessary flags for Windows and non-Windodws systems
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
+  # Pass -lmsmpi explicitly to linker as the absolute library path gets lost sometimes
+  export LDFLAGS="$LDFLAGS -Wl,-lmsmpi"
   # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
   FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
   # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="-lmsmpi -lws2_32"
+  export LIBS="${libdir}/msmpi.dll -lws2_32"
   # Disable MPI I/O on Windows since it causes p4est to crash
   mpiopts="--enable-mpi --disable-mpiio"
-  # Linker looks for libmsmpi instead of msmpi, copy existing symlink
-  cp -d ${libdir}/msmpi.dll ${libdir}/libmsmpi.dll
 else
   # Use MPI including MPI I/O on all other platforms
   export CC="mpicc"
