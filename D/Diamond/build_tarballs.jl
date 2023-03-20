@@ -15,9 +15,8 @@ version = v"2.1.6"
 
 sources = [
     # v2.1.6
-    GitSource("https://github.com/bbuchfink/diamond/",
-              "0540f86d3d5965cf9a6ef8871068999ef61211dc";
-              unpack_target="diamond"),
+    GitSource("https://github.com/bbuchfink/diamond.git",
+              "0540f86d3d5965cf9a6ef8871068999ef61211dc"),
 ]
 
 script = raw"""
