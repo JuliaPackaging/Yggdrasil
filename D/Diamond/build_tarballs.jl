@@ -31,7 +31,7 @@ install_license ../LICENSE
 """
 
 platforms = supported_platforms(exclude = p -> Sys.iswindows(p) || nbits(p) == 32)
-platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || Sys.isapple(p))
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("diamond", :diamond)
