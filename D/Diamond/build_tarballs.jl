@@ -42,6 +42,7 @@ products = [
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
