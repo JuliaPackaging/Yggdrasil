@@ -28,6 +28,17 @@ script = raw"""
 # MPItrampoline
 ################################################################################
 
+# When we build libraries linking to MPITrampoline, this library needs to find the
+# libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
+# need to give a little help to MPITrampoline to find it:
+# <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
+# apply this *hack* only when strictly needed, to avoid screwing something else up.
+if [[ "${target}" == x86_64-linux-gnu* ]]; then
+    INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
+else
+    INSTALL_RPATH=()
+fi
+
 cd $WORKSPACE/srcdir/MPItrampoline*
 mkdir build
 cd build
@@ -35,7 +46,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_INSTALL_RPATH='$ORIGIN' \
+    "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
     -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
@@ -54,7 +65,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_INSTALL_RPATH='$ORIGIN' \
+    "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
@@ -186,7 +197,7 @@ if [[ "${target}" == *-apple-* ]]; then
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_INSTALL_RPATH='$ORIGIN' \
+        "${INSTALL_RPATH[@]}" \
         -DBUILD_SHARED_LIBS=ON \
         -DMPI_C_COMPILER=cc \
         -DMPI_CXX_COMPILER=c++ \
@@ -207,7 +218,7 @@ else
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_INSTALL_RPATH='$ORIGIN' \
+        "${INSTALL_RPATH[@]}" \
         ..
 fi
 
