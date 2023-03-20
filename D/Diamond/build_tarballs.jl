@@ -7,7 +7,6 @@ version = v"2.1.6"
 # description = "Accelerated BLAST-compatible local sequence aligner"
 
 # TODO
-# - WITH_ZSTD (fails to find the library)
 # - WITH_AVX512
 # - build failures
 #   - x86_64-w64-mingw32-cxx11
@@ -23,7 +22,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/diamond*
 mkdir build && cd build
 cmake .. \
-    -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=RELEASE
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=RELEASE \
+    -DWITH_ZSTD=ON \
+    -DZSTD_LIBRARY="${libdir}/libzstd.${dlext}"
 make -j${nproc}
 make install
 install_license ../LICENSE
@@ -36,8 +39,9 @@ products = [
     ExecutableProduct("diamond", :diamond)
 ]
 
-dependencies = Dependency[
-    Dependency(PackageSpec(name="Zlib_jll")),
+dependencies = [
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
