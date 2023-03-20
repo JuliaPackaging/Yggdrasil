@@ -40,8 +40,8 @@ if [[ -d "${prefix}/cuda" ]]; then
     sed -i -e 's/PAPI_CUDA_CUPTI = \\\"\\\"/PAPI_CUDA_CUPTI = \\\"libcupti.so.'"${SO_VERSION}"'\\\"/g' components/cuda/Rules.cuda
     sed -i -e 's/PAPI_CUDA_PERFWORKS = \\\"\\\"/PAPI_CUDA_PERFWORKS = \\\"libnvperf_host.so.'"${SO_VERSION}"'\\\"/g' components/cuda/Rules.cuda
 
-    sed -i -e 's/PAPI_CUDA_CUPTI = \\\"\\\"/PAPI_CUDA_CUPTI = \\\"libcupti.so.'"${SO_VERSION}"'\\\"/g' components/nvml/Rules.cuda
-    sed -i -e 's/PAPI_NVML_MAIN = \\\"\\\"/PAPI_NVML_MAIN = \\\"libnvidia-ml.so.'"${SO_VERSION}"'\\\"/g' components/nvml/Rules.cuda
+    sed -i -e 's/PAPI_CUDA_CUPTI = \\\"\\\"/PAPI_CUDA_CUPTI = \\\"libcupti.so.'"${SO_VERSION}"'\\\"/g' components/nvml/Rules.nvml
+    sed -i -e 's/PAPI_NVML_MAIN = \\\"\\\"/PAPI_NVML_MAIN = \\\"libnvidia-ml.so.'"${SO_VERSION}"'\\\"/g' components/nvml/Rules.nvml
 fi
 
 if [[ ${target} == powerpc64le-* ]]; then
