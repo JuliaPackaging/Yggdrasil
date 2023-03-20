@@ -35,7 +35,7 @@ fi
 COMPONENTS=()
 if [[ -d "${prefix}/cuda" ]]; then
     COMPONENTS+=(cuda nvml)
-
+    export PAPI_CUDA_ROOT="${prefix}/cuda"
     sed -i -e 's/PAPI_CUDA_RUNTIME = \\\"\\\"/PAPI_CUDA_RUNTIME = \\\"libcudart.so.'"${SO_VERSION}"'\\\"/g' components/cuda/Rules.cuda
     sed -i -e 's/PAPI_CUDA_CUPTI = \\\"\\\"/PAPI_CUDA_CUPTI = \\\"libcupti.so.'"${SO_VERSION}"'\\\"/g' components/cuda/Rules.cuda
     sed -i -e 's/PAPI_CUDA_PERFWORKS = \\\"\\\"/PAPI_CUDA_PERFWORKS = \\\"libnvperf_host.so.'"${SO_VERSION}"'\\\"/g' components/cuda/Rules.cuda
