@@ -126,11 +126,13 @@ for cuda_version in cuda_versions_to_build, platform in platforms
             push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll",
                                                             version=cuda_versions[cuda_version])))
         end
+        config = """
+        export SO_VERSION="$(cuda_version.major).$(cuda_version.minor)"
+        """
+    else
+        config = ""
     end
 
-    config = """
-    export SO_VERSION="$(cuda_version.major).$(cuda_version.minor)"
-    """
 
     build_tarballs(ARGS, name, version, sources, config*script, [augmented_platform],
                    products, dependencies; lazy_artifacts=true,
