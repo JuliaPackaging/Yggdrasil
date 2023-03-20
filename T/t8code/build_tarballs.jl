@@ -5,60 +5,56 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
-name = "P4est"
-version = v"2.8.1"
-p4est_version = v"2.8"
+name = "t8code"
+version = v"1.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://p4est.github.io/release/p4est-2.8.tar.gz",
-                  "6a0586e3abac06c20e31b1018f3a82a564a6a0d9ff6b7f6c772a9e6b0f0cc5e4"),
+    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz",
+                  "0bd4bee6694735d14fb4274275fb8c4bdeacdbd29b257220c308be63e98be8f7"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd p4est-*
+cd $WORKSPACE/srcdir
+cd t8code/
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
-if [[ "${target}" == *-freebsd* ]]; then
-  export LIBS="-lm"
-elif [[ "${target}" == x86_64-linux-musl ]]; then
-  # We can't run Fortran programs for the native platform, so a check that the
-  # Fortran compiler works would fail.  Small hack: swear that we're
-  # cross-compiling.  See:
-  # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/50.
-  sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
-  sed -i 's/cross_compiling=no/cross_compiling=yes/' sc/configure
-fi
-
 # Set default preprocessor and linker flags
+# Note: This is *crucial* for Windows builds as otherwise the wrong libraries are picked up!
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
+export CFLAGS="-O3"
+export CXXFLAGS="-O3"
 
-# Special Windows treatment
+# Set necessary flags for FreeBSD
+if [[ "${target}" == *-freebsd* ]]; then
+  export LIBS="-lm"
+fi
+
+# Set necessary flags for Windows and non-Windodws systems
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
+  # Pass -lmsmpi explicitly to linker as the absolute library path specified in LIBS below is not always propagated properly
+  export LDFLAGS="$LDFLAGS -Wl,-lmsmpi"
   # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
   FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
-  # Configure does not find the correct Fortran compiler
-  export F77="f77"
   # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="-lmsmpi -lws2_32"
+  export LIBS="${libdir}/msmpi.dll -lws2_32"
   # Disable MPI I/O on Windows since it causes p4est to crash
   mpiopts="--enable-mpi --disable-mpiio"
-  # Linker looks for libmsmpi instead of msmpi, copy existing symlink
-  cp -d ${libdir}/msmpi.dll ${libdir}/libmsmpi.dll
 else
   # Use MPI including MPI I/O on all other platforms
   export CC="mpicc"
-  export CXX="mpic++"
+  export CXX="mpicxx"
   mpiopts="--enable-mpi"
 fi
 
-# Configure, build, install
-# Note: BLAS is disabled since it is only needed for SC if it is used outside of p4est
+# Run configure
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --without-blas ${mpiopts}
+
+# Build & install
 make -j${nproc} "${FLAGS[@]}"
 make install
 """
@@ -89,9 +85,11 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), pla
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
+# Note: the additional, non-canonical library names are required for the Windows build
 products = [
-    LibraryProduct("libp4est", :libp4est),
-    LibraryProduct("libsc", :libsc)
+    LibraryProduct(["libt8", "libt8-1-1-0-207-d6a74"], :libt8),
+    LibraryProduct(["libsc", "libsc-2-8-1-5-0b70"], :libsc),
+    LibraryProduct(["libp4est", "libp4est-2-2-259-ec120"], :libp4est)
 ]
 
 # Dependencies that must be installed before this package can be built
