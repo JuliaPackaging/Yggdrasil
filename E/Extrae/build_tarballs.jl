@@ -16,9 +16,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/extrae-*
 
-# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-autoconf-replace-pointer-size-check-by-AC_CHECK_SIZE.patch
-# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-autoconf-use-simpler-endianiness-check.patch
-# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0003-autoconf-support-powerpc64le-cross-compilation.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0004-cuda-cupti-undefined-structs-since-v12.patch
 
 if [[ $bb_target = aarch64* ]]; then
