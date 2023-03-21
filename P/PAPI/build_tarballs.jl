@@ -34,15 +34,8 @@ fi
 
 COMPONENTS=()
 if [[ -d "${prefix}/cuda" ]]; then
-    COMPONENTS+=(cuda nvml)
+    COMPONENTS+=(cuda)
     export PAPI_CUDA_ROOT="${prefix}/cuda"
-
-    sed -i -e 's/PAPI_CUDA_RUNTIME = \\\\\\\"\\\\\\\"/PAPI_CUDA_RUNTIME = \\\\\\\"libcudart.so.'"${SO_VERSION}"'\\\\\\\"/g' components/cuda/Rules.cuda
-    sed -i -e 's/PAPI_CUDA_CUPTI = \\\\\\"\\\\\\\"/PAPI_CUDA_CUPTI = \\\\\\\"libcupti.so.'"${SO_VERSION}"'\\\\\\\"/g' components/cuda/Rules.cuda
-    sed -i -e 's/PAPI_CUDA_PERFWORKS = \\\\\\\"\\\\\\\"/PAPI_CUDA_PERFWORKS = \\\\\\\"libnvperf_host.so.'"${SO_VERSION}"'\\\\\\\"/g' components/cuda/Rules.cuda
-
-    sed -i -e 's/PAPI_CUDA_CUPTI = \\\\\\\"\\\\\\\"/PAPI_CUDA_CUPTI = \\\\\\\"libcupti.so.'"${SO_VERSION}"'\\\\\\\"/g' components/nvml/Rules.nvml
-    sed -i -e 's/PAPI_NVML_MAIN = \\\\\\\"\\\\\\\"/PAPI_NVML_MAIN = \\\\\\\"libnvidia-ml.so.'"${SO_VERSION}"'\\\\\\\"/g' components/nvml/Rules.nvml
 fi
 
 if [[ ${target} == powerpc64le-* ]]; then
@@ -127,15 +120,10 @@ for cuda_version in cuda_versions_to_build, platform in platforms
             push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll",
                                                             version=cuda_versions[cuda_version])))
         end
-        config = """
-        export SO_VERSION="$(cuda_version.major).$(cuda_version.minor)"
-        """
-    else
-        config = ""
     end
 
 
-    build_tarballs(ARGS, name, version, sources, config*script, [augmented_platform],
+    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                    products, dependencies; lazy_artifacts=true,
                    julia_compat="1.6", augment_platform_block,
                    preferred_gcc_version=v"5")
