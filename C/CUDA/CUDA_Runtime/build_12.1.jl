@@ -54,6 +54,8 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     # CUDA Profiling Tools Interface (CUPTI) Library
     mv extras/CUPTI/lib64/libcupti.so* ${libdir}
+    mv extras/CUPTI/lib64/libnvperf_host.so* ${libdir}
+    mv extras/CUPTI/lib64/libnvperf_target.so* ${libdir}
 
     # Compute Sanitizer
     rm -r compute-sanitizer/{docs,include}
@@ -105,6 +107,8 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     # CUDA Profiling Tools Interface (CUPTI) Library
     mv extras/CUPTI/lib64/cupti64_*.dll ${bindir}
+    mv extras/CUPTI/lib64/nvperf_host.dll* ${libdir}
+    mv extras/CUPTI/lib64/nvperf_target.dll* ${libdir}
 
     # Compute Sanitizer
     rm -r compute-sanitizer/{docs,include}
@@ -142,6 +146,8 @@ function get_products(platform)
         LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
         LibraryProduct(["libcurand", "curand64_10"], :libcurand),
         LibraryProduct(["libcupti", "cupti64_2023.1.0"], :libcupti),
+        LibraryProduct(["libnvperf_host", "nvperf_host"], :libnvperf_host),
+        LibraryProduct(["libnvperf_target", "nvperf_target"], :libnvperf_target),
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
         ExecutableProduct("ptxas", :ptxas),
