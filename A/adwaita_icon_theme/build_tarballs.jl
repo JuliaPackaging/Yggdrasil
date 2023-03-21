@@ -7,7 +7,7 @@ version = v"43"
 
 # Collection of sources required to build adwaita-icon-theme
 sources = [
-    ArchiveSource("https://download.gnome.org/sources/adwaita-icon-theme/43/adwaita-icon-theme-43.tar.xz",
+    ArchiveSource("https://download.gnome.org/sources/adwaita-icon-theme/$(version.major)/adwaita-icon-theme-$(version.major).tar.xz",
                   "2e3ac77d32a6aa5554155df37e8f0a0dd54fc5a65fd721e88d505f970da32ec6"),
 ]
 
