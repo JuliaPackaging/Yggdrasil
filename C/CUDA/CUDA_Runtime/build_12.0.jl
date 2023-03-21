@@ -44,6 +44,10 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv nvvm/lib64/libnvvm.so* ${libdir}
     mv lib64/libnvJitLink.so* ${libdir}
 
+    # NVIDIA Runtime Compilation Library
+    mv lib64/libnvrtc.so* ${libdir}
+    mv lib64/libnvrtc-builtins.so* ${libdir}
+
     # NVIDIA Common Device Math Functions Library
     mkdir ${prefix}/share/libdevice
     mv nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
@@ -91,6 +95,10 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv nvvm/bin/nvvm64_*.dll ${bindir}
     mv bin/nvJitLink_*.dll ${bindir}
 
+    # NVIDIA Runtime Compilation Library
+    mv bin/nvrtc64_* ${bindir}
+    mv bin/nvrtc-builtins64_* ${bindir}
+
     # NVIDIA Common Device Math Functions Library
     mkdir ${prefix}/share/libdevice
     mv nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
@@ -124,6 +132,8 @@ function get_products(platform)
         LibraryProduct(["libcudart", "cudart64_12"], :libcudart),
         LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
         LibraryProduct(["libnvJitLink", "nvJitLink_120_0"], :libnvJitLink),
+        LibraryProduct(["libnvrtc", "nvrtc64_120_0"], :libnvrtc),
+        LibraryProduct(["libnvrtc-builtins", "nvrtc-builtins64_120"], :libnvrtc_builtins),
         LibraryProduct(["libcufft", "cufft64_11"], :libcufft),
         LibraryProduct(["libcublas", "cublas64_12"], :libcublas),
         LibraryProduct(["libcublasLt", "cublasLt64_12"], :libcublasLt),
