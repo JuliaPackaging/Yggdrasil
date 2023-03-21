@@ -99,8 +99,8 @@ index e78d2eded..96da9d294 100644
  
 +    // Step 2: Process override if given
 +    char *cuda_perfworks_lib = getenv("PAPI_CUDA_PERFWORKS");
-+    if (dl4 == NULL && strlen(cuda_perfworks_lib) > 0) {                    // If override given, it MUST work.
-+        dl4 = dlopen(cuda_perfworks, RTLD_NOW | RTLD_GLOBAL);               // Try to open that path.
++    if (dl4 == NULL && strlen(cuda_perfworks_lib) > 0) {                        // If override given, it MUST work.
++        dl4 = dlopen(cuda_perfworks_lib, RTLD_NOW | RTLD_GLOBAL);               // Try to open that path.
 +        if (dl4 == NULL) {
 +            int strErr=snprintf(_cuda_vector.cmp_info.disabled_reason, PAPI_MAX_STR_LEN, "PAPI_CUDA_PERFWORKS override '%s' given in ENV not found.", cuda_perfworks_lib);
 +            _cuda_vector.cmp_info.disabled_reason[PAPI_MAX_STR_LEN-1]=0;
