@@ -25,12 +25,6 @@ if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
 
-if [[ "${target}" == *mingw* ]]; then
-  BLAS_LAPACK="-L${libdir} -lopenblas"
-else
-  BLAS_LAPACK="-L${libdir} -lblastrampoline"
-fi
-
 ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -40,9 +34,9 @@ fi
     --with-pic \
     --disable-dependency-tracking \
     lt_cv_deplibs_check_method=pass_all \
-    --with-lapack-lflags="${BLAS_LAPACK}" \
+    --with-lapack-lflags="-lblastrampoline" \
     --with-mumps-cflags="-I${includedir}" \
-    --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis {BLAS_LAPACK} -lgfortran -lpthread" \
+    --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lblastrampoline -lgfortran -lpthread" \
     --with-asl-lflags="${LIBASL}"
 
 # parallel build fails
@@ -65,8 +59,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), ASL_version),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="=$(MUMPS_seq_version_LBT)"),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"), platforms=filter(Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
