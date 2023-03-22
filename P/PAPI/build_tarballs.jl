@@ -110,10 +110,6 @@ for cuda_version in cuda_versions_to_build, platform in platforms
     augmented_platform = Platform(arch(platform), os(platform);
                                   libc=libc(platform),
                                   cuda=tag)
-    # NOTE PAPI fails to build in the following platforms
-    if arch(augmented_platform) == "powerpc64le" && cuda_version == v"11.0"
-        continue
-    end
     should_build_platform(triplet(augmented_platform)) || continue
 
     dependencies = AbstractDependency[
