@@ -87,6 +87,7 @@ products = [
 cuda_versions_to_build = Any[
     v"10.2",
     v"11.0",
+    v"12.0",
     "none"
 ]
 
@@ -94,6 +95,7 @@ cuda_versions_to_build = Any[
 cuda_versions = Dict(
     v"10.2" => v"10.2.89",
     v"11.0" => v"11.0.3",
+    v"12.0" => v"12.0.1",
 )
 
 cuda_platforms = [
