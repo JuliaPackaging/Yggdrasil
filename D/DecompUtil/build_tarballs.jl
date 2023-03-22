@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DecompUtil"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dev10110/DecompUtil_C.git", "97ec11c300f0dd28f74199d09d5d0952ca21f384")
+    GitSource("https://github.com/dev10110/DecompUtil_C.git", "46b0dd4e8628813fb5d4b8989ebd2ca4b1bad2f3")
 ]
 
 # Bash recipe for building across all platforms
