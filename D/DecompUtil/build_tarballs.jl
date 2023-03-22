@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DecompUtil"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dev10110/DecompUtil_C.git", "97ec11c300f0dd28f74199d09d5d0952ca21f384")
+    GitSource("https://github.com/dev10110/DecompUtil_C.git", "8ecb3b66a57d293508716105661edc48b9d4e9a4")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=p->arch(p)=="powerpc64le")
 
 # The products that we will ensure are always built
 products = [
