@@ -7,7 +7,7 @@ version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dev10110/DecompUtil_C.git", "da65f21b5f8c46246dc3e810f068c2dc8464c68d")
+    GitSource("https://github.com/dev10110/DecompUtil_C.git", "8ecb3b66a57d293508716105661edc48b9d4e9a4")
 ]
 
 # Bash recipe for building across all platforms
