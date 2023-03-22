@@ -68,13 +68,13 @@ augment_platform_block = CUDA.augment
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("armv7l", "linux"; call_abi="eabihf", libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; call_abi="eabihf", libc="musl")
 ]
 
 
@@ -97,9 +97,9 @@ cuda_versions = Dict(
 )
 
 cuda_platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
 ]
 
 for cuda_version in cuda_versions_to_build, platform in platforms
