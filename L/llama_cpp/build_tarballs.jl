@@ -32,7 +32,6 @@ atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
-    atomic_patch -p1 ../patches/fix-for-clock_gettime-not-found.patch
     EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
 fi
 
@@ -66,4 +65,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"11")
+               julia_compat="1.6", preferred_gcc_version = v"8.1.0")
