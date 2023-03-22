@@ -1,0 +1,13 @@
+diff --git a/ggml.h b/ggml.h
+index bac4fe6..d60520d 100644
+--- a/ggml.h
++++ b/ggml.h
+@@ -1,5 +1,8 @@
+ #pragma once
+ 
++// so we find clock_gettime etc
++#define _POSIX_C_SOURCE 199309L
++
+ //
+ // GGML Tensor Library
+ //
