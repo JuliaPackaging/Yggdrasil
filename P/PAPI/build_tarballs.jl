@@ -101,7 +101,7 @@ cuda_versions = Dict(
 cuda_platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
+    # Platform("aarch64", "linux"; libc="glibc"),
 ]
 
 for cuda_version in cuda_versions_to_build, platform in platforms
@@ -111,9 +111,6 @@ for cuda_version in cuda_versions_to_build, platform in platforms
                                   libc=libc(platform),
                                   cuda=tag)
     # NOTE PAPI fails to build in the following platforms
-    if arch(augmented_platform) == "aarch64" && cuda_version == v"10.2"
-        continue
-    end
     if arch(augmented_platform) == "powerpc64le" && cuda_version == v"11.0"
         continue
     end
