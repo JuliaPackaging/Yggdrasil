@@ -14,14 +14,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/DecompUtil_C
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .. 
+cmak -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .. 
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [p for p in supported_platforms() if triplet(p) != "powerpc64le-linux-gnu"]
 
 # The products that we will ensure are always built
 products = [
