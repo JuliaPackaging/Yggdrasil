@@ -4,6 +4,12 @@ if VERSION < v"1.8.0"
 else
     Base.set_active_project(@__DIR__)
 end
+
+# Force ourselves to use the shared depot as well, if it exists
+if isdir("/sharedcache/depot")
+    push!(Base.DEPOT_PATH, "/sharedcache/depot")
+end
+
 import Pkg
 Pkg.instantiate()
 

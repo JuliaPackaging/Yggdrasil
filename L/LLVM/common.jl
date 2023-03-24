@@ -152,7 +152,7 @@ fi
 TARGETS=(host NVPTX AMDGPU)
 # Add WASM and BPF for LLVM >6
 if [[ "${LLVM_MAJ_VER}" != "6" ]]; then
-    TARGETS+=(WebAssembly BPF)
+    TARGETS+=(WebAssembly BPF AVR)
 fi
 LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
@@ -303,6 +303,11 @@ if [[ "${target}" == *freebsd* ]]; then
     # On FreeBSD, we must force even statically-linked code to have -fPIC
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
+
+#This breaks things on LLVM15 and above, but probably should be off everywhere because we only build one runtime per run
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF)
+#For some reason clang doesn't install it's symlinks without this
+CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="${prefix}/tools")
 
 # Tell LLVM which compiler target to use, because it loses track for some reason
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
@@ -595,7 +600,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     elseif name == "MLIR"
         script = if version < v"14"
             mlirscript_v13
-        elseif version < v"15"            
+        elseif version < v"15"
             mlirscript_v14
         else
             mlirscript_v15
@@ -612,7 +617,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("lld", :lld, "tools"),
             ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
-        
+
     elseif name == "LLVM"
         script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
