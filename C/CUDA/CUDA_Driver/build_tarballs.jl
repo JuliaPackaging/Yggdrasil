@@ -9,7 +9,7 @@ using BinaryBuilder, Pkg
 include("../../../fancy_toys.jl")
 
 name = "CUDA_Driver"
-version = v"0.4"
+version = v"0.5"
 
 cuda_version = v"12.1"
 cuda_version_str = "$(cuda_version.major)-$(cuda_version.minor)"
