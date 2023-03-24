@@ -31,7 +31,6 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
              -DENABLE_CUDA=0 \
              -DNFORTRAN=1 \
              -DNOPENMP=1 \
-             -DNPARTITION=0 \
              -DNSTATIC=1 \
              -DBLAS_FOUND=1 \
              -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
