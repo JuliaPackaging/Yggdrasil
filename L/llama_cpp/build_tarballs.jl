@@ -16,12 +16,12 @@ version = v"0.0.4"  # fake version number
 # 0.0.1           20.03.2023       master-074bea2    https://github.com/ggerganov/llama.cpp/releases/tag/master-074bea2
 # 0.0.2           21.03.2023       master-8cf9f34    https://github.com/ggerganov/llama.cpp/releases/tag/master-8cf9f34
 # 0.0.3           22.03.2023       master-d5850c5    https://github.com/ggerganov/llama.cpp/releases/tag/master-d5850c5
-# 0.0.4           25.03.2023       master-03f7e33    https://github.com/ggerganov/llama.cpp/releases/tag/master-03f7e33
+# 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
 
 sources = [
     # fake version = 0.0.4
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "03f7e335604b3d68f74995aa2ccb4955833ee423"),
+              "19726169b379bebc96189673a19b89ab1d307659"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,6 +29,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/llama.cpp*
 
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    atomic_patch -p1 ../patches/windows-examples-fix-missing-ggml-link.patch
+fi
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
