@@ -16,12 +16,12 @@ version = v"0.0.4"  # fake version number
 # 0.0.1           20.03.2023       master-074bea2    https://github.com/ggerganov/llama.cpp/releases/tag/master-074bea2
 # 0.0.2           21.03.2023       master-8cf9f34    https://github.com/ggerganov/llama.cpp/releases/tag/master-8cf9f34
 # 0.0.3           22.03.2023       master-d5850c5    https://github.com/ggerganov/llama.cpp/releases/tag/master-d5850c5
-# 0.0.4           24.03.2023       master-31572d9    https://github.com/ggerganov/llama.cpp/releases/tag/master-31572d9
+# 0.0.4           25.03.2023       master-03f7e33    https://github.com/ggerganov/llama.cpp/releases/tag/master-03f7e33
 
 sources = [
     # fake version = 0.0.4
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "31572d966531f7d768eb773322016ab78eb6e835"),
+              "03f7e335604b3d68f74995aa2ccb4955833ee423"),
     DirectorySource("./bundled"),
 ]
 
@@ -42,7 +42,7 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=RELEASE \
     -DBUILD_SHARED_LIBS=ON \
     -DLLAMA_BUILD_TESTS=OFF \
-    -DLLAMA_BUILD_EXAMPLES=OFF \
+    -DLLAMA_BUILD_EXAMPLES=ON \
     -DLLAMA_OPENBLAS=OFF \
     -DLLAMA_NATIVE=OFF \
     $EXTRA_CMAKE_ARGS
@@ -52,16 +52,16 @@ make -j${nproc}
 # make install
 
 # executables
-for prg in main quantize; do
+for prg in embedding main perplexity quantize; do
     install -Dvm 755 "./bin/${prg}${exeext}" "${bindir}/${prg}${exeext}"
 done
 
 # libs
 for lib in libllama; do
     if [[ "${target}" == *-w64-mingw32* ]]; then
-        install -Dvm 644 "./bin/${lib}.${dlext}" "${libdir}/${lib}.${dlext}"
+        install -Dvm 755 "./bin/${lib}.${dlext}" "${libdir}/${lib}.${dlext}"
     else
-        install -Dvm 644 "./${lib}.${dlext}" "${libdir}/${lib}.${dlext}"
+        install -Dvm 755 "./${lib}.${dlext}" "${libdir}/${lib}.${dlext}"
     fi
 done
 
@@ -78,7 +78,9 @@ platforms = supported_platforms(; exclude = p -> arch(p) ∉ ["i686", "x86_64", 
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
+    ExecutableProduct("embedding", :embedding),
     ExecutableProduct("main", :main),
+    ExecutableProduct("perplexity", :perplexity),
     ExecutableProduct("quantize", :quantize),
     LibraryProduct("libllama", :libllama),
 ]
