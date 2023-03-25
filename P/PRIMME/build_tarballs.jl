@@ -28,8 +28,18 @@ else
 fi
 
 cd primme
-make -j${nproc} CFLAGS=\"${CFLAGS}\" LDFLAGS=\"${LDFLAGS}\" solib
-make PREFIX=${prefix} install
+if [[ "${target}" == *musl* ]]; then
+  sed -i 's/undef I/define I_is_a_stupid_sytem_macro 1/' ./src/include/common.h
+fi
+if [[ "${target}" == *mingw* ]]; then
+  sed -i -e 's/defined (__unix__)/1/' -e '/resource.h/d' ./src/linalg/wtime.c
+  MDEFS="SLIB=dll"
+else
+  MDEFS=""
+fi
+
+make -j${nproc} CFLAGS=\"${CFLAGS}\" LDFLAGS=\"${LDFLAGS}\" ${MDEFS} solib
+make PREFIX=${prefix} ${MDEFS} install
 
 install_license ${WORKSPACE}/srcdir/primme/COPYING.txt
 """
