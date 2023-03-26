@@ -28,13 +28,12 @@ fi
 
 if [[ ${nbits} == 64 ]]; then
     CMAKE_OPTIONS=(
-        -DBLAS64_SUFFIX="_64" \
-        -DALLOW_64BIT_BLAS=YES \
+        -DBLAS64_SUFFIX="_64"
+        -DALLOW_64BIT_BLAS=YES
     )
 else
     CMAKE_OPTIONS=(
-        -DBLAS64_SUFFIX="" \
-        -DALLOW_64BIT_BLAS=NO \
+        -DALLOW_64BIT_BLAS=NO
     )
 fi
 
