@@ -1,0 +1,40 @@
+diff --git a/examples/embedding/CMakeLists.txt b/examples/embedding/CMakeLists.txt
+index 88c425d..def5b83 100644
+--- a/examples/embedding/CMakeLists.txt
++++ b/examples/embedding/CMakeLists.txt
+@@ -1,4 +1,4 @@
+ set(TARGET embedding)
+ add_executable(${TARGET} embedding.cpp)
+-target_link_libraries(${TARGET} PRIVATE common llama ${CMAKE_THREAD_LIBS_INIT})
++target_link_libraries(${TARGET} PRIVATE common llama ggml ${CMAKE_THREAD_LIBS_INIT})
+ target_compile_features(${TARGET} PRIVATE cxx_std_11)
+diff --git a/examples/main/CMakeLists.txt b/examples/main/CMakeLists.txt
+index b2dcc29..aa1f794 100644
+--- a/examples/main/CMakeLists.txt
++++ b/examples/main/CMakeLists.txt
+@@ -1,4 +1,4 @@
+ set(TARGET main)
+ add_executable(${TARGET} main.cpp)
+-target_link_libraries(${TARGET} PRIVATE common llama ${CMAKE_THREAD_LIBS_INIT})
++target_link_libraries(${TARGET} PRIVATE common llama ggml ${CMAKE_THREAD_LIBS_INIT})
+ target_compile_features(${TARGET} PRIVATE cxx_std_11)
+diff --git a/examples/perplexity/CMakeLists.txt b/examples/perplexity/CMakeLists.txt
+index 5836df8..9bd8e37 100644
+--- a/examples/perplexity/CMakeLists.txt
++++ b/examples/perplexity/CMakeLists.txt
+@@ -1,4 +1,4 @@
+ set(TARGET perplexity)
+ add_executable(${TARGET} perplexity.cpp)
+-target_link_libraries(${TARGET} PRIVATE common llama ${CMAKE_THREAD_LIBS_INIT})
++target_link_libraries(${TARGET} PRIVATE common llama ggml ${CMAKE_THREAD_LIBS_INIT})
+ target_compile_features(${TARGET} PRIVATE cxx_std_11)
+diff --git a/examples/quantize/CMakeLists.txt b/examples/quantize/CMakeLists.txt
+index fb27d45..17a995b 100644
+--- a/examples/quantize/CMakeLists.txt
++++ b/examples/quantize/CMakeLists.txt
+@@ -1,4 +1,4 @@
+ set(TARGET quantize)
+ add_executable(${TARGET} quantize.cpp)
+-target_link_libraries(${TARGET} PRIVATE llama ${CMAKE_THREAD_LIBS_INIT})
++target_link_libraries(${TARGET} PRIVATE llama ggml ${CMAKE_THREAD_LIBS_INIT})
+ target_compile_features(${TARGET} PRIVATE cxx_std_11)
