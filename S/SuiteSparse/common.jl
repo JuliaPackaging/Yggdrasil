@@ -13,7 +13,7 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
                       "03350b0faef6b77d965ddb7c3cd3614a45376bfd"),
         ],
     )
-    return [
+    return Any[
         suitesparse_version_sources[version]...,
     ]
 end
