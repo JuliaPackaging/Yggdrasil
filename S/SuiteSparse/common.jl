@@ -15,7 +15,6 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
     )
     return [
         suitesparse_version_sources[version]...,
-        DirectorySource("./bundled"),
     ]
 end
 

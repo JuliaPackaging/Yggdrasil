@@ -10,6 +10,7 @@ name = "SuiteSparse_GPU"
 version = v"5.10.1"
 
 sources = suitesparse_sources(version)
+push!(sources, DirectorySource("./bundled"))
 
 # Bash recipe for building across all platforms
 script = raw"""
