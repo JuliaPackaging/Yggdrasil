@@ -1,6 +1,9 @@
 include("../common.jl")
 
 name = "SuiteSparse"
+version = v"7.0.1"
+
+sources = suitesparse_sources(version)
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -23,6 +26,17 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
+if [[ ${nbits} == 64 ]]; then
+    CMAKE_OPTIONS=(
+        -DBLAS64_SUFFIX="_64"
+        -DALLOW_64BIT_BLAS=YES
+    )
+else
+    CMAKE_OPTIONS=(
+        -DALLOW_64BIT_BLAS=NO
+    )
+fi
+
 for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
     cd ${proj}/build
     cmake .. -DCMAKE_BUILD_TYPE=Release \
@@ -37,11 +51,10 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
              -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
              -DBLAS_UNDERSCORE=ON \
              -DBLA_VENDOR="${BLAS_NAME}" \
-             -DBLAS64_SUFFIX="_64" \
-             -DALLOW_64BIT_BLAS=YES \
              -DLAPACK_FOUND=1 \
              -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-             -DLAPACK_LINKER_FLAGS="${BLAS_NAME}"
+             -DLAPACK_LINKER_FLAGS="${BLAS_NAME}" \
+             "${CMAKE_OPTIONS[@]}"
     make -j${nproc}
     make install
     cd ../..

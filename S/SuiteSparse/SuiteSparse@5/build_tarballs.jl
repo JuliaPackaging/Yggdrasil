@@ -1,11 +1,10 @@
 include("../common.jl")
 
 name = "SuiteSparse"
+version = v"5.10.1"
 
-sources = [
-    sources;
-    DirectorySource("./bundled")
-]
+sources = suitesparse_sources(version)
+push!(sources, DirectorySource("./bundled"))
 
 # Bash recipe for building across all platforms
 script = raw"""
