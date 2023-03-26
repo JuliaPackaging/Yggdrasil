@@ -1,6 +1,9 @@
 include("../common.jl")
 
 name = "SuiteSparse32"
+version = v"5.10.1"
+
+sources = suitesparse_sources(version)
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -53,4 +56,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
