@@ -7,11 +7,9 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "SuiteSparse_GPU"
+version = v"5.10.1"
 
-sources = [
-    sources;
-    DirectorySource("./bundled")
-]
+sources = suitesparse_sources(version)
 
 # Bash recipe for building across all platforms
 script = raw"""

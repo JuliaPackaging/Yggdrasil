@@ -1,6 +1,9 @@
 include("../common.jl")
 
 name = "SuiteSparse32"
+version = v"5.10.1"
+
+sources = suitesparse_sources(version)
 
 # Bash recipe for building across all platforms
 script = raw"""

@@ -1,50 +1,53 @@
 include("../common.jl")
 
 name = "SuiteSparse"
+version = v"5.10.1"
+
+sources = suitesparse_sources(version)
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
-# Needs cmake >= 3.22
-apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+# Apply Jameson's shlib patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/SuiteSparse-shlib.patch
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
-
-if [[ "${target}" == *-mingw* ]]; then
-    BLAS_NAME=blastrampoline-5
-else
-    BLAS_NAME=blastrampoline
-fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
+if [[ ${target} == *mingw32* ]]; then
+    FLAGS+=(UNAME=Windows)
+    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir} -shared")
+else
+    FLAGS+=(UNAME="$(uname)")
+    FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_NAME=blastrampoline-5
+else
+    BLAS_NAME=blastrampoline
+fi
+if [[ ${nbits} == 64 ]]; then
+    SUN="-DSUN64 -DLONGBLAS='long long'"
+fi
+
+FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
+
+# Disable METIS in CHOLMOD by passing -DNPARTITION and avoiding linking metis
+#FLAGS+=(MY_METIS_LIB="-lmetis" MY_METIS_INC="${prefix}/include")
+FLAGS+=(UMFPACK_CONFIG="$SUN" CHOLMOD_CONFIG+="$SUN -DNPARTITION" SPQR_CONFIG="$SUN")
+
+make -j${nproc} -C SuiteSparse_config "${FLAGS[@]}" library config
+
 for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
-    cd ${proj}/build
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_INSTALL_PREFIX=${prefix} \
-             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-             -DENABLE_CUDA=0 \
-             -DNFORTRAN=1 \
-             -DNOPENMP=1 \
-             -DNSTATIC=1 \
-             -DBLAS_FOUND=1 \
-             -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-             -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
-             -DBLAS_UNDERSCORE=ON \
-             -DBLA_VENDOR="${BLAS_NAME}" \
-             -DBLAS64_SUFFIX="_64" \
-             -DALLOW_64BIT_BLAS=YES \
-             -DLAPACK_FOUND=1 \
-             -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-             -DLAPACK_LINKER_FLAGS="${BLAS_NAME}"
-    make -j${nproc}
-    make install
-    cd ../..
+    make -j${nproc} -C $proj "${FLAGS[@]}" library CFOPENMP="$CFOPENMP"
+    make -j${nproc} -C $proj "${FLAGS[@]}" install CFOPENMP="$CFOPENMP"
 done
 
 # For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
@@ -73,4 +76,6 @@ fi
 install_license LICENSE.txt
 """
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
+
+# Build trigger: 2
