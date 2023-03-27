@@ -11,7 +11,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/wolfram-app-discovery-rs/
 cargo build --release --bin wolfram-app-discovery --features=cli
-install -D -m 755 "target/${rust_target}/release/wolfram-app-discovery${exeext}" "${bindir}/wolfram-app-discovery${exeext}"
+install -Dvm 755 "target/${rust_target}/release/wolfram-app-discovery${exeext}" "${bindir}/wolfram-app-discovery${exeext}"
 install_license LICENSE-MIT LICENSE-APACHE
 """
 
