@@ -8,7 +8,7 @@ version = v"5.5.0"
 # Collection of sources required to build libblastrampoline
 sources = [
     GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
-              "c67f50df46725c3cb6239340f8c88daee350f62c"),
+              "9a8742ef266969177e656a5670c163bdb358b174"),
 ]
 
 # Bash recipe for building across all platforms
