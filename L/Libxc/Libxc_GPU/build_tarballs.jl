@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder, Pkg, BinaryBuilderBase
 
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -28,8 +28,7 @@ mkdir libxc_build
 cd libxc_build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
-    -DENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
-    -DCMAKE_CUDA_ARCHITECTURES="60;70;80" -DBUILD_TESTING=OFF \
+    -DENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc -DBUILD_TESTING=OFF \
     -DENABLE_FORTRAN=OFF -DDISABLE_KXC=ON ..
 
 make -j${nproc}
@@ -85,10 +84,10 @@ for cuda_version in [v"10.2", v"11.0", v"12.0", ], platform in platforms
         # CUDA 12 requires glibc 2.17
         # which isn't compatible with current Linux kernel headers,
         # so use the next packaged version
-        push!(cuda_deps, BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.19");
+        push!(dependencies, BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.19");
                                          platforms=glibc_platforms),)
     end
-    
+
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
                    julia_compat="1.7", augment_platform_block,
