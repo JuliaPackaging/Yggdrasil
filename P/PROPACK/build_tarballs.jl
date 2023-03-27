@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "PROPACK"
-version = v"0.2.1"
+version = v"0.2.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,10 +13,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/PROPACK-*/
 
-if [[ "${target}" == *mingw* && ${nbits} == 32 ]]; then
-  BLAS="-L${libdir} -lopenblas"
-elif [[ "${target}" == *mingw* && ${nbits} == 64 ]]; then
-  BLAS="-L${libdir} -lopenblas64_"
+if [[ "${target}" == *mingw* ]]; then
+  BLAS="-L${libdir} -lblastrampoline-5"
 else
   BLAS="-L${libdir} -lblastrampoline"
 fi
@@ -50,9 +48,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"), platforms=filter(Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), platforms=filter(!Sys.iswindows, platforms))
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
