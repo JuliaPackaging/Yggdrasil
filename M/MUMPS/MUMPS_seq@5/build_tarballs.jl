@@ -21,7 +21,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.patch * 100 + version_offset.patch)
 upstream_version
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$(upstream_version).tar.gz","1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
+  ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz","1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
   DirectorySource("./bundled")
 ]
 
