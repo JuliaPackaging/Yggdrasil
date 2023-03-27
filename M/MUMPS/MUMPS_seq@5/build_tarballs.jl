@@ -15,13 +15,13 @@ using BinaryBuilder, Pkg
 
 name = "MUMPS_seq"
 upstream_version = v"5.5.1"
-version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.2" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 upstream_version
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$(upstream_version).tar.gz","1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
+  ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz","1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
   DirectorySource("./bundled")
 ]
 
@@ -49,7 +49,7 @@ else
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-  BLAS_LAPACK="-L${libdir} -lopenblas"
+  BLAS_LAPACK="-L${libdir} -lblastrampoline-5"
 else
   BLAS_LAPACK="-L${libdir} -lblastrampoline"
 fi
@@ -95,9 +95,8 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"), platforms=filter(Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), platforms=filter(!Sys.iswindows, platforms))
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.8", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.9", preferred_gcc_version=v"6")
