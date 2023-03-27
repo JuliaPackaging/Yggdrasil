@@ -3,6 +3,7 @@ const NAME = "rocSOLVER"
 
 const GIT_TAGS = Dict(
     v"4.2.0" => "e9ef72d7c29e7c36bf02be63a64ca23b444e1ca71751749f7d66647873d9fdea",
+    v"4.5.2" => "4639322bd1e77fedfdeb9032633bde6211a0b1cc16a612db7754f873f18a492f",
 )
 
 const ROCM_PLATFORMS = [
@@ -12,6 +13,9 @@ const ROCM_PLATFORMS = [
 const PATCHES = Dict(
     v"4.2.0" => raw"""
     atomic_patch -p1 ../patches/include-stdint.patch
+    """,
+    v"4.5.2" => raw"""
+    apk add fmt fmt-dev
     """,
 )
 const PRODUCTS = [LibraryProduct("librocsolver", :librocsolver, ["rocsolver/lib"])]
