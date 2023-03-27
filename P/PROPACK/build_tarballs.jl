@@ -10,7 +10,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/PROPACK-*/
+cd $WORKSPACE/srcdir/PROPACK/
 
 if [[ "${target}" == *mingw* ]]; then
   BLAS="-L${libdir} -lblastrampoline-5"
