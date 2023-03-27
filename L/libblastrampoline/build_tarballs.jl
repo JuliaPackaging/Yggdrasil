@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libblastrampoline"
-version = v"5.4.0"
+version = v"5.5.0"
 
 # Collection of sources required to build libblastrampoline
 sources = [
     GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
-              "d00e6ca235bb747faae4c9f3a297016cae6959ed"),
+              "4e78372de1cda6f5dfaaa25b6cea0abf73b57eb1"),
 ]
 
 # Bash recipe for building across all platforms
