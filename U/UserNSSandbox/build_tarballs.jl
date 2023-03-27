@@ -14,8 +14,8 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/Sandbox.jl/deps
 mkdir -p ${bindir}
 make -j$(nproc)
-install -m 755 userns_sandbox ${bindir}
-install -m 755 userns_overlay_probe ${bindir}
+install -Dvm 755 userns_sandbox ${bindir}/userns_sandbox
+install -Dvm 755 userns_overlay_probe ${bindir}/userns_overlay_probe
 install_license /usr/share/licenses/MIT
 """
 
