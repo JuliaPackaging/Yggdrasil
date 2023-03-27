@@ -5,7 +5,7 @@ version = v"0.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/optimizers/PROPACK/archive/v1.0.tar.gz", "08ac329ff8dafc7335d83c209fbd607bc3fe9a5a")
+    GitSource("https://github.com/optimizers/PROPACK", "08ac329ff8dafc7335d83c209fbd607bc3fe9a5a")
 ]
 
 # Bash recipe for building across all platforms
