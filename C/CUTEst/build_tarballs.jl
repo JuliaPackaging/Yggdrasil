@@ -96,6 +96,7 @@ install_license $CUTEST/lgpl-3.0.txt
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
 platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = filter!(p -> !(os(p) == "freebsd" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -111,4 +112,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
