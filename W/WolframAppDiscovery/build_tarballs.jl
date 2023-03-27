@@ -10,7 +10,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/wolfram-app-discovery-rs/
-cargo build --release
+cargo build --release --bin wolfram-app-discovery --features=cli
 install -D -m 755 "target/${rust_target}/release/wolfram-app-discovery${exeext}" "${bindir}/wolfram-app-discovery${exeext}"
 install_license LICENCE-MIT LICENCE-APACHE
 """
