@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "UserNSSandbox"
-version = v"2023.03.27"
+version = v"2023.03.28"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/staticfloat/Sandbox.jl.git",
-              "2893e0d917da00546a1b8e08e4929d775f746488"),
+              "7da46332746d0e0afaa12aa4a32e5b66d555fa1f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -14,8 +14,8 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/Sandbox.jl/deps
 mkdir -p ${bindir}
 make -j$(nproc)
-install -Dvm 755 userns_sandbox ${bindir}/userns_sandbox
-install -Dvm 755 userns_overlay_probe ${bindir}/userns_overlay_probe
+install -Dvm 755 userns_sandbox ${bindir}/sandbox
+install -Dvm 755 userns_overlay_probe ${bindir}/overlay_probe
 install_license /usr/share/licenses/MIT
 """
 
@@ -24,8 +24,8 @@ platforms = filter(p -> Sys.islinux(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("userns_sandbox", :sandbox),
-    ExecutableProduct("userns_overlay_probe", :overlay_probe),
+    ExecutableProduct("sandbox", :sandbox),
+    ExecutableProduct("overlay_probe", :overlay_probe),
 ]
 
 # Dependencies that must be installed before this package can be built
