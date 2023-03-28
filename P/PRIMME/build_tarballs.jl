@@ -28,11 +28,8 @@ else
 fi
 
 cd primme
-if [[ "${target}" == *musl* ]]; then
-  sed -i 's/undef I/define I_is_a_stupid_sytem_macro 1/' ./src/include/common.h
-fi
 if [[ "${target}" == *mingw* ]]; then
-  sed -i -e 's/defined (__unix__)/1/' -e '/resource.h/d' ./src/linalg/wtime.c
+  sed -i 's/Windows\.h/windows.h/' ./src/linalg/wtime.c
   MDEFS="SLIB=dll"
 else
   MDEFS=""
@@ -46,7 +43,9 @@ install_license ${WORKSPACE}/srcdir/primme/COPYING.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+# Compilation on musl fails, apparently because of conflicting use of
+# the token I which is a boneheaded macro in complex.h.
+platforms = [p for p in supported_platforms() if (get(p.tags, "libc", nothing) != "musl")]
 
 # The products that we will ensure are always built
 products = [
