@@ -24,8 +24,8 @@ platforms = filter(p -> Sys.islinux(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("userns_sandbox", :sandbox),
-    ExecutableProduct("userns_overlay_probe", :overlay_probe),
+    ExecutableProduct("sandbox", :sandbox),
+    ExecutableProduct("overlay_probe", :overlay_probe),
 ]
 
 # Dependencies that must be installed before this package can be built
