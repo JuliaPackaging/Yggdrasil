@@ -47,7 +47,7 @@ function cuda_toolkit_tag()
         cuda_driver = if CUDA_Driver_jll.is_available()
             @debug "Using CUDA_Driver_jll for driver discovery"
 
-            if !isdefined(CUDA_Driver_jll, :libcuda)
+            if isnothing(CUDA_Driver_jll.libcuda)
                 # no driver found
                 @debug "CUDA_Driver_jll reports no driver found"
                 return "none"
