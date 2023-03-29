@@ -25,6 +25,8 @@ cmake -GNinja \
     $WORKSPACE/srcdir/cln
 cmake --build .
 cmake --build . -t install
+
+install_license $WORKSPACE/srcdir/cln/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
