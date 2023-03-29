@@ -8,7 +8,7 @@ version = v"2.1.28"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-$(version)/cyrus-sasl-$(version).tar.gz",
-                  "3e38933a30b9ce183a5488b4f6a5937a702549cde0d3287903d80968ad4ec341")
+                  "7ccfc6abd01ed67c1a0924b353e526f1b766b21f42d4562ee635a8ebfc5bb38c")
 ]
 
 # Bash recipe for building across all platforms
