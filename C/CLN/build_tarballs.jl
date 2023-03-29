@@ -12,13 +12,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cln/
+mkdir $WORKSPACE/srcdir/cln-build/
+cd $WORKSPACE/srcdir/cln-build/
 
 apk add texinfo
 
-sed -i "s/timeout=5/timeout=30/g" autogen.sh
-./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gmp
+cmake -GNinja -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release $WORKSPACE/srcdir/cln
+cmake --build .
+cmake --build . -t install
 
 make -j${nproc}
 make install
@@ -38,7 +41,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.1.2")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
