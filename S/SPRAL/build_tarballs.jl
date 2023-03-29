@@ -15,9 +15,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/spral
 
 if [[ "${target}" == *mingw* ]]; then
-  BLAS_LAPACK="-L${libdir} -lblastrampoline-5"
+  LBT="-lblastrampoline-5"
 else
-  BLAS_LAPACK="-L${libdir} -lblastrampoline"
+  LBT="-lblastrampoline"
 fi
 
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
@@ -33,10 +33,10 @@ export CXXFLAGS="-O3 -fPIC"
 export FFLAGS="-O3 -fPIC"
 export FCLAGS="-O3 -fPIC"
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-blas="-L${libdir} ${BLAS_LAPACK}" --with-lapack="-L${libdir} ${BLAS_LAPACK}" \
+    --with-blas="-L${libdir} ${LBT}" --with-lapack="-L${libdir} ${LBT}" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${includedir}"
 make
-gfortran -fPIC -shared $(flagon -Wl,--whole-archive) libspral.a $(flagon -Wl,--no-whole-archive) -lgomp ${BLAS_LAPACK} -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
+gfortran -fPIC -shared $(flagon -Wl,--whole-archive) libspral.a $(flagon -Wl,--no-whole-archive) -lgomp ${LBT} -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
 make install
 """
 
