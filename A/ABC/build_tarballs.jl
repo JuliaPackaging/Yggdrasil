@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 # abc
 name = "ABC"
-version = v"1.01.0"
+version = v"1.01.1"
 ABC_ver = "1.01.0"
 
 # Collection of sources required to complete build
