@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "WolframAppDiscovery"
-version = v"0.4.3"
+version = v"0.4.4"
 
 sources = [
-    GitSource("https://github.com/WolframResearch/wolfram-app-discovery-rs.git", "aa6feb10261593d7c6f13062f7f68b47a8b130b8")
+    GitSource("https://github.com/WolframResearch/wolfram-app-discovery-rs.git", "55969f54191335206267cb11c99176515b6de540")
 ]
 
 # Bash recipe for building across all platforms
