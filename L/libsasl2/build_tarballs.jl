@@ -7,15 +7,15 @@ version = v"2.1.28"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/cyrusimap/cyrus-sasl/archive/refs/tags/cyrus-sasl-$(version).tar.gz", "3e38933a30b9ce183a5488b4f6a5937a702549cde0d3287903d80968ad4ec341")
+    ArchiveSource("https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-$(version)/cyrus-sasl-$(version).tar.gz",
+                  "3e38933a30b9ce183a5488b4f6a5937a702549cde0d3287903d80968ad4ec341")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd cyrus-sasl-cyrus-sasl-2.1.28/
-./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_gssapi_supports_spnego=yes
-make
+cd $WORKSPACE/srcdir/cyrus-sasl-cyrus-sasl*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_gssapi_supports_spnego=yes
+make -j{nproc}
 make install
 """
 
@@ -47,7 +47,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
