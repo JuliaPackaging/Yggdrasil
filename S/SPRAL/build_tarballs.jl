@@ -28,19 +28,18 @@ fi
 ./autogen.sh
 mkdir build
 cd build
-CFLAGS=-fPIC CPPFLAGS=-fPIC CXXFLAGS=-fPIC FFLAGS=-fPIC FCFLAGS=-fPIC \
+CFLAGS="-O3 -fPIC" CPPFLAGS="-O3 -fPIC" CXXFLAGS="-O3 -fPIC" FFLAGS="-O3 -fPIC" FCFLAGS="-O3 -fPIC" \
     ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-blas="-L${libdir} ${BLAS_LAPACK}" --with-lapack="-L${libdir} ${BLAS_LAPACK}" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${includedir}"
 make
-gfortran -fPIC -shared -Wl,$(flagon --whole-archive) libspral.a -Wl,$(flagon --no-whole-archive | cut -d' ' -f1) -lgomp ${BLAS_LAPACK} -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
+gfortran -fPIC -shared $(flagon -Wl,--whole-archive) libspral.a $(flagon -Wl,--no-whole-archive) -lgomp ${BLAS_LAPACK} -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-
 
 # The products that we will ensure are always built
 products = [
