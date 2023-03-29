@@ -26,7 +26,7 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"2.9.0"
-version_offset = v"0.0.4"
+version_offset = v"0.0.5"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -34,6 +34,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build FLINT
 sources = [
     GitSource("https://github.com/flintlib/flint2.git", "fe4ecf8a99b9b7c52ad2b861e79c9c9aac5c1a0a"), # v2.9.0 + bugfixes
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -45,6 +46,15 @@ if [[ ${target} == *musl* ]]; then
 elif [[ ${target} == *mingw* ]]; then
    extraflags=--reentrant
 fi
+
+# Currently we backport 0292521af462dcd3ba747255a4c5ed9317d911dd,
+#                       bfbc1eb206288abe7b9ccd04d3cb104b4a2b3898,
+#                       a7a234463c0d4b5730d05ad57ab2798b2df26127
+# in make_flint_great_again.patch
+# Drop once we bump the version to 3.0
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+  atomic_patch -p1 ${f}
+done
 
 ./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
 make -j${nproc}
