@@ -16,6 +16,7 @@ cd $WORKSPACE/srcdir/cln/
 
 apk add texinfo
 
+sed -i "s/timeout=5/timeout=30/g" autogen.sh
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gmp
 
