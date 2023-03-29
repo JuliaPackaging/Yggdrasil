@@ -13,25 +13,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
 mkdir $WORKSPACE/srcdir/cln-build/
 cd $WORKSPACE/srcdir/cln-build/
-cmake -GNinja     -DCMAKE_CXX_STANDARD=11     -DCMAKE_INSTALL_PREFIX=${prefix}     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}     -DCMAKE_BUILD_TYPE=Release     $WORKSPACE/srcdir/cln
+
+cmake -GNinja -DCMAKE_CXX_STANDARD=11 -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release $WORKSPACE/srcdir/cln
 cmake --build .
 cmake --build . -t install
-mkdir $WORKSPACE/srcdir/ginac-build
-cd $WORKSPACE/srcdir/ginac-build
-cmake -DCMAKE_CXX_STANDARD=11     -DCMAKE_INSTALL_PREFIX=${prefix}     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}     -DCMAKE_BUILD_TYPE=Release \$WORKSPACE/srcdir/ginac-*.*.*
-cmake -DCMAKE_CXX_STANDARD=11     -DCMAKE_INSTALL_PREFIX=${prefix}     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}     -DCMAKE_BUILD_TYPE=Release $WORKSPACE/srcdir/ginac-*.*.*
-cat CMakeFiles/CMakeOutput.log 
-cmake -DCMAKE_CXX_STANDARD=11     -DCMAKE_INSTALL_PREFIX=${prefix}     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}     -DCMAKE_BUILD_TYPE=Release $WORKSPACE/srcdir/ginac-*.*.*
-which bison
-/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/bin/bison
 
-/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/bin/bison --version
-cd ..
-ls
-cd ginac-1.8.6/
+cd $WORKSPACE/srcdir/ginac-*.*.*/
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
@@ -39,22 +28,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-]
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 
 # The products that we will ensure are always built
