@@ -21,33 +21,18 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-]
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libsasl2", :libsasl2),
-    LibraryProduct("libcrammd5", :libcrammd5, "lib/sasl2"),
-    LibraryProduct("libanonymous", :libanonymous, "lib/sasl2"),
-    LibraryProduct("libscram", :libscram, "lib/sasl2"),
-    LibraryProduct("libplain", :libplain, "lib/sasl2"),
-    LibraryProduct("libdigestmd5", :libdigestmd5, "lib/sasl2"),
-    LibraryProduct("libotp", :libopt, "lib/sasl2")
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10"),
+    Dependency(PackageSpec(name="libxcrypt_legacy_jll", uuid="5ef642bb-a58b-5208-ae37-583168b2c491"); platforms=filter(p -> libc(p) == "glibc", platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
