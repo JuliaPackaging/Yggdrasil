@@ -31,7 +31,7 @@ cd build
 export CFLAGS="-O3 -fPIC"
 export CXXFLAGS="-O3 -fPIC"
 export FFLAGS="-O3 -fPIC"
-export FCLAGS="-O3 -fPIC"
+export FCFLAGS="-O3 -fPIC"
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-blas="-L${libdir} ${LBT}" --with-lapack="-L${libdir} ${LBT}" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${includedir}"
