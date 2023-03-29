@@ -28,8 +28,11 @@ fi
 ./autogen.sh
 mkdir build
 cd build
-CFLAGS="-O3 -fPIC" CPPFLAGS="-O3 -fPIC" CXXFLAGS="-O3 -fPIC" FFLAGS="-O3 -fPIC" FCFLAGS="-O3 -fPIC" \
-    ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+export CFLAGS="-O3 -fPIC"
+export CXXFLAGS="-O3 -fPIC"
+export FFLAGS="-O3 -fPIC"
+export FCLAGS="-O3 -fPIC"
+../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-blas="-L${libdir} ${BLAS_LAPACK}" --with-lapack="-L${libdir} ${BLAS_LAPACK}" \
     --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${includedir}"
 make
