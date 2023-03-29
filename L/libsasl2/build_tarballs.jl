@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cyrus-sasl*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_gssapi_supports_spnego=yes
-make -j{nproc}
+make -j${nproc}
 make install
 """
 
