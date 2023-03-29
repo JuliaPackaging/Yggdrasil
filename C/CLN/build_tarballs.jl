@@ -17,14 +17,14 @@ cd $WORKSPACE/srcdir/cln-build/
 
 apk add texinfo
 
-cmake -GNinja -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -GNinja \
+    -DCMAKE_CXX_STANDARD=11 \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release $WORKSPACE/srcdir/cln
+    -DCMAKE_BUILD_TYPE=Release \
+    $WORKSPACE/srcdir/cln
 cmake --build .
 cmake --build . -t install
-
-make -j${nproc}
-make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -41,7 +41,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.1.2")
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
