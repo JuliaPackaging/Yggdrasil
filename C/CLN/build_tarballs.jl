@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/cln/
 
 apk add texinfo
 
-./autogen.sh 
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gmp
 
 make -j${nproc}
@@ -25,14 +25,14 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; )
-]
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 
 # The products that we will ensure are always built
 products = Product[
+    LibraryProduct("libcln", :libcln),
+    ExecutableProduct("pi", :cln_pi)
 ]
 
 # Dependencies that must be installed before this package can be built
