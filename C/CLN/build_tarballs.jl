@@ -15,8 +15,6 @@ script = raw"""
 mkdir $WORKSPACE/srcdir/cln-build/
 cd $WORKSPACE/srcdir/cln-build/
 
-apk add texinfo
-
 cmake -GNinja \
     -DCMAKE_CXX_STANDARD=11 \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
