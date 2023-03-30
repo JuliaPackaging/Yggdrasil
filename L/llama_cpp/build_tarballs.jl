@@ -17,11 +17,11 @@ version = v"0.0.5"  # fake version number
 # 0.0.2           21.03.2023       master-8cf9f34    https://github.com/ggerganov/llama.cpp/releases/tag/master-8cf9f34
 # 0.0.3           22.03.2023       master-d5850c5    https://github.com/ggerganov/llama.cpp/releases/tag/master-d5850c5
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
-# 0.0.5           29.03.2023       master-ed3c680    https://github.com/ggerganov/llama.cpp/releases/tag/master-ed3c680
+# 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "ed3c680bcd0e8ce6e574573ba95880b694449878"),
+              "3bcc129ba881c99795e850b0a23707a4dfdabe9d"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,9 +29,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/llama.cpp*
 
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
-
-# upstream github issue: https://github.com/ggerganov/llama.cpp/issues/622
-atomic_patch -p1 ../patches/fix-arm-neon-simd-sign-conversion.patch
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
