@@ -25,6 +25,8 @@ cmake -DWITH_FLINT=true \
 
 cmake --build . -j${nproc}
 cmake --build . -t install
+
+install_license ${WORKSPACE}/srcdir/firefly/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -50,5 +52,6 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6",
-    preferred_gcc_version = v"5.2.0" # for std=c++14
+    # preferred_gcc_version = v"5.2.0" # for std=c++14
+    preferred_gcc_version = v"6.1.0" # for making the target example
 )
