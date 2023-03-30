@@ -16,13 +16,12 @@ mkdir $WORKSPACE/srcdir/FireFly-build
 cd $WORKSPACE/srcdir/FireFly-build/
 
 cmake -DWITH_FLINT=true \
-    -DCUSTOM=true \
     -DWITH_JEMALLOC=true \
     -DWITH_MPI=true \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    ${WORKSPACE}/srcdir/firefly || (echo "Ignored known CMake errors.")
+    ${WORKSPACE}/srcdir/firefly
 
 cmake --build . -j${nproc}
 cmake --build . -t install
