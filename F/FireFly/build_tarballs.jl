@@ -15,7 +15,14 @@ script = raw"""
 mkdir $WORKSPACE/srcdir/FireFly-build
 cd $WORKSPACE/srcdir/FireFly-build/
 
-cmake -DWITH_FLINT=true -DCUSTOM=true -DWITH_JEMALLOC=true -DWITH_MPI=true -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${WORKSPACE}/srcdir/firefly || (echo "Ignored CMake errors")
+cmake -DWITH_FLINT=true \
+    -DCUSTOM=true \
+    -DWITH_JEMALLOC=true \
+    -DWITH_MPI=true \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ${WORKSPACE}/srcdir/firefly || (echo "Ignored known CMake errors.")
 
 cmake --build . -j${nproc}
 cmake --build . -t install
@@ -23,22 +30,8 @@ cmake --build . -t install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-]
+platforms = supported_platforms(; exclude=Sys.iswindows)
+platforms = expand_cxxstring_abis(platforms)
 
 
 # The products that we will ensure are always built
@@ -56,4 +49,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6",
+    preferred_gcc_version = v"5.2.0" # for std=c++14
+)
