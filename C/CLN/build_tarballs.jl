@@ -21,7 +21,7 @@ cmake -GNinja \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     $WORKSPACE/srcdir/cln
-cmake --build .
+cmake --build . -j${nproc}
 cmake --build . -t install
 
 install_license $WORKSPACE/srcdir/cln/COPYING
