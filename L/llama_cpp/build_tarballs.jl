@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.4"  # fake version number
+version = v"0.0.5"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -17,11 +17,11 @@ version = v"0.0.4"  # fake version number
 # 0.0.2           21.03.2023       master-8cf9f34    https://github.com/ggerganov/llama.cpp/releases/tag/master-8cf9f34
 # 0.0.3           22.03.2023       master-d5850c5    https://github.com/ggerganov/llama.cpp/releases/tag/master-d5850c5
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
+# 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
 
 sources = [
-    # fake version = 0.0.4
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "19726169b379bebc96189673a19b89ab1d307659"),
+              "3bcc129ba881c99795e850b0a23707a4dfdabe9d"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,12 +29,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/llama.cpp*
 
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
-if [[ "${target}" == *-w64-mingw32* ]]; then
-    atomic_patch -p1 ../patches/windows-examples-fix-missing-ggml-link.patch
-fi
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
+    # otherwise we have undefined reference to `clock_gettime' when
+    # linking the `main' example program
     EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
 fi
 
