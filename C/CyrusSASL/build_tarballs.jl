@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CyrusSASL"
-version = v"2.1.27"
+version = v"2.1.28"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-2.1.27/cyrus-sasl-2.1.27.tar.gz", "26866b1549b00ffd020f188a43c258017fa1c382b3ddadd8201536f72efb05d5"),
+    ArchiveSource("https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-$(version)/cyrus-sasl-$(version).tar.gz", "7ccfc6abd01ed67c1a0924b353e526f1b766b21f42d4562ee635a8ebfc5bb38c"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,22 +16,23 @@ script = raw"""
 cd $WORKSPACE/srcdir/cyrus-sasl-*/
 if [[ "${target}" == *-mingw* ]]; then
     # Patches from
-    # https://github.com/msys2/MINGW-packages/tree/72dac6ecd4dbbe2cbb29ebbb355b6742a9103150/mingw-w64-cyrus-sasl
-    atomic_patch -p1 ../patches/02-exeext.patch
-    atomic_patch -p1 ../patches/03-fix-plugins.patch
+    # https://github.com/msys2/MINGW-packages/tree/0e912fe13aa3583d9afd2ec100ca6c285f553e8f/mingw-w64-cyrus-sasl
+    cp ../patches/pathtools.* lib
     atomic_patch -p1 ../patches/04-manpage-paths.patch
-    atomic_patch -p1 ../patches/14-MinGW-w64-add-LIBSASL_API-to-function-definitions.patch
-    atomic_patch -p1 ../patches/15-MinGW-w64-define-LIBSASL_EXPORTS_eq_1-for-sasldb.patch
     atomic_patch -p1 ../patches/16-MinGW-w64-define-WIN32_LEAN_AND_MEAN-avoiding-handle_t-redef.patch
-    atomic_patch -p1 ../patches/17-MinGW-w64-define-S_IRUSR-and-S_IWUSR.patch
     atomic_patch -p1 ../patches/19-paths-relocation.patch
     atomic_patch -p1 ../patches/20-mingw-tchar.patch
     atomic_patch -p1 ../patches/21-fix-getopt-guard.patch
+    atomic_patch -p1 ../patches/22-autoconf-prevent-full-path-resolution.patch
+    atomic_patch -p1 ../patches/23-Fix-building-digest-plugin.patch
 
     # Remove incompatible typedef
     atomic_patch -p1 ../patches/30-remove-extra-incompatible-typedef.patch
 fi
-atomic_patch -p1 ../patches/macos-shared-lib-extension.patch
+if [[ "${target}" == *-apple-darwin* ]]; then
+    atomic_patch -p1 ../patches/macos-shared-lib-extension.patch
+    atomic_patch -p1 ../patches/macos-libdigestmd5-links-libcrypto.patch
+fi
 autoreconf -vi
 if [[ "${target}" == *-mingw* ]]; then
     # Copy the right header file for Windows into `include/`...
@@ -86,4 +87,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
