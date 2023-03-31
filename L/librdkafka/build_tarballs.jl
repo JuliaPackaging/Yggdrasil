@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "librdkafka"
-version = v"2.0.2"
+version = v"2.0.3" # note: bumped from 2.0.2 for SASL integration
 
 # Collection of sources required to complete build
 sources = [
