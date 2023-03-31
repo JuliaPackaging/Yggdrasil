@@ -32,8 +32,6 @@ cd $WORKSPACE/srcdir/llama.cpp*
 
 # remove -march=native from cmake files
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
-# fix compilation (includes) on w64-mingw32
-atomic_patch -p1 ../patches/fix-windows-mingw32-includes.patch
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
