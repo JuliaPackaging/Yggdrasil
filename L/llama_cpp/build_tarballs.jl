@@ -1,14 +1,15 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.5"  # fake version number
+version = v"0.0.6"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
 
 # TODO
-# - i686, x86_64, aarch64 build
-#   missing architectures: powerpc64le, armv6l, arm7vl
+# - w64-mingw32 fails since master-02c5b27 (fake v0.0.6) because of
+#   missing mmap support
+# - missing architectures: powerpc64le, armv6l, arm7vl
 
 # versions: fake_version to github_version mapping
 #
@@ -18,17 +19,21 @@ version = v"0.0.5"  # fake version number
 # 0.0.3           22.03.2023       master-d5850c5    https://github.com/ggerganov/llama.cpp/releases/tag/master-d5850c5
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
 # 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
+# 0.0.6           31.03.2023       master-02c5b27    https://github.com/ggerganov/llama.cpp/releases/tag/master-02c5b27
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "3bcc129ba881c99795e850b0a23707a4dfdabe9d"),
+              "02c5b27e91a6d18cf1043d3a2d8dbc59610ac257"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/llama.cpp*
 
+# remove -march=native from cmake files
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
+# fix compilation (includes) on w64-mingw32
+atomic_patch -p1 ../patches/fix-windows-mingw32-includes.patch
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
@@ -76,7 +81,7 @@ done
 install_license ../LICENSE
 """
 
-platforms = supported_platforms(; exclude = p -> arch(p) ∉ ["i686", "x86_64", "aarch64"])
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) ∉ ["i686", "x86_64", "aarch64"])
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
