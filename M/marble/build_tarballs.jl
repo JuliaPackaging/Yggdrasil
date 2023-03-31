@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "marble"
-version = v"20.12.0"
+version = v"23.03.90"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/KDE/marble/archive/v20.12.0.tar.gz", "20ea52f071bd255109d723565fc46eb46ee4415acb402f5d45f6c6dbd6b312b7"),
+    ArchiveSource("https://invent.kde.org/education/marble/-/archive/v23.03.90/marble-v23.03.90.tar.bz2", "20ea52f071bd255109d723565fc46eb46ee4415acb402f5d45f6c6dbd6b312b7"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd marble-20.12.0/
+cd marble-23.03.90/
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/win32.patch"
 mkdir build
 cd build/
@@ -43,7 +43,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Qt_jll", uuid="ede63266-ebff-546c-83e0-1c6fb6d0efc8"))
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
