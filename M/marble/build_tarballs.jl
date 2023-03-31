@@ -7,7 +7,7 @@ version = v"23.03.90"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://invent.kde.org/education/marble/-/archive/v23.03.90/marble-v23.03.90.tar.bz2", "20ea52f071bd255109d723565fc46eb46ee4415acb402f5d45f6c6dbd6b312b7"),
+    ArchiveSource("https://invent.kde.org/education/marble/-/archive/v23.03.90/marble-v23.03.90.tar.bz2", "df85ab37f920ec70eb9d0b557f65a0722db82b9ccbb689da5c0741b80191be3b"),
     DirectorySource("./bundled")
 ]
 
