@@ -1,6 +1,6 @@
 name = "LLD"
-llvm_full_version = v"15.0.7+0"
-libllvm_version = v"15.0.7+0"
+llvm_full_version = v"15.0.7+3"
+libllvm_version = v"15.0.7+3"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -38,4 +38,4 @@ for (i, build) in enumerate(builds)
                    augment_platform_block)
 end
 
-#let's build!
+#let's build!!

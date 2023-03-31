@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"8.6.0"
+version = v"8.8.1"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -39,12 +39,20 @@ fi
 augment_platform_block = CUDA.augment
 
 products = [
+    LibraryProduct(["libcudnn_ops_infer", "cudnn_ops_infer64_$(version.major)"], :libcudnn_ops_infer64),
+    LibraryProduct(["libcudnn_ops_train", "cudnn_ops_train64_$(version.major)"], :libcudnn_ops_train64),
+    LibraryProduct(["libcudnn_cnn_infer", "cudnn_cnn_infer64_$(version.major)"], :libcudnn_cnn_infer64),
+    LibraryProduct(["libcudnn_cnn_train", "cudnn_cnn_train64_$(version.major)"], :libcudnn_cnn_train64),
+    LibraryProduct(["libcudnn_adv_infer", "cudnn_adv_infer64_$(version.major)"], :libcudnn_adv_infer64),
+    LibraryProduct(["libcudnn_adv_train", "cudnn_adv_train64_$(version.major)"], :libcudnn_adv_train64),
+
+    # shim layer
     LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn),
 ]
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
-builds = ["10.2", "11"]
+builds = ["11", "12"]
 for build in builds
     include("build_$(build).jl")
     cuda_version = VersionNumber(build)
@@ -60,8 +68,7 @@ for build in builds
         end
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                        products, dependencies; lazy_artifacts=true,
-                       julia_compat="1.6", augment_platform_block)
+                       julia_compat="1.6", augment_platform_block,
+                       dont_dlopen=true)
     end
 end
-
-# bump

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "RadeonProRender"
-version = v"2.2.17"
+version = v"3.1.00"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "3135b69b525f026458c2dfd2874aacca217ef0c5")
+    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "f880013a9b263c7ec5143d3f9246fe8fb58959ba")
 ]
 
 # TODO, also ship headers for Clang.jl generation!?
@@ -21,6 +21,9 @@ elif [[ ${target} == *-apple-darwin* ]]; then
 elif [[ ${target} == *-mingw* ]]; then
     cp binWin64/* ${libdir}/
 fi
+
+mkdir -p "${includedir}"
+cp -Rv inc/* "${includedir}"
 """
 
 # TODO, can we add centos7?

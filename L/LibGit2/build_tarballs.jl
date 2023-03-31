@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.6.0"
+version = v"1.6.1"
 
 # Collection of sources required to build libgit2
 sources = [
     GitSource("https://github.com/libgit2/libgit2.git",
-              "f7325c448053bfcd1a32ec319ed392f525480634")
+              "8a871d13b7f4e186b8ad943ae5a7fcf30be52e67")
 ]
 
 # Bash recipe for building across all platforms
