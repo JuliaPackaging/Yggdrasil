@@ -14,155 +14,28 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
 cd ${WORKSPACE}/srcdir/ginac-*.*.*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-cd ${WORKSPACE}/srcdir/firefly/
+
 mkdir $WORKSPACE/srcdir/FireFly-build
 cd $WORKSPACE/srcdir/FireFly-build/
-cmake -DWITH_FLINT=true     -DWITH_JEMALLOC=true     -DWITH_MPI=true     -DCMAKE_INSTALL_PREFIX=$prefix     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}     -DCMAKE_BUILD_TYPE=Release     ${WORKSPACE}/srcdir/firefly
+cmake -DWITH_FLINT=true -DWITH_JEMALLOC=true -DWITH_MPI=true -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${WORKSPACE}/srcdir/firefly
 cmake --build . -j${nproc}
 cmake --build . -t install
+
 mkdir ${WORKSPACE}/srcdir/Kira-build
 cd ${WORKSPACE}/srcdir/Kira-build/
-cd ${WORKSPACE}/srcdir/kira/
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-cd ${WORKSPACE}/srcdir/Kira-build/
-ninja -j${nproc}
-ls
-cd src/
-ls
-cd kira/
-ls
-cd 
-cd ${WORKSPACE}/srcdir/Kira-build/src/kira/kira.p/
-ls
-cd ..
-ls
-cd ..
-ls
-cd /workspace/destdir/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/lib/
-cd /workspace/destdir/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/
-cd /opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/
-ls
-cd lib
-ls
-ls
-cd ..
-ls
-cd usr/local
-ls
-cd l
-cd lib
-ls
-ls
-cd ${WORKSPACE}/srcdir/
-ls
-cd Kira-build/
-ls
-cat build.ninja 
-ls
-cd ..
-ls
-cd kira/
-ls
-meson -Dfirefly=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-rm -rf ${WORKSPACE}/srcdir/Kira-build/*
-meson -Dfirefly=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-ninja -C ${WORKSPACE}/srcdir/Kira-build/ -j${nproc}
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-ls
-echo ${MESON_TARGET_TOOLCHAIN} 
-cat ${MESON_TARGET_TOOLCHAIN} 
-echo $LD_LIBRARY_PATH 
-echo $LD_FOR_BUILD 
-echo $LD_BUILD 
-ls
-cd ${WORKSPACE}/destdir
-ls
-cd lib
-ls
-ls
-cd ..
-ls
-cd ..
-ls
-cd srcdir/
-ls
-cd Kira-build/
-ls
-less compile_commands.json 
-ls
-cd meson-info/
-ls
-cd ..
-ls
-cd meson-logs/
-ls
-cd ..
-ls
-cd meson-private/
-ls
-cd ..
-ls
-rm -rf ./*
-ls
-cd ..
-ls
-cd kira/
-ls
-meson --version
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-meson install
-cd ${WORKSPACE}/srcdir/Kira-build/
-meson install
-cd /workspace/destdir/opt/
-cd ${WORKSPACE}/srcdir/kira/
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --lib=${libdir} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --libdir=${libdir} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-rm -rf ${WORKSPACE}/srcdir/Kira-build/*
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --libdir=${libdir} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-cd ${WORKSPACE}/srcdir/Kira-build/
-meson install
-cat ${MESON_TARGET_TOOLCHAIN} 
-echo ${WORKSPACE}/
-echo ${WORKSPACE}
-pkg-config libz
-pkg-config zlib
-pkg-config gmp
-pkg-config --help
-pkg-config --libs
-pkg-config --exists
-pkg-config --libs gmp
-ls
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/Kira-build/
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/kira/ ${WORKSPACE}/srcdir/Kira-build/
-meson setup --wipe
-meson setup --wipe ./
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/kira/ ${WORKSPACE}/srcdir/Kira-build/
-rm -rf ./*
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/kira/ ${WORKSPACE}/srcdir/Kira-build/
-pkg-config --libs zlib
-pkg-config --libs yaml-cpp
-pkg-config --libs mpi
-pkg-config --libs mpicxx
-pkg-config --libs ginac
-pkg-config --libs gmp
-pkg-config --libs pthread
-pkg-config --libs libmpi
-pkg-config --libs mpicxx
-pkg-config --libs mpich
-echo $LD_LIBRARY_PATH 
-ls
-cat build.ninja 
-sed -i "s/\/workspace\/destdir\/opt/\/opt/g" build.ninja 
-mv build.ninja ../build.ninja.bak
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/kira/ ${WORKSPACE}/srcdir/Kira-build/
-rm -rf ./*
-meson setup -Dfirefly=true -Dflint=true -Dmpi=true -Djemalloc=true --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release ${WORKSPACE}/srcdir/kira/ ${WORKSPACE}/srcdir/Kira-build/
-diff build.ninja ../build.ninja.bak 
+meson setup \
+    -Dfirefly=true \
+    -Dflint=true \
+    -Dmpi=true \
+    -Djemalloc=true \
+    --cross-file=${MESON_TARGET_TOOLCHAIN} \
+    --buildtype=release \
+    ${WORKSPACE}/srcdir/kira/ \
+    ${WORKSPACE}/srcdir/Kira-build/
 sed -i "s/\/workspace\/destdir\/opt/\/opt/g" build.ninja 
 meson install
 """
@@ -173,7 +46,10 @@ platforms = [
     Platform("aarch64", "macos"; ),
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("x86_64", "macos"; )
-]
+]   # Fermat may only support these platforms, which is the external program required to run Kira.
+    # Notice that aarch64 MacOS is running the Fermat via Rosetta 2.
+    # It would be helpful if someone would be willing to help compile Fermat on more platforms.
+platforms = expand_cxxstring_abis(platforms)
 
 
 # The products that we will ensure are always built
@@ -193,4 +69,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6",
+    preferred_gcc_version = v"6.1.0"    # Because the FireFly need it.
+)
