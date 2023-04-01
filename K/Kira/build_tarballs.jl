@@ -29,6 +29,7 @@ pip3 install -U meson
 
 mkdir ${WORKSPACE}/srcdir/Kira-build
 cd ${WORKSPACE}/srcdir/Kira-build/
+
 meson setup \
     -Dfirefly=true \
     -Dflint=true \
@@ -39,7 +40,9 @@ meson setup \
     ${WORKSPACE}/srcdir/kira/ \
     ${WORKSPACE}/srcdir/Kira-build/
 sed -i "s/\/workspace\/destdir\/opt/\/opt/g" build.ninja
+
 meson install
+install_license ${WORKSPACE}/srcdir/kira/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
