@@ -50,7 +50,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"),
     Dependency("Geant4_jll", v"11.1.1"),
-    Dependency(PackageSpec(;name="Geant4_jll", version=v"11.1.1"))
+    Dependency(PackageSpec(;name="Geant4_jll", version=v"11.1.1")),
     Dependency("Expat_jll"),
     Dependency("Xerces_jll"),
 ]
