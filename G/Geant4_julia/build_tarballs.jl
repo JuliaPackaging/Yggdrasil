@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
 version = v"0.1.0"
-G4version= v"11.1.1"
 
 # reminder: change the above version if restricting the supported julia versions
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
@@ -50,8 +49,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Geant4_jll", v"11.1.1"),
-    Dependency(PackageSpec(;name="Geant4_jll", build_version=G4version, compat=G4version)),
+    Dependency("Geant4_jll"; compat = "~11.1"),
     Dependency("Expat_jll"),
     Dependency("Xerces_jll"),
 ]
