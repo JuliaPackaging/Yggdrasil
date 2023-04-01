@@ -6,7 +6,7 @@ name = "Geant4_julia"
 version = v"0.1.1"
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.7", v"1.8", v"1.9"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build Geant4_julia
