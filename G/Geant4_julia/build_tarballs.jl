@@ -32,8 +32,12 @@ install_license Geant4_cxxwrap/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+include("../../L/libjulia/common.jl")
+# platforms supported by libjulia
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+# platforms supported by Geant4
 platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l", platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
