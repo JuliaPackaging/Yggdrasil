@@ -25,6 +25,8 @@ cmake -DWITH_FLINT=true -DWITH_JEMALLOC=true -DWITH_MPI=true -DCMAKE_INSTALL_PRE
 cmake --build . -j${nproc}
 cmake --build . -t install
 
+pip3 install -U meson
+
 mkdir ${WORKSPACE}/srcdir/Kira-build
 cd ${WORKSPACE}/srcdir/Kira-build/
 meson setup \
@@ -36,7 +38,7 @@ meson setup \
     --buildtype=release \
     ${WORKSPACE}/srcdir/kira/ \
     ${WORKSPACE}/srcdir/Kira-build/
-sed -i "s/\/workspace\/destdir\/opt/\/opt/g" build.ninja 
+sed -i "s/\/workspace\/destdir\/opt/\/opt/g" build.ninja
 meson install
 """
 
@@ -47,6 +49,7 @@ platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("x86_64", "macos"; )
 ]   # Fermat may only support these platforms, which is the external program required to run Kira.
+    # Therefore, I do not build Kira for other platforms, while Kira could be compliled on them.
     # Notice that aarch64 MacOS is running the Fermat via Rosetta 2.
     # It would be helpful if someone would be willing to help compile Fermat on more platforms.
 platforms = expand_cxxstring_abis(platforms)
