@@ -27,7 +27,7 @@ cmake ${WORKSPACE}/srcdir/Geant4_cxxwrap -B build \
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
-install_license LICENSE
+install_license Geant4_cxxwrap/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
