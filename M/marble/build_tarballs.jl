@@ -13,8 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd marble-23.03.90/
+cd $WORKSPACE/srcdir/marble
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/win32.patch"
 mkdir build
 cd build/
