@@ -53,6 +53,11 @@ install_license ../copyright-and-BSD-license.txt
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# Altivec SIMD intrinsics don't build
+platforms = filter(p -> arch(p) ≠ "powerpc64le", platforms)
+# Neon SIMD intrinsics not supported
+platforms = filter(p -> arch(p) ≠ "armv7l", platforms)
+
 # # SZ requires a 64-bit architecture (and Windows uses 32-bit size_t?)
 # filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
 # 
