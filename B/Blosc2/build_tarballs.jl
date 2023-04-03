@@ -35,6 +35,11 @@ install_license ../LICENSES/*.txt
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 
+# Altivec SIMD intrinsics don't build
+platforms = filter(p -> arch(p) ≠ "powerpc64le", platforms)
+# Neon SIMD intrinsics not supported
+platforms = filter(p -> arch(p) ≠ "armv7l", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libblosc2", :libblosc2),
