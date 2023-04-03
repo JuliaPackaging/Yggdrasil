@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "avr_binutils"
-version = v"2.40.0"
+version_string = "2.40"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.40.tar.xz", "0f8a4c272d7f17f369ded10a4aca28b8e304828e95526da482b0ccc4dfc9d8e1")
+    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version_string).tar.xz", "0f8a4c272d7f17f369ded10a4aca28b8e304828e95526da482b0ccc4dfc9d8e1")
 ]
 
 # Bash recipe for building across all platforms
