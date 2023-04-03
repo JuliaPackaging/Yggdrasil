@@ -10,7 +10,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/dmg2img*/
-make -j${nproc} CFLAGS="-O2 -Wall -I${includedir}" LDFLAGS="-L${libdir} -lssl"
+export CFLAGS="-O2 -Wall -I${includedir}"
+if [[ "${target}" == x86_64-linux-gnu ]]; then
+    export LDFLAGS="-L${libdir} -lssl -lcrypto"
+else
+    export LDFLAGS="-L${libdir} -lssl"
+fi
+make -j${nproc}
 make install BIN_DIR=${bindir}
 """
 
