@@ -19,11 +19,11 @@ version = v"0.0.6"  # fake version number
 # 0.0.3           22.03.2023       master-d5850c5    https://github.com/ggerganov/llama.cpp/releases/tag/master-d5850c5
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
 # 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
-# 0.0.6           31.03.2023       master-3525899    https://github.com/ggerganov/llama.cpp/releases/tag/master-3525899
+# 0.0.6           03.04.2023       master-437e778    https://github.com/ggerganov/llama.cpp/releases/tag/master-437e778
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "3525899277d2e2bdc8ec3f0e6e40c47251608700"),
+              "437e77855a54e69c86fe03bc501f63d9a3fddb0e"),
     DirectorySource("./bundled"),
 ]
 
@@ -32,6 +32,8 @@ cd $WORKSPACE/srcdir/llama.cpp*
 
 # remove -march=native from cmake files
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
+# fix compilation (include Windows.h) on w64-mingw32
+atomic_patch -p1 ../patches/fix-mingw32-windows-include.patch
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
@@ -79,7 +81,7 @@ done
 install_license ../LICENSE
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) ∉ ["i686", "x86_64", "aarch64"])
+platforms = supported_platforms(; exclude = p -> arch(p) ∉ ["i686", "x86_64", "aarch64"])
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
