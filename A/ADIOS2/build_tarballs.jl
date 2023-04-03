@@ -18,8 +18,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd ADIOS2
-# # Don't define clock_gettime on macOS
-# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
+# Don't define clock_gettime on macOS
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 # atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
 
 mkdir build
@@ -60,7 +60,6 @@ fi
 
 # Fortran is not supported with Clang
 # DataMan has linker error on Windows
-#    -DADIOS2_USE_Blosc2=ON
 #    -DADIOS2_USE_SZ=ON
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -68,7 +67,7 @@ cmake \
     -DBUILD_TESTING=OFF \
     -DADIOS2_BUILD_EXAMPLES=OFF \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
-    -DADIOS2_USE_Blosc2=OFF \
+    -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
