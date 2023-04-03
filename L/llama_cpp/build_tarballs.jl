@@ -7,8 +7,6 @@ version = v"0.0.6"  # fake version number
 # description = "Port of Facebook's LLaMA model in C/C++"
 
 # TODO
-# - w64-mingw32 fails since master-02c5b27 (fake v0.0.6) because of
-#   missing mmap support
 # - missing architectures: powerpc64le, armv6l, arm7vl
 
 # versions: fake_version to github_version mapping
