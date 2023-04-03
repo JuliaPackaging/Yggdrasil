@@ -3,18 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "marble"
-version = v"20.12.0"
+version = v"23.03.90"
 
 # Collection of sources required to complete build
+# Use GitSource since there are no stable tarballs available via Github or
+# https://invent.kde.org/education/marble
 sources = [
-    ArchiveSource("https://github.com/KDE/marble/archive/v20.12.0.tar.gz", "20ea52f071bd255109d723565fc46eb46ee4415acb402f5d45f6c6dbd6b312b7"),
+    GitSource("https://github.com/KDE/marble.git", "11c9108f79be4a88218c9c10212ba46f52995ef3"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd marble-20.12.0/
+cd $WORKSPACE/srcdir/marble
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/win32.patch"
 mkdir build
 cd build/
