@@ -53,14 +53,15 @@ install_license ../copyright-and-BSD-license.txt
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-# SZ3 requires a 64-bit architecture
-filter!(p -> nbits(p) ≥ 64, platforms)
+# SZ3 requires a 64-bit architecture (and Windows uses 32-bit size_t?)
+filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
 
 # OpenMP is not supported. SZ3's cmake has a bug that is probably corrected on the master branch.
 # Try re-enabling this for version > 3.1.7.
 filter!(p -> !(arch(p) ∈ ["aarch64", "x86_64"] && Sys.isapple(p)), platforms)
 
-# There are C++ build errors with musl. I don't know why.
+# There are C++ build errors with musl: the type `uint` is not declared.
+# Try re-enabling this for version > 3.1.7.
 filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The platforms where HDF5 is supported. See "HDF5/build_tarballs.jl".
