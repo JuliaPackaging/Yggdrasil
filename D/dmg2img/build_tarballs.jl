@@ -2,9 +2,9 @@ using BinaryBuilder
 
 # Collection of sources required to build Nettle
 name = "dmg2img"
-version = v"1.6.7"
+version = v"1.6.8"
 sources = [
-    GitSource("https://github.com/Lekensteyn/dmg2img.git", "f16f247d30f868e84f31e24792b4464488f1c009"),
+    GitSource("https://github.com/Lekensteyn/dmg2img.git", "a3e413489ccdd05431401357bf21690536425012"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,8 +33,8 @@ dependencies = [
     # Future versions of bzip2 should allow a more relaxed compat because the
     # soname of the macOS library shouldn't change at every patch release.
     Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
