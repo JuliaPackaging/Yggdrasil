@@ -20,7 +20,7 @@ cd SZ-*
 hdf5_options=
 if test -f "${includedir}/hdf5.h"; then
     # HDF5 is available, use it
-    hdf5_options='-DBUILD_HDF5_FILTER=ON'
+    hdf5_options='-DBUILD_HDF5_FILTER=ON -DBUILD_NETCDF_READER=ON'
 else
     # Create an empty library
     echo 'int SZ_no_hdf5;' >hdf5sz.cxx
@@ -40,7 +40,6 @@ cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBUILD_NETCDF_READER=ON \
     -DBUILD_OPENMP=ON \
     -DBUILD_PASTRI=ON \
      ${hdf5_options} \
