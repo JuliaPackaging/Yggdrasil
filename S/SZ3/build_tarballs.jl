@@ -20,6 +20,13 @@ hdf5_options=
 if test -f ${prefix}/include/hdf5.h; then
     # HDF5 is available, use it
     hdf5_options='-DBUILD_H5Z_FILTER=ON'
+else
+    # Create an empty library
+    echo 'int SZ_no_hdf5;' >hdf5sz3.cxx
+    c++ -fPIC -c hdf5sz3.cxx
+    c++ -shared -o libhdf5sz3.${dlext} hdf5sz3.o
+    mkdir -p ${prefix}/lib
+    cp libhdf5sz3.${dlext} ${prefix}/lib
 fi
 
 mkdir build
@@ -46,9 +53,15 @@ install_license ../copyright-and-BSD-license.txt
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+# SZ3 requires a 64-bit architecture
+filter!(p -> nbits(p) < 64, platforms)
+
 # OpenMP is not supported. SZ3's cmake has a bug that is probably corrected on the master branch.
 # Try re-enabling this for version > 3.1.7.
-filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
+filter!(p -> !(arch(p) ∈ ["aarch64", "x86_64"] && Sys.isapple(p)), platforms)
+
+# There are C++ build errors with musl. I don't know why.
+filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The platforms where HDF5 is supported. See "HDF5/build_tarballs.jl".
 hdf5_platforms = [
