@@ -16,20 +16,28 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd SZ3-*
 
+hdf5_options=
+if test -f ${prefix}/include/hdf5.h; then
+    # HDF5 is available, use it
+    hdf5_options='-DBUILD_H5Z_FILTER=ON'
+fi
+
 mkdir build
 cd build
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBUILD_H5Z_FILTER=ON \
     -DBUILD_MDZ=ON \
+    ${hdf5_options} \
     ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel ${nproc}
+
 # Fix permissions on generated file (chmod does not work)
 cat SZ3ConfigVersion.cmake >SZ3ConfigVersion.cmake.tmp
 mv SZ3ConfigVersion.cmake.tmp SZ3ConfigVersion.cmake
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
 install_license ../copyright-and-BSD-license.txt
 """
 
@@ -37,6 +45,21 @@ install_license ../copyright-and-BSD-license.txt
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+
+# OpenMP is not supported. SZ3's cmake has a bug that is probably corrected on the master branch.
+# Try re-enabling this for version > 3.1.7.
+filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
+
+# The platforms where HDF5 is supported. See "HDF5/build_tarballs.jl".
+hdf5_platforms = [
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
+    Platform("aarch64", "macos"),
+]
+hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -51,9 +74,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="GSL_jll")),
-    Dependency(PackageSpec(name="HDF5_jll")),
-    Dependency(PackageSpec(name="Zstd_jll")),
+    Dependency("GSL_jll"),
+    Dependency("HDF5_jll"; platforms=hdf5_platforms),
+    Dependency("Zstd_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
