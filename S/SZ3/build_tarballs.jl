@@ -17,7 +17,7 @@ cd ${WORKSPACE}/srcdir
 cd SZ3-*
 
 hdf5_options=
-if test -f ${prefix}/include/hdf5.h; then
+if test -f "${includedir}/hdf5.h"; then
     # HDF5 is available, use it
     hdf5_options='-DBUILD_H5Z_FILTER=ON'
 else
@@ -25,8 +25,7 @@ else
     echo 'int SZ_no_hdf5;' >hdf5sz3.cxx
     c++ -fPIC -c hdf5sz3.cxx
     c++ -shared -o libhdf5sz3.${dlext} hdf5sz3.o
-    mkdir -p ${prefix}/lib
-    cp libhdf5sz3.${dlext} ${prefix}/lib
+    install -Dvm 755 "libhdf5sz3.${dlext}" "${libdir}/libhdf5sz3.${dlext}"
 fi
 
 mkdir build
