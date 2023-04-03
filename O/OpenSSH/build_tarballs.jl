@@ -1,30 +1,29 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"9.1.0"
+version = v"9.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/openssh/openssh-portable/archive/refs/tags/V_9_1_P1.tar.gz",
-                  "8ae811262318653bbad319710b5055af5ac911d28f71ade5fb5ef604ac26821e"),
-    # OpenSSH 9.1 is not yet (as of 2022-11-02) available for download there, so use 8.9.1.0 instead
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win32.zip",
-                  "b99c384811f9ef8cab7589460d607fd4d4faccd6ec08a7405a2df0a37340fdeb"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win64.zip",
-                  "b3d31939acb93c34236f420a6f1396e7cf2eead7069ef67742857a5a0befb9fc"; unpack_target = "x86_64-w64-mingw32"),
+    GitSource("https://github.com/openssh/openssh-portable.git",
+                  "6dfb65de949cdd0a5d198edee9a118f265924f33"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.0.0p1-Beta/OpenSSH-Win32.zip",
+                  "d6a381b6b1c0d17433ca0b81cf65d139d55a0f8c249f07ec9e2cf02f3effeff0"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.0.0p1-Beta/OpenSSH-Win64.zip",
+                  "d0c272360163ef2e99cab1c0941834605abf2e792377979ff21cbb09b55f3348"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-install_license openssh-portable-*/LICENCE
+install_license openssh-portable/LICENCE
 PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext})
 
 if [[ "${target}" == *-mingw* ]]; then
     cd "${target}/OpenSSH-Win${nbits}"
 else
-    cd openssh-portable-*
+    cd openssh-portable
 
     # Remove OpenSSL from the sysroot to avoid confusion
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libcrypto.*
@@ -46,9 +45,8 @@ else
     make -j${nproc} "${PRODUCTS[@]}"
 fi
 
-mkdir -p ${bindir}
 for binary in "${PRODUCTS[@]}"; do
-    install -c -m 0755 $binary ${bindir}/$binary
+    install -Dvm 0755 $binary ${bindir}/$binary
 done
 """
 
@@ -69,7 +67,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll")
-    Dependency("OpenSSL_jll")
+    Dependency("OpenSSL_jll"; compat="1.1.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
