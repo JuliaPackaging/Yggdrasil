@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "XRootD"
-version = v"5.4.3"
+version = v"5.5.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/xrootd/xrootd/archive/refs/tags/v$(version).tar.gz", "56a29c88232f2f384e151b148fcaaa8d8db5c5fdc4615193978c8f4f3a99663c")
+    ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", "41a8557ea2d118b1950282b17abea9230b252aa5ee1a5959173e2534b7d611d3")
 ]
 
 # Bash recipe for building across all platforms
@@ -100,4 +100,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"5", julia_compat="1.6")
