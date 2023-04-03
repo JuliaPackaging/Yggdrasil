@@ -60,13 +60,15 @@ fi
 
 # Fortran is not supported with Clang
 # DataMan has linker error on Windows
+#    -DADIOS2_USE_Blosc2=ON
+#    -DADIOS2_USE_SZ=ON
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DBUILD_TESTING=OFF \
     -DADIOS2_BUILD_EXAMPLES=OFF \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
-    -DADIOS2_USE_Blosc2=ON \
+    -DADIOS2_USE_Blosc2=OFF \
     -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
@@ -142,8 +144,7 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     # We cannot use HDF5 because we need an HDF5 configuration with MPI support
     # Dependency(PackageSpec(name="HDF5_jll")),
-    # TODO: Use SZ3 package (and enable it) once it's available
-    # TODO: Dependency(PackageSpec(name="SZ3_jll")),
+    # Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
