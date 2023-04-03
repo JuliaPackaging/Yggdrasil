@@ -54,7 +54,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # SZ3 requires a 64-bit architecture
-filter!(p -> nbits(p) < 64, platforms)
+filter!(p -> nbits(p) ≥ 64, platforms)
 
 # OpenMP is not supported. SZ3's cmake has a bug that is probably corrected on the master branch.
 # Try re-enabling this for version > 3.1.7.
