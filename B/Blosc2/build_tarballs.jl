@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.2.0"
+version = v"2.8.0"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "38da659cd5862dccbb0457266fe752cfd6541d4f"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "8de035e5147397e3008a61ae1e2e6fcc949319f0"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,6 +34,11 @@ install_license ../LICENSES/*.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+
+# Altivec SIMD intrinsics don't build
+platforms = filter(p -> arch(p) ≠ "powerpc64le", platforms)
+# Neon SIMD intrinsics not supported
+platforms = filter(p -> arch(p) ≠ "armv7l", platforms)
 
 # The products that we will ensure are always built
 products = [
