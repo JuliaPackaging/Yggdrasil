@@ -6,6 +6,7 @@ name = "marble"
 version = v"23.03.90"
 
 # Collection of sources required to complete build
+# Used GitSource since there are no stable tarballs available
 sources = [
     GitSource("https://github.com/KDE/marble.git", "11c9108f79be4a88218c9c10212ba46f52995ef3"),
     DirectorySource("./bundled")
