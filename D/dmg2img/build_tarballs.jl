@@ -10,10 +10,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/dmg2img*/
-
-make -j${nproc} CFLAGS="-O2 -Wall -I${prefix}/include" LDFLAGS="-L${prefix}/lib -lssl"
-make install DESTDIR=${prefix}
-mv ${prefix}/usr/bin/* ${prefix}/bin/
+make -j${nproc} CFLAGS="-O2 -Wall -I${includedir}" LDFLAGS="-L${libdir} -lssl"
+make install BIN_DIR=${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
