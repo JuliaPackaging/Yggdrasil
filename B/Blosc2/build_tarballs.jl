@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.2.0"
+version = v"2.8.0"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "38da659cd5862dccbb0457266fe752cfd6541d4f"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "8de035e5147397e3008a61ae1e2e6fcc949319f0"),
 ]
 
 # Bash recipe for building across all platforms
