@@ -63,9 +63,9 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-if any(platforms_windows)
+if !isempty(platforms_windows)
     build_tarballs(ARGS, name, version, sources, script, platforms_windows, products_windows, dependencies; julia_compat="1.6")
 end
-if any(platforms)
+if !isempty(platforms)
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 end
