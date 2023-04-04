@@ -13,7 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir $WORKSPACE/srcdir/FireFly-build
-cd $WORKSPACE/srcdir/FireFly-build/
+cd ${WORKSPACE}/srcdir/firefly
+sed -i "s/TARGETS FireFly_static FireFly_shared/TARGETS FireFly_shared/g" CMakeLists.txt
+cd $WORKSPACE/srcdir/FireFly-build
 
 cmake -DWITH_FLINT=true \
     -DWITH_JEMALLOC=true \
@@ -23,8 +25,7 @@ cmake -DWITH_FLINT=true \
     -DCMAKE_BUILD_TYPE=Release \
     ${WORKSPACE}/srcdir/firefly
 
-cmake --build . -j${nproc}
-cmake --build . -t install
+cmake --build . -j${nproc} -t install
 
 install_license ${WORKSPACE}/srcdir/firefly/LICENSE
 """
