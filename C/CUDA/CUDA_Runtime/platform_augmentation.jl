@@ -24,7 +24,7 @@ Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 #    note that we don't just leave off the platform tag or Pkg would select *any* artifact.
 function cuda_toolkit_tag()
     # check if the user requested a specific version
-    if haskey(preferences, "version")
+    if haskey(preferences, "version") && isa(preferences["version"], String)
         @debug "CUDA version override: $(preferences["version"])"
         version = tryparse(VersionNumber, preferences["version"])
         if version === nothing
