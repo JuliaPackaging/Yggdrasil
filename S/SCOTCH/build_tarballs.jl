@@ -20,9 +20,9 @@ mkdir build
 cd build
 
 if [[ "${target}" == *linux* ]]; then
-  FLAGS="-lrt -lgcc_s -fPIC"
+  FLAGS="-lrt -fPIC"
 else
-  FLAGS="-lgcc_s -fPIC"
+  FLAGS="-fPIC"
 fi
 
 CFLAGS=$FLAGS cmake \
