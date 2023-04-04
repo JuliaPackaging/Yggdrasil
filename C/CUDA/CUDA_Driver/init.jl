@@ -111,17 +111,14 @@ if !@isdefined(libcuda_compat)
     @debug "No forward-compatible CUDA library available for your platform."
     return
 end
+compat_compiler = libnvidia_ptxjitcompiler
 compat_driver = libcuda_compat
 @debug "Forward-compatible CUDA driver found at $compat_driver;" *
         " known to be version $(compat_version)"
 
 # finally, load the compatibility driver to see if it supports this platform
+compiler_handle = Libdl.dlopen(compat_compiler; throw_error=true)
 driver_handle = Libdl.dlopen(compat_driver; throw_error=true)
-# TODO: do we need to dlopen the JIT compiler library for it to be discoverable?
-#       doesn't that clash with a system one if compat cuInit fails? or should
-#       we load it _after_ the compat driver initialization succeeds?
-#compiler_handle = libnvidia_ptxjitcompiler
-#Libdl.dlopen(compiler_handle)
 
 init_status = init_driver(driver_handle)
 if init_status != 0
@@ -129,10 +126,13 @@ if init_status != 0
 
     # see comment above about unloading the system driver
     Libdl.dlclose(driver_handle)
+    Libdl.dlclose(compiler_handle)
     compat_driver_loaded = Libdl.dlopen(compat_driver, Libdl.RTLD_NOLOAD;
                                         throw_error=false) !== nothing
-    if compat_driver_loaded
-        error("Could not unload the forward compatible CUDA driver library." *
+    compat_compiler_loaded = Libdl.dlopen(compat_compiler, Libdl.RTLD_NOLOAD;
+                                            throw_error=false) !== nothing
+    if compat_driver_loaded || compat_compiler_loaded
+        error("Could not unload forwards compatible CUDA driver libraries." *
                 "This is probably caused by running Julia under a tool that hooks CUDA API calls." *
                 "In that case, prevent Julia from loading multiple drivers" *
                 " by setting JULIA_CUDA_USE_COMPAT=false in your environment.")
