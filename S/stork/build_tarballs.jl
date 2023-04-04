@@ -3,12 +3,12 @@
 using BinaryBuilder, BinaryBuilderBase
 
 name = "stork"
-version = v"1.5.0"
+version = v"1.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/jameslittle230/stork/archive/refs/tags/v$(version).tar.gz",
-                  "4f9cf8dcbf3ebec83d64f34d7b1d9b39ce753e70d872b46d9a4a314bad10bf01"),
+    GitSource("https://github.com/jameslittle230/stork.git",
+              "b946a7837bf13443e6ca0f4887d093a5b398d875"),
 ]
 
 # Adapted from the justfile of the repo
@@ -31,7 +31,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll")
+    Dependency("OpenSSL_jll"; compat="1.1.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
