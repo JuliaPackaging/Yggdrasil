@@ -7,7 +7,7 @@ version = v"1.8.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.ginac.de/ginac-$(version).tar.bz2", "00b320b1116cae5b7b43364dbffb7912471d171f484d82764605d715858d975b")
+    GitSource("git://www.ginac.de/ginac.git", "586309024f43e28dee484e231e88b85bc2d646bc")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/GiNaC-build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    $WORKSPACE/srcdir/ginac*/
+    $WORKSPACE/srcdir/ginac/
 
 cmake --build . -j${nproc}
 cmake --build . -t install
