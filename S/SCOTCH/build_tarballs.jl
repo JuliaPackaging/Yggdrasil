@@ -7,8 +7,8 @@ version = v"7.0.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(version)/scotch-v$(version).tar.gz",
-                  "5b5351f0ffd6fcae9ae7eafeccaa5a25602845b9ffd1afb104db932dd4d4f3c5")
+    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(version)/scotch-v$(version).tar.gz", "5b5351f0ffd6fcae9ae7eafeccaa5a25602845b9ffd1afb104db932dd4d4f3c5"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
