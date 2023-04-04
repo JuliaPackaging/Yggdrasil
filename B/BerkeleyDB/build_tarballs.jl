@@ -7,7 +7,8 @@ version = v"18.1.40"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.oracle.com/berkeley-db/db-$(version).tar.gz", "0cecb2ef0c67b166de93732769abdeba0555086d51de1090df325e18ee8da9c8")
+    ArchiveSource("https://download.oracle.com/berkeley-db/db-$(version).tar.gz",
+                  "0cecb2ef0c67b166de93732769abdeba0555086d51de1090df325e18ee8da9c8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,7 +32,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(!Sys.iswindows, supported_platforms())
+platforms = supported_platforms(; exclude=Sys.iswindows)
+# Exclude "experimental" platforms
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
