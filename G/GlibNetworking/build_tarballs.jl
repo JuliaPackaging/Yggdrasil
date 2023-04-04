@@ -7,7 +7,7 @@ version = v"2.74.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.gnome.org/GNOME/glib-networking.git", "33de32c0640aab7ccac53ad8e9bc4a7ab5cb5b9d")
+    ArchiveSource("https://download.gnome.org/sources/glib-networking/$(version.major).$(version.minor)/glib-networking-$(version).tar.xz", "1f185aaef094123f8e25d8fa55661b3fd71020163a0174adb35a37685cda613b")
 ]
 
 # Bash recipe for building across all platforms
@@ -23,13 +23,13 @@ rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
 
 cd $WORKSPACE/srcdir
-install_license glib-networking/COPYING
+install_license glib-networking-*/COPYING
 
 MESON_FLAGS=(--cross-file="${MESON_TARGET_TOOLCHAIN}")
 MESON_FLAGS+=(--buildtype=release)
 MESON_FLAGS+=(-Dopenssl=enabled)
 
-meson "${MESON_FLAGS[@]}" glib-networking/
+meson "${MESON_FLAGS[@]}" glib-networking-*/
 ninja -j${nproc} --verbose
 ninja install
 
@@ -40,19 +40,19 @@ rm ${prefix}/bin/glib-compile-{resources,schemas}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> !Sys.isapple(p), supported_platforms())
-platforms_macos = filter!(p -> Sys.isapple(p), supported_platforms())
+platforms = filter!(p -> !Sys.iswindows(p), supported_platforms())
+platforms_windows = filter!(p -> Sys.iswindows(p), supported_platforms())
 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgioenvironmentproxy", :libgioenvironmentproxy, "lib/gio/modules"),
-    LibraryProduct("libgioopenssl", :libgioopenssl, "lib/gio/modules")
-]
-
-products_macos = [
     FileProduct("lib/gio/modules/libgioenvironmentproxy.so", :libgioenvironmentproxy),
     FileProduct("lib/gio/modules/libgioopenssl.so", :libgioopenssl)
+]
+
+products_windows = [
+    FileProduct("bin/libgioenvironmentproxy.dll", :libgioenvironmentproxy),
+    FileProduct("bin/libgioopenssl.dll", :libgioopenssl)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -63,8 +63,8 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; julia_compat="1.6")
+if any(should_build_platform.(triplet.(platforms_windows)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_windows, products_windows, dependencies; julia_compat="1.6")
 end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
