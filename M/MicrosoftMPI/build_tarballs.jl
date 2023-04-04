@@ -1,14 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "MicrosoftMPI"
-version = v"10.1.2"
+version = v"10.1.3"
 sources = [
     FileSource("https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisetup.exe",
                   "c305ce3f05d142d519f8dd800d83a4b894fc31bcad30512cefb557feaccbe8b4"),
     FileSource("https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisdk.msi",
                   "f9174c54feda794586ebd83eea065be4ad38b36f32af6e7dd9158d8fd1c08433"),
-    ArchiveSource("https://github.com/eschnett/MPIconstants/archive/refs/tags/v1.4.0.tar.gz",
-                  "610d816c22cd05e16e17371c6384e0b6f9d3a2bdcb311824d0d40790812882fc"),
+    GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
 ]
 
 script = raw"""
@@ -44,6 +43,10 @@ mv *.f90 src
 mkdir -p share/licenses/MicrosoftMPI
 mv *.txt *.rtf share/licenses/MicrosoftMPI
 
+# Generate "mpi.mod", "mpi_base.mod", "mpi_sizeofs.mod" and "mpi_constants.mod"
+cd $includedir
+gfortran -I. ../src/mpi.f90 -fsyntax-only -fno-range-check
+
 ################################################################################
 # Install MPIconstants
 ################################################################################
@@ -62,7 +65,6 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
         -DMPI_GUESS_LIBRARY_NAME=MSMPI \
         -DMPI_C_LIBRARIES=msmpi64 \
         -DMPI_CXX_LIBRARIES=msmpi64 \
-        -DMPI_Fortran_LIBRARIES='msmpifec64;msmpi64;cfg_stub' \
         ..
 elif [[ "$target" == *-mingw* ]]; then
     cmake \
@@ -98,7 +100,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-# We manually bump the version up to `v10.1.3` here to avoid compat-changing issues
-# X-ref: https://github.com/JuliaRegistries/General/pull/28956
-version = v"10.1.3"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
