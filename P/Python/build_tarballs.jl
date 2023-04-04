@@ -109,7 +109,7 @@ dependencies = [
     Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
 ]
 
 init_block = raw"""

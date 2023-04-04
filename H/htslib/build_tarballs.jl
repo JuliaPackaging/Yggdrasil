@@ -52,7 +52,7 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("XZ_jll"),
     Dependency("LibCURL_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

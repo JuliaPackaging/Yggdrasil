@@ -39,7 +39,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Ogg_jll", uuid="e7412a2a-1a6e-54c0-be00-318e2571c051")),
     Dependency(PackageSpec(name="Opus_jll", uuid="91d4177d-7536-5919-b921-800302f37372")),
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95")),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
