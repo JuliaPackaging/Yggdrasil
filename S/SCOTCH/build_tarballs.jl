@@ -14,6 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scotch*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/dummysizes.patch
+
 mkdir build
 cd build
 
@@ -26,6 +28,7 @@ fi
 CFLAGS=$FLAGS cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -CMAKE_CROSSCOMPILING_EMULATOR=${CC_BUILD} \
     -DCMAKE_BUILD_TYPE=Release \
     -DINTSIZE="32" \
     -DTHREADS=ON \

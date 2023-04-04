@@ -1,0 +1,71 @@
+diff --git a/src/libscotch/CMakeLists.txt b/src/libscotch/CMakeLists.txt
+index e3b0cb9..20a9a32 100644
+--- a/src/libscotch/CMakeLists.txt
++++ b/src/libscotch/CMakeLists.txt
+@@ -71,7 +71,7 @@ endif(BUILD_PTSCOTCH)
+ # Generate scotch.h
+ add_custom_command(OUTPUT ${GENERATED_INCLUDE_DIR}/scotch.h
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/library.h ${CMAKE_CURRENT_BINARY_DIR}
+-  COMMAND $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library.h ${GENERATED_INCLUDE_DIR}/scotch.h DEPENDS dummysizes
++  COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library.h ${GENERATED_INCLUDE_DIR}/scotch.h DEPENDS dummysizes
+   DEPENDS library.h
+   COMMENT "Generate scotch.h")
+ add_custom_target(scotch_h
+@@ -80,7 +80,7 @@ add_custom_target(scotch_h
+ # Generate scotchf.h
+ add_custom_command(OUTPUT ${GENERATED_INCLUDE_DIR}/scotchf.h
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/library_f.h ${CMAKE_CURRENT_BINARY_DIR}
+-  COMMAND $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_f.h ${GENERATED_INCLUDE_DIR}/scotchf.h DEPENDS dummysizes
++  COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_f.h ${GENERATED_INCLUDE_DIR}/scotchf.h DEPENDS dummysizes
+   DEPENDS library.h
+   COMMENT "Generate scotchf.h")
+ add_custom_target(scotchf_h
+@@ -94,7 +94,7 @@ add_custom_target(scotchf_h
+ if(BUILD_PTSCOTCH)
+   add_custom_command(OUTPUT ${GENERATED_INCLUDE_DIR}/ptscotch.h
+     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/library_pt.h ${CMAKE_CURRENT_BINARY_DIR}
+-    COMMAND $<TARGET_FILE:ptdummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_pt.h ${GENERATED_INCLUDE_DIR}/ptscotch.h DEPENDS ptdummysizes
++    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:ptdummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_pt.h ${GENERATED_INCLUDE_DIR}/ptscotch.h DEPENDS ptdummysizes
+     DEPENDS library_pt.h scotch_h
+     COMMENT "Generate ptscotch.h")
+   add_custom_target(ptscotch_h
+@@ -103,7 +103,7 @@ if(BUILD_PTSCOTCH)
+ # Generate ptscotchf.h
+ add_custom_command(OUTPUT ${GENERATED_INCLUDE_DIR}/ptscotchf.h
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/library_pt_f.h ${CMAKE_CURRENT_BINARY_DIR}
+-  COMMAND $<TARGET_FILE:ptdummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_pt_f.h ${GENERATED_INCLUDE_DIR}/ptscotchf.h DEPENDS ptdummysizes
++  COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:ptdummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_pt_f.h ${GENERATED_INCLUDE_DIR}/ptscotchf.h DEPENDS ptdummysizes
+   DEPENDS library.h
+   COMMENT "Generate ptscotchf.h")
+ add_custom_target(ptscotchf_h
+diff --git a/src/libscotchmetis/CMakeLists.txt b/src/libscotchmetis/CMakeLists.txt
+index 6193ce8..a8425aa 100644
+--- a/src/libscotchmetis/CMakeLists.txt
++++ b/src/libscotchmetis/CMakeLists.txt
+@@ -55,7 +55,7 @@ set_source_files_properties(${GENERATED_INCLUDE_DIR}/metis.h PROPERTIES GENERATE
+ # metis.h
+ add_custom_command(OUTPUT ${GENERATED_INCLUDE_DIR}/metis.h
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/library_metis.h ${CMAKE_CURRENT_BINARY_DIR}
+-  COMMAND $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_metis.h ${GENERATED_INCLUDE_DIR}/metis.h DEPENDS dummysizes
++  COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_metis.h ${GENERATED_INCLUDE_DIR}/metis.h DEPENDS dummysizes
+   DEPENDS library_metis.h
+   COMMENT "Generating metis.h")
+ 
+@@ -65,7 +65,7 @@ add_custom_target(metis_h
+ # metisf.h
+ add_custom_command(OUTPUT ${GENERATED_INCLUDE_DIR}/metisf.h
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/library_metis_f.h ${CMAKE_CURRENT_BINARY_DIR}
+-  COMMAND $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_metis_f.h ${GENERATED_INCLUDE_DIR}/metisf.h DEPENDS dummysizes
++  COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_metis_f.h ${GENERATED_INCLUDE_DIR}/metisf.h DEPENDS dummysizes
+   DEPENDS library_metis_f.h
+   COMMENT "Generating metisf.h")
+ 
+@@ -139,7 +139,7 @@ if(BUILD_PTSCOTCH)
+   # parmetis.h
+   add_custom_command(OUTPUT ${GENERATED_INCLUDE_DIR}/parmetis.h
+     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/library_parmetis.h ${CMAKE_CURRENT_BINARY_DIR}
+-    COMMAND $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_parmetis.h ${GENERATED_INCLUDE_DIR}/parmetis.h DEPENDS dummysizes
++    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library_parmetis.h ${GENERATED_INCLUDE_DIR}/parmetis.h DEPENDS dummysizes
+     DEPENDS library_parmetis.h
+     COMMENT "Generating parmetis.h")
+ 
