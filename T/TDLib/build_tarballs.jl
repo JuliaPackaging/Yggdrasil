@@ -41,7 +41,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
 	HostBuildDependency("gperf_jll")
-	Dependency("OpenSSL_jll")
+	Dependency("OpenSSL_jll"; compat="1.1.10")
 	Dependency("Zlib_jll")
 ]
 
