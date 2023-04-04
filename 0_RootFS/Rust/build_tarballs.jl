@@ -75,7 +75,7 @@ products = [
     ExecutableProduct("cargo", :cargo),
 ]
 dependencies = [
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
 ]
 ndARGS = filter(a -> !occursin("--deploy", a), ARGS)
 build_info = build_tarballs(ndARGS, rustup_name, rustup_version, sources, script, platforms, products, dependencies; skip_audit=true)
