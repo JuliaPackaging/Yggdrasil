@@ -60,7 +60,6 @@ fi
 
 # Fortran is not supported with Clang
 # DataMan has linker error on Windows
-#    -DADIOS2_USE_SZ=ON
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
@@ -73,6 +72,7 @@ cmake \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
+    -DADIOS2_USE_SZ=ON \
     -DADIOS2_USE_ZeroMQ=ON \
     -DMPI_HOME=$prefix \
     ${archopts} \
@@ -143,7 +143,7 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     # We cannot use HDF5 because we need an HDF5 configuration with MPI support
     # Dependency(PackageSpec(name="HDF5_jll")),
-    # Dependency(PackageSpec(name="SZ_jll")),
+    Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
