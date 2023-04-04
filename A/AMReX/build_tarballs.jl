@@ -22,14 +22,6 @@ cd amrex
 mkdir build
 cd build
 
-omp_opts="-DAMReX_OMP=ON"
-# if [[ "$target" == *-apple-* ]]; then
-#     # Apple's Clang does not support OpenMP
-#     omp_opts="-DAMReX_OMP=OFF"
-# else
-#     omp_opts="-DAMReX_OMP=ON"
-# fi
-
 if [[ "$target" == *-apple-* ]]; then
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
         # MPICH's pkgconfig file "mpich.pc" lists these options:
@@ -52,9 +44,9 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DAMReX_FORTRAN=ON \
     -DAMReX_MPI=ON \
+    -DAMReX_OMP=ON \
     -DAMReX_PARTICLES=ON \
     -DBUILD_SHARED_LIBS=ON \
-    ${ompopts} \
     ${mpiopts} \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
