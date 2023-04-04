@@ -62,6 +62,8 @@ dependencies = [
     Dependency("Glib_jll", v"2.74.0"; compat="~2.74.0")
 ]
 
+include("../../fancy_toys.jl")
+
 # Build the tarballs, and possibly a `build.jl` as well.
 if any(should_build_platform.(triplet.(platforms_windows)))
     build_tarballs(ARGS, name, version, sources, script, platforms_windows, products_windows, dependencies; julia_compat="1.6")
