@@ -51,4 +51,4 @@ dependencies = [
 # TODO: GCC 8, 9 not tested for powerpc.
 # powerpc works on GCC 10.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"12")
+               julia_compat="1.6", preferred_gcc_version=v"8")
