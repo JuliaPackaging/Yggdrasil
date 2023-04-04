@@ -3,31 +3,45 @@
 using BinaryBuilder, Pkg
 
 name = "SCOTCH"
-version = v"6.1.3"
+version = v"7.0.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(version)/scotch-v$(version).tar.gz","4e54f056199e6c23d46581d448fcfe2285987e5554a0aa527f7931684ef2809e"),
-    DirectorySource("./bundled")
+    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(version)/scotch-v$(version).tar.gz",
+                  "5b5351f0ffd6fcae9ae7eafeccaa5a25602845b9ffd1afb104db932dd4d4f3c5")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scotch*
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/native_build.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Makefile.patch"
-if [[ "${target}" == *apple* || "${target}" == *freebsd* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSX_FreeBSD.patch"
-fi
-if [[ "${target}" == *mingw* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Windows.patch"
-fi
-cd src
-make scotch
-make esmumps
-make prefix=$prefix install
+mkdir build
+cd build
+
+
+CFLAGS="-lrt -fPIC" cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DINTSIZE="32" \
+    -DTHREADS=ON \
+    -DMPI_THREAD_MULTIPLE=OFF \
+    -DBUILD_PTSCOTCH=OFF \
+    -DBUILD_LIBESMUMPS=ON \
+    -DBUILD_LIBSCOTCHMETIS=ON \
+    -DINSTALL_METIS_HEADERS=OFF ..
+
+make -j${nproc}
+make install
+
+cd $libdir
+$CC -shared -I$libdir $(flagon -Wl,--whole-archive) libscotch.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotch.${dlext} 
+$CC -shared $(flagon -Wl,--whole-archive) libesmumps.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libesmumps.${dlext} 
+$CC -shared $(flagon -Wl,--whole-archive) libscotcherr.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotcherr.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libscotcherrexit.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotcherrexit.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libscotchmetisv3.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotchmetisv3.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libscotchmetisv5.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotchmetisv5.${dlext}
+
 install_license ../LICENSE_en.txt
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,16 +50,20 @@ platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libscotch", :libscotch),
+    LibraryProduct("libesmumps", :libesmumps),
     LibraryProduct("libscotcherr", :libscotcherr),
     LibraryProduct("libscotcherrexit", :libscotcherrexit),
-    LibraryProduct("libscotchmetis", :libscotchmetis),
-    LibraryProduct("libscotch", :libscotch),
-    LibraryProduct("libesmumps", :libesmumps)
+    LibraryProduct("libscotchmetisv3", :libscotchmetisv3),
+    LibraryProduct("libscotchmetisv5", :libscotchmetisv5)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
+    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0")),
+    Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
