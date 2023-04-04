@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/git-crypt-*/
+cd $WORKSPACE/srcdir/git-crypt
 make CPPFLAGS="-I${prefix}/include" LDFLAGS="-L${libdir} -lcrypto"
 make install PREFIX=$prefix
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
