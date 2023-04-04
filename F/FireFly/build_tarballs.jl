@@ -54,5 +54,6 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6",
     # preferred_gcc_version = v"5.2.0" # for std=c++14
-    preferred_gcc_version = v"6.1.0" # for making the target example
+    # preferred_gcc_version = v"6.1.0" # for making the target example
+    preferred_gcc_version = v"7.1.0" # for avoiding unexpected segmentation fault on x86_64-linux-gnu-cxx11 @ Buildkite.com
 )
