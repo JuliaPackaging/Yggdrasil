@@ -34,15 +34,20 @@ else
     install -Dvm 755 "libnetcdfsz.${dlext}" "${libdir}/libnetcdfsz.${dlext}"
 fi
 
+openmp_options=
+if [[ "${target}" != *-apple-* ]]; then
+    openmp_options='-DBUILD_OPENMP=ON'
+fi
+
 mkdir build
 cd build
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBUILD_OPENMP=ON \
     -DBUILD_PASTRI=ON \
-     ${hdf5_options} \
+    ${hdf5_options} \
+    ${openmp_options} \
     ..
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
 cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
