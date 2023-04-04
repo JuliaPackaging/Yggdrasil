@@ -13,7 +13,7 @@ sources = [
 
 # Adapted from the justfile of the repo
 script = raw"""
-cd $WORKSPACE/srcdir/stork-*
+cd $WORKSPACE/srcdir/stork
 cargo build --release --all-features
 install -Dvm 0755 "target/${rust_target}/release/stork${exeext}" "${bindir}/stork${exeext}"
 install_license license.txt
