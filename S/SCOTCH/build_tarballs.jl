@@ -18,7 +18,7 @@ mkdir build
 cd build
 
 
-CFLAGS="-lrt -fPIC" cmake \
+CFLAGS="-lrt -lgcc_s -fPIC" cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -33,15 +33,15 @@ CFLAGS="-lrt -fPIC" cmake \
 make -j${nproc}
 make install
 
-cd $libdir
-$CC -shared -I$libdir $(flagon -Wl,--whole-archive) libscotch.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotch.${dlext} 
-$CC -shared $(flagon -Wl,--whole-archive) libesmumps.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libesmumps.${dlext} 
-$CC -shared $(flagon -Wl,--whole-archive) libscotcherr.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotcherr.${dlext}
-$CC -shared $(flagon -Wl,--whole-archive) libscotcherrexit.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotcherrexit.${dlext}
-$CC -shared $(flagon -Wl,--whole-archive) libscotchmetisv3.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotchmetisv3.${dlext}
-$CC -shared $(flagon -Wl,--whole-archive) libscotchmetisv5.a $(flagon -Wl,--no-whole-archive) -lgcc_s -o ${libdir}/libscotchmetisv5.${dlext}
-
 install_license ../LICENSE_en.txt
+
+cd $libdir
+$CC -shared -I$libdir $(flagon -Wl,--whole-archive) libscotch.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotch.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libesmumps.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libesmumps.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libscotcherr.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotcherr.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libscotcherrexit.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotcherrexit.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libscotchmetisv3.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotchmetisv3.${dlext}
+$CC -shared $(flagon -Wl,--whole-archive) libscotchmetisv5.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotchmetisv5.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
