@@ -34,8 +34,8 @@ fi
 
 COMPONENTS=()
 if [[ -d "${prefix}/cuda" ]]; then
+    COMPONENTS+=(cuda)
     export PAPI_CUDA_ROOT="${prefix}/cuda"
-    COMPONENTS+=(cuda nvml)
 fi
 
 if [[ ${target} == powerpc64le-* ]]; then
@@ -121,6 +121,7 @@ for cuda_version in cuda_versions_to_build, platform in platforms
                                                             version=cuda_versions[cuda_version])))
         end
     end
+
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                    products, dependencies; lazy_artifacts=true,
