@@ -104,7 +104,7 @@ dependencies = [
     Dependency("iODBC_jll"),
     Dependency("Libiconv_jll"),
     Dependency("unixODBC_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Zlib_jll"),
 ]
 

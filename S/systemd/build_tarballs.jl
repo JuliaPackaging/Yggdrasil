@@ -88,7 +88,7 @@ dependencies = [
     #Dependency("Glib_jll"),
     #Dependency("Dbus_jll"),
     #Dependency("xkbcommon_jll"),
-    #Dependency("OpenSSL_jll"),
+    #Dependency("OpenSSL_jll"; compat="1.1.10"),
     #Dependency("XSLT_jll"),
     #Dependency("Libbpf_jll"),
     #Dependency("LibCURL_jll"),
