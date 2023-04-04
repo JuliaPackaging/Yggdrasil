@@ -86,6 +86,7 @@ products = [
     LibraryProduct("libG4intercoms", :libG4Intercoms),
     LibraryProduct("libG4particles", :libG4Particles),
     LibraryProduct("libG4ptl", :libG4Ptl),
+    LibraryProduct("libG4ToolsSG", :libG4ToolsSG),
     FileProduct("share/Geant4/data", :data_dir),
 ]
 
