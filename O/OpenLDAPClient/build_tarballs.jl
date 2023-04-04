@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "OpenLDAPClient"
-version = v"2.6.4"
+version = v"2.5.14"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-$(version).tgz",
-                  "d51704e50178430c06cf3d8aa174da66badf559747a47d920bb54b2d4aa40991"),
+                  "577d0ef7b7b2334b5d537318e4369c8dc6b066ebec0cee5cc3ecd8931e1ea76d"),
 ]
 
 # Bash recipe for building across all platforms
