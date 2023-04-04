@@ -1,13 +1,10 @@
-diff --git before/pulseaudio-15.0/src/daemon/meson.build after/pulseaudio-15.0/src/daemon/meson.build
-index 262e193..7bb207c 100644
---- before/pulseaudio-15.0/src/daemon/meson.build
-+++ after/pulseaudio-15.0/src/daemon/meson.build
-@@ -29,7 +29,7 @@ executable('pulseaudio',
+--- a/src/daemon/meson.build
++++ b/src/daemon/meson.build
+@@ -29,7 +29,6 @@
    install: true,
-   install_rpath : privlibdir,
+   install_rpath : '$ORIGIN/pulseaudio',
    include_directories : [configinc, topinc],
 -  link_args : ['-ffast-math'],
-+  
-   link_with : [libpulsecore, libpulsecommon, libpulse],
-   dependencies : [ltdl_dep, cap_dep, dbus_dep, libsystemd_dep, dl_dep, libintl_dep, platform_dep, platform_socket_dep],
+   link_with : [libpulsecore],
+   dependencies : [ltdl_dep, cap_dep, dbus_dep, libsystemd_dep, dl_dep, libintl_dep, platform_dep, platform_socket_dep, libpulsecommon_dep, libpulse_dep],
    c_args : pa_c_args,

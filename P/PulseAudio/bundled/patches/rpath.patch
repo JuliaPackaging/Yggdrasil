@@ -176,59 +176,41 @@ index d7f9ef2..e70dd0d 100644
  )
 diff --git before/pulseaudio-15.0/src/utils/meson.build after/pulseaudio-15.0/src/utils/meson.build
 index c9635fd..3506ba4 100644
---- before/pulseaudio-15.0/src/utils/meson.build
-+++ after/pulseaudio-15.0/src/utils/meson.build
-@@ -12,7 +12,7 @@ pacat_aliases = [
- executable('pacat',
-   pacat_sources,
-   install: true,
--  install_rpath : privlibdir,
-+  install_rpath : '$ORIGIN/pulseaudio',
-   include_directories : [configinc, topinc],
-   link_with : [libpulsecommon, libpulse],
-   dependencies : [sndfile_dep, libintl_dep],
-@@ -35,7 +35,7 @@ pactl_sources = [
- executable('pactl',
-   pactl_sources,
-   install: true,
--  install_rpath : privlibdir,
-+  install_rpath : '$ORIGIN/pulseaudio',
-   include_directories : [configinc, topinc],
-   link_with : [libpulsecommon, libpulse],
-   dependencies : [sndfile_dep, libintl_dep],
-@@ -51,7 +51,7 @@ if get_option('daemon')
-     executable('pasuspender',
-       pasuspender_sources,
-       install: true,
--      install_rpath : privlibdir,
-+      install_rpath : '$ORIGIN/pulseaudio',
-       include_directories : [configinc, topinc],
-       link_with : [libpulsecommon, libpulse],
-       dependencies: [libintl_dep],
-@@ -65,7 +65,7 @@ if get_option('daemon')
-     executable('pacmd',
-       pacmd_sources,
-       install: true,
--      install_rpath : privlibdir,
-+      install_rpath : '$ORIGIN/pulseaudio',
-       include_directories : [configinc, topinc],
-       link_with : [libpulsecommon, libpulse],
-       dependencies: [libintl_dep],
-@@ -82,7 +82,7 @@ if x11_dep.found()
-   executable('pax11publish',
-     pax11publish_sources,
+--- before/pulseaudio-16.1/src/utils/meson.build
++++ after/pulseaudio-16.1/src/utils/meson.build
+@@ -13,7 +13,7 @@
+   executable('pacat',
+     pacat_sources,
      install: true,
 -    install_rpath : privlibdir,
 +    install_rpath : '$ORIGIN/pulseaudio',
      include_directories : [configinc, topinc],
      link_with : [libpulsecommon, libpulse],
-     dependencies : [x11_dep, libintl_dep],
-@@ -99,7 +99,7 @@ if cdata.has('HAVE_OSS_WRAPPER')
-     libpulsecommon_sources,
+     dependencies : [sndfile_dep, libintl_dep],
+@@ -36,7 +36,7 @@
+   executable('pactl',
+     pactl_sources,
      install: true,
-     install_dir : padsplibdir,
 -    install_rpath : privlibdir,
 +    install_rpath : '$ORIGIN/pulseaudio',
      include_directories : [configinc, topinc],
      link_with : [libpulsecommon, libpulse],
-     link_args : [nodelete_link_args],
+     dependencies : [sndfile_dep, libintl_dep],
+@@ -83,7 +83,7 @@
+     executable('pax11publish',
+       pax11publish_sources,
+       install: true,
+-      install_rpath : privlibdir,
++      install_rpath : '$ORIGIN/pulseaudio',
+       include_directories : [configinc, topinc],
+       link_with : [libpulsecommon, libpulse],
+       dependencies : [x11_dep, libintl_dep],
+@@ -100,7 +100,7 @@
+       libpulsecommon_sources,
+       install: true,
+       install_dir : padsplibdir,
+-      install_rpath : privlibdir,
++      install_rpath : '$ORIGIN/pulseaudio',
+       include_directories : [configinc, topinc],
+       link_with : [libpulsecommon, libpulse],
+       link_args : [nodelete_link_args],
