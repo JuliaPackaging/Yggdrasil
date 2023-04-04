@@ -22,6 +22,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 
 cmake --build . -j${nproc}
 cmake --build . -t install
+
+install_license $WORKSPACE/srcdir/ginac*/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
