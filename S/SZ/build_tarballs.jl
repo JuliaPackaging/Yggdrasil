@@ -34,11 +34,6 @@ else
     install -Dvm 755 "libnetcdfsz.${dlext}" "${libdir}/libnetcdfsz.${dlext}"
 fi
 
-openmp_options=
-# if [[ "${target}" != *-apple-* ]]; then
-#     openmp_options='-DBUILD_OPENMP=ON'
-# fi
-
 mkdir build
 cd build
 cmake \
@@ -47,7 +42,6 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_PASTRI=ON \
     ${hdf5_options} \
-    ${openmp_options} \
     ..
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
 cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
@@ -57,17 +51,6 @@ install_license ../copyright-and-BSD-license.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
-# # SZ requires a 64-bit architecture (and Windows uses 32-bit size_t?)
-# filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
-# 
-# # OpenMP is not supported. SZ's cmake has a bug that is probably corrected on the master branch.
-# # Try re-enabling this for version > 3.1.7.
-# filter!(p -> !(arch(p) ∈ ["aarch64", "x86_64"] && Sys.isapple(p)), platforms)
-# 
-# # There are C++ build errors with musl: the type `uint` is not declared.
-# # Try re-enabling this for version > 3.1.7.
-# filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The platforms where HDF5 is supported. See "HDF5/build_tarballs.jl".
 hdf5_platforms = [
@@ -104,6 +87,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # Using GCC 8 since we require newer features of C++17.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6"
-               # , preferred_gcc_version=v"8"
-               )
+               julia_compat="1.6")
