@@ -17,8 +17,13 @@ cd $WORKSPACE/srcdir/scotch*
 mkdir build
 cd build
 
+if [[ "${target}" == *linux* ]]; then
+  FLAGS="-lrt -lgcc_s -fPIC"
+else
+  FLAGS="-lgcc_s -fPIC"
+fi
 
-CFLAGS="-lrt -lgcc_s -fPIC" cmake \
+CFLAGS=$FLAGS cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
