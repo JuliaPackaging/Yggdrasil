@@ -22,9 +22,9 @@ apk add bash-completion doxygen gettext glib orc-compiler perl-xml-parser
 # For some reason, librt fails to get linked correctly, so add a flag
 sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
 # make rpath work with cross compilation
-atomic_patch -p2 ../patches/rpath.patch
+atomic_patch -p2 $WORKSPACE/srcdir/patches/rpath.patch
 # disable fastmath
-atomic_patch -p1 ../patches/fastmath.patch
+atomic_patch -p2 $WORKSPACE/srcdir/patches/fastmath.patch
 # sys/capability.h doesn't seem to be workig on PowerPC
 if [[ "${target}" == powerpc64le-* ]]; then
     atomic_patch -p2 $WORKSPACE/srcdir/patches/capabilities.patch
