@@ -6,6 +6,7 @@ name = "Entwine"
 version = v"2.2.0"
 
 # Collection of sources required to complete build
+# Cmake build needs patching
 sources = [
     GitSource("https://github.com/connormanning/entwine/",
               "49ad52f985536cb8987d079402377cac50360cf3"),
