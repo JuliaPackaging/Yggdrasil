@@ -34,7 +34,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("Libiconv_jll"; platforms=filter(Sys.isapple, platforms)),
 ]
 
