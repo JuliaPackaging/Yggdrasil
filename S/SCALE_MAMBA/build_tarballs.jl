@@ -7,7 +7,7 @@ version = v"1.5"
 sources = [
     GitSource("https://github.com/KULeuven-COSIC/SCALE-MAMBA.git",
               "d7c960afd0a9776f04e15a5653caf300dd42f20a"),
-    DirectorySource("./bundled"_,
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
