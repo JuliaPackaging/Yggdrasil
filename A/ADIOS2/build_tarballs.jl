@@ -6,23 +6,20 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-version = v"2.8.4"
-adios_version = v"2.8.3"
+version = v"2.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v$(adios_version).tar.gz",
-                  "4906ab1899721c41dd918dddb039ba2848a1fb0cf84f3a563a1179b9d6ee0d9f"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "aac4a45fdd05fda62a80b1f5a4d174faade32f3c"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd ADIOS2-*
+cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
 
 mkdir build
 cd build
@@ -53,6 +50,13 @@ elif [[ "$target" == *-mingw* ]]; then
     archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
 fi
 
+if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
+    # This feature only works with MPICH
+    archopts="$archopts -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT="
+else
+    archopts="$archopts -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=1 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT="
+fi
+
 # Fortran is not supported with Clang
 # DataMan has linker error on Windows
 cmake \
@@ -61,12 +65,13 @@ cmake \
     -DBUILD_TESTING=OFF \
     -DADIOS2_BUILD_EXAMPLES=OFF \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
-    -DADIOS2_USE_Blosc=ON \
+    -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
+    -DADIOS2_USE_SZ=ON \
     -DADIOS2_USE_ZeroMQ=ON \
     -DMPI_HOME=$prefix \
     ${archopts} \
@@ -132,11 +137,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Blosc_jll")),
+    Dependency(PackageSpec(name="Blosc2_jll")),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     # We cannot use HDF5 because we need an HDF5 configuration with MPI support
     # Dependency(PackageSpec(name="HDF5_jll")),
+    Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
