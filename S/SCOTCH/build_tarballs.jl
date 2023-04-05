@@ -36,10 +36,10 @@ cd build
 
 FLAGS=""
 if [[ "${target}" == *linux* ]]; then
-    FLAGS+="-lrt"
+    FLAGS="-lrt"
 fi
-if [[ "${target}" == *musl* ]]; then
-    FLAGS+="-D_GNU_SOURCE"
+if [[ "${target}" == *linux-musl* ]]; then
+    FLAGS="-lrt -D_GNU_SOURCE"
 fi
 
 CFLAGS=$FLAGS cmake .. \
@@ -68,7 +68,7 @@ install_license ../LICENSE_en.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows)
+platforms = supported_platforms(; exclude=Sys.isfreebsd)
 
 # The products that we will ensure are always built
 products = [
