@@ -5,9 +5,9 @@ version = v"1.5"
 
 # Collection of sources required to build SuiteSparse
 sources = [
-    "https://github.com/KULeuven-COSIC/SCALE-MAMBA.git" =>
-    "d7c960afd0a9776f04e15a5653caf300dd42f20a",
-    "./bundled",
+    GitSource("https://github.com/KULeuven-COSIC/SCALE-MAMBA.git",
+              "d7c960afd0a9776f04e15a5653caf300dd42f20a"),
+    DirectorySource("./bundled"_,
 ]
 
 # Bash recipe for building across all platforms
@@ -35,9 +35,8 @@ fi
 make -j${nproc} CC="${CXX}" -C src
 
 # Install executables into ${prefix}
-mkdir -p ${prefix}/bin
-cp Player.x${exe} ${prefix}/bin/
-cp Setup.x${exe} ${prefix}/bin/
+install -Dvm 755 "Player.x${exe}" "${bindir}/Player.x${exe}"
+install -Dvm 755 "Setup.x${exe}" "${bindir}/Setup.x${exe}"
 """
 
 # Only x86_64, no FreeBSD or windows, and no musl
