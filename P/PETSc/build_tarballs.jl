@@ -4,22 +4,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.16.8" 
-petsc_version = v"3.16.6"
-PARMETIS_COMPAT_VERSION = "4.0.5"
+version = v"3.18.5"
+petsc_version = v"3.18.5"
 MUMPS_COMPAT_VERSION = "5.5.1"
 SUITESPARSE_COMPAT_VERSION = "5.10.1"
-SUPERLUDIST_COMPAT_VERSION = "8.0.1"
-METIS_COMPAT_VERSION = "5.1.1"
-SCOTCH_COMPAT_VERSION = "6.1.3"
-SCALAPACK_COMPAT_VERSION = "2.2.1"
-
+SUPERLUDIST_COMPAT_VERSION = "8.1.2"       
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
     ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-$(petsc_version).tar.gz",
-    "bfc836b52f57686b583c16ab7fae0c318a7b28141ca01656ad673c8ca23037fa"),
+    "df73ae13a4c5758325a9d69350cac423742657d8a8fc5782504b0e469ce46499"),
     DirectorySource("./bundled"),
 ]
 
@@ -28,7 +23,12 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+if [[ "${target}" == *-apple* ]]; then 
+    # Use Accelerate for BLAS/LAPACK dependencies
+    BLAS_LAPACK_LIB="-framework,Accelerate" 
+else
+    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+fi
 
 if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
@@ -50,13 +50,22 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
+#atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         # requires fixing, or is perhaps no longer required?
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 
 mkdir $libdir/petsc
 build_petsc()
 {
-    PETSC_CONFIG="${1}_${2}_${3}"
+    # Compile a debug version?
+    DEBUG=0
+    if [[ "${4}" == "deb" ]]; then
+        PETSC_CONFIG="${1}_${2}_${3}_deb"
+        DEBUG=1
+    else
+        PETSC_CONFIG="${1}_${2}_${3}"
+    fi
+
+
     if [[ "${3}" == "Int64" ]]; then
         USE_INT64=1
     else
@@ -112,6 +121,7 @@ build_petsc()
     echo "1="${1}
     echo "2="${2}
     echo "3="${3}
+    echo "4="${4}
     echo "USE_INT64"=$USE_INT64
     echo "Machine_name="$Machine_name
     
@@ -120,14 +130,14 @@ build_petsc()
         CC=${CC} \
         FC=${FC} \
         CXX=${CXX} \
-        COPTFLAGS='-O3' \
-        CXXOPTFLAGS='-O3' \
-        CFLAGS='-fno-stack-protector' \
+        COPTFLAGS='-O3 -g' \
+        CXXOPTFLAGS='-O3 -g' \
+        CFLAGS='-fno-stack-protector ' \
         FFLAGS="${MPI_FFLAGS}" \
         LDFLAGS="-L${libdir}" \
         FOPTFLAGS='-O3' \
         --with-64-bit-indices=${USE_INT64} \
-        --with-debugging=0 \
+        --with-debugging=${DEBUG} \
         --with-batch \
         --with-blaslapack-lib=$BLAS_LAPACK_LIB \
         --with-blaslapack-suffix="" \
@@ -145,8 +155,9 @@ build_petsc()
         --with-sowing=0 \
         --with-precision=${1} \
         --with-scalar-type=${2} \
+        --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
-        --SOSUFFIX=${PETSC_CONFIG}
+        --SOSUFFIX=${PETSC_CONFIG}                  # this was added through an earlier patch
 
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
@@ -170,14 +181,15 @@ build_petsc()
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
 }
 
-build_petsc double real Int32
-build_petsc single real Int32
-build_petsc double complex Int32
-build_petsc single complex Int32
-build_petsc double real Int64
-build_petsc single real Int64
-build_petsc double complex Int64
-build_petsc single complex Int64
+build_petsc double real Int32 opt
+build_petsc double real Int32 deb       # compile at least one debug version
+build_petsc single real Int32 opt
+build_petsc double complex Int32 opt
+build_petsc single complex Int32 opt
+build_petsc double real Int64 opt
+build_petsc single real Int64 opt
+build_petsc double complex Int64 opt
+build_petsc single complex Int64 opt
 """
 
 augment_platform_block = """
@@ -202,6 +214,7 @@ products = [
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int32_deb", :libpetsc_Float64_Real_Int32_deb, "\$libdir/petsc/double_real_Int32_deb/lib")
     LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
     LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
     LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
@@ -212,15 +225,15 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenBLAS32_jll"),
+    Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms)),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
     Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
-    Dependency("SCALAPACK32_jll"; compat=SCALAPACK_COMPAT_VERSION),
-    Dependency("METIS_jll"; compat=METIS_COMPAT_VERSION),
-    Dependency("SCOTCH_jll"; compat=SCOTCH_COMPAT_VERSION),
-    Dependency("PARMETIS_jll"; compat=PARMETIS_COMPAT_VERSION),
+    Dependency("SCALAPACK32_jll"),
+    Dependency("METIS_jll"),
+    Dependency("SCOTCH_jll"),
+    Dependency("PARMETIS_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
