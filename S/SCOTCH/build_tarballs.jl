@@ -13,22 +13,37 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/scotch*
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/dummysizes.patch
+cd ${WORKSPACE}/srcdir/scotch*
 
+# https://github.com/conda-forge/scotch-feedstock
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+  atomic_patch -p1 ${f}
+done
+
+mkdir -p src/dummysizes/build-host
+cd src/dummysizes/build-host
+cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt ../CMakeLists.txt
+
+CC=${CC_BUILD} cmake .. \
+    -DBUILD_PTSCOTCH=OFF \
+    -DCMAKE_BUILD_TYPE=Release
+
+make -j${nproc}
+
+cd ${WORKSPACE}/srcdir/scotch*
 mkdir build
 cd build
 
 if [[ "${target}" == *linux* ]]; then
-  FLAGS="-lrt -fPIC"
+  FLAGS="-lrt"
 else
-  FLAGS="-fPIC"
+  FLAGS=""
 fi
 
-CFLAGS=$FLAGS cmake \
+CFLAGS=$FLAGS cmake .. \
+    -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_CROSSCOMPILING_EMULATOR=${CC_BUILD} \
     -DCMAKE_BUILD_TYPE=Release \
     -DINTSIZE="32" \
     -DTHREADS=ON \
@@ -36,20 +51,13 @@ CFLAGS=$FLAGS cmake \
     -DBUILD_PTSCOTCH=OFF \
     -DBUILD_LIBESMUMPS=ON \
     -DBUILD_LIBSCOTCHMETIS=ON \
-    -DINSTALL_METIS_HEADERS=OFF ..
+    -DBUILD_DUMMYSIZES=OFF \
+    -DINSTALL_METIS_HEADERS=OFF
 
 make -j${nproc}
 make install
 
 install_license ../LICENSE_en.txt
-
-cd $libdir
-$CC -shared -I$libdir $(flagon -Wl,--whole-archive) libscotch.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotch.${dlext}
-$CC -shared $(flagon -Wl,--whole-archive) libesmumps.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libesmumps.${dlext}
-$CC -shared $(flagon -Wl,--whole-archive) libscotcherr.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotcherr.${dlext}
-$CC -shared $(flagon -Wl,--whole-archive) libscotcherrexit.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotcherrexit.${dlext}
-$CC -shared $(flagon -Wl,--whole-archive) libscotchmetisv3.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotchmetisv3.${dlext}
-$CC -shared $(flagon -Wl,--whole-archive) libscotchmetisv5.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libscotchmetisv5.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further

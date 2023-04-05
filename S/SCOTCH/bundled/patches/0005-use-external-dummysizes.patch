@@ -1,0 +1,65 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6b64a15..08cf2f8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -68,6 +68,9 @@ option(THREADS "Use multi-threading in Scotch and PT-Scotch" ON)
+ # Use MPI with threads
+ option(MPI_THREAD_MULTIPLE "Use multi-threading with MPI in PT-Scotch" ON)
+ 
++# Build Dummysizes
++option(BUILD_DUMMYSIZES "Build Dummysizes" ON)
++
+ # Build PT-Scotch
+ option(BUILD_PTSCOTCH "Build PT-Scotch" ON)
+ 
+diff --git a/src/libscotch/CMakeLists.txt b/src/libscotch/CMakeLists.txt
+index 7e5b479..6285b2f 100644
+--- a/src/libscotch/CMakeLists.txt
++++ b/src/libscotch/CMakeLists.txt
+@@ -45,24 +45,32 @@
+ ##                                                        ##
+ ############################################################
+ 
++
+ ################
+ #  dummysizes  #
+ ################
+ 
+-add_executable(dummysizes dummysizes.c)
+-set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+-if(BUILD_PTSCOTCH)
+-  find_package(MPI COMPONENTS C)
+-  if(NOT MPI_C_FOUND)
+-    message(FATAL_ERROR "MPI required to compile PT-Scotch")
+-  endif()
+-  add_executable(ptdummysizes dummysizes.c)
+-  set_target_properties(ptdummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+-  target_link_libraries(ptdummysizes PRIVATE MPI::MPI_C)
+-  add_dependencies(ptdummysizes scotch_h)
+-  set_target_properties(ptdummysizes PROPERTIES
+-    COMPILE_FLAGS -DSCOTCH_PTSCOTCH)
+-endif(BUILD_PTSCOTCH)
++if(BUILD_DUMMYSIZES)
++  add_executable(dummysizes dummysizes.c)
++  set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
++  if(BUILD_PTSCOTCH)
++    find_package(MPI COMPONENTS C)
++    if(NOT MPI_C_FOUND)
++      message(FATAL_ERROR "MPI required to compile PT-Scotch")
++    endif()
++    add_executable(ptdummysizes dummysizes.c)
++    set_target_properties(ptdummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
++    target_link_libraries(ptdummysizes PRIVATE MPI::MPI_C)
++    add_dependencies(ptdummysizes scotch_h)
++    set_target_properties(ptdummysizes PROPERTIES
++      COMPILE_FLAGS -DSCOTCH_PTSCOTCH)
++  endif(BUILD_PTSCOTCH)
++else()
++  add_executable(dummysizes IMPORTED GLOBAL)
++  set_property(TARGET dummysizes PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/src/dummysizes/build-host/dummysizes")
++  add_executable(ptdummysizes IMPORTED GLOBAL)
++  set_property(TARGET ptdummysizes PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/src/dummysizes/build-host/ptdummysizes")
++endif(BUILD_DUMMYSIZES)
+ 
+ ##############
+ #  scotch.h  #
