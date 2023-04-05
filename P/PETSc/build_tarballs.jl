@@ -25,7 +25,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 if [[ "${target}" == *-apple* ]]; then 
     # Use Accelerate for BLAS/LAPACK dependencies
-    BLAS_LAPACK_LIB="-framework,Accelerate" 
+    BLAS_LAPACK_LIB="-framework, Accelerate" 
 else
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 fi
@@ -106,7 +106,7 @@ build_petsc()
 
     # See if we can install MUMPS
     USE_MUMPS=0    
-    if [ -f "${libdir}/libdmumps.${dlext}" ] && [ "${1}" == "double" ]; then
+    if [ -f "${libdir}/libdmumps.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_MUMPS=1    
         MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumps.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
         MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
