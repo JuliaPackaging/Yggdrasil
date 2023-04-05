@@ -3,19 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.11.0"
+version = v"0.12.0"
 
 # Collection of sources required to build tar
 sources = [
-    ArchiveSource(
-        "https://github.com/tectonic-typesetting/tectonic/archive/tectonic@$(version).tar.gz",
-        "7bdd4b4b18af2bd6c127ab03e1abf3088ac2e3b5471467387bd60620331eab4d"
-    )
+    GitSource("https://github.com/tectonic-typesetting/tectonic.git",
+              "4dd8c217fd6483a53ed03e993e388e81d29d1265"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/tectonic-*/
+cd $WORKSPACE/srcdir/tectonic
 
 if [[ "${target}" == *-mingw* ]]; then
     export RUSTFLAGS="-Clink-args=-L${libdir}"

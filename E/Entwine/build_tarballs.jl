@@ -6,15 +6,17 @@ name = "Entwine"
 version = v"2.2.0"
 
 # Collection of sources required to complete build
+# Cmake build needs patching
 sources = [
-    ArchiveSource("https://github.com/connormanning/entwine/archive/refs/tags/$version.tar.gz", "c019a88be22c72690b7b608fef6ac2dc2dc2c113611a7a82c85828827801b653"),
+    GitSource("https://github.com/connormanning/entwine/",
+              "49ad52f985536cb8987d079402377cac50360cf3"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
-cd $WORKSPACE/srcdir/entwine-*
+cd $WORKSPACE/srcdir/entwine
 
 if [[ ${target} == *mingw* ]]; then
     
