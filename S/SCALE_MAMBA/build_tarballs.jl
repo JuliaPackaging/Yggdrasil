@@ -43,9 +43,6 @@ cp Setup.x${exe} ${prefix}/bin/
 # Only x86_64, no FreeBSD or windows, and no musl
 platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && !Sys.isfreebsd(p) && !Sys.iswindows(p) && libc(p) != "musl"]
 
-# Build with GCC 6 at least, to dodge C++ problems
-platforms = BinaryBuilder.replace_gcc_version.(platforms, :gcc6)
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("Player.x", :playerx),
@@ -54,10 +51,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "OpenSSL_jll",
-    "MPIR_jll",
-    "cryptopp_jll",
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("MPIR_jll"),
+    Dependency("cryptopp_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# Build with GCC 6 at least, to dodge C++ problems
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
