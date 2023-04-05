@@ -20,7 +20,6 @@ cd $WORKSPACE/srcdir
 cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
-# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
 
 mkdir build
 cd build
