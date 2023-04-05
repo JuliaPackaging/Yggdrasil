@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
-version = v"8.0.2"
-superlu_dist_version = v"8.0.0"
+version = v"8.1.2"
+superlu_dist_version = v"8.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "4459a89719b982dd47af5bb2494a011bb267195f"),
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "58e4171dda309255b3b66b0923cd04124f4c0c01"),
 ]
 
 # Bash recipe for building across all platforms
@@ -85,7 +85,7 @@ augment_platform_block = """
 # per Mose. Will return to it later and attempt to find a solution.
 platforms = supported_platforms()
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
