@@ -34,10 +34,12 @@ cd ${WORKSPACE}/srcdir/scotch*
 mkdir build
 cd build
 
+FLAGS=""
 if [[ "${target}" == *linux* ]]; then
-  FLAGS="-lrt"
-else
-  FLAGS=""
+    FLAGS+="-lrt"
+fi
+if [[ "${target}" == *musl* ]]; then
+    FLAGS+="-D_GNU_SOURCE"
 fi
 
 CFLAGS=$FLAGS cmake .. \
@@ -56,6 +58,10 @@ CFLAGS=$FLAGS cmake .. \
 
 make -j${nproc}
 make install
+
+if [[ "${target}" == *mingw* ]]; then
+    cp bin/*.dll $libdir
+fi
 
 install_license ../LICENSE_en.txt
 """
