@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "SCALE_MAMBA"
-version = v"1.5"
+version = v"1.14"
 
 # Collection of sources required to build SuiteSparse
 sources = [
     GitSource("https://github.com/KULeuven-COSIC/SCALE-MAMBA.git",
-              "d7c960afd0a9776f04e15a5653caf300dd42f20a"),
+              "6449e807c99c68203f6584166a7130055da52adb"),
     DirectorySource("./bundled"),
 ]
 
@@ -14,8 +14,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/SCALE-MAMBA/
 
-# Apply patch to fix multiple definitions error
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix_multiple_definitions.patch
+# Remove explicitly setting march in Makefile
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/remove_arch.patch
 
 cat > CONFIG.mine <<EOF
 ROOT = $(pwd)
@@ -41,6 +41,7 @@ install -Dvm 755 "Setup.x${exe}" "${bindir}/Setup.x${exe}"
 
 # Only x86_64, no FreeBSD or windows, and no musl
 platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && !Sys.isfreebsd(p) && !Sys.iswindows(p) && libc(p) != "musl"]
+platforms = expand_microarchitectures(platforms, ["avx","avx2","avx512"])
 
 # The products that we will ensure are always built
 products = [
@@ -57,4 +58,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Build with GCC 6 at least, to dodge C++ problems
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8")
