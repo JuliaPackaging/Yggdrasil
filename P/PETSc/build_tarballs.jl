@@ -126,6 +126,23 @@ build_petsc()
         LIBFLAGS="-L${libdir} -lssp" 
     fi
 
+    if [[ "${target}" == *-apple* ]]; then 
+        # on a mac, there might otherwise be confusion with clang
+        CC=gcc
+        FC=gfortran
+        CXX=g++
+    fi
+
+    if DEBUG==1; then
+        _COPTFLAGS='-O0 -g'
+        _CXXOPTFLAGS='-O0 -g'
+        _FOPTFLAGS='-O0' 
+    else
+        _COPTFLAGS='-O3 -g'
+        _CXXOPTFLAGS='-O3 -g'
+        _FOPTFLAGS='-O3' 
+    fi
+
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
     echo "USE_MUMPS="$USE_MUMPS
@@ -136,30 +153,23 @@ build_petsc()
     echo "USE_INT64"=$USE_INT64
     echo "Machine_name="$Machine_name
     echo "LIBFLAGS="$LIBFLAGS
-    
-    if [[ "${target}" == *-apple* ]]; then 
-        # on a mac, there might otherwise be confusion with clang
-        CC=gcc
-        FC=gfortran
-        CXX=g++
-    fi
-    
+    echo "target="$target
   
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
         FC=${FC} \
         CXX=${CXX} \
-        COPTFLAGS='-O3 -g' \
-        CXXOPTFLAGS='-O3 -g' \
+        COPTFLAGS=${_COPTFLAGS} \
+        CXXOPTFLAGS=${_CXXOPTFLAGS} \
+        FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix=""  \
         CFLAGS='-fno-stack-protector '  \
         FFLAGS="${MPI_FFLAGS}"  \
         LDFLAGS="${LIBFLAGS}"  \
-        FOPTFLAGS='-O3'  \
         --with-64-bit-indices=${USE_INT64}  \
-        --with-debugging=0  \
+        --with-debugging=${DEBUG}  \
         --with-batch \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
@@ -220,7 +230,7 @@ augment_platform_block = """
 """
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
+platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),Platform("i686","linux"; libc="musl") ]))
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
 # Avoid platforms where the MPI implementation isn't supported
@@ -265,4 +275,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"8")
