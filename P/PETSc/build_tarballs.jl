@@ -35,6 +35,7 @@ fi
 if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
     MPI_LIBS="${libdir}/msmpi.${dlext}"
+
 else
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
         MPI_FFLAGS=
@@ -49,12 +50,14 @@ else
         MPI_FFLAGS=
         MPI_LIBS=
     fi
+
 fi
+
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         
-atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/macos_version.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch   
 
 mkdir $libdir/petsc
 build_petsc()
@@ -117,6 +120,11 @@ build_petsc()
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
     fi
+    
+    LIBFLAGS="-L${libdir}" 
+    if [[ "${target}" == *-mingw* ]]; then
+        LIBFLAGS="-L${libdir} -lssp" 
+    fi
 
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
@@ -127,6 +135,7 @@ build_petsc()
     echo "4="${4}
     echo "USE_INT64"=$USE_INT64
     echo "Machine_name="$Machine_name
+    echo "LIBFLAGS="$LIBFLAGS
     
     if [[ "${target}" == *-apple* ]]; then 
         # on a mac, there might otherwise be confusion with clang
@@ -134,7 +143,8 @@ build_petsc()
         FC=gfortran
         CXX=g++
     fi
-
+    
+  
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
@@ -142,14 +152,14 @@ build_petsc()
         CXX=${CXX} \
         COPTFLAGS='-O3 -g' \
         CXXOPTFLAGS='-O3 -g' \
-        --with-blaslapack-lib=${BLAS_LAPACK_LIB} \
-        --with-blaslapack-suffix="" \
+        --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
+        --with-blaslapack-suffix=""  \
         CFLAGS='-fno-stack-protector '  \
-        FFLAGS="${MPI_FFLAGS}" \
-        LDFLAGS="-L${libdir} -lssp"  \
-        FOPTFLAGS='-O3' \
-        --with-64-bit-indices=${USE_INT64} \
-        --with-debugging=${DEBUG} \
+        FFLAGS="${MPI_FFLAGS}"  \
+        LDFLAGS="${LIBFLAGS}"  \
+        FOPTFLAGS='-O3'  \
+        --with-64-bit-indices=${USE_INT64}  \
+        --with-debugging=0  \
         --with-batch \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
