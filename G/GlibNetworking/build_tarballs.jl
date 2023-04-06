@@ -35,7 +35,7 @@ ninja install
 
 
 # Remove temporary links
-rm ${prefix}/bin/glib-compile-{resources,schemas}
+rm ${bindir}/glib-compile-{resources,schemas}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -58,8 +58,8 @@ products_windows = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Gettext_jll")
-    Dependency("OpenSSL_jll", v"1.1.20+0"; compat="~1.1.20")
-    Dependency("Glib_jll", v"2.74.0"; compat="~2.74.0")
+    Dependency("OpenSSL_jll"; compat="1.1.10")
+    Dependency("Glib_jll"; compat="2.74.0")
 ]
 
 include("../../fancy_toys.jl")
