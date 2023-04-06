@@ -8,7 +8,8 @@ version = v"3.18.5"
 petsc_version = v"3.18.5"
 MUMPS_COMPAT_VERSION = "5.5.1"
 SUITESPARSE_COMPAT_VERSION = "5.10.1"
-SUPERLUDIST_COMPAT_VERSION = "8.1.2"       
+SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
+MPItrampoline_compat_version="5.2.1"    
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
@@ -25,7 +26,8 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
 if [[ "${target}" == *-apple* ]]; then 
     # Use Accelerate for BLAS/LAPACK dependencies
-    BLAS_LAPACK_LIB="-framework, Accelerate" 
+#    BLAS_LAPACK_LIB="-framework, Accelerate" 
+    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 else
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 fi
@@ -50,12 +52,14 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-#atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         # requires fixing, or is perhaps no longer required?
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         # perhaps no longer required?
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/macos_version.patch
 
 mkdir $libdir/petsc
 build_petsc()
 {
+
     # Compile a debug version?
     DEBUG=0
     if [[ "${4}" == "deb" ]]; then
@@ -64,7 +68,6 @@ build_petsc()
     else
         PETSC_CONFIG="${1}_${2}_${3}"
     fi
-
 
     if [[ "${3}" == "Int64" ]]; then
         USE_INT64=1
@@ -125,6 +128,7 @@ build_petsc()
     echo "USE_INT64"=$USE_INT64
     echo "Machine_name="$Machine_name
     
+
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
@@ -132,15 +136,15 @@ build_petsc()
         CXX=${CXX} \
         COPTFLAGS='-O3 -g' \
         CXXOPTFLAGS='-O3 -g' \
-        CFLAGS='-fno-stack-protector ' \
+        --with-blaslapack-lib=${BLAS_LAPACK_LIB} \
+        --with-blaslapack-suffix="" \
+        CFLAGS='-fno-stack-protector' \
         FFLAGS="${MPI_FFLAGS}" \
         LDFLAGS="-L${libdir}" \
         FOPTFLAGS='-O3' \
         --with-64-bit-indices=${USE_INT64} \
         --with-debugging=${DEBUG} \
         --with-batch \
-        --with-blaslapack-lib=$BLAS_LAPACK_LIB \
-        --with-blaslapack-suffix="" \
         --with-superlu_dist=${USE_SUPERLU_DIST} \
         ${SUPERLU_DIST_LIB} \
         ${SUPERLU_DIST_INCLUDE} \
@@ -157,7 +161,7 @@ build_petsc()
         --with-scalar-type=${2} \
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
-        --SOSUFFIX=${PETSC_CONFIG}                  # this was added through an earlier patch
+        --SOSUFFIX=${PETSC_CONFIG}                  # this option was added through the patch above
 
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
@@ -200,7 +204,7 @@ augment_platform_block = """
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows")]))
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
