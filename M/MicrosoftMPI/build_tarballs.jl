@@ -86,6 +86,7 @@ install_license $WORKSPACE/destdir/share/licenses/MicrosoftMPI/* $WORKSPACE/srcd
 """
 
 platforms = filter!(Sys.iswindows, supported_platforms())
+platforms = expand_gfortran_versions(platforms)
 
 products = [
     # MicrosoftMPI
