@@ -64,10 +64,10 @@ build_petsc()
 {
 
     # Compile a debug version?
-    DEBUG=false
+    DEBUG=0
     if [[ "${4}" == "deb" ]]; then
         PETSC_CONFIG="${1}_${2}_${3}_deb"
-        DEBUG=true
+        DEBUG=1
     else
         PETSC_CONFIG="${1}_${2}_${3}"
     fi
@@ -214,13 +214,13 @@ build_petsc()
 
 build_petsc double real Int32 opt
 build_petsc double real Int32 deb       # compile at least one debug version
-#build_petsc single real Int32 opt
-#build_petsc double complex Int32 opt
-#build_petsc single complex Int32 opt
-#build_petsc double real Int64 opt
-#build_petsc single real Int64 opt
-#build_petsc double complex Int64 opt
-#build_petsc single complex Int64 opt
+build_petsc single real Int32 opt
+build_petsc double complex Int32 opt
+build_petsc single complex Int32 opt
+build_petsc double real Int64 opt
+build_petsc single real Int64 opt
+build_petsc double complex Int64 opt
+build_petsc single complex Int64 opt
 """
 
 augment_platform_block = """
@@ -246,13 +246,13 @@ products = [
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int32_deb", :libpetsc_Float64_Real_Int32_deb, "\$libdir/petsc/double_real_Int32_deb/lib")
-    #LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    #LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    #LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
-    #LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
-    #LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    #LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    #LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
+    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
 
 dependencies = [
@@ -275,4 +275,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"8")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
