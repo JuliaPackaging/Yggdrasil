@@ -107,6 +107,8 @@ diff --git a/src/sys/fileio/fretrieve.c b/src/sys/fileio/fretrieve.c
 index d214c66aef..1ec946fd49 100644
 --- a/src/sys/fileio/fretrieve.c
 +++ b/src/sys/fileio/fretrieve.c
+--- fretrieve.c	2022-10-01 06:12:21
++++ fretrieve_new.c	2023-04-06 11:32:03
 @@ -119,10 +119,17 @@
    PetscMPIInt        size, rank, *tagvalp, sum, cnt, i;
    PetscBool          flg, iflg;
@@ -117,25 +119,26 @@ index d214c66aef..1ec946fd49 100644
    int                err;
  
    PetscFunctionBegin;
-+
++  
 +  if (!have_Petsc_Tmp_keyval) {
-+     have_Petsc_Tmp_keyval = 1;
-+     Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
++    have_Petsc_Tmp_keyval = 1;
++    Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
 +  }
 +
    PetscCallMPI(MPI_Comm_size(comm, &size));
    if (size == 1) {
      *shared = PETSC_TRUE;
-@@ -235,9 +242,17 @@
+@@ -234,10 +241,17 @@
+   PetscMPIInt        size, rank, *tagvalp, sum, cnt, i;
    PetscBool          flg, iflg;
    FILE              *fd;
-   static PetscMPIInt Petsc_WD_keyval = MPI_KEYVAL_INVALID;
+-  static PetscMPIInt Petsc_WD_keyval = MPI_KEYVAL_INVALID;
 +  static int         have_Petsc_WD_keyval = 0;
 +  static PetscMPIInt Petsc_WD_keyval;
    int                err;
  
    PetscFunctionBegin;
-+
++  
 +  if (!have_Petsc_WD_keyval) {
 +    have_Petsc_WD_keyval = 1;
 +    Petsc_WD_keyval = MPI_KEYVAL_INVALID;
@@ -244,3 +247,19 @@ index 9422402d2e..e15cea0ba6 100644
  
  static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
  { 
+
+diff --git a/src/vec/vec/utils/comb.c b/src/vec/vec/utils/comb.c
+index 9422402d2e..e15cea0ba6 100644
+--- a/src/vec/vec/utils/comb.c
++++ b/src/vec/vec/utils/comb.c
+@@ -271,7 +271,9 @@
+   PetscFunctionReturn(0);
+ }
+ 
+-PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
++PetscMPIInt Petsc_Reduction_keyval;
++__attribute__((__constructor__)) static void init_Petsc_Reduction_keyval() { Petsc_Reduction_keyval = MPI_KEYVAL_INVALID; }
++
+ 
+ /*
+    Private routine to delete internal storage when a communicator is freed.
