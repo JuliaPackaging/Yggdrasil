@@ -52,7 +52,7 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         # perhaps no longer required?
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/macos_version.patch
 
@@ -128,6 +128,12 @@ build_petsc()
     echo "USE_INT64"=$USE_INT64
     echo "Machine_name="$Machine_name
     
+    if [[ "${target}" == *-apple* ]]; then 
+        # on a mac, there might otherwise be confusion with clang
+        CC=gcc
+        FC=gfortran
+        CXX=g++
+    fi
 
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
@@ -138,13 +144,22 @@ build_petsc()
         CXXOPTFLAGS='-O3 -g' \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB} \
         --with-blaslapack-suffix="" \
-        CFLAGS='-fno-stack-protector' \
+        CFLAGS='-fno-stack-protector '  \
         FFLAGS="${MPI_FFLAGS}" \
-        LDFLAGS="-L${libdir}" \
+        LDFLAGS="-L${libdir} -lssp"  \
         FOPTFLAGS='-O3' \
         --with-64-bit-indices=${USE_INT64} \
         --with-debugging=${DEBUG} \
         --with-batch \
+        --with-mpi-lib="${MPI_LIBS}" \
+        --known-mpi-int64_t=0 \
+        --with-mpi-include="${includedir}" \
+        --with-sowing=0 \
+        --with-precision=${1}  \
+        --with-scalar-type=${2} \
+        --with-pthread=0 \
+        --PETSC_ARCH=${target}_${PETSC_CONFIG} \
+        --with-suitesparse=1  \
         --with-superlu_dist=${USE_SUPERLU_DIST} \
         ${SUPERLU_DIST_LIB} \
         ${SUPERLU_DIST_INCLUDE} \
@@ -152,16 +167,8 @@ build_petsc()
         ${MUMPS_LIB} \
         ${MUMPS_INCLUDE} \
         --with-suitesparse=${USE_SUITESPARSE} \
-        --known-64-bit-blas-indices=0 \
-        --with-mpi-lib="${MPI_LIBS}" \
-        --known-mpi-int64_t=0 \
-        --with-mpi-include="${includedir}" \
-        --with-sowing=0 \
-        --with-precision=${1} \
-        --with-scalar-type=${2} \
-        --with-pthread=0 \
-        --PETSC_ARCH=${target}_${PETSC_CONFIG} \
-        --SOSUFFIX=${PETSC_CONFIG}                  # this option was added through the patch above
+        --SOSUFFIX=${PETSC_CONFIG} \
+        --with-clean=1
 
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
