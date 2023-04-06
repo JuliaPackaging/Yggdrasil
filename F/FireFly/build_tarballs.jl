@@ -20,10 +20,6 @@ cd ${WORKSPACE}/srcdir/firefly
 sed -i "s/TARGETS FireFly_static FireFly_shared/TARGETS FireFly_shared/g" CMakeLists.txt
 cd $WORKSPACE/srcdir/FireFly-build
 
-if [[ "$target" == x86_64-*-mingw* ]]; then
-    EXTRA_CMAKE_FLAGS="-DMPI_CXX_LIBRARIES=msmpi64"
-fi
-
 cmake -DWITH_FLINT=true \
     -DWITH_JEMALLOC=true \
     -DWITH_MPI=true \
@@ -46,7 +42,7 @@ argument_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=Sys.iswindows)
 filter!(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
