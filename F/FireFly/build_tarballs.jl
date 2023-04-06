@@ -20,12 +20,22 @@ cd ${WORKSPACE}/srcdir/firefly
 sed -i "s/TARGETS FireFly_static FireFly_shared/TARGETS FireFly_shared/g" CMakeLists.txt
 cd $WORKSPACE/srcdir/FireFly-build
 
+EXTRA_CMAKE_FLAGS=()
+#help find mpi on mingw, subset of https://github.com/JuliaPackaging/Yggdrasil/blob/b4fdb545c3954cff218051d7520c7418991d3416/T/TauDEM/build_tarballs.jl#L28-L53
+if [[ "$target" == x86_64-*-mingw* ]]; then
+    EXTRA_CMAKE_FLAGS+=(
+        -DMPI_HOME=${prefix}
+        -DMPI_GUESS_LIBRARY_NAME=MSMPI
+    )
+fi
+
 cmake -DWITH_FLINT=true \
     -DWITH_JEMALLOC=true \
     -DWITH_MPI=true \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    ${EXTRA_CMAKE_FLAGS} \
     ${WORKSPACE}/srcdir/firefly
 
 cmake --build . -j${nproc} -t install
@@ -70,6 +80,6 @@ append!(dependencies, platform_dependencies)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6",
     # preferred_gcc_version = v"5.2.0" # for std=c++14
-    preferred_gcc_version = v"6.1.0" # for making the target example
-    # preferred_gcc_version = v"7.1.0" # for avoiding unexpected segmentation fault on x86_64-linux-gnu-cxx11 @ Buildkite.com
+    # preferred_gcc_version = v"6.1.0" # for making the target example
+    preferred_gcc_version = v"7.1.0" # for avoiding unexpected segmentation fault on x86_64-linux-gnu-cxx11 @ Buildkite.com
 )
