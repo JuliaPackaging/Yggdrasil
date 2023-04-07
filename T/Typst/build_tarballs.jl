@@ -14,8 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/typst
 cargo build -p typst-cli --release
-mkdir -p $bindir
-mv target/$rust_target/release/typst $bindir/
+install -Dvm 755 "target/${rust_target}/release/typst" "${bindir}/typst${exeext}"
 install_license LICENSE
 """
 
