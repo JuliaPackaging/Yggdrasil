@@ -24,7 +24,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-if [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" == *-apple* ]]; then
     BLAS_LAPACK_LIB=
 else
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
@@ -215,14 +215,14 @@ build_petsc()
         # julia> run(`$(PETSc_jll.ex42()) -stokes_ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
         make --directory=${workdir} PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex42
-        install -Dvm 755 ${workdir}/ex42${exeext} "${bindir}/ex42${exeext}"
+        install -Dvm 755 ${workdir}/ex42 "${bindir}/ex42${exeext}"
 
         # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531 
         # This can later be run with:
         # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex4
-        install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
+        install -Dvm 755 ${workdir}/ex4 "${bindir}/ex4${exeext}"
 
     fi
 
