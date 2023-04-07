@@ -60,7 +60,6 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 mkdir $libdir/petsc
 build_petsc()
 {
-
     # Compile a debug version?
     DEBUG_FLAG=0
     if [[ "${4}" == "deb" ]]; then
@@ -80,9 +79,11 @@ build_petsc()
     USE_SUPERLU_DIST=0    
     SUPERLU_DIST_LIB=""
     SUPERLU_DIST_INCLUDE=""
-    if [ -f "${libdir}/libsuperlu_dist_Int64.${dlext}" ] &&  [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
+    if [ -f "${libdir}/libsuperlu_dist_Int32.${dlext}" ] &&  [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
         USE_SUPERLU_DIST=1    
-        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
+        #SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
+        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_Int32.${dlext}"
+        
         SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${includedir}"
     fi
     
@@ -130,7 +131,7 @@ build_petsc()
         LIBFLAGS="-L${libdir} -framework Accelerate" 
     fi
 
-    if  [[ DEBUG_FLAG == 1 ]]; then
+    if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
         _CXXOPTFLAGS='-O0 -g'
         _FOPTFLAGS='-O0' 
@@ -169,7 +170,7 @@ build_petsc()
         FFLAGS="${MPI_FFLAGS}"  \
         LDFLAGS="${LIBFLAGS}"  \
         --with-64-bit-indices=${USE_INT64}  \
-        --with-debugging=$DEBUG_FLAG  \
+        --with-debugging=${DEBUG_FLAG}  \
         --with-batch \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
@@ -212,16 +213,17 @@ build_petsc()
         # Compile two examples (to allow testing the installation). 
         # This can later be run with:
         # julia> run(`$(PETSc_jll.ex42()) -stokes_ksp_monitor -log_view` )
-        cd  ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
-        make PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex42
-        install -Dvm 755 ex42${exeext} "${bindir}/ex42${exeext}"
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
+        make --directory=${workdir} PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex42
+        install -Dvm 755 ${workdir}/ex42${exeext} "${bindir}/ex42${exeext}"
 
         # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531 
         # This can later be run with:
         # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
-        cd  ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
-        make PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex4
-        install -Dvm 755 ex4${exeext} "${bindir}/ex4${exeext}"
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex4
+        install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
+
     fi
 
     # we don't particularly care about the examples
