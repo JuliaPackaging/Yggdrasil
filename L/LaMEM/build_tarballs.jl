@@ -14,7 +14,7 @@ PETSc_COMPAT_VERSION = "3.16.8" # Note: this is the version of the PETSc_jll pac
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bitbucket.org/bkaus/lamem.git", 
-    "b1fcff8d06dc8ab64bcc7b42e86668cc2facfcdc")
+    "e106f62e19a90b4153564a1dd07bc8778245936c")
 ]
 
 # Bash recipe for building across all platforms
