@@ -24,10 +24,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-if [[ "${target}" == *-apple* ]]; then 
-    # Use Accelerate for BLAS/LAPACK dependencies
-#    BLAS_LAPACK_LIB="-framework, Accelerate" 
-    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_LAPACK_LIB=
 else
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 fi
@@ -64,10 +62,10 @@ build_petsc()
 {
 
     # Compile a debug version?
-    DEBUG=0
+    DEBUG_FLAG=0
     if [[ "${4}" == "deb" ]]; then
         PETSC_CONFIG="${1}_${2}_${3}_deb"
-        DEBUG=1
+        DEBUG_FLAG=1
     else
         PETSC_CONFIG="${1}_${2}_${3}"
     fi
@@ -82,12 +80,10 @@ build_petsc()
     USE_SUPERLU_DIST=0    
     SUPERLU_DIST_LIB=""
     SUPERLU_DIST_INCLUDE=""
-    if [ -d "${libdir}/superlu_dist" ] &&  [ "${1}" == "double" ]; 
-    then
+    if [ -f "${libdir}/libsuperlu_dist_Int64.${dlext}" ] &&  [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
         USE_SUPERLU_DIST=1    
-        SUPERLU_DIR="${libdir}/superlu_dist/${3}"
-        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${SUPERLU_DIR}/lib/libsuperlu_dist_${3}.${dlext}"
-        SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${SUPERLU_DIR}/include"
+        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
+        SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${includedir}"
     fi
     
     USE_SUITESPARSE=0
@@ -131,9 +127,10 @@ build_petsc()
         CC=gcc
         FC=gfortran
         CXX=g++
+        LIBFLAGS="-L${libdir} -framework Accelerate" 
     fi
 
-    if DEBUG==true; then
+    if  [[ DEBUG_FLAG == 1 ]]; then
         _COPTFLAGS='-O0 -g'
         _CXXOPTFLAGS='-O0 -g'
         _FOPTFLAGS='-O0' 
@@ -154,7 +151,10 @@ build_petsc()
     echo "Machine_name="$Machine_name
     echo "LIBFLAGS="$LIBFLAGS
     echo "target="$target
-  
+    echo "DEBUG="${DEBUG_FLAG}
+    echo "COPTFLAGS="${_COPTFLAGS}
+    echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
+
     mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         CC=${CC} \
@@ -169,7 +169,7 @@ build_petsc()
         FFLAGS="${MPI_FFLAGS}"  \
         LDFLAGS="${LIBFLAGS}"  \
         --with-64-bit-indices=${USE_INT64}  \
-        --with-debugging=${DEBUG}  \
+        --with-debugging=$DEBUG_FLAG  \
         --with-batch \
         --with-mpi-lib="${MPI_LIBS}" \
         --known-mpi-int64_t=0 \
@@ -179,7 +179,6 @@ build_petsc()
         --with-scalar-type=${2} \
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
-        --with-suitesparse=1  \
         --with-superlu_dist=${USE_SUPERLU_DIST} \
         ${SUPERLU_DIST_LIB} \
         ${SUPERLU_DIST_INCLUDE} \
@@ -208,16 +207,34 @@ build_petsc()
     # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
     # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
 
+    if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
+        
+        # Compile two examples (to allow testing the installation). 
+        # This can later be run with:
+        # julia> run(`$(PETSc_jll.ex42()) -stokes_ksp_monitor -log_view` )
+        cd  ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
+        make PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex42
+        install -Dvm 755 ex42${exeext} "${bindir}/ex42${exeext}"
+
+        # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531 
+        # This can later be run with:
+        # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
+        cd  ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
+        make PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex4
+        install -Dvm 755 ex4${exeext} "${bindir}/ex4${exeext}"
+    fi
+
     # we don't particularly care about the examples
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
+
 }
 
+build_petsc double real Int64 opt
+build_petsc double real Int64 deb       # compile at least one debug version
 build_petsc double real Int32 opt
-build_petsc double real Int32 deb       # compile at least one debug version
 build_petsc single real Int32 opt
 build_petsc double complex Int32 opt
 build_petsc single complex Int32 opt
-build_petsc double real Int64 opt
 build_petsc single real Int64 opt
 build_petsc double complex Int64 opt
 build_petsc single complex Int64 opt
@@ -242,17 +259,21 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), pla
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 products = [
+    ExecutableProduct("ex4", :ex4)
+    ExecutableProduct("ex42", :ex42)
+
     # Current default build, equivalent to Float64_Real_Int32
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc, "\$libdir/petsc/double_real_Int32/lib")
+    LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
+    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
     LibraryProduct("libpetsc_double_real_Int32_deb", :libpetsc_Float64_Real_Int32_deb, "\$libdir/petsc/double_real_Int32_deb/lib")
     LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
     LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
     LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
-    LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
     LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
     LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+
 ]
 
 dependencies = [
