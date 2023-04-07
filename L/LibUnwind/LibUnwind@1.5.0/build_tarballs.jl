@@ -37,7 +37,8 @@ export CFLAGS="-DPI -fPIC"
     --libdir=${libdir} \
     --enable-minidebuginfo \
     --enable-zlibdebuginfo \
-    --disable-tests
+    --disable-tests \
+    --disable-conservative-checks
 make -j${nproc}
 make install
 

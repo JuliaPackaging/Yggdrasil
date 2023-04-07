@@ -6,12 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MAGEMin"
-version = v"1.2.4"
+version = v"1.3.1" 
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "2bbe31fbc50827e4442ec971598ea627f3773e7b")
-        ]
+                    "0f4f0ee994158845ef8a602c8725092e89913108")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -29,8 +28,14 @@ fi
 
 CCFLAGS="-O3 -g -fPIC -std=c99"
 
-LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}"
-INC="-I${includedir}"
+if [[ "${target}" == *-apple* ]]; then 
+    # Use Accelerate for Lapack dependencies
+    LIBS="-L${libdir} -lm -framework Accelerate -lnlopt ${MPI_LIBS}"
+    INC="-I${includedir}"
+else
+    LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}"
+    INC="-I${includedir}"
+fi
 
 # Compile library:
 make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
@@ -76,7 +81,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778"))
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
+    Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 append!(dependencies, platform_dependencies)

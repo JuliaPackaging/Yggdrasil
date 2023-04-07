@@ -22,18 +22,18 @@ using BinaryBuilder, Pkg
 #
 
 # WARNING WARNING WARNING: any change to the the version of this JLL should be carefully
-# coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
+# coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"2.9.0"
-version_offset = v"0.0.1"
+version_offset = v"0.0.5"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git", "e143df4b0f19d2f841e36234a12b69f48c4359b9"), # git tag v2.9.0
+    GitSource("https://github.com/flintlib/flint2.git", "fe4ecf8a99b9b7c52ad2b861e79c9c9aac5c1a0a"), # v2.9.0 + bugfixes
     DirectorySource("./bundled"),
 ]
 
@@ -47,6 +47,11 @@ elif [[ ${target} == *mingw* ]]; then
    extraflags=--reentrant
 fi
 
+# Currently we backport 0292521af462dcd3ba747255a4c5ed9317d911dd,
+#                       bfbc1eb206288abe7b9ccd04d3cb104b4a2b3898,
+#                       a7a234463c0d4b5730d05ad57ab2798b2df26127
+# in make_flint_great_again.patch
+# Drop once we bump the version to 3.0
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done

@@ -7,14 +7,14 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 name = "jlqml"
-version = v"0.4"
+version = v"0.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/barche/jlqml.git", "2f463a86e305fb49e072bc5c2c2cc8e6026ae8dd"),
+    GitSource("https://github.com/barche/jlqml.git", "e542c7f6f6cc2add5a80fc46033d5074c1cde5a5"),
 ]
 
 # Bash recipe for building across all platforms

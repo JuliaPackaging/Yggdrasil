@@ -3,16 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"0.2.1"
+version = v"800.0.301"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.0.tgz", "74c2bb3be6b9b99e75b03b3161ebcfbfb1d211e7becdd9929328a6e92ffce5a7"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz", "5ad50eb42254c825d96f5747d8f3568dcbff0284dfbd1a727910c5a7c2899091"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# needed for now
+# clock_gettime requires linking to librt -lrt with old glibc
+# remove when CMake accounts for this
+if [[ "${target}" == *86*-linux-gnu ]]; then
+   export LDFLAGS="-lrt"
+elif [[ "${target}" == *-mingw* ]]; then
+   # this is required to link to bliss on mingw
+   export LDFLAGS=-L${libdir}
+fi
+
 cd scipoptsuite*
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findbliss.patch
+
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
@@ -23,16 +37,22 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DGCG=0\
   -DUG=0\
   -DAMPL=0\
-  -DBOOST=off\
+  -DBOOST=ON\
   -DSYM=bliss\
-  -DIPOPT_DIR=${prefix} -DIPOPT_LIBRARIES=${libdir} ..
+  -DTPI=tny\
+  -DIPOPT_DIR=${prefix} \
+  -DIPOPT_LIBRARIES=${libdir} \
+  -DBLISS_INCLUDE_DIR=${includedir} \
+  -DBLISS_LIBRARY=bliss \
+  ..
 make -j${nproc}
 make install
 
 mkdir -p ${prefix}/share/licenses/SCIP
-for dir in papilo scip soplex; do
-    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/COPYING ${prefix}/share/licenses/SCIP/LICENSE_${dir}
+for dir in scip soplex; do
+    cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP/LICENSE_${dir}
 done
+cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP/LICENSE_papilo
 """
 
 # These are the platforms we will build for by default, unless further

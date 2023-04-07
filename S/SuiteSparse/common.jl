@@ -1,12 +1,22 @@
 using BinaryBuilder, Pkg
 
-version = v"5.10.1"
 
 # Collection of sources required to build SuiteSparse
-sources = [
-    GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
-              "538273cfd53720a10e34a3d80d3779b607e1ac26"),
-]
+function suitesparse_sources(version::VersionNumber; kwargs...)
+    suitesparse_version_sources = Dict(
+        v"5.10.1" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "538273cfd53720a10e34a3d80d3779b607e1ac26")
+        ],
+        v"7.0.1" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "03350b0faef6b77d965ddb7c3cd3614a45376bfd"),
+        ],
+    )
+    return Any[
+        suitesparse_version_sources[version]...,
+    ]
+end
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms(;experimental=true)
@@ -30,6 +40,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"),
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]

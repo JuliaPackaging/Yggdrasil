@@ -44,6 +44,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libgmsh", "gmsh"], :libgmsh),
+    ExecutableProduct("gmsh", :gmsh),
     FileProduct("lib/gmsh.jl", :gmsh_api)
 ]
 

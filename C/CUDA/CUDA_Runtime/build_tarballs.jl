@@ -5,21 +5,14 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.1"
+version = v"0.5.0"
 
-cuda_versions = [v"10.0", v"10.2",
-                 v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
+cuda_versions = [v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6", v"11.7", v"11.8",
+                 v"12.0", v"12.1"]
 
 augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    $(CUDA.augment)
-
-    augment_cuda_toolkit!(platform) = augment_cuda_toolkit!(platform, $cuda_versions)
-
-    function augment_platform!(platform::Platform)
-        augment_cuda_toolkit!(platform)
-    end"""
+    $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
+    const cuda_toolkits = $cuda_versions"""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -32,9 +25,9 @@ for cuda_version in cuda_versions
         augmented_platform[CUDA.platform_name] = CUDA.platform(cuda_version)
 
         should_build_platform(triplet(augmented_platform)) || continue
-        push!(builds, (;
-            dependencies, script, products,
-            platforms=[augmented_platform],
+        push!(builds,
+              (; dependencies=[Dependency("CUDA_Driver_jll"; compat="0.5"); dependencies],
+                 script, products=get_products(platform), platforms=[augmented_platform],
         ))
     end
 end
@@ -50,6 +43,6 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, [], build.script,
                    build.platforms, build.products, build.dependencies;
-                   julia_compat="1.6", lazy_artifacts=true,
-                   augment_platform_block)
+                   julia_compat="1.6", preferred_gcc_version = v"6.1.0",
+                   lazy_artifacts=true, augment_platform_block)
 end

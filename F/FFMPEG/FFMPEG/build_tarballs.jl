@@ -37,8 +37,9 @@ dependencies = [
     Dependency("x265_jll"; compat="~3.5"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Opus_jll"),
+    Dependency("PCRE2_jll"; compat="10.35"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

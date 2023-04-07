@@ -54,6 +54,7 @@ fi
     "${FLAGS[@]}"
 make -C src/interfaces/libpq -j${nproc}
 make -C src/interfaces/libpq install
+make -C src/include install
 
 # Delete static library
 rm ${prefix}/lib/libpq.a
@@ -71,7 +72,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Kerberos_krb5_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 

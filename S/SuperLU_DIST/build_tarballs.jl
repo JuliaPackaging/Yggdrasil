@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
-version = v"8.0.1"
-superlu_dist_version = v"8.0.0"
+version = v"8.1.2"
+superlu_dist_version = v"8.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "4459a89719b982dd47af5bb2494a011bb267195f"),
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "58e4171dda309255b3b66b0923cd04124f4c0c01"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,23 +24,29 @@ if [[ "${target}" == *-mingw* ]]; then
     # This is required to ensure that MSMPI can be found by cmake
     export LDFLAGS="-L${libdir} -lmsmpi"
     PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
-else
-    PLATFLAGS="-DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${libdir}/libparmetis.${dlext};${libdir}/libmetis.${dlext}"
 fi
+
+BLAS="libopenblas"
 
 build_superlu_dist()
 {
     if [[ "${1}" == "Int64" ]]; then
         INT=64
+        METIS_PATH="${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
+        PARMETIS_PATH="${libdir}/libparmetis_Int64_Real32.${dlext}"
     else
         INT=32
+        METIS_PATH="${libdir}/libmetis.${dlext}"
+        PARMETIS_PATH="${libdir}/libparmetis.${dlext}"
     fi
-    SUPERLU_PREFIX=${libdir}/superlu_dist/Int${INT}
-    mkdir -p ${SUPERLU_PREFIX}
+    if [[ "${target}" != *-mingw* ]]; then
+        PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=TRUE -DTPL_PARMETIS_INCLUDE_DIRS=${includedir} -DTPL_PARMETIS_LIBRARIES=${PARMETIS_PATH};${METIS_PATH}"
+    fi
+
     mkdir build-${INT}
     pushd build-${INT}
     cmake \
-        -DCMAKE_INSTALL_PREFIX=${SUPERLU_PREFIX} \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_SHARED_LIBS=ON \
@@ -51,7 +57,7 @@ build_superlu_dist()
         -Denable_single=ON \
         -Denable_double=ON \
         -Denable_complex16=ON \
-        -DTPL_BLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+        -DTPL_BLAS_LIBRARIES="${libdir}/${BLAS}.${dlext}" \
         ${PLATFLAGS} \
         -DCMAKE_C_FLAGS="-std=c99" \
         -DXSDK_INDEX_SIZE=${INT} \
@@ -79,7 +85,7 @@ augment_platform_block = """
 # per Mose. Will return to it later and attempt to find a solution.
 platforms = supported_platforms()
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
@@ -96,7 +102,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.6"),
     Dependency("METIS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.

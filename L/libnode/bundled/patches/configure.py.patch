@@ -1,0 +1,17 @@
+diff --git a/configure.py b/configure.py
+index a4e5723067..60ec604454 100755
+--- a/configure.py
++++ b/configure.py
+@@ -1245,9 +1245,9 @@ def configure_node(o):
+ 
+   o['variables']['want_separate_host_toolset'] = int(cross_compiling)
+ 
+-  # Enable branch protection for arm64
+-  if target_arch == 'arm64':
+-    o['cflags']+=['-msign-return-address=all']
++  # # Enable branch protection for arm64
++  # if target_arch == 'arm64':
++  #   o['cflags']+=['-msign-return-address=all']
+ 
+   if options.node_snapshot_main is not None:
+     if options.shared:

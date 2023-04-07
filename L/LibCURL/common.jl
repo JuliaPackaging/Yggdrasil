@@ -2,9 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-function build_libcurl(ARGS, name::String)
-    version = v"7.84.0"
-    hash = "3c6893d38d054d4e378267166858698899e9d87258e8ff1419d020c395384535"
+const curl_hashes = Dict(
+    v"7.88.1" => "cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded82bbf3c7",
+    v"8.0.1"  => "5fd29000a4089934f121eff456101f0a5d09e2a3e89da1d714adf06c4be887cb",
+)
+
+function build_libcurl(ARGS, name::String, version::VersionNumber)
+    hash = curl_hashes[version]
 
     if name == "CURL"
         this_is_curl_jll = true
@@ -27,12 +31,13 @@ function build_libcurl(ARGS, name::String)
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
-        --without-ssl --without-gnutls
+        --without-gnutls
         --without-libidn2 --without-librtmp
         --without-nss --without-libpsl
-	--disable-ares --disable-manual
+        --disable-ares --disable-manual
         --disable-ldap --disable-ldaps --without-zsh-functions-dir
         --disable-static --without-libgsasl
+        --without-brotli
 
         # A few things we actually enable
         --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}

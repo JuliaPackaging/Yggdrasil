@@ -5,20 +5,27 @@ version = v"1.0.0"
 
 # Collection of sources
 sources = [
-    GitSource("https://github.com/minio/minio", "ed0cbfb31e00644013e6c2073310a2268c04a381"),
-    FileSource("https://dl.min.io/server/minio/release/darwin-arm64/minio", "6a6710fa637aa4bd95a83ad43dd0e5a2ed223adeb18e45148d339aa8ca59cddc"; filename="miniobin")
+    GitSource("https://github.com/minio/minio", "20c89ebbb30f44bbd0eba4e462846a89ab3a56fa"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/minio
 install_license LICENSE
-if [[ "${target}" == aarch64-apple-* ]]; then
-    install -Dvm 755 ${WORKSPACE}/srcdir/miniobin ${bindir}/minio
-    exit
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK to work around compilation failures
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
 fi
+
 mkdir -p ${bindir}
-GO111MODULE=on CGO_ENABLED=1 go build -o ${bindir}
+GO111MODULE=on CGO_ENABLED=1 GOTMPDIR=$WORKSPACE go build -o ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -31,8 +38,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               compilers=[:c, :go], julia_compat="1.6")

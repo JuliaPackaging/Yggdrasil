@@ -1,0 +1,11 @@
+--- a/MagickCore/timer.c
++++ b/MagickCore/timer.c
+@@ -200,7 +200,7 @@
+ */
+ static double ElapsedTime(void)
+ {
+-#if defined(MAGICKCORE_HAVE_CLOCK_GETTIME)
++#if defined(MAGICKCORE_HAVE_CLOCK_GETTIME) && defined(HAVE_CLOCK_REALTIME)
+ #define NANOSECONDS_PER_SECOND  1000000000.0
+ #if defined(CLOCK_HIGHRES)
+ #  define CLOCK_ID CLOCK_HIGHRES

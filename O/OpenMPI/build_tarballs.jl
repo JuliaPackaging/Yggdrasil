@@ -4,10 +4,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
-version = v"4.1.3"
+version = v"4.1.5"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "9c0fd1f78fc90ca9b69ae4ab704687d5544220005ccd7678bf58cc13135e67e0"),
+                  "c018b127619d2a2a30c1931f316fc8a245926d0f5b4ebed4711f9695e7f70925"),
     DirectorySource("./bundled"),
 ]
 
@@ -77,7 +77,7 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"),
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 
 init_block = raw"""

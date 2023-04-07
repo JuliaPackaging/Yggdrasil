@@ -3,19 +3,19 @@
 using BinaryBuilder
 
 name = "Libepoxy"
-version = v"1.5.8"
+version = v"1.5.10"
 
 # Collection of sources required to build Libepoxy
 sources = [
-    ArchiveSource("https://github.com/anholt/libepoxy/releases/download/$(version)/libepoxy-$(version).tar.xz",
-                  "cf05e4901778c434aef68bb7dc01bea2bce15440c0cecb777fb446f04db6fe0d")
+    ArchiveSource("https://github.com/anholt/libepoxy/archive/refs/tags/$(version).tar.gz",
+                  "a7ced37f4102b745ac86d6a70a9da399cc139ff168ba6b8002b4d8d43c900c15")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libepoxy-*/
 mkdir build && cd build
-meson .. -Dtest=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """

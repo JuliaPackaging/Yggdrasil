@@ -6,14 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "22.07"
-# version = VersionNumber(version_string)
-version = v"22.7.1"
+version_string = "23.04"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "7df433c780ab8429362df8d6d995c95d87a7c3f31ab81d5b0f416203dece086d"),
+                  "b070949611abd2156208e675e40e5e73ed405bf83e3b1e8ba70fbb451a9e7dd7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,12 +21,7 @@ cd $WORKSPACE/srcdir
 cd amrex
 mkdir build
 cd build
-if [[ "$target" == *-apple-* ]]; then
-    # Apple's Clang does not support OpenMP
-    omp_opts="-DAMReX_OMP=OFF"
-else
-    omp_opts="-DAMReX_OMP=ON"
-fi
+
 if [[ "$target" == *-apple-* ]]; then
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
         # MPICH's pkgconfig file "mpich.pc" lists these options:
@@ -48,11 +42,11 @@ fi
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DAMReX_FORTRAN=OFF \
+    -DAMReX_FORTRAN=ON \
     -DAMReX_MPI=ON \
+    -DAMReX_OMP=ON \
     -DAMReX_PARTICLES=ON \
     -DBUILD_SHARED_LIBS=ON \
-    ${ompopts} \
     ${mpiopts} \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
@@ -79,7 +73,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD 
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+               platforms=filter(Sys.isbsd, platforms)),
 ]
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)

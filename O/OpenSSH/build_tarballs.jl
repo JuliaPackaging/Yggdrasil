@@ -1,16 +1,16 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"8.9.0"
+version = v"9.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/openssh/openssh-portable.git", "5880200867e440f8ab5fd893c93db86555990443"),
-    # OpenSSH 8.9 is not yet (as of 2022-03-16) available for download there, so use 8.6 instead
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/V8.6.0.0p1-Beta/OpenSSH-Win32.zip",
-                  "0221324212413a6caf260f95e308d22f8c141fc37727b622a6ad50998c46d226"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/V8.6.0.0p1-Beta/OpenSSH-Win64.zip",
-                  "9f9215dc0b823264d52603f4767d8531880ddfa9aedf16404923814c0ab086b7"; unpack_target = "x86_64-w64-mingw32"),
+    GitSource("https://github.com/openssh/openssh-portable.git",
+                  "6dfb65de949cdd0a5d198edee9a118f265924f33"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.0.0p1-Beta/OpenSSH-Win32.zip",
+                  "d6a381b6b1c0d17433ca0b81cf65d139d55a0f8c249f07ec9e2cf02f3effeff0"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.0.0p1-Beta/OpenSSH-Win64.zip",
+                  "d0c272360163ef2e99cab1c0941834605abf2e792377979ff21cbb09b55f3348"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -45,9 +45,8 @@ else
     make -j${nproc} "${PRODUCTS[@]}"
 fi
 
-mkdir -p ${bindir}
 for binary in "${PRODUCTS[@]}"; do
-    install -c -m 0755 $binary ${bindir}/$binary
+    install -Dvm 0755 $binary ${bindir}/$binary
 done
 """
 
@@ -68,7 +67,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll")
-    Dependency("OpenSSL_jll")
+    Dependency("OpenSSL_jll"; compat="1.1.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

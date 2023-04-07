@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SuperLU"
-version = v"5.2.2"
+version = v"5.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/xiaoyeli/superlu/archive/v5.2.2.tar.gz", "470334a72ba637578e34057f46948495e601a5988a602604f5576367e606a28c")
+    ArchiveSource("https://github.com/xiaoyeli/superlu/archive/v$(version).tar.gz", "3e464afa77335de200aeb739074a11e96d9bef6d0b519950cfa6684c4be1f350")
 ]
 
 # Bash recipe for building across all platforms
@@ -51,4 +51,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")

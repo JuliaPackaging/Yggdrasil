@@ -119,6 +119,8 @@ function gcc_script(compiler_target::Platform)
     elif [[ "${COMPILER_TARGET}" == *-mingw* ]]; then
         # On mingw, we need to explicitly set the windres code page to 1, otherwise windres segfaults
         export CPPFLAGS="${CPPFLAGS} -DCP_ACP=1"
+        # Always disable TLS: https://github.com/JuliaLang/julia/pull/45582#issuecomment-1295697412
+        GCC_CONF_ARGS="${GCC_CONF_ARGS} --disable-tls"
 
     elif [[ "${COMPILER_TARGET}" == *-darwin* ]]; then
         # Use llvm archive tools to dodge binutils bugs
@@ -594,7 +596,7 @@ function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
 
     # Build the tarballs, and possibly a `build.jl` as well.
     ndARGS, deploy_target = find_deploy_arg(ARGS)
-    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, []; skip_audit=true, julia_compat="1.6")
+    build_info = build_tarballs(ndARGS, name, version, sources, script, [compiler_target], products, Dependency[]; skip_audit=true, julia_compat="1.6")
     build_info = Dict(host_platform => first(values(build_info)))
 
     # Upload the artifacts (if requested)
