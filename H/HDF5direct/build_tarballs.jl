@@ -73,7 +73,9 @@ popd
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
+    --enable-hl=yes \
     --enable-static=no \
+    --enable-tests=no \
     --enable-tools=yes \
     --with-examplesdir=/tmp \
     hdf5_cv_ldouble_to_long_special=no \
@@ -137,6 +139,7 @@ products = [
 
     # HDF5 libraries
     LibraryProduct("libhdf5", :libhdf5),
+    LibraryProduct("libhdf5_hl", :libhdf5_hl),
 ]
 
 # Dependencies that must be installed before this package can be built
