@@ -9,6 +9,7 @@ version = v"1.14.0"
 sources = [
     ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.0/src/hdf5-1.14.0.tar.gz",
                   "a571cc83efda62e1a51a0a912dd916d01895801c5025af91669484a1575a6ef4"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,16 +39,17 @@ popd
 
 # TODO:
 # - understand and fix long double / long configure tests
+# - -DHDF5_ENABLE_HDFS=ON
+# - -DHDF5_ENABLE_PARALLEL=ON
+# - -DDEFAULT_API_VERSION=...
+# - -DHDF5_ENABLE_THREADSAFE=ON
+# - build C++ and Fortran support
+# - -DHDF5_ENABLE_MAP_API=ON
+# - -DHDF5_BUILD_PARALLEL_TOOLS=ON
+# - correct floating-point descriptors for non-x86_64 architectures
+# - check floating-point descriptors for non-linux x86_64 architectures
 
 # cmake aborts because it cannot write some files
-# # -DHDF5_ENABLE_HDFS=ON
-# # -DHDF5_ENABLE_PARALLEL=ON
-# # -DDEFAULT_API_VERSION=...
-# # -DHDF5_ENABLE_THREADSAFE=ON
-# # build C++, Fortran, HL, etc.
-# # -DHDF5_ENABLE_MAP_API=ON
-# # -DHDF5_BUILD_TOOLS=ON
-# # -DHDF5_BUILD_PARALLEL_TOOLS=ON
 # cmake \
 #     -DCMAKE_FIND_ROOT_PATH=${prefix} \
 #     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -69,6 +71,9 @@ popd
 # cmake --build . --config RelWithDebInfo --parallel ${nproc}
 # cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
 
+# Required for x86_64-linux-musl. Some HDF5 C code is C99, but configure only requests C89.
+export CFLAGS="${CFLAGS} -std=c99"
+
 ../configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -83,10 +88,21 @@ popd
     hdf5_cv_ldouble_to_llong_accurate=no \
     hdf5_cv_llong_to_ldouble_correct=no \
     hdf5_cv_disable_some_ldouble_conv=yes
+
+# Patch the generated `Makefile`:
+# (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
+# - HDF5 would also try to build and run `H5detect` to collect ABI information.
+#   We know this information, and thus can provide it manually.
+# - HDF5 would try to build and run `H5make_libsettings` to collect
+#   build-time information. That information seems entirely optional, so
+#   we do mostly nothing instead.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
+
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
 # probably caused by a bug in automake, or in how automake was used.
 make -j${nproc} AM_V_P=:
+
 make install
 
 install_license ../COPYING
