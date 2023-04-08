@@ -251,7 +251,7 @@ augment_platform_block = """
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
                                                                   Platform("i686","linux"; libc="musl"),
-                                                                  Platform("aarch64","linux"; libc="musl", libgfortran_version="3.0.0")]))
+                                                                  Platform("aarch64","linux"; libc="musl")]))
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
 # Avoid platforms where the MPI implementation isn't supported
