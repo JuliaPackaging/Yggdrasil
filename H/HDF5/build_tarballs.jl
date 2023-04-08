@@ -34,8 +34,10 @@ cd build
 # - build C++ and Fortran support
 # - -DHDF5_ENABLE_MAP_API=ON
 # - -DHDF5_BUILD_PARALLEL_TOOLS=ON
-# - correct floating-point descriptors for non-x86_64 architectures
-# - check floating-point descriptors for non-linux x86_64 architectures
+# - find floating-point descriptors for windows
+# - do we actually need OpenMP? can we remove this dependency?
+# - simplify the `H5Tinit.c` stuff: have the patch do nothing, copy the file directly to the destination.
+#   maybe the would even remove the need for a patch?
 
 # cmake aborts because it cannot write some files
 # cmake \
@@ -60,6 +62,7 @@ cd build
 # cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
 
 # Required for x86_64-linux-musl. Some HDF5 C code is C99, but configure only requests C89.
+# This might not be necessary if we switch to newer GCC versions.
 export CFLAGS="${CFLAGS} -std=c99"
 
 ../configure \
@@ -77,6 +80,16 @@ export CFLAGS="${CFLAGS} -std=c99"
     hdf5_cv_llong_to_ldouble_correct=no \
     hdf5_cv_disable_some_ldouble_conv=yes
 
+# Patch the generated `Makefile`:
+# (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
+# - HDF5 would also try to build and run `H5detect` to collect ABI information.
+#   We know this information, and thus can provide it manually.
+# - HDF5 would try to build and run `H5make_libsettings` to collect
+#   build-time information. That information seems entirely optional, so
+#   we do mostly nothing instead.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
+
+# Prepare the file `H5Tinit.c` that the patch above expects:
 case "${MACHTYPE}" of
     aarch64-apple-darwin)
         cp ../files/H5Tinit-darwin-arm64v8.c H5Tinit.c
@@ -106,15 +119,6 @@ case "${MACHTYPE}" of
         UNSUPPORTED
         ;;
 esac
-
-# Patch the generated `Makefile`:
-# (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
-# - HDF5 would also try to build and run `H5detect` to collect ABI information.
-#   We know this information, and thus can provide it manually.
-# - HDF5 would try to build and run `H5make_libsettings` to collect
-#   build-time information. That information seems entirely optional, so
-#   we do mostly nothing instead.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
