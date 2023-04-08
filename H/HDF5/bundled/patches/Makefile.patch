@@ -12,7 +12,7 @@
 -	    (test $$HDF5_Make_Ignore && echo "*** Error ignored") ||            \
 -	    ($(RM) $@ ; exit 1)
 +H5Tinit.c:
-+	cat ../../../files/H5Tinit_x86_64.c >$@
++	cat ../H5Tinit.c >$@
  
  # Build configuration header file generation
  # The LD_LIBRARY_PATH setting is a kludge.

@@ -17,25 +17,13 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd hdf5-*
 
+echo $MACHTYPE
+echo $nbits
+echo $proc_family
+echo $target
+
 mkdir build
 cd build
-
-mkdir config-tests
-pushd config-tests
-
-cat >test.c <<EOF
-int size = sizeof(long double);
-EOF
-cc -S test.c
-SIZEOF_LONG_DOUBLE=$(grep '.long' test.s | sed -e 's/^	\.long	\(\d*\)$/\1/')
-
-cat >test.c <<EOF
-int size = sizeof(long);
-EOF
-cc -S test.c
-SIZEOF_LONG=$(grep '.long' test.s | sed -e 's/^	\.long	\(\d*\)$/\1/')
-
-popd
 
 # TODO:
 # - understand and fix long double / long configure tests
@@ -88,6 +76,36 @@ export CFLAGS="${CFLAGS} -std=c99"
     hdf5_cv_ldouble_to_llong_accurate=no \
     hdf5_cv_llong_to_ldouble_correct=no \
     hdf5_cv_disable_some_ldouble_conv=yes
+
+case "${MACHTYPE}" of
+    aarch64-apple-darwin)
+        cp ../files/H5Tinit-darwin-arm64v8.c H5Tinit.c
+        ;;
+    aarch64-linux-*)
+        cp ../files/H5Tinit-debian-arm64v8.c H5Tinit.c
+        ;;
+    armv6l-linux-* | armv7l-linux-*)
+        cp ../files/H5Tinit-debian-arm32v7.c H5Tinit.c
+        ;;
+    i686-linux-*)
+        cp ../files/H5Tinit-debian-i386.c H5Tinit.c
+        ;;
+    i686-w64-mingw32)
+        UNSUPPORTED
+        ;;
+    powerpc64le-linux-*)
+        cp ../files/H5Tinit-debian-ppc64le.c H5Tinit.c
+        ;;
+    x86_64-apple-darwin)
+        cp ../files/H5Tinit-darwin-x86_64.c H5Tinit.c
+        ;;
+    x86_64-linux-* | x86_64-*-freebsd)
+        cp ../files/H5Tinit-debian-x86_64.c H5Tinit.c
+        ;;
+    x86_64-w64-mingw32)
+        UNSUPPORTED
+        ;;
+esac
 
 # Patch the generated `Makefile`:
 # (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)

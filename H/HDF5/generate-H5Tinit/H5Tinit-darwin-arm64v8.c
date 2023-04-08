@@ -13,8 +13,8 @@
  * If you do not have access to either file, you may request a copy from     *
  * help@hdfgroup.org.                                                        *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Created:		Apr  7, 2023
- *			root <root@901db45e0fd3>
+ * Created:		Apr  8, 2023
+ *			Erik Schnetter <eschnett@redshift.local>
  *
  * Purpose:		This machine-generated source code contains
  *			information about the various integer and
@@ -199,37 +199,33 @@ dt->shared->u.atomic.u.f.pad = H5T_PAD_ZERO;
     H5T_NATIVE_DOUBLE_ALIGN_g = 8;
 
    /*
-    *   15       14       13       12
-    * ???????? ???????? ???????? ????????
-    *   11       10        9        8
-    * ???????? ???????? SEEEEEEE EEEEEEEE
     *    7        6        5        4
-    * MMMMMMMM MMMMMMMM MMMMMMMM MMMMMMMM
+    * SEEEEEEE EEEEMMMM MMMMMMMM MMMMMMMM
     *    3        2        1        0
     * MMMMMMMM MMMMMMMM MMMMMMMM MMMMMMMM
-    * Implicit bit? no
+    * Implicit bit? yes
     */
     if(NULL == (dt = H5T__alloc()))
         HGOTO_ERROR(H5E_DATATYPE, H5E_NOSPACE, FAIL, "datatype allocation failed")
     dt->shared->state = H5T_STATE_IMMUTABLE;
     dt->shared->type = H5T_FLOAT;
-    dt->shared->size = 16;
+    dt->shared->size = 8;
     dt->shared->u.atomic.order = H5T_ORDER_LE;
     dt->shared->u.atomic.offset = 0;
-    dt->shared->u.atomic.prec = 80;
+    dt->shared->u.atomic.prec = 64;
     dt->shared->u.atomic.lsb_pad = H5T_PAD_ZERO;
     dt->shared->u.atomic.msb_pad = H5T_PAD_ZERO;
-dt->shared->u.atomic.u.f.sign = 79;
-dt->shared->u.atomic.u.f.epos = 64;
-dt->shared->u.atomic.u.f.esize = 15;
-dt->shared->u.atomic.u.f.ebias = 0x00003fff;
+dt->shared->u.atomic.u.f.sign = 63;
+dt->shared->u.atomic.u.f.epos = 52;
+dt->shared->u.atomic.u.f.esize = 11;
+dt->shared->u.atomic.u.f.ebias = 0x000003ff;
 dt->shared->u.atomic.u.f.mpos = 0;
-dt->shared->u.atomic.u.f.msize = 64;
-dt->shared->u.atomic.u.f.norm = H5T_NORM_NONE;
+dt->shared->u.atomic.u.f.msize = 52;
+dt->shared->u.atomic.u.f.norm = H5T_NORM_IMPLIED;
 dt->shared->u.atomic.u.f.pad = H5T_PAD_ZERO;
     if((H5T_NATIVE_LDOUBLE_g = H5I_register(H5I_DATATYPE, dt, FALSE)) < 0)
         HGOTO_ERROR(H5E_DATATYPE, H5E_CANTINIT, FAIL, "can't register ID for built-in datatype")
-    H5T_NATIVE_LDOUBLE_ALIGN_g = 16;
+    H5T_NATIVE_LDOUBLE_ALIGN_g = 8;
 
     /* Set the native order for this machine */
     H5T_native_order_g = H5T_ORDER_LE;
