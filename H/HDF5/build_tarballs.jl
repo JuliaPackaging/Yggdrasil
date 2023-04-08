@@ -91,7 +91,7 @@ export CFLAGS="${CFLAGS} -std=c99"
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 # Prepare the file `H5Tinit.c` that the patch above expects:
-case "${MACHTYPE}" in
+case "${target}" in
     aarch64-apple-darwin)
         cp ../../files/H5Tinit-darwin-arm64v8.c H5Tinit.c
         ;;
