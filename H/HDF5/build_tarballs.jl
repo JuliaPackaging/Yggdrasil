@@ -81,48 +81,56 @@ export CFLAGS="${CFLAGS} -std=c99"
     hdf5_cv_llong_to_ldouble_correct=no \
     hdf5_cv_disable_some_ldouble_conv=yes
 
-# Patch the generated `Makefile`:
-# (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
-# - HDF5 would also try to build and run `H5detect` to collect ABI information.
-#   We know this information, and thus can provide it manually.
-# - HDF5 would try to build and run `H5make_libsettings` to collect
-#   build-time information. That information seems entirely optional, so
-#   we do mostly nothing instead.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
+# # Patch the generated `Makefile`:
+# # (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
+# # - HDF5 would also try to build and run `H5detect` to collect ABI information.
+# #   We know this information, and thus can provide it manually.
+# # - HDF5 would try to build and run `H5make_libsettings` to collect
+# #   build-time information. That information seems entirely optional, so
+# #   we do mostly nothing instead.
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
-# Prepare the file `H5Tinit.c` that the patch above expects:
+# # Prepare the file `H5Tinit.c` that the patch above expects:
+
+# Create the file `H5Tinit.c` so that the respective make goal is skipped:
 case "${target}" in
     aarch64-apple-darwin)
-        cp ../../files/H5Tinit-darwin-arm64v8.c H5Tinit.c
+        cp ../../files/H5Tinit-darwin-arm64v8.c src/H5Tinit.c
         ;;
     aarch64-linux-*)
-        cp ../../files/H5Tinit-debian-arm64v8.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-arm64v8.c src/H5Tinit.c
         ;;
     armv6l-linux-* | armv7l-linux-*)
-        cp ../../files/H5Tinit-debian-arm32v7.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-arm32v7.c src/H5Tinit.c
         ;;
     i686-linux-*)
-        cp ../../files/H5Tinit-debian-i386.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-i386.c src/H5Tinit.c
         ;;
     i686-w64-mingw32)
-        UNSUPPORTED
+        # sizeof(long double) == 12
+        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
+        # same as for Linux
+        cp ../../files/H5Tinit-debian-i386.c src/H5Tinit.c
         ;;
     powerpc64le-linux-*)
-        cp ../../files/H5Tinit-debian-ppc64le.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-ppc64le.c src/H5Tinit.c
         ;;
     x86_64-apple-darwin)
-        cp ../../files/H5Tinit-darwin-amd64.c H5Tinit.c
+        cp ../../files/H5Tinit-darwin-amd64.c src/H5Tinit.c
         ;;
     x86_64-linux-* | x86_64-*-freebsd)
-        cp ../../files/H5Tinit-debian-amd64.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-amd64.c src/H5Tinit.c
         ;;
     x86_64-w64-mingw32)
         # sizeof(long double) == 16
         # layout seems to be 16-bit sign+exponent and 64-bit mantissa
         # same as for Linux
-        UNSUPPORTED
+        cp ../../files/H5Tinit-debian-amd64.c src/H5Tinit.c
         ;;
 esac
+
+# Create the file `H5lib_settings.c` so that the respective make goal is skipped:
+echo 'char H5libhdf5_settings[]="";' >src/H5lib_settings.c
 
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
