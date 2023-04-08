@@ -38,6 +38,7 @@ cd build
 # - do we actually need OpenMP? can we remove this dependency?
 # - simplify the `H5Tinit.c` stuff: have the patch do nothing, copy the file directly to the destination.
 #   maybe the would even remove the need for a patch?
+# - the old HDF5 packages depends on OpenSSL and libCURL. why? what are we missing here?
 
 # cmake aborts because it cannot write some files
 # cmake \
@@ -90,30 +91,30 @@ export CFLAGS="${CFLAGS} -std=c99"
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 # Prepare the file `H5Tinit.c` that the patch above expects:
-case "${MACHTYPE}" of
+case "${MACHTYPE}" in
     aarch64-apple-darwin)
-        cp ../files/H5Tinit-darwin-arm64v8.c H5Tinit.c
+        cp ../../files/H5Tinit-darwin-arm64v8.c H5Tinit.c
         ;;
     aarch64-linux-*)
-        cp ../files/H5Tinit-debian-arm64v8.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-arm64v8.c H5Tinit.c
         ;;
     armv6l-linux-* | armv7l-linux-*)
-        cp ../files/H5Tinit-debian-arm32v7.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-arm32v7.c H5Tinit.c
         ;;
     i686-linux-*)
-        cp ../files/H5Tinit-debian-i386.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-i386.c H5Tinit.c
         ;;
     i686-w64-mingw32)
         UNSUPPORTED
         ;;
     powerpc64le-linux-*)
-        cp ../files/H5Tinit-debian-ppc64le.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-ppc64le.c H5Tinit.c
         ;;
     x86_64-apple-darwin)
-        cp ../files/H5Tinit-darwin-x86_64.c H5Tinit.c
+        cp ../../files/H5Tinit-darwin-amd64.c H5Tinit.c
         ;;
     x86_64-linux-* | x86_64-*-freebsd)
-        cp ../files/H5Tinit-debian-x86_64.c H5Tinit.c
+        cp ../../files/H5Tinit-debian-amd64.c H5Tinit.c
         ;;
     x86_64-w64-mingw32)
         UNSUPPORTED
