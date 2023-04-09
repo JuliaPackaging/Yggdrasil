@@ -92,13 +92,13 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 # Prepare the file `H5Tinit.c` that the patch above expects:
 case "${target}" in
-    aarch64-apple-darwin)
+    aarch64-apple-darwin*)
         cat ../../files/H5Tinit-darwin-arm64v8.c
         ;;
     aarch64-linux-*)
         cat ../../files/H5Tinit-debian-arm64v8.c
         ;;
-    armv6l-linux-* | armv7l-linux-*)
+    arm-linux-*)
         cat ../../files/H5Tinit-debian-arm32v7.c
         ;;
     i686-linux-*)
@@ -113,10 +113,10 @@ case "${target}" in
     powerpc64le-linux-*)
         cat ../../files/H5Tinit-debian-ppc64le.c
         ;;
-    x86_64-apple-darwin)
+    x86_64-apple-darwin*)
         cat ../../files/H5Tinit-darwin-amd64.c
         ;;
-    x86_64-linux-* | x86_64-*-freebsd)
+    x86_64-linux-* | x86_64-*-freebsd*)
         cat ../../files/H5Tinit-debian-amd64.c
         ;;
     x86_64-w64-mingw32)
