@@ -22,6 +22,14 @@ echo ${nbits}
 echo ${proc_family}
 echo ${target}
 
+# Patch `CMakeLists.txt`:
+# - HDF5 would also try to build and run `H5detect` to collect ABI information.
+#   We know this information, and thus can provide it manually.
+# - HDF5 would try to build and run `H5make_libsettings` to collect
+#   build-time information. That information seems entirely optional, so
+#   we do mostly nothing instead.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch
+
 mkdir build
 cd build
 
@@ -39,14 +47,6 @@ cd build
 # - the old HDF5 packages depends on OpenSSL and libCURL. why? what are we missing here?
 
 if true; then
-
-# Patch `CMakeLists.txt`:
-# - HDF5 would also try to build and run `H5detect` to collect ABI information.
-#   We know this information, and thus can provide it manually.
-# - HDF5 would try to build and run `H5make_libsettings` to collect
-#   build-time information. That information seems entirely optional, so
-#   we do mostly nothing instead.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch
 
 # Prepare the pre-generated file `H5Tinit.c` that cmake will expect:
 case "${target}" in
