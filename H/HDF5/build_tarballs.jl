@@ -41,7 +41,7 @@ cd build
 if true; then
 
 # Prepare the pre-generated file `H5Tinit.c` that cmake will expect:
-mkdir -p pregen/shared
+# mkdir -p pregen/shared
 case "${target}" in
     aarch64-apple-darwin*)
         cat ../../files/H5Tinit-darwin-arm64v8.c
@@ -80,7 +80,7 @@ case "${target}" in
         echo "Unsupported target architecture ${target}" >&2
         exit 1
         ;;
-esac >pregen/shared/H5Tinit.c
+esac >H5Tinit.c
 
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
@@ -92,7 +92,7 @@ cmake \
     -DHDF5_BUILD_HL_LIB=ON \
     -DHDF5_BUILD_TOOLS=ON \
     -DHDF5_USE_PREGEN=ON \
-    -DHDF5_USE_PREGEN_DIR="$(pwd)/pregen" \
+    -DHDF5_USE_PREGEN_DIR="$(pwd)" \
     -DTEST_LFS_WORKS_RUN=0 \
     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN=1 \
     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN__TRYRUN_OUTPUT= \
