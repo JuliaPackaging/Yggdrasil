@@ -17,10 +17,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd hdf5-*
 
-echo $MACHTYPE
-echo $nbits
-echo $proc_family
-echo $target
+echo ${MACHTYPE}
+echo ${nbits}
+echo ${proc_family}
+echo ${target}
 
 mkdir build
 cd build
@@ -36,31 +36,39 @@ cd build
 # - -DHDF5_BUILD_PARALLEL_TOOLS=ON
 # - find floating-point descriptors for windows
 # - do we actually need OpenMP? can we remove this dependency?
-# - simplify the `H5Tinit.c` stuff: have the patch do nothing, copy the file directly to the destination.
-#   maybe the would even remove the need for a patch?
 # - the old HDF5 packages depends on OpenSSL and libCURL. why? what are we missing here?
 
+if true; then
+
 # cmake aborts because it cannot write some files
-# cmake \
-#     -DCMAKE_FIND_ROOT_PATH=${prefix} \
-#     -DCMAKE_INSTALL_PREFIX=${prefix} \
-#     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-#     -DBUILD_STATIC_LIBS=OFF \
-#     -DHDF5_BUILD_EXAMPLES=OFF \
-#     -DTEST_LFS_WORKS_RUN=0 \
-#     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN=1 \
-#     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN__TRYRUN_OUTPUT= \
-#     -DH5_LONG_TO_LDOUBLE_SPECIAL_RUN=1 \
-#     -DH5_LONG_TO_LDOUBLE_SPECIAL_RUN__TRYRUN_OUTPUT= \
-#     -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN=1 \
-#     -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN__TRYRUN_OUTPUT= \
-#     -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN=1 \
-#     -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN__TRYRUN_OUTPUT= \
-#     -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN=1 \
-#     -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN__TRYRUN_OUTPUT= \
-#     ..
-# cmake --build . --config RelWithDebInfo --parallel ${nproc}
-# cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
+cmake \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DBUILD_STATIC_LIBS=OFF \
+    -DBUILD_TESTING=OFF \
+    -DHDF5_BUILD_EXAMPLES=OFF \
+    -DHDF5_BUILD_HL_LIB=ON \
+    -DHDF5_BUILD_TOOLS=ON \
+    -DTEST_LFS_WORKS_RUN=0 \
+    -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN=1 \
+    -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN__TRYRUN_OUTPUT= \
+    -DH5_LONG_TO_LDOUBLE_SPECIAL_RUN=1 \
+    -DH5_LONG_TO_LDOUBLE_SPECIAL_RUN__TRYRUN_OUTPUT= \
+    -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN=1 \
+    -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN__TRYRUN_OUTPUT= \
+    -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN=1 \
+    -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN__TRYRUN_OUTPUT= \
+    -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN=1 \
+    -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN__TRYRUN_OUTPUT= \
+    ..
+echo '********************************************************************************'
+cat src/Makefile
+echo '********************************************************************************'
+cmake --build . --config RelWithDebInfo --parallel ${nproc}
+cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
+
+else
 
 # Required for x86_64-linux-musl. Some HDF5 C code is C99, but configure only requests C89.
 # This might not be necessary if we switch to newer GCC versions.
@@ -137,6 +145,8 @@ esac >H5Tinit.c
 make -j${nproc} AM_V_P=:
 
 make install
+
+fi
 
 install_license ../COPYING
 """
