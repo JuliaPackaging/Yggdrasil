@@ -88,8 +88,7 @@ case "${target}" in
         exit 1
         ;;
 esac >../src/H5Tinit.c
-
-#TODO: H5lib_settings.c
+echo 'char H5libhdf5_settings[]="";' >../src/H5lib_settings.c
 
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \

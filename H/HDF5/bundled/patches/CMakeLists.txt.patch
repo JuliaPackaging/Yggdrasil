@@ -1,7 +1,15 @@
 diff -ru hdf5-1.14.0.old/src/CMakeLists.txt hdf5-1.14.0.new/src/CMakeLists.txt
 --- hdf5-1.14.0.old/src/CMakeLists.txt	2022-12-28 11:50:30
-+++ hdf5-1.14.0.new/src/CMakeLists.txt	2023-04-09 15:43:01
-@@ -635,6 +635,7 @@
++++ hdf5-1.14.0.new/src/CMakeLists.txt	2023-04-09 16:06:25
+@@ -8,6 +8,7 @@
+     ${HDF5_SRC_DIR}/H5.c
+     ${HDF5_SRC_DIR}/H5checksum.c
+     ${HDF5_SRC_DIR}/H5dbg.c
++    ${HDF5_SRC_DIR}/H5lib_settings.c
+     ${HDF5_SRC_DIR}/H5mpi.c
+     ${HDF5_SRC_DIR}/H5system.c
+     ${HDF5_SRC_DIR}/H5timer.c
+@@ -635,6 +636,7 @@
      ${HDF5_SRC_DIR}/H5Tfields.c
      ${HDF5_SRC_DIR}/H5Tfixed.c
      ${HDF5_SRC_DIR}/H5Tfloat.c
@@ -9,7 +17,7 @@ diff -ru hdf5-1.14.0.old/src/CMakeLists.txt hdf5-1.14.0.new/src/CMakeLists.txt
      ${HDF5_SRC_DIR}/H5Tnative.c
      ${HDF5_SRC_DIR}/H5Toffset.c
      ${HDF5_SRC_DIR}/H5Toh.c
-@@ -1075,159 +1076,8 @@
+@@ -1075,159 +1077,8 @@
    endif ()
  endif ()
  
@@ -170,7 +178,7 @@ diff -ru hdf5-1.14.0.old/src/CMakeLists.txt hdf5-1.14.0.new/src/CMakeLists.txt
    target_include_directories (${HDF5_LIB_TARGET}
        PRIVATE "${HDF5_SRC_INCLUDE_DIRS};${HDF5_SRC_BINARY_DIR};$<$<BOOL:${HDF5_ENABLE_PARALLEL}>:${MPI_C_INCLUDE_DIRS}>"
        INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>;$<BUILD_INTERFACE:${HDF5_SRC_BINARY_DIR}>"
-@@ -1255,19 +1105,12 @@
+@@ -1255,19 +1106,12 @@
    set_global_variable (HDF5_LIBRARIES_TO_EXPORT ${HDF5_LIB_TARGET})
    H5_SET_LIB_OPTIONS (${HDF5_LIB_TARGET} ${HDF5_LIB_NAME} STATIC 0)
    set_target_properties (${HDF5_LIB_TARGET} PROPERTIES FOLDER libraries)
@@ -191,7 +199,7 @@ diff -ru hdf5-1.14.0.old/src/CMakeLists.txt hdf5-1.14.0.new/src/CMakeLists.txt
    target_include_directories (${HDF5_LIBSH_TARGET}
        PRIVATE "${HDF5_SRC_INCLUDE_DIRS};${HDF5_SRC_BINARY_DIR};$<$<BOOL:${HDF5_ENABLE_PARALLEL}>:${MPI_C_INCLUDE_DIRS}>"
        PUBLIC "$<$<BOOL:${HDF5_ENABLE_HDFS}>:${HDFS_INCLUDE_DIR}>"
-@@ -1294,7 +1137,6 @@
+@@ -1294,7 +1138,6 @@
    set_global_variable (HDF5_LIBRARIES_TO_EXPORT "${HDF5_LIBRARIES_TO_EXPORT};${HDF5_LIBSH_TARGET}")
    H5_SET_LIB_OPTIONS (${HDF5_LIBSH_TARGET} ${HDF5_LIB_NAME} SHARED "LIB")
    set_target_properties (${HDF5_LIBSH_TARGET} PROPERTIES FOLDER libraries)
