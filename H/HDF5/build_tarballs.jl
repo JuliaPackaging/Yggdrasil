@@ -40,8 +40,15 @@ cd build
 
 if true; then
 
+# Patch `CMakeLists.txt`:
+# - HDF5 would also try to build and run `H5detect` to collect ABI information.
+#   We know this information, and thus can provide it manually.
+# - HDF5 would try to build and run `H5make_libsettings` to collect
+#   build-time information. That information seems entirely optional, so
+#   we do mostly nothing instead.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch
+
 # Prepare the pre-generated file `H5Tinit.c` that cmake will expect:
-mkdir -p pregen/shared
 case "${target}" in
     aarch64-apple-darwin*)
         cat ../../files/H5Tinit-darwin-arm64v8.c
@@ -80,10 +87,9 @@ case "${target}" in
         echo "Unsupported target architecture ${target}" >&2
         exit 1
         ;;
-esac >pregen/H5Tinit.c
-: >pregen/gen_SRCS.stamp1
-cp pregen/H5Tinit.c pregen/shared/H5Tinit.c
-: >pregen/shared/shared_gen_SRCS.stamp1
+esac >../src/H5Tinit.c
+
+#TODO: H5lib_settings.c
 
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
@@ -94,8 +100,6 @@ cmake \
     -DHDF5_BUILD_EXAMPLES=OFF \
     -DHDF5_BUILD_HL_LIB=ON \
     -DHDF5_BUILD_TOOLS=ON \
-    -DHDF5_USE_PREGEN=ON \
-    -DHDF5_USE_PREGEN_DIR="$(pwd)/pregen" \
     -DTEST_LFS_WORKS_RUN=0 \
     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN=1 \
     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN__TRYRUN_OUTPUT= \
