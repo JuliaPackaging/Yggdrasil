@@ -81,7 +81,9 @@ case "${target}" in
         exit 1
         ;;
 esac >pregen/H5Tinit.c
+: >pregen/gen_SRCS.stamp1
 cp pregen/H5Tinit.c pregen/shared/H5Tinit.c
+: >pregen/shared/shared_gen_SRCS.stamp1
 
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
