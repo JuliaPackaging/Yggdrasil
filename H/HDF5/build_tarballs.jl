@@ -40,7 +40,48 @@ cd build
 
 if true; then
 
-# cmake aborts because it cannot write some files
+# Prepare the pre-generated file `H5Tinit.c` that cmake will expect:
+mkdir pregen
+case "${target}" in
+    aarch64-apple-darwin*)
+        cat ../../files/H5Tinit-darwin-arm64v8.c
+        ;;
+    aarch64-linux-*)
+        cat ../../files/H5Tinit-debian-arm64v8.c
+        ;;
+    arm-linux-*)
+        cat ../../files/H5Tinit-debian-arm32v7.c
+        ;;
+    i686-linux-*)
+        cat ../../files/H5Tinit-debian-i386.c
+        ;;
+    i686-w64-mingw32)
+        # sizeof(long double) == 12
+        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
+        # same as for Linux
+        cat ../../files/H5Tinit-debian-i386.c
+        ;;
+    powerpc64le-linux-*)
+        cat ../../files/H5Tinit-debian-ppc64le.c
+        ;;
+    x86_64-apple-darwin*)
+        cat ../../files/H5Tinit-darwin-amd64.c
+        ;;
+    x86_64-linux-* | x86_64-*-freebsd*)
+        cat ../../files/H5Tinit-debian-amd64.c
+        ;;
+    x86_64-w64-mingw32)
+        # sizeof(long double) == 16
+        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
+        # same as for Linux
+        cat ../../files/H5Tinit-debian-amd64.c 
+        ;;
+    *)
+        echo "Unsupported target architecture ${target}" >&2
+        exit 1
+        ;;
+esac >pregen/H5Tinit.c
+
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -50,6 +91,8 @@ cmake \
     -DHDF5_BUILD_EXAMPLES=OFF \
     -DHDF5_BUILD_HL_LIB=ON \
     -DHDF5_BUILD_TOOLS=ON \
+    -DHDF5_USE_PREGEN=ON \
+    -DHDF5_USE_PREGEN_DIR="$(pwd)/pregen" \
     -DTEST_LFS_WORKS_RUN=0 \
     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN=1 \
     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN__TRYRUN_OUTPUT= \
@@ -62,9 +105,6 @@ cmake \
     -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN=1 \
     -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN__TRYRUN_OUTPUT= \
     ..
-echo '********************************************************************************'
-cat src/Makefile
-echo '********************************************************************************'
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
 cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
 
@@ -189,7 +229,8 @@ products = [
     ExecutableProduct("h5ls", :h5ls),
     ExecutableProduct("h5mkgrp", :h5mkgrp),
     ExecutableProduct("h5perf_serial",:h5perf_serial),
-    ExecutableProduct("h5redeploy", :h5redeploy),
+    # `h5redeploy` is not built by `cmake`
+    # ExecutableProduct("h5redeploy", :h5redeploy),
     ExecutableProduct("h5repack", :h5repack),
     ExecutableProduct("h5repart", :h5repart),
     ExecutableProduct("h5stat", :h5stat),
