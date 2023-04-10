@@ -299,7 +299,7 @@ function lapack_script(;lapack32::Bool=false)
        -DBUILD_SHARED_LIBS=ON \
        -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline"
 
-    make -j${nproc} all
+    make
     make install
     """
 end
