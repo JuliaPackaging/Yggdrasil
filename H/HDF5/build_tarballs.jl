@@ -30,6 +30,12 @@ echo ${target}
 #   we do mostly nothing instead.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch
 
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
+fi
+
 mkdir build
 cd build
 
@@ -46,7 +52,7 @@ cd build
 # - do we actually need OpenMP? can we remove this dependency?
 # - the old HDF5 packages depends on OpenSSL and libCURL. why? what are we missing here?
 
-if true; then
+if false; then
 
 # Prepare the pre-generated file `H5Tinit.c` that cmake will expect:
 case "${target}" in
@@ -121,6 +127,11 @@ else
 # This might not be necessary if we switch to newer GCC versions.
 export CFLAGS="${CFLAGS} -std=c99"
 
+FLAGS=()
+if [[ "${target}" == *-mingw* ]]; then
+    FLAGS+=(LDFLAGS="-no-undefined")
+fi
+
 ../configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -189,10 +200,24 @@ esac >H5Tinit.c
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
 # probably caused by a bug in automake, or in how automake was used.
-make -j${nproc} AM_V_P=:
+make -j${nproc} AM_V_P=: "${FLAGS[@]}"
 
 make install
 
+fi
+
+# Create placeholders for missing executables
+if [[ "${target}" == *-mingw* ]]; then
+    cat >h5cc.c <<EOF
+#include <stdio.h>
+int main(int argc, char **argv) {
+  fprintf(stderr, "h5cc is not supported on this architecture\n");
+  return 1;
+}
+EOF
+    cc -c h5cc.c
+    cc -o "h5cc${exeext}" h5cc.o
+    install -Dvm 755 "h5cc${exeext}" "${bindir}/h5cc${exeext}"
 fi
 
 install_license ../COPYING
@@ -258,6 +283,7 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("Zlib_jll"),
+    Dependency("dlfcn_win32_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

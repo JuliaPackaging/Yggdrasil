@@ -1,0 +1,21 @@
+diff -ru hdf5-1.14.0.old/src/H5private.h hdf5-1.14.0.new/src/H5private.h
+--- hdf5-1.14.0.old/src/H5private.h	2022-12-13 14:52:35
++++ hdf5-1.14.0.new/src/H5private.h	2023-04-10 11:19:29
+@@ -1367,7 +1367,16 @@
+ #define HDstrncpy(X, Y, Z) strncpy(X, Y, Z)
+ #endif
+ #ifndef HDstrndup
+-#define HDstrndup(S, N) strndup(S, N)
++static char *H5_strndup_impl(const char *src, size_t size) {
++  size_t len = strnlen(src, size);
++  char *dst = malloc(len + 1);
++  if (dst == NULL)
++    return NULL;
++  memcpy(dst, src, len);
++  dst[len] = '\0';
++  return dst;
++}
++#define HDstrndup(S, N) H5_strndup_impl(S, N)
+ #endif
+ #ifndef HDstrpbrk
+ #define HDstrpbrk(X, Y) strpbrk(X, Y)
