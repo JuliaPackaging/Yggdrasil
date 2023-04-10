@@ -1,0 +1,20 @@
+--- hdf5-1.14.0.old/src/H5timer.c	2022-12-13 14:52:35
++++ hdf5-1.14.0.new/src/H5timer.c	2023-04-10 12:37:31
+@@ -187,7 +187,7 @@
+ {
+     uint64_t now; /* Current time, in microseconds */
+ 
+-#if defined(H5_HAVE_CLOCK_GETTIME)
++#if !defined(_WIN32) && defined(H5_HAVE_CLOCK_GETTIME)
+     {
+         struct timespec ts;
+ 
+@@ -236,7 +236,7 @@
+ 
+     FUNC_ENTER_NOAPI_NOINIT_NOERR
+ 
+-#if defined(H5_HAVE_CLOCK_GETTIME)
++#if !defined(_WIN32) && defined(H5_HAVE_CLOCK_GETTIME)
+     {
+         struct timespec ts;
+ 

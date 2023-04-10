@@ -31,6 +31,7 @@ echo ${target}
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch
 
 if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/H5timer.c.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
