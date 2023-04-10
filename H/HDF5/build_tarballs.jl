@@ -218,6 +218,17 @@ EOF
     cc -c h5cc.c
     cc -o "h5cc${exeext}" h5cc.o
     install -Dvm 755 "h5cc${exeext}" "${bindir}/h5cc${exeext}"
+
+    cat >h5redeploy.c <<EOF
+#include <stdio.h>
+int main(int argc, char **argv) {
+  fprintf(stderr, "h5redeploy is not supported on this architecture\n");
+  return 1;
+}
+EOF
+    cc -c h5redeploy.c
+    cc -o "h5redeploy${exeext}" h5redeploy.o
+    install -Dvm 755 "h5redeploy${exeext}" "${bindir}/h5redeploy${exeext}"
 fi
 
 install_license ../COPYING
@@ -261,7 +272,6 @@ products = [
     ExecutableProduct("h5ls", :h5ls),
     ExecutableProduct("h5mkgrp", :h5mkgrp),
     ExecutableProduct("h5perf_serial",:h5perf_serial),
-    # `h5redeploy` is not built by `cmake`
     ExecutableProduct("h5redeploy", :h5redeploy),
     ExecutableProduct("h5repack", :h5repack),
     ExecutableProduct("h5repart", :h5repart),
