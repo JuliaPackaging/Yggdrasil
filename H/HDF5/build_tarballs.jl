@@ -48,7 +48,6 @@ cd build
 # - build C++ and Fortran support
 # - -DHDF5_ENABLE_MAP_API=ON
 # - -DHDF5_BUILD_PARALLEL_TOOLS=ON
-# - find floating-point descriptors for windows
 # - do we actually need OpenMP? can we remove this dependency?
 # - the old HDF5 packages depends on OpenSSL and libCURL. why? what are we missing here?
 
@@ -262,7 +261,7 @@ products = [
     ExecutableProduct("h5mkgrp", :h5mkgrp),
     ExecutableProduct("h5perf_serial",:h5perf_serial),
     # `h5redeploy` is not built by `cmake`
-    # ExecutableProduct("h5redeploy", :h5redeploy),
+    ExecutableProduct("h5redeploy", :h5redeploy),
     ExecutableProduct("h5repack", :h5repack),
     ExecutableProduct("h5repart", :h5repart),
     ExecutableProduct("h5stat", :h5stat),
