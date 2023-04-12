@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/at_*
+cd $WORKSPACE/srcdir/at
 rm -rf ../__MACOSX
 perl -p -i -e 's/\-march=native//; s/\-ffast\-math//; s/\-mtune=native//;' Makefile
 find . -name *.exe -exec rm {} \;
