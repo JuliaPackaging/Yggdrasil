@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "AcousticsToolbox"
-version = v"2020.11.4"
+version = v"2022.4.20"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_2020_11_4.zip", "6f9fe5d3d7fd99fc34fb2a2c3308f2e660a1cc0ea93f0651111af698acf442f0")
+    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_2022_4_20.zip", "ff3494c8a0c696dca17ddacb9a2a412eaf664c3204f4a424afe77e66edefc950")
 ]
 
 # Bash recipe for building across all platforms
