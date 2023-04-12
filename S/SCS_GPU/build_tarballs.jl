@@ -12,7 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
-flags="DLONG=0 USE_OPENMP=0 DINDIRECT=1"
+flags="DLONG=0 USE_OPENMP=0 INDIRECT=1"
 blasldflags="-L${libdir} -lopenblas"
 
 CUDA_PATH=$prefix/cuda make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsgpuindir.${dlext}
