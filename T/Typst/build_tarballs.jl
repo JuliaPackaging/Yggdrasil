@@ -23,7 +23,7 @@ install_license LICENSE
 platforms = filter((!=)(Platform("i686", "windows")), supported_platforms())
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     ExecutableProduct("typst", :typst),
 ]
 
