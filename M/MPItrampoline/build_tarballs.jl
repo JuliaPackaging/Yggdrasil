@@ -7,19 +7,19 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.2.1"
+mpitrampoline_version = v"5.2.3"
 version = mpitrampoline_version
 mpich_version_str = "4.1.1"
 mpiconstants_version = v"1.5.0"
-mpiwrapper_version = v"2.10.1"
+mpiwrapper_version = v"2.10.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/MPItrampoline", "95e75cb2a484085977f76675743e5a4e2abb229c"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "4c6b91ec53d466ab774c2f1ca7e985b5c0f5a8e7"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "ee30471b35ef87f4c88f871a5e2ad3811cd9c4df32fd4f138443072ff4284ca2"),
-    GitSource("https://github.com/eschnett/MPIwrapper", "aaefda8d03745b3aeda7e5bbd3f2a6e602e085da"),
+    GitSource("https://github.com/eschnett/MPIwrapper", "7c09c12e601fd0faa2ae84c37f97a05e23795141"),
 ]
 
 # Bash recipe for building across all platforms
