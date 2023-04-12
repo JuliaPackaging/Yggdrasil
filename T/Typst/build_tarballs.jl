@@ -3,27 +3,27 @@
 using BinaryBuilder, Pkg
 
 name = "Typst"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/typst/typst.git", "b3faef4b80a674294091066e20501e3a5d0f6103")
+    GitSource("https://github.com/typst/typst.git", "fe2640c55268f167d8749f77b37e52b7b17f21dd")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/typst
 cargo build -p typst-cli --release
-install -Dvm 755 "target/${rust_target}/release/typst" "${bindir}/typst${exeext}"
+install -Dvm 755 "target/${rust_target}/release/typst${exeext}" "${bindir}/typst${exeext}"
 install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = filter(p -> !(Sys.iswindows(p) && arch(p) == "i686"), supported_platforms())
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     ExecutableProduct("typst", :typst),
 ]
 
