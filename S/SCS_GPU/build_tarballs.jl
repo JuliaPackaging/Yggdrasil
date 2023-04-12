@@ -15,7 +15,7 @@ cd $WORKSPACE/srcdir/scs*
 flags="DLONG=0 USE_OPENMP=0 INDIRECT=1"
 blasldflags="-L${libdir} -lopenblas"
 
-CUDA_PATH=$prefix/cuda make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsgpuindir.${dlext}
+CUDA_PATH=$prefix/cuda make gpu BLASLDFLAGS="${blasldflags}" ${flags} out/libscsgpuindir.${dlext}
 
 mkdir -p ${libdir}
 cp out/libscs*.${dlext} ${libdir}
