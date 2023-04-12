@@ -3,30 +3,25 @@
 using BinaryBuilder, Pkg
 
 name = "JlrsLedger"
-version = v"0.0.2"
+version = v"0.0.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Taaitaaiger/jlrs_ledger.git",
-              "5ff67d8b0f6b6eea50904290e9888e8779e7cd8f"),
+              "0f1b3ab293445a53f68582302f2d50265507edbe"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/jlrs_ledger
-
-if [[ "${target}" == *-musl* ]]; then
-    rust_flags="-C target-feature=-crt-static"
-fi
-
-RUSTFLAGS=$rust_flags cargo build --release --verbose
+cargo build --release --verbose
 install_license LICENSE
 install -Dvm 0755 "target/${rust_target}/release/"*jlrs_ledger".${dlext}" "${libdir}/libjlrs_ledger.${dlext}"
 """
 
-# Rust toolchain for i686 Windows is unusable
-is_excluded(p) = Sys.iswindows(p) && nbits(p) != 64
-platforms = supported_platforms(; exclude=is_excluded)
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
