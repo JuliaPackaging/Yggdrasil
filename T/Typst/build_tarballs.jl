@@ -14,13 +14,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/typst
 cargo build -p typst-cli --release
-install -Dvm 755 "target/${rust_target}/release/typst" "${bindir}/typst${exeext}"
+install -Dvm 755 "target/${rust_target}/release/typst{exeext}" "${bindir}/typst${exeext}"
 install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter((!=)(Platform("i686", "windows")), supported_platforms())
 
 # The products that we will ensure are always built
 products = Product[
