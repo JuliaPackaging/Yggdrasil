@@ -11,13 +11,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/m4-*/
 
+if [[ "${target}" == *mingw* ]]; then
+    export CFLAGS="-fstack-protector ${CFLAGS}"
+fi
+
 ./configure --prefix=${prefix} --host=${target}
 make -j${nprocs}
 make install
 """
 
-# Windows platforms fail with messages about `__memcpy_chk`
-platforms = filter(p -> !Sys.iswindows(p), supported_platforms())
+platforms = supported_platforms()
 
 products = [
     ExecutableProduct("m4", :m4),
