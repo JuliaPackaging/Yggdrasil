@@ -7,8 +7,7 @@ version = v"5.6.0"
 
 # Collection of sources required to build MMG
 sources = [
-    ArchiveSource("https://github.com/MmgTools/mmg/archive/refs/tags/v$(version).tar.gz",
-                  "bbf9163d65bc6e0f81dd3acc5a51e4a8c47a7fdae849abc26277e01154fe2437"),
+    GitSource("https://github.com/MmgTools/mmg", "889d408419b5c48833c249695987cf6ec699d399"),
     DirectorySource("./bundled")
 ]
 
