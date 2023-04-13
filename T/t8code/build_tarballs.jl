@@ -52,7 +52,15 @@ else
 fi
 
 # Run configure
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --without-blas ${mpiopts}  --with-sc=/workspace/destdir --with-p4est=/workspace/destdir
+./configure \
+  --prefix=${prefix} \
+  --build=${MACHTYPE} \
+  --host=${target} \
+  --disable-static \
+  --without-blas \
+  --with-sc=/workspace/destdir \
+  --with-p4est=/workspace/destdir \
+  ${mpiopts}
 
 # Build & install
 make -j${nproc} "${FLAGS[@]}"
