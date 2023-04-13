@@ -48,8 +48,9 @@ if [[ "${target}" == *linux-musl* ]]; then
 fi
 
 CFLAGS=$FLAGS cmake .. \
-    -DMPI_RUN_RESULT_C_libver_mpi_normal:INTERNAL=1 \
-    -DMPI_RUN_RESULT_C_libver_mpi_normal__TRYRUN_OUTPUT:STRING="" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DMPI_RUN_RESULT_C_libver_mpi_normal=1 \
+    -DMPI_RUN_RESULT_C_libver_mpi_normal__TRYRUN_OUTPUT="" \
     -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -63,7 +64,7 @@ CFLAGS=$FLAGS cmake .. \
     -DBUILD_DUMMYSIZES=OFF \
     -DINSTALL_METIS_HEADERS=OFF
 
-make -j${nproc}
+make # -j${nproc}
 make install
 
 if [[ "${target}" == *mingw* ]]; then
