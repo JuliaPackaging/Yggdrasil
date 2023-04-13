@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "AcousticsToolbox"
-version = v"2022.4.20"
+version_string = "2022_4_20"
+version = VersionNumber(replace(version_string, "_" => "."))
 
 # Collection of sources required to complete build
 sources = [
