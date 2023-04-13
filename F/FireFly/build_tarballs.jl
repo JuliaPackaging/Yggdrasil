@@ -6,7 +6,6 @@ const YGGDRASIL_DIR = (dirname∘dirname∘dirname)(@__FILE__)
 (include∘joinpath)(YGGDRASIL_DIR, "platforms", "mpi.jl")
 
 name = "FireFly"
-version_fake = v"2.0.4" # fake version for adding missing `augment_platform_block`
 version = v"2.0.3"
 
 # Collection of sources required to complete build
@@ -71,8 +70,8 @@ dependencies = [
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version_fake, sources, script, platforms, products, dependencies;
-    augment_platform_block=augment_platform_block,
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    augment_platform_block,
     julia_compat="1.6",
     # preferred_gcc_version = v"5.2.0" # for std=c++14
     # preferred_gcc_version = v"6.1.0" # for making the target example
