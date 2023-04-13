@@ -73,7 +73,7 @@ scotch_platforms = filter(!Sys.iswindows, platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LinearElasticity_jll"),
-    Dependency("SCOTCH_jll", platforms=scotch_platforms)
+    Dependency("SCOTCH_jll", platforms=scotch_platforms, compat="6.1.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
