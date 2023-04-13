@@ -124,7 +124,6 @@ build_petsc()
     fi
 
     if [[ "${target}" == *-apple* ]]; then 
-        # on a mac, there might otherwise be confusion with clang
         LIBFLAGS="-L${libdir} -framework Accelerate" 
     fi
 
