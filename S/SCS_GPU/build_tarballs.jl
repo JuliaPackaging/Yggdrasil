@@ -6,7 +6,7 @@ version = v"3.2.3"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "f0c23340da03bcd663072dc4a90cf1aab8968c61")
+    GitSource("https://github.com/cvxgrp/scs.git", "f5f054be7dd71ee0d80c4c0eec0df1e9f0ccb123")
 ]
 
 # Bash recipe for building across all platforms
@@ -14,7 +14,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/scs*
 flags="DLONG=0 USE_OPENMP=0"
 blasldflags="-L${libdir} -lopenblas"
-export CFLAGS="-DINDIRECT=1"
 
 CUDA_PATH=$prefix/cuda make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsgpuindir.${dlext}
 
