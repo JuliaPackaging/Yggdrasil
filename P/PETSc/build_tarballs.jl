@@ -125,9 +125,9 @@ build_petsc()
 
     if [[ "${target}" == *-apple* ]]; then 
         # on a mac, there might otherwise be confusion with clang
-        CC=gcc
-        FC=gfortran
-        CXX=g++
+      #  CC=gcc
+      #  FC=gfortran
+      #  CXX=g++
         LIBFLAGS="-L${libdir} -framework Accelerate" 
     fi
 
