@@ -10,8 +10,8 @@ version = v"1.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz",
-                  "0bd4bee6694735d14fb4274275fb8c4bdeacdbd29b257220c308be63e98be8f7"),
+    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version)_dirty.tar.gz",
+                  "63c1f157a833607b14bbad2c65909fa7e3bca20a94ad8a42ccb2abc8ed428553"),
     DirectorySource("./bundled")
 ]
 
@@ -52,7 +52,7 @@ else
 fi
 
 # Run configure
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --without-blas ${mpiopts}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --without-blas ${mpiopts}  --with-sc=/workspace/destdir --with-p4est=/workspace/destdir
 
 # Build & install
 make -j${nproc} "${FLAGS[@]}"
@@ -94,6 +94,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="P4est_jll", uuid="6b5a15aa-cf52-5330-8376-5e5d90283449")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 append!(dependencies, platform_dependencies)
