@@ -37,7 +37,7 @@ install_license ${WORKSPACE}/srcdir/firefly/LICENSE
 augment_platform_block = """
     using Base.BinaryPlatforms
     $(MPI.augment)
-    argument_platform!(platform::Platform) = augment_mpi!(platform)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
