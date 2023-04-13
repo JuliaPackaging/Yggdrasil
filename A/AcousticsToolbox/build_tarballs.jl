@@ -8,7 +8,7 @@ version = VersionNumber(replace(version_string, "_" => "."))
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_2022_4_20.zip", "ff3494c8a0c696dca17ddacb9a2a412eaf664c3204f4a424afe77e66edefc950")
+    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_$(version_string).zip", "ff3494c8a0c696dca17ddacb9a2a412eaf664c3204f4a424afe77e66edefc950")
 ]
 
 # Bash recipe for building across all platforms
