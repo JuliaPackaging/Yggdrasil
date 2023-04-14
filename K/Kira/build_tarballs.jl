@@ -27,7 +27,7 @@ meson setup \
     --buildtype=release \
     ${WORKSPACE}/srcdir/kira/ \
     ${WORKSPACE}/srcdir/Kira-build/
-sed -i "s/\/workspace\/destdir\/opt/\/opt/g" build.ninja
+sed -i "s?/workspace/destdir/opt?/opt?g" build.ninja
 
 meson install
 install_license ${WORKSPACE}/srcdir/kira/COPYING
