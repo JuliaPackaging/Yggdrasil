@@ -8,7 +8,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/neper-*
+cd $WORKSPACE/srcdir/neper
 mkdir build && cd build
 CXXFLAGS="-lz"
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
