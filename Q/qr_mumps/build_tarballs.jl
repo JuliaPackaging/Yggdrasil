@@ -8,8 +8,6 @@ version = v"3.0.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.com/qr_mumps/qr_mumps.git" ,"66e9b6c97959343362d4f1b22cd4307813752df5"),
-    # ArchiveSource("http://buttari.perso.enseeiht.fr/qr_mumps/releases/qr_mumps-$version.tgz",
-    #               "f78524dcc58f597c9255e162fa17a7aabe5d2ce0ef5f0d7dcd71221cf4bdf231")
 ]
 
 # Bash recipe for building across all platforms
@@ -62,7 +60,7 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"))
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="6.1.3")
     # Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93")) for Julia ≥ v"1.9"
     # Dependency(PackageSpec(name="StarPU_jll", uuid="e3ad0b27-b140-5312-a56e-059adfc55eb4"))
 ]
