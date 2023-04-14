@@ -30,5 +30,5 @@ platforms = filter(!Sys.iswindows, supported_platforms())
 products = [
     ExecutableProduct("gawk", :gawk)
 ]
-dependencies = []
+dependencies = Dependency[]
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
