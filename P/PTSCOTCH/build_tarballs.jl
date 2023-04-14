@@ -45,7 +45,7 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude=Sys.iswindows)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
