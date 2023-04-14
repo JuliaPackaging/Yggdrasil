@@ -27,10 +27,11 @@ export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export CFLAGS="-O3"
 export CXXFLAGS="-O3"
+export LIBS="-lsc -lp4est"
 
 # Set necessary flags for FreeBSD
 if [[ "${target}" == *-freebsd* ]]; then
-  export LIBS="-lm"
+  export LIBS="${LIBS} -lm"
 fi
 
 # Set necessary flags for Windows and non-Windodws systems
@@ -41,7 +42,7 @@ if [[ "${target}" == *-mingw* ]]; then
   # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
   FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
   # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="${libdir}/msmpi.dll -lws2_32"
+  export LIBS="${LIBS} ${libdir}/msmpi.dll -lws2_32"
   # Disable MPI I/O on Windows since it causes p4est to crash
   mpiopts="--enable-mpi --disable-mpiio"
 else
