@@ -33,7 +33,7 @@ platforms = filter(p -> !(libc(p) == "musl" && arch(p) == "i686"), platforms)
 products = [
     ExecutableProduct("file", :file)
 ]
-dependencies = Dependency[
+dependencies = [
     Dependency("Bzip2_jll"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
