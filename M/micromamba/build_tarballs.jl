@@ -3,29 +3,29 @@
 using BinaryBuilder
 
 name = "micromamba"
-version = v"1.4.0"
+version = v"1.4.1"
 build = "0"
 
 # Collection of sources required to build micromamba
 # These are actually just the conda packages for each platform
 sources = [
     FileSource("https://conda.anaconda.org/conda-forge/linux-64/micromamba-$version-$build.tar.bz2",
-        "4520263a7377cb1f420e11f542006ba49c063d9c6d34d1be397ca7348777e735",
+        "3cf53fee4650a5b1e6fc1817b1b2c43c415d50af1efeaf0db0a0aee6820dd2cf",
         filename="micromamba-x86_64-linux-gnu.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/linux-aarch64/micromamba-$version-$build.tar.bz2",
-        "7c70e92a75584215813411a76066290ac2b92d0bb39660c89285e7f226899473",
+        "e7144aa2a18bfb65d1ec899041b2c3cbea34c8c95e7bebc5a866337e7f3af85b",
         filename="micromamba-aarch64-linux-gnu.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/linux-ppc64le/micromamba-$version-$build.tar.bz2",
-        "b5397b68075958c7afca61ca069d575e234138afbfea0bd5c53f4710324904bc",
+        "283fb4da81426b7fdad2efa51a3708cec8b952d73bc7d0dd97958cc9e43ea36c",
         filename="micromamba-powerpc64le-linux-gnu.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/osx-64/micromamba-$version-$build.tar.bz2",
-        "f234d8fc2b89fa242bee574862ed8a5291296159f32344fb1e8f341df5c7c84d",
+        "5d5f088d93843734598daa30cfbf4eb5bb7621b2cb80a81898b75883984a30df",
         filename="micromamba-x86_64-apple-darwin14.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/osx-arm64/micromamba-$version-$build.tar.bz2",
-        "11d3c11280093a04a3bdb8ea34678701029843b527aad8af67d596221d083582",
+        "4670ec5715af1c26e3a5c19a9afe5d10a48c8cd3966f733b1c586640330a4be2",
         filename="micromamba-aarch64-apple-darwin20.tar.bz2"),
     FileSource("https://conda.anaconda.org/conda-forge/win-64/micromamba-$version-$build.tar.bz2",
-        "09dfd50af36bc53040fac893a4727b08f0735fb7e9de62a469630b9af6eeb7cd",
+        "d9ee76ffbecb53e4e87c88f6824d6c4bf6ee8b8a0cd234551dc387a70663d0cf",
         filename="micromamba-x86_64-w64-mingw32.tar.bz2"),
 ]
 

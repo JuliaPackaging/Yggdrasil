@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.0.5" # <-- This is a lie, we're bumping to 2.0.5 to create a Julia v1.6+ release with experimental platforms
+version = v"2.0.6" # <-- This is a lie, we're bumping to 2.0.6 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    GitSource("https://github.com/ralna/ARCHDefs.git" ,"d4aa50f72626130f0e4fb6c8d31c622889a0ebbb"),
-    GitSource("https://github.com/ralna/SIFDecode.git","affd441e93bd41f076239df2f4237fb13278f6a6"),
-    GitSource("https://github.com/ralna/CUTEst.git"   ,"e6aff163eafd9424c70dfaf64a287252221cf597"),
+    GitSource("https://github.com/ralna/ARCHDefs.git" ,"5ab94bbbe45e13c1d00acdc09b8b7df470b98c29"),
+    GitSource("https://github.com/ralna/SIFDecode.git","42d3241205dc56e1f943687293e95586755a3c10"),
+    GitSource("https://github.com/ralna/CUTEst.git"   ,"1d2954ef69cfd541d3ec2299d29da7302cb8b6a3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,17 +31,6 @@ export CUTEST=${prefix}/CUTEst
 # ARCHDefs requires tput
 apk update
 apk add ncurses
-
-# SIFDecode always looks for `ar`, `ranlib`, `sed` and `grep` in `/usr/bin/`
-ln -sf $(which ar) /usr/bin/ar
-ln -sf $(which ranlib) /usr/bin/ranlib
-ln -sf $(which sed) /usr/bin/sed
-ln -sf $(which grep) /usr/bin/grep
-
-if [[ "${target}" == *-apple* ]]; then
-  mkdir -p /opt/homebrew/bin
-  ln -sf $(which gfortran) /opt/homebrew/bin/gfortran
-fi
 
 # build SIFDecode
 cd $SIFDECODE
@@ -67,13 +56,13 @@ if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
   echo "2" >> cutest.opts  # Linux
   echo "6" >> cutest.opts  # gfortran
   echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "9" >> cutest.opts  # gcc
+  echo "8" >> cutest.opts  # gcc
   export MYARCH=pc64.lnx.gfo
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > cutest.opts  # macOS
   echo "2" >> cutest.opts  # gfortran
   echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "2" >> cutest.opts  # gcc
+  echo "5" >> cutest.opts  # gcc
   export MYARCH=mac64.osx.gfo
 elif [[ "${target}" == *-mingw* ]]; then
   echo "5" > cutest.opts   # PC64
