@@ -7,12 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
 version = v"6.1.5"
-ptscotch_version = v"6.1.3"
-scotch_jll_version = v"6.1.3"
+scotch_jll_version = "6.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "40b60f8965913178cd66e3572eb23efa6ce18ade"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "40b60f8965913178cd66e3572eb23efa6ce18ade"), # <-- v"6.1.3"
     DirectorySource("./bundled")
 ]
 
