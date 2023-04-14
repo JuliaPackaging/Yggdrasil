@@ -7,13 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
 version = v"6.1.5"
-ptscotch_version = v"6.1.3"
-scotch_jll_version = v"6.1.3"
+scotch_jll_version = "6.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(ptscotch_version)/scotch-v$(ptscotch_version).tar.gz",
-                  "4e54f056199e6c23d46581d448fcfe2285987e5554a0aa527f7931684ef2809e"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "40b60f8965913178cd66e3572eb23efa6ce18ade"), # <-- v"6.1.3"
     DirectorySource("./bundled")
 ]
 
@@ -47,7 +45,7 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude=Sys.iswindows)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -68,7 +66,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency("SCOTCH_jll", scotch_jll_version)
+    Dependency("SCOTCH_jll"; compat=scotch_jll_version)
 ]
 append!(dependencies, platform_dependencies)
 
