@@ -28,7 +28,7 @@ make install
 cd ${WORKSPACE}/srcdir && rm -r ${WORKSPACE}/srcdir/mmg-genheader
 
 # Install MMG
-cd ${WORKSPACE}/srcdir/mmg-*
+cd ${WORKSPACE}/srcdir/mmg
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/MMG.mingw.patch"
     USE_SCOTCH=OFF
