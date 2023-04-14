@@ -54,13 +54,13 @@ fi
 
 # Run configure
 ./configure \
-  --prefix=${prefix} \
+  --prefix="${prefix}" \
   --build=${MACHTYPE} \
   --host=${target} \
   --disable-static \
   --without-blas \
-  --with-sc=/workspace/destdir \
-  --with-p4est=/workspace/destdir \
+  --with-sc="${prefix}" \
+  --with-p4est="${prefix}" \
   ${mpiopts}
 
 # Build & install
