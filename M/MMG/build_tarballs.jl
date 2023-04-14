@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Install genheader for host platform
-cp -r ${WORKSPACE}/srcdir/mmg-* ${WORKSPACE}/srcdir/mmg-genheader
+cp -r ${WORKSPACE}/srcdir/mmg ${WORKSPACE}/srcdir/mmg-genheader
 cd ${WORKSPACE}/srcdir/mmg-genheader
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/genheader.patch"
 mkdir build
