@@ -12,8 +12,7 @@ scotch_jll_version = v"6.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://gitlab.inria.fr/scotch/scotch/-/archive/v$(ptscotch_version)/scotch-v$(ptscotch_version).tar.gz",
-                  "4e54f056199e6c23d46581d448fcfe2285987e5554a0aa527f7931684ef2809e"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "40b60f8965913178cd66e3572eb23efa6ce18ade"),
     DirectorySource("./bundled")
 ]
 
@@ -68,7 +67,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency("SCOTCH_jll", scotch_jll_version)
+    Dependency("SCOTCH_jll"; compat=scotch_jll_version)
 ]
 append!(dependencies, platform_dependencies)
 
