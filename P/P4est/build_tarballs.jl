@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "P4est"
-version = v"2.8.1"
-p4est_version = v"2.8"
+version = v"2.8.5"
+p4est_version = v"2.8.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://p4est.github.io/release/p4est-2.8.tar.gz",
-                  "6a0586e3abac06c20e31b1018f3a82a564a6a0d9ff6b7f6c772a9e6b0f0cc5e4"),
+    ArchiveSource("https://github.com/p4est/p4est.github.io/raw/master/release/p4est-2.8.5.tar.gz",
+                  "9891a14bdf993bf799db476966f27f0336202d072e6fe73c5f38cb7534d2423b"),
     DirectorySource("./bundled")
 ]
 
