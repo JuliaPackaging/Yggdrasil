@@ -137,7 +137,6 @@ else
 
 # Patch `configure.ac`:
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.ac.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/commence.am.patch
 
 # Prepare the files `H5init.c` and `config.saved` that contain predetermined
 # configuration information
@@ -371,7 +370,7 @@ products = [
     LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
     LibraryProduct("libhdf5_hl", :libhdf5_hl),
     LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
-    LibraryProduct("libhdf5_hl_fortran", :libhdf5_hl_fortran),
+    LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
 ]
 
 # Dependencies that must be installed before this package can be built
