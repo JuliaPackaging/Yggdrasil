@@ -1,6 +1,6 @@
 --- a/hl/fortran/src/Makefile
 +++ a/hl/fortran/src/Makefile
-@@ -94,10 +94,11 @@
+@@ -1472,10 +1472,11 @@
  # H5HL_buildiface.F90 generates all the APIs that have a KIND type associated
  # with them.
  
@@ -12,6 +12,6 @@
 -H5TBff_gen.F90: H5HL_buildiface$(EXEEXT)
 +H5TBff_gen.F90:
 +	cat ../../../../saved/H5TBff_gen.F90 >H5TBff_gen.F90
- 
- # H5HL_buildiface.F90 is included in the distribution, and Automake knows
- # how to compile a fortran program given its sources.
+ # Hardcode the dependencies of these files. There isn't a known way of
+ # determining this automagically (like we do with the C files). So, when
+ # doing a parallel make, some modules could be made way before the
