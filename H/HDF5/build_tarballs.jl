@@ -7,7 +7,7 @@ version = v"1.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.0/src/hdf5-1.14.0.tar.gz",
+    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.gz",
                   "a571cc83efda62e1a51a0a912dd916d01895801c5025af91669484a1575a6ef4"),
     DirectorySource("./bundled"),
 ]
