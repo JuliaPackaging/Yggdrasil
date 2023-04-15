@@ -17,7 +17,7 @@ make -j${nproc}
 make install
 """
 
-platforms = supported_platforms()
+platforms = [AnyPlatform()]
 products = [
     FileProduct("bin/aclocal", :aclocal),
 ]
