@@ -166,8 +166,12 @@ case "${target}" in
     x86_64-apple-darwin*)
         cp ../files/darwin-amd64/* saved
         ;;
-    x86_64-linux-* | x86_64-*-freebsd*)
+    x86_64-linux-*)
         cp ../files/debian-amd64/* saved
+        ;;
+    x86_64-*-freebsd*)
+        # same as for Linux
+        cp ../files/freebsd-amd64/* saved
         ;;
     x86_64-w64-mingw32)
         # sizeof(long double) == 16
