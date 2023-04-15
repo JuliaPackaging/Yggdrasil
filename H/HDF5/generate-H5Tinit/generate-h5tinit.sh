@@ -11,5 +11,7 @@ for cpuarch in $cpuarchs; do
     docker run --rm "$tag" cat fortran/src/H5fortran_types.F90 | tee "debian-${cpuarch}/H5fortran_types.F90"
     docker run --rm "$tag" cat fortran/src/H5f90i_gen.h | tee "debian-${cpuarch}/H5f90i_gen.h"
     docker run --rm "$tag" cat fortran/src/H5_gen.F90 | tee "debian-${cpuarch}/H5_gen.F90"
+    docker run --rm "$tag" cat hl/fortran/src/H5LTff_gen.F90 | tee "debian-${cpuarch}/H5LTff_gen.F90"
+    docker run --rm "$tag" cat hl/fortran/src/H5TBff_gen.F90 | tee "debian-${cpuarch}/H5TBff_gen.F90"
     docker run --rm "$tag" cat config.status | tee "debian-${cpuarch}/config.status"
 done

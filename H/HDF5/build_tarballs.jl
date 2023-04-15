@@ -254,6 +254,7 @@ fi
 #   we do mostly nothing instead.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/src-Makefile.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran-src-Makefile.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hl-fortran-src-Makefile.patch
 
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is

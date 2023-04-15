@@ -1,0 +1,17 @@
+--- a/hl/fortran/src/Makefile
++++ a/hl/fortran/src/Makefile
+@@ -94,10 +94,11 @@
+ # H5HL_buildiface.F90 generates all the APIs that have a KIND type associated
+ # with them.
+ 
+-H5LTff_gen.F90: H5HL_buildiface$(EXEEXT)
+-	$(RUNSERIAL) ./H5HL_buildiface$(EXEEXT)
++H5LTff_gen.F90:
++	cat ../../../../saved/H5LTff_gen.F90 >H5LTff_gen.F90
+ 
+-H5TBff_gen.F90: H5HL_buildiface$(EXEEXT)
++H5TBff_gen.F90:
++	cat ../../../../saved/H5TBff_gen.F90 >H5TBff_gen.F90
+ 
+ # H5HL_buildiface.F90 is included in the distribution, and Automake knows
+ # how to compile a fortran program given its sources.
