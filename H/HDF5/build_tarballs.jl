@@ -202,9 +202,12 @@ env \
 mkdir build
 pushd build
 
-# Required for x86_64-linux-musl. Some HDF5 C code is C99, but configure only requests C89.
+# Required for x86_64-linux-musl:
+# - Some HDF5 C code requires C99, but configure only requests C89.
+# - Some HDF5 C++ code requires C++11, but configure does not request this.
 # This might not be necessary if we switch to newer GCC versions.
 export CFLAGS="${CFLAGS} -std=c99"
+export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
