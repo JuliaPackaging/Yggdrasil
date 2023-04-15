@@ -140,55 +140,47 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.ac.patch
 
 # Prepare the files `H5init.c` and `config.saved` that contain predetermined
 # configuration information
+mkdir saved
 case "${target}" in
     aarch64-apple-darwin*)
-        cp ../files/H5Tinit-darwin-arm64v8.c H5Tinit.c
-        cp ../files/config-darwin-arm64v8.status config.saved
+        cp ../files/darwin-arm64v8/* saved
         ;;
     aarch64-linux-*)
-        cp ../files/H5Tinit-debian-arm64v8.c H5Tinit.c
-        cp ../files/config-debian-arm64v8.status config.saved
+        cp ../files/debian-arm64v8/* saved
         ;;
     arm-linux-*)
-        cp ../files/H5Tinit-debian-arm32v7.c H5Tinit.c
-        cp ../files/config-debian-arm32v7.status config.saved
+        cp ../files/debian-arm32v7/* saved
         ;;
     i686-linux-*)
-        cp ../files/H5Tinit-debian-i386.c H5Tinit.c
-        cp ../files/config-debian-i386.status config.saved
+        cp ../files/debian-i386/* saved
         ;;
     i686-w64-mingw32)
         # sizeof(long double) == 12
         # layout seems to be 16-bit sign+exponent and 64-bit mantissa
         # same as for Linux
-        cp ../files/H5Tinit-debian-i386.c H5Tinit.c
-        cp ../files/config-debian-i386.status config.saved
+        cp ../files/debian-i386/* saved
         ;;
     powerpc64le-linux-*)
-        cp ../files/H5Tinit-debian-ppc64le.c H5Tinit.c
-        cp ../files/config-debian-ppc64le.status config.saved
+        cp ../files/debian-ppc64le/* saved
         ;;
     x86_64-apple-darwin*)
-        cp ../files/H5Tinit-darwin-amd64.c H5Tinit.c
-        cp ../files/config-darwin-amd64.status config.saved
+        cp ../files/darwin-amd64/* saved
         ;;
     x86_64-linux-* | x86_64-*-freebsd*)
-        cp ../files/H5Tinit-debian-amd64.c H5Tinit.c
-        cp ../files/config-debian-amd64.status config.saved
+        cp ../files/debian-amd64/* saved
         ;;
     x86_64-w64-mingw32)
         # sizeof(long double) == 16
         # layout seems to be 16-bit sign+exponent and 64-bit mantissa
         # same as for Linux
-        cp ../files/H5Tinit-debian-amd64.c H5Tinit.c
-        cp ../files/config-debian-amd64.status config.saved
+        cp ../files/debian-amd64/* saved
         ;;
     *)
         echo "Unsupported target architecture ${target}" >&2
         exit 1
         ;;
 esac
-ln -s ../files/get_config_setting .
+cp ../files/get_config_setting saved
 
 env \
     HDF5_ACLOCAL=/usr/bin/aclocal \
@@ -231,27 +223,27 @@ fi
     hdf5_cv_ldouble_to_llong_accurate=no \
     hdf5_cv_llong_to_ldouble_correct=no \
     hdf5_cv_disable_some_ldouble_conv=yes \
-    "$(../get_config_setting PAC_C_MAX_REAL_PRECISION ../config.saved)" \
-    "$(../get_config_setting PAC_FC_ALL_REAL_KINDS ../config.saved)" \
-    "$(../get_config_setting PAC_FC_MAX_REAL_PRECISION ../config.saved)" \
-    "$(../get_config_setting PAC_FORTRAN_NUM_INTEGER_KINDS ../config.saved)" \
-    "$(../get_config_setting PAC_FC_ALL_INTEGER_KINDS ../config.saved)" \
-    "$(../get_config_setting PAC_FC_ALL_REAL_KINDS_SIZEOF ../config.saved)" \
-    "$(../get_config_setting PAC_FC_ALL_INTEGER_KINDS_SIZEOF ../config.saved)" \
-    "$(../get_config_setting PAC_FORTRAN_NATIVE_INTEGER_KIND ../config.saved)" \
-    "$(../get_config_setting PAC_FORTRAN_NATIVE_INTEGER_SIZEOF ../config.saved)" \
-    "$(../get_config_setting PAC_FORTRAN_NATIVE_REAL_KIND ../config.saved)" \
-    "$(../get_config_setting PAC_FORTRAN_NATIVE_REAL_SIZEOF ../config.saved)" \
-    "$(../get_config_setting PAC_FORTRAN_NATIVE_DOUBLE_KIND ../config.saved)" \
-    "$(../get_config_setting PAC_FORTRAN_NATIVE_DOUBLE_SIZEOF ../config.saved)" \
-    "$(../get_config_setting HAVE_Fortran_INTEGER_SIZEOF ../config.saved)" \
-    "$(../get_config_setting FORTRAN_HAVE_C_LONG_DOUBLE ../config.saved)" \
-    "$(../get_config_setting FORTRAN_C_LONG_DOUBLE_IS_UNIQUE ../config.saved)" \
-    "$(../get_config_setting H5CONFIG_F_NUM_RKIND ../config.saved)" \
-    "$(../get_config_setting H5CONFIG_F_RKIND ../config.saved)" \
-    "$(../get_config_setting H5CONFIG_F_RKIND_SIZEOF ../config.saved)" \
-    "$(../get_config_setting H5CONFIG_F_NUM_IKIND ../config.saved)" \
-    "$(../get_config_setting H5CONFIG_F_IKIND ../config.saved)"
+    "$(../saved/get_config_setting PAC_C_MAX_REAL_PRECISION ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FC_ALL_REAL_KINDS ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FC_MAX_REAL_PRECISION ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FORTRAN_NUM_INTEGER_KINDS ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FC_ALL_INTEGER_KINDS ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FC_ALL_REAL_KINDS_SIZEOF ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FC_ALL_INTEGER_KINDS_SIZEOF ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_INTEGER_KIND ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_INTEGER_SIZEOF ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_REAL_KIND ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_REAL_SIZEOF ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_DOUBLE_KIND ../saved/config.status)" \
+    "$(../saved/get_config_setting PAC_FORTRAN_NATIVE_DOUBLE_SIZEOF ../saved/config.status)" \
+    "$(../saved/get_config_setting HAVE_Fortran_INTEGER_SIZEOF ../saved/config.status)" \
+    "$(../saved/get_config_setting FORTRAN_HAVE_C_LONG_DOUBLE ../saved/config.status)" \
+    "$(../saved/get_config_setting FORTRAN_C_LONG_DOUBLE_IS_UNIQUE ../saved/config.status)" \
+    "$(../saved/get_config_setting H5CONFIG_F_NUM_RKIND ../saved/config.status)" \
+    "$(../saved/get_config_setting H5CONFIG_F_RKIND ../saved/config.status)" \
+    "$(../saved/get_config_setting H5CONFIG_F_RKIND_SIZEOF ../saved/config.status)" \
+    "$(../saved/get_config_setting H5CONFIG_F_NUM_IKIND ../saved/config.status)" \
+    "$(../saved/get_config_setting H5CONFIG_F_IKIND ../saved/config.status)"
 
 # Patch the generated `Makefile`:
 # (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
