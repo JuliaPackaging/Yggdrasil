@@ -118,9 +118,9 @@ cmake \
     -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN__TRYRUN_OUTPUT= \
     -DH5_LONG_TO_LDOUBLE_SPECIAL_RUN=1 \
     -DH5_LONG_TO_LDOUBLE_SPECIAL_RUN__TRYRUN_OUTPUT= \
-    -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN=1 \
+    -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN=0 \
     -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN__TRYRUN_OUTPUT= \
-    -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN=1 \
+    -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN=0 \
     -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN__TRYRUN_OUTPUT= \
     -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN=1 \
     -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN__TRYRUN_OUTPUT= \
@@ -137,6 +137,7 @@ else
 
 # Patch `configure.ac`:
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.ac.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/commence.am.patch
 
 # Prepare the files `H5init.c` and `config.saved` that contain predetermined
 # configuration information

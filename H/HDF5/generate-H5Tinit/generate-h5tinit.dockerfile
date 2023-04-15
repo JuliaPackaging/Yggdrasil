@@ -2,7 +2,7 @@
 
 ARG cpuarch=amd64 # amd64, arm32v5, arm32v7, arm64v8, i386, mips64le, ppc64le, riscv64
 
-FROM ${cpuarch}/debian:11.5
+FROM ${cpuarch}/debian:11.6
 
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive

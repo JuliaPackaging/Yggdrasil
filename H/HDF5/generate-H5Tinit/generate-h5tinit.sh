@@ -6,7 +6,7 @@ cpuarchs="amd64 arm32v5 arm32v7 arm64v8 i386 mips64le ppc64le riscv64 s390x"
 for cpuarch in $cpuarchs; do
     tag="generate-h5tinit:debian-$cpuarch"
     docker build --file generate-h5tinit.dockerfile --build-arg cpuarch="$cpuarch" --progress plain --tag "$tag" .
-    mkdir "debian-${cpuarch}"
+    mkdir -p "debian-${cpuarch}"
     docker run --rm "$tag" cat src/H5Tinit.c | tee "debian-${cpuarch}/H5Tinit.c"
     docker run --rm "$tag" cat fortran/src/H5fortran_types.F90 | tee "debian-${cpuarch}/H5fortran_types.F90"
     docker run --rm "$tag" cat fortran/src/H5f90i_gen.h | tee "debian-${cpuarch}/H5f90i_gen.h"
