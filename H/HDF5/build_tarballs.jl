@@ -17,18 +17,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd hdf5-*
 
-echo ${MACHTYPE}
-echo ${nbits}
-echo ${proc_family}
-echo ${target}
-
-# Patch `CMakeLists.txt`:
-# - HDF5 would also try to build and run `H5detect` to collect ABI information.
-#   We know this information, and thus can provide it manually.
-# - HDF5 would try to build and run `H5make_libsettings` to collect
-#   build-time information. That information seems entirely optional, so
-#   we do mostly nothing instead.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch
+echo MACHTYPE: ${MACHTYPE}
+echo nbits: ${nbits}
+echo proc_family: ${proc_family}
+echo target: ${target}
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/H5timer.c.patch
@@ -37,22 +29,34 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
 fi
 
-mkdir build
-cd build
-
 # TODO:
 # - understand and fix long double / long configure tests
 # - -DHDF5_ENABLE_HDFS=ON
 # - -DHDF5_ENABLE_PARALLEL=ON
 # - -DDEFAULT_API_VERSION=...
 # - -DHDF5_ENABLE_THREADSAFE=ON
-# - build C++ and Fortran support
 # - -DHDF5_ENABLE_MAP_API=ON
 # - -DHDF5_BUILD_PARALLEL_TOOLS=ON
 # - do we actually need OpenMP? can we remove this dependency?
-# - the old HDF5 packages depends on OpenSSL and libCURL. why? what are we missing here?
+# - build with read-only S3 support (`--enable-ros3-vfd`)
+# - enable SZ (`--with-szlib=DIR`) (`libaec_jll`)
+# - h5cc etc. are probably useless (need to check). we might need to call `h5redeploy`, if it works.
+# - provide the registered filter plugins (BZIP2, JPEG, LZF, BLOSC, MAFISC, LZ4, Bitshuffle, and ZFP)
 
+# Building via `configure` instead of via `cmake` has one advantage:
+# The `h5cc` etc. scripts are generated, and some other packages might expect these.
 if false; then
+
+# Option 1: Build with cmake
+# This is now outdated, e.g. it doesn't enable C++ nor Fortran.
+
+# Patch `CMakeLists.txt`:
+# - HDF5 would also try to build and run `H5detect` to collect ABI information.
+#   We know this information, and thus can provide it manually.
+# - HDF5 would try to build and run `H5make_libsettings` to collect
+#   build-time information. That information seems entirely optional, so
+#   we do mostly nothing instead.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch
 
 # Prepare the pre-generated file `H5Tinit.c` that cmake will expect:
 case "${target}" in
@@ -93,8 +97,11 @@ case "${target}" in
         echo "Unsupported target architecture ${target}" >&2
         exit 1
         ;;
-esac >../src/H5Tinit.c
-echo 'char H5libhdf5_settings[]="";' >../src/H5lib_settings.c
+esac >src/H5Tinit.c
+echo 'char H5libhdf5_settings[]="";' >src/H5lib_settings.c
+
+mkdir build
+pushd build
 
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
@@ -121,7 +128,79 @@ cmake \
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
 cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
 
+popd
+
 else
+
+# Option 2: Build with configure
+# This is the currently supported way.
+
+# Patch `configure.ac`:
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.ac.patch
+
+# Prepare the files `H5init.c` and `config.saved` that contain predetermined
+# configuration information
+case "${target}" in
+    aarch64-apple-darwin*)
+        cp ../files/H5Tinit-darwin-arm64v8.c H5Tinit.c
+        cp ../files/config-darwin-arm64v8.status config.saved
+        ;;
+    aarch64-linux-*)
+        cp ../files/H5Tinit-debian-arm64v8.c H5Tinit.c
+        cp ../files/config-debian-arm64v8.status config.saved
+        ;;
+    arm-linux-*)
+        cp ../files/H5Tinit-debian-arm32v7.c H5Tinit.c
+        cp ../files/config-debian-arm32v7.status config.saved
+        ;;
+    i686-linux-*)
+        cp ../files/H5Tinit-debian-i386.c H5Tinit.c
+        cp ../files/config-debian-i386.status config.saved
+        ;;
+    i686-w64-mingw32)
+        # sizeof(long double) == 12
+        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
+        # same as for Linux
+        cp ../files/H5Tinit-debian-i386.c H5Tinit.c
+        cp ../files/config-debian-i386.status config.saved
+        ;;
+    powerpc64le-linux-*)
+        cp ../files/H5Tinit-debian-ppc64le.c H5Tinit.c
+        cp ../files/config-debian-ppc64le.status config.saved
+        ;;
+    x86_64-apple-darwin*)
+        cp ../files/H5Tinit-darwin-amd64.c H5Tinit.c
+        cp ../files/config-darwin-amd64.status config.saved
+        ;;
+    x86_64-linux-* | x86_64-*-freebsd*)
+        cp ../files/H5Tinit-debian-amd64.c H5Tinit.c
+        cp ../files/config-debian-amd64.status config.saved
+        ;;
+    x86_64-w64-mingw32)
+        # sizeof(long double) == 16
+        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
+        # same as for Linux
+        cp ../files/H5Tinit-debian-amd64.c H5Tinit.c
+        cp ../files/config-debian-amd64.status config.saved
+        ;;
+    *)
+        echo "Unsupported target architecture ${target}" >&2
+        exit 1
+        ;;
+esac
+ln -s ../files/get_config_setting .
+
+env \
+    HDF5_ACLOCAL=/usr/bin/aclocal \
+    HDF5_AUTOHEADER=/usr/bin/autoheader \
+    HDF5_AUTOMAKE=/usr/bin/automake \
+    HDF5_AUTOCONF=/usr/bin/autoconf \
+    HDF5_LIBTOOL=/usr/bin/libtool \
+    HDF5_M4=/usr/bin/m4 \
+    ./autogen.sh
+
+mkdir build
+pushd build
 
 # Required for x86_64-linux-musl. Some HDF5 C code is C99, but configure only requests C89.
 # This might not be necessary if we switch to newer GCC versions.
@@ -136,16 +215,40 @@ fi
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
+    --enable-cxx \
+    --enable-fortran \
     --enable-hl=yes \
     --enable-static=no \
     --enable-tests=no \
     --enable-tools=yes \
+    --enable-unsupported \
     --with-examplesdir=/tmp \
     hdf5_cv_ldouble_to_long_special=no \
     hdf5_cv_long_to_ldouble_special=no \
     hdf5_cv_ldouble_to_llong_accurate=no \
     hdf5_cv_llong_to_ldouble_correct=no \
-    hdf5_cv_disable_some_ldouble_conv=yes
+    hdf5_cv_disable_some_ldouble_conv=yes \
+    "$(../get_config_setting PAC_C_MAX_REAL_PRECISION ../config.saved)" \
+    "$(../get_config_setting PAC_FC_ALL_REAL_KINDS ../config.saved)" \
+    "$(../get_config_setting PAC_FC_MAX_REAL_PRECISION ../config.saved)" \
+    "$(../get_config_setting PAC_FORTRAN_NUM_INTEGER_KINDS ../config.saved)" \
+    "$(../get_config_setting PAC_FC_ALL_INTEGER_KINDS ../config.saved)" \
+    "$(../get_config_setting PAC_FC_ALL_REAL_KINDS_SIZEOF ../config.saved)" \
+    "$(../get_config_setting PAC_FC_ALL_INTEGER_KINDS_SIZEOF ../config.saved)" \
+    "$(../get_config_setting PAC_FORTRAN_NATIVE_INTEGER_KIND ../config.saved)" \
+    "$(../get_config_setting PAC_FORTRAN_NATIVE_INTEGER_SIZEOF ../config.saved)" \
+    "$(../get_config_setting PAC_FORTRAN_NATIVE_REAL_KIND ../config.saved)" \
+    "$(../get_config_setting PAC_FORTRAN_NATIVE_REAL_SIZEOF ../config.saved)" \
+    "$(../get_config_setting PAC_FORTRAN_NATIVE_DOUBLE_KIND ../config.saved)" \
+    "$(../get_config_setting PAC_FORTRAN_NATIVE_DOUBLE_SIZEOF ../config.saved)" \
+    "$(../get_config_setting HAVE_Fortran_INTEGER_SIZEOF ../config.saved)" \
+    "$(../get_config_setting FORTRAN_HAVE_C_LONG_DOUBLE ../config.saved)" \
+    "$(../get_config_setting FORTRAN_C_LONG_DOUBLE_IS_UNIQUE ../config.saved)" \
+    "$(../get_config_setting H5CONFIG_F_NUM_RKIND ../config.saved)" \
+    "$(../get_config_setting H5CONFIG_F_RKIND ../config.saved)" \
+    "$(../get_config_setting H5CONFIG_F_RKIND_SIZEOF ../config.saved)" \
+    "$(../get_config_setting H5CONFIG_F_NUM_IKIND ../config.saved)" \
+    "$(../get_config_setting H5CONFIG_F_IKIND ../config.saved)"
 
 # Patch the generated `Makefile`:
 # (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
@@ -156,53 +259,14 @@ fi
 #   we do mostly nothing instead.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
-# Prepare the file `H5Tinit.c` that the patch above expects:
-case "${target}" in
-    aarch64-apple-darwin*)
-        cat ../../files/H5Tinit-darwin-arm64v8.c
-        ;;
-    aarch64-linux-*)
-        cat ../../files/H5Tinit-debian-arm64v8.c
-        ;;
-    arm-linux-*)
-        cat ../../files/H5Tinit-debian-arm32v7.c
-        ;;
-    i686-linux-*)
-        cat ../../files/H5Tinit-debian-i386.c
-        ;;
-    i686-w64-mingw32)
-        # sizeof(long double) == 12
-        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
-        # same as for Linux
-        cat ../../files/H5Tinit-debian-i386.c
-        ;;
-    powerpc64le-linux-*)
-        cat ../../files/H5Tinit-debian-ppc64le.c
-        ;;
-    x86_64-apple-darwin*)
-        cat ../../files/H5Tinit-darwin-amd64.c
-        ;;
-    x86_64-linux-* | x86_64-*-freebsd*)
-        cat ../../files/H5Tinit-debian-amd64.c
-        ;;
-    x86_64-w64-mingw32)
-        # sizeof(long double) == 16
-        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
-        # same as for Linux
-        cat ../../files/H5Tinit-debian-amd64.c 
-        ;;
-    *)
-        echo "Unsupported target architecture ${target}" >&2
-        exit 1
-        ;;
-esac >H5Tinit.c
-
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
 # probably caused by a bug in automake, or in how automake was used.
 make -j${nproc} AM_V_P=: "${FLAGS[@]}"
 
 make install
+
+popd
 
 fi
 
@@ -219,6 +283,28 @@ EOF
     cc -o "h5cc${exeext}" h5cc.o
     install -Dvm 755 "h5cc${exeext}" "${bindir}/h5cc${exeext}"
 
+    cat >h5c++.c <<EOF
+#include <stdio.h>
+int main(int argc, char **argv) {
+  fprintf(stderr, "h5c++ is not supported on this architecture\n");
+  return 1;
+}
+EOF
+    cc -c h5c++.c
+    cc -o "h5c++${exeext}" h5c++.o
+    install -Dvm 755 "h5c++${exeext}" "${bindir}/h5c++${exeext}"
+
+    cat >h5fc.c <<EOF
+#include <stdio.h>
+int main(int argc, char **argv) {
+  fprintf(stderr, "h5fc is not supported on this architecture\n");
+  return 1;
+}
+EOF
+    cc -c h5fc.c
+    cc -o "h5fc${exeext}" h5fc.o
+    install -Dvm 755 "h5fc${exeext}" "${bindir}/h5fc${exeext}"
+
     cat >h5redeploy.c <<EOF
 #include <stdio.h>
 int main(int argc, char **argv) {
@@ -231,7 +317,7 @@ EOF
     install -Dvm 755 "h5redeploy${exeext}" "${bindir}/h5redeploy${exeext}"
 fi
 
-install_license ../COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -259,6 +345,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     # HDF5 tools
+    ExecutableProduct("h5c++", :h5cxx),
     ExecutableProduct("h5cc", :h5cc),
     ExecutableProduct("h5clear", :h5clear),
     ExecutableProduct("h5copy", :h5copy),
@@ -266,6 +353,7 @@ products = [
     ExecutableProduct("h5delete", :h5delete),
     ExecutableProduct("h5diff", :h5diff),
     ExecutableProduct("h5dump", :h5dump),
+    ExecutableProduct("h5fc", :h5fc),
     ExecutableProduct("h5format_convert", :h5format_convert),
     ExecutableProduct("h5import", :h5import),
     ExecutableProduct("h5jam",:h5jam),
@@ -281,7 +369,11 @@ products = [
 
     # HDF5 libraries
     LibraryProduct("libhdf5", :libhdf5),
+    LibraryProduct("libhdf5_cpp", :libhdf5_cpp),
+    LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
     LibraryProduct("libhdf5_hl", :libhdf5_hl),
+    LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
+    LibraryProduct("libhdf5_hl_fortran", :libhdf5_hl_fortran),
 ]
 
 # Dependencies that must be installed before this package can be built

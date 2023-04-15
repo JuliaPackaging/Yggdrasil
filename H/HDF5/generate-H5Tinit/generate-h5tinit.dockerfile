@@ -1,4 +1,4 @@
-# Run `docker build --file generate-H5Tinit.dockerfile --build-arg cpuarch=amd64 --progress plain .`
+# Run `docker build --file generate-h5tinit.dockerfile --build-arg cpuarch=amd64 --progress plain .`
 
 ARG cpuarch=amd64 # amd64, arm32v5, arm32v7, arm64v8, i386, mips64le, ppc64le, riscv64
 
@@ -10,6 +10,8 @@ RUN apt-get update && \
     apt-get --yes --no-install-recommends install \
         build-essential \
         ca-certificates \
+        g++ \
+        gfortran \
         wget
 
 # Download and build HDF5
@@ -18,8 +20,5 @@ RUN tar xzf hdf5-1.14.0.tar.gz
 WORKDIR hdf5-1.14.0
 RUN mkdir build
 WORKDIR build
-RUN ../configure
-# RUN make -j${nproc}
+RUN ../configure --enable-c++ --enable-fortran
 RUN make -j${nproc} -C src H5Tinit.c
-
-ENTRYPOINT cat src/H5Tinit.c
