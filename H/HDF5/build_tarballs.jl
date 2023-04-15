@@ -260,7 +260,8 @@ fi
 # - HDF5 would try to build and run `H5make_libsettings` to collect
 #   build-time information. That information seems entirely optional, so
 #   we do mostly nothing instead.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/src-Makefile.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran-src-Makefile.patch
 
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is

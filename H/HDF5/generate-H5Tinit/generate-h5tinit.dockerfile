@@ -22,3 +22,4 @@ RUN mkdir build
 WORKDIR build
 RUN ../configure --enable-c++ --enable-fortran
 RUN make -j${nproc} -C src H5Tinit.c
+RUN make -j${nproc} -C fortran/src H5fortran_types.F90 H5f90i_gen.h H5_gen.F90
