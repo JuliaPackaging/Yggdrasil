@@ -3,6 +3,7 @@
 ARG cpuarch=amd64 # amd64, arm32v5, arm32v7, arm64v8, i386, mips64le, ppc64le, riscv64
 
 FROM ${cpuarch}/debian:11.6
+# FROM ${cpuarch}/ubuntu:18.04
 
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euxo pipefail
+
 # riscv64 is broken
 cpuarchs="amd64 arm32v5 arm32v7 arm64v8 i386 mips64le ppc64le riscv64 s390x"
 
