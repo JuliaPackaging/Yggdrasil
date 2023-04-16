@@ -2,35 +2,33 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Bison"
-version = v"3.8.2"
+name = "HSL"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/bison/bison-$(version).tar.xz", "9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2"),
+    GitSource("https://github.com/ralna/JuliaHSL.git", "3461aed2e62f6588098692891403d8737407131c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/bison-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-relocatable
-make -j${nproc}
-make install
+cd $WORKSPACE/srcdir/JuliaHSL/dummy
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("bison", :bison)
+    LibraryProduct("libhsl", :libhsl)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-    Dependency("Libiconv_jll"),
-]
+dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

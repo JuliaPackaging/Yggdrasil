@@ -4,11 +4,11 @@ name = "neper"
 version = v"4.5.0"
 
 sources = [
-    ArchiveSource("https://github.com/neperfepx/neper/archive/refs/tags/v$(version).tar.gz", "db80dd89e02207e9b056b05fb9fbe493199ce7c3736b2039104c595b4dcd02a9")
+    GitSource("https://github.com/neperfepx/neper", "dc5ae599fbab702bdbd9bc55ec0074b0dbaf28c0")
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/neper-*
+cd $WORKSPACE/srcdir/neper
 mkdir build && cd build
 CXXFLAGS="-lz"
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -46,7 +46,7 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2"),
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778")),
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9")),
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="6.1.3"),
     RuntimeDependency(PackageSpec(name="gmsh_jll", uuid="630162c2-fc9b-58b3-9910-8442a8a132e6")),
 ]
 
