@@ -18,11 +18,11 @@ version = v"0.0.6"  # fake version number
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
 # 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
 # 0.0.6           03.04.2023       master-437e778    https://github.com/ggerganov/llama.cpp/releases/tag/master-437e778
-# 0.0.7           15.04.2023       master-2f7c8e0    https://github.com/ggerganov/llama.cpp/releases/tag/master-2f7c8e0
+# 0.0.7           16.04.2023       master-3173a62    https://github.com/ggerganov/llama.cpp/releases/tag/master-3173a62
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "2f7c8e014e3c0ceaf39688845c2ff6f919fb03b7"),
+              "3173a62eb9f90b94fb3184131032c1c8b7aa8d86"),
     DirectorySource("./bundled"),
 ]
 
@@ -31,8 +31,6 @@ cd $WORKSPACE/srcdir/llama.cpp*
 
 # remove -march=native from cmake files
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
-# add missing ctime include to fix compilation on windows
-atomic_patch -p1 ../patches/windows-add-ctime-include.patch
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
