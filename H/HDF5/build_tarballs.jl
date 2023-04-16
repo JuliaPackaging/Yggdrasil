@@ -385,7 +385,8 @@ dependencies = [
                platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
-    Dependency("LibCURL_jll"),
+    # LibCURL_jll version 8 does not work on *-musl architectures. The respective shared library can't be loaded.
+    Dependency("LibCURL_jll"; compat="7.66.0"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Zlib_jll"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
