@@ -31,15 +31,11 @@ fi
 
 # TODO:
 # - understand and fix long double / long configure tests
-# - -DHDF5_ENABLE_HDFS=ON
 # - -DHDF5_ENABLE_PARALLEL=ON
-# - -DDEFAULT_API_VERSION=...
 # - -DHDF5_ENABLE_THREADSAFE=ON
 # - -DHDF5_ENABLE_MAP_API=ON
 # - -DHDF5_BUILD_PARALLEL_TOOLS=ON
 # - do we actually need OpenMP? can we remove this dependency?
-# - build with read-only S3 support (`--enable-ros3-vfd`)
-# - enable SZ (`--with-szlib=DIR`) (`libaec_jll`)
 # - h5cc etc. are probably useless (need to check). we might need to call `h5redeploy`, if it works.
 # - provide the registered filter plugins (BZIP2, JPEG, LZF, BLOSC, MAFISC, LZ4, Bitshuffle, and ZFP)
 
@@ -214,19 +210,23 @@ fi
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --enable-cxx \
-    --enable-fortran \
+    --enable-cxx=yes \
+    --enable-fortran=yes \
     --enable-hl=yes \
+    --enable-ros3-vfd=yes \
     --enable-static=no \
     --enable-tests=no \
+    --enable-threadsafe=yes \
     --enable-tools=yes \
-    --enable-unsupported \
+    --enable-unsupported=yes \
     --with-examplesdir=/tmp \
+    --with-szlib=${prefix} \
     hdf5_cv_ldouble_to_long_special=no \
     hdf5_cv_long_to_ldouble_special=no \
     hdf5_cv_ldouble_to_llong_accurate=no \
     hdf5_cv_llong_to_ldouble_correct=no \
     hdf5_cv_disable_some_ldouble_conv=yes \
+    hdf5_cv_szlib_can_encode=yes \
     "$(../saved/get_config_setting PAC_C_MAX_REAL_PRECISION ../saved/config.status)" \
     "$(../saved/get_config_setting PAC_FC_ALL_REAL_KINDS ../saved/config.status)" \
     "$(../saved/get_config_setting PAC_FC_MAX_REAL_PRECISION ../saved/config.status)" \
@@ -385,8 +385,11 @@ dependencies = [
                platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
+    Dependency("LibCURL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Zlib_jll"),
-    Dependency("dlfcn_win32_jll"),
+    Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
+    Dependency("libaec_jll"),   # This is the successor of szlib
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
