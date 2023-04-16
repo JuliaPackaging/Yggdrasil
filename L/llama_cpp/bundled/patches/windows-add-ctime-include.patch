@@ -1,0 +1,12 @@
+diff --git a/llama.cpp b/llama.cpp
+index be8c4cd..1552d60 100644
+--- a/llama.cpp
++++ b/llama.cpp
+@@ -21,6 +21,7 @@
+ #include <memory>
+ #include <algorithm>
+ #include <initializer_list>
++#include <ctime>
+ 
+ #define LLAMA_USE_SCRATCH
+ #define LLAMA_MAX_SCRATCH_BUFFERS 16
