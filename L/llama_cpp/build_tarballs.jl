@@ -18,7 +18,7 @@ version = v"0.0.6"  # fake version number
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
 # 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
 # 0.0.6           03.04.2023       master-437e778    https://github.com/ggerganov/llama.cpp/releases/tag/master-437e778
-# 0.0.7           14.04.2023       master-2f7c8e0    https://github.com/ggerganov/llama.cpp/releases/tag/master-2f7c8e0
+# 0.0.7           15.04.2023       master-2f7c8e0    https://github.com/ggerganov/llama.cpp/releases/tag/master-2f7c8e0
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
