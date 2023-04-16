@@ -3,13 +3,15 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.6.9"
+version = v"4.8.3"
 
 # Collection of sources required to build GTK
 sources = [
     # https://download.gnome.org/sources/gtk/
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
-                  "decad346d6a94141ab667c43483e7a4b97c7969c23d589dd63cd6a49498a43d0"),
+                  "b362f968d085b4d3d9340d4d38c706377ded9d5374e694a2b6b7e6292e3cba74"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
+                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,9 +50,22 @@ if [[ "${target}" == *-apple-* ]]; then
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland-backend=false)
 elif [[ "${target}" == *-mingw* ]]; then
-    # Need to tell we're targeting at least Windows 7 so that `GC_ALLGESTURES` is defined
-    sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-DWINVER=_WIN32_WINNT_WIN7']/" ${MESON_TARGET_TOOLCHAIN}
+    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
+    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
+    make install
+
+    cd ../mingw-w64-crt/
+    if [ ${target} == "i686-w64-mingw32" ]; then
+        _crt_configure_args="--disable-lib64 --enable-lib32"
+    elif [ ${target} == "x86_64-w64-mingw32" ]; then
+        _crt_configure_args="--disable-lib32 --enable-lib64"
+    fi
+    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
+    make -j${nproc}
+    make install
 fi
+
+cd $WORKSPACE/srcdir/gtk*/
 
 mkdir build-gtk && cd build-gtk
 meson .. \
@@ -80,6 +95,7 @@ platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgtk-4", :libgtk4),
+    ExecutableProduct("gtk4-builder-tool", :gtk4_builder_tool),
 ]
 
 x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
