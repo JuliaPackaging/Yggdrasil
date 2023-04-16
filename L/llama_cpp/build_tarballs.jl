@@ -6,7 +6,7 @@ version = v"0.0.6"  # fake version number
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
 
-# TODO
+# NOTES
 # - missing architectures: powerpc64le, armv6l, arm7vl
 
 # versions: fake_version to github_version mapping
@@ -18,10 +18,11 @@ version = v"0.0.6"  # fake version number
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
 # 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
 # 0.0.6           03.04.2023       master-437e778    https://github.com/ggerganov/llama.cpp/releases/tag/master-437e778
+# 0.0.7           16.04.2023       master-47f61aa    https://github.com/ggerganov/llama.cpp/releases/tag/master-47f61aa
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "437e77855a54e69c86fe03bc501f63d9a3fddb0e"),
+              "47f61aaa5f76d04286792e2fbd0c95b659ab2af0"),
     DirectorySource("./bundled"),
 ]
 
@@ -30,8 +31,6 @@ cd $WORKSPACE/srcdir/llama.cpp*
 
 # remove -march=native from cmake files
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
-# fix compilation (include Windows.h) on w64-mingw32
-atomic_patch -p1 ../patches/fix-mingw32-windows-include.patch
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
