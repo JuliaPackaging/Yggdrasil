@@ -39,8 +39,10 @@ dependencies = Dependency[
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 include("../../fancy_toys.jl")
+
 no_autofix_platforms = [Platform("x86_64", "macos")]
 autofix_platforms = [Platform("i686", "windows"), Platform("x86_64", "windows"), Platform("x86_64", "linux"), Platform("i686", "linux")]
+
 if any(should_build_platform.(triplet.(no_autofix_platforms)))
     # Need to disable autofix: setting the soname on libiomp breaks it:
     # https://github.com/JuliaMath/FFTW.jl/pull/178#issuecomment-761904389
