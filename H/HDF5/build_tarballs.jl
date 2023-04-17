@@ -388,7 +388,7 @@ dependencies = [
     # LibCURL_jll version 8 does not work on *-musl architectures. The respective shared library can't be loaded.
     # LibCURL_jll version 7 does not exist for armv6l-linux-musleabihf.
     # Dependency("LibCURL_jll"; compat="7.66.0"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73.0, 8"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Zlib_jll"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
