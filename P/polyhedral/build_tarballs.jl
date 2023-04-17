@@ -35,9 +35,12 @@ platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("ppl-config", :ppl_config)
-    ExecutableProduct("ppl_lcdd", :ppl_lcdd)
-    ExecutableProduct("ppl_pips", :ppl_pips)
+    ExecutableProduct("GRP_ListMat_Subset_EXT_Automorphism", :GRP_ListMat_Subset_EXT_Automorphism)
+    ExecutableProduct("GRP_ListMat_Subset_EXT_Isomorphism", :GRP_ListMat_Subset_EXT_Isomorphism)
+    ExecutableProduct("GRP_ListMat_Subset_EXT_Invariant", :GRP_ListMat_Subset_EXT_Invariant)
+    ExecutableProduct("IndefiniteReduction", :IndefiniteReduction)
+    ExecutableProduct("POLY_IsomorphismReduction", :POLY_IsomorphismReduction)
+    ExecutableProduct("sv_exact", :sv_exact)
 ]
 
 # Dependencies that must be installed before this package can be built
