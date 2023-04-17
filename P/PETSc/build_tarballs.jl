@@ -4,8 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.20.5"
-petsc_version = v"3.20.5"
+version = v"3.19.0"
+petsc_version = v"3.19.0"
+MUMPS_COMPAT_VERSION = "5.5.1"
+SUITESPARSE_COMPAT_VERSION = "5.10.1"
+SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
+MPItrampoline_compat_version="5.2.1"    
 
 MPItrampoline_compat_version="5.2.1"
 MicrosoftMPI_compat_version="~10.1.4" 
@@ -13,8 +17,8 @@ MPICH_compat_version="~4.1.2"
 
 # Collection of sources required to build PETSc.
 sources = [
-    ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
-    "fb4e637758737af910b05f30a785245633916cd0a929b7b6447ad1028da4ea5a"),
+    ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-$(petsc_version).tar.gz",
+    "8ced753e4d2fb6565662b2b1fbba75a426cbf8438203f82717ce270f0591322c"),
     DirectorySource("./bundled"),
 ]
 
