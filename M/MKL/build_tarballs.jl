@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2022.2.0"
+version = v"2023.1.0"
 
 # Bash recipes for building across all platforms
 script = read(joinpath(@__DIR__, "script.sh"), String)
@@ -11,10 +11,40 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 platform_sources = [
     (
+        platform = Platform("i686", "windows"),
+        source = ArchiveSource(
+            "https://anaconda.org/intel/mkl/2023.1.0/download/win-32/mkl-2023.1.0-intel_46356.tar.bz2",
+            "b84848ab6a9b785171a58f8bf96e4843fb695e66af804d31f75e86877d53c7da";
+            unpack_target = "mkl-i686-w64-mingw32"
+        ),
+        autofix = false,
+        script = script,
+    ),
+    (
+        platform = Platform("x86_64", "windows"),
+        source = ArchiveSource(
+            "https://anaconda.org/intel/mkl/2023.1.0/download/win-64/mkl-2023.1.0-intel_46356.tar.bz2",
+            "767fbbe50157e9f365eca77d42a1495b66661b5845a1c13b8e33fe79d3b4a9f4";
+            unpack_target = "mkl-x86_64-w64-mingw32"
+        ),
+        autofix = false,
+        script = script,
+    ),
+    (
+        platform = Platform("i686", "linux"; libc="glibc"),
+        source = ArchiveSource(
+            "https://anaconda.org/intel/mkl/2023.1.0/download/linux-32/mkl-2023.1.0-intel_46342.tar.bz2",
+            "ed00993f38f05e39252c718b6041d422f1217c015d3a62faa1f294cc7f089430";
+            unpack_target = "mkl-i686-linux-gnu"
+        ),
+        autofix = true,
+        script = script,
+    ),
+    (
         platform = Platform("x86_64", "linux"; libc="glibc"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.2.0/download/linux-64/mkl-2022.2.0-intel_8748.tar.bz2",
-            "1f3f5e6f4c2d8ea3b4792d2d9a116492e4dac4914373c415ea1272d0f55491ff";
+            "https://anaconda.org/intel/mkl/2023.1.0/download/linux-64/mkl-2023.1.0-intel_46342.tar.bz2",
+            "3820a9053b1c028b3d9f62448f7d0d53a57ca6d6d38c2279faec8663f27d0a5c";
             unpack_target = "mkl-x86_64-linux-gnu"
         ),
         # We need to run autofix on Linux, because here libmkl_rt doesn't
@@ -24,20 +54,10 @@ platform_sources = [
         script = script,
     ),
     (
-        platform = Platform("i686", "linux"; libc="glibc"),
-        source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.2.0/download/linux-32/mkl-2022.2.0-intel_8748.tar.bz2",
-            "f14784822632cff8a926998c1779833f8dd6b86219b7e8744ccb535cad15023d";
-            unpack_target = "mkl-i686-linux-gnu"
-        ),
-        autofix = true,
-        script = script,
-    ),
-    (
         platform = Platform("x86_64", "macos"),
         source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.2.0/download/osx-64/mkl-2022.2.0-intel_8687.tar.bz2",
-            "d47572cf4fb018ce8e5db8a4732055b46bcc50cc4d2f8dc2d7d5ae83ca227c69";
+            "https://anaconda.org/intel/mkl/2023.1.0/download/osx-64/mkl-2023.1.0-intel_43558.tar.bz2",
+            "a4c7a5e322ebb988aa914c3dbdc88afd241c1f50d2fac3f919d3ebca4df4727d";
             unpack_target = "mkl-x86_64-apple-darwin14"
         ),
         # Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
@@ -45,27 +65,7 @@ platform_sources = [
         # https://github.com/JuliaPackaging/Yggdrasil/issues/915.
         autofix = false,
         script = script_macos,
-    ),
-    (
-        platform = Platform("i686", "windows"),
-        source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.2.0/download/win-32/mkl-2022.2.0-intel_9563.tar.bz2",
-            "60435411e0ca283b2b45f979f16520f390ca28588d1d6d2c0682cbda55e6b61f";
-            unpack_target = "mkl-i686-w64-mingw32"
-        ),
-        autofix = false,
-        script = script,
-    ),
-    (
-        platform = Platform("x86_64", "windows"),
-        source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2022.2.0/download/win-64/mkl-2022.2.0-intel_9563.tar.bz2",
-            "59e89f45c6d604d18dfef972a973e3ec4a5d69d02d0fc173d20637fa6e8b59e9";
-            unpack_target = "mkl-x86_64-w64-mingw32"
-        ),
-        autofix = false,
-        script = script,
-    ),
+    )
 ]
 
 # The products that we will ensure are always built
