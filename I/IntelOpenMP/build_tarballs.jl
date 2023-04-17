@@ -20,12 +20,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p "${libdir}"
-    if [[ ${target} == *mingw* ]]; then
+if [[ ${target} == *mingw* ]]; then
     mv ${target}/Library/bin/* "${libdir}/."
 else
     mv ${target}/lib/* "${libdir}/."
 fi
-install_license ${target}/info/*.txt
+install_license ${target}/info/licenses/*.txt
 """
 
 # The products that we will ensure are always built
