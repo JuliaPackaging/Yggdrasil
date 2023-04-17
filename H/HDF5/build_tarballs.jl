@@ -201,6 +201,13 @@ pushd build
 export CFLAGS="${CFLAGS} -std=c99"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
+if [[ "${target}" == x86_64-linux-musl ]]; then
+    # $libdir/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
+    # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libnghttp2.*
+fi
+
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
     FLAGS+=(LDFLAGS="-no-undefined")
@@ -385,10 +392,6 @@ dependencies = [
                platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
-    # LibCURL_jll version 8 does not work on `hdf5-x86-64-linux-musl`. The respective shared library can't be loaded.
-    # LibCURL_jll version 7 does not exist for armv6l-linux-musleabihf.
-    # Dependency("LibCURL_jll"; compat="7.66.0"),
-    # Dependency("LibCURL_jll"; compat="7.73.0, 8"),
     Dependency("LibCURL_jll"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Zlib_jll"),
