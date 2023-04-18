@@ -154,7 +154,7 @@ case "${target}" in
         # sizeof(long double) == 12
         # layout seems to be 16-bit sign+exponent and 64-bit mantissa
         # same as for Linux
-        cp ../files/debian-i386/* saved
+        cp ../files/msys2-mingw32/* saved
         ;;
     powerpc64le-linux-*)
         cp ../files/debian-ppc64le/* saved
@@ -173,7 +173,7 @@ case "${target}" in
         # sizeof(long double) == 16
         # layout seems to be 16-bit sign+exponent and 64-bit mantissa
         # same as for Linux
-        cp ../files/debian-amd64/* saved
+        cp ../files/msys2-mingw64/* saved
         ;;
     *)
         echo "Unsupported target architecture ${target}" >&2
