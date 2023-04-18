@@ -28,6 +28,15 @@ export NAUTY_INCLUDE="-I$WORKSPACE/destdir/include/nauty"
 export NAUTY_LINK="-L$WORKSPACE/destdir/lib -lnauty"
 
 make
+
+cp GRP_ListMat_Subset_EXT_Automorphism $WORKSPACE/destdir/bin
+cp GRP_ListMat_Subset_EXT_Isomorphism $WORKSPACE/destdir/bin
+cp GRP_ListMat_Subset_EXT_Invariant $WORKSPACE/destdir/bin
+cp IndefiniteReduction $WORKSPACE/destdir/bin
+cp POLY_cdd_lp2 $WORKSPACE/destdir/bin
+cp POLY_dual_description_group $WORKSPACE/destdir/bin
+cp POLY_sampling_facets $WORKSPACE/destdir/bin
+cp sv_exact $WORKSPACE/destdir/bin
 """
 
 # These are the platforms we will build for by default, unless further
@@ -40,7 +49,9 @@ products = [
     ExecutableProduct("GRP_ListMat_Subset_EXT_Isomorphism", :GRP_ListMat_Subset_EXT_Isomorphism)
     ExecutableProduct("GRP_ListMat_Subset_EXT_Invariant", :GRP_ListMat_Subset_EXT_Invariant)
     ExecutableProduct("IndefiniteReduction", :IndefiniteReduction)
-    ExecutableProduct("POLY_IsomorphismReduction", :POLY_IsomorphismReduction)
+    ExecutableProduct("POLY_cdd_lp2", :POLY_cdd_lp2)
+    ExecutableProduct("POLY_dual_description_group", :POLY_dual_description_group)
+    ExecutableProduct("POLY_sampling_facets", :POLY_sampling_facets)
     ExecutableProduct("sv_exact", :sv_exact)
 ]
 
