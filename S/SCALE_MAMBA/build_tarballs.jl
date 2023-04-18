@@ -36,8 +36,8 @@ fi
 make -j${nproc} CC="${CXX}" -C src
 
 # Install executables into ${prefix}
-install -Dvm 755 "Player.x${exe}" "${bindir}/Player.x${exe}"
-install -Dvm 755 "Setup.x${exe}" "${bindir}/Setup.x${exe}"
+install -Dvm 755 "Player.x${exeext}" "${bindir}/Player.x${exeext}"
+install -Dvm 755 "Setup.x${exeext}" "${bindir}/Setup.x${exeext}"
 """
 
 # Only x86_64, no FreeBSD or windows, and no musl
