@@ -60,7 +60,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& sdpa)
         .method("setParameterBetaStar", &SDPA::setParameterBetaStar)
         .method("setParameterBetaBar", &SDPA::setParameterBetaBar)
         .method("setParameterGammaStar", &SDPA::setParameterGammaStar)
-        .method("setParameterEpsilonDash", &SDPA::setParameterEpsilonDash);
+        .method("setParameterEpsilonDash", &SDPA::setParameterEpsilonDash)
         .method("getParameterType", &SDPA::getParameterType)
         .method("getParameterMaxIteration", &SDPA::getParameterMaxIteration)
         .method("getParameterEpsilonStar", &SDPA::getParameterEpsilonStar)
@@ -71,10 +71,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& sdpa)
         .method("getParameterBetaStar", &SDPA::getParameterBetaStar)
         .method("getParameterBetaBar", &SDPA::getParameterBetaBar)
         .method("getParameterGammaStar", &SDPA::getParameterGammaStar)
-        .method("getParameterEpsilonDash", &SDPA::getParameterEpsilonDash);
-        .method("getDisplay", &SDPA::getDisplay);
-        .method("setDisplay", &SDPA::setDisplay);
-        .method("getNumThreads", &SDPA::getNumThreads);
+        .method("getParameterEpsilonDash", &SDPA::getParameterEpsilonDash)
+        .method("getDisplay", &SDPA::getDisplay)
+        .method("setDisplay", &SDPA::setDisplay)
+        .method("getNumThreads", &SDPA::getNumThreads)
         .method("setNumThreads", &SDPA::setNumThreads);
       //.method("writeInputSparse", &SDPA::writeInputSparse);
 }
