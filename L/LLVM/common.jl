@@ -14,7 +14,7 @@ const llvm_tags = Dict(
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
-    v"14.0.6" => "ad0184c1a2ee9508319db7c97d635a75d5336cf8", # julia-14.0.6-2
+    v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "90e1c629f21fe3a8d66d06ebdc5dde62aa6203be", # julia-15.0.7-0
 )
 
@@ -152,7 +152,7 @@ fi
 TARGETS=(host NVPTX AMDGPU)
 # Add WASM and BPF for LLVM >6
 if [[ "${LLVM_MAJ_VER}" != "6" ]]; then
-    TARGETS+=(WebAssembly BPF)
+    TARGETS+=(WebAssembly BPF AVR)
 fi
 LLVM_TARGETS=$(IFS=';' ; echo "${TARGETS[*]}")
 CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
@@ -303,6 +303,11 @@ if [[ "${target}" == *freebsd* ]]; then
     # On FreeBSD, we must force even statically-linked code to have -fPIC
     CMAKE_FLAGS+=(-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE)
 fi
+
+#This breaks things on LLVM15 and above, but probably should be off everywhere because we only build one runtime per run
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF)
+#For some reason clang doesn't install it's symlinks without this
+CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="${prefix}/tools")
 
 # Tell LLVM which compiler target to use, because it loses track for some reason
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
@@ -595,7 +600,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     elseif name == "MLIR"
         script = if version < v"14"
             mlirscript_v13
-        elseif version < v"15"            
+        elseif version < v"15"
             mlirscript_v14
         else
             mlirscript_v15
@@ -612,7 +617,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             ExecutableProduct("lld", :lld, "tools"),
             ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
-        
+
     elseif name == "LLVM"
         script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [

@@ -6,14 +6,15 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"1.2.1"
+version = v"1.2.4"
+
 
 PETSc_COMPAT_VERSION = "3.16.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bitbucket.org/bkaus/lamem.git", 
-    "4c7d3a4474f9bf3d1d1cd251c81b25fd8fd8eafe")
+    "e106f62e19a90b4153564a1dd07bc8778245936c")
 ]
 
 # Bash recipe for building across all platforms
@@ -65,7 +66,7 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
                                                                   Platform("i686", "linux"; libc = "musl")]))
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms, MPICH_compat="4.0.2", OpenMPI_compat="4.1.3")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI

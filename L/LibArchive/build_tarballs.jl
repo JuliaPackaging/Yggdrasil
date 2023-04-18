@@ -47,7 +47,7 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Libiconv_jll"),
     Dependency("Lz4_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),

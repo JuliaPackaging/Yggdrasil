@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.2.0"
+version = v"2.8.0"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "38da659cd5862dccbb0457266fe752cfd6541d4f"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "8de035e5147397e3008a61ae1e2e6fcc949319f0"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,6 +35,9 @@ install_license ../LICENSES/*.txt
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 
+# Build errors on armv7l; see <https://github.com/Blosc/c-blosc2/issues/465>
+platforms = filter(p -> arch(p) ≠ "armv7l", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libblosc2", :libblosc2),
@@ -48,4 +51,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5.2")
+# We need at least GCC 8 for powerpc.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")

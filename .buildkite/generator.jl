@@ -4,6 +4,12 @@ if VERSION < v"1.8.0"
 else
     Base.set_active_project(@__DIR__)
 end
+
+# Force ourselves to use the shared depot as well, if it exists
+if isdir("/sharedcache/depot")
+    push!(Base.DEPOT_PATH, "/sharedcache/depot")
+end
+
 import Pkg
 Pkg.instantiate()
 
@@ -120,8 +126,9 @@ if !IS_PR
     push!(STEPS, wait_step())
     push!(STEPS, register_step(NAME, PROJECT, SKIP_BUILD))
 end
-
-definition = Dict(
-    :steps => Any[group_step(NAME, STEPS)]
-)
-upload_pipeline(definition)
+if !isempty(STEPS)
+    definition = Dict(
+        :steps => Any[group_step(NAME, STEPS)]
+    )
+    upload_pipeline(definition)
+end

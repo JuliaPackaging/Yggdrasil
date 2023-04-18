@@ -32,10 +32,10 @@ if [[ "${target}" == *-musl* ]]; then
     CFLAGS="-D_GNU_SOURCE"
 fi
 
-export PAPI_CUDA_ROOT="${prefix}/cuda"
 COMPONENTS=()
 if [[ -d "${prefix}/cuda" ]]; then
     COMPONENTS+=(cuda)
+    export PAPI_CUDA_ROOT="${prefix}/cuda"
 fi
 
 if [[ ${target} == powerpc64le-* ]]; then
@@ -45,8 +45,8 @@ elif [[ ${target} == x86_64-* || ${target} == i686-* ]]; then
 else
   CPU=arm
 fi
-  
 
+echo "Building components: ${COMPONENTS[@]}"
 export CFLAGS
 bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-ffsll \
@@ -107,18 +107,21 @@ for cuda_version in cuda_versions_to_build, platform in platforms
     augmented_platform = Platform(arch(platform), os(platform);
                                   libc=libc(platform),
                                   cuda=tag)
+    if platform == Platform("powerpc64le", "linux"; libc = "glibc") && cuda_version == v"11.0"
+        continue
+    end
     should_build_platform(triplet(augmented_platform)) || continue
 
-    dependencies = []
+    dependencies = AbstractDependency[
+        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+    ]
     if cuda_version != "none"
-        if arch(platform) in cuda_platforms
-            dependencies = [
-                BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                            version=cuda_full_versions[cuda_version])),
-                RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-            ]
+        if platform in cuda_platforms
+            push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll",
+                                                            version=cuda_versions[cuda_version])))
         end
     end
+
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                    products, dependencies; lazy_artifacts=true,

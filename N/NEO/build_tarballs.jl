@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NEO"
-version = v"22.53.25242"#.13
+version = v"22.53.25593"#.11
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "d9a4eeea8900fa32a45212cdc72293592295159f"),
+              "4adb15f14975b10138939acbe17e05f2f010fc36"),
 ]
 
 # Bash recipe for building across all platforms
@@ -79,8 +79,8 @@ products = [
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
     Dependency("gmmlib_jll"; compat="=22.3.0"),
-    Dependency("libigc_jll"; compat="=1.0.12812"),
-    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.4.8"; compat="1.3.7"),
+    Dependency("libigc_jll"; compat="=1.0.13230"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.5.8"; compat="1.5.8"),
 ]
 
 # GCC 4 has constexpr incompatibilities

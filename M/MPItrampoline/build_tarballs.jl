@@ -7,19 +7,19 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.2.1"
+mpitrampoline_version = v"5.2.3"
 version = mpitrampoline_version
-mpich_version_str = "4.0.2"
+mpich_version_str = "4.1.1"
 mpiconstants_version = v"1.5.0"
-mpiwrapper_version = v"2.10.1"
+mpiwrapper_version = v"2.10.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/MPItrampoline", "95e75cb2a484085977f76675743e5a4e2abb229c"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "4c6b91ec53d466ab774c2f1ca7e985b5c0f5a8e7"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
-    GitSource("https://github.com/eschnett/MPIwrapper", "aaefda8d03745b3aeda7e5bbd3f2a6e602e085da"),
+                  "ee30471b35ef87f4c88f871a5e2ad3811cd9c4df32fd4f138443072ff4284ca2"),
+    GitSource("https://github.com/eschnett/MPIwrapper", "7c09c12e601fd0faa2ae84c37f97a05e23795141"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,6 +28,17 @@ script = raw"""
 # MPItrampoline
 ################################################################################
 
+# When we build libraries linking to MPITrampoline, this library needs to find the
+# libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
+# need to give a little help to MPITrampoline to find it:
+# <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
+# apply this *hack* only when strictly needed, to avoid screwing something else up.
+if [[ "${target}" == x86_64-linux-gnu* ]]; then
+    INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
+else
+    INSTALL_RPATH=()
+fi
+
 cd $WORKSPACE/srcdir/MPItrampoline*
 mkdir build
 cd build
@@ -35,6 +46,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_INSTALL_PREFIX=$prefix \
+    "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
     -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
@@ -53,6 +65,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
@@ -136,11 +149,16 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
+# Do not install doc and man files which contain files which clashing names on
+# case-insensitive file systems:
+# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
+# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure \
     --build=${MACHTYPE} \
     --host=${target} \
     --disable-dependency-tracking \
     --docdir=/tmp \
+    --mandir=/tmp \
     --enable-shared=no \
     --enable-static=yes \
     --enable-threads=multiple \
@@ -179,6 +197,7 @@ if [[ "${target}" == *-apple-* ]]; then
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
+        "${INSTALL_RPATH[@]}" \
         -DBUILD_SHARED_LIBS=ON \
         -DMPI_C_COMPILER=cc \
         -DMPI_CXX_COMPILER=c++ \
@@ -199,6 +218,7 @@ else
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
+        "${INSTALL_RPATH[@]}" \
         ..
 fi
 
@@ -250,7 +270,7 @@ products = [
 
     # MPICH
     ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
-    
+
     # MPIwrapper
     ExecutableProduct("mpiwrapperexec", :mpiwrapperexec),
     # `libmpiwrapper` is a plugin, not a library, and thus has the
@@ -261,7 +281,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                       compat="0.1", top_level=true),
 ]
 
