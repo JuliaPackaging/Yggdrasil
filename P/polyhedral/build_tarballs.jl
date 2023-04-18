@@ -6,25 +6,26 @@ using BinaryBuilder, Pkg
 # Here GitSource does not allow for some clone arguments to be passed. E.g. we cannot pass
 # --recursive
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "5c03f1f3e0bc10a8d3c36268260895a5981ec663"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "835b84851d143dc896233aa5f046ceeda48bac18"),
 ]
 name = "POLYHEDRAL"
 version = v"0.1" # <-- This is the first version of it but this is rather arbitrary
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd polyhedral_common
 git submodule update --init --recursive
 cd src_export_oscar
-export GMP_INCDIR=$GMP_INCLUDE_DIR
-export GMP_CXX_LINK="$GMP_LIBS -lgmpxx -lgmp"
+export GMP_INCDIR=$WORKSPACE/destdir/include
+export GMP_CXX_LINK="$WORKSPACE/destdir/lib -lgmpxx -lgmp"
 
-export BOOST_INCDIR=$BOOST_INCLUDE_DIRS
-export BOOST_LINK="$BOOST_LIBS -lboost_serialization"
+export BOOST_INCDIR=$WORKSPACE/destdir/include
+export BOOST_LINK="-L$WORKSPACE/destdir/lib -lboost_serialization"
 
-export EIGEN_PATH=$EIGEN_INCLUDE_DIRS
+export EIGEN_PATH=$WORKSPACE/destdir/include/eigen3
 
-export NAUTY_INCLUDE="-I$NAUTY_INCLUDE_DIR"
-export NAUTY_LINK="$prefix/lib/libnauty.a"
+export NAUTY_INCLUDE="-I$WORKSPACE/destdir/include/nauty"
+export NAUTY_LINK="-L$WORKSPACE/destdir/lib -lnauty"
 
 make
 """
