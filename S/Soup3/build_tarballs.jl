@@ -28,9 +28,9 @@ if [[ "${target}" != *darwin* ]]; then
     sed -i "s/-R/-Wl,-rpath=/" build.ninja
 fi
 
-if [[ "${target}" != *darwin* && "${target}" != *w64* ]]; then
+if [[ "${target}" == *86*-linux-gnu* ]]; then
     # https://stackoverflow.com/questions/2418157/c-error-undefined-reference-to-clock-gettime-and-clock-settime
-    sed -i "s/\$ARGS -o \$out \$in \$LINK_ARGS/\$ARGS -o \$out \$in \$LINK_ARGS -lrt/" build.ninja
+    sed -i 's/$ARGS -o $out $in $LINK_ARGS/$ARGS -o $out $in $LINK_ARGS -lrt/' build.ninja
 fi
 
 ninja -j${nproc}
@@ -50,14 +50,11 @@ products = [
 dependencies = [
     # Host gettext needed for "msgfmt"
     HostBuildDependency("Gettext_jll"),
-    # Gettext is only needed on macOS
-    Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0", platforms=filter(Sys.isapple, platforms)),
     Dependency("Glib_jll"; compat="2.74.0"),
     Dependency("SQLite_jll"),
     Dependency("nghttp2_jll"),
     Dependency("brotli_jll"),
     Dependency("libpsl_jll"),
-    Dependency("LibUnwind_jll"),
     Dependency("GlibNetworking_jll"),
 ]
 
