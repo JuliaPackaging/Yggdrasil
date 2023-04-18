@@ -213,6 +213,9 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 env \
+    MPITRAMPOLINE_CC="$CC" \
+    MPITRAMPOLINE_CXX="$CXX" \
+    MPITRAMPOLINE_FC="$FC" \
     CC=mpicc \
     CXX=mpicxx \
     FC=mpifort \
@@ -599,5 +602,6 @@ dependencies = [
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# ICE with GCC 5 (MPICH)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
