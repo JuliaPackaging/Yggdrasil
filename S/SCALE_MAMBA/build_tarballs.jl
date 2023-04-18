@@ -41,7 +41,7 @@ install -Dvm 755 "Setup.x${exe}" "${bindir}/Setup.x${exe}"
 """
 
 # Only x86_64, no FreeBSD or windows, and no musl
-platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && !Sys.isfreebsd(p) && !Sys.iswindows(p) && libc(p) != "musl"]
+platforms = [p for p in supported_platforms() if arch(p) == "x86_64" && Sys.islinux(p) && libc(p) != "musl"]
 platforms = expand_microarchitectures(platforms, ["avx","avx2","avx512"])
 
 # The products that we will ensure are always built
