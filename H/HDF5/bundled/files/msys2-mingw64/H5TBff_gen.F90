@@ -34,26 +34,31 @@ MODULE H5TB
   INTERFACE h5tbwrite_field_name_f
      MODULE PROCEDURE h5tbwrite_field_name_kind_4_rank_1
      MODULE PROCEDURE h5tbwrite_field_name_kind_8_rank_1
+     MODULE PROCEDURE h5tbwrite_field_name_kind_10_rank_1
      MODULE PROCEDURE h5tbwrite_field_name_kind_16_rank_1
   END INTERFACE
   INTERFACE h5tbread_field_name_f
      MODULE PROCEDURE h5tbread_field_name_kind_4_rank_1
      MODULE PROCEDURE h5tbread_field_name_kind_8_rank_1
+     MODULE PROCEDURE h5tbread_field_name_kind_10_rank_1
      MODULE PROCEDURE h5tbread_field_name_kind_16_rank_1
   END INTERFACE
   INTERFACE h5tbwrite_field_index_f
      MODULE PROCEDURE h5tbwrite_field_index_kind_4_rank_1
      MODULE PROCEDURE h5tbwrite_field_index_kind_8_rank_1
+     MODULE PROCEDURE h5tbwrite_field_index_kind_10_rank_1
      MODULE PROCEDURE h5tbwrite_field_index_kind_16_rank_1
   END INTERFACE
   INTERFACE h5tbread_field_index_f
      MODULE PROCEDURE h5tbread_field_index_kind_4_rank_1
      MODULE PROCEDURE h5tbread_field_index_kind_8_rank_1
+     MODULE PROCEDURE h5tbread_field_index_kind_10_rank_1
      MODULE PROCEDURE h5tbread_field_index_kind_16_rank_1
   END INTERFACE
   INTERFACE h5tbinsert_field_f
      MODULE PROCEDURE h5tbinsert_field_kind_4_rank_1
      MODULE PROCEDURE h5tbinsert_field_kind_8_rank_1
+     MODULE PROCEDURE h5tbinsert_field_kind_10_rank_1
      MODULE PROCEDURE h5tbinsert_field_kind_16_rank_1
   END INTERFACE
 CONTAINS
@@ -99,6 +104,27 @@ CONTAINS
     namelen1 = LEN(field_name)
     errcode = h5tbwrite_field_name_c(loc_id,namelen,dset_name,namelen1,field_name,start,nrecords,type_size,f_ptr)
   END SUBROUTINE h5tbwrite_field_name_kind_8_rank_1
+!DEC$if defined(BUILD_HDF5_HL_DLL)
+!DEC$attributes dllexport :: h5tbwrite_field_name_kind_10_rank_1
+!DEC$endif
+  SUBROUTINE h5tbwrite_field_name_kind_10_rank_1(loc_id,dset_name,field_name,start, nrecords,type_size,buf,errcode)
+    IMPLICIT NONE
+    INTEGER(hid_t)  , INTENT(IN) :: loc_id
+    CHARACTER(LEN=*), INTENT(IN) :: dset_name
+    CHARACTER(LEN=*), INTENT(in) :: field_name
+    INTEGER(hsize_t), INTENT(in) :: start
+    INTEGER(hsize_t), INTENT(in) :: nrecords
+    INTEGER(size_t),  INTENT(in) :: type_size
+    REAL(KIND=10),INTENT(IN), DIMENSION(*), TARGET :: buf
+    INTEGER :: errcode 
+    INTEGER(size_t) :: namelen
+    INTEGER(size_t) :: namelen1
+    TYPE(C_PTR) :: f_ptr
+    f_ptr = C_LOC(buf(1)            )
+    namelen = LEN(dset_name)
+    namelen1 = LEN(field_name)
+    errcode = h5tbwrite_field_name_c(loc_id,namelen,dset_name,namelen1,field_name,start,nrecords,type_size,f_ptr)
+  END SUBROUTINE h5tbwrite_field_name_kind_10_rank_1
 !DEC$if defined(BUILD_HDF5_HL_DLL)
 !DEC$attributes dllexport :: h5tbwrite_field_name_kind_16_rank_1
 !DEC$endif
@@ -163,6 +189,27 @@ CONTAINS
     errcode = h5tbread_field_name_c(loc_id,namelen,dset_name,namelen1,field_name,start,nrecords,type_size,f_ptr)
   END SUBROUTINE h5tbread_field_name_kind_8_rank_1
 !DEC$if defined(BUILD_HDF5_HL_DLL)
+!DEC$attributes dllexport :: h5tbread_field_name_kind_10_rank_1
+!DEC$endif
+  SUBROUTINE h5tbread_field_name_kind_10_rank_1(loc_id,dset_name,field_name,start, nrecords,type_size,buf,errcode)
+    IMPLICIT NONE
+    INTEGER(hid_t)  , INTENT(IN) :: loc_id
+    CHARACTER(LEN=*), INTENT(IN) :: dset_name
+    CHARACTER(LEN=*), INTENT(in) :: field_name
+    INTEGER(hsize_t), INTENT(in) :: start
+    INTEGER(hsize_t), INTENT(in) :: nrecords
+    INTEGER(size_t),  INTENT(in) :: type_size
+    REAL(KIND=10),INTENT(INOUT), DIMENSION(*), TARGET :: buf
+    INTEGER :: errcode 
+    INTEGER(size_t) :: namelen
+    INTEGER(size_t) :: namelen1
+    TYPE(C_PTR) :: f_ptr
+    f_ptr = C_LOC(buf(1)            )
+    namelen = LEN(dset_name)
+    namelen1 = LEN(field_name)
+    errcode = h5tbread_field_name_c(loc_id,namelen,dset_name,namelen1,field_name,start,nrecords,type_size,f_ptr)
+  END SUBROUTINE h5tbread_field_name_kind_10_rank_1
+!DEC$if defined(BUILD_HDF5_HL_DLL)
 !DEC$attributes dllexport :: h5tbread_field_name_kind_16_rank_1
 !DEC$endif
   SUBROUTINE h5tbread_field_name_kind_16_rank_1(loc_id,dset_name,field_name,start, nrecords,type_size,buf,errcode)
@@ -222,6 +269,25 @@ CONTAINS
     errcode = h5tbwrite_field_index_c(loc_id,namelen,dset_name,field_index,start,nrecords,type_size,f_ptr)
   END SUBROUTINE h5tbwrite_field_index_kind_8_rank_1
 !DEC$if defined(BUILD_HDF5_HL_DLL)
+!DEC$attributes dllexport :: h5tbwrite_field_index_kind_10_rank_1
+!DEC$endif
+  SUBROUTINE h5tbwrite_field_index_kind_10_rank_1(loc_id,dset_name,field_index,start, nrecords,type_size,buf,errcode)
+    IMPLICIT NONE
+    INTEGER(hid_t)  , INTENT(IN) :: loc_id
+    CHARACTER(LEN=*), INTENT(IN) :: dset_name
+    INTEGER, INTENT(in) :: field_index
+    INTEGER(hsize_t), INTENT(in) :: start
+    INTEGER(hsize_t), INTENT(in) :: nrecords
+    INTEGER(size_t),  INTENT(in) :: type_size
+    REAL(KIND=10),INTENT(IN), DIMENSION(*), TARGET :: buf
+    INTEGER :: errcode 
+    INTEGER(size_t) :: namelen
+    TYPE(C_PTR) :: f_ptr
+    f_ptr = C_LOC(buf(1)            )
+    namelen = LEN(dset_name)
+    errcode = h5tbwrite_field_index_c(loc_id,namelen,dset_name,field_index,start,nrecords,type_size,f_ptr)
+  END SUBROUTINE h5tbwrite_field_index_kind_10_rank_1
+!DEC$if defined(BUILD_HDF5_HL_DLL)
 !DEC$attributes dllexport :: h5tbwrite_field_index_kind_16_rank_1
 !DEC$endif
   SUBROUTINE h5tbwrite_field_index_kind_16_rank_1(loc_id,dset_name,field_index,start, nrecords,type_size,buf,errcode)
@@ -278,6 +344,25 @@ CONTAINS
     namelen = LEN(dset_name)
     errcode = h5tbread_field_index_c(loc_id,namelen,dset_name,field_index,start,nrecords,type_size,f_ptr)
   END SUBROUTINE h5tbread_field_index_kind_8_rank_1
+!DEC$if defined(BUILD_HDF5_HL_DLL)
+!DEC$attributes dllexport :: h5tbread_field_index_kind_10_rank_1
+!DEC$endif
+  SUBROUTINE h5tbread_field_index_kind_10_rank_1(loc_id,dset_name,field_index,start, nrecords,type_size,buf,errcode)
+    IMPLICIT NONE
+    INTEGER(hid_t)  , INTENT(IN) :: loc_id
+    CHARACTER(LEN=*), INTENT(IN) :: dset_name
+    INTEGER, INTENT(in) :: field_index
+    INTEGER(hsize_t), INTENT(in) :: start
+    INTEGER(hsize_t), INTENT(in) :: nrecords
+    INTEGER(size_t),  INTENT(in) :: type_size
+    REAL(KIND=10),INTENT(INOUT), DIMENSION(*), TARGET :: buf
+    INTEGER :: errcode 
+    INTEGER(size_t) :: namelen
+    TYPE(C_PTR) :: f_ptr
+    f_ptr = C_LOC(buf(1)            )
+    namelen = LEN(dset_name)
+    errcode = h5tbread_field_index_c(loc_id,namelen,dset_name,field_index,start,nrecords,type_size,f_ptr)
+  END SUBROUTINE h5tbread_field_index_kind_10_rank_1
 !DEC$if defined(BUILD_HDF5_HL_DLL)
 !DEC$attributes dllexport :: h5tbread_field_index_kind_16_rank_1
 !DEC$endif
@@ -337,6 +422,26 @@ CONTAINS
     namelen1 = LEN(field_name)
     errcode = h5tbinsert_field_c(loc_id,namelen,dset_name,namelen1,field_name,field_type,field_index,f_ptr)
   END SUBROUTINE h5tbinsert_field_kind_8_rank_1
+!DEC$if defined(BUILD_HDF5_HL_DLL)
+!DEC$attributes dllexport :: h5tbinsert_field_kind_10_rank_1
+!DEC$endif
+  SUBROUTINE h5tbinsert_field_kind_10_rank_1(loc_id,dset_name,field_name,field_type,field_index,buf,errcode)
+    IMPLICIT NONE
+        INTEGER(hid_t),   INTENT(in) :: loc_id
+        CHARACTER(LEN=*), INTENT(in) :: dset_name
+        CHARACTER(LEN=*), INTENT(in) :: field_name
+        INTEGER(hid_t), INTENT(in)   :: field_type
+        INTEGER, INTENT(in) :: field_index
+        REAL(KIND=10), INTENT(IN), DIMENSION(*), TARGET :: buf
+        INTEGER(size_t) :: namelen
+        INTEGER(size_t) :: namelen1
+        INTEGER :: errcode
+        TYPE(C_PTR) :: f_ptr
+    f_ptr = C_LOC(buf(1)            )
+    namelen = LEN(dset_name)
+    namelen1 = LEN(field_name)
+    errcode = h5tbinsert_field_c(loc_id,namelen,dset_name,namelen1,field_name,field_type,field_index,f_ptr)
+  END SUBROUTINE h5tbinsert_field_kind_10_rank_1
 !DEC$if defined(BUILD_HDF5_HL_DLL)
 !DEC$attributes dllexport :: h5tbinsert_field_kind_16_rank_1
 !DEC$endif

@@ -437,11 +437,11 @@ Copyright (C) 2012 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/Users/kittisopikulm/Documents/src/hdf5-1.14.0/build'
+ac_pwd='/home/kittisopikulm/hdf5-1.14.0/build'
 srcdir='..'
 INSTALL='/usr/bin/install -c'
-MKDIR_P='../bin/install-sh -c -d'
-AWK='awk'
+MKDIR_P='/usr/bin/mkdir -p'
+AWK='gawk'
 test -n "$AWK" || AWK=awk
 # The default lists apply if the user does not specify any file.
 ac_need_defaults=:
@@ -560,50 +560,50 @@ SHELL='/bin/sh'
 ECHO='printf %s\n'
 PATH_SEPARATOR=':'
 host_alias=''
-host='arm-apple-darwin22.3.0'
-host_os='darwin22.3.0'
-build_alias=''
-build='arm-apple-darwin22.3.0'
-build_os='darwin22.3.0'
+host='x86_64-w64-mingw32'
+host_os='mingw32'
+build_alias='x86_64-w64-mingw32'
+build='x86_64-w64-mingw32'
+build_os='mingw32'
 SED='/usr/bin/sed'
 Xsed='/usr/bin/sed -e 1s/^X//'
 GREP='/usr/bin/grep'
 EGREP='/usr/bin/grep -E'
 FGREP='/usr/bin/grep -F'
-LD='/Library/Developer/CommandLineTools/usr/bin/ld'
-NM='/usr/bin/nm -B'
-LN_S='ln -s'
-max_cmd_len='786432'
+LD='D:/msys64/mingw64/x86_64-w64-mingw32/bin/ld.exe'
+NM='/mingw64/bin/nm -B'
+LN_S='cp -pR'
+max_cmd_len='8192'
 ac_objext='o'
 exeext=''
 lt_unset='unset'
 lt_SP2NL='tr \040 \012'
 lt_NL2SP='tr \015\012 \040\040'
-lt_cv_to_host_file_cmd='func_convert_file_noop'
-lt_cv_to_tool_file_cmd='func_convert_file_noop'
+lt_cv_to_host_file_cmd='func_convert_file_msys_to_w32'
+lt_cv_to_tool_file_cmd='func_convert_file_msys_to_w32'
 reload_flag=' -r'
-reload_cmds='$LTCC $LTCFLAGS -nostdlib $wl-r -o $output$reload_objs'
+reload_cmds='$LD$reload_flag -o $output$reload_objs'
 OBJDUMP='objdump'
-deplibs_check_method='pass_all'
-file_magic_cmd='$MAGIC_CMD'
+deplibs_check_method='file_magic ^x86 archive import|^x86 DLL'
+file_magic_cmd='func_win32_libid'
 file_magic_glob=''
-want_nocaseglob='no'
-DLLTOOL='false'
-sharedlib_from_linklib_cmd='printf %s\n'
+want_nocaseglob='yes'
+DLLTOOL='dlltool'
+sharedlib_from_linklib_cmd='func_cygming_dll_for_implib'
 AR='ar'
 AR_FLAGS='cr'
-archiver_list_spec=''
+archiver_list_spec='@'
 STRIP='strip'
 RANLIB='ranlib'
 old_postinstall_cmds='chmod 644 $oldlib~$RANLIB $tool_oldlib'
 old_postuninstall_cmds=''
 old_archive_cmds='$AR $AR_FLAGS $oldlib$oldobjs~$RANLIB $tool_oldlib'
-lock_old_archive_extraction='yes'
-CC='clang'
+lock_old_archive_extraction='no'
+CC='gcc'
 CFLAGS=''
 compiler='gfortran'
 GCC='yes'
-lt_cv_sys_global_symbol_pipe='sed -n -e '\''s/^.*[	 ]\([ABCDGIRSTW][ABCDGIRSTW]*\)[	 ][	 ]*_\([_A-Za-z][_A-Za-z0-9]*\)$/\1 _\2 \2/p'\'' | sed '\''/ __gnu_lto/d'\'''
+lt_cv_sys_global_symbol_pipe='sed -n -e '\''s/^.*[	 ]\([ABCDGIRSTW][ABCDGIRSTW]*\)[	 ][	 ]*\([_A-Za-z][_A-Za-z0-9]*\)\{0,1\}$/\1 \2 \2/p'\'' | sed '\''/ __gnu_lto/d'\'''
 lt_cv_sys_global_symbol_to_cdecl='sed -n -e '\''s/^T .* \(.*\)$/extern int \1();/p'\'' -e '\''s/^[ABCDGIRSTW][ABCDGIRSTW]* .* \(.*\)$/extern char \1;/p'\'''
 lt_cv_sys_global_symbol_to_import=''
 lt_cv_sys_global_symbol_to_c_name_address='sed -n -e '\''s/^: \(.*\) .*$/  {"\1", (void *) 0},/p'\'' -e '\''s/^[ABCDGIRSTW][ABCDGIRSTW]* .* \(.*\)$/  {"\1", (void *) \&\1},/p'\'''
@@ -611,137 +611,165 @@ lt_cv_sys_global_symbol_to_c_name_address_lib_prefix='sed -n -e '\''s/^: \(.*\) 
 lt_cv_nm_interface='BSD nm'
 nm_file_list_spec='@'
 lt_sysroot=''
-lt_cv_truncate_bin='/bin/dd bs=4096 count=1'
+lt_cv_truncate_bin='/usr/bin/dd bs=4096 count=1'
 objdir='.libs'
 MAGIC_CMD='file'
-lt_prog_compiler_no_builtin_flag=' -fno-builtin -fno-rtti -fno-exceptions'
-lt_prog_compiler_pic=' -fno-common -DPIC'
+lt_prog_compiler_no_builtin_flag=' -fno-builtin'
+lt_prog_compiler_pic=' -DDLL_EXPORT -DPIC'
 lt_prog_compiler_wl='-Wl,'
-lt_prog_compiler_static=''
+lt_prog_compiler_static='-static'
 lt_cv_prog_compiler_c_o='yes'
 need_locks='no'
 MANIFEST_TOOL=':'
-DSYMUTIL='dsymutil'
-NMEDIT='nmedit'
-LIPO='lipo'
-OTOOL='otool'
-OTOOL64=':'
+DSYMUTIL=''
+NMEDIT=''
+LIPO=''
+OTOOL=''
+OTOOL64=''
 libext='a'
-shrext_cmds='`test .$module = .yes && echo .so || echo .dylib`'
+shrext_cmds='.dll'
 extract_expsyms_cmds=''
-archive_cmds_need_lc='no'
-enable_shared_with_static_runtimes='no'
-export_dynamic_flag_spec=''
-whole_archive_flag_spec='`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience $wl-force_load,$conv\"; done; func_echo_all \"$new_convenience\"`'
+archive_cmds_need_lc='yes'
+enable_shared_with_static_runtimes='yes'
+export_dynamic_flag_spec='$wl--export-all-symbols'
+whole_archive_flag_spec='$wl--whole-archive$convenience $wl--no-whole-archive'
 compiler_needs_object='no'
 old_archive_from_new_cmds=''
 old_archive_from_expsyms_cmds=''
-archive_cmds='$CC -dynamiclib $allow_undefined_flag -o $lib $libobjs $deplibs $compiler_flags -install_name $rpath/$soname $verstring $single_module'
-archive_expsym_cmds='sed '\''s|^|_|'\'' < $export_symbols > $output_objdir/$libname-symbols.expsym~$CC -dynamiclib $allow_undefined_flag -o $lib $libobjs $deplibs $compiler_flags -install_name $rpath/$soname $verstring $single_module $wl-exported_symbols_list,$output_objdir/$libname-symbols.expsym'
-module_cmds='$CC $allow_undefined_flag -o $lib -bundle $libobjs $deplibs $compiler_flags'
-module_expsym_cmds='sed -e '\''s|^|_|'\'' < $export_symbols > $output_objdir/$libname-symbols.expsym~$CC $allow_undefined_flag -o $lib -bundle $libobjs $deplibs $compiler_flags $wl-exported_symbols_list,$output_objdir/$libname-symbols.expsym'
-with_gnu_ld='no'
-allow_undefined_flag='$wl-flat_namespace $wl-undefined ${wl}suppress'
+archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags -o $output_objdir/$soname $wl--enable-auto-image-base -Xlinker --out-implib -Xlinker $lib'
+archive_expsym_cmds='if   test DEF = "`$SED -n     -e '\''s/^[	 ]*//'\''     -e '\''/^\(;.*\)*$/d'\''     -e '\''s/^\(EXPORTS\|LIBRARY\)\([	 ].*\)*$/DEF/p'\''     -e q     $export_symbols`" ; then
+          cp $export_symbols $output_objdir/$soname.def;
+        else
+          echo EXPORTS > $output_objdir/$soname.def;
+          cat $export_symbols >> $output_objdir/$soname.def;
+        fi~
+        $CC -shared $output_objdir/$soname.def $libobjs $deplibs $compiler_flags -o $output_objdir/$soname $wl--enable-auto-image-base -Xlinker --out-implib -Xlinker $lib'
+module_cmds=''
+module_expsym_cmds=''
+with_gnu_ld='yes'
+allow_undefined_flag='unsupported'
 no_undefined_flag=''
-hardcode_libdir_flag_spec=''
+hardcode_libdir_flag_spec='-L$libdir'
 hardcode_libdir_separator=''
 hardcode_direct='no'
 hardcode_direct_absolute='no'
 hardcode_minus_L='no'
 hardcode_shlibpath_var='unsupported'
-hardcode_automatic='yes'
+hardcode_automatic='no'
 inherit_rpath='no'
-link_all_deplibs='yes'
+link_all_deplibs='unknown'
 always_export_symbols='no'
-export_symbols_cmds='$NM $libobjs $convenience | $global_symbol_pipe | $SED '\''s/.* //'\'' | sort | uniq > $export_symbols'
-exclude_expsyms='_GLOBAL_OFFSET_TABLE_|_GLOBAL__F[ID]_.*'
+export_symbols_cmds='$NM $libobjs $convenience | $global_symbol_pipe | $SED -e '\''/^[BCDGRS][ ]/s/.*[ ]\([^ ]*\)/\1 DATA/;s/^.*[ ]__nm__\([^ ]*\)[ ][^ ]*/\1 DATA/;/^I[ ]/d;/^[AITW][ ]/s/.* //'\'' | sort | uniq > $export_symbols'
+exclude_expsyms='[_]+GLOBAL_OFFSET_TABLE_|[_]+GLOBAL__[FID]_.*|[_]+head_[A-Za-z0-9_]+_dll|[A-Za-z0-9_]+_dll_iname'
 include_expsyms=''
 prelink_cmds=''
 postlink_cmds=''
 file_list_spec=''
-variables_saved_for_relink='PATH DYLD_LIBRARY_PATH  GCC_EXEC_PREFIX COMPILER_PATH LIBRARY_PATH'
+variables_saved_for_relink='PATH PATH LD_RUN_PATH GCC_EXEC_PREFIX COMPILER_PATH LIBRARY_PATH'
 need_lib_prefix='no'
 need_version='no'
-version_type='darwin'
-runpath_var=''
-shlibpath_var='DYLD_LIBRARY_PATH'
+version_type='windows'
+runpath_var='LD_RUN_PATH'
+shlibpath_var='PATH'
 shlibpath_overrides_runpath='yes'
 libname_spec='lib$name'
-library_names_spec='$libname$release$major$shared_ext $libname$shared_ext'
-soname_spec='$libname$release$major$shared_ext'
+library_names_spec='$libname.dll.a'
+soname_spec='$libname`echo $release | $SED -e s/[.]/-/g`$versuffix$shared_ext'
 install_override_mode=''
-postinstall_cmds=''
-postuninstall_cmds=''
+postinstall_cmds='base_file=`basename \$file`~
+      dlpath=`$SHELL 2>&1 -c '\''. $dir/'\''\$base_file'\''i; echo \$dlname'\''`~
+      dldir=$destdir/`dirname \$dlpath`~
+      test -d \$dldir || mkdir -p \$dldir~
+      $install_prog $dir/$dlname \$dldir/$dlname~
+      chmod a+x \$dldir/$dlname~
+      if test -n '\''$stripme'\'' && test -n '\''$striplib'\''; then
+        eval '\''$striplib \$dldir/$dlname'\'' || exit \$?;
+      fi'
+postuninstall_cmds='dldll=`$SHELL 2>&1 -c '\''. $file; echo \$dlname'\''`~
+      dlpath=$dir/\$dldll~
+       $RM \$dlpath'
 finish_cmds=''
 finish_eval=''
 hardcode_into_libs='no'
-sys_lib_search_path_spec='/Library/Developer/CommandLineTools/usr/lib/clang/14.0.0  /usr/local/lib'
-configure_time_dlsearch_path='/usr/local/lib /lib /usr/lib'
+sys_lib_search_path_spec='D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/12.2.0 D:/msys64/mingw64/lib/gcc D:/msys64/mingw64/x86_64-w64-mingw32/lib D:/msys64/mingw64/lib '
+configure_time_dlsearch_path='/lib /usr/lib'
 configure_time_lt_sys_library_path=''
 hardcode_action='immediate'
 enable_dlopen='yes'
-enable_dlopen_self='yes'
-enable_dlopen_self_static='yes'
-old_striplib='strip -S'
-striplib='strip -x'
+enable_dlopen_self='unknown'
+enable_dlopen_self_static='unknown'
+old_striplib='strip --strip-debug'
+striplib='strip --strip-unneeded'
 compiler_lib_search_dirs=''
 predep_objects=''
 postdep_objects=''
 predeps=''
 postdeps=''
 compiler_lib_search_path=''
-LD_CXX='/Library/Developer/CommandLineTools/usr/bin/ld'
-LD_FC='/Library/Developer/CommandLineTools/usr/bin/ld'
+LD_CXX='D:/msys64/mingw64/x86_64-w64-mingw32/bin/ld.exe'
+LD_FC='D:/msys64/mingw64/x86_64-w64-mingw32/bin/ld.exe'
 reload_flag_CXX=' -r'
 reload_flag_FC=' -r'
-reload_cmds_CXX='$LTCC $LTCFLAGS -nostdlib $wl-r -o $output$reload_objs'
-reload_cmds_FC='$LTCC $LTCFLAGS -nostdlib $wl-r -o $output$reload_objs'
+reload_cmds_CXX='$LD$reload_flag -o $output$reload_objs'
+reload_cmds_FC='$LD$reload_flag -o $output$reload_objs'
 old_archive_cmds_CXX='$AR $AR_FLAGS $oldlib$oldobjs~$RANLIB $tool_oldlib'
 old_archive_cmds_FC='$AR $AR_FLAGS $oldlib$oldobjs~$RANLIB $tool_oldlib'
-compiler_CXX='clang++'
+compiler_CXX='g++'
 compiler_FC='gfortran'
 GCC_CXX='yes'
 GCC_FC='yes'
 lt_prog_compiler_no_builtin_flag_CXX=' -fno-builtin'
 lt_prog_compiler_no_builtin_flag_FC=''
-lt_prog_compiler_pic_CXX=' -fno-common -DPIC'
-lt_prog_compiler_pic_FC=' -fno-common'
+lt_prog_compiler_pic_CXX=' -DDLL_EXPORT -DPIC'
+lt_prog_compiler_pic_FC=' -DDLL_EXPORT'
 lt_prog_compiler_wl_CXX='-Wl,'
 lt_prog_compiler_wl_FC='-Wl,'
-lt_prog_compiler_static_CXX=''
-lt_prog_compiler_static_FC=''
+lt_prog_compiler_static_CXX='-static'
+lt_prog_compiler_static_FC='-static'
 lt_cv_prog_compiler_c_o_CXX='yes'
 lt_cv_prog_compiler_c_o_FC='yes'
 archive_cmds_need_lc_CXX='no'
 archive_cmds_need_lc_FC='no'
-enable_shared_with_static_runtimes_CXX='no'
-enable_shared_with_static_runtimes_FC='no'
-export_dynamic_flag_spec_CXX=''
-export_dynamic_flag_spec_FC=''
-whole_archive_flag_spec_CXX='`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience $wl-force_load,$conv\"; done; func_echo_all \"$new_convenience\"`'
-whole_archive_flag_spec_FC='`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience $wl-force_load,$conv\"; done; func_echo_all \"$new_convenience\"`'
+enable_shared_with_static_runtimes_CXX='yes'
+enable_shared_with_static_runtimes_FC='yes'
+export_dynamic_flag_spec_CXX='$wl--export-all-symbols'
+export_dynamic_flag_spec_FC='$wl--export-all-symbols'
+whole_archive_flag_spec_CXX='$wl--whole-archive$convenience $wl--no-whole-archive'
+whole_archive_flag_spec_FC='$wl--whole-archive$convenience $wl--no-whole-archive'
 compiler_needs_object_CXX='no'
-compiler_needs_object_FC='yes'
+compiler_needs_object_FC='no'
 old_archive_from_new_cmds_CXX=''
 old_archive_from_new_cmds_FC=''
 old_archive_from_expsyms_cmds_CXX=''
 old_archive_from_expsyms_cmds_FC=''
-archive_cmds_CXX='$CC -dynamiclib $allow_undefined_flag -o $lib $libobjs $deplibs $compiler_flags -install_name $rpath/$soname $verstring $single_module'
-archive_cmds_FC='$CC -dynamiclib $allow_undefined_flag -o $lib $libobjs $deplibs $compiler_flags -install_name $rpath/$soname $verstring $single_module'
-archive_expsym_cmds_CXX='sed '\''s|^|_|'\'' < $export_symbols > $output_objdir/$libname-symbols.expsym~$CC -dynamiclib $allow_undefined_flag -o $lib $libobjs $deplibs $compiler_flags -install_name $rpath/$soname $verstring $single_module $wl-exported_symbols_list,$output_objdir/$libname-symbols.expsym'
-archive_expsym_cmds_FC='sed '\''s|^|_|'\'' < $export_symbols > $output_objdir/$libname-symbols.expsym~$CC -dynamiclib $allow_undefined_flag -o $lib $libobjs $deplibs $compiler_flags -install_name $rpath/$soname $verstring $single_module $wl-exported_symbols_list,$output_objdir/$libname-symbols.expsym'
-module_cmds_CXX='$CC $allow_undefined_flag -o $lib -bundle $libobjs $deplibs $compiler_flags'
-module_cmds_FC='$CC $allow_undefined_flag -o $lib -bundle $libobjs $deplibs $compiler_flags'
-module_expsym_cmds_CXX='sed -e '\''s|^|_|'\'' < $export_symbols > $output_objdir/$libname-symbols.expsym~$CC $allow_undefined_flag -o $lib -bundle $libobjs $deplibs $compiler_flags $wl-exported_symbols_list,$output_objdir/$libname-symbols.expsym'
-module_expsym_cmds_FC='sed -e '\''s|^|_|'\'' < $export_symbols > $output_objdir/$libname-symbols.expsym~$CC $allow_undefined_flag -o $lib -bundle $libobjs $deplibs $compiler_flags $wl-exported_symbols_list,$output_objdir/$libname-symbols.expsym'
-with_gnu_ld_CXX='no'
-with_gnu_ld_FC='no'
-allow_undefined_flag_CXX='$wl-flat_namespace $wl-undefined ${wl}suppress'
-allow_undefined_flag_FC='$wl-flat_namespace $wl-undefined ${wl}suppress'
+archive_cmds_CXX='$CC -shared -nostdlib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags -o $output_objdir/$soname $wl--enable-auto-image-base -Xlinker --out-implib -Xlinker $lib'
+archive_cmds_FC='$CC -shared $libobjs $deplibs $compiler_flags -o $output_objdir/$soname $wl--enable-auto-image-base -Xlinker --out-implib -Xlinker $lib'
+archive_expsym_cmds_CXX='if   test DEF = "`$SED -n     -e '\''s/^[	 ]*//'\''     -e '\''/^\(;.*\)*$/d'\''     -e '\''s/^\(EXPORTS\|LIBRARY\)\([	 ].*\)*$/DEF/p'\''     -e q     $export_symbols`" ; then
+              cp $export_symbols $output_objdir/$soname.def;
+            else
+              echo EXPORTS > $output_objdir/$soname.def;
+              cat $export_symbols >> $output_objdir/$soname.def;
+            fi~
+            $CC -shared -nostdlib $output_objdir/$soname.def $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags -o $output_objdir/$soname $wl--enable-auto-image-base -Xlinker --out-implib -Xlinker $lib'
+archive_expsym_cmds_FC='if   test DEF = "`$SED -n     -e '\''s/^[	 ]*//'\''     -e '\''/^\(;.*\)*$/d'\''     -e '\''s/^\(EXPORTS\|LIBRARY\)\([	 ].*\)*$/DEF/p'\''     -e q     $export_symbols`" ; then
+          cp $export_symbols $output_objdir/$soname.def;
+        else
+          echo EXPORTS > $output_objdir/$soname.def;
+          cat $export_symbols >> $output_objdir/$soname.def;
+        fi~
+        $CC -shared $output_objdir/$soname.def $libobjs $deplibs $compiler_flags -o $output_objdir/$soname $wl--enable-auto-image-base -Xlinker --out-implib -Xlinker $lib'
+module_cmds_CXX=''
+module_cmds_FC=''
+module_expsym_cmds_CXX=''
+module_expsym_cmds_FC=''
+with_gnu_ld_CXX='yes'
+with_gnu_ld_FC='yes'
+allow_undefined_flag_CXX='unsupported'
+allow_undefined_flag_FC='unsupported'
 no_undefined_flag_CXX=''
 no_undefined_flag_FC=''
-hardcode_libdir_flag_spec_CXX=''
-hardcode_libdir_flag_spec_FC=''
+hardcode_libdir_flag_spec_CXX='-L$libdir'
+hardcode_libdir_flag_spec_FC='-L$libdir'
 hardcode_libdir_separator_CXX=''
 hardcode_libdir_separator_FC=''
 hardcode_direct_CXX='no'
@@ -752,18 +780,18 @@ hardcode_minus_L_CXX='no'
 hardcode_minus_L_FC='no'
 hardcode_shlibpath_var_CXX='unsupported'
 hardcode_shlibpath_var_FC='unsupported'
-hardcode_automatic_CXX='yes'
-hardcode_automatic_FC='yes'
+hardcode_automatic_CXX='no'
+hardcode_automatic_FC='no'
 inherit_rpath_CXX='no'
 inherit_rpath_FC='no'
-link_all_deplibs_CXX='yes'
-link_all_deplibs_FC='yes'
+link_all_deplibs_CXX='unknown'
+link_all_deplibs_FC='unknown'
 always_export_symbols_CXX='no'
 always_export_symbols_FC='no'
-export_symbols_cmds_CXX='$NM $libobjs $convenience | $global_symbol_pipe | $SED '\''s/.* //'\'' | sort | uniq > $export_symbols'
-export_symbols_cmds_FC='$NM $libobjs $convenience | $global_symbol_pipe | $SED '\''s/.* //'\'' | sort | uniq > $export_symbols'
-exclude_expsyms_CXX='_GLOBAL_OFFSET_TABLE_|_GLOBAL__F[ID]_.*'
-exclude_expsyms_FC='_GLOBAL_OFFSET_TABLE_|_GLOBAL__F[ID]_.*'
+export_symbols_cmds_CXX='$NM $libobjs $convenience | $global_symbol_pipe | $SED -e '\''/^[BCDGRS][ ]/s/.*[ ]\([^ ]*\)/\1 DATA/;s/^.*[ ]__nm__\([^ ]*\)[ ][^ ]*/\1 DATA/;/^I[ ]/d;/^[AITW][ ]/s/.* //'\'' | sort | uniq > $export_symbols'
+export_symbols_cmds_FC='$NM $libobjs $convenience | $global_symbol_pipe | $SED -e '\''/^[BCDGRS][ ]/s/.*[ ]\([^ ]*\)/\1 DATA/;s/^.*[ ]__nm__\([^ ]*\)[ ][^ ]*/\1 DATA/;/^I[ ]/d;/^[AITW][ ]/s/.* //'\'' | sort | uniq > $export_symbols'
+exclude_expsyms_CXX='[_]+GLOBAL_OFFSET_TABLE_|[_]+GLOBAL__[FID]_.*|[_]+head_[A-Za-z0-9_]+_dll|[A-Za-z0-9_]+_dll_iname'
+exclude_expsyms_FC='[_]+GLOBAL_OFFSET_TABLE_|[_]+GLOBAL__[FID]_.*|[_]+head_[A-Za-z0-9_]+_dll|[A-Za-z0-9_]+_dll_iname'
 include_expsyms_CXX=''
 include_expsyms_FC=''
 prelink_cmds_CXX=''
@@ -774,22 +802,22 @@ file_list_spec_CXX=''
 file_list_spec_FC=''
 hardcode_action_CXX='immediate'
 hardcode_action_FC='immediate'
-compiler_lib_search_dirs_CXX=''
-compiler_lib_search_dirs_FC=''
-predep_objects_CXX=''
-predep_objects_FC=''
-postdep_objects_CXX=''
-postdep_objects_FC=''
+compiler_lib_search_dirs_CXX='D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0 D:/msys64/mingw64/bin/../lib/gcc D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib/../lib D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../lib D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../..'
+compiler_lib_search_dirs_FC='D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0 D:/msys64/mingw64/bin/../lib/gcc D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib/../lib D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../lib D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../..'
+predep_objects_CXX='D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../lib/dllcrt2.o D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/crtbegin.o'
+predep_objects_FC='D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../lib/dllcrt2.o D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/crtbegin.o'
+postdep_objects_CXX='D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/crtend.o'
+postdep_objects_FC='D:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/crtend.o'
 predeps_CXX=''
 predeps_FC=''
-postdeps_CXX=''
-postdeps_FC=''
-compiler_lib_search_path_CXX=''
-compiler_lib_search_path_FC=''
+postdeps_CXX='-lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32'
+postdeps_FC='-lgfortran -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -lkernel32'
+compiler_lib_search_path_CXX='-LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0 -LD:/msys64/mingw64/bin/../lib/gcc -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../lib -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../..'
+compiler_lib_search_path_FC='-LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0 -LD:/msys64/mingw64/bin/../lib/gcc -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../lib -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../..'
 
-LTCC='clang'
+LTCC='gcc'
 LTCFLAGS=' '
-compiler='clang'
+compiler='gcc'
 
 # A function that is used when there is no print builtin or printf.
 func_fallback_echo ()
@@ -844,12 +872,12 @@ fi
 ac_aux_dir='../bin'
 
 
-../bin/install-sh -c -d java/src/.classes;
-                ../bin/install-sh -c -d java/test/.classes;
-                ../bin/install-sh -c -d java/examples/intro/.classes;
-                ../bin/install-sh -c -d java/examples/datasets/.classes;
-                ../bin/install-sh -c -d java/examples/datatypes/.classes;
-                ../bin/install-sh -c -d java/examples/groups/.classes
+/usr/bin/mkdir -p java/src/.classes;
+                /usr/bin/mkdir -p java/test/.classes;
+                /usr/bin/mkdir -p java/examples/intro/.classes;
+                /usr/bin/mkdir -p java/examples/datasets/.classes;
+                /usr/bin/mkdir -p java/examples/datatypes/.classes;
+                /usr/bin/mkdir -p java/examples/groups/.classes
 
 
 # Handling of arguments.
@@ -1064,8 +1092,8 @@ fi
 
 echo 'BEGIN {' >"$ac_tmp/subs1.awk" &&
 cat >>"$ac_tmp/subs1.awk" <<\_ACAWK &&
-S["am__EXEEXT_FALSE"]=""
-S["am__EXEEXT_TRUE"]="#"
+S["am__EXEEXT_FALSE"]="#"
+S["am__EXEEXT_TRUE"]=""
 S["LTLIBOBJS"]=""
 S["LIBOBJS"]=""
 S["HAVE_SHARED_CONDITIONAL_FALSE"]="#"
@@ -1101,16 +1129,16 @@ S["DEFAULT_API_VERSION"]="v114"
 S["DEPRECATED_SYMBOLS"]="yes"
 S["BUILD_ALL_CONDITIONAL_FALSE"]=""
 S["BUILD_ALL_CONDITIONAL_TRUE"]="#"
-S["ROOT"]="/Users/kittisopikulm/Documents/src/hdf5-1.14.0/build"
-S["JAVA_VERSION"]="/Users/kittisopikulm/.juliaup/bin/ (../configure: line 33059: -version: command not found)"
-S["CXX_VERSION"]="/usr/bin/clang++ ( Apple clang version 14.0.0 )"
-S["FC_VERSION"]="/usr/local/bin/gfortran ( GNU Fortran (GCC) 12.2.0)"
-S["CC_VERSION"]="/usr/bin/clang ( Apple clang version 14.0.0 )"
+S["ROOT"]="/home/kittisopikulm/hdf5-1.14.0/build"
+S["JAVA_VERSION"]="/mingw64/bin/ (../configure: line 33019: -version: command not found)"
+S["CXX_VERSION"]="/mingw64/bin/g++"
+S["FC_VERSION"]="/mingw64/bin/gfortran"
+S["CC_VERSION"]="/mingw64/bin/gcc"
 S["WORDS_BIGENDIAN"]="no"
 S["BYTESEX"]="little-endian"
 S["CONFIG_MODE"]=""
-S["CONFIG_USER"]="kittisopikulm@kittisopikulm-wm1"
-S["CONFIG_DATE"]="Mon Apr 17 19:51:07 EDT 2023"
+S["CONFIG_USER"]="kittisopikulm@KITTISOPIKULM-2"
+S["CONFIG_DATE"]="Mon Apr 17 19:08:20 EDT 2023"
 S["H5_VERSION"]="1.14.0"
 S["examplesdir"]="${prefix}/share/hdf5_examples"
 S["HDFS_VFD_CONDITIONAL_FALSE"]=""
@@ -1165,27 +1193,27 @@ S["USE_FILTER_SZIP"]="no"
 S["LL_PATH"]=""
 S["USE_FILTER_DEFLATE"]="yes"
 S["EXTERNAL_FILTERS"]="deflate(zlib)"
-S["H5_IS_DARWIN"]="yes"
+S["H5_IS_DARWIN"]="no"
 S["LT_STATIC_EXEC"]=""
 S["USE_PLUGINS_CONDITIONAL_FALSE"]="#"
 S["USE_PLUGINS_CONDITIONAL_TRUE"]=""
 S["STATIC_EXEC"]="no"
 S["LT_SYS_LIBRARY_PATH"]=""
-S["OTOOL64"]=":"
-S["OTOOL"]="otool"
-S["LIPO"]="lipo"
-S["NMEDIT"]="nmedit"
-S["DSYMUTIL"]="dsymutil"
+S["OTOOL64"]=""
+S["OTOOL"]=""
+S["LIPO"]=""
+S["NMEDIT"]=""
+S["DSYMUTIL"]=""
 S["MANIFEST_TOOL"]=":"
 S["RANLIB"]="ranlib"
 S["ac_ct_AR"]=""
-S["DLLTOOL"]="false"
+S["DLLTOOL"]="dlltool"
 S["OBJDUMP"]="objdump"
-S["LN_S"]="ln -s"
-S["NM"]="/usr/bin/nm -B"
+S["LN_S"]="cp -pR"
+S["NM"]="/mingw64/bin/nm -B"
 S["ac_ct_DUMPBIN"]=""
 S["DUMPBIN"]=""
-S["LD"]="/Library/Developer/CommandLineTools/usr/bin/ld"
+S["LD"]="D:/msys64/mingw64/x86_64-w64-mingw32/bin/ld.exe"
 S["FGREP"]="/usr/bin/grep -F"
 S["SED"]="/usr/bin/sed"
 S["LIBTOOL"]="$(SHELL) $(top_builddir)/libtool"
@@ -1287,21 +1315,21 @@ S["HL"]="hl"
 S["HDF5_HL_GIF_TOOLS"]="no"
 S["HDF5_HL_TOOLS"]="yes"
 S["HDF5_HL"]="yes"
-S["CXXCPP"]="clang++ -E"
+S["CXXCPP"]="g++ -E"
 S["am__fastdepCXX_FALSE"]="#"
 S["am__fastdepCXX_TRUE"]=""
 S["CXXDEPMODE"]="depmode=gcc3"
-S["ac_ct_CXX"]=""
+S["ac_ct_CXX"]="g++"
 S["CXXFLAGS"]=""
-S["CXX"]="clang++"
+S["CXX"]="g++"
 S["HDF_CXX"]="yes"
 S["Fortran_COMPILER_ID"]="none"
 S["H5CONFIG_F_IKIND"]="INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8,16/)"
 S["H5CONFIG_F_NUM_IKIND"]="INTEGER, PARAMETER :: num_ikinds = 5"
-S["H5CONFIG_F_RKIND_SIZEOF"]="INTEGER, DIMENSION(1:num_rkinds) :: rkind_sizeof = (/4,8,16/)"
-S["H5CONFIG_F_RKIND"]="INTEGER, DIMENSION(1:num_rkinds) :: rkind = (/4,8,16/)"
-S["H5CONFIG_F_NUM_RKIND"]="INTEGER, PARAMETER :: num_rkinds = 3"
-S["FORTRAN_C_LONG_DOUBLE_IS_UNIQUE"]="0"
+S["H5CONFIG_F_RKIND_SIZEOF"]="INTEGER, DIMENSION(1:num_rkinds) :: rkind_sizeof = (/4,8,16,16/)"
+S["H5CONFIG_F_RKIND"]="INTEGER, DIMENSION(1:num_rkinds) :: rkind = (/4,8,10,16/)"
+S["H5CONFIG_F_NUM_RKIND"]="INTEGER, PARAMETER :: num_rkinds = 4"
+S["FORTRAN_C_LONG_DOUBLE_IS_UNIQUE"]="1"
 S["FORTRAN_HAVE_C_LONG_DOUBLE"]="1"
 S["HAVE_Fortran_INTEGER_SIZEOF_16"]="1"
 S["PAC_FORTRAN_NATIVE_DOUBLE_SIZEOF"]="                    8"
@@ -1311,20 +1339,22 @@ S["PAC_FORTRAN_NATIVE_REAL_KIND"]="           4"
 S["PAC_FORTRAN_NATIVE_INTEGER_SIZEOF"]="                    4"
 S["PAC_FORTRAN_NATIVE_INTEGER_KIND"]="           4"
 S["PAC_FC_ALL_INTEGER_KINDS_SIZEOF"]="{1,2,4,8,16}"
-S["PAC_FC_ALL_REAL_KINDS_SIZEOF"]="{4,8,16}"
+S["PAC_FC_ALL_REAL_KINDS_SIZEOF"]="{4,8,16,16}"
 S["PAC_FC_ALL_INTEGER_KINDS"]="{1,2,4,8,16}"
 S["PAC_FORTRAN_NUM_INTEGER_KINDS"]="5"
 S["PAC_FC_MAX_REAL_PRECISION"]="33"
-S["PAC_FC_ALL_REAL_KINDS"]="{4,8,16}"
-S["FCLIBS"]=" -L/usr/local/gfortran/lib/gcc/aarch64-apple-darwin22/12.2.0 -L/usr/local/gfortran/lib/gcc/aarch64-apple-darwin22/12.2.0/../../.. -lgfortran -lemutl"\
-"s_w -lquadmath"
+S["PAC_FC_ALL_REAL_KINDS"]="{4,8,10,16}"
+S["FCLIBS"]=" -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0 -LD:/msys64/mingw64/bin/../lib/gcc -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw"\
+"32/12.2.0/../../../../x86_64-w64-mingw32/lib/../lib -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../lib -LD:/msys64/mingw64"\
+"/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/lib -LD:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/12.2.0/../../.. -"\
+"lgfortran -lmingw32 -lmoldname -lmingwex -lmsvcrt -lkernel32 -lquadmath -lm -lkernel32 -lpthread -ladvapi32 -lshell32 -luser32 -lkernel32 -lkernel32"
 S["fmoddir"]="${includedir}"
 S["F9XMODEXT"]="mod"
 S["F9XMODFLAG"]="-I"
 S["FSEARCH_DIRS"]=""
 S["F9XSUFFIXFLAG"]=""
 S["FCFLAGS_f90"]=""
-S["ac_ct_FC"]=""
+S["ac_ct_FC"]="gfortran"
 S["FCFLAGS"]=""
 S["OBJECT_NAMELEN_DEFAULT_F"]=""
 S["SIZE_T"]=""
@@ -1335,12 +1365,12 @@ S["HADDR_T"]=""
 S["R_INTEGER"]=""
 S["R_LARGE"]=""
 S["FC"]="gfortran"
-S["PAC_C_MAX_REAL_PRECISION"]="17"
+S["PAC_C_MAX_REAL_PRECISION"]="33"
 S["HDF5_INTERFACES"]=" fortran c++"
 S["HDF_FORTRAN"]="yes"
 S["EGREP"]="/usr/bin/grep -E"
 S["GREP"]="/usr/bin/grep"
-S["CPP"]="clang -E"
+S["CPP"]="gcc -E"
 S["am__fastdepCC_FALSE"]="#"
 S["am__fastdepCC_TRUE"]=""
 S["CCDEPMODE"]="depmode=gcc3"
@@ -1352,49 +1382,41 @@ S["am__quote"]=""
 S["am__include"]="include"
 S["DEPDIR"]=".deps"
 S["OBJEXT"]="o"
-S["EXEEXT"]=""
-S["ac_ct_CC"]="clang"
+S["EXEEXT"]=".exe"
+S["ac_ct_CC"]="gcc"
 S["LDFLAGS"]=""
 S["CFLAGS"]=""
-S["CC"]="clang"
+S["CC"]="gcc"
 S["BUILD_MODE"]="production"
 S["CLANG_SANITIZE_CHECKS"]="none"
-S["UNAME_INFO"]="Darwin kittisopikulm-wm1 22.3.0 Darwin Kernel Version 22.3.0: Mon Jan 30 20:38:37 PST 2023; root:xnu-8792.81.3~2/RELEASE_ARM64_T6000 arm64"
+S["UNAME_INFO"]="MINGW64_NT-10.0-19044 KITTISOPIKULM-2 3.3.6-341.x86_64 2022-11-20 15:12 UTC x86_64 Msys"
 S["AM_LDFLAGS"]=""
 S["AM_JAVAFLAGS"]=""
 S["AM_JAVACFLAGS"]=""
 S["AM_JNIFLAGS"]=""
-S["AM_CPPFLAGS"]=" -I/Users/kittisopikulm/Documents/src/hdf5-1.14.0/src/H5FDsubfiling"
+S["AM_CPPFLAGS"]="-D_FILE_OFFSET_BITS=64  -I/home/kittisopikulm/hdf5-1.14.0/src/H5FDsubfiling"
 S["AM_CXXFLAGS"]=""
 S["AM_FCFLAGS"]=""
 S["AM_CFLAGS"]=""
-S["H5_LDFLAGS"]=" -Wl,-commons,use_dylibs"
+S["H5_LDFLAGS"]=" -no-undefined"
 S["H5_JAVAFLAGS"]=""
 S["H5_JAVACFLAGS"]=""
 S["H5_JNIFLAGS"]=""
-S["H5_CXXFLAGS"]="  -std=c++11 -Wall -Warray-bounds -Wcast-qual -Wconversion -Wdouble-promotion -Wextra -Wformat=2 -Wframe-larger-than=16384 -Wimplicit-fallthrough -W"\
-"null-dereference -Wunused-const-variable -Wwrite-strings -Wpedantic -Wvolatile-register-var -Wno-c++-compat     -Wbad-function-cast -Wimplicit-funct"\
-"ion-declaration -Wincompatible-pointer-types -Wmissing-declarations -Wpacked -Wshadow -Wswitch -Wno-error=incompatible-pointer-types-discards-qualif"\
-"iers -Wunused-function -Wunused-variable -Wunused-parameter -Wcast-align -Wformat -O3"
-S["H5_FCFLAGS"]=" -std=f2008  -Waliasing -Wall -Wcharacter-truncation -Wextra -Wimplicit-interface -Wsurprising -Wunderflow -pedantic -Warray-temporaries -Wintrinsic"\
-"s-std -Wimplicit-procedure -Wreal-q-constant -Wfunction-elimination -Wrealloc-lhs -Wrealloc-lhs-all -Wno-c-binding-type -Winteger-division -Wfronten"\
-"d-loop-interchange  -fdiagnostics-urls=never -fno-diagnostics-color -s  -Wno-unused-dummy-argument -O3"
+S["H5_CXXFLAGS"]="     "
+S["H5_FCFLAGS"]="     "
 S["H5_CPPFLAGS"]="  -DNDEBUG -UH5_DEBUG_API"
-S["H5_CFLAGS"]=" -std=c99  -Wall -Warray-bounds -Wcast-qual -Wconversion -Wdouble-promotion -Wextra -Wformat=2 -Wframe-larger-than=16384 -Wimplicit-fallthrough -Wnu"\
-"ll-dereference -Wunused-const-variable -Wwrite-strings -Wpedantic -Wvolatile-register-var -Wno-c++-compat     -Wbad-function-cast -Wimplicit-functio"\
-"n-declaration -Wincompatible-pointer-types -Wmissing-declarations -Wpacked -Wshadow -Wswitch -Wno-error=incompatible-pointer-types-discards-qualifie"\
-"rs -Wunused-function -Wunused-variable -Wunused-parameter -Wcast-align -Wformat -Wno-missing-noreturn -O3"
+S["H5_CFLAGS"]="      "
 S["AR_FLAGS"]="cr"
 S["JNIFLAGS"]=""
 S["CPPFLAGS"]=""
-S["host_os"]="darwin22.3.0"
-S["host_vendor"]="apple"
-S["host_cpu"]="arm"
-S["host"]="arm-apple-darwin22.3.0"
-S["build_os"]="darwin22.3.0"
-S["build_vendor"]="apple"
-S["build_cpu"]="arm"
-S["build"]="arm-apple-darwin22.3.0"
+S["host_os"]="mingw32"
+S["host_vendor"]="w64"
+S["host_cpu"]="x86_64"
+S["host"]="x86_64-w64-mingw32"
+S["build_os"]="mingw32"
+S["build_vendor"]="w64"
+S["build_cpu"]="x86_64"
+S["build"]="x86_64-w64-mingw32"
 S["MAINT"]="#"
 S["MAINTAINER_MODE_FALSE"]=""
 S["MAINTAINER_MODE_TRUE"]="#"
@@ -1407,31 +1429,31 @@ S["am__tar"]="$${TAR-tar} chof - \"$$tardir\""
 S["AMTAR"]="$${TAR-tar}"
 S["am__leading_dot"]="."
 S["SET_MAKE"]=""
-S["AWK"]="awk"
+S["AWK"]="gawk"
 S["mkdir_p"]="$(MKDIR_P)"
-S["MKDIR_P"]="../bin/install-sh -c -d"
+S["MKDIR_P"]="/usr/bin/mkdir -p"
 S["INSTALL_STRIP_PROGRAM"]="$(install_sh) -c -s"
 S["STRIP"]="strip"
-S["install_sh"]="${SHELL} /Users/kittisopikulm/Documents/src/hdf5-1.14.0/bin/install-sh"
-S["MAKEINFO"]="${SHELL} /Users/kittisopikulm/Documents/src/hdf5-1.14.0/bin/missing makeinfo"
-S["AUTOHEADER"]="${SHELL} /Users/kittisopikulm/Documents/src/hdf5-1.14.0/bin/missing autoheader"
-S["AUTOMAKE"]="${SHELL} /Users/kittisopikulm/Documents/src/hdf5-1.14.0/bin/missing automake-1.15"
-S["AUTOCONF"]="${SHELL} /Users/kittisopikulm/Documents/src/hdf5-1.14.0/bin/missing autoconf"
-S["ACLOCAL"]="${SHELL} /Users/kittisopikulm/Documents/src/hdf5-1.14.0/bin/missing aclocal-1.15"
+S["install_sh"]="${SHELL} /home/kittisopikulm/hdf5-1.14.0/bin/install-sh"
+S["MAKEINFO"]="${SHELL} /home/kittisopikulm/hdf5-1.14.0/bin/missing makeinfo"
+S["AUTOHEADER"]="${SHELL} /home/kittisopikulm/hdf5-1.14.0/bin/missing autoheader"
+S["AUTOMAKE"]="${SHELL} /home/kittisopikulm/hdf5-1.14.0/bin/missing automake-1.15"
+S["AUTOCONF"]="${SHELL} /home/kittisopikulm/hdf5-1.14.0/bin/missing autoconf"
+S["ACLOCAL"]="${SHELL} /home/kittisopikulm/hdf5-1.14.0/bin/missing aclocal-1.15"
 S["VERSION"]="1.14.0"
 S["PACKAGE"]="hdf5"
-S["CYGPATH_W"]="echo"
+S["CYGPATH_W"]="cygpath -w"
 S["am__isrc"]=" -I$(srcdir)"
 S["INSTALL_DATA"]="${INSTALL} -m 644"
 S["INSTALL_SCRIPT"]="${INSTALL}"
 S["INSTALL_PROGRAM"]="${INSTALL}"
 S["target_alias"]=""
 S["host_alias"]=""
-S["build_alias"]=""
-S["LIBS"]="-lz -ldl -lm "
+S["build_alias"]="x86_64-w64-mingw32"
+S["LIBS"]="-lz -lm "
 S["ECHO_T"]=""
-S["ECHO_N"]=""
-S["ECHO_C"]="\\c"
+S["ECHO_N"]="-n"
+S["ECHO_C"]=""
 S["DEFS"]="-DHAVE_CONFIG_H"
 S["mandir"]="${datarootdir}/man"
 S["localedir"]="${datarootdir}/locale"
@@ -1453,7 +1475,7 @@ S["libexecdir"]="${exec_prefix}/libexec"
 S["sbindir"]="${exec_prefix}/sbin"
 S["bindir"]="${exec_prefix}/bin"
 S["program_transform_name"]="s,x,x,"
-S["prefix"]="/Users/kittisopikulm/Documents/src/hdf5-1.14.0/build/hdf5"
+S["prefix"]="/mingw64"
 S["exec_prefix"]="${prefix}"
 S["PACKAGE_URL"]=""
 S["PACKAGE_BUGREPORT"]="help@hdfgroup.org"
@@ -1526,27 +1548,29 @@ D["SIZEOF_CHAR"]=" 1"
 D["SIZEOF_SHORT"]=" 2"
 D["SIZEOF_INT"]=" 4"
 D["SIZEOF_UNSIGNED"]=" 4"
-D["SIZEOF_LONG"]=" 8"
+D["SIZEOF_LONG"]=" 4"
 D["SIZEOF_LONG_LONG"]=" 8"
 D["SIZEOF_FLOAT"]=" 4"
 D["SIZEOF_DOUBLE"]=" 8"
-D["SIZEOF_LONG_DOUBLE"]=" 8"
-D["SIZEOF___FLOAT128"]=" 0"
+D["SIZEOF_LONG_DOUBLE"]=" 16"
+D["SIZEOF___FLOAT128"]=" 16"
 D["SIZEOF__QUAD"]=" 0"
-D["PAC_C_MAX_REAL_PRECISION"]=" 17"
+D["HAVE_QUADMATH_H"]=" 1"
+D["HAVE_FLOAT128"]=" 1"
+D["PAC_C_MAX_REAL_PRECISION"]=" 33"
 P["FC_FUNC"]="(name,NAME)"
 D["FC_FUNC"]=" name ## _"
 P["FC_FUNC_"]="(name,NAME)"
 D["FC_FUNC_"]=" name ## _"
 D["PAC_FC_MAX_REAL_PRECISION"]=" 33"
-D["H5CONFIG_F_NUM_RKIND"]=" INTEGER, PARAMETER :: num_rkinds = 3"
+D["H5CONFIG_F_NUM_RKIND"]=" INTEGER, PARAMETER :: num_rkinds = 4"
 D["H5CONFIG_F_NUM_IKIND"]=" INTEGER, PARAMETER :: num_ikinds = 5"
-D["H5CONFIG_F_RKIND"]=" INTEGER, DIMENSION(1:num_rkinds) :: rkind = (/4,8,16/)"
+D["H5CONFIG_F_RKIND"]=" INTEGER, DIMENSION(1:num_rkinds) :: rkind = (/4,8,10,16/)"
 D["H5CONFIG_F_IKIND"]=" INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8,16/)"
 D["PAC_FC_MAX_REAL_PRECISION"]=" 33"
-D["H5CONFIG_F_NUM_RKIND"]=" INTEGER, PARAMETER :: num_rkinds = 3"
+D["H5CONFIG_F_NUM_RKIND"]=" INTEGER, PARAMETER :: num_rkinds = 4"
 D["H5CONFIG_F_NUM_IKIND"]=" INTEGER, PARAMETER :: num_ikinds = 5"
-D["H5CONFIG_F_RKIND"]=" INTEGER, DIMENSION(1:num_rkinds) :: rkind = (/4,8,16/)"
+D["H5CONFIG_F_RKIND"]=" INTEGER, DIMENSION(1:num_rkinds) :: rkind = (/4,8,10,16/)"
 D["H5CONFIG_F_IKIND"]=" INTEGER, DIMENSION(1:num_ikinds) :: ikind = (/1,2,4,8,16/)"
 D["Fortran_COMPILER_ID"]=" none"
 D["HAVE_Fortran_INTEGER_SIZEOF_16"]=" 1"
@@ -1554,30 +1578,22 @@ D["FORTRAN_HAVE_STORAGE_SIZE"]=" 1"
 D["FORTRAN_HAVE_C_SIZEOF"]=" 1"
 D["FORTRAN_HAVE_SIZEOF"]=" 1"
 D["FORTRAN_HAVE_C_LONG_DOUBLE"]=" 1"
-D["FORTRAN_SIZEOF_LONG_DOUBLE"]=" \"8\""
-D["H5CONFIG_F_NUM_RKIND"]=" INTEGER, PARAMETER :: num_rkinds = 3"
-D["H5CONFIG_F_RKIND"]=" INTEGER, DIMENSION(1:num_rkinds) :: rkind = (/4,8,16/)"
-D["H5CONFIG_F_RKIND_SIZEOF"]=" INTEGER, DIMENSION(1:num_rkinds) :: rkind_sizeof = (/4,8,16/)"
+D["FORTRAN_C_LONG_DOUBLE_IS_UNIQUE"]=" 1"
+D["FORTRAN_SIZEOF_LONG_DOUBLE"]=" \"16\""
+D["H5CONFIG_F_NUM_RKIND"]=" INTEGER, PARAMETER :: num_rkinds = 4"
+D["H5CONFIG_F_RKIND"]=" INTEGER, DIMENSION(1:num_rkinds) :: rkind = (/4,8,10,16/)"
+D["H5CONFIG_F_RKIND_SIZEOF"]=" INTEGER, DIMENSION(1:num_rkinds) :: rkind_sizeof = (/4,8,16,16/)"
 D["INCLUDE_HL"]=" 1"
 D["TEST_EXPRESS_LEVEL_DEFAULT"]=" 3"
-D["HAVE_DLFCN_H"]=" 1"
 D["LT_OBJDIR"]=" \".libs/\""
 D["HAVE_LIBM"]=" 1"
-D["HAVE_LIBDL"]=" 1"
 D["HAVE_DIRENT_H"]=" 1"
-D["HAVE_PWD_H"]=" 1"
 D["HAVE_UNISTD_H"]=" 1"
 D["HAVE_SYS_FILE_H"]=" 1"
-D["HAVE_SYS_IOCTL_H"]=" 1"
-D["HAVE_SYS_RESOURCE_H"]=" 1"
 D["HAVE_SYS_STAT_H"]=" 1"
 D["HAVE_SYS_TIME_H"]=" 1"
 D["HAVE_SYS_TYPES_H"]=" 1"
-D["HAVE_DARWIN"]=" 1"
-D["HAVE_ARPA_INET_H"]=" 1"
-D["HAVE_NETDB_H"]=" 1"
-D["HAVE_NETINET_IN_H"]=" 1"
-D["HAVE_SYS_SOCKET_H"]=" 1"
+D["_FILE_OFFSET_BITS"]=" 64"
 D["SIZEOF_INT8_T"]=" 1"
 D["SIZEOF_UINT8_T"]=" 1"
 D["SIZEOF_INT_LEAST8_T"]=" 1"
@@ -1612,35 +1628,15 @@ D["DEV_T_IS_SCALAR"]=" 1"
 D["HAVE_ZLIB_H"]=" 1"
 D["HAVE_LIBZ"]=" 1"
 D["HAVE_FILTER_DEFLATE"]=" 1"
-D["HAVE_TM_GMTOFF"]=" 1"
 D["HAVE_TIMEZONE"]=" 1"
-D["HAVE_STAT_ST_BLOCKS"]=" 1"
-D["HAVE_GETPWUID"]=" 1"
-D["HAVE_IOCTL"]=" 1"
-D["HAVE_TIOCGWINSZ"]=" 1"
-D["HAVE_TIOCGETD"]=" 1"
+D["HAVE_GETCONSOLESCREENBUFFERINFO"]=" 1"
 D["HAVE_ALARM"]=" 1"
 D["HAVE_ASPRINTF"]=" 1"
 D["HAVE_CLOCK_GETTIME"]=" 1"
-D["HAVE_FCNTL"]=" 1"
-D["HAVE_FLOCK"]=" 1"
-D["HAVE_FORK"]=" 1"
-D["HAVE_GETHOSTNAME"]=" 1"
-D["HAVE_GETRUSAGE"]=" 1"
 D["HAVE_GETTIMEOFDAY"]=" 1"
-D["HAVE_LSTAT"]=" 1"
-D["HAVE_RAND_R"]=" 1"
-D["HAVE_RANDOM"]=" 1"
-D["HAVE_SIGLONGJMP"]=" 1"
-D["HAVE_SIGSETJMP"]=" 1"
-D["HAVE_SIGPROCMASK"]=" 1"
-D["HAVE_SRANDOM"]=" 1"
-D["HAVE_STRCASESTR"]=" 1"
 D["HAVE_STRDUP"]=" 1"
-D["HAVE_SYMLINK"]=" 1"
 D["HAVE_TMPFILE"]=" 1"
 D["HAVE_VASPRINTF"]=" 1"
-D["HAVE_WAITPID"]=" 1"
 D["HAVE_ATTRIBUTE"]=" 1"
 D["USE_FILE_LOCKING"]=" 1"
 D["IGNORE_DISABLED_FILE_LOCKS"]=" 1"
@@ -1648,10 +1644,10 @@ D["EXAMPLESDIR"]=" \"${prefix}/share/hdf5_examples\""
 D["DEFAULT_PLUGINDIR"]=" \"/usr/local/hdf5/lib/plugin\""
 D["WANT_DCONV_EXCEPTION"]=" 1"
 D["WANT_DATA_ACCURACY"]=" 1"
+D["HAVE_WINDOW_PATH"]=" 1"
 D["LDOUBLE_TO_LLONG_ACCURATE"]=" 1"
 D["LLONG_TO_LDOUBLE_CORRECT"]=" 1"
 D["USE_114_API_DEFAULT"]=" 1"
-D["HAVE_PREADWRITE"]=" 1"
 D["HAVE_EMBEDDED_LIBINFO"]=" 1"
   for (key in D) D_is_set[key] = 1
   FS = ""
