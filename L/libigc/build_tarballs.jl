@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libigc"
-version = v"1.0.12812"#.26
+version = v"1.0.13230"#.7
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -23,11 +23,11 @@ version = v"1.0.12812"#.26
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "492c11b739568f3ef5f5a33952cfd841a44ae8b5"),
-    GitSource("https://github.com/intel/opencl-clang.git", "ee31812ea8b89d08c2918f045d11a19bd33525c5" #= branch ocl-open-110 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "9991d09a15f6cc0d331d800e6ddefe6c778e5fb6" #= branch llvm_release_110 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "45dd184c790d6bfc78a5a74a10c37e888b1823fa" #= tag sdk-1.3.204.1 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "b42ba6d92faf6b4938e6f22ddd186dbdacc98d78" #= tag sdk-1.3.204.1 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "0e001e2814fd4e0e56275ab45adecea8f79e9ee8"),
+    GitSource("https://github.com/intel/opencl-clang.git", "10237c7109d613ef1161065d140b76d92133062f" #= branch ocl-open-110 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "4bce20785af572aec035db247225205a865a0ca6" #= branch llvm_release_110 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "eb0a36633d2acf4de82588504f951ad0f2cecacb" #= tag sdk-1.3.231.1 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "85a1ed200d50660786c1a88d9166e871123cce39" #= tag sdk-1.3.231.1 =#),
     GitSource("https://github.com/intel/vc-intrinsics.git", "dd72efa3b4aafdbbf599e6f3c6f8c55450e348de" #= latest version: v0.11.0 =#),
     GitSource("https://github.com/llvm/llvm-project.git", "1fdec59bffc11ae37eb51a1b9869f0696bfd5312" #= branch llvmorg-11.1.0 =#),
     # patches
