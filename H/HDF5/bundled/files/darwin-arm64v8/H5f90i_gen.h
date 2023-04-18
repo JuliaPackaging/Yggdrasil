@@ -28,8 +28,6 @@
 typedef struct {c_int_8 a; c_int_8 b;} c_int_16;
 #define c_float_4 float
 #define c_float_8 double
-#define c_float_10 long double
-#define c_float_16 long double
 
 typedef c_int_8 haddr_t_f;
 typedef c_hsize_t_8 hsize_t_f;
@@ -40,8 +38,6 @@ typedef c_time_t_8 time_t_f;
 typedef c_int_4 int_f;
 typedef c_float_4 real_C_FLOAT_f;
 typedef c_float_8 real_C_DOUBLE_f;
-typedef c_float_10 real_C_LONG_DOUBLE_f;
-typedef c_float_16 real_C_FLOAT128_f;
 typedef c_int_8 hid_t_f;
 typedef c_float_4 real_f;
 typedef c_float_8 double_f;
