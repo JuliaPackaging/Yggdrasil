@@ -8,7 +8,7 @@ diff -ru hdf5-1.14.0.old/src/H5private.h hdf5-1.14.0.new/src/H5private.h
 -#define HDstrndup(S, N) strndup(S, N)
 +static char *H5_strndup_impl(const char *src, size_t size) {
 +  size_t len = strnlen(src, size);
-+  char *dst = malloc(len + 1);
++  char *dst = (char*)malloc(len + 1);
 +  if (dst == NULL)
 +    return NULL;
 +  memcpy(dst, src, len);
