@@ -223,9 +223,7 @@ fi
     --enable-ros3-vfd=yes \
     --enable-static=no \
     --enable-tests=no \
-    --enable-threadsafe=yes \
     --enable-tools=yes \
-    --enable-unsupported=yes \
     --with-examplesdir=/tmp \
     --with-szlib=${prefix} \
     hdf5_cv_ldouble_to_long_special=no \
