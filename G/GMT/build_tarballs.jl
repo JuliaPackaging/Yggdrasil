@@ -10,7 +10,7 @@ DCW_VERSION="2.1.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "02d24df3402a20e23100920ede49285a9594e2a7"),
+    "02adf702a73d5e2ce0772fc6be69a934ff5b4719"),
     
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
@@ -70,7 +70,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"); compat="7.73.0")
+    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"); compat="7.73.0, 8.0.1")
     Dependency("NetCDF_jll", compat="400.902.5")
     Dependency("PROJ_jll", compat="900.100.0")
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="301.600.200")
