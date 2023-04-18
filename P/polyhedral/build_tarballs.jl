@@ -17,7 +17,7 @@ cd polyhedral_common
 git submodule update --init --recursive
 cd src_export_oscar
 export GMP_INCDIR=$WORKSPACE/destdir/include
-export GMP_CXX_LINK="$WORKSPACE/destdir/lib -lgmpxx -lgmp"
+export GMP_CXX_LINK="-L$WORKSPACE/destdir/lib -lgmpxx -lgmp"
 
 export BOOST_INCDIR=$WORKSPACE/destdir/include
 export BOOST_LINK="-L$WORKSPACE/destdir/lib -lboost_serialization"
