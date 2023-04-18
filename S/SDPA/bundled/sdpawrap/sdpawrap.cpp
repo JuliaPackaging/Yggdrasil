@@ -73,7 +73,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& sdpa)
         .method("getParameterGammaStar", &SDPA::getParameterGammaStar)
         .method("getParameterEpsilonDash", &SDPA::getParameterEpsilonDash)
       //.method("getDisplay", &SDPA::getDisplay)
-      //.method("setDisplay", &SDPA::setDisplay)
+        .method("setDisplay", &SDPA::setDisplay)
         .method("getNumThreads", &SDPA::getNumThreads)
         .method("setNumThreads", &SDPA::setNumThreads);
       //.method("writeInputSparse", &SDPA::writeInputSparse);
