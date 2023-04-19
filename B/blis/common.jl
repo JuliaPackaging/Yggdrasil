@@ -117,7 +117,7 @@ function blis_script(;blis32::Bool=false)
         mv ${prefix}/lib/libblis.4.dll ${libdir}/libblis.dll
     fi
 
-    if [[ "${BLIS32}" == "false" ]]; then
+    if [[ "${BLIS32}" == "true" ]]; then
         # Rename libblis.${dlext} into libblis32.${dlext}
         mv -v ${libdir}/libblis.${dlext} ${libdir}/libblis32.${dlext}
 
