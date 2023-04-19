@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "jlcxx/jlcxx.hpp"
 #include <sdpa_call.h>
 
@@ -72,7 +73,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& sdpa)
         .method("getParameterBetaBar", &SDPA::getParameterBetaBar)
         .method("getParameterGammaStar", &SDPA::getParameterGammaStar)
         .method("getParameterEpsilonDash", &SDPA::getParameterEpsilonDash)
-      //.method("getDisplay", &SDPA::getDisplay)
+        .method("getDisplay", &SDPA::getDisplay)
         .method("setDisplay", &SDPA::setDisplay)
         .method("getNumThreads", &SDPA::getNumThreads)
         .method("setNumThreads", &SDPA::setNumThreads);
