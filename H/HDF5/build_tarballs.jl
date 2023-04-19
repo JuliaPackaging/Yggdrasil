@@ -20,16 +20,18 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd hdf5-*
 
+# TODO: Remove these lines
 echo MACHTYPE: ${MACHTYPE}
 echo nbits: ${nbits}
 echo proc_family: ${proc_family}
 echo target: ${target}
 
 if [[ ${target} == *-mingw* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/H5timer.c.patch
+    #TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/H5timer.c.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
+    cp ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 fi
 
 # HDF5 assumes that some MPI constants are C constants, but they are not
@@ -201,7 +203,7 @@ export CFLAGS="${CFLAGS} -std=c99"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
 if [[ ${target} == x86_64-linux-musl ]]; then
-    # $libdir/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
+    # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
     # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
     rm /usr/lib/libcurl.*
     rm /usr/lib/libnghttp2.*
@@ -209,9 +211,10 @@ fi
 
 FLAGS=()
 if [[ ${target} == *-mingw* ]]; then
-    FLAGS+=(LDFLAGS="-no-undefined")
+    FLAGS+=(LDFLAGS='-no-undefined')
 fi
 
+# Check which VFD are available
 ENABLE_DIRECT_VFD=yes
 ENABLE_MIRROR_VFD=yes
 if [[ ${target} == *-darwin* ]]; then
@@ -221,6 +224,7 @@ elif [[ ${target} == *-w64-mingw32 ]]; then
     ENABLE_MIRROR_VFD=no
 fi
 
+# Configure MPI
 ENABLE_PARALLEL=yes
 if grep -q MPICH_NAME ${prefix}/include/mpi.h; then
     # MPICH
@@ -547,22 +551,18 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 # The products that we will ensure are always built
 products = [
     # HDF5 tools
-    # ExecutableProduct("h5c++", :h5cxx),
-    # ExecutableProduct("h5cc", :h5cc),
     ExecutableProduct("h5clear", :h5clear),
     ExecutableProduct("h5copy", :h5copy),
     ExecutableProduct("h5debug", :h5debug),
     ExecutableProduct("h5delete", :h5delete),
     ExecutableProduct("h5diff", :h5diff),
     ExecutableProduct("h5dump", :h5dump),
-    # ExecutableProduct("h5fc", :h5fc),
     ExecutableProduct("h5format_convert", :h5format_convert),
     ExecutableProduct("h5import", :h5import),
     ExecutableProduct("h5jam",:h5jam),
     ExecutableProduct("h5ls", :h5ls),
     ExecutableProduct("h5mkgrp", :h5mkgrp),
     ExecutableProduct("h5perf_serial",:h5perf_serial),
-    # ExecutableProduct("h5redeploy", :h5redeploy),
     ExecutableProduct("h5repack", :h5repack),
     ExecutableProduct("h5repart", :h5repart),
     ExecutableProduct("h5stat", :h5stat),
