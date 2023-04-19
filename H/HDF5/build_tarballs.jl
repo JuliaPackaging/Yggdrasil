@@ -25,7 +25,7 @@ echo nbits: ${nbits}
 echo proc_family: ${proc_family}
 echo target: ${target}
 
-if [[ "${target}" == *-mingw* ]]; then
+if [[ ${target} == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/H5timer.c.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
@@ -200,7 +200,7 @@ pushd build
 export CFLAGS="${CFLAGS} -std=c99"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
-if [[ "${target}" == x86_64-linux-musl ]]; then
+if [[ ${target} == x86_64-linux-musl ]]; then
     # $libdir/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
     # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
     rm /usr/lib/libcurl.*
@@ -208,27 +208,68 @@ if [[ "${target}" == x86_64-linux-musl ]]; then
 fi
 
 FLAGS=()
-if [[ "${target}" == *-mingw* ]]; then
+if [[ ${target} == *-mingw* ]]; then
     FLAGS+=(LDFLAGS="-no-undefined")
 fi
 
-env \
-    MPITRAMPOLINE_CC="$CC" \
-    MPITRAMPOLINE_CXX="$CXX" \
-    MPITRAMPOLINE_FC="$FC" \
-    CC=mpicc \
-    CXX=mpicxx \
-    FC=mpifort \
-    ../configure \
+ENABLE_DIRECT_VFD=yes
+ENABLE_MIRROR_VFD=yes
+if [[ ${target} == *-darwin* ]]; then
+    ENABLE_DIRECT_VFD=no
+elif [[ ${target} == *-w64-mingw32 ]]; then
+    ENABLE_DIRECT_VFD=no
+    ENABLE_MIRROR_VFD=no
+fi
+
+ENABLE_PARALLEL=yes
+if grep -q MPICH_NAME ${prefix}/include/mpi.h; then
+    # MPICH
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpifort
+elif grep -q MPITRAMPOLINE_MPI_H ${prefix}/include/mpi.h; then
+    # MPItrampoline
+    export MPITRAMPOLINE_CC="$(which $CC)"
+    export MPITRAMPOLINE_CXX="$(which $CXX)"
+    export MPITRAMPOLINE_FC="$(which $FC)"
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpifort
+elif grep -q MSMPI_VER ${prefix}/include/mpi.h; then
+    # Microsoft MPI
+    if [[ ${target} == i686-* ]]; then
+        # 32-bit system
+        # Do not enable MPI; the function MPI_File_close is not defined
+        # in the 32-bit version of Microsoft MPI 10.1.12498.18
+        ENABLE_PARALLEL=no
+    else
+        # Hide static libraries
+        rm ${prefix}/lib/msmpi*.lib
+        # Make shared libraries visible
+        ln -s msmpi.dll ${libdir}/libmsmpi.dll
+        export FCFLAGS="$FCFLAGS -I${prefix}/src -I${prefix}/include -fno-range-check"
+        export LIBS="-L${libdir} -lmsmpi"
+    fi
+elif grep -q OMPI_MAJOR_VERSION ${prefix}/include/mpi.h; then
+    # OpenMPI
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpifort
+else
+    # Unknown MPI
+    exit 1
+fi
+
+../configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
     --enable-cxx=yes \
-    --enable-direct-vfd=yes \
+    --enable-direct-vfd="$ENABLE_DIRECT_VFD" \
     --enable-fortran=yes \
     --enable-hl=yes \
-    --enable-mirror-vfd=yes \
-    --enable-parallel=yes \
+    --enable-mirror-vfd="$ENABLE_MIRROR_VFD" \
+    --enable-parallel="$ENABLE_PARALLEL" \
     --enable-ros3-vfd=yes \
     --enable-static=no \
     --enable-tests=no \
@@ -238,9 +279,9 @@ env \
     --with-szlib=${prefix} \
     hdf5_cv_ldouble_to_long_special=no \
     hdf5_cv_long_to_ldouble_special=no \
-    hdf5_cv_ldouble_to_llong_accurate=no \
-    hdf5_cv_llong_to_ldouble_correct=no \
-    hdf5_cv_disable_some_ldouble_conv=yes \
+    hdf5_cv_ldouble_to_llong_accurate=yes \
+    hdf5_cv_llong_to_ldouble_correct=yes \
+    hdf5_cv_disable_some_ldouble_conv=no \
     hdf5_cv_szlib_can_encode=yes \
     "$(../saved/get_config_setting PAC_C_MAX_REAL_PRECISION ../saved/config.status)" \
     "$(../saved/get_config_setting PAC_FC_ALL_REAL_KINDS ../saved/config.status)" \
@@ -285,53 +326,6 @@ make install
 popd
 
 fi
-
-# # Create placeholders for missing executables
-# if [[ "${target}" == *-mingw* ]]; then
-#     cat >h5cc.c <<EOF
-# #include <stdio.h>
-# int main(int argc, char **argv) {
-#   fprintf(stderr, "h5cc is not supported on this architecture\n");
-#   return 1;
-# }
-# EOF
-#     cc -c h5cc.c
-#     cc -o "h5cc${exeext}" h5cc.o
-#     install -Dvm 755 "h5cc${exeext}" "${bindir}/h5cc${exeext}"
-# 
-#     cat >h5c++.c <<EOF
-# #include <stdio.h>
-# int main(int argc, char **argv) {
-#   fprintf(stderr, "h5c++ is not supported on this architecture\n");
-#   return 1;
-# }
-# EOF
-#     cc -c h5c++.c
-#     cc -o "h5c++${exeext}" h5c++.o
-#     install -Dvm 755 "h5c++${exeext}" "${bindir}/h5c++${exeext}"
-# 
-#     cat >h5fc.c <<EOF
-# #include <stdio.h>
-# int main(int argc, char **argv) {
-#   fprintf(stderr, "h5fc is not supported on this architecture\n");
-#   return 1;
-# }
-# EOF
-#     cc -c h5fc.c
-#     cc -o "h5fc${exeext}" h5fc.o
-#     install -Dvm 755 "h5fc${exeext}" "${bindir}/h5fc${exeext}"
-# 
-#     cat >h5redeploy.c <<EOF
-# #include <stdio.h>
-# int main(int argc, char **argv) {
-#   fprintf(stderr, "h5redeploy is not supported on this architecture\n");
-#   return 1;
-# }
-# EOF
-#     cc -c h5redeploy.c
-#     cc -o "h5redeploy${exeext}" h5redeploy.o
-#     install -Dvm 755 "h5redeploy${exeext}" "${bindir}/h5redeploy${exeext}"
-# fi
 
 install_license COPYING
 """
