@@ -7,7 +7,7 @@ version = v"0.9.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/flame/blis.git", "14c86f66b20901b60ee276da355c1b62642c18d2"),
-    DirectorySource("./bundled")
+    DirectorySource("../bundled")
 ]
 
 # Bash recipe for building across all platforms
