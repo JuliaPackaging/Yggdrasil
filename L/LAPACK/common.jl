@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 # LAPACK mirrors the OpenBLAS build, whereas LAPACK32 mirrors the OpenBLAS32 build.
 
@@ -297,10 +297,32 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
+       -DTEST_FORTRAN_COMPILER=OFF \
        -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline"
 
     make
     make install
+
+    # Rename liblapack.${dlext} into liblapack32.${dlext}
+    if [[ "${LAPACK32}" == "true" ]]; then
+        mv -v ${libdir}/liblapack.${dlext} ${libdir}/liblapack32.${dlext}
+        # If there were links that are now broken, fix 'em up
+        for l in $(find ${prefix}/lib -xtype l); do
+          if [[ $(basename $(readlink ${l})) == liblapack ]]; then
+            ln -vsf liblapack32.${dlext} ${l}
+          fi
+        done
+        PATCHELF_FLAGS=()
+        # ppc64le and aarch64 have 64 kB page sizes, don't muck up the ELF section load alignment
+        if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
+          PATCHELF_FLAGS+=(--page-size 65536)
+        fi
+        if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+          patchelf ${PATCHELF_FLAGS[@]} --set-soname liblapack32.${dlext} ${libdir}/liblapack32.${dlext}
+        elif [[ ${target} == *apple* ]]; then
+          install_name_tool -id liblapack32.${dlext} ${libdir}/liblapack32.${dlext}
+        fi
+    fi
     """
 end
 
@@ -310,11 +332,11 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liblapack", :liblapack),
+    LibraryProduct(["liblapack32", "liblapack"], :liblapack),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-        Dependency("CompilerSupportLibraries_jll")
-        Dependency("libblastrampoline_jll"; compat="5.1.1")
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.7.0")
 ]
