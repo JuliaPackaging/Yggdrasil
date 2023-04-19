@@ -1,4 +1,0 @@
-15c15
-< arm64:          armsve firestorm thunderx2 cortexa57 cortexa53 generic
----
-> arm64:          a64fx armsve firestorm thunderx2 cortexa57 cortexa53 generic

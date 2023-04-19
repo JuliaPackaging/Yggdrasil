@@ -1,4 +1,0 @@
-48c48
-< #if !defined(BLIS_FAMILY_A64FX)
----
-> #if 1
