@@ -141,6 +141,8 @@ function blis_script(;blis32::Bool=false)
           install_name_tool -id libblis32.${dlext} ${libdir}/libblis32.${dlext}
         fi
     fi
+
+    install_license LICENSE
     """
 end
 
