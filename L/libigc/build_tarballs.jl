@@ -145,5 +145,5 @@ for platform in platforms, debug in (false, true)
     # GCC <9 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678 (for debug)
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
                    products, dependencies; preferred_gcc_version=v"9", augment_platform_block,
-                   lock_microarchitecture=false)
+                   julia_compat = "1.6", lock_microarchitecture=false)
 end
