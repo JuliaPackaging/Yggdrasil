@@ -21,8 +21,10 @@ function lapack_script(;lapack32::Bool=false)
     cd $WORKSPACE/srcdir/lapack*
     FFLAGS=(-cpp -ffixed-line-length-none -DUSE_ISNAN)
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
-        FFLAGS="${FFLAGS} -fdefault-integer-8"
-    fi
+        ILP64="ON"
+    else
+        ILP64="OFF"
+    end
 
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
       syms=(CAXPBY CAXPY CBBCSD CBDSQR
@@ -298,6 +300,7 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
        -DTEST_FORTRAN_COMPILER=OFF \
+       -DBUILD_INDEX64="$ILP64" \
        -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline"
 
     make
