@@ -303,7 +303,7 @@ function lapack_script(;lapack32::Bool=false)
        -DBUILD_INDEX64="$ILP64" \
        -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline"
 
-    make
+    make -j${nproc}
     make install
 
     # Rename liblapack.${dlext} into liblapack32.${dlext}
