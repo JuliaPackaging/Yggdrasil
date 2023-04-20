@@ -55,8 +55,6 @@ function get_script(; debug::Bool)
         atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
-        ## make the build system respect our choice of build type
-        atomic_patch -p0 patches/cmake-debug_symbols.patch
 
         cd intel-graphics-compiler
         install_license LICENSE.md
@@ -81,7 +79,14 @@ function get_script(; debug::Bool)
         CMAKE_FLAGS+=(-Wno-dev)
 
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-        ninja -C build -j ${nproc} install"""
+        ninja -C build -j ${nproc} install
+
+        # IGC's build system is stupid and always generated debug symbols,
+        # assuming you run `strip` afterwards
+        if """ * (debug ? "false" : "true") * raw"""; then
+            find ${libdir} ${bindir} -type f -exec strip -s {} \;
+        fi
+        """
 end
 
 # These are the platforms we will build for by default, unless further
