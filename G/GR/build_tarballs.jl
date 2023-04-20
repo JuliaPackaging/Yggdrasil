@@ -78,6 +78,7 @@ products = [
     LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
     LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
+    ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built
