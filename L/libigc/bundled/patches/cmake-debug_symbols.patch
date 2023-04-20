@@ -1,0 +1,20 @@
+--- intel-graphics-compiler/IGC/CMakeLists.txt	2023-04-20 17:24:17.810734886 +0200
++++ intel-graphics-compiler/IGC/CMakeLists.txt	2023-04-20 17:24:27.444085603 +0200
+@@ -210,17 +210,6 @@
+ # The section must be after project definition and its supported languages because otherwise
+ # used variables are not available yet.
+
+-# Generate debug symbols even in release mode, thus making it possible to produce
+-# separate Debian/RPM debug information packages.
+-# FIXME: Instead of hacking the release build flags, consider using CMake's
+-# RelWithDebInfo build type.
+-if(UNIX)
+-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -g")
+-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
+-  set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -g")
+-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -g")
+-endif()
+-
+
+ # Populating global property with list of debug configurations (based on pattern).
+ set(_debugConfigs)

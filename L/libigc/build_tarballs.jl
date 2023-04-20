@@ -55,6 +55,8 @@ function get_script(; debug::Bool)
         atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
+        ## make the build system respect our choice of build type
+        atomic_patch -p0 patches/cmake-debug_symbols.patch
 
         cd intel-graphics-compiler
         install_license LICENSE.md
