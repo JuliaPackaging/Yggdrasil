@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using Base.BinaryPlatforms: arch, os
+using Base.BinaryPlatforms: arch, os, tags
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -107,7 +107,12 @@ augment_platform_block = raw"""
     end"""
 
 for platform in platforms, debug in (false, true)
-    augmented_platform = Platform(arch(platform), os(platform); debug)
+    # XXX: make this more convenient in Base
+    tag_kwargs = Dict(Symbol(key) => value for (key, value) in tags(platform))
+    tag_kwargs[:debug] = string(debug)
+    delete!(tag_kwargs, :os)
+    delete!(tag_kwargs, :arch)
+    augmented_platform = Platform(arch(platform), os(platform); tag_kwargs...)
     should_build_platform(triplet(augmented_platform)) || continue
 
     # GCC 4 has constexpr incompatibilities
