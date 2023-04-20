@@ -81,6 +81,10 @@ function get_script(; debug::Bool)
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
         ninja -C build -j ${nproc} install
 
+        # we (currently) don't care about OpenCL support, so get rid of it
+        rm -rf ${libdir}/libigdfcl.so*
+        rm -rf ${libdir}/libopencl-clang.so*
+
         # IGC's build system is stupid and always generated debug symbols,
         # assuming you run `strip` afterwards
         if """ * (debug ? "false" : "true") * raw"""; then
@@ -102,9 +106,9 @@ products = [
     ExecutableProduct(["iga32", "iga64"], :iga),
     LibraryProduct(["libiga32", "libiga64"], :libiga),
     LibraryProduct("libigc", :libigc),
-    LibraryProduct("libigdfcl", :libigdfcl),
-    # opencl-clang
-    LibraryProduct("libopencl-clang", :libopencl_clang),
+    # OpenCL support
+    #LibraryProduct("libigdfcl", :libigdfcl),
+    #LibraryProduct("libopencl-clang", :libopencl_clang),
 ]
 
 # Dependencies that must be installed before this package can be built
