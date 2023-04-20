@@ -20,14 +20,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd hdf5-*
 
-# TODO: Remove these lines
-echo MACHTYPE: ${MACHTYPE}
-echo nbits: ${nbits}
-echo proc_family: ${proc_family}
-echo target: ${target}
-
 if [[ ${target} == *-mingw* ]]; then
-    #TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/H5timer.c.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
@@ -37,7 +30,7 @@ fi
 # HDF5 assumes that some MPI constants are C constants, but they are not
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi.patch
 
-# TODO:
+# Idea:
 # - provide the registered filter plugins (BZIP2, JPEG, LZF, BLOSC, MAFISC, LZ4, Bitshuffle, and ZFP)
 
 # Building via `configure` instead of via `cmake` has one advantage:
@@ -593,6 +586,10 @@ dependencies = [
     Dependency("libaec_jll"),   # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
+
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the shared libraries.
+# (MPItrampoline will skip its automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 5 reports an ICE on i686-linux-gnu-libgfortran3-cxx11-mpi+mpich

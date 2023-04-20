@@ -3,6 +3,7 @@
 set -euxo pipefail
 
 cpuarchs="amd64 arm32v5 arm32v7 arm64v8 i386 mips64le ppc64le s390x"
+# cpuarchs="riscv64"
 
 for cpuarch in $cpuarchs; do
     tag="generate-h5tinit:debian-$cpuarch"
