@@ -339,7 +339,8 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
+
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
