@@ -1,6 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: arch, os, tags
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
 version = v"1.0.13230"#.7
@@ -35,47 +39,59 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
-# the build system uses git
-export HOME=$(pwd)
-git config --global user.name "Binary Builder"
-git config --global user.email "your@email.com"
+function get_script(; debug::Bool)
+    script = raw"""
+        # the build system uses git
+        export HOME=$(pwd)
+        git config --global user.name "Binary Builder"
+        git config --global user.email "your@email.com"
 
-# move everything in places where it will get detected by the IGC build system
-mv opencl-clang llvm-project/llvm/projects/opencl-clang
-mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
+        # move everything in places where it will get detected by the IGC build system
+        mv opencl-clang llvm-project/llvm/projects/opencl-clang
+        mv SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv
 
-# Work around compilation failures
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
-atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
-# https://reviews.llvm.org/D64388
-sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
+        # Work around compilation failures
+        # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678
+        atomic_patch -p0 patches/gcc-constexpr_assert_bug.patch
+        # https://reviews.llvm.org/D64388
+        sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 
-cd intel-graphics-compiler
-install_license LICENSE.md
+        cd intel-graphics-compiler
+        install_license LICENSE.md
 
-CMAKE_FLAGS=()
+        CMAKE_FLAGS=()
 
-# Release build for best performance
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+        # Select a build type
+        CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=""" * (debug ? "Debug" : "Release") * raw""")
 
-# Install things into $prefix
-CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+        # Install things into $prefix
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
-# NOTE: igc currently can't cross compile due to a variety of issues:
-# - https://github.com/intel/intel-graphics-compiler/issues/131
-# - https://github.com/intel/opencl-clang/issues/91
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
+        # NOTE: igc currently can't cross compile due to a variety of issues:
+        # - https://github.com/intel/intel-graphics-compiler/issues/131
+        # - https://github.com/intel/opencl-clang/issues/91
+        CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
 
-# Explicitly use our cmake toolchain file
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+        # Explicitly use our cmake toolchain file
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
-# Silence developer warnings
-CMAKE_FLAGS+=(-Wno-dev)
+        # Silence developer warnings
+        CMAKE_FLAGS+=(-Wno-dev)
 
-cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j ${nproc} install
-"""
+        cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+        ninja -C build -j ${nproc} install
+
+        # we (currently) don't care about OpenCL support, so get rid of it
+        rm -rf ${libdir}/libigdfcl.so*
+        rm -rf ${libdir}/libopencl-clang.so*
+
+        # IGC's build system is stupid and always generated debug symbols,
+        # assuming you run `strip` afterwards
+        if """ * (debug ? "false" : "true") * raw"""; then
+            find ${libdir} ${bindir} -type f -exec strip -s {} \;
+        fi
+        """
+end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -90,15 +106,44 @@ products = [
     ExecutableProduct(["iga32", "iga64"], :iga),
     LibraryProduct(["libiga32", "libiga64"], :libiga),
     LibraryProduct("libigc", :libigc),
-    LibraryProduct("libigdfcl", :libigdfcl),
-    # opencl-clang
-    LibraryProduct("libopencl-clang", :libopencl_clang),
+    # OpenCL support
+    #LibraryProduct("libigdfcl", :libigdfcl),
+    #LibraryProduct("libopencl-clang", :libopencl_clang),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[]
 
-# IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8", lock_microarchitecture=false)
+augment_platform_block = raw"""
+    using Base.BinaryPlatforms
 
+    # Can't use Preferences since we might be running this very early with a non-existing Manifest
+    libigc_jll_uuid = Base.UUID("94295238-5935-5bd7-bb0f-b00942e9bdd5")
+    const preferences = Base.get_preferences(libigc_jll_uuid)
+    Base.record_compiletime_preference(libigc_jll_uuid, "debug")
+
+    function augment_platform!(platform::Platform)
+        debug = tryparse(Bool, get(preferences, "debug", "false"))
+        if debug === nothing
+            @error "Invalid preference debug=$(get(preferences, "debug", "false"))"
+        elseif !haskey(platform, "debug")
+            platform["debug"] = string(debug)
+        end
+        return platform
+    end"""
+
+for platform in platforms, debug in (false, true)
+    # XXX: make this more convenient in Base
+    tag_kwargs = Dict(Symbol(key) => value for (key, value) in tags(platform))
+    tag_kwargs[:debug] = string(debug)
+    delete!(tag_kwargs, :os)
+    delete!(tag_kwargs, :arch)
+    augmented_platform = Platform(arch(platform), os(platform); tag_kwargs...)
+    should_build_platform(triplet(augmented_platform)) || continue
+
+    # IGC only supports Ubuntu 18.04+, which uses GCC 7.4.
+    # GCC <9 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86678 (for debug)
+    build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
+                   products, dependencies; preferred_gcc_version=v"9", augment_platform_block,
+                   lock_microarchitecture=false)
+end
