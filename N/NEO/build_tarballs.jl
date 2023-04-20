@@ -118,5 +118,6 @@ for platform in platforms, debug in (false, true)
     # GCC 4 has constexpr incompatibilities
     # GCC 7 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79929
     build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
-                   products, dependencies; preferred_gcc_version=v"8", augment_platform_block)
+                   products, dependencies; preferred_gcc_version=v"8", julia_compat = "1.6",
+                   augment_platform_block)
 end
