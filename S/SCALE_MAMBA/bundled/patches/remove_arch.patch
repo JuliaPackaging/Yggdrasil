@@ -1,0 +1,12 @@
+diff --git a/src/Makefile b/src/Makefile
+index b380381..1e1256d 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -2,7 +2,6 @@ include ../CONFIG.mine
+ 
+ CC = g++
+ 
+-ARCH = -mtune=native -maes -mpclmul -msse4.1 -mavx -mbmi2 -madx -march=core2
+ CFLAGS = -Wall -std=c++14 -pedantic -Wextra -pthread -I$(ROOT)/src $(ARCH) $(FLAGS) $(OPT) -I$(OSSL)/include
+ CPPFLAGS = $(CFLAGS)
+ LDLIBS = -L/$(OSSL)/lib -lm -lssl -lcrypto -lmpirxx -lmpir -lcryptopp $(LDFLAGS)
