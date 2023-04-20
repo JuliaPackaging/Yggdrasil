@@ -1,6 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: arch, os
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
 version = v"22.53.25593"#.11
@@ -12,49 +16,50 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
-cd compute-runtime
-install_license LICENSE.md
+function get_script(; debug::Bool)
+    raw"""
+        cd compute-runtime
+        install_license LICENSE.md
 
-# work around compilation failures
-## already defined in gmmlib
-sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
-## extend LD_LIBRARY_PATH, don't overwrite it
-find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec \
-    sed -i 's/LD_LIBRARY_PATH=/LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/g' '{}' \;
-## NO
-sed -i '/-Werror/d' CMakeLists.txt
+        # work around compilation failures
+        ## already defined in gmmlib
+        sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
+        ## extend LD_LIBRARY_PATH, don't overwrite it
+        find . \( -name CMakeLists.txt -or -name '*.cmake' \) -exec \
+            sed -i 's/LD_LIBRARY_PATH=/LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}:/g' '{}' \;
+        ## NO
+        sed -i '/-Werror/d' CMakeLists.txt
 
-CMAKE_FLAGS=()
+        CMAKE_FLAGS=()
 
-# Release build for best performance
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+        # Release build for best performance
+        CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=""" * (debug ? "Debug" : "Release") * raw""")
 
-# Install things into $prefix
-CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+        # Install things into $prefix
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
-# NOTE: NEO currently can't cross compile because of its IGC dependency
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
+        # NOTE: NEO currently can't cross compile because of its IGC dependency
+        CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=OFF)
 
-# Explicitly use our cmake toolchain file
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+        # Explicitly use our cmake toolchain file
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
-# Don't run tests
-CMAKE_FLAGS+=(-DSKIP_UNIT_TESTS:Bool=true)
+        # Don't run tests
+        CMAKE_FLAGS+=(-DSKIP_UNIT_TESTS:Bool=true)
 
-# we don't care about cl_intel_va_api_media_sharing
-CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
+        # we don't care about cl_intel_va_api_media_sharing
+        CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
 
-# enable support for the DG1
-CMAKE_FLAGS+=(-DSUPPORT_DG1:Bool=true)
+        # enable support for the DG1
+        CMAKE_FLAGS+=(-DSUPPORT_DG1:Bool=true)
 
-# libigc installs libraries and pkgconfig rules in lib64, so look for them there.
-# FIXME: shouldn't BinaryBuilder do this?
-export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
+        # libigc installs libraries and pkgconfig rules in lib64, so look for them there.
+        # FIXME: shouldn't BinaryBuilder do this?
+        export PKG_CONFIG_PATH=${prefix}/lib64/pkgconfig:${prefix}/lib/pkgconfig
 
-cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j ${nproc} install
-"""
+        cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+        ninja -C build -j ${nproc} install"""
+end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -83,7 +88,30 @@ dependencies = [
     Dependency("oneAPI_Level_Zero_Headers_jll", v"1.5.8"; compat="1.5.8"),
 ]
 
-# GCC 4 has constexpr incompatibilities
-# GCC 7 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79929
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8")
+augment_platform_block = raw"""
+    using Base.BinaryPlatforms
+
+    # Can't use Preferences since we might be running this very early with a non-existing Manifest
+    NEO_jll_uuid = Base.UUID("700fe977-ac61-5f37-bbc8-c6c4b2b6a9fd")
+    const preferences = Base.get_preferences(NEO_jll_uuid)
+    Base.record_compiletime_preference(NEO_jll_uuid, "debug")
+
+    function augment_platform!(platform::Platform)
+        debug = tryparse(Bool, get(preferences, "debug", "false"))
+        if debug === nothing
+            @error "Invalid preference debug=$(get(preferences, "debug", "false"))"
+        elseif !haskey(platform, "debug")
+            platform["debug"] = string(debug)
+        end
+        return platform
+    end"""
+
+for platform in platforms, debug in (false, true)
+    augmented_platform = Platform(arch(platform), os(platform); debug)
+    should_build_platform(triplet(augmented_platform)) || continue
+
+    # GCC 4 has constexpr incompatibilities
+    # GCC 7 triggers: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79929
+    build_tarballs(ARGS, name, version, sources, get_script(; debug), [augmented_platform],
+                   products, dependencies; preferred_gcc_version=v"8", augment_platform_block)
+end
