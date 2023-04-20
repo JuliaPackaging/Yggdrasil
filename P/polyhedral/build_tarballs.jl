@@ -5,8 +5,14 @@ using BinaryBuilder, Pkg
 # Collection of sources required to build the source code
 # Here GitSource does not allow for some clone arguments to be passed. E.g. we cannot pass
 # --recursive
+#
+# CODE using the mpq_rational from boost
+#sources = [
+#        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "2c4c2f1d891c6a2ccfce6716c17bbf03263e671b"),
+#]
+# CODE using the mpq_class
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "835b84851d143dc896233aa5f046ceeda48bac18"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "c8efceb778f54c3082a07d2e89eb60d0ae7990ce"),
 ]
 name = "POLYHEDRAL"
 version = v"0.1" # <-- This is the first version of it but this is rather arbitrary
@@ -41,7 +47,8 @@ cp sv_exact $WORKSPACE/destdir/bin
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+platforms = supported_platforms(; experimental=true)
+#platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -57,7 +64,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("Eigen_jll"),
     Dependency("nauty_jll"; compat = "~2.6.13"),
     Dependency("boost_jll", compat = "=1.76.0"),
