@@ -32,19 +32,20 @@ export NAUTY_LINK="-L$WORKSPACE/destdir/lib -lnauty"
 make
 
 cp GRP_ListMat_Subset_EXT_Automorphism $bindir
-cp GRP_ListMat_Subset_EXT_Isomorphism $WORKSPACE/destdir/bin
-cp GRP_ListMat_Subset_EXT_Invariant $WORKSPACE/destdir/bin
-cp IndefiniteReduction $WORKSPACE/destdir/bin
-cp POLY_cdd_lp2 $WORKSPACE/destdir/bin
-cp POLY_dual_description_group $WORKSPACE/destdir/bin
-cp POLY_sampling_facets $WORKSPACE/destdir/bin
-cp sv_exact $WORKSPACE/destdir/bin
+cp GRP_ListMat_Subset_EXT_Isomorphism $bindir
+cp GRP_ListMat_Subset_EXT_Invariant $bindir
+cp IndefiniteReduction $bindir
+cp POLY_cdd_lp2 $bindir
+cp POLY_dual_description_group $bindir
+cp POLY_sampling_facets $bindir
+cp sv_exact $bindir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # This is needed to avoid some errors GCC4 vs GCC5 at compilation.
 platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
