@@ -1,14 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.4"  # fake version number
+version = v"0.0.6"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
 
 # TODO
-# - i686, x86_64, aarch64 build
-#   missing architectures: powerpc64le, armv6l, arm7vl
+# - missing architectures: powerpc64le, armv6l, arm7vl
 
 # versions: fake_version to github_version mapping
 #
@@ -17,24 +16,27 @@ version = v"0.0.4"  # fake version number
 # 0.0.2           21.03.2023       master-8cf9f34    https://github.com/ggerganov/llama.cpp/releases/tag/master-8cf9f34
 # 0.0.3           22.03.2023       master-d5850c5    https://github.com/ggerganov/llama.cpp/releases/tag/master-d5850c5
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
+# 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
+# 0.0.6           03.04.2023       master-437e778    https://github.com/ggerganov/llama.cpp/releases/tag/master-437e778
 
 sources = [
-    # fake version = 0.0.4
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "19726169b379bebc96189673a19b89ab1d307659"),
+              "437e77855a54e69c86fe03bc501f63d9a3fddb0e"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/llama.cpp*
 
+# remove -march=native from cmake files
 atomic_patch -p1 ../patches/cmake-remove-mcpu-native.patch
-if [[ "${target}" == *-w64-mingw32* ]]; then
-    atomic_patch -p1 ../patches/windows-examples-fix-missing-ggml-link.patch
-fi
+# fix compilation (include Windows.h) on w64-mingw32
+atomic_patch -p1 ../patches/fix-mingw32-windows-include.patch
 
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
+    # otherwise we have undefined reference to `clock_gettime' when
+    # linking the `main' example program
     EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
 fi
 
