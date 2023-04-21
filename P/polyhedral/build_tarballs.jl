@@ -10,7 +10,7 @@ using BinaryBuilder, Pkg
 sources = [
         GitSource("https://github.com/MathieuDutSik/polyhedral_common", "ed8cbe285fec0ac24ccd6a1e9d3371e9b14a3927"),
 ]
-name = "POLYHEDRAL"
+name = "polyhedral"
 version = v"0.1" # <-- This is the first version of it but this is rather arbitrary
 
 # Bash recipe for building across all platforms
