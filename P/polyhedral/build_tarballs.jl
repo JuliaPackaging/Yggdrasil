@@ -21,13 +21,13 @@ cd src_export_oscar
 export GMP_INCDIR=$includedir
 export GMP_C_LINK="-L$libdir -lgmp"
 
-export BOOST_INCDIR=$WORKSPACE/destdir/include
-export BOOST_LINK="-L$WORKSPACE/destdir/lib -lboost_serialization"
+export BOOST_INCDIR=$includedir
+export BOOST_LINK="-L$libdir -lboost_serialization"
 
-export EIGEN_PATH=$WORKSPACE/destdir/include/eigen3
+export EIGEN_PATH=$includedir/eigen3
 
-export NAUTY_INCLUDE="-I$WORKSPACE/destdir/include/nauty"
-export NAUTY_LINK="-L$WORKSPACE/destdir/lib -lnauty"
+export NAUTY_INCLUDE="-I$includedir/nauty"
+export NAUTY_LINK="-L$libdir -lnauty"
 
 make
 
