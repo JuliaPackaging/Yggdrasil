@@ -10,15 +10,21 @@ version = v"1.1.2"
 
 # Collection of sources required to complete build
 sources = [
+    #ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version)_dirty.tar.gz",
+    #              "63c1f157a833607b14bbad2c65909fa7e3bca20a94ad8a42ccb2abc8ed428553"),
+
     ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version)_dirty.tar.gz",
-                  "63c1f157a833607b14bbad2c65909fa7e3bca20a94ad8a42ccb2abc8ed428553"),
+                  "e09673e7b69aed3e1cdf0a2103ce1ef83981476c48704d77ac6126ff8573050d"),
+
+    # ArchiveSource("file:///home/mark_jo/codes/t8code/t8code_v1.1.2_dirty.tar.gz",
+    #              "e09673e7b69aed3e1cdf0a2103ce1ef83981476c48704d77ac6126ff8573050d"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd t8code/
+cd main/
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
@@ -63,6 +69,15 @@ fi
   --with-p4est="${prefix}" \
   ${mpiopts}
 
+# # Run configure
+# ./configure \
+#   --prefix="${prefix}" \
+#   --build=${MACHTYPE} \
+#   --host=${target} \
+#   --disable-static \
+#   --without-blas \
+#   ${mpiopts}
+
 # Build & install
 make -j${nproc} "${FLAGS[@]}"
 make install
@@ -97,8 +112,8 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 # Note: the additional, non-canonical library names are required for the Windows build
 products = [
     LibraryProduct(["libt8", "libt8-1-1-0-207-d6a74"], :libt8),
-    LibraryProduct(["libsc", "libsc-2-8-1-5-0b70"], :libsc),
-    LibraryProduct(["libp4est", "libp4est-2-2-259-ec120"], :libp4est)
+    # LibraryProduct(["libsc", "libsc-2-8-1-5-0b70"], :libsc),
+    # LibraryProduct(["libp4est", "libp4est-2-2-259-ec120"], :libp4est)
 ]
 
 # Dependencies that must be installed before this package can be built
