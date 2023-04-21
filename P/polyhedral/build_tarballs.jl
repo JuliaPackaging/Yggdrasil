@@ -7,12 +7,8 @@ using BinaryBuilder, Pkg
 # --recursive
 #
 # CODE using the mpq_rational from boost
-#sources = [
-#        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "2c4c2f1d891c6a2ccfce6716c17bbf03263e671b"),
-#]
-# CODE using the mpq_class
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "c8efceb778f54c3082a07d2e89eb60d0ae7990ce"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "fc67b3c5fb5f831c2eaa150a9cac32cbefbe3bec"),
 ]
 name = "POLYHEDRAL"
 version = v"0.1" # <-- This is the first version of it but this is rather arbitrary
@@ -23,7 +19,7 @@ cd polyhedral_common
 git submodule update --init --recursive
 cd src_export_oscar
 export GMP_INCDIR=$WORKSPACE/destdir/include
-export GMP_CXX_LINK="-L$WORKSPACE/destdir/lib -lgmpxx -lgmp"
+export GMP_C_LINK="-L$WORKSPACE/destdir/lib -lgmp"
 
 export BOOST_INCDIR=$WORKSPACE/destdir/include
 export BOOST_LINK="-L$WORKSPACE/destdir/lib -lboost_serialization"
@@ -71,5 +67,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"12")
 
