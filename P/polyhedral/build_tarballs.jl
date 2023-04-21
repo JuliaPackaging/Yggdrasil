@@ -18,8 +18,8 @@ script = raw"""
 cd polyhedral_common
 git submodule update --init --recursive
 cd src_export_oscar
-export GMP_INCDIR=$WORKSPACE/destdir/include
-export GMP_C_LINK="-L$WORKSPACE/destdir/lib -lgmp"
+export GMP_INCDIR=$includedir
+export GMP_C_LINK="-L$libdir -lgmp"
 
 export BOOST_INCDIR=$WORKSPACE/destdir/include
 export BOOST_LINK="-L$WORKSPACE/destdir/lib -lboost_serialization"
