@@ -31,7 +31,7 @@ export NAUTY_LINK="-L$WORKSPACE/destdir/lib -lnauty"
 
 make
 
-cp GRP_ListMat_Subset_EXT_Automorphism $WORKSPACE/destdir/bin
+cp GRP_ListMat_Subset_EXT_Automorphism $bindir
 cp GRP_ListMat_Subset_EXT_Isomorphism $WORKSPACE/destdir/bin
 cp GRP_ListMat_Subset_EXT_Invariant $WORKSPACE/destdir/bin
 cp IndefiniteReduction $WORKSPACE/destdir/bin
