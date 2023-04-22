@@ -27,7 +27,7 @@ cd ${WORKSPACE}/srcdir/
 cp -r ${target}/*/* ${prefix}/.
 cd ${prefix}
 if [[ "${target}" == *-mingw* ]]; then
-    for file in node.exe npm npm.cmd npx npx.cmd node_modules; do
+    for file in node.exe npm npm.cmd npx npx.cmd; do
         install -Dvm 0755 "${file}" "${bindir}/${file}"
     done
     mv node_modules "${bindir}/."
