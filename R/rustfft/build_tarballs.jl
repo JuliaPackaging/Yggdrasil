@@ -46,7 +46,7 @@ platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # Successfully building for i686 Windows requires raw-dylib linkage, which is currently only
 # supported for 64-bits Windows targets, or that libjulia.dll.a is available.
-is_excluded(p) = !(Sys.iswindows(p) && nbits(p) != 32)
+is_excluded(p) = Sys.iswindows(p) && nbits(p) == 32
 filter!(!is_excluded, platforms)
 
 # The products that we will ensure are always built
