@@ -81,14 +81,15 @@ function get_script(; debug::Bool)
         cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
         ninja -C build -j ${nproc} install
 
-        # we (currently) don't care about OpenCL support, so get rid of it
-        rm -rf ${libdir}/libigdfcl.so*
-        rm -rf ${libdir}/libopencl-clang.so*
-
-        # IGC's build system is stupid and always generated debug symbols,
+        # IGC's build system is stupid and always generates debug symbols,
         # assuming you run `strip` afterwards
         if """ * (debug ? "false" : "true") * raw"""; then
             find ${libdir} ${bindir} -type f -exec strip -s {} \;
+        else
+            # to reduce the JLL size, always remove debug symbols of uninteresting files
+            strip -s ${libdir}/libigdfcl.so*
+            strip -s ${libdir}/libopencl-clang.so*
+            strip -s ${bindir}/lld
         fi
         """
 end
@@ -107,8 +108,10 @@ products = [
     LibraryProduct(["libiga32", "libiga64"], :libiga),
     LibraryProduct("libigc", :libigc),
     # OpenCL support
-    #LibraryProduct("libigdfcl", :libigdfcl),
-    #LibraryProduct("libopencl-clang", :libopencl_clang),
+    # XXX: put this in a separate JLL once we have JuliaPackaging/BinaryBuilder.jl#778
+    #      (can't remove OpenCL support as it's used during build of NEO_jll)
+    LibraryProduct("libigdfcl", :libigdfcl),
+    LibraryProduct("libopencl-clang", :libopencl_clang),
 ]
 
 # Dependencies that must be installed before this package can be built
