@@ -33,7 +33,7 @@ int main(int argc, char**argv)
     return 0;
 }
 EOF
-${CC_BUILD} -I${WORKSPACE}/destdir/include -Wall version.c -o julia_version
+${CC_BUILD} -I${includedir} -Wall version.c -o julia_version
 julia_version=$(./julia_version)
 
 cargo build --features yggdrasil,${julia_version} --release --verbose
