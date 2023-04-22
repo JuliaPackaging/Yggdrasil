@@ -27,10 +27,10 @@ cd ${WORKSPACE}/srcdir/
 cp -r ${target}/*/* ${prefix}/.
 cd ${prefix}
 if [[ "${target}" == *-mingw* ]]; then
-    mkdir bin
-    chmod +x {node.exe,npm,npm.cmd,npx,npx.cmd}
-    mv {node.exe,npm,npm.cmd,npx,npx.cmd} bin
-    mv node_modules bin
+    for file in node.exe npm npm.cmd npx npx.cmd node_modules; do
+        install -Dvm 0755 "${file}" "${bindir}/${file}"
+    done
+    mv node_modules "${bindir}/."
 fi
 install_license LICENSE
 """
