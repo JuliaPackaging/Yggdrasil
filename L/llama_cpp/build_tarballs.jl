@@ -1,12 +1,18 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.6"  # fake version number
+version = v"0.0.7"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
 
 # NOTES
+# - _mm_loadu_si64 needs at least gcc-11.3.0
+#   https://stackoverflow.com/questions/72837929/mm-loadu-si32-not-recognized-by-gcc-on-ubuntu
+#   gcc-11.1.0 will silently produce wrong code, so we have to use gcc-12
+#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99754
+# - windows and mmap working?
+#   warning: You are building for pre-Windows 8; prefetch not supported
 # - missing architectures: powerpc64le, armv6l, arm7vl
 
 # versions: fake_version to github_version mapping
@@ -18,11 +24,12 @@ version = v"0.0.6"  # fake version number
 # 0.0.4           25.03.2023       master-1972616    https://github.com/ggerganov/llama.cpp/releases/tag/master-1972616
 # 0.0.5           30.03.2023       master-3bcc129    https://github.com/ggerganov/llama.cpp/releases/tag/master-3bcc129
 # 0.0.6           03.04.2023       master-437e778    https://github.com/ggerganov/llama.cpp/releases/tag/master-437e778
-# 0.0.7           16.04.2023       master-47f61aa    https://github.com/ggerganov/llama.cpp/releases/tag/master-47f61aa
+# 0.0.6+1         16.04.2023       master-47f61aa    https://github.com/ggerganov/llama.cpp/releases/tag/master-47f61aa
+# 0.0.7           23.04.2023       master-ec9cdb6    https://github.com/ggerganov/llama.cpp/releases/tag/master-ec9cdb6
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "47f61aaa5f76d04286792e2fbd0c95b659ab2af0"),
+              "ec9cdb6752dd96b3cc74d90ad1adeba5b4fa2b0e"),
     DirectorySource("./bundled"),
 ]
 
@@ -56,7 +63,7 @@ make -j${nproc}
 # make install
 
 # executables
-for prg in embedding main perplexity quantize; do
+for prg in embedding main perplexity q8dot quantize quantize-stats vdot; do
     install -Dvm 755 "./bin/${prg}${exeext}" "${bindir}/${prg}${exeext}"
 done
 
@@ -85,7 +92,10 @@ products = [
     ExecutableProduct("embedding", :embedding),
     ExecutableProduct("main", :main),
     ExecutableProduct("perplexity", :perplexity),
+    ExecutableProduct("q8dot", :q8dot),
     ExecutableProduct("quantize", :quantize),
+    ExecutableProduct("quantize-stats", :quantize_stats),
+    ExecutableProduct("vdot", :vdot),
     LibraryProduct("libllama", :libllama),
 ]
 
@@ -93,4 +103,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"8.1.0")
+               julia_compat="1.6", preferred_gcc_version = v"12")
