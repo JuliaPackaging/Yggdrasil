@@ -7,13 +7,13 @@ version = v"0.2.0" # Rebuilding louvain_jll to include macOS aarch64
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KrainskiL/louvain.git", "9e3e081f054e531e32af38fe71d2991f954ea347")
+    GitSource("https://github.com/KrainskiL/louvain.git", "3e9efdb930efc4a3715d0978ea08ed52172f7231")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/louvain/
-make -j${nproc} CXX="${CXX}"
+make -j${nproc}
 for exe in hierarchy louvain matrix convert; do
     install -Dvm 755 "${exe}" "${bindir}/${exe}${exeext}"
 done
