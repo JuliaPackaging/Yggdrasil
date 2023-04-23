@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/louvain/
-make -j${nproc}
+make -j${nproc} CXX="${CXX}"
 for exe in hierarchy louvain matrix convert; do
     install -Dvm 755 "${exe}" "${bindir}/${exe}${exeext}"
 done
