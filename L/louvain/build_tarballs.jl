@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "louvain"
-version = v"0.1.0"
+version = v"0.2.0" # Rebuilding louvain_jll to include macOS aarch64
 
 # Collection of sources required to complete build
 sources = [
