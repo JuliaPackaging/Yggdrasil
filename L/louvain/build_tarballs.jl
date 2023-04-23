@@ -14,9 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/louvain/
 make -j${nproc}
-mkdir -p ${bindir}
 for exe in hierarchy louvain matrix convert; do
-    mv "${exe}" "${bindir}/${exe}${exeext}"
+    install -Dvm 755 "${exe}" "${bindir}/${exe}${exeext}"
 done
 install_license *gpl*.txt
 """
