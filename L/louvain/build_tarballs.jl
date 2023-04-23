@@ -3,20 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "louvain"
-version = v"0.1.0"
+version = v"0.2.0" # Rebuilding louvain_jll to include macOS aarch64
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KrainskiL/louvain.git", "9e3e081f054e531e32af38fe71d2991f954ea347")
+    GitSource("https://github.com/KrainskiL/louvain.git", "3e9efdb930efc4a3715d0978ea08ed52172f7231")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/louvain/
 make -j${nproc}
-mkdir -p ${bindir}
 for exe in hierarchy louvain matrix convert; do
-    mv "${exe}" "${bindir}/${exe}${exeext}"
+    install -Dvm 755 "${exe}" "${bindir}/${exe}${exeext}"
 done
 install_license *gpl*.txt
 """
@@ -37,4 +36,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
