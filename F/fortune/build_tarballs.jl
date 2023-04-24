@@ -14,10 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 cd gortune/
+mkdir -p ${bindir}
 go build -o ${bindir}
 """
 
