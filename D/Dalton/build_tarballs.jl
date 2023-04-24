@@ -16,6 +16,7 @@ git submodule update --init --recursive
 # remove bad flags
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/rm_bad_flags.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no_lseek64_freebsd.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/use_target_processor.patch"
 
 ./setup --blas="${libdir}/libopenblas.${dlext}" --lapack="${libdir}/liblapack.${dlext}" \
     --prefix="${prefix}" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
