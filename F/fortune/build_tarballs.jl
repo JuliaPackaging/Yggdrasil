@@ -7,8 +7,7 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/blmayer/gortune.git", "59f27016f1905b381c3f3c748860dadb56aa9ca3"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/blmayer/gortune.git", "59f27016f1905b381c3f3c748860dadb56aa9ca3")
 ]
 
 # Bash recipe for building across all platforms
