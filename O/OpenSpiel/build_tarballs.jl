@@ -40,15 +40,6 @@ cd abseil-cpp
 atomic_patch -p1 ../abseil.patch
 cd ../
 
-macosflags=
-case $target in
-  *apple-darwin*)
-    macosflags="-DCMAKE_CXX_COMPILER_ID=AppleClang"
-    macosflags="$macosflags -DCMAKE_CXX_COMPILER_VERSION=10.0.0"
-    macosflags="$macosflags -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
-    ;;
-esac
-
 mv abseil-cpp open_spiel/open_spiel/abseil-cpp
 mv dds open_spiel/open_spiel/games/bridge/double_dummy_solver
 mv hanabi-learning-environment open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
@@ -67,8 +58,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
-    ../open_spiel/ \
-    $macosflags
+    ../open_spiel/
       
 
 make -j${nproc}
