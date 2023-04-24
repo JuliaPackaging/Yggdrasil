@@ -14,11 +14,11 @@ version = v"1.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/deepmind/open_spiel/archive/v1.2.tar.gz", "1f329c04a52aa6ff7812cb1aacb57fc08d9d85964498e57196c756553dd4544e"),
-    ArchiveSource("https://github.com/findmyway/dds/archive/v0.1.1.tar.gz", "fd13ee77feb5b5c3dfcc3333a0523266beb2a3d27715703cf508313af25306e5"),
-    ArchiveSource("https://github.com/abseil/abseil-cpp/archive/20230125.2.tar.gz", "9a2b5752d7bfade0bdeee2701de17c9480620f8b237e1964c1b9967c75374906"),
-    ArchiveSource("https://github.com/findmyway/hanabi-learning-environment/archive/v0.1.0.tar.gz", "6126936fd13a95f8cadeacaa69dfb38a960eaf3bd588aacc8893a6e07e4791a3"),
-    ArchiveSource("https://github.com/findmyway/project_acpc_server/archive/v0.1.0.tar.gz", "e29f969dd62ba354b7019cae3f7f1dbfbd9a744687ea4a8f7494c2bb1ee87382"),
+    GitSource("https://github.com/deepmind/open_spiel.git", "9e4559bd1d794aa0b6476013464b58329d8f2b51"), # v1.2.0
+    GitSource("https://github.com/findmyway/dds.git", "091ea94358a4016d4fb6069dea5c452cdc98d0bd"), # v0.1.1
+    GitSource("https://github.com/abseil/abseil-cpp.git", "b971ac5250ea8de900eae9f95e06548d14cd95fe"), # 20230125.2
+    GitSource("https://github.com/findmyway/hanabi-learning-environment.git", "b31c973e3930804b9e27d1a20874e08d8643e533"), # v0.1.0
+    GitSource("https://github.com/findmyway/project_acpc_server.git", "de5fb88ac597278c96875d3c163ce71cdfe7ea79"), # v0.1.0
 ]
 
 # Bash recipe for building across all platforms
