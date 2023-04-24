@@ -37,25 +37,25 @@ export OPEN_SPIEL_BUILD_WITH_JULIA=ON \
     OPEN_SPIEL_BUILD_WITH_ACPC=OFF
 
 cmake \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
-    ../open_spiel/
-    
+    ../open_spiel/ \
+    $macosflags
+      
+
 make -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 """
 
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc", julia_version=v)
-    for v in julia_versions
-]
-platforms = expand_cxxstring_abis(platforms)
-
+include("../../L/libjulia/common.jl")
+platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
 
 # The products that we will ensure are always built
 products = [
@@ -64,8 +64,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; platforms=platforms),
-    BuildDependency("libjulia_jll"; platforms=platforms)
+    Dependency("libcxxwrap_julia_jll"),
+    BuildDependency("libjulia_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
