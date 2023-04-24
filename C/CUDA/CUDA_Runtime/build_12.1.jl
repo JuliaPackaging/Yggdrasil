@@ -1,4 +1,4 @@
-dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"12.1.0"))]
+dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"12.1.1"))]
 
 script = raw"""
 # First, find (true) CUDA toolkit directory in ~/.artifacts somewhere
@@ -145,7 +145,7 @@ function get_products(platform)
         LibraryProduct(["libcusolver", "cusolver64_11"], :libcusolver),
         LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
         LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-        LibraryProduct(["libcupti", "cupti64_2023.1.0"], :libcupti),
+        LibraryProduct(["libcupti", "cupti64_2023.1.1"], :libcupti),
         LibraryProduct(["libnvperf_host", "nvperf_host"], :libnvperf_host),
         LibraryProduct(["libnvperf_target", "nvperf_target"], :libnvperf_target),
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
