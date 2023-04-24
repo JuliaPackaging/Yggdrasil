@@ -6,7 +6,7 @@ version = v"2020.1"
 
 # Collection of sources required to build imagemagick
 sources = [
-    GitSource("https://gitlab.com/dalton/dalton/", "9d7c5e435b75a9695d5ac8714121d12e6486149f")
+    GitSource("https://gitlab.com/dalton/dalton/", "9d7c5e435b75a9695d5ac8714121d12e6486149f"),
     DirectorySource("./bundled"),
 ]
 
