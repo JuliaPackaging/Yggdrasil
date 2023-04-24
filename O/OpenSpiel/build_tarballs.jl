@@ -24,21 +24,25 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-mv open_spiel-* open_spiel
-mv abseil-cpp-* open_spiel/open_spiel/abseil-cpp
-mv dds-* open_spiel/open_spiel/games/bridge/double_dummy_solver
-mv hanabi-learning-environment-* open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
-mv project_acpc_server-* open_spiel/open_spiel/games/universal_poker/acpc
+mv abseil-cpp open_spiel/open_spiel/abseil-cpp
+mv dds open_spiel/open_spiel/games/bridge/double_dummy_solver
+mv hanabi-learning-environment open_spiel/open_spiel/games/hanabi/hanabi-learning-environment
+mv project_acpc_server open_spiel/open_spiel/games/universal_poker/acpc
 
 mkdir open_spiel/build
 cd open_spiel/build
-export OPEN_SPIEL_BUILD_WITH_JULIA=ON OPEN_SPIEL_BUILD_WITH_PYTHON=OFF OPEN_SPIEL_BUILD_WITH_HANABI=ON OPEN_SPIEL_BUILD_WITH_ACPC=OFF
+export OPEN_SPIEL_BUILD_WITH_JULIA=ON \
+    OPEN_SPIEL_BUILD_WITH_PYTHON=OFF \
+    OPEN_SPIEL_BUILD_WITH_HANABI=ON \
+    OPEN_SPIEL_BUILD_WITH_ACPC=OFF
+
 cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
     ../open_spiel/
+    
 make -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
