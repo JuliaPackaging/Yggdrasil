@@ -7,32 +7,18 @@ version = v"2020.1"
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://gitlab.com/dalton/dalton/", "9d7c5e435b75a9695d5ac8714121d12e6486149f")
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 git submodule update --init --recursive
 # remove bad flags
-function traverse() {
-    for file in "$1"/*; do
-        if [ ! -d "${file}" ] ; then
-            sed -i -E 's/ \-ffast\-math| \-march=native| \-Ofast| \-mtune=native//g' "${file}"
-        else
-            traverse "${file}"
-        fi
-    done
-}
-traverse .
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/rm_bad_flags.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no_lseek64_freebsd.patch"
 
-# if [[ ${nbits} == 32 ]]; then
-    export LBT_DEFAULT_LIBS="${libdir}/libopenblas.${dlext}"
-    ./setup --blas="${LBT_DEFAULT_LIBS}" --lapack="${libdir}/liblapack.${dlext}" --prefix="${prefix}"
-    # ./setup --blas="${libdir}/libblastrampoline.${dlext}" --lapack="${libdir}/liblapack.${dlext}" --prefix="${prefix}"
-# else
-#     export LBT_DEFAULT_LIBS="${libdir}/libopenblas64_.${dlext}"
-#     ./setup --blas="${LBT_DEFAULT_LIBS}" --lapack="${libdir}/liblapack.${dlext}" --prefix="${prefix}" --int64
-#     # ./setup --blas="${libdir}/libblastrampoline.${dlext}" --lapack="${libdir}/liblapack.${dlext}" --prefix="${prefix}" --int64
-# fi
+./setup --blas="${libdir}/libopenblas.${dlext}" --lapack="${libdir}/liblapack.${dlext}" \
+    --prefix="${prefix}" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cd build
 make -j${nproc}
 make install
@@ -40,8 +26,8 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(supported_platforms())
+filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -53,7 +39,6 @@ products = [
 dependencies = [
     Dependency("LAPACK_jll"),
     Dependency("OpenBLAS32_jll"),
-    # Dependency("libblastrampoline_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
