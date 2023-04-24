@@ -80,7 +80,9 @@ install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = filter(p -> libc(p) != "musl" && os(p) != "windows", platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
