@@ -81,17 +81,17 @@ const gcc_version_sources = Dict{VersionNumber,Vector}(
         ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
                         "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
     ],
-    v"11.1.0" => [
-        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-11.1.0/gcc-11.1.0.tar.xz",
-                        "4c4a6fb8a8396059241c2e674b85b351c26a5d678274007f076957afa1cc9ddf"),
-        ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.0.2.tar.xz",
-                        "1d3be708604eae0e42d578ba93b390c2a145f17743a744d8f3f8c2ad5855a38a"),
-        ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.1.0.tar.gz",
-                        "6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e"),
-        ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.18.tar.bz2",
-                        "6b8b0fd7f81d0a957beb3679c81bbb34ccc7568d5682844d8924424a0dadcb1b"),
-        ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.1.2.tar.xz",
-                        "87b565e89a9a684fe4ebeeddb8399dce2599f9c9049854ca8c0dfbdea0e21912"),
+    v"11.3.0" => [
+        ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-11.3.0/gcc-11.3.0.tar.xz",
+                        "b47cf2818691f5b1e21df2bb38c795fac2cfbd640ede2d0a5e1c89e338a3ac39"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/gmp/gmp-6.2.1.tar.xz",
+                        "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/mpfr/mpfr-4.1.0.tar.xz",
+                        "0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f"),
+        ArchiveSource("https://mirrors.kernel.org/gnu/mpc/mpc-1.2.1.tar.gz",
+                        "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"),
+        ArchiveSource("https://gcc.gnu.org/pub/gcc/infrastructure/isl-0.24.tar.bz2",
+                        "fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0"),
     ],
     v"12.1.0" => [
         ArchiveSource("https://mirrors.kernel.org/gnu/gcc/gcc-12.1.0/gcc-12.1.0.tar.xz",
@@ -159,7 +159,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"8.1.0" => v"2.31",
             v"9.1.0" => v"2.33.1",
             v"10.2.0" => v"2.34",
-            v"11.1.0" => v"2.36",
+            v"11.3.0" => v"2.38",
             v"12.1.0" => v"2.38",
         )
 
