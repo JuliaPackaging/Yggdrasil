@@ -20,13 +20,24 @@ sources = [
     GitSource("https://github.com/findmyway/hanabi-learning-environment.git", "b31c973e3930804b9e27d1a20874e08d8643e533"), # v0.1.0
     GitSource("https://github.com/findmyway/project_acpc_server.git", "de5fb88ac597278c96875d3c163ce71cdfe7ea79"), # v0.1.0
     DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz", "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# This requires macOS 10.14
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
 
+# Apply abseil patch to fix -march issue
 cd abseil-cpp
-atomic_patch -p1 ../patches/abseil.patch
+atomic_patch -p1 ../abseil.patch
 cd ../
 
 macosflags=
