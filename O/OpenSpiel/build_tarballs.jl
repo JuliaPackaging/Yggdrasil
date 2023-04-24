@@ -19,10 +19,24 @@ sources = [
     GitSource("https://github.com/abseil/abseil-cpp.git", "b971ac5250ea8de900eae9f95e06548d14cd95fe"), # 20230125.2
     GitSource("https://github.com/findmyway/hanabi-learning-environment.git", "b31c973e3930804b9e27d1a20874e08d8643e533"), # v0.1.0
     GitSource("https://github.com/findmyway/project_acpc_server.git", "de5fb88ac597278c96875d3c163ce71cdfe7ea79"), # v0.1.0
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+cd abseil-cpp
+atomic_patch -p1 ../patches/abseil.patch
+cd ../
+
+macosflags=
+case $target in
+  *apple-darwin*)
+    macosflags="-DCMAKE_CXX_COMPILER_ID=AppleClang"
+    macosflags="$macosflags -DCMAKE_CXX_COMPILER_VERSION=10.0.0"
+    macosflags="$macosflags -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
+    ;;
+esac
 
 mv abseil-cpp open_spiel/open_spiel/abseil-cpp
 mv dds open_spiel/open_spiel/games/bridge/double_dummy_solver
