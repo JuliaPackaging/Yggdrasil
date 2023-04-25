@@ -17,10 +17,12 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd SZ-*
 
-hdf5_options=
-if test -f "${includedir}/hdf5.h"; then
-    # HDF5 is available, use it
-    hdf5_options='-DBUILD_HDF5_FILTER=ON -DBUILD_NETCDF_READER=ON'
+hdf5_options=()
+# HDF5 is available, use it.
+# The HDF5 SZ filter does not work on Windows, so don't build it there.
+# (The created shared library `libhdf5sz.dll` links to the wrong SO version of HDF5.)
+if test -f "${includedir}/hdf5.h" && [[ $target != *-mingw* ]]; then
+    hdf5_options+=(-DBUILD_HDF5_FILTER=ON -DBUILD_NETCDF_READER=ON)
 else
     # Create an empty library
     echo 'int SZ_no_hdf5;' >hdf5sz.cxx
@@ -41,7 +43,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_PASTRI=ON \
-    ${hdf5_options} \
+    ${hdf5_options[@]} \
     ..
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
 cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
