@@ -29,7 +29,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 jlcgaldir = ifelse(isyggdrasil, rname, ".")
 script = raw"""
 ## configure build
-cmake $jlcgaldir """ * raw"""\
+cmake $jlcgaldir \
   -B /tmp/build \
   `# cmake specific` \
   -DCMAKE_BUILD_TYPE=Release \
