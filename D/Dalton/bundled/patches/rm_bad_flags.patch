@@ -1,0 +1,72 @@
+diff --git a/cmake/compilers/CFlags.cmake b/cmake/compilers/CFlags.cmake
+index b5239e815..54a841f6a 100644
+--- a/cmake/compilers/CFlags.cmake
++++ b/cmake/compilers/CFlags.cmake
+@@ -11,7 +11,7 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
+             )
+     endif()
+     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
+-    set(CMAKE_C_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-unused")
++    set(CMAKE_C_FLAGS_RELEASE "-O3 -funroll-loops -ftree-vectorize -Wno-unused")
+     set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
+     if (ENABLE_CODE_COVERAGE)
+         set (CMAKE_C_FLAGS
+diff --git a/cmake/compilers/CXXFlags.cmake b/cmake/compilers/CXXFlags.cmake
+index 6136dfdeb..4f877929e 100644
+--- a/cmake/compilers/CXXFlags.cmake
++++ b/cmake/compilers/CXXFlags.cmake
+@@ -11,11 +11,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+             )
+     endif()
+     set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3")
+-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-unused")
++    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -funroll-loops -ftree-vectorize -Wno-unused")
+     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -g -pg")
+     if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+         # radovan: vpotdamp code needs this
+-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
++        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+     endif()
+     if (ENABLE_CODE_COVERAGE)
+         set (CMAKE_CXX_FLAGS
+diff --git a/cmake/compilers/FortranFlags.cmake b/cmake/compilers/FortranFlags.cmake
+index 3637b282b..99d870117 100644
+--- a/cmake/compilers/FortranFlags.cmake
++++ b/cmake/compilers/FortranFlags.cmake
+@@ -15,7 +15,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
+             )
+     endif()
+     set(CMAKE_Fortran_FLAGS_DEBUG   "-Og -g -fbacktrace -fcray-pointer -Wuninitialized")
+-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w")
++    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-loops -ftree-vectorize -w")
+     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
+     if(ENABLE_STATIC_LINKING)
+         set(CMAKE_Fortran_FLAGS
+Submodule external/pelib contains modified content
+diff --git a/external/pelib/CMakeLists.txt b/external/pelib/CMakeLists.txt
+index 09f3cf6..7b7c95d 100644
+--- a/external/pelib/CMakeLists.txt
++++ b/external/pelib/CMakeLists.txt
+@@ -110,7 +110,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+     if(ENABLE_COVERAGE)
+         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} --coverage")
+     endif()
+-    set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -Ofast -march=native -mtune=native")
++    set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}")
+     set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -Og -fcheck=all -fbacktrace -Wall -Wextra -Warray-temporaries -Wcharacter-truncation -Wconversion-extra -Wsurprising -Wimplicit-interface -Wimplicit-procedure -Wrealloc-lhs -Wrealloc-lhs-all")
+     if(CMAKE_Fortran_COMPILER_VERSION VERSION_LESS "8.2.0")
+         set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -std=f2008ts")
+Submodule external/qfitlib contains modified content
+diff --git a/external/qfitlib/cmake/FortranFlags.cmake b/external/qfitlib/cmake/FortranFlags.cmake
+index d55cc59..756b1c0 100644
+--- a/external/qfitlib/cmake/FortranFlags.cmake
++++ b/external/qfitlib/cmake/FortranFlags.cmake
+@@ -3,7 +3,7 @@
+ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
+     set(CMAKE_Fortran_FLAGS         "${CMAKE_Fortran_FLAGS} -fbacktrace -cpp")
+     set(CMAKE_Fortran_FLAGS_DEBUG   "${CMAKE_Fortran_FLAGS_DEBUG} -O0 -g")
+-    set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -O3 -ffast-math -funroll-loops -ftree-vectorize")
++    set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -O3 -funroll-loops -ftree-vectorize")
+     if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER 10.0.0)
+         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fallow-argument-mismatch")
+     endif()
