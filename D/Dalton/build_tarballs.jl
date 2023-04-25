@@ -19,21 +19,17 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no_lseek64_freebsd.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/use_target_processor.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fix_OPENDX_freebsd.patch"
 
-apk del make
-apk add make --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-apk update
-apk upgrade
-make --version
+# these platforms are seeing excessive compilation on the last compile step
+if [[ ${bb_full_target} == armv6l-linux-musleabihf-libgfortran3* ]] ||
+   [[ ${bb_full_target} == armv7l-linux-musleabihf-libgfortran3* ]] ||
+   [[ ${bb_full_target} == armv7l-linux-gnueabihf-libgfortran5*  ]] ; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no_unroll_loop.patch"
+fi
 
 ./setup --blas="${libdir}/libopenblas.${dlext}" --lapack="${libdir}/liblapack.${dlext}" \
     --prefix="${prefix}" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cd build
-if [[ ${target} == arm* ]]; then
-    # make
-    make -j${nproc} --shuffle
-else
-    make -j${nproc}
-fi
+make -j${nproc}
 make install
 """
 
