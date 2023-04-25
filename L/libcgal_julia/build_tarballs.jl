@@ -26,10 +26,10 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 script = raw"""
-if [[ "${YGGDRASIL}" == "true" ]]; then
-    jlcgaldir="libcgal-julia"
-else
+if [ -e CMakeLists.txt ]; then
     jlcgaldir="."
+else
+    jlcgaldir="libcgal-julia"
 fi
 
 cmake $jlcgaldir \
