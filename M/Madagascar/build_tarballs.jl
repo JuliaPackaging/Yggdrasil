@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/src
 # install_license
 install_license COPYING.txt
 
-./configure --prefix=${prefix} CC="${CC}" CXX="${CXX}" CAIROPATH=${includedir}/cairo FFMPEGPATH=${includedir}/libavcodec/ AR=$(which ar) CPPPATH=${includedir} LIBPATH=${libdir} BLAS=openblas
+./configure --prefix=${prefix} CC=$(which gcc) CXX=$(which g++) CAIROPATH=${includedir}/cairo FFMPEGPATH=${includedir}/libavcodec/ AR=$(which ar) CPPPATH=${includedir} LIBPATH=${libdir} BLAS=openblas
 
 make -j ${nproc}
 make install
