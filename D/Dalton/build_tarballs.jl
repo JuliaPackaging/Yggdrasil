@@ -19,12 +19,18 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no_lseek64_freebsd.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/use_target_processor.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fix_OPENDX_freebsd.patch"
 
+apk del make
+apk add make --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+apk update
+apk upgrade
+make --version
+
 ./setup --blas="${libdir}/libopenblas.${dlext}" --lapack="${libdir}/liblapack.${dlext}" \
     --prefix="${prefix}" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cd build
 if [[ ${target} == arm* ]]; then
-    make
-    # make -j${nproc} --shuffle
+    # make
+    make -j${nproc} --shuffle
 else
     make -j${nproc}
 fi
