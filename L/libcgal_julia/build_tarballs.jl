@@ -32,15 +32,6 @@ script = raw"""
 # exit on error
 set -eu
 
-macosflags=
-case $target in
-  *apple-darwin*)
-    macosflags="-DCMAKE_CXX_COMPILER_ID=AppleClang"
-    macosflags="$macosflags -DCMAKE_CXX_COMPILER_VERSION=10.0.0"
-    macosflags="$macosflags -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
-    ;;
-esac
-""" * """
 ## configure build
 cmake $jlcgaldir """ * raw"""\
   -B /tmp/build \
@@ -50,12 +41,11 @@ cmake $jlcgaldir """ * raw"""\
   -DCMAKE_INSTALL_PREFIX=$prefix \
   -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
   `# tell jlcxx where julia is` \
-  -DJulia_PREFIX=$prefix \
-  $macosflags
+  -DJulia_PREFIX=$prefix
 
 ## and away we go..
 VERBOSE=ON cmake --build /tmp/build --config Release --target install -- -j$nproc
-""" * """
+
 install_license $jlcgaldir/LICENSE
 """
 
