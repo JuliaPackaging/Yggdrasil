@@ -21,10 +21,11 @@ mkdir build && cd build
 
 # avoid autodetection (because we are cross-compiling)
 if [[ "${target}" == x86_64-* || "${target}" == i686-* ]]; then
-    CMAKE_EXTRA_FLAGS="-DENABLE_SSE=ON -DENABLE_AVX=ON -DENABLE_AVX2=ON"
+    CMAKE_EXTRA_FLAGS="-DHAVE_SSE=ON -DHAVE_AVX=ON -DHAVE_AVX2=ON"
 else
-    CMAKE_EXTRA_FLAGS="-DENABLE_SSE=OFF -DENABLE_AVX=OFF -DENABLE_AVX2=OFF"
+    CMAKE_EXTRA_FLAGS="-DHAVE_SSE=OFF -DHAVE_AVX=OFF -DHAVE_AVX2=OFF"
 fi
+echo "CMAKE_EXTRA_FLAGS=$CMAKE_EXTRA_FLAGS"
 
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=$prefix \
