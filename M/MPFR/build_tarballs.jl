@@ -10,16 +10,22 @@ version = v"4.2.0"
 sources = [
     ArchiveSource("https://www.mpfr.org/mpfr-$(version)/mpfr-$(version).tar.xz",
                   "06a378df13501248c1b2db5aa977a2c8126ae849a9d9b7be2546fb4a9c26d993"),
+    FileSource("https://www.mpfr.org/mpfr-current/allpatches",
+               "811d3b45c8fc98affbeb0aba2d183ff17339ca2c31958b2f1dfeda1249cc3366", "mpfr.patch")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
 cd $WORKSPACE/srcdir/mpfr-*
+
+atomic_patch -p1 $WORKSPACE/srcdir/mpfr.patch
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static --with-gmp=${prefix} --enable-thread-safe --enable-shared-cache --disable-float128 --disable-decimal-float
 make -j${nproc}
 make install
