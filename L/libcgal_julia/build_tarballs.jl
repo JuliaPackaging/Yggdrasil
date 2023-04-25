@@ -28,10 +28,6 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 # Bash recipe for building across all platforms
 jlcgaldir = ifelse(isyggdrasil, rname, ".")
 script = raw"""
-## pre-build setup
-# exit on error
-set -eu
-
 ## configure build
 cmake $jlcgaldir """ * raw"""\
   -B /tmp/build \
