@@ -16,7 +16,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
@@ -34,6 +33,8 @@ make install
 if [[ ${target} == *mingw* ]]; then
     cp -v ${prefix}/bin/libmpfr-*.dll ${prefix}/bin/libmpfr.dll
 fi
+
+install_license COPYING COPYING.LESSER
 """
 
 # We enable experimental platforms as this is a core Julia dependency
