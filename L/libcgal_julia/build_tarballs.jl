@@ -26,7 +26,8 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Bash recipe for building across all platforms
-jlcgaldir = ifelse(isyggdrasil, rname, ".")
+ENV["jlcgaldir"] = ifelse(isyggdrasil, rname, ".")
+
 script = raw"""
 ## configure build
 cmake $jlcgaldir \
