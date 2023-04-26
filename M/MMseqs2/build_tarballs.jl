@@ -76,11 +76,9 @@ dependencies = Dependency[
     Dependency(PackageSpec(name="Zlib_jll")),
     Dependency(PackageSpec(name="Bzip2_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else, however
-    # other libraries from `CompilerSupportLibraries_jll` are needed on x86_64 macOS and
-    # FreeBSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
-               platforms=filter(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)),
+               platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
 ]
