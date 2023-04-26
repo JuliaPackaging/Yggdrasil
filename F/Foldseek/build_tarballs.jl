@@ -14,13 +14,15 @@ name = "Foldseek"
 
 # foldseek seem to use as versioning scheme of "major version + first 7
 # characters of the tagged commit"
-version = v"4"
-# version_commitprefix = "645b789"
+version = v"5"
+# version_commitprefix = "53465f0"
+
+# url = "https://github.com/steineggerlab/foldseek"
+# description = "Fast and sensitive comparisons of large protein structure sets"
 
 sources = [
-    # 2 Feb 2023
-    # shortly after v4, with compilation fix
-    # the released version v4-645b789 has a compilation error
+    # Foldseek 5-53465f0
+    # Note: this is the same commit as v"4" in Yggdrasil
     GitSource("https://github.com/steineggerlab/foldseek",
               "53465f07cdeed1f7fda08ee7f188327cb57c37ba"),
     DirectorySource("./bundled"),
@@ -52,7 +54,7 @@ install_license ../LICENSE.md
 """
 
 platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || arch(p) == "i686")
-platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("foldseek", :foldseek)
