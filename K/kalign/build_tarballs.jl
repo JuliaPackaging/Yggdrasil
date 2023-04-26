@@ -40,7 +40,7 @@ make install
 install_license ../COPYING
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p))
+platforms = supported_platforms(; exclude = Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
 
 products = [
