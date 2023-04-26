@@ -1,0 +1,29 @@
+diff --git before/src/SConstruct after/src/SConstruct
+index abec211..a544fcb 100644
+--- before/src/SConstruct
++++ after/src/SConstruct
+@@ -10,7 +10,7 @@ if sys.version_info.major == 2:
+ sys.path.insert(0,'./framework')
+ import bldutil, configure, setenv, rsf.doc
+ 
+-env = Environment()
++env = Environment(ENV=os.environ)
+ 
+ if os.path.isfile('config.py'):
+     import config
+diff --git before/src/pens/fonts/SConstruct after/src/pens/fonts/SConstruct
+index f5860e0..f30662f 100644
+--- before/src/pens/fonts/SConstruct
++++ after/src/pens/fonts/SConstruct
+@@ -27,10 +27,7 @@ for font in src:
+        
+     aux = ' '.join(['%s_%s' % (base,x) for x in attr])
+ 
+-    ldpath = ''
+-    for key in list(os.environ.keys()):
+-        if key[-15:] == 'LD_LIBRARY_PATH':
+-            ldpath += '%s=\'%s\' ' % (key,os.environ[key])
++    ldpath = '%s=\'%s\' ' % ("LD_LIBRARY_PATH", os.environ['libdir'])
+                           
+     env.Command([include,bin],[prog,font],
+                 '%s ${SOURCES[0].abspath} %s '
