@@ -61,13 +61,14 @@ done
 # build and install shared library
 "${CXX}" -shared -o "${libdir}/libkmc_core.${dlext}" \
     -Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -Wl,$(flagon --no-whole-archive) \
-    -lpthread -lz
+    -L{$libdir} -lpthread -lz
 
 # no explicit license file, the README says KMC is licensed under the GNU GPL 3
 install_license README.md
 """
 
 platforms = supported_platforms(; exclude = p -> arch(p) != "x86_64")
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("kmc", :kmc),
