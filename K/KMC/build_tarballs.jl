@@ -49,7 +49,7 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
 fi
 
 # the Makefile expects ${CC} to be a C++ compiler
-make -j${nproc} CC="${CXX}" CXX="${CXX}" CPU_FLAGS= \
+make -j${nproc} CC="${CXX}" CXX="${CXX}" CPU_FLAGS="-fPIC" \
     kmc kmc_dump kmc_tools
 
 # no `make install`
@@ -57,6 +57,11 @@ make -j${nproc} CC="${CXX}" CXX="${CXX}" CPU_FLAGS= \
 for prg in kmc kmc_dump kmc_tools; do
     install -Dvm 755 "./bin/${prg}" "${bindir}/${prg}${exeext}"
 done
+
+# build and install shared library
+"${CXX}" -shared -o "${libdir}/libkmc_core.${dlext}" \
+    -Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -Wl,$(flagon --no-whole-archive) \
+    -pthread
 
 # no explicit license file, the README says KMC is licensed under the GNU GPL 3
 install_license README.md
@@ -68,6 +73,7 @@ products = [
     ExecutableProduct("kmc", :kmc),
     ExecutableProduct("kmc_dump", :kmc_dump),
     ExecutableProduct("kmc_tools", :kmc_tools),
+    LibraryProduct("libkmc_core", :libkmc_core),
 ]
 
 dependencies = [
