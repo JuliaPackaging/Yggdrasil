@@ -76,7 +76,7 @@ install_license LICENSE
 platforms = supported_platforms(;
     exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32
 )
-platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("famsa", :famsa)
