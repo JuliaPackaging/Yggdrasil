@@ -38,8 +38,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd MMseqs2-*/
+cd $WORKSPACE/srcdir/MMseqs2*/
 
 # patch CMakeLists.txt so it doesn't set -march unnecessarily on ARM
 atomic_patch -p1 ../patches/arm-simd-march-cmakefile.patch
