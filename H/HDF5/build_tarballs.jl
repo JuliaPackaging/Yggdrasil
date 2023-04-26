@@ -348,6 +348,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# Temporary, for testing Windows builds
+platforms = filter(p -> Sys.iswindows(p))
+
 # Platforms:
 #     aarch64-apple-darwin-libgfortran5-mpi+mpich
 #     aarch64-apple-darwin-libgfortran5-mpi+mpitrampoline
