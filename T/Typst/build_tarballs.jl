@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Typst"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/typst/typst.git", "fe2640c55268f167d8749f77b37e52b7b17f21dd")
+    GitSource("https://github.com/typst/typst.git", "b1e0de00784061a7670072160683f56c8269b25c")
 ]
 
 # Bash recipe for building across all platforms
