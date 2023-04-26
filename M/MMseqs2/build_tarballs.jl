@@ -4,12 +4,10 @@ using BinaryBuilder, Pkg
 
 name = "MMseqs2"
 version = v"14"
+# official version: "major version + first 5 characters of tagged commit"
 
-# MMseqs2 seem to use as versioning scheme of "major version + first 5
-# characters of the tagged commit"
-# https://github.com/soedinglab/MMseqs2/releases
-version_commitprefix = "7e284"
-
+# url = "https://github.com/soedinglab/MMseqs2"
+# description = "Search and cluster huge protein and nucleotide sequence sets"
 
 # Possible build variants
 # - OpenMP (default)
@@ -32,10 +30,9 @@ version_commitprefix = "7e284"
 # - powerpc build fails with g++-7.x (tries to compile for x86 simd),
 #   works with g++-8.x and above
 
-# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/soedinglab/MMseqs2/archive/refs/tags/$(version.major)-$(version_commitprefix).tar.gz",
-                  "a15fd59b121073fdcc8b259fc703e5ce4c671d2c56eb5c027749f4bd4c28dfe1"),
+    GitSource("https://github.com/soedinglab/MMseqs2",
+              "7e2840992948ee89dcc336522dc98a74fe0adf00"),
     DirectorySource("./bundled")
 ]
 
@@ -68,18 +65,14 @@ make install
 install_license ../LICENSE.md
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
 # expand cxxstring abis on platforms where we use g++
-platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
+platforms = expand_cxxstring_abis(platforms)
 
-# The products that we will ensure are always built
 products = [
     ExecutableProduct("mmseqs", :mmseqs)
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency(PackageSpec(name="Zlib_jll")),
     Dependency(PackageSpec(name="Bzip2_jll")),
@@ -93,6 +86,5 @@ dependencies = Dependency[
                platforms=filter(Sys.isbsd, platforms)),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version = v"8")
