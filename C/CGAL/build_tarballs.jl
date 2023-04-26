@@ -19,11 +19,11 @@ cmake -B build \
   -DCMAKE_FIND_ROOT_PATH=$prefix \
   -DCMAKE_INSTALL_PREFIX=$prefix \
   -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
-  CGAL-*/
+  cgal/
 
 ## and away we go..
 cmake --build build --config Release --target install -- -j$nproc
-install_license CGAL-*/LICENSE*
+install_license cgal/LICENSE*
 """
 
 # These are the platforms we will build for by default, unless further
