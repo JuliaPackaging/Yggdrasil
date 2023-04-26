@@ -41,7 +41,7 @@ install_license ../COPYING
 """
 
 platforms = supported_platforms(; exclude = Sys.iswindows)
-platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("kalign", :kalign),
