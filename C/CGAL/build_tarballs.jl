@@ -3,8 +3,7 @@
 using BinaryBuilder
 
 name     = "CGAL"
-rversion = "5.5"
-version  = VersionNumber(rversion)
+version  = v"5.5.2"
 
 # Collection of sources required to build CGAL
 sources = [
