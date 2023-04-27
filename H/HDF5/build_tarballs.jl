@@ -19,8 +19,6 @@ sources = [
     # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.0-6-any.pkg.tar.zst",
                   "3812ce5147aad8cc8bb8bbd5879ecc3131c2267296eecc2d35cd3c8515b3fbc8"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-libaec-1.0.6-2-any.pkg.tar.zst",
-                  "c6cff1a6f8a9f75e986589d8debc35e8076a7af38aa32cbda78bb6c2fbbbe58c"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.2.13-3-any.pkg.tar.zst",
                   "ed62c6f77f9cce488aed15726349d5d4537689583caab46bace8d41173db48b7"; unpack_target="i686-w64-mingw32"),
     # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
@@ -30,8 +28,6 @@ sources = [
     # 64-bit Windows from https://packages.msys2.org/package/mingw-w64-x86_64-hdf5
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.14.0-6-any.pkg.tar.zst",
                   "5faed72eb9406fd8e3bfa0e3110543d84e9f266037fd9f4c1fca49613b44db1a"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libaec-1.0.6-2-any.pkg.tar.zst",
-                  "d970bd71e55fc5bd4a55e95ef22355d8c479631973860f2a9c37b49c931c5f35"; unpack_target="x86_64-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.2.13-3-any.pkg.tar.zst",
                   "7fc6ac1629180e205f0fdbe7abd04353136a44d73d16924f0c64fd10828329a7"; unpack_target="x86_64-w64-mingw32"),
 
