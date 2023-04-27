@@ -14,7 +14,7 @@ sources = [
                   "a571cc83efda62e1a51a0a912dd916d01895801c5025af91669484a1575a6ef4"),
     DirectorySource("./bundled"),
 
-    # We don't build HDF5 on Windows; instead, we use Conda-built packages there:
+    # We don't build HDF5 on Windows; instead, we use packages from msys there:
 
     # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.0-6-any.pkg.tar.zst",
@@ -41,7 +41,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir
 
-# We don't build HDF5 on Windows; instead, we use Conda-built packages there:
+# We don't build HDF5 on Windows; instead, we use packages from msys there:
 if [[ ${target} == *mingw* ]]; then
     cd ${target}/mingw${nbits}
 
@@ -379,7 +379,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-# TODO: Don't require MPI for Windows since we're using the non-MPI Conda libraries there.
+# TODO: Don't require MPI for Windows since we're using the non-MPI msys libraries there.
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
 
 # Avoid platforms where the MPI implementation isn't supported
@@ -391,8 +391,8 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 # The products that we will ensure are always built
 products = [
-    # Since we use the Conda binaries for Windows, we can only define
-    # those products that are provided by Conda as well. These are
+    # Since we use the msys binaries for Windows, we can only define
+    # those products that are provided by msys as well. These are
     # just the regular and the high-level libraries.
 
     # # HDF5 tools
@@ -432,7 +432,7 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("LibCURL_jll"),
-    # The Conda-built Windows libraries require OpenSSL@3
+    # The msys Windows libraries require OpenSSL@3
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll"),
     # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
