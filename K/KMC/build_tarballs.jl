@@ -42,14 +42,8 @@ ln -s "${includedir}/zlib.h" 3rd_party/cloudflare/zlib.h
 # we have to use ${prefix}/lib, as ${libdir} is ${prefix}/bin on windows
 ln -s "${prefix}/lib/libz.a" 3rd_party/cloudflare/libz.a
 
-# use gcc/g++ on macOS and FreeBSD
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
-fi
-
-# the Makefile expects ${CC} to be a C++ compiler
-make -j${nproc} CC="${CXX}" CXX="${CXX}" CPU_FLAGS="-fPIC" \
+# the Makefile expects ${CC} to be a C++ compiler.  use g++ also on macOS and FreeBSD
+make -j${nproc} CC="${g++}" CXX="${g++}" CPU_FLAGS="-fPIC" \
     kmc kmc_dump kmc_tools
 
 # no `make install`
