@@ -12,18 +12,14 @@ version = v"3.2.2"
 #   (#include <ext/algorithm>)
 
 # Build issues
-# - build fails on aarch64-linux-gnu
-#   [23:53:48] kmc_core/intr_copy.h: In static member function ‘static void IntrCopy128<SIZE, 1>::Copy(void*, void*)’:
-#   [23:53:48] kmc_core/intr_copy.h:90:25: error: there are no arguments to ‘vldrq_p128’ that depend on a template parameter, so a declaration of ‘vldrq_p128’ must be available [-fpermissive]
-#   [23:53:48]     vstrq_p128(dest + i, vldrq_p128(src + i));
 #
-# - build fails on aarch64-apple-darwin
+# - aarch64-apple-darwin: build fails
 #   [23:42:49] ld: warning: building for macOS, but linking in object file (/opt/aarch64-apple-darwin20/bin/../lib/gcc/aarch64-apple-darwin20/12.0.1/../../../../aarch64-apple-darwin20/lib/libstdc++.a(cp-demangle.o)) built for iOS
 #   [23:42:49] Undefined symbols for architecture arm64:
 #   [23:42:49]   "__ZN10RadulsSort17RadixSortMSD_NEONI5CKmerILj1EEEEvPT_S4_yjjP11CMemoryPool", referenced from:
 #   [23:42:49]       __ZN4CKMCILj1EE18ProcessStage2_implEv in libkmc_core.a(kmc_runner.o)
 #
-# - linker warnings on x86_64-apple-darwin
+# - x86_64-apple-darwin: linker warnings (many about visibility)
 #   [23:36:43] ld: warning: direct access in function 'std::basic_ios<char, std::char_traits<char> >::copyfmt(std::basic_ios<char, std::char_traits<char> > const&)' from file '/opt/x86_64-apple-darwin14/bin/../lib/gcc/x86_64-apple-darwin14/7.1.0/../../../../x86_64-apple-darwin14/lib/libstdc++.a(ios-inst.o)' to global weak symbol 'std::ctype<char>::do_widen(char) const' from file 'kmc_tools/parameters_parser.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
 
 sources = [
@@ -76,7 +72,8 @@ fi
 install_license /usr/share/licenses/GPL-3.0+
 """
 
-platforms = supported_platforms(; exclude = p -> arch(p) ∉ ("x86_64", "aarch64"))
+platforms = supported_platforms(; exclude = p -> arch(p) ∉ ("x86_64", "aarch64")
+                                              || (Sys.isapple(p) && arch(p) == "aarch64"))
 platforms = expand_cxxstring_abis(platforms; skip=Returns(false))
 
 products = [
