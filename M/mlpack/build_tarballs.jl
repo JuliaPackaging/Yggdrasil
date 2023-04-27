@@ -6,11 +6,11 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.0.1"
+source_version = v"4.1.0"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "4c746936ed9da9f16744240ed7b9f2815d3abb90c904071a1d1a628a9bbfb3a5"),
+                  "e0c760baf15fd0af5601010b7cbc536e469115e9dd45f96712caa3b651b1852a"),
 ]
 
 script = raw"""
@@ -174,7 +174,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("armadillo_jll"),
+    Dependency("armadillo_jll"; compat="12.2.0"),
     Dependency("OpenBLAS_jll", v"0.3.13"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
