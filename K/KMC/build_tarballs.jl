@@ -61,7 +61,7 @@ done
 # build and install shared library
 "${CXX}" -shared -o "${libdir}/libkmc_core.${dlext}" \
     -Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -Wl,$(flagon --no-whole-archive) \
-    -L{$libdir} -lpthread -lz
+    -L${libdir} -lpthread -lz
 
 # no explicit license file, the README says KMC is licensed under the GNU GPL 3
 install_license README.md
