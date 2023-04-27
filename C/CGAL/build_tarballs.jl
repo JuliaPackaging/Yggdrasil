@@ -40,7 +40,7 @@ dependencies = [
     # Essential dependencies
     Dependency("boost_jll"; compat="=1.76.0"),
     Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("MPFR_jll"; compat="4.2"),
+    Dependency("MPFR_jll"; compat="4.1.0"),
 ]
 
 # Build the tarballs.
