@@ -67,9 +67,9 @@ done
 if [[ "${target}" == *-apple-* ]]; then
     # Avoid linker error on macos, can't find file ' '
     # I think it's because -Wl,$(flagon --no-whole-archive) expands to -Wl, (with a space at the end?)
-    link_libs="-lz -Wl,$(flagon --whole-archive) ./bin/libkmc_core.a"
+    link_libs="-Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -lz"
 else
-    link_libs="-Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -Wl,$(flagon --no-whole-archive)"
+    link_libs="-Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -Wl,$(flagon --no-whole-archive) -lz"
 fi
 "${CXX}" -O3 -shared -o "${libdir}/libkmc_core.${dlext}" $link_libs
 
