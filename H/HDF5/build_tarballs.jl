@@ -20,15 +20,65 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd hdf5-*
 
-if [[ ${target} == *-mingw* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
-    cp ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
-fi
-
 # HDF5 assumes that some MPI constants are C constants, but they are not
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi.patch
+
+# Windows is special 
+if [[ ${target} == *-mingw* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hdf5-fix-find-szip.patch
+    
+    # Set up emulation
+    CMAKE_TOOLCHAIN_FILE="${WORKSPACE}/srcdir/files/wine-mingw64/mingw64.cmake"
+
+    # Needed for clock_getime
+    cp "${WORKSPACE}/srcdir/headers/pthread_time.h" "/opt/${target}/${target}/sys-root/include/pthread_time.h"
+
+    # We need to use wine64-preloader
+    cp "${WORKSPACE}/srcdir/files/wine-mingw64/wine64.sh" "${host_bindir}"
+
+    export WINEDLLPATH="$host_libdir/wine/x86_64-unix:$host_libdir/wine/x86_64-windows"
+    export WINEPATH="${libdir}"
+    export WINEDEBUG=-all
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$WINEDLLPATH"
+
+    # We will use wine and cmake to build for Windows
+    mkdir build
+    pushd build
+
+    cmake \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
+    -DBUILD_STATIC_LIBS=OFF \
+    -DBUILD_TESTING=OFF \
+    -DHDF5_BUILD_EXAMPLES=OFF \
+    -DHDF5_BUILD_HL_LIB=ON \
+    -DHDF5_BUILD_TOOLS=ON \
+    -DHDF5_BUILD_FORTRAN=ON \
+    -DHDF5_BUILD_CPP_LIB=ON \
+    -DHDF5_ENABLE_SZIP_SUPPORT=ON \
+    -DHDF5_ENABLE_SZIP_ENCODING=ON \
+    -DUSE_LIBAEC=ON \
+    -Dlibaec_INCLUDE_DIR=${includedir} \
+    -Dlibaec_LIBRARY=${libdir}/libaec.dll \
+    -DSZIP_INCLUDE_DIR=${includedir} \
+    -DSZIP_LIBRARY=${libdir}/libsz.dll \
+    -DHAVE_IOEO_EXITCODE=0 \
+    -DTEST_LFS_WORKS_RUN=0 \
+    ..
+
+    # Debug note: Add --debug-trycompile to save executables
+
+    cmake --build . --config RelWithDebInfo --parallel ${nproc}
+    cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
+
+    popd
+
+    install_license COPYING
+
+    exit 0
+fi
+
 
 # Idea:
 # - provide the registered filter plugins (BZIP2, JPEG, LZF, BLOSC, MAFISC, LZ4, Bitshuffle, and ZFP)
@@ -343,13 +393,13 @@ platforms = expand_gfortran_versions(platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+#platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # Temporary, for testing Windows builds
-platforms = filter(p -> Sys.iswindows(p))
+platforms = filter(p -> Sys.iswindows(p), platforms)
 
 # Platforms:
 #     aarch64-apple-darwin-libgfortran5-mpi+mpich
@@ -572,7 +622,7 @@ products = [
     LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
     LibraryProduct("libhdf5_hl", :libhdf5_hl),
     LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
-    LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
+    LibraryProduct("libhdf5_hl_fortran", :libhdf5_hl_fortran),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -588,8 +638,9 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"),   # This is the successor of szlib
+    HostBuildDependency("Wine_jll"),
 ]
-append!(dependencies, platform_dependencies)
+#append!(dependencies, platform_dependencies)
 
 # Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the shared libraries.
 # (MPItrampoline will skip its automatic initialization.)
