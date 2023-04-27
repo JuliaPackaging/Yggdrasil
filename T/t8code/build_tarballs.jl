@@ -10,11 +10,8 @@ version = v"1.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version)_dirty.tar.gz",
-                  "51a97c202b6327778bc7318d4be3eb58f27b07a3a63339f850bd0d41bc367fee"),
-
-    # ArchiveSource("file:///home/mark_jo/codes/t8code/t8code_v1.1.2_dirty.tar.gz",
-    #             "51a97c202b6327778bc7318d4be3eb58f27b07a3a63339f850bd0d41bc367fee"),
+    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz",
+                  "07811b8f473e5577378c4e0d39d76d6093f9446e99e10029b109bf5b3534c5d0"),
 
     DirectorySource("./bundled")
 ]
@@ -22,7 +19,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd main/
+cd t8code
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
@@ -99,9 +96,7 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 # The products that we will ensure are always built
 # Note: the additional, non-canonical library names are required for the Windows build
 products = [
-    LibraryProduct(["libsc"], :libsc),
-    LibraryProduct(["libp4est"], :libp4est),
-    LibraryProduct(["libt8", "libt8-1-2-0-34-0f6bc-dirty"], :libt8),
+    LibraryProduct(["libt8"], :libt8),
 ]
 
 # Dependencies that must be installed before this package can be built
