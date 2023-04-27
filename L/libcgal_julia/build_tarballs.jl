@@ -34,7 +34,6 @@ fi
 
 cmake $jlcgaldir \
   -B /tmp/build \
-  `# cmake specific` \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_FIND_ROOT_PATH=$prefix \
   -DCMAKE_INSTALL_PREFIX=$prefix \
