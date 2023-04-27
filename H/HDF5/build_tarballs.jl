@@ -13,11 +13,50 @@ sources = [
     ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.gz",
                   "a571cc83efda62e1a51a0a912dd916d01895801c5025af91669484a1575a6ef4"),
     DirectorySource("./bundled"),
+
+    # We don't build HDF5 on Windows; instead, we use Conda-built packages there:
+
+    # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.0-6-any.pkg.tar.zst",
+                  "3812ce5147aad8cc8bb8bbd5879ecc3131c2267296eecc2d35cd3c8515b3fbc8"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-libaec-1.0.6-2-any.pkg.tar.zst",
+                  "c6cff1a6f8a9f75e986589d8debc35e8076a7af38aa32cbda78bb6c2fbbbe58c"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.2.13-3-any.pkg.tar.zst",
+                  "ed62c6f77f9cce488aed15726349d5d4537689583caab46bace8d41173db48b7"; unpack_target="i686-w64-mingw32"),
+    # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-gcc-libs-11.2.0-9-any.pkg.tar.zst",
+                  "c04ce4ecf40cb4c87fe6f38ba4dc7d568f24dcb69c8babfc507fa3de8ddb54a2"; unpack_target="i686-w64-mingw32"),
+
+    # 64-bit Windows from https://packages.msys2.org/package/mingw-w64-x86_64-hdf5
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.14.0-6-any.pkg.tar.zst",
+                  "5faed72eb9406fd8e3bfa0e3110543d84e9f266037fd9f4c1fca49613b44db1a"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-libaec-1.0.6-2-any.pkg.tar.zst",
+                  "d970bd71e55fc5bd4a55e95ef22355d8c479631973860f2a9c37b49c931c5f35"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.2.13-3-any.pkg.tar.zst",
+                  "7fc6ac1629180e205f0fdbe7abd04353136a44d73d16924f0c64fd10828329a7"; unpack_target="x86_64-w64-mingw32"),
+
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir
+
+# We don't build HDF5 on Windows; instead, we use Conda-built packages there:
+if [[ ${target} == *mingw* ]]; then
+    cd ${target}/mingw${nbits}
+
+    mkdir -p ${libdir} ${includedir}
+    rm -f lib/{*_cpp*,*fortran*,*f90*} # we do not need these
+    rm -f bin/{*_cpp*,*fortran*,*f90*} # we do not need these
+    
+    mv -v lib/libhdf5*.dll.a ${prefix}/lib
+    mv -v bin/*.dll ${libdir}
+    mv -v include/* ${includedir}
+
+    install_license share/doc/hdf5/COPYING
+    exit 0
+fi
+
 cd hdf5-*
 
 if [[ ${target} == *-mingw* ]]; then
@@ -336,9 +375,11 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# TODO: Don't expand ABIs for Windows since we're not providing either C++ or Fortran bindings there.
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
+# TODO: Don't require MPI for Windows since we're using the non-MPI Conda libraries there.
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
 
 # Avoid platforms where the MPI implementation isn't supported
@@ -544,32 +585,36 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 # The products that we will ensure are always built
 products = [
-    # HDF5 tools
-    ExecutableProduct("h5clear", :h5clear),
-    ExecutableProduct("h5copy", :h5copy),
-    ExecutableProduct("h5debug", :h5debug),
-    ExecutableProduct("h5delete", :h5delete),
-    ExecutableProduct("h5diff", :h5diff),
-    ExecutableProduct("h5dump", :h5dump),
-    ExecutableProduct("h5format_convert", :h5format_convert),
-    ExecutableProduct("h5import", :h5import),
-    ExecutableProduct("h5jam",:h5jam),
-    ExecutableProduct("h5ls", :h5ls),
-    ExecutableProduct("h5mkgrp", :h5mkgrp),
-    ExecutableProduct("h5perf_serial",:h5perf_serial),
-    ExecutableProduct("h5repack", :h5repack),
-    ExecutableProduct("h5repart", :h5repart),
-    ExecutableProduct("h5stat", :h5stat),
-    ExecutableProduct("h5unjam", :h5unjam),
-    ExecutableProduct("h5watch", :h5watch),
+    # Since we use the Conda binaries for Windows, we can only define
+    # those products that are provided by Conda as well. These are
+    # just the regular and the high-level libraries.
+
+    # # HDF5 tools
+    # ExecutableProduct("h5clear", :h5clear),
+    # ExecutableProduct("h5copy", :h5copy),
+    # ExecutableProduct("h5debug", :h5debug),
+    # ExecutableProduct("h5delete", :h5delete),
+    # ExecutableProduct("h5diff", :h5diff),
+    # ExecutableProduct("h5dump", :h5dump),
+    # ExecutableProduct("h5format_convert", :h5format_convert),
+    # ExecutableProduct("h5import", :h5import),
+    # ExecutableProduct("h5jam",:h5jam),
+    # ExecutableProduct("h5ls", :h5ls),
+    # ExecutableProduct("h5mkgrp", :h5mkgrp),
+    # ExecutableProduct("h5perf_serial",:h5perf_serial),
+    # ExecutableProduct("h5repack", :h5repack),
+    # ExecutableProduct("h5repart", :h5repart),
+    # ExecutableProduct("h5stat", :h5stat),
+    # ExecutableProduct("h5unjam", :h5unjam),
+    # ExecutableProduct("h5watch", :h5watch),
 
     # HDF5 libraries
     LibraryProduct("libhdf5", :libhdf5),
-    LibraryProduct("libhdf5_cpp", :libhdf5_cpp),
-    LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
+    # LibraryProduct("libhdf5_cpp", :libhdf5_cpp),
+    # LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
     LibraryProduct("libhdf5_hl", :libhdf5_hl),
-    LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
-    LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
+    # LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
+    # LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -581,9 +626,10 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("LibCURL_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    # The Conda-built Windows libraries require OpenSSL@3
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll"),
-    Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
+    # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"),   # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
