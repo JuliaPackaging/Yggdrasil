@@ -42,8 +42,15 @@ ln -s "${includedir}/zlib.h" 3rd_party/cloudflare/zlib.h
 # we have to use ${prefix}/lib, as ${libdir} is ${prefix}/bin on windows
 ln -s "${prefix}/lib/libz.a" 3rd_party/cloudflare/libz.a
 
-# the Makefile expects ${CC} to be a C++ compiler.  use g++ also on macOS and FreeBSD
-make -j${nproc} CC="g++" CXX="g++" CPU_FLAGS="-fPIC" \
+# use gcc/g++ on macOS and FreeBSD
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
+fi
+
+# Notes
+# - the Makefile expects ${CC} to be a C++ compiler
+make -j${nproc} CC="${CXX}" CXX="${CXX}" CPU_FLAGS= STATIC_CFLAGS="-fPIC -pthread" STATIC_LFLAGS="-lpthread" \
     kmc kmc_dump kmc_tools
 
 # no `make install`
@@ -53,9 +60,9 @@ for prg in kmc kmc_dump kmc_tools; do
 done
 
 # build and install shared library
-"${CXX}" -shared -o "${libdir}/libkmc_core.${dlext}" \
+"${CXX}" -std=c++14 -shared -o "${libdir}/libkmc_core.${dlext}" \
     -Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -Wl,$(flagon --no-whole-archive) \
-    -L${libdir} -lpthread -lz
+    -lpthread
 
 # no explicit license file, the README says KMC is licensed under the GNU GPL 3
 install_license /usr/share/licenses/GPL-3.0+
