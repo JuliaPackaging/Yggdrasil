@@ -58,7 +58,7 @@ done
     -L${libdir} -lpthread -lz
 
 # no explicit license file, the README says KMC is licensed under the GNU GPL 3
-install_license README.md
+install_license /usr/share/licenses/GPL-3.0+
 """
 
 platforms = supported_platforms(; exclude = p -> arch(p) != "x86_64")
