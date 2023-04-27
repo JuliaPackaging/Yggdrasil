@@ -58,6 +58,10 @@ make -j${nproc} CC="${CXX}" CXX="${CXX}" CPU_FLAGS= STATIC_CFLAGS="-fPIC -pthrea
 for prg in kmc kmc_dump kmc_tools; do
     install -Dvm 755 "./bin/${prg}" "${bindir}/${prg}${exeext}"
 done
+# install header files
+for hdr in include/*; do
+    install -Dvm 644 "${hdr}" "${prefix}/include/$(basename "${hdr}")"
+done
 
 # build and install shared library
 "${CXX}" -std=c++14 -shared -o "${libdir}/libkmc_core.${dlext}" \
