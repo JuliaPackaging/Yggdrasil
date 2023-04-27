@@ -54,9 +54,8 @@ make -j${nproc} CC="${CXX}" CXX="${CXX}" CPU_FLAGS= STATIC_CFLAGS="-fPIC -pthrea
     kmc kmc_dump kmc_tools
 
 # no `make install`
-# Note: on windows the files under bin/ don't end in .exe
 for prg in kmc kmc_dump kmc_tools; do
-    install -Dvm 755 "./bin/${prg}" "${bindir}/${prg}${exeext}"
+    install -Dvm 755 "./bin/${prg}${exeext}" "${bindir}/${prg}${exeext}"
 done
 # install header files
 for hdr in include/*; do
