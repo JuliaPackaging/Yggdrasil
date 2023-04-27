@@ -68,7 +68,7 @@ install_license README.md
 """
 
 platforms = supported_platforms(; exclude = p -> arch(p) != "x86_64")
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms; skip=Returns(false))
 
 products = [
     ExecutableProduct("kmc", :kmc),
