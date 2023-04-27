@@ -77,7 +77,7 @@ fi
 install_license /usr/share/licenses/GPL-3.0+
 """
 
-platforms = supported_platforms(; exclude = p -> arch(p) != "x86_64")
+platforms = supported_platforms(; exclude = p -> arch(p) ∉ ("x86_64", "aarch64"))
 platforms = expand_cxxstring_abis(platforms; skip=Returns(false))
 
 products = [
@@ -92,4 +92,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"7")
+               julia_compat="1.6", preferred_gcc_version = v"11")
