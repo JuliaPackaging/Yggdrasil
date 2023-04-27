@@ -64,9 +64,8 @@ for hdr in include/*; do
 done
 
 # build and install shared library
-"${CXX}" -std=c++14 -shared -o "${libdir}/libkmc_core.${dlext}" \
-    -Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -Wl,$(flagon --no-whole-archive) \
-    -lpthread
+"${CXX}" -O3 -shared -o "${libdir}/libkmc_core.${dlext}" \
+    -Wl,$(flagon --whole-archive) ./bin/libkmc_core.a -Wl,$(flagon --no-whole-archive)
 
 # no explicit license file, the README says KMC is licensed under the GNU GPL 3
 install_license /usr/share/licenses/GPL-3.0+
