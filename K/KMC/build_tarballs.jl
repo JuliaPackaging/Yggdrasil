@@ -43,7 +43,7 @@ ln -s "${includedir}/zlib.h" 3rd_party/cloudflare/zlib.h
 ln -s "${prefix}/lib/libz.a" 3rd_party/cloudflare/libz.a
 
 # the Makefile expects ${CC} to be a C++ compiler.  use g++ also on macOS and FreeBSD
-make -j${nproc} CC="${g++}" CXX="${g++}" CPU_FLAGS="-fPIC" \
+make -j${nproc} CC="g++" CXX="g++" CPU_FLAGS="-fPIC" \
     kmc kmc_dump kmc_tools
 
 # no `make install`
