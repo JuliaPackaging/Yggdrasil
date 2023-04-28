@@ -29,10 +29,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    # Only include `libiconv` if we're not on glibc, because we don't want to
-    # run afoul of the builtin iconv implementation on e.g. Ubuntu 22.04
+    # We don't, strictly speaking, need `Libiconv_jll` on linux because it's included in glibc
     Dependency("Libiconv_jll"; platforms=filter(!Sys.islinux, platforms)),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We require `gcc` v5+ to avoid the following error on some systems:
+# Inconsistency detected by ld.so: dl-version.c: 204: _dl_check_map_versions: Assertion `needed != NULL' failed!
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
