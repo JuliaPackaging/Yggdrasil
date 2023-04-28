@@ -29,7 +29,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("Libiconv_jll"),
+    # Only include `libiconv` if we're not on glibc, because we don't want to
+    # run afoul of the builtin iconv implementation on e.g. Ubuntu 22.04
+    Dependency("Libiconv_jll"; platforms=filter(!Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
