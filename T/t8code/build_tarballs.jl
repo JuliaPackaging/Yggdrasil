@@ -11,7 +11,7 @@ version = v"1.1.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz",
-                  "07811b8f473e5577378c4e0d39d76d6093f9446e99e10029b109bf5b3534c5d0"),
+                  "8a30206a8fb47013b3dafe7565cf8e09023df8373c1049e7e231d9fd36b011e4"),
 
     DirectorySource("./bundled")
 ]
