@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.72.3"
+version = v"0.72.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "45c2c98c7e1f116a6c15748decbe9654b7db3649"),
+    GitSource("https://github.com/sciapp/gr.git", "34385d25b9dca50b1a775d4ac1e669732b6bf5e1"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
                "20e1633681598e86c8b9983bef9628cb20d912b312f4024edec5dd3fa153414a", "gr.js")
 ]
@@ -51,6 +51,7 @@ install_license $WORKSPACE/srcdir/gr/LICENSE.md
 if [[ $target == *"apple-darwin"* ]]; then
     cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
+    ln -s ../Applications/grplot.app/Contents/MacOS/grplot ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
