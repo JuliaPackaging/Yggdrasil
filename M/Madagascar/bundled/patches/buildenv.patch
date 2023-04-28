@@ -1,5 +1,5 @@
 diff --git before/src/SConstruct after/src/SConstruct
-index abec211..a544fcb 100644
+index abec211..d141e7b 100644
 --- before/src/SConstruct
 +++ after/src/SConstruct
 @@ -10,7 +10,7 @@ if sys.version_info.major == 2:
@@ -7,7 +7,7 @@ index abec211..a544fcb 100644
  import bldutil, configure, setenv, rsf.doc
  
 -env = Environment()
-+env = Environment(ENV=os.environ)
++env = Environment(ENV = os.environ)
  
  if os.path.isfile('config.py'):
      import config
@@ -15,7 +15,19 @@ diff --git before/src/pens/fonts/SConstruct after/src/pens/fonts/SConstruct
 index f5860e0..f30662f 100644
 --- before/src/pens/fonts/SConstruct
 +++ after/src/pens/fonts/SConstruct
-@@ -27,10 +27,7 @@ for font in src:
+@@ -4,9 +4,9 @@ import bldutil
+ 
+ try: # distributed version
+     Import('env root incdir')
+-    env = env.Clone()
++    env = env.Clone(CC='/usr/bin/gcc', LIBS='')
+ except: # local version
+-    env = bldutil.Debug()
++    env = bldutil.Debug(CC='/usr/bin/gcc', LIBS='')
+     root = None
+     
+ src = Glob('[a-z]*.vplot_font')
+@@ -27,11 +27,8 @@ for font in src:
         
      aux = ' '.join(['%s_%s' % (base,x) for x in attr])
  
@@ -23,7 +35,32 @@ index f5860e0..f30662f 100644
 -    for key in list(os.environ.keys()):
 -        if key[-15:] == 'LD_LIBRARY_PATH':
 -            ldpath += '%s=\'%s\' ' % (key,os.environ[key])
-+    ldpath = '%s=\'%s\' ' % ("LD_LIBRARY_PATH", os.environ['libdir'])
-                           
+-                          
++    ldpath = ldpath = '%s=\'%s\' ' % ("LD_LIBRARY_PATH", os.environ['libdir'])
++
      env.Command([include,bin],[prog,font],
                  '%s ${SOURCES[0].abspath} %s '
+                 '< ${SOURCES[1]} > ${TARGETS[0]} && '
+diff --git before/src/user/cram/SConstruct after/src/user/cram/SConstruct
+index 94d9369..08d11ee 100644
+--- before/src/user/cram/SConstruct
++++ after/src/user/cram/SConstruct
+@@ -27,6 +27,8 @@ except: # local version
+ if sys.platform.startswith('linux'):
+     env.Prepend(CPPDEFINES=['LINUX'])
+ 
++env.Prepend(CPPDEFINES=['_GNU_SOURCE'])
++
+ src = Glob('[a-z]*.c')
+ 
+ sse = None
+diff --git before/src/user/mccowan/SConstruct after/src/user/mccowan/SConstruct
+index 182c796..1c05782 100644
+--- before/src/user/mccowan/SConstruct
++++ after/src/user/mccowan/SConstruct
+@@ -18,6 +18,7 @@ src = Glob('[a-z]*.c')
+ 
+ env.Prepend(CPPPATH=['../../include'],
+             LIBPATH=['../../lib'],
++            CPPDEFINES=['_GNU_SOURCE'],
+             LIBS=[env.get('DYNLIB','')+'rsf'])

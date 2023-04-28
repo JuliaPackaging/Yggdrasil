@@ -13,19 +13,22 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Add host gcc for makefont
+apk add gcc libc-dev
+
+cd $WORKSPACE/srcdir/
+
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-cd $WORKSPACE/srcdir/src
-
-sed -i 's/Environment()/Environment(ENV=os.environ)/g' SConstruct
+cd src
 
 export SCONSFLAGS="-j ${nproc}"
 
-./configure --prefix=${prefix} CC=gcc CXX=g++ \
-            CAIROPATH=${includedir}/cairo \
+./configure --prefix=${prefix} CC=$CC CXX=$CXX \
             FFMPEGPATH=${includedir}/libavcodec/ \
+            CAIROPATH=${includedir}/cairo \
             CPPPATH=${includedir} \
             LIBPATH=${libdir} \
             BLAS=blastrampoline
@@ -36,10 +39,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc")
-]
+#platforms = [
+#    Platform("i686", "linux"; libc = "glibc"),
+#    Platform("x86_64", "linux"; libc = "glibc"),
+#    Platform("x86_64", "linux"; libc = "musl"),
+#    Platform("i686", "linux"; libc = "musl")
+#]
+platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
 
 
 # The products that we will ensure are always built
@@ -1889,6 +1895,9 @@ dependencies = [
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"))
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
+    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
+    Dependency(PackageSpec(name="LibGD_jll", uuid="16339573-6216-525a-b38f-30b6f6b71b5f"))
+    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
