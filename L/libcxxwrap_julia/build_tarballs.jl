@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libcxxwrap_julia"
-version = v"0.9.4"
+version = v"0.9.6"
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
@@ -16,7 +16,7 @@ git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "c24c914a151cf3e0d155b863ff8fc4c482d5388b"),
+    GitSource(git_repo, "ff8891221146f894faed2e882267d729c1f9cf8d"),
 ]
 
 # Bash recipe for building across all platforms

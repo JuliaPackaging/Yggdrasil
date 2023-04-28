@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.72.0"
+version = v"0.72.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "eff7161c08df40e298cb16ac429bbaeae13cb3b1"),
+    GitSource("https://github.com/sciapp/gr.git", "cbce9bb9d6b42154cdb57725bd3050bb17336809"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
                "30bd4eb18107b7e80360d7f25e65a0f21e2eeba2a52d1921da9b61b21c918038", "gr.js")
 ]
@@ -78,6 +78,7 @@ products = [
     LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
     LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
+    ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built

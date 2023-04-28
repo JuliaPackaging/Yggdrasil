@@ -1,0 +1,24 @@
+diff --git a/kmc_api/kmer_api.h b/kmc_api/kmer_api.h
+index fb98980..f47df35 100644
+--- a/kmc_api/kmer_api.h
++++ b/kmc_api/kmer_api.h
+@@ -14,6 +14,7 @@ Date   : 2023-03-10
+ 
+ #include "kmer_defs.h"
+ #include <string>
++#include <cstring>
+ #include <iostream>
+ #include <vector>
+ #include "mmer.h"
+diff --git a/kmc_core/queues.h b/kmc_core/queues.h
+index 99fccb9..20198f6 100644
+--- a/kmc_core/queues.h
++++ b/kmc_core/queues.h
+@@ -25,6 +25,7 @@
+ #include <cassert>
+ #include <thread>
+ #include <mutex>
++#include <algorithm>
+ 
+ using namespace std;
+ 
