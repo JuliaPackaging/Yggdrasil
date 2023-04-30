@@ -26,7 +26,7 @@ cd build
 
 archopts=()
 
-if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
+if grep -q MSMPI_VER ${includedir}/mpi.h; then
     # Microsoft MPI
     # # Hide static libraries
     # rm ${prefix}/lib/msmpi*.lib
