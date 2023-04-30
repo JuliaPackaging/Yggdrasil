@@ -23,42 +23,38 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 
 mkdir build
 cd build
-archopts=
-if [[ "$target" == *-apple-* ]]; then
-    if grep -q MPICH_NAME $prefix/include/mpi.h; then
-        # MPICH's pkgconfig file "mpich.pc" lists these options:
-        #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
-        #     Cflags:   -I${includedir}
-        # cmake doesn't know how to handle the "-framework OpenCL" option
-        # and wants to use "-framework" as a stand-alone option. This fails
-        # gloriously, and cmake concludes that MPI is not available.
-        archopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
-    fi
-elif [[ "$target" == x86_64-w64-mingw32 ]]; then
-    # - The MSMPI Fortran bindings are missing a function; see
-    #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
-    echo 'void __guard_check_icall_fptr(unsigned long ptr) {}' >cfg_stub.c
-    gcc -c cfg_stub.c
-    ar -crs libcfg_stub.a cfg_stub.o
-    cp libcfg_stub.a $prefix/lib
-    # - cmake's auto-detection for MPI doesn't work on Windows.
-    # - The SST and Table ADIOS2 components don't build on Windows
-    #   (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
-    export FFLAGS="-I$prefix/src -I$prefix/include -fno-range-check"
-    archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DMPI_Fortran_LIBRARIES='msmpifec64;msmpi64;cfg_stub' -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
-elif [[ "$target" == *-mingw* ]]; then
-    archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
+
+archopts=()
+
+if grep -q MSMPI_VER ${includedir}/mpi.h; then
+    # Microsoft MPI
+    # # Hide static libraries
+    # rm ${prefix}/lib/msmpi*.lib
+    # # Make shared libraries visible
+    # ln -s msmpi.dll ${libdir}/libmsmpi.dll
+    # export FCFLAGS="$FCFLAGS -I${prefix}/src -I${prefix}/include -fno-range-check"
+    # export LIBS="-L${libdir} -lmsmpi"
+    # archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi -DMPI_CXX_LIBRARIES=msmpi -DMPI_Fortran_LIBRARIES=msmpi -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
+    archopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=$libdir/msmpi.dll
+               -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=$libdir/msmpi.dll
+               -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS= -DMPI_Fortran_LIBRARIES=$libdir/msmpi.dll)
+fi
+
+if [[ "$target" == *-mingw* ]]; then
+    # Windows: Some options do not build
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF)
+else
+    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_SST=ON -DADIOS2_USE_Table=ON)
 fi
 
 if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
     # This feature only works with MPICH
-    archopts="$archopts -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT="
+    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
 else
-    archopts="$archopts -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=1 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT="
+    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=1 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
 fi
 
 # Fortran is not supported with Clang
-# DataMan has linker error on Windows
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
@@ -67,14 +63,13 @@ cmake \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
     -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_USE_CUDA=OFF \
-    -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_SZ=ON \
     -DADIOS2_USE_ZeroMQ=ON \
     -DMPI_HOME=$prefix \
-    ${archopts} \
+    ${archopts[@]} \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     ..
