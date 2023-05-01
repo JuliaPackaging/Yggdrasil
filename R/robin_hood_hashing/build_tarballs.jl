@@ -16,7 +16,7 @@ install -Dv src/include/robin_hood.h "${includedir}/robin_hood.h"
 # platforms are passed in on the command line
 platforms = [AnyPlatform()]
 
-products = Product[]
+products = [FileProduct("include/robin_hood.h", :robin_hood_h)]
 dependencies = Dependency[]
 
 # Build the tarballs.
