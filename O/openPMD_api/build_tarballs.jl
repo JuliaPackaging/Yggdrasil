@@ -66,6 +66,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_INSTALL_RPATH='$ORIGIN' \
     -DBUILD_CLI_TOOLS=OFF \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_TESTING=OFF \
@@ -99,7 +100,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built.
 # Don't dlopen `libopenPMD` because it might transitively require libgfortran.
 products = [
-    LibraryProduct("libopenPMD", :libopenPMD; dont_dlopen=true),
+    LibraryProduct("libopenPMD", :libopenPMD),
     LibraryProduct("libopenPMD.jl", :libopenPMD_jl),
 ]
 
@@ -137,4 +138,8 @@ append!(dependencies, platform_dependencies)
 # macOS encounters an ICE in GCC 6; switching to GCC 7 instead
 # Let's use GCC 8 to have libgfortran5 ABI and make auditor happy when looking for libgfortran: #5028
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.7", preferred_gcc_version=v"11")
+               augment_platform_block, julia_compat="1.7",
+               #TODO preferred_gcc_version=v"11"
+               preferred_gcc_version=v"8"
+               #TODO skip_audit=true
+               )
