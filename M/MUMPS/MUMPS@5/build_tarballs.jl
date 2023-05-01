@@ -8,16 +8,13 @@ version = v"5.5.1"
 
 sources = [
   ArchiveSource("https://graal.ens-lyon.fr/MUMPS/MUMPS_$(version).tar.gz",
-                "1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
-  DirectorySource("./bundled")
+                "3e08c1bdea7aaaba303d3cf03059f3b4336fa49bef93f4260f478f067f518289")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pord.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 makefile="Makefile.G95.PAR"
 cp Make.inc/${makefile} Makefile.inc
@@ -56,6 +53,8 @@ export MPITRAMPOLINE_CXX=c++
 export MPITRAMPOLINE_FC=gfortran
 
 make_args+=(OPTF=-O3 \
+            OPTL=-O3 \
+            OPTC=-O3 \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
             IMETIS="-I${includedir}" \
@@ -121,7 +120,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="6.1.3"),
+    # Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="7.0.3"),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
     Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273")),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
