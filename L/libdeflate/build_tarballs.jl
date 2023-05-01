@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version_string = "1.13"
+version_string = "1.18"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ebiggers/libdeflate/archive/refs/tags/v$(version_string).tar.gz", 
-                  "0d81f197dc31dc4ef7b6198fde570f4e8653c77f4698fcb2163d820a9607c838"),
+                  "225d982bcaf553221c76726358d2ea139bb34913180b20823c782cede060affd"),
 ]
 
 # Bash recipe for building across all platforms
