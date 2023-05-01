@@ -3,8 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version_string = "1.18"
-version = VersionNumber(version_string)
+version = v"1.18"
 
 # Collection of sources required to complete build
 sources = [
@@ -17,8 +16,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libdeflate
-cmake -B build && cmake --build build
-install -Dvm 0755 "build/libdeflate.${dlext}" "${libdir}/libdeflate.${dlext}"
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+make
+make install
 """
 
 # These are the platforms we will build for by default, unless further
