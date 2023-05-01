@@ -9,9 +9,7 @@ sources = [GitSource("https://github.com/martinus/robin-hood-hashing", "9145f963
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/robin-hood-hashing
-
-mkdir -p "${includedir}"
-mv -v src/include/robin_hood.h "${includedir}/robin_hood.h"
+install -Dv src/include/robin_hood.h "${includedir}/robin_hood.h"
 """
 
 # These are the platforms we will build for by default, unless further
