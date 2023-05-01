@@ -12,20 +12,20 @@ sources = [
         "495fee110ebb48a5eb63b75fd67e42b2955871e2"
     ),
     ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
     ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# This requires macOS 10.14
+# This requires macOS 10.13
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
+    export MACOSX_DEPLOYMENT_TARGET=10.13
     popd
 fi
 
@@ -33,6 +33,7 @@ cd $WORKSPACE/srcdir/libdeflate
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make
 make install
+install_license ${WORKSPACE}/srcdir/libdeflate/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
