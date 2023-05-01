@@ -4,19 +4,18 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SCALAPACK32"
-version = v"2.2.1"
+version = v"2.2.2"
 scalapack_version = v"2.2.0"
 
 sources = [
-  ArchiveSource("https://github.com/Reference-ScaLAPACK/scalapack/archive/refs/tags/v$(scalapack_version).tar.gz",
-                "8862fc9673acf5f87a474aaa71cd74ae27e9bbeee475dbd7292cec5b8bcbdcf3"),
+  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "0128dc24c6d018b61ceaac080640014e1d5ec344"),
   DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
-cd $WORKSPACE/srcdir/scalapack-*
+cd $WORKSPACE/srcdir/scalapack
 
 # the patch prevents running foreign executables, which fails on most platforms
 # we instead set CDEFS manually below
@@ -38,7 +37,9 @@ rm -f empty.*
 OPENBLAS=(-lopenblas)
 
 MPILIBS=()
-if grep -q MPICH "${prefix}/include/mpi.h"; then
+if grep -q MSMPI "${prefix}/include/mpi.h"; then
+    MPILIBS=(-lmsmpi)
+elif grep -q MPICH "${prefix}/include/mpi.h"; then
     MPILIBS=(-lmpifort -lmpi)
 elif grep -q MPItrampoline "${prefix}/include/mpi.h"; then
     MPILIBS=(-lmpitrampoline)
@@ -96,7 +97,7 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-platforms = expand_gfortran_versions(supported_platforms(; exclude=Sys.iswindows))
+platforms = expand_gfortran_versions(supported_platforms())
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
