@@ -17,8 +17,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libdeflate
-make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true
-make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} install
+cmake -B build && cmake --build build
+install -Dvm 0755 "build/libdeflate.${dlext}" "${libdir}/libdeflate.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
