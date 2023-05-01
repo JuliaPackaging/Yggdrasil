@@ -47,6 +47,13 @@ elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
     MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
 fi
 
+mpiopts=""
+if [[ "$target" == *mingw32* ]]; then
+    mpiopts="-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64"
+elif [[ "$target" == *mingw* ]]; then
+    mpiopts="-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+fi
+
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
              -DCMAKE_FIND_ROOT_PATH=${prefix}
              -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
@@ -57,7 +64,8 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
              -DLAPACK_LIBRARIES="${OPENBLAS[*]}"
              -DSCALAPACK_BUILD_TESTS=OFF
              -DBUILD_SHARED_LIBS=ON
-             -DMPI_BASE_DIR="${prefix}")
+             -DMPI_BASE_DIR="${prefix}"
+             ${mpiopts})
 
 export CDEFS="Add_"
 
