@@ -59,8 +59,7 @@ mpiopts=()
 if [[ "${target}" == x86_64-w64-mingw32 ]]; then
     # Microsoft MPI
     mpiopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=${libdir}/msmpi.dll
-              -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll
-              -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS= -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.dll)
+              -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll)
 fi
 
 cmake \
@@ -97,9 +96,10 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-# The products that we will ensure are always built
+# The products that we will ensure are always built.
+# Don't dlopen `libopenPMD` because it might transitively require libgfortran.
 products = [
-    LibraryProduct("libopenPMD", :libopenPMD),
+    LibraryProduct("libopenPMD", :libopenPMD; dont_dlopen=true),
     LibraryProduct("libopenPMD.jl", :libopenPMD_jl),
 ]
 
