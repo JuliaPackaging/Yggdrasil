@@ -8,13 +8,15 @@ version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ebiggers/libdeflate/archive/refs/tags/v$(version_string).tar.gz", 
-                  "225d982bcaf553221c76726358d2ea139bb34913180b20823c782cede060affd"),
+    GitSource(
+        "https://github.com/ebiggers/libdeflate",
+        "495fee110ebb48a5eb63b75fd67e42b2955871e2"
+    ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libdeflate-*/
+cd $WORKSPACE/srcdir/libdeflate
 make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true
 make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} install
 """
