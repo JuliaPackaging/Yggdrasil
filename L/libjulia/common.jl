@@ -96,6 +96,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     done
     fi
 
+    if [[ "${version}" == 1.9.* ]] || [[ "${version}" == 1.10.* ]]; then
+        if [[ "${target}" == *mingw* ]]; then
+            sed -i -e 's/-lblastrampoline"/-lblastrampoline-5"/g' deps/libsuitesparse.mk
+        fi
+    fi
+
     # HACK to allow building Julia 1.6 in Julia >= 1.7, as we can't install an old
     # LibOSXUnwind_jll for it (due to it becoming a stdlib in Julia 1.7).
     # See also <https://github.com/JuliaPackaging/Yggdrasil/pull/4320>
