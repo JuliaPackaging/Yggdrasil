@@ -13,9 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Add host gcc for makefont
-apk add gcc libc-dev
-
 cd $WORKSPACE/srcdir/
 
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
@@ -39,13 +36,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = [
-#    Platform("i686", "linux"; libc = "glibc"),
-#    Platform("x86_64", "linux"; libc = "glibc"),
-#    Platform("x86_64", "linux"; libc = "musl"),
-#    Platform("i686", "linux"; libc = "musl")
-#]
-platforms = expand_cxxstring_abis(supported_platforms(;experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 
 # The products that we will ensure are always built
