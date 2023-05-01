@@ -15,6 +15,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# This requires macOS 10.14
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
+
 cd $WORKSPACE/srcdir/libdeflate
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 make
