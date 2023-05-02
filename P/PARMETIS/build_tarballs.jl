@@ -11,7 +11,7 @@ parmetis_version = v"4.0.3"
 # The patch prevents building the source of METIS that ships with PARMETIS;
 # we rely on METIS_jll instead.
 sources = [
-    ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/parmetis-$(parmetis_version).tar.gz",
+    ArchiveSource("https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/parmetis/4.0.3-4/parmetis_4.0.3.orig.tar.gz",
                   "f2d9a231b7cf97f1fee6e8c9663113ebf6c240d407d3c118c55b3633d6be6e5f"),
     DirectorySource("./bundled"),
 ]
