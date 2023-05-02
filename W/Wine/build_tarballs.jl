@@ -126,8 +126,8 @@ end
 # Finally, install both:
 script = raw"""
 cd $WORKSPACE/srcdir/wine
-atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/darwin.patch
+# atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
+# atomic_patch -p1 $WORKSPACE/srcdir/patches/darwin.patch
 
 if [[ "${target}" == *darwin* ]]; then
     # On macOS, we currently do not support 32-bit wine. It is unclear whether
