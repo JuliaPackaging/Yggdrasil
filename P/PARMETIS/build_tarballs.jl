@@ -82,7 +82,7 @@ augment_platform_block = """
 """
 
 platforms = supported_platforms()
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
