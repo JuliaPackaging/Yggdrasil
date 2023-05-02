@@ -31,6 +31,7 @@ if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
     atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0002-mingw-w64-do-not-use-reserved-double-underscored-names.patch
     atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0003-WIN32-Install-RUNTIME-to-bin.patch
     atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0004-Fix-GKLIB_PATH-default-for-out-of-tree-builds.patch
+    ln -s $prefix/bin/msmpi.dll $prefix/lib/msmpi.dll
 fi
 popd
 
@@ -73,6 +74,8 @@ build_parmetis 32 32
 build_parmetis 32 64
 build_parmetis 64 32
 build_parmetis 64 64
+
+install_license ../LICENSE.txt
 """
 
 augment_platform_block = """
