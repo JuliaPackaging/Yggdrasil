@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SCALAPACK32"
 version = v"2.2.2"
-scalapack_version = v"2.2.0"
+scalapack_version = v"2.2.1" # + some additional fixes
 
 sources = [
-  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "0128dc24c6d018b61ceaac080640014e1d5ec344"),
+  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "2072b8602f0a5a84d77a712121f7715c58a2e80d"),
   DirectorySource("./bundled")
 ]
 
@@ -17,7 +17,7 @@ script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/scalapack
 cp ${WORKSPACE}/srcdir/patches/SLmake.inc SLmake.inc
-make lib
+make -j${nproc} lib
 
 if grep -q MSMPI "${prefix}/include/mpi.h"; then
     $CC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lgfortran -lopenblas -L$libdir -lmsmpi -o ${libdir}/libscalapack32.${dlext}
