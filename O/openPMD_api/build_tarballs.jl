@@ -149,5 +149,5 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                augment_platform_block, julia_compat="1.7",
                #TODO preferred_gcc_version=v"11",
                preferred_gcc_version=v"8",
-               skip_audit=true,
+               #TODO skip_audit=true,
                )
