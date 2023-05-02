@@ -20,13 +20,13 @@ cp ${WORKSPACE}/srcdir/patches/SLmake.inc SLmake.inc
 make lib
 
 if grep -q MSMPI "${prefix}/include/mpi.h"; then
-    gfortran -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lopenblas -L$libdir -lmsmpi -o ${libdir}/libscalapack32.${dlext}
+    $CC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lgfortran -lopenblas -L$libdir -lmsmpi -o ${libdir}/libscalapack32.${dlext}
 elif grep -q MPICH "${prefix}/include/mpi.h"; then
-    gfortran -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lopenblas -L$libdir -lmpifort -lmpi -o ${libdir}/libscalapack32.${dlext}
+    $CC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lgfortran -lopenblas -L$libdir -lmpifort -lmpi -o ${libdir}/libscalapack32.${dlext}
 elif grep -q MPItrampoline "${prefix}/include/mpi.h"; then
-    gfortran -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lopenblas -L$libdir -lmpitrampoline -o ${libdir}/libscalapack32.${dlext}
+    $CC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lgfortran -lopenblas -L$libdir -lmpitrampoline -o ${libdir}/libscalapack32.${dlext}
 elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    gfortran -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lopenblas -L$libdir -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -o ${libdir}/libscalapack32.${dlext}
+    $CC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lgfortran -lopenblas -L$libdir -lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi -o ${libdir}/libscalapack32.${dlext}
 fi
 """
 
@@ -46,6 +46,12 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+# Internal compiler error for v2.2.0 for:
+# - aarch64-linux-musl-libgfortran4-mpi+mpich
+# - aarch64-linux-musl-libgfortran4-mpi+openmpi
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "mpich"), platforms)
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "openmpi"), platforms)
 
 # The products that we will ensure are always built
 products = [
