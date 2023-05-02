@@ -7,7 +7,7 @@ version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ahay/src.git", "3a10302c63c69317df3f6f741347e7f77a2f3d58"),
+    GitSource("https://github.com/ahay/src.git", "87b34bd9928438bbdaf0f1e96d2ce343f267fb21"),
     DirectorySource("./bundled")
 ]
 
@@ -16,37 +16,59 @@ script = raw"""
 cd $WORKSPACE/srcdir/
 
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
+    atomic_patch -p1 -l ${f}
 done
 
 cd src
 
 export SCONSFLAGS="-j ${nproc}"
 
+platform_config=()
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    platform_config+=(LINKFLAGS="-L${libdir}/darwin -lclang_rt.osx")
+fi
+
+platform="linux"
+
+if [[ "${target}" == *-apple-* ]]; then 
+    platform="darwin"
+fi
+
+blas="blastrampoline"
+
+if [[ "${target}" == *-freebsd* ]]; then
+    CC=gcc
+    CXX=g++
+fi
+
+# install_license
+install_license COPYING.txt
+
 ./configure --prefix=${prefix} CC=$CC CXX=$CXX \
             FFMPEGPATH=${includedir}/libavcodec/ \
             CAIROPATH=${includedir}/cairo \
             CPPPATH=${includedir} \
             LIBPATH=${libdir} \
-            BLAS=blastrampoline
+            BLAS=${blas} \
+            PLATFORM="${platform}" \
+            "${platform_config[@]}" \
+            ..
 
-make
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-
+platforms = filter(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libdrsf++", :libdrsfxx),
     LibraryProduct("libdrsfpwd", :libdrsfpwd),
     LibraryProduct("libdrsf", :libdrsf),
     LibraryProduct("libdsu", :libdsu),
     LibraryProduct("libdrsfplot", :libdrsfplot),
-    LibraryProduct("libdrsfgee", :libdrsfgee),
     ExecutableProduct("sfpdr2d", :sfpdr2d),
     ExecutableProduct("sfpldb", :sfpldb),
     ExecutableProduct("sfisaac2", :sfisaac2),
@@ -1889,7 +1911,8 @@ dependencies = [
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
     Dependency(PackageSpec(name="LibGD_jll", uuid="16339573-6216-525a-b38f-30b6f6b71b5f"))
     Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11"); platforms=[Platform("aarch64", "macos")])
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10")

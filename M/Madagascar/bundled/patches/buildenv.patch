@@ -11,38 +11,8 @@ index abec2115a..d141e7b52 100644
  
  if os.path.isfile('config.py'):
      import config
-diff --git before/src/pens/fonts/SConstruct after/src/pens/fonts/SConstruct
-index f5860e0fb..9e733a2b1 100644
---- before/src/pens/fonts/SConstruct
-+++ after/src/pens/fonts/SConstruct
-@@ -4,9 +4,9 @@ import bldutil
- 
- try: # distributed version
-     Import('env root incdir')
--    env = env.Clone()
-+    env = env.Clone(CC=os.environ['HOSTCC'], LIBS='')
- except: # local version
--    env = bldutil.Debug()
-+    env = bldutil.Debug(CC=os.environ['HOSTCC'], LIBS='')
-     root = None
-     
- src = Glob('[a-z]*.vplot_font')
-@@ -27,11 +27,8 @@ for font in src:
-        
-     aux = ' '.join(['%s_%s' % (base,x) for x in attr])
- 
--    ldpath = ''
--    for key in list(os.environ.keys()):
--        if key[-15:] == 'LD_LIBRARY_PATH':
--            ldpath += '%s=\'%s\' ' % (key,os.environ[key])
--                          
-+    ldpath = ldpath = '%s=\'%s\' ' % ("LD_LIBRARY_PATH", os.environ['libdir'])
-+
-     env.Command([include,bin],[prog,font],
-                 '%s ${SOURCES[0].abspath} %s '
-                 '< ${SOURCES[1]} > ${TARGETS[0]} && '
 diff --git before/src/trip/iwave/base/lib/utils.cc after/src/trip/iwave/base/lib/utils.cc
-index c11205b1d..140fee5f7 100644
+index c11205b1d..d126976a0 100644
 --- before/src/trip/iwave/base/lib/utils.cc
 +++ after/src/trip/iwave/base/lib/utils.cc
 @@ -6,7 +6,7 @@ Igor Terentyev.
@@ -72,28 +42,79 @@ index c11205b1d..140fee5f7 100644
      free(ptr); 
  #else
      _mm_free(ptr);
-diff --git before/src/user/cram/SConstruct after/src/user/cram/SConstruct
-index 94d9369c3..08d11eebf 100644
---- before/src/user/cram/SConstruct
-+++ after/src/user/cram/SConstruct
-@@ -27,6 +27,8 @@ except: # local version
- if sys.platform.startswith('linux'):
-     env.Prepend(CPPDEFINES=['LINUX'])
+diff --git before/src/trip/iwave/sucore/src/filestat.c after/src/trip/iwave/sucore/src/filestat.c
+index 9c94c5945..9d8e7acee 100644
+--- before/src/trip/iwave/sucore/src/filestat.c
++++ after/src/trip/iwave/sucore/src/filestat.c
+@@ -99,7 +99,7 @@ CWP: Jack Cohen
+ #define S_IFLNK __S_IFLNK
+ #endif
  
-+env.Prepend(CPPDEFINES=['_GNU_SOURCE'])
+-#ifndef __APPLE__
++#if !defined(__APPLE__) && !defined(__FreeBSD__)
+ #include <sys/sysmacros.h>
+ #endif
+ 
+diff --git before/src/pens/fonts/SConstruct after/src/pens/fonts/SConstruct
+index f5860e0fb..9e733a2b1 100644
+--- before/src/pens/fonts/SConstruct
++++ after/src/pens/fonts/SConstruct
+@@ -4,9 +4,9 @@ import bldutil
+ 
+ try: # distributed version
+     Import('env root incdir')
+-    env = env.Clone()
++    env = env.Clone(CC=os.environ['HOSTCC'], LIBS='', LINKFLAGS='')
+ except: # local version
+-    env = bldutil.Debug()
++    env = bldutil.Debug(CC=os.environ['HOSTCC'], LIBS='', LINKFLAGS='')
+     root = None
+     
+ src = Glob('[a-z]*.vplot_font')
+@@ -27,11 +27,8 @@ for font in src:
+        
+     aux = ' '.join(['%s_%s' % (base,x) for x in attr])
+ 
+-    ldpath = ''
+-    for key in list(os.environ.keys()):
+-        if key[-15:] == 'LD_LIBRARY_PATH':
+-            ldpath += '%s=\'%s\' ' % (key,os.environ[key])
+-                          
++    ldpath = ldpath = '%s=\'%s\' ' % ("LD_LIBRARY_PATH", os.environ['libdir'])
 +
- src = Glob('[a-z]*.c')
+     env.Command([include,bin],[prog,font],
+                 '%s ${SOURCES[0].abspath} %s '
+                 '< ${SOURCES[1]} > ${TARGETS[0]} && '
+diff --git before/src/framework/configure.py after/src/framework/configure.py
+index 3c3d59d3d..ffcdef945 100644
+--- before/src/framework/configure.py
++++ after/src/framework/configure.py
+@@ -470,6 +470,7 @@ def c99(context):
+     float complex c;
+     float f;
+     c = 0.0;
++    f = (c + 1) / (c - 1);
+     f = cabsf(ccosf(c));
+     return (int) f;
+     }\n'''
+diff --git before/src/user/gee/ckolmog.c after/src/user/gee/ckolmog.c
+index 6b727369c..41e9c2bc8 100644
+--- before/src/user/gee/ckolmog.c
++++ after/src/user/gee/ckolmog.c
+@@ -75,10 +75,15 @@ void ckolmog2(float *aut, sf_complex *trace)
+     /* Inverse transform */
+     kiss_fft(invs,(const kiss_fft_cpx *) fft, (kiss_fft_cpx *) trace);
  
- sse = None
-diff --git before/src/user/mccowan/SConstruct after/src/user/mccowan/SConstruct
-index 182c79615..1c05782b7 100644
---- before/src/user/mccowan/SConstruct
-+++ after/src/user/mccowan/SConstruct
-@@ -18,6 +18,7 @@ src = Glob('[a-z]*.c')
++#ifdef SF_HAS_COMPLEX_H
+     trace[0] *= 0.5;
+     trace[nfft/2] *= 0.5;
++#else
++    trace[0] = sf_crmul(trace[0],0.5);
++    trace[nfft/2] = sf_crmul(trace[nfft/2],0.5);
++#endif
+     for (i1=1+nfft/2; i1 < nfft; i1++) {
+-       trace[i1] = 0.;
++    trace[i1] = sf_cmplx(0.,0.);
+     }
  
- env.Prepend(CPPPATH=['../../include'],
-             LIBPATH=['../../lib'],
-+            CPPDEFINES=['_GNU_SOURCE'],
-             LIBS=[env.get('DYNLIB','')+'rsf'])
- 
- for source in src:
+     /* Fourier transform */
