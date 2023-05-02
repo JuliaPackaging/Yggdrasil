@@ -1,0 +1,25 @@
+commit f929b4544ab0a94b0099a57e0e05565839c0b2b9
+Author: Benjamin Lorenz <lorenz@math.tu-berlin.de>
+Date:   2023-04-30 16:00:58 +0200
+
+    don't add cross-compile prefix twice
+    
+    make reexports changed environment variables to subprocesses
+
+diff --git a/Make.inc b/Make.inc
+index 44addb2ee4..a443eb5709 100644
+--- a/Make.inc
++++ b/Make.inc
+@@ -458,10 +458,12 @@ endif
+ 
+ # Compiler specific stuff
+ 
++ifeq (,$(findstring $(CROSS_COMPILE),$(CC)))
+ CC := $(CROSS_COMPILE)$(CC) # attempt to add cross-compiler prefix, if the user
+                             # is not overriding the default, to form target-triple-cc (which
+                             # may not exist), and use that to decide what compiler the user
+                             # is using for the target build (or default to gcc)
++endif
+ CC_VERSION_STRING = $(shell $(CC) --version 2>/dev/null)
+ ifneq (,$(findstring clang,$(CC_VERSION_STRING)))
+ USECLANG := 1
