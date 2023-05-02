@@ -8,10 +8,10 @@ using BinaryBuilder, Pkg
 #
 # CODE using the mpq_rational from boost
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "9afb945bdb929a1e00af945ec3f3058045138170"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "bfad27e6b80aca0e1c389d1f4b0cdde991bb2ddc"),
 ]
 name = "polyhedral"
-version = v"0.1" # <-- This is the first version of it but this is rather arbitrary
+version = v"0.2" # <-- This is the first version of it but this is rather arbitrary
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -31,14 +31,19 @@ export NAUTY_LINK="-L$libdir -lnauty"
 
 make
 
-cp GRP_ListMat_Subset_EXT_Automorphism $bindir
+cp GRP_LinPolytope_Automorphism $bindir
 cp GRP_ListMat_Subset_EXT_Isomorphism $bindir
+cp GRP_LinPolytope_Automorphism_GramMat $bindir
+cp GRP_LinPolytope_Isomorphism_GramMat $bindir
+cp GRP_ListMat_Subset_EXT_Automorphism $bindir
 cp GRP_ListMat_Subset_EXT_Invariant $bindir
-cp IndefiniteReduction $bindir
-cp POLY_cdd_lp2 $bindir
 cp POLY_dual_description_group $bindir
+cp POLY_cdd_LinearProgramming $bindir
 cp POLY_sampling_facets $bindir
-cp sv_exact $bindir
+cp LATT_Automorphism $bindir
+cp LATT_Isomorphism $bindir
+cp IndefiniteReduction $bindir
+cp sv_near $bindir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,10 +58,15 @@ products = [
     ExecutableProduct("GRP_ListMat_Subset_EXT_Isomorphism", :GRP_ListMat_Subset_EXT_Isomorphism)
     ExecutableProduct("GRP_ListMat_Subset_EXT_Invariant", :GRP_ListMat_Subset_EXT_Invariant)
     ExecutableProduct("IndefiniteReduction", :IndefiniteReduction)
-    ExecutableProduct("POLY_cdd_lp2", :POLY_cdd_lp2)
     ExecutableProduct("POLY_dual_description_group", :POLY_dual_description_group)
     ExecutableProduct("POLY_sampling_facets", :POLY_sampling_facets)
-    ExecutableProduct("sv_exact", :sv_exact)
+    ExecutableProduct("sv_near", :sv_near)
+    ExecutableProduct("LATT_Automorphism", :LATT_Automorphism)
+    ExecutableProduct("LATT_Isomorphism", :LATT_Isomorphism)
+    ExecutableProduct("POLY_cdd_LinearProgramming", :POLY_cdd_LinearProgramming)
+    ExecutableProduct("GRP_LinPolytope_Automorphism", :GRP_LinPolytope_Automorphism)
+    ExecutableProduct("GRP_LinPolytope_Automorphism_GramMat", :GRP_LinPolytope_Automorphism_GramMat)
+    ExecutableProduct("GRP_LinPolytope_Isomorphism_GramMat", :GRP_LinPolytope_Isomorphism_GramMat)
 ]
 
 # Dependencies that must be installed before this package can be built
