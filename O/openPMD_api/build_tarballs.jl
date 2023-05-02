@@ -128,7 +128,10 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 append!(dependencies, platform_dependencies)
 
-# See <https://github.com/JuliaPackaging/Yggdrasil/blob/master/Q/Qt5Base/build_tarballs.jl> for building on macOS 10.14
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and
+# `dlopen`s the shared libraries. (MPItrampoline will skip its
+# automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need C++14, which requires at least GCC 5.
@@ -136,18 +139,5 @@ append!(dependencies, platform_dependencies)
 # GCC 5 has a bug regarding `std::to_string` on freebsd, fixed on GCC 6
 # macOS encounters an ICE in GCC 6; switching to GCC 7 instead
 # Let's use GCC 8 to have libgfortran5 ABI and make auditor happy when looking for libgfortran: #5028
-
-# We skip the audit because openPMD_api's dependencies may require
-# libgfortran but the auditor doesn't find it (although it's there!)
-# First the auditor says:
-#     [ Info: Checking shared library lib/libopenPMD.so
-#     ERROR: could not load library "/cache/build/yggy-amdci7-10/julialang/yggdrasil/O/openPMD_api/build/x86_64-linux-gnu-cxx11-julia_version+1.7.0-mpi+mpitrampoline/dYbFErbx/x86_64-linux-gnu-libgfortran5-cxx11-julia_version+1.7.0-mpi+mpitrampoline/destdir/lib/libopenPMD.so"
-#     libgfortran.so.5: cannot open shared object file: No such file or directory
-# ... and a bit later it says:
-#     [ Info: Found a valid dl path libgfortran.so while looking for libopenPMD
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.7",
-               #TODO preferred_gcc_version=v"11",
-               preferred_gcc_version=v"8",
-               #TODO skip_audit=true,
-               )
+               augment_platform_block, julia_compat="1.7", preferred_gcc_version=v"8")
