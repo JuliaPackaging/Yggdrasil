@@ -111,7 +111,7 @@ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra')
 fi
-if [[ "${LLVM_MAJ_VER}" -ge "14" ]]; then
+if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
