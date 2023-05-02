@@ -96,7 +96,7 @@ if !is_meta
         # Next, build wine32, without wine64, then use those tools to build wine32 WITH wine64
         wine32_script = raw"""
         cd $WORKSPACE/srcdir/wine
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
+        # atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
 
         # Next, build wine32, linking against the previously included wine64 stuff:
         mkdir $WORKSPACE/srcdir/wine32_only
