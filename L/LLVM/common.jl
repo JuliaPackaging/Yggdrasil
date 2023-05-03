@@ -15,7 +15,7 @@ const llvm_tags = Dict(
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
-    v"15.0.7" => "fcc8566589dd38181281316a65a96ea1e8b6b599", # julia-15.0.7-4
+    v"15.0.7" => "3089b0b526eed060bc1c0ed582dabe2a06801226", # julia-15.0.7-5
 )
 
 const buildscript = raw"""
@@ -111,6 +111,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "11" ]]; then
 else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang;clang-tools-extra')
 fi
+if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
+    CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
@@ -164,6 +167,10 @@ if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ
 fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
+
+if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
+    CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+fi
 
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
@@ -542,6 +549,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     if version >= v"12.0.1"
         push!(products, LibraryProduct(["MLIR", "libMLIR"], :mlir, dont_dlopen=true))
     end
+    if version >= v"14"
+        push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c, dont_dlopen=true))
+    end
     if version >= v"12"
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
         push!(products, ExecutableProduct("lld", :lld, "tools"))
@@ -610,6 +620,9 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         ]
         if v"12" <= version < v"13"
             push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
+        end
+        if version >= v"14"
+            push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c, dont_dlopen=true))
         end
     elseif name == "LLD"
         script = lldscript

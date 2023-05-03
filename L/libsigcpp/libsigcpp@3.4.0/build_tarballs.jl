@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libsigcpp"
-version = v"3.0.7"
+version = v"3.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.gnome.org/sources/libsigc++/3.0/libsigc%2B%2B-$(version).tar.xz",
-                  "bfbe91c0d094ea6bbc6cbd3909b7d98c6561eea8b6d9c0c25add906a6e83d733")
+    ArchiveSource("https://download.gnome.org/sources/libsigc++/3.4/libsigc%2B%2B-$(version).tar.xz",
+                  "02e2630ffb5ce93cd52c38423521dfe7063328863a6e96d41d765a6116b8707e")
 ]
 
 # Bash recipe for building across all platforms
