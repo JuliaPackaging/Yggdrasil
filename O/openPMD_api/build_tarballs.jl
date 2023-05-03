@@ -114,7 +114,7 @@ dependencies = [
     Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
 ]
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported
 # TODO: Do this automatically
@@ -128,10 +128,10 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 append!(dependencies, platform_dependencies)
 
-# Don't look for `mpiwrapper.so` when BinaryBuilder examines and
-# `dlopen`s the shared libraries. (MPItrampoline will skip its
-# automatic initialization.)
-ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
+#TODO # Don't look for `mpiwrapper.so` when BinaryBuilder examines and
+#TODO # `dlopen`s the shared libraries. (MPItrampoline will skip its
+#TODO # automatic initialization.)
+#TODO ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need C++14, which requires at least GCC 5.
