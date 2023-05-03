@@ -22,7 +22,7 @@ rm -f $(which python3)
 
 # We need these for the host python build
 apk update
-apk add zlib-dev libffi-dev
+apk add zlib-dev libffi-dev openssl-dev
 
 # Create fake `arch` command:
 echo '#!/bin/bash' >> /usr/bin/arch
@@ -66,6 +66,9 @@ export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
 
+# Force Python build to run in cross compilation mode
+export _PYTHON_HOST_PLATFORM="linux"
+
 conf_args=()
 conf_args+=(--enable-shared)
 conf_args+=(--disable-ipv6)
@@ -82,6 +85,12 @@ conf_args+=(ac_cv_have_chflags=no)
 ../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" "${conf_args[@]}"
 
 make -j${nproc}
+
+# Ensure that built modules haven't been removed
+if [[ $(find build -name "*_failed.so" | wc -l) -gt 0 ]]; then
+    exit 1
+fi
+
 make install
 """
 
