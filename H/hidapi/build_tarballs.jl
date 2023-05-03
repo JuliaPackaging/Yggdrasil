@@ -45,7 +45,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("libusb_jll", platforms=filter(p -> p.tags["os"] ∈ ("freebsd", "linux",), platforms))
+    Dependency("libusb_jll", platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms))
 ]
 
 
