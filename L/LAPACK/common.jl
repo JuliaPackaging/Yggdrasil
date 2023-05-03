@@ -24,7 +24,7 @@ function lapack_script(;lapack32::Bool=false)
         ILP64="ON"
     else
         ILP64="OFF"
-    end
+    fi
 
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
       syms=(CAXPBY CAXPY CBBCSD CBDSQR
