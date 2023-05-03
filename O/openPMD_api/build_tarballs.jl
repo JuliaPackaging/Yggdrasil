@@ -128,11 +128,6 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 append!(dependencies, platform_dependencies)
 
-#TODO # Don't look for `mpiwrapper.so` when BinaryBuilder examines and
-#TODO # `dlopen`s the shared libraries. (MPItrampoline will skip its
-#TODO # automatic initialization.)
-#TODO ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
-
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need C++14, which requires at least GCC 5.
 # GCC 5 reports incompatible signatures for `posix_memalign` on linux/musl, fixed on GCC 6
