@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.72.2"
+version = v"0.72.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "cbce9bb9d6b42154cdb57725bd3050bb17336809"),
+    GitSource("https://github.com/sciapp/gr.git", "34385d25b9dca50b1a775d4ac1e669732b6bf5e1"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "30bd4eb18107b7e80360d7f25e65a0f21e2eeba2a52d1921da9b61b21c918038", "gr.js")
+               "20e1633681598e86c8b9983bef9628cb20d912b312f4024edec5dd3fa153414a", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
@@ -51,6 +51,7 @@ install_license $WORKSPACE/srcdir/gr/LICENSE.md
 if [[ $target == *"apple-darwin"* ]]; then
     cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
+    ln -s ../Applications/grplot.app/Contents/MacOS/grplot ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
