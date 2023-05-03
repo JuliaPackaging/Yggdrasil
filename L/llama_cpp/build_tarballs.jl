@@ -8,6 +8,8 @@ version = v"0.0.8"  # fake version number
 
 # NOTES
 # - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
+# - fails on i686-w64-mingw32
+#   /workspace/srcdir/llama.cpp/examples/main/main.cpp:249:81: error: invalid static_cast from type ‘main(int, char**)::<lambda(DWORD)>’ to type ‘PHANDLER_ROUTINE’ {aka ‘int (__attribute__((stdcall)) *)(long unsigned int)’}
 # - on x86_64 and i686 we assume these arch extensions are available
 #   - avx (LLAMA_AVX)
 #   - avx2 (LLAMA_AVX2)
@@ -93,7 +95,7 @@ done
 install_license ../LICENSE
 """
 
-platforms = supported_platforms(; exclude = p -> arch(p) == "powerpc64le")
+platforms = supported_platforms(; exclude = p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)))
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
