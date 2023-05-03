@@ -2,15 +2,15 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.19.7"
+version = v"5.20.0"
 sources = [
-    ArchiveSource(
-        "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
-        "61cbdf1a86aefbc002ac5a0cf9c0f3f91eca2ae8aa5c3e7ef78be0f5a84426c5"),
+    GitSource(
+        "https://github.com/sbmlteam/libsbml.git",
+        "fdfda61ac8c580e8002d917cacf5728c1895bafb")
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/libsbml-*
+cd ${WORKSPACE}/srcdir/libsbml
 
 mkdir build
 cd build
