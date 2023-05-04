@@ -1,0 +1,34 @@
+diff --git a/cairomm/quartz_font.h b/cairomm/quartz_font.h
+index 16fd479..32872d4 100644
+--- a/cairomm/quartz_font.h
++++ b/cairomm/quartz_font.h
+@@ -20,6 +20,12 @@
+
+ #include <cairo-features.h>
+
++// GCC does not work with parts of the new macOS SDK used on Apple Silicon
++// due to missing __BLOCKS__ guards
++#if (defined(__APPLE__) && (defined(__arm64__) || defined(__aarch64__)))
++#undef CAIRO_HAS_QUARTZ_FONT
++#endif
++
+ #ifdef CAIRO_HAS_QUARTZ_FONT
+ #include <cairo-quartz.h>
+ #include <cairomm/fontface.h>
+diff --git a/cairomm/quartz_surface.h b/cairomm/quartz_surface.h
+index 31737f7..489fb51 100644
+--- a/cairomm/quartz_surface.h
++++ b/cairomm/quartz_surface.h
+@@ -21,6 +21,12 @@
+
+ #include <cairomm/surface.h>
+
++// GCC does not work with parts of the new macOS SDK used on Apple Silicon
++// due to missing __BLOCKS__ guards
++#if (defined(__APPLE__) && (defined(__arm64__) || defined(__aarch64__)))
++#undef CAIRO_HAS_QUARTZ_SURFACE
++#endif
++
+ #ifdef CAIRO_HAS_QUARTZ_SURFACE
+ #include <cairo-quartz.h>
+ #endif
