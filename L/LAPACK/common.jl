@@ -325,6 +325,8 @@ function lapack_script(;lapack32::Bool=false)
         elif [[ ${target} == *apple* ]]; then
           install_name_tool -id liblapack32.${dlext} ${libdir}/liblapack32.${dlext}
         fi
+    else
+        mv -v ${libdir}/liblapack64.${dlext} ${libdir}/liblapack.${dlext}
     fi
     """
 end
