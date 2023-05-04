@@ -13,7 +13,11 @@ sources = [
 # Bash recipe for building across all platforms
 
 function lapack_script(;lapack32::Bool=false)
-    script = raw"""
+    script = """
+    LAPACK32=$(lapack32)
+    """
+
+    script *= raw"""
     LAPACK32=$(lapack32)
     cd $WORKSPACE/srcdir/lapack*
     FFLAGS=(-cpp -ffixed-line-length-none -DUSE_ISNAN)
