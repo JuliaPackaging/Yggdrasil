@@ -18,8 +18,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd t8code
+cd $WORKSPACE/srcdir/t8code
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
