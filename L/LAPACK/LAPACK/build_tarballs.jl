@@ -5,7 +5,7 @@ include("../common.jl")
 script = lapack_script(lapack32=false)
 
 products = [
-    LibraryProduct(["liblapack"], :liblapack),
+    LibraryProduct(["liblapack64"], :liblapack64),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

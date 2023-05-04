@@ -13,17 +13,12 @@ sources = [
 # Bash recipe for building across all platforms
 
 function lapack_script(;lapack32::Bool=false)
-    script = """
-    LAPACK32=$(lapack32)
-    """
-
     script *= raw"""
+    LAPACK32=$(lapack32)
     cd $WORKSPACE/srcdir/lapack*
     FFLAGS=(-cpp -ffixed-line-length-none -DUSE_ISNAN)
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
-        ILP64="ON"
-    else
-        ILP64="OFF"
+        FFLAGS="${FFLAGS} -fdefault-integer-8"
     fi
 
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
@@ -300,7 +295,6 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
        -DTEST_FORTRAN_COMPILER=OFF \
-       -DBUILD_INDEX64="$ILP64" \
        -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline"
 
     make -j${nproc}
@@ -325,8 +319,6 @@ function lapack_script(;lapack32::Bool=false)
         elif [[ ${target} == *apple* ]]; then
           install_name_tool -id liblapack32.${dlext} ${libdir}/liblapack32.${dlext}
         fi
-    else
-        mv -v ${libdir}/liblapack64.${dlext} ${libdir}/liblapack.${dlext}
     fi
     """
 end
