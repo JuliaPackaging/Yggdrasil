@@ -48,6 +48,16 @@ export MPITRAMPOLINE_CC=cc
 export MPITRAMPOLINE_CXX=c++
 export MPITRAMPOLINE_FC=gfortran
 
+if [[ "${target}" == *mingw32* ]]; then
+    MPICC=gcc
+    MPIFC=gfortran
+    MPIFL=gfortran
+else
+    MPICC=mpicc
+    MPIFC=mpifort
+    MPIFL=mpifort
+fi
+
 make_args+=(OPTF=-O3 \
             OPTL=-O3 \
             OPTC=-O3 \
@@ -58,9 +68,9 @@ make_args+=(OPTF=-O3 \
             ORDERINGSF="-Dpord -Dparmetis" \
             LIBEXT_SHARED=".${dlext}" \
             SONAME="${SONAME}" \
-            CC="mpicc -fPIC ${CFLAGS[@]}" \
-            FC="mpifort -fPIC ${FFLAGS[@]}" \
-            FL="mpifort -fPIC" \
+            CC="${MPICC} -fPIC ${CFLAGS[@]}" \
+            FC="${MPIFC} -fPIC ${FFLAGS[@]}" \
+            FL="${MPIFL} -fPIC" \
             RANLIB="echo" \
             LAPACK="-L${libdir} -lopenblas"
             SCALAP="-L${libdir} -lscalapack32" \
