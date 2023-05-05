@@ -44,7 +44,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.12"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

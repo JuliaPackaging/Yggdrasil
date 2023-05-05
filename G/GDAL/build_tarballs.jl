@@ -144,7 +144,8 @@ dependencies = [
     Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73"),
     Dependency("NetCDF_jll"; compat="400.902.5", platforms=hdf5_platforms),
-    Dependency("HDF5_jll"; platforms=hdf5_platforms),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.12", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
 ]
 
