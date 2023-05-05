@@ -90,12 +90,6 @@ cuda_versions_to_build = Any[
     "none"
 ]
 
-# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
-cuda_versions = Dict(
-    v"10.2" => v"10.2.89",
-    v"11.0" => v"11.0.3",
-)
-
 cuda_platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("powerpc64le", "linux"; libc = "glibc"),
@@ -118,7 +112,7 @@ for cuda_version in cuda_versions_to_build, platform in platforms
     if cuda_version != "none"
         if platform in cuda_platforms
             push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                                            version=cuda_versions[cuda_version])))
+                                                            version=CUDA.full_version(cuda_version))))
         end
     end
 

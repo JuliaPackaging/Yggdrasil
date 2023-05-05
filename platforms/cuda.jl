@@ -62,5 +62,26 @@ const augment = """
 function platform(cuda::VersionNumber)
     return "$(cuda.major).$(cuda.minor)"
 end
+platform(cuda::String) = cuda
+
+# BinaryBuilder.jl currently does not allow selecting a BuildDependency by compat,
+# so we need the full version for CUDA_full_jll (JuliaPackaging/BinaryBuilder.jl#/1212).
+const cuda_full_versions = [
+    v"11.0.3",
+    v"11.1.1",
+    v"11.2.2",
+    v"11.3.1",
+    v"11.4.4",
+    v"11.5.2",
+    v"11.6.2",
+    v"11.7.1",
+    v"11.8.0",
+    v"12.0.1",
+    v"12.1.1"
+]
+function full_version(cuda::VersionNumber)
+    haskey(cuda_full_versions, cuda) || error("CUDA version $cuda not supported")
+    return cuda_full_versions[cuda]
+end
 
 end

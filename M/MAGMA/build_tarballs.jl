@@ -46,16 +46,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # You can only specify one cuda version in the deps. To build against more than 
+    # You can only specify one cuda version in the deps. To build against more than
     # one cuda version, you have to include them as Archive Sources. (see Torch_jll)
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.0.3")),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(v"11.0"))),
     Dependency("libblastrampoline_jll", compat="5.1.1"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-                preferred_gcc_version=v"8", 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+                preferred_gcc_version=v"8",
                 julia_compat="1.8",
                 augment_platform_block=CUDA.augment)

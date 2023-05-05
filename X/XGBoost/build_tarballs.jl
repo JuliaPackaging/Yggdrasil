@@ -1,5 +1,5 @@
-using BinaryBuilder 
-using BinaryBuilderBase 
+using BinaryBuilder
+using BinaryBuilderBase
 using Pkg
 
 name = "XGBoost"
@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"), 
+    GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,7 +29,7 @@ if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
     # make it use the workspace instead
     export TMPDIR=${WORKSPACE}/tmpdir
     mkdir ${TMPDIR}
-    
+
     export CUDA_HOME=${WORKSPACE}/destdir/cuda
     export PATH=$PATH:$CUDA_HOME/bin
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -39,7 +39,7 @@ if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
             -DBUILD_WITH_CUDA_CUB=ON
     make -j${nproc}
 else
-    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
     make -j${nproc}
 fi
 
@@ -64,14 +64,8 @@ augment_platform_block = CUDA.augment
 versions_to_build = [
     nothing,
     v"11.0",
-    v"12.0", 
+    v"12.0",
 ]
-
-# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
-cuda_full_versions = Dict(
-    v"11.0" => v"11.0.3",
-    v"12.0" => v"12.0.1",
-)
 
 cuda_preambles = Dict(
     nothing => "",
@@ -114,13 +108,13 @@ for cuda_version in versions_to_build, platform in platforms
     ]
 
     if !isnothing(cuda_version)
-        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version])))
+        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version))))
         push!(dependencies, RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")))
     end
     preamble = cuda_preambles[cuda_version]
-    
-    build_tarballs(ARGS, name, version, sources,  preamble*script, [augmented_platform], products, dependencies; 
-                    preferred_gcc_version=v"8", 
+
+    build_tarballs(ARGS, name, version, sources,  preamble*script, [augmented_platform], products, dependencies;
+                    preferred_gcc_version=v"8",
                     julia_compat="1.6",
                     augment_platform_block)
 end

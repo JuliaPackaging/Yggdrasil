@@ -93,13 +93,6 @@ products = [
     LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime),
 ]
 
-# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
-cuda_full_versions = Dict(
-    v"10.2" => v"10.2.89",
-    v"11.0" => v"11.0.3",
-    v"12.0" => v"12.0.0",
-)
-
 # build SuiteSparse for all supported CUDA toolkits
 #
 # the library doesn't have specific CUDA requirements, so we only build for CUDA 10.2,
@@ -114,7 +107,7 @@ for cuda_version in [v"10.2", v"11.0", v"12.0"], platform in platforms
 
     cuda_deps = [
         BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                    version=cuda_full_versions[cuda_version])),
+                                    version=CUDA.full_version(cuda_version))),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     ]
 

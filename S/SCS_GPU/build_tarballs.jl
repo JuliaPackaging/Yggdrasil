@@ -1,6 +1,9 @@
 using Pkg
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+
 name = "SCS_GPU"
 version = v"3.2.3"
 
@@ -35,11 +38,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 # scs uses CUSPARSE_SPMV_CSR_ALG1 which requires CUDA-11.3
-cuda_version = v"11.3.1"
+cuda_version = v"11.3"
 
 dependencies = [
     Dependency("OpenBLAS32_jll", v"0.3.10"),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version))
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version)))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

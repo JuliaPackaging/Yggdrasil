@@ -60,12 +60,6 @@ platforms = [
 
 cuda_versions_to_build = Any[v"10.2", v"11.0", nothing] #= v"12.1", =#
 
-cuda_versions = Dict(
-    v"10.2" => v"10.2.89",
-    v"11.0" => v"11.0.3",
-    # v"12.1" => v"12.1.0"
-)
-
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
     LibraryProduct("libpttrace", :libpttrace),
@@ -105,7 +99,7 @@ for cuda_version in cuda_versions_to_build, platform in platforms
     should_build_platform(triplet(augmented_platform)) || continue
 
     if !isnothing(cuda_version)
-        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_versions[cuda_version])))
+        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version))))
     end
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform], products, dependencies; julia_compat="1.6", CUDA.augment)
