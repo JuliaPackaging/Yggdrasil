@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PARMETIS"
-version = v"4.0.6" # <-- This is a lie, we're bumping to 4.0.6 since we are adding new dependencies and building all library versions.
+version = v"4.0.7" # <-- This is a lie, we're bumping to 4.0.7 since we are adding new dependencies and building all library versions.
 parmetis_version = v"4.0.3"
 
 # Collection of sources required to build PARMETIS.
