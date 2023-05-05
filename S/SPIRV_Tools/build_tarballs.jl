@@ -49,9 +49,8 @@ ninja -C build -j ${nproc} install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [Platform("x86_64", "linux", libc=:glibc)]
-# platforms = supported_platforms()
-# platforms = expand_cxxstring_abis(platforms)
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -69,4 +68,4 @@ products = [
 dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6", preferred_gcc_version=v"7") # requires C++17
