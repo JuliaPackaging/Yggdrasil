@@ -2,12 +2,12 @@ using BinaryBuilder
 
 # LAPACK mirrors the OpenBLAS build, whereas LAPACK32 mirrors the OpenBLAS32 build.
 
-version = v"3.10.0"
+version = v"3.10.1"
 
 # Collection of sources required to build lapack
 sources = [
-    GitSource("https://github.com/Reference-LAPACK/lapack-release",
-              "aa631b4b4bd13f6ae2dbab9ae9da209e1e05b0fc"),
+    GitSource("https://github.com/Reference-LAPACK/lapack.git",
+              "32b062a33352e05771dcc01b981ebe961bf2e42f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,6 +19,12 @@ function lapack_script(;lapack32::Bool=false)
 
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
+    if [[ "${target}" == *-mingw* ]]; then
+        BLAS="blastrampoline-5"
+    else
+        BLAS="blastrampoline"
+    fi
+
     FFLAGS=(-cpp -ffixed-line-length-none -DUSE_ISNAN)
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
         FFLAGS="${FFLAGS} -fdefault-integer-8"
@@ -300,17 +306,24 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
-       -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline"
+       -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
 
     make -j${nproc} all
     make install
+
+    if [[ -f "${libdir}/libblas.${dlext}" ]]; then
+        echo "Error: libblas.${dlext} has been built, linking to libblastrampoline did not work"
+        exit 1
+    fi
     """
 end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) == v"3"), platforms)
+# Building ILP64 LAPACK on aarch64 linux runs into internal compiler errors with
+# GCC ≤ 7 (=> libgfortran ≤ 4).
+filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) ≤ v"4"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -320,5 +333,5 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
         Dependency("CompilerSupportLibraries_jll")
-        Dependency("libblastrampoline_jll"; compat="5.1.1")
+        Dependency("libblastrampoline_jll"; compat="5.4.0")
 ]
