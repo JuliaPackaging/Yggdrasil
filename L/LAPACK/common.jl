@@ -316,7 +316,9 @@ end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) == v"3"), platforms)
+# Building ILP64 LAPACK on aarch64 linux runs into internal compiler errors with
+# GCC ≤ 7 (=> libgfortran ≤ 4).
+filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) ≤ v"4"), platforms)
 
 # The products that we will ensure are always built
 products = [
