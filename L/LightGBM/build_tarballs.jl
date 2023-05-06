@@ -16,35 +16,36 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cp -r ./compute/* ./LightGBM/external_libs/compute/
-cp -r ./eigen/* ./LightGBM/external_libs/eigen/
-cp -r ./fast_double_parser/* ./LightGBM/external_libs/fast_double_parser/
-cp -r ./fmt/* ./LightGBM/external_libs/fmt/
-cd LightGBM/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make -j${nproc}
+cd $WORKSPACE/srcdir/LightGBM
+cp -r ../compute/* ./external_libs/compute/
+cp -r ../eigen/* ./external_libs/eigen/
+cp -r ../fast_double_parser/* ./external_libs/fast_double_parser/
+cp -r ../fmt/* ./external_libs/fmt/
+
+if [[ $target == *"apple-darwin"* ]]; then
+  cmake_extra_args="-DAPPLE=1 -DAPPLE_OUTPUT_DYLIB=1"
+fi
+
+FLAGS=()
+
+if [[ "${target}" == *-mingw* ]]; then
+  cmake_extra_args="-DWIN32=0"
+  FLAGS+=(LDFLAGS="-no-undefined")
+fi
+
+cmake \
+  -DCMAKE_INSTALL_PREFIX=$prefix\
+  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+  -DCMAKE_BUILD_TYPE=Release \
+  $cmake_extra_args
+make -j${nproc} "${FLAGS[@]}"
 make install
-exit
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis([
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-])
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -59,4 +60,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
