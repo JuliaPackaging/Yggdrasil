@@ -310,6 +310,11 @@ function lapack_script(;lapack32::Bool=false)
 
     make -j${nproc} all
     make install
+
+    if [[ -f "${libdir}/libblas.${dlext}" ]]; then
+        echo "Error: libblas.${dlext} has been built, linking to libblastrampoline did not work"
+        exit 1
+    fi
     """
 end
 
