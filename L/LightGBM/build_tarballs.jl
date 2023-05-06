@@ -8,19 +8,15 @@ version = v"3.3.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/LightGBM.git", "ca035b2ee0c2be85832435917b1e0c8301d2e0e0"),
-    GitSource("https://github.com/boostorg/compute.git", "36c89134d4013b2e5e45bc55656a18bd6141995a"),
-    GitSource("https://gitlab.com/libeigen/eigen.git", "8ba1b0f41a7950dc3e1d4ed75859e36c73311235"),
-    GitSource("https://github.com/lemire/fast_double_parser.git", "ace60646c02dc54c57f19d644e49a61e7e7758ec"),
-    GitSource("https://github.com/fmtlib/fmt.git", "cc09f1a6798c085c325569ef466bcdcffdc266d4")
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/LightGBM
-cp -r ../compute/* ./external_libs/compute/
-cp -r ../eigen/* ./external_libs/eigen/
-cp -r ../fast_double_parser/* ./external_libs/fast_double_parser/
-cp -r ../fmt/* ./external_libs/fmt/
+git submodule update --init --depth=1
+git submodule update --checkout --depth=1
+
 
 if [[ $target == *"apple-darwin"* ]]; then
   cmake_extra_args="-DAPPLE=1 -DAPPLE_OUTPUT_DYLIB=1"
@@ -29,7 +25,11 @@ fi
 FLAGS=()
 
 if [[ "${target}" == *-mingw* ]]; then
-  cmake_extra_args="-DWIN32=0"
+  # Parches windows
+  for p in $WORKSPACE/srcdir/patches/windows/*.patch; do
+    atomic_patch -p1 "${p}"
+  done
+  cmake_extra_args="-DWIN32=1 -DMINGW=1"
   FLAGS+=(LDFLAGS="-no-undefined")
 fi
 
