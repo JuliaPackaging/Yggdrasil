@@ -2,12 +2,12 @@ using BinaryBuilder
 
 # LAPACK mirrors the OpenBLAS build, whereas LAPACK32 mirrors the OpenBLAS32 build.
 
-version = v"3.10.0"
+version = v"3.10.1"
 
 # Collection of sources required to build lapack
 sources = [
-    GitSource("https://github.com/Reference-LAPACK/lapack-release",
-              "aa631b4b4bd13f6ae2dbab9ae9da209e1e05b0fc"),
+    GitSource("https://github.com/Reference-LAPACK/lapack.git",
+              "32b062a33352e05771dcc01b981ebe961bf2e42f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -320,5 +320,5 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
         Dependency("CompilerSupportLibraries_jll")
-        Dependency("libblastrampoline_jll"; compat="5.1.1")
+        Dependency("libblastrampoline_jll"; compat="5.4.0")
 ]
