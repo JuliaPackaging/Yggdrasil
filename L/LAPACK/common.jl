@@ -19,6 +19,12 @@ function lapack_script(;lapack32::Bool=false)
 
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
+    if [[ "${target}" == *-mingw* ]]; then
+        BLAS="blastrampoline-5"
+    else
+        BLAS="blastrampoline"
+    fi
+
     FFLAGS=(-cpp -ffixed-line-length-none -DUSE_ISNAN)
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
         FFLAGS="${FFLAGS} -fdefault-integer-8"
@@ -300,7 +306,7 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
-       -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline"
+       -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
 
     make -j${nproc} all
     make install
