@@ -18,7 +18,6 @@ function lapack_script(;lapack32::Bool=false)
     """
 
     script *= raw"""
-    LAPACK32=$(lapack32)
     cd $WORKSPACE/srcdir/lapack*
     FFLAGS=(-cpp -ffixed-line-length-none -DUSE_ISNAN)
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
