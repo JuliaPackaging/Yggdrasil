@@ -57,15 +57,16 @@ dependencies = [
 cuda_full_versions = Dict(
     v"10.2" => v"10.2.89",
     v"11.0" => v"11.0.3",
-    # v"12.0" => v"12.0.0",  # Not sure why, but this causes issues
+    v"12.0" => v"12.0.0",
 )
 
 # Build Libxc for all supported CUDA toolkits
 #
-# The library doesn't have specific CUDA requirements, so we build for CUDA 10.1 till 12.0,
-# which (per semantic versioning) should support every CUDA 11.x and 12.x version.
+# The library doesn't have specific CUDA requirements, so we build for CUDA 10.1 till 11.0,
+# which (per semantic versioning) should support every CUDA 10.x and 11.x version.
+# CUDA 12 causes issues, so we don't build that yet.
 #
-for cuda_version in [v"10.2", v"11.0", v"12.0", ], platform in platforms
+for cuda_version in [v"10.2", v"11.0", ], platform in platforms
     augmented_platform = Platform(arch(platform), os(platform); cuda=CUDA.platform(cuda_version))
     should_build_platform(triplet(augmented_platform)) || continue
 
