@@ -48,7 +48,11 @@ install_license LICENSE
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # Add compatibity with older Julia versions
-filter!(p -> !(arch(p) == "armv6l" || (Sys.isapple(p) && arch(p) == "aarch64")), platforms)
+platform_compat = [
+    "1.0" => filter(p -> !(arch(p) == "armv6l" || (Sys.isapple(p) && arch(p) == "aarch64")), platforms),
+    "1.6" => filter(p -> (arch(p) == "armv6l" || (Sys.isapple(p) && arch(p) == "aarch64")), platforms),
+]
+
 
 # The products that we will ensure are always built
 products = [
@@ -65,4 +69,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.0", preferred_gcc_version = v"8")
+for (julia_compat, platforms) in platform_compat
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat=julia_compat, preferred_gcc_version = v"8")
+end
