@@ -3,15 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_Tools"
-version = v"2022.1"
+version = v"2023.2"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "b1877de5cd776117050bd42f08d04b52bce16099"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "44d72a9b36702f093dd20815561a56778b2d181e"),
     # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "ddf5e2bb92957dc8a12c5392f8495333d6844133"),
-    GitSource("https://github.com/google/re2.git", "611baecbcedc9cec1f46e38616b6d8880b676c03"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "6a55fade62dec6a406a5a721148f88a2211cbefa"),
+    GitSource("https://github.com/google/effcee.git", "66edefd2bb641de8a2f46b476de21f227fc03a28"),
+    GitSource("https://github.com/google/googletest", "a3580180d16923d6d5f488e20b3814608a892f17"),
+    GitSource("https://github.com/google/re2.git", "c9cba76063cf4235c1a15dd14a24a4ef8d623761"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "268a061764ee69f09a477a695bf6a11ffe311b8d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,6 +20,7 @@ script = raw"""
 # put vendored dependencies in places they will be picked up by the build system
 mv effcee SPIRV-Tools/external/effcee
 mv re2 SPIRV-Tools/external/re2
+mv googletest SPIRV-Tools/external/googletest
 mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
 
 cd SPIRV-Tools
@@ -66,4 +68,4 @@ products = [
 dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"7") # requires C++17

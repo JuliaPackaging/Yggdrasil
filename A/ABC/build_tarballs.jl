@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 # abc
 name = "ABC"
-version = v"1.01.0"
+version = v"1.01.1"
 ABC_ver = "1.01.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/berkeley-abc/abc.git", "645752f7d651b07a0ebd7cac827d6ce5dd5bd266")
+    GitSource("https://github.com/berkeley-abc/abc.git", "08d25f39f2ee717b688529e61acb695cec0deeed")
 ]
 
 # ABC is setup for native builds (the arch_flags program and running the
@@ -76,4 +76,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script,
+               platforms, products, dependencies; julia_compat="1.6")

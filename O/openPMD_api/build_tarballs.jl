@@ -14,11 +14,8 @@ julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [
-    # ArchiveSource("https://github.com/openPMD/openPMD-api/archive/refs/tags/$(version).tar.gz",
-    #               "46c013be5cda670f21969675ce839315d4f5ada0406a6546a91ec3441402cf5e"),
     # We use a feature branch instead of a released version because the Julia bindings are not released yet
-    ArchiveSource("https://github.com/eschnett/openPMD-api/archive/20cdbe774e9dd5b739f3aede0c7fc69a7dbaf431.tar.gz",
-                   "1004cee967e36522b17742ef946451fb9d852a78e05950206c854ce6a5764cd9"),
+    GitSource("https://github.com/eschnett/openPMD-api.git", "20cdbe774e9dd5b739f3aede0c7fc69a7dbaf431"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
@@ -27,12 +24,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Log which MPI implementation is actually used
-grep -iq MPICH $prefix/include/mpi.h && echo 'MPI: MPICH'
-grep -iq MPItrampoline $prefix/include/mpi.h && echo 'MPI: MPItrampoline'
-grep -iq OpenMPI $prefix/include/mpi.h && echo 'MPI: OpenMPI'
+grep -iq MPICH ${includedir}/mpi.h && echo 'MPI: MPICH'
+grep -iq MPItrampoline ${includedir}/mpi.h && echo 'MPI: MPItrampoline'
+grep -iq MSMPI_VER ${includedir}/mpi.h && echo 'MPI: MicrosoftMPI'
+grep -iq OpenMPI ${includedir}/mpi.h && echo 'MPI: OpenMPI'
 
-cd $WORKSPACE/srcdir
-cd openPMD-api-*
+cd ${WORKSPACE}/srcdir
+cd openPMD-api
 
 # Work around missing C++17 feature in Clang
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shared_ptr.patch
@@ -50,59 +48,37 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     #                               ^
     export MACOSX_DEPLOYMENT_TARGET=10.15
     # ...and install a newer SDK which supports `std::filesystem`
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+    cp -a System "/opt/${target}/${target}/sys-root/"
     popd
 fi
 
-mpiopts=
-if [[ "$target" == *-apple-* ]]; then
-    if grep -q MPICH_NAME $prefix/include/mpi.h; then
-        # MPICH's pkgconfig file "mpich.pc" lists these options:
-        #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
-        #     Cflags:   -I${includedir}
-        # cmake doesn't know how to handle the "-framework OpenCL" option
-        # and wants to use "-framework" as a stand-alone option. This fails
-        # gloriously, and cmake concludes that MPI is not available.
-        mpiopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
-    fi
-elif [[ "$target" == x86_64-w64-mingw32 ]]; then
-    # - The MSMPI Fortran bindings are missing a function; see
-    #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
-    echo 'void __guard_check_icall_fptr(unsigned long ptr) {}' >cfg_stub.c
-    gcc -c cfg_stub.c
-    ar -crs libcfg_stub.a cfg_stub.o
-    cp libcfg_stub.a $prefix/lib
-    # - cmake's auto-detection for MPI doesn't work on Windows.
-    # - The SST and Table ADIOS2 components don't build on Windows
-    #   (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
-    export FFLAGS="-I$prefix/src -I$prefix/include -fno-range-check"
-    mpiopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DMPI_Fortran_LIBRARIES='msmpifec64;msmpi64;cfg_stub' -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
-elif [[ "$target" == *-mingw* ]]; then
-    mpiopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
-fi
-
-testopts=
-if [[ "$target" == *-apple-* ]]; then
-    testopts="-DBUILD_TESTING=OFF"
+mpiopts=()
+if [[ "${target}" == x86_64-w64-mingw32 ]]; then
+    # Microsoft MPI
+    mpiopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=${libdir}/msmpi.dll
+              -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll)
 fi
 
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=$prefix \
-    -DJulia_PREFIX=$prefix \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DBUILD_CLI_TOOLS=OFF \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_TESTING=OFF \
+    -DJulia_PREFIX=${prefix} \
+    -DopenPMD_USE_HDF5=OFF \
     -DopenPMD_USE_Julia=ON \
     -DopenPMD_USE_MPI=ON \
-    -DMPI_HOME=$prefix \
-    ${mpiopts} \
-    ${testopts} \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DMPI_HOME=${prefix} \
+    ${mpiopts[@]} \
     ..
 
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+cmake --build . --config RelWithDebInfo --parallel ${nproc}
+cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
 install_license ../COPYING*
 """
 
@@ -120,7 +96,8 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-# The products that we will ensure are always built
+# The products that we will ensure are always built.
+# Don't dlopen `libopenPMD` because it might transitively require libgfortran.
 products = [
     LibraryProduct("libopenPMD", :libopenPMD),
     LibraryProduct("libopenPMD.jl", :libopenPMD_jl),
@@ -137,7 +114,7 @@ dependencies = [
     Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
 ]
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported
 # TODO: Do this automatically
@@ -151,8 +128,6 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 append!(dependencies, platform_dependencies)
 
-# See <https://github.com/JuliaPackaging/Yggdrasil/blob/master/Q/Qt5Base/build_tarballs.jl> for building on macOS 10.14
-
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need C++14, which requires at least GCC 5.
 # GCC 5 reports incompatible signatures for `posix_memalign` on linux/musl, fixed on GCC 6
@@ -160,4 +135,4 @@ append!(dependencies, platform_dependencies)
 # macOS encounters an ICE in GCC 6; switching to GCC 7 instead
 # Let's use GCC 8 to have libgfortran5 ABI and make auditor happy when looking for libgfortran: #5028
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.7", preferred_gcc_version=v"11")
+               augment_platform_block, julia_compat="1.7", preferred_gcc_version=v"8")

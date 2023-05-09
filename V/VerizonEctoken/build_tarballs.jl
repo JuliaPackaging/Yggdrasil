@@ -7,21 +7,18 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/VerizonDigital/ectoken.git" =>
-    "7b8812d476f5be5b290fe2832859b9b7636f43ae",
+    GitSource("https://github.com/VerizonDigital/ectoken.git",
+              "7b8812d476f5be5b290fe2832859b9b7636f43ae"),
 
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-export OPENSSL_INCLUDE="-I $prefix/include"
+export OPENSSL_INCLUDE="-I${includedir}"
 export OPENSSL_LIBS="-lssl -lcrypto"
 cd ectoken/c-ectoken/ecencrypt/
-gcc -m64 -O2 -Wall -Werror -std=gnu99 ec_encrypt.c ectoken_v3.c base64.c -o 64/ectoken3 $OPENSSL_LIBS $OPENSSL_INCLUDE -lm -lpthread -ldl
-cp 64/ectoken3 $prefix/bin/
-exit
-
+cc -m64 -O2 -Wall -Werror -std=gnu99 ec_encrypt.c ectoken_v3.c base64.c -o ${bindir}/ectoken3${exeext} $OPENSSL_LIBS $OPENSSL_INCLUDE -lm -lpthread -ldl
 """
 
 # These are the platforms we will build for by default, unless further
@@ -37,7 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-  "OpenSSL_jll"
+    Dependency("OpenSSL_jll"; compat="1.1.10")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

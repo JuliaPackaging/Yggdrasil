@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.71.8"
+version = v"0.72.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "933ff9c1c098dd21adc19d2b9cc680ae0d303071"),
+    GitSource("https://github.com/sciapp/gr.git", "34385d25b9dca50b1a775d4ac1e669732b6bf5e1"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-        "7d664808838b1cec39a2107ef758d91c22cc8d4ff020e932cdc0754d6fc108f4", "gr.js")
+               "20e1633681598e86c8b9983bef9628cb20d912b312f4024edec5dd3fa153414a", "gr.js")
 ]
 
 # Bash recipe for building across all platforms
@@ -51,6 +51,7 @@ install_license $WORKSPACE/srcdir/gr/LICENSE.md
 if [[ $target == *"apple-darwin"* ]]; then
     cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
+    ln -s ../Applications/grplot.app/Contents/MacOS/grplot ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
@@ -78,6 +79,7 @@ products = [
     LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
     LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
+    ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built

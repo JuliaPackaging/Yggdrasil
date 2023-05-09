@@ -11,14 +11,14 @@ version = v"1.1.2"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz",
-                  "0bd4bee6694735d14fb4274275fb8c4bdeacdbd29b257220c308be63e98be8f7"),
+                  "8a30206a8fb47013b3dafe7565cf8e09023df8373c1049e7e231d9fd36b011e4"),
+
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd t8code/
+cd $WORKSPACE/srcdir/t8code
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
@@ -30,7 +30,7 @@ export CXXFLAGS="-O3"
 
 # Set necessary flags for FreeBSD
 if [[ "${target}" == *-freebsd* ]]; then
-  export LIBS="-lm"
+  export LIBS="${LIBS} -lm"
 fi
 
 # Set necessary flags for Windows and non-Windodws systems
@@ -41,7 +41,7 @@ if [[ "${target}" == *-mingw* ]]; then
   # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
   FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
   # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="${libdir}/msmpi.dll -lws2_32"
+  export LIBS="${LIBS} ${libdir}/msmpi.dll -lws2_32"
   # Disable MPI I/O on Windows since it causes p4est to crash
   mpiopts="--enable-mpi --disable-mpiio"
 else
@@ -52,7 +52,15 @@ else
 fi
 
 # Run configure
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --without-blas ${mpiopts}
+./configure \
+  --prefix="${prefix}" \
+  --build=${MACHTYPE} \
+  --host=${target} \
+  --disable-static \
+  --without-blas \
+  --with-sc="${prefix}" \
+  --with-p4est="${prefix}" \
+  ${mpiopts}
 
 # Build & install
 make -j${nproc} "${FLAGS[@]}"
@@ -87,13 +95,12 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 # The products that we will ensure are always built
 # Note: the additional, non-canonical library names are required for the Windows build
 products = [
-    LibraryProduct(["libt8", "libt8-1-1-0-207-d6a74"], :libt8),
-    LibraryProduct(["libsc", "libsc-2-8-1-5-0b70"], :libsc),
-    LibraryProduct(["libp4est", "libp4est-2-2-259-ec120"], :libp4est)
+    LibraryProduct(["libt8"], :libt8),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="P4est_jll", uuid="6b5a15aa-cf52-5330-8376-5e5d90283449")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 append!(dependencies, platform_dependencies)
