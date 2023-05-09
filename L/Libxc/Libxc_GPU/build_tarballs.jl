@@ -42,12 +42,6 @@ platforms = [
     Platform("x86_64", "linux"),
 ]
 
-# some platforms need a newer glibc, because the default one is too old
-glibc_platforms = filter(platforms) do p
-    libc(p) == "glibc" && proc_family(p) in ["intel", "power"]
-
-end
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libxc", :libxc)
@@ -62,12 +56,12 @@ dependencies = [
 cuda_full_versions = Dict(
     v"10.2" => v"10.2.89",
     v"11.0" => v"11.0.3",
-    v"12.0" => v"12.0.0",
+    # v"12.0" => v"12.0.0",  # Not sure why, but this causes issues
 )
 
 # Build Libxc for all supported CUDA toolkits
 #
-# The library doesn't have specific CUDA requirements, so we only build for CUDA 11.0 and 12.0,
+# The library doesn't have specific CUDA requirements, so we build for CUDA 10.1 till 12.0,
 # which (per semantic versioning) should support every CUDA 11.x and 12.x version.
 #
 for cuda_version in [v"10.2", v"11.0", v"12.0", ], platform in platforms
@@ -79,14 +73,6 @@ for cuda_version in [v"10.2", v"11.0", v"12.0", ], platform in platforms
                                     version=cuda_full_versions[cuda_version])),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     ]
-
-    if cuda_version >= v"12"
-        # CUDA 12 requires glibc 2.17
-        # which isn't compatible with current Linux kernel headers,
-        # so use the next packaged version
-        push!(dependencies, BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.19");
-                                         platforms=glibc_platforms),)
-    end
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
