@@ -3,17 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "ssht"
-version = v"1.5.1"
+version = v"1.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/astro-informatics/ssht/archive/refs/tags/v1.5.1.tar.gz",
-                  "f0b6fb6a1de40354fcf4eafe09b953c96a72ba9c533a42e290802e93cd14170c"),
+    GitSource("https://github.com/astro-informatics/ssht.git", "c83fb2a07e1869e875e819523d2e19d91bc8a4bf"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/ssht-*
+cd ${WORKSPACE}/srcdir/ssht
 
 # Build using the regular instructions
 mkdir build
