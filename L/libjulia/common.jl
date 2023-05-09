@@ -51,12 +51,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.6.3" => "2593def8cc9ef81663d1c6bfb8addc3f10502dd9a1d5a559728316a11dea2594",
         v"1.7.0" => "8e870dbef71bc72469933317a1a18214fd1b4b12f1080784af7b2c56177efcb4",
         v"1.8.2" => "3e2cea35bf5df963ed7b75a83e8febfc000acf1e664ecd657a0772508eb1fb5d",
-        v"1.9.0-rc3" => "1f86d109ca5d73892a89ffb09332312130a9ae1ccb3df10026866a97a42de3eb",
+        v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
     )
 
     if version == v"1.10.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "e9d678e7e02a48263996f7b7a367b7435af2d504"),
+            GitSource("https://github.com/JuliaLang/julia.git", "0a696a3842750fcedca8832bc0aabe9096c7658f"),
             DirectorySource("./bundled"),
         ]
     else
