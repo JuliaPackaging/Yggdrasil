@@ -159,11 +159,6 @@ platforms = [
     Platform("x86_64", "freebsd")
 ]
 
-# The products that we will ensure are always built
-products = [
-    LibraryProduct(["libblis32", "libblis"], :blis)
-]
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
