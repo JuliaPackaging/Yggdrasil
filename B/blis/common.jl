@@ -99,7 +99,7 @@ function blis_script(;blis32::Bool=false)
     # Import libblastrampoline-style nthreads setter.
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
 
-    if [[ "${BLIS32}" == "false" ]]; then
+    if [[ "${BLIS32}" == "true" ]]; then
         export BLI_F77BITS=32
     else
         export BLI_F77BITS=${nbits}
