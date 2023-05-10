@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/
 ${CC} -fPIC -shared -o ${libdir}/qhullwrapper.${dlext} qhullwrapper.c -L${libdir} -lqhull_r
 """
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
