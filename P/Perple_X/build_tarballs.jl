@@ -7,7 +7,7 @@ version = v"7.0.10"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jadconnolly/Perple_X.git", "aeec2f4f5d31762ecc8a5abbcb6338046406306")
+    GitSource("https://github.com/jadconnolly/Perple_X.git", "1aeec2f4f5d31762ecc8a5abbcb6338046406306")
 ]
 
 # Bash recipe for building across all platforms
