@@ -42,7 +42,7 @@ fi
     lt_cv_deplibs_check_method=pass_all \
     --with-lapack-lflags="${BLAS_LAPACK}" \
     --with-mumps-cflags="-I${includedir}" \
-    --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis {BLAS_LAPACK} -lgfortran -lpthread" \
+    --with-mumps-lflags="-ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis ${BLAS_LAPACK} -lgfortran -lpthread" \
     --with-asl-lflags="${LIBASL}"
 
 # parallel build fails
