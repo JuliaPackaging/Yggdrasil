@@ -50,6 +50,7 @@ fi
 # Currently we backport 0292521af462dcd3ba747255a4c5ed9317d911dd,
 #                       bfbc1eb206288abe7b9ccd04d3cb104b4a2b3898,
 #                       a7a234463c0d4b5730d05ad57ab2798b2df26127
+#                       455d05914b62423b77ba3f39d8e99a549cc2f57e
 # in make_flint_great_again.patch
 # Drop once we bump the version to 3.0
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
