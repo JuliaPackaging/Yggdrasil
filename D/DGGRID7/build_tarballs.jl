@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/DGGRID
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 if [[ "${target}" == x86_64-linux-musl ]]; then
     # Remove libexpat to avoid it being picked up by mistake
     rm /usr/lib/libexpat.so*
@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
+    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"), v"v301.600.200"; compat="v301.600.200")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
