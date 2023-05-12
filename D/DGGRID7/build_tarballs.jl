@@ -21,8 +21,7 @@ if [[ "${target}" == x86_64-linux-musl ]]; then
     rm /usr/lib/libexpat.so*
 fi
 make -j${nproc} CCOMP="${CC}" CPPCOMP="${CXX}"
-mkdir -p ${bindir}
-cp "src/apps/dggrid/dggrid${exeext}" "${bindir}/."
+install -Dvm 755 "src/apps/dggrid/dggrid${exeext}" "${bindir}/dggrid${exeext}"
 """
 
 
