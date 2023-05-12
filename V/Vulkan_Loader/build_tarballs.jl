@@ -79,7 +79,7 @@ linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Vulkan_Headers_jll"),
+    BuildDependency("Vulkan_Headers_jll"),
     Dependency("Xorg_libXrandr_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
     Dependency("Wayland_jll"; platforms=linux),
