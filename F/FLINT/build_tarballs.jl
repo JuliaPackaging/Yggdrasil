@@ -26,7 +26,7 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"2.9.0"
-version_offset = v"0.0.5"
+version_offset = v"0.0.6"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
