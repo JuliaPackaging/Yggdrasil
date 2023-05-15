@@ -69,6 +69,11 @@ fi
   --host=${target} \
   --disable-static \
   --without-blas \
+<<<<<<< HEAD
+=======
+  --with-sc="${prefix}" \
+  --with-p4est="${prefix}" \
+>>>>>>> master
   ${mpiopts}
 
 # Build & install
