@@ -51,6 +51,17 @@ else
   mpiopts="--enable-mpi"
 fi
 
+# # Run configure
+# ./configure \
+#   --prefix="${prefix}" \
+#   --build=${MACHTYPE} \
+#   --host=${target} \
+#   --disable-static \
+#   --without-blas \
+#   --with-sc="${prefix}" \
+#   --with-p4est="${prefix}" \
+#   ${mpiopts}
+
 # Run configure
 ./configure \
   --prefix="${prefix}" \
@@ -58,8 +69,6 @@ fi
   --host=${target} \
   --disable-static \
   --without-blas \
-  --with-sc="${prefix}" \
-  --with-p4est="${prefix}" \
   ${mpiopts}
 
 # Build & install
@@ -92,6 +101,11 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# platforms = filter(p -> (arch(p) == "Windows x86_64"), platforms)
+platforms = filter(p -> (p["mpi"] == "microsoftmpi"), platforms)
+
+# println(platforms)
+
 # The products that we will ensure are always built
 # Note: the additional, non-canonical library names are required for the Windows build
 products = [
@@ -100,7 +114,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="P4est_jll", uuid="6b5a15aa-cf52-5330-8376-5e5d90283449")),
+    # Dependency(PackageSpec(name="P4est_jll", uuid="6b5a15aa-cf52-5330-8376-5e5d90283449")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 append!(dependencies, platform_dependencies)
