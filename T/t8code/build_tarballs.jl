@@ -5,7 +5,7 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
-name = "t8code"
+name = "t8code_extern_p4est"
 version = v"1.1.2"
 
 # Collection of sources required to complete build
@@ -51,17 +51,6 @@ else
   mpiopts="--enable-mpi"
 fi
 
-# # Run configure
-# ./configure \
-#   --prefix="${prefix}" \
-#   --build=${MACHTYPE} \
-#   --host=${target} \
-#   --disable-static \
-#   --without-blas \
-#   --with-sc="${prefix}" \
-#   --with-p4est="${prefix}" \
-#   ${mpiopts}
-
 # Run configure
 ./configure \
   --prefix="${prefix}" \
@@ -69,11 +58,8 @@ fi
   --host=${target} \
   --disable-static \
   --without-blas \
-<<<<<<< HEAD
-=======
   --with-sc="${prefix}" \
   --with-p4est="${prefix}" \
->>>>>>> master
   ${mpiopts}
 
 # Build & install
@@ -119,7 +105,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Dependency(PackageSpec(name="P4est_jll", uuid="6b5a15aa-cf52-5330-8376-5e5d90283449")),
+    Dependency(PackageSpec(name="P4est_jll", uuid="6b5a15aa-cf52-5330-8376-5e5d90283449")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 append!(dependencies, platform_dependencies)
