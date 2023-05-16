@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GLEW"
-version = v"2.1.0"
+version = v"2.2.0"
 
 # Collection of sources required to build GLEW
 sources = [
     ArchiveSource("https://github.com/nigels-com/glew/releases/download/glew-$(version)/glew-$(version).tgz",
-                  "04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95")
+                  "d4fc82893cfb00109578d0a1a2337fb8ca335b3ceccf97b97e5cc7f08e4353e1")
 ]
 
 # Bash recipe for building across all platforms
