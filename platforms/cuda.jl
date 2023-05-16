@@ -79,9 +79,14 @@ const cuda_full_versions = [
     v"12.0.1",
     v"12.1.1"
 ]
-function full_version(cuda::VersionNumber)
-    haskey(cuda_full_versions, cuda) || error("CUDA version $cuda not supported")
-    return cuda_full_versions[cuda]
+function full_version(ver::VersionNumber)
+    ver == Base.thisminor(ver) || error("Cannot specify a patch version")
+    for full_ver in cuda_full_versions
+        if ver == Base.thisminor(full_ver)
+            return full_ver
+        end
+    end
+    error("CUDA version $cuda not supported")
 end
 
 end
