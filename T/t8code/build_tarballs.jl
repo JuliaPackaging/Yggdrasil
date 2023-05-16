@@ -5,7 +5,7 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
-name = "t8code_intern_p4est"
+name = "t8code"
 version = v"1.1.2"
 
 # Collection of sources required to complete build
@@ -89,11 +89,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
-# platforms = filter(p -> (arch(p) == "Windows x86_64"), platforms)
-platforms = filter(p -> (p["mpi"] == "microsoftmpi"), platforms)
-
-# println(platforms)
 
 # The products that we will ensure are always built
 # Note: the additional, non-canonical library names are required for the Windows build
