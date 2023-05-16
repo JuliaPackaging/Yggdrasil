@@ -18,7 +18,11 @@ EXTRA_VARS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     # On Linux and FreeBSD this variable by default does `-L/usr/lib`
     EXTRA_VARS+=(LDFLAGS.EXTRA="")
+elif [[ "${target}" == *-mingw* ]]; then
+    # On MinGW targets this is incorrectly detected as "msys"
+    EXTRA_VARS+=(SYSTEM="mingw")
 fi
+
 make INCLUDE="-Iinclude -I${includedir}" \
     GLEW_DEST="${prefix}" \
     "${EXTRA_VARS[@]}" \
@@ -27,7 +31,7 @@ make INCLUDE="-Iinclude -I${includedir}" \
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -42,4 +46,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
