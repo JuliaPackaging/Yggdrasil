@@ -43,6 +43,7 @@ fi
 
 atomic_patch -p1 ../patches/TracyProfiler-nfd-extended-1.0.2.patch
 atomic_patch -p1 ../patches/TracyProfiler-filter-user-text.patch
+atomic_patch -p1 ../patches/TracyProfiler-no-divide-zero.patch
 
 # Build / install the profiler GUI
 make -e -j${nproc} -C profiler/build/unix LEGACY=1 IMAGE=tracy release
