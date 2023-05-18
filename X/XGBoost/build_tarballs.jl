@@ -58,7 +58,7 @@ install_license LICENSE
 """
 
 versions_to_build = [
-    #nothing,
+    # nothing,
     v"11.0",
     v"12.0", 
 ]
@@ -89,17 +89,14 @@ for cuda_version in versions_to_build
             # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
             Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
             Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-
-            BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=Platform[]),
-            RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=Platform[]),
         ]
         preamble = ""
+        augment_platform_block = ""
     else
         platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
                             cuda=CUDA.platform(cuda_version)))
         dependencies = [
             Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
-            Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=Platform[]),
             BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=platforms),
             RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=platforms),
         ]
@@ -107,12 +104,13 @@ for cuda_version in versions_to_build
         CUDA_ARCHS="$(cuda_archs[cuda_version])"
         """
         preamble = ""
+        augment_platform_block = CUDA.augment
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
     build_tarballs(ARGS, name, version, sources,  preamble*script, platforms, products, dependencies; 
                     preferred_gcc_version=v"8", 
                     julia_compat="1.6",
-                    augment_platform_block=CUDA.augment)
+                    augment_platform_block)
 
 end
