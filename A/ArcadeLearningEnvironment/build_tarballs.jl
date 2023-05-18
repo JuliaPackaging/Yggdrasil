@@ -17,11 +17,9 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DUSE_SDL=OFF \
-    -DBUILD_EXAMPLES=OFF \
     -DBUILD_PYTHON_LIB=OFF \
     -DBUILD_CPP_LIB=OFF \
-    -DBUILD_CLI=OFF \
+    -DSDL_SUPPORT=OFF \
     -DCMAKE_CXX_FLAGS="-I${includedir}" \
     -DCMAKE_SHARED_LINKER_FLAGS_INIT="-L${libdir}" \
     ..
