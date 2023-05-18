@@ -19,6 +19,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DUSE_SDL=OFF \
     -DBUILD_EXAMPLES=OFF \
+    -DBUILD_PYTHON_LIB=OFF \
     -DBUILD_CPP_LIB=OFF \
     -DBUILD_CLI=OFF \
     -DCMAKE_CXX_FLAGS="-I${includedir}" \
