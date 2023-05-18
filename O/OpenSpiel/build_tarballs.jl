@@ -8,7 +8,6 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
-
 name = "OpenSpiel"
 version = v"1.2"
 
