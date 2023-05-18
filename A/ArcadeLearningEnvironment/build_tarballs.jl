@@ -37,8 +37,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_CXX_FLAGS="-I${includedir}" \
     -DCMAKE_SHARED_LINKER_FLAGS_INIT="-L${libdir}" \
     ..
-make -j${nproc}
-make install
+cmake --build . --target install
 """
 
 # These are the platforms we will build for by default, unless further
