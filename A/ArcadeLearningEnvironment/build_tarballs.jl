@@ -7,7 +7,7 @@ version = v"0.6.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mgbellemare/Arcade-Learning-Environment/archive/v$version.tar.gz", "97d3cd6cacdba6e197d296cf3596b66ba7ea91758050f76b5c33ce3c3499dce2"),
+    GitSource("https://github.com/mgbellemare/Arcade-Learning-Environment.git", "3229aa679a5ba0356b01cb58c51718f6cd9bf694"),
     DirectorySource("./bundled"),
 ]
 
