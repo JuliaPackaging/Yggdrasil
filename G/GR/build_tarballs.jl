@@ -32,6 +32,7 @@ else
 fi
 
 if [[ "${target}" == *apple* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.14
     make -C 3rdparty/zeromq ZEROMQ_EXTRA_CONFIGURE_FLAGS="--host=${target}"
 fi
 
