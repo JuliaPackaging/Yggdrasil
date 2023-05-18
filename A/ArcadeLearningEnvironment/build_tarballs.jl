@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ArcadeLearningEnvironment"
-version = v"0.6.1"
+version = v"0.6.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mgbellemare/Arcade-Learning-Environment/archive/v0.6.1.tar.gz", "8059a4087680da03878c1648a8ceb0413a341032ecaa44bef4ef1f9f829b6dde"),
+    ArchiveSource("https://github.com/mgbellemare/Arcade-Learning-Environment/archive/v$version.tar.gz", "97d3cd6cacdba6e197d296cf3596b66ba7ea91758050f76b5c33ce3c3499dce2"),
     DirectorySource("./bundled"),
 ]
 
@@ -47,4 +47,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
