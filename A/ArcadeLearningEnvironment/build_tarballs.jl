@@ -3,19 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "ArcadeLearningEnvironment"
-version = v"0.6.1"
+version = v"0.8.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mgbellemare/Arcade-Learning-Environment/archive/v0.6.1.tar.gz", "8059a4087680da03878c1648a8ceb0413a341032ecaa44bef4ef1f9f829b6dde"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/mgbellemare/Arcade-Learning-Environment.git", "ba84c1480008aa606ebc1efd7a04a7a7729796d4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Arcade-Learning-Environment-*/
-atomic_patch -p1 ../patches/fix-dlext-macos.patch
-atomic_patch -p1 ../patches/cmake-install-for-windows.patch
+cd $WORKSPACE/srcdir/Arcade-Learning-Environment/
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
