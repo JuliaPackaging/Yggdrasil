@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Arcade-Learning-Environment-*/
+cd $WORKSPACE/srcdir/Arcade-Learning-Environment/
 atomic_patch -p1 ../patches/fix-dlext-macos.patch
 atomic_patch -p1 ../patches/cmake-install-for-windows.patch
 mkdir build && cd build
