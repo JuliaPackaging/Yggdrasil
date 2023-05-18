@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg, BinaryBuilderBase
+using BinaryBuilder, Pkg
 
 name = "XGBoost"
 version = v"1.7.5"
@@ -58,7 +58,7 @@ install_license LICENSE
 """
 
 versions_to_build = [
-    nothing,
+    #nothing,
     v"11.0",
     v"12.0", 
 ]
@@ -89,6 +89,9 @@ for cuda_version in versions_to_build
             # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
             Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
             Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+
+            BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=Platform[]),
+            RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=Platform[]),
         ]
         preamble = ""
     else
@@ -96,6 +99,7 @@ for cuda_version in versions_to_build
                             cuda=CUDA.platform(cuda_version)))
         dependencies = [
             Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+            Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=Platform[]),
             BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=platforms),
             RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=platforms),
         ]
