@@ -7,12 +7,6 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
-# Collection of sources required to build XGBoost
-sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"), 
-    DirectorySource("./bundled"),
-]
-
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
@@ -27,9 +21,15 @@ if  [[ $bb_full_target == x86_64-linux*cuda* ]]; then
     # make it use the workspace instead
     export TMPDIR=${WORKSPACE}/tmpdir
     mkdir ${TMPDIR}
-    
-    export CUDA_HOME=${WORKSPACE}/destdir/cuda
-    export PATH=$PATH:$CUDA_HOME/bin
+
+    cuda_version=`echo $bb_full_target | sed -E -e 's/.*cuda\+([0-9]+\.[0-9]+).*/\1/'`
+    cuda_version_major=`echo $cuda_version | cut -d . -f 1`
+    cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
+    cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
+    export PATH=$PATH:$cuda_full_path/bin
+    export CUDACXX=$cuda_full_path/bin/nvcc
+    export CUDA_HOME=$cuda_full_path
+
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
             -DCUDA_TOOLKIT_ROOT_DIR=${WORKSPACE}/destdir/cuda \
@@ -58,21 +58,25 @@ install_license LICENSE
 """
 
 versions_to_build = [
-    # nothing,
+    nothing,
     v"11.0",
     v"12.0", 
 ]
-
-# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
-cuda_full_versions = Dict(
-    v"11.0" => v"11.0.3",
-    v"12.0" => v"12.0.1",
-)
 
 cuda_archs = Dict(
     v"11.0" => "60;70;75;80",
     v"12.0" => "60;70;75;80;89;90",
 )
+
+cuda_sources_archs = Dict(
+    v"11.0" => [ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.0.3%2B4/CUDA_full.v11.0.3.x86_64-linux-gnu.tar.gz", 
+        "d4772bc20aef89fb61989c294d819ca446ae7431ac732f3454f5e866e3633dc2"; 
+        unpack_target = "CUDA_full.v11.0"),],
+    v"12.0" => [ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v12.0.1%2B2/CUDA_full.v12.0.1.x86_64-linux-gnu.tar.gz", 
+        "99146b1c6c2fe18977df8618770545692435e7b6fd12ac19f50f9980774d4fc5"; 
+        unpack_target = "CUDA_full.v12.0"),],
+)
+
 
 # The products that we will ensure are always built
 products = [
@@ -81,6 +85,12 @@ products = [
 ]
 
 for cuda_version in versions_to_build
+
+    # Collection of sources required to build XGBoost
+    sources = [
+        GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"), 
+        DirectorySource("./bundled"),
+    ]
 
     if isnothing(cuda_version)
         platforms = expand_cxxstring_abis(supported_platforms())
@@ -97,7 +107,6 @@ for cuda_version in versions_to_build
                             cuda=CUDA.platform(cuda_version)))
         dependencies = [
             Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
-            BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=platforms),
             RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=platforms),
         ]
         preamble = """
@@ -105,6 +114,7 @@ for cuda_version in versions_to_build
         """
         preamble = ""
         augment_platform_block = CUDA.augment
+        append!(sources, cuda_sources_archs[cuda_version])
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
