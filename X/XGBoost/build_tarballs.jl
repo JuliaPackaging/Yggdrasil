@@ -68,15 +68,16 @@ cuda_archs = Dict(
     v"12.0" => "60;70;75;80;89;90",
 )
 
-cuda_sources_archs = Dict(
-    v"11.0" => [ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.0.3%2B4/CUDA_full.v11.0.3.x86_64-linux-gnu.tar.gz", 
+sources = [
+    GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"), 
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.0.3%2B4/CUDA_full.v11.0.3.x86_64-linux-gnu.tar.gz", 
         "d4772bc20aef89fb61989c294d819ca446ae7431ac732f3454f5e866e3633dc2"; 
-        unpack_target = "CUDA_full.v11.0"),],
-    v"12.0" => [ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v12.0.1%2B2/CUDA_full.v12.0.1.x86_64-linux-gnu.tar.gz", 
+        unpack_target = "CUDA_full.v11.0"),
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v12.0.1%2B2/CUDA_full.v12.0.1.x86_64-linux-gnu.tar.gz", 
         "99146b1c6c2fe18977df8618770545692435e7b6fd12ac19f50f9980774d4fc5"; 
-        unpack_target = "CUDA_full.v12.0"),],
-)
-
+        unpack_target = "CUDA_full.v12.0"),
+    DirectorySource("./bundled"),
+]
 
 # The products that we will ensure are always built
 products = [
@@ -101,7 +102,6 @@ for cuda_version in versions_to_build
             Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
         ]
         preamble = ""
-        augment_platform_block = ""
     else
         platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
                             cuda=CUDA.platform(cuda_version)))
@@ -112,15 +112,12 @@ for cuda_version in versions_to_build
         preamble = """
         CUDA_ARCHS="$(cuda_archs[cuda_version])"
         """
-        preamble = ""
-        augment_platform_block = CUDA.augment
-        append!(sources, cuda_sources_archs[cuda_version])
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
     build_tarballs(ARGS, name, version, sources,  preamble*script, platforms, products, dependencies; 
                     preferred_gcc_version=v"8", 
                     julia_compat="1.6",
-                    augment_platform_block)
+                    augment_platform_block=CUDA.augment)
 
 end
