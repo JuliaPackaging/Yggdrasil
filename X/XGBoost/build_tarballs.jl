@@ -87,12 +87,6 @@ products = [
 
 for cuda_version in versions_to_build
 
-    # Collection of sources required to build XGBoost
-    sources = [
-        GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"), 
-        DirectorySource("./bundled"),
-    ]
-
     if isnothing(cuda_version)
         platforms = expand_cxxstring_abis(supported_platforms())
         dependencies = [
