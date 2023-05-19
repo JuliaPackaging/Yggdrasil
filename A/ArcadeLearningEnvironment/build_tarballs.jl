@@ -3,17 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "ArcadeLearningEnvironment"
-version = v"0.6.1"
+version_actual = v"0.6.1"
+version = v"0.6.2" # Fake version number for Julia 1.6 compat bound
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mgbellemare/Arcade-Learning-Environment/archive/v0.6.1.tar.gz", "8059a4087680da03878c1648a8ceb0413a341032ecaa44bef4ef1f9f829b6dde"),
+    GitSource("https://github.com/mgbellemare/Arcade-Learning-Environment.git", "5e3c3c17be85c427802e529b432b8aad2e7fa82c"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/Arcade-Learning-Environment-*/
+cd $WORKSPACE/srcdir/Arcade-Learning-Environment/
 atomic_patch -p1 ../patches/fix-dlext-macos.patch
 atomic_patch -p1 ../patches/cmake-install-for-windows.patch
 mkdir build && cd build
@@ -47,4 +48,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
