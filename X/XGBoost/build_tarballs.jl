@@ -7,6 +7,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
+sources = [
+    GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"), 
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.0.3%2B4/CUDA_full.v11.0.3.x86_64-linux-gnu.tar.gz", 
+        "d4772bc20aef89fb61989c294d819ca446ae7431ac732f3454f5e866e3633dc2"; 
+        unpack_target = "CUDA_full.v11.0"),
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v12.0.1%2B2/CUDA_full.v12.0.1.x86_64-linux-gnu.tar.gz", 
+        "99146b1c6c2fe18977df8618770545692435e7b6fd12ac19f50f9980774d4fc5"; 
+        unpack_target = "CUDA_full.v12.0"),
+    DirectorySource("./bundled"),
+]
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
@@ -29,6 +40,15 @@ if  [[ $bb_full_target == x86_64-linux*cuda* ]]; then
     export PATH=$PATH:$cuda_full_path/bin
     export CUDACXX=$cuda_full_path/bin/nvcc
     export CUDA_HOME=$cuda_full_path
+
+    # Set cuda_archs based on the CUDA version
+    if [[ $cuda_version_major == "11" ]]
+    then
+        export cuda_archs="60;70;75;80"
+    elif [[ $cuda_version_major == "12" ]]
+    then
+        export cuda_archs="60;70;75;80;89;90"
+    fi
 
     cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
@@ -57,27 +77,15 @@ fi
 install_license LICENSE
 """
 
-versions_to_build = [
-    nothing,
-    v"11.0",
-    v"12.0", 
-]
+platforms = expand_cxxstring_abis(supported_platforms())
 
-cuda_archs = Dict(
-    v"11.0" => "60;70;75;80",
-    v"12.0" => "60;70;75;80;89;90",
-)
+cuda_platforms = Platform[]
+for cuda_version in keys(cuda_archs)
+    append!(cuda_platforms, expand_cxxstring_abis(Platform("x86_64", "linux"; 
+                            cuda=CUDA.platform(cuda_version))))
+end
 
-sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"), 
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.0.3%2B4/CUDA_full.v11.0.3.x86_64-linux-gnu.tar.gz", 
-        "d4772bc20aef89fb61989c294d819ca446ae7431ac732f3454f5e866e3633dc2"; 
-        unpack_target = "CUDA_full.v11.0"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v12.0.1%2B2/CUDA_full.v12.0.1.x86_64-linux-gnu.tar.gz", 
-        "99146b1c6c2fe18977df8618770545692435e7b6fd12ac19f50f9980774d4fc5"; 
-        unpack_target = "CUDA_full.v12.0"),
-    DirectorySource("./bundled"),
-]
+append!(platforms, cuda_platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -85,33 +93,16 @@ products = [
     ExecutableProduct("xgboost", :xgboost)
 ]
 
-for cuda_version in versions_to_build
+dependencies = [
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=cuda_platforms),
+]
 
-    if isnothing(cuda_version)
-        platforms = expand_cxxstring_abis(supported_platforms())
-        dependencies = [
-            # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-            # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-            Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
-            Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-        ]
-        preamble = ""
-    else
-        platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
-                            cuda=CUDA.platform(cuda_version)))
-        dependencies = [
-            Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
-            RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=platforms),
-        ]
-        preamble = """
-        CUDA_ARCHS="$(cuda_archs[cuda_version])"
-        """
-    end
-
-    # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources,  preamble*script, platforms, products, dependencies; 
-                    preferred_gcc_version=v"8", 
-                    julia_compat="1.6",
-                    augment_platform_block=CUDA.augment)
-
-end
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+                preferred_gcc_version=v"8", 
+                julia_compat="1.6",
+                augment_platform_block=CUDA.augment)
