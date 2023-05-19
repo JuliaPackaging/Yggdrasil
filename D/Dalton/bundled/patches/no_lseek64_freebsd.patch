@@ -1,0 +1,12 @@
+diff --git a/cmake/ConfigArchitecture.cmake b/cmake/ConfigArchitecture.cmake
+index ebfbb991b..87717b7f5 100644
+--- a/cmake/ConfigArchitecture.cmake
++++ b/cmake/ConfigArchitecture.cmake
+@@ -12,6 +12,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
+         add_definitions(-DARCH32BIT)
+     endif()
++    add_definitions(-DHAVE_NO_LSEEK64)
+ endif()
+ 
+ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")

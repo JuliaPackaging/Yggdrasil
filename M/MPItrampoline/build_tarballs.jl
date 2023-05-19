@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.2.3"
+mpitrampoline_version = v"5.3.0"
 version = mpitrampoline_version
 mpich_version_str = "4.1.1"
 mpiconstants_version = v"1.5.0"
@@ -15,7 +15,7 @@ mpiwrapper_version = v"2.10.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/MPItrampoline", "4c6b91ec53d466ab774c2f1ca7e985b5c0f5a8e7"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "62e3e5a4b880da8cc601b84691198d4d20308651"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "ee30471b35ef87f4c88f871a5e2ad3811cd9c4df32fd4f138443072ff4284ca2"),
@@ -130,10 +130,6 @@ export CFLAGS='-fPIC -DPIC'
 export CXXFLAGS='-fPIC -DPIC'
 export FFLAGS='-fPIC -DPIC'
 export FCFLAGS='-fPIC -DPIC'
-
-if [[ "${target}" == aarch64-apple-* ]]; then
-    export FFLAGS="$FFLAGS -fallow-argument-mismatch"
-fi
 
 if [[ "${target}" == *-apple-* ]]; then
     # MPICH uses the link options `-flat_namespace` on Darwin. This
