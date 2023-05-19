@@ -79,8 +79,10 @@ install_license LICENSE
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
+cuda_versions_to_build = [v"11.0", v"12.0"]
+
 cuda_platforms = Platform[]
-for cuda_version in keys(cuda_archs)
+for cuda_version in cuda_versions_to_build
     append!(cuda_platforms, expand_cxxstring_abis(Platform("x86_64", "linux"; 
                             cuda=CUDA.platform(cuda_version))))
 end
