@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "ArcadeLearningEnvironment"
-version = v"0.6.2"
+version_actual = v"0.6.1"
+version = v"0.6.2" # Fake version number for Julia 1.6 compat bound
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mgbellemare/Arcade-Learning-Environment.git", "3229aa679a5ba0356b01cb58c51718f6cd9bf694"),
+    GitSource("https://github.com/mgbellemare/Arcade-Learning-Environment.git", "5e3c3c17be85c427802e529b432b8aad2e7fa82c"),
     DirectorySource("./bundled"),
 ]
 
