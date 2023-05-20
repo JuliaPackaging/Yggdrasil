@@ -19,7 +19,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     ..
 cd ../../
-make
+make -j${nproc}
 mkdir -p "${libdir}" "${bindir}"
 cp "bwa-mem2${exeext}" "${bindir}/bwa-mem2${exeext}"
 cp "bwa-mem2.avx${exeext}" "${bindir}/bwa-mem2.avx${exeext}"
