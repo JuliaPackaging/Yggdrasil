@@ -26,7 +26,7 @@ install -Dvm 755 "bwa-mem2.avx2${exeext}" "${bindir}/bwa-mem2.avx2${exeext}"
 install -Dvm 755 "bwa-mem2.avx512bw${exeext}" "${bindir}/bwa-mem2.avx512bw${exeext}"
 install -Dvm 755 "bwa-mem2.sse41${exeext}" "${bindir}/bwa-mem2.sse41${exeext}"
 install -Dvm 755 "bwa-mem2.sse42${exeext}" "${bindir}/bwa-mem2.sse42${exeext}"
-install -Dvm 755 "libbwa${dlext}" "${libdir}/libbwa${dlext}"
+install -Dvm 755 "libbwa.${dlext}" "${libdir}/libbwa.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
