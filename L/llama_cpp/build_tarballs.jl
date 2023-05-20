@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.8"  # fake version number
+version = v"0.0.9"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -33,10 +33,11 @@ version = v"0.0.8"  # fake version number
 # 0.0.6+1         16.04.2023       master-47f61aa    https://github.com/ggerganov/llama.cpp/releases/tag/master-47f61aa
 # 0.0.7           24.04.2023       master-c4fe84f    https://github.com/ggerganov/llama.cpp/releases/tag/master-c4fe84f
 # 0.0.8           02.05.2023       master-e216aa0    https://github.com/ggerganov/llama.cpp/releases/tag/master-e216aa0
+# 0.0.9           19.05.2023       master-6986c78    https://github.com/ggerganov/llama.cpp/releases/tag/master-6986c78
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "e216aa04633892b972d013719e38b59fd4917341"),
+              "6986c7835adc13ba3f9d933b95671bb1f3984dc6"),
     DirectorySource("./bundled"),
 ]
 
@@ -76,7 +77,7 @@ make -j${nproc}
 
 # `make install` doesn't work (2023.03.21)
 # install executables
-for prg in benchmark embedding main perplexity q8dot quantize quantize-stats save-load-state vdot; do
+for prg in baby-llama benchmark embedding main perplexity q8dot quantize quantize-stats save-load-state vdot; do
     install -Dvm 755 "./bin/${prg}${exeext}" "${bindir}/${prg}${exeext}"
 done
 # install libs
