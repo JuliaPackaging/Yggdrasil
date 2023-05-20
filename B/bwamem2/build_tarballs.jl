@@ -18,7 +18,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     ..
-cd ../../
+cd ../../../
 make -j${nproc}
 install -Dvm 755 "bwa-mem2${exeext}" "${bindir}/bwa-mem2${exeext}"
 install -Dvm 755 "bwa-mem2.avx${exeext}" "${bindir}/bwa-mem2.avx${exeext}"
