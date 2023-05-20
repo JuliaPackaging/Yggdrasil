@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd bwa-mem2-2.2.1/ext/safestringlib/
+cd $WORKSPACE/srcdir/bwa-mem2-*/ext/safestringlib/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cd ../../
 make
