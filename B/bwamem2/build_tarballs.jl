@@ -41,6 +41,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libbwa", :libbwa),
     ExecutableProduct("bwa-mem2.sse41", :bwamem2_sse41),
     ExecutableProduct("bwa-mem2.avx512bw", :bwamem2_avx512bw),
     ExecutableProduct("bwa-mem2.sse42", :bwamem2_sse42),
