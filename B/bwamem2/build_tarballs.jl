@@ -26,7 +26,6 @@ install -Dvm 755 "bwa-mem2.avx2${exeext}" "${bindir}/bwa-mem2.avx2${exeext}"
 install -Dvm 755 "bwa-mem2.avx512bw${exeext}" "${bindir}/bwa-mem2.avx512bw${exeext}"
 install -Dvm 755 "bwa-mem2.sse41${exeext}" "${bindir}/bwa-mem2.sse41${exeext}"
 install -Dvm 755 "bwa-mem2.sse42${exeext}" "${bindir}/bwa-mem2.sse42${exeext}"
-install -Dvm 755 "libbwa.${dlext}" "${libdir}/libbwa.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -41,7 +40,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libbwa", :libbwa),
     ExecutableProduct("bwa-mem2.sse41", :bwamem2_sse41),
     ExecutableProduct("bwa-mem2.avx512bw", :bwamem2_avx512bw),
     ExecutableProduct("bwa-mem2.sse42", :bwamem2_sse42),
