@@ -20,15 +20,13 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 cd ../../
 make -j${nproc}
-mkdir -p "${libdir}" "${bindir}"
-cp "bwa-mem2${exeext}" "${bindir}/bwa-mem2${exeext}"
-cp "bwa-mem2.avx${exeext}" "${bindir}/bwa-mem2.avx${exeext}"
-cp "bwa-mem2.avx2${exeext}" "${bindir}/bwa-mem2.avx2${exeext}"
-cp "bwa-mem2.avx512bw${exeext}" "${bindir}/bwa-mem2.avx512bw${exeext}"
-cp "bwa-mem2.sse41${exeext}" "${bindir}/bwa-mem2.sse41${exeext}"
-cp "bwa-mem2.sse42${exeext}" "${bindir}/bwa-mem2.sse42${exeext}"
-cp "bwa-mem2${libext}" "${libdir}/bwa-mem2${libext}"
-exit
+install -Dvm 755 "bwa-mem2${exeext}" "${bindir}/bwa-mem2${exeext}"
+install -Dvm 755 "bwa-mem2.avx${exeext}" "${bindir}/bwa-mem2.avx${exeext}"
+install -Dvm 755 "bwa-mem2.avx2${exeext}" "${bindir}/bwa-mem2.avx2${exeext}"
+install -Dvm 755 "bwa-mem2.avx512bw${exeext}" "${bindir}/bwa-mem2.avx512bw${exeext}"
+install -Dvm 755 "bwa-mem2.sse41${exeext}" "${bindir}/bwa-mem2.sse41${exeext}"
+install -Dvm 755 "bwa-mem2.sse42${exeext}" "${bindir}/bwa-mem2.sse42${exeext}"
+install -Dvm 755 "bwa-mem2${libext}" "${libdir}/bwa-mem2${libext}"
 """
 
 # These are the platforms we will build for by default, unless further
