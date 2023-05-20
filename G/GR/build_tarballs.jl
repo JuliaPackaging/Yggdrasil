@@ -3,13 +3,15 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.72.0"
+version = v"0.72.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "eff7161c08df40e298cb16ac429bbaeae13cb3b1"),
+    GitSource("https://github.com/sciapp/gr.git", "0082c330d02fa5597acdf5c8145f1ea1424588f2"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "30bd4eb18107b7e80360d7f25e65a0f21e2eeba2a52d1921da9b61b21c918038", "gr.js")
+               "52faa767e80e50b58834d7c51059e8f937a2c56038f9bfc7cc67c3db753df18e", "gr.js"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 # Bash recipe for building across all platforms
@@ -29,6 +31,15 @@ if [[ $target == *"mingw"* ]]; then
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-5.dll
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
+fi
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
 fi
 
 if [[ "${target}" == *apple* ]]; then
@@ -51,6 +62,7 @@ install_license $WORKSPACE/srcdir/gr/LICENSE.md
 if [[ $target == *"apple-darwin"* ]]; then
     cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
+    ln -s ../Applications/grplot.app/Contents/MacOS/grplot ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
@@ -78,6 +90,7 @@ products = [
     LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
     LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
+    ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built

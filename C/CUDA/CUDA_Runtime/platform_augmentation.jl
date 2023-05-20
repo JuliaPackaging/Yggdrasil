@@ -9,6 +9,7 @@ try
 catch err
     # during initial package installation, CUDA_Driver_jll may not be available.
     # in that case, we just won't select an artifact (unless the user has set a preference).
+    # see also: https://github.com/JuliaLang/Pkg.jl/issues/3225
 end
 
 # Can't use Preferences for the same reason
@@ -47,7 +48,8 @@ function cuda_toolkit_tag()
         cuda_driver = if CUDA_Driver_jll.is_available()
             @debug "Using CUDA_Driver_jll for driver discovery"
 
-            if isnothing(CUDA_Driver_jll.libcuda)
+            if !isdefined(CUDA_Driver_jll, :libcuda) || # CUDA_Driver_jll@0.4-compat; https://github.com/JuliaLang/Pkg.jl/issues/3225#issuecomment-1511306014
+                isnothing(CUDA_Driver_jll.libcuda)      # https://github.com/JuliaLang/julia/issues/48999
                 # no driver found
                 @debug "CUDA_Driver_jll reports no driver found"
                 return "none"
