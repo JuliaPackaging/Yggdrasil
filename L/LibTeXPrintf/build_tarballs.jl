@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LibTeXPrintf"
-version = v"1.14.2"
+version = v"1.17"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bartp5/libtexprintf.git", "61b7c0e5217f2c3be67dca909f3845887177a63f"),
+    GitSource("https://github.com/bartp5/libtexprintf.git", "77595060141ac1da3d146c62eed5fe3113811cc7"),
 ]
 
 # Bash recipe for building across all platforms
