@@ -14,22 +14,22 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd isa-l/
+cd $WORKSPACE/srcdir/isa-l/
 ./autogen.sh 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+mkdir build && cd build
+make -j${nproc} ..
+cd ..
 make install
 cd ../libdeflate/
 cmake --install-prefix "${prefix}" -B build
 cmake --build build
 cmake --install build
 cd ../fastp/
-make
-cp "fastp${exeext}" "${bindir}/fastp${exeext}"
+make -j${nproc}
+install -Dvm 755 "fastp${exeext}" "${bindir}/fastp${exeext}"
 mkdir -p "${prefix}/share/licenses/fastp/"
 cp ./LICENSE "${prefix}/share/licenses/fastp/"
-exit
 """
 
 # These are the platforms we will build for by default, unless further
