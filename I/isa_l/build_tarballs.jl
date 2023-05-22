@@ -14,6 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/isa-l/
 ./autogen.sh
+# Checks from macros `AC_FUNC_MALLOC` and `AC_FUNC_REALLOC` may fail when cross-compiling,
+# which can cause configure to remap `malloc` and `realloc` to replacement functions
+# `rpl_malloc` and `rpl_realloc`, which will cause a linking error.  For more information,
+# see https://stackoverflow.com/q/70725646/2442087
+export ac_cv_func_malloc_0_nonnull=yes
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
@@ -21,13 +26,12 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl")
-]
+platforms = supported_platforms()
+# i686 not supported
+filter!(p -> arch(p) != "i686", platforms)
+# YASM v1.3.0 (latest stable version as of 2023-05-22) doesn't seem to
+# understand AVX512 opcodes.
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -41,4 +45,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
