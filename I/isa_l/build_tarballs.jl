@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libisal"
+name = "isa_l"
 version = v"2.30.0"
 
 # Collection of sources required to complete build
@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/isa-l/
-./autogen.sh 
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
@@ -29,7 +29,6 @@ platforms = [
     Platform("x86_64", "linux"; libc = "musl")
 ]
 
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libisal", :libisal),
@@ -39,7 +38,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency(PackageSpec(name="NASM_jll", uuid="08ca2550-6d73-57c0-8625-9b24120f3eae"))
-    HostBuildDependency(PackageSpec(name="YASM_jll", uuid="997772c2-56d0-5ccd-9329-3f55f14e5768"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
