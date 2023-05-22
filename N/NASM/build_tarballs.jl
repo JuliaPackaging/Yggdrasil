@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "NASM"
-version = v"2.15.0"
+version_string = "2.16.01"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.nasm.us/pub/nasm/releasebuilds/2.15/nasm-2.15.tar.xz", "bc340c2604de5a9aa405b194aae3bcdd86c1631a68a5f4d2165e11d358c2c223")
+    ArchiveSource("https://www.nasm.us/pub/nasm/releasebuilds/$(version_string)/nasm-$(version_string).tar.xz",
+                  "c77745f4802375efeee2ec5c0ad6b7f037ea9c87c92b149a9637ff099f162558"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +24,7 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
