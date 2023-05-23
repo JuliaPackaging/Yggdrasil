@@ -7,25 +7,12 @@ version = v"0.23.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/intel/isa-l.git", "2bbce31943289d5696bcf2a433124c50928226a2"),
-    GitSource("https://github.com/ebiggers/libdeflate.git", "02dfa32da3ee3982c66278e714d2e21276dfb67b"),
-    GitSource("https://github.com/OpenGene/fastp.git", "ca559a71feed94e74ea449e7567d0506de48dea4"),
+    GitSource("https://github.com/OpenGene/fastp.git", "ca559a71feed94e74ea449e7567d0506de48dea4")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/isa-l/
-./autogen.sh 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-mkdir build && cd build
-make -j${nproc} ..
-cd ..
-make install
-cd ../libdeflate/
-cmake --install-prefix "${prefix}" -B build
-cmake --build build
-cmake --install build
-cd ../fastp/
+cd $WORKSPACE/srcdir/fastp
 make -j${nproc}
 install -Dvm 755 "fastp${exeext}" "${bindir}/fastp${exeext}"
 mkdir -p "${prefix}/share/licenses/fastp/"
@@ -36,12 +23,19 @@ cp ./LICENSE "${prefix}/share/licenses/fastp/"
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
     Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl")
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("x86_64", "macos"; ),
+    Platform("x86_64", "freebsd"; )
 ]
 platforms = expand_cxxstring_abis(platforms)
+
 
 # The products that we will ensure are always built
 products = [
@@ -50,9 +44,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="NASM_jll", uuid="08ca2550-6d73-57c0-8625-9b24120f3eae"))
-    Dependency(PackageSpec(name="YASM_jll", uuid="997772c2-56d0-5ccd-9329-3f55f14e5768"))
+    Dependency(PackageSpec(name="libdeflate_jll", uuid="46979653-d7f6-5232-b59e-dd310c4598de"))
+    Dependency(PackageSpec(name="isa_l_jll", uuid="67581813-1eb2-5518-8b74-202629104514"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
