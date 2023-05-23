@@ -55,6 +55,10 @@ platforms = expand_cxxstring_abis(platforms)
 # SZ3 requires a 64-bit architecture (and Windows uses 32-bit size_t?)
 filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
 
+# OpenMP is not supported. SZ3's cmake has a bug that is probably corrected on the master branch.
+# Try re-enabling this for version > 3.1.7.
+filter!(p -> !(arch(p) ∈ ["aarch64", "x86_64"] && Sys.isapple(p)), platforms)
+
 # There are C++ build errors with musl: the type `uint` is not declared.
 # Try re-enabling this for version > 3.1.7.
 filter!(p -> libc(p) ≠ "musl", platforms)
@@ -82,12 +86,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD 
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
-               platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
-               platforms=filter(Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("GSL_jll"),
     # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
     Dependency("HDF5_jll"; compat="~1.12", platforms=hdf5_platforms),
