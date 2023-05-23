@@ -126,7 +126,8 @@ products = [
 dependencies = [
     Dependency("MKL_jll"),
     Dependency("NetCDF_jll"; compat="400.701.400 - 400.799"),
-    Dependency("HDF5_jll"),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.12"),
     # `MbedTLS_jll` is an indirect dependency through NetCDF, we need to specify
     # a compatible build version for this to work.
     BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),

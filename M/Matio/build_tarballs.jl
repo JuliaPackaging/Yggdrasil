@@ -49,7 +49,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("HDF5_jll"),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
