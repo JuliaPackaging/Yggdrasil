@@ -4,8 +4,8 @@ name = "CGNS"
 version = v"4.3.0"
 
 sources = [
-    ArchiveSource("https://github.com/CGNS/CGNS/archive/refs/tags/v$(version).tar.gz",
-                  "7709eb7d99731dea0dd1eff183f109eaef8d9556624e3fbc34dc5177afc0a032"),
+    GitSource("https://github.com/CGNS/CGNS.git",
+              "ec538ac11dbaff510464a831ef094b0d6bf7216c"),
 ]
 
 script = raw"""
@@ -44,7 +44,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.12"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
