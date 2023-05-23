@@ -19,8 +19,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build NetCDF
 sources = [
-    GitSource("https://github.com/Unidata/netcdf-c.git",
-              "9328ba17cb53f13a63707547c94f4715243dafdf"),
+    ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
+                  "38f62cc5d9f0409205b20ff8ff01d7cc36659993"),
 ]
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
@@ -98,7 +98,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.2"),
+    Dependency(PackageSpec(name="HDF5_jll"), compat="~1.12"),
     Dependency("Zlib_jll"),
     Dependency("XML2_jll"),
     Dependency("LibCURL_jll"; compat = "7.73.0"),
