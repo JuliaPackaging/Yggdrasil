@@ -7,14 +7,13 @@ version = v"1.5.0"
 
 # Collection of sources required to build randrproto
 sources = [
-    "https://www.x.org/archive/individual/proto/randrproto-$(version).tar.bz2" =>
-    "4c675533e79cd730997d232c8894b6692174dce58d3e207021b8f860be498468",
+    ArchiveSource("https://www.x.org/archive/individual/proto/randrproto-$(version).tar.bz2",
+                  "4c675533e79cd730997d232c8894b6692174dce58d3e207021b8f860be498468"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/randrproto-*/
-CPPFLAGS="-I${prefix}/include"
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
@@ -24,13 +23,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = [AnyPlatform()]
 
 products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

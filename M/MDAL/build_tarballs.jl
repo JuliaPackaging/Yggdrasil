@@ -7,7 +7,8 @@ version = v"0.9.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/lutraconsulting/MDAL/archive/refs/tags/release-$version.tar.gz", "a8a17c73a5868745fe7ce4ffe01b0ea20745e27438e0851eec68688d875e895c"),
+    GitSource("https://github.com/lutraconsulting/MDAL.git",
+              "46c7de5f64cd4bbb4aef9dfc2352923b0e608c4b"),
     DirectorySource("./bundled")
 ]
 

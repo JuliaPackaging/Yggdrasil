@@ -58,8 +58,6 @@ fi
   --host=${target} \
   --disable-static \
   --without-blas \
-  --with-sc="${prefix}" \
-  --with-p4est="${prefix}" \
   ${mpiopts}
 
 # Build & install
@@ -100,7 +98,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="P4est_jll", uuid="6b5a15aa-cf52-5330-8376-5e5d90283449")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 append!(dependencies, platform_dependencies)

@@ -1,0 +1,15 @@
+diff --git a/csvexport/src/csvexport.cpp b/csvexport/src/csvexport.cpp
+index c0654c44..1ce0478a 100644
+--- a/csvexport/src/csvexport.cpp
++++ b/csvexport/src/csvexport.cpp
+@@ -299,7 +299,9 @@ int main(int argc, char** argv)
+             const auto ss = zone_data.sumSq
+                 - 2. * zone_data.total * avg
+                 + avg * avg * sz;
+-            const auto std = sqrt(ss / (sz - 1));
++            double std = 0;
++            if( sz > 1 )
++                std = sqrt(ss / (sz - 1));
+             values[9] = std::to_string(std);
+
+             std::string row = join(values, args.separator);
