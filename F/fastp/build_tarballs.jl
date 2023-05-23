@@ -15,8 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/fastp
 make -j${nproc}
 install -Dvm 755 "fastp${exeext}" "${bindir}/fastp${exeext}"
-mkdir -p "${prefix}/share/licenses/fastp/"
-cp ./LICENSE "${prefix}/share/licenses/fastp/"
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
