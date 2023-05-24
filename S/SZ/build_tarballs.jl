@@ -80,7 +80,8 @@ dependencies = [
                platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
-    Dependency("HDF5_jll"; platforms=hdf5_platforms),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.12", platforms=hdf5_platforms),
     Dependency("NetCDF_jll"; platforms=hdf5_platforms),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
