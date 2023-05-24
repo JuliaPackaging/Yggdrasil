@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Extract a config setting from a previous `config.status` file,
+# and create a setting that can be passed to `./configure`. This would look like
+#     hdf_cv_PAC_C_MAX_REAL_PRECISION=33
+# This setting might contains spaces, and yet it is *not* enclosed in quotes.
+# Instead, this script is supposed to be called inside double quotes, as in
+#     "$(../get_config_setting PAC_C_MAX_REAL_PRECISION ../config.saved)"
+# Shell programming is fun.
+
+set -exuo pipefail
+name="$1"
+values="$2"
+grep '^S.*"'"$name"'"' "$values" |
+sed -e 's/^S\["'"$name"'"\]="\(.*\)"$/hdf5_cv_'"$name"'=\1/'
