@@ -1,23 +1,20 @@
-using BinaryBuilder, Printf
+using BinaryBuilder
 
 name = "PATHlib"
 version = v"4.7.3"
 
-# I guess they're hoping for double-digit numbers of patch releases.  /shrug
-version_str = @sprintf("%d.%d.%02d", version.major, version.minor, version.patch)
-
 # Collection of sources required to build
 sources = [
-    "https://github.com/ampl/pathlib/archive/$(version_str).tar.gz" =>
-    "93244121cb03d1c726fcb4e33aa86e8cd59864c873eb03733b07aaef7f448ed8",
-    "./bundled",
+    GitSource("https://github.com/ampl/pathlib.git",
+              "a11966f36875748820583e41455800470c971171"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/
 
-mkdir -p ${prefix}/include ${prefix}/lib ${libdir}
+mkdir -p "${includedir}" "${prefix}/lib" "${libdir}"
 
 function target_libdir()
 {
@@ -39,9 +36,9 @@ function target_libdir()
 
 # pathlib comes as precompiled binaries, so we just copy the binaries and the include directory over
 # We move the `dlext` stuff first as that sometimes goes into `bin`, and everything else into `lib`
-mv -v pathlib-*/lib/$(target_libdir)/*.${dlext} ${libdir}
-mv -v pathlib-*/lib/$(target_libdir)/* ${prefix}/lib
-mv -v pathlib-*/include/*.h ${prefix}/include
+mv -v pathlib/lib/$(target_libdir)/*.${dlext} "${libdir}/."
+mv -v pathlib/lib/$(target_libdir)/* "${prefix}/lib/."
+mv -v pathlib/include/*.h "${includedir}/."
 
 # Add linkage args
 LDFLAGS="${LDFLAGS} -lm -lgfortran"
@@ -61,10 +58,10 @@ elif [[ ${target} == *mingw* ]]; then
     CFLAGS="${CFLAGS} -DFNAME_LCASE_NODECOR -DUSE_OUTPUT_INTERFACE"
 fi
 
-cc -o ${libdir}/${LIBNAME} pathjulia.c ${prefix}/lib/${LIBPATH_A} ${CFLAGS} ${LDFLAGS} 
+cc -o "${libdir}/${LIBNAME}" pathjulia.c "${prefix}/lib/${LIBPATH_A}" ${CFLAGS} ${LDFLAGS} 
 
 # Install license file
-install_license pathlib-*/LICENSE
+install_license pathlib/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -85,6 +82,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

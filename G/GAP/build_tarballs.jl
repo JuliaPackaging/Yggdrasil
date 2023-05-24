@@ -149,3 +149,5 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
         ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
     end
 """)
+
+# rebuild trigger: 1

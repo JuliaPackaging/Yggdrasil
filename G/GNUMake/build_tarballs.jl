@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "GNUMake"
-version_string = "4.4"
+version_string = "4.4.1"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/make/make-$(version_string).tar.gz",
-                  "581f4d4e872da74b3941c874215898a7d35802f03732bdccee1d4a7979105d18"),
+                  "dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3"),
     DirectorySource("./bundled")
 ]
 

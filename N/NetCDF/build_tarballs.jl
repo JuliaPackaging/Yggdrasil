@@ -8,10 +8,10 @@ using BinaryBuilder, Pkg
 # So for example version 2.6.3 would become 200.600.300.
 
 name = "NetCDF"
-upstream_version = v"4.9.0"
+upstream_version = v"4.9.2"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.5"
+version_offset = v"0.2.6"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -19,24 +19,19 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build NetCDF
 sources = [
-    ArchiveSource("https://github.com/Unidata/netcdf-c/archive/v$(upstream_version).zip",
-                  "76fbe29d8baa37073a3e465f3a71bb063849906067f9867b24f6a6d67281281c"),
-    DirectorySource("bundled"),
+    ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
+                  "38f62cc5d9f0409205b20ff8ff01d7cc36659993"),
 ]
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/netcdf-c-*
+cd $WORKSPACE/srcdir/netcdf-c
 
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 CONFIGURE_OPTIONS=""
-
-for p in ../patches/*.patch; do
-    atomic_patch -p1 "${p}"
-done
 
 if [[ ${target} == *-mingw* ]]; then
     export LIBS="-lhdf5-0 -lhdf5_hl-0 -lcurl-4 -lz"
@@ -103,7 +98,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.2"),
+    Dependency(PackageSpec(name="HDF5_jll"), compat="~1.12.2"),
     Dependency("Zlib_jll"),
     Dependency("XML2_jll"),
     Dependency("LibCURL_jll"; compat = "7.73.0"),

@@ -45,3 +45,5 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.6", preferred_gcc_version = v"6.1.0",
                    lazy_artifacts=true, augment_platform_block)
 end
+
+# bump
