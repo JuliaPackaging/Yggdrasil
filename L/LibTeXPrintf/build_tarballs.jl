@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libtexprintf/
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no --enable-shared=yes --enable-fast-install=yes
-make -j${nproc}
+make # -j${nproc}
 make install
 install_license COPYING
 """
