@@ -6,7 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-version = v"2.9.0"
+adios2_version = v"2.9.0"
+version = v"2.9.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -28,13 +29,6 @@ archopts=()
 
 if grep -q MSMPI_VER ${includedir}/mpi.h; then
     # Microsoft MPI
-    # # Hide static libraries
-    # rm ${prefix}/lib/msmpi*.lib
-    # # Make shared libraries visible
-    # ln -s msmpi.dll ${libdir}/libmsmpi.dll
-    # export FCFLAGS="$FCFLAGS -I${prefix}/src -I${prefix}/include -fno-range-check"
-    # export LIBS="-L${libdir} -lmsmpi"
-    # archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi -DMPI_CXX_LIBRARIES=msmpi -DMPI_Fortran_LIBRARIES=msmpi -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
     archopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=$libdir/msmpi.dll
                -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=$libdir/msmpi.dll
                -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS= -DMPI_Fortran_LIBRARIES=$libdir/msmpi.dll)
@@ -64,6 +58,7 @@ cmake \
     -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_Fortran=OFF \
+    -DADIOS2_USE_HDF5=ON \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_SZ=ON \
@@ -94,7 +89,8 @@ platforms = expand_cxxstring_abis(platforms)
 # Windows doesn't build with libcxx="cxx03"
 platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# We need to use the same compat bounds as HDF5
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -135,8 +131,7 @@ dependencies = [
     Dependency(PackageSpec(name="Blosc2_jll")),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    # We cannot use HDF5 because we need an HDF5 configuration with MPI support
-    # Dependency(PackageSpec(name="HDF5_jll")),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14"),
     Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
