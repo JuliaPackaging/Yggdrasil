@@ -20,7 +20,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build NetCDF
 sources = [
     ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
-                  "38f62cc5d9f0409205b20ff8ff01d7cc36659993"),
+                  "cf11babbbdb9963f09f55079e0b019f6d0371f52f8e1264a5ba8e9fdab1a6c48"),
 ]
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
