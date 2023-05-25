@@ -99,10 +99,19 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-# Something something HDF5 LibCurl on (at least) x86_64-linux-musl-libgfortran5-cxx03-mpi+mpich
+# Problem with linking HDF5's dependency LibCurl:
+# `libhdf5.so.310: undefined reference to `curl_slist_free_all@CURL_4`
+# - x86_64-linux-musl-libgfortran5-cxx03-mpi+mpich
+# - x86_64-linux-musl-libgfortran5-cxx11-mpi+mpich
+# - x86_64-linux-musl-libgfortran5-cxx03-mpi+openmpi
+# - x86_64-linux-musl-libgfortran5-cxx11-mpi+openmpi
 platforms = filter(p -> !(
     arch(p) == "x86_64" && os(p) == "linux" && libc(p) == "musl" &&
-        libgfortran_version(p) == v"5" && cxxstring_abi(p) = "cxx03" && p["mpi"] == "mpich"), platforms)
+        libgfortran_version(p) == v"5" && p["mpi"] ∈ ["mpich", "openmpi"]), platforms)
+
+# Problem with HDF5's header files on Windows:
+# `H5VolUtil.h: unknown type name ‘uint’`
+platforms = filter(p -> !(os(p) == "windows"), platforms)
 
 # The products that we will ensure are always built
 products = [
