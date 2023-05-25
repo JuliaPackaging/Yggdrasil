@@ -5,8 +5,8 @@ using BinaryBuilder, Pkg
 name = "TempestRemap"
 version = v"2.1.6"
 sources = [
-    ArchiveSource("https://github.com/ClimateGlobalChange/tempestremap/archive/refs/tags/v$(version).tar.gz",
-                  "d2208b5d6952eba5003ee7abcf22f46a254ba03f6b76dcc4d246068573d424e2"),
+    GitSource("https://github.com/ClimateGlobalChange/tempestremap.git",
+        "531da6298b8924b56776ecf30cce0af60d7a8144"), # v2.1.6
     DirectorySource("./bundled"),
 ]
 
