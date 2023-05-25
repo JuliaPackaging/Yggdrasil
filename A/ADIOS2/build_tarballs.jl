@@ -136,6 +136,9 @@ dependencies = [
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
+
+    # LibCURL is required for HDF5 (at least) on x86_64-linux-musl-libgfortran5-cxx03-mpi+mpich
+    Dependency("LibCURL_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
