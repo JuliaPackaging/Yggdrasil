@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SLATEC"
-version = v"4.1.0"
+version = v"4.1.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -97,4 +97,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # For the time being need LLVM 11 because of <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/158>.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_llvm_version=v"11")
