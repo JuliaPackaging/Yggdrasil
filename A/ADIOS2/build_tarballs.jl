@@ -21,13 +21,14 @@ cd $WORKSPACE/srcdir
 cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
+# `uint` is not a portable type <https://github.com/ornladios/ADIOS2/issues/3638>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/uint.patch
 
 mkdir build
 cd build
 
 if [[ ${target} == x86_64-linux-musl ]]; then
-    # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
-    # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
     rm /usr/lib/libcurl.*
     rm /usr/lib/libnghttp2.*
 fi
@@ -106,20 +107,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-# # Problem with linking HDF5's dependency LibCurl:
-# # `libhdf5.so.310: undefined reference to `curl_slist_free_all@CURL_4`
-# # - x86_64-linux-musl-libgfortran5-cxx03-mpi+mpich
-# # - x86_64-linux-musl-libgfortran5-cxx11-mpi+mpich
-# # - x86_64-linux-musl-libgfortran5-cxx03-mpi+openmpi
-# # - x86_64-linux-musl-libgfortran5-cxx11-mpi+openmpi
-# platforms = filter(p -> !(
-#     arch(p) == "x86_64" && os(p) == "linux" && libc(p) == "musl" &&
-#         libgfortran_version(p) == v"5" && p["mpi"] ∈ ["mpich", "openmpi"]), platforms)
-
-# Problem with HDF5's header files on Windows:
-# `H5VolUtil.h: unknown type name ‘uint’`
-platforms = filter(p -> !(os(p) == "windows"), platforms)
-
 # The products that we will ensure are always built
 products = [
     # ExecutableProduct("adios_deactivate_bp", :adios_deactivate_bp),
@@ -157,9 +144,6 @@ dependencies = [
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll")),
-
-    # # LibCURL is required for HDF5 (at least) on x86_64-linux-musl-libgfortran5-cxx03-mpi+mpich
-    # Dependency("LibCURL_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
