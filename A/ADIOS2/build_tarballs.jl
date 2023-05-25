@@ -36,9 +36,9 @@ fi
 
 if [[ "$target" == *-mingw* ]]; then
     # Windows: Some options do not build
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF)
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_SST=OFF)
 else
-    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_SST=ON -DADIOS2_USE_Table=ON)
+    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_SST=ON)
 fi
 
 if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
@@ -98,6 +98,11 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+# Something something HDF5 LibCurl on (at least) x86_64-linux-musl-libgfortran5-cxx03-mpi+mpich
+platforms = filter(p -> !(
+    arch(p) == "x86_64" && os(p) == "linux" && libc(p) == "musl" &&
+        libgfortran_version(p) == v"5" && cxxstring_abi(p) = "cxx03" && p["mpi"] == "mpich"), platforms)
 
 # The products that we will ensure are always built
 products = [
