@@ -90,7 +90,7 @@ products = [
 dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("HDF5_jll", compat="~1.14"),
-    Dependency("NetCDF_jll", compat="400.902.5"),
+    Dependency("NetCDF_jll", compat="400.902.5 - 400.999"),
     # The following is adapted from NetCDF_jll
     BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
