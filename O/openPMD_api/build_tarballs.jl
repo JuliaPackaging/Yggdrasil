@@ -5,7 +5,6 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
-
 name = "openPMD_api"
 version = v"0.16.0"
 openpmi_api_version = "v.0.16.0" # This is really the branch `eschnett/julia-bindings` after version 0.16.0
@@ -19,7 +18,6 @@ sources = [
     GitSource("https://github.com/eschnett/openPMD-api.git", "13ea8b4ecca968a5355825d639b3e9182d14b484"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
