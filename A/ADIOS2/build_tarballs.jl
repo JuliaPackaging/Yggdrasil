@@ -44,9 +44,10 @@ fi
 
 if [[ "$target" == *-mingw* ]]; then
     # Windows: Some options do not build
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5_VOL=OFF -DADIOS2_USE_SST=OFF)
+    # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF)
 else
-    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5_VOL=ON -DADIOS2_USE_SST=ON)
+    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
 fi
 
 if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
@@ -66,7 +67,6 @@ cmake \
     -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_Fortran=OFF \
-    -DADIOS2_USE_HDF5=ON \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_SZ=ON \
@@ -107,6 +107,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# We don't need HDF5 on Windows (see above)
+hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
+
 # The products that we will ensure are always built
 products = [
     # ExecutableProduct("adios_deactivate_bp", :adios_deactivate_bp),
@@ -139,7 +142,7 @@ dependencies = [
     Dependency(PackageSpec(name="Blosc2_jll")),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14"),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
