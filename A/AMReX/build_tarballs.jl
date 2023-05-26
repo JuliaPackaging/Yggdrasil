@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "23.04"
+version_string = "23.05"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "b070949611abd2156208e675e40e5e73ed405bf83e3b1e8ba70fbb451a9e7dd7"),
+                  "a4bf5ad5322e706b9fae46ff52043e2cca5ddba81479647816251e9ab21c0027"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +21,9 @@ cd $WORKSPACE/srcdir
 cd amrex
 mkdir build
 cd build
+
+# Correct HDF5 compiler wrappers
+perl -pi -e 's+-I/workspace/srcdir/hdf5-1.14.0/src/H5FDsubfiling++' $(which h5pcc)
 
 if [[ "$target" == *-apple-* ]]; then
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
@@ -39,6 +42,14 @@ elif [[ "$target" == *-mingw* ]]; then
 else
     mpiopts=
 fi
+
+if [[ "$target" == *-mingw32* ]]; then
+    # AMReX requires a parallel HDF5 library
+    hdf5opts="-DAMReX_HDF5=OFF"
+else
+    hdf5opts="-DAMReX_HDF5=ON"
+fi
+
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -47,6 +58,7 @@ cmake \
     -DAMReX_OMP=ON \
     -DAMReX_PARTICLES=ON \
     -DBUILD_SHARED_LIBS=ON \
+    ${hdf5opts} \
     ${mpiopts} \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
@@ -59,6 +71,11 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libamrex", :libamrex)
+]
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -66,10 +83,15 @@ platforms = supported_platforms()
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
-# The products that we will ensure are always built
-products = [
-    LibraryProduct("libamrex", :libamrex)
-]
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -77,17 +99,11 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
                platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
 ]
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
