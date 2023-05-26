@@ -8,7 +8,7 @@ version = v"3.1.8"
 
 # Collection of sources required to complete build
 sources = [
-x    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(SZ3_version)/SZ3-$(SZ3_version).zip",
+    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(SZ3_version)/SZ3-$(SZ3_version).zip",
                   "cf3ba7fae82f9483c4089963b9951ba9bf6b9eca5f712727fb92f2390b778aa8"),
 ]
 
