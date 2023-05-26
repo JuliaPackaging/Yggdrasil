@@ -22,9 +22,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
 # Patch for MinGW toolchain
 find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
-# Install open-source solvers
-./download_vendor
-
 mkdir -p build
 cd build
 
@@ -58,6 +55,7 @@ platforms = filter(!Sys.iswindows, platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("HiGHS_jll"),
 ]
 
 build_tarballs(
