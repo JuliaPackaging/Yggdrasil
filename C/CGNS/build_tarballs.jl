@@ -12,6 +12,12 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/CGNS*
 
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libnghttp2.*
+fi
+
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1.14.0/src/H5FDsubfiling++' $(which h5pcc)
 
