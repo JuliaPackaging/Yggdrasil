@@ -1,7 +1,8 @@
 using BinaryBuilder
 
 name = "CGNS"
-version = v"4.3.0"
+cgns_version = v"4.3.0"
+version = v"4.3.1"
 
 sources = [
     GitSource("https://github.com/CGNS/CGNS.git",
@@ -23,15 +24,7 @@ make -j${nproc}
 make install
 """
 
-platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-    Platform("aarch64", "macos"),
-]
-
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libcgns", :libcgns),
@@ -44,8 +37,7 @@ products = [
 ]
 
 dependencies = [
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="~1.12"),
+    Dependency("HDF5_jll"; compat="~1.14"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
