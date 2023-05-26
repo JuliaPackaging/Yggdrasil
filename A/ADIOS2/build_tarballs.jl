@@ -6,7 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-version = v"2.9.0"
+adios2_version = v"2.9.0"
+version = v"2.9.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -20,21 +21,22 @@ cd $WORKSPACE/srcdir
 cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
+# `uint` is not a portable type <https://github.com/ornladios/ADIOS2/issues/3638>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/uint.patch
 
 mkdir build
 cd build
+
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libnghttp2.*
+fi
 
 archopts=()
 
 if grep -q MSMPI_VER ${includedir}/mpi.h; then
     # Microsoft MPI
-    # # Hide static libraries
-    # rm ${prefix}/lib/msmpi*.lib
-    # # Make shared libraries visible
-    # ln -s msmpi.dll ${libdir}/libmsmpi.dll
-    # export FCFLAGS="$FCFLAGS -I${prefix}/src -I${prefix}/include -fno-range-check"
-    # export LIBS="-L${libdir} -lmsmpi"
-    # archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi -DMPI_CXX_LIBRARIES=msmpi -DMPI_Fortran_LIBRARIES=msmpi -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
     archopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=$libdir/msmpi.dll
                -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=$libdir/msmpi.dll
                -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS= -DMPI_Fortran_LIBRARIES=$libdir/msmpi.dll)
@@ -42,9 +44,10 @@ fi
 
 if [[ "$target" == *-mingw* ]]; then
     # Windows: Some options do not build
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF)
+    # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF)
 else
-    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_SST=ON -DADIOS2_USE_Table=ON)
+    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
 fi
 
 if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
@@ -94,7 +97,8 @@ platforms = expand_cxxstring_abis(platforms)
 # Windows doesn't build with libcxx="cxx03"
 platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# We need to use the same compat bounds as HDF5
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -102,6 +106,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+# We don't need HDF5 on Windows (see above)
+hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -135,8 +142,7 @@ dependencies = [
     Dependency(PackageSpec(name="Blosc2_jll")),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    # We cannot use HDF5 because we need an HDF5 configuration with MPI support
-    # Dependency(PackageSpec(name="HDF5_jll")),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
