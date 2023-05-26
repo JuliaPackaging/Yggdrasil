@@ -5,8 +5,8 @@ using BinaryBuilder, Pkg
 name = "TempestRemap"
 version = v"2.1.6"
 sources = [
-    ArchiveSource("https://github.com/ClimateGlobalChange/tempestremap/archive/refs/tags/v$(version).tar.gz",
-                  "d2208b5d6952eba5003ee7abcf22f46a254ba03f6b76dcc4d246068573d424e2"),
+    GitSource("https://github.com/ClimateGlobalChange/tempestremap.git",
+        "531da6298b8924b56776ecf30cce0af60d7a8144"), # v2.1.6
     DirectorySource("./bundled"),
 ]
 
@@ -89,6 +89,7 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
+    Dependency("HDF5_jll", compat="~1.12.2"),
     Dependency("NetCDF_jll", compat="400.902.5 - 400.999"),
     # The following is adapted from NetCDF_jll
     BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
