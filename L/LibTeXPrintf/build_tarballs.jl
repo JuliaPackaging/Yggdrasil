@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibTeXPrintf"
-version = v"1.18"
+version = v"1.18.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,9 +13,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libtexprintf/
+echo texstring >> src/texprintfsymbols # bugfix patch, remove for v1.19
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no --enable-shared=yes --enable-fast-install=yes
-make # -j${nproc}
+make # -j${nproc} # uncomment for v1.19
 make install
 install_license COPYING
 """
