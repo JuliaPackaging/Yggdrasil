@@ -11,6 +11,10 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/CGNS*
+
+# Correct HDF5 compiler wrappers
+perl -pi -e 's+-I/workspace/srcdir/hdf5-1.14.0/src/H5FDsubfiling++' $(which h5pcc)
+
 mkdir build && cd build
 H5LIB=""
 if [[ "${target}" == *-mingw* ]]; then
