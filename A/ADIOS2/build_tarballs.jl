@@ -44,9 +44,9 @@ fi
 
 if [[ "$target" == *-mingw* ]]; then
     # Windows: Some options do not build
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_SST=OFF)
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5_VOL=OFF -DADIOS2_USE_SST=OFF)
 else
-    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_SST=ON)
+    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5_VOL=ON -DADIOS2_USE_SST=ON)
 fi
 
 if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
