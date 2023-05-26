@@ -55,14 +55,16 @@ archopts=()
 if [[ "${target}" == x86_64-w64-mingw32 ]]; then
     # Microsoft MPI
     archopts+=(
-        -DopenPMD_USE_HDF5=OFF
         -DMPI_C_ADDITIONAL_INCLUDE_DIRS=
         -DMPI_C_LIBRARIES=${libdir}/msmpi.dll
         -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS=
         -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll)
+fi
+if [[ "${target}" == *-mingw32 ]]; then
+    # Windows
+    archopts+=(-DopenPMD_USE_HDF5=OFF)
 else
-    archopts+=(
-        -DopenPMD_USE_HDF5=ON)
+    archopts+=(-DopenPMD_USE_HDF5=ON)
 fi
 
 cmake \
