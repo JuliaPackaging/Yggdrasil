@@ -56,7 +56,7 @@ platforms = expand_cxxstring_abis(platforms)
 # SZ3 requires a 64-bit architecture (and Windows uses 32-bit size_t?)
 filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
 
-There are C++ build errors with musl: the type `uint` is not declared.
+# There are C++ build errors with musl: the type `uint` is not declared.
 # Try re-enabling this for version > 3.1.7.
 filter!(p -> libc(p) ≠ "musl", platforms)
 
