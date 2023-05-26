@@ -17,13 +17,6 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd SZ3-*
 
-if [[ ${target} == x86_64-linux-musl ]]; then
-    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl
-    rm /usr/lib/libcurl.*
-    rm /usr/lib/libnghttp2.*
-    CFLAGS="$CFLAGS -Duint=unsigned"
-fi
-
 hdf5_options=
 if test -f "${includedir}/hdf5.h"; then
     # HDF5 is available, use it
@@ -62,6 +55,10 @@ platforms = expand_cxxstring_abis(platforms)
 
 # SZ3 requires a 64-bit architecture (and Windows uses 32-bit size_t?)
 filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
+
+There are C++ build errors with musl: the type `uint` is not declared.
+# Try re-enabling this for version > 3.1.7.
+filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
