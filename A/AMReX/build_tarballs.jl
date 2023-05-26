@@ -42,15 +42,23 @@ elif [[ "$target" == *-mingw* ]]; then
 else
     mpiopts=
 fi
+
+if [[ "$target" == *-mingw32* ]]; then
+    # AMReX requires a parallel HDF5 library
+    hdf5opts="-DAMReX_HDF5=OFF"
+else
+    hdf5opts="-DAMReX_HDF5=ON"
+fi
+
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DAMReX_FORTRAN=ON \
-    -DAMReX_HDF5=ON \
     -DAMReX_MPI=ON \
     -DAMReX_OMP=ON \
     -DAMReX_PARTICLES=ON \
     -DBUILD_SHARED_LIBS=ON \
+    ${hdf5opts} \
     ${mpiopts} \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
