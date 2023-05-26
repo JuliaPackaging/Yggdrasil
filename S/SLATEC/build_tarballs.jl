@@ -30,13 +30,13 @@ if [[ $target == *"i686-w64-mingw32" ]]; then
 fi
 
 # libblastrampoline-5 required for mingw32
-if [[ $target == *"w64-mingw32" ]]; then 
-    # Change lapack library to libblastrampoline
-    sed -i -e 's/target_link_libraries( slatec_shared blas lapack )/target_link_libraries( slatec_shared blastrampoline-5 )/g' CMakeLists.txt
+if [[ $target == *"w64-mingw32" ]]; then
+    LBT=blastrampoline-5
 else
-    # Change lapack library to libblastrampoline
-    sed -i -e 's/target_link_libraries( slatec_shared blas lapack )/target_link_libraries( slatec_shared blastrampoline )/g' CMakeLists.txt
+    LBT=blastrampoline
 fi
+# Change lapack library to libblastrampoline
+sed -i -e "s/target_link_libraries( slatec_shared blas lapack )/target_link_libraries( slatec_shared ${LBT} )/g" CMakeLists.txt
 
 if [[ "${target}" == aarch64-apple-* ]]; then
     # Fix issue due to GCC 10+.
