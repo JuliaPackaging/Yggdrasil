@@ -51,7 +51,7 @@ products = [
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # TODO(odow): fix build issues on Windows
-# platforms = filter(!Sys.iswindows, platforms)
+platforms = filter(!Sys.iswindows, platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
