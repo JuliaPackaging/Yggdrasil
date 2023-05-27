@@ -25,6 +25,8 @@ find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 mkdir -p build
 cd build
 
+# FAST_BUILD is needed when linking HiGHS, because that's what
+# we used when compiling HiGHS_jll.
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -57,7 +59,7 @@ platforms = filter(!Sys.iswindows, platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("HiGHS_jll"),
+    Dependency("HiGHS_jll"; compat="1.5.1"),
 ]
 
 build_tarballs(
