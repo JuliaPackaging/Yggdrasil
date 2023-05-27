@@ -13,7 +13,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mosquitto/
-export OPENSSL_ROOT_DIR=${prefix}/lib64/
+
+# Fix "cannot finding openssl" under Windows
+if [[ ${target} == *-w64* ]]; then
+    export OPENSSL_ROOT_DIR=${prefix}/lib64/
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
