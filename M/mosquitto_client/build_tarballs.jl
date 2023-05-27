@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/mosquitto/
 
 # Fix "cannot finding openssl" under Windows
-if [[ ${target} == *-w64* ]]; then
+if [[ ${target} == x86_64-w64-mingw32 ]]; then
     export OPENSSL_ROOT_DIR=${prefix}/lib64/
 fi
 
