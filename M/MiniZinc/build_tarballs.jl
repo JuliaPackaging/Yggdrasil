@@ -25,12 +25,11 @@ find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 mkdir -p build
 cd build
 
-export LDFLAGS="-L${libdir}"
-
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS="-I${includedir}/highs" \
+    -DFAST_BUILD=ON \  # This is needed, because HiGHS_jll is compiled with FAST_BUILD also 
     ..
 
 if [[ "${target}" == *-linux-* ]]; then
