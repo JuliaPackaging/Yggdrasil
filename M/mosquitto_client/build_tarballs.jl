@@ -21,7 +21,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DDOCUMENTATION=OFF \
     -DWITH_CJSON=OFF \
     -DWITH_BROKER=OFF \
-    -D WITH_APPS=OFF \
+    -DWITH_APPS=OFF \
     -DWITH_PLUGINS=OFF \
     ..
 make -j${nproc}
