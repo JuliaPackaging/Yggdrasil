@@ -24,7 +24,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -D WITH_APPS=OFF \
     -DWITH_PLUGINS=OFF \
     ..
-make
+make -j${nproc}
 make install
 install_license LICENSE.txt
 """
