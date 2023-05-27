@@ -14,7 +14,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mosquitto/
 export OPENSSL_ROOT_DIR=${prefix}/lib64/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -D DOCUMENTATION=OFF -D WITH_CJSON=OFF -D WITH_BROKER=OFF -D WITH_APPS=OFF -D WITH_PLUGINS=OFF .
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DDOCUMENTATION=OFF \
+    -DWITH_CJSON=OFF \
+    -DWITH_BROKER=OFF \
+    -D WITH_APPS=OFF \
+    -DWITH_PLUGINS=OFF \
+    ..
 make
 make install
 install_license LICENSE.txt
