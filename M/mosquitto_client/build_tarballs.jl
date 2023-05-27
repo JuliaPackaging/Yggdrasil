@@ -12,9 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-export OPENSSL_ROOT_DIR=/workspace/destdir/lib64/
-cd mosquitto/
+cd $WORKSPACE/srcdir/mosquitto/
+export OPENSSL_ROOT_DIR=${prefix}/lib64/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -D DOCUMENTATION=OFF -D WITH_CJSON=OFF -D WITH_BROKER=OFF -D WITH_APPS=OFF -D WITH_PLUGINS=OFF .
 make
 make install
