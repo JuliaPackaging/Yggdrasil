@@ -59,7 +59,9 @@ platforms = filter(!Sys.iswindows, platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("HiGHS_jll"; compat="1.5.1"),
+    # Use an exact version for HiGHS. @odow has observed segfaults with
+    # HiGHS_jll v1.5.3 when libminizinc compiled with v1.5.1.
+    Dependency("HiGHS_jll"; compat="=1.5.3"),
 ]
 
 build_tarballs(
