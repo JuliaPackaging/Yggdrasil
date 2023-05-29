@@ -11,13 +11,24 @@
  #define FILE_PATH(path) (path)
  #endif
  
-+#ifdef WIN32
++#ifdef __MINGW32__
 +    #define realpath(N,R) _fullpath((R),(N),PATH_MAX)
 +#endif
 +
  namespace MiniZinc {
  namespace FileUtils {
 
+--- a/minizinc.cpp
++++ b/minizinc.cpp
+@@ -105,7 +105,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
+   }
+   auto exe = FileUtils::wide_to_utf8(argv[0]);
+ 
+-#ifdef NDEBUG
++#if defined(NDEBUG) && !defined(__MINGW32__)
+   // Lambda to prevent object unwinding not allowed with __try..__except
+   return ([&]() {
+     __try {
 --- a/include/minizinc/process.hh
 +++ b/include/minizinc/process.hh
 @@ -225,11 +225,11 @@ public:
