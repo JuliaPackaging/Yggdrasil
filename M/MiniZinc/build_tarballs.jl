@@ -52,10 +52,9 @@ products = [
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-
-# TODO(odow): fix build issues on Windows
-platforms = filter(!Sys.iswindows, platforms)
+platforms = expand_cxxstring_abis(
+    supported_platforms(; exclude = p -> arch(p) == "i686" && Sys.iswindows(p)),
+)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),

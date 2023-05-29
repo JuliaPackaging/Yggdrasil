@@ -1,14 +1,44 @@
 --- a/include/minizinc/file_utils.hh
 +++ b/include/minizinc/file_utils.hh
-@@ -16,7 +16,7 @@
+@@ -15,12 +15,16 @@
+ #include <vector>
  
  // Macro so that we can use overloaded wide versions of fstream::open for Windows
- #ifdef _WIN32
--#define FILE_PATH(path) MiniZinc::FileUtils::utf8_to_wide(path)
-+#define FILE_PATH(path) (path)
+-#ifdef _WIN32
++#if defined(_WIN32) && !defined(__MINGW32__)
+ #define FILE_PATH(path) MiniZinc::FileUtils::utf8_to_wide(path)
  #else
  #define FILE_PATH(path) (path)
  #endif
+ 
++#ifdef __MINGW32__
++    #define realpath(N,R) _fullpath((R),(N),PATH_MAX)
++#endif
++
+ namespace MiniZinc {
+ namespace FileUtils {
+
+--- a/minizinc.cpp
++++ b/minizinc.cpp
+@@ -89,7 +89,7 @@ int run(const std::string& exe, const std::vector<std::string>& args, bool jsonS
+ 
+ }  // namespace
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) && !defined(__MINGW32__)
+ #include <minizinc/interrupt.hh>
+ 
+ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
+@@ -121,7 +121,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
+ }
+ #else
+ int main(int argc, const char** argv) {
++  #if !defined(__MINGW32__)
+   OverflowHandler::install(argv);
++  #endif
+   std::vector<std::string> args(argc - 1);
+   bool jsonStream = false;
+   for (int i = 1; i < argc; i++) {
 --- a/include/minizinc/process.hh
 +++ b/include/minizinc/process.hh
 @@ -225,11 +225,11 @@ public:
