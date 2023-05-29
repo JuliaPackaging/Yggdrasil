@@ -17,7 +17,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
 
-# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
 
 # Patch for MinGW toolchain
 find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
