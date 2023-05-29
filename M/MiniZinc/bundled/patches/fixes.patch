@@ -29,6 +29,16 @@
  #include <minizinc/interrupt.hh>
  
  int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
+@@ -121,7 +121,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
+ }
+ #else
+ int main(int argc, const char** argv) {
++  #if !defined(__MINGW32__)
+   OverflowHandler::install(argv);
++  #endif
+   std::vector<std::string> args(argc - 1);
+   bool jsonStream = false;
+   for (int i = 1; i < argc; i++) {
 --- a/include/minizinc/process.hh
 +++ b/include/minizinc/process.hh
 @@ -225,11 +225,11 @@ public:
