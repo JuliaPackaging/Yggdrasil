@@ -3,22 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "LAZperf"
-version = v"2.1.0"
+version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/hobu/laz-perf/archive/refs/tags/$version.tar.gz", "0ea01f37dfa0e623d64846a58c3c2f0e77f8b17b9b8ba5721c3abcdbe14ac2d5"),
-    DirectorySource("./bundled")
+    ArchiveSource("https://github.com/hobu/laz-perf/archive/refs/tags/$version.tar.gz", "029e830758d2a0d873110b714e7f918c1a8fbad6f6538f0af9f41c3fec9de0c0")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
 cd $WORKSPACE/srcdir/laz-perf-*
-
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-portable-endian.patch
-fi
 
 cmake . \
 -DCMAKE_INSTALL_PREFIX=$prefix \
