@@ -17,7 +17,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
 
 # Patch for MinGW toolchain
 find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
@@ -53,9 +53,6 @@ products = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-
-# TODO(odow): fix build issues on Windows
-platforms = filter(!Sys.iswindows, platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
