@@ -20,15 +20,15 @@
 
 --- a/minizinc.cpp
 +++ b/minizinc.cpp
-@@ -105,7 +105,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
-   }
-   auto exe = FileUtils::wide_to_utf8(argv[0]);
+@@ -89,7 +89,7 @@ int run(const std::string& exe, const std::vector<std::string>& args, bool jsonS
  
--#ifdef NDEBUG
-+#if defined(NDEBUG) && !defined(__MINGW32__)
-   // Lambda to prevent object unwinding not allowed with __try..__except
-   return ([&]() {
-     __try {
+ }  // namespace
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) && !defined(__MINGW32__)
+ #include <minizinc/interrupt.hh>
+ 
+ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
 --- a/include/minizinc/process.hh
 +++ b/include/minizinc/process.hh
 @@ -225,11 +225,11 @@ public:
