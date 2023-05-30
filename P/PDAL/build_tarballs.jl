@@ -17,7 +17,6 @@ cd $WORKSPACE/srcdir/PDAL*
 
 mkdir build && cd build
 
-cd ..
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
