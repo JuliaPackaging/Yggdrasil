@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-cd $WORKSPACE/srcdir/PDAL*/
+cd $WORKSPACE/srcdir/PDAL*
 
 mkdir build && cd build
 
@@ -55,7 +55,8 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
     Dependency(PackageSpec(name="libgeotiff_jll", uuid="06c338fa-64ff-565b-ac2f-249532af990e"))
-    Dependency(PackageSpec(name="LAZperf_jll", uuid="498468b5-6726-5392-b148-b36d48e22663"))
+    #repo is carrying around a vendored version of LAZperf
+    #Dependency(PackageSpec(name="LAZperf_jll", uuid="498468b5-6726-5392-b148-b36d48e22663"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
