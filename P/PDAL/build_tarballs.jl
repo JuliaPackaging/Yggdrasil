@@ -59,5 +59,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# PDAL GitHub CI scripts currently run on GCC 7.5, so we'll match them in major version at least
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7", julia_compat="1.6")
+# we require a compiler that supports C++ 17 and <filesystem>
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
