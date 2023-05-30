@@ -7,11 +7,15 @@ version = v"1.11.0"
 sources = [
     ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
                   "3736161e41e2693324deb38c26cfdc3efe6209d634ba4258db1cecff6a5ad461"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*/
+
+# Apply patch from https://github.com/libssh2/libssh2/pull/1054
+atomic_patch -p1 ../patches/0001-mbedtls-use-more-size_t-to-sync-up-with-crypto.h.patch
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
