@@ -29,7 +29,7 @@ if [[ ${nbits} == 64 ]]; then
 fi
 
 FFLAG="${FFLAGS[@]}" 
-make SLIB=${dlext} FC="${FC}" FFLAG="${FFLAG}" BLAS="${BLAS}"  # LAPACK="${BLAS}"
+make SLIB=${dlext} FC="${FC}" FFLAG="${FFLAG}" BLAS="${BLAS}" LAPACK="${BLAS}"
 cp complex8/libcpropack.${dlext} complex16/libzpropack.${dlext} single/libspropack.${dlext} double/libdpropack.${dlext} ${libdir}/
 """
 
