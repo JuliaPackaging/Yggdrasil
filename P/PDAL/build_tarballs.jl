@@ -22,6 +22,7 @@ mkdir -p build/dimbuilder && cd build/dimbuilder
 (
     cmake ../../dimbuilder -G Ninja \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+        -DCMAKE_INCLUDE_PATH:FILEPATH="$(realpath ../../vendor/)" \
         -DCMAKE_BUILD_TYPE=Release
 
     ninja -j${nproc}
