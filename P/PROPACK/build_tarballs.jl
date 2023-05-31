@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "PROPACK"
-version = v"0.2.2"
+version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
