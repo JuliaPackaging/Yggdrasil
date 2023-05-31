@@ -15,7 +15,25 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/PDAL*
 
-mkdir build && cd build
+mkdir -p build/dimbuilder && cd build/dimbuilder
+
+# Build dimbuilder with the host compiler before main library.
+#see also https://github.com/conda-forge/pdal-feedstock/blob/main/recipe/build.sh
+(
+    cmake ../../dimbuilder -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release
+
+    ninja -j${nproc}
+
+    mkdir -p ../bin
+    mv dimbuilder ../bin/.
+    export DIMBUILDER=$WORKSPACE/srcdir/bin/dimbuilder
+)
+
+#make sure we're back in source dir
+cd $WORKSPACE/srcdir/PDAL*
+cd build
 
 cmake .. -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
