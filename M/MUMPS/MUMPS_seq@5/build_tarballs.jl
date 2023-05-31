@@ -21,7 +21,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.patch * 100 + version_offset.patch)
 
 sources = [
-  ArchiveSource("https://graal.ens-lyon.fr/MUMPS/MUMPS_$(version).tar.gz",
+  ArchiveSource("https://graal.ens-lyon.fr/MUMPS/MUMPS_$(upstream_version).tar.gz",
                 "3e08c1bdea7aaaba303d3cf03059f3b4336fa49bef93f4260f478f067f518289")
 ]
 
