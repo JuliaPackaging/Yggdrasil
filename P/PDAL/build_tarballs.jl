@@ -19,13 +19,15 @@ mkdir -p build/dimbuilder && cd build/dimbuilder
 
 # Build dimbuilder with the host compiler before main library.
 #see also https://github.com/conda-forge/pdal-feedstock/blob/main/recipe/build.sh
-cmake ../../dimbuilder -G Ninja \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-    -DNLOHMANN_INCLUDE_DIR="$(realpath ../../vendor/nlohmann)" \
-    -DUTFCPP_INCLUDE_DIR="$(realpath ../../vendor/utfcpp/source)" \
-    -DCMAKE_BUILD_TYPE=Release
-export DIMBUILDER=`pwd`/bin/dimbuilder
-ninja -j${nproc}
+(
+    cmake ../../dimbuilder -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+        -DNLOHMANN_INCLUDE_DIR="$(realpath ../../vendor/nlohmann)" \
+        -DUTFCPP_INCLUDE_DIR="$(realpath ../../vendor/utfcpp/source)" \
+        -DCMAKE_BUILD_TYPE=Release
+    ninja -j${nproc}
+
+)
 
 #make sure we're back in source dir
 cd $WORKSPACE/srcdir/PDAL*
@@ -37,7 +39,7 @@ cmake .. -G Ninja \
     -DCMAKE_LIBRARY_PATH:FILEPATH="${libdir}" \
     -DCMAKE_INCLUDE_PATH:FILEPATH="${includedir}" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DDIMBUILDER_EXECUTABLE=$DIMBUILDER \
+    -DDIMBUILDER_EXECUTABLE="$WORKSPACE/srcdir/PDAL/build/dimbuilder/bin/dimbuilder" \
     -DBUILD_PLUGIN_I3S=OFF \
     -DBUILD_PLUGIN_NITF=OFF \
     -DBUILD_PLUGIN_TILEDB=OFF \
