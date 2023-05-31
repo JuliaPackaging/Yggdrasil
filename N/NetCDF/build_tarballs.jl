@@ -34,9 +34,8 @@ export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 CONFIGURE_OPTIONS=""
 
-for p in ../patches/*.patch; do
-    atomic_patch -p1 "${p}"
-done
+# Apply patch https://github.com/Unidata/netcdf-c/pull/2690
+atomic_patch -p1 ../patches/0001-curl-cainfo.patch
 
 if [[ ${target} == *-mingw* ]]; then
     # we should determine the dll version (?) automatically
