@@ -25,8 +25,7 @@ mkdir -p build/dimbuilder && cd build/dimbuilder
         -DNLOHMANN_INCLUDE_DIR="$(realpath ../../vendor/nlohmann)" \
         -DUTFCPP_INCLUDE_DIR="$(realpath ../../vendor/utfcpp/source)" \
         -DCMAKE_BUILD_TYPE=Release
-    export DIMBUILDER=`pwd`/bin/dimbuilder
-    echo $DIMBUILDER
+    export DIMBUILDER_EXECUTABLE=`pwd`/bin/dimbuilder
     ninja -j${nproc}
 
 )
