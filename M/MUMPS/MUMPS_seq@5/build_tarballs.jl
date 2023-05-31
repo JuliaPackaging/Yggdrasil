@@ -14,23 +14,21 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "MUMPS_seq"
-upstream_version = v"5.5.1"
-version_offset = v"0.0.2" # reset to 0.0.0 once the upstream version changes
+upstream_version = v"5.6.0"
+version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
-upstream_version
+
 sources = [
-  ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz","1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
-  DirectorySource("./bundled")
+  ArchiveSource("https://graal.ens-lyon.fr/MUMPS/MUMPS_$(upstream_version).tar.gz",
+                "3e08c1bdea7aaaba303d3cf03059f3b4336fa49bef93f4260f478f067f518289")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pord.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
@@ -86,8 +84,6 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
-    LibraryProduct("libpord", :libpord),
-    LibraryProduct("libmpiseq", :libmpiseq),
     LibraryProduct("libmumps_common", :libmumps_common),
 ]
 
