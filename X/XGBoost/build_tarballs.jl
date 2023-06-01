@@ -1,4 +1,6 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder 
+using BinaryBuilderBase 
+using Pkg
 
 name = "XGBoost"
 version = v"1.7.5"
@@ -7,6 +9,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
+# Collection of sources required to build XGBoost
 sources = [
     GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"), 
     DirectorySource("./bundled"),
@@ -56,35 +59,13 @@ fi
 install_license LICENSE
 """
 
-# The products that we will ensure are always built
-products = [
-    LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
-    ExecutableProduct("xgboost", :xgboost)
+augment_platform_block = CUDA.augment
+
+versions_to_build = [
+    nothing,
+    v"11.0",
+    v"12.0", 
 ]
-
-# don't allow `build_tarballs` to override platform selection based on ARGS.
-# we handle that ourselves by calling `should_build_platform`
-non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
-
-# `--register` should only be passed to the latest `build_tarballs` invocation
-non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
-
-cpu_platforms = expand_cxxstring_abis(supported_platforms())
-
-cpu_dependencies = [
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, cpu_platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, cpu_platforms)),
-]
-
-# # Build the CPU tarballs
-for platform in platforms
-    should_build_platform(triplet(platform)) || continue
-    build_tarballs(non_reg_ARGS, name, version, sources, script, [platform], products, cpu_dependencies; 
-                    preferred_gcc_version=v"8", 
-                    julia_compat="1.6")
-end
 
 # XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
 cuda_full_versions = Dict(
@@ -92,38 +73,47 @@ cuda_full_versions = Dict(
     v"12.0" => v"12.0.1",
 )
 
-cuda_archs = Dict(
-    v"11.0" => "60;70;75;80",
-    v"12.0" => "60;70;75;80;89;90",
+cuda_preambles = Dict(
+    nothing => "",
+    v"11.0" => "CUDA_ARCHS=\"60;70;75;80\";",
+    v"12.0" => "CUDA_ARCHS=\"60;70;75;80;89;90\";",
 )
-cuda_versions = [v"11.0", v"12.0"]
-for (i, cuda_version) in enumerate(cuda_versions)
-    cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
-                                            cuda=CUDA.platform(cuda_version)))
-    cuda_dependencies = [
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct(["libxgboost", "xgboost"], :libxgboost),
+    ExecutableProduct("xgboost", :xgboost)
+]
+
+platforms = expand_cxxstring_abis(supported_platforms())
+
+for cuda_version in versions_to_build, platform in platforms
+
+    build_cuda = (os(platform) == "linux") && (arch(platform) in ["aarch64", "x86_64"])
+    if !isnothing(cuda_version) && !build_cuda
+        continue
+    end
+
+    augmented_platform = Platform(arch(platform), os(platform);
+        cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
+    )
+    should_build_platform(triplet(augmented_platform)) || continue
+
+    dependencies = AbstractDependency[
         # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
         # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-        Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, cuda_platforms)),
-        BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version]), platforms=cuda_platforms),
-        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"), platforms=cuda_platforms),
+        Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, [augmented_platform])),
+        BuildDependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, [augmented_platform])),
     ]
 
-    preamble = """
-    CUDA_ARCHS="$(cuda_archs[cuda_version])"
-    """
-
-    # Build the CUDA tarballs
-    for (j, platform) in enumerate(cuda_platforms)
-        should_build_platform(triplet(platform)) || continue
-        
-        final_platform = (i == lastindex(cuda_versions) )&& (j == lastindex(cuda_platforms))
-        augmented_ARGS = final_platform ? ARGS : non_reg_ARGS
-        augmented_platform = deepcopy(platform)
-        augmented_platform[CUDA.platform_name] = CUDA.platform(cuda_version)
-
-        build_tarballs(augmented_ARGS, name, version, sources,  preamble*script, [augmented_platform], products, cuda_dependencies; 
-                        preferred_gcc_version=v"8", 
-                        julia_compat="1.6",
-                        augment_platform_block=CUDA.augment)
+    if !isnothing(cuda_version)
+        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version])))
+        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_Runtime_jll")))
     end
+    preamble = cuda_preambles[cuda_version]
+    
+    build_tarballs(ARGS, name, version, sources,  preamble*script, [augmented_platform], products, dependencies; 
+                    preferred_gcc_version=v"8", 
+                    julia_compat="1.6",
+                    augment_platform_block)
 end
