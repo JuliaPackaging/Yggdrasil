@@ -24,7 +24,7 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
-if  [[ $bb_full_target == x86_64-linux*cuda* ]]; then
+if  [[ $bb_full_target == *-linux*cuda-1* ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
     # make it use the workspace instead
     export TMPDIR=${WORKSPACE}/tmpdir
@@ -95,7 +95,7 @@ for cuda_version in versions_to_build, platform in platforms
     end
 
     augmented_platform = Platform(arch(platform), os(platform);
-        cuda=isnothing(cuda_version) ? nothing : CUDA.platform(cuda_version)
+        cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
     )
     should_build_platform(triplet(augmented_platform)) || continue
 
