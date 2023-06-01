@@ -89,7 +89,7 @@ cuda_archs = Dict(
 )
 
 for cuda_version in keys(cuda_full_versions)
-    cuda_platforms = expand_cxxstring_abis(Platform("x86_aarch6464", "linux"; 
+    cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
                                             cuda=CUDA.platform(cuda_version)))
     cuda_dependencies = [
         # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
