@@ -9,7 +9,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libsingular_julia"
-version = v"0.32.0"
+version = v"0.32.1"
 
 # reminder: change the above version if restricting the supported julia versions
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
@@ -55,7 +55,7 @@ dependencies = [
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Singular_jll", compat = "~403.201.1"),
+    Dependency("Singular_jll", compat = "~403.202.200"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
