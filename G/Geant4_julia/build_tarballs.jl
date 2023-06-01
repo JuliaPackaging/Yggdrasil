@@ -12,7 +12,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "f18736397a35a7e91978b4172624b8b4f1e3c4ff"),
+              "b4eefe53573d3b8d7ee97796df478789fa536eda"),
 ]
 
 # Bash recipe for building across all platforms
