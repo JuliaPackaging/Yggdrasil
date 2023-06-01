@@ -1,0 +1,15 @@
+diff --git a/GKlib/gk_arch.h b/GKlib/gk_arch.h
+index 2cb80cc..ce79b13 100644
+--- a/GKlib/gk_arch.h
++++ b/GKlib/gk_arch.h
+@@ -41,7 +41,9 @@
+ #endif
+   #include <inttypes.h>
+   #include <sys/types.h>
+-  #include <sys/resource.h>
++  #ifndef __MINGW32__
++    #include <sys/resource.h>
++  #endif
+   #include <sys/time.h>
+ #endif
+ 
