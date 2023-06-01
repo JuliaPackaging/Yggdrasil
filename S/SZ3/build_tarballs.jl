@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SZ3"
-version = v"3.1.7"
+SZ3_version = v"3.1.7"
+version = v"3.1.8"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(version)/SZ3-$(version).zip",
+    ArchiveSource("https://github.com/szcompressor/SZ3/releases/download/v$(SZ3_version)/SZ3-$(SZ3_version).zip",
                   "cf3ba7fae82f9483c4089963b9951ba9bf6b9eca5f712727fb92f2390b778aa8"),
 ]
 
@@ -59,17 +60,6 @@ filter!(p -> nbits(p) ≥ 64 && !Sys.iswindows(p), platforms)
 # Try re-enabling this for version > 3.1.7.
 filter!(p -> libc(p) ≠ "musl", platforms)
 
-# The platforms where HDF5 is supported. See "HDF5/build_tarballs.jl".
-hdf5_platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-    Platform("aarch64", "macos"),
-]
-hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("mdz", :mdz),
@@ -89,7 +79,8 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("GSL_jll"),
-    Dependency("HDF5_jll"; platforms=hdf5_platforms),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.14"),
     Dependency("Zstd_jll"),
 ]
 

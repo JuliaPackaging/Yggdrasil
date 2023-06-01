@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "PROPACK"
-version = v"0.2.2"
+version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,9 +13,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/PROPACK/
 
 if [[ "${target}" == *mingw* ]]; then
-  BLAS="-L${libdir} -lblastrampoline-5"
+  LBT="-L${libdir} -lblastrampoline-5"
 else
-  BLAS="-L${libdir} -lblastrampoline"
+  LBT="-L${libdir} -lblastrampoline"
 fi
 
 FFLAGS=(-xf77-cpp-input)
@@ -29,7 +29,7 @@ if [[ ${nbits} == 64 ]]; then
 fi
 
 FFLAG="${FFLAGS[@]}" 
-make SLIB=${dlext} FC="${FC}" FFLAG="${FFLAG}" BLAS="${BLAS}"  # LAPACK="${BLAS}"
+make SLIB=${dlext} FC="${FC}" FFLAG="${FFLAG}" BLAS="${LBT}"
 cp complex8/libcpropack.${dlext} complex16/libzpropack.${dlext} single/libspropack.${dlext} double/libdpropack.${dlext} ${libdir}/
 """
 
@@ -47,6 +47,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 
