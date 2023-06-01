@@ -95,7 +95,7 @@ for cuda_version in versions_to_build, platform in platforms
     end
 
     augmented_platform = Platform(arch(platform), os(platform);
-        cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
+        cuda=isnothing(cuda_version) ? nothing : CUDA.platform(cuda_version)
     )
     should_build_platform(triplet(augmented_platform)) || continue
 
