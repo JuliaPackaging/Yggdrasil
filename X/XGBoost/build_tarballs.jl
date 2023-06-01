@@ -62,6 +62,13 @@ products = [
     ExecutableProduct("xgboost", :xgboost)
 ]
 
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
 cpu_platforms = expand_cxxstring_abis(supported_platforms())
 
 cpu_dependencies = [
@@ -71,11 +78,13 @@ cpu_dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, cpu_platforms)),
 ]
 
-# Build the CPU tarballs
-build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, cpu_dependencies; 
-                preferred_gcc_version=v"8", 
-                julia_compat="1.6")
-
+# # Build the CPU tarballs
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+    build_tarballs(non_reg_ARGS, name, version, sources, script, [platform], products, cpu_dependencies; 
+                    preferred_gcc_version=v"8", 
+                    julia_compat="1.6")
+end
 
 # XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
 cuda_full_versions = Dict(
@@ -87,8 +96,8 @@ cuda_archs = Dict(
     v"11.0" => "60;70;75;80",
     v"12.0" => "60;70;75;80;89;90",
 )
-
-for cuda_version in keys(cuda_full_versions)
+cuda_versions = [v"11.0", v"12.0"]
+for (i, cuda_version) in enumerate(cuda_versions)
     cuda_platforms = expand_cxxstring_abis(Platform("x86_64", "linux"; 
                                             cuda=CUDA.platform(cuda_version)))
     cuda_dependencies = [
@@ -102,9 +111,19 @@ for cuda_version in keys(cuda_full_versions)
     preamble = """
     CUDA_ARCHS="$(cuda_archs[cuda_version])"
     """
+
     # Build the CUDA tarballs
-    build_tarballs(ARGS, name, version, sources,  preamble*script, cuda_platforms, products, cuda_dependencies; 
-                    preferred_gcc_version=v"8", 
-                    julia_compat="1.6",
-                    augment_platform_block=CUDA.augment)
+    for (j, platform) in enumerate(cuda_platforms)
+        should_build_platform(triplet(platform)) || continue
+        
+        final_platform = (i == lastindex(cuda_versions) )&& (j == lastindex(cuda_platforms))
+        augmented_ARGS = final_platform ? ARGS : non_reg_ARGS
+        augmented_platform = deepcopy(platform)
+        augmented_platform[CUDA.platform_name] = CUDA.platform(cuda_version)
+
+        build_tarballs(augmented_ARGS, name, version, sources,  preamble*script, [augmented_platform], products, cuda_dependencies; 
+                        preferred_gcc_version=v"8", 
+                        julia_compat="1.6",
+                        augment_platform_block=CUDA.augment)
+    end
 end
