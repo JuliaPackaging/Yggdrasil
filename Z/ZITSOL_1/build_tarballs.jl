@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ZITSOL_1"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/JuhaHeiskala/zitsol_mod.git",
-                     "d9878e22218d1b050af876624af4ebdf163354dc")
+                     "9e4c7d5ab9c65f1e96db698d5005cd2011dcd492")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,8 +26,7 @@ install_license ../{COPYRIGHT,LGPL}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# FreeBSD build failed with libgfortran_version=3.0.0
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
@@ -37,11 +36,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
-    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363")),
+    Dependency(PackageSpec(name="libblastrampoline_jll"); compat="5.4"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # For the time being need LLVM 11 because of <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/158>.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_llvm_version=v"11")

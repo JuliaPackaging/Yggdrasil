@@ -3,13 +3,15 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.72.4"
+version = v"0.72.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "34385d25b9dca50b1a775d4ac1e669732b6bf5e1"),
+    GitSource("https://github.com/sciapp/gr.git", "d0758e25475bcbe3da796ef0290be9e2a942e87c"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "20e1633681598e86c8b9983bef9628cb20d912b312f4024edec5dd3fa153414a", "gr.js")
+               "203269cc2dbce49536e54e7f0ece3542a8bd5bec4931b0937846a1e260e00312", "gr.js"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 # Bash recipe for building across all platforms
@@ -29,6 +31,15 @@ if [[ $target == *"mingw"* ]]; then
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-5.dll
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
+fi
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
 fi
 
 if [[ "${target}" == *apple* ]]; then

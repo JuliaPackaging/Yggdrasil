@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LibTeXPrintf"
-version = v"1.14.2"
+version = v"1.18"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bartp5/libtexprintf.git", "61b7c0e5217f2c3be67dca909f3845887177a63f"),
+    GitSource("https://github.com/bartp5/libtexprintf.git", "52d2ef31944858c58d48a9e33c35471fa23218e1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libtexprintf/
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-static=no --enable-shared=yes --enable-fast-install=yes
-make -j${nproc}
+make # -j${nproc}
 make install
 install_license COPYING
 """
