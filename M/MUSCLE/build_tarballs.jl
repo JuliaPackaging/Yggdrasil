@@ -14,6 +14,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/muscle/src/
 atomic_patch ${WORKSPACE}/srcdir/patches/remove-ffast-math.patch
 make -j${nproc}
+make
 if [[ "${target}" == *-apple-* ]]; then
     install -D -m 755 ${WORKSPACE}/srcdir/muscle/src/Darwin/./muscle ${bindir}/./muscle
 else
