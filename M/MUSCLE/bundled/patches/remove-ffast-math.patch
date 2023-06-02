@@ -1,5 +1,5 @@
 From: Michael Persico <michael.a.persico@gmail.com>
-Date: Fri, 01 Jun 2023 16:09:34 -0400
+Date: Fri, 02 Jun 2023 12:38:12 -0400
 Subject: [PATCH 1/1] Makefile: remove -ffast-math flag
 
 BinaryBuilder explicitly disallows unsafe options, lest one repents.

@@ -14,18 +14,13 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/muscle/src/
 atomic_patch ${WORKSPACE}/srcdir/patches/remove-ffast-math.patch
 make -j${nproc}
-make
-if [[ "${target}" == *-apple-* ]]; then
-    install -D -m 755 ${WORKSPACE}/srcdir/muscle/src/Darwin/./muscle ${bindir}/./muscle
-else
-    install -D -m 755 ${WORKSPACE}/srcdir/muscle/src/Linux/./muscle ${bindir}/./muscle
-fi
+install -D -m 755 ${WORKSPACE}/srcdir/muscle/src/Linux/./muscle ${bindir}/./muscle
 install_license ${WORKSPACE}/srcdir/muscle/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> Sys.islinux(p) || Sys.isapple(p), supported_platforms())
+platforms = filter!(p -> Sys.islinux(p), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
