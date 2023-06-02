@@ -14,13 +14,13 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/muscle/src/
 atomic_patch ${WORKSPACE}/srcdir/patches/remove-ffast-math.patch
 make -j${nproc}
-install -D -m 755 ${WORKSPACE}/srcdir/muscle/src/Linux/./muscle ${bindir}/./muscle
+install -Dvm 755 "Linux/muscle" "${bindir}/muscle"
 install_license ${WORKSPACE}/srcdir/muscle/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> Sys.islinux(p), supported_platforms())
+platforms = filter!(Sys.islinux, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -34,4 +34,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
