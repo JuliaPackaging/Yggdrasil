@@ -6,14 +6,12 @@ version = v"5.2"
 sources = [
     GitSource("https://github.com/rcedgar/muscle.git",
                   "6c601163998616bb88991931e443c645858e162c"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/muscle/src/
-atomic_patch ${WORKSPACE}/srcdir/patches/remove-ffast-math.patch
-make -j${nproc}
+make -j${nproc} CXXFLAGS="-O3 -fopenmp"
 install -Dvm 755 "Linux/muscle" "${bindir}/muscle"
 install_license ${WORKSPACE}/srcdir/muscle/LICENSE
 """
