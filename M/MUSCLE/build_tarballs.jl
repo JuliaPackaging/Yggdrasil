@@ -11,14 +11,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/muscle/src/
-make -j${nproc} CXXFLAGS="-O3 -fopenmp"
-install -Dvm 755 "Linux/muscle" "${bindir}/muscle"
+
+if [[ "${target}" == *-apple-* ]]; then
+    make -j${nproc} CXX="clang++" CXXFLAGS="-O3 -fopenmp"
+else
+    make -j${nproc} CXXFLAGS="-O3 -fopenmp"
+fi
+
+OS_NAME=`uname`
+install -Dvm 755 "${OS_NAME}/muscle" "${bindir}/muscle"
 install_license ${WORKSPACE}/srcdir/muscle/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(Sys.islinux, supported_platforms())
+platforms = filter!(p -> Sys.islinux(p) || Sys.isapple(p), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -28,7 +35,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
