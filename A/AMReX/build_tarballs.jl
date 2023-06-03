@@ -79,9 +79,16 @@ products = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
+
+# Windows (and only Windows) platforms somehow depend on libgfortran
+platforms = [
+    filter(p -> os(p) ≠ "windows", platforms);
+    expand_gfortran_versions(filter(p -> os(p) == "windows", platforms));
+]
+
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
-platforms = expand_cxxstring_abis(platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
 # Avoid platforms where the MPI implementation isn't supported
