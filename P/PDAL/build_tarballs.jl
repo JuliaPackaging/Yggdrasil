@@ -8,12 +8,18 @@ version = v"2.5.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/PDAL/PDAL.git", "4d01a1b9486ae84b42192a36999b42fb75d0715e"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
 cd $WORKSPACE/srcdir/PDAL*
+
+if [[ "${target}" == *-mingw* ]]; then
+    #upstreamed at https://github.com/PDAL/PDAL/pull/4071
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-modify-plugin-basename.patch
+fi
 
 mkdir -p build/dimbuilder && cd build/dimbuilder
 
