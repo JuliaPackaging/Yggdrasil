@@ -11,15 +11,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/muscle/src/
-
-if [[ "${target}" == *-apple-* ]]; then
-    make -j${nproc} CXX="clang++" CXXFLAGS="-O3 -fopenmp"
-else
-    make -j${nproc} CXXFLAGS="-O3 -fopenmp"
-fi
-
-OS_NAME=`uname`
-install -Dvm 755 "${OS_NAME}/muscle" "${bindir}/muscle"
+make -j${nproc} CXX=c++ CXXFLAGS="-O3 -fopenmp"
+install -Dvm 755 "$(uname)/muscle" "${bindir}/muscle"
 install_license ${WORKSPACE}/srcdir/muscle/LICENSE
 """
 
