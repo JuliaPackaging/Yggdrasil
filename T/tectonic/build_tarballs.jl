@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.12.0"
+version = v"0.13.1"
 
 # Collection of sources required to build tar
 sources = [
     GitSource("https://github.com/tectonic-typesetting/tectonic.git",
-              "4dd8c217fd6483a53ed03e993e388e81d29d1265"),
+              "e9b786655cac895bb148c5bfa3fc4cec6a01d72f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 cargo build --release --locked --features external-harfbuzz
-cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
+install -Dvm 755 "target/${rust_target}/release/tectonic${exeext}" "${bindir}/tectonic${exeext}"
 """
 
 # Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
