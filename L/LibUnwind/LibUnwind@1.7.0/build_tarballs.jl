@@ -2,11 +2,12 @@ using BinaryBuilder
 
 name = "LibUnwind"
 version = v"1.7.0"
+tarball_version = "1.70"  # XXX: Looks like they typo'd the version in the release asset
 
 # Collection of sources required to build libunwind
 sources = [
-    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(version).tar.gz",
-                  "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"),
+    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(tarball_version).tar.gz",
+                  "c24c913d2337d6eff851b6ab32aadfb683a86fee48d28fe1fc9cd56c8e9dfa58"),
     DirectorySource("./bundled"),
 ]
 
