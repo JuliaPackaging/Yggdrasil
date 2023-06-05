@@ -48,7 +48,7 @@ fi
     --with-mumps-cflags="-I${includedir}" \
     --with-mumps-lflags="-L${libdir} -lsmumps -ldmumps -lcmumps -lzmumps -lmumps_common -lmpiseq -lpord -lmetis ${LBT} -lgfortran -lpthread" \
     --with-spral-cflags="-I${includedir}" \
-    --with-spral-lflags="-L${libdir} -lspral -lgfortran -lhwloc -lm -lmetis ${LBT} -lstdc++ -fopenmp" \
+    --with-spral-lflags="-L${libdir} -lspral -lgfortran -lhwloc -lm -lmetis ${LBT} -lstdc++ -lgomp" \
     --with-asl-lflags="-L${libdir} ${LIBASL}"
 
 # parallel build fails
