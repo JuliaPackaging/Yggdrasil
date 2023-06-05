@@ -20,7 +20,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 cargo build --release --locked --features external-harfbuzz
-cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
+install -Dvm 755 "target/${rust_target}/release/tectonic${exeext}" "${bindir}/tectonic${exeext}"
 """
 
 # Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
