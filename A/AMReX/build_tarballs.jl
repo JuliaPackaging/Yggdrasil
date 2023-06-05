@@ -73,7 +73,7 @@ augment_platform_block = """
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libamrex", :libamrex)
+    LibraryProduct("libamrex_3d", :libamrex)
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -81,10 +81,11 @@ products = [
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-# Windows (and only Windows) platforms somehow depend on libgfortran
+# Windows (and only Windows) platforms somehow depend on libgfortran.
+# AMReX requires C++17 and thus requires at least libgfortran5.
 platforms = [
-    filter(p -> os(p) ≠ "windows", platforms);
-    expand_gfortran_versions(filter(p -> os(p) == "windows", platforms));
+    filter(!Sys.iswindows, platforms);
+    filter(p -> libgfortran_version(p).major ≥ 5, expand_gfortran_versions(filter(Sys.iswindows, platforms)));
 ]
 
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
@@ -98,7 +99,7 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
+hdf5_platforms = filter(!Sys.iswindows, platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -115,8 +116,7 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # - GCC 4 is too old: AMReX requires C++14, and thus at least GCC 5
-# - On Windows, AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header.
-#   How can we require this for Windows only?
+# - AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
