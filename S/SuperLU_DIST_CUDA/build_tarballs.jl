@@ -67,7 +67,8 @@ build_superlu_dist()
         -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
         -Denable_examples=OFF \
         -DTPL_ENABLE_CUDALIB=ON \
-        -DCUDA_TOOLKIT_ROOT_DIR="$prefix/cuda" \
+        -DCUDA_ARCH=${CUDA_ARCHS} \
+        -DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
         ..
     make -j${nproc}
@@ -124,6 +125,13 @@ cuda_full_versions = Dict(
     v"11.0" => v"11.0.3",
     v"11.1" => v"11.1.1",
     v"12.0" => v"12.0.0",
+)
+
+cuda_archs = Dict(
+    v"10.2" => "35;50;60;70",
+    v"11.0" => "60;70;80",
+    v"11.1" => "60;70;80",
+    v"12.0" => "60;70;80",
 )
 
 append!(dependencies, mpi_dependencies)
