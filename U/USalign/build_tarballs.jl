@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "USalign"
-version = v"8.0.0-d968e0"
+version = v"0.0.1" # the source repository does not contain any official releases (06/06/2023)
 
 # Collection of sources required to complete build
 sources = [
