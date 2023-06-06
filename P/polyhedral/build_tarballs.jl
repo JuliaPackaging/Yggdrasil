@@ -8,7 +8,7 @@ using BinaryBuilder, Pkg
 #
 # CODE using the mpq_rational from boost
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "362fbbe9f9aab2636ee5632a72d78ce5e866d958"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "b93f0c692393ce65a23faac08ab09249f762e821"),
 ]
 name = "polyhedral"
 version = v"0.2" # <-- This is the first version of it but this is rather arbitrary
@@ -31,7 +31,7 @@ export NAUTY_LINK="-L$libdir -lnauty"
 
 export GLPK_LINK="-L$libdir -lglpk"
 
-make
+make -j${nproc}
 
 cp CP_TestCompletePositivity $bindir
 cp CP_TestCopositivity $bindir
