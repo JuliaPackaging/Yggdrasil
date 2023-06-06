@@ -122,6 +122,7 @@ dependencies = [
 cuda_full_versions = Dict(
     v"10.2" => v"10.2.89",
     v"11.0" => v"11.0.3",
+    v"11.1" => v"11.1.1",
     v"12.0" => v"12.0.0",
 )
 
@@ -144,8 +145,11 @@ for cuda_version in [v"10.2", v"11.0", v"12.0"], platform in platforms
                                     version=cuda_full_versions[cuda_version])),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     ]
-
-    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+    # taken from AMGX, might fix ARCH problem?
+    preamble = """
+    CUDA_ARCHS="$(cuda_archs[cuda_version])"
+    """
+    build_tarballs(ARGS, name, version, sources, preamble * script, [augmented_platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
                    julia_compat="1.9", augment_platform_block,
                    skip_audit=true, dont_dlopen=true)
