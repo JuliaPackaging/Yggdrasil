@@ -8,11 +8,19 @@ version = v"2.9.2"
 # Collection of sources required to build Blosc2
 sources = [
     GitSource("https://github.com/Blosc/c-blosc2.git", "f344bb7c334ff025ea71e23d7a6742a9827745b9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/c-blosc2/
+
+# Blosc2 mis-detects whether the system headers provide `_xsetbv`
+# (probably on several platforms), and on `x86_64-w64-mingw32` the
+# functions have incompatible return types (although both are 64-bit
+# integers).
+atomic_patch -p1 ../patches/_xsetbv.patch
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
