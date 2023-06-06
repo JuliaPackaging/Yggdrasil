@@ -67,7 +67,7 @@ build_superlu_dist()
         -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
         -Denable_examples=OFF \
         -DTPL_ENABLE_CUDALIB=ON \
-        -DCUDA_TOOLKIT_ROOT_DIR="$prefix/cuda" \
+        -DCMAKE_CUDA_TOOLKIT_ROOT_DIR="$prefix/cuda" \
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
         ..
     make -j${nproc}
