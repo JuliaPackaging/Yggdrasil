@@ -68,6 +68,7 @@ build_superlu_dist()
         -Denable_examples=OFF \
         -DTPL_ENABLE_CUDALIB=ON \
         -DCUDA_TOOLKIT_ROOT_DIR="$prefix/cuda" \
+        -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
         ..
     make -j${nproc}
     make install
