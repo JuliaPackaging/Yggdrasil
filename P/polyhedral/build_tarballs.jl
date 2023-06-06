@@ -8,7 +8,7 @@ using BinaryBuilder, Pkg
 #
 # CODE using the mpq_rational from boost
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "dec2223ce29765f060fbbd32fb42dc0c2205b1da"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "362fbbe9f9aab2636ee5632a72d78ce5e866d958"),
 ]
 name = "polyhedral"
 version = v"0.2" # <-- This is the first version of it but this is rather arbitrary
@@ -35,9 +35,9 @@ make
 
 cp CP_TestCompletePositivity $bindir
 cp CP_TestCopositivity $bindir
-cp GRP_ListMat_Subset_EXT_Automorphism $bindir
-cp GRP_ListMat_Subset_EXT_Isomorphism $bindir
-cp GRP_ListMat_Subset_EXT_Invariant $bindir
+cp GRP_ListMat_Vdiag_EXT_Automorphism $bindir
+cp GRP_ListMat_Vdiag_EXT_Isomorphism $bindir
+cp GRP_ListMat_Vdiag_EXT_Invariant $bindir
 cp POLY_dual_description_group $bindir
 cp POLY_cdd_LinearProgramming $bindir
 cp POLY_sampling_facets $bindir
@@ -61,9 +61,9 @@ filter!(!Sys.iswindows, platforms)
 products = [
     ExecutableProduct("CP_TestCompletePositivity", :CP_TestCompletePositivity)
     ExecutableProduct("CP_TestCopositivity", :CP_TestCopositivity)
-    ExecutableProduct("GRP_ListMat_Subset_EXT_Automorphism", :GRP_ListMat_Subset_EXT_Automorphism)
-    ExecutableProduct("GRP_ListMat_Subset_EXT_Isomorphism", :GRP_ListMat_Subset_EXT_Isomorphism)
-    ExecutableProduct("GRP_ListMat_Subset_EXT_Invariant", :GRP_ListMat_Subset_EXT_Invariant)
+    ExecutableProduct("GRP_ListMat_Vdiag_EXT_Automorphism", :GRP_ListMat_Vdiag_EXT_Automorphism)
+    ExecutableProduct("GRP_ListMat_Vdiag_EXT_Isomorphism", :GRP_ListMat_Vdiag_EXT_Isomorphism)
+    ExecutableProduct("GRP_ListMat_Vdiag_EXT_Invariant", :GRP_ListMat_Vdiag_EXT_Invariant)
     ExecutableProduct("POLY_redundancy_Equivariant", :POLY_redundancy_Equivariant)
     ExecutableProduct("POLY_dual_description_group", :POLY_dual_description_group)
     ExecutableProduct("POLY_sampling_facets", :POLY_sampling_facets)
