@@ -92,8 +92,8 @@ augment_platform_block = """
 # per Mose. Will return to it later and attempt to find a solution.
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"),
-    Platform("powerpc64le", "linux")
+    # Platform("aarch64", "linux"),
+    # Platform("powerpc64le", "linux")
 ]
 platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 # Avoid platforms where the MPI implementation isn't supported
@@ -124,14 +124,14 @@ cuda_full_versions = Dict(
     v"10.2" => v"10.2.89",
     v"11.0" => v"11.0.3",
     v"11.1" => v"11.1.1",
-    v"12.0" => v"12.0.0",
+    # v"12.0" => v"12.0.0",
 )
 
 cuda_archs = Dict(
     v"10.2" => "35;50;60;70",
     v"11.0" => "60;70;80",
     v"11.1" => "60;70;80",
-    v"12.0" => "60;70;80",
+    # v"12.0" => "60;70;80",
 )
 
 append!(dependencies, mpi_dependencies)
