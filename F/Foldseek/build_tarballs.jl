@@ -17,6 +17,8 @@ sources = [
 # - use Zstd_jll ? (static lib?) (now uses builtin zstd lib)
 
 # Build fails
+# - armv6l, armv7l, powerpc64le: cmake reports 'No SIMD support for this architecture'
+#   new error since rust is used, maybe no simd support there on rust?
 # - x86_64-freebsd
 #   compilation error, seems like a clash between KASSERT macro defined in lib/kerasify/keras_model.h
 #   and usage in freebsd headers, e.g. at line 190 of
@@ -60,7 +62,7 @@ make install
 install_license ../LICENSE.md
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32)
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32 || arch(p) == "powerpc64le")
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
