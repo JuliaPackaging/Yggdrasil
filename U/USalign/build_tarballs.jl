@@ -61,7 +61,7 @@ fi
 make
 PROGRAM=$(grep "PROGRAM=" Makefile | cut -d '=' -f2)
 for prog in $PROGRAM; do
-    install -Dvm 755 "${prog}" "${bindir}/${prog}"
+    install -Dvm 755 "${prog}" "${bindir}/${prog}${exeext}"
 done
 """
 
