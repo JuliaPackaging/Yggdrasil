@@ -61,5 +61,8 @@ dependencies = [
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
-# Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10")
+# Build the tarballs. Note that libunwind started using `stdatomic.h`, which is only
+# available with GCC version 4.9 or later, so we need to set a higher preferred version
+# than the default.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.10", preferred_gcc_version=v"4.9")
