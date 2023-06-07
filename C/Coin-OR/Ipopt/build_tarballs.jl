@@ -25,6 +25,7 @@ if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
 
+# BLAS and LAPACK
 if [[ "${target}" == *mingw* ]]; then
   LBT="-lblastrampoline-5"
 else
