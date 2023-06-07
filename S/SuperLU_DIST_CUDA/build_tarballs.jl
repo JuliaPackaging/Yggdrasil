@@ -69,7 +69,7 @@ build_superlu_dist()
         -DTPL_ENABLE_CUDALIB=ON \
         -DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
         -DCUDA_CUDART_LIBRARY=${prefix}/cuda/lib64/libcudart.so \
-        -CUDA_INCLUDE_DIRS=${prefix}/cuda/include \
+        -DCUDA_INCLUDE_DIRS=${prefix}/cuda/include \
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
         ..
     make -j${nproc}
