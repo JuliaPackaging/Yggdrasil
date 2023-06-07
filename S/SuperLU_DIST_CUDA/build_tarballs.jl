@@ -143,7 +143,7 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Require GCC 8 to avoid `error: libgfortran.so.4: cannot open shared object file`
-for cuda_version in [v"10.2", v"11.0", v"12.0"], platform in platforms
+for cuda_version in [v"10.2", v"11.0"], platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
