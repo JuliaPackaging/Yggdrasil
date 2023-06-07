@@ -15,7 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libunwind*/
 
-atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-ppc64le.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.patch
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
