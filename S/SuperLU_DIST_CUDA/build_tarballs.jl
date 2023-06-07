@@ -76,13 +76,12 @@ build_superlu_dist()
         -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
         -Denable_examples=OFF \
         -DTPL_ENABLE_CUDALIB=ON \
-        -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc \
         ..
     make -j${nproc}
     make install
     popd
 }
-build_superlu_dist Int32 turn off for now
+build_superlu_dist Int32
 build_superlu_dist Int64
 """
 
