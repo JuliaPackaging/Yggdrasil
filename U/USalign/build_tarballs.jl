@@ -27,29 +27,37 @@ fi
 if [[ "${target}" == *-apple-darwin* ]]; then
     sed -i 's/-static//g' Makefile;
 fi
-# Add a dummy pstream.h to allow compilation on Windows.
+
+
 if [[ "${target}" == *-mingw* ]]; then
-    echo -e '#ifndef PSTREAM_H\n' \
-    '#define PSTREAM_H\n' \
-    '\n#include <iostream>\n' \
-    '\nnamespace redi {\n' \
-    '    class ipstream {\n' \
-    '    public:\n' \
-    '        ipstream() {\n' \
-    '            std::cout << "POSIX is not supported on Linux, so this program cannot deal with gzipped files on this platform.\\n";\n' \
-    '        }\n' \
-    '\n        void open(const std::string&) {\n' \
-    '            std::cout << "ipstream::open is not supported on this platform.\\n";\n' \
-    '        }\n' \
-    '        bool good() const { return false; }\n' \
-    '        void close() {}\n' \
-    '        friend ipstream& getline(ipstream& is, std::string& str) { return is; }\n' \
-    '    };\n' \
-    '}\n' \
-    '\n#endif // PSTREAM_H' > pstream.h;
     # Fix the EXIT_SUCCESS not declared error
     sed -i '1i#include <cstdlib>' pdbAtomName.cpp
+
+    # Add a dummy pstream.h to allow compilation on Windows:
+
+cat << 'CONTENT' > pstream.h
+#ifndef PSTREAM_H
+#define PSTREAM_H
+#include <iostream>
+namespace redi {
+    class ipstream {
+    public:
+        ipstream() {
+            std::cout << "POSIX is not supported on Linux, so this program cannot deal with gzipped files on this platform.\n";
+        }
+        void open(const std::string&) {
+            std::cout << "ipstream::open is not supported on this platform.\n";
+        }
+        bool good() const { return false; }
+        void close() {}
+        friend ipstream& getline(ipstream& is, std::string& str) { return is; }
+    };
+}
+#endif // PSTREAM_H
+CONTENT
+
 fi
+
 make
 PROGRAM=$(grep "PROGRAM=" Makefile | cut -d '=' -f2)
 for prog in $PROGRAM; do
