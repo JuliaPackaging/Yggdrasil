@@ -46,7 +46,6 @@ fi
 # avoid 'cannot create cdylib' error on musl targets
 # see https://github.com/rust-lang/cargo/issues/8607
 #     https://github.com/rust-lang/rust/issues/59302
-export RUSTFLAGS=
 if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="-C target-feature=-crt-static"
 fi
