@@ -61,6 +61,8 @@ done
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+platforms = expand_cxxstring_abis(platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("TMscore", :TMscore),
