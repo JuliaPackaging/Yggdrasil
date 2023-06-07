@@ -61,7 +61,6 @@ fi
 make
 PROGRAM=$(grep "PROGRAM=" Makefile | cut -d '=' -f2)
 for prog in $PROGRAM; do
-    echo "Copying $prog to ${bindir}"
     install -Dvm 755 "${prog}" "${bindir}/${prog}"
 done
 """
