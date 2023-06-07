@@ -28,6 +28,15 @@ if [[ "${target}" == *-mingw* ]]; then
     PLATFLAGS="-DTPL_ENABLE_PARMETISLIB:BOOL=FALSE -DMPI_C_ADDITIONAL_INCLUDE_DIRS=${includedir}"
 fi
 
+## CUDA setup per Ian McInerney
+# nvcc writes to /tmp, which is a small tmpfs in our sandbox.
+# make it use the workspace instead
+export TMPDIR=${WORKSPACE}/tmpdir
+mkdir ${TMPDIR}
+mkdir -p /usr/local
+ln -s ${prefix}/cuda /usr/local/cuda
+export PATH="/usr/local/cuda/bin:${PATH}"
+
 BLAS="libopenblas"
 
 build_superlu_dist()
@@ -67,16 +76,13 @@ build_superlu_dist()
         -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
         -Denable_examples=OFF \
         -DTPL_ENABLE_CUDALIB=ON \
-        -DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
-        -DCUDA_CUDART_LIBRARY=${prefix}/cuda/lib64/libcudart.so \
-        -DCUDA_INCLUDE_DIRS=${prefix}/cuda/include \
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
         ..
     make -j${nproc}
     make install
     popd
 }
-# build_superlu_dist Int32 turn off for now
+build_superlu_dist Int32 turn off for now
 build_superlu_dist Int64
 """
 
