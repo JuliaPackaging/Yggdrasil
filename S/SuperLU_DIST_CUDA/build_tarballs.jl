@@ -67,8 +67,9 @@ build_superlu_dist()
         -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
         -Denable_examples=OFF \
         -DTPL_ENABLE_CUDALIB=ON \
-        -DCUDA_ARCH=${CUDA_ARCHS} \
         -DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
+        -DCUDA_CUDART_LIBRARY=${prefix}/cuda/lib64/libcudart.so \
+        -CUDA_INCLUDE_DIRS=${prefix}/cuda/include \
         -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
         ..
     make -j${nproc}
@@ -153,11 +154,7 @@ for cuda_version in [v"10.2", v"11.0"], platform in platforms
                                     version=cuda_full_versions[cuda_version])),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     ]
-    # taken from AMGX, might fix ARCH problem?
-    preamble = """
-    CUDA_ARCHS="$(cuda_archs[cuda_version])"
-    """
-    build_tarballs(ARGS, name, version, sources, preamble * script, [augmented_platform],
+    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
                    julia_compat="1.9", augment_platform_block,
                    skip_audit=true, dont_dlopen=true)
