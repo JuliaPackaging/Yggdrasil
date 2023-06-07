@@ -46,13 +46,12 @@ fi
     lt_cv_deplibs_check_method=pass_all \
     --with-lapack-lflags="-L${libdir} ${LBT}" \
     --with-mumps-cflags="-I${includedir}" \
-    --with-mumps-lflags="-L${libdir} -lsmumps -ldmumps -lcmumps -lzmumps -lmumps_common -lmpiseq -lpord -lmetis ${LBT} -lgfortran -lpthread" \
+    --with-mumps-lflags="-L${libdir} -ldmumps" \
     --with-spral-cflags="-I${includedir}" \
-    --with-spral-lflags="-L${libdir} -lspral -lgfortran -lhwloc -lm -lmetis ${LBT} -lstdc++ -lgomp" \
+    --with-spral-lflags="-L${libdir} -lspral" \
     --with-asl-lflags="-L${libdir} ${LIBASL}"
 
-# parallel build fails
-make
+make -j${nproc}
 make install
 """
 
