@@ -41,22 +41,11 @@ elif [[ "${target}" == aarch64-* ]]; then
     ARCH_FLAGS="-DHAVE_ARM8=1"
 fi
 
-# hack around corrosion (cmake cargo interop package) using a wrong
-# target string when cross-compiling
-CARGO_TARGET=
-if [[ "${target}" == *-linux-* ]]; then
-    # cargo uses an extra 'unknown' in the target string,
-    # e.g. 'x86_64-linux-gnu' becomes 'x86_64-unknown-linux-gnu' in cargo
-    CARGO_TARGET=$(echo ${target} | cut -d- -f1)-unknown-$(echo ${target} | cut -d- -f2-)
-else
-    CARGO_TARGET=${target}
-fi
-
+# avoid 'cannot create cdylib' error on musl targets
+# see https://github.com/rust-lang/cargo/issues/8607
+#     https://github.com/rust-lang/rust/issues/59302
 export RUSTFLAGS=
 if [[ "${target}" == *-musl* ]]; then
-    # avoid 'cannot create cdylib' error on musl targets
-    # see https://github.com/rust-lang/cargo/issues/8607
-    #     https://github.com/rust-lang/rust/issues/59302
     export RUSTFLAGS="-C target-feature=-crt-static"
 fi
 
@@ -64,7 +53,7 @@ mkdir build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=RELEASE \
     -DNATIVE_ARCH=0 ${ARCH_FLAGS} \
-    -DRust_COMPILER=$(which ${RUSTC}) -DRust_CARGO_TARGET=${CARGO_TARGET}
+    -DRust_COMPILER=$(which ${RUSTC}) -DRust_CARGO_TARGET=${CARGO_BUILD_TARGET}
 make -j${nproc}
 make install
 
