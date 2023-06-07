@@ -53,7 +53,7 @@ fi
 make
 PROGRAM=$(grep "PROGRAM=" Makefile | cut -d '=' -f2)
 for prog in $PROGRAM; do
-    cp $prog ${prefix}/;
+    cp $prog ${bindir};
 done
 """
 
