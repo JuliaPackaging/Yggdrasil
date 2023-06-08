@@ -91,8 +91,9 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), pla
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
-# Note: the additional, non-canonical library names are required for the Windows build
 products = [
+    LibraryProduct(["libsc"], :libsc),
+    LibraryProduct(["libp4est"], :libp4est),
     LibraryProduct(["libt8"], :libt8),
 ]
 
