@@ -62,7 +62,7 @@ install_license LICENSE
 augment_platform_block = CUDA.augment
 
 versions_to_build = [
-    #nothing,
+    nothing,
     v"11.0",
     v"12.0", 
 ]
