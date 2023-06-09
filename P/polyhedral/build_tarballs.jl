@@ -8,7 +8,7 @@ using BinaryBuilder, Pkg
 #
 # CODE using the mpq_rational from boost
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "cb299e24efd7f96ec7c81fb857e267e5f19e87bf"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "5da97d3d6dc4a2112431d1ad1e017e5cadad8868"),
 ]
 name = "polyhedral"
 version = v"0.2" # <-- This is the first version of it but this is rather arbitrary
@@ -47,7 +47,6 @@ cp LATT_Isomorphism $bindir
 cp LATT_canonicalize $bindir
 cp LATT_near $bindir
 cp LATT_IndefiniteReduction $bindir
-cp LORENTZ_FundDomain_AllcockEdgewalk $bindir
 cp SHORT_TestRealizability $bindir
 """
 
@@ -73,7 +72,6 @@ products = [
     ExecutableProduct("LATT_Isomorphism", :LATT_Isomorphism)
     ExecutableProduct("LATT_canonicalize", :LATT_canonicalize)
     ExecutableProduct("LATT_IndefiniteReduction", :LATT_IndefiniteReduction)
-    ExecutableProduct("LORENTZ_FundDomain_AllcockEdgewalk", :LORENTZ_FundDomain_AllcockEdgewalk)
     ExecutableProduct("SHORT_TestRealizability", :SHORT_TestRealizability)
 ]
 
