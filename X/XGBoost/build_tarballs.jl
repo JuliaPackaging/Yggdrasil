@@ -24,7 +24,7 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
-if  [[ $bb_full_target == *-linux*cuda-1* ]]; then
+if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
     # make it use the workspace instead
     export TMPDIR=${WORKSPACE}/tmpdir
@@ -89,7 +89,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 for cuda_version in versions_to_build, platform in platforms
 
-    build_cuda = (os(platform) == "linux") && (arch(platform) in ["aarch64", "x86_64"])
+    build_cuda = (os(platform) == "linux") 
     if !isnothing(cuda_version) && !build_cuda
         continue
     end
@@ -108,7 +108,7 @@ for cuda_version in versions_to_build, platform in platforms
 
     if !isnothing(cuda_version)
         push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version])))
-        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_Runtime_jll")))
+        push!(dependencies, RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")))
     end
     preamble = cuda_preambles[cuda_version]
     
