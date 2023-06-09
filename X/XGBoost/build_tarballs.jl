@@ -62,7 +62,7 @@ install_license LICENSE
 augment_platform_block = CUDA.augment
 
 versions_to_build = [
-    nothing,
+    #nothing,
     v"11.0",
     v"12.0", 
 ]
@@ -89,7 +89,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 for cuda_version in versions_to_build, platform in platforms
 
-    build_cuda = (os(platform) == "linux") 
+    build_cuda = (os(platform) == "linux") && (arch(platform) in ["x86_64"])
     if !isnothing(cuda_version) && !build_cuda
         continue
     end
