@@ -8,7 +8,7 @@ using BinaryBuilder, Pkg
 #
 # CODE using the mpq_rational from boost
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "5da97d3d6dc4a2112431d1ad1e017e5cadad8868"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "c7f3c4072b7583c17f8151f8d0f953694dc5864a"),
 ]
 name = "polyhedral"
 version = v"0.2" # <-- This is the first version of it but this is rather arbitrary
