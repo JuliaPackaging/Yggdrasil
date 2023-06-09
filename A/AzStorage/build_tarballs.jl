@@ -52,5 +52,10 @@ dependencies = [
     BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
+#=
+The motivation for the preferred gcc version here is compatability with the libgomp that nvc 23.5 ships with. If we use a gcc version prior to 5,
+then AzStorage seg-faults in one of its OpenMP blocks.
+=#
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
