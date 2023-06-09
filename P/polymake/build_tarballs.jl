@@ -30,8 +30,8 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 
 # Collection of sources required to build polymake
 sources = [
-    ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "c6c7fd17e833cd2f01ea1b5a03104dee658513b708afcb1fa683a217e4e6294a")
+    ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
+                  "bc7335bfca7a3e687b7961b052418ace0e4295f99a86c6cf4832bc2a51b0deea"),
     DirectorySource("./bundled")
 ]
 
