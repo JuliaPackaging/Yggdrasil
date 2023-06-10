@@ -1,3 +1,4 @@
+using Pkg
 using BinaryBuilder
 
 name = "SCS_MKL"
@@ -37,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MKL_jll"; compat="2022.2.0"),
+    BuildDependency(PackageSpec(;name="MKL_jll", version=v"2023.1")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
