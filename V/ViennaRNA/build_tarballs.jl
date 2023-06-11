@@ -34,6 +34,7 @@ export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
 # fix compile fail on musl
+# ViennaRNA PR: https://github.com/ViennaRNA/ViennaRNA/pull/187
 atomic_patch -p1 ../patches/fix-no-uint-typedef-on-musl.patch
 
 if [[ $target == *-w64-mingw32* ]]; then
