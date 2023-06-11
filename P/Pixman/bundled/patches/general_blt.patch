@@ -1,0 +1,74 @@
+--- a/pixman/pixman-general.c
++++ a/pixman/pixman-general.c
+@@ -249,6 +249,63 @@
+     { PIXMAN_OP_NONE }
+ };
+ 
++static pixman_bool_t
++general_blt (pixman_implementation_t *imp,
++             uint32_t *               src_bits,
++             uint32_t *               dst_bits,
++             int                      src_stride,
++             int                      dst_stride,
++             int                      src_bpp,
++             int                      dst_bpp,
++             int                      src_x,
++             int                      src_y,
++             int                      dest_x,
++             int                      dest_y,
++             int                      width,
++             int                      height)
++{
++    void *src_bytes;
++    void *dst_bytes;
++    int byte_width;
++
++    if (src_bpp != dst_bpp)
++	return FALSE;
++
++    if (src_bpp == 16)
++    {
++	src_stride = src_stride * (int) sizeof (uint32_t) / 2;
++	dst_stride = dst_stride * (int) sizeof (uint32_t) / 2;
++	src_bytes = (uint16_t *)src_bits + src_stride * src_y + src_x;
++	dst_bytes = (uint16_t *)dst_bits + dst_stride * dest_y + dest_x;
++	byte_width = 2 * width;
++	src_stride *= 2;
++	dst_stride *= 2;
++    }
++    else if (src_bpp == 32)
++    {
++	src_stride = src_stride * (int) sizeof (uint32_t) / 4;
++	dst_stride = dst_stride * (int) sizeof (uint32_t) / 4;
++	src_bytes = (uint32_t *)src_bits + src_stride * src_y + src_x;
++	dst_bytes = (uint32_t *)dst_bits + dst_stride * dest_y + dest_x;
++	byte_width = 4 * width;
++	src_stride *= 4;
++	dst_stride *= 4;
++    }
++    else
++    {
++	return FALSE;
++    }
++
++    while (height--)
++    {
++	memmove (dst_bytes, src_bytes, byte_width);
++	src_bytes = (uint8_t *)src_bytes + src_stride;
++	dst_bytes = (uint8_t *)dst_bytes + dst_stride;
++    }
++
++    return TRUE;
++}
++
+ pixman_implementation_t *
+ _pixman_implementation_create_general (void)
+ {
+@@ -258,6 +315,7 @@
+     _pixman_setup_combiner_functions_float (imp);
+ 
+     imp->iter_info = general_iters;
++    imp->blt = general_blt;
+ 
+     return imp;
+ }
