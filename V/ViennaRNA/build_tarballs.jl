@@ -33,6 +33,9 @@ export CXX=c++
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
+# fix compile fail on musl
+atomic_patch -p1 ../patches/fix-no-uint-typedef-on-musl.patch
+
 if [[ $target == *-w64-mingw32* ]]; then
     # time measurement in RNAforester doesn't compile on windows (mingw32),
     # so we disable it
