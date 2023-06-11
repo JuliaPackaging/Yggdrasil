@@ -7,12 +7,20 @@ version = v"1.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/protobuf-c/protobuf-c/releases/download/v$(version)/protobuf-c-$(version).tar.gz", "4cc4facd508172f3e0a4d3a8736225d472418aee35b4ad053384b137b220339f")
+    ArchiveSource("https://github.com/protobuf-c/protobuf-c/releases/download/v$(version)/protobuf-c-$(version).tar.gz",
+                  "4cc4facd508172f3e0a4d3a8736225d472418aee35b4ad053384b137b220339f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/protobuf-c*
+# Small hack for x86_64-linux-musl-cxx03: swear that we are cross-compiling, which in a
+# sense is true, since we can't run a C++ executable built for the target.  This avoids
+# errors like
+#     Error relocating ./protoc-c/protoc-gen-c: _ZN6google8protobuf8internal14ArenaStringPtr7MutableERKNS1_10LazyStringEPNS0_5ArenaE: symbol not found
+if [[ "${bb_full_target}" == x86_64-linux-musl-*cxx03* ]]; then
+    sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} PROTOC="$(which protoc)"
 make -j${nproc}
 make install
