@@ -40,7 +40,7 @@ export LDFLAGS="-L${libdir}"
 # should be included in next release (ViennaRNA-2.6.1)
 atomic_patch -p1 ../patches/fix-no-uint-typedef-on-musl.patch
 
-if [[ $target == *-w64-mingw32* ]]; then
+if [[ "${target}" == *-w64-mingw32* ]]; then
     # time measurement in RNAforester doesn't compile on windows (mingw32),
     # so we disable it
     atomic_patch -p1 ../patches/windows-forester-remove-time-measurement.patch
@@ -85,14 +85,19 @@ ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
 make -j${nproc}
 make install
 
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    # remove PCRE regex.h so it doesn't get included in the jll package
+    rm "${includedir}/regex.h"
+fi
+
 # create and install a shared library libRNA
 ldflags="$LDFLAGS -g -O2 -fno-strict-aliasing -ftree-vectorize -pthread -fopenmp"
 libs="-lpthread -lmpfr -lgmp -lstdc++ -lgsl -lgslcblas -lm $LIBS"
 
 # Note: setting -flto=auto -ffat-lto-objects assumes we are using gcc
-if [[ $target == *-linux-* ]]; then
+if [[ "${target}" == *-linux-* ]]; then
     ldflags="$ldflags -flto=auto -ffat-lto-objects"
-elif [[ $target == *-w64-mingw32* ]]; then
+elif [[ "${target}" == *-w64-mingw32* ]]; then
     ldflags="$ldflags -flto=auto -ffat-lto-objects"
     # needed for dlib
     libs="$libs -lws2_32"
@@ -118,7 +123,7 @@ install_license COPYRIGHT-libsvm
 install_license COPYING-RNAforester
 install_license COPYING-RNAxplorer
 install_license COPYING
-if [[ $target == *-w64-mingw32* ]]; then
+if [[ "${target}" == *-w64-mingw32* ]]; then
     # this code/license is only added on windows via a patch
     cp src/RNAxplorer/COPYING-getline COPYING-RNAxplorer-getline
     install_license COPYING-RNAxplorer-getline
