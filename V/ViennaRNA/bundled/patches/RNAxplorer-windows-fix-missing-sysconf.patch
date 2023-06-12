@@ -1,0 +1,26 @@
+diff --git a/src/RNAxplorer/src/gradient_walker.c b/src/RNAxplorer/src/gradient_walker.c
+index 8011635..b301ca7 100644
+--- a/src/RNAxplorer/src/gradient_walker.c
++++ b/src/RNAxplorer/src/gradient_walker.c
+@@ -20,6 +20,9 @@
+ #include "ViennaRNA/read_epars.h"
+ #include <omp.h>
+ #include <unistd.h>
++#ifdef _WIN32
++#include <windows.h>
++#endif
+ 
+ PRIVATE void
+ printStructure_pt(vrna_fold_compound_t *vc, short * pt, unsigned int index)
+@@ -59,7 +62,11 @@ gradient_walker(double temperature_celsius, int shift_moves, char *parameter_fil
+     num_structures++;
+   }
+ 
++#ifndef _WIN32
+ long int cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
++#else
++long int cpu_count = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
++#endif
+ printf("%s\n",vc->sequence);
+ #pragma omp parallel num_threads(cpu_count)
+ #pragma omp for
