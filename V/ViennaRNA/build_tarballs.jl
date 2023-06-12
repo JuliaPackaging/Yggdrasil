@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "ViennaRNA"
-version = v"2.6.0"
+version = v"2.6.1"
 
 sources = [
     ArchiveSource("https://www.tbi.univie.ac.at/RNA/download/sourcecode/" *
                   "$(version.major)_$(version.minor)_x/ViennaRNA-$(version).tar.gz",
-                  "c239596ac63ff30d98c7629f3cfeaa6a066dc3b577e1b920eb704381bb6c3f85"),
+                  "f778876bbe8e6c85725a633819b26468307c919635e82b278ba820eff8badf76"),
     DirectorySource("./bundled")
 ]
 
@@ -34,11 +34,6 @@ export CXX=c++
 # where to find dependencies
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
-
-# fix compile fail on musl
-# ViennaRNA PR: https://github.com/ViennaRNA/ViennaRNA/pull/187
-# should be included in next release (ViennaRNA-2.6.1)
-atomic_patch -p1 ../patches/fix-no-uint-typedef-on-musl.patch
 
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # time measurement in RNAforester doesn't compile on windows (mingw32),
