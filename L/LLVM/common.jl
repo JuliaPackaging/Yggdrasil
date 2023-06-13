@@ -196,6 +196,12 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
 
+# We want to build LLVM with EH and RTTI
+if [ ! -z "${LLVM_WANT_EH_RTTI}" ]; then
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_RTTI=ON)
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_EH=ON)
+fi
+
 if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* || "${target}" == *mingw* ) ]]; then
     # https://bugs.llvm.org/show_bug.cgi?id=48221
     CMAKE_CXX_FLAGS+="-fno-gnu-unique"
@@ -503,7 +509,8 @@ rm -vrf {prefix}/lib/objects-Release
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
                          git_path="https://github.com/JuliaLang/llvm-project.git",
                          git_ver=llvm_tags[version], custom_name=nothing,
-                         custom_version=version, static=false, platform_filter=nothing)
+                         custom_version=version, static=false, platform_filter=nothing,
+                         eh_rtti=false)
     # Parse out some args
     if "--assert" in ARGS
         assert = true
@@ -562,6 +569,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     config = "LLVM_MAJ_VER=$(version.major)\nLLVM_MIN_VER=$(version.minor)\nLLVM_PATCH_VER=$(version.patch)\n"
     if static
         config *= "LLVM_WANT_STATIC=1\n"
+    end
+    if eh_rtti
+        config *= "LLVM_WANT_EH_RTTI=1\n"
     end
     if assert
         config *= "ASSERTS=1\n"
