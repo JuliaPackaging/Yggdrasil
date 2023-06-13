@@ -12,7 +12,7 @@ version = v"7.0.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bitbucket.org/icl/papi.git", "de96060998cd9fc77396c5e100e52e0ea1cdc3c3"),
-    DirectorySource("./bundled")
+    DirectorySource(joinpath(@__DIR__, "bundled"))
 ]
 
 # Bash recipe for building across all platforms
@@ -68,13 +68,13 @@ augment_platform_block = CUDA.augment
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("armv7l", "linux"; call_abi="eabihf", libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("armv7l", "linux"; call_abi="eabihf", libc="musl")
 ]
 
 
@@ -87,6 +87,7 @@ products = [
 cuda_versions_to_build = Any[
     v"10.2",
     v"11.0",
+    v"12.0",
     "none"
 ]
 
@@ -94,11 +95,13 @@ cuda_versions_to_build = Any[
 cuda_versions = Dict(
     v"10.2" => v"10.2.89",
     v"11.0" => v"11.0.3",
+    v"12.0" => v"12.0.1",
 )
 
 cuda_platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    # Platform("aarch64", "linux"; libc="glibc"),
 ]
 
 for cuda_version in cuda_versions_to_build, platform in platforms
@@ -107,9 +110,6 @@ for cuda_version in cuda_versions_to_build, platform in platforms
     augmented_platform = Platform(arch(platform), os(platform);
                                   libc=libc(platform),
                                   cuda=tag)
-    if platform == Platform("powerpc64le", "linux"; libc = "glibc") && cuda_version == v"11.0"
-        continue
-    end
     should_build_platform(triplet(augmented_platform)) || continue
 
     dependencies = AbstractDependency[
