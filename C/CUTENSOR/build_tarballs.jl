@@ -6,22 +6,22 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
-version = v"1.6.1"#.5
-version_str = "1.6.1.5"
+version = v"1.7.0"
+version_str = "1.7.0.1"
 
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-x86_64/libcutensor-linux-x86_64-$(version_str)-archive.tar.xz",
-                      "793b425c30ffd423c4f3a2e94acaf4fcb6752264aa73b74695a002dd2fe94b1a")],
+                      "dd3557891371a19e73e7c955efe5383b0bee954aba6a30e4892b0e7acb9deb26")],
     Platform("powerpc64le", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-ppc64le/libcutensor-linux-ppc64le-$(version_str)-archive.tar.xz",
-                      "e895476ab13c4a28bdf018f23299746968564024783c066a2602bc0f09b86e47")],
+                      "af4ad5e29dcb636f1bf941ed1fd7fc8053eeec4813fbc0b41581e114438e84c8")],
     Platform("aarch64", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-sbsa/libcutensor-linux-sbsa-$(version_str)-archive.tar.xz",
-                      "f0644bbdca81b890056a7b92714e787333b06a4bd384e4dfbdc3938fbd132e65")],
+                      "c31f8e4386539434a5d1643ebfed74572011783b4e21b62be52003e3a9de3720")],
     Platform("x86_64", "windows") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/windows-x86_64/libcutensor-windows-x86_64-$(version_str)-archive.zip",
-                      "36eac790df7b2c7bb4578cb355f1df65d17965ffc9b4f6218d1cdb82f87ab866")],
+                      "cdbb53bcc1c7b20ee0aa2dee781644a324d2d5e8065944039024fe22d6b822ab")],
 )
 
 augment_platform_block = CUDA.augment
@@ -37,16 +37,12 @@ dependencies = [
                                   uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
-builds = ["10.2", "11"]
+builds = ["11", "12"]
 for build in builds
     include("build_$(build).jl")
     cuda_version = VersionNumber(build)
 
     for (platform, sources) in platforms_and_sources
-        if platform == Platform("aarch64", "linux") && cuda_version < v"11"
-            # ARM binaries are only provided for CUDA 11+
-            continue
-        end
         augmented_platform = Platform(arch(platform), os(platform);
                                       cuda=CUDA.platform(cuda_version))
         should_build_platform(triplet(augmented_platform)) || continue
