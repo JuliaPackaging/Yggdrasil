@@ -7,7 +7,8 @@ version = v"3.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/nats-io/nats.c.git", "ab983febcff5d6077d8db1a919a74f0ac1a53ef7")
+    GitSource("https://github.com/nats-io/nats.c.git", "ab983febcff5d6077d8db1a919a74f0ac1a53ef7"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +21,7 @@ if [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 
 cd nats.c/
+atomic_patch -p1 ../patches/freebsd_include.diff
 sed -i 's/Ws2_32/ws2_32/g' CMakeLists.txt
 mkdir build
 cd build
@@ -30,7 +32,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;exclude=Sys.isfreebsd)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
