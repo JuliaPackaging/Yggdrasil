@@ -13,7 +13,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+
+# Fix "cannot finding openssl" under Windows
+if [[ ${target} == x86_64-w64-mingw32 ]]; then
+    export OPENSSL_ROOT_DIR=${prefix}/lib64/
+fi
+
 cd nats.c/
+sed -i 's/Ws2_32/ws2_32/g' CMakeLists.txt
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DNATS_BUILD_EXAMPLES=OFF -DNATS_BUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF ..
