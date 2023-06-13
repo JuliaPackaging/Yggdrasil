@@ -24,7 +24,7 @@ script = llvm_script * raw"""
 apk add re2c
 cd $WORKSPACE/srcdir/alive2
 for f in ${WORKSPACE}/srcdir/alive_patches/*.patch; do
-    atomic_patch -p2 ${f}
+    atomic_patch -p1 ${f}
 done
 install_license LICENSE
 mkdir build
