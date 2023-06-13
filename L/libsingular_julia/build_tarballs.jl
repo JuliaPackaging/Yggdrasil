@@ -9,7 +9,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libsingular_julia"
-version = v"0.33.0"
+version = v"0.34.0"
 
 # reminder: change the above version if restricting the supported julia versions
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
@@ -17,7 +17,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "14fdb93f83a7bc5a1ba396b85cf1a4fa9eff49d4"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "72fe8fe6d464bfc6fda4329dbfe3ffa2c52a506c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +37,7 @@ VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 # store tree hash of the source directory
 git ls-tree HEAD .. | cut -c13-52 > ${libdir}/libsingular_julia.treehash
 
-install_license LICENSE.md
+install_license ../../LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
