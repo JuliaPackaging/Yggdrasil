@@ -60,14 +60,6 @@ if [[ "${target}" == *-linux-* ]]; then
     EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
 fi
 
-# turn off k_quants on arm-linux due to compile errors in k_quants.c
-# Ref: https://buildkite.com/julialang/yggdrasil/builds/3528#_
-if [[ "${target}" == *-linux-* && "${proc_family}" == "arm" ]]; then
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=OFF"
-else
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=ON"
-fi
-
 mkdir build && cd build
 
 cmake .. \
@@ -86,6 +78,7 @@ cmake .. \
     -DLLAMA_BLAS=OFF \
     -DLLAMA_CUBLAS=OFF \
     -DLLAMA_CLBLAST=OFF \
+    -DLLAMA_K_QUANTS=ON \
     $EXTRA_CMAKE_ARGS
 make -j${nproc}
 
@@ -131,4 +124,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"8")
+               julia_compat="1.6", preferred_gcc_version = v"10")
