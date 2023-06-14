@@ -104,8 +104,8 @@ for lib in libllama; do
     fi
 done
 # install header files
-for hdr in *.h; do
-    install -Dvm 644 "../${hdr}" "${includedir}/${hdr}"
+for hdr in ../*.h; do
+    install -Dvm 644 "${hdr}" "${includedir}/$(basename "${hdr}")"
 done
 
 install_license ../LICENSE
