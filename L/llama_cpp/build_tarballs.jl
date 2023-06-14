@@ -104,7 +104,7 @@ for lib in libllama; do
     fi
 done
 # install header files
-for hdr in llama.h ggml.h; do
+for hdr in *.h; do
     install -Dvm 644 "../${hdr}" "${includedir}/${hdr}"
 done
 
