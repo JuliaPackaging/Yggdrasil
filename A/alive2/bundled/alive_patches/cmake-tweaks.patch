@@ -1,0 +1,34 @@
+commit fb34d4e9980c397be17b40bcb2a850bc771f7b9c (HEAD -> master)
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Tue Jun 13 10:35:58 2023 +0000
+
+    cmake: Set targets to INSTALL
+    
+    I'm in the process of trying to get alive2 available in the
+    JuliaLang binary distribution system [1]. That system would
+    like all relevant targets to be INSTALL'ed, so add appropriate
+    CMake directives.
+    
+    [1] https://github.com/JuliaPackaging/Yggdrasil/pull/4271
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bbabbd6..7241215 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -244,6 +244,7 @@ target_link_libraries(alive PRIVATE ${ALIVE_LIBS})
+ add_executable(alive-jobserver
+                "tools/alive-jobserver.cpp"
+               )
++install(TARGETS alive alive-jobserver)
+ 
+ #add_library(alive2 SHARED ${IR_SRCS} ${SMT_SRCS} ${TOOLS_SRCS} ${UTIL_SRCS} ${LLVM_UTIL_SRCS})
+ 
+@@ -253,6 +254,7 @@ if (BUILD_LLVM_UTILS OR BUILD_TV)
+   target_link_libraries(alive-tv PRIVATE ${ALIVE_LIBS_LLVM} ${Z3_LIBRARIES} ${HIREDIS_LIBRARIES} ${llvm_libs})
+   target_link_libraries(quick-fuzz PRIVATE ${ALIVE_LIBS_LLVM} ${Z3_LIBRARIES} ${HIREDIS_LIBRARIES} ${llvm_libs})
+   target_link_libraries(alive-exec PRIVATE ${ALIVE_LIBS_LLVM} ${Z3_LIBRARIES} ${HIREDIS_LIBRARIES} ${llvm_libs})
++  install(TARGETS alive-tv alive-exec)
+ endif()
+ 
+ target_link_libraries(alive PRIVATE ${Z3_LIBRARIES} ${HIREDIS_LIBRARIES})
+
