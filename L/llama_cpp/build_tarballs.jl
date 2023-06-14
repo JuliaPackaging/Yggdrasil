@@ -1,12 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.10"  # fake version number
+version = v"0.0.11"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
 
 # NOTES
+# - k_quants disabled for armv{6,7}-linux due to compile errors
+# - k_quants fails to compile on aarch64-linux for gcc-9 and below
 # - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
 # - fails on i686-w64-mingw32
 #   /workspace/srcdir/llama.cpp/examples/main/main.cpp:249:81: error: invalid static_cast from type ‘main(int, char**)::<lambda(DWORD)>’ to type ‘PHANDLER_ROUTINE’ {aka ‘int (__attribute__((stdcall)) *)(long unsigned int)’}
@@ -17,7 +19,7 @@ version = v"0.0.10"  # fake version number
 #   - fma (LLAMA_FMA)
 # - on macos the accelerate framework is used
 # - missing build options (build multiple jlls from a common build script?)
-#   - OpenBLAS (LLAMA_OPENBLAS)
+#   - BLAS (LLAMA_BLAS)
 #   - CUDA/CuBLAS (LLAMA_CUBLAS)
 #   - OpenCL/CLBLAST (LLAMA_CLBLAST)
 
@@ -35,10 +37,11 @@ version = v"0.0.10"  # fake version number
 # 0.0.8           02.05.2023       master-e216aa0    https://github.com/ggerganov/llama.cpp/releases/tag/master-e216aa0
 # 0.0.9           19.05.2023       master-6986c78    https://github.com/ggerganov/llama.cpp/releases/tag/master-6986c78
 # 0.0.10          19.05.2023       master-2d5db48    https://github.com/ggerganov/llama.cpp/releases/tag/master-2d5db48
+# 0.0.11          13.06.2023       master-9254920    https://github.com/ggerganov/llama.cpp/releases/tag/master-9254920
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "2d5db48371052087a83974abda3767d1aedec598"),
+              "92549202659fc23ba9fec5e688227d0da9b06b40"),
     DirectorySource("./bundled"),
 ]
 
@@ -48,11 +51,22 @@ cd $WORKSPACE/srcdir/llama.cpp*
 # remove -march=native from cmake files
 atomic_patch -p1 ../patches/cmake-remove-compiler-flags-forbidden-in-bb.patch
 
+# fix static_assert outside of function, might be something with gcc-8.1.0
+# upstream issue: https://github.com/ggerganov/llama.cpp/issues/1788
+atomic_patch -p1 ../patches/fix_static_assert_outside_of_function.patch
+
 EXTRA_CMAKE_ARGS=
 if [[ "${target}" == *-linux-* ]]; then
     # otherwise we have undefined reference to `clock_gettime' when
     # linking the `main' example program
     EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
+fi
+
+# compilation errors using k_quants on armv{6,7}l-linux-*
+if [[ "${proc_family}" == "arm" && "${nbits}" == 32 ]]; then
+    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=OFF"
+else
+    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=ON"
 fi
 
 mkdir build && cd build
@@ -70,7 +84,7 @@ cmake .. \
     -DLLAMA_AVX2=ON \
     -DLLAMA_F16C=ON \
     -DLLAMA_FMA=ON \
-    -DLLAMA_OPENBLAS=OFF \
+    -DLLAMA_BLAS=OFF \
     -DLLAMA_CUBLAS=OFF \
     -DLLAMA_CLBLAST=OFF \
     $EXTRA_CMAKE_ARGS
@@ -90,8 +104,8 @@ for lib in libllama; do
     fi
 done
 # install header files
-for hdr in llama.h ggml.h; do
-    install -Dvm 644 "../${hdr}" "${includedir}/${hdr}"
+for hdr in ../*.h; do
+    install -Dvm 644 "${hdr}" "${includedir}/$(basename "${hdr}")"
 done
 
 install_license ../LICENSE
@@ -101,6 +115,7 @@ platforms = supported_platforms(; exclude = p -> arch(p) == "powerpc64le" || (ar
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
+    ExecutableProduct("baby-llama", :baby_llama),
     ExecutableProduct("benchmark", :benchmark),
     ExecutableProduct("embedding", :embedding),
     ExecutableProduct("main", :main),
@@ -117,4 +132,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"8")
+               julia_compat="1.6", preferred_gcc_version = v"10")
