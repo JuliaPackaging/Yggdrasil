@@ -62,7 +62,7 @@ fi
 
 # turn off k_quants on arm-linux due to compile errors in k_quants.c
 # Ref: https://buildkite.com/julialang/yggdrasil/builds/3528#_
-if [[ "${target}" == aarch64-linux-* || "${target}" == armv*l-linux-* ]]; then
+if [[ "${target}" == *-linux-* && "${proc_family}" == "arm" ]]; then
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=OFF"
 else
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=ON"
