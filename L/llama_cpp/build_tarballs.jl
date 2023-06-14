@@ -7,7 +7,8 @@ version = v"0.0.11"  # fake version number
 # description = "Port of Facebook's LLaMA model in C/C++"
 
 # NOTES
-# - compilation fails on arm-linux for gcc-9 and below
+# - k_quants disabled for armv{6,7}-linux due to compile errors
+# - k_quants fails to compile on aarch64-linux for gcc-9 and below
 # - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
 # - fails on i686-w64-mingw32
 #   /workspace/srcdir/llama.cpp/examples/main/main.cpp:249:81: error: invalid static_cast from type ‘main(int, char**)::<lambda(DWORD)>’ to type ‘PHANDLER_ROUTINE’ {aka ‘int (__attribute__((stdcall)) *)(long unsigned int)’}
@@ -61,6 +62,13 @@ if [[ "${target}" == *-linux-* ]]; then
     EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
 fi
 
+# compilation errors using k_quants on armv{6,7}l-linux-*
+if [[ "${proc_family}" == "arm" && "${nbits}" == 32 ]]; then
+    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=OFF"
+else
+    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=ON"
+fi
+
 mkdir build && cd build
 
 cmake .. \
@@ -79,7 +87,6 @@ cmake .. \
     -DLLAMA_BLAS=OFF \
     -DLLAMA_CUBLAS=OFF \
     -DLLAMA_CLBLAST=OFF \
-    -DLLAMA_K_QUANTS=ON \
     $EXTRA_CMAKE_ARGS
 make -j${nproc}
 
