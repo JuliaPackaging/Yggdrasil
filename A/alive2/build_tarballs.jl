@@ -73,6 +73,10 @@ append!(dependencies, llvm_dependencies)
 filter!(platforms) do p
     # FreeBSD has the same libc++ problem as macos
     Sys.isfreebsd(p) && return false
+    # Windows not supported because the LLVM.dll ends up
+    # with too many symbols in RTTI mode.
+    # See https://reviews.llvm.org/D109192.
+    Sys.iswindows(p) && return false
     return true
 end
 
