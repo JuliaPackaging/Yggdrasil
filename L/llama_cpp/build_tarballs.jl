@@ -78,6 +78,7 @@ cmake .. \
     -DLLAMA_OPENBLAS=OFF \
     -DLLAMA_CUBLAS=OFF \
     -DLLAMA_CLBLAST=OFF \
+    -DLLAMA_K_QUANTS=OFF \
     $EXTRA_CMAKE_ARGS
 make -j${nproc}
 
