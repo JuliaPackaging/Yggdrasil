@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.10"  # fake version number
+version = v"0.0.11"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
