@@ -48,6 +48,7 @@ apk add re2c
 cd $WORKSPACE/srcdir/alive2
 rm -rf /opt/x86_64-linux-musl/lib/cmake/llvm
 rm -rf /opt/x86_64-apple-darwin14/lib/cmake/llvm
+rm -rf /opt/aarch64-apple-darwin20/lib/cmake/llvm
 for f in ${WORKSPACE}/srcdir/alive_patches/*.patch; do
     atomic_patch -p1 ${f}
 done
