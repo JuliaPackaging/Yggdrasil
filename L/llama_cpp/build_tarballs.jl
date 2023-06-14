@@ -7,6 +7,7 @@ version = v"0.0.11"  # fake version number
 # description = "Port of Facebook's LLaMA model in C/C++"
 
 # NOTES
+# - compilation fails on arm-linux for gcc-9 and below
 # - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
 # - fails on i686-w64-mingw32
 #   /workspace/srcdir/llama.cpp/examples/main/main.cpp:249:81: error: invalid static_cast from type ‘main(int, char**)::<lambda(DWORD)>’ to type ‘PHANDLER_ROUTINE’ {aka ‘int (__attribute__((stdcall)) *)(long unsigned int)’}
@@ -17,7 +18,7 @@ version = v"0.0.11"  # fake version number
 #   - fma (LLAMA_FMA)
 # - on macos the accelerate framework is used
 # - missing build options (build multiple jlls from a common build script?)
-#   - OpenBLAS (LLAMA_OPENBLAS)
+#   - BLAS (LLAMA_BLAS)
 #   - CUDA/CuBLAS (LLAMA_CUBLAS)
 #   - OpenCL/CLBLAST (LLAMA_CLBLAST)
 
