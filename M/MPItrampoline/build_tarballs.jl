@@ -9,7 +9,7 @@ name = "MPItrampoline"
 
 mpitrampoline_version = v"5.3.0"
 version = mpitrampoline_version
-mpich_version_str = "4.1.1"
+mpich_version_str = "4.1.2"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.10.3"
 
@@ -18,7 +18,7 @@ sources = [
     GitSource("https://github.com/eschnett/MPItrampoline", "62e3e5a4b880da8cc601b84691198d4d20308651"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "ee30471b35ef87f4c88f871a5e2ad3811cd9c4df32fd4f138443072ff4284ca2"),
+                  "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
     GitSource("https://github.com/eschnett/MPIwrapper", "7c09c12e601fd0faa2ae84c37f97a05e23795141"),
 ]
 
