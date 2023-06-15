@@ -30,7 +30,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmutation++", :Mutationjl),
+    LibraryProduct("libmutation++", :libmutationpp),
     ExecutableProduct("mppshock", :mppshock),
     ExecutableProduct("checkmix", :checkmix),
     ExecutableProduct("mppequil", :mppequil),
