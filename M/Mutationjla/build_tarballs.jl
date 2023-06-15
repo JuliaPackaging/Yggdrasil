@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd Mutationpp/
+cd $WORKSPACE/srcdir/Mutationpp/
 mkdir build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
