@@ -4,14 +4,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version_str = "4.1.1"
+version_str = "4.1.2"
 version = VersionNumber(version_str)
 
 # build trigger: 1
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "ee30471b35ef87f4c88f871a5e2ad3811cd9c4df32fd4f138443072ff4284ca2"),
+                  "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
 ]
 
 script = raw"""
