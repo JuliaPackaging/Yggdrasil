@@ -11,7 +11,7 @@ sources = [
         GitSource("https://github.com/MathieuDutSik/polyhedral_common", "c7f3c4072b7583c17f8151f8d0f953694dc5864a"),
 ]
 name = "polyhedral"
-version = v"0.2" # <-- This is the first version of it but this is rather arbitrary
+version = v"0.3" # third version pf the code
 
 # Bash recipe for building across all platforms
 script = raw"""
