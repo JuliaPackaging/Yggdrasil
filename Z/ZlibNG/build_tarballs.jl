@@ -7,7 +7,7 @@ version = v"2.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zlib-ng/zlib-ng.git", "f75c6856c32a0ade1f33e266fb370bac92d15fac")
+    GitSource("https://github.com/zlib-ng/zlib-ng.git", "e5ab5890a89860a7f4115fca9b0fc7c778b26ef1")
 ]
 
 # Bash recipe for building across all platforms
