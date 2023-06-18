@@ -26,6 +26,18 @@ cc -DOPENMP -fopenmp -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/f
 # install multithread no SSE
 cc -DNO_SSE -fopenmp -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttreeMP_noSSE${exeext}" FastTree*.c -lm
 
+# install single thread with SSE instructions and double precision
+cc -DUSE_DOUBLE -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttree_double${exeext}" FastTree*.c -lm
+
+# install single thread no SSE and double precision
+cc -DUSE_DOUBLE -DNO_SSE -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttree_double_noSSE${exeext}" FastTree*.c -lm
+
+# install multithread with SSE and double precision
+cc -DUSE_DOUBLE -DOPENMP -fopenmp -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttreeMP_double${exeext}" FastTree*.c -lm
+
+# install multithread no SSE and double precision
+cc -DUSE_DOUBLE -DNO_SSE -fopenmp -O3 -finline-functions -funroll-loops -Wall -o "${bindir}/fasttreeMP_double_noSSE${exeext}" FastTree*.c -lm
+
 """
 
 platforms = supported_platforms()
@@ -35,6 +47,10 @@ products = [
     ExecutableProduct("fasttree_noSSE", :fasttree_noSSE),
     ExecutableProduct("fasttreeMP", :fasttreeMP),
     ExecutableProduct("fasttreeMP_noSSE", :fasttreeMP_noSSE),
+    ExecutableProduct("fasttree_double", :fasttree_double),
+    ExecutableProduct("fasttree_double_noSSE", :fasttree_double_noSSE),
+    ExecutableProduct("fasttreeMP_double", :fasttreeMP_double),
+    ExecutableProduct("fasttreeMP_double_noSSE", :fasttreeMP_double_noSSE),
 ]
 
 dependencies = [
