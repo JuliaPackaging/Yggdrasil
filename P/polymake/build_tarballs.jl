@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.9"
+upstream_version = v"4.10"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
-                  "bc7335bfca7a3e687b7961b052418ace0e4295f99a86c6cf4832bc2a51b0deea"),
+                  "295608e3dc797b5646c799153eb33e9fcc0a9e181b0b60b37f872fc2ea1a2d17"),
     DirectorySource("./bundled")
 ]
 
@@ -127,9 +127,6 @@ fi
 # cleanup symlink tree
 rm -rf ${prefix}/deps
 
-# copy julia script to generate dependency-tree at load time
-cp ../patches/generate_deps_tree.jl $prefix/share/polymake
-
 install_license COPYING
 """
 
@@ -146,7 +143,6 @@ products = [
     LibraryProduct("libpolymake-apps-rt", :libpolymake_apps_rt)
     ExecutableProduct("polymake", :polymake)
     ExecutableProduct("polymake-config", Symbol("polymake_config"))
-    FileProduct("share/polymake/generate_deps_tree.jl", :generate_deps_tree)
 ]
 
 
