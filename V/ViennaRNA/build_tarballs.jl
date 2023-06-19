@@ -16,9 +16,8 @@ sources = [
 #   which is why we use gcc-9
 
 # Notes
-# - I think only RNAxplorer needs to link to blas, lapack (and pcre on windows)
-#   also the generated shared lib doesn't need to link to these libs
-
+# - we build RNAxplorer separately, because only it needs to link to
+#   BLAS/LAPACK, and PCRE on windows
 
 script = raw"""
 cd $WORKSPACE/srcdir/ViennaRNA*/
@@ -51,28 +50,43 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
 
     # needed for compilation of dlib on windows
     export LIBS="-lwinmm"
-
-    # work around there not being a regex.h on w64-mingw32
-    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
-    export LIBS="$LIBS -lpcreposix-0"
-
-    # BLAS/LAPACK support
-    export LIBS="$LIBS -lblastrampoline-5"
-else
-    # BLAS/LAPACK support
-    export LIBS="$LIBS -lblastrampoline"
 fi
-
 
 ./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --disable-c11 \
     --with-mpfr --with-json --with-svm --with-gsl \
     --enable-openmp \
-    --with-rnaxplorer --with-blas="${libdir}/libopenblas.${dlext}" --with-lapack="${libdir}/liblapack.${dlext}" \
+    --without-rnaxplorer \
     --with-cluster --with-kinwalker \
     --without-perl --without-python --without-python2 \
     --without-doc --without-tutorial --without-cla
+
+make -j${nproc}
+make install
+
+# compile RNAxplorer, we do this separately because it links to
+# BLAS/LAPACK, and PCRE on windows
+cd src/RNAxplorer
+
+LIBS_RNAxplorer="$LIBS"
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    # work around there not being a regex.h on w64-mingw32
+    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
+    LIBS_RNAxplorer="$LIBS_RNAxplorer -lpcreposix-0"
+
+    # BLAS/LAPACK support
+    LIBS_RNAxplorer="$LIBS_RNAxplorer -lblastrampoline-5"
+else
+    # BLAS/LAPACK support
+    LIBS_RNAxplorer="$LIBS_RNAxplorer -lblastrampoline"
+fi
+
+LIBS="$LIBS_RNAxplorer" ./configure \
+    --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --with-pic \
+    --with-blas="${libdir}/libopenblas.${dlext}" --with-lapack="${libdir}/liblapack.${dlext}" \
+    --without-swig --without-python3
 
 make -j${nproc}
 make install
@@ -81,6 +95,9 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
     # remove PCRE regex.h so it doesn't get included in the jll package
     rm "${includedir}/regex.h"
 fi
+
+# finished building RNAxplorer
+cd ../..
 
 # create and install a shared library libRNA
 ldflags="$LDFLAGS -g -O2 -fno-strict-aliasing -ftree-vectorize -pthread -fopenmp"
