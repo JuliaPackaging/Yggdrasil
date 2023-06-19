@@ -77,7 +77,7 @@ cuda_full_versions = Dict(
 
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(expand_cxxstring_abis(Platform("x86_64", "linux")))
+platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms()))
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
 platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
@@ -88,11 +88,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-products = [
-    LibraryProduct("libslate", :libslate),
-    LibraryProduct("libslate_lapack_api", :libslate_lapack_api)
-    # LibraryProduct("libslate_scalapack_api, :libslate_scalapack_api) ** Not yet available under CMAKE toolchain.
-]
 
 for cuda_version in versions_to_build, platform in platforms
     build_cuda = (os(platform) == "linux") && (arch(platform) in ["x86_64"])
@@ -111,6 +106,11 @@ for cuda_version in versions_to_build, platform in platforms
     ]
     append!(dependencies, mpi_dependencies)
 
+    products = [
+        LibraryProduct("libslate", :libslate; dont_dlopen = build_cuda && !isnothing(cuda_version)),
+        LibraryProduct("libslate_lapack_api", :libslate_lapack_api; dont_dlopen = build_cuda && !isnothing(cuda_version))
+        # LibraryProduct("libslate_scalapack_api, :libslate_scalapack_api) ** Not yet available under CMAKE toolchain.
+    ]
     if !isnothing(cuda_version)
         push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_full_versions[cuda_version])))
         push!(dependencies, RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")))
