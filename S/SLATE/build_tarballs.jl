@@ -77,7 +77,7 @@ cuda_full_versions = Dict(
 
 
 # We attempt to build for all defined platforms
-platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms()))
+platforms = expand_gfortran_versions(expand_cxxstring_abis(Platform("x86_64", "linux")))
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
 platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
