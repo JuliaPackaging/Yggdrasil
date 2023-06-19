@@ -25,7 +25,7 @@ sources = [
 #   works fine on julia-1.9
 
 # TODO
-# - build shared library for RNAxplorer?
+# - build shared library for RNAxplorer? (other programs like RNAforester etc?)
 #   configure script seems to indicate there is a python interface
 
 # Notes
@@ -76,57 +76,23 @@ if [[ "${target}" == *-linux-musl* || "${target}" == *-apple-darwin* ]]; then
     export ac_cv_func_realloc_0_nonnull=yes
 fi
 
-./configure \
+COMMON_CONFIGURE_FLAGS="
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --disable-c11 \
     --with-mpfr --with-json --with-svm --with-gsl \
     --enable-openmp \
-    --without-rnaxplorer \
     --with-cluster --with-kinwalker \
-    --without-perl --without-python --without-python2 \
+    --without-swig --without-perl --without-python --without-python2 \
     --without-doc --without-tutorial --without-cla
+"
+
+./configure \
+    $COMMON_CONFIGURE_FLAGS \
+    --without-rnaxplorer
 
 make -j${nproc}
 make install
 
-# compile RNAxplorer, we do this separately because it links to
-# BLAS/LAPACK, and PCRE on windows
-cd src/RNAxplorer
-
-# remove -fno-lto from CFLAGS for clang (option doesn't exist)
-if [[ "${target}" == *-apple-darwin* || "${target}" == *-unknown-freebsd* ]]; then
-    sed -i -e 's/-fno-lto//' configure
-fi
-
-LIBS_RNAxplorer="$LIBS"
-if [[ "${target}" == *-w64-mingw32* ]]; then
-    # work around there not being a regex.h on w64-mingw32
-    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
-    LIBS_RNAxplorer="$LIBS_RNAxplorer -lpcreposix-0"
-
-    # BLAS/LAPACK support
-    LIBS_RNAxplorer="$LIBS_RNAxplorer -lblastrampoline-5"
-else
-    # BLAS/LAPACK support
-    LIBS_RNAxplorer="$LIBS_RNAxplorer -lblastrampoline"
-fi
-
-LIBS="$LIBS_RNAxplorer" ./configure \
-    --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-pic \
-    --with-blas="${libdir}/libopenblas.${dlext}" --with-lapack="${libdir}/liblapack.${dlext}" \
-    --without-swig --without-python3
-
-make -j${nproc}
-make install
-
-if [[ "${target}" == *-w64-mingw32* ]]; then
-    # remove PCRE regex.h so it doesn't get included in the jll package
-    rm "${includedir}/regex.h"
-fi
-
-# finished building RNAxplorer
-cd ../..
 
 # create and install a shared library libRNA
 ldflags="$LDFLAGS -g -O2 -fno-strict-aliasing -ftree-vectorize -pthread -fopenmp"
@@ -146,6 +112,44 @@ fi
     $ldflags \
     -Wl,$(flagon --whole-archive) ./src/ViennaRNA/libRNA.a -Wl,$(flagon --no-whole-archive) \
     $libs
+
+
+# compile RNAxplorer, we do this separately because it links to
+# BLAS/LAPACK, and PCRE on windows
+
+LIBS_RNAxplorer="$LIBS"
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    # work around there not being a regex.h on w64-mingw32
+    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
+    LIBS_RNAxplorer="$LIBS_RNAxplorer -lpcreposix-0"
+
+    # BLAS/LAPACK support
+    LIBS_RNAxplorer="$LIBS_RNAxplorer -lblastrampoline-5"
+else
+    # BLAS/LAPACK support
+    LIBS_RNAxplorer="$LIBS_RNAxplorer -lblastrampoline"
+fi
+
+# we re-run the main configure script, just running
+# src/RNAxplorer/configure runs into linking errors for clang compilers
+# (-fno-lto passed during linking, an unknown option for clang)
+LIBS="$LIBS_RNAxplorer" ./configure \
+    $COMMON_CONFIGURE_FLAGS \
+    --with-rnaxplorer \
+    --with-blas="${libdir}/libopenblas.${dlext}" --with-lapack="${libdir}/liblapack.${dlext}"
+
+cd src/RNAxplorer
+make -j${nproc}
+make install
+
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    # remove PCRE regex.h so it doesn't get included in the jll package
+    rm "${includedir}/regex.h"
+fi
+
+# finished building RNAxplorer
+cd ../..
+
 
 # install licenses
 cp src/cthreadpool/LICENSE LICENSE-cthreadpool
