@@ -93,6 +93,11 @@ make install
 # BLAS/LAPACK, and PCRE on windows
 cd src/RNAxplorer
 
+# remove -fno-lto from CFLAGS for clang (option doesn't exist)
+if [[ "${target}" == *-apple-darwin* || "${target}" == *-unknown-freebsd* ]]; then
+    sed -i -e 's/-fno-lto//' configure
+fi
+
 LIBS_RNAxplorer="$LIBS"
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # work around there not being a regex.h on w64-mingw32
