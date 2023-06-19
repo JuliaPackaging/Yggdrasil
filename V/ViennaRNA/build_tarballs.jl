@@ -64,10 +64,7 @@ else
 fi
 
 
-# configure script fails (only in sandbox) without
-# setting ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
-ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
-    ./configure \
+./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --disable-c11 \
     --with-mpfr --with-json --with-svm --with-gsl \
