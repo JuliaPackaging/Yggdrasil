@@ -45,6 +45,9 @@ install_license homepage.html
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
+# HDF5 on Windows does not provide `h5fc`
+filter!(!Sys.iswindows, platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("compose", :compose),
