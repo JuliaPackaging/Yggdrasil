@@ -28,18 +28,6 @@ function libjulia_platforms(julia_version)
         p["julia_version"] = string(julia_version)
     end
 
-    # While the "official" Julia kernel ABI does not involve any C++ linker
-    # symbols before Julia 1.6, `libjulia` exported "unofficial" symbols
-    # dependent on the C++ strings ABI (coming from LLVM related code). This
-    # doesn't matter if the client code is pure C, but as soon as there are
-    # other (actual) C++ dependencies, we must make sure to use the matching C++
-    # strings ABI. Hence we must use `expand_cxxstring_abis` below.
-    #
-    # In Julia >= 1.6, these C++ symbols all moved into `libjulia-internal`.
-    if julia_version < v"1.6"
-        platforms = expand_cxxstring_abis(platforms)
-    end
-
     return platforms
 end
 
@@ -375,7 +363,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         error("Unsupported Julia version")
     end
 
-    julia_compat = version ≥ v"1.6" ? "1.6" : "1.0"
+    julia_compat = "1.6"
 
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
