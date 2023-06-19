@@ -24,6 +24,10 @@ sources = [
 #   .../bin/RNAxplorer: error while loading shared libraries: libblastrampoline.so.5: cannot open shared object file: No such file or directory
 #   works fine on julia-1.9
 
+# TODO
+# - build shared library for RNAxplorer?
+#   configure script seems to indicate there is a python interface
+
 # Notes
 # - we build RNAxplorer separately, because only it needs to link to
 #   BLAS/LAPACK, and PCRE on windows
