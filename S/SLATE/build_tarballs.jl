@@ -105,7 +105,7 @@ for cuda_version in versions_to_build, platform in platforms
     )
     should_build_platform(triplet(augmented_platform)) || continue
 
-    dependencies = AbstractDependency[
+    dependencies = BinaryBuilder.AbstractDependency[
         Dependency("CompilerSupportLibraries_jll"),
         Dependency("libblastrampoline_jll"),
     ]
