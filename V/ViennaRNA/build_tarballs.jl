@@ -70,14 +70,13 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
     export LIBS="-lwinmm"
 fi
 
-# avoid compile errors on some targets with unknown references to rpl_malloc
-CONFIGURE_WORKAROUND=
 if [[ "${target}" == *-linux-musl* || "${target}" == *-apple-darwin* ]]; then
-    CONFIGURE_WORKAROUND="ac_cv_func_realloc_0_nonnull=yes ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes"
+    # avoid linking errors on some targets, undefined references to rpl_malloc, rpl_realloc
+    export ac_cv_func_malloc_0_nonnull=yes
+    export ac_cv_func_realloc_0_nonnull=yes
 fi
 
-$CONFIGURE_WORKAROUND \
-    ./configure \
+./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --disable-c11 \
     --with-mpfr --with-json --with-svm --with-gsl \
