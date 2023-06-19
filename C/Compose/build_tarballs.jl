@@ -32,6 +32,11 @@ ln -s $bindir/h5pfc bin/h5fc
 export PATH=$PATH:$WORKSPACE/srcdir/bin
 
 make compose test_read_hdf5 test_read_opacity
+
+install -Dm 755 "compose${exeext}" "${bindir}/compose${exeext}"
+install -Dm 755 "test_read_hdf5${exeext}" "${bindir}/test_read_hdf5${exeext}"
+install -Dm 755 "test_read_opacity${exeext}" "${bindir}/test_read_opacity${exeext}"
+
 install_license homepage.html
 """
 
