@@ -1,5 +1,14 @@
 --- a/magick/timer.c
 +++ b/magick/timer.c
+@@ -43,7 +43,7 @@
+ #if !defined(CLK_TCK)
+ #  define CLK_TCK  sysconf(_SC_CLK_TCK)
+ #endif
+-#if defined(HAVE_CLOCK_GETTIME)
++#if defined(HAVE_CLOCK_GETTIME) && defined(HAVE_CLOCK_REALTIME)
+ #  define NANOSECONDS_PER_SECOND 1000000000.0
+ #  if defined(CLOCK_HIGHRES) /* Solaris */
+ #    define CLOCK_ID CLOCK_HIGHRES
 @@ -124,7 +124,7 @@
  */
  static double ElapsedTime(void)

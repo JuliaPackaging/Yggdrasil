@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/GraphicsMagick*
 # Don't use `clock_realtime` if it isn't available
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
-# Don't use interlacing if it isn't available
+# Don't use interlacing or lossless compression if they are not available
 atomic_patch -p1 ../patches/libjpeg_turbo.patch
 ./configure \
     --build=${MACHTYPE} \
