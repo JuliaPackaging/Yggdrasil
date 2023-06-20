@@ -18,6 +18,8 @@ cd $WORKSPACE/srcdir/GraphicsMagick*
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 # Don't use interlacing or lossless compression if they are not available
 atomic_patch -p1 ../patches/libjpeg_turbo.patch
+
+# `configure` runs Ghostscript binaries -- this does not work when cross-compiling
 ./configure \
     --build=${MACHTYPE} \
     --host=${target} \
@@ -29,7 +31,7 @@ atomic_patch -p1 ../patches/libjpeg_turbo.patch
     --enable-openmp \
     --enable-quantum-library-names \
     --enable-shared \
-    --with-gs \
+    --without-gs \
     --without-frozenpaths \
     --without-perl \
     --without-x
@@ -58,7 +60,7 @@ dependencies = [
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
     Dependency("Bzip2_jll"),
     Dependency("FreeType2_jll"),
-    Dependency("Ghostscript_jll"),
+    # Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
     Dependency("JasPer_jll"),
     Dependency("JpegTurbo_jll"),
