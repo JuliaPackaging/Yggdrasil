@@ -1,0 +1,11 @@
+--- a/magick/timer.c
++++ b/magick/timer.c
+@@ -124,7 +124,7 @@
+ */
+ static double ElapsedTime(void)
+ {
+-#if defined(HAVE_CLOCK_GETTIME)
++#if defined(HAVE_CLOCK_GETTIME) && defined(HAVE_CLOCK_REALTIME)
+   struct timespec timer;
+   (void) clock_gettime(CLOCK_ID, &timer);
+ 

@@ -8,11 +8,13 @@ version = v"1.3.40"
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
                   "97dc1a9d4e89c77b25a3b24505e7ff1653b88f9bfe31f189ce10804b8efa7746"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/GraphicsMagick*
+atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 # TODO:
 # - jpeg support does not build, we are getting confused by some jpeg library that is pulled in transitively.
 ./configure \
@@ -20,8 +22,7 @@ cd $WORKSPACE/srcdir/GraphicsMagick*
     --host=${target} \
     --prefix=${prefix} \
     --disable-dependency-tracking \
-    --disable-installed\
-    --disable-jpeg \
+    --disable-installed \
     --disable-static \
     --docdir=/tmp \
     --enable-openmp \
@@ -29,6 +30,7 @@ cd $WORKSPACE/srcdir/GraphicsMagick*
     --enable-shared \
     --with-gs \
     --without-frozenpaths \
+    --without-jpeg \
     --without-perl \
     --without-x
 make -j${nproc}
