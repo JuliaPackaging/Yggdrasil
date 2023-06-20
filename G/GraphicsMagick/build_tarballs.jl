@@ -19,24 +19,32 @@ atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 # Don't use interlacing or lossless compression if they are not available
 atomic_patch -p1 ../patches/libjpeg_turbo.patch
 
-# `configure` runs Ghostscript binaries -- this does not work when cross-compiling
-./configure \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --prefix=${prefix} \
-    --disable-dependency-tracking \
-    --disable-installed \
-    --disable-static \
-    --docdir=/tmp \
-    --enable-openmp \
-    --enable-quantum-library-names \
-    --enable-shared \
-    --without-gs \
-    --without-frozenpaths \
-    --without-perl \
-    --without-x
-make -j${nproc}
-make install
+# While all libraries are available, only the last set of header files
+# (here depth=8) remain available.
+for depth in 32 16 8; do
+    mkdir build-${depth}
+    pushd build-${depth}
+    # `configure` runs Ghostscript binaries -- this does not work when cross-compiling
+    ../configure \
+        --build=${MACHTYPE} \
+        --host=${target} \
+        --prefix=${prefix} \
+        --disable-dependency-tracking \
+        --disable-installed \
+        --disable-static \
+        --docdir=/tmp \
+        --enable-openmp \
+        --enable-quantum-library-names \
+        --enable-shared \
+        --with-quantum-depth=${depth} \
+        --without-gs \
+        --without-frozenpaths \
+        --without-perl \
+        --without-x
+    make -j${nproc}
+    make install
+    popd
+done
 """
 
 # These are the platforms we will build for by default, unless further
@@ -45,9 +53,15 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGraphicsMagick-Q8", :libGraphicsMagick),
-    LibraryProduct("libGraphicsMagick++-Q8", :libGraphicsMagickxx),
-    LibraryProduct("libGraphicsMagickWand-Q8", :libGraphicsMagickWand),
+    LibraryProduct("libGraphicsMagick-Q8", :libGraphicsMagick_Q8),
+    LibraryProduct("libGraphicsMagick++-Q8", :libGraphicsMagickxx_Q8),
+    LibraryProduct("libGraphicsMagickWand-Q8", :libGraphicsMagickWand_Q8),
+    LibraryProduct("libGraphicsMagick-Q16", :libGraphicsMagick_Q16),
+    LibraryProduct("libGraphicsMagick++-Q16", :libGraphicsMagickxx_Q16),
+    LibraryProduct("libGraphicsMagickWand-Q16", :libGraphicsMagickWand_Q16),
+    LibraryProduct("libGraphicsMagick-Q32", :libGraphicsMagick_Q32),
+    LibraryProduct("libGraphicsMagick++-Q32", :libGraphicsMagickxx_Q32),
+    LibraryProduct("libGraphicsMagickWand-Q32", :libGraphicsMagickWand_Q32),
     ExecutableProduct("gm", :gm),
 ]
 

@@ -18,3 +18,12 @@
    struct timespec timer;
    (void) clock_gettime(CLOCK_ID, &timer);
  
+@@ -236,7 +236,7 @@
+ */
+ MagickExport double GetTimerResolution(void)
+ {
+-#if defined(HAVE_CLOCK_GETRES)
++#if defined(HAVE_CLOCK_GETRES) && defined(HAVE_CLOCK_REALTIME)
+   struct timespec timer;
+   (void) clock_getres(CLOCK_ID, &timer);
+ 
