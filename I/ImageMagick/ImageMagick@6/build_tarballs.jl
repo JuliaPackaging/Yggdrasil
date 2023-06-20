@@ -20,6 +20,8 @@ if [[ "${target}" == *-linux-gnu ]]; then
     # For `clock_gettime`
     atomic_patch -p1 ../patches/utilities-link-rt.patch
 elif [[ "${target}" == *-mingw* ]]; then
+    # For `clock_gettime`
+    atomic_patch -p1 ../patches/check-have-clock-realtime.patch
     # otherwise autotools looks in ${prefix}/lib
     export LDFLAGS=-L${libdir}
 fi
