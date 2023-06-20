@@ -14,9 +14,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/GraphicsMagick*
+# Don't use `clock_realtime` if it isn't available
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
-# TODO:
-# - jpeg support does not build, we are getting confused by some jpeg library that is pulled in transitively.
+# Don't use interlacing if it isn't available
+atomic_patch -p1 ../patches/libjpeg_turbo.patch
 ./configure \
     --build=${MACHTYPE} \
     --host=${target} \
@@ -30,7 +31,6 @@ atomic_patch -p1 ../patches/check-have-clock-realtime.patch
     --enable-shared \
     --with-gs \
     --without-frozenpaths \
-    --without-jpeg \
     --without-perl \
     --without-x
 make -j${nproc}
@@ -39,14 +39,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-# platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGraphicsMagick", :libGraphicsMagick),
-    LibraryProduct("libGraphicsMagick++", :libGraphicsMagickxx),
-    LibraryProduct("libGraphicsMagickWand", :libGraphicsMagickWand),
+    LibraryProduct("libGraphicsMagick-Q8", :libGraphicsMagick),
+    LibraryProduct("libGraphicsMagick++-Q8", :libGraphicsMagickxx),
+    LibraryProduct("libGraphicsMagickWand-Q8", :libGraphicsMagickWand),
     ExecutableProduct("gm", :gm),
 ]
 
@@ -62,8 +61,7 @@ dependencies = [
     Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
     Dependency("JasPer_jll"),
-    # Dependency("JpegTurbo_jll"),   # error: ‘struct jpeg_decompress_struct’ has no member named ‘process’
-    # Dependency("OpenJpeg_jll"),   # error: ‘struct jpeg_decompress_struct’ has no member named ‘process’
+    Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"),
     Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
