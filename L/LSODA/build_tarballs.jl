@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LSODA"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,13 +13,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/lib*
+cd $WORKSPACE/srcdir/liblsoda*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-make
-mkdir -p "${libdir}"
-mv src/liblsoda.${dlext} ${libdir}
+make -j${nproc} CC=cc
+install -Dvm 755 "src/liblsoda.${dlext}" "${libdir}/liblsoda.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,4 +35,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
