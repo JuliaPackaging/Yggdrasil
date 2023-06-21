@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "ViennaRNA"
-version = v"2.6.1"
+version = v"2.6.2"
 
 # url = "https://github.com/ViennaRNA/ViennaRNA"
 # description = "Library and programs for the prediction and comparison of RNA secondary structures"
@@ -9,7 +9,7 @@ version = v"2.6.1"
 sources = [
     ArchiveSource("https://www.tbi.univie.ac.at/RNA/download/sourcecode/" *
                   "$(version.major)_$(version.minor)_x/ViennaRNA-$(version).tar.gz",
-                  "f778876bbe8e6c85725a633819b26468307c919635e82b278ba820eff8badf76"),
+                  "2ce1f69f4ff87e90f50e8de704e33db7818c7d2f0dfb427a08e0eafc9da9b627"),
     DirectorySource("./bundled")
 ]
 
@@ -231,4 +231,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"9")
+               julia_compat="1.9", preferred_gcc_version = v"9")
