@@ -49,6 +49,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("JpegTurbo_jll"),
+    Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
     Dependency("libwebp_jll"),
@@ -57,7 +58,6 @@ dependencies = [
     # - jpeg12
     # - lerc
     # - libdeflate
-    # - lzma
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
