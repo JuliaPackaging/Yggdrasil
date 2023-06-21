@@ -80,6 +80,7 @@ dependencies = [
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"),
     Dependency("XML2_jll"),
+    Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
     Dependency("gperftools_jll"),
@@ -98,7 +99,6 @@ dependencies = [
     # - TRIO <http://sourceforge.net/projects/ctrio/>
     # - umum <https://github.com/omniti-labs/portableumem>
     # - libwmf <http://sourceforge.net/projects/wvware/>
-    # - liblzma <https://www.tukaani.org/xz/>
     # - heif <https://github.com/strukturag/libheif>
     # - libde265 <https://github.com/strukturag/libde265>
     # - JPEG XL (JXL) <https://github.com/libjxl/libjxl>
