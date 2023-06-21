@@ -4,7 +4,7 @@ using BinaryBuilder
 name = "GraphicsMagick"
 version = v"1.3.40"
 
-# Collection of sources required to build imagemagick
+# Collection of sources required to build GraphicsMagick
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
                   "97dc1a9d4e89c77b25a3b24505e7ff1653b88f9bfe31f189ce10804b8efa7746"),
@@ -85,6 +85,23 @@ dependencies = [
     Dependency("gperftools_jll"),
     Dependency("libpng_jll"),
     Dependency("libwebp_jll"),
+    # TODO:
+    # - ralcgm <http://www.agocg.ac.uk/train/cgm/ralcgm.htm>
+    # - cdraw <https://www.dechifro.org/dcraw/>
+    # - fig2dev <http://mcj.sourceforge.net/>
+    # - hp2xx <http://www.gnu.org/software/hp2xx/hp2xx.html>
+    # - lcms <http://www.littlecms.com/>
+    # - html2pl <https://sourceforge.net/projects/html2ps/>
+    # - JBIG-Kit <http://www.cl.cam.ac.uk/~mgk25/jbigkit/>
+    # - MPEG <mpeg2vidcodec_v12.tar.gz>
+    # - TIFF <https://libtiff.gitlab.io/libtiff/>
+    # - TRIO <http://sourceforge.net/projects/ctrio/>
+    # - umum <https://github.com/omniti-labs/portableumem>
+    # - libwmf <http://sourceforge.net/projects/wvware/>
+    # - liblzma <https://www.tukaani.org/xz/>
+    # - heif <https://github.com/strukturag/libheif>
+    # - libde265 <https://github.com/strukturag/libde265>
+    # - JPEG XL (JXL) <https://github.com/libjxl/libjxl>
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
