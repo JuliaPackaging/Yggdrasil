@@ -87,7 +87,7 @@ dependencies = [
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
     Dependency("SQLite_jll")
-    Dependency("Libtiff_jll"; compat="4.5")
+    Dependency("Libtiff_jll"; compat="4.5.1")
     Dependency("LibCURL_jll"; compat="7.73,8")
 ]
 
