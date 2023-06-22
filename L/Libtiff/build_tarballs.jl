@@ -35,7 +35,6 @@ dependencies = [
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
-    Dependency("libwebp_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
