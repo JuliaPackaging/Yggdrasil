@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MAGEMin"
-version = v"1.3.1" 
+version = v"1.3.2" 
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "0f4f0ee994158845ef8a602c8725092e89913108")                 ]
+                    "69017cba266ea689d97db511758cb2d3c5697e43")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
