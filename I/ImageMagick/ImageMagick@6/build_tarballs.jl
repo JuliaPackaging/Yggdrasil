@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
 
-if [[ "${target}" == *-linux-gnu ]]; then
+if [[ "${target}" == *86*-linux-gnu ]]; then
     # For `clock_gettime`
     atomic_patch -p1 ../patches/utilities-link-rt.patch
 elif [[ "${target}" == *-mingw* ]]; then
