@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Diamond"
-version = v"2.1.7"
+version = v"2.1.8"
 
 # url = "https://github.com/bbuchfink/diamond"
 # description = "Accelerated BLAST-compatible local sequence aligner"
@@ -14,7 +14,7 @@ version = v"2.1.7"
 
 sources = [
     GitSource("https://github.com/bbuchfink/diamond.git",
-              "14f355071e5c8627fd6ab5b795cacfc91cb5a215"),
+              "af4fc6484250c497c6b1f1a08f734764dc5d2ed4"),
 ]
 
 script = raw"""
