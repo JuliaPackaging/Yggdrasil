@@ -15,7 +15,7 @@ install -Dvm 755 "target/${rust_target}/release/libpolymers.${dlext}" "${libdir}
 """
 platforms = [supported_platforms()[2]]
 products = [LibraryProduct("libpolymers", :libpolymers)]
-dependencies = [Dependency("DocStringExtensions")]
+dependencies = Dependency[]
 build_tarballs(
     ARGS,
     name,
