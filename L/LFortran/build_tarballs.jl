@@ -45,7 +45,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
+    BuildDependency(PackageSpec(name="LLVM_jll", version=v"11.0.1",
+                                uuid="86de99a1-58d6-5da7-8064-bd56ce2e322c")),
+    Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 
