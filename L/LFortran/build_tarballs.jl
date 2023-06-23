@@ -24,7 +24,7 @@ cmake . \
 make -j$nproc
 make install
 install_license LICENSE
-cp src/bin/cpptranslate $bindir/
+install -Dvm 755 "src/bin/cpptranslate${exeext}" "${bindir}/cpptranslate${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
