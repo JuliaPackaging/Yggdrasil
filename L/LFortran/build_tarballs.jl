@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LFortran"
-version = v"0.18.0"
+version = v"0.19.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://lfortran.github.io/tarballs/release/lfortran-$(version).tar.gz",
-                  "f796b242072d92fae36bcff2e6fddd649e89dccf877feaf99ecfab552e7e1e29")
+                  "d496f61d7133b624deb3562677c0cbf98e747262babd4ac010dbd3ab4303d805")
 ]
 
 # Bash recipe for building across all platforms
