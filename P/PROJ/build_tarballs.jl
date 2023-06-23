@@ -31,6 +31,13 @@ else
     TIFF_LIBRARY_RELEASE=${libdir}/libtiff.${dlext}
 fi
 
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
+    # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libnghttp2.*
+fi
+
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
