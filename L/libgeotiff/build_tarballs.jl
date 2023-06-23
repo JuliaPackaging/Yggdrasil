@@ -45,9 +45,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("PROJ_jll"; compat="~900.100"),
-    Dependency("Libtiff_jll"; compat="~4.5"),
-    Dependency("LibCURL_jll"),
+    Dependency("PROJ_jll"; compat="~900.200.100"),
+    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
