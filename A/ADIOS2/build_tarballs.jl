@@ -146,7 +146,7 @@ dependencies = [
     Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
-    Dependency(PackageSpec(name="zfp_jll")),
+    Dependency(PackageSpec(name="zfp_jll"); compat="1"),
 ]
 append!(dependencies, platform_dependencies)
 
