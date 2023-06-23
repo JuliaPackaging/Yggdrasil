@@ -39,7 +39,7 @@ sources = [GitSource("https://github.com/Wimmerer/SuiteSparse.git",
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
-apk delete cmake
+apk del cmake
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
