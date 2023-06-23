@@ -14,10 +14,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lfortran-*
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DWITH_LLVM=yes -DCMAKE_C_FLAGS_RELEASE="-std=gnu99 -O3 -DNDEBUG" -DCMAKE_CXX_FLAGS_RELEASE="-Wall -Wextra -O3 -funroll-loops -pthread -D__STDC_FORMAT_MACROS -DNDEBUG" .
+cmake . \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DWITH_LLVM=yes \
+    -DCMAKE_C_FLAGS_RELEASE="-std=gnu99 -O3 -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="-Wall -Wextra -O3 -funroll-loops -pthread -D__STDC_FORMAT_MACROS -DNDEBUG"
 make -j$nproc
 make install
-install_license LICENSE 
+install_license LICENSE
 cp src/bin/cpptranslate $bindir/
 """
 
@@ -44,4 +50,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8", preferred_llvm_version = v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8", preferred_llvm_version=v"11")
