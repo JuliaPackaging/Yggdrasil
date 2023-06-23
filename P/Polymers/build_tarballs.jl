@@ -13,8 +13,7 @@ cd $WORKSPACE/srcdir/Polymers
 cargo build --release --features extern
 install -Dvm 755 "target/${rust_target}/release/libpolymers.${dlext}" "${libdir}/libpolymers.${dlext}"
 """
-
-platforms = supported_platforms()
+platforms = [supported_platforms()[2]]
 products = [LibraryProduct("libpolymers", :libpolymers)]
 dependencies = Dependency[]
 build_tarballs(
@@ -29,5 +28,5 @@ build_tarballs(
     compilers = [:c, :rust],
     preferred_gcc_version = v"7",
     lock_microarchitecture = false,
-    julia_compat = "1.9",
+    julia_compat = "1.6 - 1.9",
 )
