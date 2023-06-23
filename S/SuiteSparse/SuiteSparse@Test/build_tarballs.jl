@@ -27,7 +27,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 
