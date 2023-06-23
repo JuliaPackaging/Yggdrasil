@@ -38,9 +38,6 @@ sources = [GitSource("https://github.com/Wimmerer/SuiteSparse.git",
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
-# Needs cmake >= 3.22
-apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
