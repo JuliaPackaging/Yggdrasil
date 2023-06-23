@@ -31,8 +31,8 @@ dependencies = [
 ]
 
 
-source = GitSource("https://github.com/Wimmerer/SuiteSparse.git",
-"0e906339dc13abe30969a4b341d9208f41026adc"),
+sources = [GitSource("https://github.com/Wimmerer/SuiteSparse.git",
+"0e906339dc13abe30969a4b341d9208f41026adc")]
 
 # Bash recipe for building across all platforms
 script = raw"""
