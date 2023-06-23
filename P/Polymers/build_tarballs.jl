@@ -11,7 +11,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/Polymers
 cargo build --release --features extern
-install -Dvm 755 "target/${rust_target}/release/"*polymers.${dlext}" "${libdir}/libpolymers.${dlext}"
+install -Dvm 755 "target/${rust_target}/release/*polymers.${dlext}" "${libdir}/libpolymers.${dlext}"
 """
 
 platforms = supported_platforms()
