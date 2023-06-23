@@ -6,7 +6,7 @@ version = v"7.1.1"
 using BinaryBuilder, Pkg
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 # The products that we will ensure are always built
 products = [
