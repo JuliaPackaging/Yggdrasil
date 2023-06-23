@@ -30,5 +30,5 @@ build_tarballs(
     compilers = [:c, :rust],
     preferred_gcc_version = v"7",
     lock_microarchitecture = false,
-    julia_compat = "1.6 - 1.9",
+    julia_compat = "1.6",
 )
