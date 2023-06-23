@@ -4,6 +4,7 @@ name = "SuiteSparse_Test"
 version = v"7.1.1"
 
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms()
@@ -28,6 +29,7 @@ products = [
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
 ]
 
 
