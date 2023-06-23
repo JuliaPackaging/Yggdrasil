@@ -23,10 +23,12 @@ cp src/bin/cpptranslate $bindir/
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc", cxxstring_abi = "cxx11")
-    Platform("x86_64", "linux"; libc = "musl", cxxstring_abi = "cxx11")
-]
+platforms = map(supported_platforms(; exclude=(p -> arch(p) != "x86_64"))) do p
+    if !Sys.isbsd(p)  # no dependence on libstdc++
+        p["cxxstring_abi"] = "cxx11"
+    end
+    return p
+end
 
 # The products that we will ensure are always built
 products = [
