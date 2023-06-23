@@ -93,10 +93,17 @@ for cuda_version in versions_to_build, platform in platforms
     if !isnothing(cuda_version) && !build_cuda
         continue
     end
-
-    augmented_platform = Platform(arch(platform), os(platform);
-        cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
-    )
+    
+    # For Windows, we want to avoid adding cuda=none
+    # https://github.com/JuliaPackaging/Yggdrasil/issues/6911#issuecomment-1599350319
+    if os(platform) == "windows"
+        augmented_platform = deepcopy(platform)
+    else
+        augmented_platform = Platform(arch(platform), os(platform);
+            cxxstring_abi = cxxstring_abi(platform),
+            cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
+        )
+    end
     should_build_platform(triplet(augmented_platform)) || continue
 
     dependencies = AbstractDependency[
