@@ -8,9 +8,9 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-# reminder: change the above version if restricting the supported julia versions
+# reminder: change the version if restricting the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.1.3"
+version = v"0.2.0"
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
@@ -18,7 +18,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "d8e8fbecf8a05129aee1ea3fea539c935938ece9")
+              "2ad95887673de68578b8c82f26c32b37e80b8a62")
     DirectorySource("./bundled")
 ]
 
@@ -87,8 +87,8 @@ dependencies = [
     BuildDependency("libjulia_jll"),
 
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("libpolymake_julia_jll", compat = "~0.9.1"),
-    Dependency("polymake_jll", compat = "~400.900.000"),
+    Dependency("libpolymake_julia_jll", compat = "~0.10.0"),
+    Dependency("polymake_jll", compat = "~400.1000.000"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
