@@ -20,6 +20,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/gtk*/
 
 # We need to run some commands with a native Glib
+apk update
 apk add glib-dev
 
 # This is awful, I know
