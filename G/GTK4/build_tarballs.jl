@@ -85,6 +85,8 @@ meson .. \
 ninja -j${nproc}
 ninja install
 
+install_license ../COPYING
+
 # post-install script is disabled when cross-compiling
 glib-compile-schemas ${prefix}/share/glib-2.0/schemas
 
