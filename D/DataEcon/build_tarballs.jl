@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/DataEcon/
-make -j${nproc} all
+make -j${nproc} all LIBDE="bin/libdaec.${dlext}"
 install_license LICENSE.md
 install -Dvm 755 "bin/sqlite3${exeext}" "${bindir}/sqlite3${exeext}"
 install -Dvm 755 "bin/libdaec.${dlext}" "${libdir}/libdaec.${dlext}"
