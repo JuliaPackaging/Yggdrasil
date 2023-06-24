@@ -66,15 +66,15 @@ dependencies = [
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FLINT_jll", compat = "~200.900.004"),
-    Dependency("TOPCOM_jll"),
-    Dependency("lib4ti2_jll"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("TOPCOM_jll"; compat = "~0.17.8"),
+    Dependency("lib4ti2_jll"; compat = "^1.6.10"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.9.7"),
     Dependency("polymake_jll"; compat = "~400.1000.0"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
     HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1000.0")),
-    HostBuildDependency("lib4ti2_jll"),
-    HostBuildDependency("TOPCOM_jll"),
+    HostBuildDependency(PackageSpec(name="lib4ti2_jll", version=v"1.6.10")),
+    HostBuildDependency(PackageSpec(name="TOPCOM_jll", version=v"0.17.8")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
