@@ -14,38 +14,23 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/DataEcon/
-# make test
-# make clean
-make all
-cp -p bin/* src/daec.h LICENSE.md README.md $prefix/
+make -j${nproc} all
+install_license LICENSE.md
+install -Dvm 755 "bin/sqlite3${exeext}" "${bindir}/sqlite3${exeext}"
+install -Dvm 755 "bin/libdaec.${dlext}" "${libdir}/libdaec.${dlext}"
+install -Dvm 644 src/daec.h "${includedir}/daec.h"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = supported_platforms()
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("i686", "windows";),
-    Platform("x86_64", "windows";),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv6l", "linux"; call_abi="eabihf", libc="glibc"),
-    Platform("armv7l", "linux"; call_abi="eabihf", libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv6l", "linux"; call_abi="eabihf", libc="musl"),
-    Platform("armv7l", "linux"; call_abi="eabihf", libc="musl"),
-    Platform("x86_64", "freebsd";),
-]
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libdaec", "daec"], :libdaec, ["."]),
-    ExecutableProduct("sqlite3", :sqlite3shell, "."),
-    FileProduct("daec.h", :daec_header),
+    LibraryProduct(["libdaec", "daec"], :libdaec),
+    ExecutableProduct("sqlite3", :sqlite3shell),
+    FileProduct("include/daec.h", :daec_header),
 ]
 
 # Dependencies that must be installed before this package can be built
