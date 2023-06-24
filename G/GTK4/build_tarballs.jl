@@ -3,13 +3,14 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.8.3"
+version = v"4.10.4"
 
 # Collection of sources required to build GTK
 sources = [
     # https://download.gnome.org/sources/gtk/
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
-                  "b362f968d085b4d3d9340d4d38c706377ded9d5374e694a2b6b7e6292e3cba74"),
+                  "7725400482e0685e28265e226c62847f4e73cfca9e9b416ac5838207f5377a24"),
+    DirectorySource("./bundled"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
 ]
@@ -47,6 +48,7 @@ fi
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
+    atomic_patch -p1 ../patches/NSPasteboard.patch
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland-backend=false)
 elif [[ "${target}" == *-mingw* ]]; then
@@ -75,6 +77,7 @@ meson .. \
     -Ddemos=false \
     -Dbuild-examples=false \
     -Dbuild-tests=false \
+    -Dbuild-testsuite=false \
     -Dgtk_doc=false \
     "${FLAGS[@]}" \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
@@ -107,7 +110,7 @@ dependencies = [
     # Need a host Wayland for wayland-scanner
     HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("Glib_jll"; compat="2.68.3"),
+    Dependency("Glib_jll"; compat="2.74"),
     Dependency("Graphene_jll"; compat="1.10.6"),
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"; compat="1.50.3"),
