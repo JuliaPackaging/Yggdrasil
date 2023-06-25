@@ -1,12 +1,15 @@
 using BinaryBuilder, Pkg
 
 name = "ViennaRNA"
-version = v"2.6.1"
+version = v"2.6.2"
+
+# url = "https://github.com/ViennaRNA/ViennaRNA"
+# description = "Library and programs for the prediction and comparison of RNA secondary structures"
 
 sources = [
     ArchiveSource("https://www.tbi.univie.ac.at/RNA/download/sourcecode/" *
                   "$(version.major)_$(version.minor)_x/ViennaRNA-$(version).tar.gz",
-                  "f778876bbe8e6c85725a633819b26468307c919635e82b278ba820eff8badf76"),
+                  "2ce1f69f4ff87e90f50e8de704e33db7818c7d2f0dfb427a08e0eafc9da9b627"),
     DirectorySource("./bundled")
 ]
 
@@ -15,10 +18,15 @@ sources = [
 # - windows and gcc-8: internal compiler error during lto on gcc-8,
 #   which is why we use gcc-9
 
-# Notes
-# - I think only RNAxplorer needs to link to blas, lapack (and pcre on windows)
-#   also the generated shared lib doesn't need to link to these libs
+# TODO
+# - build shared library for RNAxplorer? (other programs like RNAforester etc?)
+#   configure script seems to indicate there is a python interface
 
+# Notes
+# - we build RNAxplorer separately, because only it needs to link to
+#   BLAS/LAPACK, and PCRE on windows
+# - we use the LAPACK implementation from OpenBLAS_jll
+# - we don't use libblastrampoline as that requires julia-1.9 or newer
 
 script = raw"""
 cd $WORKSPACE/srcdir/ViennaRNA*/
@@ -34,6 +42,11 @@ export CXX=c++
 # where to find dependencies
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
+
+# fix missing include for size_t, this fixes header parsing with
+# Clang.jl when generating bindings
+# upstream PR: https://github.com/ViennaRNA/ViennaRNA/pull/189
+atomic_patch -p1 ../patches/missing-include-for-size_t.patch
 
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # time measurement in RNAforester doesn't compile on windows (mingw32),
@@ -51,39 +64,31 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
 
     # needed for compilation of dlib on windows
     export LIBS="-lwinmm"
-
-    # work around there not being a regex.h on w64-mingw32
-    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
-    export LIBS="$LIBS -lpcreposix-0"
-
-    # BLAS/LAPACK support
-    export LIBS="$LIBS -lblastrampoline-5"
-else
-    # BLAS/LAPACK support
-    export LIBS="$LIBS -lblastrampoline"
 fi
 
+if [[ "${target}" == *-linux-musl* || "${target}" == *-apple-darwin* ]]; then
+    # avoid linking errors on some targets, undefined references to rpl_malloc, rpl_realloc
+    export ac_cv_func_malloc_0_nonnull=yes
+    export ac_cv_func_realloc_0_nonnull=yes
+fi
 
-# configure script fails (only in sandbox) without
-# setting ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
-ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
-    ./configure \
+COMMON_CONFIGURE_FLAGS="
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --disable-c11 \
     --with-mpfr --with-json --with-svm --with-gsl \
     --enable-openmp \
-    --with-rnaxplorer --with-blas="${libdir}/libopenblas.${dlext}" --with-lapack="${libdir}/liblapack.${dlext}" \
     --with-cluster --with-kinwalker \
-    --without-perl --without-python --without-python2 \
+    --without-swig --without-perl --without-python --without-python2 \
     --without-doc --without-tutorial --without-cla
+"
+
+./configure \
+    $COMMON_CONFIGURE_FLAGS \
+    --without-rnaxplorer
 
 make -j${nproc}
 make install
 
-if [[ "${target}" == *-w64-mingw32* ]]; then
-    # remove PCRE regex.h so it doesn't get included in the jll package
-    rm "${includedir}/regex.h"
-fi
 
 # create and install a shared library libRNA
 ldflags="$LDFLAGS -g -O2 -fno-strict-aliasing -ftree-vectorize -pthread -fopenmp"
@@ -103,6 +108,45 @@ fi
     $ldflags \
     -Wl,$(flagon --whole-archive) ./src/ViennaRNA/libRNA.a -Wl,$(flagon --no-whole-archive) \
     $libs
+
+
+# compile RNAxplorer, we do this separately because it links to
+# BLAS/LAPACK, and PCRE on windows
+
+LIBS_RNAxplorer="$LIBS"
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    # work around there not being a regex.h on w64-mingw32
+    cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
+    LIBS_RNAxplorer="$LIBS_RNAxplorer -lpcreposix-0"
+fi
+
+# avoid compile error in RNAxplorer because of redeclaring strdup
+CPPFLAGS_RNAxplorer="-DHAVE_STRDUP $CPPFLAGS"
+
+# patch RNAxplorer configure script to use -lopenblas instead of -llapack
+sed -i -e 's/-llapack/-lopenblas/' src/RNAxplorer/configure
+
+# we re-run the main configure script, just running
+# src/RNAxplorer/configure runs into linking errors for clang compilers
+# (-fno-lto passed during linking, an unknown option for clang)
+LIBS="$LIBS_RNAxplorer" LAPACK_LIBS="-lopenblas" CPPFLAGS="$CPPFLAGS_RNAxplorer" \
+    ./configure \
+    $COMMON_CONFIGURE_FLAGS \
+    --with-rnaxplorer \
+   --with-blas="-lopenblas" --with-lapack="-lopenblas"
+
+cd src/RNAxplorer
+make -j${nproc}
+make install
+
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    # remove PCRE regex.h so it doesn't get included in the jll package
+    rm "${includedir}/regex.h"
+fi
+
+# finished building RNAxplorer
+cd ../..
+
 
 # install licenses
 cp src/cthreadpool/LICENSE LICENSE-cthreadpool
@@ -177,8 +221,7 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     # we need BLAS/LAPACK for RNAxplorer
-    Dependency("LAPACK_jll"),
-    Dependency("OpenBLAS_jll"),
+    Dependency("OpenBLAS32_jll"),
     # windows POSIX regex replacement via PCRE
     Dependency("PCRE_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
