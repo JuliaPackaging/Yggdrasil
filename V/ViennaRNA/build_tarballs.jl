@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "ViennaRNA"
-version = v"2.6.1"
+version = v"2.6.2"
 
 # url = "https://github.com/ViennaRNA/ViennaRNA"
 # description = "Library and programs for the prediction and comparison of RNA secondary structures"
@@ -9,7 +9,7 @@ version = v"2.6.1"
 sources = [
     ArchiveSource("https://www.tbi.univie.ac.at/RNA/download/sourcecode/" *
                   "$(version.major)_$(version.minor)_x/ViennaRNA-$(version).tar.gz",
-                  "f778876bbe8e6c85725a633819b26468307c919635e82b278ba820eff8badf76"),
+                  "2ce1f69f4ff87e90f50e8de704e33db7818c7d2f0dfb427a08e0eafc9da9b627"),
     DirectorySource("./bundled")
 ]
 
@@ -122,21 +122,22 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
     # work around there not being a regex.h on w64-mingw32
     cp "${includedir}/pcreposix.h" "${includedir}/regex.h"
     LIBS_RNAxplorer="$LIBS_RNAxplorer -lpcreposix-0"
-
-    # BLAS/LAPACK support
-    LIBS_RNAxplorer="$LIBS_RNAxplorer -lblastrampoline-5"
-else
-    # BLAS/LAPACK support
-    LIBS_RNAxplorer="$LIBS_RNAxplorer -lblastrampoline"
 fi
+
+# avoid compile error in RNAxplorer because of redeclaring strdup
+CPPFLAGS_RNAxplorer="-DHAVE_STRDUP $CPPFLAGS"
+
+# patch RNAxplorer configure script to use -lopenblas instead of -llapack
+sed -i -e 's/-llapack/-lopenblas/' src/RNAxplorer/configure
 
 # we re-run the main configure script, just running
 # src/RNAxplorer/configure runs into linking errors for clang compilers
 # (-fno-lto passed during linking, an unknown option for clang)
-LIBS="$LIBS_RNAxplorer" ./configure \
+LIBS="$LIBS_RNAxplorer" LAPACK_LIBS="-lopenblas" CPPFLAGS="$CPPFLAGS_RNAxplorer" \
+    ./configure \
     $COMMON_CONFIGURE_FLAGS \
     --with-rnaxplorer \
-    --with-blas="${libdir}/libopenblas.${dlext}" --with-lapack="${libdir}/liblapack.${dlext}"
+   --with-blas="-lopenblas" --with-lapack="-lopenblas"
 
 cd src/RNAxplorer
 make -j${nproc}
@@ -224,11 +225,10 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     # we need BLAS/LAPACK for RNAxplorer
-    Dependency("LAPACK_jll"),
-    Dependency("OpenBLAS_jll"),
+    Dependency("OpenBLAS32_jll"),
     # windows POSIX regex replacement via PCRE
     Dependency("PCRE_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9", preferred_gcc_version = v"9")
+               julia_compat="1.6", preferred_gcc_version = v"9")
