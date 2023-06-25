@@ -18,12 +18,6 @@ sources = [
 # - windows and gcc-8: internal compiler error during lto on gcc-8,
 #   which is why we use gcc-9
 
-# Post-build problems
-# - on julia-1.6 on x86_64-linux, can't run RNAxplorer program
-#   julia> run(`$(ViennaRNA_jll.RNAxplorer()) -h`)
-#   .../bin/RNAxplorer: error while loading shared libraries: libblastrampoline.so.5: cannot open shared object file: No such file or directory
-#   works fine on julia-1.9
-
 # TODO
 # - build shared library for RNAxplorer? (other programs like RNAforester etc?)
 #   configure script seems to indicate there is a python interface
@@ -31,6 +25,8 @@ sources = [
 # Notes
 # - we build RNAxplorer separately, because only it needs to link to
 #   BLAS/LAPACK, and PCRE on windows
+# - we use the LAPACK implementation from OpenBLAS_jll
+# - we don't use libblastrampoline as that requires julia-1.9 or newer
 
 script = raw"""
 cd $WORKSPACE/srcdir/ViennaRNA*/
