@@ -13,13 +13,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/open-vcdiff/
-mkdir build
 git submodule update --init --recursive
-cd $prefix
-cmake -Dvcdiff_build_exec=OFF -DBUILD_SHARED_LIBS=ON $WORKSPACE/srcdir/open-vcdiff/
-make
+mkdir build && cd build
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -Dvcdiff_build_exec=OFF \
+    -DBUILD_SHARED_LIBS=ON
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
