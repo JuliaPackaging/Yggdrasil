@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SDPLR*
 make LAPACK_LIB=-lopenblas BLAS_LIB=
-cp sdplr $prefix/sdplr
+install -Dvm 755 "sdplr${exeext}" "${bindir}/sdplr${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
