@@ -15,7 +15,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/lfortran-*
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.12
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    # install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
 fi
 cmake . \
     -DCMAKE_INSTALL_PREFIX=$prefix \
