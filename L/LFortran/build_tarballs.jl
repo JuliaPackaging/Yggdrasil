@@ -17,6 +17,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lfortran-*
+
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
     # install a newer SDK which supports `std::filesystem`
@@ -26,15 +27,28 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
-cmake . \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DWITH_LLVM=yes \
-    -DCMAKE_C_FLAGS_RELEASE="-std=gnu99 -O3 -DNDEBUG" \
+
+CMAKE_FLAGS=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_C_FLAGS_RELEASE="-std=gnu99 -O3 -DNDEBUG"
     -DCMAKE_CXX_FLAGS_RELEASE="-Wall -Wextra -O3 -funroll-loops -pthread -D__STDC_FORMAT_MACROS -DNDEBUG"
-make -j$nproc
-make install
+    -DWITH_LLVM=YES
+)
+
+if [[ "${target}" == aarch64* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_WITH_TARGET_AARCH64=YES)
+fi
+
+# Stage 1: compiler
+cmake . ${CMAKE_FLAGS[@]} -DWITH_RUNTIME_LIBRARY=NO
+make -j${nproc} install
+
+# Stage 2: runtime library
+cmake . ${CMAKE_FLAGS[@]} -DWITH_RUNTIME_LIBRARY=YES -CMAKE_Fortran_COMPILER=${bindir}/lfortran${exeext}
+make -j${nproc} install
+
 install_license LICENSE
 install -Dvm 755 "src/bin/cpptranslate${exeext}" "${bindir}/cpptranslate${exeext}"
 """
