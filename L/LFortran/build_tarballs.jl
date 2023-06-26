@@ -42,11 +42,11 @@ if [[ "${target}" == aarch64* ]]; then
 fi
 
 # Stage 1: compiler
-cmake . ${CMAKE_FLAGS[@]} -DWITH_RUNTIME_LIBRARY=NO
+cmake . "${CMAKE_FLAGS[@]}" -DWITH_RUNTIME_LIBRARY=NO
 make -j${nproc} install
 
 # Stage 2: runtime library
-cmake . ${CMAKE_FLAGS[@]} -DWITH_RUNTIME_LIBRARY=YES -CMAKE_Fortran_COMPILER=${bindir}/lfortran${exeext}
+cmake . "${CMAKE_FLAGS[@]}" -DWITH_RUNTIME_LIBRARY=YES -CMAKE_Fortran_COMPILER=${bindir}/lfortran${exeext}
 make -j${nproc} install
 
 install_license LICENSE
