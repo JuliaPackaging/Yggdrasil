@@ -10,7 +10,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # reminder: change the version if restricting the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.2.0"
+version = v"0.2.1"
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
@@ -18,7 +18,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "2ad95887673de68578b8c82f26c32b37e80b8a62")
+              "6f43b9b94145387428d3c91749f05a8ebd6b5b8c")
     DirectorySource("./bundled")
 ]
 
