@@ -8,7 +8,10 @@ version = v"0.19.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://lfortran.github.io/tarballs/release/lfortran-$(version).tar.gz",
-                  "d496f61d7133b624deb3562677c0cbf98e747262babd4ac010dbd3ab4303d805")
+                  "d496f61d7133b624deb3562677c0cbf98e747262babd4ac010dbd3ab4303d805"),
+    # Required for `std::filesystem` support on macOS x86_64
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
