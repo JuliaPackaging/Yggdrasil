@@ -44,8 +44,8 @@ platforms = expand_cxxstring_abis(platforms)
 
 
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
-    Dependency("MPFR_jll", v"4.1.0"),
+    Dependency("GMP_jll"; compat="6.2.0"),
+    Dependency("MPFR_jll"; compat="4.1.0"),
 ]
 
 build_tarballs(ARGS, "IGLWrap", version,
