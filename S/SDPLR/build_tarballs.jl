@@ -14,6 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SDPLR*
 make LAPACK_LIB=-lopenblas BLAS_LIB=
+pwd
+ls
+ls -R
 install -Dvm 755 "sdplr" "${bindir}/sdplr${exeext}"
 """
 
