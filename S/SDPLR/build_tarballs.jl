@@ -17,7 +17,7 @@ make LAPACK_LIB=-lopenblas BLAS_LIB=
 pwd
 ls
 ls -R
-install -Dvm 755 "sdplr" "${bindir}/sdplr${exeext}"
+install -Dvm 755 "sdplr${exeext}" "${bindir}/sdplr${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
