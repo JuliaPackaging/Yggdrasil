@@ -14,11 +14,16 @@ sources = [
 # Even if the `Makefile` specifies `-o ../sdplr`,
 # On Windows with `libgfortran5`, `.exe` is added.
 # On Windows with `libgfortran3` or `libgfortran4`, nothing is added though.
-# so we copy `sdplr*`
+# so we try both
 script = raw"""
 cd $WORKSPACE/srcdir/SDPLR*
 make LAPACK_LIB=-lopenblas BLAS_LIB=
-install -Dvm 755 sdplr* "${bindir}/sdplr${exeext}"
+for executable in sdplr sdplr${exeext}
+do
+    if [[ -f ${executable} ]]; then
+        install -Dvm 755 ${executable} "${bindir}/sdplr${exeext}"
+    fi
+done
 """
 
 # These are the platforms we will build for by default, unless further
