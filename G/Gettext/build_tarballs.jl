@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build Gettext
 name = "Gettext"
-version = v"0.21.0"
+version = v"0.22.0"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
@@ -43,7 +43,8 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libgettextlib", "libgettextlib-$(version.major)"], :libgettext)
+    LibraryProduct(["libgettextlib", "libgettextlib-$(version.major)"], :libgettext),
+    LibraryProduct(["libintllib", "libintllib-$(version.major)"], :libintl)
 ]
 
 # Dependencies that must be installed before this package can be built
