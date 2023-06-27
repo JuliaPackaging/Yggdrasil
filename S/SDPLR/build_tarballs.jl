@@ -7,7 +7,7 @@ version = v"1.0.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://sburer.github.io/files/SDPLR-1.03-beta.zip", "f1f945734f72e008fd7be8544b27341b179292c3304226563d9c0f6cf503b2eb")
+    ArchiveSource("https://sburer.github.io/files/SDPLR-1.03-beta.zip", "f1f945734f72e008fd7be8544b27341b179292c3304226563d9c0f6cf503b2eb")
 ]
 
 # Bash recipe for building across all platforms
