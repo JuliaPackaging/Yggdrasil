@@ -89,14 +89,21 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 for cuda_version in versions_to_build, platform in platforms
 
-    build_cuda = (os(platform) == "linux") && (arch(platform) in ["x86_64"])
-    if !isnothing(cuda_version) && !build_cuda
+    cuda_platform = (os(platform) == "linux") && (arch(platform) in ["x86_64"])
+    if !isnothing(cuda_version) && !cuda_platform
         continue
     end
-
-    augmented_platform = Platform(arch(platform), os(platform);
-        cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
-    )
+    
+    # For platforms we can't create cuda builds on, we want to avoid adding cuda=none
+    # https://github.com/JuliaPackaging/Yggdrasil/issues/6911#issuecomment-1599350319
+    if cuda_platform
+        augmented_platform = Platform(arch(platform), os(platform);
+            cxxstring_abi = cxxstring_abi(platform),
+            cuda=isnothing(cuda_version) ? "none" : CUDA.platform(cuda_version)
+        )
+    else
+        augmented_platform = deepcopy(platform)
+    end
     should_build_platform(triplet(augmented_platform)) || continue
 
     dependencies = AbstractDependency[
