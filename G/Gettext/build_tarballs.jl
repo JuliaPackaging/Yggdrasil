@@ -6,7 +6,7 @@ version = v"0.22.0"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
-                  "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"),
+                  "0e60393a47061567b46875b249b7d2788b092d6457d656145bb0e7e6a3e26d93"),
     DirectorySource("./bundled"),
 ]
 
@@ -36,8 +36,8 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libgettextlib", "libgettextlib-$(version.major)"], :libgettext),
-    LibraryProduct(["libintllib", "libintllib-$(version.major)"], :libintl)
+    LibraryProduct(["libgettextlib", "libgettextlib-0"], :libgettext),
+    LibraryProduct(["libintl", "libintl-8"], :libintl)
 ]
 
 # Dependencies that must be installed before this package can be built
