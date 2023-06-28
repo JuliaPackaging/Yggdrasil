@@ -22,6 +22,7 @@ export LDFLAGS="-L${libdir}"
     --host=${target} \
     --disable-static \
     --enable-relocatable \
+    --with-included-gettext \
     --with-libiconv-prefix=${prefix} \
     am_cv_lib_iconv=yes \
     am_cv_func_iconv=yes
