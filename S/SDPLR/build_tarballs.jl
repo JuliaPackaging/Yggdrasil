@@ -17,7 +17,7 @@ sources = [
 # so we try both
 script = raw"""
 cd $WORKSPACE/srcdir/SDPLR*
-make LAPACK_LIB=-lopenblas BLAS_LIB=
+make CFLAGS="-O3 -fPIC" LAPACK_LIB=-lopenblas BLAS_LIB=
 for executable in sdplr sdplr${exeext}
 do
     if [[ -f ${executable} ]]; then
