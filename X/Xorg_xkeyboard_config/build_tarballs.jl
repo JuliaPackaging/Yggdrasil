@@ -34,5 +34,9 @@ dependencies = [
     Dependency("Xorg_xkbcomp_jll"),
 ]
 
+init_block = raw"""
+ENV["XKB_CONFIG_ROOT"] = get(ENV, "XKB_CONFIG_ROOT", joinpath(artifact_dir, "share", "X11", "xkb"))
+"""
+
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
