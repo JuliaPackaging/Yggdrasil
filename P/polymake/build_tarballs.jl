@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.10"
-version_offset = v"0.0.0"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -49,17 +49,10 @@ for dir in FLINT GMP MPFR PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
    ln -s .. ${prefix}/deps/${dir}_jll
 done
 
-# adjust for hardcoded /workspace dirs
-atomic_patch -p1 ../patches/relocatable.patch
-
-# to unbreak ctrl+c in julia
-atomic_patch -p1 ../patches/sigint.patch
-
-# work around sigchld-handler conflicts with other libraries
-atomic_patch -p1 ../patches/sigchld.patch
-
-# patch for bliss compatibility
-atomic_patch -p1 ../patches/bliss.patch
+for file in ../patches/*; do
+   [[ "$file" == *"polymake-cross"* ]] && continue;
+   atomic_patch -p1 $file
+done
 
 # deal with symlinks in path to scip libraries
 sed -i -e 's/find/find -L/g' bundled/scip/support/configure.pl bundled/soplex/support/configure.pl
