@@ -17,15 +17,22 @@ export CFLAGS="-O2"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
-./configure --prefix=${prefix} \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --disable-static \
-    --enable-relocatable \
-    --with-included-gettext \
-    --with-libiconv-prefix=${prefix} \
-    am_cv_lib_iconv=yes \
+FLAGS=(
+    --prefix=${prefix}
+    --build=${MACHTYPE}
+    --host=${target}
+    --disable-static
+    --enable-relocatable
+
+    --with-libiconv-prefix=${prefix}
+    am_cv_lib_iconv=yes
     am_cv_func_iconv=yes
+)
+
+# on non-Windows systems force libintl instead of libc's gettext
+if [[ "${target}" != *-w64-* ]]; then FLAGS+=( --with-included-gettext ); fi
+
+./configure "${FLAGS[@]}"
 make -j${nproc}
 make install
 """
