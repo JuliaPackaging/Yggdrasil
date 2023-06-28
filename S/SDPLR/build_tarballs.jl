@@ -17,13 +17,15 @@ sources = [
 # so we try both
 script = raw"""
 cd $WORKSPACE/srcdir/SDPLR*
-make LAPACK_LIB=-lopenblas BLAS_LIB=
+make CFLAGS="-O3 -fPIC" LAPACK_LIB=-lopenblas BLAS_LIB=
+${CC} -O3 -fPIC -shared -Llib -o libsdplr.${dlext} source/*.o -lgsl -lopenblas -lgfortran -lm
 for executable in sdplr sdplr${exeext}
 do
     if [[ -f ${executable} ]]; then
         install -Dvm 755 ${executable} "${bindir}/sdplr${exeext}"
     fi
 done
+install -Dvm 755 libsdplr.${dlext} "${libdir}/libsdplr.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -32,7 +34,8 @@ platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("sdplr", :sdplr)
+    ExecutableProduct("sdplr", :sdplr),
+    LibraryProduct("libsdplr", :libsdplr),
 ]
 
 # Dependencies that must be installed before this package can be built
