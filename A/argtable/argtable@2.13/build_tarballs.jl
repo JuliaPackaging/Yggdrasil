@@ -5,6 +5,7 @@ include("../common.jl")
 
 version = v"2.13"
 
+# Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://downloads.sourceforge.net/project/argtable/argtable/argtable-2.13/argtable2-13.tar.gz",
@@ -12,6 +13,7 @@ sources = [
     ),
 ]
 
+# Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/argtable2-13
 install_license COPYING
@@ -25,10 +27,11 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# argtable 2.x does not support building DLLs via MinGW cross-compilation, consult the README!
 platforms = supported_platforms(; exclude = Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
 
+# The products that we will ensure are always built
 products = [LibraryProduct("libargtable2", :libargtable2)]
 
+# Build the tarballs, and possibly a `build.jl` as well.
 build_argtable(version, sources, script, platforms, products)
