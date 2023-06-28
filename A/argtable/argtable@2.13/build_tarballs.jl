@@ -3,22 +3,21 @@
 
 include("../common.jl")
 
-version = v"2.13"
+version_string = "2.13"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://downloads.sourceforge.net/project/argtable/argtable/argtable-2.13/argtable2-13.tar.gz",
+        "https://downloads.sourceforge.net/project/argtable/argtable/argtable-$(version_string)/argtable$(version.major)-$(version.minor).tar.gz",
         "8f77e8a7ced5301af6e22f47302fdbc3b1ff41f2b83c43c77ae5ca041771ddbf",
     ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/argtable2-13
+cd $WORKSPACE/srcdir/argtable*
 install_license COPYING
-CC=gcc
-CXX=g++
 autoreconf -fvi
 ./configure --build=$MACHTYPE --host=$target --target=$target --prefix=$prefix
 make -j${nproc}
