@@ -15,9 +15,9 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p libqasm/build
 cd libqasm/build/
-rm /usr/share/cmake/Modules/Compiler/._*
-rm /usr/share/cmake/Modules/CompilerId/._*
-rm /usr/share/cmake/Modules/._*
+# rm /usr/share/cmake/Modules/Compiler/._*
+# rm /usr/share/cmake/Modules/CompilerId/._*
+# rm /usr/share/cmake/Modules/._*
 git submodule init
 git submodule update
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLIBQASM_COMPAT=ON -DBUILD_SHARED_LIBS=ON -DLIBQASM_BUILD_PYTHON=OFF ..
