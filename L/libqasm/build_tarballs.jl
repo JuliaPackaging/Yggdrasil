@@ -7,7 +7,8 @@ version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/QuTech-Delft/libqasm.git", "1f317077e2f2462cafec8385666d6e996340d2e8")
+    GitSource("https://github.com/QuTech-Delft/libqasm.git", "1f317077e2f2462cafec8385666d6e996340d2e8"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,6 +17,7 @@ mkdir -p $WORKSPACE/srcdir/libqasm/build
 cd $WORKSPACE/srcdir/libqasm/build/
 git submodule init
 git submodule update
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-flex-win32-compat.patch
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLIBQASM_COMPAT=ON -DBUILD_SHARED_LIBS=ON -DLIBQASM_BUILD_PYTHON=OFF ..
 export PATH=$PATH:/workspace/srcdir/libqasm/build/src/cqasm/tree-gen/:/workspace/srcdir/libqasm/build/src/cqasm/func-gen/
 make -j
