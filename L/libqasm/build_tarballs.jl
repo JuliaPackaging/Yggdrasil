@@ -20,7 +20,7 @@ git submodule update
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-flex-win32-compat.patch
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLIBQASM_COMPAT=ON -DBUILD_SHARED_LIBS=ON -DLIBQASM_BUILD_PYTHON=OFF ..
 export PATH=$PATH:/workspace/srcdir/libqasm/build/src/cqasm/tree-gen/:/workspace/srcdir/libqasm/build/src/cqasm/func-gen/
-make -j
+make -j${nproc}
 make install
 """
 
