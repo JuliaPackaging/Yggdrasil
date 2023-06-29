@@ -12,12 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-mkdir -p libqasm/build
-cd libqasm/build/
-# rm /usr/share/cmake/Modules/Compiler/._*
-# rm /usr/share/cmake/Modules/CompilerId/._*
-# rm /usr/share/cmake/Modules/._*
+mkdir -p $WORKSPACE/srcdir/libqasm/build
+cd $WORKSPACE/srcdir/libqasm/build/
 git submodule init
 git submodule update
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DLIBQASM_COMPAT=ON -DBUILD_SHARED_LIBS=ON -DLIBQASM_BUILD_PYTHON=OFF ..
@@ -43,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5.2.0")
