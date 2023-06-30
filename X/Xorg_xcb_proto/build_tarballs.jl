@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_proto"
-version = v"1.13"
+version = v"1.15"
 
 # Collection of sources required to build xcb-proto
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/xcb/xcb-proto-$(version.major).$(version.minor).tar.bz2",
-               "7b98721e669be80284e9bbfeab02d2d0d54cd11172b72271e47a2fe875e2bde1"),
+    ArchiveSource("https://www.x.org/archive/individual/xcb/xcb-proto-$(version.major).$(version.minor).tar.xz",
+               "d34c3b264e8365d16fa9db49179cfa3e9952baaf9275badda0f413966b65955f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,4 +34,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
