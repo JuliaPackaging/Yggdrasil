@@ -18,8 +18,7 @@ cd $WORKSPACE/srcdir/stride*/
 cd src
 
 make CC="${CC} -g -O2 -fPIC -Wall"
-mkdir -p "${bindir}"
-install -Dvm 755 "stride${exeext}" "${bindir}/"
+install -Dvm 755 "stride" "${bindir}/strid${exeext}"
 
 # build shared library
 mkdir -p "${libdir}"
