@@ -24,9 +24,7 @@ install -Dvm 755 "stride" "${bindir}/strid${exeext}"
 mkdir -p "${libdir}"
 "$CC" -shared -O2 -g -o "${libdir}"/libstride.${dlext} *.o
 
-cd ..
-
-install_license LICENSE
+install_license ../LICENSE
 """
 
 platforms = supported_platforms()
