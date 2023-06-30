@@ -44,7 +44,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.10.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "950154010cb112120885b9b01e2ef7387ced72c4"),
+            GitSource("https://github.com/JuliaLang/julia.git", "0e8af1c1620cbf5304c8a7cabbc5475ec48a78ec"),
             DirectorySource("./bundled"),
         ]
     else
@@ -132,38 +132,42 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # a HostDependency, now that we have those
     LLVM_CXXFLAGS="-I${prefix}/include -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -std=c++14"
 
+    if [[ "${version}" == 1.6.* ]]; then
+        LLVMVERMAJOR=11
+    elif [[ "${version}" == 1.7.* ]]; then
+        LLVMVERMAJOR=12
+    elif [[ "${version}" == 1.8.* ]]; then
+        LLVMVERMAJOR=13
+    elif [[ "${version}" == 1.9.* ]]; then
+        LLVMVERMAJOR=14
+    elif [[ "${version}" == 1.10.* ]]; then
+        LLVMVERMAJOR=15
+    else
+        echo "Error, LLVM version not specified"
+        exit 1
+    fi
+    # so far this holds for all versions:
+    LLVMVERMINOR=0
+
+    # needed for the julia.expmap symbol versioning file
+    # starting from julia 1.10
+    LLVMSYMVER="JL_LLVM_${LLVMVERMAJOR}.${LLVMVERMINOR}"
+
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
     CFLAGS="-I${prefix}/include"
     if [[ "${target}" == *mingw* ]]; then
-        if [[ "${version}" == 1.8.* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM-13jl"
-        elif [[ "${version}" == 1.9.* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM-14jl"
-        elif [[ "${version}" == 1.10.* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM-15jl"
-        else
+        if [[ "${version}" == 1.[0-7].* ]]; then
             LLVMLINK="-L${prefix}/bin -lLLVM"
+        else
+            LLVMLINK="-L${prefix}/bin -lLLVM-${LLVMVERMAJOR}jl"
         fi
         LLVM_LDFLAGS="-L${prefix}/bin"
         LDFLAGS="-L${prefix}/bin"
     elif [[ "${target}" == *apple* ]]; then
         LLVMLINK="-L${prefix}/lib -lLLVM"
     else
-        if [[ "${version}" == 1.6.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-11jl"
-        elif [[ "${version}" == 1.7.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-12jl"
-        elif [[ "${version}" == 1.8.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-13jl"
-        elif [[ "${version}" == 1.9.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-14jl"
-        elif [[ "${version}" == 1.10.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-15jl"
-        else
-            echo "Error, LLVM version not specified"
-            exit 1
-        fi
+        LLVMLINK="-L${prefix}/lib -lLLVM-${LLVMVERMAJOR}jl"
     fi
 
     # enable extglob for BB_TRIPLET_LIBGFORTRAN_CXXABI
@@ -203,6 +207,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     override CG_LLVMLINK=${LLVMLINK} # For Julia >= 1.8
     override LLVM_CXXFLAGS=${LLVM_CXXFLAGS}
     override LLVM_LDFLAGS=${LLVM_LDFLAGS}
+    override LLVM_SHLIB_SYMBOL_VERSION=${LLVMSYMVER}
 
     # just nop this
     override LLVM_CONFIG_HOST=true
@@ -251,6 +256,10 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     if [[ "${target}" == *mingw* ]]; then
         cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
     fi
+
+    # this file is generated starting from julia 1.10
+    # even for platforms without symbol versioning the file is needed to build the host flisp
+    test -f src/julia.expmap || make -C src ./julia.expmap
 
     # first build flisp, as we need that for compilation; instruct the build system
     # to build it for the cross compilation host architecture, not the final target
