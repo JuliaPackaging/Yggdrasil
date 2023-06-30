@@ -3,7 +3,8 @@
 using BinaryBuilder
 
 name = "Xorg_libpthread_stubs"
-version = v"0.1"
+# Upstream version is still 0.1, incremented here for JLL compat reasons. 
+version = v"0.1.1"
 
 # Collection of sources required to build libpthread-stubs
 sources = [
@@ -34,4 +35,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
