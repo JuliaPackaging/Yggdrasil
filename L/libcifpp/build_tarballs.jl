@@ -49,6 +49,7 @@ MACHTYPE_FULL=$MACHTYPE_FULL
 cd $WORKSPACE/srcdir/libcifpp*/
 
 # mingw doesn't have ioctl
+# upstream PR: https://github.com/PDB-REDO/libcifpp/pull/45
 atomic_patch -p1 ../patches/mingw-no-ioctl.patch
 
 mkdir build && cd build
