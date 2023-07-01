@@ -10,7 +10,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libpolymake_julia"
-version = v"0.10.0"
+version = v"0.10.1"
 
 # reminder: change the above version if restricting the supported julia versions
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
@@ -61,7 +61,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("libjulia_jll"),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.3")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
@@ -69,10 +69,10 @@ dependencies = [
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
     Dependency("libcxxwrap_julia_jll"; compat = "~0.9.7"),
-    Dependency("polymake_jll"; compat = "~400.1000.0"),
+    Dependency("polymake_jll"; compat = "~400.1000.1"),
 
-    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1000.0")),
+    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1000.1")),
     HostBuildDependency(PackageSpec(name="lib4ti2_jll", version=v"1.6.10")),
     HostBuildDependency(PackageSpec(name="TOPCOM_jll", version=v"0.17.8")),
 ]
