@@ -14,11 +14,6 @@ sources = [
 ]
 
 # TODO
-# - the installed file etc/cron.weekly/update-libcifpp-data contains
-#   hardcoded paths with /workspace/destdir/...
-#   It is used to update components.cif, which should probably be done
-#   in a different way.
-#
 # - the CCD (chemical components dictionary) normally gets downloaded
 #   by default and saved under share/libcifpp/components.cif, but we
 #   don't do this
