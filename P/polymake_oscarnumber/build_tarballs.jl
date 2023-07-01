@@ -10,7 +10,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # reminder: change the version if restricting the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.2.1"
+version = v"0.2.2"
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
@@ -18,7 +18,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "6f43b9b94145387428d3c91749f05a8ebd6b5b8c")
+              "a14f8b3411b41cf25ba131efef78106167c86d90")
     DirectorySource("./bundled")
 ]
 
@@ -40,7 +40,7 @@ for dir in FLINT GMP MPFR PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
 done
 
 unset LD_LIBRARY_PATH
-perl /workspace/destdir/share/polymake/support/generate_ninja_targets.pl build/targets.ninja /workspace/destdir/share/polymake build/config.ninja
+perl ${prefix}/share/polymake/support/generate_ninja_targets.pl build/targets.ninja ${prefix}/share/polymake build/config.ninja
 
 ninja -v -C build/Opt -j${nproc}
 
@@ -87,8 +87,8 @@ dependencies = [
     BuildDependency("libjulia_jll"),
 
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("libpolymake_julia_jll", compat = "~0.10.0"),
-    Dependency("polymake_jll", compat = "~400.1000.000"),
+    Dependency("libpolymake_julia_jll", compat = "~0.10.1"),
+    Dependency("polymake_jll", compat = "~400.1000.001"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
