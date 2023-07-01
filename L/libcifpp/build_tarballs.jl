@@ -83,7 +83,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("Eigen_jll"),
+    BuildDependency("Eigen_jll"),
     Dependency("Zlib_jll"),
     # needed for make test, which we only run on the `default_host_platform`
     HostBuildDependency("boost_jll"; platforms=[default_host_platform]),
