@@ -69,6 +69,11 @@ if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
     CFG_TESTING="-DENABLE_TESTING=ON"
 fi
 
+# use gcc/g++ on apple
+if [[ "${target}" == *-apple-darwin* ]]; then
+    CMAKE_TARGET_TOOLCHAIN="$(dirname "${CMAKE_TARGET_TOOLCHAIN}")/target_${target}_gcc.cmake"
+fi
+
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -93,7 +98,8 @@ install_license ../LICENSE
 """
 
 platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+# Only FreeBSD uses clang in this build
+platforms = expand_cxxstring_abis(platforms; skip=Sys.isfreebsd)
 
 products = [
     LibraryProduct("libcifpp", :libcifpp),
