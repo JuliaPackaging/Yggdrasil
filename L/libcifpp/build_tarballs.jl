@@ -42,7 +42,20 @@ sources = [
 # -D_CXX_ATOMIC_BUILTIN_EXITCODE=0    # std::atomic works
 # -D_CXX_ATOMIC_BUILTIN_EXITCODE__TRYRUN_OUTPUT=0
 
-script = raw"""
+# The tests only pass with the correct cxxabi (-cxx11), so we create a
+# MACHTYPE_FULL variable to pass to the shell script which can there
+# be matched against to bb_full_target.
+#
+# TODO: can we get the "libgfortran5" from default_host_platform?
+#
+# Convert x86_64-linux-musl-cxx11 -> x86_64-linux-musl-libgfortran5-cxx11
+const M = split(triplet(default_host_platform), "-")
+const MACHTYPE_FULL = join((M[1:3]..., "libgfortran5", M[4:end]...), "-")
+
+script =
+"""
+MACHTYPE_FULL=$MACHTYPE_FULL
+""" * raw"""
 cd $WORKSPACE/srcdir/libcifpp*/
 
 # mingw doesn't have ioctl
@@ -51,7 +64,7 @@ atomic_patch -p1 ../patches/mingw-no-ioctl.patch
 mkdir build && cd build
 
 CFG_TESTING="-DENABLE_TESTING=OFF"
-if [[ "${target}" == "${MACHTYPE}" ]]; then
+if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
     # build the tests if we are building for the build host platform
     CFG_TESTING="-DENABLE_TESTING=ON"
 fi
@@ -69,7 +82,7 @@ cmake .. \
 
 make -j${nproc}
 
-if [[ "${target}" == "${MACHTYPE}" ]]; then
+if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
     # run the tests on the build host platform
     make test
 fi
