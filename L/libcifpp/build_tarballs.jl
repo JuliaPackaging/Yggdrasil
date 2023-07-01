@@ -10,6 +10,7 @@ version = v"5.1.0"
 sources = [
     GitSource("https://github.com/PDB-REDO/libcifpp",
               "836aed6ea9a227b37e5b0d9cbcb1253f545d0778"),
+    DirectorySource("./bundled"),
 ]
 
 # TODO
@@ -43,6 +44,9 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/libcifpp*/
+
+# mingw doesn't have ioctl
+atomic_patch -p1 ../patches/mingw-no-ioctl.patch
 
 mkdir build && cd build
 
