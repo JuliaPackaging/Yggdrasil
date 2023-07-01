@@ -55,7 +55,7 @@ for p in platforms
     end
 end
 
-push!(dependencies, BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.2")))
+push!(dependencies, BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.3")))
 
 # The products that we will ensure are always built
 products = [
