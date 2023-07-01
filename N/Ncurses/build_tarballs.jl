@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Ncurses"
-version = v"6.2"
+version = v"6.4"
 
 # Collection of sources required to build Ncurses
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
-                  "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d"),
+                  "6931283d9ac87c5073f30b6290c4c75f21632bb4fc3603ac8100812bed248159"),
 ]
 
 # Bash recipe for building across all platforms
