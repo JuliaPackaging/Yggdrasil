@@ -33,15 +33,7 @@ sources = [
 # Note: test suite (`make test`) is run if we are building for the
 # build host platform BinaryBuilderBase.default_host_platform, which
 # is the case for `$target == $MACHTYPE` inside the shell script.
-
-# Note: cmake cache vars are set sometimes because we are
-# cross-compiling, normally cmake would try and run a program to
-# determine if a feature is available.
 #
-# -DSTD_REGEX_RUNNING=0               # std::regex works
-# -D_CXX_ATOMIC_BUILTIN_EXITCODE=0    # std::atomic works
-# -D_CXX_ATOMIC_BUILTIN_EXITCODE__TRYRUN_OUTPUT=0
-
 # The tests only pass with the correct cxxabi (-cxx11), so we create a
 # MACHTYPE_FULL variable to pass to the shell script which can there
 # be matched against to bb_full_target.
@@ -74,11 +66,20 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     CMAKE_TARGET_TOOLCHAIN="$(dirname "${CMAKE_TARGET_TOOLCHAIN}")/target_${target}_gcc.cmake"
 fi
 
+# Set cmake cache vars because test programs can't be run during
+# cross-compilation
+#
+# -DSTD_REGEX_RUNNING=0               # std::regex works
+# -D_CXX_ATOMIC_BUILTIN_EXITCODE=0    # std::atomic works
+# -D_CXX_ATOMIC_BUILTIN_EXITCODE__TRYRUN_OUTPUT=0
+#
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_FOR_CCP4=OFF \
     -DCIFPP_DOWNLOAD_CCD=OFF \
+    -DCIFPP_INSTALL_UPDATE_SCRIPT=OFF \
     -DBUILD_SHARED_LIBS=ON \
     -DSTD_REGEX_RUNNING=OFF \
     -D_CXX_ATOMIC_BUILTIN_EXITCODE=0 \
