@@ -25,6 +25,9 @@ sources = [
 #   components.cif between different packages that need it.
 #   Ref: https://www.wwpdb.org/data/ccd
 
+# Note: upstream seems to recommend gcc >= 10
+#       https://github.com/PDB-REDO/libcifpp/issues/39
+
 # Note: test suite (`make test`) is run if we are building for the
 # build host platform BinaryBuilderBase.default_host_platform, which
 # is the case for `$target == $MACHTYPE` inside the shell script.
@@ -109,4 +112,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"9")
+               julia_compat="1.6", preferred_gcc_version = v"10")
