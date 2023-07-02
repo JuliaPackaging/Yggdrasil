@@ -37,7 +37,7 @@ case "$bb_full_target" in
 
 esac
 
-cmake --build . --parallel ${nproc}
+cmake --build . --parallel 1
 cmake --install .
 install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 """
@@ -47,10 +47,7 @@ install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 if host_build
     platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
 else
-    platforms = expand_cxxstring_abis(filter(p -> arch(p) != "armv6l" &&
-                                                  Sys.islinux(p) ||
-                                                  (Sys.isbsd(p) && !Sys.isapple(p)),
-        supported_platforms()))
+    platforms = expand_cxxstring_abis(filter(p -> arch(p) != "armv6l" && Sys.islinux(p), supported_platforms()))
 end
 
 # The products that we will ensure are always built
@@ -73,4 +70,9 @@ end
 
 include("../../fancy_toys.jl")
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+init_block = raw"""
+ENV["QT_PLUGIN_PATH"] = qt6plugins_dir
+ENV["__EGL_VENDOR_LIBRARY_DIRS"] = get(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
+"""
+
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6", init_block)
