@@ -28,7 +28,8 @@ sources = [
 #   Ref: https://www.wwpdb.org/data/ccd
 
 # Note: we use a newer MacOS SDK to compile on x86_64-apple-darwin
-# fixes missing `shared_timed_mutex` and linking problems for std::filesystem
+# fixes missing `shared_timed_mutex` and linking problems for
+# std::filesystem
 
 # Note: upstream seems to recommend gcc >= 10
 #       https://github.com/PDB-REDO/libcifpp/issues/39
