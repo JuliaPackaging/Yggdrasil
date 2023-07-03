@@ -117,8 +117,7 @@ install_license ../LICENSE
 """
 
 platforms = supported_platforms()
-# Only FreeBSD uses clang in this build
-platforms = expand_cxxstring_abis(platforms; skip=Sys.isfreebsd)
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libcifpp", :libcifpp),
