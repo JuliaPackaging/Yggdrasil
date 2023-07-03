@@ -27,7 +27,6 @@ MACHTYPE_FULL=$MACHTYPE_FULL
 """ * raw"""
 cd $WORKSPACE/srcdir/dssp*/
 
-
 CFG_TESTING="-DENABLE_TESTING=OFF"
 if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
     # build the tests if we are building for the build host platform
@@ -66,7 +65,7 @@ fi
 make install
 
 # build shared library
-"${CC}" -shared -o "${libdir}/libdssp.${dlext}" \
+"${CXX}" -shared -o "${libdir}/libdssp.${dlext}" \
     -Wl,$(flagon --whole-archive) "${libdir}/libdssp.a" -Wl,$(flagon --no-whole-archive) \
     -lcifpp
 
