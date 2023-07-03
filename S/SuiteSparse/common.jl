@@ -46,4 +46,5 @@ products = [
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
 ]
