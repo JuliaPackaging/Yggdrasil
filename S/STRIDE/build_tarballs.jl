@@ -9,7 +9,7 @@ version = v"1.0.0"
 
 sources = [
     GitSource("https://github.com/m3g/stride",
-              "dfc94c82f1ec93a8852099f5f18995bb61fe5999"),
+              "71bb229679248b7ee6c39d0e95baca3eb7453427"),
 ]
 
 script = raw"""
