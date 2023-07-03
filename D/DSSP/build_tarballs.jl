@@ -67,7 +67,8 @@ make install
 
 # build shared library
 "${CC}" -shared -o "${libdir}/libdssp.${dlext}" \
-    -Wl,$(flagon --whole-archive) "${libdir}/libdssp.a" -Wl,$(flagon --no-whole-archive)
+    -Wl,$(flagon --whole-archive) "${libdir}/libdssp.a" -Wl,$(flagon --no-whole-archive) \
+    -lcifpp
 
 install_license ../LICENSE
 """
