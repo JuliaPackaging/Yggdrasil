@@ -10,6 +10,8 @@ version = v"5.1.0"
 sources = [
     GitSource("https://github.com/PDB-REDO/libcifpp",
               "836aed6ea9a227b37e5b0d9cbcb1253f545d0778"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,6 +26,9 @@ sources = [
 #   this. We should maybe think of a better way of sharing
 #   components.cif between different packages that need it.
 #   Ref: https://www.wwpdb.org/data/ccd
+
+# Note: we use a newer MacOS SDK to compile on x86_64-apple-darwin
+# fixes missing `shared_timed_mutex` and linking problems for std::filesystem
 
 # Note: upstream seems to recommend gcc >= 10
 #       https://github.com/PDB-REDO/libcifpp/issues/39
@@ -52,12 +57,23 @@ cd $WORKSPACE/srcdir/libcifpp*/
 # upstream PR: https://github.com/PDB-REDO/libcifpp/pull/45
 atomic_patch -p1 ../patches/mingw-no-ioctl.patch
 
-# fixes for clang and libc++ on macos for missing C++20 features,
-# like missing std::set::contains
+# fixes for clang and libc++ on macos for missing C++20 features
+# (missing std::set::contains and operator<=>)
 # Upstream issue: https://github.com/PDB-REDO/libcifpp/issues/39
 if [[ "${target}" == *-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/clang-libc++-fixes.patch
 fi
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK which supports `shared_timed_mutex` and `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    popd
+fi
+
 
 mkdir build && cd build
 
