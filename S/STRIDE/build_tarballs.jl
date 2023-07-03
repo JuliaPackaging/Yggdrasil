@@ -9,7 +9,7 @@ version = v"1.0.0"
 
 sources = [
     GitSource("https://github.com/m3g/stride",
-              "79aeff9a7e875eee17f3b34364a1db5da2dc222d"),
+              "3cf7d39a223824e0d114c70238f28935204203cf"),
 ]
 
 script = raw"""
@@ -22,7 +22,7 @@ install -Dvm 755 "stride" "${bindir}/stride${exeext}"
 mkdir -p "${libdir}"
 "${CC}" -shared -O2 -g -o "${libdir}"/libstride.${dlext} *.o
 
-install_license doc/stride.doc
+install_license LICENSE
 """
 
 platforms = supported_platforms()
