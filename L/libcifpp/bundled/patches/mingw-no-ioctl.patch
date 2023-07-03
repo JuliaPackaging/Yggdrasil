@@ -1,5 +1,5 @@
 diff --git a/src/utilities.cpp b/src/utilities.cpp
-index 5238a5b..f5e54a8 100644
+index 5238a5b..3aecc32 100644
 --- a/src/utilities.cpp
 +++ b/src/utilities.cpp
 @@ -43,7 +43,7 @@
@@ -7,7 +7,7 @@ index 5238a5b..f5e54a8 100644
  #include <thread>
  
 -#if not defined(_MSC_VER)
-+#if not (defined(_MSC_VER) || defined(__MINGW32__))
++#if not defined(_WIN32)
  #include <sys/ioctl.h>
  #include <termios.h>
  #endif
@@ -16,7 +16,7 @@ index 5238a5b..f5e54a8 100644
  // --------------------------------------------------------------------
  
 -#ifdef _MSC_VER
-+#if defined(_MSC_VER) || defined(__MINGW32__)
++#if defined(_WIN32)
  }
 -#include <Windows.h>
 +#include <windows.h>
