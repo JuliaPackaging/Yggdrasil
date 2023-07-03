@@ -15,7 +15,7 @@ script = raw"""
 echo ${target}
 cd $WORKSPACE/srcdir/RadeonProRenderSDK/RadeonProRender
 if [[ ${target} == x86_64-linux-gnu ]]; then
-    cp binUbuntu20/* ${libdir}/
+    cp -v binUbuntu*/* ${libdir}/
 elif [[ ${target} == *-apple-darwin* ]]; then
     cp binMacOS/* ${libdir}/
 elif [[ ${target} == *-mingw* ]]; then
