@@ -60,11 +60,6 @@ if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
     CFG_TESTING="-DENABLE_TESTING=ON"
 fi
 
-# use gcc/g++ on apple
-if [[ "${target}" == *-apple-darwin* ]]; then
-    CMAKE_TARGET_TOOLCHAIN="$(dirname "${CMAKE_TARGET_TOOLCHAIN}")/target_${target}_gcc.cmake"
-fi
-
 # Set cmake cache vars because test programs can't be run during
 # cross-compilation
 #
