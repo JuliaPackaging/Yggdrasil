@@ -52,6 +52,13 @@ cd $WORKSPACE/srcdir/libcifpp*/
 # upstream PR: https://github.com/PDB-REDO/libcifpp/pull/45
 atomic_patch -p1 ../patches/mingw-no-ioctl.patch
 
+# fixes for clang and libc++ on macos for missing C++20 features,
+# like missing std::set::contains
+# Upstream issue: https://github.com/PDB-REDO/libcifpp/issues/39
+if [[ "${target}" == *-apple-darwin* ]]; then
+    atomic_patch -p1 ../patches/clang-libc++-fixes.patch
+fi
+
 mkdir build && cd build
 
 CFG_TESTING="-DENABLE_TESTING=OFF"
