@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Libxc_GPU"
-version = v"6.1.0"
+version = v"6.2.2"
 include("../sources.jl")
 
 sources = [
@@ -72,8 +72,7 @@ for cuda_version in [v"11.0"], platform in platforms
     cuda_deps = [
         BuildDependency(PackageSpec(name="CUDA_full_jll",
                                     version=cuda_full_versions[cuda_version])),
-        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll",
-                                      version=v"0.2"), compat="0.2"),  # avoid pulling in CUDA 12 for now.
+        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     ]
 
     build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
