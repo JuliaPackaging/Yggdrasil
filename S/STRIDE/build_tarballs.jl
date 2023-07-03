@@ -4,11 +4,11 @@ using BinaryBuilderBase: Dependency
 name = "STRIDE"
 version = v"1.0.0"
 
-# url = "https://github.com/josch/stride/"
+# url = "https://github.com/m3g/stride"
 # description = "Protein secondary structure assignment from atomic coordinates"
 
 sources = [
-    GitSource("https://github.com/josch/stride/",
+    GitSource("https://github.com/m3g/stride",
               "79aeff9a7e875eee17f3b34364a1db5da2dc222d"),
 ]
 
