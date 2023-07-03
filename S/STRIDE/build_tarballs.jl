@@ -9,20 +9,21 @@ version = v"1.0.0"
 
 sources = [
     GitSource("https://github.com/m3g/stride",
-              "3cf7d39a223824e0d114c70238f28935204203cf"),
+              "dfc94c82f1ec93a8852099f5f18995bb61fe5999"),
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/
+cd $WORKSPACE/srcdir/stride*/
 
-make CC="${CC} -g -O2 -fPIC -Wall"
+cd src
+make
 install -Dvm 755 "stride" "${bindir}/stride${exeext}"
 
 # build shared library
 mkdir -p "${libdir}"
-"${CC}" -shared -O2 -g -o "${libdir}"/libstride.${dlext} *.o
+"${CC}" -shared -g -O2 -o "${libdir}"/libstride.${dlext} *.o -lm
 
-install_license LICENSE
+install_license ../LICENSE
 """
 
 platforms = supported_platforms()
