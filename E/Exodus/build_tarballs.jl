@@ -64,6 +64,18 @@ cmake \
 
 make -j${nproc}
 make install
+
+# below is an absolute hack to fix a tree hash mismatch on macos
+# this is due to a case insensitivity issue. 
+#
+# The issue is caused by a duplicate folder in destdir/lib/cmake
+# called "Seacas" which is a duplibcate of "SEACAS".
+#
+# The build process has far too many CMake files to track this down.
+#
+cd $WORKSPACE/destdir
+rm -r lib/cmake/Seacas/
+
 """
 
 # These are the platforms we will build for by default, unless further
@@ -92,7 +104,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Fmt_jll", uuid="5dc1e892-f187-50dd-85f3-7dff85c47fc5"))
     # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"); compat="~1.12")
+    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"); compat="~1.14")
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
