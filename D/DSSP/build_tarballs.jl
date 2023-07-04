@@ -58,6 +58,8 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
+cp ../LICENSE LICENSE-libmcfp
+install_license LICENSE-libmcfp
 cd ../..
 
 mkdir build && cd build
