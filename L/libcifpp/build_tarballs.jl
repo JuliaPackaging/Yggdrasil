@@ -113,6 +113,14 @@ fi
 
 make install
 
+if [[ "${target}" == *-w64-mingw* ]]; then
+    # libcifpp v5.1.0
+    # On windows, there is a non-functional static library that also gets
+    # built and installed, which can mess up packages that try to link
+    # against it.
+    rm "${prefix}"/lib/libcifpp.dll.a
+fi
+
 install_license ../LICENSE
 """
 
