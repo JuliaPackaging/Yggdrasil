@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Ncurses"
-version = v"6.4"
+version = v"6.4.1" # <-- This version is a lie, to add the TERMINFO_DIRS override
 
 # Collection of sources required to build Ncurses
 sources = [
@@ -88,5 +88,17 @@ dependencies = [
     HostBuildDependency("Ncurses_jll"),
 ]
 
+init_block = raw"""
+if Sys.isunix()
+    path = joinpath(artifact_dir, "share", "terminfo")
+    old = get(ENV, "TERMINFO_DIRS", nothing)
+    if old === nothing
+        ENV["TERMINFO_DIRS"] = path
+    else
+        ENV["TERMINFO_DIRS"] = old * ":" * path
+    end
+end
+"""
+
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
