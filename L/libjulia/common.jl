@@ -18,7 +18,7 @@ function libjulia_platforms(julia_version)
         filter!(p -> arch(p) != "armv6l", platforms)
     end
 
-    if julia_version == v"1.9.0" || julia_version == v"1.10.0"
+    if julia_version >= v"1.9.0"
         # 32bit ARM seems broken, see https://github.com/JuliaLang/julia/issues/47345
         filter!(p -> arch(p) != "armv6l", platforms)
         filter!(p -> arch(p) != "armv7l", platforms)
@@ -44,7 +44,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.10.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "0e8af1c1620cbf5304c8a7cabbc5475ec48a78ec"),
+            GitSource("https://github.com/JuliaLang/julia.git", "0ba6ec2d2282937a084d7e5e5a0b026dc953bb31"),
+            DirectorySource("./bundled"),
+        ]
+    elseif version == v"1.11.0-DEV"
+        sources = [
+            GitSource("https://github.com/JuliaLang/julia.git", "ce1b420ff12454e3414c8f37dea7c00979224ba5"),
             DirectorySource("./bundled"),
         ]
     else
@@ -84,7 +89,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     done
     fi
 
-    if [[ "${version}" == 1.9.* ]] || [[ "${version}" == 1.10.* ]]; then
+    if [[ "${version}" == 1.9.* ]] || [[ "${version}" == 1.1[0-9].* ]]; then
         if [[ "${target}" == *mingw* ]]; then
             sed -i -e 's/-lblastrampoline"/-lblastrampoline-5"/g' deps/libsuitesparse.mk
         fi
@@ -141,6 +146,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elif [[ "${version}" == 1.9.* ]]; then
         LLVMVERMAJOR=14
     elif [[ "${version}" == 1.10.* ]]; then
+        LLVMVERMAJOR=15
+    elif [[ "${version}" == 1.11.* ]]; then
         LLVMVERMAJOR=15
     else
         echo "Error, LLVM version not specified"
@@ -363,6 +370,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+2")))
     elseif version.major == 1 && version.minor == 10
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.10.1+6")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+13")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+5")))
+    elseif version.major == 1 && version.minor == 11
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.10.1+6")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+13")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
