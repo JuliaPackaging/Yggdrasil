@@ -12,6 +12,7 @@ sources = [
               "b87ef206a071e6f086c8dc01551afd5e9b23eb43"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("./bundled"),
 ]
 
 # The tests only pass with the correct cxxabi (-cxx11), so we create a
@@ -28,6 +29,10 @@ script = """
 MACHTYPE_FULL=$MACHTYPE_FULL
 """ * raw"""
 cd $WORKSPACE/srcdir/dssp*/
+
+# fix error when linking mkdssp, otherwise linking fails on windows with g++
+# Ref: https://github.com/PDB-REDO/dssp/commit/49306a57098f1eaebb700eed29025e6f472a799a
+atomic_patch -p1 ../patches/cmake-fix-libcifpp-linkage.patch
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Install a newer MacOS SDK
