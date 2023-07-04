@@ -66,4 +66,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     preferred_gcc_version=v"8",
     julia_compat = julia_compat)
 
-# rebuild trigger: 1
+# rebuild trigger: 2

@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.10"
-version_offset = v"0.0.0"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -49,33 +49,28 @@ for dir in FLINT GMP MPFR PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
    ln -s .. ${prefix}/deps/${dir}_jll
 done
 
-# adjust for hardcoded /workspace dirs
-atomic_patch -p1 ../patches/relocatable.patch
-
-# to unbreak ctrl+c in julia
-atomic_patch -p1 ../patches/sigint.patch
-
-# work around sigchld-handler conflicts with other libraries
-atomic_patch -p1 ../patches/sigchld.patch
-
-# patch for bliss compatibility
-atomic_patch -p1 ../patches/bliss.patch
+for file in ../patches/*; do
+   [[ "$file" == *"polymake-cross"* ]] && continue;
+   atomic_patch -p1 $file
+done
 
 # deal with symlinks in path to scip libraries
 sed -i -e 's/find/find -L/g' bundled/scip/support/configure.pl bundled/soplex/support/configure.pl
 sed -i -e 's/-lsoplex-pic/-lsoplexshared/g' bundled/soplex/support/configure.pl
 
+targetnover=$(echo "${target}" | sed -E 's/[0-9.]+$//g')
+
 if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
-  perl_arch=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 3)
-  perl_version=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 2)
+  perl_arch=$(grep "perlxpath=" ../config/build-Opt-$targetnover.ninja | cut -d / -f 3)
+  perl_version=$(grep "perlxpath=" ../config/build-Opt-$targetnover.ninja | cut -d / -f 2)
   # we cannot run configure and instead provide config files
   mkdir -p build/Opt
   mkdir -p build/perlx/$perl_version/$perl_arch
-  cp ../config/config-$target.ninja build/config.ninja
-  cp ../config/build-Opt-$target.ninja build/Opt/build.ninja
+  cp ../config/config-$targetnover.ninja build/config.ninja
+  cp ../config/build-Opt-$targetnover.ninja build/Opt/build.ninja
   cp ../config/targets.ninja build/targets.ninja
   ln -s ../config.ninja build/Opt/config.ninja
-  cp ../config/perlx-config-$target.ninja build/perlx/$perl_version/$perl_arch/config.ninja
+  cp ../config/perlx-config-$targetnover.ninja build/perlx/$perl_version/$perl_arch/config.ninja
 
   atomic_patch -p1 ../patches/polymake-cross.patch
 else
@@ -149,7 +144,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
+    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
@@ -159,7 +154,7 @@ dependencies = [
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("FLINT_jll", compat = "~200.900.004"),
     Dependency("PPL_jll", compat = "~1.2.1"),
-    Dependency("Perl_jll", compat = "=5.34.0"),
+    Dependency("Perl_jll", compat = "=5.34.1"),
     Dependency("SCIP_jll", compat = "~800.0.301"),
     Dependency("bliss_jll", compat = "~0.77.0"),
     Dependency("boost_jll", compat = "=1.76.0"),

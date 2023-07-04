@@ -18,7 +18,7 @@ function libjulia_platforms(julia_version)
         filter!(p -> arch(p) != "armv6l", platforms)
     end
 
-    if julia_version == v"1.9.0" || julia_version == v"1.10.0"
+    if julia_version >= v"1.9.0"
         # 32bit ARM seems broken, see https://github.com/JuliaLang/julia/issues/47345
         filter!(p -> arch(p) != "armv6l", platforms)
         filter!(p -> arch(p) != "armv7l", platforms)
@@ -44,7 +44,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.10.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "950154010cb112120885b9b01e2ef7387ced72c4"),
+            GitSource("https://github.com/JuliaLang/julia.git", "0ba6ec2d2282937a084d7e5e5a0b026dc953bb31"),
+            DirectorySource("./bundled"),
+        ]
+    elseif version == v"1.11.0-DEV"
+        sources = [
+            GitSource("https://github.com/JuliaLang/julia.git", "ce1b420ff12454e3414c8f37dea7c00979224ba5"),
             DirectorySource("./bundled"),
         ]
     else
@@ -84,7 +89,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     done
     fi
 
-    if [[ "${version}" == 1.9.* ]] || [[ "${version}" == 1.10.* ]]; then
+    if [[ "${version}" == 1.9.* ]] || [[ "${version}" == 1.1[0-9].* ]]; then
         if [[ "${target}" == *mingw* ]]; then
             sed -i -e 's/-lblastrampoline"/-lblastrampoline-5"/g' deps/libsuitesparse.mk
         fi
@@ -132,38 +137,44 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # a HostDependency, now that we have those
     LLVM_CXXFLAGS="-I${prefix}/include -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -std=c++14"
 
+    if [[ "${version}" == 1.6.* ]]; then
+        LLVMVERMAJOR=11
+    elif [[ "${version}" == 1.7.* ]]; then
+        LLVMVERMAJOR=12
+    elif [[ "${version}" == 1.8.* ]]; then
+        LLVMVERMAJOR=13
+    elif [[ "${version}" == 1.9.* ]]; then
+        LLVMVERMAJOR=14
+    elif [[ "${version}" == 1.10.* ]]; then
+        LLVMVERMAJOR=15
+    elif [[ "${version}" == 1.11.* ]]; then
+        LLVMVERMAJOR=15
+    else
+        echo "Error, LLVM version not specified"
+        exit 1
+    fi
+    # so far this holds for all versions:
+    LLVMVERMINOR=0
+
+    # needed for the julia.expmap symbol versioning file
+    # starting from julia 1.10
+    LLVMSYMVER="JL_LLVM_${LLVMVERMAJOR}.${LLVMVERMINOR}"
+
     LLVM_LDFLAGS="-L${prefix}/lib"
     LDFLAGS="-L${prefix}/lib"
     CFLAGS="-I${prefix}/include"
     if [[ "${target}" == *mingw* ]]; then
-        if [[ "${version}" == 1.8.* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM-13jl"
-        elif [[ "${version}" == 1.9.* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM-14jl"
-        elif [[ "${version}" == 1.10.* ]]; then
-            LLVMLINK="-L${prefix}/bin -lLLVM-15jl"
-        else
+        if [[ "${version}" == 1.[0-7].* ]]; then
             LLVMLINK="-L${prefix}/bin -lLLVM"
+        else
+            LLVMLINK="-L${prefix}/bin -lLLVM-${LLVMVERMAJOR}jl"
         fi
         LLVM_LDFLAGS="-L${prefix}/bin"
         LDFLAGS="-L${prefix}/bin"
     elif [[ "${target}" == *apple* ]]; then
         LLVMLINK="-L${prefix}/lib -lLLVM"
     else
-        if [[ "${version}" == 1.6.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-11jl"
-        elif [[ "${version}" == 1.7.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-12jl"
-        elif [[ "${version}" == 1.8.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-13jl"
-        elif [[ "${version}" == 1.9.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-14jl"
-        elif [[ "${version}" == 1.10.* ]]; then
-            LLVMLINK="-L${prefix}/lib -lLLVM-15jl"
-        else
-            echo "Error, LLVM version not specified"
-            exit 1
-        fi
+        LLVMLINK="-L${prefix}/lib -lLLVM-${LLVMVERMAJOR}jl"
     fi
 
     # enable extglob for BB_TRIPLET_LIBGFORTRAN_CXXABI
@@ -203,6 +214,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     override CG_LLVMLINK=${LLVMLINK} # For Julia >= 1.8
     override LLVM_CXXFLAGS=${LLVM_CXXFLAGS}
     override LLVM_LDFLAGS=${LLVM_LDFLAGS}
+    override LLVM_SHLIB_SYMBOL_VERSION=${LLVMSYMVER}
 
     # just nop this
     override LLVM_CONFIG_HOST=true
@@ -251,6 +263,10 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     if [[ "${target}" == *mingw* ]]; then
         cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
     fi
+
+    # this file is generated starting from julia 1.10
+    # even for platforms without symbol versioning the file is needed to build the host flisp
+    test -f src/julia.expmap || make -C src ./julia.expmap
 
     # first build flisp, as we need that for compilation; instruct the build system
     # to build it for the cross compilation host architecture, not the final target
@@ -354,6 +370,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+2")))
     elseif version.major == 1 && version.minor == 10
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.10.1+6")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+13")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+5")))
+    elseif version.major == 1 && version.minor == 11
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.10.1+6")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+13")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+4"); platforms=filter(!Sys.isapple, platforms)))
