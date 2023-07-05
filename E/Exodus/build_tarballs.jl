@@ -73,7 +73,6 @@ make install
 #
 # The build process has far too many CMake files to track this down.
 #
-cd $WORKSPACE/destdir
 rm -r lib/cmake/Seacas/
 """
 
