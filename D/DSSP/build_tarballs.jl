@@ -143,7 +143,6 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_FOR_CCP4=OFF \
     -DBUILD_WEBSERVER=OFF \
-    -DCMAKE_CXX_FLAGS="-fPIC" \
     ${CFG_TESTING}
 
 make -j${nproc}
@@ -160,8 +159,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("mkdssp", :mkdssp),
-    # LibraryProduct("libdssp", :libdssp),
-    # FileProduct("lib/libdssp.a", :libdssp_a),
 ]
 
 dependencies = [
