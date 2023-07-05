@@ -4,6 +4,11 @@ using BinaryBuilder, Pkg
 
 include("../../fancy_toys.jl") # for get_addable_spec
 
+# list of supported Julia versions
+if ! @isdefined julia_versions
+    julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+end
+
 # return the platforms supported by libjulia
 function libjulia_platforms(julia_version)
     platforms = supported_platforms()
@@ -385,10 +390,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         error("Unsupported Julia version")
     end
 
-    julia_compat = "1.6"
-
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
-                   preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat)
+                   preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat="1.6")
     end
 end
