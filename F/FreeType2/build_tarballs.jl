@@ -8,7 +8,7 @@ version = v"2.13.1"
 # Collection of sources required to build FreeType2
 sources = [
     ArchiveSource("https://download.savannah.gnu.org/releases/freetype/freetype-$(version).tar.xz",
-                  "86a854d8905b19698bbc8f23b860bc104246ce4854dcea8e3b0fb21284f75784")
+                  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 ]
 
 # Bash recipe for building across all platforms
