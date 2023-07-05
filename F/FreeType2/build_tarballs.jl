@@ -8,7 +8,7 @@ version = v"2.13.1"
 # Collection of sources required to build FreeType2
 sources = [
     ArchiveSource("https://download.savannah.gnu.org/releases/freetype/freetype-$(version).tar.xz",
-                  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+                  "ea67e3b019b1104d1667aa274f5dc307d8cbd606b399bc32df308a77f1a564bf")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/freetype-*/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static
 make -j${nproc}
 make install
-install_license docs/{FTL,GPLv2,LICENSE}.TXT
+install_license docs/{FTL,GPLv2}.TXT
 """
 
 # These are the platforms we will build for by default, unless further
