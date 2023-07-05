@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "FreeType2"
-version = v"2.13.0"
+version = v"2.13.1"
 
 # Collection of sources required to build FreeType2
 sources = [
