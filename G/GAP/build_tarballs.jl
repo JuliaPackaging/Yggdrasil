@@ -29,7 +29,7 @@ name = "GAP"
 upstream_version = v"4.12.2"
 version = v"400.1200.200"
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
@@ -134,7 +134,7 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.3")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.4")),
 ]
 
 # Build the tarballs.
