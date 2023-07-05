@@ -73,7 +73,7 @@ make install
 #
 # The build process has far too many CMake files to track this down.
 #
-rm -r lib/cmake/Seacas/
+rm -r "${prefix}/lib/cmake/Seacas"
 """
 
 # These are the platforms we will build for by default, unless further
