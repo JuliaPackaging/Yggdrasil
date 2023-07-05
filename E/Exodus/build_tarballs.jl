@@ -75,7 +75,6 @@ make install
 #
 cd $WORKSPACE/destdir
 rm -r lib/cmake/Seacas/
-
 """
 
 # These are the platforms we will build for by default, unless further
