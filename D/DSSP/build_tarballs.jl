@@ -10,6 +10,8 @@ version = v"4.3.1"
 sources = [
     GitSource("https://github.com/PDB-REDO/dssp",
               "b87ef206a071e6f086c8dc01551afd5e9b23eb43"),
+    GitSource("https://github.com/mhekkel/libmcfp",
+              "4aa95505ded43e663fd9dae61c49b08fdc6cce0c"), # v1.2.4
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
@@ -28,17 +30,13 @@ const MACHTYPE_FULL = join((M[1:3]..., "libgfortran5", M[4:end]...), "-")
 script = """
 MACHTYPE_FULL=$MACHTYPE_FULL
 """ * raw"""
-cd $WORKSPACE/srcdir/dssp*/
+cd $WORKSPACE/srcdir/
 
-# fix error when linking mkdssp, otherwise linking fails on windows with g++
-# Ref: https://github.com/PDB-REDO/dssp/commit/49306a57098f1eaebb700eed29025e6f472a799a
-atomic_patch -p1 ../patches/cmake-fix-libcifpp-linkage.patch
-
+# Install a newer MacOS SDK
+# fixes compilation of dssp
+# - cmake fails on checking for std::filesystem
+# - compile error: 'any_cast<std::basic_string<char>>' is unavailable: introduced in macOS 10.14
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer MacOS SDK
-    # fixes:
-    # - cmake fails on checking for std::filesystem
-    # - compile error: 'any_cast<std::basic_string<char>>' is unavailable: introduced in macOS 10.14
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
@@ -47,14 +45,8 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-CFG_TESTING="-DENABLE_TESTING=OFF"
-if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
-    # build the tests if we are building for the build host platform
-    CFG_TESTING="-DENABLE_TESTING=ON"
-fi
 
 # install header-only libmcfp command-line argument parser
-git clone --depth 1 --branch v1.2.4 https://github.com/mhekkel/libmcfp
 cd libmcfp
 mkdir build && cd build
 cmake .. \
@@ -66,6 +58,20 @@ make install
 cp ../LICENSE LICENSE-libmcfp
 install_license LICENSE-libmcfp
 cd ../..
+
+
+# now compile dssp proper
+cd dssp
+
+# fix libcifpp linkage
+# Ref: https://github.com/PDB-REDO/dssp/commit/49306a57098f1eaebb700eed29025e6f472a799a
+atomic_patch -p1 ../patches/cmake-fix-libcifpp-linkage.patch
+
+CFG_TESTING="-DENABLE_TESTING=OFF"
+if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
+    # build the tests if we are building for the build host platform
+    CFG_TESTING="-DENABLE_TESTING=ON"
+fi
 
 mkdir build && cd build
 cmake .. \
@@ -86,7 +92,7 @@ fi
 
 make install
 
-# build shared library
+# build and install shared library libdssp
 "${CXX}" -shared -o "${libdir}/libdssp.${dlext}" \
     -Wl,$(flagon --whole-archive) "${libdir}/libdssp.a" -Wl,$(flagon --no-whole-archive) \
     -lcifpp
