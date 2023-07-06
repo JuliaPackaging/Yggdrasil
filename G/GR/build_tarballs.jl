@@ -105,7 +105,8 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Pixman_jll"),
 #    Dependency("Qhull_jll"),
-    Dependency("Qt5Base_jll"),
+    HostBuildDependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
@@ -114,4 +115,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC version 7 because of ffmpeg, but building against Qt requires v8 on Windows.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"8", julia_compat="1.6")
+               preferred_gcc_version = v"9", julia_compat="1.6")
