@@ -20,12 +20,10 @@ sources = [
 ]
 
 # NOTE
-# We don't use libcifpp_jll, as that is currently built incorrectly on
-# windows.  Instead, we build libcifpp here as well and use it as a
-# static library, as that seems to be the default way to build
-# libcifpp and dssp.
-#
-# Ref: https://github.com/JuliaPackaging/Yggdrasil/pull/7001
+# We don't use libcifpp_jll, as linking to the shared library from
+# libcifpp_jll currently fails on windows.  Instead, we build libcifpp
+# here as a static library and use that to build dssp, as that seems
+# to be the default way to build libcifpp and dssp.
 
 
 # The tests only pass with the correct cxxabi (-cxx11), so we create a
