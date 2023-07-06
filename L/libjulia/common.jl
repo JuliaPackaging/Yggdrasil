@@ -5,8 +5,9 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec
 
 # list of supported Julia versions
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-DEV", v"1.11.0-DEV"]
 if ! @isdefined julia_versions
-    julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+    julia_versions = Base.thispatch.(julia_full_versions)
 end
 
 # return the platforms supported by libjulia
@@ -39,6 +40,8 @@ end
 # Collection of sources required to build Julia
 function build_julia(ARGS, version::VersionNumber; jllversion=version)
     name = "libjulia"
+
+    @assert version in julia_full_versions
 
     checksums = Dict(
         v"1.6.3" => "2593def8cc9ef81663d1c6bfb8addc3f10502dd9a1d5a559728316a11dea2594",
