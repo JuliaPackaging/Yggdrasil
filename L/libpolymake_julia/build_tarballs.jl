@@ -9,11 +9,14 @@ using Base.BinaryPlatforms
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-name = "libpolymake_julia"
-version = v"0.10.1"
+# needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
 
-# reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+name = "libpolymake_julia"
+version = v"0.10.2"
+
+# reminder: change the above version when changing the supported julia versions
+# julia_versions is now taken from libjulia/common.jl
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libpolymake_julia
@@ -43,9 +46,6 @@ mkdir -p $jsondir
 $host_bindir/perl $host_bindir/polymake --iscript libpolymake-j*/src/polymake/apptojson.pl $jsondir
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-include("../../L/libjulia/common.jl")
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
@@ -61,7 +61,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.3")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.4")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
