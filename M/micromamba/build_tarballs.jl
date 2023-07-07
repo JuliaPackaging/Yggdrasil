@@ -45,7 +45,7 @@ else
 fi
 
 # install the licenses
-install_license info/licenses/*
+install_license info/licenses/mamba/*
 """
 
 # These are the platforms we will build for by default, unless further
