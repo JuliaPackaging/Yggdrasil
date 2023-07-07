@@ -15,11 +15,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/clustal-omega
 install_license LICENSE COPYING
-autoreconf -fvi
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DARGTABLE_INCLUDE_DIR=$WORKSPACE/destdir/include -DARGTABLE_LIBRARY_DIR=$WORKSPACE/destdir/lib \
+cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+-DARGTABLE_INCLUDE_DIR=${includedir} -DARGTABLE_LIBRARY_DIR=${libdir} \
 -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
