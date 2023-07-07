@@ -24,7 +24,7 @@ make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
+# These are the platforms that we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude = Sys.iswindows)
 platforms = expand_cxxstring_abis(platforms)
