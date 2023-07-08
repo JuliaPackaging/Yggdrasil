@@ -45,6 +45,7 @@ else
 fi
 
 # install the licenses
+install_license info/licenses/*.txt
 install_license info/licenses/mamba/*
 """
 
