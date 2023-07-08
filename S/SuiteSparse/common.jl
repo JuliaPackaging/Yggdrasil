@@ -12,6 +12,10 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "03350b0faef6b77d965ddb7c3cd3614a45376bfd"),
         ],
+        v"7.2.0" => [
+            GitSource("https://github.com/Wimmerer/SuiteSparse.git",
+                "1b4edf467637dbf33a26eee9a6c20afa40c7c5ea")
+        ]
     )
     return Any[
         suitesparse_version_sources[version]...,
@@ -42,4 +46,5 @@ products = [
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
 ]
