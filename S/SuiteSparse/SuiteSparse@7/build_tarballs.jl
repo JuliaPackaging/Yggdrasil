@@ -1,7 +1,7 @@
 include("../common.jl")
 
 name = "SuiteSparse"
-version = v"7.0.1"
+version = v"7.2.0"
 
 sources = suitesparse_sources(version)
 
@@ -9,8 +9,8 @@ sources = suitesparse_sources(version)
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
-# Needs cmake >= 3.22
-apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+# Needs cmake >= 3.22 provided by jll
+apk del cmake
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
