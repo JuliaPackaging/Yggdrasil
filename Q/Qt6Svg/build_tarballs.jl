@@ -71,7 +71,7 @@ products_macos = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
 ]
 
 include("../../fancy_toys.jl")
