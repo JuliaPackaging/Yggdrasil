@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ittapi"
-version = v"3.23.0"
+version = v"3.24.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/intel/ittapi.git", "96a01335dbc560b9224f52f0cc25c28ca0f1b564")
+    GitSource("https://github.com/intel/ittapi.git", "69dd04030d3a2cf4c32e649ac1f2a628d5af6b46")
 ]
 
 # Bash recipe for building across all platforms
