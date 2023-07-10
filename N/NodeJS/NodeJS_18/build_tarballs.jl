@@ -1,24 +1,24 @@
 using BinaryBuilder
 
 name = "NodeJS_18"
-version = v"18.16.0"
+version = v"18.16.1"
 
 url_prefix = "https://nodejs.org/dist/v$version/node-v$version"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "fc83046a93d2189d919005a348db3b2372b598a145d84eb9781a3a4b0f032e95"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "dc3dfaee899ed21682e47eaf15525f85aff29013c392490e9b25219cd95b1c35"; unpack_target = "aarch64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-ppc64le.tar.gz", "b4e66dcda5ba4a3697be3fded122dabb6a677deee3d7f4d3c7c13ebb5a13844c"; unpack_target = "powerpc64le-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "a3968db44e5ae17243d126ff79b1756016b198f7cc94c6fad8522aac481b4ff3"; unpack_target = "arm-linux-gnueabihf"),
+    ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "59582f51570d0857de6333620323bdeee5ae36107318f86ce5eca24747cabf5b"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "555b5c521e068acc976e672978ba0f5b1a0c030192b50639384c88143f4460bc"; unpack_target = "aarch64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-ppc64le.tar.gz", "4c4928f8b1b01c2a93ebf0eba2e179c63e97bca103339dc4152405531ca5c738"; unpack_target = "powerpc64le-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "ffac5b7627b086b16376751b641cb5c429f94cedf9a5f0f6cfc3cbe7aa0e6b89"; unpack_target = "arm-linux-gnueabihf"),
 
-    ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "fc83046a93d2189d919005a348db3b2372b598a145d84eb9781a3a4b0f032e95"; unpack_target = "x86_64-linux-musl"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "dc3dfaee899ed21682e47eaf15525f85aff29013c392490e9b25219cd95b1c35"; unpack_target = "aarch64-linux-musl"),
-    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "a3968db44e5ae17243d126ff79b1756016b198f7cc94c6fad8522aac481b4ff3"; unpack_target = "arm-linux-musleabihf"),
+    ArchiveSource("$(url_prefix)-linux-x64.tar.gz", "59582f51570d0857de6333620323bdeee5ae36107318f86ce5eca24747cabf5b"; unpack_target = "x86_64-linux-musl"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "555b5c521e068acc976e672978ba0f5b1a0c030192b50639384c88143f4460bc"; unpack_target = "aarch64-linux-musl"),
+    ArchiveSource("$(url_prefix)-linux-armv7l.tar.gz", "ffac5b7627b086b16376751b641cb5c429f94cedf9a5f0f6cfc3cbe7aa0e6b89"; unpack_target = "arm-linux-musleabihf"),
     
-    ArchiveSource("$(url_prefix)-darwin-x64.tar.gz", "cd520da6e2e89fab881c66a3e9aff02cb0d61d68104b1d6a571dd71bef920870"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-darwin-arm64.tar.gz", "82c7bb4869419ce7338669e6739a786dfc7e72f276ffbed663f85ffc905dcdb4"; unpack_target = "aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)-darwin-x64.tar.gz", "3040210287a0b8d05af49f57de191afa783e497abbb10c340bae9158cb51fdd4"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-darwin-arm64.tar.gz", "2ccb24e9211f4d17d8d8cfc0ea521198bb6a54e2f779f8feda952dbd3bb651ac"; unpack_target = "aarch64-apple-darwin20"),
 
-    ArchiveSource("$(url_prefix)-win-x64.zip", "4b3bd4cb5570cc217490639e93a7e1b7a7a341981366661e514ce61941824a85"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-win-x86.zip", "2a7e0fb22e1a36144ee8183c80ef2705cd9754c1d894f94bb6c94a681de47924"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-win-x64.zip", "145bd2f79eaa50b76559bd78266f4585e57b88dbb94613698a9514a601f84e7f"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-win-x86.zip", "950022d45729588421a535df7075c0b48fea26c41b66d545a300b2db67d949dc"; unpack_target = "i686-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
