@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "oxigraph_server"
 version = v"0.3.18"
 
-url_prefix = "https://github.com/oxigraph/oxigraph/releases/download/$version/oxigraph_server_v$version"
+url_prefix = "https://github.com/oxigraph/oxigraph/releases/download/v$version/oxigraph_server_v$version"
 
 # Collection of sources required to complete build
 sources = [
