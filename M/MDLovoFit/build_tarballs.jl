@@ -12,12 +12,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd MDLovoFit/
-make
-cd bin/
-install -Dvm 755 "./mdlovofit" "${bindir}/mdlovofit${exeext}"
-exit
+cd ${WORKSPACE}/srcdir/MDLovoFit
+install_license LICENSE
+make -j${nproc}
+if [[ "${target}" == *-w64-* ]]; then
+	install -Dvm 755 "./bin/mdlovofit" "${bindir}/mdlovofit${exeext}"
+else
+	install -Dvm 755 "./bin/mdlovofit${exeext}" "${bindir}/mdlovofit${exeext}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
