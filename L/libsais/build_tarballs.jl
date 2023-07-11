@@ -19,17 +19,15 @@ cd ${WORKSPACE}/srcdir/libsais
 install_license LICENSE
 mkdir build
 cd build
-# Clang is generally recommended (https://github.com/IlyaGrebnov/libsais#introduction)
-CC=clang
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DLIBSAIS_USE_OPENMP=ON \
 	-DLIBSAIS_BUILD_SHARED_LIB=ON \
 	-DCMAKE_BUILD_TYPE=Release
 make -j${nproc} all
-mv ${WORKSPACE}/srcdir/libsais/build/liblibsais.${dlext} ${libdir}/liblibsais.${dlext}
+install -Dvm 755 liblibsais.${dlext} ${libdir}/liblibsais.${dlext}
 for file in ${WORKSPACE}/srcdir/libsais/include/*.h; do
-	mv ${file} ${includedir}
+	install -Dvm 644 ${file} ${includedir}/$(basename ${file})
 done
 """
 
