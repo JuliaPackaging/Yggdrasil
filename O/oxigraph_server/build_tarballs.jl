@@ -3,22 +3,28 @@
 using BinaryBuilder, Pkg
 
 name = "oxigraph_server"
-version = v"0.2.5"
+version = v"0.3.18"
+
+url_prefix = "https://github.com/oxigraph/oxigraph/releases/download/$version/oxigraph_server_v$version"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oxigraph/oxigraph.git", "a21dcbb4f7355d7a00a86fbc5ad2c350a53629c4"),
+    ArchiveSource("$(url_prefix)_aarch64_apple", "c0c2a64e7dc05cf9c24d4c29349baef583eead3e1f9984cdc2ac56a5beba9df7"; unpack_target = "arm64-apple-darwin"),
+    ArchiveSource("$(url_prefix)_x86_64_apple", "c0c2a64e7dc05cf9c24d4c29349baef583eead3e1f9984cdc2ac56a5beba9df7"; unpack_target = "arm64-apple-darwin"),
+    ArchiveSource("$(url_prefix)_aarch64_linux_gnu", "c0c2a64e7dc05cf9c24d4c29349baef583eead3e1f9984cdc2ac56a5beba9df7"; unpack_target = "arm64-apple-darwin"),
+    ArchiveSource("$(url_prefix)_x86_64_linux_gnu", "c0c2a64e7dc05cf9c24d4c29349baef583eead3e1f9984cdc2ac56a5beba9df7"; unpack_target = "arm64-apple-darwin"),
+    ArchiveSource("$(url_prefix)_x86_64_windows_msvc.exe", "c0c2a64e7dc05cf9c24d4c29349baef583eead3e1f9984cdc2ac56a5beba9df7"; unpack_target = "arm64-apple-darwin"),
+    FileSource("https://raw.githubusercontent.com/oxigraph/oxigraph/v$version/LICENSE-MIT", "b98fbb37db5b23bc5cfdcd16793206a5a7120a7b01f75374e5e0888376e4691c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/oxigraph/server
-
-cargo build --release --no-default-features --features=sled
-
-install_license $WORKSPACE/srcdir/oxigraph/LICENSE-MIT
-
-cp ../target/${rust_target}/release/oxigraph_server${exeext} ${bindir}/
+cd ${WORKSPACE}/srcdir/
+mkdir -p "${bindir}"
+mv ${target}/oxigraph* ${target}/oxigraph_server${exeext}
+cp ${target}/oxigraph_server${exeext} ${bindir}
+chmod +x ${bindir}/*
+install_license LICENSE-MIT.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -35,9 +41,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                compilers=[:c, :rust], preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat="1.6")
+    julia_compat="1.6")
