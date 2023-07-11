@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"5.2.2" # <-- There is no version 5.2.2, but we need to change version for a new Julia release 
+version = v"5.2.2" # <-- There is no version 5.2.2, but we need to change versions for new Julia releases
 
 # Collection of sources required to build Sundials
 sources = [
@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sundials*
 
+# Don't run the KLU and LAPACK tests during build since we are in a cross compile environment
 atomic_patch -p1 ../patches/Sundials_NoKLUTest.patch
 atomic_patch -p1 ../patches/Sundials_NoLAPACKTest.patch
 
@@ -45,10 +46,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_ENABLE=ON \
     -DKLU_INCLUDE_DIR="${includedir}" \
     -DKLU_LIBRARY_DIR="${libdir}" \
-    -DKLU_WORKS=ON \
     -DLAPACK_ENABLE=ON \
     -DLAPACK_LIBRARIES:STRING="${LAPACK_NAME}" \
-    -DLAPACK_WORKS=ON \
     ..
 make -j${nproc}
 make install
@@ -96,4 +95,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.10")
