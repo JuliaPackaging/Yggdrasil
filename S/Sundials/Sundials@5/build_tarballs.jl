@@ -14,13 +14,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sundials*
 
+atomic_patch -p1 ../patches/Sundials_NoKLUTest.patch
+atomic_patch -p1 ../patches/ Sundials_NoLAPACKTest.patch
+
 if [[ ${nbits} == 64 ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
 fi
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
+    atomic_patch -p1 ../patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     export CFLAGS="-DBUILD_SUNDIALS_LIBRARY"
     # See https://github.com/LLNL/sundials/issues/35
