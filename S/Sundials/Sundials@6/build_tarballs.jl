@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/sundials*
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
-    #atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_windows.patch
+    #atomic_patch -p1 ../patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     export CFLAGS="-DBUILD_SUNDIALS_LIBRARY"
     # See https://github.com/LLNL/sundials/issues/35
@@ -24,22 +24,11 @@ if [[ "${target}" == *-mingw* ]]; then
     # When looking for KLU libraries, CMake searches only for import libraries,
     # this patch ensures we look also for shared libraries.
     #atomic_patch -p1 ../patches/Sundials_findklu_suffixes.patch
-elif [[ "${target}" == powerpc64le-* ]]; then
-    export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 
 # Set up LAPACK
-LAPACK_LIBRARIES="-lgfortran"
 if [[ ${nbits} == 64 ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas64_.${dlext}"
-else
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas.${dlext}"
-fi
-if [[ "${target}" == i686-* ]] || [[ "${target}" == x86_64-* ]]; then
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} -lquadmath"
-elif [[ "${target}" == powerpc64le-* ]]; then
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} -lgomp -ldl -lm -lpthread"
 fi
 
 # Build
@@ -51,8 +40,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_ENABLE=ON \
     -DKLU_INCLUDE_DIR="${includedir}" \
     -DKLU_LIBRARY_DIR="${libdir}" \
+    -DKLU_WORKS=ON \
     -DLAPACK_ENABLE=ON \
-    -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DLAPACK_LIBRARIES:STRING="-lblastrampoline" \
+    -DLAPACK_WORKS=ON \
     ..
 make -j${nproc}
 make install
@@ -95,7 +86,7 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenBLAS_jll"),
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("SuiteSparse_jll"; compat="~7.2"),
 ]
 
