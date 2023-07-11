@@ -23,7 +23,6 @@ sources = [
 # here as a static library and use that to build dssp, as that seems
 # to be the default way to build libcifpp and dssp.
 
-
 # The tests only pass with the correct cxxabi (-cxx11), so we create a
 # MACHTYPE_FULL variable to pass to the shell script which can there
 # be matched against to bb_full_target.
