@@ -165,8 +165,8 @@ products_macos = [
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6ShaderTools_jll"),
-    Dependency("Qt6Base_jll"),
-    Dependency("Qt6ShaderTools_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
+    Dependency("Qt6ShaderTools_jll"; compat="="*string(version)),
 ]
 
 if !host_build

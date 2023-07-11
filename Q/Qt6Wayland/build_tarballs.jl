@@ -58,9 +58,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
     HostBuildDependency("Qt6Declarative_jll"),
-    Dependency("Qt6Declarative_jll"),
+    Dependency("Qt6Declarative_jll"; compat="="*string(version)),
     BuildDependency("Xorg_xproto_jll"),
 ]
 

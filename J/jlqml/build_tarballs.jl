@@ -54,9 +54,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Qt6Declarative_jll"),
+    Dependency("Qt6Declarative_jll"; compat="6.4.2"),
     HostBuildDependency("Qt6Declarative_jll"),
-    Dependency("Qt6Svg_jll"),
+    Dependency("Qt6Svg_jll"; compat="6.4.2"),
     BuildDependency("Libglvnd_jll"),
     BuildDependency("libjulia_jll"),
 ]
