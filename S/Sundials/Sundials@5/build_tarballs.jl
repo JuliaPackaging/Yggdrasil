@@ -39,8 +39,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_ENABLE=ON \
     -DKLU_INCLUDE_DIR="${includedir}" \
     -DKLU_LIBRARY_DIR="${libdir}" \
+    -DKLU_WORKS=ON \
     -DLAPACK_ENABLE=ON \
     -DLAPACK_LIBRARIES:STRING="-lblastrampoline" \
+    -DLAPACK_WORKS=ON \
     ..
 make -j${nproc}
 make install
