@@ -25,7 +25,7 @@ make install
 install_license ../LICENSE
 """
 
-platforms = supported_platforms()
+platforms = [AnyPlatform()]
 
 # No products, libmcfp is a header-only library
 products = Product[
