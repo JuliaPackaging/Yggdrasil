@@ -10,8 +10,6 @@ version = v"4.3.1"
 sources = [
     GitSource("https://github.com/PDB-REDO/dssp",
               "b87ef206a071e6f086c8dc01551afd5e9b23eb43"),
-    GitSource("https://github.com/mhekkel/libmcfp",
-              "4aa95505ded43e663fd9dae61c49b08fdc6cce0c"), # v1.2.4
     GitSource("https://github.com/PDB-REDO/libcifpp",
               "836aed6ea9a227b37e5b0d9cbcb1253f545d0778"), # v5.1.0 (git-tag v5.1.0.1)
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
@@ -59,22 +57,6 @@ CFG_TESTING="-DENABLE_TESTING=OFF"
 if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
     CFG_TESTING="-DENABLE_TESTING=ON"
 fi
-
-
-###########
-# libmcfp: install header-only libmcfp command-line argument parser
-###########
-cd libmcfp
-mkdir build && cd build
-cmake .. \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release
-make -j${nproc}
-make install
-cp ../LICENSE LICENSE-libmcfp
-install_license LICENSE-libmcfp
-cd ../..
 
 
 ###########
@@ -161,6 +143,7 @@ products = [
 
 dependencies = [
     BuildDependency("Eigen_jll"),
+    BuildDependency("libmcfp_jll"),
     Dependency("Zlib_jll"),
     # boost is needed for `make test`, which we only run on `default_host_platform`
     HostBuildDependency("boost_jll"; platforms=[default_host_platform]),
