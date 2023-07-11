@@ -39,8 +39,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_ENABLE=ON \
     -DKLU_INCLUDE_DIR="${includedir}" \
     -DKLU_LIBRARY_DIR="${libdir}" \
-    -DBLAS_ENABLE=ON \
-    -DBLAS_LIBRARIES:STRING="-lblastrampoline" \
     -DLAPACK_ENABLE=ON \
     -DLAPACK_LIBRARIES:STRING="-lblastrampoline" \
     ..
