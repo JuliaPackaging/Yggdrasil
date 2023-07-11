@@ -22,6 +22,17 @@ sources = [
 # libcifpp_jll currently fails on windows.  Instead, we build libcifpp
 # here as a static library and use that to build dssp, as that seems
 # to be the default way to build libcifpp and dssp.
+#
+# libcifpp gets installed under $prefix/install-libcifpp, as the mmcif
+# dictionary it installs is needed at runtime by mkdssp.  We don't
+# install to $prefix to avoid filename collisions with the files
+# installed by libcifpp_jll.
+#
+# Run like this from julia:
+#
+# using DSSP_jll
+# run(`$(DSSP_jll.mkdssp()) --mmcif-dictionary $(joinpath(DSSP_jll.artifact_dir, "install-libcifpp", "share", "libcifpp", "mmcif_pdbx.dic")) 1aki.cif.gz`)
+
 
 # The tests only pass with the correct cxxabi (-cxx11), so we create a
 # MACHTYPE_FULL variable to pass to the shell script which can there
@@ -83,7 +94,7 @@ mkdir build && cd build
 # -D_CXX_ATOMIC_BUILTIN_EXITCODE__TRYRUN_OUTPUT=0
 #
 cmake .. \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix}/install-libcifpp \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_FOR_CCP4=OFF \
@@ -120,6 +131,7 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PREFIX_PATH=${prefix}/install-libcifpp \
     -DBUILD_FOR_CCP4=OFF \
     -DBUILD_WEBSERVER=OFF \
     ${CFG_TESTING}
