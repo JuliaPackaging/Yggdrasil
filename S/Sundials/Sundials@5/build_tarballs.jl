@@ -1,18 +1,22 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"5.2.2" # <-- There is no version 5.2.2, but we need to change version to build for Julia v1.10
+version = v"5.2.2" # <-- There is no version 5.2.2, but we need to change version for a new Julia release 
 
 # Collection of sources required to build Sundials
 sources = [
     GitSource("https://github.com/LLNL/sundials.git",
-              "b16d3d3995668c9a13c9f4bee8b0113ff6a9cf6d"),
+              "8264ba5614fd9578786e5e8a3ba9f703ff795361"),
     DirectorySource("../bundled@5"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sundials*
+
+if [[ ${nbits} == 64 ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
+fi
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
@@ -24,22 +28,6 @@ if [[ "${target}" == *-mingw* ]]; then
     # When looking for KLU libraries, CMake searches only for import libraries,
     # this patch ensures we look also for shared libraries.
     atomic_patch -p1 ../patches/Sundials_findklu_suffixes.patch
-elif [[ "${target}" == powerpc64le-* ]]; then
-    export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
-fi
-
-# Set up LAPACK
-LAPACK_LIBRARIES="-lgfortran"
-if [[ ${nbits} == 64 ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas64_.${dlext}"
-else
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} ${libdir}/libopenblas.${dlext}"
-fi
-if [[ "${target}" == i686-* ]] || [[ "${target}" == x86_64-* ]]; then
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} -lquadmath"
-elif [[ "${target}" == powerpc64le-* ]]; then
-    LAPACK_LIBRARIES="${LAPACK_LIBRARIES} -lgomp -ldl -lm -lpthread"
 fi
 
 # Build
@@ -51,8 +39,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DKLU_ENABLE=ON \
     -DKLU_INCLUDE_DIR="${includedir}" \
     -DKLU_LIBRARY_DIR="${libdir}" \
+    -DBLAS_ENABLE=ON \
+    -DBLAS_LIBRARIES:STRING="-lblastrampoline" \
     -DLAPACK_ENABLE=ON \
-    -DLAPACK_LIBRARIES:STRING="${LAPACK_LIBRARIES}" \
+    -DLAPACK_LIBRARIES:STRING="-lblastrampoline" \
     ..
 make -j${nproc}
 make install
@@ -64,7 +54,7 @@ fi
 """
 
 # We attempt to build for all defined platforms
-platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms(; experimental=true))
+platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms())
 platforms = expand_gfortran_versions(platforms)
 
 products = [
@@ -95,9 +85,9 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenBLAS_jll"),
-    Dependency("SuiteSparse_jll"; compat="~7.2.0"),
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
+    Dependency("SuiteSparse_jll"; compat="~7.2"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.9")
