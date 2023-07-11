@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir
 cd MDLovoFit/
 make
 cd bin
-install -Dvm 755 "mdlovofit" "${bindir}/mdlovofit${exeext}"
+install -Dvm 755 "mdlovofit${exeext}" "${bindir}/mdlovofit${exeext}"
 exit
 """
 
