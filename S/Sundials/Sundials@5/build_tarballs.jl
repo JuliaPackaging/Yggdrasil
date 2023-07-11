@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/sundials*
 
 atomic_patch -p1 ../patches/Sundials_NoKLUTest.patch
-atomic_patch -p1 ../patches/ Sundials_NoLAPACKTest.patch
+atomic_patch -p1 ../patches/Sundials_NoLAPACKTest.patch
 
 if [[ ${nbits} == 64 ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
