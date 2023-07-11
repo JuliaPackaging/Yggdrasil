@@ -113,9 +113,9 @@ dependencies = [
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6ShaderTools_jll"),
     HostBuildDependency("Qt6Declarative_jll"),
-    Dependency("Qt6Base_jll"),
-    Dependency("Qt6ShaderTools_jll"),
-    Dependency("Qt6Declarative_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
+    Dependency("Qt6ShaderTools_jll"; compat="="*string(version)),
+    Dependency("Qt6Declarative_jll"; compat="="*string(version)),
 ]
 
 include("../../fancy_toys.jl")

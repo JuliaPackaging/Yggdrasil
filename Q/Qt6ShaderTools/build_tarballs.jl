@@ -88,7 +88,7 @@ products_macos = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
 ]
 
 if !host_build
