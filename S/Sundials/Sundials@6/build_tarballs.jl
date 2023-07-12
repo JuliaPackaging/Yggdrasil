@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/sundials*
 if [[ ${nbits} == 64 ]]; then
     cd $WORKSPACE/srcdir/sundials*/cmake
     atomic_patch -p2 ../patches/SundialsSetupCompilers.patch
-end
+fi
 
 # Set up CFLAGS
 cd $WORKSPACE/srcdir/sundials*/cmake/tpl
