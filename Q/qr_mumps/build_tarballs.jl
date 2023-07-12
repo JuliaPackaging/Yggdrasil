@@ -3,7 +3,9 @@
 using BinaryBuilder, Pkg
 
 name = "qr_mumps"
-version = v"3.0.4"
+
+# Version is 3.0.4 but we are bumping it for compat with new Julia releases
+version = v"3.0.5"
 
 # Collection of sources required to complete build
 sources = [
@@ -66,4 +68,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.10", preferred_gcc_version = v"9.1.0")
