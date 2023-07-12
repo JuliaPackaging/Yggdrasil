@@ -29,8 +29,7 @@ install_license LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = supported_platforms(; exclude=p -> (Sys.isbsd(p) || libc(p) == "musl" || nbits(p) != 64 || arch(p) == "powerpc64le"))
 
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
