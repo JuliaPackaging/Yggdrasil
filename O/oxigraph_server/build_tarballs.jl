@@ -9,8 +9,8 @@ url_prefix = "https://github.com/oxigraph/oxigraph/releases/download/v$version/o
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("$(url_prefix)_aarch64_apple", "c0c2a64e7dc05cf9c24d4c29349baef583eead3e1f9984cdc2ac56a5beba9df7"; filename = "oxigraph_server-arm64-apple-darwin"),
-    FileSource("$(url_prefix)_x86_64_apple", "c5d1229d1011d30ed55226545abc9f9caa5f40d34cecf3b7d0e6964db516df6b"; filename = "oxigraph_server-x86_64-apple-darwin"),
+    FileSource("$(url_prefix)_aarch64_apple", "c0c2a64e7dc05cf9c24d4c29349baef583eead3e1f9984cdc2ac56a5beba9df7"; filename = "oxigraph_server-aarch64-apple-darwin20"),
+    FileSource("$(url_prefix)_x86_64_apple", "c5d1229d1011d30ed55226545abc9f9caa5f40d34cecf3b7d0e6964db516df6b"; filename = "oxigraph_server-x86_64-apple-darwin14"),
     FileSource("$(url_prefix)_aarch64_linux_gnu", "be0ec046fe48adff38e08c235d8f3f56af8d278a0a672c7f438ab32504ecaa57"; filename = "oxigraph_server-aarch64-linux-gnu"),
     FileSource("$(url_prefix)_x86_64_linux_gnu", "1d62d475516f85dc8ab548ed0f8d25572186cbaf91cf43805d415d310045ea1e"; filename = "oxigraph_server-x86_64-linux-gnu"),
     FileSource("$(url_prefix)_x86_64_windows_msvc.exe", "232fab182aa30df0d004980b6d386fab3aabb89ec294386ee63df0f56622ccf1"; filename = "oxigraph_server-x86_64-w64-mingw32"),
@@ -43,6 +43,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("Libiconv_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
