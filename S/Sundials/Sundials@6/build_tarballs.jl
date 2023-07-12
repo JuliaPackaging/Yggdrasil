@@ -7,33 +7,37 @@ version = v"6.5.1"
 sources = [
     GitSource("https://github.com/LLNL/sundials.git",
               "34d21afdb5780947223b88a46201fbe8191af48c"),
-#    DirectorySource("../bundled@5"),
+    DirectorySource("../bundled@6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/sundials*
+cd $WORKSPACE/srcdir/sundials*/
+
+if [[ ${nbits} == 64 ]]; then
+    cd $WORKSPACE/srcdir/sundials*/cmake
+    atomic_patch -p2 ../patches/SundialsSetupCompilers.patch
+end
 
 # Set up CFLAGS
+cd $WORKSPACE/srcdir/sundials*/cmake/tpl
 if [[ "${target}" == *-mingw* ]]; then
     LAPACK_NAME="-L${libdir} -lblastrampoline-5"
-    #atomic_patch -p1 ../patches/Sundials_windows.patch
+    atomic_patch -p2 $WORKSPACE/srcdir/patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
-    export CFLAGS="-DBUILD_SUNDIALS_LIBRARY"
-    # See https://github.com/LLNL/sundials/issues/35
-    #atomic_patch -p1 ../patches/Sundials_lapackband.patch
     # When looking for KLU libraries, CMake searches only for import libraries,
     # this patch ensures we look also for shared libraries.
-    #atomic_patch -p1 ../patches/Sundials_findklu_suffixes.patch
+    atomic_patch -p2 $WORKSPACE/srcdir/patches/Sundials_findklu_suffixes.patch
+
+    #export CFLAGS="-DBUILD_SUNDIALS_LIBRARY"
+    # See https://github.com/LLNL/sundials/issues/35
+    #atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_lapackband.patch
 else
     LAPACK_NAME="-L{$libdir} -lblastrampoline"
 fi
 
-#if [[ ${nbits} == 64 ]]; then
-#    atomic_patch -p1 $WORKSPACE/srcdir/patches/Sundials_Fortran.patch
-#fi
-
 # Build
+cd $WORKSPACE/srcdir/sundials*
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
