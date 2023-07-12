@@ -14,12 +14,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/MDLovoFit
 install_license LICENSE
+cmake .
 make -j${nproc}
-if [[ "${target}" == *-w64-* ]]; then
-	install -Dvm 755 "./bin/mdlovofit" "${bindir}/mdlovofit${exeext}"
-else
-	install -Dvm 755 "./bin/mdlovofit${exeext}" "${bindir}/mdlovofit${exeext}"
-fi
 """
 
 # These are the platforms we will build for by default, unless further
