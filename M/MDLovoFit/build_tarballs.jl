@@ -16,7 +16,7 @@ cd ${WORKSPACE}/srcdir/MDLovoFit
 install_license LICENSE
 cmake .
 make -j${nproc}
-install -Dvm 755 "./bin/mdlovofit${exeext}" "${bindir}/mdlovofit${exeext}"
+install -Dvm 755 "./bin/mdlovofit" "${bindir}/mdlovofit${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
