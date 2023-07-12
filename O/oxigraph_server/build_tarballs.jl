@@ -20,10 +20,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/
-mkdir -p "${bindir}"
-mv oxigraph_server-${target} oxigraph_server${exeext}
-cp oxigraph_server${exeext} ${bindir}
-chmod +x ${bindir}/*
+install -Dvm 755 "oxigraph_server-${target}" "${bindir}/oxigraph_server${exeext}"
 install_license LICENSE.txt
 """
 
