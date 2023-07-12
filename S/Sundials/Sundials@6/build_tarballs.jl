@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/sundials*/
+cd $WORKSPACE/srcdir/sundials*
 
 if [[ ${nbits} == 64 ]]; then
     cd $WORKSPACE/srcdir/sundials*/cmake
