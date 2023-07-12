@@ -7,7 +7,7 @@ version = v"6.5.1"
 sources = [
     GitSource("https://github.com/LLNL/sundials.git",
               "34d21afdb5780947223b88a46201fbe8191af48c"),
-    DirectorySource("../bundled@6"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
