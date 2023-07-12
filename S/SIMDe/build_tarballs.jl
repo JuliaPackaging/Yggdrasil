@@ -20,12 +20,12 @@ install_license COPYING
 mkdir build
 cd build
 meson .. --prefix=${prefix} --libdir=${libdir} --buildtype=release --cross-file=${MESON_TARGET_TOOLCHAIN} -Dtests=false
-ninja install
+ninja -j${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line 
-platforms = supported_platforms()
+platforms = [AnyPlatform()]
 
 # There are no products that are built (header-only library)
 products = Product[]
