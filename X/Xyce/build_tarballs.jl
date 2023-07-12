@@ -3,7 +3,9 @@
 using BinaryBuilder, Pkg
 
 name = "Xyce"
-version = v"7.6"
+
+# Real version is 7.6, but it is bumped to manage Julia compat
+version = v"7.6.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -60,4 +62,4 @@ dependencies = [
                 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat="1.6.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat="1.10")
