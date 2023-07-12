@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"6.5.1" 
+version = v"6.5.1"
 
 # Collection of sources required to build Sundials
 sources = [
@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/sundials*
 
 # Set up CFLAGS
 if [[ "${target}" == *-mingw* ]]; then
-    LAPACK_NAME=-lblastrampoline-5
+    LAPACK_NAME="-L${libdir} -lblastrampoline-5"
     #atomic_patch -p1 ../patches/Sundials_windows.patch
     # Work around https://github.com/LLNL/sundials/issues/29
     export CFLAGS="-DBUILD_SUNDIALS_LIBRARY"
@@ -26,7 +26,7 @@ if [[ "${target}" == *-mingw* ]]; then
     # this patch ensures we look also for shared libraries.
     #atomic_patch -p1 ../patches/Sundials_findklu_suffixes.patch
 else
-    LAPACK_NAME=-lblastrampoline-5
+    LAPACK_NAME="-L{$libdir} -lblastrampoline"
 fi
 
 #if [[ ${nbits} == 64 ]]; then
