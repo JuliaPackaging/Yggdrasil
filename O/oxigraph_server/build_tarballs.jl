@@ -26,7 +26,11 @@ install_license LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> (Sys.isbsd(p) || (Sys.islinux(p) && libc(p) == "musl") || nbits(p) != 64 || arch(p) == "powerpc64le"))
+platforms = supported_platforms(; exclude=p -> (arch(p) == "powerpc64le" || Sys.isfreebsd(p) || (Sys.islinux(p) && libc(p) == "musl") || nbits(p) != 64))
+platforms = expand_cxxstring_abis(platforms)
+
+# Binaries are built upstream using GCC v9+, skip CXX03 string ABI
+platforms = filter(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
@@ -43,4 +47,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"5", lock_microarchitecture=false)
+    julia_compat="1.6", lock_microarchitecture=false)
