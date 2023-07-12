@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MDLovoFit"
-version = v"20.0.3"
+version = v"20.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/m3g/MDLovoFit.git", "a06c6048ecf43d4dad28ef2b995fd31610c732bc")
+    GitSource("https://github.com/m3g/MDLovoFit.git", "e320c2a503c9bd88fe2dc102f2abfd0b2f5d4cce")
 ]
 
 # Bash recipe for building across all platforms
