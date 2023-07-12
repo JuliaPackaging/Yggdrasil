@@ -29,7 +29,7 @@ if [[ "${target}" != *-gnu* ]]; then
 else
     STATIC_SHARED_TOGGLE=(--disable-shared --disable-static)
     # Handle error on GNU/Linux:
-    #  configure: error: 
+    #  configure: error:
     #      On GNU/Linux, building both shared and static library at the same time
     #      is not supported if --with-pic or --without-pic is used.
     #      Use either --disable-shared or --disable-static to build one type
