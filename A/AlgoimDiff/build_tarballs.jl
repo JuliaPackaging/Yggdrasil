@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/algoim/algoim
 export CXXFLAGS="-I$prefix/include/julia -llapacke -llapack -std=c++17 -fpic"
 $CXX $CXXFLAGS -c cutquad.cpp
-$CXX -shared -o $libdir/libcutquad.so cutquad.o -lopenblas
+$CXX -shared -o "${libdir}/libcutquad.${dlext}" cutquad.o -lopenblas
 """
 
 # These are the platforms we will build for by default, unless further
