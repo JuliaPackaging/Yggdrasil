@@ -26,7 +26,7 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"2.9.0"
-version_offset = v"0.0.6"
+version_offset = v"0.0.7"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -47,10 +47,11 @@ elif [[ ${target} == *mingw* ]]; then
    extraflags=--reentrant
 fi
 
-# Currently we backport 0292521af462dcd3ba747255a4c5ed9317d911dd,
-#                       bfbc1eb206288abe7b9ccd04d3cb104b4a2b3898,
+# Currently we backport 0292521af462dcd3ba747255a4c5ed9317d911dd
+#                       bfbc1eb206288abe7b9ccd04d3cb104b4a2b3898
 #                       a7a234463c0d4b5730d05ad57ab2798b2df26127
 #                       455d05914b62423b77ba3f39d8e99a549cc2f57e
+#                       ef89816abda221fc40cb4a960430cb570ef0f43c
 # in make_flint_great_again.patch
 # Drop once we bump the version to 3.0
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
