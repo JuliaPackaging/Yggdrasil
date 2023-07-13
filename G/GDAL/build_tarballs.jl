@@ -3,27 +3,26 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.6.2"
-version_offset = v"1.0.0"
+upstream_version = v"3.7.1"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
-    ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
-        "cd5bf004af85b88414676b0d5694d3192414e556961ee3d47164f3298078a818"),
+    ArchiveSource("https://github.com/OSGeo/gdal.git",
+        "68da5257b139d4d80162cf83fdb8c6d26ead412f"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gdal-*/
+cd $WORKSPACE/srcdir/gdal
 install_license LICENSE.TXT
 
-mkdir build
-cd build
+mkdir build && cd build
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
@@ -133,19 +132,19 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GEOS_jll"; compat="~3.11"),
-    Dependency("PROJ_jll"; compat="~900.100"),
+    Dependency("PROJ_jll"; compat="~900.200"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
     Dependency("LibPQ_jll"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
-    Dependency("Libtiff_jll"; compat="4.3"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("libgeotiff_jll"; compat="100.700.100"),
-    Dependency("LibCURL_jll"; compat="7.73"),
+    Dependency("LibCURL_jll"; compat="7.73,8")
     Dependency("NetCDF_jll"; compat="400.902.5", platforms=hdf5_platforms),
     # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="~1.12", platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
 ]
 
