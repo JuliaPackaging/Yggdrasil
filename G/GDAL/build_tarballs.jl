@@ -11,7 +11,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build GDAL
 sources = [
-    ArchiveSource("https://github.com/OSGeo/gdal.git",
+    GitSource("https://github.com/OSGeo/gdal.git",
         "68da5257b139d4d80162cf83fdb8c6d26ead412f"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
