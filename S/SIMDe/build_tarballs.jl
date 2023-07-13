@@ -31,7 +31,26 @@ platforms = [AnyPlatform()]
 products = Product[]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = Dependency[
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    # Please consult the relevant README section for more information in regards to
+    # SIMDe OpenMP support (https://github.com/simd-everywhere/simde#openmp-4-simd) 
+    Dependency(
+        PackageSpec(
+            name = "CompilerSupportLibraries_jll",
+            uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae",
+        );
+        platforms = filter(!Sys.isbsd, platforms),
+    ),
+    Dependency(
+        PackageSpec(
+            name = "LLVMOpenMP_jll", 
+            uuid = "1d63c593-3942-5779-bab2-d838dc0a180e"
+        );
+        platforms = filter(Sys.isbsd, platforms),
+    ),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(
