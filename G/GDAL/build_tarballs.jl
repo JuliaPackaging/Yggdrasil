@@ -132,7 +132,7 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GEOS_jll"; compat="~3.11"),
-    Dependency("PROJ_jll"; compat="~900.200"),
+    Dependency("PROJ_jll"; compat="~900.200.100"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
     Dependency("LibPQ_jll"),
