@@ -7,7 +7,8 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jehicken/algoim.git", "62dbdc98932bad7d1ad293a9cc889f876eda1f64")
+    GitSource("https://github.com/jehicken/algoim.git", 
+        "b4bd90adef7579e8358525aa29cbd89b2bb65847")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,19 +21,11 @@ $CXX -shared -o "${libdir}/libcutquad.${dlext}" cutquad.o -lopenblas
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
-]
-
+platforms = supported_platforms(;
+    exclude=[[p for p in supported_platforms() if !Sys.islinux(p)]; 
+             Platform("i686", "linux"; libc= "musl")]
+)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
