@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Trilinos"
 # Not a real version - this is 12.12.1, but needed a bump to change julia compat
-version = v"12.13.1"
+version = v"12.13.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -74,4 +74,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", julia_compat="1.10")
