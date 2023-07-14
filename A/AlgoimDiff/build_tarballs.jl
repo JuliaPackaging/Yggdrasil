@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/algoim/algoim
-export CXXFLAGS="-I$prefix/include/julia -llapacke -llapack -std=c++17 -fpic"
+export CXXFLAGS="-I${includedir}/julia -llapacke -llapack -std=c++17 -fpic"
 $CXX $CXXFLAGS -c cutquad.cpp
 $CXX -shared -o "${libdir}/libcutquad.${dlext}" cutquad.o -lopenblas
 """
