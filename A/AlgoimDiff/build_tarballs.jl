@@ -22,8 +22,7 @@ $CXX -shared -o "${libdir}/libcutquad.${dlext}" cutquad.o -lopenblas
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(;
-    exclude=[[p for p in supported_platforms() if !Sys.islinux(p)]; 
-             Platform("i686", "linux"; libc= "musl")]
+    exclude=p->!Sys.islinux(p) || (libc(p) == "musl" && arch(p) == "i686")
 )
 platforms = expand_cxxstring_abis(platforms)
 
