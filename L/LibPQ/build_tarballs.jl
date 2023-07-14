@@ -15,7 +15,7 @@ sources = [
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
-        "584666393a5424d13d27ec01183da17703273664742e049d4f62f62dab631775",
+        "46d17f2bb19ad73290f03a203006152e0fa0d7b11e5b71467c4a823811b214e7",
     ),
 ]
 
