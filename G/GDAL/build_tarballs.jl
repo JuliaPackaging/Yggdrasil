@@ -22,7 +22,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
-mkdir build && cd build
+install_license LICENSE.TXT
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
@@ -33,6 +33,8 @@ if [[ "${target}" == *-freebsd* ]]; then
 
     atomic_patch -p1 ../../patches/bsd-environ-undefined-fix.patch
 fi
+
+mkdir build && cd build
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Work around the issue
@@ -91,8 +93,6 @@ fi
 cmake .. ${CMAKE_FLAGS[@]}
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
-
-install_license LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
