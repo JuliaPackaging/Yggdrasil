@@ -1,0 +1,27 @@
+diff --git a/gdal.cmake b/gdal.cmake
+index e221f99b79..bfd00348f3 100644
+--- a/gdal.cmake
++++ b/gdal.cmake
+@@ -277,14 +277,14 @@ endif ()
+ 
+ # Check that all symbols we need are present in our dependencies This is in particular useful to check that drivers
+ # built as plugins can access all symbols they need.
+-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+-  include(CheckLinkerFlag)
+-  check_linker_flag(C "-Wl,--no-undefined" HAS_NO_UNDEFINED)
+-  if (HAS_NO_UNDEFINED AND (NOT "${CMAKE_CXX_FLAGS}" MATCHES "-fsanitize") AND NOT CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
+-    string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,--no-undefined")
+-    string(APPEND CMAKE_MODULE_LINKER_FLAGS " -Wl,--no-undefined")
+-  endif ()
+-endif ()
++# if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
++#   include(CheckLinkerFlag)
++#   check_linker_flag(C "-Wl,--no-undefined" HAS_NO_UNDEFINED)
++#   if (HAS_NO_UNDEFINED AND (NOT "${CMAKE_CXX_FLAGS}" MATCHES "-fsanitize") AND NOT CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
++#     string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,--no-undefined")
++#     string(APPEND CMAKE_MODULE_LINKER_FLAGS " -Wl,--no-undefined")
++#   endif ()
++# endif ()
+ 
+ macro(set_alternate_linker linker)
+   if( NOT "${USE_ALTERNATE_LINKER}" STREQUAL "${USE_ALTERNATE_LINKER_OLD_CACHED}" )

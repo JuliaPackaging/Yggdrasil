@@ -15,6 +15,7 @@ sources = [
         "68da5257b139d4d80162cf83fdb8c6d26ead412f"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,12 +31,8 @@ if [[ "${target}" == *-freebsd* ]]; then
     # be a problem at runtime. The flag `-undefined` allows having undefined symbols.
     # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
     export LDFLAGS="-lexecinfo -undefined"
-fi
 
-# Use GCC on FreeBSD
-toolchain="$CMAKE_TARGET_TOOLCHAIN"
-if [[ "${target}" == *-freebsd* ]]; then
-    toolchain="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
+    atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -54,27 +51,27 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
 fi
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
--DCMAKE_PREFIX_PATH=${prefix}
--DCMAKE_FIND_ROOT_PATH=${prefix}
--DCMAKE_BUILD_TYPE=Release
--DBUILD_PYTHON_BINDINGS=OFF
--DBUILD_JAVA_BINDINGS=OFF
--DBUILD_CSHARP_BINDINGS=OFF
--DGDAL_USE_CURL=ON
--DGDAL_USE_EXPAT=ON
--DGDAL_USE_GEOTIFF=ON
--DGDAL_USE_GEOS=ON
--DGDAL_USE_OPENJPEG=ON
--DGDAL_USE_SQLITE3=ON
--DGDAL_USE_TIFF=ON
--DGDAL_USE_ZLIB=ON
--DGDAL_USE_ZSTD=ON
--DGDAL_USE_POSTGRESQL=ON
--DPostgreSQL_INCLUDE_DIR=${includedir}
--DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
--DGDAL_USE_ARROW=ON
--DGDAL_USE_PARQUET=ON)
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_PREFIX_PATH=${prefix}
+    -DCMAKE_FIND_ROOT_PATH=${prefix}
+    -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_PYTHON_BINDINGS=OFF
+    -DBUILD_JAVA_BINDINGS=OFF
+    -DBUILD_CSHARP_BINDINGS=OFF
+    -DGDAL_USE_CURL=ON
+    -DGDAL_USE_EXPAT=ON
+    -DGDAL_USE_GEOTIFF=ON
+    -DGDAL_USE_GEOS=ON
+    -DGDAL_USE_OPENJPEG=ON
+    -DGDAL_USE_SQLITE3=ON
+    -DGDAL_USE_TIFF=ON
+    -DGDAL_USE_ZLIB=ON
+    -DGDAL_USE_ZSTD=ON
+    -DGDAL_USE_POSTGRESQL=ON
+    -DPostgreSQL_INCLUDE_DIR=${includedir}
+    -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
+    -DGDAL_USE_ARROW=ON
+    -DGDAL_USE_PARQUET=ON)
 
 # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
