@@ -3,9 +3,9 @@
 using BinaryBuilder
 
 name = "LibPQ"
-version = v"14.3"
+version = v"15.3"
 pg_version = string(version.major, '.', version.minor)
-tzcode_version = "2021e"
+tzcode_version = "2023c"
 
 # Collection of sources required to build LibPQ
 sources = [
@@ -72,7 +72,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Kerberos_krb5_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
