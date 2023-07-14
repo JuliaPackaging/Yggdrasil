@@ -24,14 +24,14 @@ cd $WORKSPACE/srcdir/gdal
 
 install_license LICENSE.TXT
 
+atomic_patch -p1 ../../patches/bsd-environ-undefined-fix.patch
+
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
     # complain if this symbol is used in the built library, even if this won't
     # be a problem at runtime. The flag `-undefined` allows having undefined symbols.
     # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
     export LDFLAGS="-lexecinfo -undefined"
-
-    atomic_patch -p1 ../../patches/bsd-environ-undefined-fix.patch
 fi
 
 mkdir build && cd build
