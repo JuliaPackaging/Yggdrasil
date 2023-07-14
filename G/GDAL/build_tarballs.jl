@@ -21,7 +21,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gdal
-install_license LICENSE.TXT
 
 mkdir build && cd build
 
@@ -32,7 +31,7 @@ if [[ "${target}" == *-freebsd* ]]; then
     # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
     export LDFLAGS="-lexecinfo -undefined"
 
-    atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
+    atomic_patch -p1 ../../patches/bsd-environ-undefined-fix.patch
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -92,6 +91,8 @@ fi
 cmake .. ${CMAKE_FLAGS[@]}
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
+
+install_license LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
