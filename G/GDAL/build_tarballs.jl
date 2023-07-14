@@ -29,7 +29,13 @@ if [[ "${target}" == *-freebsd* ]]; then
     # complain if this symbol is used in the built library, even if this won't
     # be a problem at runtime. The flag `-undefined` allows having undefined symbols.
     # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
-    export LDFLAGS="-Wl,-lexecinfo,-undefined"
+    export LDFLAGS="-lexecinfo -undefined"
+fi
+
+# Use GCC on FreeBSD
+toolchain="$CMAKE_TARGET_TOOLCHAIN"
+if [[ "${target}" == *-freebsd* ]]; then
+    toolchain="${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake"
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
