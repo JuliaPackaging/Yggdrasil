@@ -30,6 +30,10 @@ if [[ "${target}" == *-freebsd* ]]; then
     # be a problem at runtime. The flag `-undefined` allows having undefined symbols.
     # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
     export LDFLAGS="-lexecinfo -undefined"
+
+    # The above FreeBSD fix is not enough, trying to use gcc instead of clang:
+    CC=gcc
+    CXX=g++
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
