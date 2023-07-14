@@ -135,20 +135,20 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GEOS_jll"),
-    Dependency("PROJ_jll"),
+    Dependency("GEOS_jll"; compat="3.11.2"),
+    Dependency("PROJ_jll"; compat="900.100.0"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
     Dependency("LibPQ_jll"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
-    Dependency("Libtiff_jll"),
-    Dependency("libgeotiff_jll"),
+    Dependency("Libtiff_jll"; compat="4.4.0"),
+    Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("NetCDF_jll"; platforms=hdf5_platforms),
     # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; compat="~1.12", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
 ]
 
