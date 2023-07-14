@@ -11,7 +11,7 @@ tzcode_version = "2023c"
 sources = [
     ArchiveSource(
         "https://ftp.postgresql.org/pub/source/v$pg_version/postgresql-$pg_version.tar.gz",
-        "18eff30438703dd7a5f2a7ca916741bce3c99eadb4025bc6268af268e8e909c5"
+        "086d38533e28747966a4d5f1e78ea432e33a78f21dcb9133010ecb5189fad98c"
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
