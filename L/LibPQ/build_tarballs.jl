@@ -25,7 +25,11 @@ script = raw"""
 cd $WORKSPACE/srcdir
 make CC=$BUILD_CC VERSION_DEPS= zic
 export ZIC=$WORKSPACE/srcdir/zic
-export LDFLAGS="-L${libdir}/libcrypto.${dlext}"
+
+# Fix "cannot find openssl" under Windows
+if [[ ${target} == x86_64-w64-mingw32 ]]; then
+    export OPENSSL_ROOT_DIR=${prefix}/lib64/
+fi
 
 cd $WORKSPACE/srcdir/postgresql-*/
 if [[ "${target}" == i686-linux-musl ]]; then
