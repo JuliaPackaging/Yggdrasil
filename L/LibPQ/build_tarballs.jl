@@ -50,7 +50,7 @@ fi
     --with-libraries=${libdir} \
     --without-readline \
     --without-zlib \
-    --with-openssl \
+    --with-ssl=openssl \
     "${FLAGS[@]}"
 make -C src/interfaces/libpq -j${nproc}
 make -C src/interfaces/libpq install
