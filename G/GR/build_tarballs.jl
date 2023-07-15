@@ -102,7 +102,7 @@ dependencies = [
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="~4.3, ~4.4"),
     Dependency("Pixman_jll"),
 #    Dependency("Qhull_jll"),
     Dependency("Qt5Base_jll"),
