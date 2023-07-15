@@ -25,6 +25,8 @@ script = raw"""
 cd $WORKSPACE/srcdir
 make CC=$BUILD_CC VERSION_DEPS= zic
 export ZIC=$WORKSPACE/srcdir/zic
+export LDFLAGS="-L${libdir}/libcrypto.${dlext}"
+
 cd $WORKSPACE/srcdir/postgresql-*/
 if [[ "${target}" == i686-linux-musl ]]; then
     # Small hack: swear that we're cross-compiling.  Our `i686-linux-musl` is
