@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.72.7"
+version = v"0.72.8"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "d0758e25475bcbe3da796ef0290be9e2a942e87c"),
+    GitSource("https://github.com/sciapp/gr.git", "2e9d75e3e062ac2dc3e520456e4769901e24cd86"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "203269cc2dbce49536e54e7f0ece3542a8bd5bec4931b0937846a1e260e00312", "gr.js"),
+               "55b6d9144b251124c85c8e72627496543e7f83a5d9fb543011331eaf0c41ff2a", "gr.js"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
@@ -34,12 +34,9 @@ else
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
     export MACOSX_DEPLOYMENT_TARGET=10.14
-    popd
 fi
 
 if [[ "${target}" == *apple* ]]; then
@@ -82,6 +79,7 @@ platforms = [
     Platform("x86_64",  "freebsd"),
 ]
 platforms = expand_cxxstring_abis(platforms)
+platforms = filter(p -> !Sys.isfreebsd(p) && arch(p) != "i686" && arch(p) != "powerpc64le" && cxxstring_abi(p) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -113,6 +111,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC version 7 because of ffmpeg, but building against Qt requires v8 on Windows.
+# GCC version 9 because of Qt6
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version = v"9", julia_compat="1.6")
