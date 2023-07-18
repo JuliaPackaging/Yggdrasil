@@ -116,12 +116,12 @@ hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll")),
+    BuildDependency(PackageSpec(name="libjulia_jll", version=v"1.10.4")),
     # `ADIOS2_jll` is available only for 64-bit platforms
     Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll"); compat="1.10.4"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
 ]
 
 append!(dependencies, platform_dependencies)
@@ -141,4 +141,3 @@ products = [
 # Let's use GCC 8 to have libgfortran5 ABI and make auditor happy when looking for libgfortran: #5028
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.7", preferred_gcc_version=v"8")
-
