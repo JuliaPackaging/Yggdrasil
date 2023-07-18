@@ -98,7 +98,7 @@ dependencies = [
     Dependency("Libtiff_jll"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="6.4.2"),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
