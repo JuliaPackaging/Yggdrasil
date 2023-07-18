@@ -17,9 +17,17 @@ script = raw"""
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir ${TMPDIR}
 cd $WORKSPACE/srcdir
+
 apk add flex-dev
 update_configure_scripts --reconf
 install_license ${WORKSPACE}/srcdir/Xyce/COPYING
+
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_NAME=blastrampoline-5
+else
+    BLAS_NAME=blastrampoline
+fi
+
 cd Xyce
 ./bootstrap
 cd ..
@@ -27,7 +35,7 @@ mkdir buildx
 cd buildx
 /workspace/srcdir/Xyce/./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared --disable-mpi \
-    LDFLAGS="-L${libdir} -lopenblas" \
+    LDFLAGS="-L${libdir} -l${BLAS_NAME}" \
     CPPFLAGS="-I/${includedir} -I/usr/include"
 make -j${nprocs}
 make install
@@ -35,9 +43,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-
 platforms = supported_platforms()
-
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
@@ -56,7 +62,7 @@ products = [
 dependencies = [
                     Dependency(PackageSpec(name="Trilinos_jll", uuid="b6fd3212-6f87-5999-b9ea-021e9cd21b17"))
                     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
-                    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
+                    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
                     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
                     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
                 ]
