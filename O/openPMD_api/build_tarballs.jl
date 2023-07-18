@@ -141,3 +141,4 @@ products = [
 # Let's use GCC 8 to have libgfortran5 ABI and make auditor happy when looking for libgfortran: #5028
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.7", preferred_gcc_version=v"8")
+
