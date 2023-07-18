@@ -6,11 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "openPMD_api"
-version = v"0.16.0"
-openpmi_api_version = "v.0.16.0" # This is really the branch `eschnett/julia-bindings` after version 0.16.0
+version = v"0.16.0" # This is really the branch `eschnett/julia-bindings` before version 0.16.0
 
 # `v"1.6.3"` fails to build
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
@@ -122,7 +121,7 @@ dependencies = [
     Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll"); compat="1.10.4"),
 ]
 
 append!(dependencies, platform_dependencies)
