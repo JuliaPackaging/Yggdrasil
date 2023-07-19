@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "HSL"
-version = v"1.0.0"
+version = v"2.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/JuliaHSL.git", "3461aed2e62f6588098692891403d8737407131c")
+    GitSource("https://github.com/ralna/libHSL.git", "299299186e081c43a471e8c3ddb00f476b08682c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/JuliaHSL/dummy
+cd $WORKSPACE/srcdir/libHSL/dummy
 meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
 meson compile -C builddir
 meson install -C builddir
