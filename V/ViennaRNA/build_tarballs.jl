@@ -43,11 +43,6 @@ export CXX=c++
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
-# fix missing include for size_t, this fixes header parsing with
-# Clang.jl when generating bindings
-# upstream PR: https://github.com/ViennaRNA/ViennaRNA/pull/189
-atomic_patch -p1 ../patches/missing-include-for-size_t.patch
-
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # time measurement in RNAforester doesn't compile on windows (mingw32),
     # so we disable it
