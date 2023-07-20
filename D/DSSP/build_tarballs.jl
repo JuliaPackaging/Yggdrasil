@@ -23,13 +23,10 @@ sources = [
 # here as a static library and use that to build dssp, as that seems
 # to be the default way to build libcifpp and dssp.
 #
-# PDB .dic files from libcifpp are needed at runtime for mkdssp, these
-# get installed to `$prefix/share/dssp`.
-#
 # Run like this from julia:
 #
 # using DSSP_jll
-# run(`$(DSSP_jll.mkdssp()) --mmcif-dictionary $(joinpath(DSSP_jll.artifact_dir, "share", "dssp", "mmcif_pdbx.dic")) 1aki.cif.gz`)
+# run(`$(DSSP_jll.mkdssp()) --mmcif-dictionary $(joinpath(DSSP_jll.artifact_dir, "share", "libcifpp", "mmcif_pdbx.dic")) 1aki.cif.gz`)
 
 
 # The tests only pass with the correct cxxabi (-cxx11), so we create a
@@ -92,7 +89,7 @@ mkdir build && cd build
 # -D_CXX_ATOMIC_BUILTIN_EXITCODE__TRYRUN_OUTPUT=0
 #
 cmake .. \
-    -DCMAKE_INSTALL_PREFIX=${srcdir}/install-libcifpp \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH=${prefix} \
@@ -115,14 +112,9 @@ cp ../LICENSE LICENSE-libcifpp
 install_license LICENSE-libcifpp
 cd ../..
 
-# install pdb dictionary .dic files
-for dic in "${srcdir}"/install-libcifpp/share/libcifpp/*.dic; do
-    install -Dvm 644 "${dic}" "${prefix}/share/dssp/$(basename "${dic}")"
-done
-
 
 ###########
-# dssp: now compile dssp proper
+# dssp: now compile dssp
 ###########
 cd dssp
 
@@ -131,17 +123,19 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_PREFIX_PATH=${srcdir}/install-libcifpp \
     -DBUILD_FOR_CCP4=OFF \
     -DBUILD_WEBSERVER=OFF \
     ${CFG_TESTING}
 
 make -j${nproc}
+make install
+
+# run dssp tests
 if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
     # run the tests on the build host platform
     make test
 fi
-make install
+
 install_license ../LICENSE
 """
 
