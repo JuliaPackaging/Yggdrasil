@@ -2,14 +2,14 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: default_host_platform
 
 name = "DSSP"
-version = v"4.3.1"
+version = v"4.4.0"
 
 # url = "https://github.com/PDB-REDO/dssp"
 # description = "Application to assign secondary structure to proteins"
 
 sources = [
     GitSource("https://github.com/PDB-REDO/dssp",
-              "b87ef206a071e6f086c8dc01551afd5e9b23eb43"),
+              "c5ec1f2ddc800e7054d47a952b1ce21449f1d6b8"),
     GitSource("https://github.com/PDB-REDO/libcifpp",
               "836aed6ea9a227b37e5b0d9cbcb1253f545d0778"), # v5.1.0 (git-tag v5.1.0.1)
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
