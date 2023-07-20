@@ -79,14 +79,12 @@ products = [
 ]
 
 versions_to_build = [
-    v"10.2",
     v"11.0",
     v"11.1", # CUSOLVER ABI break
     # v"12.0", not supported by AMGX yet
 ]
 
 cuda_archs = Dict(
-    v"10.2" => "35;50;60;70",
     v"11.0" => "60;70;80",
     v"11.1" => "60;70;80",
     v"12.0" => "60;70;80",
@@ -100,7 +98,7 @@ for cuda_version in versions_to_build, platform in platforms
 
     dependencies = [
         BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                    version=CUDA.full_versions(cuda_version))),
+                                    version=CUDA.full_version(cuda_version))),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     ]
 

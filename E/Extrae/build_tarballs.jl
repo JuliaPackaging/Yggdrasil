@@ -58,7 +58,7 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
 ]
 
-cuda_versions_to_build = Any[v"10.2", v"11.0", nothing] #= v"12.1", =#
+cuda_versions_to_build = Any[v"11.0", nothing] #= v"12.1", =#
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
