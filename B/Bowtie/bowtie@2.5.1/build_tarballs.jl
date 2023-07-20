@@ -17,6 +17,7 @@ sources = [
 # TODO: Figure out Windows builds (build system for some reason does not handle missing sys/mman header)
 script = raw"""
 cd $WORKSPACE/srcdir/bowtie*
+install_license LICENSE
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
