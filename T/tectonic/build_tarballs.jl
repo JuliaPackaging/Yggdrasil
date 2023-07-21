@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.13.1"
+version = v"0.14.1"
 
 # Collection of sources required to build tar
 sources = [
@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/tectonic
+cd ${WORKSPACE}/srcdir/tectonic
 
 if [[ "${target}" == *-mingw* ]]; then
     export RUSTFLAGS="-Clink-args=-L${libdir}"
@@ -24,7 +24,7 @@ install -Dvm 755 "target/${rust_target}/release/tectonic${exeext}" "${bindir}/te
 """
 
 # Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # We dont have all dependencies for armv6l
 filter!(p -> arch(p) != "armv6l", platforms)
 # Rust toolchain for i686 Windows is unusable
