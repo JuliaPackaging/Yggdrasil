@@ -87,7 +87,7 @@ dependencies = [
     BuildDependency("MPFR_jll"),
 
     Dependency("CGAL_jll", compat="~5.5"),
-    Dependency("libcxxwrap_julia_jll", compat="0.9.2"),
+    Dependency("libcxxwrap_julia_jll", compat="0.9.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
