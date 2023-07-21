@@ -44,7 +44,7 @@ dependencies = [
     Dependency("HarfBuzz_jll"; compat="2.8.1"),
     Dependency("HarfBuzz_ICU_jll"),
     Dependency("ICU_jll"; compat="69.1"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
 ]
