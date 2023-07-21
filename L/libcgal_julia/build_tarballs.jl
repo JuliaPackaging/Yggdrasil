@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9"]
 julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end, ", ")
 
 name = "libcgal_julia"
@@ -72,7 +72,6 @@ platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 filter!(p -> arch(p) ≠ "armv7l", platforms)
 # filter experimental platforms
 filter!(p -> arch(p) ≠ "armv6l", platforms)
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
