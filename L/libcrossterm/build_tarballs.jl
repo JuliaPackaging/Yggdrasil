@@ -28,7 +28,7 @@ install -Dvm 0755 "include/crossterm.h" "${includedir}/crossterm.h"
 install_license LICENSE
 """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # `cdylib` apparently doesn't support musl
 filter!(p -> libc(p) != "musl", platforms)
 # Our Rust toolchain for i686 Windows is unusable
