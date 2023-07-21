@@ -72,7 +72,6 @@ platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 filter!(p -> arch(p) ≠ "armv7l", platforms)
 # filter experimental platforms
 filter!(p -> arch(p) ≠ "armv6l", platforms)
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
