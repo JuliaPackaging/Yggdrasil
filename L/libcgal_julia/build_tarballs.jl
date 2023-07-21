@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end, ", ")
 
 name = "libcgal_julia"
@@ -87,7 +87,7 @@ dependencies = [
     BuildDependency("MPFR_jll"),
 
     Dependency("CGAL_jll", compat="~5.5"),
-    Dependency("libcxxwrap_julia_jll", compat="0.9.2"),
+    Dependency("libcxxwrap_julia_jll", compat="0.9.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
