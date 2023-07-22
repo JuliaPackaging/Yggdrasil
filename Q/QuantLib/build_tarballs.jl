@@ -11,6 +11,17 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# needed for now
+# from https://github.com/JuliaPackaging/Yggdrasil/blob/6ee3af28801d635e4419c0e9ca8db4325568714d/S/SCIP/build_tarballs.jl#L16C1-L24C3
+# clock_gettime requires linking to librt -lrt with old glibc
+# remove when CMake accounts for this
+if [[ "${target}" == *86*-linux-gnu ]]; then
+   export LDFLAGS="-lrt"
+elif [[ "${target}" == *-mingw* ]]; then
+   # this is required to link to bliss on mingw
+   export LDFLAGS=-L${libdir}
+fi
+
 cd ${WORKSPACE}/srcdir/QuantLib
 install_license LICENSE.TXT
 mkdir build
