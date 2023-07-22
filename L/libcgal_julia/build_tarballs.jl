@@ -85,7 +85,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     BuildDependency("GMP_jll"),
     BuildDependency(get_addable_spec("MPFR_jll", v"4.1.1+3")),
-    
+
     Dependency("CGAL_jll", compat="~5.5.2"),
     Dependency("libcxxwrap_julia_jll", compat="0.9.7"),
 ]
