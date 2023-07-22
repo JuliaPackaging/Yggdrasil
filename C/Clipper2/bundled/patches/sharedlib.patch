@@ -1,61 +1,22 @@
 diff --git before/Clipper2/CPP/CMakeLists.txt after/Clipper2/CPP/CMakeLists.txt
-index bb1e924..1b1860b 100644
+index e3afbc8..e6c625d 100644
 --- before/Clipper2/CPP/CMakeLists.txt
 +++ after/Clipper2/CPP/CMakeLists.txt
-@@ -25,7 +25,7 @@ set(CLIPPER2_SRC
- )
+@@ -97,7 +97,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
  
- # 2d version of Clipper2
--add_library(Clipper2 STATIC ${CLIPPER2_INC} ${CLIPPER2_SRC})
-+add_library(Clipper2 SHARED ${CLIPPER2_INC} ${CLIPPER2_SRC})
+   if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
+     list(APPEND CLIPPER2_UTILS Clipper2utils)
+-    add_library(Clipper2utils STATIC ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
++    add_library(Clipper2utils SHARED ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
  
- target_include_directories(Clipper2
-   PUBLIC Clipper2Lib
-@@ -33,7 +33,7 @@ target_include_directories(Clipper2
- )
+     target_link_libraries(Clipper2utils PUBLIC Clipper2)
+     target_include_directories(Clipper2utils
+@@ -107,7 +107,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
  
- # Clipper2 but with USINGZ defined
--add_library(Clipper2Z STATIC ${CLIPPER2_INC} ${CLIPPER2_SRC})
-+add_library(Clipper2Z SHARED ${CLIPPER2_INC} ${CLIPPER2_SRC})
+   if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
+     list(APPEND CLIPPER2_UTILS Clipper2Zutils)
+-    add_library(Clipper2Zutils STATIC ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
++    add_library(Clipper2Zutils SHARED ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
  
- target_compile_definitions(Clipper2Z PUBLIC USINGZ)
- 
-@@ -42,16 +42,11 @@ target_include_directories(Clipper2Z
-   SYSTEM INTERFACE Clipper2Lib
- )
- 
--if (WIN32)
--  target_compile_options(Clipper2 PRIVATE /W4 /WX)
--  target_compile_options(Clipper2Z PRIVATE /W4 /WX)
--else()
--  target_compile_options(Clipper2 PRIVATE -Wall -Wextra -Wpedantic -Werror)
--  target_link_libraries(Clipper2 PUBLIC -lm)
-+target_compile_options(Clipper2 PRIVATE -Wall -Wextra -Wpedantic -Werror)
-+target_link_libraries(Clipper2 PUBLIC -lm)
- 
--  target_compile_options(Clipper2Z PRIVATE -Wall -Wextra -Wpedantic -Werror)
--  target_link_libraries(Clipper2Z PUBLIC -lm)
--endif()
-+target_compile_options(Clipper2Z PRIVATE -Wall -Wextra -Wpedantic -Werror)
-+target_link_libraries(Clipper2Z PUBLIC -lm)
- 
- set_target_properties(Clipper2 Clipper2Z PROPERTIES FOLDER Libraries)
- 
-@@ -67,7 +62,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
-     Utils/ClipFileSave.cpp
-   )
- 
--  add_library(Clipper2utils STATIC ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
-+add_library(Clipper2utils SHARED ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
- 
-   target_link_libraries(Clipper2utils PUBLIC Clipper2)
-   target_include_directories(Clipper2utils
-@@ -75,7 +70,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
-     SYSTEM INTERFACE Utils
-   )
- 
--  add_library(Clipper2Zutils STATIC ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
-+add_library(Clipper2Zutils SHARED ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
- 
-   target_link_libraries(Clipper2Zutils PUBLIC Clipper2Z)
-   target_include_directories(Clipper2Zutils
+     target_link_libraries(Clipper2Zutils PUBLIC Clipper2Z)
+     target_include_directories(Clipper2Zutils
