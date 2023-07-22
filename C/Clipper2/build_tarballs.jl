@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Clipper2"
-version = v"1.0.4"
+version = v"1.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AngusJohnson/Clipper2.git", "8916ed19e113e1b84fa44d17ead56baef23fc394"),
+    GitSource("https://github.com/AngusJohnson/Clipper2.git", "756c5079aacab5837e812a143c59dc48a09f22e7"),
     DirectorySource("./bundled")
 ]
 
@@ -29,7 +29,6 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libClipper2", :libClipper2),
@@ -41,4 +40,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13.1.0")
