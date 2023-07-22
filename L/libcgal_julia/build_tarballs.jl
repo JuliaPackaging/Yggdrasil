@@ -94,19 +94,3 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
     julia_compat)
-
-# Development julia versions
-julia_versions_dev = [v"1.10.0", v"1.11.0"]
-julia_compat_dev = join(map(julia_versions_dev) do v "~$(v.major).$(v.minor)" end, ", ")
-dependencies_dev = [
-    BuildDependency("libjulia_jll"),
-    BuildDependency("GMP_jll"),
-    BuildDependency(PackageSpec(; name="MPFR_jll", version="4.1.0")),
-
-
-    Dependency("CGAL_jll", compat="~5.5"),
-    Dependency("libcxxwrap_julia_jll", compat="0.9.2"),
-]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies_dev;
-    preferred_gcc_version = v"8",
-    julia_compat_dev)
