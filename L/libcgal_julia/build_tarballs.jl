@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end, ", ")
 
 name = "libcgal_julia"
-version = v"0.18.0"
+version = v"0.18.1"
 
 isyggdrasil = get(ENV, "YGGDRASIL", "") == "true"
 rname = "libcgal-julia"
