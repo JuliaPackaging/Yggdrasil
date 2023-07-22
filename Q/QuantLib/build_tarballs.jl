@@ -26,10 +26,18 @@ cd ${WORKSPACE}/srcdir/QuantLib
 install_license LICENSE.TXT
 mkdir build
 cd build
-cmake -G "Unix Makefiles" \
-      -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DCMAKE_BUILD_TYPE=Release ..
+if [[ "${target}" == *-mingw* ]]; then
+    cmake -G "Unix Makefiles" \
+          -DCMAKE_INSTALL_PREFIX=${prefix} \
+          -DBoost_USE_STATIC_LIBS=ON \
+          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+          -DCMAKE_BUILD_TYPE=Release ..
+else
+    cmake -G "Unix Makefiles" \
+          -DCMAKE_INSTALL_PREFIX=${prefix} \
+          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+          -DCMAKE_BUILD_TYPE=Release ..
+fi
 make -j${nproc}
 make install
 """
