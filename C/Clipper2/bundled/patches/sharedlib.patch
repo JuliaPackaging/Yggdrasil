@@ -1,8 +1,38 @@
 diff --git before/Clipper2/CPP/CMakeLists.txt after/Clipper2/CPP/CMakeLists.txt
-index e3afbc8..e6c625d 100644
+index e3afbc8..87ffa25 100644
 --- before/Clipper2/CPP/CMakeLists.txt
 +++ after/Clipper2/CPP/CMakeLists.txt
-@@ -97,7 +97,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
+@@ -46,12 +46,8 @@ if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
+     PUBLIC Clipper2Lib/include
+   )
+ 
+-  if (MSVC)
+-    target_compile_options(Clipper2 PRIVATE /W4 /WX)
+-  else()
+-    target_compile_options(Clipper2 PRIVATE -Wall -Wextra -Wpedantic -Werror)
+-    target_link_libraries(Clipper2 PUBLIC -lm)
+-  endif()
++  target_compile_options(Clipper2 PRIVATE -Wall -Wextra -Wpedantic -Werror)
++  target_link_libraries(Clipper2 PUBLIC -lm)
+ endif()
+ 
+ # secondary Clipper2 library with USINGZ defined (if required)
+@@ -65,12 +61,8 @@ if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
+     PUBLIC Clipper2Lib/include
+   )
+ 
+-  if (MSVC)
+-    target_compile_options(Clipper2Z PRIVATE /W4 /WX)
+-  else()
+-    target_compile_options(Clipper2Z PRIVATE -Wall -Wextra -Wpedantic -Werror)
+-    target_link_libraries(Clipper2Z PUBLIC -lm)
+-  endif()
++  target_compile_options(Clipper2Z PRIVATE -Wall -Wextra -Wpedantic -Werror)
++  target_link_libraries(Clipper2Z PUBLIC -lm)
+ endif()
+ 
+ set_target_properties(${CLIPPER2_LIBS} PROPERTIES FOLDER Libraries
+@@ -97,7 +89,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
  
    if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
      list(APPEND CLIPPER2_UTILS Clipper2utils)
@@ -11,7 +41,7 @@ index e3afbc8..e6c625d 100644
  
      target_link_libraries(Clipper2utils PUBLIC Clipper2)
      target_include_directories(Clipper2utils
-@@ -107,7 +107,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
+@@ -107,7 +99,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
  
    if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
      list(APPEND CLIPPER2_UTILS Clipper2Zutils)
