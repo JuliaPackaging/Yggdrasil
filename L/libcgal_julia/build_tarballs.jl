@@ -15,8 +15,8 @@ rname = "libcgal-julia"
 # Collection of sources required to build CGAL
 sources = [
     isyggdrasil ?
-        GitSource("https://github.com/rgcv/$rname.git",
-                  "513bc673b0662024e9aff56fc7671f43ecc6bcc6") :
+        GitSource("https://github.com/rcqls/$rname.git",
+                  "88d2fdef12dc059a30257b1f85e11e577b774828") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
 ]
 
