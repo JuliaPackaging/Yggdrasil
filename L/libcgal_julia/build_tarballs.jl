@@ -84,7 +84,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     BuildDependency("GMP_jll"),
-    BuildDependency(PackageSpec(; name="MPFR_jll", version=v"4.1.0")),
+    BuildDependency(VERSION >= v"1.10.0" ? PackageSpec(; name="MPFR_jll", version=v"4.1.0") : "MPFR_jll"),
 
     Dependency("CGAL_jll", compat="~5.5.2"),
     Dependency("libcxxwrap_julia_jll", compat="0.9.7"),
