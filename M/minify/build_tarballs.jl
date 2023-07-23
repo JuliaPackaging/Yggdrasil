@@ -43,5 +43,5 @@ build_tarballs(
     products,
     dependencies;
     compilers = [:c, :go],
-    julia_compat = "1.6",
+    julia_compat = "1.3",
 )
