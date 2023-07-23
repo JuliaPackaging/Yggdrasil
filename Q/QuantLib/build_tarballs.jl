@@ -11,49 +11,27 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# needed for now
-# from https://github.com/JuliaPackaging/Yggdrasil/blob/6ee3af28801d635e4419c0e9ca8db4325568714d/S/SCIP/build_tarballs.jl#L16C1-L24C3
-# clock_gettime requires linking to librt -lrt with old glibc
-# remove when CMake accounts for this
-if [[ "${target}" == *86*-linux-gnu ]]; then
-   export LDFLAGS="-lrt"
-elif [[ "${target}" == *-mingw* ]]; then
-   # this is required to link to bliss on mingw
-   export LDFLAGS=-L${libdir}
-fi
-
 cd ${WORKSPACE}/srcdir/QuantLib
 install_license LICENSE.TXT
 mkdir build
 cd build
-if [[ "${target}" == *-mingw* ]]; then
-    cmake -G "Unix Makefiles" \
-          -DCMAKE_INSTALL_PREFIX=${prefix} \
-          -DBoost_USE_STATIC_LIBS=ON \
-          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-          -DCMAKE_BUILD_TYPE=Release ..
-else
-    cmake -G "Unix Makefiles" \
-          -DCMAKE_INSTALL_PREFIX=${prefix} \
-          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-          -DCMAKE_BUILD_TYPE=Release ..
+if [[ "${target}" == *-linux-* ]]; then
+	export LDFLAGS="-lrt"
 fi
-make -j${nproc}
-make install
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DQL_EXTRA_SAFETY_CHECKS=ON \
+      -DBOOST_ROOT=${includedir} \
+      -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -L \
+      -DCMAKE_BUILD_TYPE=Release \
+      -G Ninja ..
+ninja
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms are passed in on the command line
-platforms = [
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-]
-platforms = expand_cxxstring_abis(platforms)
-
+platforms = expand_cxxstring_abis(supported_platforms(; exclude = Sys.iswindows))
 # The products that we will ensure are always built
 # Note that QuantLib also builds quantlib-benchmark and quantlib-test-suite which could be included as ExecutableProducts
 products = [
@@ -63,7 +41,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("boost_jll"),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
