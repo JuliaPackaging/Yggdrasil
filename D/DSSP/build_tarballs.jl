@@ -14,8 +14,17 @@ sources = [
               "836aed6ea9a227b37e5b0d9cbcb1253f545d0778"), # v5.1.0 (git-tag v5.1.0.1)
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    # Pre-compiled binaries for Windows
+    FileSource("https://github.com/PDB-REDO/dssp/releases/download/v$(version)/mkdssp-$(version).exe",
+               "fa897e3b23eaebf19878c7ba41180c7ce706d4333a528775e9daa047988b1cfe"),
     DirectorySource("./bundled"),
 ]
+
+# NOTE
+# On Windows we install pre-compiled binaries from github, as
+# currently the executable built from source has a bug where it
+# annotates every residue as a loop.
+# See: https://github.com/PDB-REDO/dssp/issues/63
 
 # NOTE
 # We don't use libcifpp_jll, as linking to the shared library from
@@ -41,8 +50,22 @@ const MACHTYPE_FULL = join((M[1:3]..., "libgfortran5", M[4:end]...), "-")
 
 script = """
 MACHTYPE_FULL=$MACHTYPE_FULL
+DSSP_VERSION=$version
 """ * raw"""
 cd $WORKSPACE/srcdir/
+
+# Install pre-built binary on windows
+if [[ "${target}" == *-w64-mingw* ]]; then
+    apk add p7zip
+    mkdir tmp && cd tmp
+    7z x ../mkdssp-${DSSP_VERSION}.exe
+    find bin/ -type f -exec install -Dm 755 "{}" "${bindir}" \;
+    find lib/ -type f -exec install -Dm 755 "{}" "${prefix}/lib/" \;
+    find include/ -type f -exec install -Dm 755 "{}" "${includedir}" \;
+    cp "${bindir}/libz.dll" "${bindir}/zlib.dll"
+    install_license ../dssp/LICENSE
+    exit 0
+fi
 
 # Install a newer MacOS SDK on x86_64-apple-darwin
 # Fixes compilation of libcifpp and dssp
