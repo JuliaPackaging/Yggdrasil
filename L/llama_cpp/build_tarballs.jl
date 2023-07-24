@@ -38,11 +38,11 @@ version = v"0.0.12"  # fake version number
 # 0.0.9           2023-05-19       master-6986c78    https://github.com/ggerganov/llama.cpp/releases/tag/master-6986c78
 # 0.0.10          2023-05-19       master-2d5db48    https://github.com/ggerganov/llama.cpp/releases/tag/master-2d5db48
 # 0.0.11          2023-06-13       master-9254920    https://github.com/ggerganov/llama.cpp/releases/tag/master-9254920
-# 0.0.12          2023-07-24       master-b3f138d    https://github.com/ggerganov/llama.cpp/releases/tag/master-b3f138d
+# 0.0.12          2023-07-24       master-41c6741    https://github.com/ggerganov/llama.cpp/releases/tag/master-41c6741
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "b3f138d05849ccbce67303ac17b50ebbc268128a"),
+              "41c674161fb2459bdf7806d1eebead15bc5d046e"),
 ]
 
 script = raw"""
