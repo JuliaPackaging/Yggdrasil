@@ -1,5 +1,6 @@
 include("../coin-or-common.jl")
 
+
 name = "Ipopt"
 version = Ipopt_version
 
