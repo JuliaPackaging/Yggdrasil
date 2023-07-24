@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "libmseed"
-version = v"3.0.10"
+version = v"3.0.16"
 
 # Collection of sources required to build libmseed
 sources = [
     GitSource("https://github.com/iris-edu/libmseed",
-              "d8839780299b06fb09c6f1961c293f93c3d0427e"),
+              "1934e4730496448344b95a68aa409cdc31585e61"),
 ]
 
 # Bash recipe for building across all platforms
