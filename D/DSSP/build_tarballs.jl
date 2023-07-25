@@ -63,12 +63,18 @@ cd $WORKSPACE/srcdir/
 # Install pre-built binary on windows
 if [[ "${target}" == *-w64-mingw* ]]; then
     apk add p7zip
-    mkdir tmp && cd tmp
+    mkdir tmp-windows && cd tmp-windows
     7z x ../mkdssp-${DSSP_VERSION}.exe
-    find bin/ -type f -exec install -Dm 755 "{}" "${bindir}" \;
-    find lib/ -type f -exec install -Dm 755 "{}" "${prefix}/lib/" \;
-    find include/ -type f -exec install -Dm 755 "{}" "${includedir}" \;
+    find bin/ -type f -exec install -Dvm 755 "{}" "${bindir}" \;
+    find lib/ -type f -exec install -Dvm 755 "{}" "${prefix}/lib/" \;
+    find include/ -type f -exec install -Dvm 644 "{}" "${includedir}" \;
+    # needs zlib.dll library
     cp "${bindir}/libz.dll" "${bindir}/zlib.dll"
+    # install mmcif dictionaries
+    for dir in ../libcifpp/ ../dssp/; do
+        find "${dir}" -type f -name '*.dic' -exec sh -c \
+            'install -Dvm 644 "{}" "${prefix}/share/libcifpp/$(basename "{}")"' \;
+    done
     install_license ../dssp/LICENSE
     exit 0
 fi
@@ -173,6 +179,10 @@ platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("mkdssp", :mkdssp),
+    FileProduct("share/libcifpp/dssp-extension.dic", :dssp_extension_dic),
+    FileProduct("share/libcifpp/mmcif_ddl.dic", :mmcif_ddl_dic),
+    FileProduct("share/libcifpp/mmcif_ma.dic", :mmcif_ma_dic),
+    FileProduct("share/libcifpp/mmcif_pdbx.dic", :mmcif_pdbx_dic),
 ]
 
 dependencies = [
