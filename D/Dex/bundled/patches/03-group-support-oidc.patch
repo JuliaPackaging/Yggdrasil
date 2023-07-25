@@ -1,93 +1,110 @@
 diff --git a/connector/oidc/oidc.go b/connector/oidc/oidc.go
-index 14329c00..2d7699e2 100644
+index b752f9da..321ec9e9 100644
 --- a/connector/oidc/oidc.go
 +++ b/connector/oidc/oidc.go
-@@ -12,6 +12,7 @@ import (
- 	"time"
-
- 	"github.com/coreos/go-oidc/v3/oidc"
-+	"golang.org/x/exp/slices"
- 	"golang.org/x/oauth2"
-
- 	"github.com/dexidp/dex/connector"
-@@ -51,6 +52,7 @@ type Config struct {
-
+@@ -44,6 +44,9 @@ type Config struct {
  	// InsecureEnableGroups enables groups claims. This is disabled by default until https://github.com/dexidp/dex/issues/1065 is resolved
  	InsecureEnableGroups bool `json:"insecureEnableGroups"`
-+	AllowedGroups []string `json:"allowedGroups"` // allowedGroups
 
- 	// AcrValues (Authentication Context Class Reference Values) that specifies the Authentication Context Class Values
- 	// within the Authentication Request that the Authorization Server is being requested to use for
-@@ -180,6 +182,7 @@ func (c *Config) Open(id string, logger log.Logger) (conn connector.Connector, e
- 		httpClient:                httpClient,
++	// Allowed groups.
++	AllowedGroups []string `json:"allowedGroups"` // allowedGroups
++
+ 	// GetUserInfo uses the userinfo endpoint to get additional claims for
+ 	// the token. This is especially useful where upstreams return "thin"
+ 	// id tokens
+@@ -149,6 +152,7 @@ func (c *Config) Open(id string, logger log.Logger) (conn connector.Connector, e
+ 		hostedDomains:             c.HostedDomains,
  		insecureSkipEmailVerified: c.InsecureSkipEmailVerified,
  		insecureEnableGroups:      c.InsecureEnableGroups,
 +		allowedGroups:             c.AllowedGroups,
- 		acrValues:                 c.AcrValues,
  		getUserInfo:               c.GetUserInfo,
  		promptType:                c.PromptType,
-@@ -207,6 +210,7 @@ type oidcConnector struct {
- 	httpClient                *http.Client
+ 		userIDKey:                 c.UserIDKey,
+@@ -174,6 +178,7 @@ type oidcConnector struct {
+ 	hostedDomains             []string
  	insecureSkipEmailVerified bool
  	insecureEnableGroups      bool
 +	allowedGroups             []string
- 	acrValues                 []string
  	getUserInfo               bool
  	promptType                string
-@@ -331,6 +335,7 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
- 		return identity, errors.New("oidc: no id_token in token response")
- 	}
+ 	userIDKey                 string
+@@ -253,6 +258,22 @@ func (c *oidcConnector) Refresh(ctx context.Context, s connector.Scopes, identit
+ 	return c.createIdentity(ctx, identity, token)
+ }
 
-+    c.logger.Debugf("Claims::: %q \n", claims)
++func contains(arr []string, inputArr []string) bool {
++	stringSet := make(map[string]bool)
++
++	for _, s := range arr {
++		stringSet[s] = true
++	}
++
++	for _, input := range inputArr {
++		if stringSet[input] {
++			return true
++		}
++	}
++
++	return false
++}
++
+ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.Identity, token *oauth2.Token) (connector.Identity, error) {
+ 	rawIDToken, ok := token.Extra("id_token").(string)
+ 	if !ok {
+@@ -267,6 +288,7 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
+ 	if err := idToken.Claims(&claims); err != nil {
+ 		return identity, fmt.Errorf("oidc: failed to decode claims: %v", err)
+ 	}
++	c.logger.Debugf("Claims::: %q \n", claims)
+
  	// We immediately want to run getUserInfo if configured before we validate the claims
  	if c.getUserInfo {
- 		userInfo, err := c.provider.UserInfo(ctx, oauth2.StaticTokenSource(token))
-@@ -340,6 +345,7 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
- 		if err := userInfo.Claims(&claims); err != nil {
+@@ -278,6 +300,7 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
  			return identity, fmt.Errorf("oidc: failed to decode userinfo claims: %v", err)
  		}
-+        c.logger.Debugf("UserInfo::: %q \n", userInfo)
  	}
++	c.logger.Debugf("UserInfo::: %q \n", userInfo)
 
- 	const subjectClaimKey = "sub"
-@@ -414,6 +420,28 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
- 				}
+ 	userNameKey := "name"
+ 	if c.userNameKey != "" {
+@@ -341,6 +364,28 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
  			}
  		}
-+        c.logger.Debugf("Groups::: %q \n", groups)
-+
-+        // Validate that the user is part of allowedGroups
-+        var accessAllowed = false
-+	    if len(c.allowedGroups) > 0 {
-+            for _,group := range c.allowedGroups {
-+                groupPresent := slices.Contains(groups, group)
-+                if groupPresent {
-+                    accessAllowed = true
-+                    c.logger.Debugf("Found a match - Group::: %q \n", group)
-+                    break
-+                }
-+            }
-+        } else {
-+            // don't check for groups if allowedGroups is not configured
-+            c.logger.Debugf("Group check not performed \n")
-+            accessAllowed = true
-+        }
-+
-+        if !accessAllowed {
-+	        return identity, errors.New("User is not in the allowed group(s)")
-+        }
  	}
++	c.logger.Debugf("Groups::: %q \n", groups)
++
++	// Validate that the user is part of allowedGroups
++	var accessAllowed = false
++	if len(c.allowedGroups) > 0 {
++	    for _,group := range c.allowedGroups {
++	        groupPresent := contains(groups, group)
++	        if groupPresent {
++	            accessAllowed = true
++				c.logger.Debugf("Found a match - Group::: %q \n", group)
++	            break
++	        }
++	    }
++	} else {
++	    // don't check for groups if allowedGroups is not configured
++		c.logger.Debugf("Group check not performed \n")
++	    accessAllowed = true
++	}
++
++	if !accessAllowed {
++	   return identity, errors.New("User is not in the allowed group(s)")
++	}
 
- 	cd := connectorData{
+ 	hostedDomain, _ := claims["hd"].(string)
+ 	if len(c.hostedDomains) > 0 {
 diff --git a/server/handlers.go b/server/handlers.go
-index 9438d807..7e970bed 100644
+index 2a4f8c71..d35cd83d 100644
 --- a/server/handlers.go
 +++ b/server/handlers.go
-@@ -467,7 +467,7 @@ func (s *Server) handleConnectorCallback(w http.ResponseWriter, r *http.Request)
+@@ -437,7 +437,7 @@ func (s *Server) handleConnectorCallback(w http.ResponseWriter, r *http.Request)
 
  	if err != nil {
  		s.logger.Errorf("Failed to authenticate: %v", err)
 -		s.renderError(r, w, http.StatusInternalServerError, fmt.Sprintf("Failed to authenticate: %v", err))
-+		s.renderError(r, w, http.StatusUnauthorized, fmt.Sprintf("Failed to authenticate: %v", err))
++        s.renderError(r, w, http.StatusUnauthorized, fmt.Sprintf("Failed to authenticate: %v", err))
  		return
  	}
