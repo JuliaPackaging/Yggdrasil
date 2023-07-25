@@ -1,5 +1,5 @@
 diff --git a/connector/oidc/oidc.go b/connector/oidc/oidc.go
-index b752f9da..321ec9e9 100644
+index b752f9da..28f6c3d4 100644
 --- a/connector/oidc/oidc.go
 +++ b/connector/oidc/oidc.go
 @@ -44,6 +44,9 @@ type Config struct {
@@ -28,30 +28,23 @@ index b752f9da..321ec9e9 100644
  	getUserInfo               bool
  	promptType                string
  	userIDKey                 string
-@@ -253,6 +258,22 @@ func (c *oidcConnector) Refresh(ctx context.Context, s connector.Scopes, identit
+@@ -253,6 +258,15 @@ func (c *oidcConnector) Refresh(ctx context.Context, s connector.Scopes, identit
  	return c.createIdentity(ctx, identity, token)
  }
 
-+func contains(arr []string, inputArr []string) bool {
-+	stringSet := make(map[string]bool)
-+
++func contains(target string, arr []string) bool {
 +	for _, s := range arr {
-+		stringSet[s] = true
-+	}
-+
-+	for _, input := range inputArr {
-+		if stringSet[input] {
++		if s == target {
 +			return true
 +		}
 +	}
-+
 +	return false
 +}
 +
  func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.Identity, token *oauth2.Token) (connector.Identity, error) {
  	rawIDToken, ok := token.Extra("id_token").(string)
  	if !ok {
-@@ -267,6 +288,7 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
+@@ -267,6 +281,7 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
  	if err := idToken.Claims(&claims); err != nil {
  		return identity, fmt.Errorf("oidc: failed to decode claims: %v", err)
  	}
@@ -59,15 +52,15 @@ index b752f9da..321ec9e9 100644
 
  	// We immediately want to run getUserInfo if configured before we validate the claims
  	if c.getUserInfo {
-@@ -278,6 +300,7 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
+@@ -277,6 +292,7 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
+ 		if err := userInfo.Claims(&claims); err != nil {
  			return identity, fmt.Errorf("oidc: failed to decode userinfo claims: %v", err)
  		}
++		c.logger.Debugf("UserInfo::: %q \n", userInfo)
  	}
-+	c.logger.Debugf("UserInfo::: %q \n", userInfo)
 
  	userNameKey := "name"
- 	if c.userNameKey != "" {
-@@ -341,6 +364,28 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
+@@ -341,6 +357,28 @@ func (c *oidcConnector) createIdentity(ctx context.Context, identity connector.I
  			}
  		}
  	}
@@ -77,7 +70,7 @@ index b752f9da..321ec9e9 100644
 +	var accessAllowed = false
 +	if len(c.allowedGroups) > 0 {
 +	    for _,group := range c.allowedGroups {
-+	        groupPresent := contains(groups, group)
++	        groupPresent := contains(group, groups)
 +	        if groupPresent {
 +	            accessAllowed = true
 +				c.logger.Debugf("Found a match - Group::: %q \n", group)
