@@ -23,8 +23,14 @@ sources = [
 # NOTE
 # On Windows we install pre-compiled binaries from github, as
 # currently the executable built from source has a bug where it
-# annotates every residue as a loop.
-# See: https://github.com/PDB-REDO/dssp/issues/63
+# segfaults on any nontrivial operation.  This might be due to
+# std::regex segfault issues for g++ mentioned in the libcifpp build
+# instructions, so in the future it might be worthwile investigating
+# compilation choices there.  The libcifpp cmake build tries to check
+# for a std::regex segfault during build time, but this check has to
+# be disabled here as we are cross-compiling.
+#
+# See also: https://github.com/PDB-REDO/dssp/issues/63
 
 # NOTE
 # We don't use libcifpp_jll, as linking to the shared library from
