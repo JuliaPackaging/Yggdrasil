@@ -40,7 +40,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libTracyClient", :libTracyClient; dlopen_flags=[:RTLD_DEEPBIND]),
+    LibraryProduct("libTracyClient", :libTracyClient),
     FileProduct(["lib/libTracyClient.a", "lib/libTracyClient.lib"], :libTracyClient_static)
 ]
 
@@ -48,4 +48,5 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"7")
