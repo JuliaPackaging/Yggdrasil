@@ -40,7 +40,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libTracyClient", :libTracyClient),
+    LibraryProduct("libTracyClient", :libTracyClient; dlopen_flags=[:RTLD_DEEPBIND]),
     FileProduct(["lib/libTracyClient.a", "lib/libTracyClient.lib"], :libTracyClient_static)
 ]
 
