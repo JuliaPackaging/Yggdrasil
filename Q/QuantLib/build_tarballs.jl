@@ -15,7 +15,7 @@ cd ${WORKSPACE}/srcdir/QuantLib
 install_license LICENSE.TXT
 mkdir build
 cd build
-if [[ "${target}" == *-linux-* ]]; then
+if [[ "${target}" == *86*-linux-gnu ]]; then
 	export LDFLAGS="-lrt"
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
