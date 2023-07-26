@@ -9,12 +9,12 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 name = "MParT"
-version = v"2.0.2"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/MeasureTransport/MParT.git",
-    "37a54a787d9ecaf6a02d20587ec675add27308ef")
+    "aa08ee2e2ff765282b14351f07a81ea0c963783a")
 ]
 
 # Bash recipe for building across all platforms
