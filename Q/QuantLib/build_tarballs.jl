@@ -31,7 +31,10 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+# windows excluded b/c QL doesn't build with MinGW: https://github.com/JuliaPackaging/Yggdrasil/pull/7090#issuecomment-1646444669
 platforms = expand_cxxstring_abis(supported_platforms(; exclude = Sys.iswindows))
+
+
 # The products that we will ensure are always built
 # Note that QuantLib also builds quantlib-benchmark and quantlib-test-suite which could be included as ExecutableProducts
 products = [
