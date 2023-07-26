@@ -25,7 +25,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -L \
       -DCMAKE_BUILD_TYPE=Release \
       -G Ninja ..
-ninja
+ninja -j${nproc}
 ninja install
 """
 
