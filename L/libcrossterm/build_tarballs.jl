@@ -2,12 +2,12 @@
 using BinaryBuilder, Pkg
 
 name = "libcrossterm"
-version = v"0.2.0"
+version = v"0.6.2"
 
 sources = [
   GitSource(
     "https://github.com/kdheepak/libcrossterm.git",
-    "65b89e0f18fc30e9d4a812327507dd9b468c1597"
+    "29f0f66dd657422ca87294a348924745b99f355b"
   )
 ]
 
