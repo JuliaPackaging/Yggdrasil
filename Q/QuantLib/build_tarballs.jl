@@ -40,7 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"),
+    Dependency("boost_jll"; compat="=1.76.0"), # 1.76 for Julia 1.6+ | https://github.com/JuliaPackaging/Yggdrasil/issues/3024
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
