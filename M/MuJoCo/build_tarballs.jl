@@ -26,8 +26,7 @@ cmake --install .
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
-platforms = [Platform("x86_64", "linux"; libstdcxx_version=v"11.1.0")]
-platforms = expand_cxxstring_abis(platforms)
+platforms = BinaryBuilder.supported_platforms()
 products = [
     LibraryProduct("libmujoco", :libmujuco),
     ExecutableProduct("basic", :mujoco_basic),
