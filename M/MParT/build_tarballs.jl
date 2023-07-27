@@ -44,7 +44,7 @@ include("../../L/libjulia/common.jl")
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
-platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, platforms)
+platforms = filter!(p -> !Sys.isfreebsd(p) && !Sys.iswindows(p) && nbits(p) == 64, platforms)
 
 # The products that we will ensure are always built
 products = [
