@@ -22,11 +22,9 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLC
 cmake --build .
 cmake --install .
 """
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
-platforms = BinaryBuilder.supported_platforms()
+platforms = [p for p in supported_platforms() if !Sys.isapple(p) || p.tags["arch"] != "aarch64"]
 products = [
     LibraryProduct("libmujoco", :libmujuco),
     ExecutableProduct("basic", :mujoco_basic),
