@@ -5,8 +5,8 @@ name = "libxls"
 version = v"1.6.2"
 
 sources = [
-    "https://github.com/libxls/libxls/releases/download/v$version/libxls-$version.tar.gz" =>
-    "5dacc34d94bf2115926c80c6fb69e4e7bd2ed6403d51cff49041a94172f5e371",
+    ArchiveSource("https://github.com/libxls/libxls/releases/download/v$version/libxls-$version.tar.gz",
+                  "5dacc34d94bf2115926c80c6fb69e4e7bd2ed6403d51cff49041a94172f5e371"),
 ]
 
 # Bash recipe for building across all platforms
