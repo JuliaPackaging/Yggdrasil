@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "MuJoCo"
 version = v"2.3.7"
 
-# Collection of sources required to build libX11
+# Collection of sources required to build mujoco
 sources = [
     GitSource("https://github.com/deepmind/mujoco", "c9246e1f5006379d599e0bcddf159a8616d31441")
 ]
