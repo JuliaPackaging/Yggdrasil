@@ -6,7 +6,7 @@ version = v"1.6.2"
 
 sources = [
     "https://github.com/libxls/libxls/releases/download/v$version/libxls-$version.tar.gz" =>
-    "8d7e52d96ccc6c498e5de78c1988d9838d914eeeb94ac60208378340bd6e6aaa",
+    "5dacc34d94bf2115926c80c6fb69e4e7bd2ed6403d51cff49041a94172f5e371",
 ]
 
 # Bash recipe for building across all platforms
