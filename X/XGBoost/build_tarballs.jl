@@ -3,7 +3,7 @@ using BinaryBuilderBase
 using Pkg
 
 name = "XGBoost"
-version = v"1.7.5"
+version = v"1.7.6"
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","21d95f3d8f23873a76f8afaad0fee5fa3e00eafe"),
+    GitSource("https://github.com/dmlc/xgboost.git","36eb41c960483c8b52b44082663c99e6a0de440a"),
     DirectorySource("./bundled"),
 ]
 
