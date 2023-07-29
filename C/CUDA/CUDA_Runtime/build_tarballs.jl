@@ -18,11 +18,13 @@ augment_platform_block = """
 builds = []
 for cuda_version in cuda_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
+    dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll",
+                                                version=CUDA.full_version(cuda_version)))]
     include("build_$(cuda_tag).jl")
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
-        augmented_platform[CUDA.platform_name] = CUDA.platform(cuda_version)
+        augmented_platform["cuda"] = CUDA.platform(cuda_version)
 
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds,
