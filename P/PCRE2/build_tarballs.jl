@@ -21,6 +21,8 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
+./autogen.sh
+
 # Update configure scripts
 update_configure_scripts
 
