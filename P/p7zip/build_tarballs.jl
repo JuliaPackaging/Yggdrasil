@@ -6,8 +6,8 @@ version = VersionNumber(version_string)
 
 # Collection of sources required to build p7zip
 sources = [
-    ArchiveSource("https://github.com/p7zip-project/p7zip/archive/refs/tags/v$(version_string).tar.gz",
-                  "ea029a2e21d2d6ad0a156f6679bd66836204aa78148a4c5e498fe682e77127ef"),
+    GitSource("https://github.com/p7zip-project/p7zip",
+              "0b5b1b1a866d0e41cb7945e60a32262874e724aa"),
     FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/21.07/7z2107.exe",
                "71e94e6038f4d42ed8f0f38c0e6c3846f21d13527139efa9ef8b8f6312ab6c90"),
     FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/21.07/7z2107-x64.exe",
@@ -16,7 +16,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/p7zip-*/
+cd $WORKSPACE/srcdir/p7zip*/
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
@@ -82,7 +82,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
