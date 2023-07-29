@@ -1,5 +1,3 @@
-dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.7.1"))]
-
 script = raw"""
 # First, find (true) CUDA toolkit directory in ~/.artifacts somewhere
 CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext})))
