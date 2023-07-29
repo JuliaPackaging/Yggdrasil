@@ -9,12 +9,12 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 name = "MParT"
-version = v"2.0.2"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/MeasureTransport/MParT.git",
-    "37a54a787d9ecaf6a02d20587ec675add27308ef")
+    "aa08ee2e2ff765282b14351f07a81ea0c963783a")
 ]
 
 # Bash recipe for building across all platforms
@@ -44,7 +44,7 @@ include("../../L/libjulia/common.jl")
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(vcat(libjulia_platforms.(julia_versions)...))
-platforms = filter!(p -> !Sys.isfreebsd(p) && !Sys.iswindows(p) && nbits(p) == 64, platforms)
+platforms = filter!(p -> !Sys.iswindows(p) && nbits(p) == 64, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -57,7 +57,7 @@ dependencies = [
     Dependency("libcxxwrap_julia_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"); compat="=3.6.1"),
-    Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
+    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     BuildDependency("libjulia_jll"),
 ]
 
