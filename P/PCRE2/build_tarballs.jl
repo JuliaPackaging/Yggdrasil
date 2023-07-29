@@ -8,18 +8,20 @@ version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version_string)/pcre2-$(version_string).tar.gz",
-                  "c33b418e3b936ee3153de2c61cc638e7e4fe3156022a5c77d0711bcbb9d64f1f"),
+    GitSource("https://github.com/PCRE2Project/pcre2",
+              "52c08847921a324c804cabf2814549f50bce1265"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/pcre2-*/
+cd $WORKSPACE/srcdir/pcre2*/
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
+
+./autogen.sh
 
 # Update configure scripts
 update_configure_scripts
