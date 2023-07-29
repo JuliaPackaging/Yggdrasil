@@ -85,7 +85,7 @@ readlink_f() {
         TARGET_FILE="$(basename "${TARGET_FILE}")"
     done
 
-    # Compute the canonicalized name by finding the physical path 
+    # Compute the canonicalized name by finding the physical path
     # for the directory we're in and appending the target file.
     PHYS_DIR="$(pwd -P)"
     echo "${PHYS_DIR}/${TARGET_FILE}"
@@ -112,7 +112,7 @@ products = [
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
-    Dependency("LibCURL_jll"; compat="7.73.0"),
+    Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Libiconv_jll"),
