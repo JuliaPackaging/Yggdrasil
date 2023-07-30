@@ -1,9 +1,9 @@
 diff --git before/Clipper2/CPP/CMakeLists.txt after/Clipper2/CPP/CMakeLists.txt
-index e3afbc8..6208553 100644
+index bf121bf..47eded7 100644
 --- before/Clipper2/CPP/CMakeLists.txt
 +++ after/Clipper2/CPP/CMakeLists.txt
-@@ -40,24 +40,20 @@ set(CLIPPER2_LIBS "") # one or both of Clipper2/Clipper2Z
- # primary Clipper2 library
+@@ -37,7 +37,7 @@ set(CLIPPER2_LIBS "") # one or both of Clipper2/Clipper2Z
+ # 2d version of Clipper2
  if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
    list(APPEND CLIPPER2_LIBS Clipper2)
 -  add_library(Clipper2 ${CLIPPER2_INC} ${CLIPPER2_SRC})
@@ -11,19 +11,8 @@ index e3afbc8..6208553 100644
  
    target_include_directories(Clipper2
      PUBLIC Clipper2Lib/include
-   )
- 
--  if (MSVC)
--    target_compile_options(Clipper2 PRIVATE /W4 /WX)
--  else()
--    target_compile_options(Clipper2 PRIVATE -Wall -Wextra -Wpedantic -Werror)
--    target_link_libraries(Clipper2 PUBLIC -lm)
--  endif()
-+  target_compile_options(Clipper2 PRIVATE -Wall -Wextra -Wpedantic -Werror)
-+  target_link_libraries(Clipper2 PUBLIC -lm)
- endif()
- 
- # secondary Clipper2 library with USINGZ defined (if required)
+@@ -54,7 +54,7 @@ endif()
+ # Clipper2 but with USINGZ defined
  if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
    list(APPEND CLIPPER2_LIBS Clipper2Z)
 -  add_library(Clipper2Z ${CLIPPER2_INC} ${CLIPPER2_SRC})
@@ -31,22 +20,7 @@ index e3afbc8..6208553 100644
  
    target_compile_definitions(Clipper2Z PUBLIC USINGZ)
  
-@@ -65,12 +61,8 @@ if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
-     PUBLIC Clipper2Lib/include
-   )
- 
--  if (MSVC)
--    target_compile_options(Clipper2Z PRIVATE /W4 /WX)
--  else()
--    target_compile_options(Clipper2Z PRIVATE -Wall -Wextra -Wpedantic -Werror)
--    target_link_libraries(Clipper2Z PUBLIC -lm)
--  endif()
-+  target_compile_options(Clipper2Z PRIVATE -Wall -Wextra -Wpedantic -Werror)
-+  target_link_libraries(Clipper2Z PUBLIC -lm)
- endif()
- 
- set_target_properties(${CLIPPER2_LIBS} PROPERTIES FOLDER Libraries
-@@ -97,7 +89,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
+@@ -93,7 +93,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
  
    if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
      list(APPEND CLIPPER2_UTILS Clipper2utils)
@@ -55,7 +29,7 @@ index e3afbc8..6208553 100644
  
      target_link_libraries(Clipper2utils PUBLIC Clipper2)
      target_include_directories(Clipper2utils
-@@ -107,7 +99,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
+@@ -103,7 +103,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
  
    if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
      list(APPEND CLIPPER2_UTILS Clipper2Zutils)
