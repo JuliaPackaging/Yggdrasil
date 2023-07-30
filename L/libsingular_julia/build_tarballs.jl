@@ -9,11 +9,11 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libsingular_julia"
-version = v"0.35.0"
+version = v"0.36.0"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "b09551a10b33c748aea46048a14387efd37f5d86"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "17d0bb643243dd3d3312b495b45d62970c74d5d9"),
 ]
 
 # Bash recipe for building across all platforms
