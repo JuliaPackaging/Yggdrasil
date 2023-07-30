@@ -332,11 +332,16 @@ function gcc_script(compiler_target::Platform)
             atomic_patch -p1 ${p} || true;
         done
 
+        # Patch bad `movq` argument in glibc 2.17, adapted from:
+        # https://github.com/bminor/glibc/commit/b1ec623ed50bb8c7b9b6333fa350c3866dbde87f
+        # X-ref: https://github.com/crosstool-ng/crosstool-ng/issues/1825#issuecomment-1437918391
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_movq_fix.patch
+
         # Various configure overrides
         GLIBC_CONFIGURE_OVERRIDES=( libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes )
 
-        # We have problems with libssp on ppc64le
-        if [[ ${COMPILER_TARGET} == powerpc64le-* ]]; then
+        # We have problems with libssp on ppc64le, x86_64 and i686
+        if [[ ${COMPILER_TARGET} == powerpc64le-* ]] || [[ ${COMPILER_TARGET} == x86_64-* ]] || [[ ${COMPILER_TARGET} == i686-* ]]; then
             GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
         fi
 
