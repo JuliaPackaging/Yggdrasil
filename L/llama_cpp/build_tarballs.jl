@@ -16,12 +16,12 @@ version = v"0.0.13"  # fake version number
 #   - fma (LLAMA_FMA)
 
 # TODO
-# - missing build options (build multiple jlls from a common build script?)
+# - missing build options
 #   - BLAS (LLAMA_BLAS)
 #   - CUDA/CuBLAS (LLAMA_CUBLAS)
 #   - OpenCL/CLBLAST (LLAMA_CLBLAST)
 
-# NOTES
+# Build notes and failures
 # - k_quants disabled for armv{6,7}-linux due to compile errors
 # - k_quants fails to compile on aarch64-linux for gcc-9 and below
 # - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
