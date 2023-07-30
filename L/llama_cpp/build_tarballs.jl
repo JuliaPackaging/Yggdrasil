@@ -65,6 +65,11 @@ else
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=ON"
 fi
 
+# Use Metal on Apple Silicon
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=ON"
+fi
+
 mkdir build && cd build
 
 cmake .. \
