@@ -15,14 +15,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/kokkos-*
+cd $WORKSPACE/srcdir/kokkos
 
 OPENMP_FLAG=()
 
-#inspired by https://github.com/JuliaPackaging/Yggdrasil/blob/b15a45949bf007072af7a2f335fe6e49165f7627/E/Entwine/build_tarballs.jl#L31-L40
-if [[ ${target} == *-linux-musl* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-stacktrace-macro.patch
-fi
 mkdir build
 cd build/
 
