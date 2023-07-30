@@ -1,8 +1,15 @@
 diff --git before/Clipper2/CPP/CMakeLists.txt after/Clipper2/CPP/CMakeLists.txt
-index e3afbc8..87ffa25 100644
+index e3afbc8..6208553 100644
 --- before/Clipper2/CPP/CMakeLists.txt
 +++ after/Clipper2/CPP/CMakeLists.txt
-@@ -46,12 +46,8 @@ if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
+@@ -40,24 +40,20 @@ set(CLIPPER2_LIBS "") # one or both of Clipper2/Clipper2Z
+ # primary Clipper2 library
+ if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
+   list(APPEND CLIPPER2_LIBS Clipper2)
+-  add_library(Clipper2 ${CLIPPER2_INC} ${CLIPPER2_SRC})
++  add_library(Clipper2 SHARED ${CLIPPER2_INC} ${CLIPPER2_SRC})
+ 
+   target_include_directories(Clipper2
      PUBLIC Clipper2Lib/include
    )
  
@@ -17,6 +24,13 @@ index e3afbc8..87ffa25 100644
  endif()
  
  # secondary Clipper2 library with USINGZ defined (if required)
+ if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
+   list(APPEND CLIPPER2_LIBS Clipper2Z)
+-  add_library(Clipper2Z ${CLIPPER2_INC} ${CLIPPER2_SRC})
++  add_library(Clipper2Z SHARED ${CLIPPER2_INC} ${CLIPPER2_SRC})
+ 
+   target_compile_definitions(Clipper2Z PUBLIC USINGZ)
+ 
 @@ -65,12 +61,8 @@ if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
      PUBLIC Clipper2Lib/include
    )
