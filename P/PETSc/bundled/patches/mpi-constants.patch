@@ -107,42 +107,44 @@ diff --git a/src/sys/fileio/fretrieve.c b/src/sys/fileio/fretrieve.c
 index d214c66aef..1ec946fd49 100644
 --- a/src/sys/fileio/fretrieve.c
 +++ b/src/sys/fileio/fretrieve.c
-@@ -123,10 +123,17 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
-   PetscMPIInt        size,rank,*tagvalp,sum,cnt,i;
-   PetscBool          flg,iflg;
-   FILE               *fd;
+--- fretrieve.c	2022-10-01 06:12:21
++++ fretrieve_new.c	2023-04-06 11:32:03
+@@ -119,10 +119,17 @@
+   PetscMPIInt        size, rank, *tagvalp, sum, cnt, i;
+   PetscBool          flg, iflg;
+   FILE              *fd;
 -  static PetscMPIInt Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
 +  static int         have_Petsc_Tmp_keyval = 0;
 +  static PetscMPIInt Petsc_Tmp_keyval;
    int                err;
  
    PetscFunctionBegin;
-+
++  
 +  if (!have_Petsc_Tmp_keyval) {
 +    have_Petsc_Tmp_keyval = 1;
 +    Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
 +  }
 +
-   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+   PetscCallMPI(MPI_Comm_size(comm, &size));
    if (size == 1) {
      *shared = PETSC_TRUE;
-@@ -244,10 +251,17 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
-   PetscMPIInt        size,rank,*tagvalp,sum,cnt,i;
-   PetscBool          flg,iflg;
-   FILE               *fd;
+@@ -234,10 +241,17 @@
+   PetscMPIInt        size, rank, *tagvalp, sum, cnt, i;
+   PetscBool          flg, iflg;
+   FILE              *fd;
 -  static PetscMPIInt Petsc_WD_keyval = MPI_KEYVAL_INVALID;
 +  static int         have_Petsc_WD_keyval = 0;
 +  static PetscMPIInt Petsc_WD_keyval;
    int                err;
  
    PetscFunctionBegin;
-+
++  
 +  if (!have_Petsc_WD_keyval) {
 +    have_Petsc_WD_keyval = 1;
 +    Petsc_WD_keyval = MPI_KEYVAL_INVALID;
 +  }
 +
-   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+   PetscCallMPI(MPI_Comm_size(comm, &size));
    if (size == 1) {
      *shared = PETSC_TRUE;
 diff --git a/src/sys/objects/optionsyaml.c b/src/sys/objects/optionsyaml.c
@@ -163,8 +165,8 @@ diff --git a/src/sys/objects/pinit.c b/src/sys/objects/pinit.c
 index 94b152c014..7f18938bb1 100644
 --- a/src/sys/objects/pinit.c
 +++ b/src/sys/objects/pinit.c
-@@ -56,17 +56,28 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
- PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE**);
+@@ -43,19 +43,32 @@
+ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **);
  
  /* user may set these BEFORE calling PetscInitialize() */
 -MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
@@ -175,6 +177,8 @@ index 94b152c014..7f18938bb1 100644
 +PetscMPIInt Petsc_InnerComm_keyval;
 +PetscMPIInt Petsc_OuterComm_keyval;
 +PetscMPIInt Petsc_ShmComm_keyval;
++PetscMPIInt Petsc_CreationIdx_keyval;
++PetscMPIInt Petsc_Garbage_HMap_keyval;
 +
 +__attribute__((__constructor__)) static void init_PETSC_COMM_WORLD()
 +{
@@ -187,28 +191,34 @@ index 94b152c014..7f18938bb1 100644
 +  PETSC_MPI_THREAD_REQUIRED = 0;
  #endif
  
--PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
--PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
--PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
--PetscMPIInt Petsc_ShmComm_keyval   = MPI_KEYVAL_INVALID;
-+  Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
-+  Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
-+  Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
-+  Petsc_ShmComm_keyval   = MPI_KEYVAL_INVALID;
+-PetscMPIInt Petsc_Counter_keyval      = MPI_KEYVAL_INVALID;
+-PetscMPIInt Petsc_InnerComm_keyval    = MPI_KEYVAL_INVALID;
+-PetscMPIInt Petsc_OuterComm_keyval    = MPI_KEYVAL_INVALID;
+-PetscMPIInt Petsc_ShmComm_keyval      = MPI_KEYVAL_INVALID;
+-PetscMPIInt Petsc_CreationIdx_keyval  = MPI_KEYVAL_INVALID;
+-PetscMPIInt Petsc_Garbage_HMap_keyval = MPI_KEYVAL_INVALID;
++  Petsc_Counter_keyval      = MPI_KEYVAL_INVALID;
++  Petsc_InnerComm_keyval    = MPI_KEYVAL_INVALID;
++  Petsc_OuterComm_keyval    = MPI_KEYVAL_INVALID;
++  Petsc_ShmComm_keyval      = MPI_KEYVAL_INVALID;
++  Petsc_CreationIdx_keyval  = MPI_KEYVAL_INVALID;
++  Petsc_Garbage_HMap_keyval = MPI_KEYVAL_INVALID;
 +}
  
  /*
       Declare and set all the string names of the PETSc enums
-@@ -393,7 +404,8 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void*, MPI_Datatype,PetscMPII
- PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
+@@ -419,8 +432,9 @@
+ PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void *, MPI_Datatype, PetscMPIInt, void *, MPI_Offset, void *);
  #endif
  
--PetscMPIInt PETSC_MPI_ERROR_CLASS=MPI_ERR_LASTCODE,PETSC_MPI_ERROR_CODE;
+-PetscMPIInt PETSC_MPI_ERROR_CLASS = MPI_ERR_LASTCODE, PETSC_MPI_ERROR_CODE;
+-
 +PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
 +__attribute__((__constructor__)) static void init_PETSC_MPI_ERROR_CLASS() { PETSC_MPI_ERROR_CLASS=MPI_ERR_LASTCODE; }
- 
- PETSC_INTERN int  PetscGlobalArgc;
++ 
+ PETSC_INTERN int    PetscGlobalArgc;
  PETSC_INTERN char **PetscGlobalArgs;
+ int                 PetscGlobalArgc = 0;
 diff --git a/src/sys/utils/mpiu.c b/src/sys/utils/mpiu.c
 index a28ea3dc51..15247372d9 100644
 --- a/src/sys/utils/mpiu.c
@@ -223,17 +233,33 @@ index a28ea3dc51..15247372d9 100644
  
  /*@
     PetscSequentialPhaseBegin - Begins a sequential section of code.
+diff --git a/src/mat/impls/scalapack/matscalapack.c b/src/mat/impls/scalapack/matscalapack.c
+index 9422402d2e..e15cea0ba6 100644
+--- a/src/mat/impls/scalapack/matscalapack.c
++++ b/src/mat/impls/scalapack/matscalapack.c
+@@ -17,7 +17,8 @@
+     The variable Petsc_ScaLAPACK_keyval is used to indicate an MPI attribute that
+   is attached to a communicator, in this case the attribute is a Mat_ScaLAPACK_Grid
+ */
+-static PetscMPIInt Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID;
++PetscMPIInt Petsc_ScaLAPACK_keyval;
++__attribute__((__constructor__)) static void init_Petsc_ScaLAPACK_keyval() { Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID; }
+ 
+ static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
+ { 
+
 diff --git a/src/vec/vec/utils/comb.c b/src/vec/vec/utils/comb.c
 index 9422402d2e..e15cea0ba6 100644
 --- a/src/vec/vec/utils/comb.c
 +++ b/src/vec/vec/utils/comb.c
-@@ -271,7 +271,8 @@ PetscErrorCode  PetscSplitReductionDestroy(PetscSplitReduction *sr)
+@@ -271,7 +271,9 @@
    PetscFunctionReturn(0);
  }
  
 -PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 +PetscMPIInt Petsc_Reduction_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Reduction_keyval() { Petsc_Reduction_keyval = MPI_KEYVAL_INVALID; }
++
  
  /*
     Private routine to delete internal storage when a communicator is freed.

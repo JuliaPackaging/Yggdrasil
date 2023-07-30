@@ -3,26 +3,27 @@
 using BinaryBuilder
 
 name = "Xorg_xkeyboard_config"
-version = v"2.27"
+version = v"2.39"
 
 # Collection of sources required to build xkeyboard_config
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-$(version.major).$(version.minor).tar.bz2",
-                  "690daec8fea63526c07620c90e6f3f10aae34e94b6db6e30906173480721901f"),
+    ArchiveSource("https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-$(version.major).$(version.minor).tar.xz",
+                  "5ac5f533eff7b0c116805fe254fd79b2c9882700a4f9f2c070f8c4eae5aaa682"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xkeyboard-config-*
-apk add libxslt
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+apk update && apk add libxslt
+mkdir build && cd build
+meson .. --cross-file="${MESON_TARGET_TOOLCHAIN}"
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = [AnyPlatform()]
 
 products = Product[
 ]
@@ -34,5 +35,11 @@ dependencies = [
     Dependency("Xorg_xkbcomp_jll"),
 ]
 
+init_block = raw"""
+if Sys.islinux() || Sys.isfreebsd()
+    ENV["XKB_CONFIG_ROOT"] = get(ENV, "XKB_CONFIG_ROOT", joinpath(artifact_dir, "share", "X11", "xkb"))
+end
+"""
+
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)

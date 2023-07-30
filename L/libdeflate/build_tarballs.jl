@@ -3,26 +3,43 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version = v"1.8.0"
+version = v"1.18"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ebiggers/libdeflate/archive/refs/tags/v1.8.tar.gz", 
-                  "50711ad4e9d3862f8dfb11b97eb53631a86ee3ce49c0e68ec2b6d059a9662f61"),
+    GitSource(
+        "https://github.com/ebiggers/libdeflate",
+        "495fee110ebb48a5eb63b75fd67e42b2955871e2"
+    ),
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
+    ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libdeflate-*/
-make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} DISABLE_ZLIB=true
-make PROG_SUFFIX=$exeext PREFIX=${prefix} LIBDIR=${libdir} install
+# This requires macOS 10.13
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    popd
+fi
+
+cd $WORKSPACE/srcdir/libdeflate
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+make
+make install
+install_license ${WORKSPACE}/srcdir/libdeflate/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

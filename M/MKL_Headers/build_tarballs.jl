@@ -3,35 +3,35 @@
 using BinaryBuilder, Pkg
 
 name = "MKL_Headers"
-version = v"2022.0.0"
+version = v"2023.1.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.1/download/linux-64/mkl-include-2022.0.1-intel_117.tar.bz2",
-        "e664eb639faf03d5a4e76b435deb28a67ef7f59f3c55adaeeef771a7c94b56e3";
-        unpack_target = "mkl-include-x86_64-linux-gnu"
-    ),
-    ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.1/download/linux-32/mkl-include-2022.0.1-intel_117.tar.bz2",
-        "411f636d3e95f75453de80a5574273454b67181c7c30d3276c6cb18a91ef3eeb";
-        unpack_target = "mkl-include-i686-linux-gnu"
-    ),
-    ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.0/download/osx-64/mkl-include-2022.0.0-intel_105.tar.bz2",
-        "d7aa8f0c7904045c6f569462c0d04cc34250ee991855f5a3ab2fba8bbc5a0d81";
-        unpack_target = "mkl-include-x86_64-apple-darwin14"
-    ),
-    ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.0/download/win-32/mkl-include-2022.0.0-intel_115.tar.bz2",
-        "2d9999a92959be25b5dabbd5b69a4b7f738b87215254c776d59c6b2f8b2addf3";
+        "https://anaconda.org/intel/mkl-include/2023.1.0/download/win-32/mkl-include-2023.1.0-intel_46356.tar.bz2",
+        "81f7efd96cb35ee24ea79011bb12dd038113417c94afa9718a7f45c16b81d559";
         unpack_target = "mkl-include-i686-w64-mingw32"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2022.0.0/download/win-64/mkl-include-2022.0.0-intel_115.tar.bz2",
-        "eb8f6187d8e4ded8c48b701d00658ef49adc2180e42f1ff52f43c1fecc79a870";
+        "https://anaconda.org/intel/mkl-include/2023.1.0/download/win-64/mkl-include-2023.1.0-intel_46356.tar.bz2",
+        "19eb554a8c9c75325e26f4f4a8b9b80538d420016065d5ec918fd9c10354c96b";
         unpack_target = "mkl-include-x86_64-w64-mingw32"
     ),
+    ArchiveSource(
+        "https://anaconda.org/intel/mkl-include/2023.1.0/download/linux-32/mkl-include-2023.1.0-intel_46342.tar.bz2",
+        "a6aa2335954fc2ffb0e3e8a5580a101f955061b2086f1b408c7af7827f799a2e";
+        unpack_target = "mkl-include-i686-linux-gnu"
+    ),
+    ArchiveSource(
+        "https://anaconda.org/intel/mkl-include/2023.1.0/download/linux-64/mkl-include-2023.1.0-intel_46342.tar.bz2",
+        "b24d12a8e18ba23de5c659a33fb184a7ac6019d4b159e78f628d7c8de225f77a";
+        unpack_target = "mkl-include-x86_64-linux-gnu"
+    ),
+    ArchiveSource(
+        "https://anaconda.org/intel/mkl-include/2023.1.0/download/osx-64/mkl-include-2023.1.0-intel_43558.tar.bz2",
+        "f7522e05e61d083e06a802d864c3cefcac8b7bcca35fd08b6cb95a2691808e43";
+        unpack_target = "mkl-include-x86_64-apple-darwin14"
+    )
 ]
 
 # Bash recipe for building across all platforms

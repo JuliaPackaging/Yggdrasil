@@ -3,16 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.2.0"
+version = v"2.9.2"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "38da659cd5862dccbb0457266fe752cfd6541d4f"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "f344bb7c334ff025ea71e23d7a6742a9827745b9"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/c-blosc2/
+
+# Blosc2 mis-detects whether the system headers provide `_xsetbv`
+# (probably on several platforms), and on `x86_64-w64-mingw32` the
+# functions have incompatible return types (although both are 64-bit
+# integers).
+atomic_patch -p1 ../patches/_xsetbv.patch
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -35,6 +43,9 @@ install_license ../LICENSES/*.txt
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 
+# Blosc2 requires NEON on ARM platforms; see <https://github.com/Blosc/c-blosc2/issues/465>
+platforms = filter(p -> arch(p) ≠ "armv7l", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libblosc2", :libblosc2),
@@ -48,4 +59,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5.2")
+# We need at least GCC 8 for powerpc.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")

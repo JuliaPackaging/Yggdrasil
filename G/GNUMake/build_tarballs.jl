@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "GNUMake"
-version = v"4.3"
+version_string = "4.4.1"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/make/make-4.3.tar.gz", "e05fdde47c5f7ca45cb697e973894ff4f5d79e13b750ed57d7b66d8defc78e19"),
+    ArchiveSource("https://ftp.gnu.org/gnu/make/make-$(version_string).tar.gz",
+                  "dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3"),
     DirectorySource("./bundled")
 ]
 
@@ -15,7 +17,7 @@ sources = [
 # Really ugly straight translation of the build_w32.bat file here. Could probably still use make file
 # but this is more or less a translation of the "official" install method.
 script = raw"""
-cd $WORKSPACE/srcdir/make-4.3
+cd $WORKSPACE/srcdir/make*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
 if [[ "${target}" == *-mingw* ]]; then
     cp $WORKSPACE/srcdir/Makefile GNUmakefile
@@ -31,7 +33,7 @@ else
     make -j${nproc}
     make install
 fi
-install_license ${WORKSPACE}/srcdir/make-*/COPYING
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -48,4 +50,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

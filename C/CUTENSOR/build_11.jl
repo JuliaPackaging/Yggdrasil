@@ -7,6 +7,7 @@ if [[ ${target} == *-linux-gnu ]]; then
     find .
 
     install_license LICENSE
+
     mv lib/11/libcutensor.so* ${libdir}
     mv lib/11/libcutensorMg.so* ${libdir}
     mv include/* ${prefix}/include

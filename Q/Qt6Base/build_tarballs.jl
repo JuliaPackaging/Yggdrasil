@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.3.0"
+version = v"6.4.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
@@ -13,7 +13,7 @@ const host_build = false
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "b865aae43357f792b3b0a162899d9bf6a1393a55c4e5e4ede5316b157b1a0f99"),
+                  "a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
@@ -40,12 +40,11 @@ commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE
 export LD_LIBRARY_PATH=$host_libdir:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
-sed -i 's/"-march=haswell"/"-mavx2" "-mf16c"/' $qtsrcdir/cmake/QtCompilerOptimization.cmake
+sed -i 's/"-march=haswell"/"-mavx2" "-mf16c" "-mfma" "-mbmi2" "-mlzcnt"/' $qtsrcdir/cmake/QtCompilerOptimization.cmake
 
-case "$target" in
+case "$bb_full_target" in
 
-    x86_64-linux-musl*)
-        export LD_LIBRARY_PATH=$WORKSPACE/srcdir/build/lib:$host_libdir:$LD_LIBRARY_PATH
+    x86_64-linux-musl-libgfortran5-cxx11)
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
     ;;
 
@@ -77,7 +76,11 @@ case "$target" in
     *apple-darwin*)
         apple_sdk_root=$WORKSPACE/srcdir/MacOSX11.1.sdk
         sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd
+        if [[ "${target}" == x86_64-* ]]; then
+            export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
+            deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"
+        fi
+        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd
     ;;
 
     *freebsd*)
@@ -87,24 +90,23 @@ case "$target" in
     ;;
 
     *)
-        if [[ "$target" != *"aarch64"* ]]; then
-            sed -i 's/ELFOSABI_GNU/ELFOSABI_LINUX/' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
-            sed -i 's/.*EM_AARCH64.*//' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
-        fi
-        sed -i 's/.*EM_BLACKFIN.*//' $qtsrcdir/src/corelib/plugin/qelfparser_p.cpp
+        echo "#define ELFOSABI_GNU 3" >> /opt/$target/$target/sys-root/usr/include/elf.h
+        echo "#define EM_AARCH64 183" >> /opt/$target/$target/sys-root/usr/include/elf.h
+        echo "#define EM_BLACKFIN 106" >> /opt/$target/$target/sys-root/usr/include/elf.h
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions
     ;;
 esac
 
 cmake --build . --parallel ${nproc}
 cmake --install .
-install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSE.LGPL3
+install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSES/LGPL-3.0-only.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 if host_build
     platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
+    platforms_macos = AbstractPlatform[]
 else
     platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
     filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
@@ -140,6 +142,9 @@ products_macos = [
     FrameworkProduct("QtXml", :libqt6xml),
 ]
 
+# We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_libX11_jll"),
@@ -160,8 +165,10 @@ dependencies = [
     Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.1")),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
 ]
 
 if !host_build
@@ -172,9 +179,9 @@ include("../../fancy_toys.jl")
 
 @static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", preferred_llvm_version=llvm_version, julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", preferred_llvm_version=llvm_version, julia_compat="1.6")
 end

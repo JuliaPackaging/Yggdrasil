@@ -3,18 +3,32 @@
 using BinaryBuilder, Pkg
 
 name = "TempestRemap"
-version = v"2.1.3"
+version = v"2.1.6"
 sources = [
-    ArchiveSource("https://github.com/ClimateGlobalChange/tempestremap/archive/refs/tags/v$(version).tar.gz",
-                  "f3925871b9bc19c39002665970283a6f70ec5e159f0c87c74d1ef4f7efa4c26a"),
+    GitSource("https://github.com/ClimateGlobalChange/tempestremap.git",
+        "531da6298b8924b56776ecf30cce0af60d7a8144"), # v2.1.6
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/tempestremap*
 
+atomic_patch -p1 ../patches/triangle.patch
+atomic_patch -p1 ../patches/libadd.patch
+
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
+if [[ "${target}" == *-mingw* ]]; then
+    LDFLAGS_MAKE+=" -no-undefined"
+fi
+
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # aclocal.m4 has some lines where it expects `MACOSX_DEPLOYMENT_TARGET` to be up to
+    # version 10.  Let's pretend to be 10.16, as many tools do to make old build systems
+    # happy.
+    export MACOSX_DEPLOYMENT_TARGET="10.16"
+fi
 CONFIGURE_OPTIONS=""
 
 autoreconf -fiv
@@ -35,11 +49,14 @@ make install
 install_license ../LICENSE
 """
 
-# Note: We are restricted to the platforms that NetCDF supports, the library is Unix only
+# Note: We are restricted to the platforms that NetCDF supports
 platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
+    Platform("aarch64","macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
 ] 
 platforms = expand_cxxstring_abis(platforms)
 
@@ -72,7 +89,8 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("NetCDF_jll", compat="400.702.402 - 400.799"),
+    Dependency("HDF5_jll", compat="~1.12.2"),
+    Dependency("NetCDF_jll", compat="400.902.5 - 400.999"),
     # The following is adapted from NetCDF_jll
     BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]

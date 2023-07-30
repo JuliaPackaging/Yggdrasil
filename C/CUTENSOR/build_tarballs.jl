@@ -1,53 +1,56 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms: arch, os
 
-include("../../fancy_toys.jl")
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
-version = v"1.4.0"#.6
+version = v"1.7.0"
+version_str = "1.7.0.1"
 
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-x86_64/libcutensor-linux-x86_64-1.4.0.6-archive.tar.xz",
-                      "467ba189195fcc4b868334fc16a0ae1e51574139605975cc8004cedebf595964")],
+        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-x86_64/libcutensor-linux-x86_64-$(version_str)-archive.tar.xz",
+                      "dd3557891371a19e73e7c955efe5383b0bee954aba6a30e4892b0e7acb9deb26")],
     Platform("powerpc64le", "linux") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-ppc64le/libcutensor-linux-ppc64le-1.4.0.6-archive.tar.xz",
-                      "5da44ff2562ab7b9286122653e54f28d2222c8aab4bb02e9bdd4cf7e4b7809be")],
+        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-ppc64le/libcutensor-linux-ppc64le-$(version_str)-archive.tar.xz",
+                      "af4ad5e29dcb636f1bf941ed1fd7fc8053eeec4813fbc0b41581e114438e84c8")],
     Platform("aarch64", "linux") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-sbsa/libcutensor-linux-sbsa-1.4.0.6-archive.tar.xz",
-                      "6b06d63a5bc49c1660be8c307795f8a901c93dcde7b064455a6c81333c7327f4")],
+        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-sbsa/libcutensor-linux-sbsa-$(version_str)-archive.tar.xz",
+                      "c31f8e4386539434a5d1643ebfed74572011783b4e21b62be52003e3a9de3720")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/windows-x86_64/libcutensor-windows-x86_64-1.4.0.6-archive.zip",
-                      "4f01a8aac2c25177e928c63381a80e3342f214ec86ad66965dcbfe81fc5c901d")],
+        ArchiveSource("https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/windows-x86_64/libcutensor-windows-x86_64-$(version_str)-archive.zip",
+                      "cdbb53bcc1c7b20ee0aa2dee781644a324d2d5e8065944039024fe22d6b822ab")],
 )
 
-products = [
-    LibraryProduct(["libcutensor", "cutensor"], :libcutensor, dont_dlopen = true),
-    LibraryProduct(["libcutensorMg", "cutensorMg"], :libcutensorMg, dont_dlopen = true),
-]
+augment_platform_block = CUDA.augment
 
-# XXX: CUDA_loader_jll's CUDA tag should match the library's CUDA version compatibility.
-#      lacking that, we can't currently dlopen the library
+products = [
+    LibraryProduct(["libcutensor", "cutensor"], :libcutensor),
+    LibraryProduct(["libcutensorMg", "cutensorMg"], :libcutensorMg),
+]
 
 dependencies = [
-    Dependency(PackageSpec(name="CUDA_loader_jll")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll",
-                           uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+    RuntimeDependency(PackageSpec(name="CompilerSupportLibraries_jll",
+                                  uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
-cuda_versions = [v"10.2", v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6"]
-for cuda_version in cuda_versions
-    cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
-    include("build_$(cuda_tag).jl")
+builds = ["11", "12"]
+for build in builds
+    include("build_$(build).jl")
+    cuda_version = VersionNumber(build)
 
     for (platform, sources) in platforms_and_sources
-        if platform == Platform("aarch64", "linux") && cuda_version < v"11"
-            # ARM binaries are only provided for CUDA 11+
-            continue
-        end
-        augmented_platform = Platform(arch(platform), os(platform); cuda=cuda_tag)
+        augmented_platform = Platform(arch(platform), os(platform);
+                                      cuda=CUDA.platform(cuda_version))
         should_build_platform(triplet(augmented_platform)) || continue
         build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
-                       products, dependencies; lazy_artifacts=true)
+                       products, dependencies; lazy_artifacts=true,
+                       julia_compat="1.6", augment_platform_block,
+                       skip_audit=true, dont_dlopen=true)
     end
 end
+
+# bump

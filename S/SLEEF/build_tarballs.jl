@@ -3,18 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "SLEEF"
-version = v"3.4.1"
+version = v"3.5.2" # This is an unreleased version later than v3.5.1 (the currently latest released version).
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/shibatch/sleef.git", "233ed22c45b239230bf12a2f81585e857ede5e26"),
+    GitSource("https://github.com/shibatch/sleef.git", "e0a003ee838b75d11763aa9c3ef17bf71a725bff"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sleef
-atomic_patch -p1 ../patches/version.patch
 mkdir build-native
 cd build-native
 cmake \
@@ -65,7 +64,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("MPFR_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

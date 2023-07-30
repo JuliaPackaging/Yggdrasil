@@ -3,14 +3,16 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.6.0"
+version = v"4.10.4"
 
 # Collection of sources required to build GTK
 sources = [
     # https://download.gnome.org/sources/gtk/
-    ArchiveSource("https://download.gnome.org/sources/gtk/4.6/gtk-4.6.0.tar.xz",
-                  "782d5951fbfd585fc9ec76c09d07e28e6014c72db001fb567fff217fb96e4d8c"),
+    ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
+                  "7725400482e0685e28265e226c62847f4e73cfca9e9b416ac5838207f5377a24"),
     DirectorySource("./bundled"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
+                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +20,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/gtk*/
 
 # We need to run some commands with a native Glib
+apk update
 apk add glib-dev
 
 # This is awful, I know
@@ -43,20 +46,29 @@ if [[ "${target}" == *apple* ]]; then
     sed -i "s?^ar = .*?ar = '/opt/${target}/bin/${target}-ar'?g" "${MESON_TARGET_TOOLCHAIN}"
 fi
 
-# https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4443
-atomic_patch -p1 ../patches/0001-Include-gdk-private.h-to-fix-error-about-g_source_se.patch
-# https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/4445
-atomic_patch -p1 ../patches/0001-gdkjpeg-include-stdlib.h-necessary-for-free.patch
-
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
+    atomic_patch -p1 ../patches/NSPasteboard.patch
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland-backend=false)
 elif [[ "${target}" == *-mingw* ]]; then
-    # Need to tell we're targeting at least Windows 7 so that `GC_ALLGESTURES` is defined
-    sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-DWINVER=_WIN32_WINNT_WIN7']/" ${MESON_TARGET_TOOLCHAIN}
+    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
+    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
+    make install
+
+    cd ../mingw-w64-crt/
+    if [ ${target} == "i686-w64-mingw32" ]; then
+        _crt_configure_args="--disable-lib64 --enable-lib32"
+    elif [ ${target} == "x86_64-w64-mingw32" ]; then
+        _crt_configure_args="--disable-lib32 --enable-lib64"
+    fi
+    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
+    make -j${nproc}
+    make install
 fi
+
+cd $WORKSPACE/srcdir/gtk*/
 
 mkdir build-gtk && cd build-gtk
 meson .. \
@@ -66,11 +78,14 @@ meson .. \
     -Ddemos=false \
     -Dbuild-examples=false \
     -Dbuild-tests=false \
+    -Dbuild-testsuite=false \
     -Dgtk_doc=false \
     "${FLAGS[@]}" \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
+
+install_license ../COPYING
 
 # post-install script is disabled when cross-compiling
 glib-compile-schemas ${prefix}/share/glib-2.0/schemas
@@ -81,11 +96,12 @@ rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgtk-4", :libgtk4),
+    ExecutableProduct("gtk4-builder-tool", :gtk4_builder_tool),
 ]
 
 x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
@@ -97,7 +113,7 @@ dependencies = [
     # Need a host Wayland for wayland-scanner
     HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("Glib_jll"; compat="2.68.3"),
+    Dependency("Glib_jll"; compat="2.74"),
     Dependency("Graphene_jll"; compat="1.10.6"),
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"; compat="1.50.3"),
@@ -109,7 +125,7 @@ dependencies = [
     Dependency("xkbcommon_jll"; platforms=x11_platforms),
     Dependency("iso_codes_jll"),
     Dependency("Wayland_jll"; platforms=x11_platforms),
-    Dependency("Wayland_protocols_jll"; compat="1.23", platforms=x11_platforms),
+    Dependency("Wayland_protocols_jll"; compat="1.25", platforms=x11_platforms),
     Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXrender_jll"; platforms=x11_platforms),

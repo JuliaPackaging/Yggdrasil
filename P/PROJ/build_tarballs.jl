@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "PROJ"
-upstream_version = v"9.0.1"
+upstream_version = v"9.2.1"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -11,7 +11,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz", "737eaacbe7906d0d6ff43f0d9ebedc5c734cccc9e6b8d7beefdec3ab22d9a6a3")
+    ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
+        "15ebf4afa8744b9e6fccb5d571fc9f338dc3adcf99907d9e62d1af815d4971a1")
 ]
 
 # Bash recipe for building across all platforms
@@ -23,15 +24,18 @@ EXE_SQLITE3=${host_bindir}/sqlite3
 if [[ ${target} == *mingw* ]]; then
     SQLITE3_LIBRARY=${libdir}/libsqlite3-0.dll
     CURL_LIBRARY=${libdir}/libcurl-4.dll
-    TIFF_LIBRARY_RELEASE=${libdir}/libtiff-5.dll
+    TIFF_LIBRARY_RELEASE=${libdir}/libtiff-6.dll
 else
     SQLITE3_LIBRARY=${libdir}/libsqlite3.${dlext}
     CURL_LIBRARY=${libdir}/libcurl.${dlext}
     TIFF_LIBRARY_RELEASE=${libdir}/libtiff.${dlext}
 fi
 
-if [[ "${target}" == x86_64-linux-musl* ]]; then
-    export LDFLAGS="-lcurl"
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
+    # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libnghttp2.*
 fi
 
 mkdir build
@@ -89,9 +93,9 @@ products = [
 dependencies = [
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
-    Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8"))
-    Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
-    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"))
+    Dependency("SQLite_jll")
+    Dependency("Libtiff_jll"; compat="4.5.1")
+    Dependency("LibCURL_jll"; compat="7.73,8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

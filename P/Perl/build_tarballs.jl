@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Perl"
-version = v"5.34.0"
+version = v"5.34.1"
 
 # Collection of sources required to build perl
 # with a few extra modules for polymake
 sources = [
-    ArchiveSource("https://www.cpan.org/src/5.0/perl-$version.tar.gz", "551efc818b968b05216024fb0b727ef2ad4c100f8cb6b43fab615fa78ae5be9a"),
+    ArchiveSource("https://www.cpan.org/src/5.0/perl-$version.tar.gz", "357951a491b0ba1ce3611263922feec78ccd581dddc24a446b033e25acf242a1"),
     ArchiveSource("https://cpan.metacpan.org/authors/id/I/IS/ISHIGAKI/JSON-4.03.tar.gz", "e41f8761a5e7b9b27af26fe5780d44550d7a6a66bf3078e337d676d07a699941"),
     ArchiveSource("https://cpan.metacpan.org/authors/id/J/JO/JOSEPHW/XML-Writer-0.900.tar.gz", "73c8f5bd3ecf2b350f4adae6d6676d52e08ecc2d7df4a9f089fa68360d400d1f"),
     ArchiveSource("https://cpan.metacpan.org/authors/id/J/JS/JSTOWE/TermReadKey-2.38.tar.gz", "5a645878dc570ac33661581fbb090ff24ebce17d43ea53fd22e105a856a47290"),
@@ -76,7 +76,8 @@ if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
    popd
 
    # copy and use prepared configure information
-   cp ../config/config-$target.sh config.sh
+   novertarget=$(echo "${target}" | sed -E 's/[0-9.]+$//g')
+   cp ../config/config-$novertarget.sh config.sh
    ./Configure -K -S
    extramakeargs=RUN_PERL=perl
 else
@@ -140,7 +141,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Readline_jll"; compat="~8.1.1")
+    Dependency("Readline_jll"; compat="8.1.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

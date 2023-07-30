@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DAQP"
-version = v"0.2.0"
+version = v"0.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/darnstrom/daqp.git", "ff75b939c52eb9628f91e76ee3b92c8049a3115d")
+    GitSource("https://github.com/darnstrom/daqp.git", "1c5388acc3a497b3bf6abd4bff2ec01191ec1c0d")
 ]
 
 # Bash recipe for building across all platforms

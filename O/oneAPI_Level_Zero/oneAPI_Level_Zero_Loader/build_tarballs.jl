@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-include("../common.jl"); push!(sources, DirectorySource("./bundled"))
+include("../common.jl")
 name = "oneAPI_Level_Zero_Loader"
 
 
@@ -10,10 +10,6 @@ name = "oneAPI_Level_Zero_Loader"
 script = raw"""
 cd level-zero
 install_license LICENSE
-
-if [[ "${target}" == *musl* ]]; then
-atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-no-deepbind.patch
-fi
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -54,6 +50,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5")
-
-# bump
+               preferred_gcc_version=v"8")

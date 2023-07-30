@@ -20,7 +20,7 @@ const augment = """
         end
         return platform
     end
-"""
+    """
 
 function platform(llvm_version, llvm_assertions)
     if llvm_assertions
