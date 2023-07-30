@@ -8,9 +8,9 @@ version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/$(version_string).tar.gz",
-                  "5024979f06bc8da2fb696252a66297f3e0e67098595a0cc7345312b3b4aa0f54"),
-    DirectorySource("./bundled")
+    DirectorySource("./bundled"),
+    GitSource("https://github.com/kokkos/kokkos.git",
+	      "1a0c2ff6daf1068c65529ec04c2c046177847869")
 ]
 
 # Bash recipe for building across all platforms
