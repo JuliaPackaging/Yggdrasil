@@ -1,27 +1,32 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.12"  # fake version number
+version = v"0.0.13"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
 
-# NOTES
-# - k_quants disabled for armv{6,7}-linux due to compile errors
-# - k_quants fails to compile on aarch64-linux for gcc-9 and below
-# - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
-# - fails on i686-w64-mingw32
-#   /workspace/srcdir/llama.cpp/examples/main/main.cpp:249:81: error: invalid static_cast from type ‘main(int, char**)::<lambda(DWORD)>’ to type ‘PHANDLER_ROUTINE’ {aka ‘int (__attribute__((stdcall)) *)(long unsigned int)’}
+# Supported accelerators
+# - MacOS: CPU, Metal (Apple Silicon), Accelerate (Intel)
+# - all others: CPU
 # - on x86_64 and i686 we assume these arch extensions are available
 #   - avx (LLAMA_AVX)
 #   - avx2 (LLAMA_AVX2)
 #   - f16c (LLAMA_F16C)
 #   - fma (LLAMA_FMA)
-# - on macos the accelerate framework is used
-# - missing build options (build multiple jlls from a common build script?)
+
+# TODO
+# - missing build options
 #   - BLAS (LLAMA_BLAS)
 #   - CUDA/CuBLAS (LLAMA_CUBLAS)
 #   - OpenCL/CLBLAST (LLAMA_CLBLAST)
+
+# Build notes and failures
+# - k_quants disabled for armv{6,7}-linux due to compile errors
+# - k_quants fails to compile on aarch64-linux for gcc-9 and below
+# - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
+# - fails on i686-w64-mingw32
+#   /workspace/srcdir/llama.cpp/examples/main/main.cpp:249:81: error: invalid static_cast from type ‘main(int, char**)::<lambda(DWORD)>’ to type ‘PHANDLER_ROUTINE’ {aka ‘int (__attribute__((stdcall)) *)(long unsigned int)’}
 
 # versions: fake_version to github_version mapping
 #
@@ -39,10 +44,11 @@ version = v"0.0.12"  # fake version number
 # 0.0.10          2023-05-19       master-2d5db48    https://github.com/ggerganov/llama.cpp/releases/tag/master-2d5db48
 # 0.0.11          2023-06-13       master-9254920    https://github.com/ggerganov/llama.cpp/releases/tag/master-9254920
 # 0.0.12          2023-07-24       master-41c6741    https://github.com/ggerganov/llama.cpp/releases/tag/master-41c6741
+# 0.0.13          2023-07-29       master-11f3ca0    https://github.com/ggerganov/llama.cpp/releases/tag/master-11f3ca0
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "41c674161fb2459bdf7806d1eebead15bc5d046e"),
+              "11f3ca06b8c66b0427aab0a472479da22553b472"),
 ]
 
 script = raw"""
@@ -63,6 +69,11 @@ if [[ "${proc_family}" == "arm" && "${nbits}" == 32 ]]; then
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=OFF"
 else
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=ON"
+fi
+
+# Use Metal on Apple Silicon
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=ON"
 fi
 
 mkdir build && cd build
