@@ -6,19 +6,19 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.0"
+version = v"1.14.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.gz",
-                  "a571cc83efda62e1a51a0a912dd916d01895801c5025af91669484a1575a6ef4"),
+    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version)-2.tar.bz2",
+                  "06ca141d1a3c312b5d7cc4826a12737293ae131031748861689f6a2ec8219dbd"),
     DirectorySource("./bundled"),
 
     # We don't build HDF5 on Windows; instead, we use packages from msys there:
 
     # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.0-6-any.pkg.tar.zst",
-                  "3812ce5147aad8cc8bb8bbd5879ecc3131c2267296eecc2d35cd3c8515b3fbc8"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.1.2-2-any.pkg.tar.zst",
+                  "95e22f5d0694d89d97df156f91bb0e1538bab9ac7eb0d8f8ff5b4b77ddc7e0de"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.2.13-3-any.pkg.tar.zst",
                   "ed62c6f77f9cce488aed15726349d5d4537689583caab46bace8d41173db48b7"; unpack_target="i686-w64-mingw32"),
     # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
@@ -26,8 +26,8 @@ sources = [
                   "c04ce4ecf40cb4c87fe6f38ba4dc7d568f24dcb69c8babfc507fa3de8ddb54a2"; unpack_target="i686-w64-mingw32"),
 
     # 64-bit Windows from https://packages.msys2.org/package/mingw-w64-x86_64-hdf5
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.14.0-6-any.pkg.tar.zst",
-                  "5faed72eb9406fd8e3bfa0e3110543d84e9f266037fd9f4c1fca49613b44db1a"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.14.1.2-2-any.pkg.tar.zst",
+                  "78c850057b677276537f3befafc7c98a5488181fd9c8691e2ac8e4aa8133a780"; unpack_target="x86_64-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.2.13-3-any.pkg.tar.zst",
                   "7fc6ac1629180e205f0fdbe7abd04353136a44d73d16924f0c64fd10828329a7"; unpack_target="x86_64-w64-mingw32"),
 
