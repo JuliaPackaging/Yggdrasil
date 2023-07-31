@@ -3,26 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "Kokkos"
-version_string = "3.6.01"
+version_string = "3.7.02"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/$(version_string).tar.gz",
-                  "1b80a70c5d641da9fefbbb652e857d7c7a76a0ebad1f477c253853e209deb8db"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/kokkos/kokkos.git",
+	      "1a0c2ff6daf1068c65529ec04c2c046177847869"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/kokkos-*
+cd $WORKSPACE/srcdir/kokkos
 
 OPENMP_FLAG=()
 
-#inspired by https://github.com/JuliaPackaging/Yggdrasil/blob/b15a45949bf007072af7a2f335fe6e49165f7627/E/Entwine/build_tarballs.jl#L31-L40
-if [[ ${target} == *-linux-musl* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-stacktrace-macro.patch
-fi
 mkdir build
 cd build/
 
