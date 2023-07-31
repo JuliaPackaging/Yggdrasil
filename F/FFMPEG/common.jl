@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version_string = "4.4.2" # when patch number is zero, they use X.Y format
+version_string = "4.4.4"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-                  "af419a7f88adbc56c758ab19b4c708afbcae15ef09606b82b855291f6a6faa93"),
+                  "e80b380d595c809060f66f96a5d849511ef4a76a26b76eacf5778b94c3570309"),
 ]
 
 # Bash recipe for building across all platforms
