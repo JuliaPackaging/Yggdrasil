@@ -15,7 +15,7 @@ dependencies = [
     BuildDependency("nv_codec_headers_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
-    Dependency(PackageSpec(name="FFMPEG_jll", build_version=version)),
+    Dependency("FFMPEG_jll"; compat=string(version)),
     Dependency("SDL2_jll"),
 ]
 
