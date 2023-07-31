@@ -15,9 +15,10 @@ dependencies = [
     BuildDependency("nv_codec_headers_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
-    Dependency(PackageSpec(name="FFMPEG_jll", version=version)),
+    Dependency("FFMPEG_jll"; compat=string(version)),
     Dependency("SDL2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script(; ffplay=true), platforms, products, dependencies; preferred_gcc_version=preferred_gcc_version)
+build_tarballs(ARGS, name, version, sources, script(; ffplay=true), platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=preferred_gcc_version)
