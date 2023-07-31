@@ -12,6 +12,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 # TODO: Theora once it's available
 dependencies = [
+    HostBuildDependency("YASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
