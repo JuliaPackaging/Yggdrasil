@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "assimp"
-version = v"5.0.1"
+version = v"5.2.5"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/assimp/assimp.git",
-              "8f0c6b04b2257a520aaab38421b2e090204b69df"),
+              "9519a62dd20799c5493c638d1ef5a6f484e5faf1"),
 ]
 
 # Bash recipe for building across all platforms
