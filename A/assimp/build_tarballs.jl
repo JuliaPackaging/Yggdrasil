@@ -31,8 +31,8 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms(; experimental=false) if p != Platform("i686", "linux"; libc="musl") &&
-                                                                     p != Platform("armv7l", "linux"; libc="musl")
+platforms = [p for p in supported_platforms() if p != Platform("i686", "linux"; libc="musl") &&
+                                                 p != Platform("armv7l", "linux"; libc="musl")
             ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -47,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
