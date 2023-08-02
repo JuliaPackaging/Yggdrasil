@@ -32,7 +32,10 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [p for p in supported_platforms() if p != Platform("i686", "linux"; libc="musl") &&
-                                                 p != Platform("armv7l", "linux"; libc="musl")
+                                                 p != Platform("armv7l", "linux"; libc="musl") &&
+                                                 p != Platform("aarch64", "apple"; libc="darwin") &&
+                                                 p != Platform("x86_64", "apple"; libc="darwin") &&
+                                                 p != Platform("powerpc64le", "linux"; libc="gnu")
             ]
 platforms = expand_cxxstring_abis(platforms)
 
