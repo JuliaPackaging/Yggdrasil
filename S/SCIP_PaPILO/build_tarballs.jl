@@ -59,7 +59,7 @@ products = [
     ExecutableProduct("papilo", :papilo),
     ExecutableProduct("scip", :scip),
     LibraryProduct("libscip", :libscip),
-    LibraryProduct("libsoplex", :libsoplex),
+    LibraryProduct("libsoplexshared", :libsoplex),
 ]
 
 dependencies = [
