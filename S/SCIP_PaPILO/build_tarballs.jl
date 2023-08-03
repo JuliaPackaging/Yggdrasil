@@ -4,18 +4,16 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"800.0.301"
+version = v"800.0.400"
 
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz", "5ad50eb42254c825d96f5747d8f3568dcbff0284dfbd1a727910c5a7c2899091"),
+    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.4.tgz", "820b1f446809e42ddd8beed197facfb01255ba38157b3c55790edb628b16a07b"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd scipoptsuite*
-
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findbliss.patch
 
 mkdir build
 cd build/
@@ -60,10 +58,10 @@ products = [
     ExecutableProduct("papilo", :papilo),
     ExecutableProduct("scip", :scip),
     LibraryProduct("libscip", :libscip),
+    LibraryProduct("libsoplex", :libsoplex),
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), compat="=0.77.0"),
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
