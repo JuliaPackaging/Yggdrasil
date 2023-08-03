@@ -26,7 +26,7 @@ cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DKokkos_CXX_STANDARD=17 \
+    -DCMAKE_CXX_STANDARD=17 \
     -DKokkos_ENABLE_OPENMP=ON
 
 make -j${nproc}
@@ -43,7 +43,8 @@ filter!(p -> nbits(p) != 32, platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libkokkoscore", :libkokkoscore),
-    LibraryProduct("libkokkoscontainers", :libkokkoscontainers)
+    LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
+    LibraryProduct("libkokkossimd", :libkokkossimd)
 ]
 
 # Dependencies that must be installed before this package can be built
