@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "assimp"
-version = v"5.0.1"
+version = v"5.2.5"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/assimp/assimp.git",
-              "8f0c6b04b2257a520aaab38421b2e090204b69df"),
+              "9519a62dd20799c5493c638d1ef5a6f484e5faf1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,10 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [p for p in supported_platforms() if p != Platform("i686", "linux"; libc="musl") &&
-                                                 p != Platform("armv7l", "linux"; libc="musl")
+                                                 p != Platform("armv7l", "linux"; libc="musl") &&
+                                                 p != Platform("aarch64", "macos") &&
+                                                 p != Platform("x86_64", "macos") &&
+                                                 p != Platform("powerpc64le", "linux"; libc="glibc")
             ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -47,4 +50,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", julia_compat="1.6")
