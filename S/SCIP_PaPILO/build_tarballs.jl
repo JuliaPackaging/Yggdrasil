@@ -38,6 +38,9 @@ make papilo-executable
 make install
 cp bin/papilo "${bindir}/papilo${exeext}"
 
+cd soplex
+make install
+
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in scip soplex gcg; do
     cp $WORKSPACE/srcdir/scipoptsuite*/${dir}/LICENSE ${prefix}/share/licenses/SCIP_PaPILO/LICENSE_${dir}
