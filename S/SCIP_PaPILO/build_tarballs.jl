@@ -37,9 +37,7 @@ make papilo-executable
 
 make install
 cp bin/papilo "${bindir}/papilo${exeext}"
-
-cd soplex
-make install
+cp lib/libsoplexshared.${dlext} ${libdir}/
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in scip soplex gcg; do
