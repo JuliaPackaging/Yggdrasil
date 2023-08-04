@@ -7,7 +7,7 @@ version = v"2.0.0"
 
 # Collection of sources required to build spglib
 sources = [
-    ArchiveSource("https://github.com/spglib/spglib/archive/v$(version).tar.gz",
+    ArchiveSource("https://github.com/spglib/spglib/archive/refs/tags/v$(version).tar.gz",
                   "426c4004e84fdb732d86aa5fcada5257ca8bc7a6915c06ced27565176c16ee96"),
 ]
 
