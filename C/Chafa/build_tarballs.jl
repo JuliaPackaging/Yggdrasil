@@ -32,6 +32,9 @@ make install
 
 # Chafa itself does not support Windows
 platforms = filter!(!Sys.iswindows, supported_platforms())
+# Remove this when we build a newer version for which we can target the former
+# experimental platforms
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64") && arch(p) != "armv6l", platforms)
 
 products = [
     LibraryProduct("libchafa", :libchafa),
@@ -39,8 +42,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency("FreeType2_jll"),
-    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("Glib_jll"; compat="2.59.0"),
     Dependency("ImageMagick_jll"),
 ]
 

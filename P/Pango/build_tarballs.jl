@@ -38,7 +38,7 @@ products = [
 dependencies = [
     Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("FriBidi_jll"),
     Dependency("Glib_jll"; compat="2.68.1"),
     Dependency("HarfBuzz_jll"; compat="2.8.1"),

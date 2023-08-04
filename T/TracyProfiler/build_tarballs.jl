@@ -88,7 +88,7 @@ x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 dependencies = [
     Dependency("Capstone_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Dbus_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("GLFW_jll"),
     # Needed for `pkg-config glfw3`

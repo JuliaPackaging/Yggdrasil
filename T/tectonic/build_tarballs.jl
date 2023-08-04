@@ -39,7 +39,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Graphite2_jll"),
     Dependency("HarfBuzz_jll"; compat="2.8.1"),
     Dependency("HarfBuzz_ICU_jll"),
