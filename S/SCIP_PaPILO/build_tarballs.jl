@@ -32,12 +32,13 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DBLISS_INCLUDE_DIR=${includedir} \
   -DBLISS_LIBRARY=bliss \
   ..
+
 make -j${nproc} scip
 make papilo-executable
 
 make install
 cp bin/papilo "${bindir}/papilo${exeext}"
-cp lib/libsoplexshared.${dlext} ${libdir}/
+cp lib/libsoplexshared*${dlext} ${libdir}/
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in scip soplex gcg; do
