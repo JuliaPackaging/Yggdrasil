@@ -27,7 +27,7 @@ dependencies = [
     Dependency("libass_jll"; compat="0.15.1"),
     Dependency("libfdk_aac_jll"),
     Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("LAME_jll"),
     Dependency("libvorbis_jll"),
     Dependency("libaom_jll"),
