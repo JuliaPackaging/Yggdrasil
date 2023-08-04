@@ -7,8 +7,7 @@ version = v"2.0.0"
 
 # Collection of sources required to build spglib
 sources = [
-    ArchiveSource("https://github.com/spglib/spglib/archive/refs/tags/v$(version).tar.gz",
-                  "426c4004e84fdb732d86aa5fcada5257ca8bc7a6915c06ced27565176c16ee96"),
+    GitSource("https://github.com/spglib/spglib.git", "746954462fbe6584e5deb7d98ba68decf3047122"),
 ]
 
 # Bash recipe for building across all platforms
