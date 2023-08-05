@@ -62,7 +62,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
-    Dependency("LibSSH2_jll"; compat="^1.10.1"),
+    Dependency("LibSSH2_jll"; compat="1.11.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
