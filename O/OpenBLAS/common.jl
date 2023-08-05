@@ -97,6 +97,9 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(CONSISTENT_FPCSR=1)
     fi
 
+    # Build BFLOAT16 kernels
+    flags+=(BUILD_BFLOAT16=1)
+
     # We are cross-compiling
     flags+=(CROSS=1 PREFIX=/ "CROSS_SUFFIX=${target}-")
 
