@@ -9,23 +9,14 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/binaryen
 
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
      atomic_patch -p1 ${f}
 done
 
-cd binaryen/
-
-CMAKE_FLAGS=()
-
-cmake . \
--DCMAKE_INSTALL_PREFIX=$prefix \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DCMAKE_BUILD_TYPE=Release \
--DBUILD_TESTS=OFF \
--DBUILD_SHARED_LIBS=ON \
-"${CMAKE_FLAGS[@]}"
+cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF \
+-DBUILD_SHARED_LIBS=ON 
 
 make -j${nproc}
 make install

@@ -1,6 +1,6 @@
 index 8a008b5..c69cf3d 100644
---- before/binaryen/CMakeLists.txt
-+++ after/binaryen/CMakeLists.txt
+--- before/CMakeLists.txt
++++ after/CMakeLists.txt
 @@ -278,6 +278,7 @@ else()
    add_compile_flag("-Wswitch") # we explicitly expect this in the code
    add_compile_flag("-Wimplicit-fallthrough")
