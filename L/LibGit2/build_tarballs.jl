@@ -30,7 +30,7 @@ fi
 
 # Special windows flags
 if [[ ${target} == *-mingw* ]]; then
-    BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON -DBUILD_CLAR=OFF)
+    BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON -DBUILD_TESTS=OFF)
     if [[ ${target} == i686-* ]]; then
         BUILD_FLAGS+=(-DCMAKE_C_FLAGS="-mincoming-stack-boundary=2")
     fi
