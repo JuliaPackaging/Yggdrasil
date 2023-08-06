@@ -6,6 +6,9 @@ version = v"1.0.0"
 sources = [
     GitSource("https://github.com/WebAssembly/binaryen.git", "1fb1a2e2970472e9e93f9de94c8a2c674d0a0581"),
     DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+
 ]
 
 script = raw"""
@@ -15,11 +18,19 @@ atomic_patch -p1 ../patches/fix.patch
 
 mkdir build
 cd build
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.15.sdk
+    sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+fi
+
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF \
 -DBUILD_SHARED_LIBS=ON 
 
 make -j${nproc}
 make install
+install_license ${WORKSPACE}/srcdir/binaryen/LICENSE
 """
 
 platforms = supported_platforms()
