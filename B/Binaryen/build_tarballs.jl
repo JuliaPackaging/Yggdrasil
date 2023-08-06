@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "binaryen"
+name = "Binaryen"
 version = v"1.0.0"
 
 sources = [
