@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2023.1.0"
+version = v"2023.2.0"
 
 # Bash recipes for building across all platforms
 script = read(joinpath(@__DIR__, "script.sh"), String)
