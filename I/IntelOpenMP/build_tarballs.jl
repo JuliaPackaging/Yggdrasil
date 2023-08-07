@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "IntelOpenMP"
-version = v"2023.1.0"
+version = v"2023.2.0"
 
 sources = [
     ArchiveSource("https://anaconda.org/intel/intel-openmp/2023.2.0/download/win-32/intel-openmp-2023.2.0-intel_49496.tar.bz2",
