@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Binaryen"
-version = v"1.0.0"
+version = v"0.114.0"   # follows upstream's `version_114`
 
 sources = [
     GitSource("https://github.com/WebAssembly/binaryen.git", "1fb1a2e2970472e9e93f9de94c8a2c674d0a0581"),
