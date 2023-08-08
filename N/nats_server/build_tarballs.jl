@@ -8,13 +8,17 @@ version = v"2.9.21"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/nats-io/nats-server.git", "b2e7725aed60882176f8c95dadd3fa371385accf")
-    # ArchiveSource("https://github.com/nats-io/nats-server/archive/refs/tags/v$(version).tar.gz", "e547ef512b59bd124e6851ee288584f6fd08cee3654f8c4a570abe11bc8d70a1")
 ]
 
 # Bash recipe for building across all platforms
+# using flags from '.goreleaser.yml'
+# https://github.com/nats-io/nats-server/blob/f2c7a9d37f1a7a612814abf9365c52ed6687ec4f/.goreleaser.yml
 script = raw"""
 cd $WORKSPACE/srcdir/nats-server/
-go build -o ${bindir}/nats-server
+NAME=${bindir}/nats-server${exeext}
+CGO_ENABLED=0 GO111MODULE=on go build -o $NAME\
+    -trimpath\
+    -ldflags "-w"
 """
 
 # These are the platforms we will build for by default, unless further
