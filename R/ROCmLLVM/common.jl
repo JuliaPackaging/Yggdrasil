@@ -1,13 +1,15 @@
-const ROCM_GIT = "https://github.com/RadeonOpenCompute/llvm-project"
+const ROCM_GIT = "https://github.com/RadeonOpenCompute/llvm-project.git"
 const ROCM_TAGS = Dict(
     v"4.2.0" => "b204d7f0cae65b6cd4446eec50fc1fb675d582af",
     v"4.5.2" => "9bbd96fd1936641cd47defd8022edafd063019d5",
     v"5.2.3" => "575c504b18f2f7e06fa77a3d2f63c83ed930053a",
+    v"5.4.4" => "f3d695fc2985a8dfdd5f4219d351fdeac3038867",
 )
 const LLVM_VERSIONS = Dict(
     v"4.2.0" => v"12.0.0",
     v"4.5.2" => v"13.0.0",
     v"5.2.3" => v"14.0.0",
+    v"5.4.4" => v"15.0.0",
 )
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
