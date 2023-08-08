@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "CoolProp"
-version = v"6.4.3"
+version = v"6.5.0"
 
 # Collection of sources required to complete build
 sources = [
