@@ -27,7 +27,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 
 name = "SDPA"
 upstream_version = v"7.3.8"
-version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.1.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
