@@ -59,6 +59,9 @@ cd $WORKSPACE/srcdir/libcifpp*/
 # parts of the PR have already been merged upstream
 atomic_patch -p1 ../patches/mingw-fix-windows-include.patch
 
+# fix windows mingw undefined symbols
+atomic_patch -p1 ../patches/mingw-fix-undefined-symbols.patch
+
 # fixes for clang and libc++ on macos for missing C++20 features
 # (missing std::set::contains and operator<=>)
 # Upstream issue: https://github.com/PDB-REDO/libcifpp/issues/39
