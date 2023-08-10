@@ -57,7 +57,7 @@ cd $WORKSPACE/srcdir/libcifpp*/
 # fix windows header include
 # upstream PR: https://github.com/PDB-REDO/libcifpp/pull/45
 # parts of the PR have already been merged upstream
-atomic_patch -p1 ../patches/mingw-no-ioctl.patch
+atomic_patch -p1 ../patches/mingw-fix-windows-include.patch
 
 # fixes for clang and libc++ on macos for missing C++20 features
 # (missing std::set::contains and operator<=>)
