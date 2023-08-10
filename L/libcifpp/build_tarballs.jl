@@ -2,14 +2,14 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: default_host_platform
 
 name = "libcifpp"
-version = v"5.1.0"
+version = v"5.1.1"
 
 # url = "https://github.com/PDB-REDO/libcifpp"
 # description = "Library containing code to manipulate mmCIF and PDB files"
 
 sources = [
     GitSource("https://github.com/PDB-REDO/libcifpp",
-              "836aed6ea9a227b37e5b0d9cbcb1253f545d0778"),
+              "15a49f1bb4f555ea11a9186015df28adf7a10cb0"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
