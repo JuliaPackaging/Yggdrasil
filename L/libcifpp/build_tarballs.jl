@@ -54,8 +54,9 @@ MACHTYPE_FULL=$MACHTYPE_FULL
 """ * raw"""
 cd $WORKSPACE/srcdir/libcifpp*/
 
-# mingw doesn't have ioctl
+# fix windows header include
 # upstream PR: https://github.com/PDB-REDO/libcifpp/pull/45
+# parts of the PR have already been merged upstream
 atomic_patch -p1 ../patches/mingw-no-ioctl.patch
 
 # fixes for clang and libc++ on macos for missing C++20 features
