@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"9.3.2"
+version = v"9.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.3p2.tar.gz",
-                  "200ebe147f6cb3f101fd0cdf9e02442af7ddca298dffd9f456878e7ccac676e8"),
+    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.4p1.tar.gz",
+                  "3608fd9088db2163ceb3e600c85ab79d0de3d221e59192ea1923e23263866a85"),
     ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.2.0p1-Beta/OpenSSH-Win32.zip",
                   "7b132aad088eae3ac67d85751e88d884e80631607cab9b1da52c838655bb5ae6"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.2.0p1-Beta/OpenSSH-Win64.zip",
