@@ -5,21 +5,18 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.6.0"
-
-cuda_versions = [v"11.0", v"11.1", v"11.2", v"11.3", v"11.4", v"11.5", v"11.6", v"11.7", v"11.8",
-                 v"12.0", v"12.1"]
+version = v"0.7.0"
 
 augment_platform_block = """
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
-    const cuda_toolkits = $cuda_versions"""
+    const cuda_toolkits = $(CUDA.cuda_full_versions)"""
 
 # determine exactly which tarballs we should build
 builds = []
-for cuda_version in cuda_versions
+for cuda_version in CUDA.cuda_full_versions
     cuda_tag = "$(cuda_version.major).$(cuda_version.minor)"
     dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                                version=CUDA.full_version(cuda_version)))]
+                                                version=cuda_version))]
     include("build_$(cuda_tag).jl")
 
     for platform in platforms

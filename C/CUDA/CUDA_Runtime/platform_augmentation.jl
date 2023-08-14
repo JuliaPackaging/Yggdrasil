@@ -112,7 +112,7 @@ function cuda_toolkit_tag()
     #  to function on newer drivers due to binary backward compatibility"
     filter!(cuda_toolkits) do toolkit
         if @isdefined(cuda_version_override)
-            toolkit == cuda_version_override
+            thisminor(toolkit) == thisminor(cuda_version_override)
         elseif cuda_driver_version >= v"11"
             # enhanced compatibility
             #
