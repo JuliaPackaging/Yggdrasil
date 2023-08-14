@@ -16,7 +16,8 @@ cd $WORKSPACE/srcdir
 cd opa/
 WASM_ENABLED=0 make build
 mkdir -p $bindir
-cp opa_* $bindir/opa
+ls -la opa_*
+cp opa_* $bindir/opa${exeext}
 install_license LICENSE
 """
 
