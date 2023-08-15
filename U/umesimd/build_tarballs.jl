@@ -16,14 +16,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/umesimd
-install_license LICENSE 
+install_license LICENSE
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --parallel ${nproc} --target all
-cmake --build . --target install
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} ..
+cmake --build . --parallel ${nproc} --target install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -49,3 +47,4 @@ build_tarballs(
     julia_compat = "1.6",
     preferred_gcc_version = v"7",
 )
+
