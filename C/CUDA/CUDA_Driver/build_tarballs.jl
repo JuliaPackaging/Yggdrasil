@@ -58,9 +58,10 @@ init_block = map(eachline(IOBuffer(init_block))) do line
     end |> join
 
 products = [
-    LibraryProduct("libcuda", :libcuda_compat; dont_dlopen=true),
-    LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler;
-                   dont_dlopen=true),
+    LibraryProduct("libcuda", :libcuda_compat;                            dont_dlopen=true),
+    LibraryProduct("libcudadebugger", :libcuda_debugger;                  dont_dlopen=true),
+    LibraryProduct("libnvidia-nvvm", :libnvidia_nvvm;                     dont_dlopen=true),
+    LibraryProduct("libnvidia-ptxjitcompiler", :libnvidia_ptxjitcompiler; dont_dlopen=true),
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
