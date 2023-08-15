@@ -83,5 +83,3 @@ if should_build_platform("aarch64-linux-gnu")
                    [Platform("aarch64", "linux")], products, dependencies;
                    lazy_artifacts=true, skip_audit=true, init_block)
 end
-
-# bump
