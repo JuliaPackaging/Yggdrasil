@@ -66,8 +66,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # The Windows binaries (see above) require OpenSSL @1.1;
+    # on all other platforms, build against OpenSSL @3.0
+    Dependency("OpenSSL_jll"; compat="1.1.10", platforms=filter(Sys.iswindows, platforms)),
+    Dependency("OpenSSL_jll"; compat="3.0.8", platforms=filter(!Sys.iswindows, platforms)),
     Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
