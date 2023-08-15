@@ -141,7 +141,7 @@ end
 # load dependent libraries
 # XXX: we can do this after loading libcuda, because these are runtime dependencies.
 #      if loading libcuda or calling cuInit would already require these, do so earlier.
-Libdl.dlopen(libcudadebugger; throw_error=true)
+Libdl.dlopen(libcuda_debugger; throw_error=true)
 Libdl.dlopen(libnvidia_nvvm; throw_error=true)
 Libdl.dlopen(libnvidia_ptxjitcompiler; throw_error=true)
 
