@@ -24,6 +24,8 @@ end
 function init_driver(library_handle)
     function_handle = Libdl.dlsym(library_handle, "cuInit")
     status = ccall(function_handle, Cint, (UInt32,), 0)
+    # libcuda.cuInit dlopens NULL, aka. the main program, which increments the refcount
+    # of libcuda. this breaks future dlclose calls, so eagerly lower the refcount already.
     Libdl.dlclose(library_handle)
     return status
 end
@@ -91,7 +93,7 @@ system_driver_loaded = Libdl.dlopen(system_driver, Libdl.RTLD_NOLOAD;
                                     throw_error=false) !== nothing
 if system_driver_loaded
     @debug "Could not unload the system CUDA library;" *
-            " this prevents use of the forward-compatible driver"
+           " this prevents use of the forward-compatible driver"
     return
 end
 
@@ -111,13 +113,11 @@ if !@isdefined(libcuda_compat)
     @debug "No forward-compatible CUDA library available for your platform."
     return
 end
-compat_compiler = libnvidia_ptxjitcompiler
 compat_driver = libcuda_compat
 @debug "Forward-compatible CUDA driver found at $compat_driver;" *
-        " known to be version $(compat_version)"
+       " known to be version $(compat_version)"
 
 # finally, load the compatibility driver to see if it supports this platform
-compiler_handle = Libdl.dlopen(compat_compiler; throw_error=true)
 driver_handle = Libdl.dlopen(compat_driver; throw_error=true)
 
 init_status = init_driver(driver_handle)
@@ -126,20 +126,24 @@ if init_status != 0
 
     # see comment above about unloading the system driver
     Libdl.dlclose(driver_handle)
-    Libdl.dlclose(compiler_handle)
     compat_driver_loaded = Libdl.dlopen(compat_driver, Libdl.RTLD_NOLOAD;
                                         throw_error=false) !== nothing
-    compat_compiler_loaded = Libdl.dlopen(compat_compiler, Libdl.RTLD_NOLOAD;
-                                            throw_error=false) !== nothing
-    if compat_driver_loaded || compat_compiler_loaded
-        error("Could not unload forwards compatible CUDA driver libraries." *
-                "This is probably caused by running Julia under a tool that hooks CUDA API calls." *
-                "In that case, prevent Julia from loading multiple drivers" *
-                " by setting JULIA_CUDA_USE_COMPAT=false in your environment.")
+    if compat_driver_loaded
+        error("Could not unload forwards compatible CUDA driver." *
+              "This is probably caused by running Julia under a tool that hooks CUDA API calls." *
+              "In that case, prevent Julia from loading multiple drivers" *
+              " by setting JULIA_CUDA_USE_COMPAT=false in your environment.")
     end
 
     return
 end
+
+# load dependent libraries
+# XXX: we can do this after loading libcuda, because these are runtime dependencies.
+#      if loading libcuda or calling cuInit would already require these, do so earlier.
+Libdl.dlopen(libcuda_debugger; throw_error=true)
+Libdl.dlopen(libnvidia_nvvm; throw_error=true)
+Libdl.dlopen(libnvidia_ptxjitcompiler; throw_error=true)
 
 @debug "Successfully loaded forwards-compatible CUDA driver"
 libcuda = compat_driver
