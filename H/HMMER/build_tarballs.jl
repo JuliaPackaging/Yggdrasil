@@ -30,9 +30,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/hmmer-*/
 
 EXTRA_CFG=
-if [[ "${target}" == x86_64-* || "${target}" == i686-* ]]; then
+if [[ "${proc_family}" == "intel" ]]; then
     EXTRA_CFG="${EXTRA_CFG} --enable-sse"
-elif [[ "${target}" == aarch64-* ]]; then
+elif [[ "${proc_family}" == "arm" ]]; then
     EXTRA_CFG="${EXTRA_CFG} --enable-neon"
 fi
 
