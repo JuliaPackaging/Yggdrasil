@@ -1,8 +1,9 @@
-const ROCM_GIT = "https://github.com/RadeonOpenCompute/ROCR-Runtime/"
+const ROCM_GIT = "https://github.com/RadeonOpenCompute/ROCR-Runtime.git"
 const ROCM_TAGS = Dict(
-    v"4.2.0" => "fa0e7bcd64e97cbff7c39c9e87c84a49d2184dc977b341794770805ec3f896cc",
-    v"4.5.2" => "d99eddedce0a97d9970932b64b0bb4743e47d2740e8db0288dbda7bec3cefa80",
-    v"5.2.3" => "978de85d3455207bb82bef2254a4624e9116b1258a8c164d7a7e21a644eff12f",
+    v"4.2.0" => "337e3e55d09cda3fbc8e7f99eece8aeadbec226c",
+    v"4.5.2" => "f95a10171798ff61efdb672396bb1fa6cb6259f5",
+    v"5.2.3" => "dbc2f403d7a212fab737a3f7e1775bd9608d5496",
+    v"5.4.4" => "2e52dc810a3a3066d0c72809defae52fdf0f23cb",
 )
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
@@ -20,6 +21,11 @@ const PATCHES = Dict(
     atomic_patch -p1 ../patches/musl-affinity.patch
     atomic_patch -p1 ../patches/musl-pthread-rwlock.patch
     """,
+    v"5.4.4" => raw"""
+    atomic_patch -p1 ../patches/musl-affinity.patch
+    atomic_patch -p1 ../patches/musl-clock-gettime.patch
+    atomic_patch -p1 ../patches/musl-pthread-rwlock.patch
+    """,
 )
 
 const PRODUCTS = [LibraryProduct(["libhsa-runtime64"], :libhsa_runtime64)]
@@ -27,6 +33,12 @@ const NAME = "hsa_rocr"
 
 function configure_build(version)
     buildscript = raw"""
+    # check if we need to use a more recent glibc
+    if [[ -f "$prefix/usr/include/sched.h" ]]; then
+        GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
+        rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+    fi
+
     cd ${WORKSPACE}/srcdir/ROCR-Runtime*/
     """ *
     PATCHES[version] *
@@ -45,8 +57,7 @@ function configure_build(version)
     install_license ${WORKSPACE}/srcdir/ROCR-Runtime*/LICENSE.txt
     """
     sources = [
-        ArchiveSource(
-            ROCM_GIT * "archive/rocm-$(version).tar.gz", ROCM_TAGS[version]),
+        GitSource(ROCM_GIT, ROCM_TAGS[version]),
         DirectorySource("./bundled"),
         DirectorySource("../scripts"),
     ]
@@ -65,5 +76,11 @@ function configure_build(version)
     else
         push!(dependencies, Dependency("Zlib_jll"))
     end
+    #if version >= v"5.4.4"
+        # Need this for CLOCK_BOOTTIME
+        push!(dependencies,
+              BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+                              platforms = filter(p->libc(p)=="glibc", ROCM_PLATFORMS)))
+    #end
     NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
