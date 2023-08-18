@@ -1,23 +1,17 @@
 using BinaryBuilder, Pkg
 
+include("../common.jl")
+
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libNVVM"
 version = v"4.0"
-
-sources = []
+cuda_version = v"12.2.1"
 
 script = raw"""
-# First, find (true) CUDA toolkit directory in ~/.artifacts somewhere
-CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext})))
-cd ${CUDA_ARTIFACT_DIR}
-
-# Clear out our prefix
-rm -rf ${prefix}/*
-
-# license
-install_license EULA.txt
+cd ${WORKSPACE}/srcdir/cuda_nvcc-*
+install_license LICENSE
 
 mkdir -p ${bindir} ${libdir} ${prefix}/include ${prefix}/share
 if [[ ${target} == *-linux-gnu ]]; then
@@ -40,6 +34,26 @@ products = [
     FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
 ]
 
-dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"12.1.1"))]
+dependencies = []
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+builds = []
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+
+    sources = get_sources("cuda", ["cuda_nvcc"]; version=cuda_version, platform)
+    push!(builds, (; platforms=[platform], sources))
+end
+
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+for (i,build) in enumerate(builds)
+    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+                   name, version, build.sources, script,
+                   build.platforms, products, dependencies;
+                   julia_compat="1.6")
+end
