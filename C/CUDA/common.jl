@@ -8,7 +8,7 @@ function get_sources(product::String, components::Vector{String};
 
     url = "$root/redistrib_$(version).json"
     json = sprint(io->Downloads.download(url, io))
-    parse_sources(json, product, components; version, platform)
+    parse_sources(json, product, components; version, platform, variant)
 end
 # XXX: split, for now, so that we can use this with manual JSON
 function parse_sources(json::String, product::String, components::Vector{String};
