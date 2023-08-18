@@ -3,7 +3,7 @@ using BinaryBuilderBase
 using Pkg
 
 name = "XGBoost"
-version = v"1.7.6"
+version = v"2.0.0"
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -11,8 +11,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","36eb41c960483c8b52b44082663c99e6a0de440a"),
+    GitSource("https://github.com/dmlc/xgboost.git","4301558a5711e63bbf004d2b6fca003906fb743c"),
     DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+    "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +26,18 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
+
+# https://github.com/JuliaPackaging/Yggdrasil/pull/4106
+# error: 'any_cast<std::shared_ptr<xgboost::data::CSRArrayAdapter>>' is unavailable: introduced in macOS 10.14
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    #install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+fi
 if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
     # make it use the workspace instead
@@ -39,7 +53,8 @@ if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
             -DBUILD_WITH_CUDA_CUB=ON
     make -j${nproc}
 else
-    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+    cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+            -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" 
     make -j${nproc}
 fi
 
@@ -114,7 +129,7 @@ for cuda_version in versions_to_build, platform in platforms
     preamble = cuda_preambles[cuda_version]
 
     build_tarballs(ARGS, name, version, sources,  preamble*script, [augmented_platform], products, dependencies;
-                    preferred_gcc_version=v"8",
+                    preferred_gcc_version=v"9",
                     julia_compat="1.6",
                     augment_platform_block)
 end
