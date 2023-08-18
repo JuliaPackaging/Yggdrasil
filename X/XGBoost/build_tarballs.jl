@@ -29,15 +29,16 @@ mkdir build && cd build
 
 # https://github.com/JuliaPackaging/Yggdrasil/pull/4106
 # error: 'any_cast<std::shared_ptr<xgboost::data::CSRArrayAdapter>>' is unavailable: introduced in macOS 10.14
+# `std::filesystem` support was introduced in macOS 10.15
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
-    #install a newer SDK which supports `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
+
 if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
     # make it use the workspace instead
