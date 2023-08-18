@@ -27,15 +27,15 @@ git submodule update --init
 
 mkdir build && cd build
 
-# https://github.com/JuliaPackaging/Yggdrasil/pull/4106
+# https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/193
 # error: 'any_cast<std::shared_ptr<xgboost::data::CSRArrayAdapter>>' is unavailable: introduced in macOS 10.14
 # `std::filesystem` support was introduced in macOS 10.15
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.15
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
 fi
 
