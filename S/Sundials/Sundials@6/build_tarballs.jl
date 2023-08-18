@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"6.5.1"
+version = v"6.6.0"
 
 # Collection of sources required to build Sundials
 sources = [
-    GitSource("https://github.com/LLNL/sundials.git",
-              "34d21afdb5780947223b88a46201fbe8191af48c"),
+    ArchiveSource("https://github.com/LLNL/sundials/releases/download/v$(version)/sundials-$(version).tar.gz",
+                  "f90029b8da846c8faff5530fd1fa4847079188d040554f55c1d5d1e04743d29d"),
     DirectorySource("./bundled"),
 ]
 
@@ -43,11 +43,11 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DEXAMPLES_ENABLE_C=OFF \
-    -DKLU_ENABLE=ON \
+    -DENABLE_KLU=ON \
     -DKLU_INCLUDE_DIR="${includedir}" \
     -DKLU_LIBRARY_DIR="${libdir}" \
     -DKLU_WORKS=ON \
-    -DLAPACK_ENABLE=ON \
+    -DENABLE_LAPACK=ON \
     -DLAPACK_LIBRARIES:STRING="${LAPACK_NAME}" \
     -DLAPACK_WORKS=ON \
     ..
@@ -61,7 +61,7 @@ fi
 """
 
 # We attempt to build for all defined platforms
-platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms(; experimental=true))
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 products = [
