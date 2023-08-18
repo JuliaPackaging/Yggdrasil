@@ -73,10 +73,6 @@ platform(cuda::String) = cuda
 # BinaryBuilder.jl currently does not allow selecting a BuildDependency by compat,
 # so we need the full version for CUDA_full_jll (JuliaPackaging/BinaryBuilder.jl#/1212).
 const cuda_full_versions = [
-    v"11.0.3",
-    v"11.1.1",
-    v"11.2.2",
-    v"11.3.1",
     v"11.4.4",
     v"11.5.2",
     v"11.6.2",
