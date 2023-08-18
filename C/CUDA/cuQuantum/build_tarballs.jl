@@ -26,7 +26,7 @@ augment_platform_block = CUDA.augment
 
 dependencies = [
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="~1.6.1")
+    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="1.6.1")
 ]
 
 # The products that we will ensure are always built
