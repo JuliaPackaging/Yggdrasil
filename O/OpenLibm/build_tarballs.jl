@@ -48,7 +48,7 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -70,7 +70,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("gperf_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Bzip2_jll", v"1.0.7"; compat="1.0.7"),
     Dependency("Zlib_jll"),
     Dependency("Libuuid_jll"),

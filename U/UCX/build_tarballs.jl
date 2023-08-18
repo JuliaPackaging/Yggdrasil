@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+
 name = "UCX"
 version = v"1.11.2"
 
@@ -88,14 +91,14 @@ products = [
 #   - gdrcopy -> kernel module
 # - ROCM -> TODO
 
-cuda_version = v"11.2.0"
+cuda_version = v"11.2"
 rocm_version = v"4.2.0"
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="NUMA_jll", uuid="7f51dc2b-bb24-59f8-b771-bb1490e4195d")),
     Dependency(PackageSpec(name="rdma_core_jll", uuid="69dc3629-5c98-505f-8bcd-225213cebe70")),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=cuda_version)),
+    BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version))),
     BuildDependency(PackageSpec(name="hsa_rocr_jll", version=rocm_version))
 ]
 

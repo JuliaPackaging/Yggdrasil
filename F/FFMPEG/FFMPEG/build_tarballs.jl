@@ -27,7 +27,7 @@ dependencies = [
     Dependency("libass_jll"; compat="0.15.1"),
     Dependency("libfdk_aac_jll"),
     Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("LAME_jll"),
     Dependency("libvorbis_jll"),
     Dependency("libaom_jll"),
@@ -37,10 +37,11 @@ dependencies = [
     Dependency("x265_jll"; compat="~3.5"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.9"),
     Dependency("Opus_jll"),
     Dependency("PCRE2_jll"; compat="10.35"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies; preferred_gcc_version, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=preferred_gcc_version)

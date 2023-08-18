@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.10.4"
+version = v"4.10.5"
 
 # Collection of sources required to build GTK
 sources = [
     # https://download.gnome.org/sources/gtk/
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
-                  "7725400482e0685e28265e226c62847f4e73cfca9e9b416ac5838207f5377a24"),
+                  "9bd5e437e41d48e3d6a224c336b0fd3fd490036dceb8956ed74b956369af609b"),
     DirectorySource("./bundled"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
@@ -118,7 +118,7 @@ dependencies = [
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"; compat="1.50.3"),
     Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("gdk_pixbuf_jll"),
     Dependency("Libepoxy_jll"),
     Dependency("HarfBuzz_jll"),

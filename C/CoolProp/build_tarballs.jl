@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "CoolProp"
-version = v"6.4.3"
+version = v"6.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "7d43ef778e5e245720261311fe86c8a1492a7dc49c0155408344117a81465f7d"),
+    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "ea3475c26c90ce33386e7e686c36de42f1167b37879eff1c5c9d1943063d740d"),
 ]
 
 # Bash recipe for building across all platforms

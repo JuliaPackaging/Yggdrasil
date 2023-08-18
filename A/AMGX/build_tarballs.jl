@@ -79,22 +79,12 @@ products = [
 ]
 
 versions_to_build = [
-    v"10.2",
     v"11.0",
     v"11.1", # CUSOLVER ABI break
     # v"12.0", not supported by AMGX yet
 ]
 
-# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
-cuda_full_versions = Dict(
-    v"10.2" => v"10.2.89",
-    v"11.0" => v"11.0.3",
-    v"11.1" => v"11.1.1",
-    v"12.0" => v"12.0.0",
-)
-
 cuda_archs = Dict(
-    v"10.2" => "35;50;60;70",
     v"11.0" => "60;70;80",
     v"11.1" => "60;70;80",
     v"12.0" => "60;70;80",
@@ -108,7 +98,7 @@ for cuda_version in versions_to_build, platform in platforms
 
     dependencies = [
         BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                    version=cuda_full_versions[cuda_version])),
+                                    version=CUDA.full_version(cuda_version))),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     ]
 

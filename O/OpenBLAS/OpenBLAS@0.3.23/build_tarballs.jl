@@ -17,4 +17,4 @@ dependencies = openblas_dependencies(platforms)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"6", lock_microarchitecture=false, julia_compat="1.10")
 
-# Build trigger: 1
+# Build trigger: 3

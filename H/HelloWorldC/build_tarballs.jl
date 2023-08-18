@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldC"
-version = v"1.2.1"
+version = v"1.3.0"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -28,6 +28,9 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("hello_world", :hello_world),
+
+    # This ExecutableProduct is used in tests that change one of the paths
+    ExecutableProduct("hello_world", :hello_world_doppelganger),
 ]
 
 # Dependencies that must be installed before this package can be built
