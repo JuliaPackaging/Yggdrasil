@@ -7,17 +7,18 @@ version = v"2.3.7"
 
 # Collection of sources required to build mujoco
 sources = [
-    GitSource("https://github.com/deepmind/mujoco", "c9246e1f5006379d599e0bcddf159a8616d31441")
+    GitSource("https://github.com/deepmind/mujoco", "c9246e1f5006379d599e0bcddf159a8616d31441"),
+    DirectorySource(joinpath(@__DIR__, "patches"))
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mujoco
-sed -i '/Werror/d' cmake/MujocoOptions.cmake
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../mingw.patch
+fi
 CPPFLAGS="-I${prefix}/include"
 CXXFLAGS="-I${prefix}/include"
-apk update
-apk upgrade
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .
 cmake --build .
 cmake --install .
@@ -25,8 +26,9 @@ cmake --install .
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [p for p in supported_platforms() if !Sys.isapple(p) || p.tags["arch"] != "aarch64"]
+
 products = [
-    LibraryProduct("libmujoco", :libmujuco),
+    LibraryProduct("libmujoco", :libmujoco),
     ExecutableProduct("basic", :mujoco_basic),
     ExecutableProduct("compile", :mujoco_compile),
     ExecutableProduct("derivative", :mujoco_derivative),
