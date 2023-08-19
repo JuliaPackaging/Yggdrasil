@@ -38,7 +38,7 @@ products = [
     LibraryProduct("libmujoco", :libmujoco)
 ]
 
-linux_platforms = [p for p in platforms if Sys.islinux(p) || Sys.isbsd(p)]
+linux_platforms = [p for p in platforms if Sys.islinux(p)]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
