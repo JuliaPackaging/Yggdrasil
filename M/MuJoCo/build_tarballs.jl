@@ -16,6 +16,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/mujoco
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../mingw.patch
+elif [[ "${target}" == *-apple-darwin* ]]; then
+    atomic_patch -p1 ../macos.patch
+else
+    atomic_patch -p1 ../other.patch
 fi
 CPPFLAGS="-I${prefix}/include"
 CXXFLAGS="-I${prefix}/include"
@@ -25,29 +29,27 @@ cmake --install .
 """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if !Sys.isapple(p) || p.tags["arch"] != "aarch64"]
+function platform_filer(p)
+    return contains(p.tags["arch"], "64") && (!haskey(p.tags, "libc") || p.tags["libc"] != "musl") && (!Sys.isbsd(p) || Sys.isapple(p))
+end
+platforms = [p for p in supported_platforms() if platform_filer(p)]
 
 products = [
-    LibraryProduct("libmujoco", :libmujoco),
-    ExecutableProduct("basic", :mujoco_basic),
-    ExecutableProduct("compile", :mujoco_compile),
-    ExecutableProduct("derivative", :mujoco_derivative),
-    ExecutableProduct("record", :mujoco_record),
-    ExecutableProduct("simulate", :mujoco_simulate),
-    ExecutableProduct("testspeed", :mujoco_testspeed),
-    ExecutableProduct("testxml", :mujoco_testxml),
+    LibraryProduct("libmujoco", :libmujoco)
 ]
+
+linux_platforms = [p for p in platforms if Sys.islinux(p) || Sys.isbsd(p)]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_libX11_jll"),
-    BuildDependency("Xorg_xorgproto_jll"),
-    BuildDependency("GLFW_jll"),
-    BuildDependency("Xorg_libXrandr_jll"),
-    BuildDependency("Libglvnd_jll"),
-    BuildDependency("Xorg_libXi_jll"),
-    BuildDependency("Xorg_libXinerama_jll"),
-    BuildDependency("Xorg_libXcursor_jll")
+    BuildDependency("Xorg_libX11_jll"; platforms=linux_platforms),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=linux_platforms),
+    BuildDependency("GLFW_jll"; platforms=linux_platforms),
+    BuildDependency("Xorg_libXrandr_jll"; platforms=linux_platforms),
+    BuildDependency("Libglvnd_jll"; platforms=linux_platforms),
+    BuildDependency("Xorg_libXi_jll"; platforms=linux_platforms),
+    BuildDependency("Xorg_libXinerama_jll"; platforms=linux_platforms),
+    BuildDependency("Xorg_libXcursor_jll"; platforms=linux_platforms)
 ]
 
 # Build the tarballs.
