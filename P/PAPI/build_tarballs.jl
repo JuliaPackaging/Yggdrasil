@@ -7,11 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "PAPI"
-version = v"7.0.0"
+version = v"7.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/icl/papi.git", "de96060998cd9fc77396c5e100e52e0ea1cdc3c3"),
+    GitSource("https://github.com/icl-utk-edu/papi.git", "cf3ef8872e30236a3d354e34a173e620738266b2"),
     DirectorySource("./bundled")
 ]
 
