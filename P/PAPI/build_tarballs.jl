@@ -48,6 +48,7 @@ fi
 
 echo "Building components: ${COMPONENTS[@]}"
 export CFLAGS
+autoconf
 bash ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-ffsll \
     --with-perf-events \
