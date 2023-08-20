@@ -4,31 +4,11 @@ Date: Sat, 19 Aug 2023 11:41:18 +0100
 Subject: [PATCH 1/1] other
 
 ---
- CMakeLists.txt                       | 8 ++++----
  cmake/MujocoOptions.cmake            | 1 -
  sample/cmake/SampleOptions.cmake     | 1 -
  simulate/cmake/SimulateOptions.cmake | 1 -
- 4 files changed, 4 insertions(+), 7 deletions(-)
+ 3 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 2f04d7f..f6ce7c2 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -38,10 +38,10 @@ enable_language(CXX)
- 
- list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
- 
--option(MUJOCO_BUILD_EXAMPLES "Build samples for MuJoCo" ON)
--option(MUJOCO_BUILD_SIMULATE "Build simulate library for MuJoCo" ON)
--option(MUJOCO_BUILD_TESTS "Build tests for MuJoCo" ON)
--option(MUJOCO_TEST_PYTHON_UTIL "Build and test utility libraries for Python bindings" ON)
-+option(MUJOCO_BUILD_EXAMPLES "Build samples for MuJoCo" OFF)
-+option(MUJOCO_BUILD_SIMULATE "Build simulate library for MuJoCo" OFF)
-+option(MUJOCO_BUILD_TESTS "Build tests for MuJoCo" OFF)
-+option(MUJOCO_TEST_PYTHON_UTIL "Build and test utility libraries for Python bindings" OFF)
- 
- if(APPLE AND (MUJOCO_BUILD_EXAMPLES OR MUJOCO_BUILD_SIMULATE))
-   enable_language(OBJC)
 diff --git a/cmake/MujocoOptions.cmake b/cmake/MujocoOptions.cmake
 index 998b966..213f422 100644
 --- a/cmake/MujocoOptions.cmake
