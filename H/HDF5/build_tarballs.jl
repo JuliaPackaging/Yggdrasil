@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.1"
+version = v"1.14.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version)-2.tar.bz2",
-                  "06ca141d1a3c312b5d7cc4826a12737293ae131031748861689f6a2ec8219dbd"),
+    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.bz2",
+                  "ea3c5e257ef322af5e77fc1e52ead3ad6bf3bb4ac06480dd17ee3900d7a24cfb"),
     DirectorySource("./bundled"),
 
     # We don't build HDF5 on Windows; instead, we use packages from msys there:
