@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 const curl_hashes = Dict(
     v"7.88.1" => "cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded82bbf3c7",
-    v"8.0.1"  => "5fd29000a4089934f121eff456101f0a5d09e2a3e89da1d714adf06c4be887cb",
+    v"8.2.1"  => "f98bdb06c0f52bdd19e63c4a77b5eb19b243bcbbd0f5b002b9f3cba7295a3a42",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber)
