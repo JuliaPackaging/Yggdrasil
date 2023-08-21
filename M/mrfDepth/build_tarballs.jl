@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/mrfDepth/src
 gfortran -shared -fPIC *.f -o libmrfDepth.${dlext}
-cp libmrfDepth.so ${libdir}
+cp libmrfDepth.${dlext} ${libdir}
 install_license ${WORKSPACE}/srcdir/mrfDepth/DESCRIPTION
 """
 
