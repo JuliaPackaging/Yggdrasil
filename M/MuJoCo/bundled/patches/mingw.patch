@@ -1,37 +1,17 @@
-From ea76e286c041a705250a1018e6937b09d9d40505 Mon Sep 17 00:00:00 2001
+From 51b239b1d7596a305a1305e886e2bb74f91110a2 Mon Sep 17 00:00:00 2001
 From: Jamie Mair <JamieMair@users.noreply.github.com>
-Date: Sat, 19 Aug 2023 11:29:51 +0100
+Date: Mon, 21 Aug 2023 11:13:20 +0100
 Subject: [PATCH 1/1] mingw patch
 
 ---
- CMakeLists.txt                    |  8 ++++----
  cmake/MujocoOptions.cmake         |  1 -
  dist/mujoco.rc                    |  2 +-
  dist/simulate.rc                  |  2 +-
  src/engine/engine_crossplatform.h | 10 +++++-----
  src/engine/engine_util_errmem.c   |  8 +++++---
  test/fixture.cc                   |  2 +-
- 7 files changed, 17 insertions(+), 16 deletions(-)
+ 6 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 2f04d7f..f6ce7c2 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -38,10 +38,10 @@ enable_language(CXX)
- 
- list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
- 
--option(MUJOCO_BUILD_EXAMPLES "Build samples for MuJoCo" ON)
--option(MUJOCO_BUILD_SIMULATE "Build simulate library for MuJoCo" ON)
--option(MUJOCO_BUILD_TESTS "Build tests for MuJoCo" ON)
--option(MUJOCO_TEST_PYTHON_UTIL "Build and test utility libraries for Python bindings" ON)
-+option(MUJOCO_BUILD_EXAMPLES "Build samples for MuJoCo" OFF)
-+option(MUJOCO_BUILD_SIMULATE "Build simulate library for MuJoCo" OFF)
-+option(MUJOCO_BUILD_TESTS "Build tests for MuJoCo" OFF)
-+option(MUJOCO_TEST_PYTHON_UTIL "Build and test utility libraries for Python bindings" OFF)
- 
- if(APPLE AND (MUJOCO_BUILD_EXAMPLES OR MUJOCO_BUILD_SIMULATE))
-   enable_language(OBJC)
 diff --git a/cmake/MujocoOptions.cmake b/cmake/MujocoOptions.cmake
 index 998b966..213f422 100644
 --- a/cmake/MujocoOptions.cmake
