@@ -15,15 +15,15 @@ index f829e15..2dafd78 100644
 @@ -41,9 +41,9 @@
  ##                                                        ##
  ############################################################
- 
--project(SCOTCH)
+
  cmake_minimum_required(VERSION 3.10)
+-project(SCOTCH)
 -enable_language(C Fortran)
 +project(SCOTCH LANGUAGES C Fortran)
 +
- 
+
  # Add module directory
  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
--- 
+--
 2.35.3
 
