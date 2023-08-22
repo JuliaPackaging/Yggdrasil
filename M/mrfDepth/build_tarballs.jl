@@ -14,7 +14,7 @@ sources = [
 # License is GPL ( >= 2 ) according to DESCRIPTION
 script = raw"""
 cd ${WORKSPACE}/srcdir/mrfDepth/src
-gfortran -shared -fPIC *.f -o libmrfDepth.${dlext}
+$FC -shared -fPIC *.f -o libmrfDepth.${dlext}
 cp libmrfDepth.${dlext} ${libdir}
 install_license ${WORKSPACE}/srcdir/mrfDepth/DESCRIPTION
 """
