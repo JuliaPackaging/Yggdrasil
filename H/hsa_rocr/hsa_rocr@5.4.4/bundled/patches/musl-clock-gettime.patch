@@ -1,0 +1,12 @@
+diff --git a/src/core/util/lnx/os_linux.cpp b/src/core/util/lnx/os_linux.cpp
+index afa71bd..7debbb6 100644
+--- a/src/core/util/lnx/os_linux.cpp
++++ b/src/core/util/lnx/os_linux.cpp
+@@ -51,6 +51,7 @@
+ #include <sched.h>
+ #include <sys/sysinfo.h>
+ #include <sys/time.h>
++#include <time.h>
+ #include <sys/utsname.h>
+ #include <unistd.h>
+ #include <errno.h>
