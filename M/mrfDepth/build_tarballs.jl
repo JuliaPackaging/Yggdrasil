@@ -16,7 +16,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/mrfDepth/src
 $FC -shared -fPIC *.f -o libmrfDepth.${dlext}
 cp libmrfDepth.${dlext} ${libdir}
-install_license ${WORKSPACE}/srcdir/mrfDepth/DESCRIPTION
+install_license /usr/share/licenses/GPL-2.0+
 """
 
 # These are the platforms we will build for by default, unless further
