@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SCOTCH"
-version = v"7.0.3"
+version = v"7.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "b43864123e820e3ca541bfecd3738aed385a4c47"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "82ec87f558f4acb7ccb69a079f531be380504c92"),
     DirectorySource("./bundled"),
 ]
 
