@@ -20,22 +20,32 @@ const augment = """
         # in that case, we just won't select an artifact.
     end
 
-    function cuda_comparison_strategy(a::String, b::String, a_requested::Bool, b_requested::Bool)
-        if a == "none" || b == "none"
-            return a == b
-        end
-        if a == "local" || b == "local"
-            return a == b
-        end
-        a = VersionNumber(a)
-        b = VersionNumber(b)
+    # can't use Preferences for the same reason
+    const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
+    const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
+    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
+    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
+    const local_toolkit = something(tryparse(Bool, get(preferences, "local", "false")), false)
 
-        # If both b and a requested, then we fall back to equality:
+    function cuda_comparison_strategy(_a::String, _b::String, a_requested::Bool, b_requested::Bool)
+        # if we're using a local toolkit, we can't use artifacts
+        if local_toolkit
+            return false
+        end
+
+        # if either isn't a version number (e.g. "none"), perform a simple equality check
+        a = tryparse(VersionNumber, _a)
+        b = tryparse(VersionNumber, _b)
+        if a === nothing || b === nothing
+            return _a == _b
+        end
+
+        # if both b and a requested, then we fall back to equality
         if a_requested && b_requested
             return Base.thisminor(a) == Base.thisminor(b)
         end
 
-        # Otherwise, do the comparison between the the single version cap and the single version:
+        # otherwise, do the comparison between the the single version cap and the single version:
         function is_compatible(artifact::VersionNumber, host::VersionNumber)
             if host >= v"11.0"
                 # enhanced compatibility, semver-style
@@ -62,6 +72,10 @@ const augment = """
             CUDA_Runtime_jll.augment_platform!(platform)
         end
         BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
+
+        # store the fact that we're using a local CUDA toolkit, for debugging purposes
+        platform["cuda_local"] = local_toolkit
+
         return platform
     end"""
 
