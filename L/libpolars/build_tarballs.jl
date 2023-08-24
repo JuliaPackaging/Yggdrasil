@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libpolars"
-version = v"0.32.1"
+version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Pangoraw/Polars.jl/",
-              "9ad0fea96a4ba0d367a70bd48e643df54671b153"),
+              "dd00d8db4e5ddfa19cb4fdd43df48957491052a5"),
 ]
 
 # Bash recipe for building across all platforms
