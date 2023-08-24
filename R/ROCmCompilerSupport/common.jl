@@ -1,10 +1,11 @@
 const NAME = "ROCmCompilerSupport"
 
-const ROCM_GIT = "https://github.com/RadeonOpenCompute/ROCm-CompilerSupport/"
+const ROCM_GIT = "https://github.com/RadeonOpenCompute/ROCm-CompilerSupport.git"
 const GIT_TAGS = Dict(
-    v"4.2.0" => "40a1ea50d2aea0cf75c4d17cdd6a7fe44ae999bf0147d24a756ca4675ce24e36",
-    v"4.5.2" => "e45f387fb6635fc1713714d09364204cd28fea97655b313c857beb1f8524e593",
-    v"5.2.3" => "36d67dbe791d08ad0a02f0f3aedd46059848a0a232c5f999670103b0410c89dc",
+    v"4.2.0" => "f3e81459441fd60dcb5b5e547b637c474892aa4f",
+    v"4.5.2" => "9fc2026bb43aa0f5cf989ca1b077822bd8d18240",
+    v"5.2.3" => "196e2d0e20e32752ea46a361618f05cf8af5c61f",
+    v"5.4.4" => "be624c66c58a5ff60081538dff70a235248a8131",
 )
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
@@ -36,8 +37,7 @@ const PRODUCTS = [LibraryProduct(["libamd_comgr"], :libamd_comgr)]
 
 function configure_build(version)
     sources = [
-        ArchiveSource(
-            ROCM_GIT * "archive/rocm-$(version).tar.gz", GIT_TAGS[version]),
+        GitSource(ROCM_GIT, GIT_TAGS[version]),
         DirectorySource("../scripts"),
     ]
     dependencies = [
