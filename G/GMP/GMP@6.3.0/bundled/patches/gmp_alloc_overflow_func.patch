@@ -1,0 +1,111 @@
+diff --git a/errno.c b/errno.c
+index d71c146..40d83bd 100644
+--- a/errno.c
++++ b/errno.c
+@@ -38,8 +38,11 @@ see https://www.gnu.org/licenses/.  */
+ 
+ #include "gmp-impl.h"
+ 
++static void __gmp_default_alloc_overflow(void);
++
+ int gmp_errno = 0;
+ 
++static void   (*__gmp_alloc_overflow_func) (void) = __gmp_default_alloc_overflow;
+ 
+ /* Use SIGFPE on systems which have it. Otherwise, deliberate divide
+    by zero, which triggers an exception on most systems. On those
+@@ -72,6 +75,29 @@ __gmp_divide_by_zero (void)
+ }
+ void
+ __gmp_overflow_in_mpz (void)
++{
++  (*__gmp_alloc_overflow_func)();
++}
++
++static void
++__gmp_default_alloc_overflow(void)
+ {
+   __gmp_exception (GMP_ERROR_MPZ_OVERFLOW);
+ }
++
++void
++mp_get_alloc_overflow_function(
++        void (**alloc_overflow_func) (void)) __GMP_NOTHROW
++{
++  if (alloc_overflow_func != NULL)
++    *alloc_overflow_func = __gmp_alloc_overflow_func;
++}
++
++void
++mp_set_alloc_overflow_function(
++             void (*alloc_overflow_func) (void)) __GMP_NOTHROW
++{
++  if (alloc_overflow_func == 0)
++    alloc_overflow_func = __gmp_default_alloc_overflow;
++  __gmp_alloc_overflow_func = alloc_overflow_func;
++}
+diff --git a/gmp-h.in b/gmp-h.in
+index 8598e97..6e0ef78 100644
+--- a/gmp-h.in
++++ b/gmp-h.in
+@@ -487,6 +487,13 @@ __GMP_DECLSPEC void mp_get_memory_functions (void *(**) (size_t),
+ 				      void *(**) (void *, size_t, size_t),
+ 				      void (**) (void *, size_t)) __GMP_NOTHROW;
+ 
++#define mp_set_alloc_overflow_function __gmp_set_alloc_overflow_function
++__GMP_DECLSPEC void mp_set_alloc_overflow_function (void (*) (void)) __GMP_NOTHROW;
++
++#define mp_get_alloc_overflow_function __gmp_get_alloc_overflow_function
++__GMP_DECLSPEC void mp_get_alloc_overflow_function (void (**) (void)) __GMP_NOTHROW;
++
++
+ #define mp_bits_per_limb __gmp_bits_per_limb
+ __GMP_DECLSPEC extern const int mp_bits_per_limb;
+ 
+diff --git a/tests/mpz/t-pow.c b/tests/mpz/t-pow.c
+index ff41721..36674f9 100644
+--- a/tests/mpz/t-pow.c
++++ b/tests/mpz/t-pow.c
+@@ -194,6 +194,34 @@ check_random (int reps)
+   mpz_clear (want);
+ }
+ 
++jmp_buf env;
++
++void
++alloc_overflow_handler (void)
++{
++  longjmp(env, 1);
++}
++
++void
++check_overflow (void)
++{
++  mpz_t x;
++  mpz_init (x);
++  int overflow_intercepted = 0;
++  if (setjmp (env) == 0) {
++    mp_set_alloc_overflow_function (&alloc_overflow_handler);
++    mpz_ui_pow_ui (x, 3, 7625597484987LL);
++  } else {
++    ++overflow_intercepted;
++  }
++  if (overflow_intercepted != 1) {
++    printf ("overflow not intercepted\n");
++    abort ();
++  }
++  mpz_clear (x);
++}
++
++
+ int
+ main (int argc, char **argv)
+ {
+@@ -211,6 +239,7 @@ main (int argc, char **argv)
+ 
+   check_various ();
+   check_random (reps);
++  check_overflow ();
+ 
+   tests_end ();
+   exit (0);
