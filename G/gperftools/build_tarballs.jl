@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "gperftools"
-version = v"2.9.1"
+version = v"2.12"
+version_str = "2.12"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/gperftools/gperftools/releases/download/gperftools-$(version)/gperftools-$(version).tar.gz","ea566e528605befb830671e359118c2da718f721c27225cbbc93858c7520fee3")
+    ArchiveSource("https://github.com/gperftools/gperftools/releases/download/gperftools-$(version_str)/gperftools-$(version_str).tar.gz",
+                  "fb611b56871a3d9c92ab0cc41f9c807e8dfa81a54a4a9de7f30e838756b5c7c6")
 ]
 
 # Bash recipe for building across all platforms
