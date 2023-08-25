@@ -108,7 +108,6 @@ fi"""
         "cuda_nvprune",
         "cuda_nvrtc",
 
-        "cuda_profiler_api",
         "cuda_sanitizer_api",
 
         "libcublas",
@@ -119,6 +118,9 @@ fi"""
         "libnpp",
         "libnvjpeg"
     ]
+    if version >= v"11.8"
+        push!(components, "cuda_profiler_api")
+    end
     if version >= v"12"
         push!(components, "libnvjitlink")
     end
