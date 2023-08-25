@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Tar"
-version = v"1.34"
+version = v"1.35"
 
 # Collection of sources required to build tar
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/tar/tar-$(version.major).$(version.minor).tar.xz",
-                  "63bebd26879c5e1eea4352f0d03c991f966aeb3ddeb3c7445c902568d5411d28"),
+                  "4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16"),
 ]
 
 # Bash recipe for building across all platforms
