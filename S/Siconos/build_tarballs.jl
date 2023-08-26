@@ -18,24 +18,22 @@ cd siconos/
 mkdir build
 cd build/
 python3 -m pip install wheel packaging
-cmake -DUSER_OPTIONS_FILE=../../only_numerics.cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DWITH_FCLIB=0 -DWITH_PYTHON_WRAPPER=0 -DWITH_CXX=0 ..
+cmake \
+    -DUSER_OPTIONS_FILE=../../only_numerics.cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
 make -j${nproc}
 make install
+install_license ${WORKSPACE}/srcdir/siconos/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "Linux")
-    Platform("i686", "Linux")
-    Platform("aarch64", "Linux")
-    Platform("armv6l", "Linux"; call_abi="eabihf")
-    Platform("armv7l", "Linux"; call_abi="eabihf")
-    Platform("powerpc64le", "Linux")
-    Platform("x86_64", "MacOS")
-    Platform("aarch64", "MacOS")
-    Platform("x86_64", "FreeBSD")
-]
+platforms = supported_platforms()
+filter!(!Sys.iswindows, platforms)      # Windows is not supported
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)        # Musl not supported
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
