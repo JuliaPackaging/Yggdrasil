@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 name = "XyceWrapper"
-version = v"0.4.0"
+version = v"0.5.0"
 
 # Collection of sources required to complete build
 sources = [
