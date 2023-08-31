@@ -2,10 +2,11 @@ using BinaryBuilder
 
 # Collection of sources required to build Libiconv
 name = "Libiconv"
-version = v"1.17.0"
+version_string = "1.17"
+version = VersionNumber(version_string)
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version.major).$(version.minor).tar.gz",
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version_string).tar.gz",
                "8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313"),
 ]
 
