@@ -39,8 +39,9 @@ platforms = expand_cxxstring_abis(platforms)
 # Exclude the same platforms that are excluded by Xyce_jll:
 # https://github.com/JuliaPackaging/Yggdrasil/blob/7a244de1483ceccbfc0ef9575d80b9b89c3f5a94/X/Xyce/build_tarballs.jl#L42-L45
 platforms = filter(platforms) do p
-    return !(arch(p) == "aarch64" && os(p) == "linux" && p["libgfortran_version"] ∈ ("3.0.0", "4.0.0"))
+    return !(arch(p) == "aarch64" && os(p) == "linux"
 end
+push!(platforms, Linux("aarch64", "linux"; libgfortran_version=v"5"))
 
 # The products that we will ensure are always built
 products = [
