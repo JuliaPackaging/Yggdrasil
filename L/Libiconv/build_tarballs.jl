@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build Libiconv
 name = "Libiconv"
-version = v"1.17.0" # <-- this is a lie, we're building v1.16, but we need to bump version to build for julia v1.6
+version = v"1.17.0"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version.major).$(version.minor).tar.gz",
