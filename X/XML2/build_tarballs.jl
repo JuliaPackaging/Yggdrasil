@@ -7,8 +7,8 @@ version = v"2.10.4"
 
 # Collection of sources required to build XML2
 sources = [
-    ArchiveSource("https://github.com/GNOME/libxml2/archive/v$(version).tar.gz",
-                  "6f6fb27f91bb65f9d7196e3c616901b3e18a7dea31ccc2ae857940b125faa780"),
+    ArchiveSource("https://gitlab.gnome.org/GNOME/libxml2/-/archive/v2.10.4/libxml2-v$(version).tar.gz",
+                  "1aa47bd54f9e0245686d494fbbbfa4e3e77b6fc4f988708383de8a1033292e66"),
 ]
 
 # Bash recipe for building across all platforms
