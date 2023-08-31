@@ -12,12 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd opa/
+cd $WORKSPACE/srcdir/opa/
 WASM_ENABLED=0 make build
 mkdir -p $bindir
-ls -la opa_*
-cp opa_* $bindir/opa${exeext}
+install -Dvm 755 opa_* $bindir/opa${exeext}
 install_license LICENSE
 """
 
