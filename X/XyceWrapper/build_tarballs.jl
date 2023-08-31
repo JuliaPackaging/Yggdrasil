@@ -51,7 +51,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Xyce_jll"; compat="^7.6.0"),
-    Dependency("libcxxwrap_julia_jll", compat="^0.9.0"),
+    Dependency("libcxxwrap_julia_jll", compat="^0.9.8"),
     BuildDependency("libjulia_jll"),
 ]
 
