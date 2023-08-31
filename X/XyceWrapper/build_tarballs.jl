@@ -41,7 +41,7 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = filter(platforms) do p
     return !(arch(p) == "aarch64" && os(p) == "linux")
 end
-push!(platforms, Linux("aarch64", "linux"; libgfortran_version=v"5"))
+push!(platforms, Platform("aarch64", "linux"; libgfortran_version=v"5"))
 
 # The products that we will ensure are always built
 products = [
