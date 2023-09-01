@@ -17,9 +17,9 @@ RUN apt-get update && \
         wget
 
 # Download and build HDF5
-RUN wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.0/src/hdf5-1.14.0.tar.gz
-RUN tar xzf hdf5-1.14.0.tar.gz
-WORKDIR hdf5-1.14.0
+RUN wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.2/src/hdf5-1.14.2.tar.gz
+RUN tar xzf hdf5-1.14.2.tar.gz
+WORKDIR hdf5-1.14.2
 # RUN wget -O bin/config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
 # RUN wget -O bin/config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
 RUN mkdir build
