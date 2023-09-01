@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/lz4-*/
+cd $WORKSPACE/srcdir/lz4/
 make -j${nproc} CFLAGS="-O3 -fPIC"
 make install
 if [[ "${target}" == *-mingw* ]]; then
@@ -25,7 +25,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
