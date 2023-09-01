@@ -3,32 +3,40 @@
 using BinaryBuilder, Pkg
 
 name = "Xyce"
-version = v"7.6"
+version = v"7.7"
 
 # Collection of sources required to complete build
 sources = [
-            GitSource("https://github.com/Xyce/Xyce.git", "046a561ee2db376cf459edaeb8b6b67563da980d")
-          ]
+    GitSource("https://github.com/Xyce/Xyce.git", "4d3ddea894689560ab68d1a65a42ef585818231c")
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# We need a special TMPDIR so that we don't fill up `/tmp`, which is of a limited size in the build environment.
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir ${TMPDIR}
-cd $WORKSPACE/srcdir
-apk add flex-dev
+
+cd ${WORKSPACE}/srcdir/Xyce
 update_configure_scripts --reconf
-install_license ${WORKSPACE}/srcdir/Xyce/COPYING
-cd Xyce
+
+# Link aganst LBT for BLAS needs
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_NAME=blastrampoline
+else
+    BLAS_NAME=blastrampoline
+fi
+
 ./bootstrap
-cd ..
 mkdir buildx
 cd buildx
-/workspace/srcdir/Xyce/./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared --disable-mpi \
-    LDFLAGS="-L${libdir} -lopenblas" \
+    LDFLAGS="-L${libdir} -l${BLAS_NAME}" \
     CPPFLAGS="-I/${includedir} -I/usr/include"
 make -j${nprocs}
 make install
+
+install_license ${WORKSPACE}/srcdir/Xyce/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -52,12 +60,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-                    Dependency(PackageSpec(name="Trilinos_jll", uuid="b6fd3212-6f87-5999-b9ea-021e9cd21b17"))
-                    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
-                    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-                    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
-                    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-                ]
+    BuildDependency("flex_jll"),
+    Dependency(PackageSpec(name="Trilinos_jll", uuid="b6fd3212-6f87-5999-b9ea-021e9cd21b17")),
+    Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"); compat="7.2.0"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93")),
+    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat="1.6.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat="1.10.0")
