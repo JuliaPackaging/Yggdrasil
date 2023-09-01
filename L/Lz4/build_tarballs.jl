@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "Lz4"
-version = v"1.9.3"
+version = v"1.9.4"
 
 # Collection of sources required to build Lz4
 sources = [
-    ArchiveSource("https://github.com/lz4/lz4/archive/v$(version).tar.gz",
-                  "030644df4611007ff7dc962d981f390361e6c97a34e5cbc393ddfbe019ffe2c1")
+    GitSource("https://github.com/lz4/lz4.git",
+                  "5ff839680134437dbf4678f3d0c7b371d84f4964")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/lz4-*/
+cd $WORKSPACE/srcdir/lz4/
 make -j${nproc} CFLAGS="-O3 -fPIC"
 make install
 if [[ "${target}" == *-mingw* ]]; then
@@ -25,7 +25,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
