@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/or-tools*
 mkdir build
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_DEPS:BOOL=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES:BOOL=OFF \
@@ -34,11 +35,11 @@ cmake --build build --target install
 
 platforms = [
     Platform("x86_64", "linux"),
-    # Platform("aarch64", "linux"),
-    # Platform("x86_64", "macos"),
-    # Platform("aarch64", "macos"),
-    # Platform("x86_64", "freebsd"),
-    # Platform("x86_64", "windows")
+    Platform("aarch64", "linux"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
+    Platform("x86_64", "freebsd"),
+    Platform("x86_64", "windows")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
