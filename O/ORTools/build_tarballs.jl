@@ -22,7 +22,9 @@ cmake -S. -Bbuild \
     -DBUILD_EXAMPLES:BOOL=OFF \
     -DBUILD_SAMPLES:BOOL=OFF \
     -DUSE_SCIP:BOOL=OFF \
-    -DUSE_HIGHS:BOOL=OFF
+    -DUSE_HIGHS:BOOL=OFF \
+    -DUSE_COINOR:BOOL=OFF \
+    -DUSE_GLPK:BOOL=OFF
 cmake --build build
 cmake --build build --target install
 """
