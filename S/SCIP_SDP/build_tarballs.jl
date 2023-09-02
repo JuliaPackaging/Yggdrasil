@@ -20,7 +20,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}\
   -DCMAKE_BUILD_TYPE=Release\
   -DSDPS=sdpa\
-  -DSDPA_INCLUDE_DIRS=${includedir}\
+  -DSDPA_INCLUDE_DIR=${includedir}\
   -DSCIP_DIR=${prefix}\
   -DSCIP_INCLUDE_DIRS=${includedir}\
   ..
