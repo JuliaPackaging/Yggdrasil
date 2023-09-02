@@ -21,6 +21,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DCMAKE_BUILD_TYPE=Release\
   -DSDPS=sdpa\
   -DSDPA_INCLUDE_DIRS=${includedir}\
+  -DSCIP_DIR=${prefix}\
+  -DSCIP_INCLUDE_DIRS=${includedir}\
   ..
 make -j${nproc}
 make install
