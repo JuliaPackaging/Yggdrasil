@@ -21,7 +21,7 @@ cmake -S. -Bbuild \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES:BOOL=OFF \
     -DBUILD_SAMPLES:BOOL=OFF \
-    -DUSE_SCIP:BOOL=OFF \
+    -DUSE_SCIP:BOOL=ON \
     -DUSE_HIGHS:BOOL=OFF \
     -DUSE_COINOR:BOOL=OFF \
     -DUSE_GLPK:BOOL=OFF
@@ -29,7 +29,8 @@ cmake --build build
 cmake --build build --target install
 """
 
-# TODO: generate with ProtoBuf.jl
+# TODO: generate with ProtoBuf.jl.
+# TODO: disable SCIP.
 
 platforms = [
     Platform("x86_64", "linux"),
