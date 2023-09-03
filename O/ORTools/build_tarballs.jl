@@ -19,7 +19,6 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.
 mkdir build
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_DEPS:BOOL=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES:BOOL=OFF \
@@ -34,7 +33,8 @@ cmake --build build --target install
 
 # TODO: generate with ProtoBuf.jl.
 # TODO: disable SCIP.
-# TODO: rework CMake infrastructure in OR-Tools to support cross-compilation.
+# TODO: rework CMake infrastructure in OR-Tools to support cross-compilation. Then, set:
+#     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 
 platforms = [
     Platform("x86_64", "linux"),
