@@ -9,11 +9,13 @@ version = v"9.7"
 sources = [
     GitSource("https://github.com/google/or-tools.git",
               "35d56a4b07db8ea135b83762289fbc0e7d229221"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/or-tools*
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.patch"
 mkdir build
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
