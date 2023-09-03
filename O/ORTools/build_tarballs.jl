@@ -32,14 +32,15 @@ cmake --build build --target install
 
 # TODO: generate with ProtoBuf.jl.
 # TODO: disable SCIP.
+# TODO: rework CMake infrastructure in OR-Tools to support cross-compilation.
 
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "freebsd"),
-    Platform("x86_64", "windows")
+    # Platform("aarch64", "linux"),
+    # Platform("x86_64", "macos"),
+    # Platform("aarch64", "macos"),
+    # Platform("x86_64", "freebsd"),
+    # Platform("x86_64", "windows")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
