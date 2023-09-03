@@ -22,7 +22,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DSDPS=sdpa\
   -DSDPA_INCLUDE_DIRS=${includedir}\
   -DSCIP_INCLUDE_DIRS=${includedir}\
-  -DSCIP_DIR=${libdir}\
+  -DSCIP_DIR=${prefix}\
   -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
   -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
   ..
