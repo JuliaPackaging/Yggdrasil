@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.74.0"
+version = v"2.76.5"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "3652c7f072d7b031a6b5edd623f77ebc5dcd2ae698598abcc89ff39ca75add30"),
+                  "ed3a9953a90b20da8e5578a79f7d1c8a532eacbe2adac82aa3881208db8a3abe"),
     DirectorySource("./bundled"),
 ]
 
@@ -17,9 +17,6 @@ install_license COPYING
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
 sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
-
-# Backport https://gitlab.gnome.org/GNOME/glib/-/merge_requests/2914
-atomic_patch -p1 ../patches/utimensat-macos.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Adapt patch relative to `xattr` from
@@ -35,6 +32,7 @@ mkdir build_glib && cd build_glib
 MESON_FLAGS=(--cross-file="${MESON_TARGET_TOOLCHAIN}")
 MESON_FLAGS+=(--buildtype=release)
 MESON_FLAGS+=(-Dman=false)
+MESON_FLAGS+=(-Dtests=false)
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
