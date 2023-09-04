@@ -1,0 +1,225 @@
+From 65770038726e25c3ee49d968b757853c5604f510 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Mon, 21 Aug 2023 11:08:09 +0100
+Subject: [PATCH 1/1] macos patch
+
+---
+ cmake/MujocoLinkOptions.cmake          | 12 --------
+ cmake/MujocoOptions.cmake              |  1 -
+ sample/cmake/MujocoLinkOptions.cmake   | 12 --------
+ sample/cmake/SampleOptions.cmake       |  1 -
+ simulate/cmake/MujocoLinkOptions.cmake | 12 --------
+ simulate/cmake/SimulateOptions.cmake   |  1 -
+ src/engine/engine_plugin.cc            | 40 ++++++++++++--------------
+ 7 files changed, 18 insertions(+), 61 deletions(-)
+
+diff --git a/cmake/MujocoLinkOptions.cmake b/cmake/MujocoLinkOptions.cmake
+index 242767f..f8bb131 100644
+--- a/cmake/MujocoLinkOptions.cmake
++++ b/cmake/MujocoLinkOptions.cmake
+@@ -45,18 +45,6 @@ function(get_mujoco_extra_link_options OUTPUT_VAR)
+           set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -fuse-ld=gold)
+         endif()
+       endif()
+-
+-      set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,--gc-sections")
+-      check_c_source_compiles("int main() {}" SUPPORTS_GC_SECTIONS)
+-      if(SUPPORTS_GC_SECTIONS)
+-        set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,--gc-sections)
+-      else()
+-        set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,-dead_strip")
+-        check_c_source_compiles("int main() {}" SUPPORTS_DEAD_STRIP)
+-        if(SUPPORTS_DEAD_STRIP)
+-          set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,-dead_strip)
+-        endif()
+-      endif()
+     endif()
+   endif()
+ 
+diff --git a/cmake/MujocoOptions.cmake b/cmake/MujocoOptions.cmake
+index 998b966..213f422 100644
+--- a/cmake/MujocoOptions.cmake
++++ b/cmake/MujocoOptions.cmake
+@@ -86,7 +86,6 @@ get_mujoco_extra_link_options(EXTRA_LINK_OPTIONS)
+ 
+ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC))
+   set(EXTRA_COMPILE_OPTIONS
+-      -Werror
+       -Wall
+       -Wimplicit-fallthrough
+       -Wunused
+diff --git a/sample/cmake/MujocoLinkOptions.cmake b/sample/cmake/MujocoLinkOptions.cmake
+index 242767f..f8bb131 100644
+--- a/sample/cmake/MujocoLinkOptions.cmake
++++ b/sample/cmake/MujocoLinkOptions.cmake
+@@ -45,18 +45,6 @@ function(get_mujoco_extra_link_options OUTPUT_VAR)
+           set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -fuse-ld=gold)
+         endif()
+       endif()
+-
+-      set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,--gc-sections")
+-      check_c_source_compiles("int main() {}" SUPPORTS_GC_SECTIONS)
+-      if(SUPPORTS_GC_SECTIONS)
+-        set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,--gc-sections)
+-      else()
+-        set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,-dead_strip")
+-        check_c_source_compiles("int main() {}" SUPPORTS_DEAD_STRIP)
+-        if(SUPPORTS_DEAD_STRIP)
+-          set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,-dead_strip)
+-        endif()
+-      endif()
+     endif()
+   endif()
+ 
+diff --git a/sample/cmake/SampleOptions.cmake b/sample/cmake/SampleOptions.cmake
+index 998b966..213f422 100644
+--- a/sample/cmake/SampleOptions.cmake
++++ b/sample/cmake/SampleOptions.cmake
+@@ -86,7 +86,6 @@ get_mujoco_extra_link_options(EXTRA_LINK_OPTIONS)
+ 
+ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC))
+   set(EXTRA_COMPILE_OPTIONS
+-      -Werror
+       -Wall
+       -Wimplicit-fallthrough
+       -Wunused
+diff --git a/simulate/cmake/MujocoLinkOptions.cmake b/simulate/cmake/MujocoLinkOptions.cmake
+index 242767f..f8bb131 100644
+--- a/simulate/cmake/MujocoLinkOptions.cmake
++++ b/simulate/cmake/MujocoLinkOptions.cmake
+@@ -45,18 +45,6 @@ function(get_mujoco_extra_link_options OUTPUT_VAR)
+           set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -fuse-ld=gold)
+         endif()
+       endif()
+-
+-      set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,--gc-sections")
+-      check_c_source_compiles("int main() {}" SUPPORTS_GC_SECTIONS)
+-      if(SUPPORTS_GC_SECTIONS)
+-        set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,--gc-sections)
+-      else()
+-        set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,-dead_strip")
+-        check_c_source_compiles("int main() {}" SUPPORTS_DEAD_STRIP)
+-        if(SUPPORTS_DEAD_STRIP)
+-          set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,-dead_strip)
+-        endif()
+-      endif()
+     endif()
+   endif()
+ 
+diff --git a/simulate/cmake/SimulateOptions.cmake b/simulate/cmake/SimulateOptions.cmake
+index 998b966..213f422 100644
+--- a/simulate/cmake/SimulateOptions.cmake
++++ b/simulate/cmake/SimulateOptions.cmake
+@@ -86,7 +86,6 @@ get_mujoco_extra_link_options(EXTRA_LINK_OPTIONS)
+ 
+ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC))
+   set(EXTRA_COMPILE_OPTIONS
+-      -Werror
+       -Wall
+       -Wimplicit-fallthrough
+       -Wunused
+diff --git a/src/engine/engine_plugin.cc b/src/engine/engine_plugin.cc
+index 075aacc..ce0eafd 100644
+--- a/src/engine/engine_plugin.cc
++++ b/src/engine/engine_plugin.cc
+@@ -55,8 +55,6 @@ namespace {
+ constexpr int kMaxNameLength = 1024;
+ constexpr int kMaxAttributes = 255;
+ 
+-constexpr int kCacheLine = 64;
+-
+ // vfs prefix
+ constexpr const char* kVfsPrefix = mjVFS_PREFIX;
+ 
+@@ -67,7 +65,7 @@ constexpr const char* kVfsPrefix = mjVFS_PREFIX;
+ // table will behave like an array. Since pointers are never invalidated, we do not need to apply a
+ // read lock on the global table when resolving a plugin.
+ template<typename T>
+-struct alignas(kCacheLine) PluginTable {
++struct PluginTable {
+   static constexpr int kBlockSize = 15;
+ 
+   PluginTable() {
+@@ -80,12 +78,6 @@ struct alignas(kCacheLine) PluginTable {
+   PluginTable<T>* next = nullptr;
+ };
+ 
+-static_assert(
+-    sizeof(PluginTable<mjpPlugin>) / kCacheLine ==
+-    sizeof(PluginTable<mjpPlugin>::plugins) / kCacheLine
+-    + (sizeof(PluginTable<mjpPlugin>::plugins) % kCacheLine > 0),
+-    "PluginTable::next doesn't fit in the same cache line as the end of PluginTable::plugins");
+-
+ using Mutex = std::shared_mutex;
+ 
+ class ReentrantWriteLock {
+@@ -141,7 +133,7 @@ class Global {
+   // executed by whichever thread started that termination but there is no guarantee that other
+   // threads have terminated. In other words, a static object may be accessed by another thread
+   // after it is deleted. We avoid destruction issues by never running the destructor.
+-  alignas(Mutex) unsigned char mutex_[sizeof(Mutex)];
++  unsigned char mutex_[sizeof(Mutex)];
+ };
+ 
+ template<typename T>
+@@ -156,7 +148,7 @@ template<typename T>
+ PluginTable<T>* AddNewTableBlock(PluginTable<T>* table) {
+   char err[512];
+   err[0] = '\0';
+-  table->next = new(std::nothrow) PluginTable<T>;
++  table->next = new PluginTable<T>;
+   if (!table->next) {
+     std::snprintf(err, sizeof(err), "failed to allocate memory for the global plugin table");
+     return nullptr;
+@@ -204,15 +196,14 @@ std::unique_ptr<char[]> CopyName(const char* s) {
+   if (len == -1) {
+     return nullptr;
+   }
+-  std::unique_ptr<char[]> out(new(std::nothrow) char[len + 1]);
+-  if (!out) {
+-    return nullptr;
+-  }
++  std::unique_ptr<char[]> out(new char[len + 1]);
+   std::strncpy(out.get(), s, len);
+   out.get()[len] = '\0';
+   return out;
+ }
+ 
++
++
+ // check if two plugins are identical
+ bool PluginsAreIdentical(const mjpPlugin& plugin1, const mjpPlugin& plugin2) {
+   if (plugin1.name && !plugin2.name) {
+@@ -388,17 +379,22 @@ int mjp_registerPlugin(const mjpPlugin* plugin) {
+ 
+     // release the attribute names from unique_ptr into a plain array
+     const char** attributes = nullptr;
+-    if (plugin->nattribute) {
+-      attributes = new(std::nothrow) const char*[plugin->nattribute];
+-      if (!attributes) {
+-        std::snprintf(err, sizeof(err), "failed to allocate memory for plugin attribute array");
+-        return -1;
++    try {
++      if (plugin->nattribute) {
++        attributes = new const char*[plugin->nattribute];
++        for (int i = 0; i < plugin->nattribute; ++i) {
++          attributes[i] = attributes_vec[i].release();
++        }
+       }
+-      for (int i = 0; i < plugin->nattribute; ++i) {
+-        attributes[i] = attributes_vec[i].release();
++    } catch (const std::bad_alloc&) {
++      std::snprintf(err, sizeof(err), "failed to allocate memory for plugin attribute array");
++      if (attributes) {
++        delete[] attributes;
+       }
++      return -1;
+     }
+ 
++
+     // all checked passed, actually register the plugin into the global table
+     mjpPlugin& registered_plugin = table->plugins[local_idx];
+     registered_plugin = *plugin;
+-- 
+2.41.0
+
