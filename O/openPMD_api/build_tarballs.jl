@@ -121,7 +121,7 @@ dependencies = [
     Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll"); compat="~0.10"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll"); compat="~0.9"),
 ]
 
 append!(dependencies, platform_dependencies)
