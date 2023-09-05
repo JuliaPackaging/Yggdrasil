@@ -14,7 +14,7 @@ llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7"]
 
 # Collection of sources required to build LLVMExtra
 sources = [
-    GitSource(repo, "51094f8"),
+    GitSource(repo, "51094f89c6b84bca1198c75d22c16b032ee98f2d"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
     "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
