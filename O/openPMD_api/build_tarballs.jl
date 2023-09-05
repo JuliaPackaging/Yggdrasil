@@ -73,8 +73,8 @@ cmake \
     -DBUILD_CLI_TOOLS=OFF \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_TESTING=OFF \
-    -DJulia_PREFIX=${prefix} \
-    -DopenPMD_USE_Julia=ON \
+    -DJULIA_PREFIX=${prefix} \
+    -DopenPMD_USE_JULIA=ON \
     -DopenPMD_USE_MPI=ON \
     -DMPI_HOME=${prefix} \
     ${archopts[@]} \
