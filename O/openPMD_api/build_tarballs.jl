@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "openPMD_api"
-version = v"0.16.1" # This is really the branch `eschnett/julia-bindings` before version 0.16.0
+version = v"0.16.2" # This is really the branch `eschnett/julia-bindings` before version 0.16.0
 
 # `v"1.6.3"` fails to build
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
@@ -14,7 +14,7 @@ julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 # Collection of sources required to complete build
 sources = [
     # We use a feature branch instead of a released version because the Julia bindings are not released yet
-    GitSource("https://github.com/eschnett/openPMD-api.git", "13ea8b4ecca968a5355825d639b3e9182d14b484"),
+    GitSource("https://github.com/eschnett/openPMD-api.git", "d59773adf3cd9a27fe148c535d94e25aa5709a5a"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -121,7 +121,7 @@ dependencies = [
     Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll"); compat="~0.9"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
 ]
 
 append!(dependencies, platform_dependencies)
