@@ -14,7 +14,7 @@ julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 # Collection of sources required to complete build
 sources = [
     # We use a feature branch instead of a released version because the Julia bindings are not released yet
-    GitSource("https://github.com/eschnett/openPMD-api.git", "724806e5b9743c3347af4e3f4ad129db90d1a298"),
+    GitSource("https://github.com/eschnett/openPMD-api.git", "54a5052787543700a255a608ef290f89a9c41017"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
