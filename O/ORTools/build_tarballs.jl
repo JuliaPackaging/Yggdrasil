@@ -31,7 +31,7 @@ cmake -S. -Bbuild \
     -DUSE_GLPK:BOOL=OFF
 cmake --build build
 cmake --build build --target install
-"""
+""" * "$(Base.julia_cmd()) -e 'using InteractiveUtils; versioninfo()'"
 
 # TODO: generate with ProtoBuf.jl.
 #     julia -e "using ProtoBuf; protojl()" 
