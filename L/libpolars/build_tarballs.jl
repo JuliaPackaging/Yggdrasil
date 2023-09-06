@@ -7,17 +7,34 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Pangoraw/Polars.jl/",
-              "dd00d8db4e5ddfa19cb4fdd43df48957491052a5"),
+    GitSource(
+        "https://github.com/Pangoraw/Polars.jl/",
+        "da4a4569a8ac7368aab7ae1c589b768b1e5ec36c",
+    ),
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
+    ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/c-polars/
+# This requires macOS 10.13
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    popd
+fi
+
+cd $WORKSPACE/srcdir/Polars.jl/c-polars/
 
 cargo build --release
 
 install -Dvm 755 target/${rust_target}/release/deps/*polars.${dlext} "${libdir}/libpolars.${dlext}"
+install_license ${WORKSPACE}/srcdir/Polars.jl
 """
 
 # These are the platforms we will build for by default, unless further
