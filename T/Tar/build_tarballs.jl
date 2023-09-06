@@ -15,7 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tar-*/
 export FORCE_UNSAFE_CONFIGURE=1
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+# We disable the year 2038 check because we don't have an alternative on the affected systems
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-year2038
 make -j${nproc}
 make install
 """
