@@ -34,6 +34,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Attr_jll"),
+    Dependency("Libiconv_jll", platforms=filter(Sys.isapple, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
