@@ -8,7 +8,7 @@ version = v"9.7"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "35d56a4b07db8ea135b83762289fbc0e7d229221"),
+              "c0b4bac9eb0a0b948517aa1bd4a97938d858a2e9"),
     DirectorySource("./bundled")
 ]
 
@@ -23,7 +23,7 @@ cmake -S. -Bbuild \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES:BOOL=OFF \
     -DBUILD_SAMPLES:BOOL=OFF \
-    -DUSE_SCIP:BOOL=ON \
+    -DUSE_SCIP:BOOL=OFF \
     -DUSE_HIGHS:BOOL=OFF \
     -DUSE_COINOR:BOOL=OFF \
     -DUSE_GLPK:BOOL=OFF
