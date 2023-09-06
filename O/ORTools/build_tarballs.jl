@@ -16,6 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/or-tools*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_host_CMakeLists.txt.patch"
 mkdir build
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
