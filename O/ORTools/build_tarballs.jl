@@ -20,6 +20,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_host_CMakeLists.txt.patch"
 mkdir build
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_DEPS:BOOL=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES:BOOL=OFF \
@@ -30,21 +31,18 @@ cmake -S. -Bbuild \
     -DUSE_GLPK:BOOL=OFF
 cmake --build build
 cmake --build build --target install
-julia -e "using ProtoBuf; protojl()" 
 """
 
 # TODO: generate with ProtoBuf.jl.
-# TODO: disable SCIP.
-# TODO: rework CMake infrastructure in OR-Tools to support cross-compilation. Then, set:
-#     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+#     julia -e "using ProtoBuf; protojl()" 
 
 platforms = [
     Platform("x86_64", "linux"),
-    # Platform("aarch64", "linux"),
-    # Platform("x86_64", "macos"),
-    # Platform("aarch64", "macos"),
-    # Platform("x86_64", "freebsd"),
-    # Platform("x86_64", "windows")
+    Platform("aarch64", "linux"),
+    Platform("x86_64", "macos"),
+    # Platform("aarch64", "macos"),  # Abseil uses -march for some files.
+    Platform("x86_64", "freebsd"),
+    Platform("x86_64", "windows")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
