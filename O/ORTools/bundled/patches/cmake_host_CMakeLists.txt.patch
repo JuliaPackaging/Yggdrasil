@@ -1,6 +1,4 @@
-diff --git a/cmake/host.CMakeLists.txt b/cmake/host.CMakeLists.txt
-index c35b8fed0e..697d0c8c7e 100644
---- a/cmake/host.CMakeLists.txt
+--- /dev/null
 +++ b/cmake/host.CMakeLists.txt
 @@ -103,7 +103,7 @@ FetchContent_Declare(
    zlib
