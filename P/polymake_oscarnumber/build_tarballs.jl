@@ -13,7 +13,7 @@ include("../../L/libjulia/common.jl")
 
 # reminder: change the version when changing the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.2.5"
+version = v"0.2.6"
 
 # julia_versions is now taken from libjulia/common.jl
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
@@ -85,8 +85,8 @@ dependencies = [
 
     BuildDependency("libjulia_jll"),
 
-    Dependency("libcxxwrap_julia_jll"),
-    Dependency("libpolymake_julia_jll", compat = "~0.10.2"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.0"),
+    Dependency("libpolymake_julia_jll", compat = "~0.10.4"),
     Dependency("polymake_jll", compat = "~400.1000.001"),
 ]
 
