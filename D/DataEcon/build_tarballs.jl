@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "DataEcon"
-version = v"0.2.3"
+version = v"0.2.4"
 
 # Collection of sources required to complete build
 sources = [
