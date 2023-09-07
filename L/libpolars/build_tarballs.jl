@@ -34,7 +34,6 @@ cd ${WORKSPACE}/srcdir/c-polars/
 cargo build --release
 
 install -Dvm 755 target/${rust_target}/release/deps/*polars.${dlext} "${libdir}/libpolars.${dlext}"
-install_license ${WORKSPACE}/srcdir/Polars.jl
 """
 
 # These are the platforms we will build for by default, unless further
