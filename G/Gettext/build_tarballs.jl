@@ -40,7 +40,7 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 # that cross-compiling for Windows with our setup isn't supported, and
 # that there isn't any real effort by the maintainers to remedy this
 # problem. We thus disable Windows.
-filter!(!Sys.iswinsows, platforms)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
