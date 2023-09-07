@@ -13,7 +13,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
-version = v"0.10.3"
+version = v"0.10.4"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl
@@ -61,14 +61,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.4")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.5")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FLINT_jll", compat = "~200.900.004"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.9.7"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.0"),
     Dependency("polymake_jll"; compat = "~400.1000.1"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
