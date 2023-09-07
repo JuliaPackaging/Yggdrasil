@@ -8,7 +8,7 @@ version = v"9.7"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "4fb8de32cbee2773405882956b1dc5237103ef47"),
+              "6fa02e157a5c91067b7d7b88629472b9ed461193"),
     DirectorySource("./bundled")
 ]
 
@@ -42,7 +42,7 @@ platforms = [
     Platform("x86_64", "macos"),
     # Platform("aarch64", "macos"),  # Abseil uses -march for some files.
     Platform("x86_64", "freebsd"),
-    # Platform("x86_64", "windows"),  # Unsupported for cross-compilation.
+    Platform("x86_64", "windows"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
