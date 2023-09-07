@@ -38,7 +38,7 @@ cmake --build build --target install
 
 platforms = [
     Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"),
+    # Platform("aarch64", "linux"),  # Abseil uses -march for some files.
     Platform("x86_64", "macos"),
     # Platform("aarch64", "macos"),  # Abseil uses -march for some files.
     Platform("x86_64", "freebsd"),
@@ -55,4 +55,4 @@ products = [
 dependencies = [Dependency("ProtoBuf")]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", preferred_llvm_version=v"16", julia_compat="1.6")
