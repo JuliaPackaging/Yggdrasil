@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "GMT"
-version = v"6.4.2"
+version = v"6.4.3"
 GSHHG_VERSION="2.3.7"
 DCW_VERSION="2.1.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "c9c8ac0a4a30ab1ea0e73aeacdcd0192d2789926"),
+    "bb7a9655c21bfdaf11e7a547e4736bc4f7af5a7c"),
     
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
@@ -24,6 +24,7 @@ script = """
 GSSHG_VERSION="$(GSHHG_VERSION)"
 GSSHG="gshhg-gmt-$(GSHHG_VERSION)"
 DCW="dcw-gmt-$(DCW_VERSION)"
+TEXTURE=${WORKSPACE}/srcdir/gmt/src/imgtexture
 """ * raw"""
 cd ${WORKSPACE}/srcdir/gmt
 mkdir build
@@ -33,6 +34,9 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DHAVE_QSORT_R_GLIBC=False \
+    -DEXTRA_SOURCES=${TEXTURE}/terrain_filter.c ${TEXTURE}/transpose_inplace.c ${TEXTURE}/dct_fftpack.c ${TEXTURE}/fftpack.c \
+        ${TEXTURE}/compatibility.h ${TEXTURE}/dct.h ${TEXTURE}/extern_msc.h ${TEXTURE}/fftpack.h ${TEXTURE}/terrain_filter.h \
+        ${TEXTURE}/transpose_inplace.h \
     -DHAVE___BUILTIN_BSWAP16=False \
     -DHAVE___BUILTIN_BSWAP32=False \
     -DHAVE___BUILTIN_BSWAP64=False \
