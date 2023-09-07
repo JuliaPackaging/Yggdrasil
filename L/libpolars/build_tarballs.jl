@@ -29,6 +29,8 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+ls ${WORKSPACE}/srcdir
+ls ${WORKSPACE}/srcdir/Polars.jl/
 cd ${WORKSPACE}/srcdir/Polars.jl/c-polars/
 
 cargo build --release
