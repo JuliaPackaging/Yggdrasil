@@ -18,7 +18,7 @@ sources = [
 
     # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.2-2-any.pkg.tar.zst",
-                  "b3ac2c169ad089682970f9f5370b4d4368bcb89ab9b03658df741ab1d736937f"; unpack_target="i686-w64-mingw32"),
+                  "ab053fdafb3e0c456751fed9fe5cc2fa339042046b4de677ce2848cd8b6d3b3f"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.3-1-any.pkg.tar.zst",
                   "21bacf3a43073749a4cbdf407c7f1da92bab56c80925b1205f7c4cb289c724a1"; unpack_target="i686-w64-mingw32"),
     # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
