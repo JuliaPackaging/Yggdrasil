@@ -24,7 +24,7 @@ script = """
 GSSHG_VERSION="$(GSHHG_VERSION)"
 GSSHG="gshhg-gmt-$(GSHHG_VERSION)"
 DCW="dcw-gmt-$(DCW_VERSION)"
-TEXTURE=$(WORKSPACE)/srcdir/gmt/src/imgtexture
+TEXTURE="$(WORKSPACE)/srcdir/gmt/src/imgtexture"
 """ * raw"""
 cd ${WORKSPACE}/srcdir/gmt
 mkdir build
