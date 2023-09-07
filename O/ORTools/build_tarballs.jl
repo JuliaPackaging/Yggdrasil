@@ -17,6 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/or-tools*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.patch"
 mkdir build
+cmake --version
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -41,7 +42,7 @@ platforms = [
     Platform("x86_64", "macos"),
     # Platform("aarch64", "macos"),  # Abseil uses -march for some files.
     Platform("x86_64", "freebsd"),
-    Platform("x86_64", "windows")
+    # Platform("x86_64", "windows"),  # Unsupported for cross-compilation.
 ]
 platforms = expand_cxxstring_abis(platforms)
 
