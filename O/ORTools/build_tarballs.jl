@@ -38,10 +38,10 @@ cmake --build build --target install
 
 platforms = [
     Platform("x86_64", "linux"),
-    # Platform("aarch64", "linux"),  # Abseil uses -march for some files.
-    Platform("x86_64", "macos"),
-    # Platform("aarch64", "macos"),  # Abseil uses -march for some files.
-    Platform("x86_64", "freebsd"),
+    # Platform("aarch64", "linux"),   # Abseil uses -march for some files.
+    # Platform("x86_64", "macos"),    # Requires Clang 16+.
+    # Platform("aarch64", "macos"),   # Abseil uses -march for some files.
+    # Platform("x86_64", "freebsd"),  # Requires Clang 16+.
     Platform("x86_64", "windows"),
 ]
 platforms = expand_cxxstring_abis(platforms)
