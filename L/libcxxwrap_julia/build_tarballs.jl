@@ -56,4 +56,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"9", julia_compat = "1.6")
 
-# rebuild trigger: 3
+# rebuild trigger: 4
