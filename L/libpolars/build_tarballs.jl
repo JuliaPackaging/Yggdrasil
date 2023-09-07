@@ -29,7 +29,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-cd $WORKSPACE/srcdir/Polars.jl/c-polars/
+cd ${WORKSPACE}/srcdir/Polars.jl/c-polars/
 
 cargo build --release
 
