@@ -7,23 +7,15 @@ version = v"0.22.0"
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
                   "0e60393a47061567b46875b249b7d2788b092d6457d656145bb0e7e6a3e26d93"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gettext-*/
+cd $WORKSPACE/srcdir/gettext-*
 
 export CFLAGS="-O2"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
-
-if [[ "${target}" == *-mingw* ]]; then
-    # Apply patch from https://lists.gnu.org/archive/html/bug-gettext/2020-07/msg00035.html
-    #      ../woe32dll/.libs/libgettextsrc_la-c++format.o: In function `__static_initialization_and_destruction_0':
-    #      /workspace/srcdir/gettext-0.21/gettext-tools/src/../woe32dll/../src/format.c:67: undefined reference to `__imp_formatstring_ruby'
-    atomic_patch -p1 ../patches/0001-build-Fix-build-failure-on-mingw-formatstring_ruby.patch
-fi
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -40,6 +32,15 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+
+# On Windows we see the build error
+#     undefined reference to `close_used_without_requesting_gnulib_module_close'
+# The respective discussion at
+# <https://lists.gnu.org/r/bug-gettext/2023-06/msg00059.html> shows
+# that cross-compiling for Windows with our setup isn't supported, and
+# that there isn't any real effort by the maintainers to remedy this
+# problem. We thus disable Windows.
+filter!(!Sys.iswinsows, platforms)
 
 # The products that we will ensure are always built
 products = [
