@@ -1,17 +1,16 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.7.0"
+version = v"1.7.1"
 
 # Collection of sources required to build libgit2
 sources = [
-    GitSource("https://github.com/libgit2/libgit2.git",
-              "3e2baa6d0bfb42f9016e24cba1733a6ae26a8ae6")
+    GitSource("https://github.com/libgit2/libgit2.git", "a2bde63741977ca0f4ef7db2f609df320be67a08")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgit2*/
+cd $WORKSPACE/srcdir/libgit2*
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
