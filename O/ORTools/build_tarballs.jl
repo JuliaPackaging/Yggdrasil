@@ -18,6 +18,17 @@ cd $WORKSPACE/srcdir/or-tools*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.patch"
 mkdir build
 cmake --version
+
+echo $CC | true
+which $CC | true
+echo $CXX | true
+which $CXX | true
+which clang | true
+which gcc | true
+which c++ | true
+which cc | true
+env
+
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
