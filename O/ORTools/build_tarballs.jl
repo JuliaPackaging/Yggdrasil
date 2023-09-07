@@ -8,7 +8,7 @@ version = v"9.7"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "c0b4bac9eb0a0b948517aa1bd4a97938d858a2e9"),
+              "4fb8de32cbee2773405882956b1dc5237103ef47"),
     DirectorySource("./bundled")
 ]
 
@@ -16,7 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/or-tools*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_host_CMakeLists.txt.patch"
 mkdir build
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
