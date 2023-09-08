@@ -27,15 +27,15 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-upstream_version = v"4.3.2-7" # 4.3.2p7
-version_offset = v"0.7.0"
+upstream_version = v"4.3.2-8" # 4.3.2p8
+version_offset = v"0.8.0"
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
                         Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "685a760895f7b66fe655bb8fc46137f213c7bb04"),
+    GitSource("https://github.com/Singular/Singular.git", "8e0ad00ce244dfd0756200662572aef8402f13d5"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
