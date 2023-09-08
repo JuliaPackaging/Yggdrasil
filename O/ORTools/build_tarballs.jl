@@ -55,6 +55,11 @@ cmake --build build
 cmake --build build --target install
 
 # Automatically generate the Julia bindings.
+echo $PATH
+julia -e 'using InteractiveUtils; versioninfo()'
+"""
+
+#=
 if [[ "$MACHTYPE" == *musl ]]
 then
   curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/musl/x64/1.9/julia-1.9.3-musl-x86_64.tar.gz
@@ -63,7 +68,7 @@ else
 fi
 tar -xvf julia-1.9.3.tar.gz
 julia-1.9.3/bin/julia -e 'using InteractiveUtils; versioninfo()'
-"""
+=#
 
 # TODO: generate with ProtoBuf.jl.
 #     julia -e "using ProtoBuf; protojl()" 
