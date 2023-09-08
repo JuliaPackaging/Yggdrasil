@@ -3,18 +3,16 @@ using BinaryBuilder
 # ASDF - Advanced Scientific Data Format, a C++ implementation
 
 name = "asdf_cxx"
-version = v"7.2.1"
+version = v"7.2.2"
 
-# Collection of sources required to build zlib
+# Collection of sources required to build asdf-cxx
 sources = [
-    GitSource("https://github.com/eschnett/asdf-cxx", "0d0fd304e32145c666abd6845999a5d659e49aa9"),
-    DirectorySource("bundled"),
+    GitSource("https://github.com/eschnett/asdf-cxx", "dab591d785b0e70b4cbb734a98966355abfe1d64"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/asdf-cxx
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake.patch
 cmake -S . -B build \
     -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_BUILD_TYPE=Release \
@@ -32,8 +30,6 @@ platforms = expand_cxxstring_abis(platforms)
 dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("OpenSSL_jll"; compat="3.0.10"),
-    # Dependency("Zlib_jll"; compat="1.2.13"),
-    # Dependency("yaml_cpp_jll"; compat="0.7.0"),
     Dependency("Zlib_jll"),
     Dependency("yaml_cpp_jll"),
 ]
