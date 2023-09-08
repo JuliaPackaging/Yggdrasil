@@ -55,8 +55,13 @@ cmake --build build
 cmake --build build --target install
 
 # Automatically generate the Julia bindings.
-curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.3-linux-x86_64.tar.gz
-tar -xvf julia-1.9.3-linux-x86_64.tar.gz
+if [[ "$MACHTYPE" == *musl ]]
+then
+  curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/musl/x64/1.9/julia-1.9.3-musl-x86_64.tar.gz
+else
+  curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.3-linux-x86_64.tar.gz
+fi
+tar -xvf julia-1.9.3.tar.gz
 julia-1.9.3/bin/julia -e 'using InteractiveUtils; versioninfo()'
 """
 
@@ -69,7 +74,7 @@ platforms = [
     # Platform("x86_64", "macos"),    # Requires Clang 16+.
     # Platform("aarch64", "macos"),   # Abseil uses -march for some files.
     # Platform("x86_64", "freebsd"),  # Requires Clang 16+.
-    Platform("x86_64", "windows"),
+    # Platform("x86_64", "windows"),  # Requires dlfcn.h.
 ]
 platforms = expand_cxxstring_abis(platforms)
 
