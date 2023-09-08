@@ -3,19 +3,24 @@
 using BinaryBuilder
 
 name = "Tar"
-version = v"1.34"
+version = v"1.35"
 
 # Collection of sources required to build tar
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/tar/tar-$(version.major).$(version.minor).tar.xz",
-                  "63bebd26879c5e1eea4352f0d03c991f966aeb3ddeb3c7445c902568d5411d28"),
+                  "4d62ff37342ec7aed748535323930c7cf94acf71c3591882b26a7ea50f3edc16"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tar-*/
 export FORCE_UNSAFE_CONFIGURE=1
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+configure_flags=()
+if [[ ${nbits} == 32 ]]; then
+   # We disable the year 2038 check because we don't have an alternative on the affected systems
+   configure_flags+=(--disable-year2038)
+fi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${configure_flags[@]}
 make -j${nproc}
 make install
 """
@@ -33,6 +38,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Attr_jll"),
+    Dependency("Libiconv_jll", platforms=filter(Sys.isapple, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
