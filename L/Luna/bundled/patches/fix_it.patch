@@ -9,7 +9,7 @@ index 1787450..91b42b3 100644
 +
  ifeq ($(ARCH),WINDOWS)
 -  TARGETS = luna destrat behead tocol
-+  TARGETS = $(EXE) destrat behead tocol
++  TARGETS = $(EXE) libluna destrat behead tocol
  else	
    ifdef WASM
 -    TARGETS=luna libluna destrat
