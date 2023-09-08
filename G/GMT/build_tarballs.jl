@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "GMT"
-version = v"6.4.2"
+version = v"6.4.3"
 GSHHG_VERSION="2.3.7"
 DCW_VERSION="2.1.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "c9c8ac0a4a30ab1ea0e73aeacdcd0192d2789926"),
+    "9313a044396fd723d8d058f91b750b6831374419"),
     
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
@@ -33,6 +33,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DHAVE_QSORT_R_GLIBC=False \
+    -DBUILD_IMGTEXTURE=TRUE \
     -DHAVE___BUILTIN_BSWAP16=False \
     -DHAVE___BUILTIN_BSWAP32=False \
     -DHAVE___BUILTIN_BSWAP64=False \
