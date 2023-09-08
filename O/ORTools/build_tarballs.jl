@@ -14,21 +14,32 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Prepare the source directory.
 cd $WORKSPACE/srcdir/or-tools*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.patch"
 mkdir build
 cmake --version
 
-echo $CC | true
-which $CC | true
-echo $CXX | true
-which $CXX | true
-which clang | true
-which gcc | true
-which c++ | true
-which cc | true
-env
+# Make the host compile tools easily accessible when cross-compiling.
+# Otherwise, CMake will use the cross-compiler for host tools.
+export AR=$HOSTAR
+export AS=$HOSTAS
+export CC=$HOSTCC
+export CXX=$HOSTCXX
+export DSYMUTIL=$HOSTDSYMUTIL
+export FC=$HOSTFC
+export includedir=$host_includedir
+export libdir=$host_libdir
+export LIPO=$HOSTLIPO
+export LD=$HOSTLD
+export NM=$HOSTNM
+export OBJCOPY=$HOSTOBJCOPY
+export OBJDUMP=$HOSTOBJDUMP
+export RANLIB=$HOSTRANLIB
+export READELF=$HOSTREADELF
+export STRIP=$HOSTSTRIP
 
+# Build OR-Tools.
 cmake -S. -Bbuild \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -42,7 +53,12 @@ cmake -S. -Bbuild \
     -DUSE_GLPK:BOOL=OFF
 cmake --build build
 cmake --build build --target install
-""" * "$(Base.julia_cmd()) -e 'using InteractiveUtils; versioninfo()'"
+
+# Automatically generate the Julia bindings.
+curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.3-linux-x86_64.tar.gz
+tar -xvf julia-1.9.3-linux-x86_64.tar.gz
+julia-1.9.3/bin/julia -e 'using InteractiveUtils; versioninfo()'
+"""
 
 # TODO: generate with ProtoBuf.jl.
 #     julia -e "using ProtoBuf; protojl()" 
