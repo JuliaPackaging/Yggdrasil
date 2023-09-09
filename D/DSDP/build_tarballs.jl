@@ -19,10 +19,9 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 cd DSDP*
 export DSDPROOT=${PWD}
-export LAPACKBLAS="-L${libdir} -lopenblas -lm"
 
-make dsdpapi
-make oshared
+make -j${nproc} LAPACKBLAS="-L${libdir} -lopenblas -lm" dsdpapi
+make -j${nproc} oshared
 
 mv lib/* $libdir
 mv include/dsdp* $includedir
