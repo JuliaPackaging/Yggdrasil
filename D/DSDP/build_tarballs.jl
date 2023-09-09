@@ -20,6 +20,9 @@ done
 cd DSDP*
 export DSDPROOT=${PWD}
 
+export DSDPLIB="${DSDPROOT}/lib/libdsdp.a"
+export DSDPLIBSO="${DSDPROOT}/lib/libdsdp.${dlext}"
+
 make DSDPCFLAGS="-Wall -fPIC -DPIC" LAPACKBLAS="-L${libdir} -lopenblas -lm" dsdpapi
 make DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas -lm" RM="rm -rf" SH_LD="${CC} ${CFLAGS} -shared" oshared
 
