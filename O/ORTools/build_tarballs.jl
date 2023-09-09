@@ -20,7 +20,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.
 mkdir build
 cmake --version
 
-ls -R /cache/julia-buildkite-plugin
+find / -name "julia"
 
 if [[ "$MACHTYPE" == *musl ]]
 then
