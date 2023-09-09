@@ -20,6 +20,8 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.
 mkdir build
 cmake --version
 
+ls -R /cache/julia-buildkite-plugin
+
 if [[ "$MACHTYPE" == *musl ]]
 then
   curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/musl/x64/1.9/julia-1.9.3-musl-x86_64.tar.gz
