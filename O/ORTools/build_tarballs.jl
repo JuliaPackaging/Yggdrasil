@@ -56,8 +56,8 @@ cmake --build build --target install
 
 # Automatically generate the Julia bindings.
 echo $PATH
-julia -e 'using InteractiveUtils; versioninfo()'
-"""
+ls /cache/julia-buildkite-plugin/julia_installs/bin/linux/x64/1.7/julia-1.7-latest-linux-x86_64 | true
+""" * "$(Base.julia_cmd()) -e 'using InteractiveUtils; versioninfo()'"
 
 #=
 if [[ "$MACHTYPE" == *musl ]]
@@ -68,6 +68,9 @@ else
 fi
 tar -xvf julia-1.9.3.tar.gz
 julia-1.9.3/bin/julia -e 'using InteractiveUtils; versioninfo()'
+=#
+#=
+julia -e 'using InteractiveUtils; versioninfo()'
 =#
 
 # TODO: generate with ProtoBuf.jl.
