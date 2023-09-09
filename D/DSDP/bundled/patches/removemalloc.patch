@@ -1,7 +1,7 @@
-diff --git a/src/sys/dsdploginfo.c b/src/sys/dsdploginfo2.c
+diff --git before/DSDP5.8/src/sys/dsdploginfo.c after/DSDP5.8/src/sys/dsdploginfo.c
 index 9313549..994bd44 100644
---- a/src/sys/dsdploginfo.c
-+++ b/src/sys/dsdploginfo2.c
+--- before/DSDP5.8/src/sys/dsdploginfo.c
++++ after/DSDP5.8/src/sys/dsdploginfo.c
 @@ -6,7 +6,6 @@
  #include <stdarg.h>
  #include <sys/types.h>
