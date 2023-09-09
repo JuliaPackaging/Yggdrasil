@@ -20,7 +20,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.
 mkdir build
 cmake --version
 
-find / -name "julia"
+find / -name "julia" -print 2>/dev/null
 
 if [[ "$MACHTYPE" == *musl ]]
 then
