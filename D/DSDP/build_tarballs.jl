@@ -20,10 +20,9 @@ done
 cd DSDP*
 export DSDPROOT=${PWD}
 
-make -j${nproc} LAPACKBLAS="-L${libdir} -lopenblas -lm" dsdpapi
-make -j${nproc} oshared
+make DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas -lm" dsdpapi
+make DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas -lm" RM="rm -rf" SH_LD="${CC} -shared" oshared
 
-ls lib/*
 mv lib/* $libdir
 mv include/dsdp* $includedir
 install_license dsdp-license
