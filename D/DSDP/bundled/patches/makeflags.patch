@@ -13,7 +13,7 @@ index d1b85f0..0f986de 100644
  #LAPACKBLAS  = -L/sandbox/benson/ATLAS-3.6/lib/Linux_P4SSE2  -llapack -lcblas -lf77blas -latlas -lg2c -lm 
  #LAPACKBLAS  = /soft/apps/packages/lapack-3.0/lib/lapack_LINUX.a -L/soft/apps/packages/atlas-3.6.0/lib -lcblas -lf77blas -latlas -lg2c -lm
  
- 
+-
  # STEP 6, MATLAB MACROS - If compiling Matlab interface, check MEX flag.
  MEX           = mex -O
  #MEX     = C:\Matlab\bin\mex
