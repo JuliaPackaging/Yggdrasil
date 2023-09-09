@@ -56,8 +56,16 @@ cmake --build build --target install
 
 # Automatically generate the Julia bindings.
 echo $PATH
-ls /cache/julia-buildkite-plugin/julia_installs/bin/linux/x64/1.7/julia-1.7-latest-linux-x86_64 | true
-""" * "$(Base.julia_cmd()) -e 'using InteractiveUtils; versioninfo()'"
+
+if [[ "$MACHTYPE" == *musl ]]
+then
+  curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/musl/x64/1.9/julia-1.9.3-musl-x86_64.tar.gz
+else
+  curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.3-linux-x86_64.tar.gz
+fi
+tar -xvf julia-1.9.3.tar.gz
+libdir="" julia-1.9.3/bin/julia -e 'using InteractiveUtils; versioninfo()'
+"""
 
 #=
 if [[ "$MACHTYPE" == *musl ]]
