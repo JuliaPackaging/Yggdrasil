@@ -21,7 +21,7 @@ cd DSDP*
 export DSDPROOT=${PWD}
 
 make DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas -lm" dsdpapi
-make DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas -lm" RM="rm -rf" SH_LD="${CC} -shared" oshared
+make DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas -lm" RM="rm -rf" SH_LD="${CC} -shared -fPIC -DPIC" oshared
 
 mv lib/* $libdir
 mv include/dsdp* $includedir
