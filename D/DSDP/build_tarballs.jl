@@ -23,8 +23,10 @@ export DSDPROOT=${PWD}
 make -j${nproc} LAPACKBLAS="-L${libdir} -lopenblas -lm" dsdpapi
 make -j${nproc} oshared
 
+ls lib/*
 mv lib/* $libdir
 mv include/dsdp* $includedir
+install_license dsdp-license
 """
 
 # These are the platforms we will build for by default, unless further
