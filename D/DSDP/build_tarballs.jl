@@ -18,16 +18,12 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 cd DSDP*
-export DSDPROOT=${PWD}
+DSDPROOT="${prefix}"
+DSDPLIB="${DSDPROOT}/lib/libdsdp.a"
+DSDPLIBSO="${libdir}/libdsdp.${dlext}"
 
-export DSDPLIB="${DSDPROOT}/lib/libdsdp.a"
-export DSDPLIBSO="${DSDPROOT}/lib/libdsdp.${dlext}"
-
-make DSDPCFLAGS="-Wall -fPIC -DPIC" LAPACKBLAS="-L${libdir} -lopenblas -lm" dsdpapi
-make DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas -lm" RM="rm -rf" SH_LD="${CC} ${CFLAGS} -shared" oshared
-
-mv lib/* $libdir
-mv include/dsdp* $includedir
+make DSDPROOT="${DSDPROOT}" DSDPLIB="${DSDPLIB}" DSDPLIBSO="${DSDPLIBSO}" DSDPCFLAGS="-Wall -fPIC -DPIC" LAPACKBLAS="-L${libdir} -lopenblas" dsdpapi
+make  DSDPROOT="${DSDPROOT}" DSDPLIB="${DSDPLIB}" DSDPLIBSO="${DSDPLIBSO}" DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas" RM="rm -rf" SH_LD="${CC} ${CFLAGS} -shared" oshared
 install_license dsdp-license
 """
 
