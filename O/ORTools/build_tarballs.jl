@@ -66,20 +66,6 @@ cmake --build build
 cmake --build build --target install
 """
 
-#=
-if [[ "$MACHTYPE" == *musl ]]
-then
-  curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/musl/x64/1.9/julia-1.9.3-musl-x86_64.tar.gz
-else
-  curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.3-linux-x86_64.tar.gz
-fi
-tar -xvf julia-1.9.3.tar.gz
-julia-1.9.3/bin/julia -e 'using InteractiveUtils; versioninfo()'
-=#
-#=
-julia -e 'using InteractiveUtils; versioninfo()'
-=#
-
 # TODO: generate with ProtoBuf.jl.
 #     julia -e "using ProtoBuf; protojl()" 
 
