@@ -22,6 +22,7 @@ cmake --version
 
 find / -name "julia" -print 2>/dev/null
 
+(
 if [[ "$MACHTYPE" == *musl ]]
 then
   curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/musl/x64/1.9/julia-1.9.3-musl-x86_64.tar.gz
@@ -29,12 +30,11 @@ else
   curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.3-linux-x86_64.tar.gz
 fi
 tar -xvf julia-1.9.3.tar.gz
-julia-1.9.3/bin/julia -e 'using InteractiveUtils; versioninfo()'
+./julia-1.9.3/bin/julia -e 'using InteractiveUtils; versioninfo()'
+)
 
 # Make the host compile tools easily accessible when cross-compiling.
 # Otherwise, CMake will use the cross-compiler for host tools.
-export backup_libdir=$libdir
-
 export AR=$HOSTAR
 export AS=$HOSTAS
 export CC=$HOSTCC
@@ -68,9 +68,6 @@ cmake --build build
 cmake --build build --target install
 
 # Automatically generate the Julia bindings.
-echo $PATH
-
-export libdir=$backup_libdir
 if [[ "$MACHTYPE" == *musl ]]
 then
   curl -o julia-1.9.3.tar.gz https://julialang-s3.julialang.org/bin/musl/x64/1.9/julia-1.9.3-musl-x86_64.tar.gz
