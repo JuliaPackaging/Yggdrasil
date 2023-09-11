@@ -13,6 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk add flex-dev
+
 cd $WORKSPACE/srcdir/thrift
 
 mkdir build_dir && cd build_dir
@@ -48,8 +50,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll", compat="=1.76.0")
+    Dependency("boost_jll", compat="=1.76.0"),
+    Dependency("libevent_jll"),
+    HostBuildDependency("Bison_jll"),
+
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
