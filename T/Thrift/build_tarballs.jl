@@ -3,22 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Thrift"
-version = v"0.16.0"
+version = v"0.19.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/thrift.git", "2a93df80f27739ccabb5b885cb12a8dc7595ecdf")
+    GitSource("https://github.com/apache/thrift.git", "5656208a202ca0be4d4dc44125b5ca0485f91bf0")
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/thrift
-
-# Needed as https://github.com/apache/thrift/pull/2518 isn't released yet
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 
 mkdir build_dir && cd build_dir
 
