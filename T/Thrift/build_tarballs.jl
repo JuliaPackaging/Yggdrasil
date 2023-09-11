@@ -8,7 +8,6 @@ version = v"0.19.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/apache/thrift.git", "5656208a202ca0be4d4dc44125b5ca0485f91bf0")
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
