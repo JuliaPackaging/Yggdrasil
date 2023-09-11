@@ -23,8 +23,8 @@ DSDPLIB="${DSDPROOT}/lib/libdsdp.a"
 DSDPLIBSO="${libdir}/libdsdp.${dlext}"
 
 cp include/* ${includedir}
-make DSDPROOT="${DSDPROOT}" DSDPLIB="${DSDPLIB}" DSDPLIBSO="${DSDPLIBSO}" DSDPCFLAGS="-Wall -fPIC -DPIC" LAPACKBLAS="-L${libdir} -lopenblas" dsdplibrary
-make  DSDPROOT="${DSDPROOT}" DSDPLIB="${DSDPLIB}" DSDPLIBSO="${DSDPLIBSO}" DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas" RM="rm -rf" SH_LD="${CC} ${CFLAGS} -shared" oshared
+make SHELL="sh -x" DSDPROOT="${DSDPROOT}" DSDPLIB="${DSDPLIB}" DSDPLIBSO="${DSDPLIBSO}" DSDPCFLAGS="-Wall -fPIC -DPIC" LAPACKBLAS="-L${libdir} -lopenblas" dsdplibrary
+make SHELL="sh -x" DSDPROOT="${DSDPROOT}" DSDPLIB="${DSDPLIB}" DSDPLIBSO="${DSDPLIBSO}" DSDPCFLAGS="-Wall" LAPACKBLAS="-L${libdir} -lopenblas" RM="rm -rf" SH_LD="${CC} ${CFLAGS} -shared" oshared
 install_license dsdp-license
 """
 
