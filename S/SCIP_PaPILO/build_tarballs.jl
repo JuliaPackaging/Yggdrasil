@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"800.0.401"
+version = v"800.0.400"
 
 sources = [
     ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.4.tgz", "be4f978be7f8f97371ddcdac7a60af69a4fea5f975090fe35f1ae4308db692d3"),
