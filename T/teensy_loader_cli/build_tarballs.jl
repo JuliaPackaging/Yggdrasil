@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/teensy_loader_cli
 make -j${nprocs}
-mv teensy_loader_cli $WORKSPACE/destdir/bin/teensy_loader_cli
+install -Dvm 755 "teensy_loader_cli${exeext}" "${bindir}/teensy_loader_cli${exeext}"
 install_license gpl3.txt
 """
 
