@@ -121,7 +121,7 @@ products = [
     FileProduct("include/operations_research/sat/boolean_problem.proto", :proto_sat_boolean_problem),
     # FileProduct("include/operations_research/sat/v1/cp_model_service.proto", :proto_sat_v1_cp_model_service),  # RPC definition.
     # - From util/
-    FileProduct("include/operations_research/optional_boolean.proto", :proto_util/optional_boolean),
+    FileProduct("include/operations_research/optional_boolean.proto", :optional_boolean),
     # - From scheduling/
     FileProduct("include/operations_research/course_scheduling.proto", :proto_scheduling_course_scheduling),
     FileProduct("include/operations_research/scheduling/rcpsp/rcpsp.proto", :proto_scheduling_rcpsp),
@@ -132,4 +132,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", preferred_llvm_version=v"16", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"12", preferred_llvm_version=v"16", julia_compat="1.8")
