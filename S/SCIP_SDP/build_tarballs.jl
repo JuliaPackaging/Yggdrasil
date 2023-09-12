@@ -19,8 +19,8 @@ cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}\
   -DCMAKE_BUILD_TYPE=Release\
-  -DSDPS=sdpa\
-  -DSDPA_INCLUDE_DIRS=${includedir}\
+  -DSDPS=dsdp\
+  -DDSDP_INCLUDE_DIRS=${includedir}\
   -DSCIP_INCLUDE_DIRS=${includedir}\
   -DSCIP_DIR=${prefix}\
   -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
@@ -41,7 +41,7 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291")),
-    Dependency(PackageSpec(name="SDPA_jll", uuid="7fc90fd6-dbef-5a6a-93f8-169f2a2e705b")),
+    Dependency(PackageSpec(name="DSDP_jll", uuid="1065e140-e56c-5613-be8b-7480bf7138df")),
     Dependency(PackageSpec(name="SCIP_PaPILO_jll", uuid="fc9abe76-a5e6-5fed-b0b7-a12f309cf031")),
 ]
 
