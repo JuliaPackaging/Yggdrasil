@@ -54,9 +54,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("boost_jll", compat="=1.76.0"),
-    Dependency("libevent_jll"),
-    # HostBuildDependency("Bison_jll"),
-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
