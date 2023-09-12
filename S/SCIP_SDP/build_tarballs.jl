@@ -23,6 +23,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DDSDP_INCLUDE_DIRS=${includedir}\
   -DSCIP_INCLUDE_DIRS=${includedir}\
   -DSCIP_DIR=${prefix}\
+  -DGMP_LIBRARIES=${libdir}\
   -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
   -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
   ..
@@ -40,6 +41,7 @@ products = [
 ]
 
 dependencies = [
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
     Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291")),
     Dependency(PackageSpec(name="DSDP_jll", uuid="1065e140-e56c-5613-be8b-7480bf7138df")),
     Dependency(PackageSpec(name="SCIP_PaPILO_jll", uuid="fc9abe76-a5e6-5fed-b0b7-a12f309cf031")),
