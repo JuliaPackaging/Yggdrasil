@@ -30,9 +30,7 @@ make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; experimental=true)))
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
@@ -43,7 +41,7 @@ dependencies = [
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
     Dependency(PackageSpec(name="MUMPS_jll", uuid="ca64183c-ec4f-5579-95d5-17e128c21291")),
     Dependency(PackageSpec(name="DSDP_jll", uuid="1065e140-e56c-5613-be8b-7480bf7138df")),
-    Dependency(PackageSpec(name="SCIP_PaPILO_jll", uuid="fc9abe76-a5e6-5fed-b0b7-a12f309cf031")),
+    Dependency(PackageSpec(name="SCIP_jll", uuid="e5ac4fe4-a920-5659-9bf8-f9f73e9e79ce")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
