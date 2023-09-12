@@ -13,8 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add flex-dev
-
 cd $WORKSPACE/srcdir/thrift
 
 # Needed as https://github.com/apache/thrift/pull/2518 isn't released yet
@@ -57,9 +55,9 @@ products = [
 dependencies = [
     Dependency("boost_jll", compat="=1.76.0"),
     Dependency("libevent_jll"),
-    HostBuildDependency("Bison_jll"),
+    # HostBuildDependency("Bison_jll"),
 
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
