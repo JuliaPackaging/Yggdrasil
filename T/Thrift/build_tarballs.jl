@@ -7,7 +7,8 @@ version = v"0.19.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/thrift.git", "5656208a202ca0be4d4dc44125b5ca0485f91bf0")
+    GitSource("https://github.com/apache/thrift.git", "5656208a202ca0be4d4dc44125b5ca0485f91bf0"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,6 +16,11 @@ script = raw"""
 apk add flex-dev
 
 cd $WORKSPACE/srcdir/thrift
+
+# Needed as https://github.com/apache/thrift/pull/2518 isn't released yet
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 
 mkdir build_dir && cd build_dir
 
@@ -56,4 +62,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
