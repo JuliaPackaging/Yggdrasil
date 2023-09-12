@@ -12,18 +12,20 @@ index 91a1c39af..6fc281674 100644
  
  using std::string;
 diff --git a/lib/cpp/src/thrift/transport/TPipeServer.cpp b/lib/cpp/src/thrift/transport/TPipeServer.cpp
-index e4234b180..25a256811 100644
+index e4234b180..fd1aeee95 100644
 --- a/lib/cpp/src/thrift/transport/TPipeServer.cpp
 +++ b/lib/cpp/src/thrift/transport/TPipeServer.cpp
-@@ -27,7 +27,7 @@
+@@ -27,8 +27,8 @@
  #ifdef _WIN32
  #include <thrift/windows/OverlappedSubmissionThread.h>
  #include <thrift/windows/Sync.h>
 -#include <AccCtrl.h>
+-#include <Aclapi.h>
 +#include <accctrl.h>
- #include <Aclapi.h>
++#include <aclapi.h>
  #include <sddl.h>
  #endif //_WIN32
+ 
 diff --git a/lib/cpp/src/thrift/transport/TServerSocket.cpp b/lib/cpp/src/thrift/transport/TServerSocket.cpp
 index 7cab0eefa..ffe9ed3a5 100644
 --- a/lib/cpp/src/thrift/transport/TServerSocket.cpp
