@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "23.08"
+version_string = "23.09"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "a83b7249d65ad8b6ac1881377e5f814b6db8ed8410ea5562b8ae9d4ed1f37c29"),
+                  "1a539c2628041b17ad910afd9270332060251c8e346b1482764fdb87a4f25053"),
 ]
 
 # Bash recipe for building across all platforms
