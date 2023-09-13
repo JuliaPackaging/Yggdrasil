@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GDAL"
 upstream_version = v"3.7.2"
-version_offset = v"1.0.0"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -144,8 +144,7 @@ dependencies = [
     Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("NetCDF_jll"; compat="400.902.5", platforms=hdf5_platforms),
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="~1.12", platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
 ]
 
