@@ -16,7 +16,12 @@ script = raw"""
 cd $WORKSPACE/srcdir/aws-c-io
 
 # Patch for MinGW toolchain
-find . -type f -exec sed -i 's/Windows.h/windows.h/g' '{}' \;
+find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
+     -e 's/WS2tcpip.h/ws2tcpip.h/g' \
+     -e 's/WinSock2.h/winsock2.h/g' \
+     -e 's/MSWSock.h/mswsock.h/g' \
+     -e 's/Mstcpip.h/mstcpip.h/g' \
+     '{}' \;
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
