@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "Foldseek"
-version = v"7"
+version = v"8"
 
 # url = "https://github.com/steineggerlab/foldseek"
 # description = "Fast and sensitive comparisons of large protein structure sets"
 
 sources = [
     GitSource("https://github.com/steineggerlab/foldseek",
-              "04e0ec84ce220a7f9cab9d309a8daa99ee052fce"),
+              "946841ff3b15531349a9883358b3a3052b368da9"),
     DirectorySource("./bundled"),
 ]
 
