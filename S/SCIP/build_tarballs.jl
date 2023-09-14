@@ -22,6 +22,9 @@ elif [[ "${target}" == *-mingw* ]]; then
    export LDFLAGS=-L${libdir}
 fi
 
+# for soplex threadlocal
+CXXFLAGS="-DTHREADLOCAL=''"
+
 cd scipoptsuite*
 
 mkdir build
