@@ -14,6 +14,8 @@ sources = [
 script = raw"""
 cd scipoptsuite*
 
+LDFLAGS="${LDFLAGS} -lgfortran"
+
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
