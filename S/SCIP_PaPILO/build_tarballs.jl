@@ -49,7 +49,7 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; experimental=true)))
 
 filter!(platforms) do p
-    arch(p) ∉ ("armv6l", "armv7l") && !Sys.iswindows(p) && libgfortran_version(p) >= v"4" && libc(p) != "musl"
+    libgfortran_version(p) >= v"4"
 end
 
 # The products that we will ensure are always built
