@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Thrift"
-version = v"0.16.0"
+version = v"0.19.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/thrift.git", "2a93df80f27739ccabb5b885cb12a8dc7595ecdf")
-    DirectorySource("./bundled")
+    GitSource("https://github.com/apache/thrift.git", "5656208a202ca0be4d4dc44125b5ca0485f91bf0"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,7 +31,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DBUILD_TESTING=OFF
 -DBUILD_JAVASCRIPT=OFF
 -DBUILD_NODEJS=OFF
--DWITH_SHARED_LIB=ON
+-DBUILD_SHARED_LIBS=ON
 -DBUILD_TUTORIALS=OFF
 -DTHRIFT_COMPILER_DELPHI=OFF)
 
@@ -53,8 +53,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll", compat="=1.76.0")
+    Dependency("boost_jll", compat="=1.76.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
