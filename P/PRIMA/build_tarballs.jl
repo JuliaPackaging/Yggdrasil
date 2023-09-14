@@ -7,7 +7,7 @@ version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libprima/prima.git", "7565f6f42358062e56734a91fc62e0aa66ab7575")
+    GitSource("https://github.com/libprima/prima.git", "e601a731133cbc6317b06b568c04e307daf0691b")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +31,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
