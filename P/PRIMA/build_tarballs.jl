@@ -21,7 +21,7 @@ cmake --build build --target install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
-
+platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 
 # The products that we will ensure are always built
 products = [
