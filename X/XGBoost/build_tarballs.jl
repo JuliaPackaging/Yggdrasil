@@ -81,13 +81,13 @@ augment_platform_block = CUDA.augment
 
 versions_to_build = [
     nothing,
-    v"11.0",
+    v"11.4",
     v"12.0",
 ]
 
 cuda_preambles = Dict(
     nothing => "",
-    v"11.0" => "CUDA_ARCHS=\"60;70;75;80\";",
+    v"11.4" => "CUDA_ARCHS=\"60;70;75;80\";",
     v"12.0" => "CUDA_ARCHS=\"60;70;75;80;89;90\";",
 )
 
