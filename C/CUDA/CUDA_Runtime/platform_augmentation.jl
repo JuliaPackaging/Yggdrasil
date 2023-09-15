@@ -25,22 +25,6 @@ const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
 const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
 Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
-const version_preference = if haskey(preferences, "version")
-    if isa(preferences["version"], String)
-        version = tryparse(VersionNumber, preferences["version"])
-        if version === nothing
-            @error "CUDA version preference is not valid; expected a version number, but got '$(preferences["version"])'"
-            missing
-        else
-            version
-        end
-    else
-        @error "CUDA version preference is not valid; expected a version number, but got '$(preferences["version"])'"
-        missing
-    end
-else
-    missing
-end
 const local_preference = if haskey(preferences, "local")
     if isa(preferences["local"], String)
         use_local = tryparse(Bool, preferences["local"])
@@ -54,8 +38,39 @@ const local_preference = if haskey(preferences, "local")
         @error "CUDA local preference is not valid; expected a boolean, but got '$(preferences["local"])'"
         missing
     end
+elseif haskey(preferences, "version") && preferences["version"] == "local"
+    # legacy support for CUDA.jl's old "version" preference format.
+    # in this case, an "actual_version" preference is required.
+    @debug "The version=local preference is deprecated, please use local=true instead."
+    # XXX: turn this into a warning after HPC people have had the time to upgrade.
+    true
 else
     missing
+end
+function parse_version_preference(key)
+    if haskey(preferences, key)
+        if isa(preferences[key], String)
+            version = tryparse(VersionNumber, preferences[key])
+            if version === nothing
+                @error "CUDA $key preference is not valid; expected a version number, but got '$(preferences[key])'"
+                missing
+            else
+                version
+            end
+        else
+            @error "CUDA $key preference is not valid; expected a version number, but got '$(preferences[key])'"
+            missing
+        end
+    else
+        missing
+    end
+end
+const version_preference = if haskey(preferences, "version") && preferences["version"] == "local"
+    # legacy support for CUDA.jl's old "version" preference format.
+    # in this case, an "actual_version" preference is required.
+    parse_version_preference("actual_version")
+else
+    parse_version_preference("version")
 end
 
 # get the version of the local CUDA toolkit by querying the system libcudart
@@ -229,7 +244,7 @@ function cuda_toolkit_tag()
         return nothing
     end
 
-    cuda_toolkit = last(compatible_toolkits)
+    cuda_toolkit = Base.thisminor(last(compatible_toolkits))
     @debug "Selected CUDA toolkit: $cuda_toolkit"
     "$(cuda_toolkit.major).$(cuda_toolkit.minor)"
 end
