@@ -22,18 +22,15 @@ sources = [
 # Bash recipe for building across all platforms
 # NOTE: readline and zlib are not used by libpq
 script = raw"""
-apk add perl-ipc-system-simple
-apk add tcl
-
 cd zic-build
 make CC=$BUILD_CC VERSION_DEPS= zic
 mv zic ../ && cd ../ && rm -rf zic-build
 export ZIC=$WORKSPACE/srcdir/zic
 export PATH=$WORKSPACE/srcdir:$PATH
 
-cd postgresql
+cd postgres
 
-meson ../meson_build --prefix=$prefix \
+meson meson_build --prefix=$prefix \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --bindir=${bindir} \
     --libdir=${libdir} \
@@ -46,9 +43,9 @@ meson ../meson_build --prefix=$prefix \
     -Dplperl=disabled \
     -Dnls=disabled
 
+cd meson_build
 ninja -j${nproc}
 ninja install
-    
 cd ../
 
 # Delete static library
