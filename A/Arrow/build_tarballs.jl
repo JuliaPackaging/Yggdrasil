@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-cd $WORKSPACE/srcdir/arrow-apache-arrow
+cd $WORKSPACE/srcdir/arrow
 
 # Set toolchain for building external deps
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
