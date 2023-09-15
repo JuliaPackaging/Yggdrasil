@@ -23,7 +23,7 @@ elif [[ "${target}" == *-mingw* ]]; then
 fi
 
 # for soplex threadlocal
-CXXFLAGS="-DTHREADLOCAL=''"
+export CXXFLAGS="-DTHREADLOCAL=''"
 
 cd scipoptsuite*
 
