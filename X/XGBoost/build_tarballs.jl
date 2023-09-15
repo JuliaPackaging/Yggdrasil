@@ -22,13 +22,15 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/xgboost
 git submodule update --init
 
-# Patch dmlc-core to use case-sensitive windows.h includes: https://github.com/dmlc/dmlc-core/pull/673
+# Patch dmlc-core to use case-sensitive windows.h includes: 
+# https://github.com/dmlc/dmlc-core/pull/673
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 mkdir build && cd build
 
 # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/193
-# error: 'any_cast<std::shared_ptr<xgboost::data::CSRArrayAdapter>>' is unavailable: introduced in macOS 10.14
+# error: 'any_cast<std::shared_ptr<xgboost::data::CSRArrayAdapter>>' 
+# is unavailable: introduced in macOS 10.14
 # `std::filesystem` support was introduced in macOS 10.15
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
@@ -119,8 +121,10 @@ for cuda_version in versions_to_build, platform in platforms
     dependencies = AbstractDependency[
         # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
         # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-        Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, [augmented_platform])),
-        Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, [augmented_platform])),
+        Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); 
+            platforms=filter(!Sys.isbsd, [augmented_platform])),
+        Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); 
+            platforms=filter(Sys.isbsd, [augmented_platform])),
     ]
 
     if !isnothing(cuda_version)
