@@ -30,7 +30,7 @@ export PATH=$WORKSPACE/srcdir:$PATH
 
 cd postgres
 
-meson meson_build --prefix=$prefix \
+CC=$BUILD_CC meson setup meson_build --prefix=$prefix \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --bindir=${bindir} \
     --libdir=${libdir} \
@@ -47,6 +47,10 @@ cd meson_build
 ninja -j${nproc}
 ninja install
 cd ../
+
+if [[ ${target} == *-w64-mingw32 ]]; then
+    mv -v meson_build/src/interfaces/libpq/* ${prefix}/lib
+fi
 
 # Delete static library
 rm ${prefix}/lib/libpq.a
