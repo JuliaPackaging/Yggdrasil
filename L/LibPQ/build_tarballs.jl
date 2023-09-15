@@ -4,14 +4,13 @@ using BinaryBuilder
 
 name = "LibPQ"
 version = v"16.0"
-pg_version = string(version.major, '.', version.minor)
 tzcode_version = "2023c"
 
 # Collection of sources required to build LibPQ
 sources = [
-    ArchiveSource(
-        "https://ftp.postgresql.org/pub/source/v$pg_version/postgresql-$pg_version.tar.gz",
-        "58bd3a265a279a2754905ddf072a54d64d6236dcf786f20f92b5d30b916df516",
+    GitSource(
+        "https://github.com/postgres/postgres.git",
+        "c372fbbd8e911f2412b80a8c39d7079366565d67",
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
@@ -32,7 +31,7 @@ mv zic ../ && cd ../ && rm -rf zic-build
 export ZIC=$WORKSPACE/srcdir/zic
 export PATH=$WORKSPACE/srcdir:$PATH
 
-cd postgresql-*
+cd postgresql
 
 meson ../meson_build --prefix=$prefix \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
