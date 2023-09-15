@@ -1,17 +1,19 @@
 const NAME = "ROCmOpenCLRuntime"
 
-const ROCM_GIT = "https://github.com/RadeonOpenCompute/ROCm-OpenCL-Runtime/"
-const ROCM_GIT_CLR = "https://github.com/ROCm-Developer-Tools/ROCclr/"
+const ROCM_GIT = "https://github.com/RadeonOpenCompute/ROCm-OpenCL-Runtime.git"
+const ROCM_GIT_CLR = "https://github.com/ROCm-Developer-Tools/ROCclr.git"
 
 const GIT_TAGS = Dict(
-    v"4.2.0" => "18133451948a83055ca5ebfb5ba1bd536ed0bcb611df98829f1251a98a38f730",
-    v"4.5.2" => "96b43f314899707810db92149caf518bdb7cf39f7c0ad86e98ad687ffb0d396d",
-    v"5.2.3" => "932ea3cd268410010c0830d977a30ef9c14b8c37617d3572a062b5d4595e2b94",
+    v"4.2.0" => "549af90fdd3914b1d2a7304a78500a610c457891",
+    v"4.5.2" => "bf77cab712343a85cc19abc13afcbfc5af4ceca5",
+    v"5.2.3" => "40df4420ea9d0adc7a6e315a50305037c477b05d",
+    v"5.4.4" => "00e0533578a588da2c0834c58d550e9379d17e49",
 )
 const GIT_TAGS_CLR = Dict(
-    v"4.2.0" => "c57525af32c59becf56fd83cdd61f5320a95024d9baa7fb729a01e7a9fcdfd78",
-    v"4.5.2" => "6581916a3303a31f76454f12f86e020fb5e5c019f3dbb0780436a8f73792c4d1",
-    v"5.2.3" => "0493c414d4db1af8e1eb30a651d9512044644244488ebb13478c2138a7612998",
+    v"4.2.0" => "f343e8ffe98fbb6824400f5dbbff169e725c1165",
+    v"4.5.2" => "307b17e49546864bcc257f476b1a88b6941e3bb8",
+    v"5.2.3" => "442ede037c871420f3c810cb4228f5ebc2a133bb",
+    v"5.4.4" => "ccd065214094837dd59a45aa5111d860aff38ecf",
 )
 
 const ROCM_PLATFORMS = [
@@ -30,6 +32,9 @@ const CLR_PATCHES = Dict(
     atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
     """,
     v"5.2.3" => raw"""
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
+    """,
+    v"5.4.4" => raw"""
     atomic_patch -p1 $WORKSPACE/srcdir/patches/musl-rocclr.patch
     """,
 )
@@ -105,10 +110,19 @@ function configure_build(version)
     clr_cmake = get_clr_cmake(cmake_cxx_prefix, version)
     opencl_cmake = get_opencl_cmake(cmake_cxx_prefix, version)
 
-    buildscript = raw"""
-    export ROCclr_DIR=$(realpath ${WORKSPACE}/srcdir/ROCclr-*)
-    export OPENCL_SRC=$(realpath ${WORKSPACE}/srcdir/ROCm-OpenCL-Runtime-*)
-
+    if version >= v"5.4-"
+        rocdirs = raw"""
+        export ROCclr_DIR=$(realpath ${WORKSPACE}/srcdir/ROCclr)
+        export OPENCL_SRC=$(realpath ${WORKSPACE}/srcdir/ROCm-OpenCL-Runtime)
+        """
+    else
+        rocdirs = raw"""
+        export ROCclr_DIR=$(realpath ${WORKSPACE}/srcdir/ROCclr-*)
+        export OPENCL_SRC=$(realpath ${WORKSPACE}/srcdir/ROCm-OpenCL-Runtime-*)
+        """
+    end
+    buildscript = rocdirs *
+    raw"""
     # Build ROCclr
     cd ${ROCclr_DIR}
     """ *
@@ -131,8 +145,8 @@ function configure_build(version)
     """
 
     sources = [
-        ArchiveSource(ROCM_GIT * "archive/rocm-$(version).tar.gz", GIT_TAGS[version]),
-        ArchiveSource(ROCM_GIT_CLR * "archive/rocm-$(version).tar.gz", GIT_TAGS_CLR[version]),
+        GitSource(ROCM_GIT, GIT_TAGS[version]),
+        GitSource(ROCM_GIT_CLR, GIT_TAGS_CLR[version]),
         DirectorySource("./bundled"),
         DirectorySource("../scripts"),
     ]
