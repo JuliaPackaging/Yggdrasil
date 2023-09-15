@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LibPQ"
-version = v"16.0"
+version = v"15.4"
 pg_version = string(version.major, '.', version.minor)
 tzcode_version = "2023c"
 
@@ -11,34 +11,42 @@ tzcode_version = "2023c"
 sources = [
     ArchiveSource(
         "https://ftp.postgresql.org/pub/source/v$pg_version/postgresql-$pg_version.tar.gz",
-        "58bd3a265a279a2754905ddf072a54d64d6236dcf786f20f92b5d30b916df516"
+        "58bd3a265a279a2754905ddf072a54d64d6236dcf786f20f92b5d30b916df516",
+        unpack_target="postgres",
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
         "46d17f2bb19ad73290f03a203006152e0fa0d7b11e5b71467c4a823811b214e7",
+        unpack_target="zic-build",
     ),
 ]
 
 # Bash recipe for building across all platforms
 # NOTE: readline and zlib are not used by libpq
 script = raw"""
-cd $WORKSPACE/srcdir
+apk add perl-ipc-system-simple
+apk add tcl
+
+cd zic-build
 make CC=$BUILD_CC VERSION_DEPS= zic
+mv zic ../ && cd ../ && rm -rf zic-build
 export ZIC=$WORKSPACE/srcdir/zic
 export PATH=$WORKSPACE/srcdir:$PATH
 
-cd $WORKSPACE/srcdir/postgresql-*/
+cd $WORKSPACE/srcdir/postgresql
 
-mkdir output && cd output/
-
-meson .. --prefix=$prefix \
+meson ../meson_build --prefix=$prefix \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --bindir=${bindir} \
     --libdir=${libdir} \
     --includedir=${includedir} \
     -Dssl=openssl \
     -Dzlib=disabled \
-    -Dreadline=disabled
+    -Dreadline=disabled \
+    -Dtap_tests=disabled \
+    -Dplpython=disabled \
+    -Dplperl=disabled \
+    -Dnls=disabled
 
 ninja -j${nproc}
 ninja install
@@ -65,7 +73,8 @@ dependencies = [
     Dependency("Kerberos_krb5_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
     Dependency("ICU_jll"),
     HostBuildDependency("Bison_jll"),
+    Dependency("Zstd_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11")
