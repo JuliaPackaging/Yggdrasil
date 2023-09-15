@@ -7,7 +7,7 @@ version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libprima/prima.git", "e601a731133cbc6317b06b568c04e307daf0691b")
+    GitSource("https://github.com/libprima/prima.git", "f38178a0a5676f04f7a273e1774eb1b961ed3bdf")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,7 @@ cmake --build build --target install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude=Sys.iswindows)
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 
