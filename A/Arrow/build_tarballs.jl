@@ -79,7 +79,7 @@ dependencies = [
     Dependency("Zlib_jll")
     Dependency("Bzip2_jll", compat="1.0.8")
     Dependency("Lz4_jll")
-    Dependency("Thrift_jll")
+    Dependency("Thrift_jll"; compat="0.16")
     Dependency("snappy_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms))
 ]
