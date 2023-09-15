@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd scipoptsuite*
 
-LDFLAGS="${LDFLAGS} -lgfortran"
+export LDFLAGS="-lgfortran"
 
 mkdir build
 cd build/
