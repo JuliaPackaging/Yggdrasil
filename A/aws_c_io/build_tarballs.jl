@@ -9,6 +9,7 @@ version = v"0.13.32"
 sources = [
     GitSource("https://github.com/awslabs/aws-c-io.git",
               "c4b661f44497b18201b56ffd200cc478441f6434"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +23,8 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
      -e 's/MSWSock.h/mswsock.h/g' \
      -e 's/Mstcpip.h/mstcpip.h/g' \
      '{}' \;
+# MinGW is missing some macros in sspi.h
+atomic_patch -p1 ../patches/win32_sspi_h_missing_macros.patch
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
