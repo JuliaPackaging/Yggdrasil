@@ -27,10 +27,11 @@ make CC=$BUILD_CC VERSION_DEPS= zic
 mv zic ../ && cd ../ && rm -rf zic-build
 export ZIC=$WORKSPACE/srcdir/zic
 export PATH=$WORKSPACE/srcdir:$PATH
+export CFLAGS="-std=c99"
 
 cd postgres
 
-CC=$BUILD_CC meson setup meson_build --prefix=$prefix \
+meson setup meson_build --prefix=$prefix \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --bindir=${bindir} \
     --libdir=${libdir} \
