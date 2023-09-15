@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LibPQ"
-version = v"15.3"
+version = v"16.0"
 pg_version = string(version.major, '.', version.minor)
 tzcode_version = "2023c"
 
@@ -11,7 +11,7 @@ tzcode_version = "2023c"
 sources = [
     ArchiveSource(
         "https://ftp.postgresql.org/pub/source/v$pg_version/postgresql-$pg_version.tar.gz",
-        "086d38533e28747966a4d5f1e78ea432e33a78f21dcb9133010ecb5189fad98c"
+        "58bd3a265a279a2754905ddf072a54d64d6236dcf786f20f92b5d30b916df516"
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
@@ -25,43 +25,25 @@ script = raw"""
 cd $WORKSPACE/srcdir
 make CC=$BUILD_CC VERSION_DEPS= zic
 export ZIC=$WORKSPACE/srcdir/zic
-
-# Fix "cannot find openssl" under Windows
-if [[ ${target} == x86_64-w64-mingw32 ]]; then
-    export OPENSSL_ROOT_DIR=${prefix}/lib64/
-    export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
-fi
+export PATH=$WORKSPACE/srcdir:$PATH
 
 cd $WORKSPACE/srcdir/postgresql-*/
-if [[ "${target}" == i686-linux-musl ]]; then
-    # Small hack: swear that we're cross-compiling.  Our `i686-linux-musl` is
-    # bugged and it can run only a few programs, with the result that the
-    # configure test to check whether we're cross-compiling returns that we're
-    # doing a native build, but then it fails to run a bunch of programs during
-    # other tests.
-    sed -i 's/cross_compiling=no/cross_compiling=yes/' configure
-fi
-FLAGS=()
-if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    FLAGS+=(--with-gssapi)
-    if [[ "${target}" == *-freebsd* ]]; then
-        # Only for FreeBSD we need to hint that we need to libcom_err to get
-        # functions `add_error_table` and `remove_error_table`
-        export LIBS=-lcom_err
-    fi
-fi
-./configure --prefix=${prefix} \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --with-includes=${includedir} \
-    --with-libraries=${libdir} \
-    --without-readline \
-    --without-zlib \
-    --with-ssl=openssl \
-    "${FLAGS[@]}"
-make -C src/interfaces/libpq -j${nproc}
-make -C src/interfaces/libpq install
-make -C src/include install
+
+mkdir output && cd output/
+
+meson .. --prefix=$prefix \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --bindir=${bindir} \
+    --libdir=${libdir} \
+    --includedir=${includedir} \
+    -Dssl=openssl \
+    -Dzlib=disabled \
+    -Dreadline=disabled
+
+ninja -j${nproc}
+ninja install
+    
+cd ../
 
 # Delete static library
 rm ${prefix}/lib/libpq.a
@@ -81,6 +63,8 @@ products = [
 dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Kerberos_krb5_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+    Dependency("ICU_jll"),
+    HostBuildDependency("Bison_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
