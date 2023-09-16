@@ -22,7 +22,6 @@ sources = [
 # Bash recipe for building across all platforms
 # NOTE: readline and zlib are not used by libpq
 script = raw"""
-apk add glib-dev
 cd zic-build
 make CC=$BUILD_CC VERSION_DEPS= zic
 mv zic ../ && cd ../ && rm -rf zic-build
