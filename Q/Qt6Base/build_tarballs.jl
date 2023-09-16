@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.4.2"
+version = v"6.5.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"),
+                  "3db4c729b4d80a9d8fda8dd77128406353baff4755ca619177eda4cddae71269"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
