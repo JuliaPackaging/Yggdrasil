@@ -41,6 +41,8 @@ export LD_LIBRARY_PATH=$host_libdir:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
 sed -i 's/"-march=haswell"/"-mavx2" "-mf16c" "-mfma" "-mbmi2" "-mlzcnt"/' $qtsrcdir/cmake/QtCompilerOptimization.cmake
+# temporarily allow march during configure
+sed -i '33s/^/#/' $HOSTCXX
 
 case "$bb_full_target" in
 
@@ -96,6 +98,9 @@ case "$bb_full_target" in
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions
     ;;
 esac
+
+# reinstate march restriction for build
+sed -i '33s/^#//' $HOSTCXX
 
 cmake --build . --parallel ${nproc}
 cmake --install .
@@ -166,9 +171,11 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.1")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
+    BuildDependency("Vulkan_Headers_jll"),
+    Dependency("Vulkan_Loader_jll"),
 ]
 
 if !host_build
@@ -179,9 +186,9 @@ include("../../fancy_toys.jl")
 
 @static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", preferred_llvm_version=llvm_version, julia_compat="1.6")
+        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", preferred_llvm_version=llvm_version, julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
 end
