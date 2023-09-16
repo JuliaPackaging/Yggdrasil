@@ -47,18 +47,17 @@ if [[ ${target} == *-apple-* ]]; then
 
 else
     meson setup meson_build --prefix=$prefix \
-    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-    --bindir=${bindir} \
-    --libdir=${libdir} \
-    --includedir=${includedir} \
-    --buildtype=release \
-    -Dssl=openssl \
-    -Dzlib=disabled \
-    -Dreadline=disabled \
-    -Dtap_tests=disabled \
-    -Dplpython=disabled \
-    -Dplperl=disabled \
-    -Dnls=disabled
+        --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+        --bindir=${bindir} \
+        --libdir=${libdir} \
+        --includedir=${includedir} \
+        -Dssl=openssl \
+        -Dzlib=disabled \
+        -Dreadline=disabled \
+        -Dtap_tests=disabled \
+        -Dplpython=disabled \
+        -Dplperl=disabled \
+        -Dnls=disabled
 
     cd meson_build
     ninja -j${nproc}
