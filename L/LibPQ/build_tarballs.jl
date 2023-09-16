@@ -28,6 +28,7 @@ mv zic ../ && cd ../ && rm -rf zic-build
 export ZIC=$WORKSPACE/srcdir/zic
 export PATH=$WORKSPACE/srcdir:$PATH
 export CFLAGS="-std=c99"
+
 cd postgres
 
 if [[ ${target} == *-apple-* ]]; then
@@ -94,4 +95,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
