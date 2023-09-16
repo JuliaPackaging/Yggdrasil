@@ -22,37 +22,55 @@ sources = [
 # Bash recipe for building across all platforms
 # NOTE: readline and zlib are not used by libpq
 script = raw"""
+apk add glib-dev
 cd zic-build
 make CC=$BUILD_CC VERSION_DEPS= zic
 mv zic ../ && cd ../ && rm -rf zic-build
 export ZIC=$WORKSPACE/srcdir/zic
 export PATH=$WORKSPACE/srcdir:$PATH
-export CFLAGS="-std=c99"
 
 cd postgres
 
-meson setup meson_build --prefix=$prefix \
+if [[ ${target} == *-apple-* ]]; then
+    ./configure --prefix=${prefix} \
+        --build=${MACHTYPE} \
+        --host=${target} \
+        --with-includes=${includedir} \
+        --with-libraries=${libdir} \
+        --without-readline \
+        --without-zlib \
+        --with-ssl=openssl \
+        "${FLAGS[@]}"
+
+    make -C src/interfaces/libpq -j${nproc}
+    make -C src/interfaces/libpq install
+    make -C src/include install
+
+else
+    meson setup meson_build --prefix=$prefix \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --bindir=${bindir} \
     --libdir=${libdir} \
     --includedir=${includedir} \
+    --buildtype=release \
     -Dssl=openssl \
     -Dzlib=disabled \
     -Dreadline=disabled \
     -Dtap_tests=disabled \
     -Dplpython=disabled \
     -Dplperl=disabled \
-    -Dnls=disabled \
-    -Dc_args='-fno-stack-check -std=c99' # Mac needs this
+    -Dnls=disabled
 
-cd meson_build
-ninja -j${nproc}
-ninja install
-cd ../
+    cd meson_build
+    ninja -j${nproc}
+    ninja install
+    cd ../
 
-if [[ ${target} == *-w64-mingw32 ]]; then
-    mv -v meson_build/src/interfaces/libpq/* ${prefix}/lib
+    if [[ ${target} == *-w64-mingw32 ]]; then
+        mv -v meson_build/src/interfaces/libpq/* ${prefix}/lib
+    fi    
 fi
+
 
 # Delete static library
 rm ${prefix}/lib/libpq.a
@@ -78,4 +96,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
