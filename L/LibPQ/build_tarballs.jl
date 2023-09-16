@@ -27,7 +27,7 @@ make CC=$BUILD_CC VERSION_DEPS= zic
 mv zic ../ && cd ../ && rm -rf zic-build
 export ZIC=$WORKSPACE/srcdir/zic
 export PATH=$WORKSPACE/srcdir:$PATH
-
+export CFLAGS="-std=c99"
 cd postgres
 
 if [[ ${target} == *-apple-* ]]; then
