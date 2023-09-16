@@ -42,7 +42,8 @@ meson setup meson_build --prefix=$prefix \
     -Dtap_tests=disabled \
     -Dplpython=disabled \
     -Dplperl=disabled \
-    -Dnls=disabled
+    -Dnls=disabled \
+    -Dc_args=-fno-stack-check # Mac needs this
 
 cd meson_build
 ninja -j${nproc}
