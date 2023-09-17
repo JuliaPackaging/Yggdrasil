@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "Binaryen"
-version = v"0.114.0"   # follows upstream's `version_114`
+version = v"0.116.0"   # follows upstream's `version_116`
 
 sources = [
-    GitSource("https://github.com/WebAssembly/binaryen.git", "1fb1a2e2970472e9e93f9de94c8a2c674d0a0581"),
+    GitSource("https://github.com/WebAssembly/binaryen.git", "11dba9b1c2ad988500b329727f39f4d8786918c5"),
     DirectorySource("./bundled"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
