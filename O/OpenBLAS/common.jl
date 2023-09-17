@@ -4,6 +4,10 @@ using BinaryBuilderBase: sanitize
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.24" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.24/OpenBLAS-0.3.24.tar.gz",
+                          "ceadc5065da97bd92404cac7254da66cc6eb192679cf1002098688978d4d5132")
+        ],
         v"0.3.23" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.23/OpenBLAS-0.3.23.tar.gz",
                           "5d9491d07168a5d00116cdc068a40022c3455bf9293c7cb86a65b1054d7e5114")
