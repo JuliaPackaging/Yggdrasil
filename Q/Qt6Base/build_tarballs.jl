@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.4.2"
+version = v"6.5.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"),
+                  "3db4c729b4d80a9d8fda8dd77128406353baff4755ca619177eda4cddae71269"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
@@ -41,6 +41,8 @@ export LD_LIBRARY_PATH=$host_libdir:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
 sed -i 's/"-march=haswell"/"-mavx2" "-mf16c" "-mfma" "-mbmi2" "-mlzcnt"/' $qtsrcdir/cmake/QtCompilerOptimization.cmake
+# temporarily allow march during configure
+sed -i '33s/^/#/' $HOSTCXX
 
 case "$bb_full_target" in
 
@@ -96,6 +98,9 @@ case "$bb_full_target" in
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions
     ;;
 esac
+
+# reinstate march restriction for build
+sed -i '33s/^#//' $HOSTCXX
 
 cmake --build . --parallel ${nproc}
 cmake --install .
@@ -166,9 +171,11 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"11.0.1")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
+    BuildDependency("Vulkan_Headers_jll"),
+    Dependency("Vulkan_Loader_jll"),
 ]
 
 if !host_build
@@ -179,9 +186,9 @@ include("../../fancy_toys.jl")
 
 @static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", preferred_llvm_version=llvm_version, julia_compat="1.6")
+        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", preferred_llvm_version=llvm_version, julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
 end
