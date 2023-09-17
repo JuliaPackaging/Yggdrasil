@@ -8,7 +8,7 @@ version = v"6.5.2"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -17,7 +17,8 @@ sources = [
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
+                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -30,6 +31,8 @@ cd build/
 
 qtsrcdir=`ls -d ../qtbase-everywhere-src-*`
 
+atomic_patch -p1 -d "${qtsrcdir}" ../patches/mingw.patch
+
 commonoptions=" \
 -opensource -confirm-license \
 -openssl-linked  -nomake examples -release \
@@ -40,14 +43,15 @@ commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE
 export LD_LIBRARY_PATH=$host_libdir:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
-sed -i 's/"-march=haswell"/"-mavx2" "-mf16c" "-mfma" "-mbmi2" "-mlzcnt"/' $qtsrcdir/cmake/QtCompilerOptimization.cmake
 # temporarily allow march during configure
-sed -i '33s/^/#/' $HOSTCXX
+sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-g++
 
 case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
+        sed -i 's/exit 1/#exit 1/' $HOSTCXX
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
+        sed -i 's/#exit 1/exit 1/' $HOSTCXX
     ;;
 
     *mingw*)        
@@ -82,13 +86,17 @@ case "$bb_full_target" in
             export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
             deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"
         fi
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd
+        sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
+        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd -DQT_FEATURE_vulkan=OFF
+        sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
     *freebsd*)
         sed -i 's/-Wl,--no-undefined//' $qtsrcdir/mkspecs/freebsd-clang/qmake.conf
         sed -i 's/-Wl,--no-undefined//' $qtsrcdir/cmake/QtFlagHandlingHelpers.cmake
+        sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions -DQT_PLATFORM_DEFINITION_DIR=$host_prefix/mkspecs/freebsd-clang
+        sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
     *)
@@ -100,7 +108,7 @@ case "$bb_full_target" in
 esac
 
 # reinstate march restriction for build
-sed -i '33s/^#//' $HOSTCXX
+sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-g++
 
 cmake --build . --parallel ${nproc}
 cmake --install .
