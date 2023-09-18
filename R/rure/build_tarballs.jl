@@ -12,13 +12,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd regex/regex-capi/
-mkdir -p ${includedir}
-cp ./include/rure.h ${includedir}/rure.h
+cd $WORKSPACE/srcdir/regex/regex-capi/
+install -Dvm 644 include/rure.h "${includedir}/rure.h"
 cargo build --release
-cd ../
-install -Dvm 755 target/${rust_target}/release/*rure.${dlext} "${libdir}/librure.${dlext}"
+install -Dvm 755 ../target/${rust_target}/release/*rure.${dlext} "${libdir}/librure.${dlext}"
 install_license LICENSE-MIT
 """
 
