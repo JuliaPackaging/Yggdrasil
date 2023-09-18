@@ -99,7 +99,7 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="~4.5.1"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"; compat="6.4.2"),
+    Dependency("Qt6Base_jll"; compat="~6.4.2"), # Never allow upgrading more than the minor version without recompilation
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
