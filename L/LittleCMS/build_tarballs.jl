@@ -7,8 +7,7 @@ version = v"2.15.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mm2/Little-CMS/releases/download/lcms$(version.major).$(version.minor)/lcms2-$(version.major).$(version.minor).tar.gz",
-                  "d0752309ff93f62be246ee9bf18338107f30d485")
+    GitSource("https://github.com/mm2/Little-CMS.git", "d0752309ff93f62be246ee9bf18338107f30d485")
 ]
 
 # Bash recipe for building across all platforms
