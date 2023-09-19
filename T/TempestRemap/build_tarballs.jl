@@ -85,8 +85,8 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("HDF5_jll", compat="1.14"),
-    Dependency("NetCDF_jll", compat="400.902.5"),
+    Dependency("HDF5_jll", compat="~1.14"),
+    Dependency("NetCDF_jll", compat="~400.902.207"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
