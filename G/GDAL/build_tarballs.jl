@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.7.1"
+upstream_version = v"3.7.2"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "68da5257b139d4d80162cf83fdb8c6d26ead412f"),
+        "f74cd4144199fd7667e5c151a251cdbad1f44641"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
@@ -125,11 +125,15 @@ products = [
 
 hdf5_platforms = [
     Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"),
+    Platform("armv6l", "linux"),
+    Platform("armv7l", "linux"),
+    Platform("i686", "linux"),
+    Platform("powerpc64le", "linux"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     Platform("x86_64", "windows"),
     Platform("i686", "windows"),
-    Platform("aarch64", "macos"),
 ]
 hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 
@@ -147,7 +151,6 @@ dependencies = [
     Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("NetCDF_jll"; platforms=hdf5_platforms),
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
     Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
 ]
