@@ -143,7 +143,7 @@ dependencies = [
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
-    Dependency("Libtiff_jll"; compat="4.4.0"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("NetCDF_jll"; platforms=hdf5_platforms),
