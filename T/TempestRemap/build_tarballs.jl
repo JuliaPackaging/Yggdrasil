@@ -3,18 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "TempestRemap"
-version = v"2.1.6"
+version = v"2.2.0"
 sources = [
     GitSource("https://github.com/ClimateGlobalChange/tempestremap.git",
-        "531da6298b8924b56776ecf30cce0af60d7a8144"), # v2.1.6
-    DirectorySource("./bundled"),
+        "23968403baf1ff978341bf583ea70940bf7c2102"), # v2.2.0
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/tempestremap*
-
-atomic_patch -p1 ../patches/triangle.patch
-atomic_patch -p1 ../patches/libadd.patch
 
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
@@ -89,10 +85,8 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("HDF5_jll", compat="~1.12.2"),
+    Dependency("HDF5_jll", compat="~1.14"),
     Dependency("NetCDF_jll", compat="400.902.5 - 400.999"),
-    # The following is adapted from NetCDF_jll
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
