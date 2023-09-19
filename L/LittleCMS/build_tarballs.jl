@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/lcms2/
+cd $WORKSPACE/srcdir/Little-CMS/
 if [[ "${target}" == powerpc64le-* ]]; then
     autoreconf -vi
 fi
