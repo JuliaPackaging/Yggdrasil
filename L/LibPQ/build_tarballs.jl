@@ -89,7 +89,7 @@ products = [
 dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Kerberos_krb5_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-    Dependency("ICU_jll"),
+    Dependency("ICU_jll"; compat="69.1")
     HostBuildDependency("Bison_jll"),
     Dependency("Zstd_jll"),
 ]
