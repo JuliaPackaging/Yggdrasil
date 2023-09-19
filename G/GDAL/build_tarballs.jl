@@ -24,7 +24,7 @@ cd $WORKSPACE/srcdir/gdal
 
 install_license LICENSE.TXT
 
-atomic_patch -p1 ../../patches/bsd-environ-undefined-fix.patch
+atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
