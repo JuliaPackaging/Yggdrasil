@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.72.9"
+version = v"0.72.10"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "623b90911a3fc68b253ae26fb0f259ca97d8df7d"),
+    GitSource("https://github.com/sciapp/gr.git", "ffedfe702fdc3872cb3172fddb1dfb8f0d8986c5"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "55b6d9144b251124c85c8e72627496543e7f83a5d9fb543011331eaf0c41ff2a", "gr.js"),
+               "cef858178dac122a16406dfadf73b58142cfad95b0f61b1429a913e49cf972db", "gr.js"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
@@ -99,7 +99,7 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="~4.5.1"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"; compat="~6.4.2"), # Never allow upgrading more than the minor version without recompilation
+    Dependency("Qt6Base_jll"; compat="~6.5.2"), # Never allow upgrading more than the minor version without recompilation
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
