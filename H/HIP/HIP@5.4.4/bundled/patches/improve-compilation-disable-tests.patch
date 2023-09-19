@@ -1,14 +1,20 @@
+commit 111e3257de027aea0938b75c0193becff83199dc
+Author: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date:   Mon Sep 18 08:20:03 2023 -0500
+
+    Improve compilation disable tests
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f425504d..c5213688 100755
+index 86b0c34f..eef82133 100755
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -37,10 +37,9 @@ project(hip)
+@@ -39,10 +39,9 @@ include(GNUInstallDirs)
  #  By default, CMake will search for a folder named opencl or ROCm-OpenCL-Runtime relative to the current path. Specify -DAMD_OPENCL_PATH=$OPENCL_DIR if opencl source is in obscure location.
  list(APPEND CMAKE_MODULE_PATH ${HIP_COMMON_DIR}/cmake)
  
 -# required to add the right link to libhsa-runtime in install/lib path
 -# CMAKE_PREFIX_PATH is used as rpath to search for libs outside HIP
--set(CMAKE_INSTALL_RPATH "${CMAKE_PREFIX_PATH}/lib")
+-set(CMAKE_INSTALL_RPATH "${CMAKE_PREFIX_PATH}/${CMAKE_INSTALL_LIBDIR}")
 -set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 +set(CMAKE_SKIP_BUILD_RPATH TRUE)
 +set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
@@ -16,7 +22,7 @@ index f425504d..c5213688 100755
  
  #############################
  # Options
-@@ -91,7 +90,18 @@ string(REPLACE "-" ";" VERSION_LIST ${HIP_VERSION_PATCH_GITHASH})
+@@ -93,7 +92,18 @@ string(REPLACE "-" ";" VERSION_LIST ${HIP_VERSION_PATCH_GITHASH})
  list(GET VERSION_LIST 0 HIP_VERSION_PATCH)
  set(HIP_VERSION_GITDATE 0)
  
@@ -36,17 +42,19 @@ index f425504d..c5213688 100755
  
  # FIXME: Two different version strings used.
  # Below we use UNIX commands, not compatible with Windows.
-@@ -138,9 +148,6 @@ if(GIT_FOUND)
+@@ -140,11 +150,6 @@ if(GIT_FOUND)
    else()
      set(HIP_PACKAGING_VERSION_PATCH ${HIP_VERSION_PATCH}-${HIP_VERSION_GITHASH})
    endif()
 -else()
+-  set(HIP_VERSION_BUILD_ID 0)
+-  set(HIP_VERSION_BUILD_NAME "")
 -  # FIXME: Some parts depend on this being set.
 -  set(HIP_PACKAGING_VERSION_PATCH "0")
  endif()
  
  ## Debian package specific variables
-@@ -429,36 +436,6 @@ if(CLANGFORMAT_EXE)
+@@ -436,36 +441,6 @@ if(CLANGFORMAT_EXE)
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
  endif()
  
@@ -84,14 +92,14 @@ index f425504d..c5213688 100755
  # Code analysis
  #############################
 diff --git a/hip-config.cmake.in b/hip-config.cmake.in
-index ba3e75c9..02dd5864 100755
+index 89d1224e..8c4f9b7f 100755
 --- a/hip-config.cmake.in
 +++ b/hip-config.cmake.in
-@@ -290,7 +290,6 @@ if(HIP_COMPILER STREQUAL "clang")
-     if(CLANGRT_BUILTINS-NOTFOUND)
-       message(FATAL_ERROR "clangrt builtins lib not found")
-     else()
--      set_property(TARGET hip::host APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${CLANGRT_BUILTINS}")
-       set_property(TARGET hip::device APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${CLANGRT_BUILTINS}")
-     endif()
+@@ -306,7 +306,6 @@ if(HIP_COMPILER STREQUAL "clang")
+   if(NOT CLANGRT_BUILTINS)
+     message(FATAL_ERROR "clangrt builtins lib not found")
+   else()
+-    set_property(TARGET hip::host APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${CLANGRT_BUILTINS}")
+     set_property(TARGET hip::device APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${CLANGRT_BUILTINS}")
    endif()
+ endif()

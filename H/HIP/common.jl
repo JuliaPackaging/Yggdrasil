@@ -69,6 +69,7 @@ function get_hip_cmake(cmake_cxx_prefix::String, version::VersionNumber)
         cd ${WORKSPACE}/srcdir/hipamd*/
         atomic_patch -p1 "${WORKSPACE}/srcdir/patches/improve-compilation-disable-tests.patch"
         atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-init-abort.patch"
+        atomic_patch -p1 "${WORKSPACE}/srcdir/patches/register-tracer-callback-no-const.patch"
         """
         install_license = raw"""
         install_license ${WORKSPACE}/srcdir/hipamd*/LICENSE.txt
@@ -83,6 +84,11 @@ function get_hip_cmake(cmake_cxx_prefix::String, version::VersionNumber)
         if version ≥ v"5.2.3"
             cmake_flags *= raw"""
             -DFILE_REORG_BACKWARD_COMPATIBILITY=OFF \
+            """
+        end
+        if version >= v"5.4.4"
+            setup_and_patches *= raw"""
+            pip3 install CppHeaderParser
             """
         end
     end
