@@ -37,7 +37,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
-    Dependency("Libtiff_jll"; compat="4.5.0")
+    Dependency("Libtiff_jll"; compat="~4.5.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
