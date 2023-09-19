@@ -22,8 +22,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
-install_license LICENSE.TXT
-
 atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
@@ -93,6 +91,8 @@ fi
 cmake .. ${CMAKE_FLAGS[@]}
 cmake --build . -j${nproc}
 cmake --build . -j${nproc} --target install
+
+install_license ../LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
