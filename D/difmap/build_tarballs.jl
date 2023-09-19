@@ -11,7 +11,13 @@ sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5q.tar.
 script = raw"""
 cd $WORKSPACE/srcdir/uvf_difmap*
 sed -i 's|^USE_TECLA="1"|USE_TECLA="0"|' configure  # required only for platforms with musl
-./configure linux-i486-gcc
+if [[ ${target} == *apple* ]]; then
+    ./configure arm-osx-gcc
+    CC=gcc
+    CXX=g++
+else
+    ./configure linux-i486-gcc
+fi
 ./makeall
 cp ./difmap $bindir
 install_license ./README
@@ -21,6 +27,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="musl"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
+    Platform("aarch64", "macos"),
 ]
 platforms = expand_gfortran_versions(platforms)
 
