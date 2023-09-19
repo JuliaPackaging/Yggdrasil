@@ -45,7 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("PROJ_jll"; compat="901"),
+    Dependency("PROJ_jll"; compat="901.300.0"),
     Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
 ]
