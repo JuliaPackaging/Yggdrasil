@@ -8,7 +8,8 @@ version = v"14.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/trilinos/Trilinos.git", "975307431d60d0859ebaa27c9169cbb1d4287513")
+    GitSource("https://github.com/trilinos/Trilinos.git", "975307431d60d0859ebaa27c9169cbb1d4287513"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +26,7 @@ fi
 rm /usr/bin/cmake
 
 cd Trilinos
+atomic_patch -p1 $WORKSPACE/srcdir/patches/*.patch
 
 mkdir trilbuild
 cd trilbuild
