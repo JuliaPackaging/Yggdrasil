@@ -50,7 +50,7 @@ case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
         sed -i 's/exit 1/#exit 1/' $HOSTCXX
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}
+        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -DQT_FEATURE_xcb=ON
         sed -i 's/#exit 1/exit 1/' $HOSTCXX
     ;;
 
@@ -95,7 +95,7 @@ case "$bb_full_target" in
         sed -i 's/-Wl,--no-undefined//' $qtsrcdir/mkspecs/freebsd-clang/qmake.conf
         sed -i 's/-Wl,--no-undefined//' $qtsrcdir/cmake/QtFlagHandlingHelpers.cmake
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions -DQT_PLATFORM_DEFINITION_DIR=$host_prefix/mkspecs/freebsd-clang
+        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions -DQT_PLATFORM_DEFINITION_DIR=$host_prefix/mkspecs/freebsd-clang -DQT_FEATURE_xcb=ON
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
@@ -103,7 +103,7 @@ case "$bb_full_target" in
         echo "#define ELFOSABI_GNU 3" >> /opt/$target/$target/sys-root/usr/include/elf.h
         echo "#define EM_AARCH64 183" >> /opt/$target/$target/sys-root/usr/include/elf.h
         echo "#define EM_BLACKFIN 106" >> /opt/$target/$target/sys-root/usr/include/elf.h
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions
+        ../qtbase-everywhere-src-*/configure -verbose -prefix $prefix $commonoptions -fontconfig -- $commoncmakeoptions -DQT_FEATURE_xcb=ON
     ;;
 esac
 
@@ -160,18 +160,16 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("Xorg_libX11_jll"),
+    Dependency("libinput_jll"),
     Dependency("Xorg_libXext_jll"),
-    BuildDependency("Xorg_xproto_jll"),
-    BuildDependency("Xorg_glproto_jll"),
     Dependency("Xorg_libxcb_jll"),
     Dependency("Xorg_xcb_util_wm_jll"),
+    Dependency("Xorg_xcb_util_cursor_jll"),
     Dependency("Xorg_xcb_util_image_jll"),
     Dependency("Xorg_xcb_util_keysyms_jll"),
     Dependency("Xorg_xcb_util_renderutil_jll"),
-    BuildDependency("Xorg_kbproto_jll"),
-    BuildDependency("Xorg_renderproto_jll"),
     Dependency("Xorg_libXrender_jll"),
+    Dependency("Xorg_libSM_jll"),
     Dependency("xkbcommon_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Fontconfig_jll"),
@@ -179,11 +177,16 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("Vulkan_Loader_jll"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
+    BuildDependency("Xorg_libX11_jll"),
+    BuildDependency("Xorg_kbproto_jll"),
+    BuildDependency("Xorg_renderproto_jll"),
+    BuildDependency("Xorg_xproto_jll"),
+    BuildDependency("Xorg_glproto_jll"),
     BuildDependency("Vulkan_Headers_jll"),
-    Dependency("Vulkan_Loader_jll"),
 ]
 
 if !host_build
