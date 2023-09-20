@@ -4,11 +4,11 @@ using BinaryBuilder, Pkg
 
 name = "Trilinos"
 # Not a real version - this is 12.12.1, but needed a bump to change julia compat
-version = v"12.13.3"
+version = v"14.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4"),
+    GitSource("https://github.com/trilinos/Trilinos.git", "975307431d60d0859ebaa27c9169cbb1d4287513"),
     DirectorySource("./bundled"),
 ]
 
