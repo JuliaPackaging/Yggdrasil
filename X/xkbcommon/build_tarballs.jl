@@ -14,17 +14,22 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libxkbcommon-*/
-apk add wayland-dev
+mv $bindir/wayland-scanner $bindir/wayland-scanner_
+ln -s `which wayland-scanner` $bindir
 mkdir build && cd build
+cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
 meson .. --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Denable-docs=false
 ninja -j${nproc}
 ninja install
+rm $bindir/wayland-scanner
+mv $bindir/wayland-scanner_ $bindir/wayland-scanner
+rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l" && Sys.islinux(p), supported_platforms())
+platforms = filter(p -> arch(p) != "armv6l" && (Sys.islinux(p) || Sys.isfreebsd(p)), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -39,6 +44,9 @@ dependencies = [
     Dependency("Xorg_libxcb_jll"),
     Dependency("Wayland_jll"),
     Dependency("Wayland_protocols_jll"),
+    BuildDependency("EpollShim_jll"),
+    HostBuildDependency("Wayland_jll"),
+    HostBuildDependency("Wayland_protocols_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
