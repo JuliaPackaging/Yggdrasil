@@ -9,7 +9,7 @@ version = v"1.16.0"
 sources = [
     GitSource("https://github.com/osmcode/osmium-tool.git", "583db02ac9193dfb5217f93c823a4975405338ac"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "583db02ac9193dfb5217f93c823a4975405338ac"),
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),),
 ]
 
 # Bash recipe for building across all platforms
