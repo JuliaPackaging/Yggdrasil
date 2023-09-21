@@ -80,7 +80,7 @@ if [[ ${target} == *-linux-gnu ]]; then
     find ${prefix}/cuda -type d -empty -delete
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     for project in *-archive; do
-        cp -a ${project}/*/* ${prefix}/cuda
+        cp -a ${project}/* ${prefix}/cuda
     done
 
     # keep or remove static libraries
