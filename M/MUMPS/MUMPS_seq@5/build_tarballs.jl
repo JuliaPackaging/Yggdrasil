@@ -14,7 +14,7 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "MUMPS_seq"
-upstream_version = v"5.6.0"
+upstream_version = v"5.6.1"
 version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -22,7 +22,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 sources = [
   ArchiveSource("https://graal.ens-lyon.fr/MUMPS/MUMPS_$(upstream_version).tar.gz",
-                "3e08c1bdea7aaaba303d3cf03059f3b4336fa49bef93f4260f478f067f518289")
+                "1920426d543e34d377604070fde93b8d102aa38ebdf53300cbce9e15f92e2896")
 ]
 
 # Bash recipe for building across all platforms

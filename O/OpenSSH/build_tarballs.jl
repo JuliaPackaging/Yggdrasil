@@ -1,29 +1,29 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"9.2.0"
+version = v"9.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/openssh/openssh-portable.git",
-                  "6dfb65de949cdd0a5d198edee9a118f265924f33"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.0.0p1-Beta/OpenSSH-Win32.zip",
-                  "d6a381b6b1c0d17433ca0b81cf65d139d55a0f8c249f07ec9e2cf02f3effeff0"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.0.0p1-Beta/OpenSSH-Win64.zip",
-                  "d0c272360163ef2e99cab1c0941834605abf2e792377979ff21cbb09b55f3348"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.3p2.tar.gz",
+                  "200ebe147f6cb3f101fd0cdf9e02442af7ddca298dffd9f456878e7ccac676e8"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.2.0p1-Beta/OpenSSH-Win32.zip",
+                  "7b132aad088eae3ac67d85751e88d884e80631607cab9b1da52c838655bb5ae6"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.2.0p1-Beta/OpenSSH-Win64.zip",
+                  "ec8144a107014740ec3ce16ec51710398fc390fca5344931c1506e7cc2e181f3"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-install_license openssh-portable/LICENCE
+install_license openssh-*/LICENCE
 PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext})
 
 if [[ "${target}" == *-mingw* ]]; then
     cd "${target}/OpenSSH-Win${nbits}"
 else
-    cd openssh-portable
+    cd openssh-*
 
     # Remove OpenSSL from the sysroot to avoid confusion
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libcrypto.*
@@ -66,8 +66,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll")
-    Dependency("OpenSSL_jll"; compat="1.1.10")
+    Dependency("Zlib_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

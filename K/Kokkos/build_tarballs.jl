@@ -3,26 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "Kokkos"
-version_string = "3.6.01"
+version_string = "4.1.00"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/$(version_string).tar.gz",
-                  "1b80a70c5d641da9fefbbb652e857d7c7a76a0ebad1f477c253853e209deb8db"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/kokkos/kokkos.git",
+	      "1a3ea28f6e97b4c9dd2c8ceed53ad58ed5f94dfe"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/kokkos-*
+cd $WORKSPACE/srcdir/kokkos
 
 OPENMP_FLAG=()
 
-#inspired by https://github.com/JuliaPackaging/Yggdrasil/blob/b15a45949bf007072af7a2f335fe6e49165f7627/E/Entwine/build_tarballs.jl#L31-L40
-if [[ ${target} == *-linux-musl* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-stacktrace-macro.patch
-fi
 mkdir build
 cd build/
 
@@ -31,7 +26,7 @@ cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DKokkos_CXX_STANDARD=17 \
+    -DCMAKE_CXX_STANDARD=17 \
     -DKokkos_ENABLE_OPENMP=ON
 
 make -j${nproc}
@@ -48,7 +43,8 @@ filter!(p -> nbits(p) != 32, platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libkokkoscore", :libkokkoscore),
-    LibraryProduct("libkokkoscontainers", :libkokkoscontainers)
+    LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
+    LibraryProduct("libkokkossimd", :libkokkossimd)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -60,5 +56,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#minimum supported gcc on x86_64 is 5.3.0, BB only has 5.2.0 so we bump up to 6
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")

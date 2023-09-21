@@ -92,7 +92,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     fi
 
     # We always want threading
-    flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=50 NO_AFFINITY=1)
+    flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=400 NO_AFFINITY=1)
     if [[ "${CONSISTENT_FPCSR}" == "true" ]]; then
         flags+=(CONSISTENT_FPCSR=1)
     fi

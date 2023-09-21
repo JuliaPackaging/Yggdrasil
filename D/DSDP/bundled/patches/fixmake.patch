@@ -1,0 +1,12 @@
+diff --git before/DSDP5.8/Makefile after/DSDP5.8/Makefile
+index 518fc1d..1ef4bfb 100644
+--- before/DSDP5.8/Makefile
++++ after/DSDP5.8/Makefile
+@@ -55,6 +55,6 @@ oshared:
+ 	cd tmp; \
+ 	echo "building ${DSDPLIBSO}"; \
+ 	${AR} x ${DSDPLIB} ;\
+-	${SH_LD} ${DSDPLIBSO} *.o -o ${DSDPLIBSO}; \
++	${SH_LD} *.o -o ${DSDPLIBSO}; \
+ 	cd ../ ; \
+ 	${RM} tmp

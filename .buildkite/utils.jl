@@ -96,7 +96,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         :plugins => build_plugins,
         :timeout_in_minutes => 180,
         :priority => -1,
-        :concurrency => 16,
+        :concurrency => 12,
         :concurrency_group => "yggdrasil/build/$NAME", # Could use ENV["BUILDKITE_JOB_ID"]
         :commands => [script],
         :env => build_env,

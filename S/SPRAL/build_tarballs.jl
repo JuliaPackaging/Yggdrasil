@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SPRAL"
-version = v"2023.03.29"
+version = v"2023.09.07"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/spral.git", "b1d6a7409d41d575bff7106a4e9d9a60b8935c2e")
+    GitSource("https://github.com/ralna/spral.git", "04133cdacbc35c868ef8e3b5eb63ee76715625d4")
 ]
 
 # Bash recipe for building across all platforms

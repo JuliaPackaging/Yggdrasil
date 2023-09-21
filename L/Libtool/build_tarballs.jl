@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Libtool"
-version = v"2.4.6"
+version = v"2.4.7"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/libtool/libtool-$(version).tar.gz",
-                  "e3bd4d5d3d025a36c21dd6af7ea818a2afcd4dfc1ea5a17b39d7854bcd0c06e3")
+                  "04e96c2404ea70c590c546eba4202a4e12722c640016c12b9b2f1ce3d481e9a8")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,8 +22,6 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# TODO: in next release include the "experimental" platforms
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64") && !(arch(p) == "armv6l"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -36,4 +34,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

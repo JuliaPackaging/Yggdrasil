@@ -2,20 +2,35 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: default_host_platform
 
 name = "DSSP"
-version = v"4.3.1"
+version = v"4.4.0"
 
 # url = "https://github.com/PDB-REDO/dssp"
 # description = "Application to assign secondary structure to proteins"
 
 sources = [
     GitSource("https://github.com/PDB-REDO/dssp",
-              "b87ef206a071e6f086c8dc01551afd5e9b23eb43"),
+              "c5ec1f2ddc800e7054d47a952b1ce21449f1d6b8"),
     GitSource("https://github.com/PDB-REDO/libcifpp",
               "836aed6ea9a227b37e5b0d9cbcb1253f545d0778"), # v5.1.0 (git-tag v5.1.0.1)
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    # Pre-compiled binaries for Windows
+    FileSource("https://github.com/PDB-REDO/dssp/releases/download/v$(version)/mkdssp-$(version).exe",
+               "fa897e3b23eaebf19878c7ba41180c7ce706d4333a528775e9daa047988b1cfe"),
     DirectorySource("./bundled"),
 ]
+
+# NOTE
+# On Windows we install pre-compiled binaries from github, as
+# currently the executable built from source has a bug where it
+# segfaults on any nontrivial operation.  This might be due to
+# std::regex segfault issues for g++ mentioned in the libcifpp build
+# instructions, so in the future it might be worthwile investigating
+# compilation choices there.  The libcifpp cmake build tries to check
+# for a std::regex segfault during build time, but this check has to
+# be disabled here as we are cross-compiling.
+#
+# See also: https://github.com/PDB-REDO/dssp/issues/63
 
 # NOTE
 # We don't use libcifpp_jll, as linking to the shared library from
@@ -23,13 +38,10 @@ sources = [
 # here as a static library and use that to build dssp, as that seems
 # to be the default way to build libcifpp and dssp.
 #
-# PDB .dic files from libcifpp are needed at runtime for mkdssp, these
-# get installed to `$prefix/share/dssp`.
-#
 # Run like this from julia:
 #
 # using DSSP_jll
-# run(`$(DSSP_jll.mkdssp()) --mmcif-dictionary $(joinpath(DSSP_jll.artifact_dir, "share", "dssp", "mmcif_pdbx.dic")) 1aki.cif.gz`)
+# run(`$(DSSP_jll.mkdssp()) --mmcif-dictionary $(joinpath(DSSP_jll.artifact_dir, "share", "libcifpp", "mmcif_pdbx.dic")) 1aki.cif.gz`)
 
 
 # The tests only pass with the correct cxxabi (-cxx11), so we create a
@@ -44,8 +56,28 @@ const MACHTYPE_FULL = join((M[1:3]..., "libgfortran5", M[4:end]...), "-")
 
 script = """
 MACHTYPE_FULL=$MACHTYPE_FULL
+DSSP_VERSION=$version
 """ * raw"""
 cd $WORKSPACE/srcdir/
+
+# Install pre-built binary on windows
+if [[ "${target}" == *-w64-mingw* ]]; then
+    apk add p7zip
+    mkdir tmp-windows && cd tmp-windows
+    7z x ../mkdssp-${DSSP_VERSION}.exe
+    find bin/ -type f -exec install -Dvm 755 "{}" "${bindir}" \;
+    find lib/ -type f -exec install -Dvm 755 "{}" "${prefix}/lib/" \;
+    find include/ -type f -exec install -Dvm 644 "{}" "${includedir}" \;
+    # needs zlib.dll library
+    cp "${bindir}/libz.dll" "${bindir}/zlib.dll"
+    # install mmcif dictionaries
+    for dir in ../libcifpp/ ../dssp/; do
+        find "${dir}" -type f -name '*.dic' -exec sh -c \
+            'install -Dvm 644 "{}" "${prefix}/share/libcifpp/$(basename "{}")"' \;
+    done
+    install_license ../dssp/LICENSE
+    exit 0
+fi
 
 # Install a newer MacOS SDK on x86_64-apple-darwin
 # Fixes compilation of libcifpp and dssp
@@ -92,7 +124,7 @@ mkdir build && cd build
 # -D_CXX_ATOMIC_BUILTIN_EXITCODE__TRYRUN_OUTPUT=0
 #
 cmake .. \
-    -DCMAKE_INSTALL_PREFIX=${srcdir}/install-libcifpp \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH=${prefix} \
@@ -115,37 +147,30 @@ cp ../LICENSE LICENSE-libcifpp
 install_license LICENSE-libcifpp
 cd ../..
 
-# install pdb dictionary .dic files
-for dic in "${srcdir}"/install-libcifpp/share/libcifpp/*.dic; do
-    install -Dvm 644 "${dic}" "${prefix}/share/dssp/$(basename "${dic}")"
-done
-
 
 ###########
-# dssp: now compile dssp proper
+# dssp: now compile dssp
 ###########
 cd dssp
-
-# fix libcifpp linkage
-# Ref: https://github.com/PDB-REDO/dssp/commit/49306a57098f1eaebb700eed29025e6f472a799a
-atomic_patch -p1 ../patches/dssp-cmake-fix-libcifpp-linkage.patch
 
 mkdir build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_PREFIX_PATH=${srcdir}/install-libcifpp \
     -DBUILD_FOR_CCP4=OFF \
     -DBUILD_WEBSERVER=OFF \
     ${CFG_TESTING}
 
 make -j${nproc}
+make install
+
+# run dssp tests
 if [[ "${bb_full_target}" == "${MACHTYPE_FULL}" ]]; then
     # run the tests on the build host platform
     make test
 fi
-make install
+
 install_license ../LICENSE
 """
 
@@ -154,6 +179,10 @@ platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("mkdssp", :mkdssp),
+    FileProduct("share/libcifpp/dssp-extension.dic", :dssp_extension_dic),
+    FileProduct("share/libcifpp/mmcif_ddl.dic", :mmcif_ddl_dic),
+    FileProduct("share/libcifpp/mmcif_ma.dic", :mmcif_ma_dic),
+    FileProduct("share/libcifpp/mmcif_pdbx.dic", :mmcif_pdbx_dic),
 ]
 
 dependencies = [

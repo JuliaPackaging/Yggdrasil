@@ -7,12 +7,11 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-
 name = "OpenCV"
 version = v"4.6.0"
 version_collapsed_str = replace(string(version), "." => "")
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
@@ -94,7 +93,6 @@ install_license ../opencv/{LICENSE,COPYRIGHT}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # We don't have Qt5 for Musl platforms

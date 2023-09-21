@@ -41,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Note: we explicitly lie about this because we don't have the new

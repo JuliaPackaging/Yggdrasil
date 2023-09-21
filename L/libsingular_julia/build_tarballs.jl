@@ -9,11 +9,11 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libsingular_julia"
-version = v"0.35.0"
+version = v"0.40.2"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "b09551a10b33c748aea46048a14387efd37f5d86"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "a5f1f30ca23699d678a8ab57c3603388dd224e92"),
 ]
 
 # Bash recipe for building across all platforms
@@ -53,8 +53,8 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"),
-    Dependency("Singular_jll", compat = "~403.203.200"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.0"),
+    Dependency("Singular_jll", compat = "~403.208.800"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

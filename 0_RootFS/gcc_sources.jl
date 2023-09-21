@@ -213,17 +213,12 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
 
     if Sys.islinux(compiler_target) && libc(compiler_target) == "glibc"
         # Depending on our architecture, we choose different versions of glibc
-        if arch(compiler_target) in ["x86_64", "i686"]
-            libc_sources = [
-                ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.12.2.tar.xz",
-                              "0eb4fdf7301a59d3822194f20a2782858955291dd93be264b8b8d4d56f87203f"),
-            ]
-        elseif arch(compiler_target) in ["armv7l", "aarch64"]
+        if arch(compiler_target) in ["armv7l", "aarch64"]
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz",
                               "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
             ]
-        elseif arch(compiler_target) in ["powerpc64le"]
+        elseif arch(compiler_target) in ["x86_64", "i686", "powerpc64le"]
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz",
                               "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),

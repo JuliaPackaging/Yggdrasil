@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-adios2_version = v"2.9.0"
-version = v"2.9.1"
+adios2_version = v"2.9.1"
+version = v"2.9.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ornladios/ADIOS2.git", "aac4a45fdd05fda62a80b1f5a4d174faade32f3c"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "d143154f3bbebfdd7ac3c46b4e31fdfda7e8e79c"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,8 +21,6 @@ cd $WORKSPACE/srcdir
 cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
-# `uint` is not a portable type <https://github.com/ornladios/ADIOS2/issues/3638>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/uint.patch
 
 mkdir build
 cd build
@@ -149,6 +147,11 @@ dependencies = [
     Dependency(PackageSpec(name="zfp_jll"); compat="1"),
 ]
 append!(dependencies, platform_dependencies)
+
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and
+# `dlopen`s the shared libraries. (MPItrampoline will skip its
+# automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>

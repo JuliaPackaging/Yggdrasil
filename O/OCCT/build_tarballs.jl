@@ -97,7 +97,7 @@ x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),

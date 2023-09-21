@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SCOTCH"
-version = v"7.0.3"
+version = v"7.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "b43864123e820e3ca541bfecd3738aed385a4c47"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "82ec87f558f4acb7ccb69a079f531be380504c92"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,6 +19,10 @@ cd ${WORKSPACE}/srcdir/scotch*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
+
+# We don't want to break the ABI if we have a new release.
+sed s/'set_target_properties(scotch PROPERTIES VERSION'/'#set_target_properties(scotch PROPERTIES VERSION'/ -i src/libscotch/CMakeLists.txt
+sed s/'  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/'#  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/ -i src/libscotch/CMakeLists.txt
 
 mkdir -p src/dummysizes/build-host
 cd src/dummysizes/build-host

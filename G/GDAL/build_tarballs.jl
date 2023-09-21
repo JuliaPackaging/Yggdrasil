@@ -150,7 +150,7 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("libgeotiff_jll"; compat="100.700.100"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("NetCDF_jll"; platforms=hdf5_platforms),
+    Dependency("NetCDF_jll"; compat="400.902.208", platforms=hdf5_platforms),
     Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
 ]
