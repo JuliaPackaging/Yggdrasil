@@ -20,11 +20,10 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
-    -GNinja \
+    -DBUILD_SHARED_LIBS=ON \
     ..
-ninja -j${nproc}
-ninja install
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -33,7 +32,7 @@ platforms = supported_platforms(; exclude=p->Sys.iswindows(p) || Sys.isapple(p))
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/libs2n.a", :libs2n),
+    LibraryProduct("libs2n", :libs2n),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -43,4 +42,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"5")
+               julia_compat="1.6", preferred_gcc_version=v"5")

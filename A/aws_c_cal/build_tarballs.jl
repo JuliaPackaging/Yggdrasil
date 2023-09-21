@@ -20,7 +20,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_SHARED_LIBS=ON \
     ..
 cmake --build . -j${nproc} --target install
 """
@@ -32,15 +32,15 @@ filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/libaws-c-cal.a", :libaws_c_cal),
+    LibraryProduct("libaws-c-cal", :libaws_c_cal),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("aws_c_common_jll"),
+    Dependency("aws_c_common_jll"; compat="0.9.3"),
     BuildDependency("aws_lc_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"5")
+               julia_compat="1.6", preferred_gcc_version=v"5")
