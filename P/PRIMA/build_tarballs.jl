@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PRIMA"
-version = v"0.7.0"
+version = v"0.7.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libprima/prima.git", "f38178a0a5676f04f7a273e1774eb1b961ed3bdf")
+    GitSource("https://github.com/libprima/prima.git", "af58422ee307f6401a560454c696f229ae8e9bdf")
 ]
 
 # Bash recipe for building across all platforms
