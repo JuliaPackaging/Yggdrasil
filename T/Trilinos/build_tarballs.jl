@@ -28,6 +28,7 @@ rm /usr/bin/cmake
 cd Trilinos
 atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/tekoepetraguard.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
 
 mkdir trilbuild
 cd trilbuild
