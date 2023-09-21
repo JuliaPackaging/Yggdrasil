@@ -48,9 +48,16 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_Teuchos=ON
     -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON
     -DTrilinos_ENABLE_Sacado=ON
-    -DTrilinos_ENABLE_Tpetra=ON
-    -DTrilinos_ENABLE_Teko=ON
     "
+
+# Kokkos-dependent enables
+# Kokkos is not available on all platforms, so only enable Kokkos-dependent things if it is available
+if [ -f "/workspace/destdir/lib/cmake/Kokkos/KokkosConfig.cmake" ]; then
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DTrilinos_ENABLE_Tpetra=ON -DTrilinos_ENABLE_Teko=ON"
+else
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_Kokkos=OFF"
+fi
+
 # Global Trilinos FLAGS
 CMAKE_FLAGS="${CMAKE_FLAGS}
     -DBUILD_SHARED_LIBS=ON
