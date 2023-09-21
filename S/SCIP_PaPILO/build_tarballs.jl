@@ -37,7 +37,7 @@ make -j${nproc} scip
 make papilo-executable
 
 make install
-cp bin/papilo "${bindir}/papilo${exeext}"
+cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in scip soplex gcg; do
