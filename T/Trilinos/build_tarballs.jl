@@ -108,7 +108,7 @@ platforms = expand_gfortran_versions(platforms)
 # Filter libgfortran3 - the corresponding GCC is too old to compiler some of
 # the newer C++ constructs.
 filter!(platforms) do p
-    p["libgfortran_version"] != "3.0.0"
+    !(p["libgfortran_version"] in ("3.0.0", "4.0.0"))
 end
 
 # The products that we will ensure are always built
