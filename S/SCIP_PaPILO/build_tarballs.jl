@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd scipoptsuite*
 
-export LDFLAGS="-lgfortran"
+echo "target_link_libraries(clusol gfortran)" >> papilo/CMakeLists.txt
 
 mkdir build
 cd build/
