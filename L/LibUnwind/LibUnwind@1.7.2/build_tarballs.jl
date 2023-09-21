@@ -1,13 +1,12 @@
 using BinaryBuilder
 
 name = "LibUnwind"
-version = v"1.7.0"
-tarball_version = "1.70"  # XXX: Looks like they typo'd the version in the release asset
+version = v"1.7.2"
 
 # Collection of sources required to build libunwind
 sources = [
-    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(tarball_version).tar.gz",
-                  "c24c913d2337d6eff851b6ab32aadfb683a86fee48d28fe1fc9cd56c8e9dfa58"),
+    GitSource("https://github.com/libunwind/libunwind.git",
+              "24947191d61dda869e039e0414fe97e9f594acd5"),
     DirectorySource("./bundled"),
 ]
 
@@ -58,7 +57,7 @@ products = [
 dependencies = [
     BuildDependency("XZ_jll"),
     Dependency("Zlib_jll"),
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Build the tarballs. Note that libunwind started using `stdatomic.h`, which is only
