@@ -32,8 +32,6 @@ if [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-lexecinfo -undefined"
 fi
 
-mkdir build && cd build
-
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Work around the issue
     # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/arrow/type.h:1745:36: error: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' is unavailable: introduced in macOS 10.14
@@ -48,6 +46,8 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
+
+mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
