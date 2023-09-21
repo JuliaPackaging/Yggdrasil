@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "OpenJpeg"
-version = v"2.4.0"
+version = v"2.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/uclouvain/openjpeg/archive/v$(version)/openjpeg-$(version).tar.gz",
-                  "8702ba68b442657f11aaeb2b338443ca8d5fb95b0d845757968a7be31ef7f16d"),
+    GitSource("https://github.com/uclouvain/openjpeg.git",
+                  "a5891555eb49ed7cc26b2901ea680acda136d811"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/openjpeg-*/
+cd $WORKSPACE/srcdir/openjpeg/
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
@@ -25,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -39,7 +39,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="LittleCMS_jll", uuid="d3a379c0-f9a3-5b72-a4c0-6bf4d2e8af0f"))
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f"))
-    Dependency("Libtiff_jll"; compat="4.3.0")
+    Dependency("Libtiff_jll"; compat="~4.5.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
