@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "extxyz"
-version = v"0.1.0"
+version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libAtoms/extxyz", "47a449e69fa9fa0cc99d0acad3a4a4925c363495")
+    GitSource("https://github.com/libAtoms/extxyz", "0299d34cb1783612796cb39226dbe13210e4e758")
 ]
 
 # Bash recipe for building across all platforms
