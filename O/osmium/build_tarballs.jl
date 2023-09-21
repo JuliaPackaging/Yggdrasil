@@ -7,7 +7,7 @@ version = v"1.16.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/osmcode/osmium-tool.git", "214cc1ea4016bee5deba5949dad7545655c58826"),
+    GitSource("https://github.com/osmcode/osmium-tool.git", "583db02ac9193dfb5217f93c823a4975405338ac"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "583db02ac9193dfb5217f93c823a4975405338ac"),
 ]
