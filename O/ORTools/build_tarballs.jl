@@ -53,6 +53,53 @@ cmake -S. -Bbuild \
     -DUSE_GLPK:BOOL=OFF
 cmake --build build
 cmake --build build --target install
+
+# Finish installing: the ProtoBuf definitions.
+mkdir ${prefix}/include/operations_research
+mkdir ${prefix}/include/operations_research/bop
+mkdir ${prefix}/include/operations_research/glop
+mkdir ${prefix}/include/operations_research/math_opt
+mkdir ${prefix}/include/operations_research/math_opt/solvers
+mkdir ${prefix}/include/operations_research/math_opt/packing
+mkdir ${prefix}/include/operations_research/math_opt/packing/vbp
+mkdir ${prefix}/include/operations_research/math_opt/pdlp
+mkdir ${prefix}/include/operations_research/math_opt/sat
+mkdir ${prefix}/include/operations_research/math_opt/scheduling
+mkdir ${prefix}/include/operations_research/math_opt/scheduling/rcpsp/
+mkdir ${prefix}/include/operations_research/math_opt/scheduling/jssp/
+cp ortools/bop/bop_parameters.proto ${prefix}/include/operations_research/bop/
+cp ortools/constraint_solver/assignment.proto ${prefix}include/operations_research/
+cp ortools/constraint_solver/demon_profiler.proto ${prefix}include/operations_research/
+cp ortools/constraint_solver/search_limit.proto ${prefix}include/operations_research/
+cp ortools/constraint_solver/search_stats.proto ${prefix}include/operations_research/
+cp ortools/constraint_solver/solver_parameters.proto ${prefix}include/operations_research/
+cp ortools/constraint_solver/routing_enums.proto ${prefix}include/operations_research/
+cp ortools/constraint_solver/routing_parameters.proto ${prefix}include/operations_research/
+cp ortools/glop/parameters.proto ${prefix}include/operations_research/glop/
+cp ortools/gscip/flow_problem.proto ${prefix}include/operations_research/
+cp ortools/linear_solver/linear_solver.proto ${prefix}include/operations_research/
+cp ortools/math_opt/callback.proto ${prefix}include/operations_research/math_opt/
+cp ortools/math_opt/model.proto ${prefix}include/operations_research/math_opt/
+cp ortools/math_opt/model_parameters.proto ${prefix}include/operations_research/math_opt/
+cp ortools/math_opt/model_update.proto ${prefix}include/operations_research/math_opt/
+cp ortools/math_opt/result.proto ${prefix}include/operations_research/math_opt/
+cp ortools/math_opt/solution.proto ${prefix}include/operations_research/math_opt/
+cp ortools/math_opt/parameters.proto ${prefix}include/operations_research/math_opt/
+cp ortools/math_opt/solvers/glpk.proto ${prefix}include/operations_research/math_opt/solvers/
+cp ortools/math_opt/solvers/gurobi.proto ${prefix}include/operations_research/math_opt/solvers/
+cp ortools/math_opt/solvers/highs.proto ${prefix}include/operations_research/math_opt/solvers/
+cp ortools/math_opt/sparse_containers.proto ${prefix}include/operations_research/math_opt/
+cp ortools/packing/multiple_dimensions_bin_packing.proto ${prefix}include/operations_research/packing/
+cp ortools/packing/vector_bin_packing.proto ${prefix}include/operations_research/packing/vbp/
+cp ortools/pdlp/solve_log.proto ${prefix}include/operations_research/pdlp/
+cp ortools/pdlp/solvers.proto ${prefix}include/operations_research/pdlp/
+cp ortools/sat/cp_model.proto ${prefix}include/operations_research/sat/
+cp ortools/sat/sat_parameters.proto ${prefix}include/operations_research/sat/
+cp ortools/sat/boolean_problem.proto ${prefix}include/operations_research/sat/
+cp ortools/util/optional_boolean.proto ${prefix}include/operations_research/
+cp ortools/scheduling/course_scheduling.proto ${prefix}include/operations_research/
+cp ortools/scheduling/rcpsp.proto ${prefix}include/operations_research/scheduling/rcpsp/
+cp ortools/scheduling/jobshop_scheduling.proto ${prefix}include/operations_research/scheduling/jssp/
 """
 
 # TODO: generate with ProtoBuf.jl.
