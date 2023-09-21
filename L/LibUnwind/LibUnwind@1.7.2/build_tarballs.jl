@@ -5,8 +5,8 @@ version = v"1.7.2"
 
 # Collection of sources required to build libunwind
 sources = [
-    GitSource("https://github.com/libunwind/libunwind.git",
-              "24947191d61dda869e039e0414fe97e9f594acd5"),
+    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(version).tar.gz",
+                  "a18a6a24307443a8ace7a8acc2ce79fbbe6826cd0edf98d6326d0225d6a5d6e6"),
     DirectorySource("./bundled"),
 ]
 
