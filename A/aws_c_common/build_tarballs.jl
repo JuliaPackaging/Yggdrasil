@@ -37,7 +37,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=OFF \
+        -DBUILD_SHARED_LIBS=ON \
 	..
 cmake --build . -j${nproc} --target install
 """
@@ -51,7 +51,7 @@ filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    FileProduct(["lib/libaws-c-common.a", "lib/libaws-c-common.dll.a"], :libaws_c_common),
+    LibraryProduct("libaws-c-common", :libaws_c_common),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -60,4 +60,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"5")
+               julia_compat="1.6", preferred_gcc_version=v"5")
