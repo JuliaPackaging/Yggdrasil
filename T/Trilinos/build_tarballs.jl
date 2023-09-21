@@ -4,11 +4,11 @@ using BinaryBuilder, Pkg
 
 name = "Trilinos"
 # Not a real version - this is 12.12.1, but needed a bump to change julia compat
-version = v"12.13.3"
+version = v"14.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/trilinos/Trilinos.git", "512a9e81183c609ab16366a9b09d70d37c6af8d4"),
+    GitSource("https://github.com/trilinos/Trilinos.git", "975307431d60d0859ebaa27c9169cbb1d4287513"),
     DirectorySource("./bundled"),
 ]
 
@@ -22,18 +22,78 @@ else
     BLAS_NAME=libblastrampoline
 fi
 
+# Use newer cmake from the HostBuildDependency
+rm /usr/bin/cmake
+
 cd Trilinos
-atomic_patch -p1 $WORKSPACE/srcdir/patches/*.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/tekoepetraguard.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
 
 mkdir trilbuild
 cd trilbuild
 install_license ${WORKSPACE}/srcdir/Trilinos/LICENSE
 SRCDIR="/workspace/srcdir/Trilinos"
-FLAGS="-O3 -fPIC"
+FLAGS='-O3 -fPIC'
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+# Trilinos package enables
+CMAKE_FLAGS="${CMAKE_FLAGS}
+    -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_ABSTRACT_IMPLEMENTATION_EPETRA=ON
+    -DNOX_ENABLE_LOCA=ON
+    -DTrilinos_ENABLE_EpetraExt=ON -DEpetraExt_BUILD_BTF=ON -DEpetraExt_BUILD_EXPERIMENTAL=ON -DEpetraExt_BUILD_GRAPH_REORDERINGS=ON
+    -DTrilinos_ENABLE_TrilinosCouplings=ON
+    -DTrilinos_ENABLE_Ifpack=ON
+    -DTrilinos_ENABLE_Isorropia=ON
+    -DTrilinos_ENABLE_AztecOO=ON
+    -DTrilinos_ENABLE_Belos=ON
+    -DTrilinos_ENABLE_Teuchos=ON
+    -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON
+    -DTrilinos_ENABLE_Sacado=ON
+    "
+
+# Kokkos-dependent enables
+# Kokkos is not available on all platforms, so only enable Kokkos-dependent things if it is available
+if [ -f "/workspace/destdir/lib/cmake/Kokkos/KokkosConfig.cmake" ]; then
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DTrilinos_ENABLE_Tpetra=ON -DTrilinos_ENABLE_Teko=ON"
+else
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_Kokkos=OFF"
+fi
+
+# Global Trilinos FLAGS
+CMAKE_FLAGS="${CMAKE_FLAGS}
+    -DBUILD_SHARED_LIBS=ON
+    -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF
+    -DTrilinos_ENABLE_CXX11=ON -DCMAKE_BUILD_TYPE=Release
+    -DTrilinos_ENABLE_OpenMP=ON -DTrilinos_ENABLE_COMPLEX_DOUBLE=ON
+    "
+# SuiteSparse config
+CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS=\"/${libdir}\"
+    -DAMD_LIBRARY_NAMES=\"libsuitesparseconfig.${dlext}\;libamd.${dlext}\;libklu.${dlext}\;libcolamd.${dlext}\;libbtf.${dlext}\"
+    -DAMD_INCLUDE_DIRS=\"${prefix}/include\" -DTPL_ENABLE_UMFPACK=ON -DUMFPACK_LIBRARY_DIRS=\"/${libdir}\"
+    -DAMD_LIBRARY_NAMES=\"libumfpack.${dlext}\" -DTPL_UMFPACK_INCLUDE_DIRS=\"${prefix}/include\"
+    -DTPL_UMFPACK_LIBRARIES=\"$libdir/libumfpack.${dlext}\" -DTPL_AMD_LIBRARIES=\"$libdir/libamd.${dlext}\"
+    "
+# BLAS/LAPACK config
+CMAKE_FLAGS="${CMAKE_FLAGS}
+    -DTPL_ENABLE_BLAS=ON -DTPL_ENABLE_LAPACK=ON -DBLAS_LIBRARY_DIRS=\"${prefix}/lib\" -DBLAS_LIBRARY_NAMES=\"${BLAS_NAME}.${dlext}\"
+    -DLAPACK_LIBRARY_DIRS=\"${prefix}/lib\" -DLAPACK_LIBRARY_NAMES=\"${BLAS_NAME}.${dlext}\"
+    "
+
 # Trilinos tries to run a bunch of configure tests. Tell it what the output would have been.
-CMAKE_FLAGS="${CMAKE_FLAGS} -DHAVE_GCC_ABI_DEMANGLE_EXITCODE=0 -DHAVE_TEUCHOS_BLASFLOAT_EXITCODE=0 -DHAVE_TEUCHOS_BLASFLOAT_DOUBLE_RETURN_EXITCODE=0 -DCXX_COMPLEX_BLAS_WORKS_EXITCODE=0 -DLAPACK_SLAPY2_WORKS_EXITCODE=0 -DHAVE_GCC_ABI_DEMANGLE_EXITCODE__TRYRUN_OUTPUT='' -DHAVE_TEUCHOS_BLASFLOAT_EXITCODE__TRYRUN_OUTPUT='' -DLAPACK_SLAPY2_WORKS_EXITCODE__TRYRUN_OUTPUT='' -DCXX_COMPLEX_BLAS_WORKS_EXITCODE__TRYRUN_OUTPUT=''"
-cmake -G "Unix Makefiles" ${CMAKE_FLAGS} -DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_Fortran_FLAGS="$FLAGS" -DBUILD_SHARED_LIBS=ON -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_LOCA=ON -DTrilinos_ENABLE_EpetraExt=ON   -DEpetraExt_BUILD_BTF=ON   -DEpetraExt_BUILD_EXPERIMENTAL=ON -DEpetraExt_BUILD_GRAPH_REORDERINGS=ON -DTrilinos_ENABLE_TrilinosCouplings=ON -DTrilinos_ENABLE_Ifpack=ON -DTrilinos_ENABLE_Isorropia=ON -DTrilinos_ENABLE_AztecOO=ON -DTrilinos_ENABLE_Belos=ON -DTrilinos_ENABLE_Teuchos=ON -DTeuchos_ENABLE_COMPLEX=ON -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON -DTrilinos_ENABLE_Sacado=ON -DTrilinos_ENABLE_Kokkos=OFF -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF -DTrilinos_ENABLE_CXX11=ON -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS="/${libdir}" -DAMD_LIBRARY_NAMES="libsuitesparseconfig.${dlext};libamd.${dlext};libklu.${dlext};libcolamd.${dlext};libbtf.${dlext}" -DAMD_INCLUDE_DIRS="${prefix}/include" -DTPL_ENABLE_UMFPACK=ON -DUMFPACK_LIBRARY_DIRS="/${libdir}" -DAMD_LIBRARY_NAMES="libumfpack.${dlext}" -DTPL_UMFPACK_INCLUDE_DIRS="${prefix}/include" -DTPL_ENABLE_BLAS=ON -DTPL_ENABLE_LAPACK=ON -DTPL_UMFPACK_LIBRARIES="$libdir/libumfpack.${dlext}" -DTPL_AMD_LIBRARIES="$libdir/libamd.${dlext}" -DBLAS_LIBRARY_DIRS="${prefix}/lib" -DBLAS_LIBRARY_NAMES="${BLAS_NAME}.${dlext}" -DLAPACK_LIBRARY_DIRS="${prefix}/lib" -DLAPACK_LIBRARY_NAMES="${BLAS_NAME}.${dlext}" -DCMAKE_BUILD_TYPE=Release $SRCDIR
+CMAKE_FLAGS="${CMAKE_FLAGS}
+    -DHAVE_GCC_ABI_DEMANGLE_EXITCODE=0
+    -DHAVE_TEUCHOS_BLASFLOAT_EXITCODE=0 -DHAVE_TEUCHOS_BLASFLOAT_DOUBLE_RETURN_EXITCODE=0
+    -DCXX_COMPLEX_BLAS_WORKS_EXITCODE=0 -DLAPACK_SLAPY2_WORKS_EXITCODE=0
+    -DHAVE_TEUCHOS_LAPACKLARND_EXITCODE=0 -DKK_BLAS_RESULT_AS_POINTER_ARG_EXITCODE=0
+    -DHAVE_GCC_ABI_DEMANGLE_EXITCODE__TRYRUN_OUTPUT=''
+    -DHAVE_TEUCHOS_BLASFLOAT_EXITCODE__TRYRUN_OUTPUT=''
+    -DLAPACK_SLAPY2_WORKS_EXITCODE__TRYRUN_OUTPUT=''
+    -DCXX_COMPLEX_BLAS_WORKS_EXITCODE__TRYRUN_OUTPUT=''
+    -DHAVE_TEUCHOS_LAPACKLARND_EXITCODE__TRYRUN_OUTPUT=''
+    -DKK_BLAS_RESULT_AS_POINTER_ARG_EXITCODE__TRYRUN_OUTPUT=''
+    "
+
+cmake -G "Unix Makefiles" ${CMAKE_FLAGS} -DCMAKE_CXX_FLAGS="${FLAGS}" -DCMAKE_C_FLAGS="${FLAGS}" -DCMAKE_Fortran_FLAGS="${FLAGS}" $SRCDIR
 
 make -j${nprocs}
 make install
@@ -45,6 +105,12 @@ platforms = supported_platforms()
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
+
+# Filter libgfortran3 - the corresponding GCC is too old to compiler some of
+# the newer C++ constructs.
+filter!(platforms) do p
+    !(p["libgfortran_version"] in ("3.0.0", "4.0.0"))
+end
 
 # The products that we will ensure are always built
 products = [
@@ -80,7 +146,9 @@ dependencies = [
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"))
+    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.10")
