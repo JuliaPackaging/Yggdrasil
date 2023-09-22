@@ -50,7 +50,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("HDF5_jll"; compat="1.14"),
+    Dependency("HDF5_jll"; compat="1.14.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
