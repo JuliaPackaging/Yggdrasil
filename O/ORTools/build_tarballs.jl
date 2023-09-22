@@ -104,9 +104,6 @@ cp ortools/scheduling/rcpsp.proto ${prefix}/include/operations_research/scheduli
 cp ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/operations_research/scheduling/jssp/
 """
 
-# TODO: generate with ProtoBuf.jl.
-#     julia -e "using ProtoBuf; protojl()" 
-
 platforms = [
     Platform("x86_64", "linux"),
     # Platform("aarch64", "linux"),   # Abseil uses -march for some files.
