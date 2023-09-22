@@ -15,6 +15,13 @@ script = raw"""
 cd $WORKSPACE/srcdir/libunwind*/
 
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/libunwind-configure-static-lzma.patch
+if [[ ${target} == aarch64-linux-musl ]]; then
+    # https://github.com/checkpoint-restore/criu/issues/934, fixed by
+    # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit?id=9966a05c7b80f075f2bc7e48dbb108d3f2927234
+    pushd /opt/aarch64-linux-musl/aarch64-linux-musl/sys-root/usr/include
+    atomic_patch -p5 ${WORKSPACE}/srcdir/patches/linux-disentangle_sigcontext.patch
+    popd
+fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
