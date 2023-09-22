@@ -26,7 +26,12 @@ git submodule update --init
 # https://github.com/dmlc/dmlc-core/pull/673
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
-mkdir build && cd build
+# XGBoost fails to compile on mac due to `std::make_shared`
+# being bugged with some apple clang versions
+# https://github.com/dmlc/xgboost/issues/9601
+if [[ "${target}" == *-apple-* ]]; then
+    atomic_patch -p1 "../patches/mac_make_shared.patch"
+fi
 
 # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/193
 # error: 'any_cast<std::shared_ptr<xgboost::data::CSRArrayAdapter>>' 
@@ -40,6 +45,8 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
 fi
+
+mkdir build && cd build
 
 if  [[ $bb_full_target == *-linux*cuda+1* ]]; then
     # nvcc writes to /tmp, which is a small tmpfs in our sandbox.
