@@ -49,6 +49,12 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_Teuchos=ON
     -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON
     -DTrilinos_ENABLE_Sacado=ON
+    -DTrilinos_ENABLE_Rhytmos=ON
+    -DTrilinos_ENABLE_Panzer=ON
+    -DTrilinos_ENABLE_SEACAS=ON
+    -DTrilinos_ENABLE_Piro=ON
+    -DTrilinos_ENABLE_Stratimikos=ON
+    -DTrilinos_ENABLE_STK=ON
     "
 
 # Kokkos-dependent enables
@@ -65,6 +71,7 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF
     -DTrilinos_ENABLE_CXX11=ON -DCMAKE_BUILD_TYPE=Release
     -DTrilinos_ENABLE_OpenMP=ON -DTrilinos_ENABLE_COMPLEX_DOUBLE=ON
+    -DTPL_ENABLE_X11=OFF
     "
 # SuiteSparse config
 CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS=\"/${libdir}\"
@@ -147,6 +154,8 @@ dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"))
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
+    Dependency(PackageSpec(name="Matio_jll", uuid="f34749e5-bf11-50ef-9bf7-447477e32da8"))
     HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6"))
 ]
 
