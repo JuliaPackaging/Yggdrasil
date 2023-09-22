@@ -14,6 +14,10 @@ sources = [
 script = raw"""
 cd scipoptsuite*
 
+# for soplex threadlocal
+export CXXFLAGS="-DTHREADLOCAL=''"
+
+# can be removed for scip 805
 echo "target_link_libraries(clusol gfortran)" >> papilo/CMakeLists.txt
 
 mkdir build
