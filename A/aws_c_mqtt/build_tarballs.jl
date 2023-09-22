@@ -20,7 +20,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_SHARED_LIBS=ON \
     ..
 cmake --build . -j${nproc} --target install
 """
@@ -32,20 +32,14 @@ filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/libaws-c-mqtt.a", :libaws_c_mqtt),
+    LibraryProduct("libaws-c-mqtt", :libaws_c_mqtt),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Direct deps
-    BuildDependency("aws_c_http_jll"),
-    BuildDependency("aws_c_io_jll"),
-    # Transitive deps
-    BuildDependency("aws_c_cal_jll"),
-    BuildDependency("aws_c_compression_jll"),
-    BuildDependency("aws_c_common_jll"),
+    Dependency("aws_c_http_jll"; compat="0.7.12"),
+    Dependency("aws_c_io_jll"; compat="0.13.32"),
     BuildDependency("aws_lc_jll"),
-    BuildDependency("s2n_tls_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
