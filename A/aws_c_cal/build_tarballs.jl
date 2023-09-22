@@ -14,6 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-cal
+# Lowercase names for MinGW
+sed -i -e 's/BCrypt/bcrypt/g' -e 's/NCrypt/ncrypt/g' CMakeLists.txt
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
