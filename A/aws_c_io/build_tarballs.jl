@@ -23,6 +23,8 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
      -e 's/MSWSock.h/mswsock.h/g' \
      -e 's/Mstcpip.h/mstcpip.h/g' \
      '{}' \;
+# Lowercase names for MinGW
+sed -i -e 's/Secur32/secur32/g' -e 's/Crypt32/crypt32/g' CMakeLists.txt
 # MinGW is missing some macros in sspi.h
 atomic_patch -p1 ../patches/win32_sspi_h_missing_macros.patch
 
@@ -32,7 +34,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_SHARED_LIBS=ON \
     ..
 cmake --build . -j${nproc} --target install
 """
@@ -44,17 +46,17 @@ filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/libaws-c-io.a", :libaws_c_io),
+    LibraryProduct("libaws-c-io", :libaws_c_io),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("s2n_tls_jll"),
-    BuildDependency("aws_c_cal_jll"),
-    BuildDependency("aws_c_common_jll"),
+    Dependency("s2n_tls_jll"; compat="1.3.51"),
+    Dependency("aws_c_cal_jll"; compat="0.6.2"),
+    Dependency("aws_c_common_jll"; compat="0.9.3"),
     BuildDependency("aws_lc_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"5")
+               julia_compat="1.6", preferred_gcc_version=v"7")
