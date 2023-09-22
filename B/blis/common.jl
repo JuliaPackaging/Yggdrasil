@@ -104,7 +104,7 @@ function blis_script(;blis32::Bool=false)
     else
         export BLI_F77BITS=${nbits}
     fi
-    ./configure -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
+    ./configure --enable-cblas -p ${prefix} -t ${BLI_THREAD} -b ${BLI_F77BITS} ${BLI_CONFIG}
     make -j${nproc}
     make install
 
