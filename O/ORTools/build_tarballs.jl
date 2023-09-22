@@ -80,6 +80,7 @@ cp ortools/graph/flow_problem.proto ${prefix}/include/operations_research/
 cp ortools/gscip/gscip.proto ${prefix}/include/operations_research/
 cp ortools/linear_solver/linear_solver.proto ${prefix}/include/operations_research/
 cp ortools/math_opt/callback.proto ${prefix}/include/operations_research/math_opt/
+cp ortools/math_opt/infeasible_subsystem.proto ${prefix}/include/operations_research/math_opt/
 cp ortools/math_opt/model.proto ${prefix}/include/operations_research/math_opt/
 cp ortools/math_opt/model_parameters.proto ${prefix}/include/operations_research/math_opt/
 cp ortools/math_opt/model_update.proto ${prefix}/include/operations_research/math_opt/
