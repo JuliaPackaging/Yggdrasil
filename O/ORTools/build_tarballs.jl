@@ -76,7 +76,8 @@ cp ortools/constraint_solver/solver_parameters.proto ${prefix}/include/operation
 cp ortools/constraint_solver/routing_enums.proto ${prefix}/include/operations_research/
 cp ortools/constraint_solver/routing_parameters.proto ${prefix}/include/operations_research/
 cp ortools/glop/parameters.proto ${prefix}/include/operations_research/glop/
-cp ortools/gscip/flow_problem.proto ${prefix}/include/operations_research/
+cp ortools/graph/flow_problem.proto ${prefix}/include/operations_research/
+cp ortools/gscip/gscip.proto ${prefix}/include/operations_research/
 cp ortools/linear_solver/linear_solver.proto ${prefix}/include/operations_research/
 cp ortools/math_opt/callback.proto ${prefix}/include/operations_research/math_opt/
 cp ortools/math_opt/model.proto ${prefix}/include/operations_research/math_opt/
