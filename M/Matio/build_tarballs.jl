@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "Matio"
-version = v"1.5.23"
+# This is still 1.5.23 upstream, but we needed a bump for HDF5 compat
+version = v"1.5.24"
 
 # Collection of sources required to complete build
 sources = [
@@ -49,8 +50,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="~1.12"),
+    Dependency("HDF5_jll"; compat="1.14"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
