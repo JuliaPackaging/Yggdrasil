@@ -7,14 +7,14 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 name = "jlqml"
-version = v"0.5.2"
+version = v"0.5.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/barche/jlqml.git", "e542c7f6f6cc2add5a80fc46033d5074c1cde5a5"),
+    GitSource("https://github.com/JuliaGraphics/jlqml.git", "4c04db44d7e291edb9a30e76df6a3c63e3f4ab19"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,14 +54,14 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("Qt6Declarative_jll"; compat="6.4.2"),
+    Dependency("Qt6Declarative_jll"; compat="~6.5.2"),
     HostBuildDependency("Qt6Declarative_jll"),
-    Dependency("Qt6Svg_jll"; compat="6.4.2"),
+    Dependency("Qt6Svg_jll"; compat="~6.5.2"),
     BuildDependency("Libglvnd_jll"),
     BuildDependency("libjulia_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version = v"9",
+    preferred_gcc_version = v"10",
     julia_compat = "1.6")
