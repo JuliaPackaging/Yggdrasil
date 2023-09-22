@@ -23,6 +23,8 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
      -e 's/MSWSock.h/mswsock.h/g' \
      -e 's/Mstcpip.h/mstcpip.h/g' \
      '{}' \;
+# Lowercase names for MinGW
+sed -i -e 's/Secur32/secur32/g' -e 's/Crypt32/crypt32/g' CMakeLists.txt
 # MinGW is missing some macros in sspi.h
 atomic_patch -p1 ../patches/win32_sspi_h_missing_macros.patch
 
