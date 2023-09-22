@@ -60,13 +60,13 @@ mkdir ${prefix}/include/operations_research/bop
 mkdir ${prefix}/include/operations_research/glop
 mkdir ${prefix}/include/operations_research/math_opt
 mkdir ${prefix}/include/operations_research/math_opt/solvers
-mkdir ${prefix}/include/operations_research/math_opt/pdlp
-mkdir ${prefix}/include/operations_research/math_opt/sat
-mkdir ${prefix}/include/operations_research/math_opt/scheduling
-mkdir ${prefix}/include/operations_research/math_opt/scheduling/rcpsp/
-mkdir ${prefix}/include/operations_research/math_opt/scheduling/jssp/
 mkdir ${prefix}/include/operations_research/packing
 mkdir ${prefix}/include/operations_research/packing/vbp
+mkdir ${prefix}/include/operations_research/pdlp
+mkdir ${prefix}/include/operations_research/sat
+mkdir ${prefix}/include/operations_research/scheduling
+mkdir ${prefix}/include/operations_research/scheduling/rcpsp/
+mkdir ${prefix}/include/operations_research/scheduling/jssp/
 cp ortools/bop/bop_parameters.proto ${prefix}/include/operations_research/bop/
 cp ortools/constraint_solver/assignment.proto ${prefix}/include/operations_research/
 cp ortools/constraint_solver/demon_profiler.proto ${prefix}/include/operations_research/
