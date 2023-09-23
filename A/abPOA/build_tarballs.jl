@@ -34,14 +34,17 @@ cmake --build . --target install
 platforms = filter(p -> arch(p) == "x86_64", supported_platforms(; exclude = Sys.iswindows))
 
 # The products that we will ensure are always built
-products = [ExecutableProduct("abpoa", :abpoa), LibraryProduct("libabpoa", :libabpoa)]
+products = [
+    ExecutableProduct("abpoa", :abpoa), 
+    LibraryProduct("libabpoa", :libabpoa)
+]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("SIMDe_jll"),
     Dependency(
         PackageSpec(; name = "Zlib_jll", uuid = "83775a58-1f1d-513f-b197-d71354ab007a");
-        compat = "1.2.13",
+        compat = "1.2.12",
     ),
 ]
 
