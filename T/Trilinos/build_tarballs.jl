@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
@@ -37,8 +38,15 @@ cd trilbuild
 install_license ${WORKSPACE}/srcdir/Trilinos/LICENSE
 SRCDIR="/workspace/srcdir/Trilinos"
 FLAGS='-O3 -fPIC'
-# TODO: This is a bug in Yggdrasil's GCC distribution
-FLAGS+=" -D_GLIBCXX_HAVE_ALIGNED_ALLOC"
+
+if [[ "${target}" == *86*-linux-gnu* ]]; then
+    # TODO: Can be removed after https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/318
+    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath "${prefix}/usr/include/stdlib.h"))))
+    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+    CMAKE_CPP_FLAGS+=("-D_GLIBCXX_HAVE_ALIGNED_ALLOC=1")
+    FLAGS+=" -D_GLIBCXX_HAVE_ALIGNED_ALLOC"
+fi
+
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix"
 # Trilinos package enables
 CMAKE_FLAGS="${CMAKE_FLAGS}
@@ -144,7 +152,6 @@ products = [
     LibraryProduct("libnoxlapack", :libnoxlapack),
     LibraryProduct("libnox", :libnox),
     LibraryProduct("libteuchoscore", :libteuchoscore),
-    LibraryProduct("libsimpi", :libsimpi),
     LibraryProduct("libteuchosremainder", :libteuchosremainder),
     LibraryProduct("liblocaepetra", :liblocaepetra),
     LibraryProduct("libteuchosnumerics", :libteuchosnumerics),
@@ -176,7 +183,7 @@ push!(dependencies,
    # On Intel Linux platforms we use glibc 2.12, but building STKMesh
    # requires 2.16+.
    # TODO: Can be removed after https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/318
-   BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+   BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17.0+3");
                               platforms=filter(p -> libc(p) == "glibc" && proc_family(p) == "intel", platforms)))
 
 # Build the tarballs, and possibly a `build.jl` as well.
