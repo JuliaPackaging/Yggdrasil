@@ -32,6 +32,7 @@ cd Trilinos
 atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/tekoepetraguard.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/stratikimosnotpetra.patch
 
 mkdir trilbuild
 cd trilbuild
@@ -62,17 +63,16 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON
     -DTrilinos_ENABLE_Sacado=ON
     -DTrilinos_ENABLE_Rhytmos=ON
-    -DTrilinos_ENABLE_Panzer=ON -DTrilinos_ENABLE_PanzerCore=ON -DTrilinos_ENABLE_PanzerDiscFE=ON -DTrilinos_ENABLE_PanzerAdaptersSTK=ON
     -DTrilinos_ENABLE_SEACAS=ON
     -DTrilinos_ENABLE_Piro=ON
     -DTrilinos_ENABLE_Stratimikos=ON
-    -DTrilinos_ENABLE_STK=ON -DTrilinos_ENABLE_STKMesh=ON
+    -DTrilinos_ENABLE_STK=ON
     "
 
 # Kokkos-dependent enables
 # Kokkos is not available on all platforms, so only enable Kokkos-dependent things if it is available
 if [ -f "/workspace/destdir/lib/cmake/Kokkos/KokkosConfig.cmake" ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DTrilinos_ENABLE_Tpetra=ON -DTrilinos_ENABLE_Teko=ON"
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DTrilinos_ENABLE_Tpetra=ON -DTrilinos_ENABLE_Teko=ON -DTrilinos_ENABLE_STKMesh=ON Trilinos_ENABLE_PanzerDiscFE=ON -DTrilinos_ENABLE_Panzer=ON -DTrilinos_ENABLE_PanzerCore=ON -DTrilinos_ENABLE_PanzerAdaptersSTK=ON"
 else
     CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_Kokkos=OFF"
 fi
