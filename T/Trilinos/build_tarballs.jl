@@ -33,6 +33,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/tekoepetraguard.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/stratikimosnotpetra.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/muslunistd.patch
 
 mkdir trilbuild
 cd trilbuild
