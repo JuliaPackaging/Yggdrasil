@@ -1,6 +1,8 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Trilinos"
 # Not a real version - this is 12.12.1, but needed a bump to change julia compat
@@ -35,7 +37,9 @@ cd trilbuild
 install_license ${WORKSPACE}/srcdir/Trilinos/LICENSE
 SRCDIR="/workspace/srcdir/Trilinos"
 FLAGS='-O3 -fPIC'
-CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+# TODO: This is a bug in Yggdrasil's GCC distribution
+FLAGS+=" -D_GLIBCXX_HAVE_ALIGNED_ALLOC"
+CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix"
 # Trilinos package enables
 CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_ABSTRACT_IMPLEMENTATION_EPETRA=ON
@@ -50,11 +54,11 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON
     -DTrilinos_ENABLE_Sacado=ON
     -DTrilinos_ENABLE_Rhytmos=ON
-    -DTrilinos_ENABLE_Panzer=ON
+    -DTrilinos_ENABLE_Panzer=ON -DTrilinos_ENABLE_PanzerCore=ON -DTrilinos_ENABLE_PanzerDiscFE=ON -DTrilinos_ENABLE_PanzerAdaptersSTK=ON
     -DTrilinos_ENABLE_SEACAS=ON
     -DTrilinos_ENABLE_Piro=ON
     -DTrilinos_ENABLE_Stratimikos=ON
-    -DTrilinos_ENABLE_STK=ON
+    -DTrilinos_ENABLE_STK=ON -DTrilinos_ENABLE_STKMesh=ON
     "
 
 # Kokkos-dependent enables
@@ -71,7 +75,7 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=OFF
     -DTrilinos_ENABLE_CXX11=ON -DCMAKE_BUILD_TYPE=Release
     -DTrilinos_ENABLE_OpenMP=ON -DTrilinos_ENABLE_COMPLEX_DOUBLE=ON
-    -DTPL_ENABLE_X11=OFF
+    -DTPL_ENABLE_X11=OFF -DTPL_ENABLE_MPI=ON
     "
 # SuiteSparse config
 CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_AMD=ON -DAMD_LIBRARY_DIRS=\"/${libdir}\"
@@ -119,6 +123,14 @@ filter!(platforms) do p
     !(p["libgfortran_version"] in ("3.0.0", "4.0.0"))
 end
 
+# MPI Handling
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libaztecoo", :libaztecoo),
@@ -158,6 +170,14 @@ dependencies = [
     Dependency(PackageSpec(name="Matio_jll", uuid="f34749e5-bf11-50ef-9bf7-447477e32da8"))
     HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6"))
 ]
+append!(dependencies, platform_dependencies)
+
+push!(dependencies,
+   # On Intel Linux platforms we use glibc 2.12, but building STKMesh
+   # requires 2.16+.
+   # TODO: Can be removed after https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/318
+   BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+                              platforms=filter(p -> libc(p) == "glibc" && proc_family(p) == "intel", platforms)))
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.10", augment_platform_block)
