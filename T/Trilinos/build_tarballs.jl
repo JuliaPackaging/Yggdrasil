@@ -188,6 +188,15 @@ dependencies = [
     Dependency(PackageSpec(name="Matio_jll", uuid="f34749e5-bf11-50ef-9bf7-447477e32da8"), compat="v1.5.24")
     HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6"))
 ]
+
+# BBB bug, can select infeasible package set (https://github.com/JuliaPackaging/BinaryBuilderBase.jl/issues/328).
+# Manually set a feasible version.
+for (i, dep) in enumerate(platform_dependencies)
+    if dep.pkg.name == "MPItrampoline_jll"
+        platform_dependencies[i] = Dependency(dep.pkg; compat="5.3.1", platforms=dep.platforms)
+    end
+end
+
 append!(dependencies, platform_dependencies)
 
 push!(dependencies,
