@@ -1,0 +1,19 @@
+commit b2945775511c1073d7811120c7b88c3043154bdb
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sun Sep 24 19:14:28 2023 +0000
+
+    Instantiate unsigned long long
+
+diff --git a/packages/stk/stk_mesh/stk_mesh/base/BulkData.cpp b/packages/stk/stk_mesh/stk_mesh/base/BulkData.cpp
+index 1dbc65a32da..af581b1e072 100644
+--- a/packages/stk/stk_mesh/stk_mesh/base/BulkData.cpp
++++ b/packages/stk/stk_mesh/stk_mesh/base/BulkData.cpp
+@@ -1467,6 +1467,8 @@ template
+ void BulkData::declare_entities(stk::topology::rank_t rank, const std::vector<int64_t>& newIds, const PartVector& parts, std::vector<Entity>& requested_entities);
+ template
+ void BulkData::declare_entities(stk::topology::rank_t rank, const std::vector<unsigned long>& newIds, const PartVector& parts, std::vector<Entity>& requested_entities);
++template
++void BulkData::declare_entities(stk::topology::rank_t rank, const std::vector<unsigned long long>& newIds, const PartVector& parts, std::vector<Entity>& requested_entities);
+ 
+ bool BulkData::in_shared(EntityKey key, int proc) const
+ {
