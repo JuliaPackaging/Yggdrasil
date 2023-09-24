@@ -47,7 +47,7 @@ mpi_abis = (
     ("MPICH", PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
     ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "", !Sys.iswindows),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "^5.0.1", p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"))
+    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.0.1-5", p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"))
 )
 
 """
