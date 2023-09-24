@@ -28,12 +28,16 @@ fi
 # Use newer cmake from the HostBuildDependency
 rm /usr/bin/cmake
 
+# Prevent host libcurl from accidentally being linked for -musl builds
+rm /usr/lib/libcurl.so.*
+
 cd Trilinos
 atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/tekoepetraguard.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/stratikimosnotpetra.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/muslunistd.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/muslmallinfo.patch
 
 mkdir trilbuild
 cd trilbuild
