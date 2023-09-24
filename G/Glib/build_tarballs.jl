@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.76.5"
+version = v"2.77.3"
 
 # Collection of sources required to build Glib
 sources = [
