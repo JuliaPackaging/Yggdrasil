@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "libadwaita"
-version = v"1.2.0"
+version = v"1.4.0"
 
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libadwaita/$(version.major).$(version.minor)/libadwaita-$(version).tar.xz",
