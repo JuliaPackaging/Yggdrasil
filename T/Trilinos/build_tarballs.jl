@@ -54,6 +54,11 @@ if [[ "${target}" == *86*-linux-gnu* ]]; then
     FLAGS+=" -D_GLIBCXX_HAVE_ALIGNED_ALLOC"
 fi
 
+# TODO: MPITrampoline embeds the wrong CC. https://github.com/JuliaPackaging/Yggdrasil/issues/7420
+export MPITRAMPOLINE_CC="$(which $CC)"
+export MPITRAMPOLINE_CXX="$(which $CXX)"
+export MPITRAMPOLINE_FC="$(which $FC)"
+
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix"
 # Trilinos package enables
 CMAKE_FLAGS="${CMAKE_FLAGS}
