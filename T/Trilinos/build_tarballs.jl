@@ -28,6 +28,11 @@ fi
 # Use newer cmake from the HostBuildDependency
 rm /usr/bin/cmake
 
+# Delete compiler settings from toolchain file to let Trilinos
+# autodetect mpic{c|xx}.
+sed -i '/CMAKE_C_COMPILER/d' ${CMAKE_TARGET_TOOLCHAIN}
+sed -i '/CMAKE_CXX_COMPILER/d' ${CMAKE_TARGET_TOOLCHAIN}
+
 # Prevent host libcurl from accidentally being linked for -musl builds
 rm /usr/lib/libcurl.so.*
 rm /usr/lib/libnghttp2.so*
@@ -39,6 +44,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/stratikimosnotpetra.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/muslunistd.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/muslmallinfo.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd.patch
 
 mkdir trilbuild
 cd trilbuild
@@ -59,7 +65,7 @@ export MPITRAMPOLINE_CC="$(which $CC)"
 export MPITRAMPOLINE_CXX="$(which $CXX)"
 export MPITRAMPOLINE_FC="$(which $FC)"
 
-CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix"
+CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 # Trilinos package enables
 CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_ABSTRACT_IMPLEMENTATION_EPETRA=ON
@@ -86,6 +92,10 @@ if [ -f "/workspace/destdir/lib/cmake/Kokkos/KokkosConfig.cmake" ]; then
     CMAKE_FLAGS="${CMAKE_FLAGS} -DTrilinos_ENABLE_Tpetra=ON -DTrilinos_ENABLE_Teko=ON -DTrilinos_ENABLE_STKMesh=ON Trilinos_ENABLE_PanzerDiscFE=ON -DTrilinos_ENABLE_Panzer=ON -DTrilinos_ENABLE_PanzerCore=ON -DTrilinos_ENABLE_PanzerAdaptersSTK=ON"
 else
     CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_Kokkos=OFF"
+fi
+
+if [[ "${target}" == *-apple-* ]]; then
+    CMAKE_FLAGS="${CMAKE_FLAGS} -DOpenMP_C_LIB_NAMES=gomp -DOpenMP_CXX_LIB_NAMES=gomp -DOpenMP_omp_LIBRARY=gomp"
 fi
 
 # Global Trilinos FLAGS
@@ -123,7 +133,7 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DKK_BLAS_RESULT_AS_POINTER_ARG_EXITCODE__TRYRUN_OUTPUT=''
     "
 
-cmake -G "Unix Makefiles" ${CMAKE_FLAGS} -DCMAKE_CXX_FLAGS="${FLAGS}" -DCMAKE_C_FLAGS="${FLAGS}" -DCMAKE_Fortran_FLAGS="${FLAGS}" $SRCDIR
+cmake --debug-find -G "Unix Makefiles" ${CMAKE_FLAGS} -DCMAKE_CXX_FLAGS="${FLAGS}" -DCMAKE_C_FLAGS="${FLAGS}" -DCMAKE_Fortran_FLAGS="${FLAGS}" $SRCDIR
 
 make -j${nprocs}
 make install
@@ -183,6 +193,8 @@ dependencies = [
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c"))
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    #Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+    #           platforms=filter(p->Sys.isbsd(p) || Sys.isapple(p), platforms))
     Dependency(PackageSpec(name="Kokkos_jll", uuid="c1216c3d-6bb3-5a2b-bbbf-529b35eba709"))
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"))
     Dependency(PackageSpec(name="Matio_jll", uuid="f34749e5-bf11-50ef-9bf7-447477e32da8"), compat="v1.5.24")
