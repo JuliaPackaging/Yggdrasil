@@ -7,7 +7,7 @@ version = v"1.4.0"
 
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libadwaita/$(version.major).$(version.minor)/libadwaita-$(version).tar.xz",
-                  "322f3e1be39ba67981d9fe7228a85818eccaa2ed0aa42bcafe263af881c6460c"),
+                  "e51a098a54d43568218fc48fcf52e80e36f469b3ce912d8ce9c308a37e9f47c2"),
 ]
 
 # Bash recipe for building across all platforms
