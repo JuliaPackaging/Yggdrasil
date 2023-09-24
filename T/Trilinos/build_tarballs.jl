@@ -30,6 +30,7 @@ rm /usr/bin/cmake
 
 # Prevent host libcurl from accidentally being linked for -musl builds
 rm /usr/lib/libcurl.so.*
+rm /usr/lib/libnghttp2.so*
 
 cd Trilinos
 atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
