@@ -6,7 +6,7 @@ version = v"2.77.3"
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "ed3a9953a90b20da8e5578a79f7d1c8a532eacbe2adac82aa3881208db8a3abe"),
+                  "1753f963bb680b28a83d6e2095f63d0d4b94244675bcd2603850b2ebc1ac6a61"),
     DirectorySource("./bundled"),
 ]
 
