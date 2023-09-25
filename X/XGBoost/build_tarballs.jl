@@ -27,7 +27,7 @@ git submodule update --init
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
 
 # XGBoost fails to compile on mac due to `std::make_shared`
-# being bugged with some apple clang versions
+# being bugged on apple with some clang versions 
 # https://github.com/dmlc/xgboost/issues/9601
 if [[ "${target}" == *-apple-* ]]; then
     atomic_patch -p1 "../patches/mac_make_shared.patch"
