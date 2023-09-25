@@ -74,7 +74,7 @@ const augment = """
         BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
 
         # store the fact that we're using a local CUDA toolkit, for debugging purposes
-        platform["cuda_local"] = local_toolkit
+        platform["cuda_local"] = string(local_toolkit)
 
         return platform
     end"""
