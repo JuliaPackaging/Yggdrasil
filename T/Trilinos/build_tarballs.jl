@@ -55,6 +55,7 @@ cd Trilinos
 atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/tekoepetraguard.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport2.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/stratikimosnotpetra.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/muslunistd.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/muslmallinfo.patch
@@ -62,6 +63,17 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/nohdf5.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/ulltemplate.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/stknolonglong.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/winheadercase.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/winsigcompat.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/msmpicompat.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/rusagecompat.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/intrepid2sfinae.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/iossexplicit.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/stkalignedalloc.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/zoltan2time.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/stktypename.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/panzerhardcode.patch
 
 mkdir trilbuild
 cd trilbuild
@@ -83,6 +95,11 @@ export MPITRAMPOLINE_CXX="$(which $CXX)"
 export MPITRAMPOLINE_FC="$(which $FC)"
 
 CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+
+if [[ "${bb_full_target}" == *microsoftmpi* ]]; then
+    EXTRA_LDFLAGS="-L/workspace/destdir/bin -lmsmpi"
+fi
+
 # Trilinos package enables
 CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_ABSTRACT_IMPLEMENTATION_EPETRA=ON
@@ -146,7 +163,7 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DKK_BLAS_RESULT_AS_POINTER_ARG_EXITCODE__TRYRUN_OUTPUT=''
     "
 
-cmake --debug-find -G "Unix Makefiles" ${CMAKE_FLAGS} -DCMAKE_CXX_FLAGS="${FLAGS}" -DCMAKE_C_FLAGS="${FLAGS}" -DCMAKE_Fortran_FLAGS="${FLAGS}" $SRCDIR
+cmake -G "Unix Makefiles" ${CMAKE_FLAGS} -DCMAKE_CXX_FLAGS="${FLAGS}" -DCMAKE_C_FLAGS="${FLAGS}" -DCMAKE_Fortran_FLAGS="${FLAGS}" -DTrilinos_EXTRA_LINK_FLAGS="${EXTRA_LDFLAGS}" $SRCDIR
 
 make -j${nprocs}
 make install
