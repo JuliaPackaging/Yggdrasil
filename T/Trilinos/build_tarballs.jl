@@ -61,6 +61,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/muslmallinfo.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/nohdf5.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/ulltemplate.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/stknolonglong.patch
 
 mkdir trilbuild
 cd trilbuild
