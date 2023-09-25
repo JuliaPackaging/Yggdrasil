@@ -1,4 +1,4 @@
-commit 1bf73f775f868600cd13385290934baadb3a1b82
+commit f977994fadb71f977957706f1b49a6663d6c2754
 Author: Keno Fischer <keno@juliacomputing.com>
 Date:   Mon Sep 25 11:01:43 2023 +0000
 
@@ -173,22 +173,21 @@ index c5c13d7cdc7..23cf56dd13d 100644
  {
    clock_t ticks = clock();
 diff --git a/packages/stk/stk_util/stk_util/environment/Env.cpp b/packages/stk/stk_util/stk_util/environment/Env.cpp
-index 4b3298d9dbe..2a6f1e90321 100644
+index 4b3298d9dbe..d0ae0f26aca 100644
 --- a/packages/stk/stk_util/stk_util/environment/Env.cpp
 +++ b/packages/stk/stk_util/stk_util/environment/Env.cpp
-@@ -52,9 +52,8 @@
+@@ -52,7 +52,9 @@
  #include <iostream>                                       // for operator<<, basic_ostream, endl
  #include <string>                                         // for string, operator<<, char_traits
  
 -#if defined(__GNUC__)
--#include <sys/resource.h>                                 // for rusage, getrusage, RUSAGE_SELF
--#include <sys/time.h>                                     // for timeval, gettimeofday, timezone
 +#ifdef _WIN32
 +#include <sysinfoapi.h>
++#elif defined(__GNUC__)
+ #include <sys/resource.h>                                 // for rusage, getrusage, RUSAGE_SELF
+ #include <sys/time.h>                                     // for timeval, gettimeofday, timezone
  #endif
- 
- using namespace std;
-@@ -80,6 +79,16 @@ format_time(
+@@ -80,6 +82,16 @@ format_time(
  
  namespace Env {
  
@@ -205,7 +204,7 @@ index 4b3298d9dbe..2a6f1e90321 100644
  double
  wall_now()
  {
-@@ -88,22 +97,7 @@ wall_now()
+@@ -88,22 +100,7 @@ wall_now()
    gettimeofday(&tp, &tz);
    return (tp.tv_sec + ((static_cast<double>(tp.tv_usec))/1000000.0));
  }
