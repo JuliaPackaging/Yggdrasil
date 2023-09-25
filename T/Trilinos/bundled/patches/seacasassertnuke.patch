@@ -1,0 +1,21 @@
+commit a6508b2bf00b263dbdebb3df619b003036acc105
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 21:07:04 2023 +0000
+
+    seacas: Remove failing static assert
+    
+    I filed https://github.com/sandialabs/seacas/issues/405 to discuss
+    what the proper resolution is.
+
+diff --git a/packages/seacas/libraries/supes/ext_lib/exmemy.c b/packages/seacas/libraries/supes/ext_lib/exmemy.c
+index 406b4f29f99..2a7b2c794f2 100644
+--- a/packages/seacas/libraries/supes/ext_lib/exmemy.c
++++ b/packages/seacas/libraries/supes/ext_lib/exmemy.c
+@@ -109,7 +109,6 @@
+  *
+  * Contact Greg Sjaardema, gdsjaar@sandia.gov for asisstance.
+  */
+-CT_ASSERT(sizeof(FTNINT) == sizeof(void *));
+ 
+ #if defined(ADDC_)
+ void exmemy_(FTNINT *memreq, FTNINT *locblk, FTNINT *memrtn)

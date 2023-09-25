@@ -74,6 +74,8 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/zoltan2time.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/stktypename.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/panzerhardcode.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/ztmsmpicompat.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/seacasassertnuke.patch
 
 mkdir trilbuild
 cd trilbuild
