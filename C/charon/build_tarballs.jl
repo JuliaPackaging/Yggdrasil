@@ -15,14 +15,17 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/charon-all-changes.patch.patch
+cd tcad-charon
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/charon-no-rhytmos.patch
+mv src src2
+sed -i 's/src/src2/g' PackagesList.cmake
+cd ..
 rm /usr/bin/cmake
 mkdir tcad-charon-build
 cd tcad-charon-build/
 export TRIBITS_BASE_DIR=${WORKSPACE}/srcdir/TriBITS
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${WORKSPACE}/srcdir/tcad-charon -Dtcad-charon_ENABLE_Charon:BOOL=ON -DTPL_ENABLE_SEACASNemspread=OFF -DTPL_ENABLE_SEACASNemslice=OFF -DTPL_ENABLE_SEACASExodiff=OFF -DTPL_ENABLE_SEACASEpu=OFF -DTPL_ENABLE_SEACAS=OFF
+cmake --trace -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${WORKSPACE}/srcdir/tcad-charon -Dtcad-charon_ENABLE_Charon:BOOL=ON
 make -j20 install
 """
 
@@ -36,9 +39,11 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Trilinos_jll", uuid="b6fd3212-6f87-5999-b9ea-021e9cd21b17"), compat="14.4.0")
+    Dependency(PackageSpec(name="Trilinos_jll", uuid="b6fd3212-6f87-5999-b9ea-021e9cd21b17"), compat="14.4.0"),
+    Dependency("boost_jll"),
     HostBuildDependency(PackageSpec(name="CMake_jll"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",
+    preferred_gcc_version=v"9")

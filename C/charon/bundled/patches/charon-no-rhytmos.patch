@@ -1,0 +1,17 @@
+commit b740521deb5a18f4351de9ee72725a6953560dbd
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Tue Sep 26 14:12:57 2023 +0000
+
+    Remove Rhytmos
+
+diff --git a/src/cmake/Dependencies.cmake b/src/cmake/Dependencies.cmake
+index 0362269..e615c6c 100644
+--- a/src/cmake/Dependencies.cmake
++++ b/src/cmake/Dependencies.cmake
+@@ -1,5 +1,5 @@
+ tribits_package_define_dependencies(
+-  LIB_REQUIRED_PACKAGES Teuchos Kokkos Panzer PanzerDiscFE PanzerAdaptersSTK STKMesh STKUtil STKTopology SEACASNemesis SEACASExodus SEACASAprepro Stratimikos Piro NOX Rythmos Teko Belos AztecOO
++  LIB_REQUIRED_PACKAGES Teuchos Kokkos Panzer PanzerDiscFE PanzerAdaptersSTK STKMesh STKUtil STKTopology SEACASNemesis SEACASExodus SEACASAprepro Stratimikos Piro NOX Teko Belos AztecOO
+   TEST_REQUIRED_PACKAGES SEACAS SEACASEpu SEACASExodiff SEACASNemslice SEACASNemspread)
+ 
+ IF (ENABLE_XYCE_CLUSTER OR ENABLE_MIXED_MODE)

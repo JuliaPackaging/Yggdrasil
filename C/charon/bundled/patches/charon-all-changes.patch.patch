@@ -11,7 +11,7 @@ diff --git before/tcad-charon/TPLsList.cmake after/tcad-charon/TPLsList.cmake
 index 402fb98..43088ab 100644
 --- before/tcad-charon/TPLsList.cmake
 +++ after/tcad-charon/TPLsList.cmake
-@@ -1 +1,25 @@
+@@ -1 +1,24 @@
 -TRIBITS_REPOSITORY_DEFINE_TPLS()
 +TRIBITS_REPOSITORY_DEFINE_TPLS(
 +  Teuchos TRIBITS_PKG PT
@@ -28,7 +28,6 @@ index 402fb98..43088ab 100644
 +  Stratimikos TRIBITS_PKG PT
 +  Piro TRIBITS_PKG PT
 +  NOX TRIBITS_PKG PT
-+  Rythmos TRIBITS_PKG PT
 +  Teko TRIBITS_PKG PT
 +  Belos TRIBITS_PKG PT
 +  AztecOO TRIBITS_PKG PT
