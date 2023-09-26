@@ -76,6 +76,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/stktypename.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/panzerhardcode.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/ztmsmpicompat.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/seacasassertnuke.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/noxheader.patch
 
 mkdir trilbuild
 cd trilbuild
@@ -107,6 +108,7 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_ABSTRACT_IMPLEMENTATION_EPETRA=ON
     -DNOX_ENABLE_LOCA=ON
     -DTrilinos_ENABLE_EpetraExt=ON -DEpetraExt_BUILD_BTF=ON -DEpetraExt_BUILD_EXPERIMENTAL=ON -DEpetraExt_BUILD_GRAPH_REORDERINGS=ON
+    -DTrilinos_ENABLE_ThyraEpetraAdapters=ON
     -DTrilinos_ENABLE_TrilinosCouplings=ON
     -DTrilinos_ENABLE_Ifpack=ON
     -DTrilinos_ENABLE_Isorropia=ON
