@@ -83,7 +83,7 @@ index 4d2849b126e..435dbca7af6 100644
  
  */
 -void Zoltan_bisector_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
-+void MPIAPI Zoltan_bisector_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
++void ZOLTAN_MPI_CALLBACK_API Zoltan_bisector_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
  {
    struct bisector *med1, *med2;
    int i, nwgts;
@@ -96,7 +96,7 @@ index 1bb73fca703..a3885d79275 100644
  
  */
 -void Zoltan_RB_median_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
-+void MPIAPI Zoltan_RB_median_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
++void ZOLTAN_MPI_CALLBACK_API Zoltan_RB_median_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
  {
    struct median *med1,*med2;
  
