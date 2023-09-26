@@ -1,4 +1,4 @@
-commit 75ce1fcb1f6a36acc320c482c8f6d84dddf45c9f
+commit 047a0a65d1c76eee98a6e77928fcda28f8f7c187
 Author: Keno Fischer <keno@juliacomputing.com>
 Date:   Mon Sep 25 21:06:38 2023 +0000
 
@@ -75,7 +75,7 @@ index a30e0e42928..a01a3d67ded 100644
    void *inout, 
    int *len, 
 diff --git a/packages/zoltan/src/par/par_bisect.c b/packages/zoltan/src/par/par_bisect.c
-index 4d2849b126e..435dbca7af6 100644
+index 4d2849b126e..6653d9da035 100644
 --- a/packages/zoltan/src/par/par_bisect.c
 +++ b/packages/zoltan/src/par/par_bisect.c
 @@ -1251,7 +1251,7 @@ static double eval_cut_quality(
@@ -88,10 +88,18 @@ index 4d2849b126e..435dbca7af6 100644
    struct bisector *med1, *med2;
    int i, nwgts;
 diff --git a/packages/zoltan/src/par/par_median.c b/packages/zoltan/src/par/par_median.c
-index 1bb73fca703..a3885d79275 100644
+index 1bb73fca703..b960ceb0535 100644
 --- a/packages/zoltan/src/par/par_median.c
 +++ b/packages/zoltan/src/par/par_median.c
-@@ -585,7 +585,7 @@ if (proc==0) printf("FINAL tmp_half %.20f weightlo/hi %.0f %.0f valuemin/max %.2
+@@ -60,6 +60,7 @@ extern "C" {
+ #include "par_average_const.h"
+ #include "zoltan_timer.h"
+ #include "zz_const.h"
++#include "zz_util_const.h"
+ 
+ #define TINY   1.0e-6
+ 
+@@ -585,7 +586,7 @@ if (proc==0) printf("FINAL tmp_half %.20f weightlo/hi %.0f %.0f valuemin/max %.2
                                all procs must get same proclo,prochi
  
  */
