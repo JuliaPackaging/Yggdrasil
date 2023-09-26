@@ -1,0 +1,36 @@
+commit 12eb91304eec8f7c71b403325224b79c1e881779
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 05:52:43 2023 +0000
+
+    STK no long long
+
+diff --git a/packages/stk/stk_util/stk_util/parallel/MPI.hpp b/packages/stk/stk_util/stk_util/parallel/MPI.hpp
+index 57000d28133..93c0364d919 100644
+--- a/packages/stk/stk_util/stk_util/parallel/MPI.hpp
++++ b/packages/stk/stk_util/stk_util/parallel/MPI.hpp
+@@ -334,7 +334,6 @@ struct Datatype<unsigned long>
+   }
+ };
+ 
+-#ifdef MPI_LONG_LONG
+ template <>
+ struct Datatype<long long>
+ {
+@@ -342,9 +341,7 @@ struct Datatype<long long>
+     return MPI_LONG_LONG;
+   }
+ };
+-#endif
+ 
+-#ifdef MPI_UNSIGNED_LONG_LONG
+ template <>
+ struct Datatype<unsigned long long>
+ {
+@@ -352,7 +349,6 @@ struct Datatype<unsigned long long>
+     return MPI_UNSIGNED_LONG_LONG;
+   }
+ };
+-#endif
+ 
+ template <>
+ struct Datatype<float>
