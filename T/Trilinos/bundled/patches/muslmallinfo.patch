@@ -1,0 +1,29 @@
+commit fb60a24d40ef01873b8fa64ee0f8632900deaab6
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sun Sep 24 07:00:30 2023 +0000
+
+    stk: Disable use of mallinfo on musl libc
+    
+    musl libc does not provide this glibc-specific interface -
+    only enable in when built against glibc.
+
+diff --git a/packages/stk/stk_util/stk_util/util/FeatureTest.hpp b/packages/stk/stk_util/stk_util/util/FeatureTest.hpp
+index 26c7e44070a..c7bfb62731b 100644
+--- a/packages/stk/stk_util/stk_util/util/FeatureTest.hpp
++++ b/packages/stk/stk_util/stk_util/util/FeatureTest.hpp
+@@ -92,11 +92,14 @@
+ 
+ #elif defined(__linux__)	// Generic linux
+ #  define SIERRA_USE_PLATFORM_DEMANGLER
+-#  define SIERRA_HEAP_INFO
+ #  define SIERRA_MEMORY_INFO
+ #  define SIERRA_MPI_ABORT_SIGNAL SIGTERM
+ #  define SIERRA_USER_SHUTDOWN_SIGNAL SIGUSR1
+ 
++#  if defined(__GLIBC__)
++#    define SIERRA_HEAP_INFO
++#  endif
++
+ #elif defined(__APPLE__)	// MacOS
+ #  define SIERRA_USE_PLATFORM_DEMANGLER
+ #  define SIERRA_HEAP_INFO

@@ -1,0 +1,45 @@
+commit 7f5b16bbf94912fb9c85f722735e769d3cf5d0ac
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 10:24:19 2023 +0000
+
+    Fix windows header capitalization
+
+diff --git a/packages/seacas/applications/epu/EP_Internals.C b/packages/seacas/applications/epu/EP_Internals.C
+index 57b90eef852..9f2143af04b 100644
+--- a/packages/seacas/applications/epu/EP_Internals.C
++++ b/packages/seacas/applications/epu/EP_Internals.C
+@@ -23,7 +23,7 @@
+ 
+ #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER) ||                \
+     defined(__MINGW32__) || defined(_WIN64) || defined(__MINGW64__)
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #endif
+ 
+ extern "C" {
+diff --git a/packages/seacas/applications/epu/EP_ParallelDisks.C b/packages/seacas/applications/epu/EP_ParallelDisks.C
+index f5496b983e6..e11ca5c47a5 100644
+--- a/packages/seacas/applications/epu/EP_ParallelDisks.C
++++ b/packages/seacas/applications/epu/EP_ParallelDisks.C
+@@ -15,7 +15,7 @@
+ 
+ #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER) ||                \
+     defined(__MINGW32__) || defined(_WIN64) || defined(__MINGW64__)
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #endif
+ 
+ /*****************************************************************************/
+diff --git a/packages/seacas/libraries/suplib_cpp/sys_info.C b/packages/seacas/libraries/suplib_cpp/sys_info.C
+index cc034e18150..5f36b1f8b1a 100644
+--- a/packages/seacas/libraries/suplib_cpp/sys_info.C
++++ b/packages/seacas/libraries/suplib_cpp/sys_info.C
+@@ -12,7 +12,7 @@
+ #ifndef NOMINMAX
+ #define NOMINMAX
+ #endif
+-#include <Windows.h>
++#include <windows.h>
+ #undef IN
+ #undef OUT
+ #include <fmt/ostream.h>

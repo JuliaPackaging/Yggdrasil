@@ -1,0 +1,28 @@
+commit 06adc693bd34fbbb4e66c4063c04e07efba64a68
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 10:53:59 2023 +0000
+
+    MPI_CXX_BOOL -> MPI_C_BOOL for msmpi compat
+
+diff --git a/packages/stk/stk_util/stk_util/parallel/ParallelReduceBool.hpp b/packages/stk/stk_util/stk_util/parallel/ParallelReduceBool.hpp
+index b66ce7486b8..2aa01497e40 100644
+--- a/packages/stk/stk_util/stk_util/parallel/ParallelReduceBool.hpp
++++ b/packages/stk/stk_util/stk_util/parallel/ParallelReduceBool.hpp
+@@ -54,7 +54,7 @@ inline bool is_true_on_all_procs(ParallelMachine comm , const bool truthValue)
+     return globalResult;
+   } else if (stk::util::get_common_coupling_version() >= 3) {
+     bool globalResult;
+-    MPI_Allreduce(&truthValue, &globalResult, 1, MPI_CXX_BOOL, MPI_LAND, comm);
++    MPI_Allreduce(&truthValue, &globalResult, 1, MPI_C_BOOL, MPI_LAND, comm);
+     return globalResult;
+   } else
+   {
+@@ -80,7 +80,7 @@ inline bool is_true_on_any_proc(ParallelMachine comm , const bool truthValue)
+     return globalResult;
+   } else if (stk::util::get_common_coupling_version() >= 3) {
+     bool globalResult;
+-    MPI_Allreduce(&truthValue, &globalResult, 1, MPI_CXX_BOOL, MPI_LOR, comm);
++    MPI_Allreduce(&truthValue, &globalResult, 1, MPI_C_BOOL, MPI_LOR, comm);
+     return globalResult;
+   } else
+   {

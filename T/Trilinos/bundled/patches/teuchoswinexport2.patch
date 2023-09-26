@@ -1,0 +1,82 @@
+commit 6426a7def22f1982694a2bc22e2d56f9862f99ce
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 13:36:15 2023 +0000
+
+    Teuchos: More missing windows export declarations
+
+diff --git a/packages/teuchos/comm/src/Teuchos_DefaultMpiComm.hpp b/packages/teuchos/comm/src/Teuchos_DefaultMpiComm.hpp
+index 4a0fc76682c..22add28a89d 100644
+--- a/packages/teuchos/comm/src/Teuchos_DefaultMpiComm.hpp
++++ b/packages/teuchos/comm/src/Teuchos_DefaultMpiComm.hpp
+@@ -75,7 +75,7 @@
+ namespace Teuchos {
+ 
+ //! Human-readable string version of the given MPI error code.
+-std::string
++TEUCHOSCOMM_LIB_DLL_EXPORT std::string
+ mpiErrorCodeToString (const int err);
+ 
+ namespace details {
+@@ -92,13 +92,13 @@ namespace details {
+   /// \note This function may allow a memory leak in your program, if
+   ///   you have allowed the MPI_Comm to persist after MPI_Finalize
+   ///   has been called.
+-  void safeCommFree (MPI_Comm* comm);
++  TEUCHOSCOMM_LIB_DLL_EXPORT void safeCommFree (MPI_Comm* comm);
+ 
+   /// Set the given communicator's error handler to \c handler.
+   ///
+   /// If the MPI version is >= 2, this calls MPI_Comm_set_handler().
+   /// If the MPI version is 1, this calls MPI_Errhandler_set().
+-  int setCommErrhandler (MPI_Comm comm, MPI_Errhandler handler);
++  TEUCHOSCOMM_LIB_DLL_EXPORT int setCommErrhandler (MPI_Comm comm, MPI_Errhandler handler);
+ 
+ } // namespace details
+ 
+diff --git a/packages/teuchos/comm/src/Teuchos_EReductionType.hpp b/packages/teuchos/comm/src/Teuchos_EReductionType.hpp
+index 58c7104a4be..cd70ff066e4 100644
+--- a/packages/teuchos/comm/src/Teuchos_EReductionType.hpp
++++ b/packages/teuchos/comm/src/Teuchos_EReductionType.hpp
+@@ -46,6 +46,7 @@
+ /// \brief Declaration of Teuchos::EReductionType enum, and related functions
+ 
+ #include "Teuchos_config.h"
++#include "Teuchos_DLLExportMacro.h"
+ #ifdef HAVE_TEUCHOS_MPI
+ #  include <mpi.h> // need this for MPI_Op (see below)
+ #endif // HAVE_TEUCHOS_MPI
+@@ -88,7 +89,7 @@ namespace Details {
+ ///
+ /// \warning This is an implementation detail and not for public use.
+ ///   It only exists when Trilinos was built with MPI.
+-MPI_Op getMpiOpForEReductionType (const enum EReductionType reductionType);
++TEUCHOSCOMM_LIB_DLL_EXPORT MPI_Op getMpiOpForEReductionType (const enum EReductionType reductionType);
+ 
+ } // namespace Details
+ #endif // HAVE_TEUCHOS_MPI
+diff --git a/packages/teuchos/comm/src/Teuchos_MpiReductionOpSetter.hpp b/packages/teuchos/comm/src/Teuchos_MpiReductionOpSetter.hpp
+index 1bc59f61810..860f352088b 100644
+--- a/packages/teuchos/comm/src/Teuchos_MpiReductionOpSetter.hpp
++++ b/packages/teuchos/comm/src/Teuchos_MpiReductionOpSetter.hpp
+@@ -122,7 +122,7 @@ private:
+ ///
+ /// \warning This is an implementation detail of Teuchos.
+ ///   Users should never call this function directly.
+-MPI_Op setMpiReductionOp (const MpiReductionOpBase& reductOp);
++TEUCHOSCOMM_LIB_DLL_EXPORT MPI_Op setMpiReductionOp (const MpiReductionOpBase& reductOp);
+ 
+ } // namespace Details
+ } // namespace Teuchos
+diff --git a/packages/teuchos/comm/src/Teuchos_TimeMonitor.hpp b/packages/teuchos/comm/src/Teuchos_TimeMonitor.hpp
+index b65094fe6ea..04021aecac5 100644
+--- a/packages/teuchos/comm/src/Teuchos_TimeMonitor.hpp
++++ b/packages/teuchos/comm/src/Teuchos_TimeMonitor.hpp
+@@ -766,7 +766,7 @@ protected:
+ 
+ /// \class SyncTimeMonitor
+ /// \brief A TimeMonitor that waits at a MPI barrier before destruction.
+-class SyncTimeMonitor :
++class TEUCHOSCOMM_LIB_DLL_EXPORT SyncTimeMonitor :
+     public TimeMonitor {
+ public:
+ 

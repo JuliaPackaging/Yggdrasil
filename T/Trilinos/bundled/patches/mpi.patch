@@ -1,0 +1,50 @@
+commit f4edb559c112a1f2cb86276479d111388c8411bf
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 15:16:24 2023 +0000
+
+    M_PI stuff
+
+diff --git a/packages/intrepid2/src/Shared/Intrepid2_PolylibDef.hpp b/packages/intrepid2/src/Shared/Intrepid2_PolylibDef.hpp
+index bbb75d8d6b8..a9175ab61cb 100644
+--- a/packages/intrepid2/src/Shared/Intrepid2_PolylibDef.hpp
++++ b/packages/intrepid2/src/Shared/Intrepid2_PolylibDef.hpp
+@@ -102,6 +102,9 @@
+   #endif
+   #include <math.h>
+ #endif
++#ifndef M_PI
++#define M_PI   3.14159265358979323846264338327
++#endif
+ 
+ namespace Intrepid2 {
+ 
+diff --git a/packages/stk/stk_unit_test_utils/stk_unit_test_utils/stk_mesh_fixtures/CoordinateMapping.hpp b/packages/stk/stk_unit_test_utils/stk_unit_test_utils/stk_mesh_fixtures/CoordinateMapping.hpp
+index 568a1926873..e815394a921 100644
+--- a/packages/stk/stk_unit_test_utils/stk_unit_test_utils/stk_mesh_fixtures/CoordinateMapping.hpp
++++ b/packages/stk/stk_unit_test_utils/stk_unit_test_utils/stk_mesh_fixtures/CoordinateMapping.hpp
+@@ -39,6 +39,10 @@
+ #include <stddef.h>                     // for size_t, NULL
+ #include <stk_mesh/base/Field.hpp>      // for Field
+ 
++#ifndef M_PI
++#define M_PI 3.14159265358979323846
++#endif
++
+ namespace stk {
+ namespace mesh {
+ namespace fixtures {
+diff --git a/packages/stk/stk_unit_test_utils/stk_unit_test_utils/stk_mesh_fixtures/Gear.hpp b/packages/stk/stk_unit_test_utils/stk_unit_test_utils/stk_mesh_fixtures/Gear.hpp
+index 082c31ef8a0..7d947fc9b82 100644
+--- a/packages/stk/stk_unit_test_utils/stk_unit_test_utils/stk_mesh_fixtures/Gear.hpp
++++ b/packages/stk/stk_unit_test_utils/stk_unit_test_utils/stk_mesh_fixtures/Gear.hpp
+@@ -43,6 +43,10 @@
+ #include "stk_mesh/base/Entity.hpp"     // for Entity
+ #include "stk_mesh/base/FieldState.hpp"  // for FieldState
+ 
++#ifndef M_PI
++#define M_PI 3.14159265358979323846
++#endif
++
+ namespace stk { namespace mesh { class BulkData; } }
+ namespace stk { namespace mesh { class MetaData; } }
+ namespace stk { namespace mesh { class Part; } }

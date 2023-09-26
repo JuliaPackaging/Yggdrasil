@@ -1,0 +1,29 @@
+commit f5bf18ec8e9f2325793f9f55829c3fc80fea40f7
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sun Sep 24 17:42:17 2023 +0000
+
+    Comment out HDF5 for now
+
+diff --git a/packages/seacas/libraries/exodus/src/ex_utils.c b/packages/seacas/libraries/exodus/src/ex_utils.c
+index e92cffdea58..224bde537dd 100644
+--- a/packages/seacas/libraries/exodus/src/ex_utils.c
++++ b/packages/seacas/libraries/exodus/src/ex_utils.c
+@@ -98,12 +98,12 @@ const char *ex_config(void)
+ #endif
+ #ifndef _MSC_VER
+ #if NC_HAS_HDF5
+-  {
+-    unsigned major, minor, release;
+-    H5get_libversion(&major, &minor, &release);
+-    j += snprintf(buffer + j, buffer_size - j, "\t\tHDF5 enabled (%u.%u.%u)\n", major, minor,
+-                  release);
+-  }
++//  {
++//    unsigned major, minor, release;
++//    H5get_libversion(&major, &minor, &release);
++//    j += snprintf(buffer + j, buffer_size - j, "\t\tHDF5 enabled (%u.%u.%u)\n", major, minor,
++//                  release);
++//  }
+   j += snprintf(buffer + j, buffer_size - j, "\t\tZlib Compression (read/write) enabled\n");
+ #if NC_HAS_SZIP_WRITE == 1
+   j += snprintf(buffer + j, buffer_size - j, "\t\tSZip Compression (read/write) enabled\n");
