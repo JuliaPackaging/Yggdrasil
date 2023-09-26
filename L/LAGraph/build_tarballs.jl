@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LAGraph"
-version = v"1.0.1"
+version = v"1.0.2"
 
 sources = [
     GitSource(
         "https://github.com/GraphBLAS/LAGraph.git",
-        "0c84c41c561608a49a770569642eaff4bcc7eb8f",
+        "7887f54875d5659e701809d623031fe0afd0aa0c",
     ),
     DirectorySource("./bundled"),
 ]
@@ -17,19 +17,17 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/LAGraph
 install_license LICENSE
-# Linux builds throw "undefined reference to 'clock_gettime' and 'clock_settime'" errors if -lrt isn't set
-if [[ "${target}" == *-linux-* ]]; then
+# x86 glibc builds throw "undefined reference to 'clock_gettime' and 'clock_settime'" errors if -lrt isn't set
+if [[ "${target}" == *86*-linux-gnu ]]; then
 	atomic_patch -p1 ../patches/lrt-flag.patch
 fi
-# Account for mallopt not being included in musl 
-atomic_patch -p1 ../patches/fix_missing_mallopt_on_musl.patch
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DGRAPHBLAS_INCLUDE_DIR=${includedir} \
       -DCMAKE_BUILD_TYPE=Release ..
-make -j${nproc}
-make install
+cmake --build . --parallel ${nproc} --target all
+cmake --build . --target install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -37,7 +35,10 @@ make install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [LibraryProduct("liblagraph", :liblagraph)]
+products = [
+    LibraryProduct("liblagraph", :liblagraph), 
+    LibraryProduct("liblagraphx", :liblagraphx),
+]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -46,7 +47,6 @@ dependencies = [
             name = "SSGraphBLAS_jll",
             uuid = "7ed9a814-9cab-54e9-8e9e-d9e95b4d61b1",
         );
-        platforms = platforms,
     ),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else
@@ -76,3 +76,4 @@ build_tarballs(
     julia_compat = "1.6",
     preferred_gcc_version = v"9",
 )
+
