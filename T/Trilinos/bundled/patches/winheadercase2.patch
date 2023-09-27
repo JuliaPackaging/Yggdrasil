@@ -1,0 +1,42 @@
+commit 328d4dd42a22923679be75de8e8671bbacfbc2d2
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Wed Sep 27 15:14:47 2023 +0000
+
+    Windows: More header capitalization issues
+
+diff --git a/cmake/tribits/win_interface/include/gettimeofday.c b/cmake/tribits/win_interface/include/gettimeofday.c
+index 5b1a5738c15..559137197c2 100644
+--- a/cmake/tribits/win_interface/include/gettimeofday.c
++++ b/cmake/tribits/win_interface/include/gettimeofday.c
+@@ -1,5 +1,5 @@
+ #include <time.h>
+-#include <Winsock2.h> /* to get timeval struct */
++#include <winsock2.h> /* to get timeval struct */
+ 
+ struct timezone 
+ {
+diff --git a/cmake/tribits/win_interface/include/winprocess.h b/cmake/tribits/win_interface/include/winprocess.h
+index d313c6d71d4..338facaa76f 100644
+--- a/cmake/tribits/win_interface/include/winprocess.h
++++ b/cmake/tribits/win_interface/include/winprocess.h
+@@ -1,6 +1,6 @@
+ #ifdef _MSC_VER
+ # define NOMINMAX
+-# include <Winsock2.h>
++# include <winsock2.h>
+ # include <process.h>
+ # define getpid _getpid
+ inline void sleep(int sec)
+diff --git a/packages/ml/src/Utils/ml_utils.c b/packages/ml/src/Utils/ml_utils.c
+index 9b0e6704955..58d6b2e6811 100644
+--- a/packages/ml/src/Utils/ml_utils.c
++++ b/packages/ml/src/Utils/ml_utils.c
+@@ -24,7 +24,7 @@ Modified by:      $Author$
+ #include <time.h>
+ #include "ml_viz_stats.h"
+ #ifdef _WIN32
+-# include <Winsock2.h>
++# include <winsock2.h>
+ # include <process.h>
+ void sleep(int sec)
+ {
