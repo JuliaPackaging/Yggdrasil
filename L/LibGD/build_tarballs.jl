@@ -1,23 +1,35 @@
 using BinaryBuilder, Pkg
 
 name = "LibGD"
-version = v"2.3.0"
+version = v"2.3.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libgd/libgd/releases/download/gd-$(version)/libgd-$(version).tar.gz",
-                  "32590e361a1ea6c93915d2448ab0041792c11bae7b18ee812514fe08b2c6a342")
+    GitSource("https://github.com/libgd/libgd.git",
+              "b5319a41286107b53daa0e08e402aa1819764bdc")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgd-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-# For some reasons (something must be off in the configure script), on some
-# platforms the build system tries to use iconv but without adding the `-liconv`
-# flag.  Give a hint to make to use the right flag everywhere
-make -j${nproc} LIBICONV="-liconv" LTLIBICONV="-liconv"
-make install
+cd $WORKSPACE/srcdir/libgd
+
+mkdir build && cd build
+
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_PNG=1 \
+    -DENABLE_JPEG=1 \
+    -DENABLE_TIFF=1 \
+    -DENABLE_WEBP=1 \
+    -DENABLE_XPM=1 \
+    -DENABLE_GD_FORMATS=1 \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+
+cmake --build . -j${nproc} --target install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -45,12 +57,12 @@ dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
     # TODO: v4.3.0 is available, use that next time
-    Dependency("Libtiff_jll"; compat="4.1.0"),
+    Dependency("Libtiff_jll"; compat="4.3.0"),
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
     Dependency(PackageSpec(name="Xorg_libXpm_jll", uuid = "1a3ddb2d-74e3-57f3-a27b-e9b16291b4f2")),
     Dependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
-    Dependency(PackageSpec(name="libwebp_jll", uuid = "c5f90fcd-3b7e-5836-afba-fc50a0988cb2")),
+    Dependency("libwebp_jll"; compat="^1.2.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
