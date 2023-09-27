@@ -7,7 +7,7 @@ version = v"1.3.42"
 # Collection of sources required to build GraphicsMagick
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
-                  "97dc1a9d4e89c77b25a3b24505e7ff1653b88f9bfe31f189ce10804b8efa7746"),
+                  "484fccfd2b2faf6c2ba9151469ece5072bcb91ba4ed73e75ed3d8e46c759d557"),
     DirectorySource("bundled"),
 ]
 
