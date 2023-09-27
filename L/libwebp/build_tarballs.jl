@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/libwebp
 export CFLAGS="-std=c99"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-swap-16bit-csp \
     --enable-experimental \
