@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "GraphicsMagick"
-version = v"1.3.40"
+version = v"1.3.42"
 
 # Collection of sources required to build GraphicsMagick
 sources = [
@@ -85,7 +85,7 @@ dependencies = [
     Dependency("Zstd_jll"),
     Dependency("gperftools_jll"),
     Dependency("libpng_jll"),
-    Dependency("libwebp_jll"),
+    Dependency("libwebp_jll"; compat="^1.2.4"),
     # TODO:
     # - ralcgm <http://www.agocg.ac.uk/train/cgm/ralcgm.htm>
     # - cdraw <https://www.dechifro.org/dcraw/>
