@@ -22,6 +22,11 @@ if [[ ${target} == aarch64-linux-musl ]]; then
     atomic_patch -p5 ${WORKSPACE}/srcdir/patches/linux-disentangle_sigcontext.patch
     popd
 fi
+if [[ "${target}" == *freebsd* ]]; then
+    # https://github.com/JuliaLang/julia/issues/51467, caused by
+    # https://github.com/libunwind/libunwind/pull/203
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-revert_prelink_unwind.patch
+fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
