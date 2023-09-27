@@ -108,7 +108,7 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_NOX=ON -DNOX_ENABLE_ABSTRACT_IMPLEMENTATION_EPETRA=ON
     -DNOX_ENABLE_LOCA=ON
     -DTrilinos_ENABLE_EpetraExt=ON -DEpetraExt_BUILD_BTF=ON -DEpetraExt_BUILD_EXPERIMENTAL=ON -DEpetraExt_BUILD_GRAPH_REORDERINGS=ON
-    -DTrilinos_ENABLE_ThyraEpetraAdapters=ON
+    -DTrilinos_ENABLE_ThyraEpetraAdapters=ON -DTrilinos_ENABLE_ThyraEpetraExtAdapters=ON
     -DTrilinos_ENABLE_TrilinosCouplings=ON
     -DTrilinos_ENABLE_Ifpack=ON
     -DTrilinos_ENABLE_Isorropia=ON
@@ -117,7 +117,8 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_Teuchos=ON
     -DTrilinos_ENABLE_Amesos=ON -DAmesos_ENABLE_KLU=ON
     -DTrilinos_ENABLE_Sacado=ON
-    -DTrilinos_ENABLE_Rhytmos=ON
+    -DTrilinos_ENABLE_Rythmos=ON
+    -DTrilinos_ENABLE_Tempus=ON
     -DTrilinos_ENABLE_SEACAS=ON
     -DTrilinos_ENABLE_Piro=ON
     -DTrilinos_ENABLE_Stratimikos=ON
@@ -127,7 +128,16 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
 # Kokkos-dependent enables
 # Kokkos is not available on all platforms, so only enable Kokkos-dependent things if it is available
 if [ -f "/workspace/destdir/lib/cmake/Kokkos/KokkosConfig.cmake" ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} -DTrilinos_ENABLE_Tpetra=ON -DTrilinos_ENABLE_Teko=ON -DTrilinos_ENABLE_STKMesh=ON Trilinos_ENABLE_PanzerDiscFE=ON -DTrilinos_ENABLE_Panzer=ON -DTrilinos_ENABLE_PanzerCore=ON -DTrilinos_ENABLE_PanzerAdaptersSTK=ON"
+    CMAKE_FLAGS="${CMAKE_FLAGS}
+        -DTrilinos_ENABLE_Tpetra=ON
+        -DTrilinos_ENABLE_Teko=ON
+        -DTrilinos_ENABLE_STKMesh=ON
+        -DTrilinos_ENABLE_PanzerDiscFE=ON
+        -DTrilinos_ENABLE_Panzer=ON
+        -DTrilinos_ENABLE_PanzerCore=ON
+        -DTrilinos_ENABLE_PanzerAdaptersSTK=ON
+        -DTrilinos_ENABLE_Amesos2=ON
+        -DNOX_ENABLE_KOKKOS_SOLVER_STACK=ON"
 else
     CMAKE_FLAGS="${CMAKE_FLAGS} -DTPL_ENABLE_Kokkos=OFF"
 fi
