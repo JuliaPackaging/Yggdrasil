@@ -7,13 +7,13 @@ version = v"1.2.4"
 
 # Collection of sources required to build libwebp
 sources = [
-    ArchiveSource("https://chromium.googlesource.com/webm/libwebp",
+    GitSource("https://chromium.googlesource.com/webm/libwebp",
                   "8bacd63a6de1cc091f85a1692390401e7bbf55ac"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libwebp-*/
+cd $WORKSPACE/srcdir/libwebp
 export CFLAGS="-std=c99"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
