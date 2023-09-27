@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libwebp"
-version = v"1.2.0"
+version = v"1.2.4"
 
 # Collection of sources required to build libwebp
 sources = [
-    ArchiveSource("https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$(version).tar.gz",
-                  "2fc8bbde9f97f2ab403c0224fb9ca62b2e6852cbc519e91ceaa7c153ffd88a0c"),
+    ArchiveSource("https://chromium.googlesource.com/webm/libwebp",
+                  "8bacd63a6de1cc091f85a1692390401e7bbf55ac"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,7 +28,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
