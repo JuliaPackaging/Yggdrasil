@@ -77,6 +77,8 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/panzerhardcode.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/ztmsmpicompat.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/seacasassertnuke.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/noxheader.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/winheadercase2.patch
+
 
 mkdir trilbuild
 cd trilbuild
