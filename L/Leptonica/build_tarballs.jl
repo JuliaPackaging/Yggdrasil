@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/leptonica
 export CPPFLAGS="-I${includedir}"
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
