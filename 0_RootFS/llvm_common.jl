@@ -52,7 +52,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     """ *
     raw"""
     apk update
-    apk add build-base python3 python3-dev linux-headers musl-dev zlib-dev musl-dev
+    apk add build-base python3 python3-dev linux-headers musl-dev zlib-dev
 
     # We need the XML2, iconv, Zlib libraries in our LLVMBootstrap artifact,
     # and we also need them in target-prefixed directories, so they stick
