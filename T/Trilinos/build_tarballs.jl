@@ -123,6 +123,8 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
     -DTrilinos_ENABLE_Piro=ON
     -DTrilinos_ENABLE_Stratimikos=ON
     -DTrilinos_ENABLE_STK=ON
+    -DTrilinos_ENABLE_Amesos=ON
+    -DTrilinos_ENABLE_ML=ON
     "
 
 # Kokkos-dependent enables
@@ -130,7 +132,7 @@ CMAKE_FLAGS="${CMAKE_FLAGS}
 if [ -f "/workspace/destdir/lib/cmake/Kokkos/KokkosConfig.cmake" ]; then
     CMAKE_FLAGS="${CMAKE_FLAGS}
         -DTrilinos_ENABLE_Tpetra=ON
-        -DTrilinos_ENABLE_Teko=ON
+        -DTrilinos_ENABLE_Teko=ON -DTEKO_HAVE_EPETRA=ON
         -DTrilinos_ENABLE_STKMesh=ON
         -DTrilinos_ENABLE_PanzerDiscFE=ON
         -DTrilinos_ENABLE_Panzer=ON
