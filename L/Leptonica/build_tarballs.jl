@@ -27,7 +27,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liblept", :liblept),
+    LibraryProduct("libleptonica", :liblept),
     ExecutableProduct("convertfilestopdf", :convertfilestopdf),
     ExecutableProduct("convertfilestops", :convertfilestops),
     ExecutableProduct("convertformat", :convertformat),
