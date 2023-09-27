@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libwebp"
-version = v"1.2.4"
+version = v"1.3.2"
 
 # Collection of sources required to build libwebp
 sources = [
     GitSource("https://chromium.googlesource.com/webm/libwebp",
-                  "8bacd63a6de1cc091f85a1692390401e7bbf55ac"),
+                  "ca332209cb5567c9b249c86788cb2dbf8847e760"),
 ]
 
 # Bash recipe for building across all platforms
