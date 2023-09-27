@@ -224,6 +224,7 @@ function gcc_script(compiler_target::Platform)
         # Patch for building binutils 2.30+ against FreeBSD
         atomic_patch -p1 $WORKSPACE/srcdir/patches/binutils_freebsd_symbol_versioning.patch || true
 
+        #gprofng doesn't build on musl anymore ;(
         ./configure --prefix=${prefix} \
             --target=${COMPILER_TARGET} \
             --host=${MACHTYPE} \
@@ -231,8 +232,8 @@ function gcc_script(compiler_target::Platform)
             --enable-multilib \
             --program-prefix="${COMPILER_TARGET}-" \
             --disable-werror \
-            --enable-deterministic-archives
-
+            --enable-deterministic-archives \
+            --disable-gprofng
         make -j${nproc}
         make install
     fi
@@ -280,6 +281,8 @@ function gcc_script(compiler_target::Platform)
     unset CFLAGS
     unset CXXFLAGS
 
+    CFLAGS="$CFLAGS -D_GNU_SOURCE"
+    CXXFLAGS="$CXXFLAGS -D_GNU_SOURCE"
     # This is needed for any glibc older than 2.14, which includes the following commit
     # https://sourceware.org/git/?p=glibc.git;a=commit;h=95f5a9a866695da4e038aa4e6ccbbfd5d9cf63b7
     ln -vs libgcc.a $(${COMPILER_TARGET}-gcc -print-libgcc-file-name | sed 's/libgcc/&_eh/') || true
