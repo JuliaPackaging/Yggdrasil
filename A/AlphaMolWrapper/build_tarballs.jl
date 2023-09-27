@@ -5,7 +5,7 @@ version = v"0.1"
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 
 sources = [
-    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "446c9949291c89596a58cd14f9864101ff0dc9bf"),    
+    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "a13beb3ffe986c3f493ca88212c5c9ed2b705225"),    
 ]
 
 script = raw"""
