@@ -4,11 +4,11 @@ using BinaryBuilder
 
 # Collection of sources required to build SymEngine
 name = "SymEngine"
-version = v"0.10.1"
+version = v"0.11.1"
 
 sources = [
     GitSource("https://github.com/symengine/symengine.git",
-                  "ef931563213434e0288b29ac3ef54ee5efa91f85"),
+              "72a01e4c1fc88796796d6ef37e6ed6d15728bd7f"),
 ]
 
 # Bash recipe for building across all platforms
