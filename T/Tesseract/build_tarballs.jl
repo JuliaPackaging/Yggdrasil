@@ -25,7 +25,7 @@ install_license ./LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -40,7 +40,7 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"),
-    Dependency("Leptonica_jll"),
+    Dependency("Leptonica_jll"; compat="~1.8.2"),
     Dependency("CompilerSupportLibraries_jll"),
     # Optional dependencies
     # Dependency("ICU_jll"),
