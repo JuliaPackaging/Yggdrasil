@@ -8,11 +8,15 @@ version = v"1.3.42"
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
                   "484fccfd2b2faf6c2ba9151469ece5072bcb91ba4ed73e75ed3d8e46c759d557"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/GraphicsMagick*
+
+# Don't use `clock_realtime` if it isn't available
+atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 
 # While all libraries are available, only the last set of header files
 # (here depth=8) remain available.
