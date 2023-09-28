@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SDL
+cd $WORKSPACE/srcdir/SDL_image
 
 mkdir build && cd build
 
