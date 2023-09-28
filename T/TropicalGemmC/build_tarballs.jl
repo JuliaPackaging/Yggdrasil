@@ -1,5 +1,3 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 using BinaryBuilderBase
 using Pkg
@@ -13,10 +11,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ArrogantGao/TropicalGemm_Cuda.git", "3e592f5ccdb1690844b0988f37701271ecda04fa")
+    GitSource("https://github.com/ArrogantGao/TropicalGemm_Cuda.git", "5510f1394e8b5dc4fc98df7ea640a54a417188a2")
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd TropicalGemm_Cuda/
@@ -24,20 +21,44 @@ cd TropicalGemm_Cuda/
 export CUDA_HOME=${WORKSPACE}/destdir/cuda;
 export PATH=$PATH:$CUDA_HOME/bin
 
+mkdir build
+cd build
+
+cmake ..
 make -j${nproc}
+
+cd ..
+for file in lib/*.${dlext}; do
+    if [ -f "$file" ]; then
+        install -Dvm 0755 $file ${libdir}/$(basename $file)
+    fi
+done
+
 install_license /usr/share/licenses/MIT
 """
-
 
 augment_platform_block = CUDA.augment
 
 versions_to_build = [
-    v"12.1",
+    v"12.0",
+    v"12.1"
 ]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["TropicalGemmC"], :libtropicalgemm),
+    LibraryProduct(["lib_PlusMul_FP32"], :lib_PlusMul_FP32),
+    LibraryProduct(["lib_PlusMul_FP64"], :lib_PlusMul_FP64),
+    LibraryProduct(["lib_PlusMul_INT32"], :lib_PlusMul_INT32),
+    LibraryProduct(["lib_PlusMul_INT64"], :lib_PlusMul_INT64),
+    LibraryProduct(["lib_TropicalMaxMul_FP32"], :lib_TropicalMaxMul_FP32),
+    LibraryProduct(["lib_TropicalMaxMul_FP64"], :lib_TropicalMaxMul_FP64),
+    LibraryProduct(["lib_TropicalMaxMul_INT32"], :lib_TropicalMaxMul_INT32),
+    LibraryProduct(["lib_TropicalMaxMul_INT64"], :lib_TropicalMaxMul_INT64),
+    LibraryProduct(["lib_TropicalAndOr_Bool"], :TropicalAndOr_Bool),
+    LibraryProduct(["lib_TropicalMaxPlus_FP32"], :TropicalMaxPlus_FP32),
+    LibraryProduct(["lib_TropicalMaxPlus_FP64"], :TropicalMaxPlus_FP64),
+    LibraryProduct(["lib_TropicalMinPlus_FP32"], :TropicalMinPlus_FP32),
+    LibraryProduct(["lib_TropicalMinPlus_FP64"], :TropicalMinPlus_FP64),
 ]
 
 platforms = [
