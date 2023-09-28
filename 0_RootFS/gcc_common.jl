@@ -399,6 +399,16 @@ function gcc_script(compiler_target::Platform)
         ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/lib/libc.so
 
     elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
+        # Install headers
+        mkdir -p $WORKSPACE/srcdir/mingw_headers
+        cd $WORKSPACE/srcdir/mingw_headers
+        ${WORKSPACE}/srcdir/mingw-*/mingw-w64-headers/configure \
+        --prefix=/ \
+        --enable-sdk=no \
+        --build=${HOST_TARGET} \
+        --host=${COMPILER_TARGET}
+        make install DESTDIR=${sysroot}
+
         # Build CRT
         mkdir -p $WORKSPACE/srcdir/mingw_crt_build
         cd $WORKSPACE/srcdir/mingw_crt_build
@@ -423,8 +433,7 @@ function gcc_script(compiler_target::Platform)
             --host=${COMPILER_TARGET} \
             --with-sysroot=${sysroot} \
             ${MINGW_CONF_ARGS}
-        # Build serially, it sounds like there are some race conditions in the makefile
-        make
+        make -j${nproc}
         make install DESTDIR=${sysroot}
 
     elif [[ ${COMPILER_TARGET} == *-darwin* ]]; then
