@@ -59,7 +59,6 @@ dependencies = [
     # TODO: v4.3.0 is available, use that next time
     Dependency("Libtiff_jll"; compat="~4.5.1"),
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
-    Dependency(PackageSpec(name="Xorg_libXpm_jll", uuid = "1a3ddb2d-74e3-57f3-a27b-e9b16291b4f2")),
     Dependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
     Dependency("libwebp_jll"; compat="1.2.4"),
 ]
