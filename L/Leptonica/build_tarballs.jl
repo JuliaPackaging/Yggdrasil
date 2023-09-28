@@ -51,7 +51,7 @@ dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
     # Leptonica has a runtime check on the minor version of OpenJpeg, because why not:
     # https://github.com/DanBloomberg/leptonica/blob/68d2cc15b955192f65772689d258a6d10dba52f5/src/jp2kio.c#L268-L272
-    Dependency("OpenJpeg_jll"; compat="~2.4.0"),
+    Dependency("OpenJpeg_jll"; compat="~2.5.0"),
 ]
 
 # Build the tarballs.
