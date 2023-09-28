@@ -20,24 +20,18 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.
 mkdir build
 cmake --version
 
-# Make the host compile tools easily accessible when cross-compiling.
-# Otherwise, CMake will use the cross-compiler for host tools.
-export AR=$HOSTAR
-export AS=$HOSTAS
-export CC=$HOSTCC
-export CXX=$HOSTCXX
-export DSYMUTIL=$HOSTDSYMUTIL
-export FC=$HOSTFC
-export includedir=$host_includedir
-export libdir=$host_libdir
-export LIPO=$HOSTLIPO
-export LD=$HOSTLD
-export NM=$HOSTNM
-export OBJCOPY=$HOSTOBJCOPY
-export OBJDUMP=$HOSTOBJDUMP
-export RANLIB=$HOSTRANLIB
-export READELF=$HOSTREADELF
-export STRIP=$HOSTSTRIP
+# Build some host tools using Yggdrasil-specific hacks.
+cmake -S. -Bbuild \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+    -DBUILD_DEPS:BOOL=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_EXAMPLES:BOOL=OFF \
+    -DBUILD_SAMPLES:BOOL=OFF \
+    -DUSE_SCIP:BOOL=OFF \
+    -DUSE_HIGHS:BOOL=OFF \
+    -DUSE_COINOR:BOOL=OFF \
+    -DUSE_GLPK:BOOL=OFF
+cmake --build host_tools
 
 # Build OR-Tools.
 cmake -S. -Bbuild \
