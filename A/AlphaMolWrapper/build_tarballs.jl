@@ -1,11 +1,16 @@
 using BinaryBuilder, Pkg
 
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942 
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
 name = "AlphaMolWrapper"
 version = v"0.1"
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 sources = [
-    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "4d7e902a7bec19a7cc3df905b7900afb75e8e26a"),    
+    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "7d27ba6c26eed686a2d82e6e2956dd0ef4a85fd3"),    
 ]
 
 script = raw"""
@@ -27,8 +32,8 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("GMP_jll"; compat="6.2.0"),
+    Dependency("GMP_jll"; compat="6.2.1"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"11", julia_compat="1.7")
+    preferred_gcc_version=v"9", julia_compat=join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", "))
