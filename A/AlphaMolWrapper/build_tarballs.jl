@@ -27,7 +27,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"),
-    Dependency("GMP_jll"),
+    Dependency("GMP_jll"; compat="6.2.0"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
