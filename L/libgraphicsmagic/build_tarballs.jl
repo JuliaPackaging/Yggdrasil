@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libgraphicsmagic"
-version = v"1.3.36"
+version = v"1.3.42"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("ftp://ftp.icm.edu.pl/pub/unix/graphics/GraphicsMagick/1.3/GraphicsMagick-1.3.36.tar.gz", "1e6723c48c4abbb31197fadf8396b2d579d97e197123edc70a4f057f0533d563")
+    ArchiveSource("ftp://ftp.icm.edu.pl/pub/unix/graphics/GraphicsMagick/1.3/GraphicsMagick-$(version).tar.gz", "1e6723c48c4abbb31197fadf8396b2d579d97e197123edc70a4f057f0533d563")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(!Sys.iswindows, supported_platforms(; experimental=true))
+platforms = filter!(!Sys.iswindows, supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 
@@ -35,7 +35,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-    Dependency(PackageSpec(name="libwebp_jll", uuid="c5f90fcd-3b7e-5836-afba-fc50a0988cb2"))
+    Dependency("libwebp_jll"; compat="1.2.4")
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f"))
     Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"); compat="2.10.4")
     Dependency(PackageSpec(name="Ghostscript_jll", uuid="61579ee1-b43e-5ca0-a5da-69d92c66a64b"))
