@@ -84,7 +84,7 @@ dependencies = [
     Dependency("Zstd_jll"),
     Dependency("gperftools_jll"),
     Dependency("libpng_jll"),
-    Dependency("libwebp_jll"; compat="^1.2.4"),
+    Dependency("libwebp_jll"; compat="1.2.4"),
     # TODO:
     # - ralcgm <http://www.agocg.ac.uk/train/cgm/ralcgm.htm>
     # - cdraw <https://www.dechifro.org/dcraw/>
