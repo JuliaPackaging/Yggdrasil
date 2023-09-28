@@ -1,5 +1,3 @@
-diff --git a/magick/timer.c b/magick/timer.c
-index fcd226b..774c5f3 100644
 --- a/magick/timer.c
 +++ b/magick/timer.c
 @@ -43,7 +43,7 @@
@@ -20,3 +18,11 @@ index fcd226b..774c5f3 100644
    struct timespec timer;
    (void) clock_gettime(CLOCK_ID, &timer);
 
+@@ -236,7 +236,7 @@ MagickExport void GetTimerInfo(TimerInfo *time_info)
+ */
+ MagickExport double GetTimerResolution(void)
+ {
+-#if defined(HAVE_CLOCK_GETRES)
++#if defined(HAVE_CLOCK_GETRES) && defined(HAVE_CLOCK_REALTIME)
+   struct timespec timer;
+   (void) clock_getres(CLOCK_ID, &timer);
