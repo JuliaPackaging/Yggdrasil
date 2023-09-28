@@ -40,7 +40,7 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"),
-    Dependency("Leptonica_jll"; compat="~1.8.2"),
+    Dependency("Leptonica_jll"; compat="~1.82"),
     Dependency("CompilerSupportLibraries_jll"),
     # Optional dependencies
     # Dependency("ICU_jll"),
