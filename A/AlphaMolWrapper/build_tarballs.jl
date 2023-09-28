@@ -10,7 +10,8 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/AlphaMolWrapper
-cmake \
+mkdir build && cd build
+cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} 
