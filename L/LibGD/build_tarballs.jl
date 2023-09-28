@@ -13,22 +13,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libgd
 
-mkdir build && cd build
+./bootstrap.sh
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-png --with-jpeg --with-tiff --with-webp --with-zlib
 
-cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DENABLE_PNG=1 \
-    -DENABLE_JPEG=1 \
-    -DENABLE_TIFF=1 \
-    -DENABLE_WEBP=1 \
-    -DENABLE_XPM=0 \
-    -DENABLE_GD_FORMATS=1 \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    ..
-
-cmake --build . -j${nproc} --target install
+# For some reasons (something must be off in the configure script), on some
+# platforms the build system tries to use iconv but without adding the `-liconv`
+# flag.  Give a hint to make to use the right flag everywhere
+make -j${nproc} LIBICONV="-liconv" LTLIBICONV="-liconv"
+make install
 """
 
 # These are the platforms we will build for by default, unless further
