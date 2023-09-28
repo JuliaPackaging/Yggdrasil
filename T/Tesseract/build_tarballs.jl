@@ -7,8 +7,8 @@ version = v"5.1.0"
 
 # Collection of sources required to build Tesseract
 sources = [
-    ArchiveSource("https://github.com/tesseract-ocr/tesseract/archive/$(version).tar.gz",
-                  "fdec8528d5a0ecc28ab5fff985e0b8ced60726f6ef33f54126f2868e323d4bd2"),
+    GitSource("https://github.com/tesseract-ocr/tesseract.git",
+                  "c2a3efe2824e1c8a0810e82a43406ba8e01527c4"),
     DirectorySource("./bundled")
 ]
 
