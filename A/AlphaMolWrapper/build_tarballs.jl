@@ -8,6 +8,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 name = "AlphaMolWrapper"
 version = v"0.1"
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 sources = [
     GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "7d27ba6c26eed686a2d82e6e2956dd0ef4a85fd3"),    
@@ -36,4 +37,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"9", julia_compat=join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", "))
+    preferred_gcc_version=v"7.5", julia_compat=julia_compat)
