@@ -38,27 +38,25 @@ export CPPFLAGS="-I${includedir}"
 # Delete old misleading libtool files
 rm -f ${prefix}/lib/*.la
 
-if [[ "${target}" == *-apple-* ]]; then
-    BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
-elif [[ "${target}" == *-mingw* ]]; then
-    BACKEND_OPTIONS="--enable-win32 --disable-xcb --disable-xlib"
-elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *freebsd* ]]; then
-    BACKEND_OPTIONS="--enable-xlib --enable-xcb --enable-xlib-xcb"
-fi
+# if [[ "${target}" == *-apple-* ]]; then
+#     BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
+# elif [[ "${target}" == *-mingw* ]]; then
+#     BACKEND_OPTIONS="--enable-win32 --disable-xcb --disable-xlib"
+# elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *freebsd* ]]; then
+#     BACKEND_OPTIONS="--enable-xlib --enable-xcb --enable-xlib-xcb"
+# fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-static \
-    --enable-ft \
-    --enable-tee \
-    --enable-svg \
-    --enable-ps \
-    --enable-pdf \
-    --enable-gobject \
-    --disable-dependency-tracking \
-    ${BACKEND_OPTIONS}
+mkdir output && cd output/
+meson .. --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+    -Dfreetype=enabled \
+    -Dtee=enabled \
+    -Dpng=enabled \
+    -Dzlib=enabled \
+    -Dglib=enabled \
+    -Ddefault_library=shared
 
-make -j${nproc}
-make install
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
