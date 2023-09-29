@@ -56,6 +56,7 @@ fi
     --enable-gobject \
     --disable-dependency-tracking \
     ${BACKEND_OPTIONS}
+
 make -j${nproc}
 make install
 """
