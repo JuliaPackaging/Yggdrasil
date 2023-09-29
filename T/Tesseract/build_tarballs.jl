@@ -15,11 +15,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tesseract
+
 atomic_patch -p1 "$WORKSPACE/srcdir/patches/disable_fast_math.patch"
+
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+
 install_license ./LICENSE
 """
 
@@ -38,7 +41,7 @@ dependencies = [
     Dependency("Giflib_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="~4.3, ~4.4"),
     Dependency("Zlib_jll"),
     Dependency("Leptonica_jll"; compat="~1.82"),
     Dependency("CompilerSupportLibraries_jll"),
