@@ -45,7 +45,7 @@ dependencies = [
     # Optional dependencies
     # Dependency("ICU_jll"),
     Dependency("Cairo_jll"; compat="1.16.1"),
-    Dependency("Pango_jll"; compat="1.50.0"),
+    Dependency("Pango_jll"; compat="1.47.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
