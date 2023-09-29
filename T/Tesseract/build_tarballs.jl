@@ -38,14 +38,14 @@ dependencies = [
     Dependency("Giflib_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="~4.5.1"),
     Dependency("Zlib_jll"),
     Dependency("Leptonica_jll"; compat="~1.82"),
     Dependency("CompilerSupportLibraries_jll"),
     # Optional dependencies
     # Dependency("ICU_jll"),
     Dependency("Cairo_jll"; compat="1.16.1"),
-    Dependency("Pango_jll"; compat="1.47.0"),
+    Dependency("Pango_jll"; compat="1.50.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
