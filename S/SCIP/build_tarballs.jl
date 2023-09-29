@@ -12,6 +12,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# needed for now
+# clock_gettime requires linking to librt -lrt with old glibc
+# remove when CMake accounts for this
+if [[ "${target}" == *86*-linux-gnu ]]; then
+   export LDFLAGS="-lrt"
+elif [[ "${target}" == *-mingw* ]]; then
+   # this is required to link to bliss on mingw
+   export LDFLAGS=-L${libdir}
+fi
+
 cd scipoptsuite*
 
 # for soplex threadlocal
