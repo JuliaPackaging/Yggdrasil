@@ -62,7 +62,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -82,7 +82,7 @@ dependencies = [
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.13.1"),
-    Dependency("Bzip2_jll"; compat="1.0.8")
+    Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
     Dependency("LZO_jll"),
