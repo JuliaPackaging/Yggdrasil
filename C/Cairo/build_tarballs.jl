@@ -2,15 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "Cairo"
-version = v"1.16.0"
+version = v"1.18.0"
 
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/cairo-$(version).tar.xz",
-                  "5e7b29b3f113ef870d1e3ecf8adf21f923396401604bda16d44be45e66052331"),
+                  "243a0736b978a33dee29f9cca7521733b78a65b5418206fef7bd1c3d4cf10b64"),
     DirectorySource("./bundled"),
 ]
-
-version = v"1.16.1" # <-- This version number is a lie to build for the experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -64,7 +62,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -83,8 +81,8 @@ dependencies = [
     Dependency("Pixman_jll"),
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("Bzip2_jll", v"1.0.8"; compat="1.0.8"),
+    Dependency("FreeType2_jll"; compat="2.13.1"),
+    Dependency("Bzip2_jll"; compat="1.0.8")
     Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
     Dependency("LZO_jll"),
