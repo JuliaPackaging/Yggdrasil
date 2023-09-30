@@ -15,7 +15,7 @@ cd $WORKSPACE/srcdir/cairo-*/
 
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
-    sed -i -e "s~cmake_defaults = .*~cmake_defaults = false\nipc_rmid_deferred_release = false~" ${MESON_TARGET_TOOLCHAIN}
+    sed -i -e "s~cmake_defaults = .*~cmake_defaults = false\nipc_rmid_deferred_release = false~" ${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson
 elif [[ "${target}" == "${MACHTYPE}" ]]; then
     # Remove system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
@@ -23,7 +23,7 @@ fi
 
 mkdir output && cd output/
 
-meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
+meson .. --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
     -Dfreetype=enabled \
     -Dtee=enabled \
     -Dpng=enabled \
