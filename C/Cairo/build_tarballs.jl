@@ -38,14 +38,6 @@ export CPPFLAGS="-I${includedir}"
 # Delete old misleading libtool files
 rm -f ${prefix}/lib/*.la
 
-# if [[ "${target}" == *-apple-* ]]; then
-#     BACKEND_OPTIONS="--enable-quartz --enable-quartz-image --disable-xcb --disable-xlib"
-# elif [[ "${target}" == *-mingw* ]]; then
-#     BACKEND_OPTIONS="--enable-win32 --disable-xcb --disable-xlib"
-# elif [[ "${target}" == *-linux-* ]] || [[ "${target}" == *freebsd* ]]; then
-#     BACKEND_OPTIONS="--enable-xlib --enable-xcb --enable-xlib-xcb"
-# fi
-
 mkdir output && cd output/
 
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
