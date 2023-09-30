@@ -7,36 +7,22 @@ version = v"1.18.0"
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/cairo-$(version).tar.xz",
                   "243a0736b978a33dee29f9cca7521733b78a65b5418206fef7bd1c3d4cf10b64"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/cairo-*/
 
-if [[ "${target}" == *-mingw* ]]; then
-    # Link against libssp to fix errors like
-    #     /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld: .libs/cairo-output-stream.o: in function `memcpy':
-    #     /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/string.h:202: undefined reference to `__memcpy_chk'
-    #     /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld: .libs/cairo-win32-font.o: in function `memcpy':
-    #     /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/string.h:202: undefined reference to `__memcpy_chk'
-    #     /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/bin/ld: .libs/cairo-pdf-interchange.o: in function `strcat':
-    #     /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/include/string.h:234: undefined reference to `__strcat_chk'
-    atomic_patch -p1 ../patches/mingw-libssp.patch
-    # autoreconf needs gtkdocize, install it
-    apk update
-    apk add gtk-doc
-    autoreconf -fiv
-elif [[ "${target}" == "${MACHTYPE}" ]]; then
-    # Remove system libexpat to avoid confusion
-    rm /usr/lib/libexpat.so*
-fi
+# if [[ "${target}" == "${MACHTYPE}" ]]; then
+#     # Remove system libexpat to avoid confusion
+#     rm /usr/lib/libexpat.so*
+# fi
 
-# Because `zlib` doesn't have a proper `.pc` file, configure fails to find.
-export CPPFLAGS="-I${includedir}"
+# # Because `zlib` doesn't have a proper `.pc` file, configure fails to find.
+# export CPPFLAGS="-I${includedir}"
 
-# Delete old misleading libtool files
-rm -f ${prefix}/lib/*.la
+# # Delete old misleading libtool files
+# rm -f ${prefix}/lib/*.la
 
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
