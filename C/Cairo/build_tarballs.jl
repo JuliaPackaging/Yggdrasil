@@ -47,7 +47,13 @@ rm -f ${prefix}/lib/*.la
 # fi
 
 mkdir output && cd output/
-meson .. --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+
+# Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
+if [[ "${target}" != x86_64-linux-* ]]; then
+    sed -i -e "s~cmake_defaults = .*~cmake_defaults = false\nipc_rmid_deferred_release = false~" ${MESON_TARGET_TOOLCHAIN}
+fi
+
+meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dfreetype=enabled \
     -Dtee=enabled \
     -Dpng=enabled \
