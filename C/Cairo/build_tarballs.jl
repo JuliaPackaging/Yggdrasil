@@ -59,7 +59,8 @@ meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dpng=enabled \
     -Dzlib=enabled \
     -Dglib=enabled \
-    -Ddefault_library=shared
+    -Ddefault_library=shared \
+    -Dtests=disabled
 
 ninja -j${nproc}
 ninja install
