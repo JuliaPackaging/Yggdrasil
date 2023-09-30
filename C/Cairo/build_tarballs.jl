@@ -38,12 +38,12 @@ export CPPFLAGS="-I${includedir}"
 # Delete old misleading libtool files
 rm -f ${prefix}/lib/*.la
 
-mkdir output && cd output/
-
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
     sed -i -e "s~cmake_defaults = .*~cmake_defaults = false\nipc_rmid_deferred_release = false~" ${MESON_TARGET_TOOLCHAIN}
 fi
+
+mkdir output && cd output/
 
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dfreetype=enabled \
@@ -52,7 +52,8 @@ meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dzlib=enabled \
     -Dglib=enabled \
     -Ddefault_library=shared \
-    -Dtests=disabled
+    -Dtests=disabled \
+    -Ddwrite=disabled
 
 ninja -j${nproc}
 ninja install
