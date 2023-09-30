@@ -9,7 +9,7 @@ version = v"0.1.0"
 sources = [
     GitSource(
         "https://github.com/Pangoraw/Polars.jl/",
-        "da4a4569a8ac7368aab7ae1c589b768b1e5ec36c",
+        "1860f4dd5a8750ffe2ab78268b72e7008cfe169d",
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
