@@ -16,6 +16,10 @@ cd $WORKSPACE/srcdir/cairo-*/
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
     sed -i -e "s~cmake_defaults = .*~cmake_defaults = false\nipc_rmid_deferred_release = false~" ${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson
+elif [[ "${target}" == *-freebsd* ]]; then
+    # Fix the error: undefined reference to `backtrace_symbols'
+    export LDFLAGS="-lexecinfo"
+    export CPPFLAGS="-I${includedir}"
 elif [[ "${target}" == "${MACHTYPE}" ]]; then
     # Remove system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
@@ -71,4 +75,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.6")
