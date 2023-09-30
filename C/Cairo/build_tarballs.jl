@@ -24,7 +24,7 @@ fi
 if [[ "${target}" == *-freebsd* ]]; then
     # Fix the error: undefined reference to `backtrace_symbols'
     sed -i -e "s~c_link_args = .*~c_link_args = ['-L${includedir}', '-lexecinfo']~" ${MESON_TARGET_TOOLCHAIN}
-    sed -i -e "s~cpp_link_args = .*~c_link_args = ['-L${libdir}', '-lexecinfo']~" ${MESON_TARGET_TOOLCHAIN}
+    sed -i -e "s~cpp_link_args = .*~cpp_link_args = ['-L${libdir}', '-lexecinfo']~" ${MESON_TARGET_TOOLCHAIN}
 fi
 
 mkdir output && cd output/
