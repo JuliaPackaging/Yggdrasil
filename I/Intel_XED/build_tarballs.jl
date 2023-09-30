@@ -21,7 +21,7 @@ cd ${WORKSPACE}/srcdir/xed
 rm -f /usr/lib/python3.9/site-packages/._distutils-precedence.pth
 
 python3 mfile.py --clean
-python3 mfile.py -j${nproc} --cc=${CC} --opt=2 --shared
+python3 mfile.py -j${nproc} --cc=${CC} --opt=2 --shared --no-werror
 # We could also build the CLI.
 
 mkdir -p ${includedir}
@@ -35,7 +35,11 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 # This package works only on x86/x86_64
-filter!(p -> arch(p) in ["i686", "x86_64"], platforms)
+filter!(p -> arch(p) ∈ ["i686", "x86_64"], platforms)
+# While x86 should work it's broken
+filter!(p -> arch(p) ≠ "i686", platforms)
+# Darwin and Windows are not supported
+filter!(p -> !Sys.iswindows(p) && !Sys.isapple(p), platforms)
 
 # The products that we will ensure are always built
 products = [
