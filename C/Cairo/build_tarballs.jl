@@ -15,19 +15,21 @@ cd $WORKSPACE/srcdir/cairo-*/
 
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
-    sed -i -e "s~cmake_defaults = .*~cmake_defaults = false\nipc_rmid_deferred_release = false~" ${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson
-elif [[ "${target}" == *-freebsd* ]]; then
-    # Fix the error: undefined reference to `backtrace_symbols'
-    export LDFLAGS="-lexecinfo"
-    export CPPFLAGS="-I${includedir}"
+    sed -i -e "s~cmake_defaults = .*~cmake_defaults = false\nipc_rmid_deferred_release = false~" ${MESON_TARGET_TOOLCHAIN}
 elif [[ "${target}" == "${MACHTYPE}" ]]; then
     # Remove system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
 fi
 
+if [[ "${target}" == *-freebsd* ]]; then
+    # Fix the error: undefined reference to `backtrace_symbols'
+    sed -i -e "s~c_link_args = .*~c_link_args = ['-L${includedir}', '-lexecinfo']~" ${MESON_TARGET_TOOLCHAIN}
+    sed -i -e "s~cpp_link_args = .*~c_link_args = ['-L${libdir}', '-lexecinfo']~" ${MESON_TARGET_TOOLCHAIN}
+fi
+
 mkdir output && cd output/
 
-meson .. --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dfreetype=enabled \
     -Dtee=enabled \
     -Dpng=enabled \
