@@ -17,7 +17,8 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/xed
 
 # This file is binary (?), and Python tries to decode it as UTF-8 and fails, and aborts
-rm /usr/lib/python3.9/site-packages/._distutils-precedence.pth
+# This file exists when I build locally, but not when Yggdrasil builds.
+rm -f /usr/lib/python3.9/site-packages/._distutils-precedence.pth
 
 python3 mfile.py --clean
 python3 mfile.py -j${nproc} --cc=${CC} --opt=2 --shared
