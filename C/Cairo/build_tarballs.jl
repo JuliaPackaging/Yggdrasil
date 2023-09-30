@@ -13,17 +13,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cairo-*/
 
-# if [[ "${target}" == "${MACHTYPE}" ]]; then
-#     # Remove system libexpat to avoid confusion
-#     rm /usr/lib/libexpat.so*
-# fi
-
-# # Because `zlib` doesn't have a proper `.pc` file, configure fails to find.
-# export CPPFLAGS="-I${includedir}"
-
-# # Delete old misleading libtool files
-# rm -f ${prefix}/lib/*.la
-
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
     sed -i -e "s~cmake_defaults = .*~cmake_defaults = false\nipc_rmid_deferred_release = false~" ${MESON_TARGET_TOOLCHAIN}
