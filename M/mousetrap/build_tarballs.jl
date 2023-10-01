@@ -41,10 +41,6 @@ platforms = [
     Platform("x86_64", "windows"; )
 ]
 
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
-include("../../L/libjulia/common.jl")
-platforms = vcat(libjulia_platforms.(julia_versions)...)
-
 linux_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # The products that we will ensure are always built
