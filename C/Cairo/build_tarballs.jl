@@ -64,7 +64,7 @@ dependencies = [
     Dependency("Pixman_jll"),
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.13.1"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
