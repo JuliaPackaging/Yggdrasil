@@ -76,6 +76,7 @@ function blis_script(;blis32::Bool=false)
     # This corresponds to ILP64 handling of OpenBLAS thus Julia.
     if [[ ${nbits} == 64 ]] && [[ "${BLIS32}" != "true" ]]; then
         patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
+        patch frame/compat/cblas/src/cblas_f77.h < ${WORKSPACE}/srcdir/patches/cblas_f77suffix64.patch
     fi
 
     # Include A64FX in Arm64 metaconfig.
