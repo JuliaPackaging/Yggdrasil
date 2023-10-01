@@ -13,6 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libmonitor
+# These client signals are needed for HPCToolkit which depends on this package
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-client-signals=SIGBUS,SIGSEGV,SIGPROF,36,37,38 \
     --disable-dlfcn
