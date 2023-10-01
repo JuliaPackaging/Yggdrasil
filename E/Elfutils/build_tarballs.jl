@@ -27,6 +27,10 @@ if [[ ${target} = *-musl* ]] ; then
     mkdir -p $prefix/include/sys
     # Skip warning macro at top of file
     tail -n +2 /usr/include/sys/cdefs.h >$prefix/include/sys/cdefs.h
+    mkdir $WORKSPACE/bin
+    export PATH=$PATH:$WORKSPACE/bin
+    : >$WORKSPACE/bin/autopoint
+    chmod a+x $WORKSPACE/bin/autopoint
     autoreconf -vif
 fi
 export CC=gcc
