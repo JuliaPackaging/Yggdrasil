@@ -68,7 +68,7 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
-    Dependency("LZO_jll"),
+    # Dependency("LZO_jll"), # Seems to be an issue with clang & darwin...
     Dependency("Zlib_jll"),
     # libcairo needs libssp on Windows, which is provided by CSL, but not in all versions of
     # Julia.  Note that above we're copying libssp to libdir for the versions of Julia where
