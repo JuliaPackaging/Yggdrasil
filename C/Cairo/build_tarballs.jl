@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "Cairo"
-version = v"1.18.0"
+version = v"1.17.8"
 
 sources = [
-    ArchiveSource("https://www.cairographics.org/releases/cairo-$(version).tar.xz",
-                  "243a0736b978a33dee29f9cca7521733b78a65b5418206fef7bd1c3d4cf10b64"),
+    GitSource("https://gitlab.freedesktop.org/cairo/cairo.git",
+              "a9336919fd9e8c10a43cc01ecbf47fce9f4208d2e3cd"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cairo-*/
+cd $WORKSPACE/srcdir/cairo
 
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
@@ -64,7 +64,7 @@ dependencies = [
     Dependency("Pixman_jll"),
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.1"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
