@@ -24,6 +24,15 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# libmonitor uses `<sys/cdefs.h>` (which is a bug) and thus doesn't work with musl
+filter!(p -> libc(p) ≠ "musl", platforms)
+# `<link.h>` not found
+filter!(!Sys.isapple, platforms)
+# `<<alloca.h>` not found
+filter!(!Sys.isfreebsd, platforms)
+# Error "invalid client signals list" during configure
+filter!(!Sys.iswindows, platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmonitor", :libmonitor),
