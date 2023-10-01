@@ -29,7 +29,8 @@ fi
 
 mkdir output && cd output/
 
-meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \ # -Dfreetype=enabled \
+# Add back: -Dfreetype=enabled
+meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \ 
     -Dtee=enabled \
     -Dpng=enabled \
     -Dzlib=enabled \
