@@ -29,6 +29,8 @@ cmake --build build --parallel ${nproc} --target install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# Error: ‘_control87’ was not declared in this scope
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
