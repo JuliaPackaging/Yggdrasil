@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Elfutils"
-version = v"0.182"
+version = v"0.189"
 
 # Collection of sources required to build Elfutils
 sources = [
     ArchiveSource("https://sourceware.org/elfutils/ftp/$(version.major).$(version.minor)/elfutils-$(version.major).$(version.minor).tar.bz2",
-                  "ecc406914edf335f0b7fc084ebe6c460c4d6d5175bfdd6688c1c78d9146b8858"),
+                  "39bd8f1a338e2b7cd4abc3ff11a0eddc6e690f69578a57478d8179b4148708c8"),
     DirectorySource("./bundled"),
 ]
 
