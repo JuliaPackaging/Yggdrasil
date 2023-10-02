@@ -22,15 +22,12 @@ if [[ ${target} = *-musl* ]] ; then
     cp $WORKSPACE/srcdir/error.h src/
     cp $WORKSPACE/srcdir/error.h lib/
 
-    apk add bsd-compat-headers
+    # install missing headers and `autopoint` 
+    apk add bsd-compat-headers gettext-dev 
     # /usr/include isn't in search path of cross-cc, so copy cdefs.h
     mkdir -p $prefix/include/sys
     # Skip warning macro at top of file
     tail -n +2 /usr/include/sys/cdefs.h >$prefix/include/sys/cdefs.h
-    mkdir $WORKSPACE/bin
-    export PATH=$PATH:$WORKSPACE/bin
-    : >$WORKSPACE/bin/autopoint
-    chmod a+x $WORKSPACE/bin/autopoint
     autoreconf -vif
 fi
 export CC=gcc
