@@ -5,7 +5,9 @@ const ROCM_TAGS = Dict(
     v"4.2.0" => "7cdd63475c36bb9f49bb960f90f9a8cdb7e80a21",
     v"4.5.2" => "3277d5354ed623598a5cea82cc3790a577af177c",
     v"5.2.3" => "026fae434a141faa10da109a2c1b03dc9e06db3f",
-    v"5.4.4" => "2d55276bfa186a47611cdd2fc20879dacb506a9a")
+    v"5.4.4" => "2d55276bfa186a47611cdd2fc20879dacb506a9a",
+    v"5.5.1" => "695ec62187ba0708e3f8a960c2b75b877c2521a9",
+)
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
     Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
