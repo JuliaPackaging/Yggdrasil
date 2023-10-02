@@ -4,10 +4,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
-version = v"4.1.5"
+version = v"4.1.6"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "c018b127619d2a2a30c1931f316fc8a245926d0f5b4ebed4711f9695e7f70925"),
+                  "44da277b8cdc234e71c62473305a09d63f4dcca292ca40335aab7c4bf0e6a566"),
     DirectorySource("./bundled"),
 ]
 
@@ -22,7 +22,7 @@ cd ${WORKSPACE}/srcdir/openmpi-*
 atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
-    # Help compiler find `complib/cl_types.h`.
+    # Help compiler find `complib/cl_types.h`
     export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
 fi
 
