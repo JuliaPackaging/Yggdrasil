@@ -22,7 +22,7 @@ cd ${WORKSPACE}/srcdir/openmpi-*
 atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
-    # Help compiler find `complib/cl_types.h`.
+    # Help compiler find `complib/cl_types.h`
     export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
 fi
 
