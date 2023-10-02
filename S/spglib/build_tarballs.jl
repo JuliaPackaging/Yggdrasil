@@ -8,6 +8,7 @@ version = v"2.1.0"
 # Collection of sources required to build spglib
 sources = [
     GitSource("https://github.com/spglib/spglib.git", "59bea8a7df30c8f2202ed0ee1033be0d98d9ed5e"),
+    GitSource("https://github.com/google/googletest", "f8d7d77c06936315286eb55f8de22cd23c188571"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,6 +20,7 @@ if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
 fi
 cmake -B ./build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DFETCHCONTENT_SOURCE_DIR_GTEST=$(echo ${WORKSPACE}/srcdir/googletest*/) \
       ${args}
 cmake --build ./build -j${nproc}
 if [[ -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
