@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.41"
+version = v"2.41.1"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
@@ -39,7 +39,8 @@ make install
 
 # Install the `-fPIC` version of `libiberty.a` (which we built) but which isn't installed by default,
 # overwriting the non-pic version which was installed
-install -Dvm 755 libiberty/pic/libiberty.a ${libdir}/lib/libiberty.a
+test -f ${prefix}/lib64/libiberty.a
+install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib64/libiberty.a
 """
 
 platforms = supported_platforms(; exclude=!Sys.islinux)
