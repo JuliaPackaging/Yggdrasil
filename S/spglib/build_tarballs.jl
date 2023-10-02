@@ -8,11 +8,24 @@ version = v"2.1.0"
 # Collection of sources required to build spglib
 sources = [
     GitSource("https://github.com/spglib/spglib.git", "59bea8a7df30c8f2202ed0ee1033be0d98d9ed5e"),
-    GitSource("https://github.com/google/googletest", "f8d7d77c06936315286eb55f8de22cd23c188571"),
+    GitSource("https://github.com/google/googletest.git", "e2239ee6043f73722e7aa812a459f54a28552929"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir/googletest
+mkdir build && cd build
+cmake -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_GMOCK=OFF \
+    -DCMAKE_CXX_STANDARD=11 \
+    -Wno-dev \
+    ..
+make -j${nproc}
+make install
+
 cd $WORKSPACE/srcdir/spglib
 args=""
 if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
