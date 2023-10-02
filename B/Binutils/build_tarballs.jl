@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.41.1"
+version = v"2.41"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
