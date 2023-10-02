@@ -13,17 +13,18 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/spglib
-if [[ ${target} == *-mingw32 ]]; then
-    sed -i -e 's/LIBRARY/RUNTIME/' CMakeLists.txt
+args=""
+if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
+  args="${args} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 fi
-mkdir _build
-cd _build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DCMAKE_BUILD_TYPE=Release \
-      ..
-make -j${nproc}
-make install VERBOSE=1
+cmake -B ./build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      ${args}
+cmake --build ./build -j${nproc}
+if [[ -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
+  ctest --test-dir ./build
+fi
+cmake --install ./build
 """
 
 # These are the platforms we will build for by default, unless further
