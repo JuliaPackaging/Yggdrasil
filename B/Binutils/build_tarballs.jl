@@ -39,8 +39,13 @@ make install
 
 # Install the `-fPIC` version of `libiberty.a` (which we built) but which isn't installed by default,
 # overwriting the non-pic version which was installed
-test -f ${prefix}/lib64/libiberty.a
-install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib64/libiberty.a
+if test -f ${prefix}/lib64/libiberty.a; then
+    install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib64/libiberty.a
+elif test -f ${prefix}/lib/libiberty.a; then
+    install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib/libiberty.a
+else
+    exit 1
+fi
 """
 
 platforms = supported_platforms(; exclude=!Sys.islinux)
