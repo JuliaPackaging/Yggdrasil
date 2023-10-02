@@ -40,9 +40,9 @@ products = [
 dependencies = [
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
-    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
-    Dependency("GoogleTest_jll"; platforms=filter(Sys.isbsd, platforms)),
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(platform -> !Sys.isbsd(platform) || Sys.isapple(platform), platforms)),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(platform -> !Sys.isbsd(platform) || Sys.isapple(platform), platforms)),
+    Dependency("GoogleTest_jll"; platforms=filter(platform -> !Sys.isbsd(platform) || Sys.isapple(platform), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
