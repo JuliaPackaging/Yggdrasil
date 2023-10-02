@@ -29,19 +29,15 @@ rm cmake_toolchain_patch.ini
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
-    Platform("aarch64", "linux"; libc = "glibc")
-    Platform("powerpc64le", "linux"; libc = "glibc")
-    Platform("x86_64", "linux"; libc = "musl")
-    Platform("aarch64", "linux"; libc = "musl")
-    Platform("x86_64", "freebsd"; )
-    Platform("x86_64", "macos"; )
-    Platform("aarch64", "macos"; )
-    Platform("x86_64", "windows"; )
-]
-
-linux_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+platforms = Platform[]
+include("../../L/libjulia/common.jl")
+for version in [v"1.7.0", v"1.8.2", v"1.9.0", v"1.10", v"1.11"]
+    for platform in libjulia_platforms(version)
+        if !(arch(platform) == "i686" || contains(arch(platform), "arm"))
+            push!(platforms, platform)
+        end
+    end
+end
 
 # The products that we will ensure are always built
 products = [
@@ -49,16 +45,17 @@ products = [
     LibraryProduct("libmousetrap_julia_binding", :mousetrap_julia_binding)
 ]
 
+x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GLEW_jll")
-    Dependency("GLU_jll"; platforms=linux_platforms)
+    Dependency("GLU_jll"; platforms = x11_platforms)
     Dependency("GTK4_jll")
     Dependency("libadwaita_jll")
     Dependency("OpenGLMathematics_jll")
     Dependency("libcxxwrap_julia_jll")
     BuildDependency("libjulia_jll")
-    BuildDependency("Xorg_xorgproto_jll"; platforms=linux_platforms)
+    BuildDependency("Xorg_xorgproto_jll"; platforms = x11_platforms)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
