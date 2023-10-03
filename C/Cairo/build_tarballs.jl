@@ -45,6 +45,7 @@ if [[ "${target}" == *apple* ]]; then
     sed -i -e "s~HAVE_CXX11_ATOMIC_PRIMITIVES~HAVE_OS_ATOMIC_OPS~" config.h
     echo "#define SIZEOF_VOID_P 8" >> config.h
     echo "#define HAVE_UINT64_T 1" >> config.h
+    echo "#define HAVE_FT_SVG_DOCUMENT 1" >> config.h
 fi
 
 ninja -j${nproc}
