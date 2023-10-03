@@ -13,20 +13,33 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/googletest
-mkdir build && cd build
-cmake -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_GMOCK=OFF \
-    -DCMAKE_CXX_STANDARD=11 \
-    -Wno-dev \
-    ..
-make -j${nproc}
-make install
+cat <<EOL > 0001-Add-missing-include.patch
+From a597c9120c168e34ed4452d14fc8d4b59e2f4cd4 Mon Sep 17 00:00:00 2001
+From: Cristian Le <cristian.le@mpsd.mpg.de>
+Date: Mon, 2 Oct 2023 11:16:33 +0200
+Subject: [PATCH] Add missing 'include'
+
+Signed-off-by: Cristian Le <cristian.le@mpsd.mpg.de>
+---
+ test/CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/test/CMakeLists.txt b/test/CMakeLists.txt
+index 19d565e..14517fa 100644
+--- a/test/CMakeLists.txt
++++ b/test/CMakeLists.txt
+@@ -1,4 +1,5 @@
+ enable_language(CXX)
++include(GoogleTest)
+ 
+ set(CMAKE_CXX_STANDARD 11)
+ set(CMAKE_CXX_STANDARD_REQUIRED True)
+-- 
+2.41.0
+EOL
 
 cd $WORKSPACE/srcdir/spglib
+patch -p1 < $WORKSPACE/srcdir/0001-Add-missing-include.patch
 args=""
 if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
   args="${args} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
