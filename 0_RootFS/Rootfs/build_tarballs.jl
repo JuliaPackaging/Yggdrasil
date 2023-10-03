@@ -32,8 +32,8 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/818c831891a18d2453ad6458011ea8cbff74d0e1/x86_64/alpine-minirootfs-3.15.0-x86_64.tar.gz"
-rootfs_hash = "ec7ec80a96500f13c189a6125f2dbe8600ef593b87fc4670fe959dc02db727a2"
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/blob/v3.18/x86_64/alpine-minirootfs-3.18.4-x86_64.tar.gz"
+rootfs_hash = "b0ed4443caa438f1cc756b37e647f21166fa8742bcb8db009807962db7ee6fdf"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
@@ -123,11 +123,11 @@ sources = [
               "b9cbf3aa6f4a8c1c5332ce7947d8040755f186b8"), # v1.2.1
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",
-                  "960ebcd32842f81d140293157d90e4e829fd16241bf5b0a23929e4938256a572",
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.3%2B0/ldid.v2.1.3.x86_64-linux-musl-cxx11.tar.gz",
+                  "d37c2a8f5bfb75c6a4b9fafb97160c8065e1281b9fe85ac51557fe490edad142",
                   unpack_target="ldid"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.0%2B0/libplist.v2.2.0.x86_64-linux-musl.tar.gz",
-                  "1b02d6fd8b77b71eaf672f15fecd8b38ef1e167baf469399b7d52435c11d414b",
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.1%2B0/libplist.v2.2.1.x86_64-linux-musl.tar.gz",
+                  "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5",
                   unpack_target="ldid"),
     # And also our own local patches, utilities, etc...
     DirectorySource("./bundled"),
