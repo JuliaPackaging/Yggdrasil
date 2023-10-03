@@ -47,7 +47,6 @@ install_license COPYING*
 # Only build for Linux
 platforms = supported_platforms()
 filter!(Sys.islinux, platforms)
-filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
