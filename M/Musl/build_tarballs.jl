@@ -13,8 +13,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/musl-*
 
-mkdir ${WORKSPACE}/srcdir/musl_build
-cd ${WORKSPACE}/srcdir/musl_build
+mkdir musl_build && cd musl_build
+
 musl_arch()
 {
     case "${target}" in
