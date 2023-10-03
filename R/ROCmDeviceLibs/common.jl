@@ -6,11 +6,19 @@ const ROCM_TAGS = Dict(
     v"4.5.2" => "0f2eb8c16630c1f03a417c7a4248402c356ee510",
     v"5.2.3" => "d999f1780979585119251d4e90c923133a775a8c",
     v"5.4.4" => "4d86a313a33027cff82dc73fe9b8395a7a96eb04",
-    v"5.5.1" => "49dd756ee374d648beb3ecd593f419db425ef621")
+    v"5.5.1" => "49dd756ee374d648beb3ecd593f419db425ef621",
+    v"5.6.1" => "2b9acb09a3808d80c61ab89235a7cf487f52e955")
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
     Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
+const ROCM_PATCHES = Dict(
+    v"5.6.1" => raw"""
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/ocml-builtins-rename.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/ockl-no-ballot.patch
+    """
+)
 
 const BUILDSCRIPT = raw"""
 cd ${WORKSPACE}/srcdir/ROCm-Device-Libs*/
@@ -39,6 +47,9 @@ function configure_build(version)
         GitSource(ROCM_GIT, ROCM_TAGS[version]),
         DirectorySource("../scripts"),
     ]
+    if version in keys(ROCM_PATCHES)
+        push!(sources, DirectorySource("./bundled"))
+    end
     # Compile devlibs with older LLVM version than what's used in ROCmLLVM
     # for Julia compatibility.
     llvm_version = min(v"5.4.4", version)
