@@ -37,6 +37,8 @@ mkdir -p $libdir
 for F in bin/${genicam_arch_os}/*.$dlext; do
     install -v -D -m 755 $F $libdir/`basename $F`
 done
+mkdir -p $libdir/genicam
+cp -av log $libdir/genicam/
 install_license License_ReadMe.txt
 cp -av licenses/GenICam_License_20180629.pdf $prefix/share/licenses/GenICamRuntime/
 """
