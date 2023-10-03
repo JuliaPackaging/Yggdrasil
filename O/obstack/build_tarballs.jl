@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "obstack"
-version = v"1.2.2"
+version = v"1.2.3"
 
 # Collection of sources required to build obstack
 sources = [
     GitSource("https://github.com/void-linux/musl-obstack.git",
-              "d0493f4726835a08c5a145bce42b61a65847c6a9"),
+              "f4385255be1615688c6a5f042277304d7ab288b1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,4 +34,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
