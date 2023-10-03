@@ -31,6 +31,10 @@ mkdir output && cd output/
 
 
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
+    -Dtee=enabled \
+    -Dpng=enabled \
+    -Dzlib=enabled \
+    -Dglib=enabled \
     -Ddefault_library=shared \
     -Dtests=disabled
 
@@ -38,6 +42,7 @@ if [[ "${target}" == *apple* ]]; then
     # Fix the error: undefined reference to `backtrace_symbols'
     sed -i -e "s~HAVE_CXX11_ATOMIC_PRIMITIVES~HAVE_OS_ATOMIC_OPS~" config.h
     echo "#define SIZEOF_VOID_P 8" >> config.h
+    echo "#define HAVE_UINT64_T 1" >> config.h
 fi
 
 ninja -j${nproc}
@@ -78,4 +83,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7.1.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
