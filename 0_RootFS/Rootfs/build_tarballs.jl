@@ -113,14 +113,14 @@ insert_compiler_shard(name, version, rootfs_squashfs_hash, :squashfs)
 sources = [
     ArchiveSource(rootfs_url, rootfs_hash),
     # Objconv is very useful
-    ArchiveSource("https://github.com/staticfloat/objconv/archive/v2.49.tar.gz",
-                  "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f"),
+    GitSource("https://github.com/staticfloat/objconv.git",
+                  "ae54df67e0c4ac2c78f3a7ece486ed4e92d098af"), # v2.53
     # As is patchelf
     GitSource("https://github.com/NixOS/patchelf.git",
-              "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
+              "99c24238981b7b1084313aca8f5c493bb46f302c"), # v0.18.0
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
-    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/1.0.1/meson-1.0.1.tar.gz",
-                  "d926b730de6f518728cc7c57bc5e701667bae0c3522f9e369427b2cc7839d3c1"),
+    GitSource("https://github.com/mesonbuild/meson.git",
+              "b9cbf3aa6f4a8c1c5332ce7947d8040755f186b8"), # v1.2.1
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",
