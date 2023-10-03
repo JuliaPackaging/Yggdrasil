@@ -13,8 +13,8 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
                       "03350b0faef6b77d965ddb7c3cd3614a45376bfd"),
         ],
         v"7.2.0" => [
-            GitSource("https://github.com/Wimmerer/SuiteSparse.git",
-                "1b4edf467637dbf33a26eee9a6c20afa40c7c5ea")
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                "8a7641cdb4809533c681417e94f98058c07c5da2")
         ]
     )
     return Any[
@@ -23,7 +23,7 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
 end
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
@@ -44,7 +44,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"; compat="5.4.0"),
+    Dependency("libblastrampoline_jll"; compat="5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
 ]

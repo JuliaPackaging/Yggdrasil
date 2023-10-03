@@ -87,4 +87,4 @@ install_license LICENSE.txt
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9")
+               julia_compat="1.10")
