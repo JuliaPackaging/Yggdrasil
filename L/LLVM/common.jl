@@ -144,9 +144,9 @@ mkdir ${WORKSPACE}/build && cd ${WORKSPACE}/build
 
 # Accumulate these flags outside CMAKE_FLAGS,
 # they will be added at the end.
-CMAKE_CPP_FLAGS=""
-CMAKE_CXX_FLAGS=""
-CMAKE_C_FLAGS=""
+CMAKE_CPP_FLAGS=()
+CMAKE_CXX_FLAGS=()
+CMAKE_C_FLAGS=()
 
 CMAKE_FLAGS=()
 
@@ -215,7 +215,7 @@ fi
 # Change this to check if we are building with clang?
 if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* ) ]]; then
     # https://bugs.llvm.org/show_bug.cgi?id=48221
-    CMAKE_CXX_FLAGS+=("-fno-gnu-unique")
+    CMAKE_CXX_FLAGS+=(-fno-gnu-unique)
 fi
 
 # LLVM 16 requires `align_alloc`, make it available for Intel Linux platforms
@@ -223,7 +223,7 @@ fi
 if [[ "${LLVM_MAJ_VER}" -ge "16" && "${target}" == *86*-linux-gnu* ]]; then
     GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath "${prefix}/usr/include/stdlib.h"))))
     rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
-    CMAKE_CPP_FLAGS+=("-D_GLIBCXX_HAVE_ALIGNED_ALLOC=1")
+    CMAKE_CPP_FLAGS+=(-D_GLIBCXX_HAVE_ALIGNED_ALLOC=1)
 fi
 
 # Install things into $prefix, and make sure it knows we're cross-compiling
@@ -324,9 +324,9 @@ if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-    CMAKE_CPP_FLAGS+=("-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC")
-    CMAKE_C_FLAGS+=("-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC")
-    CMAKE_FLAGS+=("-DLLVM_USE_LINKER=lld")
+    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
+    CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
+    CMAKE_FLAGS+=(-DLLVM_USE_LINKER=lld)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     # Windows is case-insensitive and some dependencies take full advantage of that
     echo "BaseTsd.h basetsd.h" >> /opt/${target}/${target}/include/header.gcc
@@ -355,7 +355,7 @@ CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
-cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS[@]} ${CMAKE_CXX_FLAGS[@]}" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS[@]}"
+cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
 ninja -j${nproc} -vv
 
 # Install!
