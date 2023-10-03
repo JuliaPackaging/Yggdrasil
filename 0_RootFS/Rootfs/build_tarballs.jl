@@ -32,8 +32,8 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/alpinelinux/docker-alpine/blob/v3.18/x86_64/alpine-minirootfs-3.18.4-x86_64.tar.gz"
-rootfs_hash = "b0ed4443caa438f1cc756b37e647f21166fa8742bcb8db009807962db7ee6fdf"
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/v3.18/x86_64/alpine-minirootfs-3.18.4-x86_64.tar.gz"
+rootfs_hash = "c59d5203bc6b8b6ef81f3f6b63e32c28d6e47be806ba8528f8766a4ca506c7ba"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
@@ -126,8 +126,8 @@ sources = [
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.3%2B0/ldid.v2.1.3.x86_64-linux-musl-cxx11.tar.gz",
                   "d37c2a8f5bfb75c6a4b9fafb97160c8065e1281b9fe85ac51557fe490edad142",
                   unpack_target="ldid"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.1%2B0/libplist.v2.2.1.x86_64-linux-musl.tar.gz",
-                  "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5",
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.1%2B0/libplist.v2.2.1.x86_64-linux-musl-cxx11.tar.gz",
+                  "f881818f288d3a82a1ca98e4a011f44289f2bc8c1ba8cfdafe4f1690af0cf4ae",
                   unpack_target="ldid"),
     # And also our own local patches, utilities, etc...
     DirectorySource("./bundled"),
@@ -160,7 +160,7 @@ mkdir ./dev/shm
 
 ## Install foundational packages within the chroot
 NET_TOOLS="curl wget git openssl ca-certificates"
-MISC_TOOLS="python2 python3 py3-pip sudo file libintl patchutils grep zlib"
+MISC_TOOLS="python3 py3-pip sudo file libintl patchutils grep zlib"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools rsync" # TODO: restore `unrar` when it comes back to Alpine Linux
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
