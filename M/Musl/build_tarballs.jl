@@ -7,13 +7,11 @@ version = v"1.2.4"
 sources = [
     ArchiveSource("https://www.musl-libc.org/releases/musl-$(version).tar.gz",
                   "7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/musl-*
-atomic_patch -p1 ../patches/qsort_r.patch
 
 mkdir ${WORKSPACE}/srcdir/musl_build
 cd ${WORKSPACE}/srcdir/musl_build
