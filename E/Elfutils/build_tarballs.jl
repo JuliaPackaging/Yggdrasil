@@ -81,7 +81,7 @@ dependencies = [
     Dependency("XZ_jll"),
     Dependency("argp_standalone_jll"),
     Dependency("fts_jll"),
-    Dependency("obstack_jll"; compat="~1.2.2"),
+    Dependency("obstack_jll"; compat="~1.2.3"),
 ]
 
 
