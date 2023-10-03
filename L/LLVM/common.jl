@@ -1,6 +1,6 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 using BinaryBuilder, Pkg, LibGit2
-using BinaryBuilderBase: get_addable_spec, sanitize
+using BinaryBuilderBase: get_addable_spec, sanitize, proc_family
 
 # Everybody is just going to use the same set of platforms
 
@@ -16,11 +16,16 @@ const llvm_tags = Dict(
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "e010657e399d312a9440732a8a67125ecd0e2298", # julia-15.0.7-7
+    v"16.0.2" => "5f05685e0fa26391f16ce90cfaf34953fc9d9575", # TODO: make a tag
 )
 
 const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
+
+# Increase max file descriptors
+fd_lim=$(ulimit -n -H)
+ulimit -n $fd_lim
 
 if [[ ("${target}" == x86_64-apple-darwin*) && ! -z "${LLVM_UPDATE_MAC_SDK}" ]]; then
     # LLVM 15 requires macOS SDK 10.14, see
@@ -152,7 +157,12 @@ if [[ "${ASSERTS}" == "1" ]]; then
 fi
 
 # build for our host arch and our GPU targets NVidia and AMD
-TARGETS=(host NVPTX AMDGPU)
+TARGETS=(host NVPTX)
+
+if [[ "${target}" != *-apple-darwin* ]]; then
+    TARGETS+=(AMDGPU)
+fi
+
 # Add WASM and BPF for LLVM >6
 if [[ "${LLVM_MAJ_VER}" != "6" ]]; then
     TARGETS+=(WebAssembly BPF AVR)
@@ -162,13 +172,14 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
 PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
-if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
+# Note: we disable building MLIR dylib on 32-bit archs because of <https://github.com/llvm/llvm-project/issues/61581>.
+if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" && "${nbits}" != "32" ]]; then
     PROJECTS+=(mlir)
 fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
-if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
+if [[ "${LLVM_MAJ_VER}" -gt "13" && "${nbits}" != "32" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
 fi
 
@@ -201,10 +212,18 @@ if [ ! -z "${LLVM_WANT_EH_RTTI}" ]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_RTTI=ON)
     CMAKE_FLAGS+=(-DLLVM_ENABLE_EH=ON)
 fi
-
-if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* || "${target}" == *mingw* ) ]]; then
+# Change this to check if we are building with clang?
+if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* ) ]]; then
     # https://bugs.llvm.org/show_bug.cgi?id=48221
-    CMAKE_CXX_FLAGS+="-fno-gnu-unique"
+    CMAKE_CXX_FLAGS+=("-fno-gnu-unique")
+fi
+
+# LLVM 16 requires `align_alloc`, make it available for Intel Linux platforms
+# which use an older glibc.
+if [[ "${LLVM_MAJ_VER}" -ge "16" && "${target}" == *86*-linux-gnu* ]]; then
+    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath "${prefix}/usr/include/stdlib.h"))))
+    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+    CMAKE_CPP_FLAGS+=("-D_GLIBCXX_HAVE_ALIGNED_ALLOC=1")
 fi
 
 # Install things into $prefix, and make sure it knows we're cross-compiling
@@ -254,7 +273,13 @@ if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
 fi
 
 # Explicitly use our cmake toolchain file
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+# Windows runs out of symbols so use clang which can do some fancy things
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
+
 
 # Manually set the host triplet, as otherwise on some platforms it tries to guess using
 # `ld -v`, which is hilariously wrong.
@@ -299,7 +324,10 @@ if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-    CMAKE_CPP_FLAGS="${CMAKE_CPP_FLAGS} -remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE"
+    CMAKE_CPP_FLAGS+=("-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC")
+    CMAKE_C_FLAGS+=("-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC")
+    CMAKE_FLAGS+=("-DLLVM_USE_LINKER=lld")
+    CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     # Windows is case-insensitive and some dependencies take full advantage of that
     echo "BaseTsd.h basetsd.h" >> /opt/${target}/${target}/include/header.gcc
     CMAKE_FLAGS+=(-DCLANG_INCLUDE_TESTS=OFF)
@@ -327,7 +355,7 @@ CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
-cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
+cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS[@]} ${CMAKE_CXX_FLAGS[@]}" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS[@]}"
 ninja -j${nproc} -vv
 
 # Install!
@@ -592,6 +620,13 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
               ArchiveSource(
                   "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+    end
+    if version >= v"16"
+        push!(dependencies,
+              # On Intel Linux platforms we use glibc 2.12, but building LLVM 16
+              # requires glibc 2.16+.
+              BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+                              platforms=filter(p -> libc(p) == "glibc" && proc_family(p) == "intel", platforms)))
     end
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
