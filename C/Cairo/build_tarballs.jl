@@ -31,12 +31,14 @@ mkdir output && cd output/
 
 
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
+    -Dfreetype=enabled \
     -Dtee=enabled \
     -Dpng=enabled \
     -Dzlib=enabled \
     -Dglib=enabled \
     -Ddefault_library=shared \
-    -Dtests=disabled
+    -Dtests=disabled \
+    -Ddwrite=disabled
 
 if [[ "${target}" == *apple* ]]; then
     # Fix the error: undefined reference to `backtrace_symbols'
