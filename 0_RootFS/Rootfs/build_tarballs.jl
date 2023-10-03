@@ -243,16 +243,16 @@ for arch in x86_64 i686; do
 done
 
 # Build/install meson
-cd ${WORKSPACE}/srcdir/meson-*/
+cd ${WORKSPACE}/srcdir/meson/
 python3 setup.py build
 python3 setup.py install --prefix=/usr --root="${prefix}"
 
 # Build/install objconv
-cd ${WORKSPACE}/srcdir/objconv*/
+cd ${WORKSPACE}/srcdir/objconv/
 g++ -O2 -o ${prefix}/usr/bin/objconv src/*.cpp
 
 # Build/install patchelf
-cd ${WORKSPACE}/srcdir/patchelf*/
+cd ${WORKSPACE}/srcdir/patchelf/
 ./bootstrap.sh
 ./configure --prefix=${prefix}/usr
 make -j${nproc}
