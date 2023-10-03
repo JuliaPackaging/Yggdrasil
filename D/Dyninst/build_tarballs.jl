@@ -66,6 +66,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("CMake_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # We need at least v2.41 of Binutils_jll to get an `-fPIC` version of `libiberty.a`
     Dependency("Binutils_jll"; compat="2.41"),
