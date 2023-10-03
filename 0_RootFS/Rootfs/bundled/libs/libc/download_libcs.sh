@@ -12,5 +12,5 @@ done
 for arch in i686 x86_64; do
     rm -rf musl-${arch}
     mkdir -p musl-${arch}
-    curl -L "https://github.com/JuliaBinaryWrappers/Musl_jll.jl/releases/download/Musl-v1.2.2%2B2/Musl.v1.2.2.${arch}-linux-musl.tar.gz" | tar --wildcards --strip-components=1 -zxv -C musl-${arch} "lib*/"
+    curl -L "https://github.com/JuliaBinaryWrappers/Musl_jll.jl/releases/download/Musl-v1.2.4%2B2/Musl.v1.2.4.${arch}-linux-musl.tar.gz" | tar --wildcards --strip-components=1 -zxv -C musl-${arch} "lib*/"
 done
