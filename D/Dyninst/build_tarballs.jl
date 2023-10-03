@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+using Pkg
 
 name = "Dyninst"
 version = v"12.3.0"
@@ -39,9 +40,14 @@ cmake --build build --parallel ${nproc} --target install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
+
+# Binutils and Elfutils require Linux
+filter!(Sys.islinux, platforms)
 
 # The products that we will ensure are always built
 products = [
+    ExecutableProduct("parseThat", :parseThat),
     LibraryProduct("libcommon", :libcommon),
     LibraryProduct("libdynC_API", :libdynC_API),
     LibraryProduct("libdynDwarf", :libdynDwarf),
@@ -50,6 +56,7 @@ products = [
     LibraryProduct("libdyninstAPI_RT", :libdyninstAPI_RT),
     LibraryProduct("libinstructionAPI", :libinstructionAPI),
     LibraryProduct("libparseAPI", :libparseAPI),
+    LibraryProduct("libparseThat", :libparseThat),
     LibraryProduct("libpatchAPI", :libpatchAPI),
     LibraryProduct("libpcontrol", :libpcontrol),
     LibraryProduct("libstackwalk", :libstackwalk),
@@ -59,6 +66,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     # We need at least v2.41 of Binutils_jll to get an `-fPIC` version of `libiberty.a`
     Dependency("Binutils_jll"; compat="2.41"),
     # We require at least v0.186 of Elfutils
@@ -71,7 +79,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
-               # preferred_gcc_version=v"6"
-               preferred_gcc_version=v"7"
-)
+               julia_compat="1.6", preferred_gcc_version=v"7")
