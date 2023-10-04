@@ -296,13 +296,13 @@ if [[ "${target}" == *apple* ]]; then
     else
         CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
     fi
-
+    CMAKE_FLAGS+=(-DSANITIZER_MIN_OSX_VERSION="${MACOSX_DEPLOYMENT_TARGET}")
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
-
     CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_IOS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_WATCHOS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_TVOS=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_MACCATALYST=OFF)
 
     # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
     # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
