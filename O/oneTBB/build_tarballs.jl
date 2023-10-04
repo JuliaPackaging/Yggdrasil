@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2021.8.0"
+version = v"2021.9.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
-    "c9497714821c3d443ee44c732609eb6850195ffb"),
+              "a00cc3b8b5fb4d8115e9de56bf713157073ed68c"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,6 +29,7 @@ mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DTBB_STRICT=OFF \
     -DTBB_TEST=OFF \
     -DTBB_EXAMPLES=OFF \
     ..
@@ -50,4 +51,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"9")
