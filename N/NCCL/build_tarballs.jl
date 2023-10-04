@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.15.1"
+version = v"2.18.5"
 build = 1
 
 script = raw"""
@@ -31,7 +31,7 @@ dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
 # TODO: how does compatibility work here exactly? do we support 11.1-11.7?
 #       are we correctly selecting artifacts in that case?
-builds = ["10.2", "11.0", "11.8"]
+builds = ["11.0", "12.0", "12.2"]
 for build in builds
     include("build_$(build).jl")
     cuda_version = VersionNumber(build)
