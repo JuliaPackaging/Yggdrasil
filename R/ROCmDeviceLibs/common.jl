@@ -43,6 +43,13 @@ install_license ${WORKSPACE}/srcdir/ROCm-Device-Libs*/LICENSE.TXT
 const PRODUCTS = [FileProduct("amdgcn/bitcode/", :bitcode_path)]
 
 function configure_build(version)
+    buildscript = raw"""
+    cd ${WORKSPACE}/srcdir/ROCm-Device-Libs*/
+    """ * get(ROCM_PATCHES, version, "") *
+    raw"""
+    mkdir build && cd build
+    """ * BUILDSCRIPT
+
     sources = [
         GitSource(ROCM_GIT, ROCM_TAGS[version]),
         DirectorySource("../scripts"),
@@ -58,5 +65,5 @@ function configure_build(version)
         BuildDependency(PackageSpec(; name="rocm_cmake_jll", version)),
         Dependency("Zlib_jll"),
     ]
-    NAME, version, sources, BUILDSCRIPT, ROCM_PLATFORMS, PRODUCTS, dependencies
+    NAME, version, sources, buildscript, ROCM_PLATFORMS, PRODUCTS, dependencies
 end
