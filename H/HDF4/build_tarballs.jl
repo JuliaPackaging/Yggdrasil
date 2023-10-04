@@ -22,7 +22,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DH4_PRINTF_LL_TEST_RUN=0 \
     -DH4_PRINTF_LL_TEST_RUN__TRYRUN_OUTPUT= \
     ..
-make
+make -j${nproc}
 make install
 exit
 """
