@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-beta2", v"1.11.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-beta3", v"1.11.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -50,14 +50,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
     )
 
-    if version == v"1.10.0-beta2"
+    if version == v"1.10.0-beta3"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "a468aa198d030bd77efd7cb3e4069684af622dcc"),
+            GitSource("https://github.com/JuliaLang/julia.git", "404750f8586d77a7d1832e0dfb1b1931fcf191ac"),
             DirectorySource("./bundled"),
         ]
     elseif version == v"1.11.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "8e14322b5aa344639dd86bf9eabb84afe831fcba"),
+            GitSource("https://github.com/JuliaLang/julia.git", "a988992b9b5aea642ab0a7cf442bbcecc25cd536"),
             DirectorySource("./bundled"),
         ]
     else
@@ -294,6 +294,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # choose make targets which compile libjulia but don't try to build a sysimage
     MAKE_TARGET="julia-src-release julia-cli-release julia-src-debug julia-cli-debug"
 
+    # work around missing strtoll strtoull, see https://github.com/JuliaLang/julia/issues/48081
+    if [[ "${target}" == *mingw* ]]; then
+        make -C deps install-csl
+        cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/lib/libmsvcrt.a ./usr/lib/libmsvcrt.a
+    fi
     # Start the actual build. We pass DSYMUTIL='true -ignore' to skip the
     # unnecessary step calling dsymutil, which in our cross compilation
     # environment results in a segfault.
