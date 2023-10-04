@@ -24,7 +24,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
