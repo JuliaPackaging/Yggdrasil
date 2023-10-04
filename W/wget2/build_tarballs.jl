@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "wget2"
-version = v"2.0.0"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -59,7 +59,7 @@ dependencies = [
     Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d"))
     Dependency("Gettext_jll"; compat="=0.21.0")
     Dependency("Nettle_jll"; compat="~3.7.2")
-    Dependency("OpenSSL_jll"; compat="1.1.10")
+    Dependency("OpenSSL_jll"; compat="3.0.11")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
