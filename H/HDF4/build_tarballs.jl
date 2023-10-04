@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd hdf-4.2.16-2/
+cd $WORKSPACE/srcdir/hdf*
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DTEST_LFS_WORKS_RUN=0 -DH4_PRINTF_LL_TEST_RUN=0 -DH4_PRINTF_LL_TEST_RUN__TRYRUN_OUTPUT= ..
