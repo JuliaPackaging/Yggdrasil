@@ -61,20 +61,19 @@ if [[ "${target}" == *linux* ]]; then
     export CFLAGS="-lrt"
 fi
 
-# TOOLCHAIN
+LINKER_FLAGS = ""
 if [[ "${target}" == *aarch64-apple-darwin* ]]; then
-    TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
-else
-    TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN}
+    LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
 fi
 
 cmake .. \
     -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_SHARED_LINKER_FLAGS=${LINKER_FLAGS} \
     -DBUILD_DOCUMENTATION=OFF \
     -DBLAS_LIBRARIES=$LBT \
     -DLAPACK_LIBRARIES=$LBT \
     -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
+    -DCMAKE_TOOLCHAIN_FILE=TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DPASTIX_INT64=OFF \
     -DPASTIX_ORDERING_SCOTCH=$BOOL \
@@ -99,11 +98,14 @@ platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libpastix", :libpastix),
-    LibraryProduct("libpastixf", :libpastixf)
+    LibraryProduct("libpastixf", :libpastixf),
+    LibraryProduct("libspm", :libspm),
+    LibraryProduct("libspmf", :libspmf)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=[Platform("aarch64", "macos")]),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="7.0.4", platforms=filter(!Sys.isfreebsd, platforms)),
