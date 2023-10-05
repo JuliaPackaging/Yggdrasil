@@ -27,13 +27,15 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
-products = [
+lib_products = [
     LibraryProduct("libsentencepiece_train", :libsentencepiece_train),
+    LibraryProduct("libsentencepiece", :libsentencepiece)
+]
+exe_products = [
     ExecutableProduct("spm_normalize", :spm_normalize),
     ExecutableProduct("spm_encode", :spm_encode),
     ExecutableProduct("spm_export_vocab", :spm_export_vocab),
     ExecutableProduct("spm_train", :spm_train),
-    LibraryProduct("libsentencepiece", :libsentencepiece),
     ExecutableProduct("spm_decode", :spm_decode)
 ]
 
@@ -45,4 +47,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6",preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, filter(!Sys.iswindows, platforms), [lib_products; exe_products], dependencies; julia_compat = "1.6",preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, filter(Sys.iswindows, platforms), exe_products, dependencies; julia_compat = "1.6",preferred_gcc_version=v"8")
