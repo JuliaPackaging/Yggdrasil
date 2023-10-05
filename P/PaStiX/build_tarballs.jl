@@ -31,7 +31,7 @@ sed s/'check_c_source_runs("${SCOTCH_C_TEST_SCOTCH_Num_8}" SCOTCH_Num_8)'/'set(S
 if [[ "${target}" == *mingw* ]]; then
     sed s/'check_function_exists(METIS_NodeND METIS_WORKS)'/'set(METIS_WORKS 1)'/ -i cmake_modules/morse_cmake/modules/find/FindMETIS.cmake
     sed s/'check_function_exists(hwloc_topology_init HWLOC_WORKS)'/'set(HWLOC_WORKS 1)'/ -i cmake_modules/morse_cmake/modules/find/FindHWLOC.cmake
-    sed s/'set(LIB_INSTALL_DIR "lib/"'/'set(LIB_INSTALL_DIR "bin/"'/ -i CMakeLists.txt
+    sed s/'set(LIB_INSTALL_DIR "lib'/'set(LIB_INSTALL_DIR "bin'/ -i CMakeLists.txt
 fi
 
 # ABI
