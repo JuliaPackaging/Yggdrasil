@@ -1,0 +1,97 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+name = "PaStiX"
+version = v"6.3.0"
+
+# Collection of sources required to complete build
+sources = [
+    GitSource("https://gitlab.inria.fr/solverstack/pastix.git", "ee20a7ded080bf6b48e11cc3229feba89507c68c"),
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+  atomic_patch -p1 ${f}
+done
+
+cd pastix
+git submodule update --init --recursive
+
+# We can't run executables in the cross-compiler
+sed s/'morse_check_static_or_dynamic(CBLAS CBLAS_LIBRARIES)'/'#morse_check_static_or_dynamic(CBLAS CBLAS_LIBRARIES)'/ -i cmake_modules/morse_cmake/modules/find/FindCBLAS.cmake
+sed s/'morse_check_static_or_dynamic(LAPACKE LAPACKE_LIBRARIES)'/'#morse_check_static_or_dynamic(LAPACKE LAPACKE_LIBRARIES)'/ -i cmake_modules/morse_cmake/modules/find/FindLAPACKE.cmake
+sed s/'check_c_source_runs("${METIS_C_TEST_METIS_Idx_4}" METIS_Idx_4)'/'set(METIS_Idx_4 1)'/ -i cmake_modules/morse_cmake/modules/find/FindMETIS.cmake
+sed s/'check_c_source_runs("${METIS_C_TEST_METIS_Idx_8}" METIS_Idx_8)'/'set(METIS_Idx_8 0)'/ -i cmake_modules/morse_cmake/modules/find/FindMETIS.cmake
+sed s/'check_c_source_runs("${SCOTCH_C_TEST_SCOTCH_Num_4}" SCOTCH_Num_4)'/'set(SCOTCH_Num_4 1)'/ -i cmake_modules/morse_cmake/modules/find/FindSCOTCH.cmake
+sed s/'check_c_source_runs("${SCOTCH_C_TEST_SCOTCH_Num_8}" SCOTCH_Num_8)'/'set(SCOTCH_Num_8 0)'/ -i cmake_modules/morse_cmake/modules/find/FindSCOTCH.cmake
+
+mkdir build
+cd build
+
+# BLAS and LAPACK
+LBT="-lopenblas"
+
+# Let's compile a version supported by Julia LTS before
+# if [[ "${target}" == *mingw* ]]; then
+#   LBT="-lblastrampoline-5"
+# else
+#   LBT="-lblastrampoline"
+# fi
+
+# SCOTCH
+if [[ "${target}" == *freebsd* ]]; then
+    BOOL=OFF
+else
+    BOOL=ON
+fi
+
+if [[ "${target}" == *linux* ]]; then
+    export CFLAGS="-lrt"
+fi
+
+cmake .. \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_DOCUMENTATION=OFF \
+    -DBLAS_LIBRARIES=$LBT \
+    -DLAPACK_LIBRARIES=$LBT \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DPASTIX_INT64=OFF \
+    -DPASTIX_ORDERING_SCOTCH=$BOOL \
+    -DPASTIX_ORDERING_METIS=ON
+
+make -j${nproc}
+make install
+
+rm -r $prefix/examples
+rm -r $libdir/julia
+rm -r $libdir/python
+rm $bindir/pastix_completion.sh
+rm $bindir/pastix_env.sh
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libpastix", :libpastix),
+    LibraryProduct("libpastixf", :libpastixf)
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="7.0.4", platforms=filter(!Sys.isfreebsd, platforms)),
+    Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
+    # Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0")
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
