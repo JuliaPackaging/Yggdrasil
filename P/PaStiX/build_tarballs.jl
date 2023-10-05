@@ -8,6 +8,7 @@ version = v"6.3.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.inria.fr/solverstack/pastix.git", "ee20a7ded080bf6b48e11cc3229feba89507c68c"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
