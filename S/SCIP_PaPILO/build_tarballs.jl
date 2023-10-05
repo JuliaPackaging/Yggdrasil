@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"800.0.400"
+version = v"800.0.401"
 
 sources = [
     ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.4.tgz", "be4f978be7f8f97371ddcdac7a60af69a4fea5f975090fe35f1ae4308db692d3"),
@@ -13,6 +13,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd scipoptsuite*
+
+# for soplex threadlocal
+export CXXFLAGS="-DTHREADLOCAL=''"
+
+# can be removed for scip 805
+echo "target_link_libraries(clusol gfortran)" >> papilo/CMakeLists.txt
 
 mkdir build
 cd build/
@@ -35,7 +41,7 @@ make -j${nproc} scip
 make papilo-executable
 
 make install
-cp bin/papilo "${bindir}/papilo${exeext}"
+cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in scip soplex gcg; do
@@ -49,7 +55,7 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; experimental=true)))
 
 filter!(platforms) do p
-    arch(p) ∉ ("armv6l", "armv7l") && !Sys.iswindows(p) && libgfortran_version(p) >= v"4" && libc(p) != "musl"
+    libgfortran_version(p) >= v"4"
 end
 
 # The products that we will ensure are always built

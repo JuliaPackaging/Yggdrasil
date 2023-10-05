@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"800.0.400"
+version = v"800.0.401"
 
 # Collection of sources required to complete build
 sources = [
@@ -23,6 +23,9 @@ elif [[ "${target}" == *-mingw* ]]; then
 fi
 
 cd scipoptsuite*
+
+# for soplex threadlocal
+export CXXFLAGS="-DTHREADLOCAL=''"
 
 mkdir build
 cd build/
