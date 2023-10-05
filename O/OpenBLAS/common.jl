@@ -89,7 +89,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         cp ${prefix}/lib/lib{flang*,ompstub*,pgmath*,omp*} /opt/${target}/${target}/sys-root/usr/lib/
 
         # Install msan runtime (for clang)
-        cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
+        cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/16.0.6/lib/linux/
 
         # Install msan runtime (for flang)
         mkdir -p $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux
