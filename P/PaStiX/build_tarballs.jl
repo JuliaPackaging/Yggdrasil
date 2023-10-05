@@ -61,7 +61,7 @@ if [[ "${target}" == *linux* ]]; then
     export CFLAGS="-lrt"
 fi
 
-LINKER_FLAGS = ""
+LINKER_FLAGS=""
 if [[ "${target}" == *aarch64-apple-darwin* ]]; then
     LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
 fi
