@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 # Collection of sources required to build OpenBLAS
@@ -89,12 +89,11 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         cp ${prefix}/lib/lib{flang*,ompstub*,pgmath*,omp*} /opt/${target}/${target}/sys-root/usr/lib/
 
         # Install msan runtime (for clang)
-        ls /opt/x86_64-linux-musl/lib/clang/16
-        cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/16/lib/linux/
+        cp -rL ${prefix}/lib/linux/* /opt/x86_64-linux-musl/lib/clang/13.0.1/lib/linux/
 
         # Install msan runtime (for flang)
-        mkdir -p $(dirname $(readlink -f $(which flang)))/../lib/clang/16/lib/linux
-        cp -rL ${prefix}/lib/linux/* $(dirname $(readlink -f $(which flang)))/../lib/clang/16/lib/linux/
+        mkdir -p $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux
+        cp -rL ${prefix}/lib/linux/* $(dirname $(readlink -f $(which flang)))/../lib/clang/13.0.1/lib/linux/
     fi
 
     # We always want threading
@@ -246,9 +245,9 @@ end
 
 function openblas_dependencies(platforms; kwargs...)
     return [
-        Dependency("CompilerSupportLibraries_jll"),
-        HostBuildDependency("FlangClassic_jll"),
-        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
-        BuildDependency("FlangClassic_RTLib_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms))
+        Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+        HostBuildDependency(PackageSpec(name="FlangClassic_jll", uuid="b3f849d4-7198-5f76-a9c5-8e4f35f75d39")),
+        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency(PackageSpec(name="FlangClassic_RTLib_jll", uuid="48abaad9-6585-5455-9ce3-84cd0709264b"); platforms=filter(p -> sanitize(p)=="memory", platforms))
     ]
 end
