@@ -57,13 +57,20 @@ if [[ "${target}" == *linux* ]]; then
     export CFLAGS="-lrt"
 fi
 
+# TOOLCHAIN
+if [[ "${target}" == *aarch64-apple-darwin* ]]; then
+    TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
+else
+    TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN}
+fi
+
 cmake .. \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_DOCUMENTATION=OFF \
     -DBLAS_LIBRARIES=$LBT \
     -DLAPACK_LIBRARIES=$LBT \
     -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
     -DCMAKE_BUILD_TYPE=Release \
     -DPASTIX_INT64=OFF \
     -DPASTIX_ORDERING_SCOTCH=$BOOL \
@@ -71,10 +78,6 @@ cmake .. \
 
 make -j${nproc}
 make install
-
-if [[ "${target}" == *mingw* ]]; then
-    mv $prefix/lib/*.dll $libdir
-fi
 
 rm -r $prefix/examples
 rm -r $prefix/lib/julia
