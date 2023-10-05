@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "HDF4"
-version = v"2.16.0"
+version = v"4.2.16"
 
 # Collection of sources required to complete build
 sources = [
