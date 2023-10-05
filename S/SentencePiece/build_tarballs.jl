@@ -7,8 +7,7 @@ version = v"0.1.99"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/sentencepiece", "3863f7648e5d8edb571ac592f3ac4f5f0695275a"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/google/sentencepiece", "3863f7648e5d8edb571ac592f3ac4f5f0695275a")
 ]
 
 # Bash recipe for building across all platforms
