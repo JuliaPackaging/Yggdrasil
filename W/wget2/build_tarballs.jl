@@ -18,6 +18,9 @@ cd $WORKSPACE/srcdir/wget2*
 --prefix=${prefix} \
 --build=${MACHTYPE} \
 --host=${target} \
+--prefix=${prefix} \
+--libdir=${libdir} \
+--includedir=${includedir} \
 --enable-shared=yes \
 --enable-static=no \
 --without-libpsl \
@@ -63,4 +66,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"11")
