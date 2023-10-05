@@ -33,6 +33,10 @@ if [[ "${target}" == *mingw* ]]; then
     sed s/'check_function_exists(hwloc_topology_init HWLOC_WORKS)'/'set(HWLOC_WORKS 1)'/ -i cmake_modules/morse_cmake/modules/find/FindHWLOC.cmake
 fi
 
+# ABI
+sed s/'set_target_properties(spm'/'#set_target_properties(spm'/ -i spm/src/CMakeLists.txt
+sed s/'set_target_properties(spmf'/'#set_target_properties(spmf'/ -i spm/wrappers/fortran90/CMakeLists.txt
+
 mkdir build
 cd build
 
