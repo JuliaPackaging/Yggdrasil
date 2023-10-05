@@ -82,6 +82,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         cat /opt/bin/${bb_full_target}/${target}-clang | sed 's/clang/flang/g' > /opt/bin/${bb_full_target}/${target}-flang
         chmod +x /opt/bin/${bb_full_target}/${target}-flang
         ln -s ${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/bin/flang /opt/x86_64-linux-musl/bin/flang
+        cp ${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/include/*.mod /opt/x86_64-linux-musl/include
         export FC=${target}-flang
 
         # Install flang rt libraries to sysroot
