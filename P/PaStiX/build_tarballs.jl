@@ -28,6 +28,10 @@ sed s/'check_c_source_runs("${METIS_C_TEST_METIS_Idx_8}" METIS_Idx_8)'/'set(METI
 sed s/'check_c_source_runs("${SCOTCH_C_TEST_SCOTCH_Num_4}" SCOTCH_Num_4)'/'set(SCOTCH_Num_4 1)'/ -i cmake_modules/morse_cmake/modules/find/FindSCOTCH.cmake
 sed s/'check_c_source_runs("${SCOTCH_C_TEST_SCOTCH_Num_8}" SCOTCH_Num_8)'/'set(SCOTCH_Num_8 0)'/ -i cmake_modules/morse_cmake/modules/find/FindSCOTCH.cmake
 
+if [[ "${target}" == *mingw* ]]; then
+    sed s/'check_function_exists(METIS_NodeND METIS_WORKS)'/'set(METIS_WORKS 1)'/ -i cmake_modules/morse_cmake/modules/find/FindMETIS.cmake
+fi
+
 mkdir build
 cd build
 
@@ -67,9 +71,13 @@ cmake .. \
 make -j${nproc}
 make install
 
+if [[ "${target}" == *mingw* ]]; then
+    mv $prefix/*.dll $libdir
+fi
+
 rm -r $prefix/examples
-rm -r $libdir/julia
-rm -r $libdir/python
+rm -r $prefix/lib/julia
+rm -r $prefix/lib/python
 rm $bindir/pastix_completion.sh
 rm $bindir/pastix_env.sh
 """
@@ -78,6 +86,7 @@ rm $bindir/pastix_env.sh
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
+platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 
 # The products that we will ensure are always built
 products = [
