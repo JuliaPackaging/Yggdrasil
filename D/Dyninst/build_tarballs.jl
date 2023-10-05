@@ -54,6 +54,10 @@ platforms = expand_cxxstring_abis(platforms)
 # Binutils and Elfutils require Linux
 # TODO: We should be able to build on Windows without Binutils and Elfutils
 filter!(Sys.islinux, platforms)
+# cmake fails with "unknown platform"
+filter!(p -> arch(p) ∉ ["armv6l", "armv7l"], platforms)
+# linking fails with "undefined reference to `_r_debug'"
+filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
