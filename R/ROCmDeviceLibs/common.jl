@@ -21,9 +21,6 @@ const ROCM_PATCHES = Dict(
 )
 
 const BUILDSCRIPT = raw"""
-cd ${WORKSPACE}/srcdir/ROCm-Device-Libs*/
-mkdir build && cd build
-
 CC=${WORKSPACE}/srcdir/rocm-clang \
 CXX=${WORKSPACE}/srcdir/rocm-clang++ \
 cmake \
