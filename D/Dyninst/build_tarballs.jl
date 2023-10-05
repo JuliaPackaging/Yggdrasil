@@ -56,7 +56,6 @@ products = [
     LibraryProduct("libdyninstAPI_RT", :libdyninstAPI_RT),
     LibraryProduct("libinstructionAPI", :libinstructionAPI),
     LibraryProduct("libparseAPI", :libparseAPI),
-    LibraryProduct("libparseThat", :libparseThat),
     LibraryProduct("libpatchAPI", :libpatchAPI),
     LibraryProduct("libpcontrol", :libpcontrol),
     LibraryProduct("libstackwalk", :libstackwalk),
