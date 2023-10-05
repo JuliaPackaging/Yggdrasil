@@ -68,7 +68,7 @@ fi
 
 cmake .. \
     -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_SHARED_LINKER_FLAGS=${LINKER_FLAGS} \
+    -DCMAKE_SHARED_LINKER_FLAGS="${LINKER_FLAGS}" \
     -DBUILD_DOCUMENTATION=OFF \
     -DBLAS_LIBRARIES=$LBT \
     -DLAPACK_LIBRARIES=$LBT \
@@ -115,4 +115,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"13.0.1")
