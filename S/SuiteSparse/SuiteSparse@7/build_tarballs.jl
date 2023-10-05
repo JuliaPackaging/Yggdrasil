@@ -54,6 +54,7 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
              -DLAPACK_FOUND=1 \
              -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
              -DLAPACK_LINKER_FLAGS="${BLAS_NAME}" \
+             -DHAVE_KEYWORD__THREAD_EXITCODE \
              "${CMAKE_OPTIONS[@]}"
     make -j${nproc}
     make install
