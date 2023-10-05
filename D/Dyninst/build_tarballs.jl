@@ -26,7 +26,16 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dt_flags_1.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/em_amdgpu.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 
+# set(CMAKE_SKIP_BUILD_RPATH FALSE)
+# set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#                args.append("-DENABLE_STATIC_LIBS=NO")
+#            args.append("-DUSE_OpenMP=ON")
+#            args.append("-DSTERILE_BUILD=ON")
+
+
 cmake -B build -S . \
+    -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
@@ -43,6 +52,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # Binutils and Elfutils require Linux
+# TODO: We should be able to build on Windows without Binutils and Elfutils
 filter!(Sys.islinux, platforms)
 
 # The products that we will ensure are always built
