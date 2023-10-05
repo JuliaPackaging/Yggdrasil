@@ -15,11 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sentencepiece*
 
-# Resolve FreeBSD build issue per https://github.com/google/sentencepiece/pull/693/files
-if [[ "${target}" == *-freebsd* ]]; then
-    atomic_patch -p1 ../patches/freebsd.patch
-fi
-
 mkdir build && cd build/
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 ..
