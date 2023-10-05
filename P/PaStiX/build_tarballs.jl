@@ -84,8 +84,8 @@ make -j${nproc}
 make install
 
 rm -r $prefix/examples
-rm -r $libdir/julia
-rm -r $libdir/python
+rm -r $prefix/lib/julia
+rm -r $prefix/lib/python
 rm $bindir/pastix_completion.sh
 rm $bindir/pastix_env.sh
 """
