@@ -21,16 +21,21 @@ script = raw"""
 
 # Hint to find libstc++, required to link against C++ libs when using C compiler
 
+# libstc++ required for c++ libs when using C compiler
+if [[ "${nbits}" == 32 ]]; then
+    export LDFLAGS="-lrt -L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib"
+elif [[ "${target}" != *-apple-* ]]; then 
+    export LDFLAGS="-lrt -L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib64"
+else 
+    export LDFLAGS="-L${prefix}/lib -liconv -lrt"
+fi
+
 if [[ "${target}" == *86*-linux-gnu ]]; then
-   export LDFLAGS="-lrt"
     if [[ "${nbits}" == 32 ]]; then
         export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
     else
         export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
     fi
-elif [[ "${target}" == *-mingw* ]]; then
-   # this is required to link to bliss on mingw
-   export LDFLAGS=-L${libdir}
 fi
 
 cd scipoptsuite*
