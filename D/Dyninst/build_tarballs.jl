@@ -57,6 +57,7 @@ filter!(Sys.islinux, platforms)
 # cmake fails with "unknown platform"
 filter!(p -> arch(p) ∉ ["armv6l", "armv7l"], platforms)
 # linking fails with "undefined reference to `_r_debug'"
+# TODO: Would this be fixed by linking against `libdl`?
 filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The products that we will ensure are always built
