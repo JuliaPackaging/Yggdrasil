@@ -4,10 +4,17 @@ name = "SuiteSparse"
 version = v"7.2.1"
 
 sources = suitesparse_sources(version)
+push!(sources, DirectorySource("./bundled"))
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
+
+# Apply cmake cross compile patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suitesparse-crosscompile.patch
+
+# Apply patch to fix ordering of specifiers for GCC
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suitesparse-threadstatic.patch
 
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
@@ -54,7 +61,6 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
              -DLAPACK_FOUND=1 \
              -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
              -DLAPACK_LINKER_FLAGS="${BLAS_NAME}" \
-             -DHAVE_KEYWORD__THREAD_EXITCODE \
              "${CMAKE_OPTIONS[@]}"
     make -j${nproc}
     make install
