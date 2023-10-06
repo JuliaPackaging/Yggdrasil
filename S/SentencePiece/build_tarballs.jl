@@ -47,5 +47,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, filter(!Sys.iswindows, platforms), [lib_products; exe_products], dependencies; julia_compat = "1.6",preferred_gcc_version=v"8")
 build_tarballs(ARGS, name, version, sources, script, filter(Sys.iswindows, platforms), exe_products, dependencies; julia_compat = "1.6",preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, filter(!Sys.iswindows, platforms), [lib_products; exe_products], dependencies; julia_compat = "1.6",preferred_gcc_version=v"8")
