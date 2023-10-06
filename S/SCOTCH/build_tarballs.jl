@@ -45,6 +45,9 @@ fi
 if [[ "${target}" == *linux-musl* ]]; then
     FLAGS="-lrt -D_GNU_SOURCE"
 fi
+if [[ "${target}" == *freebsd* ]]; then
+    FLAGS="-Dcpu_set_t=cpuset_t -D__BSD_VISIBLE"
+fi
 
 CFLAGS=$FLAGS cmake .. \
     -DBUILD_SHARED_LIBS=ON \
@@ -72,7 +75,7 @@ install_license ../LICENSE_en.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.isfreebsd)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -93,4 +96,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"9.1.0", julia_compat="1.6", preferred_llvm_version=v"13.0.1")
