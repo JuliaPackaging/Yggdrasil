@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "DataEcon"
-version = v"0.3.0"
+version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/bankofcanada/DataEcon.git",
-        "074f9e050aa0e207def0b2999446c331019deacf")
+        "d58732b8a1cb3a4d9a82796bce3c5732f74086ca")
 ]
 
 # Bash recipe for building across all platforms
