@@ -18,24 +18,14 @@ script = raw"""
 # needed for now
 # clock_gettime requires linking to librt -lrt with old glibc
 # remove when CMake accounts for this
-
-# Hint to find libstc++, required to link against C++ libs when using C compiler
-
-# libstc++ required for c++ libs when using C compiler
-if [[ "${nbits}" == 32 ]]; then
-    export LDFLAGS="-lrt -L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib"
-elif [[ "${target}" != *-apple-* ]]; then 
-    export LDFLAGS="-lrt -L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib64"
-else 
-    export LDFLAGS="-L${prefix}/lib -liconv -lrt"
-fi
-
 if [[ "${target}" == *86*-linux-gnu ]]; then
-    if [[ "${nbits}" == 32 ]]; then
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
-    else
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
-    fi
+   export LDFLAGS="-lrt"
+elif [[ "${target}" == *-mingw* ]]; then
+   # this is required to link to bliss on mingw
+   export LDFLAGS=-L${libdir}
+elif [[ "${target}" == powerpc64le-linux* ]]; then
+   # needed to avoid dladdr@GLIBC_2.17 errors
+   export LDFLAGS="-L/opt/${target}/${target}/sys-root/lib64 -Wl,-rpath-link,/opt/${target}/${target}/sys-root/lib64"
 fi
 
 cd scipoptsuite*
