@@ -7,12 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PTSCOTCH"
 version = v"7.0.4"
-ptscotch_version = v"7.0.3"
 scotch_jll_version = v"7.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "b43864123e820e3ca541bfecd3738aed385a4c47"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "82ec87f558f4acb7ccb69a079f531be380504c92"),
     DirectorySource("./bundled")
 ]
 
@@ -24,6 +23,10 @@ cd ${WORKSPACE}/srcdir/scotch*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
+
+# We don't want to break the ABI if we have a new release.
+sed s/'set_target_properties(scotch PROPERTIES VERSION'/'#set_target_properties(scotch PROPERTIES VERSION'/ -i src/libscotch/CMakeLists.txt
+sed s/'  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/'#  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/ -i src/libscotch/CMakeLists.txt
 
 mkdir -p src/dummysizes/build-host
 cd src/dummysizes/build-host
@@ -45,6 +48,9 @@ if [[ "${target}" == *linux* ]]; then
 fi
 if [[ "${target}" == *linux-musl* ]]; then
     FLAGS="-lrt -D_GNU_SOURCE"
+fi
+if [[ "${target}" == *freebsd* ]]; then
+    FLAGS="-Dcpu_set_t=cpuset_t -D__BSD_VISIBLE"
 fi
 
 CFLAGS=$FLAGS cmake .. \
@@ -83,7 +89,6 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported
@@ -114,4 +119,5 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9.1.0")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"9.1.0",
+               preferred_llvm_version=v"13.0.1")
