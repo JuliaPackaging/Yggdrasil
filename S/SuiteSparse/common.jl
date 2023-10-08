@@ -14,7 +14,7 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
         ],
         v"7.2.0" => [
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
-                "8a7641cdb4809533c681417e94f98058c07c5da2")
+                      "6f2a224dc37c09ebd1b5e9887da6790746f3fdc5")
         ]
     )
     return Any[
@@ -24,7 +24,9 @@ end
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms()
-push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
+
+# Disable sanitize build until it is fixed for the latest LLVM
+#push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
