@@ -23,9 +23,6 @@ if [[ "${target}" == *86*-linux-gnu ]]; then
 elif [[ "${target}" == *-mingw* ]]; then
    # this is required to link to bliss on mingw
    export LDFLAGS=-L${libdir}
-elif [[ "${target}" == powerpc64le-linux* ]]; then
-   # needed to avoid dladdr@GLIBC_2.17 errors
-   export LDFLAGS="-L/opt/${target}/${target}/sys-root/lib64 -Wl,-rpath-link,/opt/${target}/${target}/sys-root/lib64"
 fi
 
 cd scipoptsuite*
