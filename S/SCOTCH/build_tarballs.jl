@@ -64,13 +64,20 @@ CFLAGS=$FLAGS cmake .. \
     -DINSTALL_METIS_HEADERS=OFF
 
 make -j${nproc}
-make install
+# make install
 
 if [[ "${target}" == *mingw* ]]; then
+    rm bin/libptesmumps.dll
+    rm lib/libptesmumps.dll.a
     cp bin/*.dll $libdir
+    cp lib/*.dll.a $prefix/lib
+else
+    cp lib/*.${dlext} $libdir
 fi
+cd src/include
+cp scotch.h scotchf.h esmumps.h $includedir
 
-install_license ../LICENSE_en.txt
+install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
 """
 
 # These are the platforms we will build for by default, unless further
