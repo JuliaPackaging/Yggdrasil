@@ -27,6 +27,7 @@ done
 # We don't want to break the ABI if we have a new release.
 sed s/'set_target_properties(scotch PROPERTIES VERSION'/'#set_target_properties(scotch PROPERTIES VERSION'/ -i src/libscotch/CMakeLists.txt
 sed s/'  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/'#  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/ -i src/libscotch/CMakeLists.txt
+sed s/'    VERSION ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL}'/'#    VERSION ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL}'/ -i src/libscotch/CMakeLists.txt
 
 mkdir -p src/dummysizes/build-host
 cd src/dummysizes/build-host
@@ -54,9 +55,9 @@ if [[ "${target}" == *freebsd* ]]; then
 fi
 
 CFLAGS=$FLAGS cmake .. \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DMPI_RUN_RESULT_C_libver_mpi_normal=1 \
     -DMPI_RUN_RESULT_C_libver_mpi_normal__TRYRUN_OUTPUT="" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -70,12 +71,11 @@ CFLAGS=$FLAGS cmake .. \
     -DBUILD_DUMMYSIZES=OFF \
     -DINSTALL_METIS_HEADERS=OFF
 
-make # -j${nproc}
-make install
+make -j${nproc}
+# make install
 
-if [[ "${target}" == *mingw* ]]; then
-    cp bin/*.dll $libdir
-fi
+cp lib/libpt*.$dlext $libdir
+cp src/include/pt*.h $includedir
 
 install_license ../LICENSE_en.txt
 """
