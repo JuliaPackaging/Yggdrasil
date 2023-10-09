@@ -26,7 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_ENABLE_AMALGAMATION=ON \
     -DUA_ENABLE_IMMUTABLE_NODES=ON \
     -DBUILD_SHARED_LIBS=ON \
-    -UA_FORCE_WERROR=OFF \
+    -DUA_FORCE_WERROR=OFF \
     ..
 make -j${nproc}
 make install
