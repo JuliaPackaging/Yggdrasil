@@ -60,7 +60,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Cairo_jll"; compat="1.16.1"),
+    Dependency("Cairo_jll"; compat="~1.16.1"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("FriBidi_jll"),
