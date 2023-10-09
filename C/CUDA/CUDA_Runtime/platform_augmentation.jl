@@ -4,6 +4,26 @@ using Base: thismajor, thisminor
 
 using Libdl
 
+# before loading CUDA_Driver_jll, try to find out where the system driver is located.
+let
+    name = if Sys.iswindows()
+        Libdl.find_library("nvcuda")
+    else
+        Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+    end
+
+    # if we've found a system driver, put a dependency on it,
+    # so that we get recompiled if the driver changes.
+    if name != ""
+        handle = Libdl.dlopen(name)
+        path = Libdl.dlpath(handle)
+        Libdl.dlclose(handle)
+
+        @debug "Adding include dependency on $path"
+        Base.include_dependency(path)
+    end
+end
+
 # platform augmentation hooks run in an ill-defined environment, where:
 # - CUDA_Driver_jll may not be available
 # - the wrong version of CUDA_Driver_jll may be available
