@@ -8,8 +8,7 @@ version = v"1.3.7"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "b8ac9e77f703e6ba5c012b886a8821037503daa6"),
-    DirectorySource("./bundled"),
+              "b8ac9e77f703e6ba5c012b886a8821037503daa6")
 ]
 
 # Bash recipe for building across all platforms
