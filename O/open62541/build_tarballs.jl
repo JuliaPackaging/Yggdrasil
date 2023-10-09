@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.2.2"
+version = v"1.3.7"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "ecf5a703785877a8719a0cda863a98455f7d5d12"),
+              "b8ac9e77f703e6ba5c012b886a8821037503daa6"),
     DirectorySource("./bundled"),
 ]
 
