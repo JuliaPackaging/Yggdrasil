@@ -14,8 +14,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/open62541/
-atomic_patch -p1 ../patches/0001-fix-core-Explicit-cast-to-avoid-compiler-warning-420.patch
-atomic_patch -p1 ../patches/0002-refactor-pubsub-Fix-check-macros-and-slightly-clean-.patch
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
