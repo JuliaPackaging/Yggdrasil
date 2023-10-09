@@ -6,7 +6,7 @@ version = v"0.4.0"
 sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
-        "9482382"),
+        "9482382acc150cfd3c046292975853cd76e57f43"),
 ]
 
 # https://libcellml.org/documentation/guides/latest/installation/build_from_source
