@@ -80,7 +80,8 @@ cat >dlopen.c <<EOF
 #include <dlfcn.h>
 #include <stdio.h>
 int main(int *argc, char *argv[]) {
-  void *ptr = dlopen(argv[1], RTLD_NOW);
+  // void *ptr = dlopen(argv[1], RTLD_NOW);
+  void *ptr = dlopen(argv[1], RTLD_LAZY | RTLD_DEEPBIND);
   printf("ptr=%p\n", ptr);
   return 0;
 }
