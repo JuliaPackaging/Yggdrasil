@@ -3,7 +3,7 @@ include("../common.jl")
 using Base.BinaryPlatforms: arch, os
 
 name = "SuiteSparse"
-version = v"7.2.0"
+version = v"7.2.1"
 
 sources = suitesparse_sources(version)
 
@@ -51,7 +51,7 @@ for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine CHOLMOD SPQR; 
     cmake .. -DCMAKE_BUILD_TYPE=Release \
              -DCMAKE_INSTALL_PREFIX=${prefix} \
              -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-             -DENABLE_CUDA=0 \
+             -DENABLE_CUDA=1 \
              -DNFORTRAN=1 \
              -DNOPENMP=1 \
              -DNSTATIC=1 \
