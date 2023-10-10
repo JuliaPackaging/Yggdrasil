@@ -26,10 +26,13 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dt_flags_1.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/em_amdgpu.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 
+# TODO:
+#     -DCMAKE_BUILD_TYPE=Release \
+
 cmake -B build -S . \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -60,7 +63,7 @@ filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && cxxs
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("parseThat", :parseThat),
-    LibraryProduct("libcommon", :libcommon),
+    # LibraryProduct("libcommon", :libcommon),
     LibraryProduct("libdynC_API", :libdynC_API),
     LibraryProduct("libdynDwarf", :libdynDwarf),
     LibraryProduct("libdynElf", :libdynElf),
@@ -90,5 +93,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# The auditor fails, maybe the init functions of some of the libraries do something weird
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7", skip_audit=true)
