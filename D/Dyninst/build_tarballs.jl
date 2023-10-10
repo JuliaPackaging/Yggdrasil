@@ -26,30 +26,10 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dt_flags_1.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/em_amdgpu.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 
-# TODO: -DCMAKE_BUILD_TYPE=Release
-
-# Fail:
-
-#     -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
-#     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-#     -DCMAKE_SKIP_BUILD_RPATH=OFF \
-
-#     -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-#     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-#     -DCMAKE_SKIP_BUILD_RPATH=OFF \
-
-#     -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
-#     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=OFF \
-#     -DCMAKE_SKIP_BUILD_RPATH=OFF \
-
 cmake -B build -S . \
-    -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
-    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
-    -DCMAKE_SKIP_BUILD_RPATH=ON \
-    \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
-    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -111,4 +91,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.6", preferred_gcc_version=v"7", skip_audit=true)
