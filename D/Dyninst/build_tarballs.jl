@@ -26,24 +26,21 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dt_flags_1.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/em_amdgpu.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 
-# set(CMAKE_SKIP_BUILD_RPATH FALSE)
-# set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-#                args.append("-DENABLE_STATIC_LIBS=NO")
-#            args.append("-DUSE_OpenMP=ON")
-#            args.append("-DSTERILE_BUILD=ON")
-
-
 # TODO: -DCMAKE_BUILD_TYPE=Release
 
 # Fail:
+
 #     -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
 #     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
 #     -DCMAKE_SKIP_BUILD_RPATH=OFF \
 
+#     -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+#     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+#     -DCMAKE_SKIP_BUILD_RPATH=OFF \
+
 cmake -B build -S . \
-    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+    -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
+    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=OFF \
     -DCMAKE_SKIP_BUILD_RPATH=OFF \
     \
     -DBUILD_SHARED_LIBS=ON \
