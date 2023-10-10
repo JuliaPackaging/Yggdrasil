@@ -36,16 +36,25 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 
 # TODO: -DCMAKE_BUILD_TYPE=Release
 
+# Fail:
+#     -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
+#     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+#     -DCMAKE_SKIP_BUILD_RPATH=OFF \
+
 cmake -B build -S . \
-    -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
+    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
     -DCMAKE_SKIP_BUILD_RPATH=OFF \
+    \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DENABLE_STATIC_LIBS=NO \
+    -DSTERILE_BUILD=ON \
+    -DUSE_OpenMP=ON
 cmake --build build --parallel ${nproc}
 cmake --build build --parallel ${nproc} --target install
 """
