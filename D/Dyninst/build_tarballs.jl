@@ -57,24 +57,24 @@ file $libdir/libcommon.so
 ldd $libdir/libcommon.so
 $libdir/libcommon.so || true
 
-/workspace/destdir/lib/libboost_atomic.so.1.79.0 || true
-/workspace/destdir/lib/libboost_chrono.so.1.79.0 || true
-/workspace/destdir/lib/libboost_date_time.so.1.79.0 || true
-/workspace/destdir/lib/libboost_filesystem.so.1.79.0 || true
-/workspace/destdir/lib/libboost_thread.so.1.79.0 || true
-/lib64/libpthread.so.0 || true
-/workspace/destdir/lib/libboost_timer.so.1.79.0 || true
-/workspace/destdir/lib/libboost_system.so.1.79.0 || true
-/workspace/destdir/lib/libtbbmalloc_proxy.so.2 || true
-/workspace/destdir/lib/libtbbmalloc.so.2 || true
-/workspace/destdir/lib/libtbb.so.12 || true
-/workspace/destdir/lib/libstdc++.so.6 || true
-/lib64/libm.so.6 || true
-/workspace/destdir/lib/libgomp.so.1 || true
-/workspace/destdir/lib/libgcc_s.so.1 || true
-/lib64/libc.so.6 || true
-/lib64/librt.so.1 || true
-/lib64/libdl.so.2 || true
+ldd /workspace/destdir/lib/libboost_atomic.so.1.79.0 || true
+ldd /workspace/destdir/lib/libboost_chrono.so.1.79.0 || true
+ldd /workspace/destdir/lib/libboost_date_time.so.1.79.0 || true
+ldd /workspace/destdir/lib/libboost_filesystem.so.1.79.0 || true
+ldd /workspace/destdir/lib/libboost_thread.so.1.79.0 || true
+ldd /lib64/libpthread.so.0 || true
+ldd /workspace/destdir/lib/libboost_timer.so.1.79.0 || true
+ldd /workspace/destdir/lib/libboost_system.so.1.79.0 || true
+ldd /workspace/destdir/lib/libtbbmalloc_proxy.so.2 || true
+ldd /workspace/destdir/lib/libtbbmalloc.so.2 || true
+ldd /workspace/destdir/lib/libtbb.so.12 || true
+ldd /workspace/destdir/lib/libstdc++.so.6 || true
+ldd /lib64/libm.so.6 || true
+ldd /workspace/destdir/lib/libgomp.so.1 || true
+ldd /workspace/destdir/lib/libgcc_s.so.1 || true
+ldd /lib64/libc.so.6 || true
+ldd /lib64/librt.so.1 || true
+ldd /lib64/libdl.so.2 || true
 
 #TODO
 # exit 1
