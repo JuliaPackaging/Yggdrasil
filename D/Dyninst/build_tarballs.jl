@@ -44,7 +44,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 
 cmake -B build -S . \
     -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
-    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
+    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
     -DCMAKE_SKIP_BUILD_RPATH=ON \
     \
     -DBUILD_SHARED_LIBS=ON \
