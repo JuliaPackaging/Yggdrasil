@@ -4,17 +4,10 @@ name = "SuiteSparse"
 version = v"7.2.1"
 
 sources = suitesparse_sources(version)
-push!(sources, DirectorySource("./bundled"))
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
-
-# Apply cmake cross compile patch
-#atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suitesparse-crosscompile.patch
-
-# Apply patch to fix ordering of specifiers for GCC
-#atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suitesparse-threadstatic.patch
 
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
