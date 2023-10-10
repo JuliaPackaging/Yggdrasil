@@ -51,30 +51,55 @@ cmake -B build -S . \
 cmake --build build --parallel ${nproc}
 cmake --build build --parallel ${nproc} --target install
 
-echo $libdir
-ls -l $libdir/libcommon.so*
-file $libdir/libcommon.so
-ldd $libdir/libcommon.so
-$libdir/libcommon.so || true
+# echo $libdir
+# ls -l $libdir/libcommon.so*
+# file $libdir/libcommon.so
+# ldd $libdir/libcommon.so
+# $libdir/libcommon.so || true
+# 
+# ldd /workspace/destdir/lib/libboost_atomic.so.1.79.0 || true
+# ldd /workspace/destdir/lib/libboost_chrono.so.1.79.0 || true
+# ldd /workspace/destdir/lib/libboost_date_time.so.1.79.0 || true
+# ldd /workspace/destdir/lib/libboost_filesystem.so.1.79.0 || true
+# ldd /workspace/destdir/lib/libboost_thread.so.1.79.0 || true
+# ldd /lib64/libpthread.so.0 || true
+# ldd /workspace/destdir/lib/libboost_timer.so.1.79.0 || true
+# ldd /workspace/destdir/lib/libboost_system.so.1.79.0 || true
+# ldd /workspace/destdir/lib/libtbbmalloc_proxy.so.2 || true
+# ldd /workspace/destdir/lib/libtbbmalloc.so.2 || true
+# ldd /workspace/destdir/lib/libtbb.so.12 || true
+# ldd /workspace/destdir/lib/libstdc++.so.6 || true
+# ldd /lib64/libm.so.6 || true
+# ldd /workspace/destdir/lib/libgomp.so.1 || true
+# ldd /workspace/destdir/lib/libgcc_s.so.1 || true
+# ldd /lib64/libc.so.6 || true
+# ldd /lib64/librt.so.1 || true
+# ldd /lib64/libdl.so.2 || true
 
-ldd /workspace/destdir/lib/libboost_atomic.so.1.79.0 || true
-ldd /workspace/destdir/lib/libboost_chrono.so.1.79.0 || true
-ldd /workspace/destdir/lib/libboost_date_time.so.1.79.0 || true
-ldd /workspace/destdir/lib/libboost_filesystem.so.1.79.0 || true
-ldd /workspace/destdir/lib/libboost_thread.so.1.79.0 || true
-ldd /lib64/libpthread.so.0 || true
-ldd /workspace/destdir/lib/libboost_timer.so.1.79.0 || true
-ldd /workspace/destdir/lib/libboost_system.so.1.79.0 || true
-ldd /workspace/destdir/lib/libtbbmalloc_proxy.so.2 || true
-ldd /workspace/destdir/lib/libtbbmalloc.so.2 || true
-ldd /workspace/destdir/lib/libtbb.so.12 || true
-ldd /workspace/destdir/lib/libstdc++.so.6 || true
-ldd /lib64/libm.so.6 || true
-ldd /workspace/destdir/lib/libgomp.so.1 || true
-ldd /workspace/destdir/lib/libgcc_s.so.1 || true
-ldd /lib64/libc.so.6 || true
-ldd /lib64/librt.so.1 || true
-ldd /lib64/libdl.so.2 || true
+cat >dlopen.c <<EOF
+#include <dlfcn.h>
+#include <stdio.h>
+int main(int *argc, char *argv[]) {
+  void *ptr = dlopen(argv[1], RTLD_NOW);
+  printf("ptr=%p\n", ptr);
+  return 0;
+}
+EOF
+cc -o dlopen dlopen.c -ldl
+
+./dlopen $libdir/libcommon.so
+./dlopen $libdir/libdynC_API.so
+./dlopen $libdir/libdynDwarf.so
+./dlopen $libdir/libdynElf.so
+./dlopen $libdir/libdyninstAPI.so
+./dlopen $libdir/libdyninstAPI_RT.so
+./dlopen $libdir/libinstructionAPI.so
+./dlopen $libdir/libparseAPI.so
+./dlopen $libdir/libpatchAPI.so
+./dlopen $libdir/libpcontrol.so
+./dlopen $libdir/libstackwalk.so
+./dlopen $libdir/libsymLite.so
+./dlopen $libdir/libsymtabAPI.so
 
 #TODO
 # exit 1
