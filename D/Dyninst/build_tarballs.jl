@@ -26,13 +26,18 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dt_flags_1.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/em_amdgpu.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 
-# TODO:
+# TODO: 
 #     -DCMAKE_BUILD_TYPE=Release \
+
+# set(CMAKE_SKIP_BUILD_RPATH FALSE)
+# set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# set(DYNINST_RPATH_DIRECTORIES "\$ORIGIN")
 
 cmake -B build -S . \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
-    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -95,4 +100,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # The auditor fails, maybe the init functions of some of the libraries do something weird
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7", skip_audit=true)
+               julia_compat="1.6", preferred_gcc_version=v"7", skip_audit=false)
