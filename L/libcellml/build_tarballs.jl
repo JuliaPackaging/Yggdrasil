@@ -1,16 +1,29 @@
 using BinaryBuilder, Pkg
 
 name = "libcellml"
-version = v"0.4.0"
+version = v"0.5.0"
 
 sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
         "9482382acc150cfd3c046292975853cd76e57f43"),
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
-# https://libcellml.org/documentation/guides/latest/installation/build_from_source
+# https://libcellml.org/documentation/installation/build_from_source
 script = raw"""
+# This requires macOS 10.15
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    popd
+fi
+
 cd libcellml
 mkdir build && cd build
 cmake -DINSTALL_PREFIX=${prefix} \
