@@ -51,6 +51,12 @@ cmake -B build -S . \
 cmake --build build --parallel ${nproc}
 cmake --build build --parallel ${nproc} --target install
 
+echo $libdir
+ls -l $libdir/libcommon.so*
+file $libdir/libcommon.so
+ldd $libdir/libcommon.so
+$libdir/libcommon.so || true
+
 #TODO
 # exit 1
 """
