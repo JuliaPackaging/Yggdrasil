@@ -35,17 +35,23 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 # set(DYNINST_RPATH_DIRECTORIES "\$ORIGIN")
 
 cmake -B build -S . \
+    -DCMAKE_SKIP_BUILD_RPATH=OFF \
+    -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
+    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=OFF \
+    \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DENABLE_STATIC_LIBS=NO \
     -DSTERILE_BUILD=ON \
     -DUSE_OpenMP=ON
 cmake --build build --parallel ${nproc}
 cmake --build build --parallel ${nproc} --target install
+
+#TODO
+# exit 1
 """
 
 # These are the platforms we will build for by default, unless further
@@ -68,7 +74,7 @@ filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && cxxs
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("parseThat", :parseThat),
-    # LibraryProduct("libcommon", :libcommon),
+    LibraryProduct("libcommon", :libcommon),
     LibraryProduct("libdynC_API", :libdynC_API),
     LibraryProduct("libdynDwarf", :libdynDwarf),
     LibraryProduct("libdynElf", :libdynElf),
