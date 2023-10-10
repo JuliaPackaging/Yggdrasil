@@ -34,14 +34,18 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 #            args.append("-DSTERILE_BUILD=ON")
 
 
+# TODO: -DCMAKE_BUILD_TYPE=Release
+
 cmake -B build -S . \
     -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
+    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON \
+    -DCMAKE_SKIP_BUILD_RPATH=OFF \
+    -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_TESTING=OFF \
+    -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-    # -DBUILD_SHARED_LIBS=ON
-    # -DBUILD_TESTING=OFF
-    # -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --build build --parallel ${nproc} --target install
 """
@@ -59,6 +63,9 @@ filter!(p -> arch(p) ∉ ["armv6l", "armv7l"], platforms)
 # linking fails with "undefined reference to `_r_debug'"
 # TODO: Would this be fixed by linking against `libdl`?
 filter!(p -> libc(p) ≠ "musl", platforms)
+
+# TODO: For debugging:
+filter!(p -> arch(p) == "x86-64" && Sys.islinux(p) && libc(p) == "gnu" && cxxstring_abi(p) == "cxx11",  platforms)
 
 # The products that we will ensure are always built
 products = [
