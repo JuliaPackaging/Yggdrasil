@@ -51,30 +51,29 @@ cmake -B build -S . \
 cmake --build build --parallel ${nproc}
 cmake --build build --parallel ${nproc} --target install
 
-# echo $libdir
-# ls -l $libdir/libcommon.so*
-# file $libdir/libcommon.so
-# ldd $libdir/libcommon.so
-# $libdir/libcommon.so || true
-# 
-# ldd /workspace/destdir/lib/libboost_atomic.so.1.79.0 || true
-# ldd /workspace/destdir/lib/libboost_chrono.so.1.79.0 || true
-# ldd /workspace/destdir/lib/libboost_date_time.so.1.79.0 || true
-# ldd /workspace/destdir/lib/libboost_filesystem.so.1.79.0 || true
-# ldd /workspace/destdir/lib/libboost_thread.so.1.79.0 || true
-# ldd /lib64/libpthread.so.0 || true
-# ldd /workspace/destdir/lib/libboost_timer.so.1.79.0 || true
-# ldd /workspace/destdir/lib/libboost_system.so.1.79.0 || true
-# ldd /workspace/destdir/lib/libtbbmalloc_proxy.so.2 || true
-# ldd /workspace/destdir/lib/libtbbmalloc.so.2 || true
-# ldd /workspace/destdir/lib/libtbb.so.12 || true
-# ldd /workspace/destdir/lib/libstdc++.so.6 || true
-# ldd /lib64/libm.so.6 || true
-# ldd /workspace/destdir/lib/libgomp.so.1 || true
-# ldd /workspace/destdir/lib/libgcc_s.so.1 || true
-# ldd /lib64/libc.so.6 || true
-# ldd /lib64/librt.so.1 || true
-# ldd /lib64/libdl.so.2 || true
+echo $libdir
+ls -l $libdir/libcommon.so*
+file $libdir/libcommon.so
+ldd $libdir/libcommon.so
+
+ldd /workspace/destdir/lib/libboost_atomic.so.1.79.0
+ldd /workspace/destdir/lib/libboost_chrono.so.1.79.0
+ldd /workspace/destdir/lib/libboost_date_time.so.1.79.0
+ldd /workspace/destdir/lib/libboost_filesystem.so.1.79.0
+ldd /workspace/destdir/lib/libboost_thread.so.1.79.0
+ldd /lib64/libpthread.so.0
+ldd /workspace/destdir/lib/libboost_timer.so.1.79.0
+ldd /workspace/destdir/lib/libboost_system.so.1.79.0
+ldd /workspace/destdir/lib/libtbbmalloc_proxy.so.2
+ldd /workspace/destdir/lib/libtbbmalloc.so.2
+ldd /workspace/destdir/lib/libtbb.so.12
+ldd /workspace/destdir/lib/libstdc++.so.6
+ldd /lib64/libm.so.6
+ldd /workspace/destdir/lib/libgomp.so.1
+ldd /workspace/destdir/lib/libgcc_s.so.1
+ldd /lib64/libc.so.6
+ldd /lib64/librt.so.1
+ldd /lib64/libdl.so.2
 
 cat >dlopen.c <<EOF
 #include <dlfcn.h>
@@ -158,4 +157,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # The auditor fails, maybe the init functions of some of the libraries do something weird
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7", skip_audit=false)
+               julia_compat="1.6", preferred_gcc_version=v"7")
