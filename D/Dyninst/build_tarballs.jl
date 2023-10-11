@@ -152,7 +152,7 @@ dependencies = [
     # We require at least v2019.7 of oneTBB
     Dependency("oneTBB_jll"; compat="2021.8.0"),
     # We require at least v1.70.0 of Boost
-    Dependency("boost_jll"; compat="1.79.0"),
+    Dependency("boost_jll"; compat="=1.79.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
