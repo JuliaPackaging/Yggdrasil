@@ -179,6 +179,10 @@ fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
+if [[ "${LLVM_MAJ_VER}" -gt "13"]]; then
+    CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+fi
+
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
 
