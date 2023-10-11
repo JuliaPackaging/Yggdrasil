@@ -1,17 +1,16 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "spglib"
 version = v"2.1.0"
 
-# Collection of sources required to build spglib
+# Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/spglib/spglib.git", "59bea8a7df30c8f2202ed0ee1033be0d98d9ed5e"),
+    GitSource("https://github.com/spglib/spglib.git", "59bea8a7df30c8f2202ed0ee1033be0d98d9ed5e")
 ]
 
 # Bash recipe for building across all platforms
-# See https://github.com/JuliaPackaging/Yggdrasil/pull/7310
 script = raw"""
 cd $WORKSPACE/srcdir/spglib
 args=""
@@ -36,12 +35,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-    Dependency("CompilerSupportLibraries_jll"; platforms=filter(platform -> !Sys.isbsd(platform) || Sys.isapple(platform), platforms)),
-    Dependency("LLVMOpenMP_jll"; platforms=filter(platform -> !Sys.isbsd(platform) || Sys.isapple(platform), platforms)),
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12.1.0")
