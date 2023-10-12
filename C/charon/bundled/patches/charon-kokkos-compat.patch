@@ -1,0 +1,59 @@
+commit 14656a17e15b9b8a07b1c1b79fbc645bf53a6c38
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Thu Oct 12 04:35:24 2023 +0000
+
+    Kokkos_DefaultNode.hpp -> Tpetra_KokkosCompat_DefaultNode.hpp
+
+diff --git a/src/Charon_Main.cpp b/src/Charon_Main.cpp
+index f6d58d9..bf21bff 100644
+--- a/src/Charon_Main.cpp
++++ b/src/Charon_Main.cpp
+@@ -45,7 +45,7 @@
+ 
+ // Kokkos
+ #include "Kokkos_Core.hpp"
+-#include "Kokkos_DefaultNode.hpp"
++#include "Tpetra_KokkosCompat_DefaultNode.hpp"
+ 
+ // Panzer
+ #include "Panzer_ParameterLibraryUtilities.hpp"
+diff --git a/src/solver/Charon_NOXObserver_EorTpetraOutput.hpp b/src/solver/Charon_NOXObserver_EorTpetraOutput.hpp
+index 193c9f0..acefedf 100644
+--- a/src/solver/Charon_NOXObserver_EorTpetraOutput.hpp
++++ b/src/solver/Charon_NOXObserver_EorTpetraOutput.hpp
+@@ -32,7 +32,7 @@
+ 
+ #include "MatrixMarket_Tpetra.hpp"
+ 
+-#include <Kokkos_DefaultNode.hpp>
++#include <Tpetra_KokkosCompat_DefaultNode.hpp>
+ 
+ #include <vector>
+ #include <string>
+@@ -180,10 +180,10 @@ namespace charon {
+                            const Teuchos::RCP<const Thyra::LinearOpBase<double> > & J,bool useDomainMap,bool transpose=false) const
+     {
+       // now use tpetra to get domain map
+-      typedef Thyra::TpetraVector<double,int,panzer::GlobalOrdinal,KokkosClassic::DefaultNode::DefaultNodeType> Thyra_TpVector;
++      typedef Thyra::TpetraVector<double,int,panzer::GlobalOrdinal,Tpetra::KokkosClassic::DefaultNode::DefaultNodeType> Thyra_TpVector;
+       Teuchos::RCP<const Thyra_TpVector> th_tp_x = Teuchos::rcp_dynamic_cast<const Thyra_TpVector>(x);
+       if(th_tp_x!=Teuchos::null) {
+-        typedef Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal,KokkosClassic::DefaultNode::DefaultNodeType> sparse_matrix;
++        typedef Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal,Tpetra::KokkosClassic::DefaultNode::DefaultNodeType> sparse_matrix;
+ 
+         Tpetra::MatrixMarket::Writer<sparse_matrix>::writeDenseFile(fileName,th_tp_x->getConstTpetraVector());
+ 
+@@ -283,11 +283,11 @@ namespace charon {
+         return;
+ 
+       // test and conditionally write Tpetra
+-      typedef Thyra::TpetraLinearOp<double,int,panzer::GlobalOrdinal,KokkosClassic::DefaultNode::DefaultNodeType> th_tp_matrix;
++      typedef Thyra::TpetraLinearOp<double,int,panzer::GlobalOrdinal,Tpetra::KokkosClassic::DefaultNode::DefaultNodeType> th_tp_matrix;
+       Teuchos::RCP<const th_tp_matrix> th_tp_J = Teuchos::rcp_dynamic_cast<const th_tp_matrix>(J);
+ 
+       if(th_tp_J!=Teuchos::null) {
+-        typedef Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal,KokkosClassic::DefaultNode::DefaultNodeType> sparse_matrix;
++        typedef Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal,Tpetra::KokkosClassic::DefaultNode::DefaultNodeType> sparse_matrix;
+ 
+         Teuchos::RCP<const sparse_matrix> tp_J = Teuchos::rcp_dynamic_cast<const sparse_matrix>(th_tp_J->getConstTpetraOperator());
+         Tpetra::MatrixMarket::Writer<sparse_matrix>::writeSparseFile(fileName,tp_J);

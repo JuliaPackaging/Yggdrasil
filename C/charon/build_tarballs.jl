@@ -17,16 +17,21 @@ script = raw"""
 cd $WORKSPACE/srcdir
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/charon-all-changes.patch.patch
 cd tcad-charon
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/charon-kokkos-compat.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/charon-no-rhytmos.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/panzerinclude.patch
 mv src src2
 sed -i 's/src/src2/g' PackagesList.cmake
+# TODO: This should probably be fixed in Trilinos
+sed -i 's|local/||g' /opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/lib/external_packages/DLlib/DLlibConfig.cmake
 cd ..
 rm /usr/bin/cmake
 mkdir tcad-charon-build
 cd tcad-charon-build/
 export TRIBITS_BASE_DIR=${WORKSPACE}/srcdir/TriBITS
-cmake --trace -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${WORKSPACE}/srcdir/tcad-charon -Dtcad-charon_ENABLE_Charon:BOOL=ON
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${WORKSPACE}/srcdir/tcad-charon -Dtcad-charon_ENABLE_Charon:BOOL=ON -DTPL_ENABLE_MPI=ON -Dtcad-charon_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON -DCharon_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON -Dtcad-charon_EXTRA_LINK_FLAGS="-lmpi"
 make -j20 install
+install_license LICENSE/Charon_LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -45,5 +50,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10",
     preferred_gcc_version=v"9")
