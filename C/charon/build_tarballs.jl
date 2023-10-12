@@ -1,6 +1,8 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "charon"
 version = v"2.2.0"
@@ -37,6 +39,23 @@ install_license LICENSE/Charon_LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+
+# Filter libgfortran3 - the corresponding GCC is too old to compiler some of
+# the newer C++ constructs.
+filter!(platforms) do p
+    !(p["libgfortran_version"] in ("3.0.0", "4.0.0"))
+end
+
+# MPI Handling
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = Product[
