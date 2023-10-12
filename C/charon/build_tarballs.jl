@@ -26,6 +26,7 @@ mv src src2
 sed -i 's/src/src2/g' PackagesList.cmake
 # TODO: This should probably be fixed in Trilinos
 sed -i 's|local/||g' /opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/lib/external_packages/DLlib/DLlibConfig.cmake
+install_license LICENSE/Charon_LICENSE
 cd ..
 rm /usr/bin/cmake
 mkdir tcad-charon-build
@@ -33,7 +34,6 @@ cd tcad-charon-build/
 export TRIBITS_BASE_DIR=${WORKSPACE}/srcdir/TriBITS
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${WORKSPACE}/srcdir/tcad-charon -Dtcad-charon_ENABLE_Charon:BOOL=ON -DTPL_ENABLE_MPI=ON -Dtcad-charon_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON -DCharon_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON -Dtcad-charon_EXTRA_LINK_FLAGS="-lmpi"
 make -j20 install
-install_license LICENSE/Charon_LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
