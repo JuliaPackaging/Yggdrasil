@@ -218,14 +218,6 @@ if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* ) ]]; then
     CMAKE_CXX_FLAGS+=(-fno-gnu-unique)
 fi
 
-# LLVM 16 requires `align_alloc`, make it available for Intel Linux platforms
-# which use an older glibc.
-if [[ "${LLVM_MAJ_VER}" -ge "16" && "${target}" == *86*-linux-gnu* ]]; then
-    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath "${prefix}/usr/include/stdlib.h"))))
-    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
-    CMAKE_CPP_FLAGS+=(-D_GLIBCXX_HAVE_ALIGNED_ALLOC=1)
-fi
-
 # Install things into $prefix, and make sure it knows we're cross-compiling
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
@@ -620,13 +612,6 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
               ArchiveSource(
                   "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-    end
-    if version >= v"16"
-        push!(dependencies,
-              # On Intel Linux platforms we use glibc 2.12, but building LLVM 16
-              # requires glibc 2.16+.
-              BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
-                              platforms=filter(p -> libc(p) == "glibc" && proc_family(p) == "intel", platforms)))
     end
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
