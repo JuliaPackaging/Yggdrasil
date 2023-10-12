@@ -86,6 +86,7 @@ function get_runtime_version()
         return nothing
     end
     @debug "Found CUDA runtime library at '$cuda_runtime'"
+
     # minimal API call wrappers we need
     function cudaRuntimeGetVersion(library_handle)
         function_handle = Libdl.dlsym(library_handle, "cudaRuntimeGetVersion"; throw_error=false)
