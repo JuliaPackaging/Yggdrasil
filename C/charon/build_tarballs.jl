@@ -25,7 +25,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/panzerinclude.patch
 mv src src2
 sed -i 's/src/src2/g' PackagesList.cmake
 # TODO: This should probably be fixed in Trilinos
-sed -i 's|local/||g' /opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/lib/external_packages/DLlib/DLlibConfig.cmake
+sed -i 's|local/||g' /workspace/destdir/lib/external_packages/DLlib/DLlibConfig.cmake
 install_license LICENSE/Charon_LICENSE
 cd ..
 rm /usr/bin/cmake
