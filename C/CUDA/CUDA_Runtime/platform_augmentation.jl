@@ -4,26 +4,6 @@ using Base: thismajor, thisminor
 
 using Libdl
 
-# before loading CUDA_Driver_jll, try to find out where the system driver is located.
-let
-    name = if Sys.iswindows()
-        Libdl.find_library("nvcuda")
-    else
-        Libdl.find_library(["libcuda.so.1", "libcuda.so"])
-    end
-
-    # if we've found a system driver, put a dependency on it,
-    # so that we get recompiled if the driver changes.
-    if name != ""
-        handle = Libdl.dlopen(name)
-        path = Libdl.dlpath(handle)
-        Libdl.dlclose(handle)
-
-        @debug "Adding include dependency on $path"
-        Base.include_dependency(path)
-    end
-end
-
 # platform augmentation hooks run in an ill-defined environment, where:
 # - CUDA_Driver_jll may not be available
 # - the wrong version of CUDA_Driver_jll may be available
@@ -106,7 +86,6 @@ function get_runtime_version()
         return nothing
     end
     @debug "Found CUDA runtime library at '$cuda_runtime'"
-
     # minimal API call wrappers we need
     function cudaRuntimeGetVersion(library_handle)
         function_handle = Libdl.dlsym(library_handle, "cudaRuntimeGetVersion"; throw_error=false)
@@ -130,6 +109,9 @@ function get_runtime_version()
         @debug "Failed to load CUDA runtime library"
         return nothing
     end
+    runtime_path = Libdl.dlpath(runtime_handle)
+    @debug "Adding include dependency on $runtime_path"
+    Base.include_dependency(runtime_path)
 
     cudaRuntimeGetVersion(runtime_handle)
 end
@@ -196,6 +178,9 @@ function get_driver_version()
         @debug "Failed to load CUDA driver"
         return nothing
     end
+    driver_path = Libdl.dlpath(driver_handle)
+    @debug "Adding include dependency on $driver_path"
+    Base.include_dependency(driver_path)
 
     cuDriverGetVersion(driver_handle)
 end
@@ -294,3 +279,5 @@ function augment_platform!(platform::Platform)
 
     return platform
 end
+
+const cuda_toolkits = VersionNumber[v"11.4.4", v"11.5.2", v"11.6.2", v"11.7.1", v"11.8.0", v"12.0.1", v"12.1.1", v"12.2.2"]
