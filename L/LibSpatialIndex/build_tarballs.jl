@@ -1,14 +1,14 @@
 using BinaryBuilder
 
 name = "LibSpatialIndex"
-version = v"1.8.5"
+version = v"1.9.3"
 
 # Collection of sources required to build LibSpatialIndex
 sources = [
-    ArchiveSource("http://download.osgeo.org/libspatialindex/spatialindex-src-1.8.5.tar.bz2",
-        "31ec0a9305c3bd6b4ad60a5261cba5402366dd7d1969a8846099717778e9a50a"),
-    DirectorySource("./patches"),
-]
+    ArchiveSource("https://github.com/libspatialindex/libspatialindex/releases/download/$(version)/spatialindex-src-$(version).tar.bz2",
+        "4a529431cfa80443ab4dcd45a4b25aebbabe1c0ce2fa1665039c80e999dcc50a"),
+    DirectorySource("./patches")
+    ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -16,24 +16,21 @@ cd $WORKSPACE/srcdir
 
 cd spatialindex-src-*
 
-patch < ${WORKSPACE}/srcdir/makefile.patch
-rm Makefile.am.orig
-
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
-  patch < ${WORKSPACE}/srcdir/header-check.patch
+    # apply https://github.com/libspatialindex/libspatialindex/pull/185 for mingw builds
+    # to succeed
+    atomic_patch -p1 ${WORKSPACE}/srcdir/0001-fix-mingw-build-185.patch
+    # fix for https://github.com/JuliaPackaging/Yggdrasil/pull/7520#issuecomment-1760495334
+    atomic_patch -p1 ${WORKSPACE}/srcdir/0002-set-win-bin-dir.patch
 fi
 
-aclocal
-autoconf
-automake --add-missing --foreign
 
-# Show options in the log
-./configure --help
-
-./configure --prefix=${prefix} --host=$target --build=${MACHTYPE} --enable-static=no
-make
-make install
-install_license COPYING
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . -j${nproc}
+cmake --build . --target install
+install_license ../COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -50,4 +47,4 @@ products = [
 dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
