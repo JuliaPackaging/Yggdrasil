@@ -7,8 +7,8 @@ version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Clemapfel/mousetrap.git", "f14b9e4a7b9f83fca6082ce961e468da93529e6c"),
-    GitSource("https://github.com/Clemapfel/mousetrap_julia_binding.git", "5fa37713123201a523051d4bed318da015f514b1")
+    GitSource("https://github.com/Clemapfel/mousetrap.git", "8f6356c58c37e0f41b5c5d4d2e7f7207260ab5d8"),
+    GitSource("https://github.com/Clemapfel/mousetrap_julia_binding.git", "b83169f0cd2f2891d578e0c3abfc67c4e2b504c4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -60,3 +60,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7", preferred_gcc_version = v"12.1.0")
+
