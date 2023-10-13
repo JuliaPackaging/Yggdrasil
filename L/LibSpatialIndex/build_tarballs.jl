@@ -5,7 +5,7 @@ version = v"1.9.3"
 
 # Collection of sources required to build LibSpatialIndex
 sources = [
-    ArchiveSource("https://github.com/libspatialindex/libspatialindex/releases/download/1.9.3/spatialindex-src-1.9.3.tar.bz2",
+    ArchiveSource("https://github.com/libspatialindex/libspatialindex/releases/download/$(version)/spatialindex-src-$(version).tar.bz2",
         "4a529431cfa80443ab4dcd45a4b25aebbabe1c0ce2fa1665039c80e999dcc50a"),
     DirectorySource("./patches")
     ]
@@ -16,10 +16,12 @@ cd $WORKSPACE/srcdir
 
 cd spatialindex-src-*
 
-# apply https://github.com/libspatialindex/libspatialindex/pull/185 for mingw builds
-# to succeed
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
-   patch src/CMakeLists.txt < ${WORKSPACE}/srcdir/0001-fix-mingw-build-185.patch
+    # apply https://github.com/libspatialindex/libspatialindex/pull/185 for mingw builds
+    # to succeed
+    atomic_patch -p1 ${WORKSPACE}/srcdir/0001-fix-mingw-build-185.patch
+    # fix for https://github.com/JuliaPackaging/Yggdrasil/pull/7520#issuecomment-1760495334
+    atomic_patch -p1 ${WORKSPACE}/srcdir/0002-set-win-bin-dir.patch
 fi
 
 
