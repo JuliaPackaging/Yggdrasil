@@ -1,6 +1,6 @@
 # LLVMBuilder -- reliable LLVM builds all the time.
 using BinaryBuilder, Pkg, LibGit2
-using BinaryBuilderBase: get_addable_spec, sanitize
+using BinaryBuilderBase: get_addable_spec, sanitize, proc_family
 
 # Everybody is just going to use the same set of platforms
 
@@ -16,11 +16,16 @@ const llvm_tags = Dict(
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "e010657e399d312a9440732a8a67125ecd0e2298", # julia-15.0.7-7
+    v"16.0.6" => "47769d362cb27243a60b02167df0d23a2dfa1e25", # julia-16.0.6-0
 )
 
 const buildscript = raw"""
 # We want to exit the program if errors occur.
 set -o errexit
+
+# Increase max file descriptors
+fd_lim=$(ulimit -n -H)
+ulimit -n $fd_lim
 
 if [[ ("${target}" == x86_64-apple-darwin*) && ! -z "${LLVM_UPDATE_MAC_SDK}" ]]; then
     # LLVM 15 requires macOS SDK 10.14, see
@@ -139,9 +144,9 @@ mkdir ${WORKSPACE}/build && cd ${WORKSPACE}/build
 
 # Accumulate these flags outside CMAKE_FLAGS,
 # they will be added at the end.
-CMAKE_CPP_FLAGS=""
-CMAKE_CXX_FLAGS=""
-CMAKE_C_FLAGS=""
+CMAKE_CPP_FLAGS=()
+CMAKE_CXX_FLAGS=()
+CMAKE_C_FLAGS=()
 
 CMAKE_FLAGS=()
 
@@ -152,7 +157,12 @@ if [[ "${ASSERTS}" == "1" ]]; then
 fi
 
 # build for our host arch and our GPU targets NVidia and AMD
-TARGETS=(host NVPTX AMDGPU)
+TARGETS=(host)
+
+if [[ "${target}" != *-apple-darwin* ]]; then
+    TARGETS+=(AMDGPU NVPTX)
+fi
+
 # Add WASM and BPF for LLVM >6
 if [[ "${LLVM_MAJ_VER}" != "6" ]]; then
     TARGETS+=(WebAssembly BPF AVR)
@@ -162,6 +172,7 @@ CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=$LLVM_TARGETS)
 
 # We mostly care about clang and LLVM
 PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
+# Note: we disable building MLIR dylib on 32-bit archs because of <https://github.com/llvm/llvm-project/issues/61581>.
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     PROJECTS+=(mlir)
 fi
@@ -201,10 +212,10 @@ if [ ! -z "${LLVM_WANT_EH_RTTI}" ]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_RTTI=ON)
     CMAKE_FLAGS+=(-DLLVM_ENABLE_EH=ON)
 fi
-
-if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* || "${target}" == *mingw* ) ]]; then
+# Change this to check if we are building with clang?
+if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* ) ]]; then
     # https://bugs.llvm.org/show_bug.cgi?id=48221
-    CMAKE_CXX_FLAGS+="-fno-gnu-unique"
+    CMAKE_CXX_FLAGS+=(-fno-gnu-unique)
 fi
 
 # Install things into $prefix, and make sure it knows we're cross-compiling
@@ -254,7 +265,13 @@ if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
 fi
 
 # Explicitly use our cmake toolchain file
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+# Windows runs out of symbols so use clang which can do some fancy things
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
+
 
 # Manually set the host triplet, as otherwise on some platforms it tries to guess using
 # `ld -v`, which is hilariously wrong.
@@ -271,13 +288,13 @@ if [[ "${target}" == *apple* ]]; then
     else
         CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.8)
     fi
-
+    CMAKE_FLAGS+=(-DSANITIZER_MIN_OSX_VERSION="${MACOSX_DEPLOYMENT_TARGET}")
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
-
     CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_IOS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_WATCHOS=OFF)
     CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_TVOS=OFF)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_ENABLE_MACCATALYST=OFF)
 
     # If we're building for Apple, CMake gets confused with `aarch64-apple-darwin` and instead prefers
     # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
@@ -299,7 +316,10 @@ if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-    CMAKE_CPP_FLAGS="${CMAKE_CPP_FLAGS} -remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE"
+    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
+    CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
+    CMAKE_FLAGS+=(-DLLVM_USE_LINKER=lld)
+    CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     # Windows is case-insensitive and some dependencies take full advantage of that
     echo "BaseTsd.h basetsd.h" >> /opt/${target}/${target}/include/header.gcc
     CMAKE_FLAGS+=(-DCLANG_INCLUDE_TESTS=OFF)
@@ -327,7 +347,7 @@ CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
-cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}" -DCMAKE_C_FLAGS="${CMAKE_CPP_FLAGS} ${CMAKE_CXX_FLAGS}"
+cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
 ninja -j${nproc} -vv
 
 # Install!
