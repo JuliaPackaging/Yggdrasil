@@ -101,7 +101,7 @@ filter!(p -> arch(p) == "x86_64", platforms)
 
 # Add products
 push!(products, LibraryProduct("libGPUQREngine", :libGPUQREngine))
-push!(products, LibraryProduct("libGPUQREngine", :libSuiteSparse_GPURuntime))
+push!(products, LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime))
 
 # build SuiteSparse for all supported CUDA toolkits
 for platform in platforms
@@ -111,6 +111,7 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
-                   julia_compat="1.10", augment_platform_block=CUDA.augment,
+                   julia_compat="1.10",preferred_gcc_version=v"9",
+                   augment_platform_block=CUDA.augment,
                    skip_audit=true, dont_dlopen=true)
 end
