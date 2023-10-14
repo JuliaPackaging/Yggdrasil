@@ -25,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude= p -> !Sys.islinux(p))
+platforms = supported_platforms(; exclude= p -> !Sys.islinux(p) || libc(p) == "musl")
 
 # The products that we will ensure are always built
 products = [
