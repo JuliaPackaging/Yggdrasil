@@ -14,6 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/picotool/
+cp udev/99-picotool.rules $prefix/99-picotool.rules
+install_license LICENSE.TXT
 mkdir build
 cd build
 PICO_SDK_PATH=$WORKSPACE/srcdir/pico-sdk cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" -DCMAKE_BUILD_TYPE=Release ..
@@ -23,11 +25,12 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=!Sys.islinux)
+platforms = supported_platforms(; exclude= p -> !Sys.islinux(p) || libc(p) == "musl")
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("picotool", :picotool)
+    ExecutableProduct("picotool", :picotool),
+    FileProduct("99-picotool.rules", :pico_udev)
 ]
 
 # Dependencies that must be installed before this package can be built
