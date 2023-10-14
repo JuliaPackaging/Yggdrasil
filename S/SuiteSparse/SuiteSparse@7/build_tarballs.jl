@@ -11,10 +11,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
 # Apply cmake cross compile patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suitesparse-crosscompile.patch
+#atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suitesparse-crosscompile.patch
 
 # Apply patch to fix ordering of specifiers for GCC
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suitesparse-threadstatic.patch
+#atomic_patch -p1 ${WORKSPACE}/srcdir/patches/suitesparse-threadstatic.patch
 
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
