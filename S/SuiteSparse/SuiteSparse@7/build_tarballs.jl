@@ -1,7 +1,7 @@
 include("../common.jl")
 
 name = "SuiteSparse"
-version = v"7.2.0"
+version = v"7.2.1"
 
 sources = suitesparse_sources(version)
 
@@ -87,4 +87,4 @@ install_license LICENSE.txt
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9")
+               julia_compat="1.10")
