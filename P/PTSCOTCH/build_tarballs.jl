@@ -37,7 +37,8 @@ CC=${CC_BUILD} cmake .. \
     -DBUILD_PTSCOTCH=ON \
     -DCMAKE_BUILD_TYPE=Release
 
-make -j${nproc}
+# make -j${nproc}
+make
 
 cd ${WORKSPACE}/srcdir/scotch*
 mkdir build
@@ -71,9 +72,10 @@ CFLAGS=$FLAGS cmake .. \
     -DBUILD_DUMMYSIZES=OFF \
     -DINSTALL_METIS_HEADERS=OFF
 
-make -j${nproc}
-# make install
+# make -j${nproc}
+make
 
+# make install
 cp lib/libpt*.$dlext $libdir
 cp src/include/pt*.h $includedir
 
@@ -88,7 +90,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=Sys.iswindows)
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported
