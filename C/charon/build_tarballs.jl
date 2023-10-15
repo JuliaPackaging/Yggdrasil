@@ -46,6 +46,7 @@ cd tcad-charon
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/charon-kokkos-compat.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/charon-no-rhytmos.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/panzerinclude.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/m_pi.patch
 mv src src2
 sed -i 's/src/src2/g' PackagesList.cmake
 # TODO: This should probably be fixed in Trilinos
@@ -68,7 +69,7 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 filter!(platforms) do p
-    # Filter libgfortran{3,4} - the corresponding GCC is too old to compiler some of
+    # Filter libgfortran{3,4} - the corresponding GCC is too old to compile some of
     # the newer C++ constructs.
     libgfortran_version(p) >= v"5"
 end
