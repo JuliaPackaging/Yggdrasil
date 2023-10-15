@@ -1,0 +1,18 @@
+commit 3fe0dfa422a23bd897884d53624cda7ab25832b4
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Thu Oct 12 07:04:08 2023 +0000
+
+    Add missing panzer include
+
+diff --git a/src/solver/Charon_TempusObserverFactory.hpp b/src/solver/Charon_TempusObserverFactory.hpp
+index 3e7dadf..8918775 100644
+--- a/src/solver/Charon_TempusObserverFactory.hpp
++++ b/src/solver/Charon_TempusObserverFactory.hpp
+@@ -13,6 +13,7 @@
+ 
+ #include "Panzer_ResponseLibrary.hpp"
+ #include "Panzer_ParameterLibrary.hpp"
++#include "Panzer_String_Utilities.hpp"
+ 
+ #include "Panzer_STK_TempusObserverFactory.hpp"
+ 
