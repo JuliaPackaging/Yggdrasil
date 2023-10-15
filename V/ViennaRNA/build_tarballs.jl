@@ -43,6 +43,9 @@ export CXX=c++
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
+# ISO C++-17 doesn't allow register keyword
+atomic_patch -p1 ../patches/RNAlocmin-fix-clang.patch
+
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # time measurement in RNAforester doesn't compile on windows (mingw32),
     # so we disable it
