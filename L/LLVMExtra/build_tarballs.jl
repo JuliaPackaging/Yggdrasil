@@ -9,7 +9,7 @@ name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
 version = v"0.0.26"
 
-llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7"]
+llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6"]
 
 
 # Collection of sources required to build LLVMExtra
