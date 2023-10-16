@@ -2,10 +2,10 @@ using BinaryBuilder
 
 # Collection of sources required to build SHTOOLS
 name = "SHTOOLS"
-version = v"4.10.2"
+version = v"4.10.4"
 sources = [
     ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v$(version)/SHTOOLS-$(version).tar.gz",
-                  "0caece67d65ddde19a79ec79bc6244f447f6fa878e5b2dc3f635cae2a3d1ee8c"),
+                  "f31ab09e960d85ad23d046fa427b692ffb80915a2c96773725bb83ad90bdec20"),
 ]
 
 # Bash recipe for building across all platforms
