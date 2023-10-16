@@ -17,14 +17,12 @@ cd $WORKSPACE/srcdir
 echo -e "[binaries]\ncmake='/usr/bin/cmake'" >> cmake_toolchain_patch.ini
 cd mousetrap
 mkdir ${prefix}/share/licenses/mousetrap
-cp LICENSE ${prefix}/share/licenses/mousetrap/LICENSE
+install_license LICENSE
 meson setup build --cross-file=$MESON_TARGET_TOOLCHAIN --cross-file=../cmake_toolchain_patch.ini
 meson install -C build
 cd ../mousetrap_julia_binding
 meson setup build --cross-file=$MESON_TARGET_TOOLCHAIN --cross-file=../cmake_toolchain_patch.ini -DJulia_INCLUDE_DIRS=$prefix/include/julia
 meson install -C build
-cd ..
-rm cmake_toolchain_patch.ini
 """
 
 # These are the platforms we will build for by default, unless further
