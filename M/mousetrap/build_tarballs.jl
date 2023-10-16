@@ -16,7 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 echo -e "[binaries]\ncmake='/usr/bin/cmake'" >> cmake_toolchain_patch.ini
 cd mousetrap
-mkdir ${prefix}/share/licenses/mousetrap
 install_license LICENSE
 meson setup build --cross-file=$MESON_TARGET_TOOLCHAIN --cross-file=../cmake_toolchain_patch.ini
 meson install -C build
