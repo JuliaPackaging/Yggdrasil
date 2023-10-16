@@ -44,10 +44,7 @@ install_license ../LICENSES/*.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-
-# Blosc2 requires NEON on ARM platforms; see <https://github.com/Blosc/c-blosc2/issues/465>
-platforms = filter(p -> arch(p) ≠ "armv7l", platforms)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -57,8 +54,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
-    Dependency("Lz4_jll"),
+    Dependency("Zstd_jll"; compat="1.5.0"),
+    Dependency("Lz4_jll"; compat="1.9.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
