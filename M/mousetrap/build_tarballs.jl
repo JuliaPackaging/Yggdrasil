@@ -30,7 +30,7 @@ platforms = Platform[]
 include("../../L/libjulia/common.jl")
 for version in [v"1.7.0", v"1.8.2", v"1.9.0", v"1.10", v"1.11"]
     for platform in libjulia_platforms(version)
-        if !(arch(platform) == "i686" || contains(arch(platform), "arm"))
+        if nbits(platform) != 32
             push!(platforms, platform)
         end
     end
