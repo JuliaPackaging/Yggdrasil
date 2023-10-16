@@ -45,6 +45,7 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
              -DENABLE_CUDA=0 \
              -DNFORTRAN=1 \
              -DNOPENMP=1 \
+             -DNPARTITION=0 \
              -DNSTATIC=1 \
              -DBLAS_FOUND=1 \
              -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
@@ -63,7 +64,7 @@ done
 # For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
 # Eventually, this should be fixed upstream
 if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    echo "-- Modifying library name for Lbt"
+    echo "-- Modifying library name for libblastrampoline"
 
     for nm in libcholmod libspqr libumfpack; do
         # Figure out what version it probably latched on to:
