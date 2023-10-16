@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.9.2"
+version = v"2.10.5"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "f344bb7c334ff025ea71e23d7a6742a9827745b9"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "f8417b103e6b0bbe06b861f92d57285590e1166a"),
     DirectorySource("./bundled"),
 ]
 
@@ -20,6 +20,9 @@ cd $WORKSPACE/srcdir/c-blosc2/
 # functions have incompatible return types (although both are 64-bit
 # integers).
 atomic_patch -p1 ../patches/_xsetbv.patch
+
+# fix compile arguments for armv7l <https://github.com/Blosc/c-blosc2/pull/563>
+atomic_patch -p1 ../patches/armv7l.patch
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
