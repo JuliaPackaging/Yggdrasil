@@ -25,7 +25,9 @@ export CUDACXX=$CUDA_HOME/bin/nvcc
 mkdir build
 cd build
 
-cmake ..
+mv ${WORKSPACE}/destdir/cuda/lib ${WORKSPACE}/destdir/cuda/lib64
+
+cmake .. -DCMAKE_CUDA_ARCHITECTURES=60 -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 
 cd ..
@@ -48,7 +50,7 @@ versions_to_build = [
     v"11.8"
     v"12.0"
     v"12.1"
-    # v"12.2"
+    v"12.2"
 ]
 
 # The products that we will ensure are always built
@@ -94,7 +96,8 @@ for cuda_version in versions_to_build, platform in platforms
     ]
 
     if !isnothing(cuda_version)
-        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(cuda_version))))
+        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=CUDA.full_version(cuda_version))))
+        push!(dependencies, BuildDependency(PackageSpec(name="CUDA_SDK_static_jll", version=CUDA.full_version(cuda_version))))
         push!(dependencies, RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")))
     end
 
