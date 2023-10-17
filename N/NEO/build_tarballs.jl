@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"23.17.26241"#.22
+version = v"23.30.26918"#.9
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "0bb5b3408e6cb61b477e7cad296fd278b11e73be"),
+              "6d516e54b2c3d920e371f8622980fa911621fa59"),
 ]
 
 # Bash recipe for building across all platforms
@@ -50,8 +50,8 @@ function get_script(; debug::Bool)
         # we don't care about cl_intel_va_api_media_sharing
         CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
 
-        # enable support for the DG1
-        CMAKE_FLAGS+=(-DSUPPORT_DG1:Bool=true)
+        # additional hardware support
+        CMAKE_FLAGS+=(-DNEO_ENABLE_i915_PRELIM_DETECTION=TRUE)
 
         # libigc installs libraries and pkgconfig rules in lib64, so look for them there.
         # FIXME: shouldn't BinaryBuilder do this?
@@ -84,8 +84,8 @@ products = [
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
     Dependency("gmmlib_jll"; compat="=22.3.0"),
-    Dependency("libigc_jll"; compat="=1.0.13822"),
-    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.6.3"; compat="1.5.8"),
+    Dependency("libigc_jll"; compat="=1.0.14828"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.7.0"; compat="1.7.0"),
 ]
 
 augment_platform_block = raw"""
