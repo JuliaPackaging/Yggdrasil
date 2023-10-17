@@ -1,0 +1,35 @@
+diff --git a/src/libscotch/CMakeLists.txt b/src/libscotch/CMakeLists.txt
+index e3b0cb9..480306f 100644
+--- a/src/libscotch/CMakeLists.txt
++++ b/src/libscotch/CMakeLists.txt
+@@ -505,10 +511,14 @@ set(SCOTCH_C_SOURCES
+ 
+ add_library(scotch
+   ${SCOTCH_C_SOURCES})
++
+ set_target_properties(scotch PROPERTIES VERSION
+   ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})
+ add_dependencies(scotch parser_yy_c parser_ll_c)
+-target_link_libraries(scotch PUBLIC m)
++if(NOT WIN32)
++  target_link_libraries(scotch PUBLIC m)
++endif()
++target_link_libraries(scotch PUBLIC scotcherr)
+ target_include_directories(scotch PUBLIC
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+diff --git a/src/scotch/CMakeLists.txt b/src/scotch/CMakeLists.txt
+index 3974f4f..30143cb 100644
+--- a/src/scotch/CMakeLists.txt
++++ b/src/scotch/CMakeLists.txt
+@@ -110,7 +110,9 @@ endforeach()
+ 
+ # Targets which need special source lists
+ add_scotch_exe(gout gout_c.c gout_o.c)
+-target_link_libraries(gout PRIVATE m)
++if(NOT WIN32)
++  target_link_libraries(gout PRIVATE m)
++endif()
+ 
+ # gpart is a special target (same source as gmap)
+ add_scotch_exe(gpart gmap.c gmap.h)

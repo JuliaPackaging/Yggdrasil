@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CImGuiPack"
-version = v"0.1.2"
+version = v"0.2.0"
 
 # Collection of sources required to build CImGuiPack
 sources = [
     GitSource("https://github.com/JuliaImGui/cimgui-pack.git",
-              "ecc93265e2f0f916462a2bef427f5f6b024ad6b2")
+              "af96d7d92c8b430af35e4b87c1260b234ccf9b5a")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,4 +37,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")

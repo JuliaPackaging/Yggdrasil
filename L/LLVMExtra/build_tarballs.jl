@@ -7,14 +7,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.23"
+version = v"0.0.26"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.6", v"15.0.7"]
+llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7"]
 
 
 # Collection of sources required to build LLVMExtra
 sources = [
-    GitSource(repo, "1a8bcc163ca79947acd7b408065c43ca1d42b57d"),
+    GitSource(repo, "b4aef3da952ce70997114c036de44525d8e96626"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
     "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]

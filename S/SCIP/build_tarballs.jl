@@ -3,12 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"800.0.301"
+version = v"800.0.401"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz", "5ad50eb42254c825d96f5747d8f3568dcbff0284dfbd1a727910c5a7c2899091"),
-    DirectorySource("./bundled"),
+    ArchiveSource(
+        "https://scipopt.org/download/release/scipoptsuite-8.0.4.tgz",
+        "be4f978be7f8f97371ddcdac7a60af69a4fea5f975090fe35f1ae4308db692d3"
+    ),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +27,8 @@ fi
 
 cd scipoptsuite*
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findbliss.patch
+# for soplex threadlocal
+export CXXFLAGS="-DTHREADLOCAL=''"
 
 mkdir build
 cd build/
@@ -71,11 +74,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), v"0.77.0"),
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0"),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.2.0"),
-    Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"); compat="300.1400.400"),
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.2.1"),
+    Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"); compat="300.1400.1302"),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
