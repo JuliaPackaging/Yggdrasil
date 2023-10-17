@@ -3,7 +3,7 @@ using BinaryBuilderBase
 using Pkg
 
 name = "TropicalGemmC"
-version = v"0.1.0"
+version = v"0.1.1"
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -20,6 +20,7 @@ cd TropicalGemm_Cuda/
 
 export CUDA_HOME=${WORKSPACE}/destdir/cuda;
 export PATH=$PATH:$CUDA_HOME/bin
+export CUDACXX=$CUDA_HOME/bin/nvcc
 
 mkdir build
 cd build
@@ -40,8 +41,14 @@ install_license /usr/share/licenses/MIT
 augment_platform_block = CUDA.augment
 
 versions_to_build = [
-    v"12.0",
+    v"11.4"
+    v"11.5"
+    v"11.6"
+    v"11.7"
+    v"11.8"
+    v"12.0"
     v"12.1"
+    # v"12.2"
 ]
 
 # The products that we will ensure are always built
@@ -54,11 +61,11 @@ products = [
     LibraryProduct(["lib_TropicalMaxMul_FP64"], :lib_TropicalMaxMul_FP64),
     LibraryProduct(["lib_TropicalMaxMul_INT32"], :lib_TropicalMaxMul_INT32),
     LibraryProduct(["lib_TropicalMaxMul_INT64"], :lib_TropicalMaxMul_INT64),
-    LibraryProduct(["lib_TropicalAndOr_Bool"], :TropicalAndOr_Bool),
-    LibraryProduct(["lib_TropicalMaxPlus_FP32"], :TropicalMaxPlus_FP32),
-    LibraryProduct(["lib_TropicalMaxPlus_FP64"], :TropicalMaxPlus_FP64),
-    LibraryProduct(["lib_TropicalMinPlus_FP32"], :TropicalMinPlus_FP32),
-    LibraryProduct(["lib_TropicalMinPlus_FP64"], :TropicalMinPlus_FP64),
+    LibraryProduct(["lib_TropicalAndOr_Bool"], :lib_TropicalAndOr_Bool),
+    LibraryProduct(["lib_TropicalMaxPlus_FP32"], :lib_TropicalMaxPlus_FP32),
+    LibraryProduct(["lib_TropicalMaxPlus_FP64"], :lib_TropicalMaxPlus_FP64),
+    LibraryProduct(["lib_TropicalMinPlus_FP32"], :lib_TropicalMinPlus_FP32),
+    LibraryProduct(["lib_TropicalMinPlus_FP64"], :lib_TropicalMinPlus_FP64),
 ]
 
 platforms = [
