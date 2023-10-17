@@ -4,6 +4,33 @@ global libcuda_version = nothing
 global libcuda_original_version = nothing
 # compat_version is set in build_tarballs.jl
 
+# manual use of preferences, as we can't depend on additional packages in JLLs.
+CUDA_Driver_jll_uuid = Base.UUID("4ee394cb-3365-5eb0-8335-949819d2adfc")
+preferences = Base.get_preferences(CUDA_Driver_jll_uuid)
+function parse_preference(val)
+    if isa(val, Bool)
+        val
+    elseif isa(val, String)
+        parsed = tryparse(Bool, val)
+        if parsed === nothing
+            @error "CUDA compat preference is not valid; expected a boolean, but got '$val'"
+            missing
+        else
+            parsed
+        end
+    else
+        @error "CUDA compat preference is not valid; expected a boolean, but got '$val'"
+        missing
+    end
+end
+compat_preference = if haskey(preferences, "compat")
+    parse_preference(preferences["compat"])
+elseif haskey(ENV, "JULIA_CUDA_USE_COMPAT")
+    parse_preference(ENV["JULIA_CUDA_USE_COMPAT"])
+else
+    missing
+end
+
 # minimal API call wrappers we need
 function driver_version(library_handle)
     function_handle = Libdl.dlsym(library_handle, "cuDriverGetVersion"; throw_error=false)
@@ -74,9 +101,12 @@ if system_driver_loaded
 end
 
 # check the user preference
-if !parse(Bool, get(ENV, "JULIA_CUDA_USE_COMPAT", "true"))
-    @debug "User disallows using forward-compatible driver."
-    return
+if compat_preference !== missing
+    @debug "CUDA compat preference: $(compat_preference)"
+    if !compat_preference
+        @debug "User disallows using forward-compatible driver."
+        return
+    end
 end
 
 # check the version
