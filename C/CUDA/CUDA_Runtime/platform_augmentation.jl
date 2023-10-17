@@ -46,7 +46,9 @@ const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
 Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
 const local_preference = if haskey(preferences, "local")
-    if isa(preferences["local"], String)
+    if isa(preferences["local"], Bool)
+        preferences["local"]
+    elseif isa(preferences["local"], String)
         use_local = tryparse(Bool, preferences["local"])
         if use_local === nothing
             @error "CUDA local preference is not valid; expected a boolean, but got '$(preferences["local"])'"

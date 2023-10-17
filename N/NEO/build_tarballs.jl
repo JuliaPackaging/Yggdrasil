@@ -95,12 +95,27 @@ augment_platform_block = raw"""
     NEO_jll_uuid = Base.UUID("700fe977-ac61-5f37-bbc8-c6c4b2b6a9fd")
     const preferences = Base.get_preferences(NEO_jll_uuid)
     Base.record_compiletime_preference(NEO_jll_uuid, "debug")
+    const debug_preference = if haskey(preferences, "debug")
+        if isa(preferences["debug"], Bool)
+            preferences["debug"]
+        elseif isa(preferences["debug"], String)
+            parsed = tryparse(Bool, preferences["debug"])
+            if parsed === nothing
+                @error "Debug preference is not valid; expected a boolean, but got '$(preferences["debug"])'"
+                missing
+            else
+                parsed
+            end
+        else
+            @error "Debug preference is not valid; expected a boolean, but got '$(preferences["debug"])'"
+            missing
+        end
+    else
+        missing
+    end
 
     function augment_platform!(platform::Platform)
-        debug = tryparse(Bool, get(preferences, "debug", "false"))
-        if debug === nothing
-            @error "Invalid preference debug=$(get(preferences, "debug", "false"))"
-        elseif !haskey(platform, "debug")
+        if debug_preference !== missing
             platform["debug"] = string(debug)
         end
         return platform
