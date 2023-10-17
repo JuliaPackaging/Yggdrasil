@@ -116,7 +116,7 @@ augment_platform_block = raw"""
 
     function augment_platform!(platform::Platform)
         if debug_preference !== missing
-            platform["debug"] = string(debug)
+            platform["debug"] = string(debug_preference)
         end
         return platform
     end"""
