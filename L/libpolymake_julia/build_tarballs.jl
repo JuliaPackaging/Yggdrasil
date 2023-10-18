@@ -13,7 +13,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
-version = v"0.10.5"
+version = v"0.10.6"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl
@@ -22,7 +22,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "a219a55aaf72d470d1d95ec0a0626e16cadc32d8"),
+              "6502403aad3230483ab43283822e1a9b10eda11c"),
 ]
 
 # Bash recipe for building across all platforms
