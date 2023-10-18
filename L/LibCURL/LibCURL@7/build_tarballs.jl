@@ -27,6 +27,7 @@ FLAGS=(
 
     # A few things we actually enable
     --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
+    --enable-versioned-symbols
 )
 
 
@@ -39,6 +40,14 @@ if [[ ${target} == *mingw* ]]; then
 elif [[ ${target} == *darwin* ]]; then
     # On Darwin, we need to use SecureTransport (native TLS library)
     FLAGS+=(--with-secure-transport)
+
+    # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
+    # complain about: `Symbol not found: ___isOSVersionAtLeast`
+    if [[ "${target}" == aarch64* ]]; then
+        export CFLAGS=-mmacosx-version-min=11.0
+    else
+        export CFLAGS=-mmacosx-version-min=10.11
+    fi
 else
     # On all other systems, we use MbedTLS
     FLAGS+=(--with-mbedtls=${prefix})
@@ -72,4 +81,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
