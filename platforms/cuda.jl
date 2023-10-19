@@ -85,7 +85,7 @@ end
 platform(cuda::String) = cuda
 
 # BinaryBuilder.jl currently does not allow selecting a BuildDependency by compat,
-# so we need the full version for CUDA_full_jll (JuliaPackaging/BinaryBuilder.jl#/1212).
+# so we need the full version for CUDA_SDK_jll (JuliaPackaging/BinaryBuilder.jl#/1212).
 const cuda_full_versions = [
     v"11.4.4",
     v"11.5.2",
@@ -153,20 +153,27 @@ function is_supported(platform)
 end
 
 """
-    required_dependencies(platform)
+    required_dependencies(platform; static_sdk=false)
 
 Return a list of dependencies required to build and use CUDA artifacts for a given platform.
+Optionally include the CUDA static libraries with `static_sdk` for toolchains that require them.
 """
-function required_dependencies(platform)
+function required_dependencies(platform; static_sdk=false)
     dependencies = Dependency[]
     if !haskey(tags(platform), "cuda") || tags(platform)["cuda"] == "none"
         return BinaryBuilder.AbstractDependency[]
     end
     release = VersionNumber(tags(platform)["cuda"])
-    return BinaryBuilder.AbstractDependency[
-        BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(release))),
+    deps = BinaryBuilder.AbstractDependency[
+        BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=CUDA.full_version(release))),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))
     ]
+
+    if static_sdk
+        push!(deps, BuildDependency(PackageSpec(name="CUDA_SDK_static_jll", version=CUDA.full_version(release))))
+    end
+
+    return deps
 end
 
 end

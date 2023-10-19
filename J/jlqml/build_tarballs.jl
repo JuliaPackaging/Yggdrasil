@@ -10,11 +10,11 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 name = "jlqml"
-version = v"0.5.3"
+version = v"0.5.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaGraphics/jlqml.git", "4c04db44d7e291edb9a30e76df6a3c63e3f4ab19"),
+    GitSource("https://github.com/JuliaGraphics/jlqml.git", "a04a16a24d71011555d629169a985a3f174408a7"),
 ]
 
 # Bash recipe for building across all platforms

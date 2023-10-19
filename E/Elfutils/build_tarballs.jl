@@ -47,7 +47,6 @@ install_license COPYING*
 # Only build for Linux
 platforms = supported_platforms()
 filter!(Sys.islinux, platforms)
-filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -82,7 +81,7 @@ dependencies = [
     Dependency("XZ_jll"),
     Dependency("argp_standalone_jll"),
     Dependency("fts_jll"),
-    Dependency("obstack_jll"; compat="~1.2.2"),
+    Dependency("obstack_jll"; compat="~1.2.3"),
 ]
 
 

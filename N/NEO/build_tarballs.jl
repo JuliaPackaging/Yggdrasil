@@ -50,8 +50,8 @@ function get_script(; debug::Bool)
         # we don't care about cl_intel_va_api_media_sharing
         CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
 
-        # enable support for the DG1
-        CMAKE_FLAGS+=(-DSUPPORT_DG1:Bool=true)
+        # additional hardware support
+        CMAKE_FLAGS+=(-DNEO_ENABLE_i915_PRELIM_DETECTION=TRUE)
 
         # libigc installs libraries and pkgconfig rules in lib64, so look for them there.
         # FIXME: shouldn't BinaryBuilder do this?
@@ -95,13 +95,28 @@ augment_platform_block = raw"""
     NEO_jll_uuid = Base.UUID("700fe977-ac61-5f37-bbc8-c6c4b2b6a9fd")
     const preferences = Base.get_preferences(NEO_jll_uuid)
     Base.record_compiletime_preference(NEO_jll_uuid, "debug")
+    const debug_preference = if haskey(preferences, "debug")
+        if isa(preferences["debug"], Bool)
+            preferences["debug"]
+        elseif isa(preferences["debug"], String)
+            parsed = tryparse(Bool, preferences["debug"])
+            if parsed === nothing
+                @error "Debug preference is not valid; expected a boolean, but got '$(preferences["debug"])'"
+                missing
+            else
+                parsed
+            end
+        else
+            @error "Debug preference is not valid; expected a boolean, but got '$(preferences["debug"])'"
+            missing
+        end
+    else
+        missing
+    end
 
     function augment_platform!(platform::Platform)
-        debug = tryparse(Bool, get(preferences, "debug", "false"))
-        if debug === nothing
-            @error "Invalid preference debug=$(get(preferences, "debug", "false"))"
-        elseif !haskey(platform, "debug")
-            platform["debug"] = string(debug)
+        if debug_preference !== missing
+            platform["debug"] = string(debug_preference)
         end
         return platform
     end"""
