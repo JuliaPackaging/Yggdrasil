@@ -26,19 +26,10 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/dt_flags_1.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/em_amdgpu.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/r_x86_64_rex_gotpcrelx.patch"
 
-# TODO: 
-#     -DCMAKE_BUILD_TYPE=Release \
-
-# set(CMAKE_SKIP_BUILD_RPATH FALSE)
-# set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-# set(DYNINST_RPATH_DIRECTORIES "\$ORIGIN")
-
 cmake -B build -S . \
     -DCMAKE_SKIP_BUILD_RPATH=OFF \
     -DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF \
     -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=OFF \
-    \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
@@ -50,59 +41,6 @@ cmake -B build -S . \
     -DUSE_OpenMP=ON
 cmake --build build --parallel ${nproc}
 cmake --build build --parallel ${nproc} --target install
-
-echo $libdir
-ls -l $libdir/libcommon.so*
-file $libdir/libcommon.so
-ldd $libdir/libcommon.so
-
-ldd /workspace/destdir/lib/libboost_atomic.so.1.79.0
-ldd /workspace/destdir/lib/libboost_chrono.so.1.79.0
-ldd /workspace/destdir/lib/libboost_date_time.so.1.79.0
-ldd /workspace/destdir/lib/libboost_filesystem.so.1.79.0
-ldd /workspace/destdir/lib/libboost_thread.so.1.79.0
-ldd /lib64/libpthread.so.0
-ldd /workspace/destdir/lib/libboost_timer.so.1.79.0
-ldd /workspace/destdir/lib/libboost_system.so.1.79.0
-ldd /workspace/destdir/lib/libtbbmalloc_proxy.so.2
-ldd /workspace/destdir/lib/libtbbmalloc.so.2
-ldd /workspace/destdir/lib/libtbb.so.12
-ldd /workspace/destdir/lib/libstdc++.so.6
-ldd /lib64/libm.so.6
-ldd /workspace/destdir/lib/libgomp.so.1
-ldd /workspace/destdir/lib/libgcc_s.so.1
-ldd /lib64/libc.so.6
-ldd /lib64/librt.so.1
-ldd /lib64/libdl.so.2
-
-cat >dlopen.c <<EOF
-#include <dlfcn.h>
-#include <stdio.h>
-int main(int *argc, char *argv[]) {
-  // void *ptr = dlopen(argv[1], RTLD_NOW);
-  void *ptr = dlopen(argv[1], RTLD_LAZY | RTLD_DEEPBIND);
-  printf("ptr=%p\n", ptr);
-  return 0;
-}
-EOF
-cc -o dlopen dlopen.c -ldl
-
-./dlopen $libdir/libcommon.so
-./dlopen $libdir/libdynC_API.so
-./dlopen $libdir/libdynDwarf.so
-./dlopen $libdir/libdynElf.so
-./dlopen $libdir/libdyninstAPI.so
-./dlopen $libdir/libdyninstAPI_RT.so
-./dlopen $libdir/libinstructionAPI.so
-./dlopen $libdir/libparseAPI.so
-./dlopen $libdir/libpatchAPI.so
-./dlopen $libdir/libpcontrol.so
-./dlopen $libdir/libstackwalk.so
-./dlopen $libdir/libsymLite.so
-./dlopen $libdir/libsymtabAPI.so
-
-#TODO
-# exit 1
 """
 
 # These are the platforms we will build for by default, unless further
