@@ -119,9 +119,6 @@ filter!(p -> arch(p) ∉ ["armv6l", "armv7l"], platforms)
 # TODO: Would this be fixed by linking against `libdl`?
 filter!(p -> libc(p) ≠ "musl", platforms)
 
-# TODO: For debugging:
-filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && cxxstring_abi(p) == "cxx11",  platforms)
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("parseThat", :parseThat),
