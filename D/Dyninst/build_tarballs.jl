@@ -154,4 +154,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # The auditor fails, but the resulting libaries appear usable
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7", skip_audit=true)
+               julia_compat="1.6", dont_dlopen=true, preferred_gcc_version=v"7", skip_audit=true)
