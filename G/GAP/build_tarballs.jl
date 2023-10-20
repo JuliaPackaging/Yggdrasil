@@ -134,7 +134,7 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll", v"8.1.1"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.4")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.6")),
 ]
 
 # Build the tarballs.

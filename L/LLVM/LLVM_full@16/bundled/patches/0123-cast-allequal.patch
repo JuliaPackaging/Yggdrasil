@@ -1,0 +1,17 @@
+diff --git a/llvm/include/llvm/ADT/STLExtras.h b/llvm/include/llvm/ADT/STLExtras.h
+index 79b145632d5a..ff28ac694d70 100644
+--- a/llvm/include/llvm/ADT/STLExtras.h
++++ b/llvm/include/llvm/ADT/STLExtras.h
+@@ -891,9 +891,9 @@ detail::zippy<detail::zip_shortest, T, U, Args...> zip(T &&t, U &&u,
+ template <typename T, typename U, typename... Args>
+ detail::zippy<detail::zip_first, T, U, Args...> zip_equal(T &&t, U &&u,
+                                                           Args &&...args) {
+-  assert(all_equal({std::distance(adl_begin(t), adl_end(t)),
+-                    std::distance(adl_begin(u), adl_end(u)),
+-                    std::distance(adl_begin(args), adl_end(args))...}) &&
++  assert(all_equal({(long long int)std::distance(adl_begin(t), adl_end(t)),
++                    (long long int)std::distance(adl_begin(u), adl_end(u)),
++                    (long long int)std::distance(adl_begin(args), adl_end(args))...}) &&
+          "Iteratees do not have equal length");
+   return detail::zippy<detail::zip_first, T, U, Args...>(
+       std::forward<T>(t), std::forward<U>(u), std::forward<Args>(args)...);

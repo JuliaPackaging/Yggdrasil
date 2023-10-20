@@ -1,0 +1,41 @@
+diff --git a/src/core/util/lnx/os_linux.cpp b/src/core/util/lnx/os_linux.cpp
+index 7debbb6..b2ad9b3 100644
+--- a/src/core/util/lnx/os_linux.cpp
++++ b/src/core/util/lnx/os_linux.cpp
+@@ -101,6 +101,7 @@ class os_thread {
+       assert(err == 0 && "pthread_attr_setstacksize failed.");
+     }
+ 
++#ifdef __GLIBC__
+     if (core::Runtime::runtime_singleton_->flag().override_cpu_affinity()) {
+       int cores = get_nprocs_conf();
+       cpu_set_t* cpuset = CPU_ALLOC(cores);
+@@ -112,6 +113,7 @@ class os_thread {
+       assert(err == 0 && "pthread_attr_setaffinity_np failed.");
+       CPU_FREE(cpuset);
+     }
++#endif
+ 
+     int err = pthread_create(&thread, &attrib, ThreadTrampoline, args.get());
+ 
+@@ -126,6 +128,20 @@ class os_thread {
+       }
+     }
+ 
++#ifndef __GLIBC__
++    if (core::Runtime::runtime_singleton_->flag().override_cpu_affinity()) {
++      int cores = get_nprocs_conf();
++      cpu_set_t* cpuset = CPU_ALLOC(cores);
++      CPU_ZERO_S(CPU_ALLOC_SIZE(cores), cpuset);
++      for (int i = 0; i < cores; i++) {
++        CPU_SET(i, cpuset);
++      }
++      int err = pthread_setaffinity_np(thread, CPU_ALLOC_SIZE(cores), cpuset);
++      assert(err == 0 && "pthread_setaffinity_np failed.");
++      CPU_FREE(cpuset);
++    }
++#endif
++
+     pthread_attr_destroy(&attrib);
+     if (err == 0)
+       args.release();

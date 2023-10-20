@@ -1,0 +1,129 @@
+From 51b239b1d7596a305a1305e886e2bb74f91110a2 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Mon, 21 Aug 2023 11:13:20 +0100
+Subject: [PATCH 1/1] mingw patch
+
+---
+ cmake/MujocoOptions.cmake         |  1 -
+ dist/mujoco.rc                    |  2 +-
+ dist/simulate.rc                  |  2 +-
+ src/engine/engine_crossplatform.h | 10 +++++-----
+ src/engine/engine_util_errmem.c   |  8 +++++---
+ test/fixture.cc                   |  2 +-
+ 6 files changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/cmake/MujocoOptions.cmake b/cmake/MujocoOptions.cmake
+index 998b966..213f422 100644
+--- a/cmake/MujocoOptions.cmake
++++ b/cmake/MujocoOptions.cmake
+@@ -86,7 +86,6 @@ get_mujoco_extra_link_options(EXTRA_LINK_OPTIONS)
+ 
+ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC))
+   set(EXTRA_COMPILE_OPTIONS
+-      -Werror
+       -Wall
+       -Wimplicit-fallthrough
+       -Wunused
+diff --git a/dist/mujoco.rc b/dist/mujoco.rc
+index 4691253..9fb8faf 100644
+--- a/dist/mujoco.rc
++++ b/dist/mujoco.rc
+@@ -20,6 +20,6 @@ FILETYPE 0x1
+   }
+   BLOCK "VarFileInfo"
+   {
+-    VALUE "Translation", 0x0409 0x04B0
++    VALUE "Translation", 0x0409, 0x04B0
+   }
+ }
+diff --git a/dist/simulate.rc b/dist/simulate.rc
+index 16ba684..194a137 100644
+--- a/dist/simulate.rc
++++ b/dist/simulate.rc
+@@ -22,6 +22,6 @@ FILETYPE 0x1
+   }
+   BLOCK "VarFileInfo"
+   {
+-    VALUE "Translation", 0x0409 0x04B0
++    VALUE "Translation", 0x0409, 0x04B0
+   }
+ }
+diff --git a/src/engine/engine_crossplatform.h b/src/engine/engine_crossplatform.h
+index a73d892..8a3d4d0 100644
+--- a/src/engine/engine_crossplatform.h
++++ b/src/engine/engine_crossplatform.h
+@@ -18,10 +18,14 @@
+ #include <stdlib.h>
+ 
+ // Windows
+-#ifdef _WIN32
++#if defined(_WIN32) && !defined(__MINGW32__) && !defined(__MINGW64__)
+   #define strcasecmp _stricmp
+   #define strncasecmp _strnicmp
++#else
++  #include <strings.h>
++#endif
+ 
++#if defined(_WIN32)
+   #define mjQUICKSORT(buf, elnum, elsz, func, context) \
+       qsort_s(buf, elnum, elsz, func, context)
+   #define quicksortfunc(name, context, el1, el2) \
+@@ -29,16 +33,12 @@
+ 
+ // Unix-common
+ #else
+-  #include <strings.h>
+-
+   // Apple
+   #ifdef __APPLE__
+     #define mjQUICKSORT(buf, elnum, elsz, func, context) \
+         qsort_r(buf, elnum, elsz, context, func)
+     #define quicksortfunc(name, context, el1, el2) \
+         static int name(void* context, const void* el1, const void* el2)
+-
+-  // non-Apple
+   #else
+     #define mjQUICKSORT(buf, elnum, elsz, func, context) \
+         qsort_r(buf, elnum, elsz, func, context)
+diff --git a/src/engine/engine_util_errmem.c b/src/engine/engine_util_errmem.c
+index 125a64d..6d98872 100644
+--- a/src/engine/engine_util_errmem.c
++++ b/src/engine/engine_util_errmem.c
+@@ -109,16 +109,18 @@ void mju_writeLog(const char* type, const char* msg) {
+ 
+ #if defined(_POSIX_C_SOURCE) || defined(__APPLE__) || defined(__STDC_VERSION_TIME_H__)
+     localtime_r(&rawtime, &timeinfo);
++    fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
+ #elif _MSC_VER
+     localtime_s(&timeinfo, &rawtime);
+-#elif __STDC_LIB_EXT1__
++    fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
++#elif __STDC_LIB_EXT1__ 
+     localtime_s(&rawtime, &timeinfo);
++    fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
+ #else
+-    #error "Thread-safe version of `localtime` is not present in the standard C library"
++    fprintf(fp, "%s%s: %s\n\n", asctime(localtime(&rawtime)), type, msg);
+ #endif
+ 
+     // write to log file
+-    fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
+     fclose(fp);
+   }
+ }
+diff --git a/test/fixture.cc b/test/fixture.cc
+index 1043223..c818e3e 100644
+--- a/test/fixture.cc
++++ b/test/fixture.cc
+@@ -128,7 +128,7 @@ const std::string SaveAndReadXml(const mjModel* model) {
+ #if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
+   int fd = mkstemp(filepath);
+   EXPECT_NE(fd, -1) << std::strerror(errno);
+-#elif defined(_WIN32)
++#elif defined(_WIN32) && !defined(__MINGW32__) && !defined(__MINGW32__)
+   EXPECT_NE(_mktemp_s(filepath), EINVAL);
+ #endif
+ 
+-- 
+2.41.0
+

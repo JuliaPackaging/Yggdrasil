@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "CImGuiPack"
-version = v"0.1.3"
+version = v"0.2.0"
 
 # Collection of sources required to build CImGuiPack
 sources = [

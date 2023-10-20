@@ -59,3 +59,91 @@ function parse_sources(json::String, product::String, components::Vector{String}
     end
     sources
 end
+
+function build_sdk(name::String, version::VersionNumber, platforms::Vector{Platform};
+                   static::Bool=false)
+    script = "static=\"$(static)\"\n" * raw"""
+install_license cuda_cudart*/LICENSE
+
+mkdir ${prefix}/cuda
+if [[ ${target} == *-linux-gnu ]]; then
+    for project in *-archive; do
+        cp -a ${project}/* ${prefix}/cuda
+    done
+
+    # keep or remove static libraries
+    if [[ ${static} == "false" ]]; then
+        find ${prefix}/cuda -type f -name "*_static*.a" -exec rm -f {} +
+    else
+        find ${prefix}/cuda \( -type f -o -type l \) ! -name "*_static*.a" -exec rm -f {} +
+    fi
+    find ${prefix}/cuda -type d -empty -delete
+elif [[ ${target} == x86_64-w64-mingw32 ]]; then
+    for project in *-archive; do
+        cp -a ${project}/* ${prefix}/cuda
+    done
+
+    # keep or remove static libraries
+    if [[ ${static} == "false" ]]; then
+        find ${prefix}/cuda -type f -name "*_static*.lib" -exec rm -f {} +
+    else
+        find ${prefix}/cuda \( -type f -o -type l \) ! -name "*_static*.lib" -exec rm -f {} +
+    fi
+    find ${prefix}/cuda -type d -empty -delete
+
+    # fixup
+    find ${prefix}/cuda -type f \( -name "*.exe" -or -name "*.dll" \) -exec chmod +x {} +
+fi"""
+
+    # determine exactly which tarballs we should build
+    builds = []
+    components = [
+        "cuda_cccl",
+        "cuda_cudart",
+        "cuda_cuobjdump",
+        "cuda_cupti",
+        "cuda_nvcc",
+        "cuda_nvdisasm",
+        "cuda_nvml_dev",
+        "cuda_nvprune",
+        "cuda_nvrtc",
+
+        "cuda_sanitizer_api",
+
+        "libcublas",
+        "libcufft",
+        "libcurand",
+        "libcusolver",
+        "libcusparse",
+        "libnpp",
+        "libnvjpeg"
+    ]
+    if version >= v"11.8"
+        push!(components, "cuda_profiler_api")
+    end
+    if version >= v"12"
+        push!(components, "libnvjitlink")
+    end
+
+    for platform in platforms
+        should_build_platform(triplet(platform)) || continue
+        push!(builds,
+                (; script, platforms=[platform], products=Product[],
+                sources=get_sources("cuda", components; version, platform)
+        ))
+    end
+
+    # don't allow `build_tarballs` to override platform selection based on ARGS.
+    # we handle that ourselves by calling `should_build_platform`
+    non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+    # `--register` should only be passed to the latest `build_tarballs` invocation
+    non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+    for (i,build) in enumerate(builds)
+        build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+                    name, version, build.sources, build.script,
+                    build.platforms, build.products, [];
+                    skip_audit=true)
+    end
+end

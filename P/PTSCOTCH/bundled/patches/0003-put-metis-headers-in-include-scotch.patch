@@ -1,0 +1,34 @@
+From 52c739d29ab088604b577ab6377e30d683bda77a Mon Sep 17 00:00:00 2001
+From: Min RK <benjaminrk@gmail.com>
+Date: Fri, 20 May 2022 20:32:45 +0200
+Subject: [PATCH 3/4] put metis headers in include/scotch
+
+---
+ src/libscotchmetis/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/libscotchmetis/CMakeLists.txt b/src/libscotchmetis/CMakeLists.txt
+index 981d93a..df0e3b7 100644
+--- a/src/libscotchmetis/CMakeLists.txt
++++ b/src/libscotchmetis/CMakeLists.txt
+@@ -118,7 +118,7 @@ foreach(version 3 5)
+       EXPORT scotchmetisTargets
+       ARCHIVE DESTINATION lib
+       LIBRARY DESTINATION lib
+-      PUBLIC_HEADER DESTINATION include)
++      PUBLIC_HEADER DESTINATION include/scotch)
+   else()
+     install(TARGETS scotchmetisv${version}
+       COMPONENT libscotch
+@@ -186,7 +186,7 @@ if(BUILD_PTSCOTCH)
+         EXPORT ptscotchparmetisTargets
+         ARCHIVE DESTINATION lib
+         LIBRARY DESTINATION lib
+-        PUBLIC_HEADER DESTINATION include)
++        PUBLIC_HEADER DESTINATION include/scotch)
+     else()
+       install(TARGETS ptscotchparmetisv${version}
+         COMPONENT libptscotch
+-- 
+2.35.3
+
