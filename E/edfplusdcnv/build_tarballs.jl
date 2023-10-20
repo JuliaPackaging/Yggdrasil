@@ -13,9 +13,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p "${bindir}"
-cp ${target}/edfplusdcnv-* ${bindir}
+cp edfplusdcnv-* ${bindir}
 chmod +x ${bindir}/edfplusdcnv
-install_license  ${bindir}/README
+install_license ${bindir}/README
 """
 
 # These are the platforms we will build for by default, unless further
