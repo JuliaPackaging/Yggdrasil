@@ -11,7 +11,7 @@ version = v"0.15.2" # This is really the branch `eschnett/c-bindings` after vers
 # Collection of sources required to complete build
 sources = [
     # We use a feature branch instead of a released version because the C bindings are not released yet
-    GitSource("https://github.com/eschnett/openPMD-api.git", "17950ad1097c11613ba0923513dc142710d3d405"),
+    GitSource("https://github.com/eschnett/openPMD-api.git", "e662ba9ef415aef92c306a65ea65a102f3210ccc"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -116,7 +116,7 @@ append!(dependencies, platform_dependencies)
 products = [
     ExecutableProduct("openpmd-ls", :openpmd_ls),
     LibraryProduct("libopenPMD", :libopenPMD),
-    LibraryProduct("libopenPMD.c", :libopenPMD_c),
+    LibraryProduct("libopenPMD_c", :libopenPMD_c),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
