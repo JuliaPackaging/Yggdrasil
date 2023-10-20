@@ -46,7 +46,7 @@ install_license ../LICENSE
 """
 
 # Note: We are restricted to the platforms that NetCDF supports
-platforms = supported_platforms()
+platforms = supported_platforms(exclude = p -> arch(p) == "powerpc64le" || libc(p) == "musl")
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
