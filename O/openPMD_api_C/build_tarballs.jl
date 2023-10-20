@@ -12,8 +12,8 @@ version = v"0.15.2" # This is really the branch `eschnett/c-bindings` after vers
 sources = [
     # We use a feature branch instead of a released version because the C bindings are not released yet
     GitSource("https://github.com/eschnett/openPMD-api.git", "17950ad1097c11613ba0923513dc142710d3d405"),
-    # ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-    #               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,21 +24,56 @@ grep -iq MPItrampoline ${includedir}/mpi.h && echo 'MPI: MPItrampoline'
 grep -iq MSMPI_VER ${includedir}/mpi.h && echo 'MPI: MicrosoftMPI'
 grep -iq OpenMPI ${includedir}/mpi.h && echo 'MPI: OpenMPI'
 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Work around the issue
+    #     /workspace/srcdir/SHOT/src/Model/../Model/Simplifications.h:1370:26: error: 'value' is unavailable: introduced in macOS 10.14
+    #                     optional.value()->coefficient *= -1.0;
+    #                              ^
+    #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/optional:947:27: note: 'value' has been explicitly marked unavailable here
+    #         constexpr value_type& value() &
+    #                               ^
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    # ...and install a newer SDK which supports `std::filesystem`
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -a usr/* /opt/${target}/${target}/sys-root/usr/
+    cp -a System /opt/${target}/${target}/sys-root/
+    popd
+fi
+
 cd ${WORKSPACE}/srcdir
 cd openPMD-api
 
+archopts=()
+if [[ "${target}" == x86_64-w64-mingw32 ]]; then
+    # Microsoft MPI
+    archopts+=(
+        -DMPI_C_ADDITIONAL_INCLUDE_DIRS=
+        -DMPI_C_LIBRARIES=${libdir}/msmpi.dll
+        -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS=
+        -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll)
+fi
+if [[ "${target}" == *-mingw32 ]]; then
+    # Windows: We do not have a parallel HDF5 implementation there
+    archopts+=(-DopenPMD_USE_HDF5=OFF)
+else
+    archopts+=(-DopenPMD_USE_HDF5=ON)
+fi
+
 cmake -B build -S . \
-    -DBUILD_CLI_TOOLS=OFF \
+    -DBUILD_CLI_TOOLS=ON \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_TESTING=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DMPI_HOME=${prefix} \
     -DopenPMD_USE_C=ON \
-    -DopenPMD_USE_MPI=ON
-cmake --build build --config RelWithDebInfo --parallel ${nproc}
-cmake --build build --config RelWithDebInfo --parallel ${nproc} --target install
+    -DopenPMD_USE_MPI=ON \
+    ${archopts[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
 install_license COPYING*
 """
 
@@ -79,6 +114,7 @@ append!(dependencies, platform_dependencies)
 # The products that we will ensure are always built.
 # Don't dlopen `libopenPMD` because it might transitively require libgfortran.
 products = [
+    ExecutableProduct("openpmd-ls", :openpmd_ls),
     LibraryProduct("libopenPMD", :libopenPMD),
     LibraryProduct("libopenPMD.c", :libopenPMD_c),
 ]
