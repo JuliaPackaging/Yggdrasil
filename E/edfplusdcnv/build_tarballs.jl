@@ -13,12 +13,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p "${bindir}"
-if [[ "${target}" != *-mingw* ]]; then
-    subdir="bin/"
-fi
-cp ${target}/edfplusdcnv-*/${subdir}edfplusdcnv${exeext} ${bindir}
-chmod +x ${bindir}/*
-install_license README
+cp ${target}/edfplusdcnv-* ${bindir}
+chmod +x ${bindir}/edfplusdcnv
+install_license  ${bindir}/README
 """
 
 # These are the platforms we will build for by default, unless further
