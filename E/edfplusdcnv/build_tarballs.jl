@@ -13,6 +13,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 mkdir -p "${bindir}"
+tar -xvzf edfplusdcnv-*.tar.gz
 cp edfplusdcnv-* ${bindir}
 chmod +x ${bindir}/edfplusdcnv
 install_license ${bindir}/README
