@@ -11,9 +11,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/
+cd ${WORKSPACE}/
 mkdir -p "${bindir}"
-cp edfplusdcnv* ${bindir}
+cp edfplusdcnv_*/* "${bindir}"
 chmod +x ${bindir}/edfplusdcnv
 install_license ${bindir}/README
 """
