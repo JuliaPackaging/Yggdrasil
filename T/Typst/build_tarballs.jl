@@ -20,7 +20,9 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> !(Sys.iswindows(p) && arch(p) == "i686"), supported_platforms())
+platforms = filter(supported_platforms()) do p
+    !(Sys.iswindows(p) && arch(p) == "i686" || Sys.islinux(p) && arch(p) == "powerpc64le")
+end
 
 # The products that we will ensure are always built
 products = [
