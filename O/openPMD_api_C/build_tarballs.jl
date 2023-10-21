@@ -122,7 +122,7 @@ append!(dependencies, platform_dependencies)
 products = [
     ExecutableProduct("openpmd-ls", :openpmd_ls),
     LibraryProduct("libopenPMD", :libopenPMD),
-    LibraryProduct("libopenPMD_c", :libopenPMD_c),
+    LibraryProduct("libopenPMD.c", :libopenPMD_c),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
