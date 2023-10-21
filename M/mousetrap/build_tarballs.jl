@@ -35,6 +35,7 @@ for version in [v"1.7.0", v"1.8.2", v"1.9.0", v"1.10", v"1.11"]
         end
     end
 end
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
