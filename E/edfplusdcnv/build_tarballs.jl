@@ -12,9 +12,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/
-mkdir -p "${bindir}"
-cp edfplusdcnv_*/* "${bindir}"
-chmod +x ${bindir}/edfplusdcnv
+install -Dvm 755 edfplusdcnv_*/edfplusdcnv "${bindir}/edfplusdcnv"
 install_license ${bindir}/README
 """
 
