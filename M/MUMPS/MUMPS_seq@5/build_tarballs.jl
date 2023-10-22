@@ -62,9 +62,9 @@ make_args+=(OPTF="-O3 -fopenmp"
             ORDERINGSF="-Dpord -Dmetis"
             LIBEXT_SHARED=".${dlext}"
             SONAME="${SONAME}"
-            CC="$CC -fPIC ${CFLAGS[@]}"
-            FC="gfortran -fPIC ${FFLAGS[@]}"
-            FL="gfortran -fPIC"
+            CC="$CC ${CFLAGS[@]}"
+            FC="gfortran ${FFLAGS[@]}"
+            FL="gfortran"
             RANLIB="echo"
             LIBBLAS="${BLAS_LAPACK}"
             LAPACK="${BLAS_LAPACK}")
@@ -85,7 +85,6 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
-    LibraryProduct("libmumps_common", :libmumps_common),
 ]
 
 # Dependencies that must be installed before this package can be built
