@@ -7,7 +7,7 @@ name = "MUMPS"
 version = v"5.6.2"
 
 sources = [
-  ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz",
+  ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
                 "13a2c1aff2bd1aa92fe84b7b35d88f43434019963ca09ef7e8c90821a8f1d59a")
 ]
 
