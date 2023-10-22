@@ -76,10 +76,11 @@ make_args+=(PLAT="par" \
             ORDERINGSF="-Dmetis -Dpord -Dparmetis ${FSCOTCH}" \
             LIBEXT_SHARED=".${dlext}" \
             SONAME="${SONAME}" \
-            CC="${MPICC} ${CFLAGS[@]}" \
-            FC="${MPIFC} ${FFLAGS[@]}" \
+            CC="${MPICC} ${CFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \
+            FC="${MPIFC} ${FFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \
             FL="${MPIFL}" \
             RANLIB="echo" \
+            LPORD="-LPORD/lib -lpordpar" \
             LAPACK="-L${libdir} -lopenblas" \
             SCALAP="-L${libdir} -lscalapack32" \
             INCPAR="-I${includedir}" \
