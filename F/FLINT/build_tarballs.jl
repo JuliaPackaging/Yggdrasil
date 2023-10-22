@@ -43,7 +43,7 @@ if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
    export CFLAGS=-D_GNU_SOURCE
 elif [[ ${target} == *mingw* ]]; then
-   extraflags=--enble-reentrant
+   extraflags=--enable-reentrant
 fi
 
 ./bootstrap.sh
