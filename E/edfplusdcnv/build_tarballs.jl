@@ -6,7 +6,7 @@ edfplusdcnv_ver = "1.0.0"
 version = VersionNumber(edfplusdcnv_ver)
 
 sources = [
-    ArchiveSource("https://www.teuniz.net/edfplusd-converter/edfplusdcnv_100.tar.gz", "eeb6033a2f21dc052852e3dd779da7d368f65d88e45b7e40fa14f4bb514e62b9"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("https://www.teuniz.net/edfplusd-converter/edfplusdcnv_100.tar.gz", "eeb6033a2f21dc052852e3dd779da7d368f65d88e45b7e40fa14f4bb514e62b9"),
 ]
 
 # Bash recipe for building across all platforms
