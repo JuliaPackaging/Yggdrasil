@@ -266,7 +266,7 @@ fi
 
 # Explicitly use our cmake toolchain file
 # Windows runs out of symbols so use clang which can do some fancy things
-if [[ "${target}" == *mingw* ]]; then
+if [[ "${target}" == *mingw* && "${LLVM_MAJ_VER}" -ge "16" ]]; then
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
