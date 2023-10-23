@@ -95,6 +95,7 @@ const cuda_full_versions = [
     v"12.0.1",
     v"12.1.1",
     v"12.2.2",
+    v"12.3.0",
 ]
 function full_version(ver::VersionNumber)
     ver == Base.thisminor(ver) || error("Cannot specify a patch version")
