@@ -80,7 +80,7 @@ make_args+=(PLAT="par" \
             FC="${MPIFC} ${FFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \
             FL="${MPIFL}" \
             RANLIB="echo" \
-            LPORD="-LPORD/lib -lpordpar" \
+            LPORD="-L./PORD/lib -lpordpar" \
             LAPACK="-L${libdir} -lopenblas" \
             SCALAP="-L${libdir} -lscalapack32" \
             INCPAR="-I${includedir}" \
