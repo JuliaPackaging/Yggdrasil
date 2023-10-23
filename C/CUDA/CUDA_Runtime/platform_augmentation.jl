@@ -228,6 +228,12 @@ function cuda_toolkit_tag()
             @debug "Local CUDA runtime version: $version"
             cuda_version_override = version
         end
+
+        # if we're using a local toolkit, use the version as-is. this may result in an
+        # incompatible toolkit being used, but CUDA.jl will complain about that.
+        if local_preference
+            return "$(cuda_version_override.major).$(cuda_version_override.minor)"
+        end
     end
 
     # if not, we need to be able to use the driver to determine the version.
