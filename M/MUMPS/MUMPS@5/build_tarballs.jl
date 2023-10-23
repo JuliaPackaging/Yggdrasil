@@ -58,7 +58,7 @@ else
     MPICC=mpicc
     MPIFC=mpifort
     MPIFL=mpifort
-    LSCOTCH="-L${libdir} -lptesmumps -lptscotch -lptscotcherr"
+    LSCOTCH="-L${libdir} -lesmumps -lscotch -lscotcherr -lptesmumps -lptscotch -lptscotcherr"
     FSCOTCH="-Dscotch -Dptscotch"
 fi
 
