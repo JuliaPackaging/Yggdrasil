@@ -158,7 +158,7 @@ for version in CUDA.cuda_full_versions
 
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds,
-              (; dependencies=[Dependency("CUDA_Driver_jll"; compat="0.6")],
+              (; dependencies=[Dependency("CUDA_Driver_jll"; compat="0.7")],
                  script, platforms=[augmented_platform], products=get_products(platform),
                  sources=get_sources("cuda", components; version, platform)
         ))
