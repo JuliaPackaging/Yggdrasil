@@ -1,6 +1,6 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.download.nvidia.com/compute/machine-learning/nccl/secure/$(version)/agnostic/x64/nccl_$(version)-1+11.0_x86_64.txz",
+        ArchiveSource("https://developer.download.nvidia.com/compute/machine-learning/nccl/secure/$(version)/agnostic/x64/nccl_$(version)-1+cuda11.0_x86_64.txz",
                       "9e8db61e16db0ed937bd116471ad4963f83d3dab588f9b8fb499a869a3fbe374")],
     Platform("powerpc64le", "linux") => [
         ArchiveSource("https://developer.download.nvidia.com/compute/machine-learning/nccl/secure/$(version)/agnostic/ppc64le/nccl_$(version)-1+cuda11.0_ppc64le.txz",
