@@ -29,7 +29,7 @@ products = [
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
-# TODO: how does compatibility work here exactly? do we support 11.1-11.7?
+# TODO: how does compatibility work here exactly? do we support 11.0-12.2?
 #       are we correctly selecting artifacts in that case?
 builds = ["11.0", "12.0", "12.2"]
 for build in builds
