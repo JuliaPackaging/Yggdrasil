@@ -23,8 +23,8 @@ sources = [
 script = raw"""
 cd LLVM.jl/deps/LLVMExtra
 
-if [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+15.asserts* ]]; then
-    # LLVM 15 requires macOS SDK 10.14.
+if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+    # LLVM 15+ requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
