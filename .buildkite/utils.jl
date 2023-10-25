@@ -55,8 +55,6 @@ group_step(name, steps) = Dict(:group => name, :steps => steps)
 
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
-    apt-get update
-    apt install -y unzip
     # Don't share secrets with build_tarballs.jl
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" AWS_SECRET_ACCESS_KEY="" .buildkite/build.sh
     """
