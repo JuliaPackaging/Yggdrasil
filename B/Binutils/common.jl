@@ -43,6 +43,10 @@ function binutils_sources(version)
             ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.38.tar.xz",
                           "e316477a914f567eccc34d5d29785b8b0f5a10208d36bbacedcc39048ecfe024"),
         ],
+        v"2.41" => [
+            ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.41.tar.xz",
+                          "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450"),
+        ]
     )
     return [
         binutils_version_sources[version]...,
@@ -70,7 +74,8 @@ function binutils_script()
         --disable-multilib \
         --program-prefix="${target}-" \
         --disable-werror \
-        --enable-new-dtags
+        --enable-new-dtags \
+        --disable-gprofng
 
     # Force `make` to use `/bin/true` instead of `makeinfo` so that we don't
     # die while failing to build docs.
