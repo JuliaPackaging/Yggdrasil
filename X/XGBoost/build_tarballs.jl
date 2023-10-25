@@ -3,7 +3,7 @@ using BinaryBuilderBase
 using Pkg
 
 name = "XGBoost"
-version = v"2.0.0"
+version = v"2.0.1"
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to build XGBoost
 sources = [
-    GitSource("https://github.com/dmlc/xgboost.git","096047c547aa71af7d53a507cecdd2a1d3124651"),
+    GitSource("https://github.com/dmlc/xgboost.git","a408254c2f0c4a39a04430f9894579038414cb31"),
     DirectorySource("./bundled"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
     "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
@@ -25,13 +25,6 @@ git submodule update --init
 # Patch dmlc-core to use case-sensitive windows.h includes: 
 # https://github.com/dmlc/dmlc-core/pull/673
 (cd dmlc-core; atomic_patch -p1 "../../patches/dmlc_windows.patch")
-
-# XGBoost fails to compile on mac due to `std::make_shared`
-# being bugged on apple with some clang versions 
-# https://github.com/dmlc/xgboost/issues/9601
-if [[ "${target}" == *-apple-* ]]; then
-    atomic_patch -p1 "../patches/mac_make_shared.patch"
-fi
 
 # https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/193
 # error: 'any_cast<std::shared_ptr<xgboost::data::CSRArrayAdapter>>' 
