@@ -42,6 +42,9 @@ if [[ "${target}" == *-mingw* ]]; then
     # ...and don't regenerate a wrong one with `make.  This patch needs to be
     # applied _after_ autoreconf, which seems to somehow revert the changes :-(
     atomic_patch -p1 ../patches/31-do-not-make-mdf5global_h.patch
+
+    # Help the linker find libcrypto.
+    export LDFLAGS="-L${libdir}"
 fi
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} --host=${target} \
