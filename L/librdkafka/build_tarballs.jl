@@ -49,7 +49,7 @@ dependencies = [
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8"),
-    Dependency(PackageSpec(name="CyrusSASL_jll", uuid="6422fedd-75a7-50c2-a7c3-a11dad25a896")),
+    Dependency(PackageSpec(name="CyrusSASL_jll", uuid="6422fedd-75a7-50c2-a7c3-a11dad25a896"); compat="2.1.29"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
