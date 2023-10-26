@@ -29,6 +29,8 @@ if [[ "${target}" == *-mingw* ]]; then
 
     # Remove incompatible typedef
     atomic_patch -p1 ../patches/30-remove-extra-incompatible-typedef.patch
+
+    autoupdate
 fi
 if [[ "${target}" == *-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/macos-shared-lib-extension.patch
