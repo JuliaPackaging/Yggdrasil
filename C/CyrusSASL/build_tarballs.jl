@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "CyrusSASL"
-version = v"2.1.28+openssl3"
-library_version=VersionNumber(version.major, version.minor, version.patch)
+version = v"2.1.29"          # We need to bump the version of the jll to compile with OpenSSL 3.0 instead of 1.1.10
+library_version = v"2.1.28"  # But keep the CyrusSASL version as-is
 
 # Collection of sources required to complete build
 sources = [
