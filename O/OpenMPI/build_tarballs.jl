@@ -4,10 +4,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
-version = v"4.1.6"
+# Note that OpenMPI 5 is ABI compatible with OpenMPI 4.
+# Should we decrease the version number to indicate this?
+# Probably not since nothing depends on `OpenMPI_jll` directly.
+version = v"5.0.0"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "44da277b8cdc234e71c62473305a09d63f4dcca292ca40335aab7c4bf0e6a566"),
+                  "4bf81fc86f562b372c40d44a09372ba1fa9b780d50d09a46ed0c4c7f09250b71"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,7 +22,7 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
+#TODO atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Help compiler find `complib/cl_types.h`
@@ -32,15 +35,21 @@ fi
 # infer the MPI options. Otherwise, the MPI options need to be
 # specified manually for OpenMPI to work.
 
-./configure --prefix=${prefix} \
+./configure \
     --build=${MACHTYPE} \
-    --host=${target} \
-    --enable-shared=yes \
-    --enable-static=no \
-    --without-cs-fs \
     --enable-mpi-fortran=usempif08 \
     --enable-script-wrapper-compilers \
-    --with-cross=${WORKSPACE}/srcdir/${target}
+    --enable-shared=yes \
+    --enable-static=no \
+    --host=${target} \
+    --prefix=${prefix} \
+    --with-cross=${WORKSPACE}/srcdir/${target} \
+    --without-cs-fs
+
+#     --with-hwloc=external
+#     --with-libevent=external
+#     --with-pmix=external
+#     --with-prrte=external
 
 # Build the library
 make -j${nproc}
@@ -63,7 +72,8 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
+platforms = supported_platforms()
+#TODO platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
 platforms = expand_gfortran_versions(platforms)
 
 # Add `mpi+openmpi` platform tag
@@ -77,6 +87,12 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    # TODO: Remove those dependencies that are too old (and which won't be used anyway).
+    # Alternatively, update these dependencies!
+    Dependency("Hwloc_jll"),    # compat="2.0.0"
+    Dependency("PMIx_jll"),     # compat="4.2.0"
+    Dependency("libevent_jll"), # compat="2.0.21"
+    Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 
