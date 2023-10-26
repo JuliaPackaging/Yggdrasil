@@ -29,8 +29,6 @@ if [[ "${target}" == *-mingw* ]]; then
 
     # Remove incompatible typedef
     atomic_patch -p1 ../patches/30-remove-extra-incompatible-typedef.patch
-
-    autoupdate
 fi
 if [[ "${target}" == *-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/macos-shared-lib-extension.patch
@@ -45,8 +43,10 @@ if [[ "${target}" == *-mingw* ]]; then
     # applied _after_ autoreconf, which seems to somehow revert the changes :-(
     atomic_patch -p1 ../patches/31-do-not-make-mdf5global_h.patch
 
-    # Help the linker find libcrypto.
-    export LDFLAGS="-L${libdir}"
+    if [[ "${target}" == x86_64-* ]]; then
+        # On x86_64 mingw32 the import library is in `lib64/`.
+        export LDFLAGS="-L${prefix}/lib64"
+    fi
 fi
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} --host=${target} \
