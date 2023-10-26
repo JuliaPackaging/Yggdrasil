@@ -44,7 +44,7 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/31-do-not-make-mdf5global_h.patch
 
     if [[ "${target}" == x86_64-* ]]; then
-        # On x86_64 mingw32 the import library is in `lib64/`.
+        # On x86_64 mingw32 the import libraries of OpenSSL are in `lib64/`.
         export LDFLAGS="-L${prefix}/lib64"
     fi
 fi
