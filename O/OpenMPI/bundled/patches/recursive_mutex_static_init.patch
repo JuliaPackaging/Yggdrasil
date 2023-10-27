@@ -1,4 +1,4 @@
-s--- a/opal/mca/btl/usnic/btl_usnic_component.c
+--- a/opal/mca/btl/usnic/btl_usnic_component.c
 +++ b/opal/mca/btl/usnic/btl_usnic_component.c
 @@ -83,7 +83,31 @@
  #define OPAL_BTL_USNIC_NUM_COMPLETIONS 500
