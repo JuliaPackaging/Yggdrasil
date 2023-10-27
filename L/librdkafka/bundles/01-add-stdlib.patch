@@ -1,0 +1,12 @@
+diff --git a/src/rdposix.h b/src/rdposix.h
+index 0af59481..ba312689 100644
+--- a/src/rdposix.h
++++ b/src/rdposix.h
+@@ -39,6 +39,7 @@
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <string.h>
++#include <stdlib.h>
+ 
+ /**
+  * Types
