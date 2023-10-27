@@ -4,9 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
-# Note that OpenMPI 5 is ABI compatible with OpenMPI 4.
-# Should we decrease the version number to indicate this?
-# Probably not since nothing depends on `OpenMPI_jll` directly.
+# Note that OpenMPI 5 is ABI compatible with OpenMPI 4
 version = v"5.0.0"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
@@ -22,7 +20,12 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-#TODO atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
+if [[ "${target}" == *-musl* ]]; then
+    # musl does not support `PTHREAD_RECURSIVE_MUTEX_INITIALIZER` which is
+    # a GNU extension. We initialize the recursive mutexes manually.
+    # This patch is valid on all systems, but we only need it on non-GNU systems.
+    atomic_patch -p1 ../patches/recursive_mutex_static_init.patch
+fi
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Help compiler find `complib/cl_types.h`
@@ -45,11 +48,6 @@ fi
     --prefix=${prefix} \
     --with-cross=${WORKSPACE}/srcdir/${target} \
     --without-cs-fs
-
-#     --with-hwloc=external
-#     --with-libevent=external
-#     --with-pmix=external
-#     --with-prrte=external
 
 # Build the library
 make -j${nproc}
@@ -75,7 +73,9 @@ augment_platform_block = """
 platforms = supported_platforms()
 # OpenMPI 5 supports only 64-bit systems
 filter!(p -> nbits(p) == 64, platforms)
-#TODO platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
+# Disable Windows, we do not know how to cross-compile
+filter!(!Sys.iswindows, platforms)
+
 platforms = expand_gfortran_versions(platforms)
 
 # Add `mpi+openmpi` platform tag
@@ -89,12 +89,12 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    # TODO: Remove those dependencies that are too old (and which won't be used anyway).
-    # Alternatively, update these dependencies!
     Dependency("Hwloc_jll"),    # compat="2.0.0"
-    Dependency("PMIx_jll"),     # compat="4.2.0"
+    # [too old, we only have 4.1.0]
+    # Dependency("PMIx_jll"),     # compat="4.2.0"
     Dependency("libevent_jll"), # compat="2.0.21"
-    Dependency("prrte_jll"),    # compat="3.0.0"
+    # [too old, we only have 2.0.0]
+    # Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 
