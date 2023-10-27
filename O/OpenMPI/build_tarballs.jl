@@ -27,10 +27,10 @@ if [[ "${target}" == *-musl* ]]; then
     atomic_patch -p1 ../patches/recursive_mutex_static_init.patch
 fi
 
-if [[ "${target}" == *-freebsd* ]]; then
-    # Help compiler find `complib/cl_types.h`
-    export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
-fi
+# if [[ "${target}" == *-freebsd* ]]; then
+#     # Help compiler find `complib/cl_types.h`
+#     export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
+# fi
 
 # We use `--enable-script-wrapper-compilers` to turn the compiler
 # wrappers (`mpicc` etc.) into scripts instead of binaries. As scripts,
@@ -90,10 +90,11 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Hwloc_jll"),    # compat="2.0.0"
-    # [too old, we only have 4.1.0]
+    # Too old, we only have 4.1.0
     # Dependency("PMIx_jll"),     # compat="4.2.0"
-    Dependency("libevent_jll"), # compat="2.0.21"
-    # [too old, we only have 2.0.0]
+    # Some systems (freebsd and musl-libgfortran3) don't recognize our libevent library
+    # Dependency("libevent_jll"), # compat="2.0.21"
+    # Too old, we only have 2.0.0
     # Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
