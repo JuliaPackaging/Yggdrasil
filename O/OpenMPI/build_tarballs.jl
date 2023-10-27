@@ -92,8 +92,11 @@ dependencies = [
     Dependency("Hwloc_jll"),    # compat="2.0.0"
     # Too old, we only have 4.1.0
     # Dependency("PMIx_jll"),     # compat="4.2.0"
-    # Some systems (freebsd and musl-libgfortran3) don't recognize our libevent library
-    # Dependency("libevent_jll"), # compat="2.0.21"
+    # On some systems (freebsd and musl-libgfortran3), the PMIx distributed with OpenMPI doesn't recognize our libevent library
+    Dependency("libevent_jll"; platforms=filter(p -> libc(p) != "musl", platforms), # compat="2.0.21"
+
+TODO: update PMIx_jll, then try again
+
     # Too old, we only have 2.0.0
     # Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
