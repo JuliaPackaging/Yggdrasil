@@ -62,17 +62,13 @@ make install
 install_license $WORKSPACE/srcdir/openmpi*/LICENSE
 """
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = supported_platforms()
 # OpenMPI 5 supports only 64-bit systems
 filter!(p -> nbits(p) == 64, platforms)
+# Disable FreeBSD, it is not supported by PMIx (which we need)
+filter!(!Sys.isfreebsd, platforms)
 # Disable Windows, we do not know how to cross-compile
 filter!(!Sys.iswindows, platforms)
 
@@ -90,16 +86,21 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Hwloc_jll"),    # compat="2.0.0"
-    # Too old, we only have 4.1.0
-    # TODO: update PMIx_jll, then try again
-    # Dependency("PMIx_jll"),     # compat="4.2.0"
+    Dependency("PMIx_jll"),     # compat="4.2.0"
     # On some systems (freebsd and musl-libgfortran3), the PMIx distributed with OpenMPI doesn't recognize our libevent library
-    Dependency("libevent_jll"; platforms=filter(p -> libc(p) != "musl", platforms)), # compat="2.0.21"
-    # Too old, we only have 2.0.0
+    # Dependency("libevent_jll"; platforms=filter(p -> libc(p) != "musl", platforms)), # compat="2.0.21"
+    Dependency("libevent_jll"), # compat="2.0.21"
+    # Too old, we only have 2.0.0 in Yggdrasil
     # Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
     Dependency("Zlib_jll"),
 ]
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
 
 init_block = raw"""
 ENV["OPAL_PREFIX"] = artifact_dir
