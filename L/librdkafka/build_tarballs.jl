@@ -9,7 +9,6 @@ version = v"2.3.0"
 sources = [
     # git rev-list -n 1 v2.3.0
     GitSource("https://github.com/confluentinc/librdkafka.git", "95a542c87c61d2c45b445f91c73dd5442eb04f3c",),
-    DirectorySource("./bundles"),
 ]
 
 # Bash recipe for building across all platforms
