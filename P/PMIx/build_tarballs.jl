@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PMIx"
-version = v"4.1.0"
+version = v"4.2.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/openpmix/openpmix/releases/download/v$(version)/pmix-$(version).tar.bz2", "145f05a6c621bfb3fc434776b615d7e6d53260cc9ba340a01f55b383e07c842e")
+    ArchiveSource("https://github.com/openpmix/openpmix/releases/download/v$(version)/pmix-$(version).tar.bz2",
+                  "145f05a6c621bfb3fc434776b615d7e6d53260cc9ba340a01f55b383e07c842e")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +19,7 @@ cd pmix-*
     --enable-shared \
     --with-libevent=${prefix} \
     --with-hwloc=${prefix} \
+    --with-zlib=${prefix} \
     --without-tests-examples \
     --disable-man-pages
 make -j${nproc}
@@ -26,30 +28,31 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; )
-]
+platforms = supported_platforms()
+# platforms = [
+#     Platform("i686", "linux"; libc = "glibc"),
+#     Platform("x86_64", "linux"; libc = "glibc"),
+#     Platform("aarch64", "linux"; libc = "glibc"),
+#     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+#     Platform("powerpc64le", "linux"; libc = "glibc"),
+#     Platform("i686", "linux"; libc = "musl"),
+#     Platform("x86_64", "linux"; libc = "musl"),
+#     Platform("aarch64", "linux"; libc = "musl"),
+#     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+#     Platform("x86_64", "macos"; ),
+#     Platform("aarch64", "macos"; )
+# ]
 
-# TODO: Configure fails on Windows with:
-```
-checking for library containing event_config_new... no
-checking for event_getcode4name in -levent... no
-checking will libevent support be built... no
-configure: WARNING: Either libevent or libev support is required, but neither
-configure: WARNING: was found. Please use the configure options to point us
-configure: WARNING: to where we can find one or the other library
-configure: error: Cannot continue
-```
+# # TODO: Configure fails on Windows with:
+# ```
+# checking for library containing event_config_new... no
+# checking for event_getcode4name in -levent... no
+# checking will libevent support be built... no
+# configure: WARNING: Either libevent or libev support is required, but neither
+# configure: WARNING: was found. Please use the configure options to point us
+# configure: WARNING: to where we can find one or the other library
+# configure: error: Cannot continue
+# ```
 
 # The products that we will ensure are always built
 products = [
