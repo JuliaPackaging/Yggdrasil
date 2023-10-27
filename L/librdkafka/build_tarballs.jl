@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/librdkafka*
-atomic_patch -p1 < ../01-add-stdlib.patch
+atomic_patch -p1 ../01-add-stdlib.patch
 if [[ "${target}" != *-freebsd* ]]; then
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libcrypto.*
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libssl.*
