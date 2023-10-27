@@ -31,7 +31,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # FreeBSD does not provide `pthread_setaffinity_np` which is a GNU extension
 filter!(!Sys.isfreebsd, platforms)
