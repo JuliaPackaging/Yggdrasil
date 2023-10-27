@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libevent"
-version = v"2.1.12"
+libevent_version =v"2.1.12"
+# We update to 2.1.13 because we updated our dependencies
+version = v"2.1.13"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libevent/libevent/releases/download/release-$(version)-stable/libevent-$(version)-stable.tar.gz",
+    ArchiveSource("https://github.com/libevent/libevent/releases/download/release-$(libevent_version)-stable/libevent-$(libevent_version)-stable.tar.gz",
                   "92e6de1be9ec176428fd2367677e61ceffc2ee1cb119035037a27d346b0403bb"),
 ]
 
@@ -31,7 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
