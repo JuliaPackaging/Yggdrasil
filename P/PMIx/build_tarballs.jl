@@ -8,17 +8,16 @@ version = v"4.2.7"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/openpmix/openpmix/releases/download/v$(version)/pmix-$(version).tar.bz2",
-                  "145f05a6c621bfb3fc434776b615d7e6d53260cc9ba340a01f55b383e07c842e")
+                  "ac9cf58a0bf01bfacd51d342100234f04c740ec14257e4492d1dd0207ff2a917")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd pmix-*
+cd $WORKSPACE/srcdir/pmix-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
-    --with-libevent=${prefix} \
     --with-hwloc=${prefix} \
+    --with-libevent=${prefix} \
     --with-zlib=${prefix} \
     --without-tests-examples \
     --disable-man-pages
@@ -28,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; experimental=true)
 # platforms = [
 #     Platform("i686", "linux"; libc = "glibc"),
 #     Platform("x86_64", "linux"; libc = "glibc"),
