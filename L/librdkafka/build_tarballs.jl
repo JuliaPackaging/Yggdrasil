@@ -8,15 +8,14 @@ version = v"2.3.0"
 # Collection of sources required to complete build
 sources = [
     # git rev-list -n 1 v2.3.0
-    GitSource("https://github.com/confluentinc/librdkafka.git",
-        "95a542c87c61d2c45b445f91c73dd5442eb04f3c",
-    ),
+    GitSource("https://github.com/confluentinc/librdkafka.git", "95a542c87c61d2c45b445f91c73dd5442eb04f3c",),
+    DirectorySource("./bundles"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/librdkafka*
-patch -p1 < bundles/01-add-stdlib.patch
+atomic_patch -p1 < ../01-add-stdlib.patch
 if [[ "${target}" != *-freebsd* ]]; then
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libcrypto.*
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libssl.*
