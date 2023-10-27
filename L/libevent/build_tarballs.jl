@@ -11,11 +11,16 @@ version = v"2.1.13"
 sources = [
     ArchiveSource("https://github.com/libevent/libevent/releases/download/release-$(libevent_version)-stable/libevent-$(libevent_version)-stable.tar.gz",
                   "92e6de1be9ec176428fd2367677e61ceffc2ee1cb119035037a27d346b0403bb"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libevent-*/
+cd $WORKSPACE/srcdir/libevent-*
+if [[ "${target}" == aarch64-apple-* ]]; then
+    # Build without `-Wl,--no-undefined`
+    atomic_patch -p1 ../patches/build_with_no_undefined.patch
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
