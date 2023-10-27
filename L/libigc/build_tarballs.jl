@@ -131,22 +131,20 @@ augment_platform_block = raw"""
             parsed = tryparse(Bool, preferences["debug"])
             if parsed === nothing
                 @error "Debug preference is not valid; expected a boolean, but got '$(preferences["debug"])'"
-                missing
+                nothing
             else
                 parsed
             end
         else
             @error "Debug preference is not valid; expected a boolean, but got '$(preferences["debug"])'"
-            missing
+            nothing
         end
     else
-        missing
+        nothing
     end
 
     function augment_platform!(platform::Platform)
-        if debug_preference !== missing
-            platform["debug"] = string(debug_preference)
-        end
+        platform["debug"] = string(something(debug_preference, false))
         return platform
     end"""
 
