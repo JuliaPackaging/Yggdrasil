@@ -19,11 +19,11 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 LIBTOOLIZE=libtoolize ./autogen.sh
 # Build shared library version
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes --enable-cider --with-ngshared ac_cv_func_realloc_0_nonnull=yes
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes --enable-cider --enable-osdi --with-ngshared ac_cv_func_realloc_0_nonnull=yes
 make -j${nproc}
 make install
 # Build executable version
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes --enable-cider ac_cv_func_realloc_0_nonnull=yes
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes --enable-cider --enable-osdi ac_cv_func_realloc_0_nonnull=yes
 make -j${nproc}
 make install
 """
