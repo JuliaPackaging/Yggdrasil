@@ -31,6 +31,10 @@ make install
 """
 
 platforms = supported_platforms()
+# PMIx is not supported on FreeBSD
+filter!(!Sys.isfreebsd, platforms)
+# `configure` does not find `libevent` on Windows (could probably be fixed)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
