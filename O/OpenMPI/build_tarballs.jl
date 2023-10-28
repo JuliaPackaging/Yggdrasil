@@ -26,11 +26,10 @@ if [[ "${target}" == *-musl* ]]; then
     atomic_patch -p1 ../patches/recursive_mutex_static_init.patch
 fi
 
-# if [[ "${target}" == *-freebsd* ]]; then
-#     # Help compiler find `complib/cl_types.h`
-#     export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
-# fi
+# Autotools doesn't add `${includedir}` as an include directory on some platforms
+export CPPFLAGS="-I${includedir}"
 
+# The configure scripts doesn't link against `libdl` by itself on many platforms
 export LIBS='-ldl'
 
 # We use `--enable-script-wrapper-compilers` to turn the compiler
@@ -88,8 +87,6 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Hwloc_jll"),    # compat="2.0.0"
     Dependency("PMIx_jll"),     # compat="4.2.0"
-    # On some systems (freebsd and musl-libgfortran3), the PMIx distributed with OpenMPI doesn't recognize our libevent library
-    # Dependency("libevent_jll"; platforms=filter(p -> libc(p) != "musl", platforms)), # compat="2.0.21"
     Dependency("libevent_jll"), # compat="2.0.21"
     # Too old, we only have 2.0.0 in Yggdrasil
     # Dependency("prrte_jll"),    # compat="3.0.0"
