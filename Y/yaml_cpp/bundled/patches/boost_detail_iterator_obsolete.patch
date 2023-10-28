@@ -1,0 +1,26 @@
+diff --git a/include/yaml-cpp/node/detail/iterator.h b/include/yaml-cpp/node/detail/iterator.h
+index 2c701af..232fca7 100644
+--- a/include/yaml-cpp/node/detail/iterator.h
++++ b/include/yaml-cpp/node/detail/iterator.h
+@@ -45,7 +45,7 @@ class iterator_base
+  private:
+   friend class boost::iterator_core_access;
+ 
+-  void increment() { this->base_reference() = boost::next(this->base()); }
++  void increment() { this->base_reference() = std::next(this->base()); }
+ 
+   value_type dereference() const {
+     const typename base_type::value_type& v = *this->base();
+diff --git a/src/node_data.cpp b/src/node_data.cpp
+index a1ca900..0bdb6e7 100644
+--- a/src/node_data.cpp
++++ b/src/node_data.cpp
+@@ -104,7 +104,7 @@ void node_data::compute_seq_size() const {
+ void node_data::compute_map_size() const {
+   kv_pairs::iterator it = m_undefinedPairs.begin();
+   while (it != m_undefinedPairs.end()) {
+-    kv_pairs::iterator jt = boost::next(it);
++    kv_pairs::iterator jt = std::next(it);
+     if (it->first->is_defined() && it->second->is_defined())
+       m_undefinedPairs.erase(it);
+     it = jt;

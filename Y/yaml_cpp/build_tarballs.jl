@@ -3,24 +3,32 @@
 using BinaryBuilder, Pkg
 
 name = "yaml_cpp"
-version = v"0.7.0"
+version = v"0.5.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/jbeder/yaml-cpp/archive/refs/tags/yaml-cpp-$(version).zip",
-                  "4d5e664a7fb2d7445fc548cc8c0e1aa7b1a496540eb382d137e2cc263e6d3ef5")
+    GitSource("https://github.com/jbeder/yaml-cpp.git", "b57efe94e7d445713c29f863adb8c23438eaa217"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/yaml-cpp*/
+
+patch -p1 < ../patches/boost_detail_iterator_obsolete.patch
+
+if [[ $target == *-apple-darwin* || $target == *-freebsd* ]]; then
+    cmake_extra_args=-DCMAKE_C_FLAGS=-D_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES
+fi
+
 mkdir build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DYAML_BUILD_SHARED_LIBS=ON \
-    -DYAML_CPP_BUILD_TESTS=OFF
+    -DBUILD_SHARED_LIBS=ON \
+    -DYAML_CPP_BUILD_TOOLS=OFF \
+    $cmake_extra_args
 
 make -j${nproc}
 make install
@@ -32,11 +40,12 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libyaml-cpp", :libyaml_cpp)
+    LibraryProduct(["libyaml-cpp", "yaml-cpp"], :libyaml_cpp)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    BuildDependency(PackageSpec("boost_jll", v"1.76.0")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
