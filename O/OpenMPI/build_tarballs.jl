@@ -23,7 +23,6 @@ cd ${WORKSPACE}/srcdir/openmpi-*
 if [[ "${target}" == *-musl* ]]; then
     # musl does not support `PTHREAD_RECURSIVE_MUTEX_INITIALIZER` which is
     # a GNU extension. We initialize the recursive mutexes manually.
-    # This patch is valid on all systems, but we only need it on non-GNU systems.
     atomic_patch -p1 ../patches/recursive_mutex_static_init.patch
 fi
 
@@ -31,6 +30,8 @@ fi
 #     # Help compiler find `complib/cl_types.h`
 #     export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
 # fi
+
+export LIBS='-ldl'
 
 # We use `--enable-script-wrapper-compilers` to turn the compiler
 # wrappers (`mpicc` etc.) into scripts instead of binaries. As scripts,
