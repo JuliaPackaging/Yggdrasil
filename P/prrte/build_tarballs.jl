@@ -14,6 +14,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/prrte-*
+
+# Autotools doesn't add `${includedir}` as an include directory on some platforms
+export CPPFLAGS="-I${includedir}"
+
 ./configure \
     --build=${MACHTYPE} \
     --enable-shared \
