@@ -87,11 +87,10 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Hwloc_jll"),    # compat="2.0.0"
     Dependency("PMIx_jll"),     # compat="4.2.0"
-    Dependency("libevent_jll"), # compat="2.0.21"
-    # Too old, we only have 2.0.0 in Yggdrasil
-    # Dependency("prrte_jll"),    # compat="3.0.0"
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
     Dependency("Zlib_jll"),
+    Dependency("libevent_jll"), # compat="2.0.21"
+    Dependency("prrte_jll"),    # compat="3.0.0"
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 
 augment_platform_block = """
