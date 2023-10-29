@@ -1,0 +1,17 @@
+diff --git a/src/rd.h b/src/rd.h
+index fd6c307f..7a7984d4 100644
+--- a/src/rd.h
++++ b/src/rd.h
+@@ -40,10 +40,12 @@
+ #endif
+ 
+ #define __need_IOV_MAX
++#if !defined(__FreeBSD__)
+ #ifndef _POSIX_C_SOURCE
+ #define _POSIX_C_SOURCE 200809L /* for timespec on solaris */
+ #endif
+ #endif
++#endif
+ 
+ #include <stdio.h>
+ #include <stdlib.h>

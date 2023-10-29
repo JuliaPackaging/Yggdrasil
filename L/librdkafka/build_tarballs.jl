@@ -9,6 +9,7 @@ version = v"2.3.0"
 sources = [
     # git rev-list -n 1 v2.3.0
     GitSource("https://github.com/confluentinc/librdkafka.git", "95a542c87c61d2c45b445f91c73dd5442eb04f3c",),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,8 +20,12 @@ if [[ "${target}" != *-freebsd* ]]; then
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libssl.*
     rm -f /opt/${target}/${target}/sys-root/usr/lib/libsasl2.*
 fi
+
+atomic_patch -p1 ../patches/bsd_posix.patch
+
 mkdir build
 cd build/
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -33,7 +38,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(exclude = Sys.isfreebsd))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 
 # The products that we will ensure are always built
