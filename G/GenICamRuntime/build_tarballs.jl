@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GenICamRuntime"
-version = v"3.3.0"
+version = v"3.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.emva.org/wp-content/uploads/GenICam_V3_3_0_public_data.zip", "0b3dd212681418f355b8fbb677338d80b2c1ea63f33ecfbe3c2f31c8f93e851e"; unpack_target = "GenICam")
+    ArchiveSource("https://www.emva.org/wp-content/uploads/GenICam_V3_1_0_public_data.zip", "4c551e9a09cab1a5224350698249ea7f81f473e6a76b755fe792e11d30c66f2e"; unpack_target = "GenICam")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,11 +26,11 @@ genicam_arch_os=${genicam_target_map[$target_arch_os]}
 echo $genicam_arch_os
 
 cd $WORKSPACE/srcdir
-cd GenICam/public_data
+cd GenICam
 if [[ $target == *w64-mingw32 ]]; then
     unzip GenICam_V*-${genicam_arch_os}_*-Runtime.zip
 else
-    tar xfz GenICam_V*-${genicam_arch_os}_*-Runtime.tgz 
+    tar xfz GenICam_Runtime_*_${genicam_arch_os}_v*.tgz 
 fi
 ls -laR
 mkdir -p $libdir
@@ -40,7 +40,7 @@ done
 mkdir -p $libdir/genicam
 cp -av log $libdir/genicam/
 install_license License_ReadMe.txt
-cp -av licenses/GenICam_License_20180629.pdf $prefix/share/licenses/GenICamRuntime/
+cp -av licenses/GenICam_License_20140921.pdf $prefix/share/licenses/GenICamRuntime/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -51,10 +51,10 @@ filter!(p -> !(arch(p) == "aarch64" && os(p) == "macos") , platforms)
 filter!(p -> os(p) != "freebsd" , platforms)
 
 # The products that we will ensure are always built
-toolchains = ["gcc494", "gcc49", "gcc48", "clang100"]
+toolchains = ["gcc48", "gcc46", "gcc42", "clang61"]
 expand_library_name(n) = vcat(
     ["lib$(n)_$(toolchain)_v$(version.major)_$(version.minor)" for toolchain in toolchains],
-    "$(n)_MD_VC141_v$(version.major)_$(version.minor)",
+    "$(n)_MD_VC120_v$(version.major)_$(version.minor)",
 )
 products = [
     LibraryProduct(expand_library_name("GCBase"), :libGCBase),
@@ -66,7 +66,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
