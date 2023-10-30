@@ -15,6 +15,10 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
         v"7.2.1" => [
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "d6c84f7416eaee0d23d61c6c49ad1b73235d2ea2")
+        ],
+        v"7.3.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "fad1f30fa260975466bb0ad7da1aabf054517399")
         ]
     )
     return Any[
