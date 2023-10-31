@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/boost*/
 
-./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
+env CC=$CC_FOR_BUILD ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset=cc
 
 rm project-config.jam
 toolset=gcc
@@ -52,7 +52,7 @@ elif [[ $target == *freebsd* ]]; then
     extraargs="address-model=64 link=shared"
     echo "using clang : 6.0 : $CXX : <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
 fi
-./tools/build/src/engine/bin.linuxx86_64/b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
+./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
 
 install_license LICENSE_1_0.txt
 """
@@ -67,7 +67,6 @@ products = [
     LibraryProduct("libboost_chrono", :libboost_chrono),
     LibraryProduct("libboost_container", :libboost_container),
     LibraryProduct("libboost_context", :libboost_context),
-    LibraryProduct("libboost_contract", :libboost_contract),
     LibraryProduct("libboost_coroutine", :libboost_coroutine),
     LibraryProduct("libboost_date_time", :libboost_date_time),
     LibraryProduct("libboost_filesystem", :libboost_filesystem),
