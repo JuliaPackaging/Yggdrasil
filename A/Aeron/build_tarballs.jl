@@ -15,12 +15,13 @@ script = raw"""
 apk update
 apk add openjdk11 hdrhistogram-c-dev libbsd-dev util-linux-dev
 cd $WORKSPACE/srcdir/aeron
+sed -i '1s;^;add_compile_options("-lrt")\nlink_libraries("-lrt")\n;' CMakeLists.txt
 mkdir build && cd build
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DCMAKE_BUILD_TYPE=Release
 -DCMAKE_C_EXTENSIONS=ON
--DBUILD_AERON_DRIVER=OFF
+-DBUILD_AERON_DRIVER=ON
 -DBUILD_AERON_ARCHIVE_API=OFF
 -DAERON_TESTS=OFF
 -DAERON_SYSTEM_TESTS=OFF
@@ -38,7 +39,7 @@ make install
 platforms = [
     # Platform("i686", "linux"; libc = "glibc"),
     Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
+    # Platform("aarch64", "linux"; libc = "glibc"),
     # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
     # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
     # Platform("powerpc64le", "linux"; libc = "glibc"),
@@ -48,9 +49,9 @@ platforms = [
     # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
     # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
     # Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; )
+    # Platform("aarch64", "macos"; )
 ]
-platforms = expand_cxxstring_abis(platforms)
+# platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -63,4 +64,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1.0")
+build_tarballs(
+    ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", preferred_gcc_version = v"11.1.0")
