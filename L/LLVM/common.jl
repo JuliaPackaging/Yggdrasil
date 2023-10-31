@@ -307,7 +307,8 @@ if [[ "${target}" == *apple* ]]; then
     fi
 fi
 
-if [[ "${target}" == aarch64-linux* ]]; then
+GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
+if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
     CMAKE_C_FLAGS+=(-mno-outline-atomics)
     CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
 fi
