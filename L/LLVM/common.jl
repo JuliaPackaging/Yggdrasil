@@ -302,6 +302,11 @@ if [[ "${target}" == *apple* ]]; then
         CMAKE_TARGET=arm64-${target#*-}
     fi
 
+    if [[ "${target}" == x86_64* ]]; then
+        CMAKE_FLAGS+=(-DDARWIN_osx_BUILTIN_ARCHS="x86_64")
+        CMAKE_FLAGS+=(-DDARWIN_osx_ARCHS="x86_64")
+    fi
+
     if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
         CMAKE_FLAGS+=(-DLLVM_HAVE_LIBXAR=OFF)
     fi
