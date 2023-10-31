@@ -307,6 +307,11 @@ if [[ "${target}" == *apple* ]]; then
     fi
 fi
 
+if [[ "${target}" == aarch64-linux* ]]; then
+    CMAKE_C_FLAGS+=(-mno-outline-atomics)
+    CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+fi
+
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
     # On clang-based platforms we need to override the check for ffs because it doesn't work with `clang`.
     export ac_cv_have_decl___builtin_ffs=yes
