@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/yaml-cpp*/
 
-patch -p1 < ../patches/boost_detail_iterator_obsolete.patch
+patch -p1 < ../patches/missing_boost_next_prior_include.patch
 
 if [[ $target == *-apple-darwin* || $target == *-freebsd* ]]; then
     cmake_extra_args=-DCMAKE_C_FLAGS=-D_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES
