@@ -7,8 +7,7 @@ version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/CEED/libCEED/archive/v$(version).tar.gz",
-                  "2d94c218f6ab1bed072d11b70b0a0e70a5720fdf3d61db924e89909424a2f93e")
+    GitSource("https://github.com/CEED/libCEED.git", "4018a20a98d451fac24765d3ddb936861647ce8d"),
 ]
 
 # Bash recipe for building across all platforms
