@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libCEED-*
+cd $WORKSPACE/srcdir/libCEED*
 make -j${nproc} MEMCHK=0 CC_VENDOR=gcc
 make install MEMCHK=0 CC_VENDOR=gcc
 """
