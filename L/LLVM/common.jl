@@ -302,9 +302,20 @@ if [[ "${target}" == *apple* ]]; then
         CMAKE_TARGET=arm64-${target#*-}
     fi
 
+    if [[ "${target}" == x86_64* ]]; then
+        CMAKE_FLAGS+=(-DDARWIN_osx_BUILTIN_ARCHS="x86_64")
+        CMAKE_FLAGS+=(-DDARWIN_osx_ARCHS="x86_64")
+    fi
+
     if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
         CMAKE_FLAGS+=(-DLLVM_HAVE_LIBXAR=OFF)
     fi
+fi
+
+GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
+if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
+    CMAKE_C_FLAGS+=(-mno-outline-atomics)
+    CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
