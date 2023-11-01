@@ -1,5 +1,5 @@
 name = "libLLVM"
-version = v"16.0.6+0"
+version = v"16.0.6+1"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
