@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "libCEED"
-version = v"0.11.0"
+version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/CEED/libCEED/archive/v$(version).tar.gz",
-                  "cf51d034ec26c120ed1ca47cb7142381644e76558fa5922300b06b8dd715b0e4")
+                  "2d94c218f6ab1bed072d11b70b0a0e70a5720fdf3d61db924e89909424a2f93e")
 ]
 
 # Bash recipe for building across all platforms
