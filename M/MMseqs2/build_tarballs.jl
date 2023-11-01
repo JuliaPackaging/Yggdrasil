@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MMseqs2"
-version = v"14"
+version = v"15"
 # official version: "major version + first 5 characters of tagged commit"
 
 # url = "https://github.com/soedinglab/MMseqs2"
@@ -32,11 +32,10 @@ version = v"14"
 
 sources = [
     GitSource("https://github.com/soedinglab/MMseqs2",
-              "7e2840992948ee89dcc336522dc98a74fe0adf00"),
+              "6f45232ac8daca14e354ae320a4359056ec524c2"),
     DirectorySource("./bundled")
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/MMseqs2*/
 
