@@ -28,12 +28,14 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 # FIXME: Name is `libevent-2-1-7.dll` but `parse_dl_name_version` strips the trailing `-7`
 products = [
-    LibraryProduct(["libevent", "libevent-2-1"], :libevent)
+    LibraryProduct(["libevent", "libevent-2-1"], :libevent),
+    LibraryProduct(["libevent_core", "libevent_core-2-1"], :libevent_core),
+    LibraryProduct(["libevent_pthreads", "libevent_pthreads-2-1"], :libevent_pthreads),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -42,4 +44,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
