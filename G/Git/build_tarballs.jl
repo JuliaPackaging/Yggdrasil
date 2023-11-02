@@ -114,7 +114,7 @@ dependencies = [
     HostBuildDependency("Gettext_jll"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("OpenSSL_jll"; compat="3.0.0"),
+    Dependency("OpenSSL_jll"; compat="3"),
     Dependency("Libiconv_jll"),
     Dependency("PCRE2_jll"; compat="10.35.0"),
     Dependency("Zlib_jll"),
