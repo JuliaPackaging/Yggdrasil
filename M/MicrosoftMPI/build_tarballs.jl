@@ -47,6 +47,9 @@ mv *.txt *.rtf share/licenses/MicrosoftMPI
 cd $includedir
 gfortran -I. ../src/mpi.f90 -fsyntax-only -fno-range-check
 
+# Replace an unknown character in mpif.h by a space
+sed -i '/Copyright Notice/!b;n;c!    + 2002 University of Chicago' mpif.h
+
 ################################################################################
 # Install MPIconstants
 ################################################################################
