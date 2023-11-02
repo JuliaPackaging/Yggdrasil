@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "KaHyPar"
-version = v"1.3.0"
+version = v"1.3.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kahypar/kahypar.git", "3802b7976002663b4126a11c5bff84996a830fb9"),
+    GitSource("https://github.com/kahypar/kahypar.git", "c1efa28379c3c8ddc5df2ed24f30f42567190478"),
     DirectorySource(joinpath(@__DIR__, "bundled"))
 ]
 
