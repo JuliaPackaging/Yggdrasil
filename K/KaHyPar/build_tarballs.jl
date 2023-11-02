@@ -18,6 +18,7 @@ cd $WORKSPACE/srcdir/kahypar/
 atomic_patch -p1 ../patches/no_native.patch
 git submodule update --init --recursive --depth=1
 mkdir build && cd build
+rm /usr/share/cmake/Modules/Compiler/._*
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
