@@ -12,7 +12,7 @@ sources = [
     ArchiveSource("$(url_prefix)-arm64-macOS.zip", "d3f79fc9ba4da848b76e9edfb874cd6bcce9430cf4a105c3646828405310d562"; unpack_target = "aarch64-apple-darwin20"),
     ArchiveSource("$(url_prefix)-windows-x86_64.zip", "11eb6dbe5286c9e5edb0cca4412e7d99ec6578ec04158b0b7fe11f7fd96688e5"; unpack_target = "x86_64-w64-mingw32"),
     ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "3932f1b07993cdae3bcfa7523a8eb19654269d2c30e4ec16d93c4211980fe27a"; unpack_target = "aarch64-linux-gnu"),
-    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "bec2a2261d16b5ffddde7e7f2f51d2131a1686006f32a61475a4054415d7e367"),
+    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "d08e01a4da8ec37b4645a1708483d8845731b5760b411d12736c648de8ccdc21"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "e7ea3adeab955103a837b692ca0017cb3abbed0d3dccbfa499d6b2b825d698c3"),
 ]
 
