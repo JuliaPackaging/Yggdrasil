@@ -8,7 +8,7 @@ version = v"1.3.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/kahypar/kahypar.git", "3802b7976002663b4126a11c5bff84996a830fb9"),
-    DirectorySource("./bundled")
+    DirectorySource(joinpath(@__DIR__, "bundled"))
 ]
 
 # Bash recipe for building across all platforms
