@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "yaml_cpp"
-version = v"0.6.3"
+version = v"0.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jbeder/yaml-cpp.git", "9a3624205e8774953ef18f57067b3426c1c5ada6"),
+    GitSource("https://github.com/jbeder/yaml-cpp.git", "f7320141120f720aecc4c32be25586e7da9eb978"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,7 +31,7 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libyaml-cpp", "yaml-cpp"], :libyaml_cpp)
+    LibraryProduct("libyaml-cpp", :libyaml_cpp)
 ]
 
 # Dependencies that must be installed before this package can be built
