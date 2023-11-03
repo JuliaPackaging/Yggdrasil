@@ -1,19 +1,25 @@
 using BinaryBuilder
+using BinaryBuilderBase
 
-sources_linux = [
+sources = Dict{Platform, Vector{AbstractSource}}()
+
+push!(sources, Platform("x86_64", "linux") => [
     FileSource("http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run",
                "560d07fdcf4a46717f2242948cd4f92c5f9b6fc7eae10dd996614da913d5ca11", "installer.run")
-]
-sources_macos = [
+])
+push!(sources, Platform("x86_64", "macos") => [
     FileSource("http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_mac.dmg",
                "51193fff427aad0a3a15223b1a202a6c6f0964fcc6fb0e6c77ca7cd5b6944d20", "installer.dmg")
-]
-sources_windows = [
+])
+push!(sources, Platform("x86_64", "windows") => [
     FileSource("http://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_441.22_win10.exe",
                "b538271c4d9ffce1a8520bf992d9bd23854f0f29cee67f48c6139e4cf301e253", "installer.exe")
-]
-
-sources_linux_aarch64 = [
+])
+push!(sources, Platform("powerpc64le", "linux") => [
+    FileSource("https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux_ppc64le.run",
+               "5227774fcb8b10bd2d8714f0a716a75d7a2df240a9f2a49beb76710b1c0fc619", "installer.run")
+])
+push!(sources, Platform("aarch64", "linux") => [
     # Expected install order for cuda-toolkit-10-2, i.e. output from `apt-get -s install --no-install-recommends cuda-toolkit-10-2` (using source: "deb https://repo.download.nvidia.com/jetson/common r32.5 main")
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-license-10-2_10.2.89-1_arm64.deb", "8a862acbff5b33904bfe7ec3e92a553a8312da1db9f651b6cfe14db137a139ce"),
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-nvdisasm-10-2_10.2.89-1_arm64.deb", "9523033692cca5a2b29cd69942d69036deedacb8eb3273395662f6024b2c27f9"),
@@ -55,8 +61,8 @@ sources_linux_aarch64 = [
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-nvml-dev-10-2_10.2.89-1_arm64.deb", "c8743e69c84a432c5e6dea6edfcacf1bb6b09b028bee61c8aece7a41d0447265"),
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-tools-10-2_10.2.89-1_arm64.deb", "eeaae6a103cc5d950bf4e774a277d90286492df0e0815e161f7c12291c9aa5ba"),
     FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/c/cuda/cuda-toolkit-10-2_10.2.89-1_arm64.deb", "47a1c8c8bde2c763396a68c38cc901217e1606bb536ec5880d4c072c4eee9073"),
-]
-sources_linux_aarch64_manifest = join([src.filename for src in sources_linux_aarch64], "\n")
+])
+sources_linux_aarch64_manifest = join([src.filename for src in sources[Platform("aarch64", "linux")]], "\n")
 
 get_script(static::Bool) = """
 static=\"$(static)\"
@@ -74,13 +80,16 @@ mkdir ${temp}
 apk add p7zip
 
 mkdir ${prefix}/cuda
-if [[ ${target} == x86_64-linux-gnu ]]; then
+if [[ ${target} == x86_64-linux-gnu || ${target} == powerpc64le-linux-gnu ]]; then
     sh installer.run --tmpdir="${temp}" --target "${temp}" --noexec
     cd ${temp}/builds/cuda-toolkit
     find .
 
     # clean-up
-    rm -r libnsight libnvvp nsightee_plugins nsight-compute-2019.5.0 nsight-systems-2019.5.2 doc
+    rm -r libnsight libnvvp nsightee_plugins nsight-compute-2019.5.0 doc
+    if [[ ${target} == x86_64-linux-gnu ]]; then
+        rm -r nsight-systems-2019.5.2
+    fi
 
     mv * ${prefix}/cuda
 elif [[ ${target} == x86_64-apple-darwin* ]]; then
@@ -178,20 +187,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
-function get_sources(platform::Platform)
-    if triplet(platform) == "x86_64-linux-gnu"
-        return sources_linux
-    elseif triplet(platform) == "x86_64-apple-darwin"
-        return sources_macos
-    elseif triplet(platform) == "x86_64-w64-mingw32"
-        return sources_windows
-    elseif triplet(platform) == "aarch64-linux-gnu"
-        return sources_linux_aarch64
-    else
-        error("Unsupported platform: $platform")
-    end
-end
-
 function build_sdk(name::String, version::VersionNumber, platforms::Vector{Platform};
     static::Bool=false)
     builds = []
@@ -200,7 +195,7 @@ function build_sdk(name::String, version::VersionNumber, platforms::Vector{Platf
         should_build_platform(triplet(platform)) || continue
         push!(builds,
                 (; script=get_script(static), platforms=[platform], products=Product[],
-                sources=get_sources(platform)
+                sources=sources[platform]
         ))
     end
 
