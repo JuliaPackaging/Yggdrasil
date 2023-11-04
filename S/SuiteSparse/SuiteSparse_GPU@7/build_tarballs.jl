@@ -100,8 +100,8 @@ platforms = CUDA.supported_platforms()
 filter!(p -> arch(p) == "x86_64", platforms)
 
 # Add products
-push!(products, LibraryProduct("libGPUQREngine", :libGPUQREngine))
-push!(products, LibraryProduct("libSuiteSparse_GPURuntime", :libSuiteSparse_GPURuntime))
+push!(products, LibraryProduct("libgpuqrengine", :libgpuqrengine))
+push!(products, LibraryProduct("libsuitesparse_gpuruntime", :libsuitesparse_gpuruntime))
 
 # build SuiteSparse for all supported CUDA toolkits
 for platform in platforms
