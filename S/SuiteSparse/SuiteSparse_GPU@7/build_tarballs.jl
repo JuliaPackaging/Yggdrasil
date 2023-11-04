@@ -2,7 +2,7 @@ include("../common.jl")
 
 using Base.BinaryPlatforms: arch, os
 
-name = "SuiteSparse"
+name = "SuiteSparse_GPU"
 version = v"7.3.0"
 
 sources = suitesparse_sources(version)
@@ -13,7 +13,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SuiteSparse
+cd $WORKSPACE/srcdir/SuiteSparse_GPU
 
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
@@ -103,7 +103,7 @@ filter!(p -> arch(p) == "x86_64", platforms)
 push!(products, LibraryProduct("libgpuqrengine", :libgpuqrengine))
 push!(products, LibraryProduct("libsuitesparse_gpuruntime", :libsuitesparse_gpuruntime))
 
-# build SuiteSparse for all supported CUDA toolkits
+# build SuiteSparse_GPU for all supported CUDA toolkits
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
