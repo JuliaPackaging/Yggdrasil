@@ -13,7 +13,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SuiteSparse_GPU
+cd $WORKSPACE/srcdir/SuiteSparse
 
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
@@ -46,7 +46,7 @@ else
     )
 fi
 
-for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR SuiteSparse_GPURuntime GPUQREngine; do
+for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine CHOLMOD SPQR; do
     cd ${proj}/build
     cmake .. -DCMAKE_BUILD_TYPE=Release \
              -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -102,6 +102,9 @@ filter!(p -> arch(p) == "x86_64", platforms)
 # Add products
 push!(products, LibraryProduct("libgpuqrengine", :libgpuqrengine))
 push!(products, LibraryProduct("libsuitesparse_gpuruntime", :libsuitesparse_gpuruntime))
+
+# Add dependency on SuiteSparse_jll
+push!(dependencies, Dependency("SuiteSparse_jll"))
 
 # build SuiteSparse_GPU for all supported CUDA toolkits
 for platform in platforms
