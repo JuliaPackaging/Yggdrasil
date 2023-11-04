@@ -46,7 +46,7 @@ else
     )
 fi
 
-for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine CHOLMOD SPQR; do
+for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR Mongoose SPEX SuiteSparse_GPURuntime GPUQREngine; do
     cd ${proj}/build
     cmake .. -DCMAKE_BUILD_TYPE=Release \
              -DCMAKE_INSTALL_PREFIX=${prefix} \
