@@ -6,7 +6,7 @@ diff --color -ur qtbase-everywhere-src-6.5.2/cmake/QtCompilerOptimization.cmake 
      set(QT_CFLAGS_AVX        "-mavx")
      set(QT_CFLAGS_AVX2       "-mavx2")
 -    set(QT_CFLAGS_ARCH_HASWELL "-march=haswell")
-+    set(QT_CFLAGS_ARCH_HASWELL "-mavx2" "-mf16c" "-mfma" "-mbmi2" "-mlzcnt")
++    set(QT_CFLAGS_ARCH_HASWELL "-mavx2" "-mf16c" "-mfma" "-mbmi" "-mbmi2" "-mlzcnt")
      set(QT_CFLAGS_AVX512F    "-mavx512f")
      set(QT_CFLAGS_AVX512ER   "-mavx512er")
      set(QT_CFLAGS_AVX512CD   "-mavx512cd")
