@@ -40,7 +40,7 @@ commonoptions=" \
 
 commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix -DQT_FEATURE_openssl_linked=ON"
 
-export LD_LIBRARY_PATH=$host_libdir:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$host_libdir:$host_prefix/lib64:$LD_LIBRARY_PATH
 export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
 # temporarily allow march during configure
