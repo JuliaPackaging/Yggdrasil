@@ -24,8 +24,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-BIN_DIR="/opt/bin/${bb_full_target}"
-
 mkdir build
 cd build/
 
@@ -75,8 +73,15 @@ case "$bb_full_target" in
         make -j${nproc}
         make install
 
+        if [[ "${target}" == x86_64-* ]]; then
+           # On x86_64 mingw32 the import libraries of OpenSSL are in `lib64/`,
+           # but there doesn't seem to be a sensible way to convince the build system to
+           # look into that directory, so we just have to link files around.
+           ln -vs ${prefix}/lib64/lib{crypto,ssl}.dll.a ${prefix}/lib/
+        fi
+
         cd $WORKSPACE/srcdir/build
-        ../qtbase-everywhere-src-*/configure -prefix $prefix -opensource -confirm-license -nomake examples -release -opengl dynamic -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix
+        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -opengl dynamic -- $commoncmakeoptions
     ;;
 
     *apple-darwin*)
@@ -113,6 +118,10 @@ sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-g++
 cmake --build . --parallel ${nproc}
 cmake --install .
 install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSES/LGPL-3.0-only.txt
+if [[ "${target}" == x86_64-*-mingw* ]]; then
+   # Remove temporary symlinks.
+   rm -v ${prefix}/lib/lib{crypto,ssl}.dll.a
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -156,29 +165,30 @@ products_macos = [
 ]
 
 # We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
-llvm_version = v"13.0.1"
+llvm_version = v"16.0.6"
+
+linux_freebsd = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libinput_jll"),
-    Dependency("Xorg_libXext_jll"),
-    Dependency("Xorg_libxcb_jll"),
-    Dependency("Xorg_xcb_util_wm_jll"),
-    Dependency("Xorg_xcb_util_cursor_jll"),
-    Dependency("Xorg_xcb_util_image_jll"),
-    Dependency("Xorg_xcb_util_keysyms_jll"),
-    Dependency("Xorg_xcb_util_renderutil_jll"),
-    Dependency("Xorg_libXrender_jll"),
-    Dependency("Xorg_libSM_jll"),
-    Dependency("xkbcommon_jll"),
+    Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libxcb_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_wm_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_cursor_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_image_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_keysyms_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_renderutil_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libSM_jll"; platforms=linux_freebsd),
+    Dependency("xkbcommon_jll"; platforms=linux_freebsd),
     Dependency("Libglvnd_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
+    Dependency("Glib_jll"; compat="2.59.0"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Vulkan_Loader_jll"),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
     BuildDependency("Xorg_libX11_jll"),
