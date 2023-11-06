@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Hayagriva"
-version = v"0.3.0"
+version = v"0.4.0"
 
 sources = [
     GitSource("https://github.com/typst/hayagriva.git",
-                  "c1c58e44eba1733726d596025e3357c6aa56826a"),
+                  "8dce242de6366156eee2ea113584236883af6e66"),
 ]
 
 # Bash recipe for building across all platforms
