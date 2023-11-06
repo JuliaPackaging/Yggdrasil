@@ -75,13 +75,8 @@ case "$bb_full_target" in
         make -j${nproc}
         make install
 
-        if [[ "${target}" == x86_64-* ]]; then
-           # On x86_64 mingw32 the import libraries of OpenSSL are in `lib64/`.
-           export LDFLAGS="-L${prefix}/lib64"
-        fi
-
         cd $WORKSPACE/srcdir/build
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -opengl dynamic -- $commoncmakeoptions
+        ../qtbase-everywhere-src-*/configure -prefix $prefix -opensource -confirm-license -nomake examples -release -opengl dynamic -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix
     ;;
 
     *apple-darwin*)
