@@ -45,7 +45,7 @@ cd $WORKSPACE/srcdir/polymake
 # to be able to generate a similiar dependency tree at runtime
 # we prepare a symlink tree for all dependencies
 mkdir -p ${prefix}/deps
-for dir in FLINT GMP MPFR PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
+for dir in FLINT GMP MPFR MongoC PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
    ln -s .. ${prefix}/deps/${dir}_jll
 done
 
@@ -90,6 +90,7 @@ else
               --with-cdd=${prefix}/deps/cddlib_jll \
               --with-lrs=${prefix}/deps/lrslib_jll \
               --with-libnormaliz=${prefix}/deps/normaliz_jll \
+              --with-mongoc=${prefix}/deps/MongoC_jll \
               --without-singular \
               --without-native \
               --without-prereq
@@ -153,6 +154,7 @@ dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("FLINT_jll", compat = "~200.900.004"),
+    Dependency("MongoC_jll", compat = "~1.19.1"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.1"),
     Dependency("SCIP_jll", compat = "~800.0.301"),
