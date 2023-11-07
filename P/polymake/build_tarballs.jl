@@ -22,8 +22,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.10"
-version_offset = v"0.0.1"
+upstream_version = v"4.11"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
-                  "295608e3dc797b5646c799153eb33e9fcc0a9e181b0b60b37f872fc2ea1a2d17"),
+                  "a02c4a737271c2ffb5b2fcfed5a6fde5bc417c9eb1b92c29f25a17f3b037a838"),
     DirectorySource("./bundled")
 ]
 
