@@ -14,9 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ginkgo/
 mkdir build && cd build
-cmake -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_BENCHMARKS=OFF -DGINKGO_BUILD_EXAMPLES=OFF -DGINKGO_DOC_GENERATE_EXAMPLES=OFF -G "Ninja" ../
+cmake -DCMAKE_INSTALL_PREFIX=/workspace/destdir -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_BENCHMARKS=OFF -DGINKGO_BUILD_EXAMPLES=OFF -DGINKGO_DOC_GENERATE_EXAMPLES=OFF -G "Ninja" ../
 ninja -j${nproc} 
-DESTDIR=${prefix}/shared ninja install
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -34,17 +34,18 @@ platforms = [
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
 ]
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libginkgo", :libginkgo, "shared/usr/local/lib"),
-    LibraryProduct("libginkgo_device", :libginkgo_device, "shared/usr/local/lib"),
-    LibraryProduct("libginkgo_cuda", :libginkgo_cuda, "shared/usr/local/lib"),
-    LibraryProduct("libginkgo_reference", :libginkgo_reference, "shared/usr/local/lib"),
-    LibraryProduct("libginkgo_omp", :libginkgo_omp, "shared/usr/local/lib"),
-    LibraryProduct("libginkgo_dpcpp", :libginkgo_dpcpp, "shared/usr/local/lib"),
-    LibraryProduct("libginkgo_hip", :libginkgo_hip, "shared/usr/local/lib")
+    LibraryProduct("libginkgo", :libginkgo),
+    LibraryProduct("libginkgo_device", :libginkgo_device),
+    LibraryProduct("libginkgo_cuda", :libginkgo_cuda),
+    LibraryProduct("libginkgo_reference", :libginkgo_reference),
+    LibraryProduct("libginkgo_omp", :libginkgo_omp),
+    LibraryProduct("libginkgo_dpcpp", :libginkgo_dpcpp),
+    LibraryProduct("libginkgo_hip", :libginkgo_hip)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -53,4 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
