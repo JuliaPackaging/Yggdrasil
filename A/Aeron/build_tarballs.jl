@@ -21,6 +21,8 @@ echo $prefix
 sed -i '1s;^;add_compile_options("-lrt")\nlink_libraries("-lrt")\n;' CMakeLists.txt
 sed -i 's/check_symbol_exists(poll "poll.h" POLL_PROTOTYPE_EXISTS)/set(POLL_PROTOTYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
 sed -i 's/check_type_size("struct mmsghdr" STRUCT_MMSGHDR_TYPE_EXISTS)/set(STRUCT_MMSGHDR_TYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
+sed -i 's/find_library(LIBBSD_EXISTS NAMES bsd libbsd)/set(LIBBSD_EXISTS False)/g' aeron-driver/src/main/c/CMakeLists.txt
+sed -i 's/find_library(LIBUUID_EXISTS NAMES uuid libuuid libuuid.dll)/set(LIBUUID_EXISTS False)/g' aeron-driver/src/main/c/CMakeLists.txt
 CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DCMAKE_BUILD_TYPE=Release
 -DCMAKE_C_EXTENSIONS=ON
@@ -33,9 +35,12 @@ CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DAERON_ENABLE_NONSTANDARD_OPTIMIZATIONS=OFF
 -DAERON_INSTALL_TARGETS=ON)
 mkdir build && cd build
+export LDFLAGS="-L${libdir}"
 cmake .. "${CMAKE_FLAGS[@]}"
-make -j${nproc}
+make -j${nproc} aeron_client aeron_driver_static
 make install
+cp /usr/local/lib/*aeron* ${libdir}
+cp /usr/local/bin/aeronmd ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -59,7 +64,8 @@ platforms = [
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct(["libaeron"], :libaeron)
+    LibraryProduct(["libaeron"], :libaeron, String["/usr/local/lib"]),
+    ExecutableProduct("aeronmd", :aeronmd, "/usr/local/bin/aeronmd"),
 ]
 
 # Dependencies that must be installed before this package can be built
