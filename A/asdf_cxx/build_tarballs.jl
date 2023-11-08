@@ -3,11 +3,11 @@ using BinaryBuilder
 # ASDF - Advanced Scientific Data Format, a C++ implementation
 
 name = "asdf_cxx"
-version = v"7.3.0"
+version = v"7.3.1"
 
 # Collection of sources required to build asdf-cxx
 sources = [
-    GitSource("https://github.com/eschnett/asdf-cxx", "dd988cd234f4819d8566e488c5733f5712d8dac3"),
+    GitSource("https://github.com/eschnett/asdf-cxx", "9836ffb81c79f48182226a3b976d260078a05b07"),
 ]
 
 # Bash recipe for building across all platforms
@@ -49,4 +49,4 @@ products = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"6")
+               julia_compat="1.6", preferred_gcc_version=v"8")
