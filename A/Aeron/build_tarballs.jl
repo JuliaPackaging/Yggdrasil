@@ -15,10 +15,13 @@ script = raw"""
 apk update
 apk add openjdk11 hdrhistogram-c-dev libbsd-dev util-linux-dev
 cd $WORKSPACE/srcdir/aeron
+mkdir -p /sys/devices/system/cpu/
+echo 1-${nproc} > /sys/devices/system/cpu/possible
+echo $prefix
 sed -i '1s;^;add_compile_options("-lrt")\nlink_libraries("-lrt")\n;' CMakeLists.txt
-mkdir build && cd build
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+sed -i 's/check_symbol_exists(poll "poll.h" POLL_PROTOTYPE_EXISTS)/set(POLL_PROTOTYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
+sed -i 's/check_type_size("struct mmsghdr" STRUCT_MMSGHDR_TYPE_EXISTS)/set(STRUCT_MMSGHDR_TYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
+CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DCMAKE_BUILD_TYPE=Release
 -DCMAKE_C_EXTENSIONS=ON
 -DBUILD_AERON_DRIVER=ON
@@ -29,6 +32,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DAERON_BUILD_DOCUMENTATION=OFF
 -DAERON_ENABLE_NONSTANDARD_OPTIMIZATIONS=OFF
 -DAERON_INSTALL_TARGETS=ON)
+mkdir build && cd build
 cmake .. "${CMAKE_FLAGS[@]}"
 make -j${nproc}
 make install
@@ -67,3 +71,4 @@ dependencies = [
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version = v"11.1.0")
+# BinaryBuilder.runshell(Platform("x86_64", "linux", libc="glibc"))
