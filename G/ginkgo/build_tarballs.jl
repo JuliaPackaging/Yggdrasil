@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ginkgo/
+cd $WORKSPACE/srcdir/ginkgo/
 mkdir build && cd build
 cmake -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_BENCHMARKS=ON -DGINKGO_BUILD_EXAMPLES=ON -DGINKGO_DOC_GENERATE_EXAMPLES=OFF -G "Ninja" ../
 ninja -j${nproc} 
