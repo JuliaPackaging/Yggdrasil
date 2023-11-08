@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.10.5"
+version = v"2.11.2"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "f8417b103e6b0bbe06b861f92d57285590e1166a"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "3ea8b4ae21563bc740c91f5abfe823c9b8438738"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,8 +21,11 @@ cd $WORKSPACE/srcdir/c-blosc2/
 # integers).
 atomic_patch -p1 ../patches/_xsetbv.patch
 
-# fix compile arguments for armv7l <https://github.com/Blosc/c-blosc2/pull/563>
-atomic_patch -p1 ../patches/armv7l.patch
+# Clang on Apple does not (yet?) properly support `__builtin_cpu_supports`.
+# The symbol `__cpu_model` is not provided by any standard library.
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    perl -pi -e 's/#define HAVE_CPU_FEAT_INTRIN/#undef HAVE_CPU_FEAT_INTRIN/' blosc/shuffle.c
+fi
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -32,7 +35,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_BENCHMARKS=OFF \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_STATIC=OFF \
-    -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" \
     -DPREFER_EXTERNAL_ZLIB=ON \
     -DPREFER_EXTERNAL_ZSTD=ON \
     -DPREFER_EXTERNAL_LZ4=ON \
