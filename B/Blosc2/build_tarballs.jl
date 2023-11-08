@@ -15,8 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/c-blosc2/
 
-rm -f /usr/share/cmake/Modules/Compiler/._*
-
 # Blosc2 mis-detects whether the system headers provide `_xsetbv`
 # (probably on several platforms), and on `x86_64-w64-mingw32` the
 # functions have incompatible return types (although both are 64-bit
