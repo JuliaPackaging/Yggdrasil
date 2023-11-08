@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/ginkgo/
 mkdir build && cd build
 cmake -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_BENCHMARKS=ON -DGINKGO_BUILD_EXAMPLES=ON -DGINKGO_DOC_GENERATE_EXAMPLES=OFF -G "Ninja" ../
 ninja -j${nproc} 
-DESTDIR=${WORKSPACE}/destdir/shared ninja install
+DESTDIR=${prefix}/shared ninja install
 """
 
 # These are the platforms we will build for by default, unless further
