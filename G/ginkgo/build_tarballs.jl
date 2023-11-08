@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ginkgo/
 mkdir build && cd build
-cmake -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_BENCHMARKS=ON -DGINKGO_BUILD_EXAMPLES=ON -DGINKGO_DOC_GENERATE_EXAMPLES=OFF -G "Ninja" ../
+cmake -DGINKGO_BUILD_TESTS=OFF -DGINKGO_BUILD_BENCHMARKS=OFF -DGINKGO_BUILD_EXAMPLES=OFF -DGINKGO_DOC_GENERATE_EXAMPLES=OFF -G "Ninja" ../
 ninja -j${nproc} 
 DESTDIR=${prefix}/shared ninja install
 """
