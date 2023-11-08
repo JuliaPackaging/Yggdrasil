@@ -8,10 +8,6 @@ version = v"2.11.2"
 # Collection of sources required to build Blosc2
 sources = [
     GitSource("https://github.com/Blosc/c-blosc2.git", "3ea8b4ae21563bc740c91f5abfe823c9b8438738"),
-    # ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-    #               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    # ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
-    #               "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,27 +17,17 @@ cd $WORKSPACE/srcdir/c-blosc2/
 
 rm -f /usr/share/cmake/Modules/Compiler/._*
 
-# if [[ "${target}" == x86_64-apple-darwin* ]]; then
-#     # export MACOSX_DEPLOYMENT_TARGET=10.15
-#     # pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-#     export MACOSX_DEPLOYMENT_TARGET=11.0
-#     pushd ${WORKSPACE}/srcdir/MacOSX11.*.sdk
-#     rm -rf /opt/${target}/${target}/sys-root/System
-#     cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-#     cp -a System "/opt/${target}/${target}/sys-root/"
-#     popd
-# fi
-
 # Blosc2 mis-detects whether the system headers provide `_xsetbv`
 # (probably on several platforms), and on `x86_64-w64-mingw32` the
 # functions have incompatible return types (although both are 64-bit
 # integers).
 atomic_patch -p1 ../patches/_xsetbv.patch
 
-# # fix compile arguments for armv7l <https://github.com/Blosc/c-blosc2/pull/563>
-# atomic_patch -p1 ../patches/armv7l.patch
-
-#    -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" \
+# Clang on Apple does not (yet?) properly support `__builtin_cpu_supports`.
+# The symbol `__cpu_model` is not provided by any standard library.
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    perl -pi -e 's/#define HAVE_CPU_FEAT_INTRIN/#undef HAVE_CPU_FEAT_INTRIN/' blosc/shuffle.c
+fi
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
