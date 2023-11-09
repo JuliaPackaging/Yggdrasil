@@ -28,12 +28,16 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 # FIXME: Name is `libevent-2-1-7.dll` but `parse_dl_name_version` strips the trailing `-7`
 products = [
-    LibraryProduct(["libevent", "libevent-2-1"], :libevent)
+    LibraryProduct(["libevent", "libevent-$(version.major)-$(version.minor)"], :libevent),
+    LibraryProduct(["libevent_core", "libevent_core-$(version.major)-$(version.minor)"], :libevent_core),
+]
+products_unix = [
+    LibraryProduct(["libevent_pthreads", "libevent_pthreads-$(version.major)-$(version.minor)"], :libevent_pthreads),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -41,5 +45,15 @@ dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.12"),
 ]
 
+include("../../fancy_toys.jl")
+
+platforms_unix = filter(!Sys.iswindows, platforms)
+platforms_windows = filter(Sys.iswindows, platforms)
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+if any(should_build_platform.(triplet.(platforms_windows)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_windows, products, dependencies; julia_compat="1.6")
+end
+if any(should_build_platform.(triplet.(platforms_unix)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_unix, [products; products_unix], dependencies; julia_compat="1.6")
+end

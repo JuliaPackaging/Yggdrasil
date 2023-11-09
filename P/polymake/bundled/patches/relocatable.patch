@@ -63,7 +63,7 @@ index 7106f5e5c3..5784ab87ec 100644
     }
  
 +   s{use strict;}{use strict;\nuse File::Basename qw( dirname );};
-    s{=Version(?=;)}{=$Version};
+    s{=Version(?=;)}{="$Version"};
 -   s{=InstallTop(?=;)}{='$ConfigFlags{InstallTop}'};
 -   s{=InstallArch(?=;)}{='$ConfigFlags{InstallArch}'};
 +   s{=InstallTop(?=;)}{=dirname(dirname(\$0))."/share/polymake"};
