@@ -13,7 +13,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
-version = v"0.10.6"
+version = v"0.11.0"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl
@@ -22,7 +22,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "6502403aad3230483ab43283822e1a9b10eda11c"),
+              "fe9d2949f4922cadc10a17d352ef4faa31464b2e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -69,10 +69,10 @@ dependencies = [
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
     Dependency("libcxxwrap_julia_jll"; compat = "~0.11.1"),
-    Dependency("polymake_jll"; compat = "~400.1000.1"),
+    Dependency("polymake_jll"; compat = "~400.1100.0"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1000.1")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1100.0")),
     HostBuildDependency(PackageSpec(name="lib4ti2_jll", version=v"1.6.10")),
     HostBuildDependency(PackageSpec(name="TOPCOM_jll", version=v"0.17.8")),
 ]
