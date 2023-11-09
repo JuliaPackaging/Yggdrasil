@@ -33,15 +33,13 @@ CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DAERON_BUILD_DOCUMENTATION=OFF
 -DAERON_ENABLE_NONSTANDARD_OPTIMIZATIONS=OFF
 -DAERON_INSTALL_TARGETS=ON
+-DCMAKE_INSTALL_PREFIX=$prefix
 )
 mkdir build && cd build
 export LDFLAGS="-L${libdir}"
 cmake .. "${CMAKE_FLAGS[@]}"
 make -j${nproc} aeron_client aeron_driver_static
 make install
-mkdir -p ${bindir}
-mv /usr/local/lib/*aeron* ${libdir}
-mv /usr/local/bin/aeronmd ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
