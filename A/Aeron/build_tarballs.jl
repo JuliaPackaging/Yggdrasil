@@ -18,9 +18,11 @@ cd $WORKSPACE/srcdir/aeron
 mkdir -p /sys/devices/system/cpu/
 echo 1-${nproc} > /sys/devices/system/cpu/possible
 echo $prefix
-sed -i '1s;^;add_compile_options("-lrt")\nlink_libraries("-lrt")\n;' CMakeLists.txt
-sed -i 's/check_symbol_exists(poll "poll.h" POLL_PROTOTYPE_EXISTS)/set(POLL_PROTOTYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
-sed -i 's/check_type_size("struct mmsghdr" STRUCT_MMSGHDR_TYPE_EXISTS)/set(STRUCT_MMSGHDR_TYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
+if [[ "${target}" == *linux* ]]; then
+    sed -i 's/check_symbol_exists(poll "poll.h" POLL_PROTOTYPE_EXISTS)/set(POLL_PROTOTYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
+    sed -i '1s;^;add_compile_options("-lrt")\nlink_libraries("-lrt")\n;' CMakeLists.txt
+    sed -i 's/check_type_size("struct mmsghdr" STRUCT_MMSGHDR_TYPE_EXISTS)/set(STRUCT_MMSGHDR_TYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
+fi
 sed -i 's/find_library(LIBBSD_EXISTS NAMES bsd libbsd)/set(LIBBSD_EXISTS False)/g' aeron-driver/src/main/c/CMakeLists.txt
 sed -i 's/find_library(LIBUUID_EXISTS NAMES uuid libuuid libuuid.dll)/set(LIBUUID_EXISTS False)/g' aeron-driver/src/main/c/CMakeLists.txt
 CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
@@ -42,16 +44,14 @@ make install
 cp /usr/local/lib/*aeron* ${libdir}
 mkdir -p ${bindir}
 cp /usr/local/bin/aeronmd ${bindir}
-echo  ${bindir}
-ls  ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
     # Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    # Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"), # works
+    Platform("aarch64", "linux"; libc = "glibc"),  # works
     # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
     # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
     # Platform("powerpc64le", "linux"; libc = "glibc"),
@@ -61,7 +61,7 @@ platforms = [
     # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
     # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
     # Platform("x86_64", "macos"; ),
-    # Platform("aarch64", "macos"; )
+    Platform("aarch64", "macos"; ) # works
 ]
 platforms = expand_cxxstring_abis(platforms)
 
