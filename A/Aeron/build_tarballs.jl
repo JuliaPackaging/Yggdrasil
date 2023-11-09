@@ -49,19 +49,20 @@ cp /usr/local/bin/aeronmd ${bindir}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    # Platform("i686", "linux"; libc = "glibc"),
+    # Platform("i686", "linux"; libc = "glibc"),  # untested
     Platform("x86_64", "linux"; libc = "glibc"), # works
     Platform("aarch64", "linux"; libc = "glibc"),  # works
-    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    # Platform("powerpc64le", "linux"; libc = "glibc"),
-    # Platform("i686", "linux"; libc = "musl"),
-    # Platform("x86_64", "linux"; libc = "musl"),
-    # Platform("aarch64", "linux"; libc = "musl"),
-    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    # Platform("x86_64", "macos"; ),
+    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"), # untested
+    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"), # untested
+    # Platform("powerpc64le", "linux"; libc = "glibc"), # untested
+    # Platform("i686", "linux"; libc = "musl"), # untested
+    # Platform("x86_64", "linux"; libc = "musl"),  # untested
+    # Platform("aarch64", "linux"; libc = "musl"),  # untested
+    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"), # untested
+    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"), # untested
+    # Platform("x86_64", "macos"; ), # fails
     Platform("aarch64", "macos"; ) # works
+    # Platform("x86_64", "windows") # fails: assumes MSVC all over the place, not portable to MINGW
 ]
 platforms = expand_cxxstring_abis(platforms)
 
