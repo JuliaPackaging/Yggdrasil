@@ -40,7 +40,10 @@ cmake .. "${CMAKE_FLAGS[@]}"
 make -j${nproc} aeron_client aeron_driver_static
 make install
 cp /usr/local/lib/*aeron* ${libdir}
+mkdir -p ${bindir}
 cp /usr/local/bin/aeronmd ${bindir}
+echo  ${bindir}
+ls  ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -60,12 +63,12 @@ platforms = [
     # Platform("x86_64", "macos"; ),
     # Platform("aarch64", "macos"; )
 ]
-# platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
     LibraryProduct(["libaeron"], :libaeron, String["/usr/local/lib"]),
-    ExecutableProduct("aeronmd", :aeronmd, "/usr/local/bin/aeronmd"),
+    ExecutableProduct("aeronmd", :aeronmd),
 ]
 
 # Dependencies that must be installed before this package can be built
