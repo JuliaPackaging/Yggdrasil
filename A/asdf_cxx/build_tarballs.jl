@@ -3,11 +3,11 @@ using BinaryBuilder
 # ASDF - Advanced Scientific Data Format, a C++ implementation
 
 name = "asdf_cxx"
-version = v"7.2.2"
+version = v"7.3.1"
 
 # Collection of sources required to build asdf-cxx
 sources = [
-    GitSource("https://github.com/eschnett/asdf-cxx", "dab591d785b0e70b4cbb734a98966355abfe1d64"),
+    GitSource("https://github.com/eschnett/asdf-cxx", "9836ffb81c79f48182226a3b976d260078a05b07"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-cmake --build build
+cmake --build build --parallel $nproc
 cmake --install build
 install_license LICENSE.rst
 """
@@ -28,9 +28,12 @@ platforms = expand_cxxstring_abis(platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Blosc2_jll"),
+    Dependency("Blosc_jll"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("OpenSSL_jll"; compat="3.0.10"),
     Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
     Dependency("yaml_cpp_jll"),
 ]
 
@@ -38,11 +41,13 @@ dependencies = [
 products = [
     ExecutableProduct("asdf-copy", :asdf_copy),
     ExecutableProduct("asdf-demo", :asdf_demo),
+    ExecutableProduct("asdf-demo-compression", :asdf_demo_compression),
     ExecutableProduct("asdf-demo-external", :asdf_demo_external),
     ExecutableProduct("asdf-demo-large", :asdf_demo_large),
     ExecutableProduct("asdf-ls", :asdf_ls),
     LibraryProduct("libasdf-cxx", :libasdf_cxx),
 ]
 
+# C++17 requires a new-ish GCC
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"6")
+               julia_compat="1.6", preferred_gcc_version=v"8")
