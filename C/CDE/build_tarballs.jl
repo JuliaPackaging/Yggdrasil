@@ -5,11 +5,7 @@ version = v"1.0.0"
 sources = [GitSource("https://github.com/HabershonLab/cde", "049cd0d2da73a0c5bb340ebdb9a78e35348fe49a")]
 
 script = raw"""
-if [[ ${target} == *w64* ]]; then
-    exe_out="${bindir}/cde.exe"
-else
-    exe_out="${bindir}/cde"
-fi
+exe_out="${bindir}/cde${exeext}"
 
 cd cde
 gfortran -O3 -c src/constants.f90 -o src/constants.o -J src
