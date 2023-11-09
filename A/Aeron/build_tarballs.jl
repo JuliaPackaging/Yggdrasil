@@ -15,9 +15,6 @@ script = raw"""
 apk update
 apk add openjdk11 hdrhistogram-c-dev libbsd-dev util-linux-dev
 cd $WORKSPACE/srcdir/aeron
-mkdir -p /sys/devices/system/cpu/
-echo 1-${nproc} > /sys/devices/system/cpu/possible
-echo $prefix
 if [[ "${target}" == *linux* ]]; then
     sed -i 's/check_symbol_exists(poll "poll.h" POLL_PROTOTYPE_EXISTS)/set(POLL_PROTOTYPE_EXISTS True)/g' aeron-driver/src/main/c/CMakeLists.txt
     sed -i '1s;^;add_compile_options("-lrt")\nlink_libraries("-lrt")\n;' CMakeLists.txt
@@ -35,15 +32,17 @@ CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 -DAERON_BUILD_SAMPLES=OFF
 -DAERON_BUILD_DOCUMENTATION=OFF
 -DAERON_ENABLE_NONSTANDARD_OPTIMIZATIONS=OFF
--DAERON_INSTALL_TARGETS=ON)
+-DAERON_INSTALL_TARGETS=ON
+)
 mkdir build && cd build
 export LDFLAGS="-L${libdir}"
 cmake .. "${CMAKE_FLAGS[@]}"
 make -j${nproc} aeron_client aeron_driver_static
 make install
-cp /usr/local/lib/*aeron* ${libdir}
-mkdir -p ${bindir}
-cp /usr/local/bin/aeronmd ${bindir}
+mkdir -p ${prefix}/bin # we want it here
+mkdir -p ${prefix}/binaries # the aeron build puts it here (CMAKE_CURRENT_BINARY_DIR)
+mv /usr/local/lib/*aeron* ${libdir}
+mv /usr/local/bin/aeronmd ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -69,6 +68,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = Product[
     LibraryProduct(["libaeron"], :libaeron, String["/usr/local/lib"]),
+    LibraryProduct(["libaeron_driver"], :libaeron, String["/usr/local/lib"]),
     ExecutableProduct("aeronmd", :aeronmd),
 ]
 
@@ -80,5 +80,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version = v"11.1.0")
-# BinaryBuilder.runshell(Platform("x86_64", "linux", libc="glibc"))
+    julia_compat="1.6",)
