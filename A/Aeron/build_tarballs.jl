@@ -39,8 +39,7 @@ export LDFLAGS="-L${libdir}"
 cmake .. "${CMAKE_FLAGS[@]}"
 make -j${nproc} aeron_client aeron_driver_static
 make install
-mkdir -p ${prefix}/bin # we want it here
-mkdir -p ${prefix}/binaries # the aeron build puts it here (CMAKE_CURRENT_BINARY_DIR)
+mkdir -p ${bindir}
 mv /usr/local/lib/*aeron* ${libdir}
 mv /usr/local/bin/aeronmd ${bindir}
 """
@@ -81,4 +80,3 @@ dependencies = [
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.6",)
-    
