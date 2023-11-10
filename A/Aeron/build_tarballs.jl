@@ -65,7 +65,6 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = Product[
     LibraryProduct(["libaeron"], :libaeron, String["/usr/local/lib"]),
-    LibraryProduct(["libaeron_driver"], :libaeron, String["/usr/local/lib"]),
     ExecutableProduct("aeronmd", :aeronmd),
 ]
 
