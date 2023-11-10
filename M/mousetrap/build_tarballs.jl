@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+# Increment to rebuild without version bump
+# Build count: 1
 name = "mousetrap"
 version = v"0.3.0"
 
