@@ -34,7 +34,7 @@ platforms = filter(
             (arch(p) == "x86_64" || arch(p) == "aarch64"),
     supported_platforms(),
 )
-
+platforms = expand_cxxstring_abis(platforms) 
 
 # The products that we will ensure are always built
 # NOTE: last-dotplot not supported due to Python Dependency
