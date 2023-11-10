@@ -30,6 +30,12 @@ script = raw"""
 # remove default perl which interferes with the hostbuild perl
 rm -f /usr/bin/perl
 
+# needed to avoid errors when linking to openblas32_jll with -flat_namespace
+# ld64.lld: error: No LC_DYLD_INFO_ONLY or LC_DYLD_EXPORTS_TRIE found in /workspace/destdir/lib/libgcc_s.1.1.dylib
+if [[ $target = x86_64-apple* ]]; then
+   export LDFLAGS=-fuse-ld=ld
+fi
+
 cmake libpolymake-j*/ -B build \
    -DJulia_PREFIX="$prefix" \
    -DCMAKE_INSTALL_PREFIX="$prefix" \
