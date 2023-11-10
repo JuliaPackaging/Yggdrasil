@@ -26,7 +26,7 @@ cd build
 export CUDA_HOME=${WORKSPACE}/destdir/cuda
 export PATH=${PATH}:${CUDA_HOME}/bin
 export CUDACXX=${CUDA_HOME}/bin/nvcc
-mv ${WORKSPACE}/destdir/cuda/lib ${WORKSPACE}/destdir/cuda/lib64
+ln -s ${WORKSPACE}/destdir/cuda/lib ${WORKSPACE}/destdir/cuda/lib64
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
