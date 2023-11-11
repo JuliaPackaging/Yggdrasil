@@ -5,11 +5,6 @@ using BinaryBuilder, Pkg
 name = "Qt6Base"
 version = v"6.5.3"
 
-# Set this to true first when updating the version. It will build only for the host (linux musl).
-# After that JLL is in the registyry, set this to false to build for the other platforms, using
-# this same package as host build dependency.
-const host_build = false
-
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
@@ -43,6 +38,19 @@ export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
 # temporarily allow march during configure
 sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-g++
+
+cd ..
+mkdir build_host
+cd build_host
+
+sed -i 's/exit 1/#exit 1/' $HOSTCXX
+../qtbase-everywhere-src-*/configure -prefix $host_prefix -opensource -confirm-license  -make tools -nomake examples -no-gui -no-widgets -no-opengl -no-dbus -release \
+     -- -DCMAKE_PREFIX_PATH=${host_prefix} -DQT_HOST_PATH=$host_prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -DQT_FEATURE_network=OFF -DQT_FEATURE_sql=OFF
+sed -i 's/#exit 1/exit 1/' $HOSTCXX
+cmake --build . --parallel ${nproc}
+cmake --install .
+
+cd ../build
 
 case "$bb_full_target" in
 
@@ -126,14 +134,9 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-if host_build
-    platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
-    platforms_macos = AbstractPlatform[]
-else
-    platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
-    filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
-    platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
-end
+platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
+filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
+platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 
 # The products that we will ensure are always built
 products = [
@@ -199,16 +202,10 @@ dependencies = [
     BuildDependency("Vulkan_Headers_jll"),
 ]
 
-if !host_build
-    push!(dependencies, HostBuildDependency("Qt6Base_jll"))
-end
-
 include("../../fancy_toys.jl")
 
-@static if !host_build
-    if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
-    end
+if any(should_build_platform.(triplet.(platforms_macos)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
 end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
