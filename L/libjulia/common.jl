@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-beta3", v"1.11.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-rc1", v"1.11.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -50,14 +50,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
     )
 
-    if version == v"1.10.0-beta3"
+    if version == v"1.10.0-rc1"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "404750f8586d77a7d1832e0dfb1b1931fcf191ac"),
+            GitSource("https://github.com/JuliaLang/julia.git", "5aaa94854367ca875375e38ae14f369f124e7315"),
             DirectorySource("./bundled"),
         ]
     elseif version == v"1.11.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "a988992b9b5aea642ab0a7cf442bbcecc25cd536"),
+            GitSource("https://github.com/JuliaLang/julia.git", "42c088b8b3e678edd19e5cb9ea54503e43624d06"),
             DirectorySource("./bundled"),
         ]
     else
@@ -265,6 +265,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     EOM
     fi
 
+    # lld is too strict about some libraries that were built a long time ago
+    # (libLLVM-11jl.so for julia 1.6 on freebsd)
+    if [[ "${version}" == 1.6.* ]] && [[ "${target}" == *freebsd* ]]; then
+        LDFLAGS="${LDFLAGS} -fuse-ld=bfd"
+    fi
+
     # avoid linker errors related to atomic support in 32bit ARM builds
     if [[ "${bb_full_target}" == armv7l-* ]]; then
         echo "MARCH=armv7-a" >>Make.user
@@ -394,17 +400,20 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+8")))
     elseif version.major == 1 && version.minor == 11
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.0+1")))
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.1+1")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+14")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+5"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.7.2+2"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+8")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+9")))
     else
         error("Unsupported Julia version")
     end
 
+    # gcc 7 and gcc 8 crash on aarch64-linux when encountering some bfloat16 intrinsics
+    gcc_ver = version >= v"1.11.0-DEV" ? v"9" : v"7"
+
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
-                   preferred_gcc_version=v"7", lock_microarchitecture=false, julia_compat="1.6")
+                   preferred_gcc_version=gcc_ver, lock_microarchitecture=false, julia_compat="1.6")
     end
 end
