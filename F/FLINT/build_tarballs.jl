@@ -25,16 +25,15 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"2.9.0"
-version_offset = v"0.0.6"
+upstream_version = v"3.0.0"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/flintlib/flint2.git", "fe4ecf8a99b9b7c52ad2b861e79c9c9aac5c1a0a"), # v2.9.0 + bugfixes
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/flintlib/flint2.git", "904aeb3752dae4f23b635f1633e9261dc042ffe2"), # v3.0.0 + a few commits, including the blas detection fix
 ]
 
 # Bash recipe for building across all platforms
@@ -44,22 +43,13 @@ if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
    export CFLAGS=-D_GNU_SOURCE
 elif [[ ${target} == *mingw* ]]; then
-   extraflags=--reentrant
+   extraflags=--enable-reentrant
 fi
 
-# Currently we backport 0292521af462dcd3ba747255a4c5ed9317d911dd,
-#                       bfbc1eb206288abe7b9ccd04d3cb104b4a2b3898,
-#                       a7a234463c0d4b5730d05ad57ab2798b2df26127
-#                       455d05914b62423b77ba3f39d8e99a549cc2f57e
-# in make_flint_great_again.patch
-# Drop once we bump the version to 3.0
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
-
-./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
+./bootstrap.sh
+./configure --host=${target} --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
 make -j${nproc}
-make install LIBDIR=$(basename ${libdir})
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -80,7 +70,7 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.6",
+               julia_compat = "1.6", preferred_gcc_version=v"6",
                init_block = """
   if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
     #to match the global gmp ones

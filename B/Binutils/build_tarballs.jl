@@ -1,11 +1,12 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.39"
+version = v"2.41"
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz", "645c25f563b8adc0a81dbd6a41cffbf4d37083a382e02d5d3df4f65c09516d00"),
-    DirectorySource("$(@__DIR__)/bundled"),
+    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
+                  "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
@@ -35,6 +36,16 @@ cd ${WORKSPACE}/srcdir/binutils-*/
 
 make -j${nproc}
 make install
+
+# Install the `-fPIC` version of `libiberty.a` (which we built) but which isn't installed by default,
+# overwriting the non-pic version which was installed
+if test -f ${prefix}/lib64/libiberty.a; then
+    install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib64/libiberty.a
+elif test -f ${prefix}/lib/libiberty.a; then
+    install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib/libiberty.a
+else
+    exit 1
+fi
 """
 
 platforms = supported_platforms(; exclude=!Sys.islinux)

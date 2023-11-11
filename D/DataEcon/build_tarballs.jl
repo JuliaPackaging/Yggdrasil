@@ -3,22 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "DataEcon"
-version = v"0.2.1"
+version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/bankofcanada/DataEcon.git",
-        "b70ca2ddf9bde70a9e395e6f97e79f29a26f840f")
+        "d58732b8a1cb3a4d9a82796bce3c5732f74086ca")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/DataEcon/
-make -j${nproc} all LIBDE="bin/libdaec.${dlext}"
+make -j${nproc} all LIBDE="lib/libdaec.${dlext}"
 install_license LICENSE.md
 install -Dvm 755 "bin/sqlite3${exeext}" "${bindir}/sqlite3${exeext}"
-install -Dvm 755 "bin/libdaec.${dlext}" "${libdir}/libdaec.${dlext}"
-install -Dvm 644 src/daec.h "${includedir}/daec.h"
+install -Dvm 755 "bin/desh${exeext}" "${bindir}/desh${exeext}"
+install -Dvm 755 "bin/daec2csv${exeext}" "${bindir}/daec2csv${exeext}"
+install -Dvm 755 "lib/libdaec.${dlext}" "${libdir}/libdaec.${dlext}"
+install -Dvm 644 "include/daec.h" "${includedir}/daec.h"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -30,6 +32,8 @@ platforms = supported_platforms()
 products = [
     LibraryProduct(["libdaec", "daec"], :libdaec),
     ExecutableProduct("sqlite3", :sqlite3shell),
+    ExecutableProduct("desh", :desh),
+    ExecutableProduct("daec2csv", :daec2csv),
     FileProduct("include/daec.h", :daec_header),
 ]
 

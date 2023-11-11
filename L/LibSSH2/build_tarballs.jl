@@ -53,7 +53,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10")

@@ -56,7 +56,7 @@ x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),

@@ -73,7 +73,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
     Dependency("Bzip2_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     # Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
     Dependency("JasPer_jll"),

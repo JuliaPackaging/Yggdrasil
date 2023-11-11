@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "23.07"
+version_string = "23.09"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "4edb991da51bcaad040f852e42c82834d8605301aa7eeb01cd1512d389a58d90"),
+                  "1a539c2628041b17ad910afd9270332060251c8e346b1482764fdb87a4f25053"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,7 @@ mkdir build
 cd build
 
 # Correct HDF5 compiler wrappers
-perl -pi -e 's+-I/workspace/srcdir/hdf5-1.14.0/src/H5FDsubfiling++' $(which h5pcc)
+perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
 
 if [[ "$target" == *-apple-* ]]; then
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
@@ -80,13 +80,10 @@ products = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
-# Windows (and only Windows) platforms somehow depend on libgfortran.
-# AMReX requires C++17 and thus requires at least libgfortran5.
-platforms = [
-    filter(!Sys.iswindows, platforms);
-    filter(p -> libgfortran_version(p).major ≥ 5, expand_gfortran_versions(filter(Sys.iswindows, platforms)));
-]
+# AMReX requires C++17 and thus requires at least libgfortran5
+platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)

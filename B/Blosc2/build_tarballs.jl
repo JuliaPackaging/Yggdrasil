@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.9.2"
+version = v"2.11.2"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "f344bb7c334ff025ea71e23d7a6742a9827745b9"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "3ea8b4ae21563bc740c91f5abfe823c9b8438738"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,6 +21,12 @@ cd $WORKSPACE/srcdir/c-blosc2/
 # integers).
 atomic_patch -p1 ../patches/_xsetbv.patch
 
+# Clang on Apple does not (yet?) properly support `__builtin_cpu_supports`.
+# The symbol `__cpu_model` is not provided by any standard library.
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    perl -pi -e 's/#define HAVE_CPU_FEAT_INTRIN/#undef HAVE_CPU_FEAT_INTRIN/' blosc/shuffle.c
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -29,7 +35,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_BENCHMARKS=OFF \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_STATIC=OFF \
-    -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" \
     -DPREFER_EXTERNAL_ZLIB=ON \
     -DPREFER_EXTERNAL_ZSTD=ON \
     -DPREFER_EXTERNAL_LZ4=ON \
@@ -41,10 +46,7 @@ install_license ../LICENSES/*.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-
-# Blosc2 requires NEON on ARM platforms; see <https://github.com/Blosc/c-blosc2/issues/465>
-platforms = filter(p -> arch(p) ≠ "armv7l", platforms)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -54,8 +56,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
-    Dependency("Lz4_jll"),
+    Dependency("Zstd_jll"; compat="1.5.0"),
+    Dependency("Lz4_jll"; compat="1.9.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

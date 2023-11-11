@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.36.1"
+version = v"2.42.0"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "405d4a0ff6e818d1f12b3e92e1ac060f612adcb454f6299f70583058cb508370"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "7b7cce2d1a29bb18b661720c692b39a27b406cd4916d75cc62d5fe1bfd9a57ea"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "38f4888db497ebe11f67c42a88ac1708fb5c68d53a398b4030b51a6116cce0e5"; unpack_target = "x86_64-w64-mingw32"),
+                  "3278210e9fd2994b8484dd7e3ddd9ea8b940ef52170cdb606daa94d887c93b0d"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.2/Git-$(version).2-32-bit.tar.bz2",
+                  "64cd27bebd457592a83c2aa8bf0555ef6501675769f330b7558041d17cbb52fa"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.2/Git-$(version).2-64-bit.tar.bz2",
+                  "c192e56f8ed3d364acc87ad04d1f5aa6ae03c23b32b67bf65fcc6f9b8f032e65"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -85,7 +85,7 @@ readlink_f() {
         TARGET_FILE="$(basename "${TARGET_FILE}")"
     done
 
-    # Compute the canonicalized name by finding the physical path 
+    # Compute the canonicalized name by finding the physical path
     # for the directory we're in and appending the target file.
     PHYS_DIR="$(pwd -P)"
     echo "${PHYS_DIR}/${TARGET_FILE}"
@@ -112,9 +112,9 @@ products = [
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
-    Dependency("LibCURL_jll"; compat="7.73.0"),
+    Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Libiconv_jll"),
     Dependency("PCRE2_jll"; compat="10.35.0"),
     Dependency("Zlib_jll"),

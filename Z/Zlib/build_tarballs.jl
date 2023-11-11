@@ -3,13 +3,13 @@ using BinaryBuilderBase: sanitize
 
 # zlib version
 name = "Zlib"
-version = v"1.2.13"
+version = v"1.3"
 
 # Collection of sources required to build zlib
 sources = [
     # use Git source because zlib has a track record of deleting release tarballs of old versions
     GitSource("https://github.com/madler/zlib.git",
-              "04f42ceca40f73e2978b50e93806c2a18c1281fc"),
+              "09155eaa2f9270dc4ed1fa13e2b4b2613e6e4851"),
 ]
 
 # Bash recipe for building across all platforms
@@ -45,4 +45,5 @@ dependencies = [
     BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.9")

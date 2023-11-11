@@ -6,16 +6,15 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "openPMD_api"
-version = v"0.16.0"
-openpmi_api_version = "v.0.16.0" # This is really the branch `eschnett/julia-bindings` after version 0.16.0
+version = v"0.16.3" # This is really the branch `eschnett/julia-bindings` before version 0.16.0
 
 # `v"1.6.3"` fails to build
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
     # We use a feature branch instead of a released version because the Julia bindings are not released yet
-    GitSource("https://github.com/eschnett/openPMD-api.git", "13ea8b4ecca968a5355825d639b3e9182d14b484"),
+    GitSource("https://github.com/eschnett/openPMD-api.git", "cac948869a45b1b5ebeebccc930a805a7ab337a7"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -61,7 +60,7 @@ if [[ "${target}" == x86_64-w64-mingw32 ]]; then
         -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll)
 fi
 if [[ "${target}" == *-mingw32 ]]; then
-    # Windows
+    # Windows: We do not have a parallel HDF5 implementation there
     archopts+=(-DopenPMD_USE_HDF5=OFF)
 else
     archopts+=(-DopenPMD_USE_HDF5=ON)
@@ -75,7 +74,7 @@ cmake \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_TESTING=OFF \
     -DJulia_PREFIX=${prefix} \
-    -DopenPMD_USE_Julia=ON \
+    -DopenPMD_USE_JULIA=ON \
     -DopenPMD_USE_MPI=ON \
     -DMPI_HOME=${prefix} \
     ${archopts[@]} \
@@ -112,16 +111,14 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-# We don't need HDF5 on Windows (see above)
-hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll")),
     # `ADIOS2_jll` is available only for 64-bit platforms
     Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
+    # Parallel HDF5 is not available on Windows
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
 ]
 

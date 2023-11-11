@@ -32,7 +32,8 @@ platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 products = Product[
-    FileProduct("share/vulkan/registry/vk.xml", :vk_xml)
+    FileProduct("share/vulkan/registry/vk.xml", :vk_xml),
+    FileProduct("include/vulkan/vulkan.hpp", :vulkan_hpp),
 ]
 
 # Dependencies that must be installed before this package can be built

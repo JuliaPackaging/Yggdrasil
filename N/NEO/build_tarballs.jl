@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"22.53.25593"#.11
+version = v"23.30.26918"#.9
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "4adb15f14975b10138939acbe17e05f2f010fc36"),
+              "6d516e54b2c3d920e371f8622980fa911621fa59"),
 ]
 
 # Bash recipe for building across all platforms
@@ -50,8 +50,8 @@ function get_script(; debug::Bool)
         # we don't care about cl_intel_va_api_media_sharing
         CMAKE_FLAGS+=(-DDISABLE_LIBVA:Bool=true)
 
-        # enable support for the DG1
-        CMAKE_FLAGS+=(-DSUPPORT_DG1:Bool=true)
+        # additional hardware support
+        CMAKE_FLAGS+=(-DNEO_ENABLE_i915_PRELIM_DETECTION=TRUE)
 
         # libigc installs libraries and pkgconfig rules in lib64, so look for them there.
         # FIXME: shouldn't BinaryBuilder do this?
@@ -84,8 +84,8 @@ products = [
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
     Dependency("gmmlib_jll"; compat="=22.3.0"),
-    Dependency("libigc_jll"; compat="=1.0.13230"),
-    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.5.8"; compat="1.5.8"),
+    Dependency("libigc_jll"; compat="=1.0.14828"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.7.0"; compat="1.7.0"),
 ]
 
 augment_platform_block = raw"""
@@ -95,14 +95,27 @@ augment_platform_block = raw"""
     NEO_jll_uuid = Base.UUID("700fe977-ac61-5f37-bbc8-c6c4b2b6a9fd")
     const preferences = Base.get_preferences(NEO_jll_uuid)
     Base.record_compiletime_preference(NEO_jll_uuid, "debug")
+    const debug_preference = if haskey(preferences, "debug")
+        if isa(preferences["debug"], Bool)
+            preferences["debug"]
+        elseif isa(preferences["debug"], String)
+            parsed = tryparse(Bool, preferences["debug"])
+            if parsed === nothing
+                @error "Debug preference is not valid; expected a boolean, but got '$(preferences["debug"])'"
+                nothing
+            else
+                parsed
+            end
+        else
+            @error "Debug preference is not valid; expected a boolean, but got '$(preferences["debug"])'"
+            nothing
+        end
+    else
+        nothing
+    end
 
     function augment_platform!(platform::Platform)
-        debug = tryparse(Bool, get(preferences, "debug", "false"))
-        if debug === nothing
-            @error "Invalid preference debug=$(get(preferences, "debug", "false"))"
-        elseif !haskey(platform, "debug")
-            platform["debug"] = string(debug)
-        end
+        platform["debug"] = string(something(debug_preference, false))
         return platform
     end"""
 

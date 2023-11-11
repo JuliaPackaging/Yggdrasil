@@ -2,7 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "MAGMA"
 version = v"2.7.0"
@@ -30,12 +32,11 @@ make install prefix=${prefix}
 install_license COPYRIGHT
 """
 
-cuda_platforms = [
-    # CUDA 10.2 would not build, missing symbols.
-    # Platform("x86_64", "Linux"; cuda = "10.2"),
-    Platform("x86_64", "Linux"; cuda = "11.3"),
-]
-platforms = expand_cxxstring_abis(cuda_platforms)
+augment_platform_block = CUDA.augment
+
+platforms = CUDA.supported_platforms()
+filter!(p -> arch(p) == "x86_64", platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 
 # The products that we will ensure are always built
@@ -46,16 +47,19 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # You can only specify one cuda version in the deps. To build against more than 
-    # one cuda version, you have to include them as Archive Sources. (see Torch_jll)
-    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-    BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"11.0.3")),
     Dependency("libblastrampoline_jll", compat="5.1.1"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-                preferred_gcc_version=v"8", 
-                julia_compat="1.8",
-                augment_platform_block=CUDA.augment)
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+
+    cuda_deps = CUDA.required_dependencies(platform)
+
+    build_tarballs(ARGS, name, version, sources, script, [platform],
+                   products, [dependencies; cuda_deps];
+                   preferred_gcc_version=v"8",
+                   julia_compat="1.8",
+                   augment_platform_block,
+                   skip_audit=true, dont_dlopen=true)
+end

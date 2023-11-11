@@ -8,17 +8,20 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-# reminder: change the version if restricting the supported julia versions
-name = "polymake_oscarnumber"
-version = v"0.2.2"
+# needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+# reminder: change the version when changing the supported julia versions
+name = "polymake_oscarnumber"
+version = v"0.2.8"
+
+# julia_versions is now taken from libjulia/common.jl
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "b9e214d17ea1b4b332c0902d8cec992f62dc173d")
+              "9946ee4b341240fca2cfc1a7db90918e9bd7686c")
     DirectorySource("./bundled")
 ]
 
@@ -63,10 +66,6 @@ rm -rf ${prefix}/deps
 install_license LICENSE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-include("../../L/libjulia/common.jl")
-
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
 platforms = expand_cxxstring_abis(platforms)
@@ -84,10 +83,10 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 
-    BuildDependency("libjulia_jll"),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.6")),
 
-    Dependency("libcxxwrap_julia_jll"),
-    Dependency("libpolymake_julia_jll", compat = "~0.10.1"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.1"),
+    Dependency("libpolymake_julia_jll", compat = "~0.10.5"),
     Dependency("polymake_jll", compat = "~400.1000.001"),
 ]
 

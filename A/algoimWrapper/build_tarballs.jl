@@ -6,11 +6,11 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "algoimWrapper"
-version = v"0.1.1"
+version = v"0.2.1"
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 sources = [
-    GitSource("https://github.com/ericneiva/algoimWrapper.git", "a4c15fdd67dbdbbac4d1a6c0dd0f3e2ca3b36e5f"),
+    GitSource("https://github.com/ericneiva/algoimWrapper.git", "d763149d1d2fdd698c4982c28cdeff69c9c16a07"),
     DirectorySource("./bundled"),
 ]
 

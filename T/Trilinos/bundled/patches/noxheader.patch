@@ -1,0 +1,18 @@
+commit d10b2cfc376285c8617d897240c2b27e24ba948f
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Tue Sep 26 14:59:26 2023 +0000
+
+    NOX: Add missing header
+
+diff --git a/packages/nox/src/CMakeLists.txt b/packages/nox/src/CMakeLists.txt
+index 9018b9a2db0..751c80f65fc 100644
+--- a/packages/nox/src/CMakeLists.txt
++++ b/packages/nox/src/CMakeLists.txt
+@@ -189,6 +189,7 @@ APPEND_SET(HEADERS
+   NOX_Observer_Log.hpp
+   NOX_Observer_Print.hpp
+   NOX_Assert.H
++  NOX_Exceptions.H
+   )
+ APPEND_SET(SOURCES
+   NOX_Utils.C

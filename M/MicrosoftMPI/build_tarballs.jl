@@ -1,12 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "MicrosoftMPI"
-version = v"10.1.3"
+microsoftmpi_version = v"10.1.3"
+version = v"10.1.4"
 sources = [
-    FileSource("https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisetup.exe",
-                  "c305ce3f05d142d519f8dd800d83a4b894fc31bcad30512cefb557feaccbe8b4"),
-    FileSource("https://download.microsoft.com/download/a/5/2/a5207ca5-1203-491a-8fb8-906fd68ae623/msmpisdk.msi",
-                  "f9174c54feda794586ebd83eea065be4ad38b36f32af6e7dd9158d8fd1c08433"),
+    FileSource("https://download.microsoft.com/download/7/2/7/72731ebb-b63c-4170-ade7-836966263a8f/msmpisetup.exe",
+               "47443829114d8d8670f77af98939fe876d33eceb35d0ce4e0e85efeec4d87213"),
+    FileSource("https://download.microsoft.com/download/7/2/7/72731ebb-b63c-4170-ade7-836966263a8f/msmpisdk.msi",
+               "8ccbc77a0cfe1e30f7495a759886b4d99b2c494b9b9ad414dcda1da84c00d3fa"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
 ]
 
@@ -24,10 +25,9 @@ else
     mv -f $prefix/msmpi64.dll $prefix/msmpi.dll
     mv -f $prefix/msmpires64.dll $prefix/msmpires.dll
 fi
+
 7z x msmpisdk.msi -o$prefix
-
-cd ${WORKSPACE}/destdir/
-
+cd ${prefix}
 chmod +x *.exe
 mkdir -p bin
 mv *.exe *.dll bin
@@ -46,6 +46,9 @@ mv *.txt *.rtf share/licenses/MicrosoftMPI
 # Generate "mpi.mod", "mpi_base.mod", "mpi_sizeofs.mod" and "mpi_constants.mod"
 cd $includedir
 gfortran -I. ../src/mpi.f90 -fsyntax-only -fno-range-check
+
+# Replace an unknown character in mpif.h by a space
+sed -i '/Copyright Notice/!b;n;c!    + 2002 University of Chicago' mpif.h
 
 ################################################################################
 # Install MPIconstants

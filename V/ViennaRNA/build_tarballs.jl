@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "ViennaRNA"
-version = v"2.6.2"
+version = v"2.6.4"
 
 # url = "https://github.com/ViennaRNA/ViennaRNA"
 # description = "Library and programs for the prediction and comparison of RNA secondary structures"
@@ -9,7 +9,7 @@ version = v"2.6.2"
 sources = [
     ArchiveSource("https://www.tbi.univie.ac.at/RNA/download/sourcecode/" *
                   "$(version.major)_$(version.minor)_x/ViennaRNA-$(version).tar.gz",
-                  "2ce1f69f4ff87e90f50e8de704e33db7818c7d2f0dfb427a08e0eafc9da9b627"),
+                  "d1259ce5809601a12b0dc9b724ea2c55806fece80d8d83ad417ea8a2dd574982"),
     DirectorySource("./bundled")
 ]
 
@@ -43,10 +43,8 @@ export CXX=c++
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
-# fix missing include for size_t, this fixes header parsing with
-# Clang.jl when generating bindings
-# upstream PR: https://github.com/ViennaRNA/ViennaRNA/pull/189
-atomic_patch -p1 ../patches/missing-include-for-size_t.patch
+# ISO C++-17 doesn't allow register keyword
+atomic_patch -p1 ../patches/RNAlocmin-fix-clang.patch
 
 if [[ "${target}" == *-w64-mingw32* ]]; then
     # time measurement in RNAforester doesn't compile on windows (mingw32),

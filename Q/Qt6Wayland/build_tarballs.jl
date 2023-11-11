@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Wayland"
-version = v"6.4.2"
+version = v"6.5.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
@@ -13,7 +13,7 @@ const host_build = false
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtwayland-everywhere-src-$version.tar.xz",
-                  "24cf1a0af751ab1637b4815d5c5f3704483d5fa7bedbd3519e6fc020d8be135f"),
+                  "3020be86fb7fd0abb8509906ca6583cadcaee168159abceaeb5b3e9d42563c9a"),
 ]
 
 script = raw"""
@@ -58,10 +58,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
     HostBuildDependency("Qt6Declarative_jll"),
-    Dependency("Qt6Declarative_jll"),
+    Dependency("Qt6Declarative_jll"; compat="="*string(version)),
     BuildDependency("Xorg_xproto_jll"),
+    BuildDependency("Vulkan_Headers_jll"),
 ]
 
 if !host_build
@@ -75,4 +76,4 @@ ENV["QT_PLUGIN_PATH"] = qt6plugins_dir
 ENV["__EGL_VENDOR_LIBRARY_DIRS"] = get(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
 """
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6", init_block)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6", init_block)

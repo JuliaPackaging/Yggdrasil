@@ -3,20 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.2.2"
+version = v"1.3.7"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "ecf5a703785877a8719a0cda863a98455f7d5d12"),
-    DirectorySource("./bundled"),
+              "b8ac9e77f703e6ba5c012b886a8821037503daa6")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/open62541/
-atomic_patch -p1 ../patches/0001-fix-core-Explicit-cast-to-avoid-compiler-warning-420.patch
-atomic_patch -p1 ../patches/0002-refactor-pubsub-Fix-check-macros-and-slightly-clean-.patch
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -29,6 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_ENABLE_AMALGAMATION=ON \
     -DUA_ENABLE_IMMUTABLE_NODES=ON \
     -DBUILD_SHARED_LIBS=ON \
+    -DUA_FORCE_WERROR=OFF \
     ..
 make -j${nproc}
 make install

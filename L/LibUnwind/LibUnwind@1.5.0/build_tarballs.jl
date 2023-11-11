@@ -5,9 +5,9 @@ name = "LibUnwind"
 version_string = "1.5"
 version = VersionNumber(version_string)
 
-# Collection of sources required to build libffi
+# Collection of sources required to build libunwind
 sources = [
-    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version_string)/libunwind-$(version).tar.gz",
+    ArchiveSource("https://download.savannah.nongnu.org/releases/libunwind/libunwind-$(version).tar.gz",
                   "90337653d92d4a13de590781371c604f9031cdb50520366aa1e3a91e1efb1017"),
     DirectorySource("./bundled"),
 ]
