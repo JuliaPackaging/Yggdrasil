@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ggml"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ggerganov/ggml.git", "7eb0edf3118a48f036cc4bf23e8a1eaeb2ea7f02"),
+    GitSource("https://github.com/ggerganov/ggml.git", "239defe61dbe9dddc6304942e8a3d03d6a3c69ab"),
 ]
 
 # Bash recipe for building across all platforms
