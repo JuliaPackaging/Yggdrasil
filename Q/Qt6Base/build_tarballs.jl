@@ -45,7 +45,7 @@ cd build_host
 
 sed -i 's/exit 1/#exit 1/' $HOSTCXX
 ../qtbase-everywhere-src-*/configure -prefix $host_prefix -opensource -confirm-license  -make tools -nomake examples -no-gui -no-widgets -no-opengl -no-dbus -release \
-     -- -DCMAKE_PREFIX_PATH=${host_prefix} -DQT_HOST_PATH=$host_prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -DQT_FEATURE_network=OFF -DQT_FEATURE_sql=OFF
+     -- -DCMAKE_PREFIX_PATH=${host_prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -DQT_FEATURE_network=OFF -DQT_FEATURE_sql=OFF
 sed -i 's/#exit 1/exit 1/' $HOSTCXX
 cmake --build . --parallel ${nproc}
 cmake --install .
