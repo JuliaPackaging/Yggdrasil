@@ -41,7 +41,6 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --enable-shared \
-    --enable-static \
     --with-pic \
     --disable-dependency-tracking \
     lt_cv_deplibs_check_method=pass_all \
