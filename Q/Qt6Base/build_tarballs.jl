@@ -2,13 +2,14 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Qt6Base"
-version = v"6.5.3"
-
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
+
+basicname = "Qt6Base"
+name = host_build ? basicname*"_host" : basicname
+version = v"6.5.3"
 
 # Collection of sources required to build qt6
 sources = [
@@ -200,7 +201,7 @@ dependencies = [
 ]
 
 if !host_build
-    push!(dependencies, HostBuildDependency("Qt6Base_jll"))
+    push!(dependencies, HostBuildDependency("Qt6Base_host_jll"))
 end
 
 include("../../fancy_toys.jl")
