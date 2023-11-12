@@ -2,12 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-include("../../fancy_toys.jl")
+name = "Qt6Base"
+version = v"6.5.3"
 
-function build_qt(version, host_build)
-
-basicname = "Qt6Base"
-name = host_build ? basicname*"_host" : basicname 
+# Set this to true first when updating the version. It will build only for the host (linux musl).
+# After that JLL is in the registyry, set this to false to build for the other platforms, using
+# this same package as host build dependency.
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -17,7 +18,7 @@ sources = [
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
-    DirectorySource("../bundled"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -199,16 +200,16 @@ dependencies = [
 ]
 
 if !host_build
-    push!(dependencies, HostBuildDependency("Qt6Base_host_jll"))
+    push!(dependencies, HostBuildDependency("Qt6Base_jll"))
 end
 
-if !host_build
+include("../../fancy_toys.jl")
+
+@static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
         build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
-end
-
 end
