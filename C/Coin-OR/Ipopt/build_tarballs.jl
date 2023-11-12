@@ -45,7 +45,7 @@ fi
     --disable-dependency-tracking \
     lt_cv_deplibs_check_method=pass_all \
     --with-lapack-lflags="-L${libdir} ${LBT}" \
-    --with-mumps-cflags="-I${includedir}" \
+    --with-mumps-cflags="-I${includedir}/libseq" \
     --with-mumps-lflags="-L${libdir} -ldmumps" \
     --with-spral-cflags="-I${includedir}" \
     --with-spral-lflags="-L${libdir} -lspral" \
