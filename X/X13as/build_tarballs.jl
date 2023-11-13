@@ -28,7 +28,7 @@ then
 else
     make -j${nproc} -f makefile.gf
 fi
-mkdir ${bindir}
+mkdir -p ${bindir}
 install -Dvm 755 "x13as_ascii${exeext}" "${bindir}/x13as_ascii${exeext}"
 popd
 ########## Second, build and install the html version
@@ -47,7 +47,7 @@ install -Dvm 755 "x13as_html${exeext}" "${bindir}/x13as_html${exeext}"
 popd
 ########## Third, install the docs and the test examples
 docsdir="${prefix}/docs"
-mkdir "${docsdir}"
+mkdir -p "${docsdir}"
 install -Dvm 644 "x13as/testairline.spc" "${docsdir}/testairline.spc"
 install -Dvm 644 "x13as/docs/docx13as.pdf" "${docsdir}/docx13as.pdf"
 install -Dvm 644 "x13as/docs/qrefX13ASunix.pdf" "${docsdir}/qrefX13ASunix.pdf"
