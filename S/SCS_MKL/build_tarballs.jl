@@ -38,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(;name="MKL_jll", version=v"2023.2"); compat = "=2023.2.0"),
+    Dependency("MKL_jll"; compat = "=2023.2.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
