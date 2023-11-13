@@ -24,9 +24,9 @@ if [[ "${target}" == *-apple-* ]]
 then
     # the -static flag doesn't work in macos; also disable -s linker flag
     sed -e "s/\-static//" -i makefile.gf
-    make -j${nproc} -f makefile.gf LDFLAGS=
+    make -j${nproc} -f makefile.gf PROGRAM="x13as_ascii${exeext}" LDFLAGS=
 else
-    make -j${nproc} -f makefile.gf
+    make -j${nproc} -f makefile.gf PROGRAM="x13as_ascii${exeext}"
 fi
 mkdir -p ${bindir}
 install -Dvm 755 "x13as_ascii${exeext}" "${bindir}/x13as_ascii${exeext}"
@@ -39,9 +39,9 @@ if [[ "${target}" == *-apple-* ]]
 then
     # the -static flag doesn't work in macos; also disable -s linker flag
     sed -e "s/\-static//" -i makefile.gf
-    make -j${nproc} -f makefile.gf LDFLAGS=
+    make -j${nproc} -f makefile.gf PROGRAM="x13as_html${exeext}" LDFLAGS=
 else
-    make -j${nproc} -f makefile.gf
+    make -j${nproc} -f makefile.gf PROGRAM="x13as_html${exeext}"
 fi
 install -Dvm 755 "x13as_html${exeext}" "${bindir}/x13as_html${exeext}"
 popd
