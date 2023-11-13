@@ -45,7 +45,9 @@ dependencies = [
     Dependency("Xorg_libX11_jll")
     BuildDependency("Xorg_xorgproto_jll")
     Dependency("Xorg_libXpm_jll")
+    Dependency("VDT_jll")
     Dependency("Xorg_libXft_jll")
+    Dependency("XRootD_jll")
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
     Dependency("Lz4_jll")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
@@ -58,4 +60,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
