@@ -44,8 +44,8 @@ products = Product[
 dependencies = [
     Dependency("Xorg_libX11_jll")
     BuildDependency("Xorg_xorgproto_jll")
-    BuildDependency("Xorg_libXpm_jll")
-    BuildDependency("Xorg_libXft_jll")
+    Dependency("Xorg_libXpm_jll")
+    Dependency("Xorg_libXft_jll")
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
     Dependency("Lz4_jll")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
