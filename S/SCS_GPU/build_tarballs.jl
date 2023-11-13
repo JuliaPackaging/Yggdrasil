@@ -41,7 +41,6 @@ products = [
 dependencies = [
     Dependency("OpenBLAS32_jll", v"0.3.10"),
     Dependency("CUDA_jll"),
-    Dependency("SCS_jll"; compat = "=$version"),
 ]
 
 for platform in platforms
