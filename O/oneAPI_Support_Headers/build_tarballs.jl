@@ -3,25 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support_Headers"
-version = v"2023.11.7"
+version = v"2024.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/oneapi-src/level-zero.git", "ea5be99d8d34480447ab1e3c7efc30d6f179b123"),
-    GitSource("https://github.com/oneapi-src/oneCCL.git", "bfc879266e870b732bd165e399897419c44ad13d"),
-    GitSource("https://github.com/oneapi-src/oneDNN.git", "22b933f7f53d1e1e79496070027d9702114cf1cc"),
-    GitSource("https://github.com/oneapi-src/oneMKL.git", "5696f3aa974910d8c8cf90c2c1663c20ffc2a5a1"),
-    # GitSource("https://github.com/oneapi-src/oneDPL.git", "c93a31cf7fe4870f34aec8ed38685b499e80ef48"),
-    # GitSource("https://github.com/oneapi-src/oneTBB.git", "7b8018f0bc34e66c06e99551860551171ec60e31"),
+    ArchiveSource("https://anaconda.org/intel/mkl-devel-dpcpp/2024.0.0/download/linux-64/mkl-devel-dpcpp-2024.0.0-intel_49656.tar.bz2",
+        "ba52047546ced5a6b2060dd6c59384af1ab9aefaa47fdc202fbbde2d07602658")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir $includedir
-cp -r oneCCL/include $includedir/oneCCL
-cp -r oneDNN/include $includedir/oneDNN
-cp -r oneMKL/include $includedir/oneMKL
-cp -r level-zero/include $includedir/level-zero
+cp -r include/oneapi $includedir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -30,9 +23,7 @@ platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("include/oneCCL/oneapi/ccl.hpp", :ccl_hpp),
-    FileProduct("include/oneDNN/dnnl.hpp", :dnnl_hpp),
-    FileProduct("include/oneMKL/oneapi/mkl.hpp", :mkl_hpp)
+    FileProduct("include/oneapi/mkl.hpp", :mkl_hpp)
 ]
 
 # Dependencies that must be installed before this package can be built
