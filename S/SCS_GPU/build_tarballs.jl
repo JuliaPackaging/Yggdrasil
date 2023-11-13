@@ -40,7 +40,6 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll", v"0.3.10"),
-    Dependency("CUDA_jll"),
 ]
 
 for platform in platforms
