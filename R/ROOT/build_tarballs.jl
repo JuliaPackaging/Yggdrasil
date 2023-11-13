@@ -17,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir build
 cd build/
-cmake -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../root-6.28.08
+cmake -Dbuiltin_llvm=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../root-6.28.08
 make
 """
 
@@ -47,6 +47,7 @@ dependencies = [
     Dependency("Xorg_libX11_jll")
     BuildDependency("Xorg_xorgproto_jll")
     Dependency("Xorg_libXpm_jll")
+    Dependency("LLVM_jll")
     Dependency("VDT_jll")
     Dependency("Xorg_libXft_jll")
     Dependency("XRootD_jll")
