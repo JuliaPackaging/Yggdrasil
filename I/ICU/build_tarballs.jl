@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "ICU"
-version = v"69.1"
+version = v"74.1"
 
 # Collection of sources required to build ICU
 sources = [
