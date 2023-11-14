@@ -12,15 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-install_license ${WORKSPACE}/srcdir/hand-isomorphism/LICENSE.txt
-cp hand-isomorphism/LICENSE.txt $prefix/share/licenses/LICENSE.txt
-cd hand-isomorphism/src/
-mkdir $includedir
-cp hand_index.h $includedir/hand_index.h
-OS=$(uname)
-if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then     mkdir $prefix/lib/;     gcc -std=c99 -O2 -shared -o $prefix/lib/libhandisomorphism.so -fPIC deck.c hand_index.c -lm; elif [[ "${target}" == *mingw* ]]; then     mkdir $prefix/bin/;     gcc -std=c99 -O2 -shared -o $prefix/bin/libhandisomorphism.dll -fPIC deck.c hand_index.c -lm; elif [[ "${target}" == *apple* ]]; then          mkdir $prefix/lib/;     gcc -std=c99 -O2 -dynamiclib -o $prefix/lib/libhandisomorphism.dylib -fPIC deck.c hand_index.c -lm; fi
-exit
+cd $WORKSPACE/srcdir/hand-isomorphism/src/
+install_license ../LICENSE.txt
+install -Dvm 644 hand_index.h ${includedir}/hand_index.h
+mkdir -p "${libdir}"
+cc -std=c99 -O2 -shared -o "${libdir}/libhandisomorphism.${dlext}" -fPIC deck.c hand_index.c -lm
 """
 
 # These are the platforms we will build for by default, unless further
