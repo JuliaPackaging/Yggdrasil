@@ -2,7 +2,7 @@ using BinaryBuilder
 
 include("../../../fancy_toys.jl")
 
-name = "CUDA_full"
+name = "CUDA_SDK"
 version = v"10.2.89"
 
 sources_linux = [
