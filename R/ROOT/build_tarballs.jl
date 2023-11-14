@@ -18,7 +18,8 @@ cd $WORKSPACE/srcdir
 mkdir build
 cd build/
 cmake -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-6.28.08
-make
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
