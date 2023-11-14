@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/ginkgo/
 mkdir build && cd build
 cmake \
-    -DCMAKE_INSTALL_PREFIX=/workspace/destdir \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DGINKGO_BUILD_TESTS=OFF \
     -DGINKGO_BUILD_BENCHMARKS=OFF \
