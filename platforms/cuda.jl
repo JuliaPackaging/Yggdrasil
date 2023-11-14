@@ -87,6 +87,7 @@ platform(cuda::String) = cuda
 # BinaryBuilder.jl currently does not allow selecting a BuildDependency by compat,
 # so we need the full version for CUDA_SDK_jll (JuliaPackaging/BinaryBuilder.jl#/1212).
 const cuda_full_versions = [
+    v"10.2.89",
     v"11.4.4",
     v"11.5.2",
     v"11.6.2",
@@ -97,6 +98,11 @@ const cuda_full_versions = [
     v"12.2.2",
     v"12.3.0",
 ]
+
+const cuda_minor_versions = [Base.thisminor(ver) for ver in cuda_full_versions]
+
+const cuda_major_versions = unique(Base.thismajor(ver) for ver in cuda_full_versions)
+
 function full_version(ver::VersionNumber)
     ver == Base.thisminor(ver) || error("Cannot specify a patch version")
     for full_ver in cuda_full_versions
@@ -108,11 +114,16 @@ function full_version(ver::VersionNumber)
 end
 
 """
-    supported_platforms()
+    supported_platforms(; <keyword arguments>)
 
 Return a list of supported platforms to build CUDA artifacts for.
+
+# Arguments
+- `cuda_major_versions=cuda_major_versions`: CUDA major versions to target (given provided `cuda_full_versions`) - if `cuda_minor_versions` is empty.
+- `cuda_minor_versions=VersionNumber[]`: CUDA minor versions to target (given provided `cuda_full_versions`) - if non-empty.
+- `cuda_full_versions=cuda_full_versions`.
 """
-function supported_platforms()
+function supported_platforms(; cuda_major_versions=cuda_major_versions, cuda_minor_versions=VersionNumber[], cuda_full_versions=cuda_full_versions)
     base_platforms = [
         Platform("x86_64", "linux"; libc = "glibc"),
         Platform("aarch64", "linux"; libc = "glibc"),
@@ -121,6 +132,12 @@ function supported_platforms()
         # nvcc isn't a cross compiler, so incompatible with BinaryBuilder
         #Platform("x86_64", "windows"),
     ]
+
+    if isempty(cuda_minor_versions)
+        cuda_full_versions = filter(ver -> Base.thismajor(ver) in cuda_major_versions, cuda_full_versions)
+    else
+        cuda_full_versions = filter(ver -> Base.thisminor(ver) in cuda_minor_versions, cuda_full_versions)
+    end
 
     # augment with CUDA versions
     platforms = Platform[]
