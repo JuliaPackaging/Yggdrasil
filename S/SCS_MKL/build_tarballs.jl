@@ -26,9 +26,9 @@ cp out/libscs*.${dlext} ${libdir}
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     # Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
+    # Platform("x86_64", "macos"),
     # Platform("i686", "windows"),
-    Platform("x86_64", "windows"),
+    # Platform("x86_64", "windows"),
 ]
 
 # The products that we will ensure are always built
@@ -42,5 +42,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"9.1.0", julia_compat="1.6", preferred_llvm_version=v"13.0.1")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
