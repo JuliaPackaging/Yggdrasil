@@ -6,11 +6,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "SCS_GPU"
-version = v"3.2.3"
+version = v"3.2.4"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "f5f054be7dd71ee0d80c4c0eec0df1e9f0ccb123")
+    GitSource("https://github.com/cvxgrp/scs.git", "9024b8ccc1bba6ee797440fb22354cadb9c81839")
 ]
 
 # Bash recipe for building across all platforms
@@ -30,8 +30,6 @@ cp out/libscs*.${dlext} ${libdir}
 
 platforms = CUDA.supported_platforms()
 filter!(p -> arch(p) == "x86_64", platforms)
-## scs uses CUSPARSE_SPMV_CSR_ALG1 which requires CUDA-11.3
-filter!(p -> p["cuda"] == "11.3", platforms)
 
 # The products that we will ensure are always built
 products = [
