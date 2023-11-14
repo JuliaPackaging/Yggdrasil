@@ -8,7 +8,8 @@ version_slug = "6.28.08"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://root.cern.ch/download/root_v$(version_slug).source.tar.gz", "a3e64b4c01f87cd9bbe57e61ef96b41626e49b0446095070d41d9bfba3526862")
+    ArchiveSource("https://root.cern.ch/download/root_v$(version_slug).source.tar.gz",
+    "a3e64b4c01f87cd9bbe57e61ef96b41626e49b0446095070d41d9bfba3526862")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir build
 cd build/
-cmake -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ../root-6.28.08
+cmake -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-6.28.08
 make
 """
 
@@ -61,4 +62,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
