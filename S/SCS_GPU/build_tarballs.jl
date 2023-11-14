@@ -30,8 +30,6 @@ cp out/libscs*.${dlext} ${libdir}
 
 platforms = CUDA.supported_platforms()
 filter!(p -> arch(p) == "x86_64", platforms)
-## scs uses CUSPARSE_SPMV_CSR_ALG1 which requires CUDA-11.3
-filter!(p -> p["cuda"] == "11.3", platforms)
 
 # The products that we will ensure are always built
 products = [
