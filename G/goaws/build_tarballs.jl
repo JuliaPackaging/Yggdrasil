@@ -13,8 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/goaws/
-go build -o goaws app/cmd/goaws.go
-mv goaws $prefix/goaws
+mkdir -p ${bindir}
+go build -o ${bindir} app/cmd/goaws.go
 """
 
 # These are the platforms we will build for by default, unless further
