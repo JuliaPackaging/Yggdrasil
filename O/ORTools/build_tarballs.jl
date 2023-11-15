@@ -16,7 +16,6 @@ sources = [
 script = raw"""
 # Prepare the source directory.
 cd $WORKSPACE/srcdir/or-tools*
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/cmake_dependencies_CMakeLists.txt.patch"
 mkdir build
 cmake --version
 
