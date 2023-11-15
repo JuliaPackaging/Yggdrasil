@@ -8,8 +8,7 @@ version = v"9.7"
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "6fa02e157a5c91067b7d7b88629472b9ed461193"),
-    DirectorySource("./bundled")
+              "6fa02e157a5c91067b7d7b88629472b9ed461193")
 ]
 
 # Bash recipe for building across all platforms
