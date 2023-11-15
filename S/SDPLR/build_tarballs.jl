@@ -3,7 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SDPLR"
-version = v"1.0.3"
+upstream_version = v"1.0.3"
+version_offset = v"0.1.0" # reset to 0.0.0 once the upstream version changes
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
