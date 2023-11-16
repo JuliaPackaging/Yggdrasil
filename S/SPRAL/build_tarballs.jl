@@ -12,29 +12,58 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Install a version of Meson ≥ 0.63.0
-python3 -m pip install --user --upgrade meson
-
 cd ${WORKSPACE}/srcdir/spral
 
 if [[ "${target}" == *mingw* ]]; then
-  HWLOC="hwloc-15"
-  LBT="blastrampoline-5"
+    LBT="-lblastrampoline-5"
 else
-  HWLOC="hwloc"
-  LBT="blastrampoline"
+    LBT="-lblastrampoline"
 fi
 
-meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} \
-                     --prefix=$prefix -Dlibhwloc=$HWLOC \
-                     -Dlibblas=$LBT -Dliblapack=$LBT
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
+fi
 
-for i in {1..10}
-do
-    meson compile -C builddir || true
-done
-meson install -C builddir
+./autogen.sh
+mkdir build
+cd build
+export CFLAGS="-O3 -fPIC"
+export CXXFLAGS="-O3 -fPIC"
+export FFLAGS="-O3 -fPIC"
+export FCFLAGS="-O3 -fPIC"
+../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --with-blas="-L${libdir} ${LBT}" --with-lapack="-L${libdir} ${LBT}" \
+    --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${includedir}"
+make
+gfortran -fPIC -shared $(flagon -Wl,--whole-archive) libspral.a $(flagon -Wl,--no-whole-archive) -lgomp ${LBT} -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
+make install
 """
+
+#----------------------------------------------------------------#
+# # Install a version of Meson ≥ 0.63.0
+# python3 -m pip install --user --upgrade meson
+#
+# cd ${WORKSPACE}/srcdir/spral
+#
+# if [[ "${target}" == *mingw* ]]; then
+#   HWLOC="hwloc-15"
+#   LBT="blastrampoline-5"
+# else
+#   HWLOC="hwloc"
+#   LBT="blastrampoline"
+# fi
+#
+# CC=gcc CXX=g++ meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} \
+#                                     --prefix=$prefix -Dlibhwloc=$HWLOC \
+#                                     -Dlibblas=$LBT -Dliblapack=$LBT
+#
+# for i in {1..10}
+# do
+#     meson compile -C builddir || true
+# done
+# meson install -C builddir
+#----------------------------------------------------------------#
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
