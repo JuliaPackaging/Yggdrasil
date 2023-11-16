@@ -20,6 +20,9 @@ end
 # GCC version for building the whole system
 gcc_version = v"8.1.0"
 
+# LLVM version for building the whole system
+llvm_version = v"13.0.1"
+
 # Versions of various COIN-OR libraries
 
 Bonmin_upstream_version = v"1.8.9"
@@ -78,8 +81,8 @@ ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
 MUMPS_seq_version = v"5.4.1"
 MUMPS_seq_version_LBT = v"500.600.200"
-SPRAL_version_LBT = v"2023.09.07"
-OpenBLAS32_version = v"0.3.24"
+SPRAL_version_LBT = v"2023.11.15"
+OpenBLAS32_version = v"0.3.25"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
