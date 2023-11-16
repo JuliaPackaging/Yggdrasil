@@ -1,16 +1,14 @@
 using BinaryBuilder
 
 name = "OpenSSH"
-version = v"9.3.2"
+version = v"9.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.3p2.tar.gz",
-                  "200ebe147f6cb3f101fd0cdf9e02442af7ddca298dffd9f456878e7ccac676e8"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.2.0p1-Beta/OpenSSH-Win32.zip",
-                  "7b132aad088eae3ac67d85751e88d884e80631607cab9b1da52c838655bb5ae6"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.2.2.0p1-Beta/OpenSSH-Win64.zip",
-                  "ec8144a107014740ec3ce16ec51710398fc390fca5344931c1506e7cc2e181f3"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.4p1.tar.gz",
+                  "3608fd9088db2163ceb3e600c85ab79d0de3d221e59192ea1923e23263866a85"),
+    ArchiveSource("https://mirror.msys2.org/msys/x86_64/openssh-9.4p1-1-x86_64.pkg.tar.zst",
+                  "c719753161881a616ca38bac39e6ddb0b6f251fd07f1d4de88dc8908e1bcd7bf"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,8 +19,11 @@ install_license openssh-*/LICENCE
 PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext})
 
 if [[ "${target}" == *-mingw* ]]; then
-    cd "${target}/OpenSSH-Win${nbits}"
+
+    cd usr/bin
+
 else
+
     cd openssh-*
 
     # Remove OpenSSL from the sysroot to avoid confusion
@@ -35,14 +36,18 @@ else
     if [[ "${target}" == *-linux-gnu* ]]; then
         # We use very old versions of glibc which used to have `libcrypt.so.1`, but modern
         # glibcs have `libcrypt.so.2`, so if we link to `libcrypt.so.1` most users would
-        # have troubles running the programs at runtime.
+        # have trouble running the programs at runtime.
         conf_args+=(ac_cv_lib_crypt_crypt=no)
     fi
+
+    # OpenSSH's check (as of OpenSSH 9.4) of the zlib version number does not work for zlib >= 1.3
+    conf_args+=(--without-zlib-version-check)
 
     export CPPFLAGS="-I${includedir}"
     autoreconf -vi
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${conf_args[@]}"
     make -j${nproc} "${PRODUCTS[@]}"
+
 fi
 
 for binary in "${PRODUCTS[@]}"; do
@@ -53,6 +58,9 @@ done
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+# We do not (yet?) know how to build for Windows, and we do not have i686 Windows binaries that use OpenSSL @3
+filter!(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -66,8 +74,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("OpenSSL_jll"; compat="3.0.8", platforms=filter(!Sys.iswindows, platforms)),
     Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
