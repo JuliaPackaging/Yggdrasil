@@ -3,41 +3,34 @@
 using BinaryBuilder, Pkg
 
 name = "SPRAL"
-version = v"2023.09.07"
+version = v"2023.11.15"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/spral.git", "04133cdacbc35c868ef8e3b5eb63ee76715625d4")
+    GitSource("https://github.com/ralna/spral.git", "96767481809ff682a56e124a2d66ba8364c4c2c4")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Install a version of Meson ≥ 0.63.0
+python3 -m pip install --user --upgrade meson
+
 cd ${WORKSPACE}/srcdir/spral
 
 if [[ "${target}" == *mingw* ]]; then
-  LBT="-lblastrampoline-5"
+  HWLOC="hwloc-15"
+  LBT="blastrampoline-5"
 else
-  LBT="-lblastrampoline"
+  HWLOC="hwloc"
+  LBT="blastrampoline"
 fi
 
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
-fi
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} \
+                     --prefix=$prefix -Dlibhwloc=$HWLOC \
+                     -Dlibblas=$LBT -Dliblapack=$LBT
 
-./autogen.sh
-mkdir build
-cd build
-export CFLAGS="-O3 -fPIC"
-export CXXFLAGS="-O3 -fPIC"
-export FFLAGS="-O3 -fPIC"
-export FCFLAGS="-O3 -fPIC"
-../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-blas="-L${libdir} ${LBT}" --with-lapack="-L${libdir} ${LBT}" \
-    --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${includedir}"
-make
-gfortran -fPIC -shared $(flagon -Wl,--whole-archive) libspral.a $(flagon -Wl,--no-whole-archive) -lgomp ${LBT} -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
-make install
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
