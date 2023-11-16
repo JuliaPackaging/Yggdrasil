@@ -7,7 +7,7 @@ version = v"2023.11.15"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/spral.git", "96767481809ff682a56e124a2d66ba8364c4c2c4")
+    GitSource("https://github.com/ralna/spral.git", "e723071ce2e0e6181bb65e1b365dc47449e1a912")
 ]
 
 # Bash recipe for building across all platforms
