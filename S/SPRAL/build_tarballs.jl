@@ -29,7 +29,10 @@ meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} \
                      --prefix=$prefix -Dlibhwloc=$HWLOC \
                      -Dlibblas=$LBT -Dliblapack=$LBT
 
-meson compile -C builddir
+for i in {1..10}
+do
+    meson compile -C builddir || true
+done
 meson install -C builddir
 """
 
