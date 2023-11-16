@@ -13,7 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 
 function blas_script(;blas32::Bool=false)
-script = "BLAS32=$(blas32)"
+script = """
+BLAS32=$(blas32)
+"""
 
 script *= raw"""
 if [[ ${nbits} == 64 ]] && [[ "${BLAS32}" != "true" ]]; then
