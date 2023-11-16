@@ -5,8 +5,8 @@ version = v"2.4.06"
 
 sources = [
     #ArchiveSource("https://github.com/BIC-MNI/libminc/archive/refs/tags/release-2.4.06.tar.gz", "cd5c6da9cd98be225a4bd3b8d712bd5292fc24f434cae732fa37af866c2db5b3"),
-    GitSource("git@github.com:BIC-MNI/libminc.git","15d994def83274b715711afffa73268167ec2cc6") # release-2.4.06
-    GitSource("git@github.com:NIST-MNI/minc2-simple.git","e7203f04941faf45cd7cea9149e7b196672fb117")
+    GitSource("https://github.com/BIC-MNI/libminc.git","15d994def83274b715711afffa73268167ec2cc6") # release-2.4.06
+    GitSource("https://github.com/NIST-MNI/minc2-simple.git","e7203f04941faf45cd7cea9149e7b196672fb117")
 ]
 
 script = raw"""
