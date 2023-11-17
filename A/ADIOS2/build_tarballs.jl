@@ -21,6 +21,8 @@ cd $WORKSPACE/srcdir
 cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
+# Declare `arm8_rt_call_link`
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
 
 mkdir build
 cd build
@@ -32,6 +34,13 @@ if [[ ${target} == x86_64-linux-musl ]]; then
 fi
 
 archopts=()
+
+if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
+    # This feature only works with MPICH
+    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
+else
+    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=1 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
+fi
 
 if grep -q MSMPI_VER ${includedir}/mpi.h; then
     # Microsoft MPI
@@ -46,13 +55,6 @@ if [[ "$target" == *-mingw* ]]; then
     archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF)
 else
     archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
-fi
-
-if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
-    # This feature only works with MPICH
-    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
-else
-    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=1 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
 fi
 
 # Fortran is not supported with Clang
