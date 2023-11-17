@@ -105,7 +105,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfree(p)), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
