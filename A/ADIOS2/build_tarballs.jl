@@ -26,12 +26,11 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
 # Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
 
-mkdir build
-cd build
-
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
+    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
     rm /usr/lib/libcurl.*
+    rm /usr/lib/libevent*
     rm /usr/lib/libnghttp2.*
 fi
 
@@ -61,7 +60,7 @@ fi
 
 # Fortran is not supported with Clang
 # We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
-cmake \
+cmake -B build -S . \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DBUILD_SHARED_LIBS=ON \
@@ -79,11 +78,10 @@ cmake \
     -DMPI_HOME=$prefix \
     ${archopts[@]} \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
-install_license ../Copyright.txt ../LICENSE
+    -DCMAKE_INSTALL_PREFIX=$prefix
+cmake --build build --config RelWithDebInfo --parallel $nproc
+cmake --build build --config RelWithDebInfo --parallel $nproc --target install
+install_license Copyright.txt LICENSE
 """
 
 augment_platform_block = """
