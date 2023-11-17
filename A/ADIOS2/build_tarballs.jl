@@ -60,6 +60,7 @@ else
 fi
 
 # Fortran is not supported with Clang
+# We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
