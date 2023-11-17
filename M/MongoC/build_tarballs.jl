@@ -3,29 +3,31 @@
 using BinaryBuilder, Pkg
 
 name = "MongoC"
-version = v"1.19.1"
+version = v"1.25.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mongodb/mongo-c-driver/releases/download/$(version)/mongo-c-driver-$(version).tar.gz",
-                  "1732251e3f65bc02ce05c04ce34ef2819b154479108df669f0c045486952521d")
+    GitSource(
+        "https://github.com/mongodb/mongo-c-driver.git",
+        "e9c77e4753a80535d027734823e6c144fcb25cf4";
+    )
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd mongo-c-driver-*
+cd mongo-c-driver
 sed -i "s/Windows.h/windows.h/" src/libmongoc/src/mongoc/mongoc-client.c
 sed -i "s/WinDNS.h/windns.h/" src/libmongoc/src/mongoc/mongoc-client.c
 sed -i "s/Mstcpip.h/mstcpip.h/" src/libmongoc/src/mongoc/mongoc-client.c
 sed -i "s/Mstcpip.h/mstcpip.h/" src/libmongoc/src/mongoc/mongoc-socket.c
-sed -i "s/Dnsapi/dnsapi/" build/cmake/FindResSearch.cmake
+sed -i "s/Dnsapi/dnsapi/" build/cmake/ResSearch.cmake
 mkdir cmake-build
 cd cmake-build
 
 if [[ "${nbits}" == 32 ]]; then
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
-elif [[ "${target}" != *-apple-* ]]; then 
+elif [[ "${target}" != *-apple-* ]]; then
     export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
 fi
 if [[ "${target}" == *-mingw* ]]; then
