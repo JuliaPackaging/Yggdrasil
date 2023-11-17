@@ -21,8 +21,10 @@ cd $WORKSPACE/srcdir
 cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
-# Declare `arm8_rt_call_link`
+# Declare `arm8_rt_call_link`. See <https://github.com/ornladios/ADIOS2/issues/3925>.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
+# Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htonso.patch
 
 mkdir build
 cd build
