@@ -73,14 +73,18 @@ for (llvm_version, rocm_versions) in llvm_versions, rocm_version in rocm_version
     sources = [
         GitSource(devlibs_source, devlibs_tags[rocm_version]),
         DirectorySource("./scripts")]
+
     # If there are any patches, add them.
-    if llvm_version in keys(rocm_patches) && rocm_version in keys(rocm_patches[llvm_version])
+    has_patch = (
+        llvm_version in keys(rocm_patches) &&
+        rocm_version in keys(rocm_patches[llvm_version]))
+    if has_patch
         push!(sources, DirectorySource("./bundled_$(lv)_$(rv)"))
     end
 
     buildscript = raw"""
     cd ${WORKSPACE}/srcdir/ROCm-Device-Libs*/
-    """ * get(rocm_patches, rocm_version, "") *
+    """ * (has_patch ? rocm_patches[llvm_version][rocm_version] : "") *
     raw"""
     mkdir build && cd build
     """ * script
