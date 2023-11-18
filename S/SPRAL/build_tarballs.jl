@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SPRAL"
-version = v"2023.09.07"
+version = v"2023.11.15"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/spral.git", "04133cdacbc35c868ef8e3b5eb63ee76715625d4")
+    GitSource("https://github.com/ralna/spral.git", "e723071ce2e0e6181bb65e1b365dc47449e1a912")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,9 +15,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/spral
 
 if [[ "${target}" == *mingw* ]]; then
-  LBT="-lblastrampoline-5"
+    LBT="-lblastrampoline-5"
 else
-  LBT="-lblastrampoline"
+    LBT="-lblastrampoline"
 fi
 
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
@@ -39,6 +39,31 @@ make
 gfortran -fPIC -shared $(flagon -Wl,--whole-archive) libspral.a $(flagon -Wl,--no-whole-archive) -lgomp ${LBT} -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
 make install
 """
+
+#----------------------------------------------------------------#
+# # Install a version of Meson ≥ 0.63.0
+# python3 -m pip install --user --upgrade meson
+#
+# cd ${WORKSPACE}/srcdir/spral
+#
+# if [[ "${target}" == *mingw* ]]; then
+#   HWLOC="hwloc-15"
+#   LBT="blastrampoline-5"
+# else
+#   HWLOC="hwloc"
+#   LBT="blastrampoline"
+# fi
+#
+# CC=gcc CXX=g++ meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} \
+#                                     --prefix=$prefix -Dlibhwloc=$HWLOC \
+#                                     -Dlibblas=$LBT -Dliblapack=$LBT
+#
+# for i in {1..10}
+# do
+#     meson compile -C builddir || true
+# done
+# meson install -C builddir
+#----------------------------------------------------------------#
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

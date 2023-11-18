@@ -4,29 +4,14 @@ using Base: thismajor, thisminor
 
 using Libdl
 
-# platform augmentation hooks run in an ill-defined environment, where:
-# - CUDA_Driver_jll may not be available
-# - the wrong version of CUDA_Driver_jll may be available
-#
-# because of that, we need to be very careful about using that dependency.
-# currently, we support all existing versions of CUDA_Driver_jll, but if we
-# ever need to introduce a breaking change, we'll need some way to identify
-# the version of CUDA_Driver_jll from its module (e.g. a global constant).
-#
-# ref: https://github.com/JuliaLang/Pkg.jl/issues/3225
-try
-    using CUDA_Driver_jll
-catch err
-    # we'll handle this below
-end
-
-# can't use Preferences for the same reason
 const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
 const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
 Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
 Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
 const local_preference = if haskey(preferences, "local")
-    if isa(preferences["local"], String)
+    if isa(preferences["local"], Bool)
+        preferences["local"]
+    elseif isa(preferences["local"], String)
         use_local = tryparse(Bool, preferences["local"])
         if use_local === nothing
             @error "CUDA local preference is not valid; expected a boolean, but got '$(preferences["local"])'"
@@ -47,6 +32,7 @@ elseif haskey(preferences, "version") && preferences["version"] == "local"
 else
     missing
 end
+
 function parse_version_preference(key)
     if haskey(preferences, key)
         if isa(preferences[key], String)
@@ -71,6 +57,45 @@ const version_preference = if haskey(preferences, "version") && preferences["ver
     parse_version_preference("actual_version")
 else
     parse_version_preference("version")
+end
+
+if ismissing(version_preference)
+    # before loading CUDA_Driver_jll, try to find out where the system driver is located.
+    let
+        name = if Sys.iswindows()
+            Libdl.find_library("nvcuda")
+        else
+            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+        end
+
+        # if we've found a system driver, put a dependency on it,
+        # so that we get recompiled if the driver changes.
+        if name != ""
+            handle = Libdl.dlopen(name)
+            path = Libdl.dlpath(handle)
+            Libdl.dlclose(handle)
+
+            @debug "Adding include dependency on $path"
+            Base.include_dependency(path)
+        end
+    end
+end
+
+# platform augmentation hooks run in an ill-defined environment, where:
+# - CUDA_Driver_jll may not be available
+# - the wrong version of CUDA_Driver_jll may be available
+#
+# because of that, we need to be very careful about using that dependency.
+# currently, we support all existing versions of CUDA_Driver_jll, but if we
+# ever need to introduce a breaking change, we'll need some way to identify
+# the version of CUDA_Driver_jll from its module (e.g. a global constant).
+#
+# ref: https://github.com/JuliaLang/Pkg.jl/issues/3225
+# can't use Preferences for the same reason
+try
+    using CUDA_Driver_jll
+catch err
+    # we'll handle this below
 end
 
 # get the version of the local CUDA toolkit by querying the system libcudart
@@ -202,6 +227,12 @@ function cuda_toolkit_tag()
             end
             @debug "Local CUDA runtime version: $version"
             cuda_version_override = version
+        end
+
+        # if we're using a local toolkit, use the version as-is. this may result in an
+        # incompatible toolkit being used, but CUDA.jl will complain about that.
+        if local_preference
+            return "$(cuda_version_override.major).$(cuda_version_override.minor)"
         end
     end
 
