@@ -17,6 +17,15 @@ version = v"0.0.1"
 # TODO support more than 1.10.
 # For what LLVM versions to build => what ROCm versions.
 llvm_versions = Dict(v"15.0.7" => [v"5.5.1", v"5.6.1"])
+rocm_patches = Dict(
+    v"15.0.7" => Dict(
+        v"5.6.1" => raw"""
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/ocml-builtins-rename.patch
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/ockl-no-ballot.patch
+        """,
+    ),
+)
 
 # TODO build using (llvm_version, rocm_llvm) pair.
 # Using fixed version of ROCm LLVM which still uses LLVM 15.
@@ -25,14 +34,6 @@ rocm_llvm = v"5.4.4"
 platforms = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
 ]
-
-rocm_patches = Dict(
-    v"5.6.1" => raw"""
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/ocml-builtins-rename.patch
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/ockl-no-ballot.patch
-    """
-)
 
 script = raw"""
 CC=${WORKSPACE}/srcdir/rocm-clang \
@@ -73,8 +74,8 @@ for (llvm_version, rocm_versions) in llvm_versions, rocm_version in rocm_version
         GitSource(devlibs_source, devlibs_tags[rocm_version]),
         DirectorySource("./scripts")]
     # If there are any patches, add them.
-    if version in keys(rocm_patches)
-        push!(sources, DirectorySource("./bundled_$lv_$rv"))
+    if llvm_version in keys(rocm_patches) && rocm_version in keys(rocm_patches[llvm_version])
+        push!(sources, DirectorySource("./bundled_$(lv)_$(rv)"))
     end
 
     buildscript = raw"""
@@ -99,15 +100,9 @@ end
 # `--register` should only be passed to the latest `build_tarballs` invocation
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 for (i, build) in enumerate(builds)
-    println()
-    @show i
-    @show build
-    println()
-
     build_tarballs(
         i == lastindex(builds) ? ARGS : non_reg_ARGS,
         name, version, build.sources, build.buildscript,
         build.platforms, build.products, build.dependencies;
         preferred_gcc_version=v"8", julia_compat="1.9", augment_platform_block)
-
 end
