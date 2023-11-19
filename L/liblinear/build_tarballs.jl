@@ -7,7 +7,7 @@ version = v"2.30.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/cjlin1/liblinear/archive/v230.tar.gz", "9b57710078206d4dbbe75e9015d4cf7fabe4464013fe0e89b8a2fe40038f8f51"),
+    GitSource("https://github.com/cjlin1/liblinear", "8dc206b782e07676dc0d00678bedd295ce85acf3"),
     DirectorySource("./bundled")
 ]
 
@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-cd liblinear-230/
+cd liblinear/
 mkdir -p ${prefix}/bin
 mkdir -p ${prefix}/lib
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
