@@ -1,7 +1,7 @@
-diff --git a/Makefile b/Makefile
+diff --git before/liblinear/Makefile after/liblinear/Makefile
 index ac287b3..15125b0 100644
---- a/Makefile
-+++ b/Makefile
+--- before/liblinear/Makefile
++++ after/liblinear/Makefile
 @@ -6,21 +6,21 @@ LIBS = blas/blas.a
  SHVER = 5
  OS = $(shell uname)
