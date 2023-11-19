@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "liblinear"
-version = v"2.30.0"
+version = v"2.47.0"
 
 # Collection of sources required to complete build
 sources = [
