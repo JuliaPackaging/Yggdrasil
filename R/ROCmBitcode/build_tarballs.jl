@@ -7,17 +7,29 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 devlibs_source = "https://github.com/RadeonOpenCompute/ROCm-Device-Libs.git"
 devlibs_tags = Dict(
-    v"5.5.1" => "49dd756ee374d648beb3ecd593f419db425ef621",
     v"5.6.1" => "2b9acb09a3808d80c61ab89235a7cf487f52e955")
 
 name = "ROCmBitcode"
 # Version of our artifact.
-version = v"0.0.1"
+version = v"0.1.0"
 
-# TODO support more than 1.10.
-# For what LLVM versions to build => what ROCm versions.
-llvm_versions = Dict(v"15.0.7" => [v"5.5.1", v"5.6.1"])
+# TODO build using rocm_version.
+# What ROCm LLVM to use when building device libraries.
+rocm_llvm = v"5.4.4"
+# Julia LLVM version => ROCm device libraries version.
+# TODO augment platform with rocm version
+# llvm_versions = Dict(v"15.0.7" => [v"5.5.1", v"5.6.1"])
+llvm_versions = Dict(
+    v"14.0.2" => [v"5.6.1"],
+    v"15.0.7" => [v"5.6.1"])
 rocm_patches = Dict(
+    v"14.0.2" => Dict(
+        v"5.6.1" => raw"""
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/ocml-builtins-rename.patch
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/ockl-no-ballot.patch
+        """,
+    ),
     v"15.0.7" => Dict(
         v"5.6.1" => raw"""
         atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
@@ -26,10 +38,6 @@ rocm_patches = Dict(
         """,
     ),
 )
-
-# TODO build using (llvm_version, rocm_llvm) pair.
-# Using fixed version of ROCm LLVM which still uses LLVM 15.
-rocm_llvm = v"5.4.4"
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
@@ -63,7 +71,7 @@ builds = []
 for (llvm_version, rocm_versions) in llvm_versions, rocm_version in rocm_versions
     rv = "rocm_$(rocm_version.major)_$(rocm_version.minor)"
     lv = "llvm_$(llvm_version.major)"
-    products = [FileProduct("amdgcn/bitcode/", Symbol("bitcode_$(lv)_$(rv)"))]
+    products = [FileProduct("amdgcn/bitcode/", :bitcode_path)]
 
     dependencies = [
         BuildDependency(PackageSpec(; name="ROCmLLVM_jll", version=rocm_llvm)),
@@ -94,7 +102,6 @@ for (llvm_version, rocm_versions) in llvm_versions, rocm_version in rocm_version
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(
             llvm_version, false #= llvm assertions =#)
-        augmented_platform["rocm_version"] = string(rocm_version)
         push!(builds, (;
             dependencies, products, buildscript, sources,
             platforms=[augmented_platform]))
