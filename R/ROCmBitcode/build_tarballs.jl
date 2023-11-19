@@ -20,27 +20,19 @@ rocm_llvm = v"5.4.4"
 # TODO augment platform with rocm version
 # llvm_versions = Dict(v"15.0.7" => [v"5.5.1", v"5.6.1"])
 llvm_versions = Dict(
-    v"14.0.2" => [v"5.6.1"],
-    v"15.0.7" => [v"5.6.1"])
+    v"14.0.2" => v"5.6.1",
+    v"15.0.7" => v"5.6.1")
 rocm_patches = Dict(
-    v"14.0.2" => Dict(
-        v"5.6.1" => raw"""
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/ocml-builtins-rename.patch
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/ockl-no-ballot.patch
-        """,
-    ),
-    v"15.0.7" => Dict(
-        v"5.6.1" => raw"""
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/ocml-builtins-rename.patch
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/ockl-no-ballot.patch
-        """,
-    ),
+    v"5.6.1" => raw"""
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/ocml-builtins-rename.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/ockl-no-ballot.patch
+    """,
 )
 
 platforms = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
 ]
 
 script = raw"""
@@ -68,9 +60,8 @@ augment_platform_block = """
     end"""
 
 builds = []
-for (llvm_version, rocm_versions) in llvm_versions, rocm_version in rocm_versions
+for (llvm_version, rocm_version) in llvm_versions
     rv = "rocm_$(rocm_version.major)_$(rocm_version.minor)"
-    lv = "llvm_$(llvm_version.major)"
     products = [FileProduct("amdgcn/bitcode/", :bitcode_path)]
 
     dependencies = [
@@ -83,16 +74,14 @@ for (llvm_version, rocm_versions) in llvm_versions, rocm_version in rocm_version
         DirectorySource("./scripts")]
 
     # If there are any patches, add them.
-    has_patch = (
-        llvm_version in keys(rocm_patches) &&
-        rocm_version in keys(rocm_patches[llvm_version]))
+    has_patch = rocm_version in keys(rocm_patches)
     if has_patch
-        push!(sources, DirectorySource("./bundled_$(lv)_$(rv)"))
+        push!(sources, DirectorySource("./bundled_$(rv)"))
     end
 
     buildscript = raw"""
     cd ${WORKSPACE}/srcdir/ROCm-Device-Libs*/
-    """ * (has_patch ? rocm_patches[llvm_version][rocm_version] : "") *
+    """ * (has_patch ? rocm_patches[rocm_version] : "") *
     raw"""
     mkdir build && cd build
     """ * script
