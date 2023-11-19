@@ -20,10 +20,6 @@ done
 cd liblinear/
 mkdir -p "${bindir}"
 mkdir -p "${libdir}"
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
-fi
 make 
 make lib
 cp train${exeext} ${bindir}
