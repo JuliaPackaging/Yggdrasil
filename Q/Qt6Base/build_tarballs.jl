@@ -2,13 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-# Set this to true first when updating the version. It will build only for the host (linux musl).
-# After that JLL is in the registyry, set this to false to build for the other platforms, using
-# this same package as host build dependency.
-const host_build = true
-
-basicname = "Qt6Base"
-name = host_build ? basicname*"_host" : basicname
+name = "Qt6Base"
 version = v"6.5.3"
 
 # Collection of sources required to build qt6
@@ -44,6 +38,23 @@ export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
 # temporarily allow march during configure
 sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-g++
+
+mkdir host_build
+cd host_build
+
+ln -vs ${host_prefix}/lib64/lib{crypto,ssl}.so* ${host_prefix}/lib/
+cp $host_prefix/lib/libz.a /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/local/lib/libz.a
+
+sed -i 's/exit 1/#exit 1/' $HOSTCXX
+../../qtbase-everywhere-src-*/configure -prefix $host_prefix -opensource -confirm-license -no-openssl -nomake examples -release -fontconfig -- \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -DCMAKE_PREFIX_PATH=${host_prefix} -DCMAKE_INSTALL_PREFIX=$host_prefix -DQT_FEATURE_xcb=ON \
+    -DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES=$host_prefix/include -DCMAKE_CXX_IMPLICIT_LINK_DIRECTORIES=$host_prefix/lib
+sed -i 's/#exit 1/exit 1/' $HOSTCXX
+
+cmake --build . --parallel ${nproc}
+cmake --install .
+
+cd ..
 
 case "$bb_full_target" in
 
@@ -127,14 +138,10 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-if host_build
-    platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
-    platforms_macos = AbstractPlatform[]
-else
-    platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
-    filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
-    platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
-end
+platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
+filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
+filter!(p -> cxxstring_abi(p) == "cxx11" && Sys.iswindows(p) && arch(p) == "x86_64", platforms)
+platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 
 # The products that we will ensure are always built
 products = [
@@ -200,17 +207,17 @@ dependencies = [
     BuildDependency("Vulkan_Headers_jll"),
 ]
 
-if !host_build
-    push!(dependencies, HostBuildDependency("Qt6Base_host_jll"))
+host_build_deps = []
+for dep in dependencies
+    push!(host_build_deps, HostBuildDependency(dep.pkg.name))
 end
+append!(dependencies, host_build_deps)
 
 include("../../fancy_toys.jl")
 
-@static if !host_build
-    if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
-    end
-end
+# if any(should_build_platform.(triplet.(platforms_macos)))
+#     build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
+# end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
 end
