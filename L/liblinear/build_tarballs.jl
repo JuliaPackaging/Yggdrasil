@@ -18,8 +18,8 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 cd liblinear/
-mkdir -p ${prefix}/bin
-mkdir -p ${prefix}/lib
+mkdir -p "${bindir}"
+mkdir -p "${libdir}"
 if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
     CC=gcc
     CXX=g++
