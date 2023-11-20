@@ -49,5 +49,7 @@ dependencies = [
     Dependency("Libiconv_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# XML2 requires full C11 support (so GCC >= 5), but GCC v5-7 crases with an ICE
+# on Windows, so we need GCC 8 for that platform.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"8", julia_compat="1.6")
