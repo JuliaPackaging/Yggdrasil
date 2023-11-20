@@ -18,13 +18,11 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 cd liblinear/
-mkdir -p "${bindir}"
-mkdir -p "${libdir}"
 make 
 make lib
-cp train${exeext} ${bindir}
-cp predict${exeext} ${bindir}
-cp liblinear.${dlext} ${libdir}
+install -Dvm 755 "train${exeext}" "${bindir}/train${exeext}"
+install -Dvm 755 "predict${exeext}" "${bindir}/predict${exeext}"
+install -Dvm 755 "liblinear.${dlext}" "${libdir}/liblinear.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
