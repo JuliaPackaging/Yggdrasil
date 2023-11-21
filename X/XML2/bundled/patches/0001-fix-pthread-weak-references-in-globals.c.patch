@@ -1,0 +1,50 @@
+From 1ac88300c1eb156697d12c8b1f6017cb20db0516 Mon Sep 17 00:00:00 2001
+From: Mike Dalessio <mike.dalessio@gmail.com>
+Date: Sat, 18 Nov 2023 12:21:38 -0500
+Subject: [PATCH 1/2] fix: pthread weak references in globals.c
+
+Linking executables will fail on systems with glibc < 2.34 without
+declaring these symbols as weak references.
+
+In commit c19771c1f13de9196f98260d142d8c8672eb5733 these references
+were moved to globals.c from threads.c, but the `#pragma weak`
+declarations were lost in the process.
+
+Also removing unneeded weak declarations from threads.c.
+---
+ globals.c | 5 +++++
+ threads.c | 2 --
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/globals.c b/globals.c
+index a786a4b9..fe240138 100644
+--- a/globals.c
++++ b/globals.c
+@@ -118,6 +118,11 @@ static XML_THREAD_LOCAL xmlGlobalState globalState;
+     defined(__GLIBC__) && \
+     __GLIBC__ * 100 + __GLIBC_MINOR__ < 234
+ 
++#pragma weak pthread_getspecific
++#pragma weak pthread_setspecific
++#pragma weak pthread_key_create
++#pragma weak pthread_key_delete
++
+ #define XML_PTHREAD_WEAK
+ 
+ static int libxml_is_threaded = -1;
+diff --git a/threads.c b/threads.c
+index 3e8ef2fe..461f4a51 100644
+--- a/threads.c
++++ b/threads.c
+@@ -78,8 +78,6 @@
+ #pragma weak pthread_cond_wait
+ #pragma weak pthread_equal
+ #pragma weak pthread_self
+-#pragma weak pthread_key_create
+-#pragma weak pthread_key_delete
+ #pragma weak pthread_cond_signal
+ 
+ #define XML_PTHREAD_WEAK
+-- 
+2.42.1
+

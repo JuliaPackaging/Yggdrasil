@@ -9,11 +9,16 @@ version = v"2.12.0"
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
                   "431521c8e19ca396af4fa97743b5a6bfcccddbba90e16426a15e5374cd64fe0d"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libxml2-*
+
+# Remove patches for next version.
+atomic_patch -p1 ../patches/0001-fix-pthread-weak-references-in-globals.c.patch
+atomic_patch -p1 ../patches/0002-fix-more-pthread-weak-references-in-globals.c.patch
 
 ./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --without-python \
