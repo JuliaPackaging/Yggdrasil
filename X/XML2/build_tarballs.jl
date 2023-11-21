@@ -20,11 +20,19 @@ cd ${WORKSPACE}/srcdir/libxml2-*
 atomic_patch -p1 ../patches/0001-fix-pthread-weak-references-in-globals.c.patch
 atomic_patch -p1 ../patches/0002-fix-more-pthread-weak-references-in-globals.c.patch
 
+# Work around https://gitlab.gnome.org/GNOME/libxml2/-/issues/625
+if [[ "${target}" == i686-*-mingw* ]]; then
+   # Testing for `snprintf` and `vsnprintf` fails on this platform, but the
+   # functions are actually available, inform configure that we can use them.
+   EXTRA_ARGS=( ac_cv_func_snprintf=yes ac_cv_func_vsnprintf=yes )
+fi
+
 ./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --without-python \
     --disable-static \
     --with-zlib=${prefix} \
-    --with-iconv=${prefix}
+    --with-iconv=${prefix} \
+    "${EXTRA_ARGS[@]}"
 make -j${nproc}
 make install
 
