@@ -3,23 +3,31 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.11.5"
+version = v"2.12.0"
 
 # Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
-                  "3727b078c360ec69fa869de14bd6f75d7ee8d36987b071e6928d4720a28df3a6"),
+                  "431521c8e19ca396af4fa97743b5a6bfcccddbba90e16426a15e5374cd64fe0d"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libxml2-*
 
-./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --without-python \
-    --disable-static \
-    --with-zlib=${prefix} \
-    --with-iconv=${prefix}
+# Remove patches for next version.
+atomic_patch -p1 ../patches/0001-fix-pthread-weak-references-in-globals.c.patch
+atomic_patch -p1 ../patches/0002-fix-more-pthread-weak-references-in-globals.c.patch
+
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLIBXML2_WITH_PYTHON=OFF \
+      -DLIBXML2_WITH_LZMA=OFF \
+      -DLIBXML2_WITH_TRIO=ON \
+      ..
 make -j${nproc}
 make install
 
@@ -44,5 +52,7 @@ dependencies = [
     Dependency("Libiconv_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# XML2 requires full C11 support (so GCC >= 5), but GCC v5-7 crases with an ICE
+# on Windows, so we need GCC 8 for that platform.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"8", julia_compat="1.6")
