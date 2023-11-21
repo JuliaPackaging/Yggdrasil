@@ -19,6 +19,8 @@ const ROCM_PATCHES = Dict(
 )
 
 const BUILDSCRIPT = raw"""
+echo ${target}
+
 CC=${WORKSPACE}/srcdir/rocm-clang \
 CXX=${WORKSPACE}/srcdir/rocm-clang++ \
 cmake \
