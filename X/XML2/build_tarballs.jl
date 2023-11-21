@@ -20,11 +20,14 @@ cd ${WORKSPACE}/srcdir/libxml2-*
 atomic_patch -p1 ../patches/0001-fix-pthread-weak-references-in-globals.c.patch
 atomic_patch -p1 ../patches/0002-fix-more-pthread-weak-references-in-globals.c.patch
 
-./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --without-python \
-    --disable-static \
-    --with-zlib=${prefix} \
-    --with-iconv=${prefix}
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DLIBXML2_WITH_PYTHON=OFF \
+      -DLIBXML2_WITH_LZMA=OFF \
+      -DLIBXML2_WITH_TRIO=ON \
+      ..
 make -j${nproc}
 make install
 
