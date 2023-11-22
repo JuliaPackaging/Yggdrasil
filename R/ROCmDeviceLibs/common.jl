@@ -19,7 +19,9 @@ const ROCM_PATCHES = Dict(
 )
 
 const BUILDSCRIPT = raw"""
-echo ${target}
+# Remove to avoid using incorrect one... :/
+rm /opt/bin/x86_64-linux-musl-libgfortran4-cxx11/x86_64-linux-musl-ld.lld
+rm /opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-ld.lld
 
 CC=${WORKSPACE}/srcdir/rocm-clang \
 CXX=${WORKSPACE}/srcdir/rocm-clang++ \
