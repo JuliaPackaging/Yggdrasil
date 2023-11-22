@@ -8,10 +8,8 @@ const ROCM_TAGS = Dict(
     v"5.4.4" => "4d86a313a33027cff82dc73fe9b8395a7a96eb04",
     v"5.5.1" => "49dd756ee374d648beb3ecd593f419db425ef621",
     v"5.6.1" => "2b9acb09a3808d80c61ab89235a7cf487f52e955")
-const ROCM_PLATFORMS = [
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
-]
+const ROCM_PLATFORMS = [AnyPlatform()]
+
 const ROCM_PATCHES = Dict(
     v"5.6.1" => raw"""
     atomic_patch -p1 $WORKSPACE/srcdir/patches/irif-no-memory-rw.patch
@@ -21,6 +19,10 @@ const ROCM_PATCHES = Dict(
 )
 
 const BUILDSCRIPT = raw"""
+# Remove to avoid using incorrect one... :/
+rm /opt/bin/x86_64-linux-musl-libgfortran4-cxx11/x86_64-linux-musl-ld.lld
+rm /opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-ld.lld
+
 CC=${WORKSPACE}/srcdir/rocm-clang \
 CXX=${WORKSPACE}/srcdir/rocm-clang++ \
 cmake \
