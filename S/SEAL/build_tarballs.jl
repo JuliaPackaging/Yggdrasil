@@ -1,20 +1,18 @@
-
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "SEAL"
-version = v"3.6.2"
+version = v"4.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/microsoft/SEAL/archive/v$(version).tar.gz",
-                  "1e2a97deb1f5b543640fc37d7b4737cab2a9849f616c13ff40ad3be4cf29fb9c")
+    GitSource("https://github.com/microsoft/SEAL.git", "206648d0e4634e5c61dcf9370676630268290b59")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SEAL-*
+cd $WORKSPACE/srcdir/SEAL
 
 # Collect target-specific flags
 # Note: The '-DSEAL_USE__*' and `-DSEAL*_EXITCODE*` flags are required to circumvent
@@ -49,3 +47,37 @@ cmake -S . -B build \
   -DSEAL__SUBBORROW_U64_FOUND_EXITCODE=1 \
   -DSEAL__SUBBORROW_U64_FOUND_EXITCODE__TRYRUN_OUTPUT=1 \
   $TARGET_FLAGS
+
+cmake --build build --parallel ${nproc}
+cmake --install build
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="musl"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "macos"),
+    Platform("x86_64", "freebsd")
+]
+
+# Fix incompatibilities across the GCC 4/5 version boundary due to std::string,
+# as suggested by the wizard
+platforms = expand_cxxstring_abis(platforms)
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libsealc", :libsealc)
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = Dependency[
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"7.1.0")
+
