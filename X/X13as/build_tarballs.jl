@@ -7,6 +7,7 @@ version = v"1.1.60"
 
 # Collection of sources required to complete build
 sources = [
+    DirectorySource("./bundled"),
     ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_asciisrc-v1-1-b60.tar.gz", "2bd53953a1bdd238a128b89e95e8e5fc14f33aa4a9e4c7f0fc3fe7323b73131c", unpack_target="./x13as_asciisrc"),
     ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_htmlsrc-v1-1-b60.tar.gz", "642f6b6a969c5c311252ca83845ea391ab8c3d59840c4dc2508f9c86095c7757", unpack_target="./x13as_htmlsrc"),
     ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_ascii-v1-1-b60.tar.gz", "593e6b63024181c9550c281587bfeb28b2dcf1658f4495d42eb8933c6868ee36"),
@@ -53,6 +54,8 @@ install -Dvm 644 "x13as/docs/docx13as.pdf" "${docsdir}/docx13as.pdf"
 install -Dvm 644 "x13as/docs/qrefX13ASunix.pdf" "${docsdir}/qrefX13ASunix.pdf"
 install -Dvm 644 "x13as/docs/docX13ASHTML.pdf" "${docsdir}/docX13ASHTML.pdf"
 install -Dvm 644 "x13as/docs/qrefX13ASHTMLunix.pdf" "${docsdir}/qrefX13ASHTMLunix.pdf"
+########## Fourth, install license files
+install_license x13as_license.md
 """
 
 # These are the platforms we will build for by default, unless further
