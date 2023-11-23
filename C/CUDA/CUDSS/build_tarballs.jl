@@ -11,9 +11,6 @@ name = "CUDSS"
 version = v"0.1.0"
 full_version = "0.1.0.45"
 
-# XXX: the server's redistrib json does not list both CUDA variants, so provide our own.
-json = read("redistrib.json", String)
-
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
 
@@ -54,8 +51,8 @@ for cuda_version in [v"12"], platform in platforms
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = parse_sources(json, "cudss", ["cudss"]; version=full_version, platform,
-                            variant="cuda$(cuda_version.major)")
+    sources = get_sources("cudss", ["cudss"]; version=full_version, platform,
+                          variant="cuda$(cuda_version.major)")
 
     push!(builds, (; platforms=[augmented_platform], sources))
 end
