@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "CDE"
-version = v"1.0.0"
-sources = [GitSource("https://github.com/HabershonLab/cde", "049cd0d2da73a0c5bb340ebdb9a78e35348fe49a")]
+version = v"1.0.1"
+sources = [GitSource("https://github.com/HabershonLab/cde", "6ff939817769fc4da20f82baafd2d92f4a47e211")]
 
 script = raw"""
 cd cde
 mkdir -p $bindir
-make -j1 EXE="${bindir}/cde${exeext}" COMPILE_STATIC=false 
+make -j${nproc} EXE="${bindir}/cde${exeext}"
 """
 
 platforms = supported_platforms()
