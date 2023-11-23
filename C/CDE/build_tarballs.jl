@@ -7,7 +7,7 @@ sources = [GitSource("https://github.com/HabershonLab/cde", "6ff939817769fc4da20
 script = raw"""
 cd cde
 mkdir -p $bindir
-make -j{nproc} EXE="${bindir}/cde${exeext}"
+make -j${nproc} EXE="${bindir}/cde${exeext}"
 """
 
 platforms = supported_platforms()
