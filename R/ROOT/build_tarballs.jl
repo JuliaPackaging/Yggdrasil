@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "ROOT"
-version = v"6.28.8"
-version_slug = "6.28.08"
+version = v"6.00.00"
+version_slug = "6.30.00"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://root.cern.ch/download/root_v$(version_slug).source.tar.gz",
-    "a3e64b4c01f87cd9bbe57e61ef96b41626e49b0446095070d41d9bfba3526862")
+    "0592c066954cfed42312957c9cb251654456064fe2d8dabdcb8826f1c0099d71")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir build
 cd build/
-cmake -DLLVM_INCLUDE_TESTS=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-6.28.08
+cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-*
 make -j${nproc}
 make install
 """
