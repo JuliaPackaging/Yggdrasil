@@ -17,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir build
 cd build/
-cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-6.28.08
+cmake -DLLVM_INCLUDE_TESTS=OFF -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-6.28.08
 make -j${nproc}
 make install
 """
