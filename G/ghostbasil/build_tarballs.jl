@@ -15,9 +15,10 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir ghostbasil/julia/build
 cd ghostbasil/julia/build
-cmake     -DJulia_PREFIX=$prefix     -DCMAKE_INSTALL_PREFIX=$prefix     -DCMAKE_FIND_ROOT_PATH=$prefix     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}     -DEigen3_DIR=$prefix/share/eigen3/cmake     -DCMAKE_BUILD_TYPE=Release     ../
+cmake -DJulia_PREFIX=$prefix -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DEigen3_DIR=$prefix/share/eigen3/cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 make install
+install_license $WORKSPACE/srcdir/ghostbasil/R/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,10 +39,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"))
-    Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
-    Dependency(PackageSpec(name="libjulia_jll", uuid="5ad3ddd2-0711-543a-b040-befd59781bbf"))
+    Dependency("libcxxwrap_julia_jll"),
+    BuildDependency("Eigen_jll"),
+    BuildDependency("libjulia_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
