@@ -33,7 +33,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libghostbasil_wrap", :libghostbasil)
+    LibraryProduct("libghostbasil_wrap", :libghostbasil_wrap)
 ]
 
 # Dependencies that must be installed before this package can be built
