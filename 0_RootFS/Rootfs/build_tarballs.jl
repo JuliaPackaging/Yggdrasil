@@ -163,7 +163,7 @@ NET_TOOLS="curl wget git openssl ca-certificates"
 MISC_TOOLS="python3 py3-pip sudo file libintl patchutils grep zlib"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools rsync" # TODO: restore `unrar` when it comes back to Alpine Linux
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
-BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
+BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache ninja"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
 
 # chgrp and chown should be no-ops since we run in a single-user mode
