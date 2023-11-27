@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "ghostbasil"
-version = v"0.0.2"
+version = v"0.0.4"
 
 # Collection of sources required to complete build
 sources = [
@@ -41,7 +41,7 @@ platforms = [
     Platform("x86_64", "linux"; libc = "musl"),
     Platform("aarch64", "linux"; libc = "musl")
 ]
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
