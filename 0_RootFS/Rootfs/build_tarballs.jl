@@ -32,8 +32,8 @@ version = VersionNumber("$(year(today())).$(month(today())).$(day(today()))")
 verbose = "--verbose" in ARGS
 
 # We begin by downloading the alpine rootfs and using THAT as a bootstrap rootfs.
-rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/e7f8cc3aebd309337497c1e794db9aabbb9902c0/x86_64/alpine-minirootfs-3.18.4-x86_64.tar.gz"
-rootfs_hash = "c59d5203bc6b8b6ef81f3f6b63e32c28d6e47be806ba8528f8766a4ca506c7ba"
+rootfs_url = "https://github.com/alpinelinux/docker-alpine/raw/818c831891a18d2453ad6458011ea8cbff74d0e1/x86_64/alpine-minirootfs-3.15.0-x86_64.tar.gz"
+rootfs_hash = "ec7ec80a96500f13c189a6125f2dbe8600ef593b87fc4670fe959dc02db727a2"
 mkpath(joinpath(@__DIR__, "build"))
 mkpath(joinpath(@__DIR__, "products"))
 rootfs_targz_path = joinpath(@__DIR__, "build", "rootfs.tar.gz")
@@ -114,13 +114,13 @@ sources = [
     ArchiveSource(rootfs_url, rootfs_hash),
     # Objconv is very useful
     GitSource("https://github.com/staticfloat/objconv.git",
-                  "ae54df67e0c4ac2c78f3a7ece486ed4e92d098af"), # v2.53
+              "c68e441d2b93074b01ea193cb17e944ed751750f"), # v2.54
     # As is patchelf
     GitSource("https://github.com/NixOS/patchelf.git",
               "99c24238981b7b1084313aca8f5c493bb46f302c"), # v0.18.0
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
     GitSource("https://github.com/mesonbuild/meson.git",
-              "b9cbf3aa6f4a8c1c5332ce7947d8040755f186b8"), # v1.2.1
+              "7368795d13081d4928a9ba04d48498ca2442624b"), # v1.3.0
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.3%2B0/ldid.v2.1.3.x86_64-linux-musl-cxx11.tar.gz",
@@ -160,7 +160,7 @@ mkdir ./dev/shm
 
 ## Install foundational packages within the chroot
 NET_TOOLS="curl wget git openssl ca-certificates"
-MISC_TOOLS="python3 py3-pip sudo file libintl patchutils grep zlib"
+MISC_TOOLS="python2 python3 py3-pip sudo file libintl patchutils grep zlib"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools rsync" # TODO: restore `unrar` when it comes back to Alpine Linux
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
 BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache ninja"
