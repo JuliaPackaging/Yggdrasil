@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "ghostbasil"
-version = v"0.0.1"
+version = v"0.0.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,11 +13,22 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir ghostbasil/julia/build
+mkdir -p ghostbasil/julia/build
 cd ghostbasil/julia/build
-cmake -DJulia_PREFIX=$prefix -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DEigen3_DIR=$prefix/share/eigen3/cmake -DCMAKE_BUILD_TYPE=Release ..
+
+cmake \
+    -DJulia_PREFIX=$prefix \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DEigen3_DIR=$prefix/share/eigen3/cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    ../
+
 make
 make install
+
+# install license
 install_license $WORKSPACE/srcdir/ghostbasil/R/LICENSE.md
 """
 
