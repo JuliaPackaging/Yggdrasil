@@ -144,15 +144,16 @@ fi
 #TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 #TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 #TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+grep -v '"-l ' libtool
+grep -v ' -l ' libtool
+grep -v '-l"' libtool
 
 make -j${nproc}
 make -j${nproc} install
 
 # Delete duplicate file
 if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
-    echo OUCH
-    false
-#TODO     ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
+    ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
 fi
 
 ################################################################################
