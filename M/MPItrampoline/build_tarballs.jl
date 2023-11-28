@@ -144,14 +144,15 @@ fi
 #TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 #TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 #TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
-grep -v '"-l ' libtool
-grep -v ' -l ' libtool
-grep -v '-l"' libtool
+grep -v -- '"-l ' libtool
+grep -v -- ' -l ' libtool
+grep -v -- '-l"' libtool
 
 make -j${nproc}
 make -j${nproc} install
 
 # Delete duplicate file
+# See <https://github.com/pmodels/mpich/issues/6814>
 if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
     ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
 fi
