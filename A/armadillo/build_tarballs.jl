@@ -55,9 +55,6 @@ cmake .. "${FLAGS[@]}"
 make -j${nproc}
 make install
 
-# debugging sanity check
-ldd "${libdir}/libarmadillo.${dlext}"
-
 # Armadillo links against a _very_ specific version of OpenBLAS on macOS by
 # default:
 if [[ ${target} == *apple* ]]; then
