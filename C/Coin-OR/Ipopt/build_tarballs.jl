@@ -41,12 +41,11 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --enable-shared \
-    --enable-static \
     --with-pic \
     --disable-dependency-tracking \
     lt_cv_deplibs_check_method=pass_all \
     --with-lapack-lflags="-L${libdir} ${LBT}" \
-    --with-mumps-cflags="-I${includedir}" \
+    --with-mumps-cflags="-I${includedir}/libseq" \
     --with-mumps-lflags="-L${libdir} -ldmumps" \
     --with-spral-cflags="-I${includedir}" \
     --with-spral-lflags="-L${libdir} -lspral" \
@@ -87,5 +86,6 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = gcc_version,
+    preferred_llvm_version = llvm_version,
     julia_compat = "1.9"
 )

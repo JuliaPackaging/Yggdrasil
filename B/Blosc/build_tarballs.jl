@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Blosc"
-version = v"1.21.4"
+version = v"1.21.5"
 
 # Collection of sources required to build Blosc
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc.git", "2c2f9bd936b1340ad92a6da6c2a52adf4254c241"),
+    GitSource("https://github.com/Blosc/c-blosc.git", "d306135aaf378ade04cd4d149058c29036335758"),
     DirectorySource("./bundled"),
 ]
 
@@ -44,9 +44,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-	Dependency("Zlib_jll"),
-	Dependency("Zstd_jll"),
-	Dependency("Lz4_jll"),
+	Dependency("Zlib_jll"; compat="1.2.12"),
+	Dependency("Zstd_jll"; compat="1.5.0"),
+	Dependency("Lz4_jll"; compat="1.9.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -1,0 +1,41 @@
+diff --git a/lib/core/include/RandomGenerators.h b/lib/core/include/RandomGenerators.h
+index 622fe28834..1f2dc255f8 100644
+--- a/lib/core/include/RandomGenerators.h
++++ b/lib/core/include/RandomGenerators.h
+@@ -38,9 +38,17 @@ public:
+ 
+    const Integer& get() const { return data; }
+ 
++   static void set_rand_source(std::function<long()> fun) {
++      rand_source = fun;
++   }
++   static void set_rand_source(long (*funptr)()) {
++      rand_source = std::function<long()>(funptr);
++   }
++
+    void renew();
+ private:
+    static int rfd;
++   static std::function<long()> rand_source;
+    Integer data;
+ };
+ 
+diff --git a/lib/core/src/RandomGenerators.cc b/lib/core/src/RandomGenerators.cc
+index bc08ed774b..37ac33fd6c 100644
+--- a/lib/core/src/RandomGenerators.cc
++++ b/lib/core/src/RandomGenerators.cc
+@@ -33,9 +33,14 @@ RandomSeed::RandomSeed(perl::Value v) :
+ }
+ 
+ int RandomSeed::rfd = -2;
++std::function<long()> RandomSeed::rand_source;
+ 
+ void RandomSeed::renew()
+ {
++   if (rand_source) {
++      data = rand_source();
++      return;
++   }
+    if (rfd==-2) rfd=open("/dev/urandom", O_RDONLY);
+    if (rfd>=0) {
+       if (data.fill_from_file(rfd)) return;

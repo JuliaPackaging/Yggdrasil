@@ -3,17 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "libCEED"
-version = v"0.11.0"
+version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/CEED/libCEED/archive/v$(version).tar.gz",
-                  "cf51d034ec26c120ed1ca47cb7142381644e76558fa5922300b06b8dd715b0e4")
+    GitSource("https://github.com/CEED/libCEED.git", "4018a20a98d451fac24765d3ddb936861647ce8d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libCEED-*
+cd $WORKSPACE/srcdir/libCEED*
 make -j${nproc} MEMCHK=0 CC_VENDOR=gcc
 make install MEMCHK=0 CC_VENDOR=gcc
 """

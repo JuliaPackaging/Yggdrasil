@@ -1,0 +1,70 @@
+--- a/opal/mca/btl/usnic/btl_usnic_component.c
++++ b/opal/mca/btl/usnic/btl_usnic_component.c
+@@ -83,7 +83,31 @@
+ #define OPAL_BTL_USNIC_NUM_COMPLETIONS 500
+ 
+ /* MPI_THREAD_MULTIPLE_SUPPORT */
+-opal_recursive_mutex_t btl_usnic_lock = OPAL_RECURSIVE_MUTEX_STATIC_INIT;
++opal_recursive_mutex_t btl_usnic_lock;
++__attribute__((__constructor__)) static void btl_usnic_lock_init() {
++  pthread_mutexattr_t attr;
++  pthread_mutexattr_init(&attr);
++  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
++
++  #if OPAL_ENABLE_DEBUG 
++    btl_usnic_lock.super.obj_magic_id = OPAL_OBJ_MAGIC_ID;
++  #endif
++  btl_usnic_lock.super.obj_class = OBJ_CLASS(opal_mutex_t);
++  btl_usnic_lock.super.obj_reference_count = 1;
++  #if OPAL_ENABLE_DEBUG 
++    btl_usnic_lock.super.cls_init_file_name = __FILE__;
++    btl_usnic_lock.super.cls_init_lineno = __LINE__;
++  #endif
++  pthread_mutex_init(&btl_usnic_lock.m_lock, &attr);   
++  #if OPAL_ENABLE_DEBUG 
++    btl_usnic_lock.m_lock_debug = 0;
++    btl_usnic_lock.m_lock_file = NULL;
++    btl_usnic_lock.m_lock_line = 0;
++  #endif
++  btl_usnic_lock.m_lock_atomic = OPAL_ATOMIC_LOCK_INIT;
++
++  pthread_mutexattr_destroy(&attr);
++}
+ 
+ /* RNG buffer definition */
+ opal_rng_buff_t opal_btl_usnic_rand_buff = {{0}};
+--- a/ompi/instance/instance.c
++++ b/ompi/instance/instance.c
+@@ -59,7 +59,31 @@
+ 
+ ompi_predefined_instance_t ompi_mpi_instance_null = {{{{0}}}};
+ 
+-static opal_recursive_mutex_t instance_lock = OPAL_RECURSIVE_MUTEX_STATIC_INIT;
++static opal_recursive_mutex_t instance_lock;
++__attribute__((__constructor__)) static void instance_lock_init() {
++  pthread_mutexattr_t attr;
++  pthread_mutexattr_init(&attr);
++  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
++
++  #if OPAL_ENABLE_DEBUG 
++    instance_lock.super.obj_magic_id = OPAL_OBJ_MAGIC_ID;
++  #endif
++  instance_lock.super.obj_class = OBJ_CLASS(opal_mutex_t);
++  instance_lock.super.obj_reference_count = 1;
++  #if OPAL_ENABLE_DEBUG 
++    instance_lock.super.cls_init_file_name = __FILE__;
++    instance_lock.super.cls_init_lineno = __LINE__;
++  #endif
++  pthread_mutex_init(&instance_lock.m_lock, &attr);   
++  #if OPAL_ENABLE_DEBUG 
++    instance_lock.m_lock_debug = 0;
++    instance_lock.m_lock_file = NULL;
++    instance_lock.m_lock_line = 0;
++  #endif
++  instance_lock.m_lock_atomic = OPAL_ATOMIC_LOCK_INIT;
++
++  pthread_mutexattr_destroy(&attr);
++}
+ 
+ /** MPI_Init instance */
+ ompi_instance_t *ompi_mpi_instance_default = NULL;

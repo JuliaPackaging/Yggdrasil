@@ -3,28 +3,41 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.11.5"
+version = v"2.12.0"
 
 # Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
-                  "3727b078c360ec69fa869de14bd6f75d7ee8d36987b071e6928d4720a28df3a6"),
+                  "431521c8e19ca396af4fa97743b5a6bfcccddbba90e16426a15e5374cd64fe0d"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libxml2-*
 
+# Remove patches for next version.
+atomic_patch -p1 ../patches/0001-fix-pthread-weak-references-in-globals.c.patch
+atomic_patch -p1 ../patches/0002-fix-more-pthread-weak-references-in-globals.c.patch
+
+# Work around https://gitlab.gnome.org/GNOME/libxml2/-/issues/625
+if [[ "${target}" == i686-*-mingw* ]]; then
+   # Testing for `snprintf` and `vsnprintf` fails on this platform, but the
+   # functions are actually available, inform configure that we can use them.
+   EXTRA_ARGS=( ac_cv_func_snprintf=yes ac_cv_func_vsnprintf=yes )
+fi
+
 ./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --without-python \
     --disable-static \
     --with-zlib=${prefix} \
-    --with-iconv=${prefix}
+    --with-iconv=${prefix} \
+    "${EXTRA_ARGS[@]}"
 make -j${nproc}
 make install
 
 # Remove heavy doc directories
-rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc}
+rm -r ${prefix}/share/{doc/libxml2,man}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,5 +57,7 @@ dependencies = [
     Dependency("Libiconv_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# XML2 requires full C11 support (so GCC >= 5), but GCC v5-7 crases with an ICE
+# on Windows, so we need GCC 8 for that platform.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"8", julia_compat="1.6")
