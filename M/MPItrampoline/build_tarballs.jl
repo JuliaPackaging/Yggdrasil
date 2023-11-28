@@ -220,7 +220,7 @@ foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
 
 # Save time while testing
 # TODO: Disable this in production!
-platforms = filter(p -> arch(p) = "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"5", platforms)
+platforms = filter(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"5", platforms)
 @show platforms
 
 # The products that we will ensure are always built
