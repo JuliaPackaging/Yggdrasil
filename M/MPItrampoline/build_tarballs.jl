@@ -170,26 +170,26 @@ cd ${WORKSPACE}/srcdir/MPItrampoline*/mpiwrapper
 
 # Yes, this is tedious. No, without being this explicit, cmake will
 # not properly auto-detect the MPI libraries on Darwin.
-if [[ "${target}" == *-apple-* ]]; then
-    ext='a'
-    cmake -B build -S . \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        "${INSTALL_RPATH[@]}" \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_CXX_COMPILER=c++ \
-        -DMPI_Fortran_COMPILER=gfortran \
-        -DMPI_C_LIB_NAMES='mpi;pmpi' \
-        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
-        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${ext} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
-        -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec
-else
+#TODO if [[ "${target}" == *-apple-* ]]; then
+#TODO     ext='a'
+#TODO     cmake -B build -S . \
+#TODO         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+#TODO         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
+#TODO         -DCMAKE_INSTALL_PREFIX=${prefix} \
+#TODO         "${INSTALL_RPATH[@]}" \
+#TODO         -DBUILD_SHARED_LIBS=ON \
+#TODO         -DMPI_C_COMPILER=cc \
+#TODO         -DMPI_CXX_COMPILER=c++ \
+#TODO         -DMPI_Fortran_COMPILER=gfortran \
+#TODO         -DMPI_C_LIB_NAMES='mpi;pmpi' \
+#TODO         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
+#TODO         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
+#TODO         -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
+#TODO         -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${ext} \
+#TODO         -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
+#TODO         -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
+#TODO         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec
+#TODO else
     cmake -B build -S . \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
@@ -197,7 +197,7 @@ else
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         "${INSTALL_RPATH[@]}"
-fi
+#TODO fi
 
 cmake --build build --config Debug --parallel ${nproc}
 cmake --build build --config Debug --parallel ${nproc} --target install
@@ -218,21 +218,35 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
 
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
 # not support musl or BSD.
 # FreeBSD: https://reviews.freebsd.org/D24841
-platforms = filter(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
-
-platforms = expand_gfortran_versions(platforms)
-
-# Add `mpi+mpitrampoline` platform tag
-foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
+filter!(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
 
 # # Save time while testing
 # # TODO: Disable this in production!
-# platforms = filter(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"5", platforms)
+# filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"5", platforms)
 # @show platforms
+
+# We disable this platform because it does not build:
+#     ERROR: could not load library "/cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0"
+#     /cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0: ELF load command address/offset not properly aligned
+# filter!(p -> !(arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"4"), platforms)
+
+# Build error:
+#     ERROR: could not load library "/cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0"
+#     /cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0: ELF load command address/offset not properly aligned
+# filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"4", platforms)
+
+# Build error:
+#     /workspace/srcdir/MPItrampoline/mpiwrapper/mpiwrapper.c:1583:14: error: call to undeclared function 'MPI_Buffer_flush'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+# all `arch`s and `libgfortran_version`s
+filter!(p -> arch(p) == "x86_64" && Sys.isapple(p) && libgfortran_version(p) == v"5", platforms)
+
+# Add `mpi+mpitrampoline` platform tag
+foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -265,5 +279,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # - `<stdatomic.h>` requires at least GCC 5
+# - try GCC 6
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
