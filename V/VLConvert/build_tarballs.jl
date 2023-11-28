@@ -4,8 +4,7 @@ name = "VLConvert"
 version = v"1.1.0"
 
 sources = [
-    ArchiveSource("https://github.com/vega/vl-convert/archive/refs/tags/v$(version).tar.gz",
-                  "e409cd8c2b2b90e8be13e3bec41482c07b03b2e3a1dc6afe715d5a6968b13b2a"),
+    GitSource("https://github.com/vega/vl-convert.git", "ec4940b42b54bda3d9828323cf0de0e3c71bdf39"),
 ]
 
 # Bash recipe for building across all platforms
