@@ -185,10 +185,17 @@ if [[ "${target}" == *-apple-* ]]; then
         -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec
 else
+    #TODO cmake -B build -S . \
+    #TODO     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    #TODO     -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
+    #TODO     -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
+    #TODO     -DBUILD_SHARED_LIBS=ON \
+    #TODO     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    #TODO     "${INSTALL_RPATH[@]}"
     cmake -B build -S . \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-        -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
+        -DCMAKE_C_COMPILER=${prefix}/lib/mpich/bin/mpicc \
+        -DCMAKE_Fortran_COMPILER=${prefix}/lib/mpich/bin/mpifort \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         "${INSTALL_RPATH[@]}"
