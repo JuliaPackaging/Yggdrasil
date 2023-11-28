@@ -25,9 +25,9 @@ script = raw"""
 # Install MPItrampoline
 ################################################################################
 
-#TODO # When we build libraries linking to MPITrampoline, this library needs to find the
+#TODO # When we build libraries linking to MPItrampoline, this library needs to find the
 #TODO # libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
-#TODO # need to give a little help to MPITrampoline to find it:
+#TODO # need to give a little help to MPItrampoline to find it:
 #TODO # <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
 #TODO # apply this *hack* only when strictly needed, to avoid screwing something else up.
 #TODO if [[ "${target}" == x86_64-linux-gnu* ]]; then
@@ -40,9 +40,9 @@ cd ${WORKSPACE}/srcdir/MPItrampoline*/mpitrampoline
 cmake -B build -S . \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    "${INSTALL_RPATH[@]}" \
-    -DBUILD_SHARED_LIBS=ON
+    "${INSTALL_RPATH[@]}"
 cmake --build build --config Debug --parallel ${nproc}
 cmake --build build --config Debug --parallel ${nproc} --target install
 
@@ -170,8 +170,8 @@ cd ${WORKSPACE}/srcdir/MPItrampoline*/mpiwrapper
 
 # Yes, this is tedious. No, without being this explicit, cmake will
 # not properly auto-detect the MPI libraries on Darwin.
-#TODO if [[ "${target}" == *-apple-* ]]; then
-#TODO     ext='a'
+if [[ "${target}" == *-apple-* ]]; then
+    ext='a'
 #TODO     cmake -B build -S . \
 #TODO         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 #TODO         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
@@ -189,7 +189,26 @@ cd ${WORKSPACE}/srcdir/MPItrampoline*/mpiwrapper
 #TODO         -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
 #TODO         -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
 #TODO         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec
-#TODO else
+    cmake -B build -S . \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_FIND_ROOT_PATH="${prefix}" \
+        -DMPI_C_COMPILER=cc \
+        -DMPI_CXX_COMPILER=c++ \
+        -DMPI_Fortran_COMPILER=gfortran \
+        -DMPI_C_COMPILER_FLAGS="-I${prefix}/lib/mpich/include" \
+        -DMPI_CXX_COMPILER_FLAGS="-I${prefix}/lib/mpich/include" \
+        -DMPI_Fortran_COMPILER_FLAGS="-I${prefix}/lib/mpich/include" \
+        -DMPI_C_LIB_NAMES='mpi;pmpi' \
+        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
+        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${ext} \
+        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
+        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
+        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
+        -DBUILD_SHARED_LIBS=ON \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        "${INSTALL_RPATH[@]}"
+else
     cmake -B build -S . \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
@@ -197,7 +216,7 @@ cd ${WORKSPACE}/srcdir/MPItrampoline*/mpiwrapper
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         "${INSTALL_RPATH[@]}"
-#TODO fi
+fi
 
 cmake --build build --config Debug --parallel ${nproc}
 cmake --build build --config Debug --parallel ${nproc} --target install
