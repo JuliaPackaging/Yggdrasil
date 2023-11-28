@@ -148,10 +148,12 @@ fi
 make -j${nproc}
 make -j${nproc} install
 
-#TODO # Delete duplicate file
-#TODO if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
+# Delete duplicate file
+if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
+    echo OUCH
+    false
 #TODO     ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
-#TODO fi
+fi
 
 ################################################################################
 # Install MPIwrapper
@@ -215,10 +217,10 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-#TODO # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
-#TODO # not support musl or BSD.
-#TODO # FreeBSD: https://reviews.freebsd.org/D24841
-#TODO platforms = filter(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
+# MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
+# not support musl or BSD.
+# FreeBSD: https://reviews.freebsd.org/D24841
+platforms = filter(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
 
 platforms = expand_gfortran_versions(platforms)
 
@@ -260,5 +262,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# - `<stdatomic.h>` requires at least GCC 5
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
