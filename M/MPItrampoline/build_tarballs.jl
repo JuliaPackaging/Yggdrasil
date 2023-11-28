@@ -14,7 +14,7 @@ mpich_version_str = "4.1.2"
 # Collection of sources required to complete build
 sources = [
     # This is really the development version before version 6.0.0
-    GitSource("https://github.com/eschnett/MPItrampoline", "7d35a4defa3bc6c0980cddbb8a41fb7191e0a2e1"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "2d3298d8216d5ad8d7b868685bf4a489a87790e2"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
 ]
@@ -185,17 +185,10 @@ if [[ "${target}" == *-apple-* ]]; then
         -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec
 else
-    #TODO cmake -B build -S . \
-    #TODO     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    #TODO     -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-    #TODO     -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
-    #TODO     -DBUILD_SHARED_LIBS=ON \
-    #TODO     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    #TODO     "${INSTALL_RPATH[@]}"
     cmake -B build -S . \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_C_COMPILER=${prefix}/lib/mpich/bin/mpicc \
-        -DCMAKE_Fortran_COMPILER=${prefix}/lib/mpich/bin/mpifort \
+        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
+        -DMPI_HOME=${prefix}/lib/mpich \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         "${INSTALL_RPATH[@]}"
