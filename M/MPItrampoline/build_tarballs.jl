@@ -22,31 +22,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 ################################################################################
-# Install MPItrampoline
-################################################################################
-
-#TODO # When we build libraries linking to MPItrampoline, this library needs to find the
-#TODO # libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
-#TODO # need to give a little help to MPItrampoline to find it:
-#TODO # <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
-#TODO # apply this *hack* only when strictly needed, to avoid screwing something else up.
-#TODO if [[ "${target}" == x86_64-linux-gnu* ]]; then
-#TODO     INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
-#TODO else
-INSTALL_RPATH=()
-#TODO fi
-
-cd ${WORKSPACE}/srcdir/MPItrampoline*/mpitrampoline
-cmake -B build -S . \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    "${INSTALL_RPATH[@]}"
-cmake --build build --config Debug --parallel ${nproc}
-cmake --build build --config Debug --parallel ${nproc} --target install
-
-################################################################################
 # Install MPICH
 ################################################################################
 
@@ -170,7 +145,7 @@ cd ${WORKSPACE}/srcdir/MPItrampoline*/mpiwrapper
 
 # Yes, this is tedious. No, without being this explicit, cmake will
 # not properly auto-detect the MPI libraries on Darwin.
-if [[ "${target}" == *-apple-* ]]; then
+if [[ "${target}" == *-Xapple-* ]]; then
     ext='a'
 #TODO     cmake -B build -S . \
 #TODO         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -218,6 +193,31 @@ else
         "${INSTALL_RPATH[@]}"
 fi
 
+cmake --build build --config Debug --parallel ${nproc}
+cmake --build build --config Debug --parallel ${nproc} --target install
+
+################################################################################
+# Install MPItrampoline
+################################################################################
+
+#TODO # When we build libraries linking to MPItrampoline, this library needs to find the
+#TODO # libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
+#TODO # need to give a little help to MPItrampoline to find it:
+#TODO # <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
+#TODO # apply this *hack* only when strictly needed, to avoid screwing something else up.
+#TODO if [[ "${target}" == x86_64-linux-gnu* ]]; then
+#TODO     INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
+#TODO else
+INSTALL_RPATH=()
+#TODO fi
+
+cd ${WORKSPACE}/srcdir/MPItrampoline*/mpitrampoline
+cmake -B build -S . \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    "${INSTALL_RPATH[@]}"
 cmake --build build --config Debug --parallel ${nproc}
 cmake --build build --config Debug --parallel ${nproc} --target install
 
