@@ -123,7 +123,7 @@ fi
 # Ensure that `bin/mpiexec` exists
 if ! test -e ${prefix}/lib/mpich/bin/mpiexec; then
     test -e ${prefix}/lib/mpich/bin/mpiexec.hydra
-    ln -s mpiexec.hydra ${prefix}/lib/mpich/bin/mpiexec
+    cp ${prefix}/lib/mpich/bin/mpiexec.hydra ${prefix}/lib/mpich/bin/mpiexec
 fi
 
 ################################################################################
