@@ -59,6 +59,13 @@ if [[ "${target}" == i686-linux-musl ]]; then
     EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
 fi
 
+if [[ "${target}" == *-apple-* ]]; then
+    # Prevent this error:
+    #     ERROR: could not load library "/cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0"
+    #     /cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0: ELF load command address/offset not properly aligned
+    sed -i 's/ -r -keep_private_externs / /g' configure
+fi
+
 if [[ "${target}" == aarch64-apple-* ]]; then
     EXTRA_FLAGS+=(
         FFLAGS=-fallow-argument-mismatch
