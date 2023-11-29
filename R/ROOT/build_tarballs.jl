@@ -18,7 +18,7 @@ apk add coreutils findutils dateutils
 cd $WORKSPACE/srcdir
 mkdir build
 cd build/
-cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-*
+cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Droofit=OFF -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-*
 make -j${nproc}
 make install
 """
@@ -60,8 +60,9 @@ dependencies = [
     Dependency(PackageSpec(name="PCRE_jll", uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"))
     Dependency(PackageSpec(name="Graphviz_jll", uuid="3c863552-8265-54e4-a6dc-903eb78fde85"))
     Dependency(PackageSpec(name="xxHash_jll", uuid="5fdcd639-92d1-5a06-bf6b-28f2061df1a9"))
+    Dependency("XZ_jll")
     Dependency(PackageSpec(name="Librsvg_jll", uuid="925c91fb-5dd6-59dd-8e8c-345e74382d89"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"13")
