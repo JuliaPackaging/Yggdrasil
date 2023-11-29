@@ -14,12 +14,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add coreutils findutils dateutils
+apk add util-linux pciutils usbutils coreutils binutils findutils grep iproute2
+apk add dateutils
+apk add bash bash-completion
+apk add cmake extra-cmake-modules
 cd $WORKSPACE/srcdir
 mkdir build
 cd build/
 cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Droot7=OFF -Droofit=OFF -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-*
 make -j${nproc}
+make
 make install
 """
 
