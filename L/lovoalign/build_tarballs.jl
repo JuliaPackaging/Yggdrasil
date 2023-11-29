@@ -7,22 +7,16 @@ version = v"20.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/m3g/lovoalign.git", "1e53ba4861e771d20cc081ee2be511130e606da4"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/m3g/lovoalign.git", "cba28738a5a945475570f5869b2efe9c0c2573eb")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-cd lovoalign/src
-if [[ $target == *"w64-mingw32" ]]; then
-    sed -i 's/lblastrampoline/lblastrampoline-5/' Makefile
-fi
+cd lovoalign
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .
 make
-cp ../bin/lovoalign ../../../destdir
+make install
 exit
 """
 
@@ -37,7 +31,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
