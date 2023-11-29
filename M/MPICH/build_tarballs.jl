@@ -12,6 +12,7 @@ version = VersionNumber(version_str)
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
                   "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
