@@ -264,7 +264,7 @@ products = [
 
     # MPICH
     # ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
-    ExecutableProduct("mpiexec", :mpiexec, "lib/mpich/bin"),
+    ExecutableProduct("mpiexec.hydra", :mpiexec, "lib/mpich/bin"),
 
     # MPIwrapper
     # `libmpiwrapper` is a plugin, not a library, and thus has the
