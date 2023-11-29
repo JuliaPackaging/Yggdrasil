@@ -82,15 +82,12 @@ fi
     --mandir=/tmp \
     "${EXTRA_FLAGS[@]}"
 
-#TODO # Remove empty `-l` flags from libtool
-#TODO # (Why are they there? They should not be.)
-#TODO # Run the command several times to handle multiple (overlapping) occurrences.
-#TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
-#TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
-#TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
-grep -v -- '"-l ' libtool
-grep -v -- ' -l ' libtool
-grep -v -- '-l"' libtool
+# Remove empty `-l` flags from libtool
+# (Why are they there? They should not be.)
+# Run the command several times to handle multiple (overlapping) occurrences.
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 
 # Build the library
 #TODO make -j${nproc}
