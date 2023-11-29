@@ -293,6 +293,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # - `<stdatomic.h>` requires at least GCC 5
-# - try GCC 6
+# - GCC 8: not yet good
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"12")
