@@ -63,6 +63,13 @@ if [[ "${target}" == i686-linux-musl ]]; then
     EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
 fi
 
+if [[ "${target}" == *-apple-* ]]; then
+    # Avoid this error:
+    # ld64.lld: warning: Option `-keep_private_externs' is not yet implemented. Stay tuned...
+    # ld64.lld: warning: Option `-r' is not yet implemented. Stay tuned...
+    sed -i 's/ -r -keep_private_externs / /' configure
+fi
+
 if [[ "${target}" == aarch64-apple-* ]]; then
     EXTRA_FLAGS+=(
         FFLAGS=-fallow-argument-mismatch
