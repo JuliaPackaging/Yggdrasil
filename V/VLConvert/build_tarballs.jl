@@ -10,7 +10,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/vl-convert*/
-cargo build --release
+V8_FROM_SOURCE=1 cargo build --release
 install -D -m 755 "target/${rust_target}/release/vl-convert${exeext}" "${bindir}/vl-convert${exeext}"
 """
 
