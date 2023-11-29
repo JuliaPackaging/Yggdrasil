@@ -13,6 +13,7 @@ sources = [
     ),
 ]
 
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd scipoptsuite*
