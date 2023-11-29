@@ -7,7 +7,7 @@ version = v"20.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/m3g/lovoalign.git", "da093d5ad97c093473cfe6b6fb73d6ead2d2a63b"),
+    GitSource("https://github.com/m3g/lovoalign.git", "1e53ba4861e771d20cc081ee2be511130e606da4"),
     DirectorySource("./bundled")
 ]
 
@@ -28,7 +28,7 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
