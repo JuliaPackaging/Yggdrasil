@@ -5,10 +5,10 @@ using BinaryBuilder
 
 
 name = "armadillo"
-version = v"12.2.0"
+version = v"12.6.6"
 sources = [
     ArchiveSource("http://sourceforge.net/projects/arma/files/armadillo-$(version).tar.xz",
-                  "b0dce042297e865add3351dad77f78c2c7638d6632f58357b015e50edcbd2186")
+                  "3858b0fd431772af032ad3f35c2aeb54e8dabea59169e7d1e9fccd78bc82ad35")
 ]
 
 script = raw"""
