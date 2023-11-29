@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "ROOT"
-version = v"6.00.00"
+version = v"6.30.00"
 version_slug = "6.30.00"
 
 # Collection of sources required to complete build
@@ -18,7 +18,7 @@ apk add coreutils findutils dateutils
 cd $WORKSPACE/srcdir
 mkdir build
 cd build/
-cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Droofit=OFF -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-*
+cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Droot7=OFF -Droofit=OFF -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-*
 make -j${nproc}
 make install
 """
@@ -53,6 +53,8 @@ dependencies = [
     Dependency("Xorg_libXft_jll")
     Dependency("XRootD_jll")
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"13.0.1"))
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"13.0.1"))
     Dependency("Lz4_jll")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="Giflib_jll", uuid="59f7168a-df46-5410-90c8-f2779963d0ec"))
@@ -65,4 +67,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"13")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
