@@ -257,12 +257,7 @@ filter!(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platf
 # Build error:
 #     ERROR: could not load library "/cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0"
 #     /cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0: ELF load command address/offset not properly aligned
-# filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"4", platforms)
-
-# Build error:
-#     /workspace/srcdir/MPItrampoline/mpiwrapper/mpiwrapper.c:1583:14: error: call to undeclared function 'MPI_Buffer_flush'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-# all `arch`s and `libgfortran_version`s
-filter!(p -> arch(p) == "x86_64" && Sys.isapple(p) && libgfortran_version(p) == v"5", platforms)
+filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"4", platforms)
 
 # Add `mpi+mpitrampoline` platform tag
 foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
