@@ -97,8 +97,7 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 
 # Build the library
-#TODO make -j${nproc}
-make
+make -j${nproc}
 
 # Install the library
 make install
