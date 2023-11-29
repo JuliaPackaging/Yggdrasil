@@ -22,6 +22,9 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
 
+# MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
+
 EXTRA_FLAGS=()
 # Define some obscure undocumented variables needed for cross compilation of
 # the Fortran bindings.  See for example
@@ -30,6 +33,7 @@ EXTRA_FLAGS=()
 export CROSS_F77_SIZEOF_INTEGER=4
 export CROSS_F77_SIZEOF_REAL=4
 export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
+export CROSS_F77_SIZEOF_LOGICAL=4
 export CROSS_F77_TRUE_VALUE=1
 export CROSS_F77_FALSE_VALUE=0
 
@@ -75,18 +79,21 @@ fi
     --enable-fast=all,O3 \
     --docdir=/tmp \
     --mandir=/tmp \
-    --disable-opencl \
     "${EXTRA_FLAGS[@]}"
 
-# Remove empty `-l` flags from libtool
-# (Why are they there? They should not be.)
-# Run the command several times to handle multiple (overlapping) occurrences.
-sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
-sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
-sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+#TODO # Remove empty `-l` flags from libtool
+#TODO # (Why are they there? They should not be.)
+#TODO # Run the command several times to handle multiple (overlapping) occurrences.
+#TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+#TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+#TODO sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+grep -v -- '"-l ' libtool
+grep -v -- ' -l ' libtool
+grep -v -- '-l"' libtool
 
 # Build the library
-make -j${nproc}
+#TODO make -j${nproc}
+make
 
 # Install the library
 make install
