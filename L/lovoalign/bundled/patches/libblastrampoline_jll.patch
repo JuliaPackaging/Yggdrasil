@@ -1,0 +1,13 @@
+diff --git before/lovoalign/src/Makefile after/lovoalign/src/Makefile
+index 2c61b0b..58fb558 100644
+--- before/lovoalign/src/Makefile
++++ after/lovoalign/src/Makefile
+@@ -7,7 +7,7 @@
+ FORTRAN = gfortran
+ #
+ # These flags assumes that lapack is installed system-wide
+-FLAGS = -O3 -ffast-math -llapack
++FLAGS = -O3 -lblastrampoline
+ # These are the flags necessary for using a local lapack library
+ #FLAGS = -O3 -ffast-math -L$HOME/.local/lapack -llapack -lblas 
+ #
