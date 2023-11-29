@@ -14,6 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+apk add coreutils findutils dateutils
 cd $WORKSPACE/srcdir
 mkdir build
 cd build/
