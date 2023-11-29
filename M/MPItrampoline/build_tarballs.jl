@@ -120,6 +120,12 @@ if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
     ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
 fi
 
+# Ensure that `bin/mpiexec` exists
+if test -f ${prefix}/lib/mpich/bin/mpiexec; then
+    test -f ${prefix}/lib/mpich/bin/mpiexec.hydra
+    ln -s mpiexec.hydra ${prefix}/lib/mpich/bin/mpiexec
+fi
+
 ################################################################################
 # Install MPIwrapper
 ################################################################################
@@ -264,7 +270,7 @@ products = [
 
     # MPICH
     # ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
-    ExecutableProduct("mpiexec.hydra", :mpiexec, "lib/mpich/bin"),
+    ExecutableProduct("mpiexec", :mpiexec, "lib/mpich/bin"),
 
     # MPIwrapper
     # `libmpiwrapper` is a plugin, not a library, and thus has the
