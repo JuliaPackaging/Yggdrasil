@@ -52,18 +52,6 @@ export CROSS_F90_DOUBLE_MODEL=15,307
 export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
 export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
 
-#TODO if [[ "${target}" == i686-linux-musl ]]; then
-#TODO     # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
-#TODO     # but not C++ or Fortran.  `configure` runs a C program to determine
-#TODO     # whether it's cross-compiling or not, but when it comes to running
-#TODO     # Fortran programs, it fails.  In addition, `configure` ignores the
-#TODO     # above exported variables if it believes it's doing a native build.
-#TODO     # Small hack: edit `configure` script to force `cross_compiling` to be
-#TODO     # always "yes".
-#TODO     sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
-#TODO     EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
-#TODO fi
-
 # Building with an external hwloc leads to problems loading the
 # resulting libraries and executable via MPIwrapper because this
 # happens outside of Julia's control.
@@ -200,16 +188,16 @@ cmake --build build --config Debug --parallel ${nproc} --target install
 # Install MPItrampoline
 ################################################################################
 
-#TODO # When we build libraries linking to MPItrampoline, this library needs to find the
-#TODO # libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
-#TODO # need to give a little help to MPItrampoline to find it:
-#TODO # <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
-#TODO # apply this *hack* only when strictly needed, to avoid screwing something else up.
-#TODO if [[ "${target}" == x86_64-linux-gnu* ]]; then
-#TODO     INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
-#TODO else
-INSTALL_RPATH=()
-#TODO fi
+# When we build libraries linking to MPItrampoline, this library needs to find the
+# libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
+# need to give a little help to MPItrampoline to find it:
+# <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
+# apply this *hack* only when strictly needed, to avoid screwing something else up.
+if [[ "${target}" == x86_64-linux-gnu* ]]; then
+    INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
+else
+    INSTALL_RPATH=()
+fi
 
 cd ${WORKSPACE}/srcdir/MPItrampoline*/mpitrampoline
 cmake -B build -S . \
