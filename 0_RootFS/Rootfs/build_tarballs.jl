@@ -116,8 +116,11 @@ sources = [
     GitSource("https://github.com/staticfloat/objconv.git",
               "c68e441d2b93074b01ea193cb17e944ed751750f"), # v2.54
     # As is patchelf
+    # We don't want to upgrade patchelf unless there's a compelling and proved reason
+    # to do it because of previous problems we experienced with v0.18.0.
+    # We encountered the error "ELF load command address/offset not properly aligned" in #7728 and #7729.
     GitSource("https://github.com/NixOS/patchelf.git",
-              "99c24238981b7b1084313aca8f5c493bb46f302c"), # v0.18.0
+              "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
     GitSource("https://github.com/mesonbuild/meson.git",
               "7368795d13081d4928a9ba04d48498ca2442624b"), # v1.3.0
@@ -163,7 +166,7 @@ NET_TOOLS="curl wget git openssl ca-certificates"
 MISC_TOOLS="python2 python3 py3-pip sudo file libintl patchutils grep zlib"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools rsync" # TODO: restore `unrar` when it comes back to Alpine Linux
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
-BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache ninja"
+BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
 
 # chgrp and chown should be no-ops since we run in a single-user mode
