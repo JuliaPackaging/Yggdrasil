@@ -89,6 +89,7 @@ fi
 # case-insensitive file systems:
 # - https://github.com/JuliaPackaging/Yggdrasil/pull/315
 # - https://github.com/JuliaPackaging/Yggdrasil/issues/6344
+git submodule update --init
 ./autogen.sh
 ./configure \
     --build=${MACHTYPE} \
