@@ -23,7 +23,9 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
 
-# MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>
+# MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>.
+# (The MPICH developers say that this is a bug in MPICH and that
+# `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
 EXTRA_FLAGS=()
