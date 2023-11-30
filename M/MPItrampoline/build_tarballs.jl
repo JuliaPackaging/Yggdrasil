@@ -15,8 +15,9 @@ mpich_version_str = "4.1.2"
 sources = [
     # This is really the development version before version 6.0.0
     GitSource("https://github.com/eschnett/MPItrampoline", "3b5fcdfc6dc4c9d152cdd0a1617f1d539d30e36f"),
-    ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
+    #TODO ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
+    #TODO               "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
+    GitSource("https://github.com/hzhou/mpich", "eaa0b4f058acc7b38f0cb1d264ba8b4f91d02690"),
 ]
 
 # Bash recipe for building across all platforms
@@ -114,11 +115,11 @@ grep -v -- '-l"' libtool
 make -j${nproc}
 make -j${nproc} install
 
-# Delete duplicate file
-# See <https://github.com/pmodels/mpich/issues/6814>
-if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
-    ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
-fi
+#TODO # Delete duplicate file
+#TODO # See <https://github.com/pmodels/mpich/issues/6814>
+#TODO if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
+#TODO     ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
+#TODO fi
 
 # Ensure that `bin/mpiexec` exists
 if ! test -e ${prefix}/lib/mpich/bin/mpiexec; then
