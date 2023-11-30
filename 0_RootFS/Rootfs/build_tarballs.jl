@@ -116,6 +116,9 @@ sources = [
     GitSource("https://github.com/staticfloat/objconv.git",
               "c68e441d2b93074b01ea193cb17e944ed751750f"), # v2.54
     # As is patchelf
+    # We don't want to upgrade patchelf unless there's a compelling and proved reason
+    # to do it because of previous problems we experienced with v0.18.0.
+    # We encountered the error "ELF load command address/offset not properly aligned" in #7728 and #7729.
     GitSource("https://github.com/NixOS/patchelf.git",
               "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
