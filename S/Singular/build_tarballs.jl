@@ -53,6 +53,13 @@ cd [Ss]ingular*
 
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
+
+# lld doesn't support -r and -keep_private_externs which the Singular build uses
+# switch back to ld on macos to avoid errors:
+if [[ "${target}" == *apple* ]]; then
+  export LDFLAGS="-fuse-ld=ld"
+fi
+
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
     --with-libparse \
     --enable-shared \
