@@ -117,11 +117,12 @@ grep -v -- '-l"' libtool
 make -j${nproc}
 make -j${nproc} install
 
-#TODO # Delete duplicate file
-#TODO # See <https://github.com/pmodels/mpich/issues/6814>
-#TODO if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
-#TODO     ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
-#TODO fi
+# Delete duplicate file
+# See <https://github.com/pmodels/mpich/issues/6814>
+if ar t ${prefix}/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
+    false
+    ar d ${prefix}/lib/mpich/lib/libmpifort.a setbotf.o
+fi
 
 # Ensure that `bin/mpiexec` exists
 if ! test -e ${prefix}/lib/mpich/bin/mpiexec; then
