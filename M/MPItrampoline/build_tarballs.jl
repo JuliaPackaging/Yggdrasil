@@ -14,7 +14,7 @@ mpich_version_str = "4.1.2"
 # Collection of sources required to complete build
 sources = [
     # This is really the development version before version 6.0.0
-    GitSource("https://github.com/eschnett/MPItrampoline", "3b5fcdfc6dc4c9d152cdd0a1617f1d539d30e36f"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "c2940f73dbf6d4c4aa86027b0744a4bad2d077a3"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
 ]
