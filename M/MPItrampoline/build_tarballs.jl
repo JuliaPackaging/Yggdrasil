@@ -216,21 +216,6 @@ platforms = expand_gfortran_versions(platforms)
 # FreeBSD: https://reviews.freebsd.org/D24841
 filter!(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
 
-# # Save time while testing
-# # TODO: Disable this in production!
-# filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"5", platforms)
-# @show platforms
-
-# We disable this platform because it does not build:
-#     ERROR: could not load library "/cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0"
-#     /cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0: ELF load command address/offset not properly aligned
-# filter!(p -> !(arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"4"), platforms)
-
-# Build error:
-#     ERROR: could not load library "/cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0"
-#     /cache/build/yggy-amdci7-8/julialang/yggdrasil/M/MPItrampoline/build/x86_64-linux-gnu-libgfortran4-mpi+mpitrampoline/qv7tNBab/x86_64-linux-gnu-libgfortran4-cxx11-mpi+mpitrampoline/destdir/lib/libmpitrampoline.so.6.0.0: ELF load command address/offset not properly aligned
-# filter!(p -> arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc" && libgfortran_version(p) == v"4", platforms)
-
 # Add `mpi+mpitrampoline` platform tag
 foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
 
@@ -258,9 +243,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    #TODO Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-                      compat="0.1", top_level=true),
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
