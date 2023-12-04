@@ -15,7 +15,7 @@ const llvm_tags = Dict(
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
-    v"15.0.7" => "084cd0fc414425be2d22f23552b79432dcbb01f0", # julia-15.0.7-9
+    v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
     v"16.0.6" => "3c83f175925974ae6b68aa96715d8f04a1a9aae4", # julia-16.0.6-1
 )
 
@@ -312,10 +312,12 @@ if [[ "${target}" == *apple* ]]; then
     fi
 fi
 
-GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
-if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
-    CMAKE_C_FLAGS+=(-mno-outline-atomics)
-    CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
+    if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
+        CMAKE_C_FLAGS+=(-mno-outline-atomics)
+        CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+    fi
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
