@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MKL_Headers"
-version = v"2023.2.0"
+version = v"2024.0.0"
 
 # Collection of sources required to complete build
 sources = [
