@@ -23,7 +23,7 @@ if [[ ${target} == *mingw* ]]; then
 else
     mv ${target}/lib/* "${libdir}/."
 fi
-install_license info/licenses/*.txt
+install_license ${target}/info/licenses/*.txt
 """
 
 # These are the platforms we will build for by default, unless further
