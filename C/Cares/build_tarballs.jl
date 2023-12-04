@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "Cares"
-version = v"1.22.0"
+version = v"1.23.0"
 
 # url = "https://c-ares.org/"
 # description = "C library for asynchronous DNS requests (including name resolves)"
 
 sources = [
     ArchiveSource("https://c-ares.org/download/c-ares-$(version).tar.gz",
-                  "ad2e205088083317147c9f9eab5f24b82c3d50927c381a7c963deeb1182dbc21"),
+                  "cb614ecf78b477d35963ebffcf486fc9d55cc3d3216f00700e71b7d4868f79f5"),
 ]
 
 script = raw"""
