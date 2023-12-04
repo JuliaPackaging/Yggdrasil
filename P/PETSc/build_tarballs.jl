@@ -29,11 +29,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-if [[ "${target}" == *-apple* ]]; then
-    BLAS_LAPACK_LIB=
-else
-    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
-fi
+BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 
 if [[ "${target}" == *-mingw* ]]; then
     #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
@@ -126,10 +122,6 @@ build_petsc()
     LIBFLAGS="-L${libdir}" 
     if [[ "${target}" == *-mingw* ]]; then
         LIBFLAGS="-L${libdir} -lssp" 
-    fi
-
-    if [[ "${target}" == *-apple* ]]; then 
-        LIBFLAGS="-L${libdir} -framework Accelerate" 
     fi
 
     if  [ ${DEBUG_FLAG} == 1 ]; then
@@ -294,7 +286,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms)),
+    Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
     Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
