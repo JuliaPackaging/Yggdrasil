@@ -14,8 +14,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd gtpsa/
-if [[ $target == *"-apple-"* ]]; then CC=gcc; CXX=g++; fi
-if [[ $target == *"-apple-"* ]]; then ln /workspace/destdir/lib/liblapack32.dylib /workspace/destdir/lib/liblapack.dylib; elif [[ $target == *"linux"* ]]; then ln /workspace/destdir/lib/liblapack32.so /workspace/destdir/lib/liblapack.so; fi
+if [[ $target == *"-apple-"* ]]
+then
+CC=gcc
+CXX=g++
+ln /workspace/destdir/lib/liblapack32.dylib /workspace/destdir/lib/liblapack.dylib
+elif [[ $target == *"linux"* ]]
+then
+ln /workspace/destdir/lib/liblapack32.so /workspace/destdir/lib/liblapack.so
+fi
 cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
 make
 make install
