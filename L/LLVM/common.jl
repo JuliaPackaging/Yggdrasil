@@ -312,10 +312,12 @@ if [[ "${target}" == *apple* ]]; then
     fi
 fi
 
-GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
-if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
-    CMAKE_C_FLAGS+=(-mno-outline-atomics)
-    CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
+    if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
+        CMAKE_C_FLAGS+=(-mno-outline-atomics)
+        CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+    fi
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
