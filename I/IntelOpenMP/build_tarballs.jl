@@ -18,9 +18,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p "${libdir}"
-if [[ ${target} == *mingw* ]]; then
-    mv ${target}/Library/bin/* "${libdir}/."
-else
+if [[ ${target} == *i686-w64-mingw* ]]; then
+    mv ${target}/bin32/* "${libdir}/."
+fi
+if [[ ${target} == *x86_64-w64-mingw* ]]; then
+    mv ${target}/bin/* "${libdir}/."
+fi
+if [[ ${target} == *i686-linux-gnu* ]]; then
+    mv ${target}/lib32/* "${libdir}/."
+fi
+if [[ ${target} == *x86_64-linux-gnu* ]]; then
     mv ${target}/lib/* "${libdir}/."
 fi
 install_license ${target}/info/licenses/*.txt
