@@ -11,7 +11,7 @@ name = "NetCDF"
 upstream_version = v"4.9.2"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.8"
+version_offset = v"0.2.9"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -55,7 +55,7 @@ if [[ ${target} -ne x86_64-linux-gnu ]]; then
 fi
 
 # https://github.com/JuliaPackaging/Yggdrasil/issues/5031#issuecomment-1155000045
-rm /workspace/destdir/lib/*.la
+rm -f /workspace/destdir/lib/*.la
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -94,6 +94,8 @@ dependencies = [
     Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
+    Dependency("libzip_jll"),
+    Dependency("Blosc_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
