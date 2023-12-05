@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-rc1", v"1.11.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-rc2", v"1.11.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -50,14 +50,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
     )
 
-    if version == v"1.10.0-rc1"
+    if version == v"1.10.0-rc2"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "5aaa94854367ca875375e38ae14f369f124e7315"),
+            GitSource("https://github.com/JuliaLang/julia.git", "dbb9c46795b0e45b770254542854526f3db119b5"),
             DirectorySource("./bundled"),
         ]
     elseif version == v"1.11.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "42c088b8b3e678edd19e5cb9ea54503e43624d06"),
+            GitSource("https://github.com/JuliaLang/julia.git", "0a4b8108ee44aa915619f4791d39345adbcd95ae"),
             DirectorySource("./bundled"),
         ]
     else
