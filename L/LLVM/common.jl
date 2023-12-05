@@ -415,8 +415,8 @@ mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
 
 # LLVM isn't very reliable in choosing tools over bin even if we tell it to
-mv -v ${LLVM_ARTIFACT_DIR}/tools/*clang* ${prefix}/tools/ 2>/dev/null
-mv -v ${LLVM_ARTIFACT_DIR}/bin/*clang* ${prefix}/tools/ 2>/dev/null
+mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/ 2>/dev/null
+mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/ 2>/dev/null
 
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
