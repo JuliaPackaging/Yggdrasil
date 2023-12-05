@@ -414,11 +414,10 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
 
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/clang* ) = "${LLVM_ARTIFACT_DIR}/bin/clang*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/*clang* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/*clang* ${prefix}/tools/
-fi
+# LLVM isn't very reliable in choosing tools over bin even if we tell it to
+mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/ 2>/dev/null
+mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/ 2>/dev/null
+
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
@@ -487,17 +486,11 @@ rm -rf ${prefix}/*
 # Copy over `lld`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/lld*) = "${LLVM_ARTIFACT_DIR}/bin/lld*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
-fi
 
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/dsymutil*) = "${LLVM_ARTIFACT_DIR}/bin/dsymutil*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/dsymutil* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/dsymutil* ${prefix}/tools/
-fi
+# LLVM isn't very reliable in choosing tools over bin even if we tell it to
+mv -v ${LLVM_ARTIFACT_DIR}/tools/{*lld*,wasm-ld*,dsymutil*} ${prefix}/tools/ 2>/dev/null
+mv -v ${LLVM_ARTIFACT_DIR}/bin/{*lld*,wasm-ld*,dsymutil*} ${prefix}/tools/ 2>/dev/null
+
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/lld ${prefix}/lib/cmake/lld
