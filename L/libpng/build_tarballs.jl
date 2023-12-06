@@ -11,8 +11,6 @@ sources = [
                   "8f720b363aa08683c9bf2a563236f45313af2c55d542b5481ae17dd8d183bb42"),
 ]
 
-version = v"1.6.38" # <--- This version number is a lie, we need to bump it to build for experimental platforms
-
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libpng-*/
