@@ -6,24 +6,23 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"1.1.2"
+version = v"1.6.1"
+
+tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8-$(version).tar.gz"
+sha256sum = "dc96effa7c1ad1d50437fefdd0963f6ef7c943eb10a372a4e8546a5f2970a412"
 
 # Collection of sources required to complete build
-sources = [
-    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz",
-                  "8a30206a8fb47013b3dafe7565cf8e09023df8373c1049e7e231d9fd36b011e4"),
-
-    DirectorySource("./bundled")
-]
+sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
 # Bash recipe for building across all platforms
-script = raw"""
-cd $WORKSPACE/srcdir/t8code
+script = """
+cd \$WORKSPACE/srcdir/t8-$(version)
+""" * raw"""
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
 # Note: This is *crucial* for Windows builds as otherwise the wrong libraries are picked up!
-export CPPFLAGS="-I${includedir}"
+export CPPFLAGS="-I${includedir} -I${includedir}"
 export LDFLAGS="-L${libdir}"
 export CFLAGS="-O3"
 export CXXFLAGS="-O3"
