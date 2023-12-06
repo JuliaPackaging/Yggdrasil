@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "librsync"
-version = v"2.3.1"
+version = v"2.3.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/librsync/librsync.git", "028d9432d05ba4b75239e0ba35bcb36fbfc17e35")
+    GitSource("https://github.com/librsync/librsync.git", "e364852674780e43d578e4239128ff7014190ed3")
 ]
 
 # Bash recipe for building across all platforms
