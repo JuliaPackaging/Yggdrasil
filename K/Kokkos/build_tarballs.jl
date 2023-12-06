@@ -9,19 +9,26 @@ version = VersionNumber(version_string)
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/kokkos/kokkos.git", "71a9bcae52543bd065522bf3e41b5bfa467d8015"),
+    # Kokkos requires macOS 10.13 or later
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/kokkos
+cd ${WORKSPACE}/srcdir/kokkos
 
-OPENMP_FLAG=()
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+    cp -a System "/opt/${target}/${target}/sys-root/"
+    popd
+fi
 
-mkdir build
-cd build/
-
-cmake .. \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
@@ -29,9 +36,8 @@ cmake .. \
     -DKokkos_ENABLE_OPENMP=ON \
     -DKokkos_ENABLE_SERIAL=ON
 
-make -j${nproc}
-make install
-
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
