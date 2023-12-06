@@ -13,12 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/libxml2-*
-
-# Remove patches for next version.
-atomic_patch -p1 ../patches/0001-fix-pthread-weak-references-in-globals.c.patch
-atomic_patch -p1 ../patches/0002-fix-more-pthread-weak-references-in-globals.c.patch
-
 # Work around https://gitlab.gnome.org/GNOME/libxml2/-/issues/625
 if [[ "${target}" == i686-*-mingw* ]]; then
    # Testing for `snprintf` and `vsnprintf` fails on this platform, but the
