@@ -18,23 +18,17 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd popt-*
 
-#TODO update_configure_scripts
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-nl_langinfo.mingw32.patch"
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/197416.all.patch"
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/217602.all.patch"
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/278402-manpage.all.patch"
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/318833.all.patch"
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/356669.all.patch"
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/367153-manpage.all.patch"
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/get-w32-console-maxcols.mingw32.patch"
-#TODO atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-uid-stuff-on.mingw32.patch"
-#TODO 
-#TODO if [[ "${target}" == powerpc64le-* || "${target}" == *-freebsd* ]]; then
-#TODO     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fix-old-configure-macros.patch"
-#TODO     autoreconf -vi
-#TODO fi
+if [[ $target = *-mingw32* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/get-w32-console-maxcols.mingw32.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/no-uid-stuff-on.mingw32.patch"
+fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static # --with-libiconv-prefix=${prefix}
+LIBS=
+if [[ ${target} = *-musl* ]]; then
+    LIBS='-liconv'
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static LIBS="${LIBS}"
 make -j${nproc}
 make install
 install_license COPYING
