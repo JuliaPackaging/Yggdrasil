@@ -11,7 +11,7 @@ sources = [
     GitSource("https://github.com/kokkos/kokkos.git", "71a9bcae52543bd065522bf3e41b5bfa467d8015"),
     # Kokkos requires macOS 10.13 or later
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                  "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
 ]
 
 # Bash recipe for building across all platforms
