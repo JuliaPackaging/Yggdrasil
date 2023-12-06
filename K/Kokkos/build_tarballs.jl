@@ -3,13 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Kokkos"
-version_string = "4.1.00"
+version_string = "4.2.0"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kokkos/kokkos.git",
-	      "1a3ea28f6e97b4c9dd2c8ceed53ad58ed5f94dfe"),
+    GitSource("https://github.com/kokkos/kokkos.git", "71a9bcae52543bd065522bf3e41b5bfa467d8015"),
 ]
 
 # Bash recipe for building across all platforms
