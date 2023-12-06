@@ -3,12 +3,11 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.12.0"
+version = v"2.12.2"
 
 # Collection of sources required to build XML2
 sources = [
-    ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
-                  "431521c8e19ca396af4fa97743b5a6bfcccddbba90e16426a15e5374cd64fe0d"),
+    GitSource("https://gitlab.gnome.org/GNOME/libxml2/", "4d8fa5b292fc902268217fa0f7031e77e5437b5a"),
     DirectorySource("./bundled"),
 ]
 
