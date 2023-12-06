@@ -3,12 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "grep"
-version = v"3.7.0"
+version = v"3.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/grep/grep-3.7.tar.xz", "5c10da312460aec721984d5d83246d24520ec438dd48d7ab5a05dbc0d6d6823c")
+    ArchiveSource("https://ftp.gnu.org/gnu/grep/grep-3.11.tar.xz",
+                  "1db2aedde89d0dea42b16d9528f894c8d15dae4e190b59aecc78f5a951276eab")
 ]
+
 
 # Bash recipe for building across all platforms
 script = raw"""
