@@ -7,18 +7,14 @@ version = v"2.12.2"
 
 # Collection of sources required to build XML2
 sources = [
-    ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz", "3f2e6464fa15073eb8f3d18602d54fafc489b7715171064615a40490c6be9f4f"),
+    ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
+        "3f2e6464fa15073eb8f3d18602d54fafc489b7715171064615a40490c6be9f4f"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Work around https://gitlab.gnome.org/GNOME/libxml2/-/issues/625
-if [[ "${target}" == i686-*-mingw* ]]; then
-   # Testing for `snprintf` and `vsnprintf` fails on this platform, but the
-   # functions are actually available, inform configure that we can use them.
-   EXTRA_ARGS=( ac_cv_func_snprintf=yes ac_cv_func_vsnprintf=yes )
-fi
+cd ${WORKSPACE}/srcdir/libxml2-*
 
 ./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --without-python \
