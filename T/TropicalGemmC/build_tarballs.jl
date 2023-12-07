@@ -1,8 +1,6 @@
 using BinaryBuilder
 using BinaryBuilderBase
 using Pkg
-using Base.BinaryPlatforms
-using Base.BinaryPlatforms: arch, os, tags
 
 name = "TropicalGemmC"
 version = v"0.1.2"
