@@ -12,6 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd $WORKSPACE/srcdir/xla
+
 apk update
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 apk add py3-numpy
