@@ -50,6 +50,11 @@ else
   mpiopts="--enable-mpi"
 fi
 
+# Temporary fix according to: https://github.com/JuliaPackaging/Yggdrasil/issues/7745
+if [[ "${target}" == *-apple-darwin-mpi* ]]; then
+  export LDFLAGS="$LDFLAGS -fuse-ld=ld"
+fi
+
 # Run configure
 ./configure \
   --prefix="${prefix}" \
