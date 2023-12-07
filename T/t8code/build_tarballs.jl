@@ -22,7 +22,7 @@ atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
 # Note: This is *crucial* for Windows builds as otherwise the wrong libraries are picked up!
-export CPPFLAGS="-I${includedir} -I${includedir}"
+export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export CFLAGS="-O3"
 export CXXFLAGS="-O3"
