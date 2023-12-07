@@ -51,7 +51,7 @@ else
 fi
 
 # Temporary fix according to: https://github.com/JuliaPackaging/Yggdrasil/issues/7745
-if [[ "${target}" == *-apple-darwin-mpi* ]]; then
+if [[ "${target}" == *-apple-* ]]; then
   export LDFLAGS="$LDFLAGS -fuse-ld=ld"
 fi
 
