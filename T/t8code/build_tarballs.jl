@@ -15,9 +15,8 @@ sha256sum = "dc96effa7c1ad1d50437fefdd0963f6ef7c943eb10a372a4e8546a5f2970a412"
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
 # Bash recipe for building across all platforms
-script = """
-cd \$WORKSPACE/srcdir/t8-$(version)
-""" * raw"""
+script = raw"""
+cd $WORKSPACE/srcdir/t8*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
