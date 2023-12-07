@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 apk update
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
-apk add py-numpy
+apk add py3-numpy
 
 export TN_NEED_ROCM=0
 export TF_NEED_CUDA=0
