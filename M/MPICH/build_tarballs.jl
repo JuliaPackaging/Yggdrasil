@@ -72,6 +72,12 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
+LDFLAGS=()
+if [[ $target = *-darwin* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
+    LDFLAGS=('-fuse-ld=ld')
+fi
+
 # Do not install doc and man files which contain files which clashing names on
 # case-insensitive file systems:
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
@@ -82,7 +88,8 @@ fi
     --enable-fast=all,O3 \
     --docdir=/tmp \
     --mandir=/tmp \
-    "${EXTRA_FLAGS[@]}"
+    "${EXTRA_FLAGS[@]}" \
+    LDFLAGS="${LDFLAGS[@]}"
 
 # Remove empty `-l` flags from libtool
 # (Why are they there? They should not be.)
