@@ -27,7 +27,7 @@ yes "" | ./configure
 # use '/workspace' storage with more available space
 mkdir -p /workspace/bazel-tmp
 
-bazel --output_base=/workspace/bazel-tmp \
+bazel --output_user_root=/workspace/bazel-tmp \
     build \
     --test_output=all \
     --spawn_strategy=local \
