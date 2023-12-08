@@ -43,7 +43,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="IntelOpenMP_jll", uuid="1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0")),
+    # MKL should use the corresponding version of IntelOpenMP, otherwise there may
+    # occasionally be incompatibilities, e.g. x86_64 macOS builds were removed in v2024,
+    # using MKL v2023 with IntelOpenMP v2024 would be problematic:
+    # <https://github.com/JuliaMath/FFTW.jl/issues/281>.
+    Dependency(PackageSpec(name="IntelOpenMP_jll", uuid="1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"); compat=string(version)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
