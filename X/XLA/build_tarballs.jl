@@ -27,7 +27,7 @@ yes "" | ./configure
 # use '/workspace' storage with more available space
 mkdir -p /workspace/bazel-tmp
 
-bazel --output_base=/workspace/bazel-tmp build --test_output=all --spawn_strategy=local --verbose_failures //xla/... || df -hT
+bazel --output_base=/workspace/bazel-tmp build --test_output=all --spawn_strategy=local --verbose_failures //xla/...
 """
 
 # These are the platforms we will build for by default, unless further
