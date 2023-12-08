@@ -14,7 +14,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tiff-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --docdir=/tmp
+LDFLAGS=()
+if [[ $target = *-darwin* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
+    LDFLAGS=('-fuse-ld=ld')
+fi
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --docdir=/tmp LDFLAGS="${LDFLAGS[@]}"
 make -j${nproc}
 make install
 """
