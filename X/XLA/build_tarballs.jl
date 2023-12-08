@@ -24,7 +24,7 @@ export TF_DOWNLOAD_CLANG=0
 export TF_CUDA_CLANG=0 
 yes "" | ./configure
 
-bazel build --test_output=all --spawn_strategy=local --verbose_failures //xla/... || df -HT
+bazel build --test_output=all --spawn_strategy=local --verbose_failures //xla/... || df -hT
 """
 
 # These are the platforms we will build for by default, unless further
