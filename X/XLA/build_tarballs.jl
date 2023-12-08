@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/xla
 
 apk update
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
-apk add py3-numpy py3-numpy-dev
+apk add python3 python3-dev py3-numpy py3-numpy-dev
 
 export TN_NEED_ROCM=0
 export TF_NEED_CUDA=0
