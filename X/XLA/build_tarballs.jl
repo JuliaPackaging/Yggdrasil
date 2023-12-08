@@ -33,7 +33,9 @@ bazel --output_base=/workspace/bazel-tmp \
     --spawn_strategy=local \
     --verbose_failures \
     --subcommands \
+    --action_env=MACOSX_DEPLOYMENT_TARGET \
     --host_action_env=MACOSX_DEPLOYMENT_TARGET \
+    --test_env=MACOSX_DEPLOYMENT_TARGET \
     //xla/...
 """
 
