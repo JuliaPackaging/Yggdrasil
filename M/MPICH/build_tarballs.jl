@@ -87,8 +87,7 @@ fi
     --enable-fast=all,O3 \
     --docdir=/tmp \
     --mandir=/tmp \
-    "${EXTRA_FLAGS[@]}" \
-    LDFLAGS="${LDFLAGS[@]}"
+    "${EXTRA_FLAGS[@]}"
 
 # Remove empty `-l` flags from libtool
 # (Why are they there? They should not be.)
