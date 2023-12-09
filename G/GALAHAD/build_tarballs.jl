@@ -3,106 +3,35 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"4.1.0"
+version = v"4.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "18a4e1d2d4c9ca41072a3b83f06459992a01d7ab"),
-    GitSource("https://github.com/ralna/ARCHDefs.git", "e395fe46462d74002d63e6079257b64f65f3658c")
+    GitSource("https://github.com/ralna/GALAHAD.git", "33214d72ac384e77682dc2a947a9d99bdca87009")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-export ARCHDEFS=$PWD/ARCHDefs
-export GALAHAD=$PWD/GALAHAD
+# Update Ninja
+python3 -m pip install --user --upgrade ninja
+cp /root/.local/bin/ninja /usr/bin/ninja
 
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
+cd ${WORKSPACE}/srcdir/GALAHAD
+
+if [[ "${target}" == *mingw* ]]; then
+  HWLOC="hwloc-15"
+  LBT="blastrampoline-5"
+else
+  HWLOC="hwloc"
+  LBT="blastrampoline"
 fi
 
-# install_optrove requires tput
-apk update
-apk add ncurses
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                     --prefix=$prefix -Dlibhwloc=$HWLOC \
+                     -Dlibblas=$LBT -Dliblapack=$LBT
 
-# install GALAHAD
-cd ARCHDefs
-printf "y1\n" > install_config
-printf "nnnyn7\n" >> install_config
-printf "n1\n" >> install_config
-printf "n3\n" >> install_config
-printf "nybn" >> install_config
-./install_optrove < install_config
-
-# copy headers in $includedir
-cp $GALAHAD/include/*.h $includedir
-cp $GALAHAD/objects/binarybuilder.bb.fc/double/galahad_precision.h $includedir
-
-# generate shared libraries
-cd $GALAHAD/objects/binarybuilder.bb.fc/
-
-# We don't need these two libraries because we already have OpenBLAS32.
-#
-# $FC -shared -o $libdir/libgalahad_blas.$dlext -Wl,--no-undefined \
-# $(flagon -Wl,--whole-archive) double/libgalahad_blas.a $(flagon -Wl,--no-whole-archive)
-#
-# $FC -shared -o $libdir/libgalahad_lapack.$dlext -Wl,--no-undefined \
-# $(flagon -Wl,--whole-archive) double/libgalahad_lapack.a $(flagon -Wl,--no-whole-archive) \
-# -L$libdir -lgalahad_blas
-
-# We could use METIS4_jll if it provides a shared library.
-$FC -shared -o $libdir/libgalahad_metis.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_metis.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_cutest_dummy.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_cutest_dummy.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_umfpack.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_umfpack.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_mumps.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_mumps.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_pastix.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_pastix.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_wsmp.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_wsmp.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_pardiso.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_pardiso.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_mkl_pardiso.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_mkl_pardiso.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_hsl.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_hsl.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_minpack.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_minpack.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_dummy.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_dummy.a $(flagon -Wl,--no-whole-archive)
-
-$FC -shared -o $libdir/libgalahad_spral.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_spral.a $(flagon -Wl,--no-whole-archive) \
--lopenblas -lstdc++ -lgomp -lhwloc \
--L $libdir -lgalahad_metis
-
-$FC -shared -o $libdir/libgalahad.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad.a $(flagon -Wl,--no-whole-archive) \
--lopenblas -lgomp \
--L$libdir -lgalahad_cutest_dummy -lgalahad_hsl -lgalahad_hsl \
--lgalahad_metis -lgalahad_pastix \
--lgalahad_spral -lgalahad_wsmp -lgalahad_mkl_pardiso -lgalahad_pardiso
-
-$FC -shared -o $libdir/libgalahad_hsl_c.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_hsl_c.a $(flagon -Wl,--no-whole-archive) \
--lgalahad_hsl -L./double -lgalahad_c
-
-$FC -shared -o $libdir/libgalahad_c.$dlext -Wl,--no-undefined \
-$(flagon -Wl,--whole-archive) double/libgalahad_c.a $(flagon -Wl,--no-whole-archive) \
--L$libdir -lgalahad -lgalahad_hsl_c
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -112,27 +41,19 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libgalahad_wsmp", :libgalahad_wsmp),
-    LibraryProduct("libgalahad_pastix", :libgalahad_pastix),
-    LibraryProduct("libgalahad_mkl_pardiso", :libgalahad_mkl_pardiso),
-    LibraryProduct("libgalahad_minpack", :libgalahad_minpack),
-    LibraryProduct("libgalahad_umfpack", :libgalahad_umfpack),
-    LibraryProduct("libgalahad_hsl", :libgalahad_hsl),
-    LibraryProduct("libgalahad_cutest_dummy", :libgalahad_cutest_dummy),
-    # LibraryProduct("libgalahad_lapack", :libgalahad_lapack),
-    LibraryProduct("libgalahad_metis", :libgalahad_metis),
-    LibraryProduct("libgalahad_spral", :libgalahad_spral),
-    LibraryProduct("libgalahad_pardiso", :libgalahad_pardiso),
-    # LibraryProduct("libgalahad_blas", :libgalahad_blas),
-    LibraryProduct("libgalahad_mumps", :libgalahad_mumps),
-    LibraryProduct("libgalahad_dummy", :libgalahad_dummy)
+    LibraryProduct("libgalahad_single", :libgalahad_single),
+    LibraryProduct("libgalahad_double", :libgalahad_double)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8"))
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
+    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d")),
+    Dependency(PackageSpec(name="PaStiX_jll", uuid="46e5285b-ff06-5712-adf2-cc145d39f096")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
