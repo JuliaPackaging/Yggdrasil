@@ -72,10 +72,9 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
-LDFLAGS=()
 if [[ $target = *-darwin* ]]; then
     # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
-    LDFLAGS=('-fuse-ld=ld')
+    EXTRA_FLAGS+=('lt_cv_apple_cc_single_mod=yes')
 fi
 
 # Do not install doc and man files which contain files which clashing names on
