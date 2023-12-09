@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "spglib"
-version = v"2.1.0"
+version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/spglib/spglib.git", "59bea8a7df30c8f2202ed0ee1033be0d98d9ed5e")
+    GitSource("https://github.com/spglib/spglib.git", "3a4ba41f4ce1cf4e76d37fe6535dd0bf76b24b42")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,6 @@ if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
 fi
 cmake -B ./build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DSPGLIB_WITH_TESTS=OFF \
       ${args}
 cmake --build ./build -j${nproc}
 cmake --install ./build
