@@ -11,7 +11,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/agg/
 mkdir -p ${bindir}
-cargo build --release -o ${bindir}/agg${exeext}
+cargo build --release
 install_license LICENSE
 install -Dvm 755 "target/${rust_target}/release/agg${exeext}" "${bindir}/agg${exeext}"
 """
