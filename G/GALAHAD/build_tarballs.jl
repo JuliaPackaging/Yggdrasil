@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Update Ninja
-cp ${bindir}/ninja /usr/bin/ninja
+cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
 cd ${WORKSPACE}/srcdir/GALAHAD
 
