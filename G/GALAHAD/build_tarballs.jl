@@ -13,16 +13,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Update Ninja
-python3 -m pip install --user --upgrade ninja
-cp /root/.local/bin/ninja /usr/bin/ninja
+cp ${bindir}/ninja /usr/bin/ninja
 
 cd ${WORKSPACE}/srcdir/GALAHAD
 
 if [[ "${target}" == *mingw* ]]; then
-  HWLOC="hwloc-15"
   LBT="blastrampoline-5"
 else
-  HWLOC="hwloc"
   LBT="blastrampoline"
 fi
 
@@ -46,6 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
