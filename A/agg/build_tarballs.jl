@@ -19,9 +19,11 @@ install -Dvm 755 "target/${rust_target}/release/agg${exeext}" "${bindir}/agg${ex
 # We build for a restricted set of platforms, because our rust toolchain is a little broken
 platforms = supported_platforms()
 
-# 32-bit Windows seems to be broken
-# https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/499
-filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+# error: failed to run custom build command for `ring v0.16.20`
+filter!(p -> arch(p) != "i686", platforms)
+filter!(p -> arch(p) != "armv7l", platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # The products that we will ensure are always built
 products = [
