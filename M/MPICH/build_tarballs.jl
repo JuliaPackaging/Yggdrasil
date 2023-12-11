@@ -12,6 +12,7 @@ version = VersionNumber(version_str)
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
                   "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
@@ -22,6 +23,11 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
 
+# MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>.
+# (The MPICH developers say that this is a bug in MPICH and that
+# `<pthread_np.h>` should not actually be used on FreeBSD.)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
+
 EXTRA_FLAGS=()
 # Define some obscure undocumented variables needed for cross compilation of
 # the Fortran bindings.  See for example
@@ -30,6 +36,7 @@ EXTRA_FLAGS=()
 export CROSS_F77_SIZEOF_INTEGER=4
 export CROSS_F77_SIZEOF_REAL=4
 export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
+export CROSS_F77_SIZEOF_LOGICAL=4
 export CROSS_F77_TRUE_VALUE=1
 export CROSS_F77_FALSE_VALUE=0
 
@@ -65,6 +72,11 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
+if [[ $target = *-darwin* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
+    EXTRA_FLAGS+=('lt_cv_apple_cc_single_mod=yes')
+fi
+
 # Do not install doc and man files which contain files which clashing names on
 # case-insensitive file systems:
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
@@ -75,7 +87,6 @@ fi
     --enable-fast=all,O3 \
     --docdir=/tmp \
     --mandir=/tmp \
-    --disable-opencl \
     "${EXTRA_FLAGS[@]}"
 
 # Remove empty `-l` flags from libtool
