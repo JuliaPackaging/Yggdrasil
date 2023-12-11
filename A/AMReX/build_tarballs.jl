@@ -51,6 +51,12 @@ else
     mpiopts=
 fi
 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    echo $LDFLAGS
+    LDFLAGS=-fuse-ld=ld
+fi
+false
+
 if [[ "$target" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
     hdf5opts="-DAMReX_HDF5=OFF"
