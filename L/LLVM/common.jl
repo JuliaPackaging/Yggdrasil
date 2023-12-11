@@ -415,8 +415,10 @@ mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
 
 # LLVM isn't very reliable in choosing tools over bin even if we tell it to
-mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/ 2>/dev/null
-mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/ 2>/dev/null
+# mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/ ; true
+# mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/ ; true
+find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "clang*" -print0 -o -type l -name "clang*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "clang*" -print0 -o -type l -name "clang*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
 
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
@@ -488,8 +490,13 @@ mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
 
 # LLVM isn't very reliable in choosing tools over bin even if we tell it to
-mv -v ${LLVM_ARTIFACT_DIR}/tools/{*lld*,wasm-ld*,dsymutil*} ${prefix}/tools/ 2>/dev/null
-mv -v ${LLVM_ARTIFACT_DIR}/bin/{*lld*,wasm-ld*,dsymutil*} ${prefix}/tools/ 2>/dev/null
+file_patterns=("*lld*" "wasm-ld*" "dsymutil*")
+for pattern in "${file_patterns[@]}"; do
+    find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "$pattern" -print0 -o -type l -name "$pattern" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+done
+for pattern in "${file_patterns[@]}"; do
+    find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "$pattern" -print0 -o -type l -name "$pattern" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+done
 
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
