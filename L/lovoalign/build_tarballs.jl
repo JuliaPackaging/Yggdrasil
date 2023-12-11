@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd lovoalign
+cd $WORKSPACE/srcdir/lovoalign
 if [[ $target == *"w64-mingw32" ]]; then  sed -i 's/blastrampoline/blastrampoline-5/' CMakeLists.txt ; fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release .
 make 
