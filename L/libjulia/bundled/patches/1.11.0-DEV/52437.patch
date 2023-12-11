@@ -1,0 +1,453 @@
+From f0ff1f1b921dd189ae106647436084b082d9c4c5 Mon Sep 17 00:00:00 2001
+From: "Steven G. Johnson" <stevenj@alum.mit.edu>
+Date: Wed, 6 Dec 2023 22:21:41 -0500
+Subject: [PATCH 1/8] Update crc32c.c register constraints
+
+---
+ src/crc32c.c | 34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
+
+diff --git a/src/crc32c.c b/src/crc32c.c
+index 844a6e34156e6..d7e7e3f71d557 100644
+--- a/src/crc32c.c
++++ b/src/crc32c.c
+@@ -114,14 +114,15 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         uintptr_t crc2 = 0;
+         const char *end = buf + LONG;
+         do {
+-            __asm__(CRC32_PTR "\t" "(%3), %0\n\t"
+-                    CRC32_PTR "\t" LONGx1 "(%3), %1\n\t"
+-                    CRC32_PTR "\t" LONGx2 "(%3), %2"
+-                    : "+r"(crc0), "+r"(crc1), "+r"(crc2)
+-                    : "r"(buf),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[0]),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[LONG]),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
++            __asm__(CRC32_PTR "\t" "(%1), %0"
++                    : "+r"(crc0),
++                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
++            __asm__(CRC32_PTR "\t" LONGx1 "(%1), %0"
++                    :  "+r"(crc1),
++                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG]));
++            __asm__(CRC32_PTR "\t" LONGx2 "(%1), %0"
++                    :  "+r"(crc2),
++                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+         crc0 = crc32c_shift(crc32c_long, crc0) ^ crc1;
+@@ -137,14 +138,15 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         uintptr_t crc2 = 0;
+         const char *end = buf + SHORT;
+         do {
+-            __asm__(CRC32_PTR "\t" "(%3), %0\n\t"
+-                    CRC32_PTR "\t" SHORTx1 "(%3), %1\n\t"
+-                    CRC32_PTR "\t" SHORTx2 "(%3), %2"
+-                    : "+r"(crc0), "+r"(crc1), "+r"(crc2)
+-                    : "r"(buf),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[0]),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT]),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
++            __asm__(CRC32_PTR "\t" "(%1), %0"
++                    : "+r"(crc0),
++                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
++            __asm__(CRC32_PTR "\t" SHORTx1 "(%1), %0"
++                    :  "+r"(crc1),
++                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT]));
++            __asm__(CRC32_PTR "\t" SHORTx2 "(%1), %0"
++                    :  "+r"(crc2),
++                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+         crc0 = crc32c_shift(crc32c_short, crc0) ^ crc1;
+
+From 023e798c627227f8f70499bb6c6b1d12ea3edf78 Mon Sep 17 00:00:00 2001
+From: "Steven G. Johnson" <stevenj@alum.mit.edu>
+Date: Wed, 6 Dec 2023 22:24:58 -0500
+Subject: [PATCH 2/8] fix
+
+---
+ src/crc32c.c | 19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
+
+diff --git a/src/crc32c.c b/src/crc32c.c
+index d7e7e3f71d557..9f772d7e008e0 100644
+--- a/src/crc32c.c
++++ b/src/crc32c.c
+@@ -56,14 +56,9 @@
+ #define POLY 0x82f63b78
+ 
+ /* Block sizes for three-way parallel crc computation.  LONG and SHORT must
+-   both be powers of two.  The associated string constants must be set
+-   accordingly, for use in constructing the assembler instructions. */
++   both be powers of two. */
+ #define LONG 8192
+-#define LONGx1 "8192"
+-#define LONGx2 "16384"
+ #define SHORT 256
+-#define SHORTx1 "256"
+-#define SHORTx2 "512"
+ 
+ #ifndef GEN_CRC32C_TABLES
+ #include "crc32c-tables.c"
+@@ -114,13 +109,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         uintptr_t crc2 = 0;
+         const char *end = buf + LONG;
+         do {
+-            __asm__(CRC32_PTR "\t" "(%1), %0"
++            __asm__(CRC32_PTR "\t(%1), %0"
+                     : "+r"(crc0),
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
+-            __asm__(CRC32_PTR "\t" LONGx1 "(%1), %0"
++            __asm__(CRC32_PTR "\t(%1), %0"
+                     :  "+r"(crc1),
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG]));
+-            __asm__(CRC32_PTR "\t" LONGx2 "(%1), %0"
++            __asm__(CRC32_PTR "\t(%1), %0"
+                     :  "+r"(crc2),
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
+             buf += sizeof(void*);
+@@ -138,13 +133,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         uintptr_t crc2 = 0;
+         const char *end = buf + SHORT;
+         do {
+-            __asm__(CRC32_PTR "\t" "(%1), %0"
++            __asm__(CRC32_PTR "\t(%1), %0"
+                     : "+r"(crc0),
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
+-            __asm__(CRC32_PTR "\t" SHORTx1 "(%1), %0"
++            __asm__(CRC32_PTR "\t(%1), %0"
+                     :  "+r"(crc1),
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT]));
+-            __asm__(CRC32_PTR "\t" SHORTx2 "(%1), %0"
++            __asm__(CRC32_PTR "\t(%1), %0"
+                     :  "+r"(crc2),
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
+             buf += sizeof(void*);
+
+From 7f6271fe6246a1d58bf1f70e3707404cb636722d Mon Sep 17 00:00:00 2001
+From: "Steven G. Johnson" <stevenj@alum.mit.edu>
+Date: Fri, 8 Dec 2023 17:10:20 -0500
+Subject: [PATCH 3/8] rm commas
+
+---
+ src/crc32c.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/crc32c.c b/src/crc32c.c
+index 9f772d7e008e0..36cc9b97e986d 100644
+--- a/src/crc32c.c
++++ b/src/crc32c.c
+@@ -110,13 +110,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         const char *end = buf + LONG;
+         do {
+             __asm__(CRC32_PTR "\t(%1), %0"
+-                    : "+r"(crc0),
++                    : "+r"(crc0)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
+             __asm__(CRC32_PTR "\t(%1), %0"
+-                    :  "+r"(crc1),
++                    :  "+r"(crc1)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG]));
+             __asm__(CRC32_PTR "\t(%1), %0"
+-                    :  "+r"(crc2),
++                    :  "+r"(crc2)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+@@ -134,13 +134,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         const char *end = buf + SHORT;
+         do {
+             __asm__(CRC32_PTR "\t(%1), %0"
+-                    : "+r"(crc0),
++                    : "+r"(crc0)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
+             __asm__(CRC32_PTR "\t(%1), %0"
+-                    :  "+r"(crc1),
++                    :  "+r"(crc1)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT]));
+             __asm__(CRC32_PTR "\t(%1), %0"
+-                    :  "+r"(crc2),
++                    :  "+r"(crc2)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+
+From fc0df9dfec8656fedb039bffe80b8ea453baeabb Mon Sep 17 00:00:00 2001
+From: "Steven G. Johnson" <stevenj@alum.mit.edu>
+Date: Fri, 8 Dec 2023 20:25:36 -0500
+Subject: [PATCH 4/8] Update crc32c.c
+
+---
+ src/crc32c.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/crc32c.c b/src/crc32c.c
+index 36cc9b97e986d..32a19d6115083 100644
+--- a/src/crc32c.c
++++ b/src/crc32c.c
+@@ -109,13 +109,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         uintptr_t crc2 = 0;
+         const char *end = buf + LONG;
+         do {
+-            __asm__(CRC32_PTR "\t(%1), %0"
++            __asm__(CRC32_PTR "\t%1, %0"
+                     : "+r"(crc0)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
+-            __asm__(CRC32_PTR "\t(%1), %0"
++            __asm__(CRC32_PTR "\t%1, %0"
+                     :  "+r"(crc1)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG]));
+-            __asm__(CRC32_PTR "\t(%1), %0"
++            __asm__(CRC32_PTR "\t%1, %0"
+                     :  "+r"(crc2)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
+             buf += sizeof(void*);
+@@ -133,13 +133,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         uintptr_t crc2 = 0;
+         const char *end = buf + SHORT;
+         do {
+-            __asm__(CRC32_PTR "\t(%1), %0"
++            __asm__(CRC32_PTR "\t%1, %0"
+                     : "+r"(crc0)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
+-            __asm__(CRC32_PTR "\t(%1), %0"
++            __asm__(CRC32_PTR "\t%1, %0"
+                     :  "+r"(crc1)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT]));
+-            __asm__(CRC32_PTR "\t(%1), %0"
++            __asm__(CRC32_PTR "\t%1, %0"
+                     :  "+r"(crc2)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
+             buf += sizeof(void*);
+
+From 3c495cae4da6c598d7f42b5dbeea1caccbfee34c Mon Sep 17 00:00:00 2001
+From: "Steven G. Johnson" <stevenj@alum.mit.edu>
+Date: Fri, 8 Dec 2023 20:26:59 -0500
+Subject: [PATCH 5/8] Update crc32c.c
+
+---
+ src/crc32c.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/crc32c.c b/src/crc32c.c
+index 32a19d6115083..464fe63499faa 100644
+--- a/src/crc32c.c
++++ b/src/crc32c.c
+@@ -113,10 +113,10 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+                     : "+r"(crc0)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
+             __asm__(CRC32_PTR "\t%1, %0"
+-                    :  "+r"(crc1)
++                    : "+r"(crc1)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG]));
+             __asm__(CRC32_PTR "\t%1, %0"
+-                    :  "+r"(crc2)
++                    : "+r"(crc2)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+@@ -137,10 +137,10 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+                     : "+r"(crc0)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
+             __asm__(CRC32_PTR "\t%1, %0"
+-                    :  "+r"(crc1)
++                    : "+r"(crc1)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT]));
+             __asm__(CRC32_PTR "\t%1, %0"
+-                    :  "+r"(crc2)
++                    : "+r"(crc2)
+                     : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+
+From fc02d992775fc0bcb7d374d5a4475746c339d228 Mon Sep 17 00:00:00 2001
+From: "Steven G. Johnson" <stevenj@alum.mit.edu>
+Date: Fri, 8 Dec 2023 23:59:11 -0500
+Subject: [PATCH 6/8] rm -> m
+
+---
+ src/crc32c.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/src/crc32c.c b/src/crc32c.c
+index 464fe63499faa..b2898f957af49 100644
+--- a/src/crc32c.c
++++ b/src/crc32c.c
+@@ -95,9 +95,9 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+     /* compute the crc for up to seven leading bytes to bring the data pointer
+        to an eight-byte boundary */
+     while (len && ((uintptr_t)buf & 7) != 0) {
+-        __asm__("crc32b\t" "(%1), %0"
++        __asm__("crc32b\t" "%1, %0"
+                 : "+r"(crc0)
+-                : "r"(buf), "m"(*buf));
++                : "m"(*buf));
+         buf++;
+         len--;
+     }
+@@ -111,13 +111,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         do {
+             __asm__(CRC32_PTR "\t%1, %0"
+                     : "+r"(crc0)
+-                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
++                    : "m"(* (const char (*)[sizeof(void*)]) &buf[0]));
+             __asm__(CRC32_PTR "\t%1, %0"
+                     : "+r"(crc1)
+-                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG]));
++                    : "m"(* (const char (*)[sizeof(void*)]) &buf[LONG]));
+             __asm__(CRC32_PTR "\t%1, %0"
+                     : "+r"(crc2)
+-                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
++                    : "m"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+         crc0 = crc32c_shift(crc32c_long, crc0) ^ crc1;
+@@ -135,13 +135,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         do {
+             __asm__(CRC32_PTR "\t%1, %0"
+                     : "+r"(crc0)
+-                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[0]));
++                    : "m"(* (const char (*)[sizeof(void*)]) &buf[0]));
+             __asm__(CRC32_PTR "\t%1, %0"
+                     : "+r"(crc1)
+-                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT]));
++                    : "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT]));
+             __asm__(CRC32_PTR "\t%1, %0"
+                     : "+r"(crc2)
+-                    : "rm"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
++                    : "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+         crc0 = crc32c_shift(crc32c_short, crc0) ^ crc1;
+@@ -154,18 +154,18 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+        block */
+     const char *end = buf + (len - (len & 7));
+     while (buf < end) {
+-        __asm__(CRC32_PTR "\t" "(%1), %0"
++        __asm__(CRC32_PTR "\t" "%1, %0"
+                 : "+r"(crc0)
+-                : "r"(buf), "m"(* (const char (*)[sizeof(void*)]) buf));
++                : "m"(* (const char (*)[sizeof(void*)]) buf));
+         buf += sizeof(void*);
+     }
+     len &= 7;
+ 
+     /* compute the crc for up to seven trailing bytes */
+     while (len) {
+-        __asm__("crc32b\t" "(%1), %0"
++        __asm__("crc32b\t" "%1, %0"
+                 : "+r"(crc0)
+-                : "r"(buf), "m"(*buf));
++                : "m"(*buf));
+         buf++;
+         len--;
+     }
+
+From 664ec684c4ceab1b8bcbb605aeed2a79c9130270 Mon Sep 17 00:00:00 2001
+From: "Steven G. Johnson" <stevenj@alum.mit.edu>
+Date: Sat, 9 Dec 2023 00:04:45 -0500
+Subject: [PATCH 7/8] simplification
+
+---
+ src/crc32c.c | 32 ++++++++++++++------------------
+ 1 file changed, 14 insertions(+), 18 deletions(-)
+
+diff --git a/src/crc32c.c b/src/crc32c.c
+index b2898f957af49..a638b2efcf1cd 100644
+--- a/src/crc32c.c
++++ b/src/crc32c.c
+@@ -109,15 +109,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         uintptr_t crc2 = 0;
+         const char *end = buf + LONG;
+         do {
+-            __asm__(CRC32_PTR "\t%1, %0"
+-                    : "+r"(crc0)
+-                    : "m"(* (const char (*)[sizeof(void*)]) &buf[0]));
+-            __asm__(CRC32_PTR "\t%1, %0"
+-                    : "+r"(crc1)
+-                    : "m"(* (const char (*)[sizeof(void*)]) &buf[LONG]));
+-            __asm__(CRC32_PTR "\t%1, %0"
+-                    : "+r"(crc2)
+-                    : "m"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
++            __asm__(CRC32_PTR "\t%3, %0\n\t"
++                    CRC32_PTR "\t%4, %1\n\t"
++                    CRC32_PTR "\t%5, %2"
++                    : "+r"(crc0), "+r"(crc1), "+r"(crc2)
++                    : "m"(* (const char (*)[sizeof(void*)]) &buf[0]),
++                      "m"(* (const char (*)[sizeof(void*)]) &buf[LONG]),
++                      "m"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+         crc0 = crc32c_shift(crc32c_long, crc0) ^ crc1;
+@@ -133,15 +131,13 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+         uintptr_t crc2 = 0;
+         const char *end = buf + SHORT;
+         do {
+-            __asm__(CRC32_PTR "\t%1, %0"
+-                    : "+r"(crc0)
+-                    : "m"(* (const char (*)[sizeof(void*)]) &buf[0]));
+-            __asm__(CRC32_PTR "\t%1, %0"
+-                    : "+r"(crc1)
+-                    : "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT]));
+-            __asm__(CRC32_PTR "\t%1, %0"
+-                    : "+r"(crc2)
+-                    : "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
++            __asm__(CRC32_PTR "\t%3, %0\n\t"
++                    CRC32_PTR "\t%4, %1\n\t"
++                    CRC32_PTR "\t%5, %2"
++                    : "+r"(crc0), "+r"(crc1), "+r"(crc2)
++                    : "m"(* (const char (*)[sizeof(void*)]) &buf[0]),
++                      "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT]),
++                      "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+         crc0 = crc32c_shift(crc32c_short, crc0) ^ crc1;
+
+From 5193f10ce4536e1fdb39de6209d9c643526e0d14 Mon Sep 17 00:00:00 2001
+From: "Steven G. Johnson" <stevenj@alum.mit.edu>
+Date: Sat, 9 Dec 2023 00:09:12 -0500
+Subject: [PATCH 8/8] simplify pointer cast to const uintptr_t *
+
+---
+ src/crc32c.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/src/crc32c.c b/src/crc32c.c
+index a638b2efcf1cd..b38f9d6c0e765 100644
+--- a/src/crc32c.c
++++ b/src/crc32c.c
+@@ -113,9 +113,9 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+                     CRC32_PTR "\t%4, %1\n\t"
+                     CRC32_PTR "\t%5, %2"
+                     : "+r"(crc0), "+r"(crc1), "+r"(crc2)
+-                    : "m"(* (const char (*)[sizeof(void*)]) &buf[0]),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[LONG]),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[LONG*2]));
++                    : "m"(* (const uintptr_t *) &buf[0]),
++                      "m"(* (const uintptr_t *) &buf[LONG]),
++                      "m"(* (const uintptr_t *) &buf[LONG*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+         crc0 = crc32c_shift(crc32c_long, crc0) ^ crc1;
+@@ -135,9 +135,9 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+                     CRC32_PTR "\t%4, %1\n\t"
+                     CRC32_PTR "\t%5, %2"
+                     : "+r"(crc0), "+r"(crc1), "+r"(crc2)
+-                    : "m"(* (const char (*)[sizeof(void*)]) &buf[0]),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT]),
+-                      "m"(* (const char (*)[sizeof(void*)]) &buf[SHORT*2]));
++                    : "m"(* (const uintptr_t *) &buf[0]),
++                      "m"(* (const uintptr_t *) &buf[SHORT]),
++                      "m"(* (const uintptr_t *) &buf[SHORT*2]));
+             buf += sizeof(void*);
+         } while (buf < end);
+         crc0 = crc32c_shift(crc32c_short, crc0) ^ crc1;
+@@ -152,7 +152,7 @@ static uint32_t crc32c_sse42(uint32_t crc, const char *buf, size_t len)
+     while (buf < end) {
+         __asm__(CRC32_PTR "\t" "%1, %0"
+                 : "+r"(crc0)
+-                : "m"(* (const char (*)[sizeof(void*)]) buf));
++                : "m"(* (const uintptr_t *) buf));
+         buf += sizeof(void*);
+     }
+     len &= 7;
