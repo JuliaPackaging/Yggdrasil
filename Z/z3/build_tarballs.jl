@@ -14,7 +14,7 @@ julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3-solver-$(version).0.tar.gz",
-                  "dce2f3d88ff7b8671bd5d843f4f3f353e7089a45"),
+                  "f692c87437be8d585ebca124355cd6488d60331289f6bbebbde65cd497205128"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
