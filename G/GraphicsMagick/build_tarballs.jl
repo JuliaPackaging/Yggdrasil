@@ -2,12 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "GraphicsMagick"
-version = v"1.3.40"
+version = v"1.3.42"
 
 # Collection of sources required to build GraphicsMagick
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
-                  "97dc1a9d4e89c77b25a3b24505e7ff1653b88f9bfe31f189ce10804b8efa7746"),
+                  "484fccfd2b2faf6c2ba9151469ece5072bcb91ba4ed73e75ed3d8e46c759d557"),
     DirectorySource("bundled"),
 ]
 
@@ -16,8 +16,12 @@ script = raw"""
 cd $WORKSPACE/srcdir/GraphicsMagick*
 # Don't use `clock_realtime` if it isn't available
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
-# Don't use interlacing or lossless compression if they are not available
-atomic_patch -p1 ../patches/libjpeg_turbo.patch
+
+LDFLAGS=()
+if [[ $target = *-darwin* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
+    LDFLAGS=('-fuse-ld=ld')
+fi
 
 # While all libraries are available, only the last set of header files
 # (here depth=8) remain available.
@@ -40,7 +44,8 @@ for depth in 32 16 8; do
         --without-gs \
         --without-frozenpaths \
         --without-perl \
-        --without-x
+        --without-x \
+        LDFLAGS="${LDFLAGS[@]}"
     make -j${nproc}
     make install
     popd
