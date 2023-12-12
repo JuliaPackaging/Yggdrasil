@@ -41,7 +41,6 @@ install_license ../COPYING
 """
 
 platforms = supported_platforms(; exclude = Sys.iswindows)
-platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("kalign", :kalign),
