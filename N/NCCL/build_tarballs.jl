@@ -18,12 +18,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-export CUDA_HOME=${WORKSPACE}/destdir/cuda
-export BUILDDIR=${WORKSPACE}/destdir
-export CXXFLAGS='-D__STDC_FORMAT_MACROS'
-
-mkdir -p ${WORKSPACE}/tmpdir
 export TMPDIR=${WORKSPACE}/tmpdir
+export BUILDDIR=${WORKSPACE}/destdir
+export CUDA_HOME=${WORKSPACE}/destdir/cuda
+export CXXFLAGS='-D__STDC_FORMAT_MACROS'
+export CUDARTLIB=cudart
+
+mkdir -p ${TMPDIR}
 
 cd nccl
 make -j src.build || df -hT
