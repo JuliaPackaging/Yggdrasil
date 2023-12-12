@@ -20,6 +20,7 @@ cd $WORKSPACE/srcdir
 
 export CUDA_HOME=${WORKSPACE}/destdir/cuda
 export BUILDDIR=${WORKSPACE}/destdir
+export CXXFLAGS='-D__STDC_FORMAT_MACROS'
 
 cd nccl
 make -j src.build || df -hT
