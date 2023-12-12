@@ -22,7 +22,7 @@ export CUDA_HOME=${WORKSPACE}/destdir/cuda
 export BUILDDIR=${WORKSPACE}/destdir
 
 cd nccl
-make -j src.build
+make -j src.build || df -hT
 """
 
 # These are the platforms we will build for by default, unless further
