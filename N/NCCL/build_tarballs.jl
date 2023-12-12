@@ -18,6 +18,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
+export CUDA_HOME=${WORKSPACE}/destdir/cuda
+export BUILDDIR=${WORKSPACE}/destdir
+
 cd nccl
 make -j src.build
 """
