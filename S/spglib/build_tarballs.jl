@@ -19,6 +19,7 @@ if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
 fi
 cmake -B ./build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DSPGLIB_WITH_TESTS=OFF \
       ${args}
 cmake --build ./build -j${nproc}
 cmake --install ./build
