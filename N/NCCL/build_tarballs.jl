@@ -21,13 +21,14 @@ cd $WORKSPACE/srcdir
 export TMPDIR=${WORKSPACE}/tmpdir
 export BUILDDIR=${WORKSPACE}/destdir
 export CUDA_HOME=${WORKSPACE}/destdir/cuda
+export CUDA_LIB=${CUDA_HOME}/lib
 export CXXFLAGS='-D__STDC_FORMAT_MACROS'
 export CUDARTLIB=cudart
 
 mkdir -p ${TMPDIR}
 
 cd nccl
-make -j src.build || df -hT
+make -j src.build
 """
 
 # These are the platforms we will build for by default, unless further
