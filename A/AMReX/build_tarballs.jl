@@ -52,8 +52,12 @@ else
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
-    export LDFLAGS=-fuse-ld=ld
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
+    # Remove the new fancy linkers which don't work yet
+    rm /opt/bin/${bb_full_target}/ld64.lld
+    rm /opt/bin/${bb_full_target}/ld64.${target}
+    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
+    rm /opt/${MACHTYPE}/bin/ld64.lld
 fi
 
 if [[ "${target}" == *-mingw32* ]]; then
