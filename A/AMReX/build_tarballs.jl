@@ -19,10 +19,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/amrex
+cd ${WORKSPACE}/srcdir/amrex
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
@@ -33,8 +33,8 @@ fi
 # Correct HDF5 compiler wrappers
 perl -pi -e 's+-I/workspace/srcdir/hdf5-1[.]14[.]./src/H5FDsubfiling++' $(which h5pcc)
 
-if [[ "$target" == *-apple-* ]]; then
-    if grep -q MPICH_NAME $prefix/include/mpi.h; then
+if [[ "${target}" == *-apple-* ]]; then
+    if grep -q MPICH_NAME ${prefix}/include/mpi.h; then
         # MPICH's pkgconfig file "mpich.pc" lists these options:
         #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
         #     Cflags:   -I${includedir}
@@ -43,20 +43,21 @@ if [[ "$target" == *-apple-* ]]; then
         # and cmake concludes that MPI is not available.
         mpiopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
     fi
-elif [[ "$target" == x86_64-w64-mingw32 ]]; then
-    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
-elif [[ "$target" == *-mingw* ]]; then
-    mpiopts="-DMPI_HOME=$prefix -DMPI_GUESS_LIBRARY_NAME=MSMPI"
+elif [[ "${target}" == x86_64-w64-mingw32 ]]; then
+    mpiopts="-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64"
+elif [[ "${target}" == *-mingw* ]]; then
+    mpiopts="-DMPI_HOME=${prefix} -DMPI_GUESS_LIBRARY_NAME=MSMPI"
 else
     mpiopts=
 fi
 
+echo "${target}"
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
     LDFLAGS=-fuse-ld=ld
 fi
 
-if [[ "$target" == *-mingw32* ]]; then
+if [[ "${target}" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
     hdf5opts="-DAMReX_HDF5=OFF"
 else
@@ -65,7 +66,7 @@ fi
 
 cmake \
     -B build \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DAMReX_FORTRAN=ON \
