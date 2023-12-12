@@ -34,6 +34,7 @@ make -j src.build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = CUDA.supported_platforms()
+filter!(p -> arch(p) == "x86_64", platforms)
 
 products = [
     LibraryProduct("libnccl", :libnccl),
@@ -53,6 +54,5 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
-                   julia_compat="1.7", CUDA.augment,
-                   skip_audit=true, dont_dlopen=true)
+                   julia_compat="1.6", CUDA.augment)
 end
