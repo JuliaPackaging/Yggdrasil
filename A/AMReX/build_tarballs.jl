@@ -52,10 +52,9 @@ else
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    echo $LDFLAGS
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
     LDFLAGS=-fuse-ld=ld
 fi
-false
 
 if [[ "$target" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
