@@ -51,10 +51,9 @@ else
     mpiopts=
 fi
 
-echo "${target}"
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
-    LDFLAGS=-fuse-ld=ld
+    export LDFLAGS=-fuse-ld=ld
 fi
 
 if [[ "${target}" == *-mingw32* ]]; then
