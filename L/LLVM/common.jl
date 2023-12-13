@@ -301,12 +301,13 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 # Clear out our `${prefix}`
 rm -rf ${prefix}/*
 
-# Copy over `llvm-config`, `libLLVM` and `include`, specifically.
-mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib
+# Copy over `llvm-config`, `libLLVM`, `cmake` files, and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/llvm* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/llvm-config* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*LLVM*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/*LLVM*.a ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/llvm* ${prefix}/lib/cmake
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
@@ -317,17 +318,20 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 # Clear out our `${prefix}`
 rm -rf ${prefix}/*
 
-# Copy over `clang`, `libclang` and `include`, specifically.
-mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools
+# Copy over `clang`, `libclang`, `cmake` files, `diagtool`, and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib/cmake ${prefix}/tools
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
 if [[ -f ${LLVM_ARTIFACT_DIR}/bin/clang* ]]; then
     mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/
 else
     mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/
 fi
+mv -v ${LLVM_ARTIFACT_DIR}/tools/{diagtool,modularize,find-all-symbols,pp-trace} ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/lib/libfindAllSymbols.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
+mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/clang* ${prefix}/lib/cmake
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
