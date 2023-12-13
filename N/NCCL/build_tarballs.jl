@@ -18,17 +18,18 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-export TMPDIR=${WORKSPACE}/tmpdir
+export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
 export CUDA_HOME=${WORKSPACE}/destdir/cuda
 export CUDA_LIB=${CUDA_HOME}/lib
 export CXXFLAGS='-D__STDC_FORMAT_MACROS'
-export CUDARTLIB=cudart
+export CUDARTLIB=cudart # link against dynamic library
 
 mkdir -p ${TMPDIR}
 
 cd nccl
 make -j pkg.txz.build
 tar -xJf build/pkg/txz/*.txz -C ${WORKSPACE}/destdir --strip-components=1
+rm ${WORKSPACE}/destdir/lib/libnccl_static.a  # remove static library: saves 230 MB
 """
 
 # These are the platforms we will build for by default, unless further
