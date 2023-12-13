@@ -29,7 +29,10 @@ mkdir -p ${TMPDIR}
 cd nccl
 make -j pkg.txz.build
 tar -xJf build/pkg/txz/*.txz -C ${WORKSPACE}/destdir --strip-components=1
+rm ${WORKSPACE}/destdir/LICENSE.txt
 rm ${WORKSPACE}/destdir/lib/libnccl_static.a  # remove static library: saves 230 MB
+
+install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
