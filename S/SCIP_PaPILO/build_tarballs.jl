@@ -20,6 +20,9 @@ cd scipoptsuite*
 # for soplex threadlocal
 export CXXFLAGS="-DTHREADLOCAL=''"
 
+# can be removed for scip 805
+echo "target_link_libraries(clusol gfortran)" >> papilo/CMakeLists.txt
+
 if [[ "${target}" == *apple-darwin* ]]; then
     # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
     # Remove the new linkers which don't work yet
