@@ -20,8 +20,14 @@ cd scipoptsuite*
 # for soplex threadlocal
 export CXXFLAGS="-DTHREADLOCAL=''"
 
-# can be removed for scip 805
-echo "target_link_libraries(clusol gfortran)" >> papilo/CMakeLists.txt
+if [[ "${target}" == *apple-darwin* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
+    # Remove the new linkers which don't work yet
+    rm /opt/bin/${bb_full_target}/ld64.lld
+    rm /opt/bin/${bb_full_target}/ld64.${target}
+    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
+    rm /opt/${MACHTYPE}/bin/ld64.lld
+fi
 
 mkdir build
 cd build/
@@ -45,15 +51,6 @@ make papilo-executable
 
 make install
 cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
-
-if [[ "${target}" == *apple-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
-    # Remove the new linkers which don't work yet
-    rm /opt/bin/${bb_full_target}/ld64.lld
-    rm /opt/bin/${bb_full_target}/ld64.${target}
-    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
-    rm /opt/${MACHTYPE}/bin/ld64.lld
-fi
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in scip soplex gcg; do
