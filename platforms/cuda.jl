@@ -99,10 +99,6 @@ const cuda_full_versions = [
     v"12.3.0",
 ]
 
-const cuda_minor_versions = [Base.thisminor(ver) for ver in cuda_full_versions]
-
-const cuda_major_versions = unique(Base.thismajor(ver) for ver in cuda_full_versions)
-
 function full_version(ver::VersionNumber)
     ver == Base.thisminor(ver) || error("Cannot specify a patch version")
     for full_ver in cuda_full_versions
@@ -119,11 +115,11 @@ end
 Return a list of supported platforms to build CUDA artifacts for.
 
 # Arguments
-- `cuda_major_versions=cuda_major_versions`: CUDA major versions to target (given provided `cuda_full_versions`) - if `cuda_minor_versions` is empty.
-- `cuda_minor_versions=VersionNumber[]`: CUDA minor versions to target (given provided `cuda_full_versions`) - if non-empty.
+- `min_version=v"11"`: Min. CUDA version to target (given provided `cuda_full_versions`).
+- `max_version=nothing`: Max. CUDA version to target (given provided `cuda_full_versions`).
 - `cuda_full_versions=cuda_full_versions`.
 """
-function supported_platforms(; cuda_major_versions=cuda_major_versions, cuda_minor_versions=VersionNumber[], cuda_full_versions=cuda_full_versions)
+function supported_platforms(; min_version=v"11", max_version=nothing, cuda_full_versions=cuda_full_versions)
     base_platforms = [
         Platform("x86_64", "linux"; libc = "glibc"),
         Platform("aarch64", "linux"; libc = "glibc"),
@@ -133,11 +129,7 @@ function supported_platforms(; cuda_major_versions=cuda_major_versions, cuda_min
         #Platform("x86_64", "windows"),
     ]
 
-    if isempty(cuda_minor_versions)
-        cuda_full_versions = filter(ver -> Base.thismajor(ver) in cuda_major_versions, cuda_full_versions)
-    else
-        cuda_full_versions = filter(ver -> Base.thisminor(ver) in cuda_minor_versions, cuda_full_versions)
-    end
+    cuda_full_versions = filter(v -> (isnothing(min_version) || v >= min_version) && (isnothing(max_version) || v <= max_version), cuda_full_versions)
 
     # augment with CUDA versions
     platforms = Platform[]
