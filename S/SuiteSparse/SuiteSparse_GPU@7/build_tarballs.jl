@@ -99,10 +99,6 @@ install_license LICENSE.txt
 platforms = CUDA.supported_platforms()
 filter!(p -> arch(p) == "x86_64", platforms)
 
-# Add products
-push!(products, LibraryProduct("libgpuqrengine", :libgpuqrengine))
-push!(products, LibraryProduct("libsuitesparse_gpuruntime", :libsuitesparse_gpuruntime))
-
 # Add dependency on SuiteSparse_jll
 push!(dependencies, Dependency("SuiteSparse_jll"))
 
@@ -113,7 +109,7 @@ for platform in platforms
     cuda_deps = CUDA.required_dependencies(platform)
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
-                   products, [dependencies; cuda_deps]; lazy_artifacts=true,
+                   gpu_products, [dependencies; cuda_deps]; lazy_artifacts=true,
                    julia_compat="1.10",preferred_gcc_version=v"9",
                    augment_platform_block=CUDA.augment,
                    skip_audit=true, dont_dlopen=true)
