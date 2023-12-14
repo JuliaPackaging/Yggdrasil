@@ -56,6 +56,14 @@ products = [
     LibraryProduct("libspqr",                :libspqr),
 ]
 
+# Products for the GPU builds of SuiteSparse
+gpu_products = [
+    LibraryProduct("libcholmod_cuda",                :libcholmod),
+    LibraryProduct("libspqr_cuda",                   :libspqr),
+    LibraryProduct("libgpuqrengine_cuda",            :libgpuqrengine),
+    LibraryProduct("libsuitesparse_gpuruntime_cuda", :libsuitesparse_gpuruntime),
+]
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.8.0"),
