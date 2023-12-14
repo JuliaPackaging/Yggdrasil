@@ -34,8 +34,7 @@ install_license ../COPYRIGHT ../LICENSE-APACHE ../LICENSE-MIT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-platforms = [Platform("i686", "windows")]
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 augment_platform_block = """
     using Base.BinaryPlatforms
