@@ -13,7 +13,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/QuEST
-cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ${WORKSPACE}/srcdir/QuEST
+cmake \
+    -DCMAKE_C_STANDARD=99 \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    .
 make
 cp -r $WORKSPACE/srcdir/QuEST/QuEST/include/ ${libdir}/
 install -Dvm 755 $WORKSPACE/srcdir/QuEST/libQuEST.${dlext} ${libdir}/libQuEST.${dlext}
