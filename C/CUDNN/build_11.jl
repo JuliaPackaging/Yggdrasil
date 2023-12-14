@@ -1,14 +1,14 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.6.0/local_installers/11.8/cudnn-linux-x86_64-8.6.0.163_cuda11-archive.tar.xz",
-                      "bbc396df47294c657edc09c600674d608cb1bfc80b82dcf4547060c21711159e")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.4/11.4_20210831/cudnn-11.4-linux-x64-v8.2.4.15.tgz",
+                      "0e5d2df890b9967efa6619da421310d97323565a79f05a1a8cb9b7165baad0d7")],
     Platform("powerpc64le", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.6.0/local_installers/11.8/cudnn-linux-ppc64le-8.6.0.163_cuda11-archive.tar.xz",
-                      "c8a25e7e3df1bb9c4e18a4f24dd5f25cfd4bbe8b7054e34008e53b2be4f58a80")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.4/11.4_20210831/cudnn-11.4-linux-ppc64le-v8.2.4.15.tgz",
+                      "af8749ca83fd6bba117c8bee31b787b7f204946e864294030ee0091eb7d3577e")],
     Platform("aarch64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.6.0/local_installers/11.8/cudnn-linux-sbsa-8.6.0.163_cuda11-archive.tar.xz",
-                      "a0202278d3cbd4f3adc3f7816bff6071621cb042b0903698b477acac8928ac06")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.4/11.4_20210831/cudnn-11.4-linux-aarch64sbsa-v8.2.4.15.tgz",
+                      "48b11f19e9cd3414ec3c6c357ad228aebbd43282aae372d42cab2af67c32a08b")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.6.0/local_installers/11.8/cudnn-windows-x86_64-8.6.0.163_cuda11-archive.zip",
-                      "78b4e5c455c4e8303b5d6c5401916fb0d731ea5da72b040cfa81e0a340040ae3")],
+        ArchiveSource("https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.4/11.4_20210831/cudnn-11.4-windows-x64-v8.2.4.15.zip",
+                      "f01594639de35c380b4e360673ccaf04cdb238578e4b284935ee3d5a45f51f3c")],
 )
