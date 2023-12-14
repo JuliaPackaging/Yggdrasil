@@ -20,7 +20,8 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     .
 make -j${nproc}
-cp -r $WORKSPACE/srcdir/QuEST/QuEST/include/* ${includedir}/
+mkdir -p "${includedir}"
+cp -vr $WORKSPACE/srcdir/QuEST/QuEST/include/* ${includedir}/
 install -Dvm 755 $WORKSPACE/srcdir/QuEST/libQuEST.${dlext} ${libdir}/libQuEST.${dlext}
 install_license LICENSE.txt
 """
