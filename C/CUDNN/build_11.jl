@@ -1,14 +1,14 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.8.1/local_installers/11.8/cudnn-linux-x86_64-8.8.1.3_cuda11-archive.tar.xz",
-                      "af7584cae0cc5524b5913ef08c29ba6154113c60eb0a37a0590a91b515a8a8f9")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.6.0/local_installers/11.8/cudnn-linux-x86_64-8.6.0.163_cuda11-archive.tar.xz",
+                      "bbc396df47294c657edc09c600674d608cb1bfc80b82dcf4547060c21711159e")],
     Platform("powerpc64le", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.8.1/local_installers/11.8/cudnn-linux-ppc64le-8.8.1.3_cuda11-archive.tar.xz",
-                      "d086003d09d5388aa42142f07483a773aa74b602478b0933e24fc63f56f1658f")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.6.0/local_installers/11.8/cudnn-linux-ppc64le-8.6.0.163_cuda11-archive.tar.xz",
+                      "c8a25e7e3df1bb9c4e18a4f24dd5f25cfd4bbe8b7054e34008e53b2be4f58a80")],
     Platform("aarch64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.8.1/local_installers/11.8/cudnn-linux-sbsa-8.8.1.3_cuda11-archive.tar.xz",
-                      "3b35aaf9a4249886d938d996498c85a19cde9b74657685f2272ec6553e863359")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.6.0/local_installers/11.8/cudnn-linux-sbsa-8.6.0.163_cuda11-archive.tar.xz",
+                      "a0202278d3cbd4f3adc3f7816bff6071621cb042b0903698b477acac8928ac06")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.8.1/local_installers/11.8/cudnn-windows-x86_64-8.8.1.3_cuda11-archive.zip",
-                      "5a22c15bf42f5e74971ac619150829aa954b9e38d5daa7d8483c7cce0d704f2c")],
+        ArchiveSource("https://developer.nvidia.com/compute/cudnn/secure/8.6.0/local_installers/11.8/cudnn-windows-x86_64-8.6.0.163_cuda11-archive.zip",
+                      "78b4e5c455c4e8303b5d6c5401916fb0d731ea5da72b040cfa81e0a340040ae3")],
 )

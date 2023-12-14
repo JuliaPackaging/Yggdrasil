@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"8.8.1"
+version = v"8.6.0"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -52,7 +52,7 @@ products = [
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
-builds = ["11", "12"]
+builds = ["10.2", "11"]
 for build in builds
     include("build_$(build).jl")
     cuda_version = VersionNumber(build)
