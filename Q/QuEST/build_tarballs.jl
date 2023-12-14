@@ -29,7 +29,10 @@ install_license LICENCE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
+filter!(platforms) do p
+    !Sys.iswindows(p) &&
+    !(BinaryBuilder.proc_family(p) != "intel" && Sys.islinux(p))
+end
 
 # The products that we will ensure are always built
 products = [
