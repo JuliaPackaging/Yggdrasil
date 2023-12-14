@@ -7,7 +7,7 @@ version = v"23.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://poppler.freedesktop.org/poppler-23.12.0.tar.xz",
+    ArchiveSource("https://poppler.freedesktop.org/poppler-$(version).tar.xz",
                   "beba398c9d37a9b6d02486496635e08f1df3d437cfe61dab2593f47c4d14cdbb")
 ]
 
@@ -83,7 +83,7 @@ dependencies = [
     Dependency("FreeType2_jll"),              # we need 2.10
     Dependency("Glib_jll"; compat="2.68.1"),  # we need 2.64
     Dependency("JpegTurbo_jll"),
-    Dependency("LibCURL_jll"),                 # we need 7.68
+    Dependency("LibCURL_jll"; compat="7.73,8"),# we need 7.68
     Dependency("Libtiff_jll"; compat="4.5.1"), # we need 4.1
     Dependency("OpenJpeg_jll"),
     Dependency("libpng_jll"),
