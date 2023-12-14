@@ -84,7 +84,7 @@ dependencies = [
     Dependency("Glib_jll"; compat="2.68.1"),  # we need 2.64
     Dependency("JpegTurbo_jll"),
     Dependency("LibCURL_jll"),                 # we need 7.68
-    Dependency("Libtiff_jll"; compat="4.3.0"), # we need 4.1
+    Dependency("Libtiff_jll"; compat="4.5.1"), # we need 4.1
     Dependency("OpenJpeg_jll"),
     Dependency("libpng_jll"),
 ]
