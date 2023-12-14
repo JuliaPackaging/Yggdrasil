@@ -54,11 +54,10 @@ products = [
 
 # Products for the GPU builds of SuiteSparse
 gpu_products = [
-    LibraryProduct("libsuitesparseconfig",      :libsuitesparseconfig),
-    LibraryProduct("libcholmod",                :libcholmod),
-    LibraryProduct("libspqr",                   :libspqr),
-    LibraryProduct("libgpuqrengine",            :libgpuqrengine),
-    LibraryProduct("libsuitesparse_gpuruntime", :libsuitesparse_gpuruntime),
+    LibraryProduct("libcholmod_cuda",                :libcholmod),
+    LibraryProduct("libspqr_cuda",                   :libspqr),
+    LibraryProduct("libgpuqrengine_cuda",            :libgpuqrengine),
+    LibraryProduct("libsuitesparse_gpuruntime_cuda", :libsuitesparse_gpuruntime),
 ]
 
 # Dependencies that must be installed before this package can be built

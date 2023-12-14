@@ -3,7 +3,7 @@ include("../common.jl")
 using Base.BinaryPlatforms: arch, os
 
 name = "SuiteSparse_GPU"
-version = v"7.3.0"
+version = v"7.4.0"
 
 sources = suitesparse_sources(version)
 
@@ -17,6 +17,14 @@ cd $WORKSPACE/srcdir/SuiteSparse
 
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
+
+# Ensure CUDA is on the path
+export CUDA_HOME=${WORKSPACE}/destdir/cuda;
+export PATH=$PATH:$CUDA_HOME/bin
+export CUDACXX=$CUDA_HOME/bin/nvcc
+
+# nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
+ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
@@ -38,59 +46,45 @@ fi
 if [[ ${nbits} == 64 ]]; then
     CMAKE_OPTIONS=(
         -DBLAS64_SUFFIX="_64"
-        -DALLOW_64BIT_BLAS=YES
+        -DSUITESPARSE_USE_64BIT_BLAS=YES
     )
 else
     CMAKE_OPTIONS=(
-        -DALLOW_64BIT_BLAS=NO
+        -DSUITESPARSE_USE_64BIT_BLAS=NO
     )
 fi
 
-for proj in SuiteSparse_config SuiteSparse_GPURuntime GPUQREngine CHOLMOD SPQR; do
-    cd ${proj}/build
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_INSTALL_PREFIX=${prefix} \
-             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-             -DENABLE_CUDA=1 \
-             -DNFORTRAN=1 \
-             -DNOPENMP=1 \
-             -DNSTATIC=1 \
-             -DBLAS_FOUND=1 \
-             -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-             -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
-             -DBLAS_UNDERSCORE=ON \
-             -DBLA_VENDOR="${BLAS_NAME}" \
-             -DLAPACK_FOUND=1 \
-             -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-             -DLAPACK_LINKER_FLAGS="${BLAS_NAME}" \
-             "${CMAKE_OPTIONS[@]}"
-    make -j${nproc}
-    make install
-    cd ../..
-done
+PROJECTS_TO_BUILD="cholmod;spqr"
 
-# For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
-# Eventually, this should be fixed upstream
-if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    echo "-- Modifying library name for Lbt"
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_RELEASE_POSTFIX="_cuda" \
+      -DBUILD_STATIC_LIBS=OFF \
+      -DBUILD_TESTING=OFF \
+      -DSUITESPARSE_ENABLE_PROJECTS=${PROJECTS_TO_BUILD} \
+      -DSUITESPARSE_DEMOS=OFF \
+      -DSUITESPARSE_USE_STRICT=ON \
+      -DSUITESPARSE_USE_CUDA=ON \
+      -DSUITESPARSE_USE_FORTRAN=OFF \
+      -DSUITESPARSE_USE_OPENMP=OFF \
+      -DSUITESPARSE_USE_SYSTEM_SUITESPARSE_CONFIG=ON \
+      -DSUITESPARSE_USE_SYSTEM_AMD=ON \
+      -DSUITESPARSE_USE_SYSTEM_COLAMD=ON \
+      -DSUITESPARSE_USE_SYSTEM_CAMD=ON \
+      -DSUITESPARSE_USE_SYSTEM_CCOLAMD=ON \
+      -DCHOLMOD_PARTITION=ON \
+      -DBLAS_FOUND=1 \
+      -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
+      -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
+      -DBLA_VENDOR="${BLAS_NAME}" \
+      -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
+      -DLAPACK_LINKER_FLAGS="${BLAS_NAME}" \
+      "${CMAKE_OPTIONS[@]}" \
+      .
 
-    for nm in libcholmod libspqr; do
-        # Figure out what version it probably latched on to:
-        if [[ ${target} == *-apple-* ]]; then
-            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
-            install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
-        elif [[ ${target} == *freebsd* ]]; then
-            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${LBT_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
-        fi
-    done
-fi
-
-# Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
-if [[ "${target}" == *-mingw* ]]; then
-    rm -f ${libdir}/lib*.*.${dlext}
-    rm -f ${libdir}/lib*.*.*.${dlext}
-fi
+make -j${nproc}
+make install
 
 install_license LICENSE.txt
 """
@@ -106,7 +100,8 @@ push!(dependencies, Dependency("SuiteSparse_jll"))
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    cuda_deps = CUDA.required_dependencies(platform)
+    # Need the static SDK to let CMake detect the compiler properly
+    cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    gpu_products, [dependencies; cuda_deps]; lazy_artifacts=true,
