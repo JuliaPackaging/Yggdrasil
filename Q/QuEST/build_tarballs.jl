@@ -17,7 +17,7 @@ cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FIL
 make
 cp -r $WORKSPACE/srcdir/QuEST/QuEST/include/ ${libdir}/
 install -Dvm 755 $WORKSPACE/srcdir/QuEST/libQuEST.${dlext} ${libdir}/libQuEST.${dlext}
-exit
+install_license LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
