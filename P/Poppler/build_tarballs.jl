@@ -48,7 +48,13 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-# filter!(p -> arch(p) != "armv6l", platforms)
+
+# `armv6l` is not supported, `libpoppler_glib` is not built
+filter!(p -> arch(p) != "armv6l", platforms)
+
+# C++03 is not supported because
+# `error: function ‘GfxFontLoc& GfxFontLoc::operator=(GfxFontLoc&&)’ defaulted on its redeclaration with an exception-specification that differs from the implicit exception-specification`
+filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -75,13 +81,11 @@ dependencies = [
     Dependency("Cairo_jll"; compat="1.16.1"), # we need 1.16.0
     Dependency("Fontconfig_jll"),             # we need 2.12
     Dependency("FreeType2_jll"),              # we need 2.10
-    # Dependency("GTK3_jll"),
-    Dependency("Glib_jll"; compat="2.68.1"), # we need 2.64
+    Dependency("Glib_jll"; compat="2.68.1"),  # we need 2.64
     Dependency("JpegTurbo_jll"),
     Dependency("LibCURL_jll"),                 # we need 7.68
     Dependency("Libtiff_jll"; compat="4.3.0"), # we need 4.1
     Dependency("OpenJpeg_jll"),
-    # Dependency("gdk_pixbuf_jll"),
     Dependency("libpng_jll"),
 ]
 
