@@ -13,17 +13,17 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/QuEST
-cmake \
+cmake -B build \
     -DCMAKE_C_STANDARD=99 \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     .
-make -j${nproc}
+cmake --build build --parallel ${nproc}
 mkdir -p "${includedir}"
 cp -vr $WORKSPACE/srcdir/QuEST/QuEST/include/* ${includedir}/
-install -Dvm 755 $WORKSPACE/srcdir/QuEST/libQuEST.${dlext} ${libdir}/libQuEST.${dlext}
-install_license LICENSE.txt
+install -Dvm 755 build/QuEST/libQuEST.${dlext} ${libdir}/libQuEST.${dlext}
+install_license LICENCE.txt
 """
 
 # These are the platforms we will build for by default, unless further
