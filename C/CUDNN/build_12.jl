@@ -1,14 +1,14 @@
 platforms_and_sources = Dict(
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.9.2/local_installers/12.x/cudnn-linux-x86_64-8.9.2.26_cuda12-archive.tar.xz",
-                      "ccafd7d15c2bf26187d52d79d9ccf95104f4199980f5075a7c1ee3347948ce32")],
+        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.8.1/local_installers/12.0/cudnn-linux-x86_64-8.8.1.3_cuda12-archive.tar.xz",
+                      "79d77a769c7e7175abc7b5c2ed5c494148c0618a864138722c887f95c623777c")],
     Platform("powerpc64le", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.9.2/local_installers/12.x/cudnn-linux-ppc64le-8.9.2.26_cuda12-archive.tar.xz",
-                      "4f5e5bd01570c4805b93fb199f8bb6f8475d016948c55abf48fed9ffe89d13e5")],
+        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.8.1/local_installers/12.0/cudnn-linux-ppc64le-8.8.1.3_cuda12-archive.tar.xz",
+                      "b0e89021a846952cad8cfc674edce2883f6e344ebd47a2394f706b1136715bc7")],
     Platform("aarch64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.9.2/local_installers/12.x/cudnn-linux-sbsa-8.9.2.26_cuda12-archive.tar.xz",
-                      "898d00c82f9ad8797bd6f6c639327b320a38fa4aeebfb2b3fbb2db0d38f7e1b0")],
+        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.8.1/local_installers/12.0/cudnn-linux-sbsa-8.8.1.3_cuda12-archive.tar.xz",
+                      "9e3977aa1b9d06eb860b582ac8933630675a0243029c259bfec5bb5699867d20")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.9.2/local_installers/12.x/cudnn-windows-x86_64-8.9.2.26_cuda12-archive.zip",
-                      "8cf26fec7362d7fac110df9986a579e932a7e1ae693a11e3fa77cca41ae4d8b9")],
+        ArchiveSource("https://developer.nvidia.com/downloads/compute/cudnn/secure/8.8.1/local_installers/12.0/cudnn-windows-x86_64-8.8.1.3_cuda12-archive.zip",
+                      "ec1a6e1cd98808454b026df0da16bdd08149f2a9120ce8010f55a96e573af9f2")],
 )
