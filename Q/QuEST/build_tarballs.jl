@@ -19,7 +19,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     .
-make
+make -j${nproc}
 cp -r $WORKSPACE/srcdir/QuEST/QuEST/include/ ${libdir}/
 install -Dvm 755 $WORKSPACE/srcdir/QuEST/libQuEST.${dlext} ${libdir}/libQuEST.${dlext}
 install_license LICENSE.txt
