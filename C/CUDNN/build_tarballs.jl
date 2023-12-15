@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"8.2.4"
+version = v"8.2.1"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -26,7 +26,7 @@ elif [[ ${target} == aarch64-linux-gnu && ${bb_full_target} == aarch64-linux-gnu
     dpkg-deb -x libcudnn8-dev_*.deb .
     mv -nv ./usr/include/aarch64-linux-gnu/* ${includedir}
     mv -nv ./usr/lib/aarch64-linux-gnu/libcudnn*.so* ${libdir}
-    install_license ./usr/src/cudnn_samples_v8/NVIDIA_SLA_cuDNN_Support.txt
+    install_license ./usr/share/doc/libcudnn8/copyright
 elif [[ ${target} == *-linux-gnu ]]; then
     cd cuda
     find .
