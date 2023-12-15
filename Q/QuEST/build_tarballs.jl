@@ -36,7 +36,7 @@ end
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libQuEST", :quest)
+    LibraryProduct("libQuEST", :libquest)
 ]
 
 # Dependencies that must be installed before this package can be built
