@@ -1,0 +1,68 @@
+diff --git before/maingo/.git/config after/maingo/.git/config
+index eecf7c3..da4b196 100644
+--- before/maingo/.git/config
++++ after/maingo/.git/config
+@@ -4,8 +4,62 @@
+ 	filemode = true
+ 	logallrefupdates = true
+ [remote "origin"]
+-	url = /home/aron/.julia/packages/BinaryBuilderBase/hosj0/deps/downloads/clones/maingo.git-b90142e6006c7f712aebc598b23d73d68bed912cf404348819f4b4323018bd57
++	url = https://git.rwth-aachen.de/avt-svt/public/maingo.git
+ 	fetch = +refs/heads/*:refs/remotes/origin/*
+ [branch "master"]
+ 	remote = origin
+ 	merge = refs/heads/master
++[submodule "dep/babbase"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/babbase.git
++[submodule "dep/blas"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/blas.git
++[submodule "dep/clp"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/clp.git
++[submodule "dep/cplex"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/cplex.git
++[submodule "dep/cpplapack"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/cpplapack.git
++[submodule "dep/fadbad"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/fadbad.git
++[submodule "dep/filib"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/filib.git
++[submodule "dep/googletest"]
++	active = true
++	url = https://github.com/google/googletest
++[submodule "dep/ipopt"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/ipopt.git
++[submodule "dep/json"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/json.git
++[submodule "dep/knitro"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/knitro.git
++[submodule "dep/lapack"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/lapack.git
++[submodule "dep/libale"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/libale.git
++[submodule "dep/mcpp"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/mcpp.git
++[submodule "dep/melon"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/melon.git
++[submodule "dep/mumps"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/mumps.git
++[submodule "dep/nlopt"]
++	active = true
++	url = https://git.rwth-aachen.de/avt-svt/public/thirdparty/nlopt.git
++[submodule "dep/pybind11"]
++	active = true
++	url = https://github.com/pybind/pybind11
