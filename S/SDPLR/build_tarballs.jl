@@ -4,14 +4,14 @@ using BinaryBuilder, Pkg
 
 name = "SDPLR"
 upstream_version = v"1.0.3"
-version_offset = v"0.1.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.2.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sburer.github.io/files/SDPLR-1.03-beta.zip", "f1f945734f72e008fd7be8544b27341b179292c3304226563d9c0f6cf503b2eb")
+    GitSource("https://github.com/sburer/sdplr.git", "6866be46ac64aef7043e21dd79f26df83b953280")
 ]
 
 # Bash recipe for building across all platforms
