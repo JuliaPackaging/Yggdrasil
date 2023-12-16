@@ -20,7 +20,7 @@ sources = [
 # On Windows with `libgfortran3` or `libgfortran4`, nothing is added though.
 # so we try both
 script = raw"""
-cd $WORKSPACE/srcdir/SDPLR*
+cd $WORKSPACE/srcdir/sdplr
 make CFLAGS="-O3 -fPIC" LAPACK_LIB=-lopenblas BLAS_LIB=
 ${CC} -O3 -fPIC -shared -Llib -o libsdplr.${dlext} source/*.o -lgsl -lopenblas -lgfortran -lm
 for executable in sdplr sdplr${exeext}
