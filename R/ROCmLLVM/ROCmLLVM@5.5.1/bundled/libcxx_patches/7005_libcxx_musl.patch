@@ -2,7 +2,7 @@ diff --git a/include/locale b/include/locale
 index 2043892fa2d..4af51464208 100644
 --- a/include/locale
 +++ b/include/locale
-@@ -737,7 +737,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end,
+@@ -755,7 +755,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end,
          __libcpp_remove_reference_t<decltype(errno)> __save_errno = errno;
          errno = 0;
          char *__p2;
@@ -11,13 +11,13 @@ index 2043892fa2d..4af51464208 100644
          __libcpp_remove_reference_t<decltype(errno)> __current_errno = errno;
          if (__current_errno == 0)
              errno = __save_errno;
-@@ -777,7 +777,7 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
+@@ -795,7 +795,7 @@ __num_get_unsigned_integral(const char* __a, const char* __a_end,
          __libcpp_remove_reference_t<decltype(errno)> __save_errno = errno;
          errno = 0;
          char *__p2;
 -        unsigned long long __ll = strtoull_l(__a, &__p2, __base, _LIBCPP_GET_C_LOCALE);
 +        unsigned long long __ll = strtoull(__a, &__p2, __base);
-         typename remove_reference<decltype(errno)>::type __current_errno = errno;
+         __libcpp_remove_reference_t<decltype(errno)> __current_errno = errno;
          if (__current_errno == 0)
              errno = __save_errno;
 
