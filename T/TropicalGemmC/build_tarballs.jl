@@ -3,7 +3,7 @@ using BinaryBuilderBase
 using Pkg
 
 name = "TropicalGemmC"
-version = v"0.1.2"
+version = v"0.1.3"
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ArrogantGao/TropicalGemm_Cuda.git", "d80efc066bca8ac7fc4ce0ca2c40ec025793ccbd")
+    GitSource("https://github.com/ArrogantGao/TropicalGemm_Cuda.git", "3a7dd44a5927f148c5c58c77dc4e0b027887fa58")
 ]
 
 script = raw"""
