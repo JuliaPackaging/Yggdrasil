@@ -13,18 +13,10 @@ diff --git a/lld/ELF/InputFiles.cpp b/lld/ELF/InputFiles.cpp
 index 927dc272b532..d8bf9ebf7adc 100644
 --- a/lld/ELF/InputFiles.cpp
 +++ b/lld/ELF/InputFiles.cpp
-@@ -275,14 +275,14 @@ template <class ELFT> static void doParseFile(InputFile *file) {
+@@ -275,7 +275,7 @@ template <class ELFT> static void doParseFile(InputFile *file) {
  
    // .so file
    if (auto *f = dyn_cast<SharedFile>(file)) {
--    f->parse<ELFT>();
-+    f->template parse<ELFT>();
-     return;
-   }
- 
-   // LLVM bitcode file
-   if (auto *f = dyn_cast<BitcodeFile>(file)) {
-     ctx->bitcodeFiles.push_back(f);
 -    f->parse<ELFT>();
 +    f->template parse<ELFT>();
      return;
