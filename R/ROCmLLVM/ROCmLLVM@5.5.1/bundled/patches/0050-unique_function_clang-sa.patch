@@ -11,7 +11,7 @@ diff --git a/llvm/include/llvm/ADT/FunctionExtras.h b/llvm/include/llvm/ADT/Func
 index 121aa527a5d..b9b6d829b14 100644
 --- a/llvm/include/llvm/ADT/FunctionExtras.h
 +++ b/llvm/include/llvm/ADT/FunctionExtras.h
-@@ -193,9 +193,11 @@ public:
+@@ -299,9 +299,11 @@ public:
      // Copy the callback and inline flag.
      CallbackAndInlineFlag = RHS.CallbackAndInlineFlag;
  

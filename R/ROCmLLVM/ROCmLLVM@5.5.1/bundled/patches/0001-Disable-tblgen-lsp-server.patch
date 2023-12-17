@@ -23,7 +23,7 @@ diff --git a/mlir/test/CMakeLists.txt b/mlir/test/CMakeLists.txt
 index 74f805865d2d..60908a0268f4 100644
 --- a/mlir/test/CMakeLists.txt
 +++ b/mlir/test/CMakeLists.txt
-@@ -98,7 +98,7 @@ set(MLIR_TEST_DEPENDS
+@@ -82,7 +82,7 @@ set(MLIR_TEST_DEPENDS
    mlir-reduce
    mlir-tblgen
    mlir-translate

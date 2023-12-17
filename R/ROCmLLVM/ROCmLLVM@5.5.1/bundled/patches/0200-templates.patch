@@ -13,7 +13,7 @@ diff --git a/lld/ELF/InputFiles.cpp b/lld/ELF/InputFiles.cpp
 index 927dc272b532..d8bf9ebf7adc 100644
 --- a/lld/ELF/InputFiles.cpp
 +++ b/lld/ELF/InputFiles.cpp
-@@ -185,14 +185,14 @@ template <class ELFT> static void doParseFile(InputFile *file) {
+@@ -275,14 +275,14 @@ template <class ELFT> static void doParseFile(InputFile *file) {
  
    // .so file
    if (auto *f = dyn_cast<SharedFile>(file)) {
@@ -34,7 +34,7 @@ diff --git a/lld/ELF/InputSection.cpp b/lld/ELF/InputSection.cpp
 index 8fe36eca6a4b..b9564f2184c3 100644
 --- a/lld/ELF/InputSection.cpp
 +++ b/lld/ELF/InputSection.cpp
-@@ -130,7 +130,7 @@ template <class ELFT> RelsOrRelas<ELFT> InputSectionBase::relsOrRelas() const {
+@@ -139,7 +139,7 @@ template <class ELFT> RelsOrRelas<ELFT> InputSectionBase::relsOrRelas() const {
      return {};
    RelsOrRelas<ELFT> ret;
    typename ELFT::Shdr shdr =
@@ -47,7 +47,7 @@ diff --git a/lld/ELF/SyntheticSections.cpp b/lld/ELF/SyntheticSections.cpp
 index b359c2e7bcea..812d38ca81de 100644
 --- a/lld/ELF/SyntheticSections.cpp
 +++ b/lld/ELF/SyntheticSections.cpp
-@@ -3360,7 +3360,7 @@ template <class ELFT> void elf::splitSections() {
+@@ -3302,7 +3302,7 @@ template <class ELFT> void elf::splitSections() {
        if (auto *s = dyn_cast<MergeInputSection>(sec))
          s->splitIntoPieces();
        else if (auto *eh = dyn_cast<EhInputSection>(sec))
