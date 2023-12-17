@@ -2,45 +2,45 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "msolve"
-version = v"0.6.2"
+name = "QuEST"
+version = v"3.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "15c433bc17218818f05bee523f19dea194a54428")
+    GitSource("https://github.com/QuEST-Kit/QuEST.git", "d4f75f724993b4af8e43a796e3c09ce24ae11670")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/msolve/
-./autogen.sh
-
-ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --with-gnu-ld --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nprocs}
-make install
+cd $WORKSPACE/srcdir/QuEST
+cmake -B build \
+    -DCMAKE_C_STANDARD=99 \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    .
+cmake --build build --parallel ${nproc}
+mkdir -p "${includedir}"
+cp -vr $WORKSPACE/srcdir/QuEST/QuEST/include/* ${includedir}/
+install -Dvm 755 build/QuEST/libQuEST.${dlext} ${libdir}/libQuEST.${dlext}
+install_license LICENCE.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-filter!(!Sys.iswindows, platforms)  # no FLINT_jll available
-# At the moment we cannot add optimized versions for specific architectures
-# since the logic of artifact selection when loading the package is not
-# working well.
-# platforms = expand_microarchitectures(platforms)
+platforms = supported_platforms()
+filter!(platforms) do p
+    !Sys.iswindows(p) &&
+    !(BinaryBuilder.proc_family(p) != "intel" && Sys.islinux(p))
+end
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmsolve", :libmsolve),
-    LibraryProduct("libneogb", :libneogb),
+    LibraryProduct("libQuEST", :libquest)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
-    Dependency("FLINT_jll", compat = "~200.900.000"),
-    Dependency("MPFR_jll", v"4.1.1"),
-
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
@@ -48,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
