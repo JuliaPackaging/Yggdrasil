@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "oxigraph_server"
-version = v"0.3.20"
+version = v"0.3.22"
 
 url_prefix = "https://github.com/oxigraph/oxigraph/releases/download/v$version/oxigraph_server_v$version"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("$(url_prefix)_aarch64_apple", "cc9e47f43cf546eb16a0300972de37ddc699565340c2ee5fa82c96bb57c8b19e"; filename = "oxigraph_server-aarch64-apple-darwin20"),
-    FileSource("$(url_prefix)_x86_64_apple", "fa3d2dae62063d68c00dd2b0787ac5514ac2d914c9fd31fa9fd3f8246363dc8a"; filename = "oxigraph_server-x86_64-apple-darwin14"),
-    FileSource("$(url_prefix)_aarch64_linux_gnu", "67021a33618af8a4418186cd3ee9d2be1e3de7b2a26f7e0a1a4e4bbd4f4cfefc"; filename = "oxigraph_server-aarch64-linux-gnu"),
-    FileSource("$(url_prefix)_x86_64_linux_gnu", "bd1905a38014fde4b2983c9a6c13992c64797b1c4cd7e272c1217876d077f2a9"; filename = "oxigraph_server-x86_64-linux-gnu"),
-    FileSource("$(url_prefix)_x86_64_windows_msvc.exe", "d8e836562f3b0d762a6410b06c736f0ccb2c9a0da95a2921487b7b63f62f8c9d"; filename = "oxigraph_server-x86_64-w64-mingw32"),
+    FileSource("$(url_prefix)_aarch64_apple", "eb257070e93c39569e906a4523c5ec3f9011d87b672206b5d77408da57b71e0a"; filename = "oxigraph_server-aarch64-apple-darwin20"),
+    FileSource("$(url_prefix)_x86_64_apple", "bc7967199cd70945e95f649511ccfda78cb9f3b3a14931d73210207741be2ae3"; filename = "oxigraph_server-x86_64-apple-darwin14"),
+    FileSource("$(url_prefix)_aarch64_linux_gnu", "727043118272953123bf3bd9835a5d9ecf394b72f603fd745f155caa1f61b2ee"; filename = "oxigraph_server-aarch64-linux-gnu"),
+    FileSource("$(url_prefix)_x86_64_linux_gnu", "728f34d92fbb73e9b42655b6edd47a061e638f7e6e621e7f123772d41048942a"; filename = "oxigraph_server-x86_64-linux-gnu"),
+    FileSource("$(url_prefix)_x86_64_windows_msvc.exe", "eb8499e1a510ae904511e585e233f2d81bbf5ee70a4949a75102e57901903e69"; filename = "oxigraph_server-x86_64-w64-mingw32"),
     FileSource("https://raw.githubusercontent.com/oxigraph/oxigraph/v$version/LICENSE-MIT", "1f4f6736adc52ebfda18bb84947e0ef492bd86a408c0e83872efb75ed5e02838"; filename = "LICENSE.txt")
 ]
 
