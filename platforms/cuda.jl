@@ -115,11 +115,10 @@ end
 Return a list of supported platforms to build CUDA artifacts for.
 
 # Arguments
-- `min_version=v"11"`: Min. CUDA version to target (given provided `cuda_full_versions`).
-- `max_version=nothing`: Max. CUDA version to target (given provided `cuda_full_versions`).
-- `cuda_full_versions=cuda_full_versions`.
+- `min_version=v"11"`: Min. CUDA version to target.
+- `max_version=nothing`: Max. CUDA version to target.
 """
-function supported_platforms(; min_version=v"11", max_version=nothing, cuda_full_versions=cuda_full_versions)
+function supported_platforms(; min_version=v"11", max_version=nothing)
     base_platforms = [
         Platform("x86_64", "linux"; libc = "glibc"),
         Platform("aarch64", "linux"; libc = "glibc"),
