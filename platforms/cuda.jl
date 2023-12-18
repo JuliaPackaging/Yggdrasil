@@ -153,7 +153,7 @@ only ever be used if there is _also_ a CUDA-enabled build available.
 function is_supported(platform)
     if Sys.islinux(platform)
         return arch(platform) in ["x86_64", "aarch64", "powerpc64le"]
-    elseif is Sys.iswindows(platform)
+    elseif Sys.iswindows(platform)
         # see note in `supported_platforms()`
         return false
     else
