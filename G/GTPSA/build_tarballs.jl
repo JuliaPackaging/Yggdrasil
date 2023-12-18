@@ -22,6 +22,9 @@ ln /workspace/destdir/lib/liblapack32.dylib /workspace/destdir/lib/liblapack.dyl
 elif [[ $target == *"linux"* ]]
 then
 ln /workspace/destdir/lib/liblapack32.so /workspace/destdir/lib/liblapack.so
+elif [[ $target == *"w64-min"* ]]
+then
+ln /workspace/destdir/bin/liblapack32.dll /workspace/destdir/bin/liblapack.dll
 fi
 cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
 make
