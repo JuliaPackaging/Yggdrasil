@@ -19,10 +19,10 @@ if [[ $target == *mingw* ]]; then
 fi
 
 multimedia=ffmpeg
-if [[ $target == armv6l-* ]]; then
+if [[ ${bb_full_target} == armv6l-* ]]; then
     # FFMpeg is not available on armv6l
     multimedia=nothing
-elif [[ $target == *mingw* ]]; then
+elif [[ ${target} == *mingw* ]]; then
     # FFMpeg is not found (why?)
     # We patch CMakelists.txt for shared libraries in Windows, maybe this goes wrong?
     multimedia=nothing
@@ -42,7 +42,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DUSE_STATIC=OFF
        )
 
-if [[ $target == aarch64-apple-* ]]; then
+if [[ ${target} == aarch64-apple-* ]]; then
     # We need `libgcc` for the function `__divdc3`.
     # We specify an explicit path name because there is no development version of this library.
     # It's likely that `FFmpeg` doesn't properly declare its dependency on this library.
