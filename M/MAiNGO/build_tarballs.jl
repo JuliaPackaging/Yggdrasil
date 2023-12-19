@@ -33,7 +33,7 @@ fi
 
 if [[ "${target}" == *-freebsd* || "${target}" == x86_64-apple-darwin* ]]; then
     cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_/TARGET_TOOLCHAIN%.*}_gcc.cmake \
+          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
           ${common_cmake_options} \
           ..
 else
