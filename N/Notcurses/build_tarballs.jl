@@ -21,11 +21,11 @@ fi
 multimedia=ffmpeg
 if [[ ${bb_full_target} == armv6l-* ]]; then
     # FFMpeg is not available on armv6l
-    multimedia=nothing
+    multimedia=none
 elif [[ ${target} == *mingw* ]]; then
     # FFMpeg is not found (why?)
     # We patch CMakelists.txt for shared libraries in Windows, maybe this goes wrong?
-    multimedia=nothing
+    multimedia=none
 fi
 
 FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
