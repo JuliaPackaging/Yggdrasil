@@ -48,7 +48,6 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("notcurses-demo", :notcurses_demo),
     ExecutableProduct("notcurses-info", :notcurses_info),
-    ExecutableProduct("notcurses-tester", :notcurses_tester),
     LibraryProduct("libnotcurses", :libnotcurses),
     LibraryProduct("libnotcurses-core", :libnotcurses_core),
     LibraryProduct("libnotcurses-ffi", :libnotcurses_ffi),
