@@ -46,7 +46,6 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built.
 products = [
-    ExecutableProduct("ncplayer", :ncplayer),
     ExecutableProduct("notcurses-demo", :notcurses_demo),
     ExecutableProduct("notcurses-info", :notcurses_info),
     ExecutableProduct("notcurses-tester", :notcurses_tester),
@@ -57,10 +56,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built.
 dependencies = [
-    Dependency("Ncurses_jll"),
-    Dependency("libunistring_jll"),
-    Dependency("libdeflate_jll"),
     Dependency("FFMPEG_jll"),
+    Dependency("Ncurses_jll"),
+    Dependency("libdeflate_jll"),
+    Dependency("libunistring_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
