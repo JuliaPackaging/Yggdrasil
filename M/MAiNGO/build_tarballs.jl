@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd maingo/
+cd $WORKSPACE/srcdir/maingo/
 git remote set-url origin https://git.rwth-aachen.de/avt-svt/public/maingo.git
 mkdir build
 cd build
@@ -21,16 +20,22 @@ git submodule init
 git submodule update -j 1
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
-    export CXXFLAGS="-mmacosx-version-min=10.15"
 fi
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DMAiNGO_build_standalone=True -DMAiNGO_build_shared_c_api=True -DMAiNGO_build_parser=True -DMAiNGO_use_cplex=False -DMAiNGO_use_melon=False  ..
-cmake --build . --config Release --parallel ${nproc} > make_out.txt
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DMAiNGO_build_standalone=True \
+    -DMAiNGO_build_shared_c_api=True \
+    -DMAiNGO_build_parser=True \
+    -DMAiNGO_use_cplex=False \
+    -DMAiNGO_use_melon=False \
+    ..
+cmake --build . --config Release --parallel ${nproc}
 mkdir -p ${libdir}
 mkdir -p ${bindir}
 find . -type f -name "*maingo-c-api.*" ! -name "*.cpp*" -exec cp '{}' ${libdir}/ \;
 find . -type f -name "MAiNGO*" !  -name "*.cpp*" -exec cp '{}' ${bindir}/ \;
 install_license ../LICENSE
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -59,7 +64,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
