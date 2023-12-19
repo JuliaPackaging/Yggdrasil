@@ -27,15 +27,16 @@ common_cmake_options="-DCMAKE_BUILD_TYPE=Release \
                      -DMAiNGO_use_cplex=False \
                      -DMAiNGO_use_melon=False"
 
+# GCC used because of https://github.com/JuliaPackaging/Yggdrasil/issues/7139
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
-fi
-
-if [[ "${target}" == *-freebsd* || "${target}" == x86_64-apple-darwin* ]]; then
     cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
           -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
           ${common_cmake_options} \
           ..
+fi
+
+
 else
     cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
           -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -61,6 +62,8 @@ install_license ../LICENSE
 #but with march="avx2" avx512 is detected, so we build without march
 
 platforms = supported_platforms()
+#FreeBSD is not supported
+filter!(!Sys.isfreebsd, platforms)
 #only x64 is supported
 filter!(p -> (arch(p) == "x86_64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
