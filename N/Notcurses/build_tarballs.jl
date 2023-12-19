@@ -15,10 +15,18 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries
 
 if [[ $target == *mingw* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
-    cp ${WORKSPACE}/srcdir/headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
+    cp ${WORKSPACE}/srcdir/headers/pthread_time.h /opt/${target}/${target}/sys-root/include/pthread_time.h
 fi
 
-# export CFLAGS="${CFLAGS} -I${includedir}"
+multimedia=ffmpeg
+if [[ $target == armv6l-* ]]; then
+    # FFMpeg is not available on armv6l
+    multimedia=nothing
+elif [[ $target == *mingw* ]]; then
+    # FFMpeg is not found (why?)
+    # We patch CMakelists.txt for shared libraries in Windows, maybe this goes wrong?
+    multimedia=nothing
+fi
 
 FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -27,12 +35,19 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DBUILD_SHARED_LIBS=ON
        -DUSE_CXX=OFF
        -DUSE_DOCTEST=OFF
-       -DUSE_MULTIMEDIA=ffmpeg
+       -DUSE_MULTIMEDIA=${multimedia}
        -DUSE_PANDOC=OFF
        -DUSE_POC=OFF
        -DUSE_QRCODEGEN=OFF
        -DUSE_STATIC=OFF
        )
+
+if [[ $target == aarch64-apple-* ]]; then
+    # We need `libgcc` for the function `__divdc3`.
+    # We specify an explicit path name because there is no development version of this library.
+    # It's likely that `FFmpeg` doesn't properly declare its dependency on this library.
+    FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS_INIT=${libdir}/libgcc_s.1.1.dylib)
+fi
 
 cmake -B build "${FLAGS[@]}"
 cmake --build build --parallel ${nproc}
