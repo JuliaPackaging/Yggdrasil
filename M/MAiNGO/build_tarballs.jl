@@ -34,9 +34,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
           -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
           ${common_cmake_options} \
           ..
-fi
-
-
 else
     cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
           -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
