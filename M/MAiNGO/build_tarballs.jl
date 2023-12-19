@@ -54,16 +54,15 @@ install_license ../LICENSE
 #Auditor complains about avx1.
 #Without march the Auditor detects avx2
 #but with march="avx2" avx512 is detected, so we build without march
-#We expand only to gfortan 4 and 5 (others seem not to have std::variant)
-#MacOS is in principle supported but requires newer SDK
-#see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1263 (wee need std::shared_ptr and std::weak_ptr with array support that needs XCode 12.0)
-#FreeBsd builds only with gcc, that platform has not yet been sufficiently tested for inclusion.
-platforms = [
-    Platform("x86_64", "linux", libgfortran_version=v"4"),
-    Platform("x86_64", "linux", libgfortran_version=v"5"),
-    Platform("x86_64", "Windows", libgfortran_version=v"4"),
-    Platform("x86_64", "Windows", libgfortran_version=v"5")]
+
+platforms = supported_platforms()
+#only x64 is supported
+filter!(p -> (arch(p) == "x86_64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+#We filter out gfortan 3 (seem not to have std::variant)
+filter!(p -> !(libgfortran_version(p) == v"3"), platforms)
+
 
 # The products that we will ensure are always built
 products = [
