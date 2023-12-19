@@ -31,10 +31,9 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DMAiNGO_use_melon=False \
     ..
 cmake --build . --config Release --parallel ${nproc}
-mkdir -p ${libdir}
-mkdir -p ${bindir}
-find . -type f -name "*maingo-c-api.*" ! -name "*.cpp*" -exec cp '{}' ${libdir}/ \;
-find . -type f -name "MAiNGO*" !  -name "*.cpp*" -exec cp '{}' ${bindir}/ \;
+install -Dvm 755 "MAiNGO${exeext}" "${bindir}/MAiNGO${exeext}"
+install -Dvm 755 "MAiNGOcpp${exeext}" "${bindir}/MAiNGOcpp${exeext}"
+install -Dvm 755 "libmaingo-c-api.${dlext}" "${libdir}/libmaingo-c-api.${dlext}"
 install_license ../LICENSE
 """
 
