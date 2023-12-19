@@ -20,24 +20,28 @@ git submodule init
 git submodule update -j 1
 
 
+common_cmake_options="-DCMAKE_BUILD_TYPE=Release \
+                     -DMAiNGO_build_standalone=True \
+                     -DMAiNGO_build_shared_c_api=True \
+                     -DMAiNGO_build_parser=True \
+                     -DMAiNGO_use_cplex=False \
+                     -DMAiNGO_use_melon=False"
+
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
-    toolchain_file=${CMAKE_/TARGET_TOOLCHAIN%.*}_gcc.cmake
-elif [[ "${target}" == *-freebsd* ]]; then
-    toolchain_file=${CMAKE_/TARGET_TOOLCHAIN%.*}_gcc.cmake
-else
-    toolchain_file=${CMAKE_TARGET_TOOLCHAIN}
 fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${toolchain_file} \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DMAiNGO_build_standalone=True \
-      -DMAiNGO_build_shared_c_api=True \
-      -DMAiNGO_build_parser=True \
-      -DMAiNGO_use_cplex=False \
-      -DMAiNGO_use_melon=False \
-      ..
+if [[ "${target}" == *-freebsd* || "${target}" == x86_64-apple-darwin* ]]; then
+    cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_/TARGET_TOOLCHAIN%.*}_gcc.cmake \
+          ${common_cmake_options}
+else
+    cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+          ${common_cmake_options} \
+          ..
+fi
+
 
 
 cmake --build . --config Release --parallel ${nproc}
