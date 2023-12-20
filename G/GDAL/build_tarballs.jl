@@ -22,8 +22,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
-apk add libxml2-dev
-
 atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
@@ -155,6 +153,7 @@ dependencies = [
     Dependency("NetCDF_jll"; compat="400.902.208", platforms=hdf5_platforms),
     Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
+    Dependency("XML2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
