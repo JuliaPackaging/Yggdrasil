@@ -22,6 +22,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
+apk add libxml2-dev
+
 atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
