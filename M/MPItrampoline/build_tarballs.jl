@@ -24,6 +24,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${bb_full_target}" == *-apple-darwin*-libgfortran[45]-* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
+    # Remove the new fancy linkers which don't work yet
+    rm /opt/bin/${bb_full_target}/ld64.lld
+    rm /opt/bin/${bb_full_target}/ld64.${target}
+    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
+    rm /opt/${MACHTYPE}/bin/ld64.lld
+fi
+
 ################################################################################
 # MPItrampoline
 ################################################################################
@@ -191,15 +200,6 @@ fi
 # Install MPIwrapper
 ################################################################################
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
-    # Remove the new fancy linkers which don't work yet
-    rm /opt/bin/${bb_full_target}/ld64.lld
-    rm /opt/bin/${bb_full_target}/ld64.${target}
-    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
-    rm /opt/${MACHTYPE}/bin/ld64.lld
-fi
-
 cd $WORKSPACE/srcdir/MPIwrapper*
 mkdir build
 cd build
@@ -213,9 +213,9 @@ if [[ "${target}" == *-apple-* ]]; then
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         "${INSTALL_RPATH[@]}" \
         -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_CXX_COMPILER=c++ \
-        -DMPI_Fortran_COMPILER=gfortran \
+        -DMPI_C_COMPILER=${CC} \
+        -DMPI_CXX_COMPILER=${CXX} \
+        -DMPI_Fortran_COMPILER=${FC} \
         -DMPI_C_LIB_NAMES='mpi;pmpi' \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
