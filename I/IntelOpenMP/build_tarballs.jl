@@ -1,22 +1,22 @@
 using BinaryBuilder
 
 name = "IntelOpenMP"
-version = v"2024.0.0"
+version = v"2024.0.2"
 
 sources = [
     # Main OpenMP files
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/win-32/intel-openmp-2024.0.0-intel_49840.tar.bz2",
-                  "7b94dd0d65c8fbb76f0e2ab207731ae1cf6cf0ab3678e79d9bcfae56b5fb7fe6"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/win-64/intel-openmp-2024.0.0-intel_49840.tar.bz2",
-                  "a971532e9a397ec2907d079183f2852d907e42b8ac7616e53e1d3dd664903721"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/linux-32/intel-openmp-2024.0.0-intel_49819.tar.bz2",
-                  "f3e8e6fea77e8206ca32727fd59fb55a496f70a0f9942d0216b9ba5789a0a9b4"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/linux-64/intel-openmp-2024.0.0-intel_49819.tar.bz2",
-                  "feee49a26abc74ef0b57cfb6f521b427d6a93e7d8293d30e941b70d5fd0ab2d9"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.2/download/win-32/intel-openmp-2024.0.2-intel_49896.tar.bz2",
+                  "437439357a3333104f873efb4e9fd932af12fdcbb6e14c5bc45835ece325b767"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.2/download/win-64/intel-openmp-2024.0.2-intel_49896.tar.bz2",
+                  "85a0795a2598d5a040b620796b83bf32ea86638564d174ddb8776df0ce6bf55e"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.2/download/linux-32/intel-openmp-2024.0.2-intel_49895.tar.bz2",
+                  "20940af6206994f3a6b58404ade710e2b38de659e3998fb51d25271090267de8"; unpack_target="i686-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.2/download/linux-64/intel-openmp-2024.0.2-intel_49895.tar.bz2",
+                  "ed4eec1642bfd613bfe2a4fd0e79ac4cfab2b623f71d7e6b2ea553962972ab63"; unpack_target="x86_64-linux-gnu"),
 
     # Archive for Windows linker file, only available for win64 currently
-    ArchiveSource("https://anaconda.org/intel/dpcpp_impl_win-64/2024.0.0/download/win-64/dpcpp_impl_win-64-2024.0.0-intel_49840.tar.bz2",
-                  "b00cbbfdea2573d9d18acf5decf14ab5a84cd9a95debe98138679e36eafbae18"; unpack_target="x86_64-w64-mingw32-dpcpp"),
+    ArchiveSource("https://anaconda.org/intel/dpcpp_impl_win-64/2024.0.2/download/win-64/dpcpp_impl_win-64-2024.0.2-intel_49896.tar.bz2",
+                  "4516779ade366aae8a82d01aa1718e73bfa1433c03bf15e845c227c253ab4840"; unpack_target="x86_64-w64-mingw32-dpcpp"),
 ]
 
 # Bash recipe for building across all platforms
