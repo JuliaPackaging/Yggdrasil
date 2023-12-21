@@ -45,10 +45,9 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        )
 
 if [[ ${target} == aarch64-apple-* ]]; then
-    # We need `libgcc` for the function `__divdc3`.
-    # We specify an explicit path name because there is no development version of this library.
-    # It's likely that `FFmpeg` doesn't properly declare its dependency on this library.
-    FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS_INIT=${libdir}/libgcc_s.1.1.dylib)
+    # Linking libomp requires the function `__divdc3`, which is implemented in
+    # `libclang_rt.osx.a` from LLVM compiler-rt.
+    FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx")
 fi
 
 cmake -B build "${FLAGS[@]}"
@@ -71,12 +70,17 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built.
+llvm_version = v"13.0.1+1"
 dependencies = [
     Dependency("FFMPEG_jll"),
     Dependency("Ncurses_jll"),
     Dependency("libdeflate_jll"),
     Dependency("libunistring_jll"),
+    # We need libclang_rt.osx.a for linking libomp, because this library provides the
+    # implementation of `__divdc3`.
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version;
+                    platforms=[Platform("aarch64", "macos")]),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.6", preferred_gcc_version=v"7", preferred_llvm_version=llvm_version)
