@@ -4,6 +4,7 @@ name = "IntelOpenMP"
 version = v"2024.0.0"
 
 sources = [
+    # Main OpenMP files
     ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/win-32/intel-openmp-2024.0.0-intel_49840.tar.bz2",
                   "7b94dd0d65c8fbb76f0e2ab207731ae1cf6cf0ab3678e79d9bcfae56b5fb7fe6"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/win-64/intel-openmp-2024.0.0-intel_49840.tar.bz2",
@@ -12,6 +13,10 @@ sources = [
                   "f3e8e6fea77e8206ca32727fd59fb55a496f70a0f9942d0216b9ba5789a0a9b4"; unpack_target="i686-linux-gnu"),
     ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.0/download/linux-64/intel-openmp-2024.0.0-intel_49819.tar.bz2",
                   "feee49a26abc74ef0b57cfb6f521b427d6a93e7d8293d30e941b70d5fd0ab2d9"; unpack_target="x86_64-linux-gnu"),
+
+    # Archive for Windows linker file, only available for win64 currently
+    ArchiveSource("https://anaconda.org/intel/dpcpp_impl_win-64/2024.0.0/download/win-64/dpcpp_impl_win-64-2024.0.0-intel_49840.tar.bz2",
+                  "b00cbbfdea2573d9d18acf5decf14ab5a84cd9a95debe98138679e36eafbae18"; unpack_target="x86_64-w64-mingw32-dpcpp"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,6 +28,11 @@ if [[ ${target} == *i686-w64-mingw* ]]; then
 fi
 if [[ ${target} == *x86_64-w64-mingw* ]]; then
     mv ${target}/bin/* "${libdir}/."
+
+    # These import libraries go inside the actual lib folder, not the bin folder with the DLLs
+    mkdir -p $WORKSPACE/destdir/lib
+    cp ${target}-dpcpp/Library/lib/libiomp5md.lib "$WORKSPACE/destdir/lib/"
+    cp ${target}-dpcpp/Library/lib/libiompstubs5md.lib "$WORKSPACE/destdir/lib/"
 fi
 if [[ ${target} == *i686-linux-gnu* ]]; then
     mv ${target}/lib32/* "${libdir}/."
