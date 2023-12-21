@@ -7,6 +7,7 @@ const curl_hashes = Dict(
     v"7.88.1" => "cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded82bbf3c7",
     v"8.2.1"  => "f98bdb06c0f52bdd19e63c4a77b5eb19b243bcbbd0f5b002b9f3cba7295a3a42",
     v"8.4.0"  => "816e41809c043ff285e8c0f06a75a1fa250211bbfb2dc0a037eeef39f1a9e427",
+    v"8.5.0"  => "05fc17ff25b793a437a0906e0484b82172a9f4de02be5ed447e0cab8c3475add",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber)
@@ -114,7 +115,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         ]
     end
 
-    llvm_version = v"13.0.1"
+    llvm_version = v"13.0.1+1"
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
@@ -125,7 +126,8 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         # we default to schannel/SecureTransport on Windows/MacOS.
         Dependency("MbedTLS_jll"; compat="~2.28.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                        platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 
     if this_is_curl_jll
