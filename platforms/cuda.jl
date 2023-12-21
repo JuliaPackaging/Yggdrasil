@@ -128,11 +128,11 @@ function supported_platforms(; min_version=v"11", max_version=nothing)
         #Platform("x86_64", "windows"),
     ]
 
-    cuda_full_versions = filter(v -> (isnothing(min_version) || v >= min_version) && (isnothing(max_version) || v <= max_version), cuda_full_versions)
+    cuda_versions = filter(v -> (isnothing(min_version) || v >= min_version) && (isnothing(max_version) || v <= max_version), cuda_full_versions)
 
     # augment with CUDA versions
     platforms = Platform[]
-    for version in cuda_full_versions
+    for version in cuda_versions
         for base_platform in base_platforms
             platform = deepcopy(base_platform)
             platform["cuda"] = "$(version.major).$(version.minor)"
