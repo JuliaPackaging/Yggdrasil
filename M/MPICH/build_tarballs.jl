@@ -82,9 +82,11 @@ fi
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
 # * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared=yes --enable-static=no \
-    --with-device=ch3 --disable-dependency-tracking \
-    --enable-fast=all,O3 \
+    --enable-shared=yes \
+    --enable-static=no \
+    --with-device=ch4 \
+    --disable-dependency-tracking \
+    --enable-fast=O3,ndebug \
     --docdir=/tmp \
     --mandir=/tmp \
     "${EXTRA_FLAGS[@]}"
