@@ -14,9 +14,22 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
+    # Remove the new fancy linkers which don't work yet
+    rm /opt/bin/${bb_full_target}/ld64.lld
+    rm /opt/bin/${bb_full_target}/ld64.${target}
+    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
+    rm /opt/${MACHTYPE}/bin/ld64.lld
+fi
+
 cd $WORKSPACE/srcdir/cfitsio*
 atomic_patch -p1 ../patches/configure_in.patch
 atomic_patch -p1 ../patches/Makefile_in.patch
+if [[ $target == *-freebsd* ]]; then
+   # `gethostbyname` is considered outdated and not available any more; declare it manually
+   atomic_patch -p1 ../patches/gethostbyname.patch
+fi
 autoreconf
 if [[ "${target}" == *-mingw* ]]; then
     # This is ridiculous: when CURL is enabled, CFITSIO defines a macro,
@@ -24,6 +37,7 @@ if [[ "${target}" == *-mingw* ]]; then
     # `TBYTE` to `_TBYTE`.
     sed -i 's/\<TBYTE\>/_TBYTE/g' $(grep -lr '\<TBYTE\>')
 fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-reentrant
 make -j${nproc} shared
 make install
