@@ -47,7 +47,9 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 if [[ ${target} == aarch64-apple-* ]]; then
     # Linking libomp requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
-    FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx")
+    FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+            -DCMAKE_EXE_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx")
+            )
 fi
 
 cmake -B build "${FLAGS[@]}"
