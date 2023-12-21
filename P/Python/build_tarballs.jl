@@ -8,7 +8,7 @@ version = v"3.10.13"
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "6a30ecde59c47048013eb5a658c9b5dec277203d2793667f578df7671f7f03f3"),
+                  "5c88848668640d3e152b35b4536ef1c23b2ca4bd2c957ef1ecbb053f571dd3f6"),
     DirectorySource("./bundled"),
 ]
 
