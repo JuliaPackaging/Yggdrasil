@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.10.8"
+version = v"3.10.13"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "6a30ecde59c47048013eb5a658c9b5dec277203d2793667f578df7671f7f03f3"),
+                  "5c88848668640d3e152b35b4536ef1c23b2ca4bd2c957ef1ecbb053f571dd3f6"),
     DirectorySource("./bundled"),
 ]
 
@@ -87,7 +87,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # Disable windows for now, until we can sort through all of these patches
 # and choose the ones that we need:
@@ -109,7 +109,7 @@ dependencies = [
     Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.12"),
 ]
 
 init_block = raw"""
