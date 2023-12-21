@@ -48,8 +48,8 @@ mkl_deps = [
     BuildDependency("MKL_Headers_jll", platforms=filter(!Sys.isapple, platforms)),
 
     # MKL is no longer supported on macOS as of 2024.0.0, so we need 2023.2.0 on that platform
-    BuildDependency(PackageSpec(; name="MKL_jll", version=v"2023.2.0"), platforms=filter(Sys.isapple, platforms)),
-    BuildDependency(PackageSpec(; name="MKL_Headers_jll", version=v"2023.2.0"), platforms=filter(Sys.isapple, platforms)),
+    BuildDependency(PackageSpec(; name="MKL_jll", version="2023.2.0"), platforms=filter(Sys.isapple, platforms)),
+    BuildDependency(PackageSpec(; name="MKL_Headers_jll", version="2023.2.0"), platforms=filter(Sys.isapple, platforms)),
 ]
 
 # Build the package
