@@ -54,6 +54,15 @@ cmake \
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 
+# Post-process the compiler wrappers. They remember the original
+# compiler used to build MPItrampoline, but this compiler is too
+# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
+# `$FC` etc.
+sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
+sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
+sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
+cp ${bindir}/mpifc ${bindir}/mpifort
+
 ################################################################################
 # Install MPIconstants
 ################################################################################
@@ -278,7 +287,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-                      compat="0.1", top_level=true),
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
