@@ -7,6 +7,7 @@ version = v"2024.0.0"
 
 # Collection of sources required to complete build
 sources = [
+    # Archives for the headers
     ArchiveSource(
         "https://anaconda.org/intel/mkl-include/2024.0.0/download/win-32/mkl-include-2024.0.0-intel_49657.tar.bz2",
         "9359c55d2fcf26b7cd879362504416fb5cd924af07f29e763c9dab980c19f783";
@@ -27,6 +28,28 @@ sources = [
         "fcbdf5d4197f18fb91fa1d9648f35a45628cc1131ff58c83dcbafe2767490571";
         unpack_target = "mkl-include-x86_64-linux-gnu"
     ),
+
+    # Archives for the CMake/pkgconfig files
+    ArchiveSource(
+        "https://anaconda.org/intel/mkl-devel/2024.0.0/download/win-32/mkl-devel-2024.0.0-intel_49657.tar.bz2",
+        "6d7ce2dd7660e31251621e4b5d22049e0bace07b650831db8b4e7b1a78981dc5";
+        unpack_target = "mkl-devel-i686-w64-mingw32"
+    ),
+    ArchiveSource(
+        "https://anaconda.org/intel/mkl-devel/2024.0.0/download/win-64/mkl-devel-2024.0.0-intel_49657.tar.bz2",
+        "05e43480b2bf0a4f6e6f3208aa88e613b0b44e6639c7c5e52bef518193364dba";
+        unpack_target = "mkl-devel-x86_64-w64-mingw32"
+    ),
+    ArchiveSource(
+        "https://anaconda.org/intel/mkl-devel/2024.0.0/download/linux-32/mkl-devel-2024.0.0-intel_49656.tar.bz2",
+        "6e57d8f98ab904b55d8e5bb810c06d8d889308f774a6ec08cac76c53b6024256";
+        unpack_target = "mkl-devel-i686-linux-gnu"
+    ),
+    ArchiveSource(
+        "https://anaconda.org/intel/mkl-devel/2024.0.0/download/linux-64/mkl-devel-2024.0.0-intel_49656.tar.bz2",
+        "f6c37ade3153a0a98cf1f50346af32be1b87c4c3cb09e4f7b94dcb77b4896bd7";
+        unpack_target = "mkl-devel-x86_64-linux-gnu"
+    ),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,6 +61,15 @@ else
     rsync -av include/ ${includedir}
 fi
 install_license info/licenses/*.txt
+
+cd $WORKSPACE/srcdir/mkl-devel-$target
+mkdir -p ${libdir}
+if [[ $target == *-mingw* ]]; then
+    # These toolchain files must still go inside the lib folder, not the ${libdir} folder
+    rsync -av Library/lib/ $WORKSPACE/destdir/lib
+else
+    rsync -av lib/ ${libdir}
+fi
 """
 
 # These are the platforms we will build for by default, unless further
