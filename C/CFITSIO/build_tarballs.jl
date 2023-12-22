@@ -3,20 +3,33 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"4.0.0"
+version = v"4.3.1"
 
 # Collection of sources required to build CFITSIO
 sources = [
     ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version).tar.gz",
-                  "b2a8efba0b9f86d3e1bd619f662a476ec18112b4f27cc441cc680a4e3777425e"),
+                  "47a7c8ee05687be1e1d8eeeb94fb88f060fbf3cd8a4df52ccb88d5eb0f5062be"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
+    # Remove the new fancy linkers which don't work yet
+    rm /opt/bin/${bb_full_target}/ld64.lld
+    rm /opt/bin/${bb_full_target}/ld64.${target}
+    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
+    rm /opt/${MACHTYPE}/bin/ld64.lld
+fi
+
 cd $WORKSPACE/srcdir/cfitsio*
 atomic_patch -p1 ../patches/configure_in.patch
 atomic_patch -p1 ../patches/Makefile_in.patch
+if [[ $target == *-freebsd* ]]; then
+   # `gethostbyname` is considered outdated and not available any more; declare it manually
+   atomic_patch -p1 ../patches/gethostbyname.patch
+fi
 autoreconf
 if [[ "${target}" == *-mingw* ]]; then
     # This is ridiculous: when CURL is enabled, CFITSIO defines a macro,
@@ -24,6 +37,7 @@ if [[ "${target}" == *-mingw* ]]; then
     # `TBYTE` to `_TBYTE`.
     sed -i 's/\<TBYTE\>/_TBYTE/g' $(grep -lr '\<TBYTE\>')
 fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-reentrant
 make -j${nproc} shared
 make install
@@ -47,7 +61,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("Zlib_jll"),
 ]
 
