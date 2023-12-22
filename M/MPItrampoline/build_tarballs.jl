@@ -24,6 +24,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${bb_full_target}" == *-apple-darwin*-libgfortran[45]-* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
+    # Remove the new fancy linkers which don't work yet
+    rm /opt/bin/${bb_full_target}/ld64.lld
+    rm /opt/bin/${bb_full_target}/ld64.${target}
+    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
+    rm /opt/${MACHTYPE}/bin/ld64.lld
+fi
+
 ################################################################################
 # MPItrampoline
 ################################################################################
@@ -53,6 +62,15 @@ cmake \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+# Post-process the compiler wrappers. They remember the original
+# compiler used to build MPItrampoline, but this compiler is too
+# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
+# `$FC` etc.
+sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
+sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
+sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
+cp ${bindir}/mpifc ${bindir}/mpifort
 
 ################################################################################
 # Install MPIconstants
@@ -195,9 +213,9 @@ if [[ "${target}" == *-apple-* ]]; then
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         "${INSTALL_RPATH[@]}" \
         -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_CXX_COMPILER=c++ \
-        -DMPI_Fortran_COMPILER=gfortran \
+        -DMPI_C_COMPILER=${CC} \
+        -DMPI_CXX_COMPILER=${CXX} \
+        -DMPI_Fortran_COMPILER=${FC} \
         -DMPI_C_LIB_NAMES='mpi;pmpi' \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
@@ -278,7 +296,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-                      compat="0.1", top_level=true),
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
