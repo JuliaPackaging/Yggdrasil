@@ -39,6 +39,11 @@ sources_by_version = Dict(
                   "89f040a5c938985c5f30728baed21e49d0846a53"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
+    v"2.28.6" => [
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "3a91dad9dceb484eea8b41f8941facafc4520021"),
+        DirectorySource("./bundled"; follow_symlinks=true),
+    ],
 )
 sources = sources_by_version[version]
 
