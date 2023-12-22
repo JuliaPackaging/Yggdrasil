@@ -45,7 +45,7 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        )
 
 if [[ ${target} == aarch64-apple-* ]]; then
-    # Linking libomp requires the function `__divdc3`, which is implemented in
+    # Linking FFMPEG requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
     FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
             -DCMAKE_EXE_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
@@ -78,7 +78,7 @@ dependencies = [
     Dependency("Ncurses_jll"),
     Dependency("libdeflate_jll"),
     Dependency("libunistring_jll"),
-    # We need libclang_rt.osx.a for linking libomp, because this library provides the
+    # We need libclang_rt.osx.a for linking FFMPEG, because this library provides the
     # implementation of `__divdc3`.
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=[Platform("aarch64", "macos")]),
