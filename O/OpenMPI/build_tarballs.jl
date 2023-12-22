@@ -20,7 +20,7 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-if [[ "${target}" == *-apple-darwin*-libgfortran[45]-* ]]; then
+if [[ "${bb_full_target}" == *-apple-darwin*-libgfortran[45]-* ]]; then
     # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
     # Remove the new fancy linkers which don't work yet
     rm /opt/bin/${bb_full_target}/ld64.lld
