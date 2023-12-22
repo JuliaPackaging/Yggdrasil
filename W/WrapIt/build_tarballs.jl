@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "WrapIt"
-version = v"1.1.0"
+version = v"1.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "46b250d663b07a54c6438745aa4aa6f6bc05ac03")
+    GitSource("https://github.com/grasph/wrapit.git", "85276a28d1d1d0f7719d7d798534bb265f462606")
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
@@ -20,8 +20,8 @@ script = raw"""
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    cp -rp usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -rp System "/opt/${target}/${target}/sys-root/."
     export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
 fi
@@ -69,8 +69,8 @@ EOF
 
 # Add a link to the clang resource directory
 ln -sf artifacts/$clang_uuid ..
-[ -d lib/clang ] || mkdir lib/clang/
-ln -sf ../../../$clang_uuid/lib/clang/16 lib/"$clang_resource_dir"
+mkdir -p lib/$clang_resource_dir
+cp -rp ../artifacts/$clang_uuid/lib/clang/16/include lib/"$clang_resource_dir"
 
 # Add libraries used by wrapit. Make copy as we haven't found how
 # To get symlinks to regular files included in the genrated tarball.
