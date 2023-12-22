@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.0"
+version = v"5.0.1"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "4bf81fc86f562b372c40d44a09372ba1fa9b780d50d09a46ed0c4c7f09250b71"),
+                  "15805510d599558aed2ef43770e8a4683b9a6b361d0a91f107cb7c377cfe2bfb"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,12 +19,6 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
-
-if [[ "${target}" == *-musl* ]]; then
-    # musl does not support `PTHREAD_RECURSIVE_MUTEX_INITIALIZER` which is
-    # a GNU extension. We initialize the recursive mutexes manually.
-    atomic_patch -p1 ../patches/recursive_mutex_static_init.patch
-fi
 
 # Autotools doesn't add `${includedir}` as an include directory on some platforms
 export CPPFLAGS="-I${includedir}"
