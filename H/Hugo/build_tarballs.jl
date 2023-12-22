@@ -1,5 +1,5 @@
 # Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message
+# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
 name = "Hugo"
