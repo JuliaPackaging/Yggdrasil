@@ -4,10 +4,13 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"800.0.401"
+version = v"800.100.000"
 
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.4.tgz", "be4f978be7f8f97371ddcdac7a60af69a4fea5f975090fe35f1ae4308db692d3"),
+    ArchiveSource(
+        "https://scipopt.org/download/release/scipoptsuite-8.1.0.tgz",
+        "a3c1b45220252865d4cedf41d6327b6023608feb360d463f2e68ec4ac41cda06"
+    ),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,6 +22,15 @@ export CXXFLAGS="-DTHREADLOCAL=''"
 
 # can be removed for scip 805
 echo "target_link_libraries(clusol gfortran)" >> papilo/CMakeLists.txt
+
+if [[ "${target}" == *apple-darwin* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
+    # Remove the new linkers which don't work yet
+    rm /opt/bin/${bb_full_target}/ld64.lld
+    rm /opt/bin/${bb_full_target}/ld64.${target}
+    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
+    rm /opt/${MACHTYPE}/bin/ld64.lld
+fi
 
 mkdir build
 cd build/
