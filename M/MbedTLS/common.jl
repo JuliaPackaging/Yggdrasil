@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "MbedTLS"
 
@@ -103,7 +103,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+llvm_version = v"13.0.1+1"
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
-
