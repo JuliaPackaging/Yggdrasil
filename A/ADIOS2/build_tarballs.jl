@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
 adios2_version = v"2.9.2"
-version = v"2.9.3"
+version = v"2.9.4"
 
 # Collection of sources required to complete build
 sources = [
@@ -73,7 +73,6 @@ cmake -B build -S . \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
-    -DADIOS2_USE_SZ=ON \
     -DADIOS2_USE_ZeroMQ=ON \
     -DMPI_HOME=$prefix \
     ${archopts[@]} \
@@ -97,7 +96,6 @@ platforms = supported_platforms()
 # <https://github.com/ornladios/ADIOS2/issues/2704>
 platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
-# Windows doesn't build with libcxx="cxx03"
 platforms = expand_gfortran_versions(platforms)
 
 # We need to use the same compat bounds as HDF5
@@ -146,7 +144,6 @@ dependencies = [
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
-    Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll"); compat="1"),
