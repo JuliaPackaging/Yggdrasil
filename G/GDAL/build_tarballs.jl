@@ -69,7 +69,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_POSTGRESQL=ON
     -DLIBXML2_INCLUDE_DIR=${includedir}
     -DLIBXML2_LIBRARY=${libdir}/libxml2.${dlext}
-    -DGDAL_USE_LIBXML2=OFF
+    -DGDAL_USE_LIBXML2=ON
     -DPostgreSQL_INCLUDE_DIR=${includedir}
     -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
     -DGDAL_USE_ARROW=ON
