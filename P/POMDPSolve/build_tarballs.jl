@@ -23,8 +23,7 @@ make -j${nprocs} CC=${CC} CXX=${CXX} LINKER=${CXX} CFLAGS=${CFLAGS} CXXFLAGS=${C
 
 make install
 
-mkdir -p ${prefix}/share/licenses/POMDPSolve
-cp COPYING ${prefix}/share/licenses/POMDPSolve/
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
