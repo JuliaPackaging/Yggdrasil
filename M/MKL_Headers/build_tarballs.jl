@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+# Build counter: 1
+
 # Note: 2024.0.0 has already been built, but 2023.2.0 is being built to fix a bug in the packaging where the CMake/pkgconfig scripts were missing.
 # When updating to the next 2024.x.x release, the following must be done again (in addition to updating the sources):
 # * Bump the Julia compat to 1.6
