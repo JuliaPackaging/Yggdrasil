@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cuQuantum"
-version = v"23.6.1"
-version_str = "23.06.1"
+version = v"23.10.0.6"
+version_str = "23.10.0.6"
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -26,7 +26,7 @@ augment_platform_block = CUDA.augment
 
 dependencies = [
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="1.6.1")
+    RuntimeDependency(PackageSpec(name="CUTENSOR_jll"), compat="2.0.0")
 ]
 
 # The products that we will ensure are always built
