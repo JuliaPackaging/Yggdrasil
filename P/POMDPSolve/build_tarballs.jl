@@ -19,7 +19,7 @@ autoreconf -f -i
 
 ./configure --prefix=${prefix} --exec_prefix=${prefix} --build=${MACHTYPE} --host=${target}
 
-make -j${nprocs} CC=${CC} CXX=${CXX} LINKER=${CXX} CFLAGS=${CFLAGS} CXXFLAGS=${CXXFLAGS} LDFLAGS=${LDFLAGS}
+make -j${nprocs}
 
 make install
 
