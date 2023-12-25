@@ -154,7 +154,6 @@ dependencies = [
     Dependency("NetCDF_jll"; compat="400.902.208", platforms=hdf5_platforms),
     Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
-    Dependency("XML2_jll"),
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]
 
