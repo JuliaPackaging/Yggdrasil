@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.7.2"
+upstream_version = v"3.8.2"
 version_offset = v"1.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -67,6 +67,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_ZLIB=ON
     -DGDAL_USE_ZSTD=ON
     -DGDAL_USE_POSTGRESQL=ON
+    -DGDAL_USE_LIBXML2=OFF
     -DPostgreSQL_INCLUDE_DIR=${includedir}
     -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
     -DGDAL_USE_ARROW=ON
@@ -153,6 +154,7 @@ dependencies = [
     Dependency("NetCDF_jll"; compat="400.902.208", platforms=hdf5_platforms),
     Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
