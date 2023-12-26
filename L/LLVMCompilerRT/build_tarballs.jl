@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "LLVMCompilerRT"
-version = v"16.0.6"
+version = v"17.0.6"
 
 sources = [
     ArchiveSource(
