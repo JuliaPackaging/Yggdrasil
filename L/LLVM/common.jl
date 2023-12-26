@@ -17,7 +17,7 @@ const llvm_tags = Dict(
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
     v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
-    v"17.0.6" => "6009708b4367171ccdbf4b5905cb6a803753fe18", # julia-17.0.6
+    v"17.0.6" => "ac82491b6d79605ed3636112e9c831c597676b0b", # julia-17.SOMETHING TODO: I have no idea what upstream version number this corresponds to
 )
 
 const buildscript = raw"""
