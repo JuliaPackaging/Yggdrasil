@@ -6,20 +6,22 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"1.2.4"
+version = v"2.1.2"
 
 
-PETSc_COMPAT_VERSION = "3.16.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
+PETSc_COMPAT_VERSION = "3.18.6" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
+MPItrampoline_compat_version="5.2.1"  
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/bkaus/lamem.git", 
-    "e106f62e19a90b4153564a1dd07bc8778245936c")
+    GitSource("https://github.com/UniMainzGeo/LaMEM", 
+    "cb237fc07056a49d3af927e476dbf34e2dcb1366")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Create required directories
+mkdir $WORKSPACE/srcdir/lamem
 mkdir $WORKSPACE/srcdir/lamem/bin
 mkdir $WORKSPACE/srcdir/lamem/bin/opt
 mkdir $WORKSPACE/srcdir/lamem/dep
@@ -43,7 +45,7 @@ then
 fi
 
 cp LaMEM${exeext} $WORKSPACE/srcdir/lamem/
-cp LaMEM${exeext} $WORKSPACE/srcdir
+#cp LaMEM${exeext} $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/lamem
 
 # Install binaries
@@ -66,7 +68,7 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
                                                                   Platform("i686", "linux"; libc = "musl")]))
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms, MPICH_compat="4.0.2", OpenMPI_compat="4.1.3")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version,  OpenMPI_compat="4.1.5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
