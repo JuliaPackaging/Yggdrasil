@@ -105,8 +105,10 @@ dependencies = [
         PackageSpec(name = "GDAL_jll", uuid = "a7073274-a066-55f0-b90d-d619367d196c");
         compat = "=300.202.100",
     )
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
     Dependency(
-        PackageSpec(name = "HDF5_jll", uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"),
+        PackageSpec(name = "HDF5_jll", uuid = "0234f1f7-429e-5d53-9886-15a909be8d59");
+        compat = "~1.12",
     )
     Dependency(
         PackageSpec(name = "NetCDF_jll", uuid = "7243133f-43d8-5620-bbf4-c2c921802cf3");

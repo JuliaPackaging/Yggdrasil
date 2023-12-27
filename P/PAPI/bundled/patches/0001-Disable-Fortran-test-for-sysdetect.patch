@@ -15,7 +15,7 @@ index daff240f3..34d1307a4 100644
  endif
  
  TESTS = query_device_simple \
--        query_device_simple_f \
+-        $(FTESTS)           \
          $(MPITESTS)
  
  sysdetect_tests: $(TESTS)

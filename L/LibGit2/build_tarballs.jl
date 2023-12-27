@@ -1,17 +1,16 @@
 using BinaryBuilder
 
 name = "LibGit2"
-version = v"1.6.1"
+version = v"1.7.1"
 
 # Collection of sources required to build libgit2
 sources = [
-    GitSource("https://github.com/libgit2/libgit2.git",
-              "8a871d13b7f4e186b8ad943ae5a7fcf30be52e67")
+    GitSource("https://github.com/libgit2/libgit2.git", "a2bde63741977ca0f4ef7db2f609df320be67a08")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgit2*/
+cd $WORKSPACE/srcdir/libgit2*
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
@@ -30,7 +29,7 @@ fi
 
 # Special windows flags
 if [[ ${target} == *-mingw* ]]; then
-    BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON -DBUILD_CLAR=OFF)
+    BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON -DBUILD_TESTS=OFF)
     if [[ ${target} == i686-* ]]; then
         BUILD_FLAGS+=(-DCMAKE_C_FLAGS="-mincoming-stack-boundary=2")
     fi
@@ -62,7 +61,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
-    Dependency("LibSSH2_jll"; compat="1.10.1"),
+    Dependency("LibSSH2_jll"; compat="1.11.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 

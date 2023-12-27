@@ -7,7 +7,8 @@ version = v"0.9.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/lutraconsulting/MDAL/archive/refs/tags/release-$version.tar.gz", "a8a17c73a5868745fe7ce4ffe01b0ea20745e27438e0851eec68688d875e895c"),
+    GitSource("https://github.com/lutraconsulting/MDAL.git",
+              "46c7de5f64cd4bbb4aef9dfc2352923b0e608c4b"),
     DirectorySource("./bundled")
 ]
 
@@ -71,7 +72,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
-    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"))
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"); compat="~1.12")
     Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
     Dependency(PackageSpec(name="SQLite_jll", uuid="76ed43ae-9a5d-5a62-8c75-30186b810ce8"))
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.902.5")

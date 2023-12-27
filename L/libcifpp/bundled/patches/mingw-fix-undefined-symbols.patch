@@ -1,0 +1,21 @@
+diff --git a/src/utilities.cpp b/src/utilities.cpp
+index 9d41e26..5253b76 100644
+--- a/src/utilities.cpp
++++ b/src/utilities.cpp
+@@ -415,9 +415,13 @@ struct rsrc_imp
+ 
+ #if __MINGW32__
+ 
+-extern "C" __attribute__((weak, alias("gResourceIndexDefault"))) const mrsrc::rsrc_imp gResourceIndex[];
+-extern "C" __attribute__((weak, alias("gResourceDataDefault"))) const char gResourceData[];
+-extern "C" __attribute__((weak, alias("gResourceNameDefault"))) const char gResourceName[];
++extern const __attribute__((weak)) mrsrc::rsrc_imp gResourceIndex[];
++extern const __attribute__((weak)) char gResourceData[];
++extern const __attribute__((weak)) char gResourceName[];
++
++const mrsrc::rsrc_imp gResourceIndex[1] = {};
++const char gResourceData[1] = {};
++const char gResourceName[1] = {};
+ 
+ #else
+ 

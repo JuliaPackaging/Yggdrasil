@@ -6,9 +6,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(imgui-cpp SHARED)
 
 target_sources(imgui-cpp PRIVATE ./imgui/imgui.cpp)
-target_sources(imgui-cpp PRIVATE ./imgui/imgui_demo.cpp)
 target_sources(imgui-cpp PRIVATE ./imgui/imgui_draw.cpp)
-target_sources(imgui-cpp PRIVATE ./imgui/imgui_tables.cpp)
+target_sources(imgui-cpp PRIVATE ./imgui/imgui_demo.cpp)
 target_sources(imgui-cpp PRIVATE ./imgui/imgui_widgets.cpp)
 
 target_include_directories(imgui-cpp PUBLIC
@@ -19,8 +18,7 @@ add_definitions("-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS=1")
 
 if (WIN32)
     add_definitions("-DIMGUI_IMPL_API=extern \"C\" __declspec\(dllexport\)")
-    target_link_libraries(imgui-cpp imm32)
-else()
+else(WIN32)
     add_definitions("-DIMGUI_IMPL_API=extern \"C\" ")
 endif(WIN32)
 
@@ -45,9 +43,7 @@ install(EXPORT imgui-cpp-targets
         DESTINATION lib/cmake/imgui-cpp)
 
 add_library(cimgui SHARED cimgui.cpp)
-target_include_directories(cimgui PUBLIC 
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:include>)
+target_include_directories(cimgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(cimgui PROPERTIES PUBLIC_HEADER cimgui.h)
 target_link_libraries(cimgui imgui-cpp)
 
@@ -58,8 +54,17 @@ install(TARGETS cimgui
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)
 
-install(EXPORT cimgui-targets
-        FILE cimgui-config.cmake
-        DESTINATION lib/cmake/cimgui)
+add_library(cimgui_helper SHARED helper.c)
+
+target_include_directories(cimgui_helper PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(cimgui_helper cimgui)
+set_target_properties(cimgui_helper PROPERTIES PUBLIC_HEADER helper.h)
+
+install(TARGETS cimgui_helper
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib/static
+        INCLUDES DESTINATION include
+        PUBLIC_HEADER DESTINATION include)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json DESTINATION share)

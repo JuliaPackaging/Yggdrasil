@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SZ"
-version = v"2.1.12"
+version = v"2.1.13"
 version_string = "2.1.12.5"
 
 # Collection of sources required to complete build
@@ -17,10 +17,12 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 cd SZ-*
 
-hdf5_options=
-if test -f "${includedir}/hdf5.h"; then
-    # HDF5 is available, use it
-    hdf5_options='-DBUILD_HDF5_FILTER=ON -DBUILD_NETCDF_READER=ON'
+hdf5_options=()
+# HDF5 is available, use it.
+# The HDF5 SZ filter does not work on Windows, so don't build it there.
+# (The created shared library `libhdf5sz.dll` links to the wrong SO version of HDF5.)
+if test -f "${includedir}/hdf5.h" && [[ $target != *-mingw* ]]; then
+    hdf5_options+=(-DBUILD_HDF5_FILTER=ON -DBUILD_NETCDF_READER=ON)
 else
     # Create an empty library
     echo 'int SZ_no_hdf5;' >hdf5sz.cxx
@@ -41,7 +43,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_PASTRI=ON \
-    ${hdf5_options} \
+    ${hdf5_options[@]} \
     ..
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
 cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
@@ -51,17 +53,6 @@ install_license ../copyright-and-BSD-license.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
-# The platforms where HDF5 is supported. See "HDF5/build_tarballs.jl".
-hdf5_platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-    Platform("aarch64", "macos"),
-]
-hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -78,8 +69,8 @@ dependencies = [
                platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
-    Dependency("HDF5_jll"; platforms=hdf5_platforms),
-    Dependency("NetCDF_jll"; platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; compat="~1.14"),
+    Dependency("NetCDF_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
 ]

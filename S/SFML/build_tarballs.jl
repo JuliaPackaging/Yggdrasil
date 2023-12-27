@@ -69,7 +69,7 @@ dependencies = [
     Dependency("Libglvnd_jll"),
     Dependency("Ogg_jll"),
     Dependency("FLAC_jll"; compat="~1.3.3"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("libvorbis_jll"),
     Dependency("Xorg_libXrandr_jll"),
     Dependency("Xorg_libX11_jll"),

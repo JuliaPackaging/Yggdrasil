@@ -717,9 +717,18 @@ index 0e7aa97..b511d02 100644
  #include "gtools.h"
  #include "schreier.h" 
  
-@@ -62,3 +65,5 @@ extern void Traces(sparsegraph*,int*,int*,int*,TracesOptions*,
+@@ -62,4 +65,14 @@
++#ifdef __cplusplus
++extern "C" {
++#endif
++
+ extern void Traces(sparsegraph*,int*,int*,int*,TracesOptions*,
  				   TracesStats*,sparsegraph*);									
  extern void refine_tr(sparsegraph*,int*,int*,int*,int*,TracesOptions*);		
  extern void traces_freedyn(void);
++
++#ifdef __cplusplus
++}
++#endif
 +
 +#endif /* _TRACES_H_ */

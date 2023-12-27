@@ -14,15 +14,17 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/binutils-*
+# for building as
+apk add --upgrade texinfo
 ./configure --prefix=${prefix} \
     --target=avr \
     --build=${MACHTYPE} \
     --host=${target} \
+    --with-gas \
     --disable-dependency-tracking \
     --disable-werror \
     --disable-gprof \
     --disable-gprofng \
-    --disable-gas \
     --disable-gold \
     --disable-ar \
     --disable-avr-ar \
@@ -44,12 +46,14 @@ platforms = supported_platforms(; exclude=!Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
+    ExecutableProduct("as", :as, "avr/bin"),
     ExecutableProduct("objcopy", :objcopy, "avr/bin"),
     ExecutableProduct("readelf", :readelf, "avr/bin"),
     ExecutableProduct("objdump", :objdump, "avr/bin"),
     ExecutableProduct("strip", :binutils_strip, "avr/bin"),
     ExecutableProduct("nm", :nm, "avr/bin"),
     ExecutableProduct("ld", :ld, "avr/bin"),
+    ExecutableProduct("avr-as", :avr_as),
     ExecutableProduct("avr-nm", :avr_nm),
     ExecutableProduct("avr-readelf", :avr_readelf),
     ExecutableProduct("avr-objcopy", :avr_objcopy),

@@ -1,7 +1,7 @@
 include("../common.jl")
 
 name = "SuiteSparse"
-version = v"7.0.1"
+version = v"7.3.0"
 
 sources = suitesparse_sources(version)
 
@@ -9,8 +9,8 @@ sources = suitesparse_sources(version)
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
-# Needs cmake >= 3.22
-apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+# Needs cmake >= 3.22 provided by jll
+apk del cmake
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
@@ -45,6 +45,7 @@ for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPA
              -DENABLE_CUDA=0 \
              -DNFORTRAN=1 \
              -DNOPENMP=1 \
+             -DNPARTITION=0 \
              -DNSTATIC=1 \
              -DBLAS_FOUND=1 \
              -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
@@ -63,7 +64,7 @@ done
 # For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
 # Eventually, this should be fixed upstream
 if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    echo "-- Modifying library name for Lbt"
+    echo "-- Modifying library name for libblastrampoline"
 
     for nm in libcholmod libspqr libumfpack; do
         # Figure out what version it probably latched on to:
@@ -86,4 +87,5 @@ fi
 install_license LICENSE.txt
 """
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.10")

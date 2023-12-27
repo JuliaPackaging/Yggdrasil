@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "squashfs_tools"
-version = v"4.5.1"
+version = v"4.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/plougher/squashfs-tools.git", "afdd63fc386919b4aa40d573b0a6069414d14317"),
+    GitSource("https://github.com/plougher/squashfs-tools.git", "d8cb82d9840330f9344ec37b992595b5d7b44184"),
 ]
 
 # Bash recipe for building across all platforms

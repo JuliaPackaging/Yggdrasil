@@ -1,0 +1,18 @@
+diff --git a/GKlib/gk_getopt.h b/GKlib/gk_getopt.h
+index 4bb8611..690a498 100644
+--- a/GKlib/gk_getopt.h
++++ b/GKlib/gk_getopt.h
+@@ -52,10 +52,10 @@ struct gk_option {
+ 
+ 
+ /* Function prototypes */
+-extern int gk_getopt(int __argc, char **__argv, char *__shortopts);
+-extern int gk_getopt_long(int __argc, char **__argv, char *__shortopts,
++extern int gk_getopt(int gk_argc, char **gk_argv, char *__shortopts);
++extern int gk_getopt_long(int gk_argc, char **gk_argv, char *__shortopts,
+               struct gk_option *__longopts, int *__longind);
+-extern int gk_getopt_long_only (int __argc, char **__argv,
++extern int gk_getopt_long_only (int gk_argc, char **gk_argv,
+               char *__shortopts, struct gk_option *__longopts, int *__longind);
+ 
+ 

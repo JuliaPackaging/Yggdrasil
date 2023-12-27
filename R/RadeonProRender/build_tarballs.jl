@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "RadeonProRender"
-version = v"3.1.00"
+version = v"3.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "f880013a9b263c7ec5143d3f9246fe8fb58959ba")
+    GitSource("https://github.com/GPUOpen-LibrariesAndSDKs/RadeonProRenderSDK.git", "20d32d8c27269cd407190d98c7c3b63d150d3c47")
 ]
 
 # TODO, also ship headers for Clang.jl generation!?
@@ -15,7 +15,7 @@ script = raw"""
 echo ${target}
 cd $WORKSPACE/srcdir/RadeonProRenderSDK/RadeonProRender
 if [[ ${target} == x86_64-linux-gnu ]]; then
-    cp binUbuntu18/* ${libdir}/
+    cp -v binUbuntu*/* ${libdir}/
 elif [[ ${target} == *-apple-darwin* ]]; then
     cp binMacOS/* ${libdir}/
 elif [[ ${target} == *-mingw* ]]; then

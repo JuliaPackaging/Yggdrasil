@@ -8,15 +8,14 @@ version = v"2.2.1"
 scalapack_version = v"2.2.0"
 
 sources = [
-  ArchiveSource("https://github.com/Reference-ScaLAPACK/scalapack/archive/refs/tags/v$(scalapack_version).tar.gz",
-                "8862fc9673acf5f87a474aaa71cd74ae27e9bbeee475dbd7292cec5b8bcbdcf3"),
+  GitSource("https://github.com/Reference-ScaLAPACK/scalapack", "0128dc24c6d018b61ceaac080640014e1d5ec344"),
   DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
-cd $WORKSPACE/srcdir/scalapack-*
+cd $WORKSPACE/srcdir/scalapack
 
 # the patch prevents running foreign executables, which fails on most platforms
 # we instead set CDEFS manually below
@@ -24,69 +23,78 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
-CPPFLAGS=()
-CFLAGS=()
-FFLAGS=(-cpp -ffixed-line-length-none)
+# use Make instead of CMake to compile SCALAPACK on Windows platforms
+# CMake is unable to detect Microsoft-MPI
+cp ${WORKSPACE}/srcdir/patches/SLmake.inc SLmake.inc
 
-# Add `-fallow-argument-mismatch` if supported
-: >empty.f
-if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
-    FFLAGS+=(-fallow-argument-mismatch)
-fi
-rm -f empty.*
+if [[ "${target}" == *mingw* ]]; then
+    make lib
+    $FC -shared $(flagon -Wl,--whole-archive) libscalapack32.a $(flagon -Wl,--no-whole-archive) -lopenblas -L$libdir -lmsmpi -o ${libdir}/libscalapack32.${dlext}
+else
+    CPPFLAGS=()
+    CFLAGS=()
+    FFLAGS=(-ffixed-line-length-none)
 
-OPENBLAS=(-lopenblas)
+    # Add `-fallow-argument-mismatch` if supported
+    : >empty.f
+    if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
+        FFLAGS+=(-fallow-argument-mismatch)
+    fi
+    rm -f empty.*
 
-MPILIBS=()
-if grep -q MPICH "${prefix}/include/mpi.h"; then
-    MPILIBS=(-lmpifort -lmpi)
-elif grep -q MPItrampoline "${prefix}/include/mpi.h"; then
-    MPILIBS=(-lmpitrampoline)
-elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
-fi
+    OPENBLAS=(-lopenblas)
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
-             -DCMAKE_FIND_ROOT_PATH=${prefix}
-             -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
-             -DCMAKE_Fortran_FLAGS="${CPPFLAGS[*]} ${FFLAGS[*]}"
-             -DCMAKE_C_FLAGS="${CPPFLAGS[*]} ${CFLAGS[*]}"
-             -DCMAKE_BUILD_TYPE=Release
-             -DBLAS_LIBRARIES="${OPENBLAS[*]} ${MPILIBS[*]}"
-             -DLAPACK_LIBRARIES="${OPENBLAS[*]}"
-             -DSCALAPACK_BUILD_TESTS=OFF
-             -DBUILD_SHARED_LIBS=ON
-             -DMPI_BASE_DIR="${prefix}")
+    MPILIBS=()
+    if grep -q MPICH "${prefix}/include/mpi.h"; then
+        MPILIBS=(-lmpifort -lmpi)
+    elif grep -q MPItrampoline "${prefix}/include/mpi.h"; then
+        MPILIBS=(-lmpitrampoline)
+    elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+        MPILIBS=(-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh -lmpi)
+    fi
 
-export CDEFS="Add_"
+    CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
+                 -DCMAKE_FIND_ROOT_PATH=${prefix}
+                 -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+                 -DCMAKE_Fortran_FLAGS="${CPPFLAGS[*]} ${FFLAGS[*]}"
+                 -DCMAKE_C_FLAGS="${CPPFLAGS[*]} ${CFLAGS[*]}"
+                 -DCMAKE_BUILD_TYPE=Release
+                 -DBLAS_LIBRARIES="${OPENBLAS[*]} ${MPILIBS[*]}"
+                 -DLAPACK_LIBRARIES="${OPENBLAS[*]}"
+                 -DSCALAPACK_BUILD_TESTS=OFF
+                 -DBUILD_SHARED_LIBS=ON
+                 -DMPI_BASE_DIR="${prefix}")
 
-mkdir build
-cd build
-cmake .. "${CMAKE_FLAGS[@]}"
+    export CDEFS="Add_"
 
-make -j${nproc} all
-make install
+    mkdir build
+    cd build
+    cmake .. "${CMAKE_FLAGS[@]}"
 
-mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack32.${dlext}
+    make -j${nproc} all
+    make install
 
-# If there were links that are now broken, fix 'em up
-for l in $(find ${prefix}/lib -xtype l); do
-  if [[ $(basename $(readlink ${l})) == libscalapack ]]; then
-    ln -vsf libscalapack32.${dlext} ${l}
-  fi
-done
+    mv -v ${libdir}/libscalapack.${dlext} ${libdir}/libscalapack32.${dlext}
 
-PATCHELF_FLAGS=()
+    # If there were links that are now broken, fix 'em up
+    for l in $(find ${prefix}/lib -xtype l); do
+      if [[ $(basename $(readlink ${l})) == libscalapack ]]; then
+        ln -vsf libscalapack32.${dlext} ${l}
+      fi
+    done
 
-# ppc64le and aarch64 have 64 kB page sizes, don't muck up the ELF section load alignment
-if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
-  PATCHELF_FLAGS+=(--page-size 65536)
-fi
+    PATCHELF_FLAGS=()
 
-if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
-  patchelf ${PATCHELF_FLAGS[@]} --set-soname libscalapack32.${dlext} ${libdir}/libscalapack32.${dlext}
-elif [[ ${target} == *apple* ]]; then
-  install_name_tool -id libscalapack32.${dlext} ${libdir}/libscalapack32.${dlext}
+    # ppc64le and aarch64 have 64 kB page sizes, don't muck up the ELF section load alignment
+    if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
+      PATCHELF_FLAGS+=(--page-size 65536)
+    fi
+
+    if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+      patchelf ${PATCHELF_FLAGS[@]} --set-soname libscalapack32.${dlext} ${libdir}/libscalapack32.${dlext}
+    elif [[ ${target} == *apple* ]]; then
+      install_name_tool -id libscalapack32.${dlext} ${libdir}/libscalapack32.${dlext}
+    fi
 fi
 """
 
@@ -96,9 +104,9 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-platforms = expand_gfortran_versions(supported_platforms(; exclude=Sys.iswindows))
+platforms = expand_gfortran_versions(supported_platforms())
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -106,12 +114,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
-# Internal compiler error for v2.2.0 for:
-# - aarch64-linux-musl-libgfortran4-mpi+mpich
-# - aarch64-linux-musl-libgfortran4-mpi+openmpi
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "mpich"), platforms)
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && p["mpi"] == "openmpi"), platforms)
 
 # The products that we will ensure are always built
 products = [

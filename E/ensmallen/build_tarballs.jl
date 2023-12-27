@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ensmallen"
-version = v"2.18.1"
+version = v"2.21.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mlpack/ensmallen/archive/refs/tags/$(version).tar.gz", "573964639bb52f7a5518f41d1d4c673dc69685f5d36dad3d87deaaa5f8c23e87")
+    ArchiveSource("https://www.ensmallen.org/files/ensmallen-$(version).tar.gz", "076f9d84e1ebc84c0ae19ee63accfc8fd3ec850f8993784bd9277776c3af2932")
 ]
 
 # Bash recipe for building across all platforms

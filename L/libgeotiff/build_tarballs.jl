@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "libgeotiff"
 upstream_version = v"1.7.1"
-version_offset = v"0.0.0"
+version_offset = v"0.1.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -45,9 +45,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("PROJ_jll"; compat="~900.100"),
-    Dependency("Libtiff_jll"; compat="4.3"),
-    Dependency("LibCURL_jll"),
+    Dependency("PROJ_jll"; compat="901.300.0"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -21,7 +21,7 @@
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can either build &
 #   deploy the compilers one by one or run something like
 #
-#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd12.2 i686-w64-mingw32 x86_64-w64-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
+#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd13.2 i686-w64-mingw32 x86_64-w64-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
 
 include("./common.jl")
 include("./gcc_sources.jl")
@@ -224,6 +224,7 @@ function gcc_script(compiler_target::Platform)
         # Patch for building binutils 2.30+ against FreeBSD
         atomic_patch -p1 $WORKSPACE/srcdir/patches/binutils_freebsd_symbol_versioning.patch || true
 
+        #gprofng doesn't build on musl anymore ;(
         ./configure --prefix=${prefix} \
             --target=${COMPILER_TARGET} \
             --host=${MACHTYPE} \
@@ -231,8 +232,8 @@ function gcc_script(compiler_target::Platform)
             --enable-multilib \
             --program-prefix="${COMPILER_TARGET}-" \
             --disable-werror \
-            --enable-deterministic-archives
-
+            --enable-deterministic-archives \
+            --disable-gprofng
         make -j${nproc}
         make install
     fi
@@ -280,6 +281,8 @@ function gcc_script(compiler_target::Platform)
     unset CFLAGS
     unset CXXFLAGS
 
+    CFLAGS="$CFLAGS -D_GNU_SOURCE"
+    CXXFLAGS="$CXXFLAGS -D_GNU_SOURCE"
     # This is needed for any glibc older than 2.14, which includes the following commit
     # https://sourceware.org/git/?p=glibc.git;a=commit;h=95f5a9a866695da4e038aa4e6ccbbfd5d9cf63b7
     ln -vs libgcc.a $(${COMPILER_TARGET}-gcc -print-libgcc-file-name | sed 's/libgcc/&_eh/') || true
@@ -332,11 +335,16 @@ function gcc_script(compiler_target::Platform)
             atomic_patch -p1 ${p} || true;
         done
 
+        # Patch bad `movq` argument in glibc 2.17, adapted from:
+        # https://github.com/bminor/glibc/commit/b1ec623ed50bb8c7b9b6333fa350c3866dbde87f
+        # X-ref: https://github.com/crosstool-ng/crosstool-ng/issues/1825#issuecomment-1437918391
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_movq_fix.patch
+
         # Various configure overrides
         GLIBC_CONFIGURE_OVERRIDES=( libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes )
 
-        # We have problems with libssp on ppc64le
-        if [[ ${COMPILER_TARGET} == powerpc64le-* ]]; then
+        # We have problems with libssp on ppc64le, x86_64 and i686
+        if [[ ${COMPILER_TARGET} == powerpc64le-* ]] || [[ ${COMPILER_TARGET} == x86_64-* ]] || [[ ${COMPILER_TARGET} == i686-* ]]; then
             GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
         fi
 
@@ -391,6 +399,16 @@ function gcc_script(compiler_target::Platform)
         ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/lib/libc.so
 
     elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
+        # Install headers
+        mkdir -p $WORKSPACE/srcdir/mingw_headers
+        cd $WORKSPACE/srcdir/mingw_headers
+        ${WORKSPACE}/srcdir/mingw-*/mingw-w64-headers/configure \
+        --prefix=/ \
+        --enable-sdk=no \
+        --build=${HOST_TARGET} \
+        --host=${COMPILER_TARGET}
+        make install DESTDIR=${sysroot}
+
         # Build CRT
         mkdir -p $WORKSPACE/srcdir/mingw_crt_build
         cd $WORKSPACE/srcdir/mingw_crt_build

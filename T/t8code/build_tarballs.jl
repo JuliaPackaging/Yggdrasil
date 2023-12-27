@@ -6,19 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"1.1.2"
+version = v"1.6.1"
+
+tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8-$(version).tar.gz"
+sha256sum = "dc96effa7c1ad1d50437fefdd0963f6ef7c943eb10a372a4e8546a5f2970a412"
 
 # Collection of sources required to complete build
-sources = [
-    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz",
-                  "0bd4bee6694735d14fb4274275fb8c4bdeacdbd29b257220c308be63e98be8f7"),
-    DirectorySource("./bundled")
-]
+sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd t8code/
+cd $WORKSPACE/srcdir/t8*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
@@ -30,7 +28,7 @@ export CXXFLAGS="-O3"
 
 # Set necessary flags for FreeBSD
 if [[ "${target}" == *-freebsd* ]]; then
-  export LIBS="-lm"
+  export LIBS="${LIBS} -lm"
 fi
 
 # Set necessary flags for Windows and non-Windodws systems
@@ -41,7 +39,7 @@ if [[ "${target}" == *-mingw* ]]; then
   # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
   FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
   # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="${libdir}/msmpi.dll -lws2_32"
+  export LIBS="${LIBS} ${libdir}/msmpi.dll -lws2_32"
   # Disable MPI I/O on Windows since it causes p4est to crash
   mpiopts="--enable-mpi --disable-mpiio"
 else
@@ -51,8 +49,19 @@ else
   mpiopts="--enable-mpi"
 fi
 
+# Temporary fix according to: https://github.com/JuliaPackaging/Yggdrasil/issues/7745
+if [[ "${target}" == *-apple-* ]]; then
+  export LDFLAGS="$LDFLAGS -fuse-ld=ld"
+fi
+
 # Run configure
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --without-blas ${mpiopts}
+./configure \
+  --prefix="${prefix}" \
+  --build=${MACHTYPE} \
+  --host=${target} \
+  --disable-static \
+  --without-blas \
+  ${mpiopts}
 
 # Build & install
 make -j${nproc} "${FLAGS[@]}"
@@ -85,11 +94,10 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), pla
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
-# Note: the additional, non-canonical library names are required for the Windows build
 products = [
-    LibraryProduct(["libt8", "libt8-1-1-0-207-d6a74"], :libt8),
-    LibraryProduct(["libsc", "libsc-2-8-1-5-0b70"], :libsc),
-    LibraryProduct(["libp4est", "libp4est-2-2-259-ec120"], :libp4est)
+    LibraryProduct(["libsc"], :libsc),
+    LibraryProduct(["libp4est"], :libp4est),
+    LibraryProduct(["libt8"], :libt8),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -100,4 +108,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"8.1.0")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0")

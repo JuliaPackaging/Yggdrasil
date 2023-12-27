@@ -1,0 +1,19 @@
+commit 3450c0968102ad4d198834ded28538f2e9a36846
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sun Sep 24 16:15:29 2023 +0000
+
+    Fix build on FreeBSD
+
+diff --git a/packages/seacas/libraries/ioss/src/Ioss_FileInfo.C b/packages/seacas/libraries/ioss/src/Ioss_FileInfo.C
+index 5b3450fd036..9b893aabaf4 100644
+--- a/packages/seacas/libraries/ioss/src/Ioss_FileInfo.C
++++ b/packages/seacas/libraries/ioss/src/Ioss_FileInfo.C
+@@ -27,7 +27,7 @@
+ #endif
+ #else
+ #include <unistd.h>
+-#if defined(__APPLE__) && defined(__MACH__)
++#if (defined(__APPLE__) && defined(__MACH__)) || defined(__FreeBSD__)
+ #include <sys/mount.h>
+ #include <sys/param.h>
+ #else

@@ -6,14 +6,17 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
-version = v"2.1.0"
-
+version = v"2.2.0"
+commit_hash = "51892059a4b457a99a2569ac11e9e91cd2e289e7";
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "042a96cab8a3c17a544125b7890616b1dd5eacd1b50ce0464617903b01bddd54")
+    GitSource("https://github.com/flatironinstitute/finufft.git", commit_hash)
 ]
 
 # Bash recipe for building across all platforms
+# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
+# NOTE: This may have been due to use of GCC8, which is not recommended by FINUFFT
+# TODO: Check performance on computer with AVX512, to see if we can remove this fix
 script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
 
@@ -38,7 +41,6 @@ install -Dvm 0755 "lib/libfinufft.${dlext}" "${libdir}/libfinufft.${dlext}"
 """
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
 platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"]); skip=!Sys.iswindows)
 
 augment_platform_block = """
@@ -70,4 +72,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8", julia_compat="1.6", augment_platform_block)
+               preferred_gcc_version=v"10", julia_compat="1.6", augment_platform_block)

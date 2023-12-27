@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CALCEPH"
-version = v"3.4.7"
+version = v"3.5.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.imcce.fr/content/medias/recherche/equipes/asd/calceph/calceph-$(version).tar.gz", "99ff6c153c888cc514d9c4e8acfb99448ab0bdaff8ef5aaa398a1d4f00c8579f")
+    ArchiveSource("https://www.imcce.fr/content/medias/recherche/equipes/asd/calceph/calceph-$(version).tar.gz", "c9a834e823cf376de6c0f826458b5f19555ed45dfd26880781e61a91849925b5")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,4 +39,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

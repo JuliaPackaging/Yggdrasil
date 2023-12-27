@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LibModbus"
-version = v"0.1.0"
+version = v"3.1.10"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/stephane/libmodbus.git", "f9fe3b0a5343f7fbb3f5c74196bd0fce88df39d5")
+    GitSource("https://github.com/stephane/libmodbus.git", "b25629bfb508bdce7d519884c0fa9810b7d98d44")
 ]
 
 # Bash recipe for building across all platforms
