@@ -21,7 +21,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Create required directories
-# mkdir $WORKSPACE/srcdir/LaMEM
 mkdir $WORKSPACE/srcdir/LaMEM/bin
 mkdir $WORKSPACE/srcdir/LaMEM/bin/opt
 mkdir $WORKSPACE/srcdir/LaMEM/dep
@@ -45,7 +44,6 @@ then
 fi
 
 cp LaMEM${exeext} $WORKSPACE/srcdir/LaMEM/
-#cp LaMEM${exeext} $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/LaMEM
 
 # Install binaries
@@ -70,6 +68,9 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("aarch64","linux"; libc="musl")]))
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version,  OpenMPI_compat="4.1.5")
+
+
+# We attempt to build for all defined platforms
 
 
 # Avoid platforms where the MPI implementation isn't supported
