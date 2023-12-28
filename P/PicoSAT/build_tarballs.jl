@@ -26,7 +26,6 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -34,12 +33,11 @@ products = [
     ExecutableProduct("picomus", :picomus),
     ExecutableProduct("picomcs", :picomcs),
     ExecutableProduct("picogcnf", :picogcnf),
-    LibraryProduct("libpicosat",:libpicosat)
+    LibraryProduct("libpicosat", :libpicosat),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat="1.6")
