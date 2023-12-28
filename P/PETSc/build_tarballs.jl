@@ -7,7 +7,7 @@ name = "PETSc"
 version = v"3.18.6"
 petsc_version = v"3.18.6"
 MUMPS_COMPAT_VERSION = "5.5.1"
-SUITESPARSE_COMPAT_VERSION = "7.3.0" 
+SUITESPARSE_COMPAT_VERSION = "7.2.1" 
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
 MPItrampoline_compat_version="5.2.1"    
 
