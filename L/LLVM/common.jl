@@ -333,7 +333,6 @@ if [[ "${target}" == *mingw* ]]; then
     CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
     CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
-    CMAKE_FLAGS+=(-DCMAKE_CXX_VISIBILITY_PRESET=hidden)
     # Windows is case-insensitive and some dependencies take full advantage of that
     echo "BaseTsd.h basetsd.h" >> /opt/${target}/${target}/include/header.gcc
     CMAKE_FLAGS+=(-DCLANG_INCLUDE_TESTS=OFF)
