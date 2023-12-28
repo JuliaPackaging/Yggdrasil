@@ -69,10 +69,6 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version,  OpenMPI_compat="4.1.5")
 
-
-# We attempt to build for all defined platforms
-
-
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
