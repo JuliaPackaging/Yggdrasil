@@ -7,7 +7,7 @@ name = "PETSc"
 version = v"3.18.6"
 petsc_version = v"3.18.6"
 MUMPS_COMPAT_VERSION = "5.5.1"
-SUITESPARSE_COMPAT_VERSION = "5.10.1"
+SUITESPARSE_COMPAT_VERSION = "7.2.1"  # copmpiled with this version; compat removed below
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
 MPItrampoline_compat_version="5.2.1"    
 
@@ -280,7 +280,7 @@ dependencies = [
     Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms)),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
-    Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
+    Dependency("SuiteSparse_jll", compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
     Dependency("SCALAPACK32_jll"),
     Dependency("METIS_jll"),
