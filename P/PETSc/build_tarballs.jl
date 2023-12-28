@@ -280,7 +280,7 @@ dependencies = [
     Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms)),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
-    Dependency("SuiteSparse_jll", compat=SUITESPARSE_COMPAT_VERSION),
+    Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
     Dependency("SCALAPACK32_jll"),
     Dependency("METIS_jll"),
