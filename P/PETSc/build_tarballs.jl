@@ -270,9 +270,9 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("i686","linux"; libc="musl"),
                                                                   Platform("i686","linux"; libc="gnu"),
                                                                   Platform("x86_64","unknown"; libc="freebsd"),
-                                                                  Platform("armv6l","linux"; libc="musleabihf"),
-                                                                  Platform("armv7l","linux"; libc="musleabihf"),
-                                                                  Platform("armv7l","linux"; libc="gnueabihf"),
+                                                                  Platform("armv6l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
