@@ -113,13 +113,13 @@ products = [
     # - From bop/
     FileProduct("include/operations_research/bop/bop_parameters.proto", :proto_bop_parameters),
     # - From constraint_solver/
-    FileProduct("include/ortools/assignment.proto", :proto_constraint_solver_assignment),
-    FileProduct("include/ortools/demon_profiler.proto", :proto_constraint_solver_demon_profiler),
-    FileProduct("include/ortools/search_limit.proto", :proto_constraint_solver_search_limit),
-    FileProduct("include/ortools/search_stats.proto", :proto_constraint_solver_search_stats),
-    FileProduct("include/ortools/solver_parameters.proto", :proto_constraint_solver_solver_parameters),
-    FileProduct("include/ortools/routing_enums.proto", :proto_constraint_solver_routing_enums),
-    FileProduct("include/ortools/routing_parameters.proto", :proto_constraint_solver_routing_parameters),
+    FileProduct("include/ortools/constraint_solver/assignment.proto", :proto_constraint_solver_assignment),
+    FileProduct("include/ortools/constraint_solver/demon_profiler.proto", :proto_constraint_solver_demon_profiler),
+    FileProduct("include/ortools/constraint_solver/search_limit.proto", :proto_constraint_solver_search_limit),
+    FileProduct("include/ortools/constraint_solver/search_stats.proto", :proto_constraint_solver_search_stats),
+    FileProduct("include/ortools/constraint_solver/solver_parameters.proto", :proto_constraint_solver_solver_parameters),
+    FileProduct("include/ortools/constraint_solver/routing_enums.proto", :proto_constraint_solver_routing_enums),
+    FileProduct("include/ortools/constraint_solver/routing_parameters.proto", :proto_constraint_solver_routing_parameters),
     # - From glop/
     FileProduct("include/ortools/glop/parameters.proto", :ortools_glop_parameters),
     # - From graph/
@@ -153,9 +153,9 @@ products = [
     FileProduct("include/ortools/sat/boolean_problem.proto", :proto_sat_boolean_problem),
     # FileProduct("include/ortools/sat/v1/cp_model_service.proto", :proto_sat_v1_cp_model_service),  # RPC definition.
     # - From util/
-    FileProduct("include/ortools/optional_boolean.proto", :optional_boolean),
+    FileProduct("include/ortools/util/optional_boolean.proto", :optional_boolean),
     # - From scheduling/
-    FileProduct("include/ortools/course_scheduling.proto", :proto_scheduling_course_scheduling),
+    FileProduct("include/ortools/scheduling/course_scheduling.proto", :proto_scheduling_course_scheduling),
     FileProduct("include/ortools/scheduling/rcpsp/rcpsp.proto", :proto_scheduling_rcpsp),
     FileProduct("include/ortools/scheduling/jssp/jobshop_scheduling.proto", :proto_scheduling_jobshop_scheduling),
 ]
