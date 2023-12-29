@@ -1,6 +1,6 @@
 # To ensure a build, it isn't sufficient to modify highs_common.jl.
 # You also need to update a line in this file:
-#     Last updated: 2023-03-10
+#     Last updated: 2023-09-30
 
 include("../highs_common.jl")
 

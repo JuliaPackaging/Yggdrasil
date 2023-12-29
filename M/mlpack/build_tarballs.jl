@@ -6,11 +6,11 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.1.0"
+source_version = v"4.3.0"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "e0c760baf15fd0af5601010b7cbc536e469115e9dd45f96712caa3b651b1852a"),
+                  "08cd54f711fde66fc3b6c9db89dc26776f9abf1a6256c77cfa3556e2a56f1a3d"),
 ]
 
 script = raw"""
@@ -24,7 +24,7 @@ mkdir build && cd build
 # version.  So we'll just create a crappy little script, since Julia may not
 # be available in the build environment.
 echo "#!/bin/bash" > julia
-echo "echo \"Fake Julia version 1.8.2\"" >> julia
+echo "echo \"Fake Julia version 1.9.4\"" >> julia
 chmod +x julia
 
 FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Svg"
-version = v"6.4.2"
+version = v"6.5.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtsvg-everywhere-src-$version.tar.xz",
-                  "b746af3cb1793621d8ed7eae38d9ad5a15541dc2742031069f2ae3fe87590314"),
+                  "48b4cc1093af2e0ab3bea30f60651bddd877a2335d16e7207879a2e9e81963a3"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
 ]
@@ -71,14 +71,14 @@ products_macos = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
 ]
 
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
 end

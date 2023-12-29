@@ -12,6 +12,11 @@ SUPERLUDIST_COMPAT_VERSION = "8.1.2"
 MPItrampoline_compat_version="5.2.1"
 BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
 
+SCALAPACK32_COMPAT_VERSION="2.2.1"
+METIS_COMPAT_VERSION="5.1.2"
+SCOTCH_COMPAT_VERSION="6.1.3"
+PARMETIS_COMPAT_VERSION="4.0.6"
+
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
@@ -215,14 +220,26 @@ build_petsc()
         # julia> run(`$(PETSc_jll.ex42()) -stokes_ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/ksp/ksp/tutorials/
         make --directory=${workdir} PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex42
-        install -Dvm 755 ${workdir}/ex42* "${bindir}/ex42${exeext}"
+        file=${workdir}/ex42
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        install -Dvm 755 ${workdir}/ex42${exeext} "${bindir}/ex42${exeext}"
 
         # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531 
         # This can later be run with:
         # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex4
-        install -Dvm 755 ${workdir}/ex4* "${bindir}/ex4${exeext}"
+        file=${workdir}/ex4
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
 
     fi
 

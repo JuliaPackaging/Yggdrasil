@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "JlrsLedger"
-version = v"0.0.3"
+version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Taaitaaiger/jlrs_ledger.git",
-              "0f1b3ab293445a53f68582302f2d50265507edbe"),
+              "ec587100061297e112f767038fed179db617031a"),
 ]
 
 # Bash recipe for building across all platforms

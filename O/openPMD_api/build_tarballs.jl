@@ -6,19 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "openPMD_api"
-version = v"0.15.2"
-openpmi_api_version = "v.0.14.5" # This is really the `dev` branch after version 0.14.5
+version = v"0.16.3" # This is really the branch `eschnett/julia-bindings` before version 0.16.0
 
 # `v"1.6.3"` fails to build
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
     # We use a feature branch instead of a released version because the Julia bindings are not released yet
-    GitSource("https://github.com/eschnett/openPMD-api.git", "20cdbe774e9dd5b739f3aede0c7fc69a7dbaf431"),
+    GitSource("https://github.com/eschnett/openPMD-api.git", "cac948869a45b1b5ebeebccc930a805a7ab337a7"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,9 +29,6 @@ grep -iq OpenMPI ${includedir}/mpi.h && echo 'MPI: OpenMPI'
 
 cd ${WORKSPACE}/srcdir
 cd openPMD-api
-
-# Work around missing C++17 feature in Clang
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shared_ptr.patch
 
 mkdir build
 cd build
@@ -55,11 +50,20 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-mpiopts=()
+archopts=()
 if [[ "${target}" == x86_64-w64-mingw32 ]]; then
     # Microsoft MPI
-    mpiopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=${libdir}/msmpi.dll
-              -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll)
+    archopts+=(
+        -DMPI_C_ADDITIONAL_INCLUDE_DIRS=
+        -DMPI_C_LIBRARIES=${libdir}/msmpi.dll
+        -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS=
+        -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll)
+fi
+if [[ "${target}" == *-mingw32 ]]; then
+    # Windows: We do not have a parallel HDF5 implementation there
+    archopts+=(-DopenPMD_USE_HDF5=OFF)
+else
+    archopts+=(-DopenPMD_USE_HDF5=ON)
 fi
 
 cmake \
@@ -70,11 +74,10 @@ cmake \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_TESTING=OFF \
     -DJulia_PREFIX=${prefix} \
-    -DopenPMD_USE_HDF5=OFF \
-    -DopenPMD_USE_Julia=ON \
+    -DopenPMD_USE_JULIA=ON \
     -DopenPMD_USE_MPI=ON \
     -DMPI_HOME=${prefix} \
-    ${mpiopts[@]} \
+    ${archopts[@]} \
     ..
 
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
@@ -96,25 +99,7 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-# The products that we will ensure are always built.
-# Don't dlopen `libopenPMD` because it might transitively require libgfortran.
-products = [
-    LibraryProduct("libopenPMD", :libopenPMD),
-    LibraryProduct("libopenPMD.jl", :libopenPMD_jl),
-]
-
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    BuildDependency(PackageSpec(name="libjulia_jll")),
-    # `ADIOS2_jll` is available only for 64-bit platforms
-    Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    # We would need a parallel version of HDF5
-    # Dependency(PackageSpec(name="HDF5_jll")),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
-]
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
 
 # Avoid platforms where the MPI implementation isn't supported
 # TODO: Do this automatically
@@ -126,7 +111,25 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    BuildDependency(PackageSpec(name="libjulia_jll")),
+    # `ADIOS2_jll` is available only for 64-bit platforms
+    Dependency(PackageSpec(name="ADIOS2_jll"); platforms=filter(p -> nbits(p) ≠ 32, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # Parallel HDF5 is not available on Windows
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=filter(!Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll")),
+]
+
 append!(dependencies, platform_dependencies)
+
+# The products that we will ensure are always built.
+# Don't dlopen `libopenPMD` because it might transitively require libgfortran.
+products = [
+    LibraryProduct("libopenPMD", :libopenPMD),
+    LibraryProduct("libopenPMD.jl", :libopenPMD_jl),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need C++14, which requires at least GCC 5.

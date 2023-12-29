@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Typst"
-version = v"0.3.0"
+version = v"0.10.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/typst/typst.git", "b1e0de00784061a7670072160683f56c8269b25c")
+    GitSource("https://github.com/typst/typst.git", "70ca0d257bb4ba927f63260e20443f244e0bb58c")
 ]
 
 # Bash recipe for building across all platforms
@@ -20,7 +20,9 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> !(Sys.iswindows(p) && arch(p) == "i686"), supported_platforms())
+platforms = filter(supported_platforms()) do p
+    !((Sys.iswindows(p) && arch(p) == "i686") || (arch(p) == "powerpc64le"))
+end
 
 # The products that we will ensure are always built
 products = [
@@ -33,4 +35,5 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", compilers=[:rust, :c], lock_microarchitecture=false)
+               julia_compat="1.6", compilers=[:rust, :c], lock_microarchitecture=false,
+               preferred_gcc_version = v"5")

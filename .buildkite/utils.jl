@@ -39,7 +39,7 @@ plugins() = Pair{String, Union{Nothing, Dict}}[
 ]
 
 env(NAME, PROJECT) = Dict(
-    "JULIA_PKG_SERVER" => "us-east.pkg.julialang.org",
+    "JULIA_PKG_SERVER" => "pkg.julia.csail.mit.edu",
     "JULIA_PKG_SERVER_REGISTRY_PREFERENCE" => "eager",
     "NAME" => NAME,
     "PROJECT" => PROJECT,
@@ -55,8 +55,6 @@ group_step(name, steps) = Dict(:group => name, :steps => steps)
 
 function build_step(NAME, PLATFORM, PROJECT)
     script = raw"""
-    apt-get update
-    apt install -y unzip
     # Don't share secrets with build_tarballs.jl
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" AWS_SECRET_ACCESS_KEY="" .buildkite/build.sh
     """
@@ -94,9 +92,9 @@ function build_step(NAME, PLATFORM, PROJECT)
         :label => "build -- $PROJECT -- $PLATFORM",
         :agents => agent(),
         :plugins => build_plugins,
-        :timeout_in_minutes => 180,
+        :timeout_in_minutes => 240,
         :priority => -1,
-        :concurrency => 16,
+        :concurrency => 12,
         :concurrency_group => "yggdrasil/build/$NAME", # Could use ENV["BUILDKITE_JOB_ID"]
         :commands => [script],
         :env => build_env,

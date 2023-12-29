@@ -8,10 +8,10 @@ using BinaryBuilder, Pkg
 #
 # CODE using the mpq_rational from boost
 sources = [
-        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "bfad27e6b80aca0e1c389d1f4b0cdde991bb2ddc"),
+        GitSource("https://github.com/MathieuDutSik/polyhedral_common", "c7f3c4072b7583c17f8151f8d0f953694dc5864a"),
 ]
 name = "polyhedral"
-version = v"0.2" # <-- This is the first version of it but this is rather arbitrary
+version = v"0.3" # third version pf the code
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -19,7 +19,7 @@ cd polyhedral_common
 git submodule update --init --recursive
 cd src_export_oscar
 export GMP_INCDIR=$includedir
-export GMP_C_LINK="-L$libdir -lgmp"
+export GMP_CXX_LINK="-L$libdir -lgmpxx -lgmp"
 
 export BOOST_INCDIR=$includedir
 export BOOST_LINK="-L$libdir -lboost_serialization"
@@ -29,21 +29,25 @@ export EIGEN_PATH=$includedir/eigen3
 export NAUTY_INCLUDE="-I$includedir/nauty"
 export NAUTY_LINK="-L$libdir -lnauty"
 
-make
+export GLPK_LINK="-L$libdir -lglpk"
 
-cp GRP_LinPolytope_Automorphism $bindir
-cp GRP_ListMat_Subset_EXT_Isomorphism $bindir
-cp GRP_LinPolytope_Automorphism_GramMat $bindir
-cp GRP_LinPolytope_Isomorphism_GramMat $bindir
-cp GRP_ListMat_Subset_EXT_Automorphism $bindir
-cp GRP_ListMat_Subset_EXT_Invariant $bindir
+make -j${nproc}
+
+cp CP_TestCompletePositivity $bindir
+cp CP_TestCopositivity $bindir
+cp GRP_ListMat_Vdiag_EXT_Automorphism $bindir
+cp GRP_ListMat_Vdiag_EXT_Isomorphism $bindir
+cp GRP_ListMat_Vdiag_EXT_Invariant $bindir
 cp POLY_dual_description_group $bindir
 cp POLY_cdd_LinearProgramming $bindir
 cp POLY_sampling_facets $bindir
+cp POLY_redundancy_Equivariant $bindir
 cp LATT_Automorphism $bindir
 cp LATT_Isomorphism $bindir
-cp IndefiniteReduction $bindir
-cp sv_near $bindir
+cp LATT_canonicalize $bindir
+cp LATT_near $bindir
+cp LATT_IndefiniteReduction $bindir
+cp SHORT_TestRealizability $bindir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -54,25 +58,28 @@ filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("GRP_ListMat_Subset_EXT_Automorphism", :GRP_ListMat_Subset_EXT_Automorphism)
-    ExecutableProduct("GRP_ListMat_Subset_EXT_Isomorphism", :GRP_ListMat_Subset_EXT_Isomorphism)
-    ExecutableProduct("GRP_ListMat_Subset_EXT_Invariant", :GRP_ListMat_Subset_EXT_Invariant)
-    ExecutableProduct("IndefiniteReduction", :IndefiniteReduction)
+    ExecutableProduct("CP_TestCompletePositivity", :CP_TestCompletePositivity)
+    ExecutableProduct("CP_TestCopositivity", :CP_TestCopositivity)
+    ExecutableProduct("GRP_ListMat_Vdiag_EXT_Automorphism", :GRP_ListMat_Vdiag_EXT_Automorphism)
+    ExecutableProduct("GRP_ListMat_Vdiag_EXT_Isomorphism", :GRP_ListMat_Vdiag_EXT_Isomorphism)
+    ExecutableProduct("GRP_ListMat_Vdiag_EXT_Invariant", :GRP_ListMat_Vdiag_EXT_Invariant)
+    ExecutableProduct("POLY_redundancy_Equivariant", :POLY_redundancy_Equivariant)
     ExecutableProduct("POLY_dual_description_group", :POLY_dual_description_group)
     ExecutableProduct("POLY_sampling_facets", :POLY_sampling_facets)
-    ExecutableProduct("sv_near", :sv_near)
+    ExecutableProduct("POLY_cdd_LinearProgramming", :POLY_cdd_LinearProgramming)
+    ExecutableProduct("LATT_near", :LATT_near)
     ExecutableProduct("LATT_Automorphism", :LATT_Automorphism)
     ExecutableProduct("LATT_Isomorphism", :LATT_Isomorphism)
-    ExecutableProduct("POLY_cdd_LinearProgramming", :POLY_cdd_LinearProgramming)
-    ExecutableProduct("GRP_LinPolytope_Automorphism", :GRP_LinPolytope_Automorphism)
-    ExecutableProduct("GRP_LinPolytope_Automorphism_GramMat", :GRP_LinPolytope_Automorphism_GramMat)
-    ExecutableProduct("GRP_LinPolytope_Isomorphism_GramMat", :GRP_LinPolytope_Isomorphism_GramMat)
+    ExecutableProduct("LATT_canonicalize", :LATT_canonicalize)
+    ExecutableProduct("LATT_IndefiniteReduction", :LATT_IndefiniteReduction)
+    ExecutableProduct("SHORT_TestRealizability", :SHORT_TestRealizability)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     BuildDependency("Eigen_jll"),
+    Dependency("GLPK_jll"),
     Dependency("nauty_jll"; compat = "~2.6.13"),
     Dependency("boost_jll", compat = "=1.76.0"),
 ]

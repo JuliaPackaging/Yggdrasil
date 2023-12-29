@@ -1,0 +1,66 @@
+commit d9ba50fa7fe1482987c1a31420df3ae942d87fc6
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 15:15:10 2023 +0000
+
+    zoltan2: Windows implementation of gettimeofday
+
+diff --git a/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybrid2GL.hpp b/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybrid2GL.hpp
+index 59d0dbb5173..fe715ba268a 100644
+--- a/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybrid2GL.hpp
++++ b/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybrid2GL.hpp
+@@ -6,7 +6,7 @@
+ #include <iostream>
+ #include <queue>
+ #ifdef _WIN32
+-#include <time.h>
++#include <sysinfoapi.h>
+ #else
+ #include <sys/time.h>
+ #endif
+@@ -57,9 +57,16 @@ class AlgTwoGhostLayer : public Algorithm<Adapter> {
+     using host_mem = typename femv_t::host_view_type::device_type::memory_space;
+ 
+     double timer(){
++#ifdef _WIN32
++      FILETIME t;
++      GetSystemTimeAsFileTime(&t);
++      unsigned long long time_since_win_epoch = ((unsigned long long)t.dwHighDateTime << 32 | t.dwLowDateTime);
++      return (time_since_win_epoch - 116444736000000000LL) * 1.0e-7;
++#else
+       struct timeval tp;
+       gettimeofday(&tp, NULL);
+       return ((double) (tp.tv_sec) + 1e-6 * tp.tv_usec);
++#endif
+     }
+   private:
+ 
+diff --git a/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybridD1.hpp b/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybridD1.hpp
+index be182462a6e..2f784e32c4b 100644
+--- a/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybridD1.hpp
++++ b/packages/zoltan2/core/src/algorithms/color/Zoltan2_AlgHybridD1.hpp
+@@ -7,7 +7,7 @@
+ #include <fstream>
+ #include <queue>
+ #ifdef _WIN32
+-#include <time.h>
++#include <sysinfoapi.h>
+ #else
+ #include <sys/time.h>
+ #endif
+@@ -56,9 +56,16 @@ class AlgDistance1 : public Algorithm<Adapter>
+     using host_exec = typename femv_t::host_view_type::device_type::execution_space;
+     using host_mem = typename femv_t::host_view_type::device_type::memory_space;
+     double timer() {
++#ifdef _WIN32
++      FILETIME t;
++      GetSystemTimeAsFileTime(&t);
++      unsigned long long time_since_win_epoch = ((unsigned long long)t.dwHighDateTime << 32 | t.dwLowDateTime);
++      return (time_since_win_epoch - 116444736000000000LL) * 1.0e-7;
++#else
+       struct timeval tp;
+       gettimeofday(&tp, NULL);
+       return ((double) (tp.tv_sec) + 1e-6 * tp.tv_usec);
++#endif
+     }
+     
+   private:

@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SZ"
-version = v"2.1.12"
+version = v"2.1.13"
 version_string = "2.1.12.5"
 
 # Collection of sources required to complete build
@@ -54,17 +54,6 @@ install_license ../copyright-and-BSD-license.txt
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# The platforms where HDF5 is supported. See "HDF5/build_tarballs.jl".
-hdf5_platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-    Platform("aarch64", "macos"),
-]
-hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libhdf5sz", :libhdf5sz),
@@ -80,8 +69,8 @@ dependencies = [
                platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
-    Dependency("HDF5_jll"; platforms=hdf5_platforms),
-    Dependency("NetCDF_jll"; platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; compat="~1.14"),
+    Dependency("NetCDF_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
 ]

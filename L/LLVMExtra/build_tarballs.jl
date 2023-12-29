@@ -7,24 +7,20 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.21"
+version = v"0.0.27"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.6", v"15.0.7"]
+llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6"]
 
-
-# Collection of sources required to build LLVMExtra
 sources = [
-    GitSource(repo, "d3f386d221cd61ff82d0a49d2942ecc3442c97c4"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-    "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+    GitSource(repo, "510fa0bc1dec20b118e38c0d06c52f9e0ccf6dd5")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd LLVM.jl/deps/LLVMExtra
 
-if [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+15.asserts* ]]; then
-    # LLVM 15 requires macOS SDK 10.14.
+if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+    # LLVM 15+ requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
@@ -89,9 +85,16 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
 
+        platform_sources = BinaryBuilder.AbstractSource[sources...]
+        if Sys.isapple(platform)
+            push!(platform_sources,
+                  ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+        end
+
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;
-            dependencies, products,
+            dependencies, products, sources=platform_sources,
             platforms=[augmented_platform],
         ))
     end
@@ -106,10 +109,9 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, sources, script,
+                   name, version, build.sources, script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=v"8", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
 
-# bump

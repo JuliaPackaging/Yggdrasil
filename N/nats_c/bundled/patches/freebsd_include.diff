@@ -1,0 +1,15 @@
+diff --git a/src/include/n-unix.h.orig b/src/include/n-unix.h
+index 3b775cd..98605f4 100644
+--- a/src/include/n-unix.h
++++ b/src/include/n-unix.h
+@@ -18,7 +18,10 @@
+ #define _GNU_SOURCE
+ #endif
+
+-#if defined(__arm__) || defined(__aarch64__)
++#if defined(__arm__) || defined(__aarch64__) || defined(__FreeBSD__)
++#ifdef __FreeBSD__
++#include <sys/types.h>
++#endif
+ #include <sys/socket.h>
+ #endif

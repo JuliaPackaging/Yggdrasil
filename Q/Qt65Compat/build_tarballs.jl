@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Qt65Compat"
-version = v"6.4.2"
+version = v"6.5.2"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qt5compat-everywhere-src-$version.tar.xz",
-                  "f51f505c8e985b51b7d733e27d782c6fce181beef53364acb0368cc892c4b792"),
+                  "b9abe42ee2055c27a8e7579c7816069e91aae1f9b10649bf572db8ba96fa91c4"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
@@ -113,17 +113,17 @@ dependencies = [
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6ShaderTools_jll"),
     HostBuildDependency("Qt6Declarative_jll"),
-    Dependency("Qt6Base_jll"),
-    Dependency("Qt6ShaderTools_jll"),
-    Dependency("Qt6Declarative_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
+    Dependency("Qt6ShaderTools_jll"; compat="="*string(version)),
+    Dependency("Qt6Declarative_jll"; compat="="*string(version)),
 ]
 
 include("../../fancy_toys.jl")
 
 if any(should_build_platform.(triplet.(platforms_macos)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
 end
 
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
 end

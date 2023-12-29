@@ -65,10 +65,11 @@ dependencies = [
     Dependency("Cairo_jll"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="1.12.1"),
+    # Updating to a newer HDF5 version requires rebuilding this package
+    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.12.1"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),

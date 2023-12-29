@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.2.9"
+version = v"5.4.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://tukaani.org/xz/xz-$(version).tar.xz",
-                  "287ef163e7e57561e9de590b2a9037457af24f03a46bbd12bf84f3263679e8d2"),
+                  "da9dec6c12cf2ecf269c31ab65b5de18e8e52b96f35d5bcd08c12b43e6878803"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,7 @@ if [[ "${target}" != *-gnu* ]]; then
 else
     STATIC_SHARED_TOGGLE=(--disable-shared --disable-static)
     # Handle error on GNU/Linux:
-    #  configure: error: 
+    #  configure: error:
     #      On GNU/Linux, building both shared and static library at the same time
     #      is not supported if --with-pic or --without-pic is used.
     #      Use either --disable-shared or --disable-static to build one type

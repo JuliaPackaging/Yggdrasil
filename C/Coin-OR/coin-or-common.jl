@@ -18,12 +18,15 @@ function offset_version(upstream, offset)
 end
 
 # GCC version for building the whole system
-gcc_version = v"8"
+gcc_version = v"8.1.0"
+
+# LLVM version for building the whole system
+llvm_version = v"13.0.1"
 
 # Versions of various COIN-OR libraries
 
-Bonmin_upstream_version = v"1.8.8"
-Bonmin_gitsha = "65c56cea1e7c40acd9897a2667c11f91d845bb7b"
+Bonmin_upstream_version = v"1.8.9"
+Bonmin_gitsha = "030d111af16a0f30b6fff851ba7f983bea14f982"
 Bonmin_version_offset = v"0.0.1"
 Bonmin_version = offset_version(Bonmin_upstream_version, Bonmin_version_offset)
 
@@ -45,9 +48,9 @@ Osi_gitsha = "c67528fc8b2a36dc936b285fe34030439b9147c3"
 CoinUtils_version = offset_version(v"2.11.6", v"0.0.0")
 CoinUtils_gitsha = "26e9639ed9897e13e89169870dbe910296a9783b"
 
-Ipopt_upstream_version = v"3.14.12"
-Ipopt_gitsha = "26e0c6580b83a6e68cd63803b93a1e43092cfb33"
-Ipopt_verson_offset = v"0.0.0"
+Ipopt_upstream_version = v"3.14.13"
+Ipopt_gitsha = "4262e538feb1909036cecf9d8720454896cdc23c"
+Ipopt_verson_offset = v"0.0.3"
 Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
 ALPS_upstream_version = v"1.5.7"
@@ -77,8 +80,9 @@ Julia_compat_version = "1.6"
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
 MUMPS_seq_version = v"5.4.1"
-MUMPS_seq_version_LBT = v"500.500.101"
-OpenBLAS32_version = v"0.3.21"
+MUMPS_seq_version_LBT = v"500.600.200"
+SPRAL_version_LBT = v"2023.11.15"
+OpenBLAS32_version = v"0.3.25"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line

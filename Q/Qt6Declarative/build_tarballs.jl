@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Declarative"
-version = v"6.4.2"
+version = v"6.5.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
@@ -13,7 +13,7 @@ const host_build = false
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtdeclarative-everywhere-src-$version.tar.xz",
-                  "a4bdd983de4e9cbca0f85b767dbdd8598711554e370a06da8f509ded4430f5bd"),
+                  "f3a11fe54e9fac77c649e46e39f1cbe161e9efe89bad205115ba2861b1eb8719"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
                   "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
@@ -165,8 +165,9 @@ products_macos = [
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6ShaderTools_jll"),
-    Dependency("Qt6Base_jll"),
-    Dependency("Qt6ShaderTools_jll"),
+    Dependency("Qt6Base_jll"; compat="="*string(version)),
+    Dependency("Qt6ShaderTools_jll"; compat="="*string(version)),
+    BuildDependency("Vulkan_Headers_jll"),
 ]
 
 if !host_build
@@ -177,9 +178,9 @@ include("../../fancy_toys.jl")
 
 @static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
 end

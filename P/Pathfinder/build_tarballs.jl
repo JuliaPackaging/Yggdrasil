@@ -51,7 +51,7 @@ not_windows = filter(!Sys.iswindows, platforms)
 
 dependencies = [
     Dependency("Fontconfig_jll", platforms=not_windows),
-    Dependency("FreeType2_jll",  platforms=not_windows),
+    Dependency("FreeType2_jll",  platforms=not_windows, compat="2.10.4"),
     Dependency("HarfBuzz_jll",   platforms=not_windows),
     HostBuildDependency(PackageSpec(; name="cbindgen_jll", uuid="a52b955f-5256-5bb0-8795-313e28591558")),
 ]

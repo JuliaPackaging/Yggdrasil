@@ -1,11 +1,12 @@
+using Pkg
 using BinaryBuilder
 
 name = "SCS_MKL"
-version = v"3.2.3"
+version = v"3.2.4"
 
 # Collection of sources required to build SCSBuilder
 sources = [
-    GitSource("https://github.com/cvxgrp/scs.git", "f0c23340da03bcd663072dc4a90cf1aab8968c61")
+    GitSource("https://github.com/cvxgrp/scs.git", "9024b8ccc1bba6ee797440fb22354cadb9c81839")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MKL_jll"; compat="2022.2.0"),
+    Dependency("MKL_jll"; compat = "=2023.2.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 julia_compat = join(map(julia_versions) do v "~$(v.major).$(v.minor)" end, ", ")
 
 name = "libcgal_julia"
-version = v"0.18.0"
+version = v"0.18.1"
 
 isyggdrasil = get(ENV, "YGGDRASIL", "") == "true"
 rname = "libcgal-julia"
@@ -15,8 +15,8 @@ rname = "libcgal-julia"
 # Collection of sources required to build CGAL
 sources = [
     isyggdrasil ?
-        GitSource("https://github.com/rgcv/$rname.git",
-                  "513bc673b0662024e9aff56fc7671f43ecc6bcc6") :
+        GitSource("https://github.com/rcqls/$rname.git",
+                  "88d2fdef12dc059a30257b1f85e11e577b774828") :
         DirectorySource(joinpath(ENV["HOME"], "src/github/rgcv/$rname"))
 ]
 
@@ -72,7 +72,6 @@ platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 filter!(p -> arch(p) ≠ "armv7l", platforms)
 # filter experimental platforms
 filter!(p -> arch(p) ≠ "armv6l", platforms)
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -85,10 +84,10 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     BuildDependency("GMP_jll"),
-    BuildDependency("MPFR_jll"),
+    BuildDependency(get_addable_spec("MPFR_jll", v"4.1.1+3")),
 
-    Dependency("CGAL_jll", compat="~5.5"),
-    Dependency("libcxxwrap_julia_jll", compat="0.9.2"),
+    Dependency("CGAL_jll", compat="~5.5.2"),
+    Dependency("libcxxwrap_julia_jll", compat="0.9.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

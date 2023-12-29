@@ -7,23 +7,32 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.3.0"
+mpitrampoline_version = v"5.3.1"
 version = mpitrampoline_version
-mpich_version_str = "4.1.1"
+mpich_version_str = "4.1.2"
 mpiconstants_version = v"1.5.0"
-mpiwrapper_version = v"2.10.3"
+mpiwrapper_version = v"2.10.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/MPItrampoline", "62e3e5a4b880da8cc601b84691198d4d20308651"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "25efb0f7a4cd00ed82bafb8b1a6285fc50d297ed"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "ee30471b35ef87f4c88f871a5e2ad3811cd9c4df32fd4f138443072ff4284ca2"),
-    GitSource("https://github.com/eschnett/MPIwrapper", "7c09c12e601fd0faa2ae84c37f97a05e23795141"),
+                  "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
+    GitSource("https://github.com/eschnett/MPIwrapper", "64f663cfaa36139882c5d92dc974b1a755cd6f5d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${bb_full_target}" == *-apple-darwin*-libgfortran[45]-* ]]; then
+    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
+    # Remove the new fancy linkers which don't work yet
+    rm /opt/bin/${bb_full_target}/ld64.lld
+    rm /opt/bin/${bb_full_target}/ld64.${target}
+    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
+    rm /opt/${MACHTYPE}/bin/ld64.lld
+fi
+
 ################################################################################
 # MPItrampoline
 ################################################################################
@@ -53,6 +62,15 @@ cmake \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+# Post-process the compiler wrappers. They remember the original
+# compiler used to build MPItrampoline, but this compiler is too
+# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
+# `$FC` etc.
+sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
+sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
+sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
+cp ${bindir}/mpifc ${bindir}/mpifort
 
 ################################################################################
 # Install MPIconstants
@@ -195,9 +213,9 @@ if [[ "${target}" == *-apple-* ]]; then
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         "${INSTALL_RPATH[@]}" \
         -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_CXX_COMPILER=c++ \
-        -DMPI_Fortran_COMPILER=gfortran \
+        -DMPI_C_COMPILER=${CC} \
+        -DMPI_CXX_COMPILER=${CXX} \
+        -DMPI_Fortran_COMPILER=${FC} \
         -DMPI_C_LIB_NAMES='mpi;pmpi' \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
@@ -278,7 +296,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-                      compat="0.1", top_level=true),
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -11,7 +11,7 @@ name = "NetCDF"
 upstream_version = v"4.9.2"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.6"
+version_offset = v"0.2.8"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -19,22 +19,27 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build NetCDF
 sources = [
-    GitSource("https://github.com/Unidata/netcdf-c.git",
-              "9328ba17cb53f13a63707547c94f4715243dafdf"),
+    ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
+                  "cf11babbbdb9963f09f55079e0b019f6d0371f52f8e1264a5ba8e9fdab1a6c48"),
+    DirectorySource("bundled"),
 ]
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/netcdf-c
+cd $WORKSPACE/srcdir/netcdf-c*
 
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 CONFIGURE_OPTIONS=""
 
+# Apply patch https://github.com/Unidata/netcdf-c/pull/2690
+atomic_patch -p1 ../patches/0001-curl-cainfo.patch
+
 if [[ ${target} == *-mingw* ]]; then
-    export LIBS="-lhdf5-0 -lhdf5_hl-0 -lcurl-4 -lz"
+    # we should determine the dll version (?) automatically
+    export LIBS="-lhdf5-310 -lhdf5_hl-310 -lcurl-4 -lz"
     # linking fails with: "libtool:   error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified"
     # unless -no-undefined is added to LDFLAGS
     LDFLAGS_MAKE="${LDFLAGS} ${LIBS} -no-undefined -Wl,--export-all-symbols"
@@ -42,9 +47,6 @@ if [[ ${target} == *-mingw* ]]; then
     # additional configure options from
     # https://github.com/Unidata/netcdf-c/blob/5df5539576c5b2aa8f31d4b50c4f8258925589dd/.github/workflows/run_tests_win_mingw.yml#L38
     CONFIGURE_OPTIONS="--disable-byterange"
-elif [[ "${target}" == *-apple-* ]]; then
-    # this file is referenced by hdf.h by not installed
-    touch ${includedir}/features.h
 fi
 
 if [[ ${target} -ne x86_64-linux-gnu ]]; then
@@ -77,19 +79,7 @@ nc-config --all
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# Set equal to the supported platforms in HDF5
-platforms = [
-    Platform("x86_64", "linux"),
-    # HDF5_jll on armv7l should use the same glibc as the root filesystem
-    # before it can be used
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/1090#discussion_r432683488
-    # Platform("armv7l", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64","macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -98,12 +88,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="HDF5_jll"), compat="1.12.2"),
-    Dependency("Zlib_jll"),
+    Dependency("Bzip2_jll"),
+    Dependency("HDF5_jll"; compat = "~1.14"),
+    Dependency("LibCURL_jll"; compat = "7.73.0,8"),
     Dependency("XML2_jll"),
-    Dependency("LibCURL_jll"; compat = "7.73.0"),
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
 ]
-
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

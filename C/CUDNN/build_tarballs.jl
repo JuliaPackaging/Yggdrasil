@@ -6,25 +6,40 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"8.8.1"
+version = v"8.2.4"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
 
 cd ${WORKSPACE}/srcdir
-if [[ ${target} == *-linux-gnu ]]; then
-    cd cudnn*
+if [[ ${target} == powerpc64le-linux-gnu ]]; then
+    cd cuda/targets/ppc64le-linux
     find .
 
-    install_license LICENSE
+    install_license NVIDIA_SLA_cuDNN_Support.txt
 
     mv lib/libcudnn*.so* ${libdir}
     mv include/* ${prefix}/include
-elif [[ ${target} == x86_64-w64-mingw32 ]]; then
-    cd cudnn*
+elif [[ ${target} == aarch64-linux-gnu && ${bb_full_target} == aarch64-linux-gnu-*-cuda+10.2 ]]; then
+    apk add dpkg
+    dpkg-deb -x libcudnn8_*.deb .
+    dpkg-deb -x libcudnn8-dev_*.deb .
+    mv -nv ./usr/include/aarch64-linux-gnu/* ${includedir}
+    mv -nv ./usr/lib/aarch64-linux-gnu/libcudnn*.so* ${libdir}
+    install_license ./usr/src/cudnn_samples_v8/NVIDIA_SLA_cuDNN_Support.txt
+elif [[ ${target} == *-linux-gnu ]]; then
+    cd cuda
     find .
 
-    install_license LICENSE
+    install_license NVIDIA_SLA_cuDNN_Support.txt
+
+    mv lib64/libcudnn*.so* ${libdir}
+    mv include/* ${prefix}/include
+elif [[ ${target} == x86_64-w64-mingw32 ]]; then
+    cd cuda
+    find .
+
+    install_license NVIDIA_SLA_cuDNN_Support.txt
 
     mv bin/cudnn*64_*.dll ${libdir}
     mv include/* ${prefix}/include
@@ -52,7 +67,7 @@ products = [
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
-builds = ["11", "12"]
+builds = ["10.2", "11"]
 for build in builds
     include("build_$(build).jl")
     cuda_version = VersionNumber(build)

@@ -1,15 +1,26 @@
 using BinaryBuilder
 
 name = "CGNS"
-version = v"4.3.0"
+cgns_version = v"4.3.0"
+version = v"4.3.1"
 
 sources = [
-    ArchiveSource("https://github.com/CGNS/CGNS/archive/refs/tags/v$(version).tar.gz",
-                  "7709eb7d99731dea0dd1eff183f109eaef8d9556624e3fbc34dc5177afc0a032"),
+    GitSource("https://github.com/CGNS/CGNS.git",
+              "ec538ac11dbaff510464a831ef094b0d6bf7216c"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/CGNS*
+
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libnghttp2.*
+fi
+
+# Correct HDF5 compiler wrappers
+perl -pi -e 's+-I/workspace/srcdir/hdf5-1.14.0/src/H5FDsubfiling++' $(which h5pcc)
+
 mkdir build && cd build
 H5LIB=""
 if [[ "${target}" == *-mingw* ]]; then
@@ -23,15 +34,7 @@ make -j${nproc}
 make install
 """
 
-platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-    Platform("aarch64", "macos"),
-]
-
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libcgns", :libcgns),
@@ -44,7 +47,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"),
+    Dependency("HDF5_jll"; compat="~1.14"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

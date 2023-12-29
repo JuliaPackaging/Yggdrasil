@@ -1,6 +1,6 @@
 name = "Clang"
-llvm_full_version = v"15.0.7+5"
-libllvm_version = v"15.0.7+5"
+llvm_full_version = v"15.0.7+10"
+libllvm_version = v"15.0.7+10"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -37,4 +37,3 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, julia_compat="1.9",
                    augment_platform_block)
 end
-#Rebuild!

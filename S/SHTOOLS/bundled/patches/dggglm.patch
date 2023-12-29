@@ -1,0 +1,10 @@
+--- a/src/SHExpandLSQ.F95
+--- b/src/SHExpandLSQ.F95
+@@ -84,6 +84,7 @@
+                              din(:)
+ #ifdef LAPACK_UNDERSCORE
+ #define dgels dgels_
++#define dggglm dggglm_
+ #endif
+     external :: dgels, dggglm
+ 

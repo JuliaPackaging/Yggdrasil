@@ -1,94 +1,54 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2023.1.0"
+version = v"2024.0.0"
 
-# Bash recipes for building across all platforms
-script = read(joinpath(@__DIR__, "script.sh"), String)
-script_macos = read(joinpath(@__DIR__, "script_macos.sh"), String)
+sources = [
+    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/win-32/mkl-2024.0.0-intel_49657.tar.bz2",
+                  "c9418f0c982f6d914f147bf1262a6d4dc631a3a2de61bae92ffc4e8d9e9d4b14"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/win-64/mkl-2024.0.0-intel_49657.tar.bz2",
+                  "5e69fd6314f5ed95da076bdf1a4701aa234dc842d5dfc845d5b2e05e12cd7fcc"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/linux-32/mkl-2024.0.0-intel_49656.tar.bz2",
+                  "0445142acaec7f2371682ddce8016049bff8d2ec015a2431b650f3dc03d14720"; unpack_target="i686-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/linux-64/mkl-2024.0.0-intel_49656.tar.bz2",
+                  "e02ad8cf2b0d1c18c4c0a6a06cb23ec6dc076678ab1e5bbc55876aa56f390458"; unpack_target="x86_64-linux-gnu"),
+]
 
-non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
+# Bash recipe for building across all platforms
+script = raw"""
+cd $WORKSPACE/srcdir
+mkdir -p "${libdir}"
+if [[ ${target} == *mingw* ]]; then
+    mv ${target}/Library/bin/* "${libdir}/."
+else
+    mv ${target}/lib/* "${libdir}/."
+fi
+install_license ${target}/info/licenses/*.txt
+"""
 
-platform_sources = [
-    (
-        platform = Platform("i686", "windows"),
-        source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2023.1.0/download/win-32/mkl-2023.1.0-intel_46356.tar.bz2",
-            "b84848ab6a9b785171a58f8bf96e4843fb695e66af804d31f75e86877d53c7da";
-            unpack_target = "mkl-i686-w64-mingw32"
-        ),
-        autofix = false,
-        script = script,
-    ),
-    (
-        platform = Platform("x86_64", "windows"),
-        source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2023.1.0/download/win-64/mkl-2023.1.0-intel_46356.tar.bz2",
-            "767fbbe50157e9f365eca77d42a1495b66661b5845a1c13b8e33fe79d3b4a9f4";
-            unpack_target = "mkl-x86_64-w64-mingw32"
-        ),
-        autofix = false,
-        script = script,
-    ),
-    (
-        platform = Platform("i686", "linux"; libc="glibc"),
-        source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2023.1.0/download/linux-32/mkl-2023.1.0-intel_46342.tar.bz2",
-            "ed00993f38f05e39252c718b6041d422f1217c015d3a62faa1f294cc7f089430";
-            unpack_target = "mkl-i686-linux-gnu"
-        ),
-        autofix = true,
-        script = script,
-    ),
-    (
-        platform = Platform("x86_64", "linux"; libc="glibc"),
-        source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2023.1.0/download/linux-64/mkl-2023.1.0-intel_46342.tar.bz2",
-            "3820a9053b1c028b3d9f62448f7d0d53a57ca6d6d38c2279faec8663f27d0a5c";
-            unpack_target = "mkl-x86_64-linux-gnu"
-        ),
-        # We need to run autofix on Linux, because here libmkl_rt doesn't
-        # have a soname, so we can't ccall it without specifying the path:
-        # https://github.com/JuliaSparse/Pardiso.jl/issues/69
-        autofix = true,
-        script = script,
-    ),
-    (
-        platform = Platform("x86_64", "macos"),
-        source = ArchiveSource(
-            "https://anaconda.org/intel/mkl/2023.1.0/download/osx-64/mkl-2023.1.0-intel_43558.tar.bz2",
-            "a4c7a5e322ebb988aa914c3dbdc88afd241c1f50d2fac3f919d3ebca4df4727d";
-            unpack_target = "mkl-x86_64-apple-darwin14"
-        ),
-        # Need to disable autofix: updating linkage of libmkl_intel_thread.dylib on
-        # macOS causes runtime issues:
-        # https://github.com/JuliaPackaging/Yggdrasil/issues/915.
-        autofix = false,
-        script = script_macos,
-    )
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
 ]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libmkl_core", "mkl_core", "mkl_core.2"], :libmkl_core),
-    LibraryProduct(["libmkl_rt", "mkl_rt", "mkl_rt.2"], :libmkl_rt),
+    LibraryProduct(["libmkl_core", "mkl_core.2"], :libmkl_core),
+    LibraryProduct(["libmkl_rt", "mkl_rt.2"], :libmkl_rt),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("IntelOpenMP_jll"),
+    # MKL should use the corresponding version of IntelOpenMP, otherwise there may
+    # occasionally be incompatibilities, e.g. x86_64 macOS builds were removed in v2024,
+    # using MKL v2023 with IntelOpenMP v2024 would be problematic:
+    # <https://github.com/JuliaMath/FFTW.jl/issues/281>.
+    Dependency(PackageSpec(name="IntelOpenMP_jll", uuid="1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"); compat=string(version)),
 ]
 
-non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-include("../../fancy_toys.jl")
-filter!(p -> should_build_platform(triplet(first(p))), platform_sources)
-
-for (idx, (platform, source, autofix, script)) in enumerate(platform_sources)
-    # Use "--register" only on the last invocation of build_tarballs
-    if idx < length(platform_sources)
-        args = non_reg_ARGS
-    else
-        args = ARGS
-    end
-    build_tarballs(args, name, version, [source], script, [platform], products, dependencies; lazy_artifacts = true, autofix = autofix)
-end
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lazy_artifacts=true, julia_compat="1.6")

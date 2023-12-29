@@ -1,10 +1,11 @@
 const NAME = "rocminfo"
 
-const ROCM_GIT = "https://github.com/RadeonOpenCompute/rocminfo/"
+const ROCM_GIT = "https://github.com/RadeonOpenCompute/rocminfo.git"
 const ROCM_TAGS = Dict(
-    v"4.2.0" => "6952b6e28128ab9f93641f5ccb66201339bb4177bb575b135b27b69e2e241996",
-    v"4.5.2" => "5ea839cd1f317cbc72ea1e3634a75f33a458ba0cb5bf48377f08bb329c29222d",
-    v"5.2.3" => "38fe8db21077100ee2242bd087371f6b8e0078d3a269e145d3a4ab314d0b8902",
+    v"4.2.0" => "10da0a71da6700c91e8cd204927cca0d9461b586",
+    v"4.5.2" => "1452f8fa24b2a33051c326dc7b21bff0450b4c66",
+    v"5.2.3" => "cf92f649ab0db4084fc8b2b6e891670f60edc314",
+    v"5.4.4" => "d8f236cd8180ee0f1fc1da497d0f576a446b86ab",
 )
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
@@ -12,6 +13,12 @@ const ROCM_PLATFORMS = [
 ]
 
 const BUILDSCRIPT = raw"""
+# check if we need to use a more recent glibc
+if [[ -f "$prefix/usr/include/sched.h" ]]; then
+    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
+    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+fi
+
 cd ${WORKSPACE}/srcdir/rocminfo*/
 
 mkdir build && cd build
@@ -35,12 +42,20 @@ const PRODUCTS = [
 
 function configure_build(version)
     sources = [
-        ArchiveSource(
-            ROCM_GIT * "archive/rocm-$(version).tar.gz", ROCM_TAGS[version]),
+        GitSource(ROCM_GIT, ROCM_TAGS[version]),
     ]
-    dependencies = [
+    dependencies = Any[
         Dependency("hsakmt_roct_jll", version),
         Dependency("hsa_rocr_jll", version),
     ]
+    glibc_platforms = filter(ROCM_PLATFORMS) do p
+        libc(p) == "glibc"
+    end
+    if version >= v"5.4.4"
+        # We seem to need this for linking against libhsa-runtime64
+        push!(dependencies,
+              BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+                                          platforms=glibc_platforms))
+    end
     NAME, version, sources, BUILDSCRIPT, ROCM_PLATFORMS, PRODUCTS, dependencies
 end

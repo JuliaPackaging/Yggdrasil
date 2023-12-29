@@ -1,14 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "nghttp2"
-version = v"1.52.0"
+version = v"1.58.0"
 
 # Collection of sources required to build LibCURL
 sources = [
     ArchiveSource("https://github.com/nghttp2/nghttp2/releases/download/v$(version)/nghttp2-$(version).tar.xz",
-                  "3ea9f0439e60469ad4d39cb349938684ffb929dd7e8e06a7bffe9f9d21f8ba7d"),
+                  "4a68a3040da92fd9872c056d0f6b0cd60de8410de10b578f8ade9ecc14d297e0"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,10 +36,12 @@ products = [
     LibraryProduct("libnghttp2", :libnghttp2),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=llvm_version)

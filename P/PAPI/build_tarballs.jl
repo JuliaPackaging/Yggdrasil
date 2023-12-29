@@ -7,11 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "PAPI"
-version = v"7.0.0"
+version = v"7.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/icl/papi.git", "de96060998cd9fc77396c5e100e52e0ea1cdc3c3"),
+    GitSource("https://github.com/icl-utk-edu/papi.git", "cf3ef8872e30236a3d354e34a173e620738266b2"),
     DirectorySource("./bundled")
 ]
 
@@ -63,8 +63,6 @@ make -j ${nproc}
 make install
 """
 
-augment_platform_block = CUDA.augment
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
@@ -84,47 +82,24 @@ products = [
     LibraryProduct("libpapi", :libpapi)
 ]
 
-cuda_versions_to_build = Any[
-    v"10.2",
-    v"11.0",
-    "none"
-]
+cuda_platforms = CUDA.supported_platforms()
+filter!(p -> arch(p) != "aarch64", cuda_platforms)
+filter!(p -> !(arch(p) == "powerpc64le" && p["cuda"] == "11.0"), cuda_platforms)
 
-# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
-cuda_versions = Dict(
-    v"10.2" => v"10.2.89",
-    v"11.0" => v"11.0.3",
-)
-
-cuda_platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-]
-
-for cuda_version in cuda_versions_to_build, platform in platforms
-    tag = cuda_version == "none" ? "none" : CUDA.platform(cuda_version)
-    cuda_version != "none" && !(platform in cuda_platforms) && continue
-    augmented_platform = Platform(arch(platform), os(platform);
-                                  libc=libc(platform),
-                                  cuda=tag)
-    if platform == Platform("powerpc64le", "linux"; libc = "glibc") && cuda_version == v"11.0"
-        continue
-    end
-    should_build_platform(triplet(augmented_platform)) || continue
+for platform in [platforms; cuda_platforms]
+    should_build_platform(triplet(platform)) || continue
 
     dependencies = AbstractDependency[
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+        CUDA.required_dependencies(platform)...
     ]
-    if cuda_version != "none"
-        if platform in cuda_platforms
-            push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                                            version=cuda_versions[cuda_version])))
-        end
+
+    if platform in platforms && CUDA.is_supported(platform)
+        platform["cuda"] = "none"
     end
 
-
-    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+    build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, dependencies; lazy_artifacts=true,
-                   julia_compat="1.6", augment_platform_block,
+                   julia_compat="1.6", augment_platform_block=CUDA.augment,
                    preferred_gcc_version=v"5")
 end

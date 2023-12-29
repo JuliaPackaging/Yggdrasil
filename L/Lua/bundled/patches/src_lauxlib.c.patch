@@ -1,11 +1,12 @@
 diff --git a/src/lauxlib.c b/src/lauxlib.c
-index 8bdada5..080301d 100644
+index 4ca6c65..146cb75 100644
 --- a/src/lauxlib.c
 +++ b/src/lauxlib.c
-@@ -1041,3 +1041,12 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver, size_t sz) {
-                   (LUAI_UACNUMBER)ver, (LUAI_UACNUMBER)*v);
+@@ -1110,3 +1110,13 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver, size_t sz) {
+                   (LUAI_UACNUMBER)ver, (LUAI_UACNUMBER)v);
  }
  
++
 +/* Julia-specific extensions for accessing configuration parameters */
 +
 +LUALIB_API int jl_lua_int_type() {

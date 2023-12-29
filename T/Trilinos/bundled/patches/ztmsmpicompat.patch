@@ -1,0 +1,148 @@
+commit 047a0a65d1c76eee98a6e77928fcda28f8f7c187
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 21:06:38 2023 +0000
+
+    Teuchos/Zoltan: Annotate MPIAPI on callbacks for msmpi compat
+
+diff --git a/packages/teuchos/comm/src/Teuchos_DefaultComm.hpp b/packages/teuchos/comm/src/Teuchos_DefaultComm.hpp
+index 9b31d806cd0..99152ebdcbc 100644
+--- a/packages/teuchos/comm/src/Teuchos_DefaultComm.hpp
++++ b/packages/teuchos/comm/src/Teuchos_DefaultComm.hpp
+@@ -51,14 +51,19 @@
+ namespace Teuchos {
+ 
+ #ifdef HAVE_MPI
++#  ifdef MPIAPI
++#    define TEUCHOS_MPI_CALLBACK_API MPIAPI
++#  else
++#    define TEUCHOS_MPI_CALLBACK_API
++#  endif
+ namespace Details {
+ 
+ template<class OrdinalType>
+-int
++int TEUCHOS_MPI_CALLBACK_API
+ mpiFreeDefaultComm (MPI_Comm, int, void*, void*);
+ 
+ template<class OrdinalType>
+-int
++int TEUCHOS_MPI_CALLBACK_API
+ mpiFreeDefaultSerialComm (MPI_Comm, int, void*, void*);
+ 
+ } // namespace Details
+@@ -160,7 +165,7 @@ private:
+ namespace Details {
+ 
+ template<class OrdinalType>
+-int
++int TEUCHOS_MPI_CALLBACK_API
+ mpiFreeDefaultComm (MPI_Comm, int, void*, void*)
+ {
+   try {
+@@ -182,7 +187,7 @@ mpiFreeDefaultComm (MPI_Comm, int, void*, void*)
+ }
+ 
+ template<class OrdinalType>
+-int
++int TEUCHOS_MPI_CALLBACK_API
+ mpiFreeDefaultSerialComm (MPI_Comm, int, void*, void*)
+ {
+   try {
+diff --git a/packages/teuchos/comm/src/Teuchos_MpiReductionOpSetter.cpp b/packages/teuchos/comm/src/Teuchos_MpiReductionOpSetter.cpp
+index 9a4562fd14a..cf3fa56067d 100644
+--- a/packages/teuchos/comm/src/Teuchos_MpiReductionOpSetter.cpp
++++ b/packages/teuchos/comm/src/Teuchos_MpiReductionOpSetter.cpp
+@@ -125,7 +125,7 @@ freeMpiOp (MPI_Op* op)
+ //
+ // This is the singleton's "destructor" that we attach to
+ // MPI_COMM_SELF as an MPI_Finalize hook.
+-int
++int CALL_API
+ freeMpiOpCallback (MPI_Comm, int, void*, void*)
+ {
+   // We don't need any of the arguments to this function, since we're
+diff --git a/packages/zoltan/src/lb/lb_balance.c b/packages/zoltan/src/lb/lb_balance.c
+index a30e0e42928..a01a3d67ded 100644
+--- a/packages/zoltan/src/lb/lb_balance.c
++++ b/packages/zoltan/src/lb/lb_balance.c
+@@ -1100,7 +1100,7 @@ static void free_hash_table(struct Hash_Node **ht, int tableSize)
+ /*****************************************************************************/
+ /*****************************************************************************/
+ /*****************************************************************************/
+-void Zoltan_PartDist_MPIOp(
++void ZOLTAN_MPI_CALLBACK_API Zoltan_PartDist_MPIOp(
+   void *in, 
+   void *inout, 
+   int *len, 
+diff --git a/packages/zoltan/src/par/par_bisect.c b/packages/zoltan/src/par/par_bisect.c
+index 4d2849b126e..6653d9da035 100644
+--- a/packages/zoltan/src/par/par_bisect.c
++++ b/packages/zoltan/src/par/par_bisect.c
+@@ -1251,7 +1251,7 @@ static double eval_cut_quality(
+ 
+ 
+ */
+-void Zoltan_bisector_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
++void ZOLTAN_MPI_CALLBACK_API Zoltan_bisector_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
+ {
+   struct bisector *med1, *med2;
+   int i, nwgts;
+diff --git a/packages/zoltan/src/par/par_median.c b/packages/zoltan/src/par/par_median.c
+index 1bb73fca703..b960ceb0535 100644
+--- a/packages/zoltan/src/par/par_median.c
++++ b/packages/zoltan/src/par/par_median.c
+@@ -60,6 +60,7 @@ extern "C" {
+ #include "par_average_const.h"
+ #include "zoltan_timer.h"
+ #include "zz_const.h"
++#include "zz_util_const.h"
+ 
+ #define TINY   1.0e-6
+ 
+@@ -585,7 +586,7 @@ if (proc==0) printf("FINAL tmp_half %.20f weightlo/hi %.0f %.0f valuemin/max %.2
+                               all procs must get same proclo,prochi
+ 
+ */
+-void Zoltan_RB_median_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
++void ZOLTAN_MPI_CALLBACK_API Zoltan_RB_median_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
+ {
+   struct median *med1,*med2;
+ 
+diff --git a/packages/zoltan/src/rcb/rcb.c b/packages/zoltan/src/rcb/rcb.c
+index 57b3ae19117..b63b0714e98 100644
+--- a/packages/zoltan/src/rcb/rcb.c
++++ b/packages/zoltan/src/rcb/rcb.c
+@@ -56,6 +56,7 @@ extern "C" {
+ #include <memory.h>
+ #include <float.h>
+ #include "zz_const.h"
++#include "zz_util_const.h"
+ #include "rcb.h"
+ #include "params_const.h"
+ #include "ha_const.h"
+@@ -1338,7 +1339,7 @@ End:
+ 
+ /* min/max merge of each component of a rcb_box */
+ 
+-void Zoltan_RCB_box_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
++void ZOLTAN_MPI_CALLBACK_API Zoltan_RCB_box_merge(void *in, void *inout, int *len, MPI_Datatype *dptr)
+ 
+ {
+   int i;
+diff --git a/packages/zoltan/src/zz/zz_util_const.h b/packages/zoltan/src/zz/zz_util_const.h
+index 45559a2bbd2..b619d4a9675 100644
+--- a/packages/zoltan/src/zz/zz_util_const.h
++++ b/packages/zoltan/src/zz/zz_util_const.h
+@@ -53,6 +53,12 @@
+ #include "zoltan_types.h"
+ #include "zz_hash.h"
+ 
++#ifdef MPIAPI
++#define ZOLTAN_MPI_CALLBACK_API MPIAPI
++#else
++#define ZOLTAN_MPI_CALLBACK_API
++#endif
++
+ #ifdef __cplusplus
+ /* if C++, define the rest of this header file as extern C */
+ extern "C" {

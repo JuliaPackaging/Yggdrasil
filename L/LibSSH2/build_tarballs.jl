@@ -1,26 +1,21 @@
 using BinaryBuilder
 
 name = "LibSSH2"
-version = v"1.10.0"
+version = v"1.11.0"
 
 # Collection of sources required to build LibSSH2
 sources = [
     ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
-                  "2d64e90f3ded394b91d3a2e774ca203a4179f69aebee03003e5a6fa621e41d51"),
+                  "3736161e41e2693324deb38c26cfdc3efe6209d634ba4258db1cecff6a5ad461"),
     DirectorySource("./bundled"),
 ]
-
-version = v"1.10.2" # <-- This version number is a lie to update compat bounds
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*/
 
-# Apply patch to fix v1.10.0 CVE (https://github.com/libssh2/libssh2/issues/649), drop with v1.11
-atomic_patch -p1 ../patches/0001-userauth-check-for-too-large-userauth_kybd_auth_name.patch
-# Fix import lib name on windows: `liblibssh2.dll.a` ==> `libssh2.dll.a`
-# Drop this when a new release contains: https://github.com/libssh2/libssh2/pull/711
-atomic_patch -p1 ../patches/0002-libssh2-fix-import-lib-name.patch
+# Apply patch from https://github.com/libssh2/libssh2/pull/1054
+atomic_patch -p1 ../patches/0001-mbedtls-use-more-size_t-to-sync-up-with-crypto.h.patch
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
@@ -58,7 +53,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("MbedTLS_jll"; compat="~2.28.0"),
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10")

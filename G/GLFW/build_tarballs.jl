@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "GLFW"
-version = v"3.3.8"
+version = v"3.3.9"
 
 # Collection of sources required to build glfw
 sources = [
     ArchiveSource("https://github.com/glfw/glfw/releases/download/$(version)/glfw-$(version).zip",
-                  "4d025083cc4a3dd1f91ab9b9ba4f5807193823e565a5bcf4be202669d9911ea6")
+                  "55261410f8c3a9cc47ce8303468a90f40a653cd8f25fb968b12440624fb26d08")
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,7 @@ products = [
     LibraryProduct(["libglfw", "glfw3"], :libglfw)
 ]
 
-x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+x11_platforms = filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [

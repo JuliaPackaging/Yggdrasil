@@ -12,15 +12,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 gap_version = v"400.1200.200"
 gap_lib_version = v"400.1201.200"
 name = "JuliaInterface"
-upstream_version = "0.8.2" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "0.8.3" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
-
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to build this JLL
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "62c1e9aedc4408c8f57ea2a9df8ce980a9c41d31"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "38af454942a1924b39f30f00a8a64622dd06ce32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,6 +41,7 @@ name = gap_pkg_name(name)
 platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
 
 # expand julia platforms
+include("../../../L/libjulia/common.jl")
 julia_platforms = []
 for p in platforms
     for jv in julia_versions
@@ -55,7 +54,7 @@ for p in platforms
     end
 end
 
-push!(dependencies, BuildDependency("libjulia_jll"))
+push!(dependencies, BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.6")))
 
 # The products that we will ensure are always built
 products = [
@@ -66,4 +65,4 @@ products = [
 build_tarballs(ARGS, name, version, sources, script, julia_platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
 
-# rebuild trigger: 2
+# rebuild trigger: 3

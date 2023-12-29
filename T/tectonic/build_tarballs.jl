@@ -3,28 +3,28 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.12.0"
+version = v"0.14.1"
 
 # Collection of sources required to build tar
 sources = [
     GitSource("https://github.com/tectonic-typesetting/tectonic.git",
-              "4dd8c217fd6483a53ed03e993e388e81d29d1265"),
+              "e9b786655cac895bb148c5bfa3fc4cec6a01d72f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/tectonic
+cd ${WORKSPACE}/srcdir/tectonic
 
 if [[ "${target}" == *-mingw* ]]; then
     export RUSTFLAGS="-Clink-args=-L${libdir}"
 fi
 
 cargo build --release --locked --features external-harfbuzz
-cp target/${rust_target}/release/tectonic${exeext} ${bindir}/
+install -Dvm 755 "target/${rust_target}/release/tectonic${exeext}" "${bindir}/tectonic${exeext}"
 """
 
 # Some platforms disabled for now due issues with rust and musl cross compilation. See #1673.
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # We dont have all dependencies for armv6l
 filter!(p -> arch(p) != "armv6l", platforms)
 # Rust toolchain for i686 Windows is unusable
@@ -39,12 +39,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Graphite2_jll"),
     Dependency("HarfBuzz_jll"; compat="2.8.1"),
     Dependency("HarfBuzz_ICU_jll"),
     Dependency("ICU_jll"; compat="69.1"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
 ]

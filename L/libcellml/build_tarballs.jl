@@ -1,26 +1,26 @@
 using BinaryBuilder, Pkg
 
 name = "libcellml"
-version = v"0.4.0"
+version = v"0.5.0"
 
 sources = [
     GitSource(
         "https://github.com/cellml/libcellml",
-        "697e0b2d07e5e68d147a42c63305d7f72ce26c78"),
+        "79c79e851a8ad9b10bc0cc7978121ae6ad98ef9c"),
     ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
-# https://libcellml.org/documentation/guides/latest/installation/build_from_source
+# https://libcellml.org/documentation/installation/build_from_source
 script = raw"""
-# This requires macOS 10.14
+# This requires macOS 10.15
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
+    export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
 fi
 

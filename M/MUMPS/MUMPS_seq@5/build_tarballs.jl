@@ -14,23 +14,21 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "MUMPS_seq"
-upstream_version = v"5.5.1"
-version_offset = v"0.0.2" # reset to 0.0.0 once the upstream version changes
+upstream_version = v"5.6.2"
+version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
-upstream_version
+
 sources = [
-  ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz","1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
-  DirectorySource("./bundled")
+  ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz",
+                "13a2c1aff2bd1aa92fe84b7b35d88f43434019963ca09ef7e8c90821a8f1d59a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pord.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
@@ -54,9 +52,9 @@ else
   BLAS_LAPACK="-L${libdir} -lblastrampoline"
 fi
 
-make_args+=(OPTF=-O3
-            OPTL=-O3
-            OPTC=-O3
+make_args+=(OPTF="-O3 -fopenmp"
+            OPTL="-O3 -fopenmp"
+            OPTC="-O3 -fopenmp"
             CDEFS=-DAdd_
             LMETISDIR=${libdir}
             IMETIS=-I${includedir}
@@ -64,17 +62,18 @@ make_args+=(OPTF=-O3
             ORDERINGSF="-Dpord -Dmetis"
             LIBEXT_SHARED=".${dlext}"
             SONAME="${SONAME}"
-            CC="$CC -fPIC ${CFLAGS[@]}"
-            FC="gfortran -fPIC ${FFLAGS[@]}"
-            FL="gfortran -fPIC"
+            CC="$CC ${CFLAGS[@]}"
+            FC="gfortran ${FFLAGS[@]}"
+            FL="gfortran"
             RANLIB="echo"
             LIBBLAS="${BLAS_LAPACK}"
             LAPACK="${BLAS_LAPACK}")
 
 make -j${nproc} allshared "${make_args[@]}"
 
+mkdir ${includedir}/libseq
 cp include/*.h ${includedir}
-cp libseq/*.h ${includedir}
+cp libseq/*.h ${includedir}/libseq
 cp lib/*.${dlext} ${libdir}
 """
 
@@ -86,9 +85,6 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
-    LibraryProduct("libpord", :libpord),
-    LibraryProduct("libmpiseq", :libmpiseq),
-    LibraryProduct("libmumps_common", :libmumps_common),
 ]
 
 # Dependencies that must be installed before this package can be built
