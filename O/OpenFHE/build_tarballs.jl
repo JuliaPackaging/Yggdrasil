@@ -17,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/openfhe-development/
 
 if [[ "${target}" == *-apple* ]]; then
-  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/macos-include-cmath.patch
+  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/macos-include-cmath.patch"
 fi
 
 mkdir build && cd build
