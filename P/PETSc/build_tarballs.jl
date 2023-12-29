@@ -310,7 +310,7 @@ dependencies = [
     Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
     Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
-    BuildDependency("LLVMCompilerRT_jll", platforms=[Platform("aarch64", "macos")]),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("SCALAPACK32_jll"),
     Dependency("METIS_jll"),
     Dependency("SCOTCH_jll"),
