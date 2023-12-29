@@ -122,7 +122,7 @@ build_petsc()
         LIBFLAGS="-L${libdir} -lssp" 
     fi
 
-    if [[ "${target}" == *-apple* ]]; then 
+    if [[ "${target}" == aarch64-apple-* ]]; then    
         LIBFLAGS="-L${libdir}" 
         # Linking requires the function `__divdc3`, which is implemented in
         # `libclang_rt.osx.a` from LLVM compiler-rt.
@@ -161,18 +161,18 @@ build_petsc()
     mkdir $libdir/petsc/${PETSC_CONFIG}
 
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
-        CC=${CC} \
-        FC=${FC} \
-        CXX=${CXX} \
-        COPTFLAGS=${_COPTFLAGS} \
-        CXXOPTFLAGS=${_CXXOPTFLAGS} \
-        FOPTFLAGS=${_FOPTFLAGS}  \
+        --CC=${CC} \
+        --FC=${FC} \
+        --CXX=${CXX} \
+        --COPTFLAGS=${_COPTFLAGS} \
+        --CXXOPTFLAGS=${_CXXOPTFLAGS} \
+        --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix=""  \
-        CFLAGS='-fno-stack-protector '  \
-        FFLAGS="${MPI_FFLAGS}"  \
-        LDFLAGS="${LIBFLAGS}"  \
-        CC_LINKER_FLAGS="${CLINK_FLAGS}" \
+        --CFLAGS='-fno-stack-protector '  \
+        --FFLAGS="${MPI_FFLAGS}"  \
+        --LDFLAGS="${LIBFLAGS}"  \
+        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
         --with-debugging=${DEBUG_FLAG}  \
         --with-batch \
@@ -268,6 +268,11 @@ augment_platform_block = """
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
                                                                   Platform("i686","linux"; libc="musl"),
+                                                                  Platform("i686","linux"; libc="gnu"),
+                                                                  Platform("x86_64","unknown"; libc="freebsd"),
+                                                                  Platform("armv6l","linux"; libc="musleabihf"),
+                                                                  Platform("armv7l","linux"; libc="musleabihf"),
+                                                                  Platform("armv7l","linux"; libc="gnueabihf"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
@@ -305,7 +310,7 @@ dependencies = [
     Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
     Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
-    BuildDependency("LLVMCompilerRT_jll"),
+    BuildDependency("LLVMCompilerRT_jll", platforms=[Platform("aarch64", "macos")]),
     Dependency("SCALAPACK32_jll"),
     Dependency("METIS_jll"),
     Dependency("SCOTCH_jll"),
