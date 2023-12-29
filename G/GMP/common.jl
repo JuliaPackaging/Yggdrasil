@@ -10,6 +10,7 @@ function configure(version)
         v"6.1.2" => "5275bb04f4863a13516b2f39392ac5e272f5e1bb8057b18aec1c9b79d73d8fb2",
         v"6.2.0" => "f51c99cb114deb21a60075ffb494c1a210eb9d7cb729ed042ddb7de9534451ea",
         v"6.2.1" => "eae9326beb4158c386e39a356818031bd28f3124cf915f8c5b1dc4c7a36b4d7c",
+        v"6.3.0" => "ac28211a7cfb609bae2e2c8d6058d66c8fe96434f740cf6fe2e47b000d1c20cb",
     )
 
     # Collection of sources required to complete build
@@ -71,4 +72,3 @@ install_license COPYING*
 
     return name, version, sources, script, platforms, products, dependencies
 end
-
