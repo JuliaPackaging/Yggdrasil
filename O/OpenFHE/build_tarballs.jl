@@ -35,6 +35,10 @@ platforms = supported_platforms()
 # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
 platforms = filter(p -> libc(p) != "musl", platforms)
 
+# PowerPC and 32-bit x86 platforms are not supported by OpenFHE
+platforms = filter(p -> arch(p) != "i686", platforms)
+platforms = filter(p -> arch(p) != "powerpc64le", platforms)
+
 # Expand C++ string ABIs since we use std::string
 platforms = expand_cxxstring_abis(platforms)
 
