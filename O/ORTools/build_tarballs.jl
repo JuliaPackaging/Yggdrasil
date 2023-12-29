@@ -111,7 +111,7 @@ products = [
 
     # Protocol Buffers definitions. Their position depends on the name space, but the symbol name includes the module the definitions come from.
     # - From bop/
-    FileProduct("include/operations_research/bop/bop_parameters.proto", :proto_bop_parameters),
+    FileProduct("include/ortools/bop/bop_parameters.proto", :proto_bop_parameters),
     # - From constraint_solver/
     FileProduct("include/ortools/constraint_solver/assignment.proto", :proto_constraint_solver_assignment),
     FileProduct("include/ortools/constraint_solver/demon_profiler.proto", :proto_constraint_solver_demon_profiler),
@@ -123,11 +123,11 @@ products = [
     # - From glop/
     FileProduct("include/ortools/glop/parameters.proto", :ortools_glop_parameters),
     # - From graph/
-    FileProduct("include/ortools/flow_problem.proto", :ortools_graph_flow_problem),
+    FileProduct("include/ortools/graph/flow_problem.proto", :ortools_graph_flow_problem),
     # - From gscip/:
-    FileProduct("include/ortools/gscip.proto", :proto_gscip),
+    FileProduct("include/ortools/gscip/gscip.proto", :proto_gscip),
     # - From linear_solver/
-    FileProduct("include/ortools/linear_solver.proto", :proto_linear_solver),
+    FileProduct("include/ortools/linear_solver/linear_solver.proto", :proto_linear_solver),
     # - From math_opt/
     FileProduct("include/ortools/math_opt/callback.proto", :proto_math_opt_callback),
     FileProduct("include/ortools/math_opt/model.proto", :proto_math_opt_model),
