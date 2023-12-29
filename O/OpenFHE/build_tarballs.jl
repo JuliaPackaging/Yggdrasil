@@ -14,7 +14,16 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/openfhe-development/
 mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DWITH_BE2=ON -DWITH_BE4=ON
+
+cmake .. \
+  -DCMAKE_INSTALL_PREFIX=$prefix \
+  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DWITH_BE2=ON \
+  -DWITH_BE4=ON \
+  -DBUILD_UNITTESTS=OFF \
+  -DBUILD_BENCHMARKS=OFF
+
 make -j${nproc}
 make install
 """
@@ -32,11 +41,12 @@ platforms = expand_cxxstring_abis(platforms)
 products = [
     LibraryProduct("libOPENFHEbinfhe", :libOPENFHEbinfhe),
     LibraryProduct("libOPENFHEpke", :libOPENFHEpke),
-    LibraryProduct("libOPENFHEcore", :libOPENFHEcore)
+    LibraryProduct("libOPENFHEcore", :libOPENFHEcore),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
