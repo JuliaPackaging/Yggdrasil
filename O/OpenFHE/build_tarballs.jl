@@ -7,12 +7,19 @@ version = v"1.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/openfheorg/openfhe-development.git", "b2869aef5cf61afd364b3eaea748dcc8a7020b9c")
+    GitSource("https://github.com/openfheorg/openfhe-development.git",
+              "b2869aef5cf61afd364b3eaea748dcc8a7020b9c"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openfhe-development/
+
+if [[ "${target}" == *-apple* ]]; then
+  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/macos-include-cmath.patch
+fi
+
 mkdir build && cd build
 
 cmake .. \
