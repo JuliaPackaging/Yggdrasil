@@ -30,7 +30,7 @@ version = v"0.0.14"  # fake version number
 # - removed armv{6,7} specific CMAKE ARGS as the flag `LLAMA_K_QUANTS` is no longer available
 # - removed Product "embd_input_test" as it's no longer part of the project
 # - removed Library "libembdinput" as it's no longer part of the project
-# - disable METAL (LLAMA_METAL=OFF) on Intel-based MacOS as it's not supported (supported on Apple Silicon only)
+# - disabled METAL (LLAMA_METAL=OFF) on Intel-based MacOS as it's not supported (supported on Apple Silicon only)
 
 # versions: fake_version to github_version mapping
 #
