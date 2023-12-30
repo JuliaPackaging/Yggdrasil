@@ -31,6 +31,7 @@ version = v"0.0.14"  # fake version number
 # - removed Product "embd_input_test" as it's no longer part of the project
 # - removed Library "libembdinput" as it's no longer part of the project
 # - disabled METAL (LLAMA_METAL=OFF) on Intel-based MacOS as it's not supported (supported on Apple Silicon only)
+# - temporarily disabled Windows x86_64 builds
 
 # versions: fake_version to github_version mapping
 #
@@ -49,11 +50,12 @@ version = v"0.0.14"  # fake version number
 # 0.0.11          2023-06-13       master-9254920    https://github.com/ggerganov/llama.cpp/releases/tag/master-9254920
 # 0.0.12          2023-07-24       master-41c6741    https://github.com/ggerganov/llama.cpp/releases/tag/master-41c6741
 # 0.0.13          2023-07-29       master-11f3ca0    https://github.com/ggerganov/llama.cpp/releases/tag/master-11f3ca0
-# 0.0.14          2023-12-30       b1729             https://github.com/ggerganov/llama.cpp/releases/tag/b1729
+# 0.0.14          2023-12-26       b1703             https://github.com/ggerganov/llama.cpp/releases/tag/b1703
+
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-        "24a447e20af425fa44cf10feaa632b6bb596c80f"),
+        "dc68f0054cd279cddddb0cae0c9ef4f9cbaa512a"),
 ]
 
 script = raw"""
@@ -107,7 +109,7 @@ done
 install_license ../LICENSE
 """
 
-platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)))
+platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)) || (arch(p) == "x86_64" && Sys.iswindows(p)))
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
