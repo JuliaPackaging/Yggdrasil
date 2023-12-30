@@ -1,9 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
-function configure(version)
+function configure(version, llvm_version)
     name = "GMP"
 
     hash = Dict(
@@ -56,10 +56,10 @@ fi
 install_license COPYING*
 """
 
-    # We enable experimental platforms as this is a core Julia dependency
     platforms = supported_platforms()
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     platforms = expand_cxxstring_abis(platforms)
+
     products = [
         LibraryProduct("libgmp", :libgmp),
         LibraryProduct("libgmpxx", :libgmpxx),
@@ -67,7 +67,8 @@ install_license COPYING*
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        BuildDependency("LLVMCompilerRT_jll", platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                        platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 
     return name, version, sources, script, platforms, products, dependencies
