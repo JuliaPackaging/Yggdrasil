@@ -53,41 +53,41 @@ cmake --build build
 cmake --build build --target install
 
 # Finish installing: the ProtoBuf definitions.
-install -Dvm 644 ortools/bop/bop_parameters.proto ${prefix}/include/operations_research/bop/bop_parameters.proto
-install -Dvm 644 ortools/constraint_solver/assignment.proto ${prefix}/include/operations_research/assignment.proto
-install -Dvm 644 ortools/constraint_solver/demon_profiler.proto ${prefix}/include/operations_research/demon_profiler.proto
-install -Dvm 644 ortools/constraint_solver/search_limit.proto ${prefix}/include/operations_research/search_limit.proto
-install -Dvm 644 ortools/constraint_solver/search_stats.proto ${prefix}/include/operations_research/search_stats.proto
-install -Dvm 644 ortools/constraint_solver/solver_parameters.proto ${prefix}/include/operations_research/solver_parameters.proto
-install -Dvm 644 ortools/constraint_solver/routing_enums.proto ${prefix}/include/operations_research/routing_enums.proto
-install -Dvm 644 ortools/constraint_solver/routing_parameters.proto ${prefix}/include/operations_research/routing_parameters.proto
-install -Dvm 644 ortools/glop/parameters.proto ${prefix}/include/operations_research/glop/parameters.proto
-install -Dvm 644 ortools/graph/flow_problem.proto ${prefix}/include/operations_research/flow_problem.proto
-install -Dvm 644 ortools/gscip/gscip.proto ${prefix}/include/operations_research/gscip.proto
-install -Dvm 644 ortools/linear_solver/linear_solver.proto ${prefix}/include/operations_research/linear_solver.proto
-install -Dvm 644 ortools/math_opt/callback.proto ${prefix}/include/operations_research/math_opt/callback.proto
-install -Dvm 644 ortools/math_opt/infeasible_subsystem.proto ${prefix}/include/operations_research/math_opt/infeasible_subsystem.proto
-install -Dvm 644 ortools/math_opt/model.proto ${prefix}/include/operations_research/math_opt/model.proto
-install -Dvm 644 ortools/math_opt/model_parameters.proto ${prefix}/include/operations_research/math_opt/model_parameters.proto
-install -Dvm 644 ortools/math_opt/model_update.proto ${prefix}/include/operations_research/math_opt/model_update.proto
-install -Dvm 644 ortools/math_opt/result.proto ${prefix}/include/operations_research/math_opt/result.proto
-install -Dvm 644 ortools/math_opt/solution.proto ${prefix}/include/operations_research/math_opt/solution.proto
-install -Dvm 644 ortools/math_opt/parameters.proto ${prefix}/include/operations_research/math_opt/parameters.proto
-install -Dvm 644 ortools/math_opt/solvers/glpk.proto ${prefix}/include/operations_research/math_opt/solvers/glpk.proto
-install -Dvm 644 ortools/math_opt/solvers/gurobi.proto ${prefix}/include/operations_research/math_opt/solvers/gurobi.proto
-install -Dvm 644 ortools/math_opt/solvers/highs.proto ${prefix}/include/operations_research/math_opt/solvers/highs.proto
-install -Dvm 644 ortools/math_opt/sparse_containers.proto ${prefix}/include/operations_research/math_opt/sparse_containers.proto
-install -Dvm 644 ortools/packing/multiple_dimensions_bin_packing.proto ${prefix}/include/operations_research/packing/multiple_dimensions_bin_packing.proto
-install -Dvm 644 ortools/packing/vector_bin_packing.proto ${prefix}/include/operations_research/packing/vbp/vector_bin_packing.proto
-install -Dvm 644 ortools/pdlp/solve_log.proto ${prefix}/include/operations_research/pdlp/solve_log.proto
-install -Dvm 644 ortools/pdlp/solvers.proto ${prefix}/include/operations_research/pdlp/solvers.proto
-install -Dvm 644 ortools/sat/cp_model.proto ${prefix}/include/operations_research/sat/cp_model.proto
-install -Dvm 644 ortools/sat/sat_parameters.proto ${prefix}/include/operations_research/sat/sat_parameters.proto
-install -Dvm 644 ortools/sat/boolean_problem.proto ${prefix}/include/operations_research/sat/boolean_problem.proto
-install -Dvm 644 ortools/util/optional_boolean.proto ${prefix}/include/operations_research/optional_boolean.proto
-install -Dvm 644 ortools/scheduling/course_scheduling.proto ${prefix}/include/operations_research/course_scheduling.proto
-install -Dvm 644 ortools/scheduling/rcpsp.proto ${prefix}/include/operations_research/scheduling/rcpsp/rcpsp.proto
-install -Dvm 644 ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/operations_research/scheduling/jssp/jobshop_scheduling.proto
+install -Dvm 644 ortools/bop/bop_parameters.proto ${prefix}/include/ortools/bop/bop_parameters.proto
+install -Dvm 644 ortools/constraint_solver/assignment.proto ${prefix}/include/ortools/constraint_solver/assignment.proto
+install -Dvm 644 ortools/constraint_solver/demon_profiler.proto ${prefix}/include/ortools/constraint_solver/demon_profiler.proto
+install -Dvm 644 ortools/constraint_solver/search_limit.proto ${prefix}/include/ortools/constraint_solver/search_limit.proto
+install -Dvm 644 ortools/constraint_solver/search_stats.proto ${prefix}/include/ortools/constraint_solver/search_stats.proto
+install -Dvm 644 ortools/constraint_solver/solver_parameters.proto ${prefix}/include/ortools/constraint_solver/solver_parameters.proto
+install -Dvm 644 ortools/constraint_solver/routing_enums.proto ${prefix}/include/ortools/constraint_solver/routing_enums.proto
+install -Dvm 644 ortools/constraint_solver/routing_parameters.proto ${prefix}/include/ortools/constraint_solver/routing_parameters.proto
+install -Dvm 644 ortools/glop/parameters.proto ${prefix}/include/ortools/glop/parameters.proto
+install -Dvm 644 ortools/graph/flow_problem.proto ${prefix}/include/ortools/graph/flow_problem.proto
+install -Dvm 644 ortools/gscip/gscip.proto ${prefix}/include/ortools/gscip/gscip.proto
+install -Dvm 644 ortools/linear_solver/linear_solver.proto ${prefix}/include/ortools/linear_solver/linear_solver.proto
+install -Dvm 644 ortools/math_opt/callback.proto ${prefix}/include/ortools/math_opt/callback.proto
+install -Dvm 644 ortools/math_opt/infeasible_subsystem.proto ${prefix}/include/ortools/math_opt/infeasible_subsystem.proto
+install -Dvm 644 ortools/math_opt/model.proto ${prefix}/include/ortools/math_opt/model.proto
+install -Dvm 644 ortools/math_opt/model_parameters.proto ${prefix}/include/ortools/math_opt/model_parameters.proto
+install -Dvm 644 ortools/math_opt/model_update.proto ${prefix}/include/ortools/math_opt/model_update.proto
+install -Dvm 644 ortools/math_opt/result.proto ${prefix}/include/ortools/math_opt/result.proto
+install -Dvm 644 ortools/math_opt/solution.proto ${prefix}/include/ortools/math_opt/solution.proto
+install -Dvm 644 ortools/math_opt/parameters.proto ${prefix}/include/ortools/math_opt/parameters.proto
+install -Dvm 644 ortools/math_opt/solvers/glpk.proto ${prefix}/include/ortools/math_opt/solvers/glpk.proto
+install -Dvm 644 ortools/math_opt/solvers/gurobi.proto ${prefix}/include/ortools/math_opt/solvers/gurobi.proto
+install -Dvm 644 ortools/math_opt/solvers/highs.proto ${prefix}/include/ortools/math_opt/solvers/highs.proto
+install -Dvm 644 ortools/math_opt/sparse_containers.proto ${prefix}/include/ortools/math_opt/sparse_containers.proto
+install -Dvm 644 ortools/packing/multiple_dimensions_bin_packing.proto ${prefix}/include/ortools/packing/multiple_dimensions_bin_packing.proto
+install -Dvm 644 ortools/packing/vector_bin_packing.proto ${prefix}/include/ortools/packing/vbp/vector_bin_packing.proto
+install -Dvm 644 ortools/pdlp/solve_log.proto ${prefix}/include/ortools/pdlp/solve_log.proto
+install -Dvm 644 ortools/pdlp/solvers.proto ${prefix}/include/ortools/pdlp/solvers.proto
+install -Dvm 644 ortools/sat/cp_model.proto ${prefix}/include/ortools/sat/cp_model.proto
+install -Dvm 644 ortools/sat/sat_parameters.proto ${prefix}/include/ortools/sat/sat_parameters.proto
+install -Dvm 644 ortools/sat/boolean_problem.proto ${prefix}/include/ortools/sat/boolean_problem.proto
+install -Dvm 644 ortools/util/optional_boolean.proto ${prefix}/include/ortools/util/optional_boolean.proto
+install -Dvm 644 ortools/scheduling/course_scheduling.proto ${prefix}/include/ortools/scheduling/course_scheduling.proto
+install -Dvm 644 ortools/scheduling/rcpsp.proto ${prefix}/include/ortools/scheduling/rcpsp/rcpsp.proto
+install -Dvm 644 ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/ortools/scheduling/jssp/jobshop_scheduling.proto
 """
 
 platforms = [
@@ -111,53 +111,53 @@ products = [
 
     # Protocol Buffers definitions. Their position depends on the name space, but the symbol name includes the module the definitions come from.
     # - From bop/
-    FileProduct("include/operations_research/bop/bop_parameters.proto", :proto_bop_parameters),
+    FileProduct("include/ortools/bop/bop_parameters.proto", :proto_bop_parameters),
     # - From constraint_solver/
-    FileProduct("include/operations_research/assignment.proto", :proto_constraint_solver_assignment),
-    FileProduct("include/operations_research/demon_profiler.proto", :proto_constraint_solver_demon_profiler),
-    FileProduct("include/operations_research/search_limit.proto", :proto_constraint_solver_search_limit),
-    FileProduct("include/operations_research/search_stats.proto", :proto_constraint_solver_search_stats),
-    FileProduct("include/operations_research/solver_parameters.proto", :proto_constraint_solver_solver_parameters),
-    FileProduct("include/operations_research/routing_enums.proto", :proto_constraint_solver_routing_enums),
-    FileProduct("include/operations_research/routing_parameters.proto", :proto_constraint_solver_routing_parameters),
+    FileProduct("include/ortools/constraint_solver/assignment.proto", :proto_constraint_solver_assignment),
+    FileProduct("include/ortools/constraint_solver/demon_profiler.proto", :proto_constraint_solver_demon_profiler),
+    FileProduct("include/ortools/constraint_solver/search_limit.proto", :proto_constraint_solver_search_limit),
+    FileProduct("include/ortools/constraint_solver/search_stats.proto", :proto_constraint_solver_search_stats),
+    FileProduct("include/ortools/constraint_solver/solver_parameters.proto", :proto_constraint_solver_solver_parameters),
+    FileProduct("include/ortools/constraint_solver/routing_enums.proto", :proto_constraint_solver_routing_enums),
+    FileProduct("include/ortools/constraint_solver/routing_parameters.proto", :proto_constraint_solver_routing_parameters),
     # - From glop/
-    FileProduct("include/operations_research/glop/parameters.proto", :ortools_glop_parameters),
+    FileProduct("include/ortools/glop/parameters.proto", :ortools_glop_parameters),
     # - From graph/
-    FileProduct("include/operations_research/flow_problem.proto", :ortools_graph_flow_problem),
+    FileProduct("include/ortools/graph/flow_problem.proto", :ortools_graph_flow_problem),
     # - From gscip/:
-    FileProduct("include/operations_research/gscip.proto", :proto_gscip),
+    FileProduct("include/ortools/gscip/gscip.proto", :proto_gscip),
     # - From linear_solver/
-    FileProduct("include/operations_research/linear_solver.proto", :proto_linear_solver),
+    FileProduct("include/ortools/linear_solver/linear_solver.proto", :proto_linear_solver),
     # - From math_opt/
-    FileProduct("include/operations_research/math_opt/callback.proto", :proto_math_opt_callback),
-    FileProduct("include/operations_research/math_opt/model.proto", :proto_math_opt_model),
-    FileProduct("include/operations_research/math_opt/model_parameters.proto", :proto_math_opt_model_parameters),
-    FileProduct("include/operations_research/math_opt/model_update.proto", :proto_math_opt_model_update),
-    FileProduct("include/operations_research/math_opt/result.proto", :proto_math_opt_result),
-    FileProduct("include/operations_research/math_opt/solution.proto", :proto_math_opt_solution),
-    FileProduct("include/operations_research/math_opt/parameters.proto", :proto_math_opt_parameters),
-    FileProduct("include/operations_research/math_opt/solvers/glpk.proto", :proto_math_opt_solvers_glpk),
-    FileProduct("include/operations_research/math_opt/solvers/gurobi.proto", :proto_math_opt_solvers_gurobi),
-    FileProduct("include/operations_research/math_opt/solvers/highs.proto", :proto_math_opt_solvers_highs),
-    FileProduct("include/operations_research/math_opt/sparse_containers.proto", :proto_math_opt_sparse_containers),
-    FileProduct("include/operations_research/math_opt/infeasible_subsystem.proto", :proto_math_opt_infeasible_subsystem),
+    FileProduct("include/ortools/math_opt/callback.proto", :proto_math_opt_callback),
+    FileProduct("include/ortools/math_opt/model.proto", :proto_math_opt_model),
+    FileProduct("include/ortools/math_opt/model_parameters.proto", :proto_math_opt_model_parameters),
+    FileProduct("include/ortools/math_opt/model_update.proto", :proto_math_opt_model_update),
+    FileProduct("include/ortools/math_opt/result.proto", :proto_math_opt_result),
+    FileProduct("include/ortools/math_opt/solution.proto", :proto_math_opt_solution),
+    FileProduct("include/ortools/math_opt/parameters.proto", :proto_math_opt_parameters),
+    FileProduct("include/ortools/math_opt/solvers/glpk.proto", :proto_math_opt_solvers_glpk),
+    FileProduct("include/ortools/math_opt/solvers/gurobi.proto", :proto_math_opt_solvers_gurobi),
+    FileProduct("include/ortools/math_opt/solvers/highs.proto", :proto_math_opt_solvers_highs),
+    FileProduct("include/ortools/math_opt/sparse_containers.proto", :proto_math_opt_sparse_containers),
+    FileProduct("include/ortools/math_opt/infeasible_subsystem.proto", :proto_math_opt_infeasible_subsystem),
     # - From packing/
-    FileProduct("include/operations_research/packing/multiple_dimensions_bin_packing.proto", :proto_packing_multiple_dimensions_bin_packing),
-    FileProduct("include/operations_research/packing/vbp/vector_bin_packing.proto", :proto_packing_vector_bin_packing),
+    FileProduct("include/ortools/packing/multiple_dimensions_bin_packing.proto", :proto_packing_multiple_dimensions_bin_packing),
+    FileProduct("include/ortools/packing/vbp/vector_bin_packing.proto", :proto_packing_vector_bin_packing),
     # - From pdlp/
-    FileProduct("include/operations_research/pdlp/solve_log.proto", :proto_pdlp_solve_log),
-    FileProduct("include/operations_research/pdlp/solvers.proto", :proto_pdlp_solvers),
+    FileProduct("include/ortools/pdlp/solve_log.proto", :proto_pdlp_solve_log),
+    FileProduct("include/ortools/pdlp/solvers.proto", :proto_pdlp_solvers),
     # - From sat/
-    FileProduct("include/operations_research/sat/cp_model.proto", :proto_sat_cp_model),
-    FileProduct("include/operations_research/sat/sat_parameters.proto", :proto_sat_parameters),
-    FileProduct("include/operations_research/sat/boolean_problem.proto", :proto_sat_boolean_problem),
-    # FileProduct("include/operations_research/sat/v1/cp_model_service.proto", :proto_sat_v1_cp_model_service),  # RPC definition.
+    FileProduct("include/ortools/sat/cp_model.proto", :proto_sat_cp_model),
+    FileProduct("include/ortools/sat/sat_parameters.proto", :proto_sat_parameters),
+    FileProduct("include/ortools/sat/boolean_problem.proto", :proto_sat_boolean_problem),
+    # FileProduct("include/ortools/sat/v1/cp_model_service.proto", :proto_sat_v1_cp_model_service),  # RPC definition.
     # - From util/
-    FileProduct("include/operations_research/optional_boolean.proto", :optional_boolean),
+    FileProduct("include/ortools/util/optional_boolean.proto", :optional_boolean),
     # - From scheduling/
-    FileProduct("include/operations_research/course_scheduling.proto", :proto_scheduling_course_scheduling),
-    FileProduct("include/operations_research/scheduling/rcpsp/rcpsp.proto", :proto_scheduling_rcpsp),
-    FileProduct("include/operations_research/scheduling/jssp/jobshop_scheduling.proto", :proto_scheduling_jobshop_scheduling),
+    FileProduct("include/ortools/scheduling/course_scheduling.proto", :proto_scheduling_course_scheduling),
+    FileProduct("include/ortools/scheduling/rcpsp/rcpsp.proto", :proto_scheduling_rcpsp),
+    FileProduct("include/ortools/scheduling/jssp/jobshop_scheduling.proto", :proto_scheduling_jobshop_scheduling),
 ]
 
 # Dependencies that must be installed before this package can be built
