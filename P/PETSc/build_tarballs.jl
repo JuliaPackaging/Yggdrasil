@@ -61,11 +61,10 @@ build_petsc()
 {
     # Compile a debug version?
     DEBUG_FLAG=0
+    PETSC_CONFIG="${1}_${2}_${3}"
     if [[ "${4}" == "deb" ]]; then
         PETSC_CONFIG="${1}_${2}_${3}_deb"
         DEBUG_FLAG=1
-    else
-        PETSC_CONFIG="${1}_${2}_${3}"
     fi
 
     if [[ "${3}" == "Int64" ]]; then
@@ -157,6 +156,7 @@ build_petsc()
     echo "DEBUG="${DEBUG_FLAG}
     echo "COPTFLAGS="${_COPTFLAGS}
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
+    echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
     
     mkdir $libdir/petsc/${PETSC_CONFIG}
 
@@ -192,9 +192,8 @@ build_petsc()
         ${MUMPS_INCLUDE} \
         --with-suitesparse=${USE_SUITESPARSE} \
         --SOSUFFIX=${PETSC_CONFIG} \
+        --with-shared-libraries=1 \
         --with-clean=1
-
-    
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
     elif [[ "${target}" == powerpc64le-* ]]; then
@@ -245,7 +244,6 @@ build_petsc()
 
     # we don't particularly care about the examples
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
-
 }
 
 build_petsc double real Int64 opt
@@ -269,7 +267,7 @@ augment_platform_block = """
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
                                                                   Platform("i686","linux"; libc="musl"),
                                                                   Platform("i686","linux"; libc="gnu"),
-                                                                  Platform("x86_64","unknown"; libc="freebsd"),
+                                                                  Platform("x86_64","freebsd"),
                                                                   Platform("armv6l","linux"; libc="musl"),
                                                                   Platform("armv7l","linux"; libc="musl"),
                                                                   Platform("armv7l","linux"; libc="gnu"),
@@ -324,5 +322,8 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
+# NOTE: llvm15 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.10", preferred_gcc_version = v"9")
+               augment_platform_block, julia_compat="1.10", 
+               preferred_gcc_version = v"9",  
+               preferred_llvm_version=v"14")
