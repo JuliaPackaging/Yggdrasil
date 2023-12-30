@@ -83,14 +83,16 @@ platforms = supported_platforms()
 # some packages on aarch64-apple-darwin, so there is little need to spend time on getting
 # this to build for _all_ platforms.  The long-term plan is to have these libraries as part
 # of LLVMBootstrap: https://github.com/JuliaPackaging/Yggdrasil/pull/1681
-filter!(p -> arch(p) == "aarch64" && Sys.isapple(p), platforms)
+filter!(p -> arch(p) != "powerpc64le" && !(BinaryBuilder.proc_family(p) == "intel" && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = LibraryProduct[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("XML2_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
