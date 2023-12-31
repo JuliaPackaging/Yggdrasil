@@ -1,6 +1,5 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
@@ -106,7 +105,10 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.iswindows(p)), platforms)
+
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
