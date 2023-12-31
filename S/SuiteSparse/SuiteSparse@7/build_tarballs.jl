@@ -39,9 +39,6 @@ fi
 
 PROJECTS_TO_BUILD="suitesparse_config;amd;btf;camd;ccolamd;colamd;cholmod;klu;ldl;umfpack;rbio;spqr"
 
-export CFLAGS="-DBLAS_UNDERSCORE"
-export CXXFLAGS="-DBLAS_UNDERSCORE"
-
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
