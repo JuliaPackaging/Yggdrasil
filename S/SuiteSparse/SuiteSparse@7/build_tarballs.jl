@@ -29,15 +29,18 @@ fi
 if [[ ${nbits} == 64 ]]; then
     CMAKE_OPTIONS=(
         -DBLAS64_SUFFIX="_64"
-        -DALLOW_64BIT_BLAS=YES
+        -DSUITESPARSE_USE_64BIT_BLAS=YES
     )
 else
     CMAKE_OPTIONS=(
-        -DALLOW_64BIT_BLAS=NO
+        -DSUITESPARSE_USE_64BIT_BLAS=NO
     )
 fi
 
 PROJECTS_TO_BUILD="suitesparse_config;amd;btf;camd;ccolamd;colamd;cholmod;klu;ldl;umfpack;rbio;spqr"
+
+export CFLAGS="-DBLAS_UNDERSCORE"
+export CXXFLAGS="-DBLAS_UNDERSCORE"
 
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -50,13 +53,11 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DSUITESPARSE_USE_CUDA=OFF \
       -DSUITESPARSE_USE_FORTRAN=OFF \
       -DSUITESPARSE_USE_OPENMP=OFF \
-      -DNPARTITION=OFF \
+      -DCHOLMOD_PARTITION=ON \
       -DBLAS_FOUND=1 \
       -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
       -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
-      -DBLAS_UNDERSCORE=ON \
       -DBLA_VENDOR="${BLAS_NAME}" \
-      -DLAPACK_FOUND=1 \
       -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
       -DLAPACK_LINKER_FLAGS="${BLAS_NAME}" \
       "${CMAKE_OPTIONS[@]}" \
