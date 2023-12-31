@@ -21,6 +21,11 @@ if [[ "${target}" == *-apple* ]]; then
   atomic_patch -p1 "${WORKSPACE}/srcdir/patches/macos-include-cmath.patch"
 fi
 
+# Set proper install directories for libraries on Windows
+if [[ "${target}" == *-mingw* ]]; then
+  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
+fi
+
 mkdir build && cd build
 
 cmake .. \
@@ -34,13 +39,6 @@ cmake .. \
 
 make -j${nproc}
 make install
-
-# Hotfix `OpenFHETargets-release.cmake` to reflect library move by BinaryBuilder.jl auditor
-if [[ "${target}" == *-mingw* ]]; then
-  cd /
-  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
-  cd -
-fi
 """
 
 # These are the platforms we will build for by default, unless further

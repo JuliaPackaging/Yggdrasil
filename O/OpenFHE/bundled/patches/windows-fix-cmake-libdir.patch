@@ -1,41 +1,39 @@
---- a/workspace/destdir/CMake/OpenFHETargets-release.cmake
-+++ b/workspace/destdir/CMake/OpenFHETargets-release.cmake
-@@ -9,31 +9,31 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
- set_property(TARGET OPENFHEcore APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
- set_target_properties(OPENFHEcore PROPERTIES
-   IMPORTED_IMPLIB_RELEASE "${_IMPORT_PREFIX}/lib/libOPENFHEcore.dll.a"
--  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libOPENFHEcore.dll"
-+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/libOPENFHEcore.dll"
-   )
-
- list(APPEND _IMPORT_CHECK_TARGETS OPENFHEcore )
--list(APPEND _IMPORT_CHECK_FILES_FOR_OPENFHEcore "${_IMPORT_PREFIX}/lib/libOPENFHEcore.dll.a" "${_IMPORT_PREFIX}/lib/libOPENFHEcore.dll" )
-+list(APPEND _IMPORT_CHECK_FILES_FOR_OPENFHEcore "${_IMPORT_PREFIX}/lib/libOPENFHEcore.dll.a" "${_IMPORT_PREFIX}/bin/libOPENFHEcore.dll" )
-
- # Import target "OPENFHEpke" for configuration "Release"
- set_property(TARGET OPENFHEpke APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
- set_target_properties(OPENFHEpke PROPERTIES
-   IMPORTED_IMPLIB_RELEASE "${_IMPORT_PREFIX}/lib/libOPENFHEpke.dll.a"
--  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libOPENFHEpke.dll"
-+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/libOPENFHEpke.dll"
-   )
-
- list(APPEND _IMPORT_CHECK_TARGETS OPENFHEpke )
--list(APPEND _IMPORT_CHECK_FILES_FOR_OPENFHEpke "${_IMPORT_PREFIX}/lib/libOPENFHEpke.dll.a" "${_IMPORT_PREFIX}/lib/libOPENFHEpke.dll" )
-+list(APPEND _IMPORT_CHECK_FILES_FOR_OPENFHEpke "${_IMPORT_PREFIX}/lib/libOPENFHEpke.dll.a" "${_IMPORT_PREFIX}/bin/libOPENFHEpke.dll" )
-
- # Import target "OPENFHEbinfhe" for configuration "Release"
- set_property(TARGET OPENFHEbinfhe APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
- set_target_properties(OPENFHEbinfhe PROPERTIES
-   IMPORTED_IMPLIB_RELEASE "${_IMPORT_PREFIX}/lib/libOPENFHEbinfhe.dll.a"
--  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libOPENFHEbinfhe.dll"
-+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/libOPENFHEbinfhe.dll"
-   )
-
- list(APPEND _IMPORT_CHECK_TARGETS OPENFHEbinfhe )
--list(APPEND _IMPORT_CHECK_FILES_FOR_OPENFHEbinfhe "${_IMPORT_PREFIX}/lib/libOPENFHEbinfhe.dll.a" "${_IMPORT_PREFIX}/lib/libOPENFHEbinfhe.dll" )
-+list(APPEND _IMPORT_CHECK_FILES_FOR_OPENFHEbinfhe "${_IMPORT_PREFIX}/lib/libOPENFHEbinfhe.dll.a" "${_IMPORT_PREFIX}/bin/libOPENFHEbinfhe.dll" )
-
- # Commands beyond this point should not need to know the version.
- set(CMAKE_IMPORT_FILE_VERSION)
-
+--- a/src/binfhe/CMakeLists.txt
++++ b/src/binfhe/CMakeLists.txt
+@@ -26,7 +26,9 @@ if ( BUILD_SHARED )
+ 	set_property(TARGET OPENFHEbinfhe PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+ 	install(TARGETS OPENFHEbinfhe
+ 		EXPORT OpenFHETargets
+-		DESTINATION lib)
++		RUNTIME DESTINATION bin
++		LIBRARY DESTINATION lib
++		ARCHIVE DESTINATION lib)
+ endif()
+ 
+ if( BUILD_STATIC )
+--- a/src/core/CMakeLists.txt
++++ b/src/core/CMakeLists.txt
+@@ -28,7 +28,9 @@ if ( BUILD_SHARED )
+ 	set_property(TARGET OPENFHEcore PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+ 	install(TARGETS OPENFHEcore
+ 		EXPORT OpenFHETargets
+-		DESTINATION lib)
++		RUNTIME DESTINATION bin
++		LIBRARY DESTINATION lib
++		ARCHIVE DESTINATION lib)
+ endif()
+ 
+ 
+--- a/src/pke/CMakeLists.txt
++++ b/src/pke/CMakeLists.txt
+@@ -26,7 +26,9 @@ if( BUILD_SHARED )
+ 	set_property(TARGET OPENFHEpke PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+ 	install(TARGETS OPENFHEpke
+ 		EXPORT OpenFHETargets
+-		DESTINATION lib)
++		RUNTIME DESTINATION bin
++		LIBRARY DESTINATION lib
++		ARCHIVE DESTINATION lib)
+ endif()
+ 
+ if( BUILD_STATIC )
