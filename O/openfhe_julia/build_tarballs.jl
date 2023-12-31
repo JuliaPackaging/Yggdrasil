@@ -37,9 +37,6 @@ make install
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
-# Remove Julia v1.6 since there seem to be build issues
-platforms = filter(p -> !startswith(p.tags["julia_version"], "1.6"), platforms)
-
 # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
 platforms = filter(p -> libc(p) != "musl", platforms)
 
