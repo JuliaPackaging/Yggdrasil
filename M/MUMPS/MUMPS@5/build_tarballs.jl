@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
-version = v"5.6.1"
+version = v"5.6.2"
 
 sources = [
-  ArchiveSource("https://graal.ens-lyon.fr/MUMPS/MUMPS_$(version).tar.gz",
-                "1920426d543e34d377604070fde93b8d102aa38ebdf53300cbce9e15f92e2896")
+  ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
+                "13a2c1aff2bd1aa92fe84b7b35d88f43434019963ca09ef7e8c90821a8f1d59a")
 ]
 
 # Bash recipe for building across all platforms
@@ -52,37 +52,40 @@ if [[ "${target}" == *mingw32* ]]; then
     MPICC=gcc
     MPIFC=gfortran
     MPIFL=gfortran
+    LSCOTCH="-L${libdir} -lesmumps -lscotch -lscotcherr"
+    FSCOTCH="-Dscotch"
 else
     MPICC=mpicc
     MPIFC=mpifort
     MPIFL=mpifort
+    LSCOTCH="-L${libdir} -lesmumps -lscotch -lscotcherr -lptesmumps -lptscotch -lptscotcherr"
+    FSCOTCH="-Dscotch -Dptscotch"
 fi
 
-make_args+=(OPTF=-O3 \
-            OPTL=-O3 \
-            OPTC=-O3 \
+make_args+=(PLAT="par" \
+            OPTF="-O3 -fopenmp" \
+            OPTL="-O3 -fopenmp" \
+            OPTC="-O3 -fopenmp" \
             CDEFS=-DAdd_ \
             LMETISDIR="${libdir}" \
             IMETIS="-I${includedir}" \
             LMETIS="-L${libdir} -lparmetis -lmetis" \
-            ORDERINGSF="-Dpord -Dparmetis" \
+            LSCOTCHDIR=${libdir} \
+            ISCOTCH="-I${includedir}" \
+            LSCOTCH="${LSCOTCH}" \
+            ORDERINGSF="-Dmetis -Dpord -Dparmetis ${FSCOTCH}" \
             LIBEXT_SHARED=".${dlext}" \
             SONAME="${SONAME}" \
-            CC="${MPICC} -fPIC ${CFLAGS[@]}" \
-            FC="${MPIFC} -fPIC ${FFLAGS[@]}" \
-            FL="${MPIFL} -fPIC" \
+            CC="${MPICC} ${CFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \
+            FC="${MPIFC} ${FFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \
+            FL="${MPIFL}" \
             RANLIB="echo" \
-            LAPACK="-L${libdir} -lopenblas"
+            LPORD="-L./PORD/lib -lpordpar" \
+            LAPACK="-L${libdir} -lopenblas" \
             SCALAP="-L${libdir} -lscalapack32" \
             INCPAR="-I${includedir}" \
             LIBPAR="-L${libdir} -lscalapack32 -lopenblas ${MPILIBS[*]}" \
             LIBBLAS="-L${libdir} -lopenblas")
-
-# Options for SCOTCH
-# LSCOTCHDIR=${prefix}
-# ISCOTCH="-I${includedir}"
-# LSCOTCH="-L${libdir} -lesmumps -lscotch -lscotcherr"
-# ORDERINGSF="-Dpord -Dparmetis -Dscotch"
 
 make -j${nproc} allshared "${make_args[@]}"
 
@@ -109,19 +112,19 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsmumps", :libsmumps),
-    LibraryProduct("libdmumps", :libdmumps),
-    LibraryProduct("libcmumps", :libcmumps),
-    LibraryProduct("libzmumps", :libzmumps),
-    LibraryProduct("libmumps_common", :libmumps_common),
+    LibraryProduct("libsmumpspar", :libsmumpspar),
+    LibraryProduct("libdmumpspar", :libdmumpspar),
+    LibraryProduct("libcmumpspar", :libcmumpspar),
+    LibraryProduct("libzmumpspar", :libzmumpspar),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="7.0.3"),
     Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa")),
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="7.0.4"),
+    Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"); compat="7.0.4", platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="SCALAPACK32_jll", uuid="aabda75e-bfe4-5a37-92e3-ffe54af3c273")),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
 ]
