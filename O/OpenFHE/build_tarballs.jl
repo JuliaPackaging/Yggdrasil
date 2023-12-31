@@ -16,8 +16,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/openfhe-development/
 
+# Add missing `<cmath>` header to avoid disambiguities in macOS builds
 if [[ "${target}" == *-apple* ]]; then
   atomic_patch -p1 "${WORKSPACE}/srcdir/patches/macos-include-cmath.patch"
+fi
+
+# Set proper install directories for libraries on Windows
+if [[ "${target}" == *-mingw* ]]; then
+  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
 fi
 
 mkdir build && cd build
