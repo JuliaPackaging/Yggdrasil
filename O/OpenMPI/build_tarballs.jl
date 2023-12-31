@@ -20,15 +20,6 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-if [[ "${bb_full_target}" == *-apple-darwin*-libgfortran[45]-* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
-    # Remove the new fancy linkers which don't work yet
-    rm /opt/bin/${bb_full_target}/ld64.lld
-    rm /opt/bin/${bb_full_target}/ld64.${target}
-    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
-    rm /opt/${MACHTYPE}/bin/ld64.lld
-fi
-
 # Autotools doesn't add `${includedir}` as an include directory on some platforms
 export CPPFLAGS="-I${includedir}"
 
@@ -108,4 +99,4 @@ ENV["OPAL_PREFIX"] = artifact_dir
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, init_block, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, init_block, julia_compat="1.6", preferred_gcc_version=v"5", clang_use_lld=false)

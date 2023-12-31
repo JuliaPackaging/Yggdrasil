@@ -17,12 +17,6 @@ cd $WORKSPACE/srcdir/GraphicsMagick*
 # Don't use `clock_realtime` if it isn't available
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 
-LDFLAGS=()
-if [[ $target = *-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
-    LDFLAGS=('-fuse-ld=ld')
-fi
-
 # While all libraries are available, only the last set of header files
 # (here depth=8) remain available.
 for depth in 32 16 8; do
@@ -44,8 +38,7 @@ for depth in 32 16 8; do
         --without-gs \
         --without-frozenpaths \
         --without-perl \
-        --without-x \
-        LDFLAGS="${LDFLAGS[@]}"
+        --without-x
     make -j${nproc}
     make install
     popd
@@ -110,4 +103,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", clang_use_lld=false)

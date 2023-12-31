@@ -72,11 +72,6 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
-if [[ $target = *-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
-    EXTRA_FLAGS+=('lt_cv_apple_cc_single_mod=yes')
-fi
-
 # Do not install doc and man files which contain files which clashing names on
 # case-insensitive file systems:
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
@@ -136,4 +131,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", clang_use_lld=false)

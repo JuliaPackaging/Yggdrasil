@@ -49,11 +49,6 @@ else
   mpiopts="--enable-mpi"
 fi
 
-# Temporary fix according to: https://github.com/JuliaPackaging/Yggdrasil/issues/7745
-if [[ "${target}" == *-apple-* ]]; then
-  export LDFLAGS="$LDFLAGS -fuse-ld=ld"
-fi
-
 # Run configure
 ./configure \
   --prefix="${prefix}" \
@@ -108,4 +103,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0", clang_use_lld=false)

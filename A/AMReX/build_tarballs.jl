@@ -51,15 +51,6 @@ else
     mpiopts=
 fi
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
-    # Remove the new fancy linkers which don't work yet
-    rm /opt/bin/${bb_full_target}/ld64.lld
-    rm /opt/bin/${bb_full_target}/ld64.${target}
-    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
-    rm /opt/${MACHTYPE}/bin/ld64.lld
-fi
-
 if [[ "${target}" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
     hdf5opts="-DAMReX_HDF5=OFF"
@@ -134,4 +125,4 @@ append!(dependencies, platform_dependencies)
 # - AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9", clang_use_lld=false)
