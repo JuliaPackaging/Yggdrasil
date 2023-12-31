@@ -16,6 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/openfhe-development/
 
+# Add missing `<cmath>` header to avoid disambiguities in macOS builds
 if [[ "${target}" == *-apple* ]]; then
   atomic_patch -p1 "${WORKSPACE}/srcdir/patches/macos-include-cmath.patch"
 fi
@@ -33,6 +34,13 @@ cmake .. \
 
 make -j${nproc}
 make install
+
+# Hotfix `OpenFHETargets-release.cmake` to reflect library move by BinaryBuilder.jl auditor
+if [[ "${target}" == *-mingw* ]]; then
+  cd /
+  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
+  cd -
+fi
 """
 
 # These are the platforms we will build for by default, unless further
