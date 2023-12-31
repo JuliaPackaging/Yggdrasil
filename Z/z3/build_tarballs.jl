@@ -8,13 +8,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.12.1"
+version = v"4.12.4"
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3-solver-$(version).0.tar.gz",
-                  "c6b7c0f1c595ba47609d0e02b0cc263dc755def9f8d6f51c1943aec040a1eb2d"),
+                  "f692c87437be8d585ebca124355cd6488d60331289f6bbebbde65cd497205128"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -39,19 +39,18 @@ fi
 script = macfix * raw"""
 cd $WORKSPACE/srcdir/z3-*/core
 
-mkdir z3-build && cd z3-build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_FIND_ROOT_PATH="${prefix}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DZ3_USE_LIB_GMP=True \
     -DZ3_BUILD_JULIA_BINDINGS=True \
     -DZ3_ENABLE_EXAMPLE_TARGETS=False \
-    -DJulia_PREFIX="${prefix}" \
-    ..
-make -j${nproc}
-make install
-install_license ${WORKSPACE}/srcdir/z3-*/core/LICENSE.txt
+    -DJulia_PREFIX="${prefix}"
+cmake --build build --parallel ${nproc}
+cmake --install build
+install_license LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further

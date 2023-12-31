@@ -15,8 +15,8 @@ const llvm_tags = Dict(
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
-    v"15.0.7" => "084cd0fc414425be2d22f23552b79432dcbb01f0", # julia-15.0.7-9
-    v"16.0.6" => "3c83f175925974ae6b68aa96715d8f04a1a9aae4", # julia-16.0.6-1
+    v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
+    v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
 )
 
 const buildscript = raw"""
@@ -312,10 +312,12 @@ if [[ "${target}" == *apple* ]]; then
     fi
 fi
 
-GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
-if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
-    CMAKE_C_FLAGS+=(-mno-outline-atomics)
-    CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
+    if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
+        CMAKE_C_FLAGS+=(-mno-outline-atomics)
+        CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+    fi
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
@@ -412,11 +414,12 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
 
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/clang* ) = "${LLVM_ARTIFACT_DIR}/bin/clang*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/*clang* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/*clang* ${prefix}/tools/
-fi
+# LLVM isn't very reliable in choosing tools over bin even if we tell it to
+# mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/ ; true
+# mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/ ; true
+find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "clang*" -print0 -o -type l -name "clang*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "clang*" -print0 -o -type l -name "clang*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
@@ -485,17 +488,16 @@ rm -rf ${prefix}/*
 # Copy over `lld`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/lld*) = "${LLVM_ARTIFACT_DIR}/bin/lld*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
-fi
 
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/dsymutil*) = "${LLVM_ARTIFACT_DIR}/bin/dsymutil*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/dsymutil* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/dsymutil* ${prefix}/tools/
-fi
+# LLVM isn't very reliable in choosing tools over bin even if we tell it to
+file_patterns=("*lld*" "wasm-ld*" "dsymutil*")
+for pattern in "${file_patterns[@]}"; do
+    find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "$pattern" -print0 -o -type l -name "$pattern" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+done
+for pattern in "${file_patterns[@]}"; do
+    find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "$pattern" -print0 -o -type l -name "$pattern" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+done
+
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/lld ${prefix}/lib/cmake/lld

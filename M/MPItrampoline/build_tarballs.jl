@@ -142,11 +142,21 @@ cd ${WORKSPACE}/srcdir/MPItrampoline*/mpiwrapper
 if [[ "${target}" == *-Xapple-* ]]; then
     cmake -B build -S . \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+<<<<<<< HEAD
         -DCMAKE_FIND_ROOT_PATH="${prefix}" \
         -DMPI_C_COMPILER=cc \
         -DMPI_Fortran_COMPILER=gfortran \
         -DMPI_C_COMPILER_FLAGS="-I${prefix}/lib/mpich/include" \
         -DMPI_Fortran_COMPILER_FLAGS="-I${prefix}/lib/mpich/include;-J${prefix}/lib/mpich/include" \
+=======
+        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        "${INSTALL_RPATH[@]}" \
+        -DBUILD_SHARED_LIBS=ON \
+        -DMPI_C_COMPILER=${CC} \
+        -DMPI_CXX_COMPILER=${CXX} \
+        -DMPI_Fortran_COMPILER=${FC} \
+>>>>>>> master
         -DMPI_C_LIB_NAMES='mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
         -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.a \
@@ -192,6 +202,15 @@ cmake -B build -S . \
     "${INSTALL_RPATH[@]}"
 cmake --build build --config Debug --parallel ${nproc}
 cmake --build build --config Debug --parallel ${nproc} --target install
+
+# Post-process the compiler wrappers. They remember the original
+# compiler used to build MPItrampoline, but this compiler is too
+# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
+# `$FC` etc.
+sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
+sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
+sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
+cp ${bindir}/mpifc ${bindir}/mpifort
 
 ################################################################################
 # Install licenses
@@ -251,5 +270,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # - `<stdatomic.h>` requires at least GCC 5
+# TODO: Don't use `dont_dlopen=true`?
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, dont_dlopen=true, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, clang_use_lld=false, dont_dlopen=true, julia_compat="1.6", preferred_gcc_version=v"5")
