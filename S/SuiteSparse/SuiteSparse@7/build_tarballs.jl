@@ -5,12 +5,18 @@ version = v"7.4.0"
 
 sources = suitesparse_sources(version)
 
+sources = suitesparse_sources(version)
+push!(sources, DirectorySource("./bundled"))
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
+
+# Apply upstream patch to fix BLAS calls (backported from 7.5.0 dev branch)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blas_suffix.patch
 
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
