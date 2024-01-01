@@ -108,6 +108,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.iswindows(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && os(p) == "linux" && libc(p) == "musl" && libgfortran_version(p) == v"5"), platforms)
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
