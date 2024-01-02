@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "GMT"
-version = v"6.4.3"
+version = v"6.5.0"
 GSHHG_VERSION="2.3.7"
 DCW_VERSION="2.1.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "9313a044396fd723d8d058f91b750b6831374419"),
+    "77f152f180f2b00de2e2e7d30c15ba0db5a6cad1"),
     
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
