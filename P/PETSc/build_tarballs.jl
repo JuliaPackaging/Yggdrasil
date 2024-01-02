@@ -12,6 +12,7 @@ SUPERLUDIST_COMPAT_VERSION = "8.1.2"
 MPItrampoline_compat_version="5.3.1"
 BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
 HDF5_COMPAT_VERSION="1.14.2"
+
 SCALAPACK32_COMPAT_VERSION="2.2.1"
 METIS_COMPAT_VERSION="5.1.2"
 SCOTCH_COMPAT_VERSION="6.1.3"
@@ -342,3 +343,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                augment_platform_block, julia_compat="1.7", 
                preferred_gcc_version = v"9",  
                preferred_llvm_version=v"13")
+

@@ -14,15 +14,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == aarch64-apple-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>:
-    # Remove the new fancy linkers which don't work yet
-    rm /opt/bin/${bb_full_target}/ld64.lld
-    rm /opt/bin/${bb_full_target}/ld64.${target}
-    rm /opt/bin/${bb_full_target}/${target}-ld64.lld
-    rm /opt/${MACHTYPE}/bin/ld64.lld
-fi
-
 cd $WORKSPACE/srcdir/cfitsio*
 atomic_patch -p1 ../patches/configure_in.patch
 atomic_patch -p1 ../patches/Makefile_in.patch
@@ -66,4 +57,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # When using lld for AArch64 macOS, linking fails with
+               #     ld64.lld: error: -dylib_current_version 10.4.3.1: malformed version
+               julia_compat="1.6", clang_use_lld=false)
