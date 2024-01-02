@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SuperLU_DIST"
-version = v"8.1.2"
-superlu_dist_version = v"8.1.2"
+version = v"8.2.1"
+superlu_dist_version = v"8.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "58e4171dda309255b3b66b0923cd04124f4c0c01"),
+    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "b3eecd3eaac3a1332d0d2c5fc052d1af114df192"),
 ]
 
 # Bash recipe for building across all platforms
