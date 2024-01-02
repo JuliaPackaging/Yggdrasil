@@ -85,13 +85,10 @@ augment_platform_block = """
 # per Mose. Will return to it later and attempt to find a solution.
 platforms = supported_platforms()
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1", OpenMPI_compat="4.1.6")
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-
-# OpenMPI 5 supports only 64-bit systems
-platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) != 64), platforms)
 
 # Disable FreeBSD, it is not supported by PMIx (which we need)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p) ), platforms)
