@@ -9,9 +9,9 @@ petsc_version = v"3.19.6"
 MUMPS_COMPAT_VERSION = "5.6.2"
 SUITESPARSE_COMPAT_VERSION = "7.2.1" 
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
-MPItrampoline_compat_version="5.2.1"
+MPItrampoline_compat_version="5.3.1"
 BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
-
+HDF5_COMPAT_VERSION="1.14.2"
 SCALAPACK32_COMPAT_VERSION="2.2.1"
 METIS_COMPAT_VERSION="5.1.2"
 SCOTCH_COMPAT_VERSION="6.1.3"
@@ -117,6 +117,12 @@ build_petsc()
         MUMPS_INCLUDE=""
     fi
     
+    # See if we can install HDF5
+    USE_HDF5=0    
+    if [ -f "${libdir}/libhdf5.${dlext}" ]; then
+        USE_HDF5=1    
+    fi
+    
     LIBFLAGS="-L${libdir}" 
     if [[ "${target}" == *-mingw* ]]; then
         LIBFLAGS="-L${libdir} -lssp" 
@@ -142,9 +148,6 @@ build_petsc()
         _FOPTFLAGS='-O3' 
     fi
 
-    echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
-    echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_MUMPS="$USE_MUMPS
     echo "1="${1}
     echo "2="${2}
     echo "3="${3}
@@ -157,7 +160,11 @@ build_petsc()
     echo "COPTFLAGS="${_COPTFLAGS}
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
     echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
-    
+    echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
+    echo "USE_SUITESPARSE="$USE_SUITESPARSE
+    echo "USE_MUMPS="$USE_MUMPS
+    echo "USE_HDF5="$USE_HDF5
+
     mkdir $libdir/petsc/${PETSC_CONFIG}
 
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
@@ -191,6 +198,7 @@ build_petsc()
         ${MUMPS_LIB} \
         ${MUMPS_INCLUDE} \
         --with-suitesparse=${USE_SUITESPARSE} \
+        --with-hdf5=${USE_HDF5} \
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
@@ -307,6 +315,7 @@ dependencies = [
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
     Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
+    Dependency("HDF5_jll"; compat=HDF5_COMPAT_VERSION),
     Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("SCALAPACK32_jll"),
