@@ -89,6 +89,17 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+
+# OpenMPI 5 supports only 64-bit systems
+platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) != 64), platforms)
+
+# Disable FreeBSD, it is not supported by PMIx (which we need)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p) ), platforms)
+
+# Disable Windows, we do not know how to cross-compile
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.iswindows(p) ), platforms)
+
+
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
