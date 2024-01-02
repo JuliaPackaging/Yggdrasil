@@ -6,10 +6,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "PETSc"
 version = v"3.19.0"
 petsc_version = v"3.19.0"
-MUMPS_COMPAT_VERSION = "5.5.1"
-SUITESPARSE_COMPAT_VERSION = "5.10.1"
+MUMPS_COMPAT_VERSION = "5.6.2"
+SUITESPARSE_COMPAT_VERSION = "7.2.1" 
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
-MPItrampoline_compat_version="5.2.1"    
+MPItrampoline_compat_version="5.2.1"
+BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
 
 MPItrampoline_compat_version="5.2.1"
 MicrosoftMPI_compat_version="~10.1.4" 
@@ -52,6 +53,7 @@ if [[ "${target}" == *-mingw* ]]; then
     # Despite a significant time-effort from my side, I have been unable to fix the issue, so I deactivate MPI on windows as a workaround.
     #MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
     #MPI_INC=--with-mpi-include=${includedir}
+    MPI_LIBS="${libdir}/msmpi.${dlext}"
 
     MPI_FFLAGS=""
     MPI_LIBS=""
@@ -120,6 +122,11 @@ build_petsc()
         USE_STATIC_MUMPS=0
     elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
         USE_STATIC_MUMPS=1      
+    USE_MUMPS=0    
+    if [ -f "${libdir}/libdmumps.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+        USE_MUMPS=1    
+        MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
+        MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
     else
         USE_STATIC_MUMPS=0      
     fi
@@ -130,6 +137,15 @@ build_petsc()
     fi
 
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+    if [[ "${target}" == aarch64-apple-* ]]; then    
+        LIBFLAGS="-L${libdir}" 
+        # Linking requires the function `__divdc3`, which is implemented in
+        # `libclang_rt.osx.a` from LLVM compiler-rt.
+        CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    else
+        CLINK_FLAGS=""
+    fi
+    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
 
     if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
@@ -190,6 +206,10 @@ build_petsc()
   
     # Step 1: build static libraries of external packages (happens during configure)    
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages 
+    echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
+    
+    mkdir $libdir/petsc/${PETSC_CONFIG}
+
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         --CC=${MPI_CC} \
         --FC=${MPI_FC} \
@@ -197,10 +217,21 @@ build_petsc()
         --COPTFLAGS=${_COPTFLAGS} \
         --CXXOPTFLAGS=${_CXXOPTFLAGS} \
         --FOPTFLAGS=${_FOPTFLAGS}  \
+        --CC=${CC} \
+        --FC=${FC} \
+        --CXX=${CXX} \
+        --COPTFLAGS=${_COPTFLAGS} \
+        --CXXOPTFLAGS=${_CXXOPTFLAGS} \
+        --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix="" \
         --CFLAGS='-fno-stack-protector'  \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
+        --LDFLAGS="${LIBFLAGS}"  \
+        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
+        --with-blaslapack-suffix=""  \
+        --CFLAGS='-fno-stack-protector '  \
+        --FFLAGS="${MPI_FFLAGS}"  \
         --LDFLAGS="${LIBFLAGS}"  \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
@@ -223,7 +254,6 @@ build_petsc()
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
-
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
     elif [[ "${target}" == powerpc64le-* ]]; then
@@ -335,6 +365,13 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms;
                                         MPItrampoline_compat = MPItrampoline_compat_version,
                                         MPICH_compat         = MPICH_compat_version,
                                         MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
+                                                                  Platform("i686","linux"; libc="gnu"),
+                                                                  Platform("x86_64","freebsd"),
+                                                                  Platform("armv6l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="gnu"),
+                                                                  Platform("aarch64","linux"; libc="musl")]))
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
 # mpitrampoline and libgfortran 3 don't seem to work
 platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
@@ -377,6 +414,15 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
 
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
+    Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
+    Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
+    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
+    Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
+    Dependency("SCALAPACK32_jll"),
+    Dependency("METIS_jll"),
+    Dependency("SCOTCH_jll"),
+    Dependency("PARMETIS_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -392,3 +438,7 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                julia_compat="1.9", 
                preferred_gcc_version = v"9",
                clang_use_lld=false)
+
+               augment_platform_block, julia_compat="1.7", 
+               preferred_gcc_version = v"9",  
+               preferred_llvm_version=v"13")
