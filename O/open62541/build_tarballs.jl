@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.3.9"
+version = v"1.3.10"
 
 # Collection of sources required to complete build
 sources = [
@@ -50,4 +50,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
