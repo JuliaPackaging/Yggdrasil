@@ -31,7 +31,6 @@ version = v"0.0.14"  # fake version number
 # - removed Product "embd_input_test" as it's no longer part of the project
 # - removed Library "libembdinput" as it's no longer part of the project
 # - disabled METAL (LLAMA_METAL=OFF) on Intel-based MacOS as it's not supported (supported on Apple Silicon only)
-# - temporarily disabled Windows x86_64 builds
 
 # versions: fake_version to github_version mapping
 #
@@ -55,11 +54,14 @@ version = v"0.0.14"  # fake version number
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-        "dc68f0054cd279cddddb0cae0c9ef4f9cbaa512a"),
+              "dc68f0054cd279cddddb0cae0c9ef4f9cbaa512a"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/llama.cpp*
+
+atomic_patch -p1 ../patches/mingw-stdlib-windows.patch
 
 # remove compiler flags forbidden in BinaryBuilder
 sed -i -e 's/-funsafe-math-optimizations//g' CMakeLists.txt
@@ -109,7 +111,7 @@ done
 install_license ../LICENSE
 """
 
-platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)) || (arch(p) == "x86_64" && Sys.iswindows(p)))
+platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)))
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -132,4 +134,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", preferred_gcc_version=v"10")
