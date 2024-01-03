@@ -16,4 +16,4 @@ platforms = [Platform("x86_64", "linux"),
 
 build_sdk(name, version, platforms; static=false)
 
-# Bump for 12.3.1 build
+# Bump for 12.3.2 build
