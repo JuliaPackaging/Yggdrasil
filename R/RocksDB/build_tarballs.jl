@@ -12,6 +12,31 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd rocksdb
+mkdir build && cd build
+
+# build flags for arm
+if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]]; then
+    export ARMCRC_SOURCE=1
+    export CXXFLAGS = '-march=armv8-a+crc+crypto'
+    export CFLAGS = '-march=armv8-a+crc+crypto'
+fi
+
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DWITH_GFLAGS=0 \
+    -DROCKSDB_BUILD_SHARED=1 \
+    -GNinja \
+    -DPORTABLE=1 \
+    -DWITH_TOOLS=0 \
+    -DWITH_TESTS=0 \
+    -DWITH_BENCHMARK_TOOLS=0 \
+    -DCMAKE_BUILD_TYPE=Release ..
+
+ninja -j${nproc}
+
+make shared_lib -j${nproc}
+make install
 
 """
 
@@ -32,4 +57,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
