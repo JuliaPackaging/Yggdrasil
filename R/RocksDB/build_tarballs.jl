@@ -34,10 +34,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release ..
 
 ninja -j${nproc}
-
-make shared_lib -j${nproc}
-make install
-
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
