@@ -10,10 +10,6 @@
 #
 # During the build, AMGCL_C downloads AMGCL via ExternalProject_Add() 
 #
-# AMGCL_C uses OpenMP. Unfortunately, on Apple, CMake is unable to find it
-# so currently, OpenMP probably won't be available on MacOS.
-#
-#
 # CMake parameters:
 #   BUILD_DI_INTERFACE: Build interface for double + int
 #   BUILD_DL_INTERFACE: Build interface for double + long
