@@ -14,7 +14,7 @@ mpich_version_str = "4.1.2"
 # Collection of sources required to complete build
 sources = [
     # This is really the development version before version 6.0.0
-    GitSource("https://github.com/eschnett/MPItrampoline", "c2940f73dbf6d4c4aa86027b0744a4bad2d077a3"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "8280d5656e018bf2d435262aa0822e5822a59b39"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
 ]
@@ -142,21 +142,11 @@ cd ${WORKSPACE}/srcdir/MPItrampoline*/mpiwrapper
 if [[ "${target}" == *-Xapple-* ]]; then
     cmake -B build -S . \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-<<<<<<< HEAD
         -DCMAKE_FIND_ROOT_PATH="${prefix}" \
         -DMPI_C_COMPILER=cc \
         -DMPI_Fortran_COMPILER=gfortran \
         -DMPI_C_COMPILER_FLAGS="-I${prefix}/lib/mpich/include" \
         -DMPI_Fortran_COMPILER_FLAGS="-I${prefix}/lib/mpich/include;-J${prefix}/lib/mpich/include" \
-=======
-        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        "${INSTALL_RPATH[@]}" \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=${CC} \
-        -DMPI_CXX_COMPILER=${CXX} \
-        -DMPI_Fortran_COMPILER=${FC} \
->>>>>>> master
         -DMPI_C_LIB_NAMES='mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
         -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.a \
@@ -230,10 +220,14 @@ augment_platform_block = """
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
+# # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
+# # not support musl or BSD.
+# # FreeBSD: https://reviews.freebsd.org/D24841
+# # Note that this now available in FreeBSD 12.2.
+# filter!(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
-# not support musl or BSD.
-# FreeBSD: https://reviews.freebsd.org/D24841
-filter!(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
+# not support musl or Windows.
+filter!(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
 
 # Add `mpi+mpitrampoline` platform tag
 foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
