@@ -55,7 +55,9 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
       $(interfaces)\
       -DBLOCKSIZES="BLOCKSIZE(2) BLOCKSIZE(3) BLOCKSIZE(4) BLOCKSIZE(5) BLOCKSIZE(6) BLOCKSIZE(7) BLOCKSIZE(8)"\
       -B build .
-make -C build install
+cd build
+make -j${nprocs}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
