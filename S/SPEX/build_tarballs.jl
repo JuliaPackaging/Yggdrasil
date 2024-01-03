@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "SPEX"
-version = v"1.1.5"
+version = v"3.0.0"
 
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/clouren/SPEX",
-        "9471682b072419063d73bc950949bf3458b187f9"),
+        "1eaa6c79412d8efa9de76598344ea4d2c11be06a"),
     DirectorySource("./bundled")
 ]
 
