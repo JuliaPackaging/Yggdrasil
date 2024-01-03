@@ -1,0 +1,82 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+
+#
+# This script builds [AMGCL_C](https://github.com/j-fu/amgcl_c)
+# which is a C wrapper to [AMGCL](https://github.com/ddemidov/amgcl),
+# an algebraic multigrid (AMG) based iterative solver library.
+#
+# Both AMGCL and AMGCL_C are MIT licensed.
+#
+# During the build, AMGCL_C downloads AMGCL via ExternalProject_Add() 
+#
+# AMGCL_C uses OpenMP. Unfortunately, on Apple, CMake is unable to find it
+# so currently, OpenMP probably won't be available on MacOS.
+#
+#
+# CMake parameters:
+#   BUILD_DI_INTERFACE: Build interface for double + int
+#   BUILD_DL_INTERFACE: Build interface for double + long
+#   BLOCKSIZES: List of blocksizes instantiated for static blocking in AMGCL
+#               More blocksizes => longer compile time, larger lib.
+#               (see e.g. https://amgcl.readthedocs.io/en/latest/tutorial/Serena.html)
+#
+# Handling of integer types attempts to be similar to umfpack: build both DL and DI on
+# 64 bit systems and only DI on 32bit. See
+# https://github.com/JuliaSparse/SparseArrays.jl/blob/feb54ee5e49008bd157227099cafe604a67c36fb/src/solvers/umfpack.jl#L145
+# https://github.com/JuliaSparse/SparseArrays.jl/blob/feb54ee5e49008bd157227099cafe604a67c36fb/src/solvers/umfpack.jl#L578
+#
+
+using BinaryBuilder, Pkg
+
+name = "AMGCL_C"
+version = v"0.1.0"
+
+# Collection of sources required to complete build
+# This accesses AMGCL version 1.4.4
+sources = [
+    GitSource("https://github.com/j-fu/amgcl_c.git", "0225d19d2fe53bb855307aca0dfaac9a8257dde1")
+]
+
+# Bash recipe for building across all platform
+script = raw"""
+cd $WORKSPACE/srcdir
+cd amgcl_c
+
+if [[ ${nbits} == 32 ]]; then
+   interfaces="-DBUILD_DI_INTERFACE=True  -DBUILD_DL_INTERFACE=False"
+else
+   interfaces="-DBUILD_DI_INTERFACE=True  -DBUILD_DL_INTERFACE=True"
+fi
+
+cmake -DCMAKE_INSTALL_PREFIX=$prefix\
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}\
+      -DCMAKE_BUILD_TYPE=Release\
+      $(interfaces)\
+      -DBLOCKSIZES="BLOCKSIZE(2) BLOCKSIZE(3) BLOCKSIZE(4) BLOCKSIZE(5) BLOCKSIZE(6) BLOCKSIZE(7) BLOCKSIZE(8)"\
+      -B build .
+make -C build install
+"""
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms()
+
+# libamgcl_c.so contains std::string values. This causes incompatibilities across the GCC
+# 4/5 version boundary. To remedy this, we build a tarball for both GCC 4 and GCC 5.
+platforms = expand_cxxstring_abis(platforms)
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libamgcl_c", :libamgcl_c),
+    FileProduct("include/amgcl_c/amgcl_c.h",:amgcl_c_h)
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
