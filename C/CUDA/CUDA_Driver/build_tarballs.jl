@@ -13,20 +13,20 @@ version = v"0.7"
 
 cuda_version = v"12.3"
 cuda_version_str = "$(cuda_version.major)-$(cuda_version.minor)"
-driver_version_str = "545.23.06"
+driver_version_str = "545.23.08"
 build = 1
 
 sources_linux_x86 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).x86_64.rpm",
-               "04167d1f1fd1eab887c7ea512f779a0de5c32f6c6b66ab2e840c7548621aa1d9", "compat.rpm")
+               "a4be9e9ab3b108daa5847c3c87e1ce3ef9155e75e120db4cc4284cb0ef77118d", "compat.rpm")
 ]
 sources_linux_ppc64le = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/ppc64le/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).ppc64le.rpm",
-               "cd8f0bb34757063b2c5eb0fc901a6bf0740a173ac2048d71c8ba4dda05818aef", "compat.rpm")
+               "2862cfee15e157a250a9598e16163beb6c5e597f0230b956ebed2254bd5897a3", "compat.rpm")
 ]
 sources_linux_aarch64 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).aarch64.rpm",
-               "b0d2fffbbd30e048844c5b4cef495c85f5abd210084d896bf93f2193cf1f060a", "compat.rpm")
+               "d6af238e622e86d1517114e45f44dbdf858190980ebe3129b4d36036b1f4298d", "compat.rpm")
 ]
 
 dependencies = []
