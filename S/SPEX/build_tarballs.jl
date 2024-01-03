@@ -6,15 +6,13 @@ version = v"3.0.0"
 # Collection of sources required to build SuiteSparse:GraphBLAS
 sources = [
     GitSource("https://github.com/clouren/SPEX",
-        "1eaa6c79412d8efa9de76598344ea4d2c11be06a"),
-    DirectorySource("./bundled")
+        "1eaa6c79412d8efa9de76598344ea4d2c11be06a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Compile GraphBLAS
 cd ${WORKSPACE}/srcdir/SPEX
-atomic_patch -p1 ../werror.patch
 CFLAGS="${CFLAGS} -std=c99"
 cd ${WORKSPACE}/srcdir/SPEX/SPEX/SPEX_Util
 if [[ "${target}" == *mingw* ]]; then
