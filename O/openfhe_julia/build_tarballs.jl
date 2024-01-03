@@ -13,7 +13,7 @@ version = v"0.2.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sloede/openfhe-julia.git",
-              "73abcd4afa6e7f923b5a9e9b83b9cafc36ee287f"),
+              "72c9c5a941b9d5a084a439d9359be8f26d2d91d4"),
 ]
 
 # Bash recipe for building across all platforms
