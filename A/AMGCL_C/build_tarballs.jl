@@ -30,7 +30,7 @@ version = v"0.1.0"
 # Collection of sources required to complete build
 # This accesses AMGCL version 1.4.4 and AMGCL_C 0.1.2
 sources = [
-    GitSource("https://github.com/j-fu/amgcl_c.git", "6604079edbb76f18a5a73a07b7638eb26b39fafe")
+    GitSource("https://github.com/j-fu/amgcl_c.git", "afe76c46d2bd68aadccd04f56d55e5f7ce78a4b1")
 ]
 
 # Bash recipe for building across all platform
