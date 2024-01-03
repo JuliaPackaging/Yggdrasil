@@ -18,8 +18,8 @@ mkdir build && cd build
 # build flags for arm
 if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]]; then
     export ARMCRC_SOURCE=1
-    export CXXFLAGS = '-march=armv8-a+crc+crypto'
-    export CFLAGS = '-march=armv8-a+crc+crypto'
+    export CXXFLAGS="-march=armv8-a+crc+crypto"
+    export CFLAGS="-march=armv8-a+crc+crypto"
 fi
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
