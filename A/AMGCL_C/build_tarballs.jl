@@ -26,16 +26,15 @@
 # https://github.com/JuliaSparse/SparseArrays.jl/blob/feb54ee5e49008bd157227099cafe604a67c36fb/src/solvers/umfpack.jl#L145
 # https://github.com/JuliaSparse/SparseArrays.jl/blob/feb54ee5e49008bd157227099cafe604a67c36fb/src/solvers/umfpack.jl#L578
 #
-
 using BinaryBuilder, Pkg
 
 name = "AMGCL_C"
 version = v"0.1.0"
 
 # Collection of sources required to complete build
-# This accesses AMGCL version 1.4.4
+# This accesses AMGCL version 1.4.4 and AMGCL_C 0.1.2
 sources = [
-    GitSource("https://github.com/j-fu/amgcl_c.git", "0225d19d2fe53bb855307aca0dfaac9a8257dde1")
+    GitSource("https://github.com/j-fu/amgcl_c.git", "6604079edbb76f18a5a73a07b7638eb26b39fafe")
 ]
 
 # Bash recipe for building across all platform
@@ -52,7 +51,7 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}\
       -DCMAKE_BUILD_TYPE=Release\
-      $(interfaces)\
+      $interfaces\
       -DBLOCKSIZES="BLOCKSIZE(2) BLOCKSIZE(3) BLOCKSIZE(4) BLOCKSIZE(5) BLOCKSIZE(6) BLOCKSIZE(7) BLOCKSIZE(8)"\
       -B build .
 cd build
@@ -80,8 +79,8 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"))
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"),v"1.79.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
