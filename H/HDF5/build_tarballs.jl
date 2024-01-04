@@ -184,6 +184,13 @@ else
     export FC=mpifort
 fi
 
+# This is likely a bug in HDF5; see
+# <https://github.com/HDFGroup/hdf5/issues/3925>. The file
+# `config/freebsd` includes `config/classic-fflags` which is
+# missing. This file is supposed to contain Fortran flags for the
+# classic Intel compiler.
+: >../config/classic-fflags
+
 ../configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -267,7 +274,7 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 # TODO: Don't require MPI for Windows since we're using the non-MPI msys libraries there.
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
