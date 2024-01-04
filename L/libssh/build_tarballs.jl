@@ -13,8 +13,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Necessary for cmake to find openssl on Windows
-export OPENSSL_ROOT_DIR=$WORKSPACE/destdir/lib64
-export DOC_DIR=${prefix}/usr/share/doc/libssh
+if [[ ${target} == *w64* ]]; then
+    export OPENSSL_ROOT_DIR=${prefix}/lib64
+fi
+
+DOC_DIR=${prefix}/usr/share/doc/libssh
 
 # Build and install library
 cd $WORKSPACE/srcdir/libssh-*
@@ -39,12 +42,12 @@ make docs install
 
 # Install Doxygen tagfile
 mkdir -p ${DOC_DIR}
-cp ../doc/tags.xml ${DOC_DIR}
+install -Dv ../doc/tags.xml "${DOC_DIR}/tags.xml"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
@@ -56,9 +59,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Doxygen_jll"),
-    Dependency("Kerberos_krb5_jll"),
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95")),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    Dependency("Kerberos_krb5_jll"; compat="1.19.3"),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8"),
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"); compat="1.2.13")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
