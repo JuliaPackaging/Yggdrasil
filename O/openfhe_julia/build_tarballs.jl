@@ -21,7 +21,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/openfhe-julia/
 
 if [[ "${target}" == *-mingw* ]]; then
-    # This is needed because otherwise we get unusable binaries (error "The specified executable is not a valid application for this OS platform"). These come from CompilerSupportLibraries_jll:
+    # This is needed because otherwise we get unusable binaries (error "The specified
+    # executable is not a valid application for this OS platform"). These come from
+    # CompilerSupportLibraries_jll:
     rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
 fi
 
