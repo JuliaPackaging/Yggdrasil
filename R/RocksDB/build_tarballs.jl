@@ -27,7 +27,7 @@ mkdir build && cd build
 # Resolve: error: aligned allocation function of type 'void *(std::size_t, std::align_val_t)' is only available on macOS 10.13 or newer
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     echo "Installing newer MacOS 10.15 SDK"
-    export CXXFLAGS="-mmacosx-version-min=10.15"
+    export MACOSX_DEPLOYMENT_TARGET=10.15
     # ...and install a newer SDK which supports `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
