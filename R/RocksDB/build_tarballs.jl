@@ -57,6 +57,7 @@ ninja install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+filter!(p -> arch(p) ∉ ("armv7l", "armv6l"), platforms)
 
 # The products that we will ensure are always built
 products = Product[
