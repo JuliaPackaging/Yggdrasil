@@ -90,7 +90,6 @@ case "${target}" in
     i686-w64-mingw32)
         # sizeof(long double) == 12
         # layout seems to be 16-bit sign+exponent and 64-bit mantissa
-        # same as for Linux
         cp ../files/msys2-mingw32/* saved
         ;;
     powerpc64le-linux-*)
@@ -103,13 +102,12 @@ case "${target}" in
         cp ../files/debian-amd64/* saved
         ;;
     x86_64-*-freebsd*)
-        # same as for Linux
-        cp ../files/debian-amd64/* saved
+        # no __float128
+        cp ../files/freebsd-amd64/* saved
         ;;
     x86_64-w64-mingw32)
         # sizeof(long double) == 16
         # layout seems to be 16-bit sign+exponent and 64-bit mantissa
-        # same as for Linux
         cp ../files/msys2-mingw64/* saved
         ;;
     *)
