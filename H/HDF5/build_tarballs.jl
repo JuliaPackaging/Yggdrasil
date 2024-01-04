@@ -328,4 +328,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 5 reports an ICE on i686-linux-gnu-libgfortran3-cxx11-mpi+mpich
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
