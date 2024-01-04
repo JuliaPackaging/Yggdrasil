@@ -42,15 +42,14 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DWITH_GFLAGS=0 \
     -DROCKSDB_BUILD_SHARED=1 \
-    -GNinja \
     -DPORTABLE=1 \
     -DWITH_TOOLS=0 \
     -DWITH_TESTS=0 \
     -DWITH_BENCHMARK_TOOLS=0 \
     -DCMAKE_BUILD_TYPE=Release ..
 
-ninja -j${nproc}
-ninja install 
+cmake --build . --parallel ${nproc}
+cmake --install .
 """
 
 # These are the platforms we will build for by default, unless further
