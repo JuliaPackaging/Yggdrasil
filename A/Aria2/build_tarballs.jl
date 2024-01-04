@@ -8,7 +8,7 @@ version = v"1.37.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/aria2/aria2/releases/download/release-$(version)/aria2-$(version).tar.xz",
-        "60a420ad7085eb616cb6e2bdf0a7206d68ff3d37fb5a956dc44242eb2f79b66b"),
+                  "60a420ad7085eb616cb6e2bdf0a7206d68ff3d37fb5a956dc44242eb2f79b66b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -50,11 +50,12 @@ dependencies = [
     # `LibSSH2_jll` was compiled with.  So we explicitly select the
     # right version here.
     BuildDependency(PackageSpec(name="MbedTLS_jll", version=v"2.28")),
-    Dependency(PackageSpec(name="OpenSSL_jll"); compat="1.1.10"),
+    Dependency(PackageSpec(name="OpenSSL_jll"); compat="3.0.8"),
     Dependency(PackageSpec(name="XML2_jll")),
     Dependency(PackageSpec(name="Zlib_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"7")
+               # Option `-r' for `lld` is not yet implemented
+               julia_compat="1.8", preferred_gcc_version=v"7", clang_use_lld=false)
