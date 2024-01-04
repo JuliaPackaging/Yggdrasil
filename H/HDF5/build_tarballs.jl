@@ -6,19 +6,19 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.2"
+version = v"1.14.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.bz2",
-                  "ea3c5e257ef322af5e77fc1e52ead3ad6bf3bb4ac06480dd17ee3900d7a24cfb"),
+                  "9425f224ed75d1280bb46d6f26923dd938f9040e7eaebf57e66ec7357c08f917"),
     DirectorySource("./bundled"),
 
     # We don't build HDF5 on Windows; instead, we use packages from msys there:
 
     # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.2-2-any.pkg.tar.zst",
-                  "ab053fdafb3e0c456751fed9fe5cc2fa339042046b4de677ce2848cd8b6d3b3f"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.3-1-any.pkg.tar.zst",
+                  "09c6bf048eada4d3ad945c641111e7394169aa69904e5c4dd8de5c4b41143440"; unpack_target="i686-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.3-1-any.pkg.tar.zst",
                   "21bacf3a43073749a4cbdf407c7f1da92bab56c80925b1205f7c4cb289c724a1"; unpack_target="i686-w64-mingw32"),
     # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
@@ -26,8 +26,8 @@ sources = [
                   "2dae8189318a91067cca895572b2b46183bfd2ee97a55127a84f4f418f0b32f3"; unpack_target="i686-w64-mingw32"),
 
     # 64-bit Windows from https://packages.msys2.org/package/mingw-w64-x86_64-hdf5
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.14.2-2-any.pkg.tar.zst",
-                  "19a0a28d32c8990a29e001b77fe2deeb4946ff6c7d0949dbf756dfe1b9b40e8a"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.14.3-1-any.pkg.tar.zst",
+                  "a6a69866725504cba9212a616c8734ade54c8de7d5f42074e33a7b62c7a31428"; unpack_target="x86_64-w64-mingw32"),
     ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.3-1-any.pkg.tar.zst",
                   "254a6c5a8a27d1b787377a3e70a39cceb200b47c5f15f4ab5bfa1431b718ef98"; unpack_target="x86_64-w64-mingw32"),
 
@@ -211,6 +211,7 @@ case "${target}" in
 esac
 cp ../files/get_config_setting saved
 
+
 env \
     HDF5_ACLOCAL=/usr/bin/aclocal \
     HDF5_AUTOHEADER=/usr/bin/autoheader \
@@ -298,7 +299,7 @@ fi
     --host=${target} \
     --enable-cxx=yes \
     --enable-direct-vfd="$ENABLE_DIRECT_VFD" \
-    --enable-fortran=yes \
+    --enable-fortran=no \
     --enable-hl=yes \
     --enable-mirror-vfd="$ENABLE_MIRROR_VFD" \
     --enable-parallel="$ENABLE_PARALLEL" \
@@ -337,6 +338,7 @@ fi
     "$(../saved/get_config_setting H5CONFIG_F_NUM_IKIND ../saved/config.status)" \
     "$(../saved/get_config_setting H5CONFIG_F_IKIND ../saved/config.status)"
 
+
 # Patch the generated `Makefile`:
 # (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
 # - HDF5 would also try to build and run `H5detect` to collect ABI information.
@@ -344,7 +346,7 @@ fi
 # - HDF5 would try to build and run `H5make_libsettings` to collect
 #   build-time information. That information seems entirely optional, so
 #   we do mostly nothing instead.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/src-Makefile.patch
+#atomic_patch -p1 ${WORKSPACE}/srcdir/patches/src-Makefile.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran-src-Makefile.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hl-fortran-src-Makefile.patch
 
