@@ -23,8 +23,13 @@ cd $WORKSPACE/srcdir/openfhe-julia/
 if [[ "${target}" == *-mingw* ]]; then
     # This is needed because otherwise we get unusable binaries (error "The specified
     # executable is not a valid application for this OS platform"). These come from
-    # CompilerSupportLibraries_jll:
-    rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
+    # CompilerSupportLibraries_jll.
+    # xref: https://github.com/JuliaPackaging/Yggdrasil/issues/7904
+    #
+    # The remove path pattern matches `lib/gcc/<triple>/<major>/`, where `<triple>` is the
+    # platform triplet and `<major>` is the GCC major version with which CSL was built
+    # xref: https://github.com/JuliaPackaging/Yggdrasil/pull/7535
+    rm $prefix/lib/gcc/*mingw*/*/libgcc* $prefix/lib/gcc/*mingw*/*/libmsvcrt*
 fi
 
 mkdir build && cd build
