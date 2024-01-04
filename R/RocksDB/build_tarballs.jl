@@ -57,6 +57,7 @@ cmake --install .
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 filter!(p -> arch(p) ∉ ("armv7l", "armv6l"), platforms)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
