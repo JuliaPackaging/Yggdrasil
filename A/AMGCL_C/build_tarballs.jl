@@ -25,7 +25,7 @@
 using BinaryBuilder, Pkg
 
 name = "AMGCL_C"
-version = v"0.1.0"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 # This accesses AMGCL version 1.4.4 and AMGCL_C 0.1.2
