@@ -1,0 +1,10 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -488,7 +488,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Android")
+ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+   add_definitions(-DWIN32 -DOS_WIN -D_MBCS -DWIN64 -DNOMINMAX)
+   if(MINGW)
+-    add_definitions(-D_WIN32_WINNT=_WIN32_WINNT_VISTA)
++    # add_definitions(-D_WIN32_WINNT=_WIN32_WINNT_VISTA)
+   endif()
+ endif()
