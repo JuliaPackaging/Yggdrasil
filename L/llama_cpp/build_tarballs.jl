@@ -60,8 +60,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/llama.cpp*
 
-atomic_patch -p1 ../patches/mingw-stdlib-windows.patch
-
 # remove compiler flags forbidden in BinaryBuilder
 sed -i -e 's/-funsafe-math-optimizations//g' CMakeLists.txt
 
