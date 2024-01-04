@@ -17,12 +17,12 @@ script = raw"""
 cd rocksdb
 mkdir build && cd build
 
-# build flags for arm
-if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]]; then
-    export ARMCRC_SOURCE=1
-    export CXXFLAGS="-march=armv8-a+crc+crypto"
-    export CFLAGS="-march=armv8-a+crc+crypto"
-fi
+# # build flags for arm
+# if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]]; then
+#     export ARMCRC_SOURCE=1
+#     export CXXFLAGS="-march=armv8-a+crc+crypto"
+#     export CFLAGS="-march=armv8-a+crc+crypto"
+# fi
 
 # Resolve: error: aligned allocation function of type 'void *(std::size_t, std::align_val_t)' is only available on macOS 10.13 or newer
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
