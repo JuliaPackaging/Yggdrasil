@@ -8,17 +8,39 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "openfhe_julia"
-version = v"0.1.2"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sloede/openfhe-julia.git",
-              "621b83611bf8b600a3fab3bca0b0053548ac6a04"),
+              "72c9c5a941b9d5a084a439d9359be8f26d2d91d4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openfhe-julia/
+
+if [[ "${target}" == *-mingw* ]]; then
+    # This is needed because otherwise we get unusable binaries (error "The specified
+    # executable is not a valid application for this OS platform"). These come from
+    # CompilerSupportLibraries_jll.
+    # xref: https://github.com/JuliaPackaging/Yggdrasil/issues/7904
+    #
+    # The remove path pattern matches `lib/gcc/<triple>/<major>/`, where `<triple>` is the
+    # platform triplet and `<major>` is the GCC major version with which CSL was built
+    # xref: https://github.com/JuliaPackaging/Yggdrasil/pull/7535
+    #
+    # However, before CSL v1.1, these files were located in just `lib/`, thus we clean this
+    # directory as well.
+    if test -n "$(find $prefix/lib/gcc/*mingw*/*/libgcc*)"; then
+        rm $prefix/lib/gcc/*mingw*/*/libgcc* $prefix/lib/gcc/*mingw*/*/libmsvcrt*
+    elif test -n "$(find $prefix/lib/libgcc*)"; then
+        rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
+    else
+        echo "Could not find any libraries to remove :-/"
+        find $prefix/lib
+    fi
+fi
 
 mkdir build && cd build
 
@@ -55,7 +77,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.8")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.7")),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7")),
     Dependency(PackageSpec(name="OpenFHE_jll", uuid="a2687184-f17b-54bc-b2bb-b849352af807")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
@@ -68,4 +90,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+               julia_compat="1.6", preferred_gcc_version = v"9")
