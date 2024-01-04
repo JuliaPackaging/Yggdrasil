@@ -49,13 +49,12 @@ version = v"0.0.14"  # fake version number
 # 0.0.11          2023-06-13       master-9254920    https://github.com/ggerganov/llama.cpp/releases/tag/master-9254920
 # 0.0.12          2023-07-24       master-41c6741    https://github.com/ggerganov/llama.cpp/releases/tag/master-41c6741
 # 0.0.13          2023-07-29       master-11f3ca0    https://github.com/ggerganov/llama.cpp/releases/tag/master-11f3ca0
-# 0.0.14          2023-12-26       b1703             https://github.com/ggerganov/llama.cpp/releases/tag/b1703
+# 0.0.14          2024-01-04       b1767             https://github.com/ggerganov/llama.cpp/releases/tag/b1767
 
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "dc68f0054cd279cddddb0cae0c9ef4f9cbaa512a"),
-    DirectorySource("bundled"),
+        "012cf349aec8ffb47c9def5dc018240fa3721e8b"),
 ]
 
 script = raw"""
@@ -134,4 +133,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+    julia_compat="1.6", preferred_gcc_version=v"10")
