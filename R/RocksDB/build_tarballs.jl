@@ -20,8 +20,6 @@ cd rocksdb
 # Apply patch for arm and mingw
 if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]]; then
     atomic_patch -p1 ../patches/arm64.patch
-elif [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/mingw.patch
 fi
 
 mkdir build && cd build
