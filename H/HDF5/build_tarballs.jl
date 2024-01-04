@@ -68,102 +68,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi.patch
 # Idea:
 # - provide the registered filter plugins (BZIP2, JPEG, LZF, BLOSC, MAFISC, LZ4, Bitshuffle, and ZFP)
 
-# Building via `configure` instead of via `cmake` has one advantage:
-# The `h5cc` etc. scripts are generated, and some other packages might expect these.
-if false; then
-
-# Option 1: Build with cmake
-# This is now outdated, e.g. it doesn't enable C++ nor Fortran.
-
-# Patch `CMakeLists.txt`:
-# - HDF5 would also try to build and run `H5detect` to collect ABI information.
-#   We know this information, and thus can provide it manually.
-# - HDF5 would try to build and run `H5make_libsettings` to collect
-#   build-time information. That information seems entirely optional, so
-#   we do mostly nothing instead.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch
-
-# Prepare the pre-generated file `H5Tinit.c` that cmake will expect:
-case "${target}" in
-    aarch64-apple-darwin*)
-        cat ../../files/H5Tinit-darwin-arm64v8.c
-        ;;
-    aarch64-linux-*)
-        cat ../../files/H5Tinit-debian-arm64v8.c
-        ;;
-    arm-linux-*)
-        cat ../../files/H5Tinit-debian-arm32v7.c
-        ;;
-    i686-linux-*)
-        cat ../../files/H5Tinit-debian-i386.c
-        ;;
-    i686-w64-mingw32)
-        # sizeof(long double) == 12
-        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
-        # same as for Linux
-        cat ../../files/H5Tinit-debian-i386.c
-        ;;
-    powerpc64le-linux-*)
-        cat ../../files/H5Tinit-debian-ppc64le.c
-        ;;
-    x86_64-apple-darwin*)
-        cat ../../files/H5Tinit-darwin-amd64.c
-        ;;
-    x86_64-linux-* | x86_64-*-freebsd*)
-        cat ../../files/H5Tinit-debian-amd64.c
-        ;;
-    x86_64-w64-mingw32)
-        # sizeof(long double) == 16
-        # layout seems to be 16-bit sign+exponent and 64-bit mantissa
-        # same as for Linux
-        cat ../../files/H5Tinit-debian-amd64.c 
-        ;;
-    *)
-        echo "Unsupported target architecture ${target}" >&2
-        exit 1
-        ;;
-esac >src/H5Tinit.c
-echo 'char H5libhdf5_settings[]="";' >src/H5lib_settings.c
-
-mkdir build
-pushd build
-
-cmake \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBUILD_STATIC_LIBS=OFF \
-    -DBUILD_TESTING=OFF \
-    -DHDF5_BUILD_EXAMPLES=OFF \
-    -DHDF5_BUILD_HL_LIB=ON \
-    -DHDF5_BUILD_TOOLS=ON \
-    -DHAVE_IOEO_EXITCODE=0 \
-    -DTEST_LFS_WORKS_RUN=0 \
-    -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN=1 \
-    -DH5_LDOUBLE_TO_LONG_SPECIAL_RUN__TRYRUN_OUTPUT= \
-    -DH5_LONG_TO_LDOUBLE_SPECIAL_RUN=1 \
-    -DH5_LONG_TO_LDOUBLE_SPECIAL_RUN__TRYRUN_OUTPUT= \
-    -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN=0 \
-    -DH5_LDOUBLE_TO_LLONG_ACCURATE_RUN__TRYRUN_OUTPUT= \
-    -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN=0 \
-    -DH5_LLONG_TO_LDOUBLE_CORRECT_RUN__TRYRUN_OUTPUT= \
-    -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN=1 \
-    -DH5_DISABLE_SOME_LDOUBLE_CONV_RUN__TRYRUN_OUTPUT= \
-    ..
-cmake --build . --config RelWithDebInfo --parallel ${nproc}
-cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
-
-popd
-
-else
-
-# Option 2: Build with configure
-# This is the currently supported way.
-
 # Patch `configure.ac`:
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.ac.patch
 
-# Prepare the files `H5init.c` and `config.saved` that contain predetermined
+# Prepare the file `config.saved` that contains predetermined
 # configuration information
 mkdir saved
 case "${target}" in
@@ -196,7 +104,7 @@ case "${target}" in
         ;;
     x86_64-*-freebsd*)
         # same as for Linux
-        cp ../files/freebsd-amd64/* saved
+        cp ../files/debian-amd64/* saved
         ;;
     x86_64-w64-mingw32)
         # sizeof(long double) == 16
@@ -255,20 +163,7 @@ fi
 
 # Configure MPI
 ENABLE_PARALLEL=yes
-if grep -q MPICH_NAME ${prefix}/include/mpi.h; then
-    # MPICH
-    export CC=mpicc
-    export CXX=mpicxx
-    export FC=mpifort
-elif grep -q MPITRAMPOLINE_MPI_H ${prefix}/include/mpi.h; then
-    # MPItrampoline
-    export MPITRAMPOLINE_CC="$(which $CC)"
-    export MPITRAMPOLINE_CXX="$(which $CXX)"
-    export MPITRAMPOLINE_FC="$(which $FC)"
-    export CC=mpicc
-    export CXX=mpicxx
-    export FC=mpifort
-elif grep -q MSMPI_VER ${prefix}/include/mpi.h; then
+if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
     # Microsoft MPI
     if [[ ${target} == i686-* ]]; then
         # 32-bit system
@@ -280,17 +175,13 @@ elif grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         rm ${prefix}/lib/msmpi*.lib
         # Make shared libraries visible
         ln -s msmpi.dll ${libdir}/libmsmpi.dll
-        export FCFLAGS="$FCFLAGS -I${prefix}/src -I${prefix}/include -fno-range-check"
+        export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
         export LIBS="-L${libdir} -lmsmpi"
     fi
-elif grep -q OMPI_MAJOR_VERSION ${prefix}/include/mpi.h; then
-    # OpenMPI
+else
     export CC=mpicc
     export CXX=mpicxx
     export FC=mpifort
-else
-    # Unknown MPI
-    exit 1
 fi
 
 ../configure \
@@ -299,7 +190,7 @@ fi
     --host=${target} \
     --enable-cxx=yes \
     --enable-direct-vfd="$ENABLE_DIRECT_VFD" \
-    --enable-fortran=no \
+    --enable-fortran=yes \
     --enable-hl=yes \
     --enable-mirror-vfd="$ENABLE_MIRROR_VFD" \
     --enable-parallel="$ENABLE_PARALLEL" \
@@ -359,8 +250,6 @@ make install
 
 popd
 
-fi
-
 install_license COPYING
 """
 
@@ -378,7 +267,7 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 # TODO: Don't require MPI for Windows since we're using the non-MPI msys libraries there.
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
