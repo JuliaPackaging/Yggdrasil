@@ -9,20 +9,22 @@ version = v"8.9.1"
 sources = [
     GitSource("https://github.com/facebook/rocksdb.git", "49ce8a1064dd1ad89117899839bf136365e49e79"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),    
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd rocksdb
-mkdir build && cd build
 
-# # build flags for arm
-# if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]]; then
-#     export ARMCRC_SOURCE=1
-#     export CXXFLAGS="-march=armv8-a+crc+crypto"
-#     export CFLAGS="-march=armv8-a+crc+crypto"
-# fi
+# Apply patch for arm and mingw
+if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]]; then
+    atomic_patch -p1 ../patches/arm64.patch
+elif [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/mingw.patch
+fi
+
+mkdir build && cd build
 
 # Resolve: error: aligned allocation function of type 'void *(std::size_t, std::align_val_t)' is only available on macOS 10.13 or newer
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
