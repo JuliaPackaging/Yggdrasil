@@ -16,6 +16,10 @@ script = raw"""
 cd crun
 install_license COPYING
 
+# next to our (outdated) glibc's sched.h, also include the one from the kernel
+# in order to pick up more recent definitions (e.g. CLONE_NEWCGROUP)
+find src -name '*.c' -exec sed -i '/#include <sched.h>/a #include <linux/sched.h>' {} \;
+
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
             --disable-criu # missing JLL
