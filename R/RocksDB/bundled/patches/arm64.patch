@@ -8,3 +8,8 @@
 +# if(HAS_ARMV8_CRC)
    list(APPEND SOURCES
      util/crc32c_arm64.cc)
+-endif(HAS_ARMV8_CRC)
++# endif(HAS_ARMV8_CRC)
+ 
+ if(WIN32)
+   list(APPEND SOURCES
