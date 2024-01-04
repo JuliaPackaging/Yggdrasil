@@ -29,7 +29,18 @@ if [[ "${target}" == *-mingw* ]]; then
     # The remove path pattern matches `lib/gcc/<triple>/<major>/`, where `<triple>` is the
     # platform triplet and `<major>` is the GCC major version with which CSL was built
     # xref: https://github.com/JuliaPackaging/Yggdrasil/pull/7535
-    rm $prefix/lib/gcc/*mingw*/*/libgcc* $prefix/lib/gcc/*mingw*/*/libmsvcrt*
+    #
+    # However, before CSL v1.1, these files were located in just `lib/`, thus we clean this
+    # directory as well.
+    if test -n "$(find $prefix/lib/gcc/*mingw*/*/libgcc*)"; then
+        rm $prefix/lib/gcc/*mingw*/*/libgcc* $prefix/lib/gcc/*mingw*/*/libmsvcrt*
+    elif test -n "$(find $prefix/lib/libgcc*)"; then
+        rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
+    else
+        echo "Could not find the libraries I am supposed to remove :-/"
+        find $prefix/lib
+        exit 1
+    fi
 fi
 
 mkdir build && cd build
