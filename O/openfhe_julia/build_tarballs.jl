@@ -37,9 +37,8 @@ if [[ "${target}" == *-mingw* ]]; then
     elif test -n "$(find $prefix/lib/libgcc*)"; then
         rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
     else
-        echo "Could not find the libraries I am supposed to remove :-/"
+        echo "Could not find any libraries to remove :-/"
         find $prefix/lib
-        exit 1
     fi
 fi
 
