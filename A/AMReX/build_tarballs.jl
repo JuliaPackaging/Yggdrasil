@@ -72,6 +72,8 @@ cmake \
     ${mpiopts}
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+install_license LICENSE
 """
 
 augment_platform_block = """
