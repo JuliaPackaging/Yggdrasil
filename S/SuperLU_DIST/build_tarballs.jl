@@ -9,6 +9,9 @@ name = "SuperLU_DIST"
 version = v"8.2.1"
 superlu_dist_version = v"8.2.1"
 
+OpenMPI_version="4.6.1, 5.0"    # adding 4.6.1 to ensure that 32bit builds still work
+MPItrampoline_version="5.2.1"
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/xiaoyeli/superlu_dist.git", "b3eecd3eaac3a1332d0d2c5fc052d1af114df192"),
@@ -93,7 +96,7 @@ augment_platform_block = """
 # per Mose. Will return to it later and attempt to find a solution.
 platforms = supported_platforms()
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_version, OpenMPI_compat=OpenMPI_version)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
