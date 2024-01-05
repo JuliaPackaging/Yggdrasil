@@ -160,23 +160,27 @@ elif [[ ${target} == *-w64-mingw32 ]]; then
 fi
 
 # Configure MPI
-ENABLE_PARALLEL=yes
 if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
     # Microsoft MPI
     if [[ ${target} == i686-* ]]; then
         # 32-bit system
         # Do not enable MPI; the function MPI_File_close is not defined
         # in the 32-bit version of Microsoft MPI 10.1.12498.18
-        ENABLE_PARALLEL=no
+        :
     else
         # Hide static libraries
         rm ${prefix}/lib/msmpi*.lib
         # Make shared libraries visible
         ln -s msmpi.dll ${libdir}/libmsmpi.dll
+        ENABLE_PARALLEL=yes
         export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
         export LIBS="-L${libdir} -lmsmpi"
     fi
 else
+    ENABLE_PARALLEL=yes
+    export MPITRAMPOLINE_CC="${CC}"
+    export MPITRAMPOLINE_CXX="${CXX}"
+    export MPITRAMPOLINE_FC="${FC}"
     export CC=mpicc
     export CXX=mpicxx
     export FC=mpifort
