@@ -317,6 +317,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # To ensure that the correct version of libgfortran is found at runtime
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("LibCURL_jll"),
     # The msys Windows libraries require OpenSSL@3
     Dependency("OpenSSL_jll"; compat="3.0.8"),
