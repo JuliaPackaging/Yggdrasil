@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "iso_codes"
-version = v"4.11.0"
+version = v"4.15.0"
 
 # the git tag used for versioning has changed format
 if version < v"4.8"
