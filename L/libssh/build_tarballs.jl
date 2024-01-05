@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Necessary for cmake to find openssl on Windows
-if [[ ${target} == *w64* ]]; then
+if [[ ${target} == x86_64-*-mingw* ]]; then
     export OPENSSL_ROOT_DIR=${prefix}/lib64
 fi
 
