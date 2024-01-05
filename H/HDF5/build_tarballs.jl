@@ -378,7 +378,7 @@ platforms = expand_cxxstring_abis(platforms)
 #platforms = expand_gfortran_versions(platforms)
 
 # TODO: Don't require MPI for Windows since we're using the non-MPI msys libraries there.
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0", OpenMPI_compat="4.1.6")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
