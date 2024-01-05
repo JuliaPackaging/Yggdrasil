@@ -17,9 +17,9 @@ sources = [
 script = raw"""
 cd rocksdb
 
-# Apply patch for arm and mingw
-if [[ "${target}" = arm* ]] || [[ "${target}" == aarch* ]]; then
-    atomic_patch -p1 ../patches/arm64.patch
+# Apply patch for aarch
+if [[ "${target}" == aarch* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm64.patch
 fi
 
 mkdir build && cd build
@@ -58,7 +58,7 @@ filter!(p -> arch(p) ∉ ("armv7l", "armv6l"), platforms)
 filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     LibraryProduct("librocksdb", :librocksdb),
 ]
 
