@@ -48,6 +48,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 
 cmake --build . --parallel ${nproc}
 cmake --install .
+
+install_license ../LICENSE.apache ../LICENSE.leveldb
 """
 
 # These are the platforms we will build for by default, unless further
