@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "23.12"
+version_string = "24.01"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "90e00410833d7a82bf6d9e71a70ce85d2bfb89770da7e34d0dda940f2bf5384a"),
+                  "83dbd4dad6dc51fa4a80aad0347b15ee5a6d816cf4abcd87f7b0e2987d8131b7"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
@@ -72,6 +72,8 @@ cmake \
     ${mpiopts}
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+install_license LICENSE
 """
 
 augment_platform_block = """
