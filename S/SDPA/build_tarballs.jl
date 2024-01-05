@@ -73,7 +73,6 @@ fi
 
 # work around missing strtoll strtoull, see https://github.com/JuliaLang/julia/issues/48081
 if [[ "${target}" == *mingw* ]]; then
-    make -C deps install-csl
     cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/lib/libmsvcrt.a ./usr/lib/libmsvcrt.a
 fi
 
