@@ -375,7 +375,7 @@ augment_platform_block = """
 platforms = supported_platforms()
 # TODO: Don't expand ABIs for Windows since we're not providing either C++ or Fortran bindings there.
 platforms = expand_cxxstring_abis(platforms)
-platforms = expand_gfortran_versions(platforms)
+#platforms = expand_gfortran_versions(platforms)
 
 # TODO: Don't require MPI for Windows since we're using the non-MPI msys libraries there.
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
@@ -439,4 +439,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 5 reports an ICE on i686-linux-gnu-libgfortran3-cxx11-mpi+mpich
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
