@@ -71,6 +71,12 @@ elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
 
+# work around missing strtoll strtoull, see https://github.com/JuliaLang/julia/issues/48081
+if [[ "${target}" == *mingw* ]]; then
+    make -C deps install-csl
+    cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/lib/libmsvcrt.a ./usr/lib/libmsvcrt.a
+fi
+
 ./configure --prefix=$prefix --with-pic --disable-pkg-config --build=${MACHTYPE} --host=${target} \
 --enable-shared lt_cv_deplibs_check_method=pass_all \
 --with-blas="-lopenblas" --with-lapack="-lopenblas" \
