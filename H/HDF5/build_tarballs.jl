@@ -140,7 +140,7 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         # Make shared libraries visible
         ln -s msmpi.dll ${libdir}/libmsmpi.dll
         ENABLE_PARALLEL=yes
-        export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
+        export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check -L${prefix}/lib64"
         export LIBS="-L${libdir} -lmsmpi"
         # Allows configure to find libcrypto for ROS3-VFD
         export CFLAGS="$CLFAGS -L${prefix}/lib64"
