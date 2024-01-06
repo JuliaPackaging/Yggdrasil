@@ -277,11 +277,11 @@ products = [
 
     # HDF5 libraries
     LibraryProduct("libhdf5", :libhdf5),
-     LibraryProduct("libhdf5_cpp", :libhdf5_cpp),
-    # LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
+    LibraryProduct("libhdf5_cpp", :libhdf5_cpp),
+    LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
     LibraryProduct("libhdf5_hl", :libhdf5_hl),
-     LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
-    # LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
+    LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
+    LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
 ]
 
 # Dependencies that must be installed before this package can be built
