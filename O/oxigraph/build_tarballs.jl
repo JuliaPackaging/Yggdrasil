@@ -33,7 +33,7 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     BuildDependency("RocksDB_jll"),
 ]
 
