@@ -356,6 +356,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# TEMPORARY, just test Windows for CI
+platforms = filter(p -> Sys.iswindows(p), platforms)
+
 # The products that we will ensure are always built
 products = [
     # # HDF5 tools
