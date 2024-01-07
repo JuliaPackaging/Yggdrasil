@@ -114,6 +114,9 @@ fi
 FLAGS=()
 if [[ ${target} == *-mingw* ]]; then
     FLAGS+=(LDFLAGS='-no-undefined')
+    # For OpenSSL's libcrypto for ROS3-VFD
+    export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
+    export CFLAGS="${CFLAGS} -L${prefix}/lib64"
 fi
 
 # Check which VFD are available
@@ -134,16 +137,23 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         # Do not enable MPI; the function MPI_File_close is not defined
         # in the 32-bit version of Microsoft MPI 10.1.12498.18
         :
-    else
+    elif false; then
+        # DISABLED
+        # 64-bit system
+        # Do not enable MPI
+        # Mingw-w64 runtime failure:
+        # 32 bit pseudo relocation at 0000000007828E2C out of range, targeting 00007FFDE78BAD90, yielding the value 00007FFDE0091F60.
+        # Consider: https://www.symscape.com/configure-msmpi-for-mingw-w64
+        # gendef msmpi.dll - creates msmpi.def
+        # x86_64-w64-mingw32-dlltool -d msmpi.def -l libmsmpi.a -D msmpi.dll - creates libmsmpi.a
+
         # Hide static libraries
         rm ${prefix}/lib/msmpi*.lib
         # Make shared libraries visible
         ln -s msmpi.dll ${libdir}/libmsmpi.dll
         ENABLE_PARALLEL=yes
-        export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check -L${prefix}/lib64"
+        export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
         export LIBS="-L${libdir} -lmsmpi"
-        # Allows configure to find libcrypto for ROS3-VFD
-        export CFLAGS="$CLFAGS -L${prefix}/lib64"
     fi
 else
     ENABLE_PARALLEL=yes
