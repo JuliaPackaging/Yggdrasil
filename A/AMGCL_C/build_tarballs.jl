@@ -11,43 +11,36 @@
 # During the build, AMGCL_C downloads AMGCL via ExternalProject_Add() 
 #
 # CMake parameters:
-#   BUILD_DI_INTERFACE: Build interface for double + int
-#   BUILD_DL_INTERFACE: Build interface for double + long
+#   BUILD_DI_INTERFACE: Build interface for double + 32bit integer
+#   BUILD_DL_INTERFACE: Build interface for double + 64bit integer
 #   BLOCKSIZES: List of blocksizes instantiated for static blocking in AMGCL
-#               More blocksizes => longer compile time, larger lib.
+#               More blocksizes => longer compile time, larger lib. Blocksize 1
+#               uses the scalar codepath and is available by default.
 #               (see e.g. https://amgcl.readthedocs.io/en/latest/tutorial/Serena.html)
 #
-# Handling of integer types attempts to be similar to umfpack: build both DL and DI on
-# 64 bit systems and only DI on 32bit. See
-# https://github.com/JuliaSparse/SparseArrays.jl/blob/feb54ee5e49008bd157227099cafe604a67c36fb/src/solvers/umfpack.jl#L145
-# https://github.com/JuliaSparse/SparseArrays.jl/blob/feb54ee5e49008bd157227099cafe604a67c36fb/src/solvers/umfpack.jl#L578
+# CMake detects the 64bit integer type according to the C99 standard.
+# So the DI interfce use  4 byte integers, and the DL interface uses 8 bytes integers on
+# all systems, allowing to properly map Int32 and Int64 independent of system address or word size.
 #
 using BinaryBuilder, Pkg
 
 name = "AMGCL_C"
-version = v"0.1.2"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
-# This accesses AMGCL version 1.4.4 and AMGCL_C 0.1.2
+# This accesses AMGCL version 1.4.4 and AMGCL_C 0.2.0
 sources = [
-    GitSource("https://github.com/j-fu/amgcl_c.git", "6c8c3bcdd793cf3098b866e261ee3008a555a41c")
+    GitSource("https://github.com/j-fu/amgcl_c.git", "e3962cbfa561f01f758c12dcd5b56ecf654077f7")
 ]
 
 # Bash recipe for building across all platform
 script = raw"""
 cd $WORKSPACE/srcdir
 cd amgcl_c
-
-if [[ ${nbits} == 32 ]]; then
-   interfaces="-DBUILD_DI_INTERFACE=True  -DBUILD_DL_INTERFACE=False"
-else
-   interfaces="-DBUILD_DI_INTERFACE=True  -DBUILD_DL_INTERFACE=True"
-fi
-
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}\
-      -DCMAKE_BUILD_TYPE=Release\
-      $interfaces\
+      -DBUILD_DI_INTERFACE=True\
+      -DBUILD_DL_INTERFACE=True\
       -DBLOCKSIZES="BLOCKSIZE(2) BLOCKSIZE(3) BLOCKSIZE(4) BLOCKSIZE(5) BLOCKSIZE(6) BLOCKSIZE(7) BLOCKSIZE(8)"\
       -B build .
 cd build
