@@ -17,10 +17,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir
-
-# We don't build HDF5 on Windows; instead, we use packages from msys there:
-cd hdf5-*
+cd ${WORKSPACE}/srcdir/hdf5-*
 
 if [[ ${target} == *-mingw* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
@@ -31,9 +28,6 @@ fi
 
 # HDF5 assumes that some MPI constants are C constants, but they are not
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi.patch
-
-# Idea:
-# - provide the registered filter plugins (BZIP2, JPEG, LZF, BLOSC, MAFISC, LZ4, Bitshuffle, and ZFP)
 
 # Patch `configure.ac`:
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure.ac.patch
@@ -84,7 +78,6 @@ case "${target}" in
 esac
 cp ../files/get_config_setting saved
 
-
 env \
     HDF5_ACLOCAL=/usr/bin/aclocal \
     HDF5_AUTOHEADER=/usr/bin/autoheader \
@@ -115,8 +108,8 @@ FLAGS=()
 if [[ ${target} == *-mingw* ]]; then
     FLAGS+=(LDFLAGS='-no-undefined')
     # For OpenSSL's libcrypto for ROS3-VFD
-    export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
     export CFLAGS="${CFLAGS} -L${prefix}/lib64"
+    export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
 fi
 
 # Check which VFD are available
@@ -165,11 +158,10 @@ else
     export FC=mpifort
 fi
 
-# This is likely a bug in HDF5; see
+# This is a bug in HDF5; see
 # <https://github.com/HDFGroup/hdf5/issues/3925>. The file
 # `config/freebsd` includes `config/classic-fflags` which is
-# missing. This file is supposed to contain Fortran flags for the
-# classic Intel compiler.
+# missing.
 : >../config/classic-fflags
 
 ../configure \
@@ -217,15 +209,12 @@ fi
     "$(../saved/get_config_setting H5CONFIG_F_NUM_IKIND ../saved/config.status)" \
     "$(../saved/get_config_setting H5CONFIG_F_IKIND ../saved/config.status)"
 
-
 # Patch the generated `Makefile`:
 # (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
-# - HDF5 would also try to build and run `H5detect` to collect ABI information.
-#   We know this information, and thus can provide it manually.
-# - HDF5 would try to build and run `H5make_libsettings` to collect
-#   build-time information. That information seems entirely optional, so
-#   we do mostly nothing instead.
-#atomic_patch -p1 ${WORKSPACE}/srcdir/patches/src-Makefile.patch
+# HDF5 would otherwise try to build and run code to determine what
+# integer and real types are available in Fortran. This doesn't work
+# while cross-compiling. We thus provide pre-recorded information
+# instead (see `config.saved` above).
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran-src-Makefile.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hl-fortran-src-Makefile.patch
 
@@ -250,12 +239,12 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# TODO: Don't expand ABIs for Windows since we're not providing either C++ or Fortran bindings there.
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-# TODO: Don't require MPI for Windows since we're using the non-MPI msys libraries there.
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6")
+# TODO: Use MPI only on non-Windows platforms
+# platforms = [filter(!Sys.iswindows, mpi_platforms); filter(Sys.iswindows, platforms)]
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -299,7 +288,6 @@ dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("LibCURL_jll"),
-    # The msys Windows libraries require OpenSSL@3
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll"),
     # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
