@@ -10,13 +10,23 @@ sources = [
     GitSource("https://github.com/ORNL/TASMANIAN.git", "10a762e036c58b2aee4dbf21137aff8401acf0a3")
 ]
 
+BLAS="blastrampoline"
+LAPACK="blastrampoline"
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/TASMANIAN
 mkdir build && cd build
+export CXXFLAGS=-Dsgemm_=sgemm_64
+if [[ "${target}" == *-freebsd* ]]; then
+    export LDFLAGS="-lpthread"
+fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBLAS_LIBRARIES="-l${BLAS}" \
+    -DLAPACK_LIBRARIES="-l${LAPACK}" \
+    -DTasmanian_ENABLE_RECOMMENDED=ON \
+    -DTasmanian_ENABLE_PYTHON=OFF \
     ..
 make -j${nproc}
 make install
@@ -25,7 +35,8 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -35,6 +46,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("libblastrampoline_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
 ]
 
 # License file
