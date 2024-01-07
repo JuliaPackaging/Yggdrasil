@@ -13,24 +13,6 @@ sources = [
     ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.bz2",
                   "9425f224ed75d1280bb46d6f26923dd938f9040e7eaebf57e66ec7357c08f917"),
     DirectorySource("./bundled"),
-
-    # We don't build HDF5 on Windows; instead, we use packages from msys there:
-
-    # 32-bit Windows from https://packages.msys2.org/package/mingw-w64-i686-hdf5
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-hdf5-1.14.3-1-any.pkg.tar.zst",
-                  "09c6bf048eada4d3ad945c641111e7394169aa69904e5c4dd8de5c4b41143440"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-zlib-1.3-1-any.pkg.tar.zst",
-                  "21bacf3a43073749a4cbdf407c7f1da92bab56c80925b1205f7c4cb289c724a1"; unpack_target="i686-w64-mingw32"),
-    # We need some special compiler support libraries from mingw for i686 (libgcc_s_dw2)
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw32/mingw-w64-i686-gcc-libs-13.2.0-2-any.pkg.tar.zst",
-                  "2dae8189318a91067cca895572b2b46183bfd2ee97a55127a84f4f418f0b32f3"; unpack_target="i686-w64-mingw32"),
-
-    # 64-bit Windows from https://packages.msys2.org/package/mingw-w64-x86_64-hdf5
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-hdf5-1.14.3-1-any.pkg.tar.zst",
-                  "a6a69866725504cba9212a616c8734ade54c8de7d5f42074e33a7b62c7a31428"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.3-1-any.pkg.tar.zst",
-                  "254a6c5a8a27d1b787377a3e70a39cceb200b47c5f15f4ab5bfa1431b718ef98"; unpack_target="x86_64-w64-mingw32"),
-
 ]
 
 # Bash recipe for building across all platforms
@@ -38,21 +20,6 @@ script = raw"""
 cd ${WORKSPACE}/srcdir
 
 # We don't build HDF5 on Windows; instead, we use packages from msys there:
-if [[ ${target} == *mingw* ]]; then
-    cd ${target}/mingw${nbits}
-
-    mkdir -p ${libdir} ${includedir}
-    rm -f lib/{*_cpp*,*fortran*,*f90*} # we do not need these
-    rm -f bin/{*_cpp*,*fortran*,*f90*} # we do not need these
-    
-    mv -v lib/libhdf5*.dll.a ${prefix}/lib
-    mv -v bin/*.dll ${libdir}
-    mv -v include/* ${includedir}
-
-    install_license share/doc/hdf5/COPYING
-    exit 0
-fi
-
 cd hdf5-*
 
 if [[ ${target} == *-mingw* ]]; then
@@ -147,6 +114,9 @@ fi
 FLAGS=()
 if [[ ${target} == *-mingw* ]]; then
     FLAGS+=(LDFLAGS='-no-undefined')
+    # For OpenSSL's libcrypto for ROS3-VFD
+    export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
+    export CFLAGS="${CFLAGS} -L${prefix}/lib64"
 fi
 
 # Check which VFD are available
@@ -167,7 +137,16 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         # Do not enable MPI; the function MPI_File_close is not defined
         # in the 32-bit version of Microsoft MPI 10.1.12498.18
         :
-    else
+    elif false; then
+        # DISABLED
+        # 64-bit system
+        # Do not enable MPI
+        # Mingw-w64 runtime failure:
+        # 32 bit pseudo relocation at 0000000007828E2C out of range, targeting 00007FFDE78BAD90, yielding the value 00007FFDE0091F60.
+        # Consider: https://www.symscape.com/configure-msmpi-for-mingw-w64
+        # gendef msmpi.dll - creates msmpi.def
+        # x86_64-w64-mingw32-dlltool -d msmpi.def -l libmsmpi.a -D msmpi.dll - creates libmsmpi.a
+
         # Hide static libraries
         rm ${prefix}/lib/msmpi*.lib
         # Make shared libraries visible
@@ -287,36 +266,32 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 # The products that we will ensure are always built
 products = [
-    # Since we use the msys binaries for Windows, we can only define
-    # those products that are provided by msys as well. These are
-    # just the regular and the high-level libraries.
-
     # # HDF5 tools
-    # ExecutableProduct("h5clear", :h5clear),
-    # ExecutableProduct("h5copy", :h5copy),
-    # ExecutableProduct("h5debug", :h5debug),
-    # ExecutableProduct("h5delete", :h5delete),
-    # ExecutableProduct("h5diff", :h5diff),
-    # ExecutableProduct("h5dump", :h5dump),
-    # ExecutableProduct("h5format_convert", :h5format_convert),
-    # ExecutableProduct("h5import", :h5import),
-    # ExecutableProduct("h5jam",:h5jam),
-    # ExecutableProduct("h5ls", :h5ls),
-    # ExecutableProduct("h5mkgrp", :h5mkgrp),
-    # ExecutableProduct("h5perf_serial",:h5perf_serial),
-    # ExecutableProduct("h5repack", :h5repack),
-    # ExecutableProduct("h5repart", :h5repart),
-    # ExecutableProduct("h5stat", :h5stat),
-    # ExecutableProduct("h5unjam", :h5unjam),
-    # ExecutableProduct("h5watch", :h5watch),
+    ExecutableProduct("h5clear", :h5clear),
+    ExecutableProduct("h5copy", :h5copy),
+    ExecutableProduct("h5debug", :h5debug),
+    ExecutableProduct("h5delete", :h5delete),
+    ExecutableProduct("h5diff", :h5diff),
+    ExecutableProduct("h5dump", :h5dump),
+    ExecutableProduct("h5format_convert", :h5format_convert),
+    ExecutableProduct("h5import", :h5import),
+    ExecutableProduct("h5jam",:h5jam),
+    ExecutableProduct("h5ls", :h5ls),
+    ExecutableProduct("h5mkgrp", :h5mkgrp),
+    ExecutableProduct("h5perf_serial",:h5perf_serial),
+    ExecutableProduct("h5repack", :h5repack),
+    ExecutableProduct("h5repart", :h5repart),
+    ExecutableProduct("h5stat", :h5stat),
+    ExecutableProduct("h5unjam", :h5unjam),
+    ExecutableProduct("h5watch", :h5watch),
 
     # HDF5 libraries
     LibraryProduct("libhdf5", :libhdf5),
-    # LibraryProduct("libhdf5_cpp", :libhdf5_cpp),
-    # LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
+    LibraryProduct("libhdf5_cpp", :libhdf5_cpp),
+    LibraryProduct("libhdf5_fortran", :libhdf5_fortran),
     LibraryProduct("libhdf5_hl", :libhdf5_hl),
-    # LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
-    # LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
+    LibraryProduct("libhdf5_hl_cpp", :libhdf5_hl_cpp),
+    LibraryProduct("libhdf5hl_fortran", :libhdf5_hl_fortran),
 ]
 
 # Dependencies that must be installed before this package can be built
