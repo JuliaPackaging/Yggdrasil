@@ -2957,9 +2957,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -2985,9 +2985,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3013,9 +3013,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3041,9 +3041,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3069,9 +3069,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3097,9 +3097,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3125,9 +3125,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3153,9 +3153,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3181,9 +3181,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3209,9 +3209,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3237,9 +3237,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3265,9 +3265,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3293,9 +3293,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3321,9 +3321,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3349,9 +3349,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3377,9 +3377,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3405,9 +3405,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3433,9 +3433,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3461,9 +3461,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3489,9 +3489,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3517,9 +3517,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3545,9 +3545,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3573,9 +3573,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3601,9 +3601,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3629,9 +3629,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3657,9 +3657,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3685,9 +3685,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3713,9 +3713,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3741,9 +3741,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3769,9 +3769,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3797,9 +3797,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3825,9 +3825,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3853,9 +3853,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3881,9 +3881,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3909,9 +3909,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3937,9 +3937,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3965,9 +3965,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -3993,9 +3993,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4021,9 +4021,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4049,9 +4049,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4077,9 +4077,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4105,9 +4105,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4133,9 +4133,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4161,9 +4161,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4189,9 +4189,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4217,9 +4217,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4245,9 +4245,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4273,9 +4273,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4301,9 +4301,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4329,9 +4329,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4357,9 +4357,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4385,9 +4385,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4413,9 +4413,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4441,9 +4441,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4469,9 +4469,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4497,9 +4497,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4525,9 +4525,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4553,9 +4553,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4581,9 +4581,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4609,9 +4609,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4637,9 +4637,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4665,9 +4665,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4693,9 +4693,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4721,9 +4721,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4749,9 +4749,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(INOUT), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4777,9 +4777,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4805,9 +4805,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4833,9 +4833,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4861,9 +4861,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4889,9 +4889,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4917,9 +4917,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4945,9 +4945,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -4973,9 +4973,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*), INTENT(INOUT), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5001,9 +5001,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*), INTENT(INOUT), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5029,9 +5029,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*), INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5057,9 +5057,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*), INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5085,9 +5085,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*), INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5113,9 +5113,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*), INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5141,9 +5141,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*), INTENT(INOUT), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5169,9 +5169,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5197,9 +5197,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5225,9 +5225,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5253,9 +5253,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5281,9 +5281,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5309,9 +5309,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5337,9 +5337,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5365,9 +5365,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5393,9 +5393,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5421,9 +5421,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5449,9 +5449,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5477,9 +5477,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5505,9 +5505,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5533,9 +5533,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5561,9 +5561,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5589,9 +5589,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5617,9 +5617,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5645,9 +5645,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5673,9 +5673,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5701,9 +5701,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5729,9 +5729,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5757,9 +5757,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5785,9 +5785,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5813,9 +5813,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=10),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5841,9 +5841,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5869,9 +5869,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5897,9 +5897,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5925,9 +5925,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5953,9 +5953,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -5981,9 +5981,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6009,9 +6009,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6037,9 +6037,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     REAL(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6065,9 +6065,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6093,9 +6093,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6121,9 +6121,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6149,9 +6149,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6177,9 +6177,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6205,9 +6205,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6233,9 +6233,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6261,9 +6261,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=1),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6289,9 +6289,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6317,9 +6317,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6345,9 +6345,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6373,9 +6373,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6401,9 +6401,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6429,9 +6429,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6457,9 +6457,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6485,9 +6485,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=2),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6513,9 +6513,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6541,9 +6541,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6569,9 +6569,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6597,9 +6597,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6625,9 +6625,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6653,9 +6653,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6681,9 +6681,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6709,9 +6709,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=4),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6737,9 +6737,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6765,9 +6765,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6793,9 +6793,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6821,9 +6821,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6849,9 +6849,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6877,9 +6877,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6905,9 +6905,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6933,9 +6933,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=8),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6961,9 +6961,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(IN), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -6989,9 +6989,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7017,9 +7017,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7045,9 +7045,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7073,9 +7073,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7101,9 +7101,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7129,9 +7129,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7157,9 +7157,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     INTEGER(KIND=16),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7185,9 +7185,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*),INTENT(IN), DIMENSION(dims(1)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7213,9 +7213,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*),INTENT(IN), DIMENSION(dims(1),dims(2)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7241,9 +7241,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7269,9 +7269,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7297,9 +7297,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7325,9 +7325,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7353,9 +7353,9 @@ CONTAINS
     INTEGER(HSIZE_T), INTENT(IN), DIMENSION(*) :: dims
     CHARACTER(LEN=*),INTENT(IN), DIMENSION(dims(1),dims(2),dims(3),dims(4),dims(5),dims(6),dims(7)), TARGET :: buf
     INTEGER, INTENT(OUT) :: hdferr
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: mem_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: file_space_id
-    INTEGER(HID_T), OPTIONAL, INTENT(IN) :: xfer_prp
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: mem_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: file_space_id
+    INTEGER(HID_T), INTENT(IN), OPTIONAL :: xfer_prp
     INTEGER(HID_T) :: xfer_prp_default
     INTEGER(HID_T) :: mem_space_id_default
     INTEGER(HID_T) :: file_space_id_default
@@ -7381,7 +7381,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr 
     TYPE(C_PTR) :: f_ptr 
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pset_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pset_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pset_fill_value_kind_4
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pset_fill_value_kind_8
@@ -7394,7 +7394,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr 
     TYPE(C_PTR) :: f_ptr 
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pset_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pset_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pset_fill_value_kind_8
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pset_fill_value_kind_10
@@ -7407,7 +7407,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr 
     TYPE(C_PTR) :: f_ptr 
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pset_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pset_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pset_fill_value_kind_10
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pset_fill_value_kind_16
@@ -7420,7 +7420,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr 
     TYPE(C_PTR) :: f_ptr 
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pset_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pset_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pset_fill_value_kind_16
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pget_fill_value_kind_4
@@ -7433,7 +7433,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr
     TYPE(C_PTR) :: f_ptr
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pget_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pget_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pget_fill_value_kind_4
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pget_fill_value_kind_8
@@ -7446,7 +7446,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr
     TYPE(C_PTR) :: f_ptr
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pget_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pget_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pget_fill_value_kind_8
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pget_fill_value_kind_10
@@ -7459,7 +7459,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr
     TYPE(C_PTR) :: f_ptr
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pget_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pget_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pget_fill_value_kind_10
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pget_fill_value_kind_16
@@ -7472,7 +7472,7 @@ CONTAINS
     INTEGER, INTENT(OUT) :: hdferr
     TYPE(C_PTR) :: f_ptr
     f_ptr = C_LOC(fillvalue)
-    hdferr = h5pget_fill_value_c(prp_id, type_id, f_ptr)
+    hdferr = INT(h5pget_fill_value(prp_id, type_id, f_ptr))
   END SUBROUTINE h5pget_fill_value_kind_16
 !DEC$if defined(BUILD_HDF5_DLL)
 !DEC$attributes dllexport :: h5pset_kind_4
