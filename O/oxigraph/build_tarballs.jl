@@ -12,7 +12,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/oxigraph/lib
+cd $WORKSPACE/srcdir/oxigraph
+
+git submodule update --init
+
+cd lib
 
 cargo build --release --features rocksdb-pkg-config
 
