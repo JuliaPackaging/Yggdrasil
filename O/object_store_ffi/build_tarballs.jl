@@ -4,8 +4,8 @@ name = "object_store_ffi"
 version = v"0.1.0"
 
 sources = [
-    # https://github.com/RelationalAI/object_store_ffi/commit/b87c4f4747bfa2b54b03a6f4edad9c1ff1cf58b9
-    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "b87c4f4747bfa2b54b03a6f4edad9c1ff1cf58b9")
+    # https://github.com/RelationalAI/object_store_ffi/commit/ca78c608b6e573ddfd72931c8f6c551ce3cb6862
+    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "ca78c608b6e573ddfd72931c8f6c551ce3cb6862")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +21,7 @@ platforms = [
     Platform("aarch64", "macos"),
     Platform("x86_64",  "linux"),
     Platform("x86_64",  "macos"),
+    Platform("aarch64", "linux"),
 ]
 
 # The products that we will ensure are always built
