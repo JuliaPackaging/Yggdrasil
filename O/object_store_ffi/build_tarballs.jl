@@ -10,7 +10,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/
+cd ${WORKSPACE}/srcdir/object_store_ffi/
 cargo rustc --release --lib --crate-type=cdylib
 install -Dvm 755 "target/${rust_target}/release/libobject_store_ffi.${dlext}" "${libdir}/libobject_store_ffi.${dlext}"
 """
