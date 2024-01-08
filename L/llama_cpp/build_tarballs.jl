@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.14"  # fake version number
+version = v"0.0.15"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -50,11 +50,12 @@ version = v"0.0.14"  # fake version number
 # 0.0.12          2023-07-24       master-41c6741    https://github.com/ggerganov/llama.cpp/releases/tag/master-41c6741
 # 0.0.13          2023-07-29       master-11f3ca0    https://github.com/ggerganov/llama.cpp/releases/tag/master-11f3ca0
 # 0.0.14          2024-01-04       b1767             https://github.com/ggerganov/llama.cpp/releases/tag/b1767
+# 0.0.15          2024-01-08       b1794             https://github.com/ggerganov/llama.cpp/releases/tag/b1794
 
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-        "012cf349aec8ffb47c9def5dc018240fa3721e8b"),
+        "1fc2f265ff9377a37fd2c61eae9cd813a3491bea"),
 ]
 
 script = raw"""
