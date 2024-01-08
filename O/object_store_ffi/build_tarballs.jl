@@ -4,8 +4,8 @@ name = "object_store_ffi"
 version = v"0.1.0"
 
 sources = [
-    # https://github.com/RelationalAI/object_store_ffi/commit/b7b55f31d217b0360858ac1fd5471651d3e73784
-    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "b7b55f31d217b0360858ac1fd5471651d3e73784")
+    # https://github.com/RelationalAI/object_store_ffi/commit/b87c4f4747bfa2b54b03a6f4edad9c1ff1cf58b9
+    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "b87c4f4747bfa2b54b03a6f4edad9c1ff1cf58b9")
 ]
 
 # Bash recipe for building across all platforms
