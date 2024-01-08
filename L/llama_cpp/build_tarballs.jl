@@ -31,6 +31,7 @@ version = v"0.0.15"  # fake version number
 # - removed Product "embd_input_test" as it's no longer part of the project
 # - removed Library "libembdinput" as it's no longer part of the project
 # - disabled METAL (LLAMA_METAL=OFF) on Intel-based MacOS as it's not supported (supported on Apple Silicon only)
+# - disabled armv[6,7]-linux-gnu as it fails to compile with the latest version (tried all GCCs between 8-11)
 
 # versions: fake_version to github_version mapping
 #
@@ -109,7 +110,7 @@ done
 install_license ../LICENSE
 """
 
-platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)))
+platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p) || (arch(p) == "armv6l" || arch(p) == "armv67")))
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
