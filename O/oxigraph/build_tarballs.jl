@@ -14,7 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/oxigraph/lib
 
-cargo build --release --features rocksdb-pkg-config
+cargo build --release
+
+#--features rocksdb-pkg-config
 
 install_license LICENSE.txt
 """
