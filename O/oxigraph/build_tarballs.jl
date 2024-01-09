@@ -41,7 +41,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("RocksDB_jll"),
-    HostBuildDependency("Clang_jll"),
+    Dependency("LLVM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
