@@ -35,17 +35,20 @@ apk add ncurses
 # build SIFDecode
 cd $SIFDECODE
 echo "7" > sifdecode.opts  # Cross-compiler BinaryBuilder
+echo "n" >> sifdecode.opts
 echo "4" >> sifdecode.opts # Fortran compiler for BinaryBuilder
-echo "nny" >> sifdecode.opts
+echo "n" >> sifdecode.opts
+echo "y" >> sifdecode.opts
 ./install_sifdecode < sifdecode.opts
 
 # build CUTEst
 cd $CUTEST
 echo "7" > cutest.opts  # Cross-compiler BinaryBuilder
+echo "n" >> cutest.opts
 echo "4" >> cutest.opts # Fortran compiler for BinaryBuilder
 echo "2" >> cutest.opts # Everything except Matlab support
 echo "3" >> cutest.opts # C and C++ compilers for BinaryBuilder
-echo "nnnydy" >> cutest.opts
+echo "nnydy" >> cutest.opts
 export MYARCH=binarybuilder.bb.fc
 ./install_cutest < cutest.opts
 
