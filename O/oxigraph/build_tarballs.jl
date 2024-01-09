@@ -20,7 +20,7 @@ cd lib
 
 export BINDGEN_EXTRA_CLANG_ARGS="--sysroot /opt/${target}/${target}/sys-root"
 
-cargo build --release --features rocksdb-pkg-config
+RUST_BACKTRACE=1 cargo build --release --features rocksdb-pkg-config
 
 install_license LICENSE.txt
 """
