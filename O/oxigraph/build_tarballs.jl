@@ -40,7 +40,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    RuntimeDependency("RocksDB_jll"),
+    Dependency("RocksDB_jll"),
     BuildDependency("Clang_jll"),
 ]
 
