@@ -30,6 +30,13 @@ apk add gettext
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+
+# Windows has issues with the symlinks so replace
+# them with copies
+# https://stackoverflow.com/questions/7167424/replace-all-symlinks-with-original
+rsync ${prefix}/share/ ${prefix}/share2/ -a --copy-links -v
+rm -rf ${prefix}/share
+mv ${prefix}/share2 ${prefix}/share
 """
 
 # These are the platforms we will build for by default, unless further
