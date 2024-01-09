@@ -79,12 +79,18 @@ install_license ../elmerfem/LICENSE.md
 #   
 #   The linux cmake_install.cmake doesn't include this line at all, so perhaps we can just remove it
 #   before running `make`...?
+# XXX: build fails on FreeBSD with compilation error... suggests we need to use an older C++ standard:
+#       [17:35:11] /workspace/srcdir/elmerfem/meshgen2d/src/BGTriangleMesh.cpp:33:7: error: no member named 'random_shuffle' in namespace 'std'
+#       [17:35:11]         std::random_shuffle(indirect, indirect + len);
+#       [17:35:11]         ~~~~~^
+#       [17:35:11] 1 error generated.
 platforms = [
     p for p in expand_gfortran_versions(supported_platforms()) if (
         libgfortran_version(p) >= v"5" &&
         !Sys.isapple(p) &&
         !(arch(p) in ("armv6l", "armv7l")) &&
-        !Sys.iswindows(p)
+        !Sys.iswindows(p) &&
+        !Sys.isfreebsd(p)
     )
 ]
 
