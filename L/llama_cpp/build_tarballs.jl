@@ -56,7 +56,7 @@ version = v"0.0.15"  # fake version number
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-        "27afe2992741d559fe074cf609c95ba65a124bcb"),
+        "18c2e1752c3b387689e9e73d7d8a1a3b1511ce23"),
 ]
 
 script = raw"""
