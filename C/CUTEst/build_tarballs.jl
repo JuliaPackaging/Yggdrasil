@@ -78,8 +78,8 @@ platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("sifdecoder", :sifdecoder),
-    ExecutableProduct("slct", :slct),
-    ExecutableProduct("clsf", :clsf),
+    # ExecutableProduct("slct", :slct),
+    # ExecutableProduct("clsf", :clsf),
     # LibraryProduct("libcutest_single", :libcutest_single),
     # LibraryProduct("libcutest_double", :libcutest_double),
 ]
