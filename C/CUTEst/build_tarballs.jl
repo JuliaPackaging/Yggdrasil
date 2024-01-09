@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.0.6" # <-- This is a lie, we're bumping to 2.0.6 to create a Julia v1.6+ release with experimental platforms
+version = v"2.0.27"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    GitSource("https://github.com/ralna/ARCHDefs.git" ,"5ab94bbbe45e13c1d00acdc09b8b7df470b98c29"),
-    GitSource("https://github.com/ralna/SIFDecode.git","42d3241205dc56e1f943687293e95586755a3c10"),
-    GitSource("https://github.com/ralna/CUTEst.git"   ,"1d2954ef69cfd541d3ec2299d29da7302cb8b6a3"),
+    GitSource("https://github.com/ralna/ARCHDefs.git" ,"fe046f073a657c6f8a063e1875e929110b021d51"), # v2.2.1
+    GitSource("https://github.com/ralna/SIFDecode.git","d88f40b1c4df2c07981812bb877cf49b92822fcb"), # v2.1.0
+    GitSource("https://github.com/ralna/CUTEst.git"   ,"52274eea4334f2e8058385b3a7c9a8d11c3398b1"), # v2.0.27
 ]
 
 # Bash recipe for building across all platforms
@@ -34,45 +34,19 @@ apk add ncurses
 
 # build SIFDecode
 cd $SIFDECODE
-if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
-  echo "6" > sifdecode.opts   # PC64
-  echo "2" >> sifdecode.opts  # Linux
-  echo "6" >> sifdecode.opts  # gfortran
-elif [[ "${target}" == *-apple* ]]; then
-  echo "13" > sifdecode.opts  # macOS
-  echo "2" >> sifdecode.opts  # gfortran
-elif [[ "${target}" == *-mingw* ]]; then
-  echo "6" > sifdecode.opts   # PC64
-  echo "1" >> sifdecode.opts  # Windows
-  echo "3" >> sifdecode.opts  # gfortran
-fi
+echo "7" > sifdecode.opts  # Cross-compiler BinaryBuilder
+echo "4" >> sifdecode.opts # Fortran compiler for BinaryBuilder
 echo "nny" >> sifdecode.opts
 ./install_sifdecode < sifdecode.opts
 
 # build CUTEst
 cd $CUTEST
-if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
-  echo "6" > cutest.opts   # PC64
-  echo "2" >> cutest.opts  # Linux
-  echo "6" >> cutest.opts  # gfortran
-  echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "8" >> cutest.opts  # gcc
-  export MYARCH=pc64.lnx.gfo
-elif [[ "${target}" == *-apple* ]]; then
-  echo "13" > cutest.opts  # macOS
-  echo "2" >> cutest.opts  # gfortran
-  echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "5" >> cutest.opts  # gcc
-  export MYARCH=mac64.osx.gfo
-elif [[ "${target}" == *-mingw* ]]; then
-  echo "5" > cutest.opts   # PC64
-  echo "1" >> cutest.opts  # Windows
-  echo "3" >> cutest.opts  # gfortran
-  echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "5" >> cutest.opts  # gcc
-  export MYARCH=pc64.mgw.gfo
-fi
-echo "nnydy" >> cutest.opts
+echo "7" > cutest.opts  # Cross-compiler BinaryBuilder
+echo "4" >> cutest.opts # Fortran compiler for BinaryBuilder
+echo "2" >> cutest.opts # Everything except Matlab support
+echo "3" >> cutest.opts # C and C++ compilers for BinaryBuilder
+echo "nnnydy" >> cutest.opts
+export MYARCH=binarybuilder.bb.fc
 ./install_cutest < cutest.opts
 
 # build shared libs
@@ -96,7 +70,7 @@ install_license $CUTEST/lgpl-3.0.txt
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
 platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
-platforms = filter!(p -> !(os(p) == "freebsd" && libgfortran_version(p) == v"3"), platforms)
+# platforms = filter!(p -> !(os(p) == "freebsd" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
