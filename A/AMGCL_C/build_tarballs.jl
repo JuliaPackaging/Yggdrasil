@@ -25,12 +25,12 @@
 using BinaryBuilder, Pkg
 
 name = "AMGCL_C"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
-# This accesses AMGCL version 1.4.4 and AMGCL_C 0.2.0
+# This accesses AMGCL version 1.4.4 and AMGCL_C 0.3.0
 sources = [
-    GitSource("https://github.com/j-fu/amgcl_c.git", "e3962cbfa561f01f758c12dcd5b56ecf654077f7")
+    GitSource("https://github.com/j-fu/amgcl_c.git", "0c6ba2206bea8a2e00f4e611d24bd74d1519fa17")
 ]
 
 # Bash recipe for building across all platform
