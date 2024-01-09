@@ -18,6 +18,8 @@ git submodule update --init
 
 cd lib
 
+export BINDGEN_EXTRA_CLANG_ARGS="--sysroot /opt/${target}/${target}/sys-root"
+
 cargo build --release --features rocksdb-pkg-config
 
 install_license LICENSE.txt
@@ -38,8 +40,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("RocksDB_jll"),
-    RuntimeDependency("Clang_jll")
+    RuntimeDependency("RocksDB_jll"),
+    BuildDependency("Clang_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
