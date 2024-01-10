@@ -4,8 +4,6 @@ name = "SuiteSparse"
 version = v"7.4.0"
 
 sources = suitesparse_sources(version)
-
-sources = suitesparse_sources(version)
 push!(sources, DirectorySource("./bundled"))
 
 # Bash recipe for building across all platforms

@@ -6,6 +6,7 @@ name = "SuiteSparse_GPU"
 version = v"7.4.0"
 
 sources = suitesparse_sources(version)
+push!(sources, DirectorySource("./bundled"))
 
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -17,6 +18,9 @@ cd $WORKSPACE/srcdir/SuiteSparse
 
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
+
+# Apply upstream patch to fix BLAS calls (backported from 7.5.0 dev branch)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blas_suffix.patch
 
 # Ensure CUDA is on the path
 export CUDA_HOME=${WORKSPACE}/destdir/cuda;
@@ -105,7 +109,7 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    gpu_products, [dependencies; cuda_deps]; lazy_artifacts=true,
-                   julia_compat="1.10",preferred_gcc_version=v"9",
+                   julia_compat="1.11",preferred_gcc_version=v"9",
                    augment_platform_block=CUDA.augment,
                    skip_audit=true, dont_dlopen=true)
 end
