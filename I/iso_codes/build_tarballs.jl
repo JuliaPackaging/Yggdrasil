@@ -32,16 +32,6 @@ apk add gettext
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
-
-if [[ "${target}" == *-mingw* ]]; then
-    # Windows has issues with the symlinks so replace
-    # them with copies
-    # https://stackoverflow.com/questions/7167424/replace-all-symlinks-with-original
-    no_link_temp=`mktemp -d`
-    rsync ${prefix}/share ${no_link_temp} -a --copy-links -v
-    rm -rf ${prefix}/share
-    mv ${no_link_temp}/share ${prefix}/share
-fi
 """
 
 # These are the platforms we will build for by default, unless further
