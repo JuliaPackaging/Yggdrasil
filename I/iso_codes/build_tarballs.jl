@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "iso_codes"
-version = v"4.15.0"
+version = v"4.15.1"
 
 # the git tag used for versioning has changed format
 if version < v"4.8"
@@ -12,6 +12,8 @@ if version < v"4.8"
     else
         tag = "iso-codes-$version"
     end
+elseif version == v"4.15.1" # for fake patch version to fix windows install.
+    tag = "v4.15.0"
 else
     tag = "v$version"
 end
@@ -31,18 +33,20 @@ apk add gettext
 make -j${nproc}
 make install
 
-# Windows has issues with the symlinks so replace
-# them with copies
-# https://stackoverflow.com/questions/7167424/replace-all-symlinks-with-original
-no_link_temp=`mktemp -d`
-rsync ${prefix}/share ${no_link_temp} -a --copy-links -v
-rm -rf ${prefix}/share
-mv ${no_link_temp}/share ${prefix}/share
+if [[ "${target}" == *-mingw* ]]; then
+    # Windows has issues with the symlinks so replace
+    # them with copies
+    # https://stackoverflow.com/questions/7167424/replace-all-symlinks-with-original
+    no_link_temp=`mktemp -d`
+    rsync ${prefix}/share ${no_link_temp} -a --copy-links -v
+    rm -rf ${prefix}/share
+    mv ${no_link_temp}/share ${prefix}/share
+fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [AnyPlatform()]
+platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = Product[
@@ -54,4 +58,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
