@@ -10,8 +10,6 @@ sources = [
     GitSource("https://github.com/ORNL/TASMANIAN.git", "10a762e036c58b2aee4dbf21137aff8401acf0a3")
 ]
 
-BLAS="blastrampoline"
-LAPACK="blastrampoline"
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/TASMANIAN
@@ -23,8 +21,6 @@ fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBLAS_LIBRARIES="-l${BLAS}" \
-    -DLAPACK_LIBRARIES="-l${LAPACK}" \
     -DTasmanian_ENABLE_RECOMMENDED=ON \
     -DTasmanian_ENABLE_PYTHON=OFF \
     ..
@@ -46,8 +42,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("libblastrampoline_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # License file
