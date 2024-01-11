@@ -28,8 +28,8 @@ common_cmake_options="-DCMAKE_BUILD_TYPE=Release \
                      -DMAiNGO_use_melon=False"
 
 # GCC used because of https://github.com/JuliaPackaging/Yggdrasil/issues/7139
-#if [[ "${target}" == x86_64-apple-darwin* ]]; then
-#    export MACOSX_DEPLOYMENT_TARGET=10.15
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.15
 #    cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 #          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
 #          ${common_cmake_options} \
@@ -39,7 +39,7 @@ common_cmake_options="-DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
           ${common_cmake_options} \
           ..
-#fi
+fi
 
 
 
