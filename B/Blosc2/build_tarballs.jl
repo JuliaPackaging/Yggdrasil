@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.11.3"
+version = v"2.12.0"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "6bc96bf65053c8664722b40f1d416aed9532c76c"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "e512ce0acbc66ccd69c11fd1aff3f39f9a25b79e"),
     DirectorySource("./bundled"),
 ]
 
