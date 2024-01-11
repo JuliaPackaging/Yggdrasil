@@ -1,12 +1,9 @@
 include("../common.jl")
 
 name = "SuiteSparse"
-version = v"7.4.0"
+version = v"7.5.0"
 
 sources = suitesparse_sources(version)
-
-sources = suitesparse_sources(version)
-push!(sources, DirectorySource("./bundled"))
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -15,16 +12,14 @@ cd $WORKSPACE/srcdir/SuiteSparse
 # Needs cmake >= 3.22 provided by jll
 apk del cmake
 
-# Apply upstream patch to fix BLAS calls (backported from 7.5.0 dev branch)
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/blas_suffix.patch
-
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
+BLAS_NAME=blastrampoline
 if [[ "${target}" == *-mingw* ]]; then
-    BLAS_NAME=blastrampoline-5
+    BLAS_LIB=${BLAS_NAME}-5
 else
-    BLAS_NAME=blastrampoline
+    BLAS_LIB=${BLAS_NAME}
 fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
@@ -58,11 +53,11 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DSUITESPARSE_USE_OPENMP=OFF \
       -DCHOLMOD_PARTITION=ON \
       -DBLAS_FOUND=1 \
-      -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-      -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
+      -DBLAS_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+      -DBLAS_LINKER_FLAGS="${BLAS_LIB}" \
       -DBLA_VENDOR="${BLAS_NAME}" \
-      -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-      -DLAPACK_LINKER_FLAGS="${BLAS_NAME}" \
+      -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+      -DLAPACK_LINKER_FLAGS="${BLAS_LIB}" \
       "${CMAKE_OPTIONS[@]}" \
       .
 make -j${nproc}
