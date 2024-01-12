@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
-version = v"0.1.11"
+version = v"0.1.12"
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "19b53e7c691b41809bc082b4b393dee2e0303c48"),
+              "d1ad3e7bcc15d8ac3d561b0697be4b664d6203db"),
 ]
 
 # Bash recipe for building across all platforms
@@ -49,7 +49,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.11.2"),
-    Dependency("Geant4_jll"; compat = "~11.1.1"),
+    Dependency("Geant4_jll"; compat = "~11.2.0"),
     Dependency("Expat_jll"),
     Dependency("Xerces_jll"),
 ]
