@@ -1,10 +1,9 @@
 using BinaryBuilder
 using BinaryBuilderBase
 using Pkg
-using Base.BinaryPlatforms: arch, os
 
 name = "TropicalGemmC"
-version = v"0.1.1"
+version = v"0.1.3"
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -12,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ArrogantGao/TropicalGemm_Cuda.git", "5510f1394e8b5dc4fc98df7ea640a54a417188a2")
+    GitSource("https://github.com/ArrogantGao/TropicalGemm_Cuda.git", "3a7dd44a5927f148c5c58c77dc4e0b027887fa58")
 ]
 
 script = raw"""

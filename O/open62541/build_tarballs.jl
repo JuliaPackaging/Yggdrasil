@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.3.8"
+version = v"1.3.9"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "086b1557d6f49e8a82c999054a7da77d080cd54e")
+              "70ff3501ddecd7e7594ebc63e2365994d59e010d")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +25,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_ENABLE_NODEMANAGEMENT=ON \
     -DUA_ENABLE_AMALGAMATION=ON \
     -DUA_ENABLE_IMMUTABLE_NODES=ON \
+    -DUA_ENABLE_HISTORIZING=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DUA_FORCE_WERROR=OFF \
     ..

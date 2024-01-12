@@ -1,6 +1,6 @@
---- a/configure.in
+q--- a/configure.in
 +++ b/configure.in
-@@ -451,42 +451,9 @@
+@@ -514,43 +514,9 @@
  
  # Curl library (will be pulled in to the shared CFITSIO library):
  # ---------------------------------------------------------------
@@ -9,15 +9,16 @@
 -CURL_LIB_PATH=""
  if test "x$ADD_CURL" = xyes; then
 -  # Use curl-config to get compiler & linker flags, if available.
--  AC_CHECK_PROG([CURLCONFIG], [curl-config], [curl-config], [], [], [])
+-  # (and prefer /usr/bin/curl-config)
+-  AC_PATH_PROG([CURLCONFIG], [curl-config], [], [/usr/bin$PATH_SEPARATOR$PATH], [])
 -  if test "x$CURLCONFIG" != x; then
 -    CURL_LIB=`$CURLCONFIG --libs`
 -    CURL_INC=`$CURLCONFIG --cflags`
 -    if test "x$CURL_LIB" != x; then
 -      LIBS_CURL="$CURL_LIB"
 -      # Mac OS: For third-party curl-config, acquire an rpath:
--      if test `echo $host | grep -c apple-darwin` -ne 0 -a `echo $CURL_LIB | grep -c "^\-L"` -gt 0; then
--        CURL_LIB_PATH=`echo ${CURL_LIB} | tr " " "\012" | grep "^\-L" | tr "\012" " " | sed 's:-L::' | sed 's:[ ]$::'`
+-      if test `echo $host | grep -c apple-darwin` -ne 0 -a `echo $CURL_LIB | grep -c "^-L"` -gt 0; then
+-        CURL_LIB_PATH=`echo ${CURL_LIB} | tr " " "\012" | grep "^-L" | tr "\012" " " | sed 's:-L::' | sed 's:[ ]$::'`
 -        if test "x$CURL_LIB_PATH" != x; then
 -          LIBS_CURL="-Wl,-rpath,$CURL_LIB_PATH $CURL_LIB"
 -        fi
@@ -42,5 +43,5 @@
  fi
 -AC_SUBST(LIBS_CURL)
  
- # GSIFTP flags:
- if test "x$GSIFTP_PATH" != x -a "x$GSIFTP_FLAVOUR" != x; then
+ # ZLIB (required):
+ if test "x$ZLIB_CHECK" = xyes; then

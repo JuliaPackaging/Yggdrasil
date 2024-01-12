@@ -19,6 +19,14 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
         v"7.3.0" => [
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "fad1f30fa260975466bb0ad7da1aabf054517399")
+        ],
+        v"7.4.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "df91d7be262e6b5cddf5dd23ff42dec1713e7947")
+        ],
+        v"7.5.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "da5050cd3f6b6a15ec4d7c42b2c1e2dfe4f8ef6e")
         ]
     )
     return Any[
@@ -46,6 +54,14 @@ products = [
     LibraryProduct("libumfpack",             :libumfpack),
     LibraryProduct("librbio",                :librbio),
     LibraryProduct("libspqr",                :libspqr),
+]
+
+# Products for the GPU builds of SuiteSparse
+gpu_products = [
+    LibraryProduct("libcholmod_cuda",                :libcholmod),
+    LibraryProduct("libspqr_cuda",                   :libspqr),
+    LibraryProduct("libgpuqrengine_cuda",            :libgpuqrengine),
+    LibraryProduct("libsuitesparse_gpuruntime_cuda", :libsuitesparse_gpuruntime),
 ]
 
 # Dependencies that must be installed before this package can be built
