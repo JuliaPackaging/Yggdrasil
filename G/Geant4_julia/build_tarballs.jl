@@ -36,7 +36,7 @@ include("../../L/libjulia/common.jl")
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 # platforms supported by Geant4
-platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l", platforms)
+platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "armv7l", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
