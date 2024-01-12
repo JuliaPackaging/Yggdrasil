@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.42.0"
+version = v"2.43.0"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "3278210e9fd2994b8484dd7e3ddd9ea8b940ef52170cdb606daa94d887c93b0d"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.2/Git-$(version).2-32-bit.tar.bz2",
-                  "64cd27bebd457592a83c2aa8bf0555ef6501675769f330b7558041d17cbb52fa"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.2/Git-$(version).2-64-bit.tar.bz2",
-                  "c192e56f8ed3d364acc87ad04d1f5aa6ae03c23b32b67bf65fcc6f9b8f032e65"; unpack_target = "x86_64-w64-mingw32"),
+                  "5446603e73d911781d259e565750dcd277a42836c8e392cac91cf137aa9b76ec"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
+                  "192f58080247f1eea2845fb61e37e91c05a89b44260c7e045b936ca3e45ac7f6"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
+                  "4c19cc73003e55ec71d6f1ce4a961ab32ca22f9c57217d224982535161123f79"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
