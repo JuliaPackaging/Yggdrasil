@@ -17,8 +17,14 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd rclone*
 
-# Cross-compiling fails at the moment; see <https://github.com/rclone/rclone/issues/7560>
-atomic_patch -p0 ../patches/nfs.patch
+if ! [[ $target = *-mingw* ]]; then
+    # Cross-compiling fails at the moment; see <https://github.com/rclone/rclone/issues/7560>
+    atomic_patch -p0 ../patches/nfs.patch
+fi
+
+# Don't run any locally built executables when building for Windows (this doesn't work when cross-compiling).
+# We are losing "version information and icon resources" in our `rclone` executable.
+atomic_patch -p0 ../patches/make.patch
 
 make
 
@@ -29,7 +35,7 @@ install -t ${bindir} ${GOPATH}/bin/rclone${exeext}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
