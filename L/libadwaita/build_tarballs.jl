@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "libadwaita"
-version = v"1.2.0"
+version = v"1.3.6"
 
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libadwaita/$(version.major).$(version.minor)/libadwaita-$(version).tar.xz",
-                  "322f3e1be39ba67981d9fe7228a85818eccaa2ed0aa42bcafe263af881c6460c"),
+                  "cb8313dabe78a128415b93891d9aff2aba88ad58e3d5a54562e1f05fc9222979"),
 ]
 
 # Bash recipe for building across all platforms
