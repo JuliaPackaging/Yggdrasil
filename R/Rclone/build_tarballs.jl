@@ -3,18 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "Rclone"
-version = v"1.65.0"
+version = v"1.65.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rclone/rclone/releases/download/v$(version)/rclone-v$(version).tar.gz",
-                  "45ec732d50b2517dc2c860317a3bf79867634a8143e4a441a3e399434ad6c141")
+                  "904b906cc465dd679a00487497e3891d33fca6b6e25c184400bccfb248344f39"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd rclone*
+
+# Cross-compiling fails at the moment; see <https://github.com/rclone/rclone/issues/7560>
+atomic_patch -p0 ../patches/nfs.patch
 
 make
 
