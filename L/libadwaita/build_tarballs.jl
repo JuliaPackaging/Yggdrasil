@@ -43,6 +43,9 @@ rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
 # post-install script is disabled when cross-compiling
 glib-compile-schemas ${prefix}/share/glib-2.0/schemas
+
+# Remove temporary links
+rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 """
 
 # These are the platforms we will build for by default, unless further
