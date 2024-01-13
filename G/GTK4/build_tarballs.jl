@@ -33,7 +33,7 @@ rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
-    #atomic_patch -p1 ../patches/NSPasteboard.patch
+    atomic_patch -p1 ../patches/NSPasteboard.patch
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland-backend=false)
 elif [[ "${target}" == *-mingw* ]]; then
