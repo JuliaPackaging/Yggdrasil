@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools/
 
-if [[ $target = *-freebsd* -o $target = *-mingw* ]]
+if [[ $target == *-freebsd* ]] || [[ $target == *-mingw* ]]; then
     # Disable OS xattr support on FreeBSD and Windows
     XATTR_OS_SUPPORT=0
 else
