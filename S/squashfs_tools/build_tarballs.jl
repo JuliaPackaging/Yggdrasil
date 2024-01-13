@@ -13,7 +13,15 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools/
-make XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1 -j${nproc}
+
+if [[ $target = *-freebsd* -o $target = *-mingw* ]]
+    # Disable OS xattr support on FreeBSD and Windows
+    XATTR_OS_SUPPORT=0
+else
+    XATTR_OS_SUPPORT=1
+fi
+
+make XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1 XATTR_OS_SUPPORT=${XATTR_OS_SUPPORT} -j${nproc}
 cp mksquashfs unsquashfs ${bindir}
 """
 
