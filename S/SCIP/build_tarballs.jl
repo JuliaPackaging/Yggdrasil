@@ -26,7 +26,7 @@ elif [[ "${target}" == *-mingw* ]]; then
 fi
 
 if [[ "${target}" == *w64* ]]; then
-    export CFLAGS="-O1"
+    export CFLAGS="-O0"
 fi
 
 cd scipoptsuite*

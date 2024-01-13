@@ -4,12 +4,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.18.6"
+version = v"3.18.7"
 petsc_version = v"3.18.6"
-MUMPS_COMPAT_VERSION = "5.5.1"
-SUITESPARSE_COMPAT_VERSION = "5.10.1"
+MUMPS_COMPAT_VERSION = "5.6.2"
+SUITESPARSE_COMPAT_VERSION = "7.2.1" 
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
-MPItrampoline_compat_version="5.2.1"    
+MPItrampoline_compat_version="5.2.1"
+BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
 
 SCALAPACK32_COMPAT_VERSION="2.2.1"
 METIS_COMPAT_VERSION="5.1.2"
@@ -29,14 +30,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-if [[ "${target}" == *-apple* ]]; then
-    BLAS_LAPACK_LIB=
-else
-    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
-fi
-
 if [[ "${target}" == *-mingw* ]]; then
-    #atomic_patch -p1 $WORKSPACE/srcdir/patches/fix-header-cases.patch
     MPI_LIBS="${libdir}/msmpi.${dlext}"
 
 else
@@ -67,11 +61,10 @@ build_petsc()
 {
     # Compile a debug version?
     DEBUG_FLAG=0
+    PETSC_CONFIG="${1}_${2}_${3}"
     if [[ "${4}" == "deb" ]]; then
         PETSC_CONFIG="${1}_${2}_${3}_deb"
         DEBUG_FLAG=1
-    else
-        PETSC_CONFIG="${1}_${2}_${3}"
     fi
 
     if [[ "${3}" == "Int64" ]]; then
@@ -116,7 +109,7 @@ build_petsc()
     USE_MUMPS=0    
     if [ -f "${libdir}/libdmumps.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_MUMPS=1    
-        MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumps.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
+        MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
         MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
     else
         MUMPS_LIB=""
@@ -128,8 +121,15 @@ build_petsc()
         LIBFLAGS="-L${libdir} -lssp" 
     fi
 
-    if [[ "${target}" == *-apple* ]]; then 
-        LIBFLAGS="-L${libdir} -framework Accelerate" 
+    if [[ "${target}" == aarch64-apple-* ]]; then    
+        LIBFLAGS="-L${libdir}" 
+        # Linking requires the function `__divdc3`, which is implemented in
+        # `libclang_rt.osx.a` from LLVM compiler-rt.
+        BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+        CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    else
+        BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+        CLINK_FLAGS=""
     fi
 
     if  [ ${DEBUG_FLAG} == 1 ]; then
@@ -156,20 +156,23 @@ build_petsc()
     echo "DEBUG="${DEBUG_FLAG}
     echo "COPTFLAGS="${_COPTFLAGS}
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
-
+    echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
+    
     mkdir $libdir/petsc/${PETSC_CONFIG}
+
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
-        CC=${CC} \
-        FC=${FC} \
-        CXX=${CXX} \
-        COPTFLAGS=${_COPTFLAGS} \
-        CXXOPTFLAGS=${_CXXOPTFLAGS} \
-        FOPTFLAGS=${_FOPTFLAGS}  \
+        --CC=${CC} \
+        --FC=${FC} \
+        --CXX=${CXX} \
+        --COPTFLAGS=${_COPTFLAGS} \
+        --CXXOPTFLAGS=${_CXXOPTFLAGS} \
+        --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix=""  \
-        CFLAGS='-fno-stack-protector '  \
-        FFLAGS="${MPI_FFLAGS}"  \
-        LDFLAGS="${LIBFLAGS}"  \
+        --CFLAGS='-fno-stack-protector '  \
+        --FFLAGS="${MPI_FFLAGS}"  \
+        --LDFLAGS="${LIBFLAGS}"  \
+        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
         --with-debugging=${DEBUG_FLAG}  \
         --with-batch \
@@ -189,8 +192,8 @@ build_petsc()
         ${MUMPS_INCLUDE} \
         --with-suitesparse=${USE_SUITESPARSE} \
         --SOSUFFIX=${PETSC_CONFIG} \
+        --with-shared-libraries=1 \
         --with-clean=1
-
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
     elif [[ "${target}" == powerpc64le-* ]]; then
@@ -204,7 +207,7 @@ build_petsc()
         FFLAGS="${FFLAGS}"
     make install
 
-    # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case insensitive file-systems.
+    # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
     # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
     # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
@@ -241,7 +244,6 @@ build_petsc()
 
     # we don't particularly care about the examples
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
-
 }
 
 build_petsc double real Int64 opt
@@ -264,12 +266,20 @@ augment_platform_block = """
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
                                                                   Platform("i686","linux"; libc="musl"),
+                                                                  Platform("i686","linux"; libc="gnu"),
+                                                                  Platform("x86_64","freebsd"),
+                                                                  Platform("armv6l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
@@ -299,10 +309,12 @@ dependencies = [
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
     Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
-    Dependency("SCALAPACK32_jll";compat=SCALAPACK32_COMPAT_VERSION),
-    Dependency("METIS_jll", compat=METIS_COMPAT_VERSION),
-    Dependency("SCOTCH_jll"; compat=SCOTCH_COMPAT_VERSION),
-    Dependency("PARMETIS_jll"; compat=PARMETIS_COMPAT_VERSION),
+    Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
+    Dependency("SCALAPACK32_jll"),
+    Dependency("METIS_jll"),
+    Dependency("SCOTCH_jll"),
+    Dependency("PARMETIS_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -312,5 +324,8 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
+# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
+               augment_platform_block, julia_compat="1.10", 
+               preferred_gcc_version = v"9",  
+               preferred_llvm_version=v"13")

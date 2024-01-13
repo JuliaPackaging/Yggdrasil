@@ -14,9 +14,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/TASMANIAN
 mkdir build && cd build
+export CXXFLAGS=-Dsgemm_=sgemm_64
+if [[ "${target}" == *-freebsd* ]]; then
+    export LDFLAGS="-lpthread"
+fi
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DTasmanian_ENABLE_RECOMMENDED=ON \
+    -DTasmanian_ENABLE_PYTHON=OFF \
     ..
 make -j${nproc}
 make install
@@ -25,7 +31,8 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -35,6 +42,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # License file
