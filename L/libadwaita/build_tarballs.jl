@@ -20,8 +20,6 @@ apk add glib-dev
 ln -sf /usr/bin/glib-compile-resources ${bindir}/glib-compile-resources
 ln -sf /usr/bin/glib-compile-schemas ${bindir}/glib-compile-schemas
 ln -sf /usr/bin/gdk-pixbuf-pixdata ${bindir}/gdk-pixbuf-pixdata
-# Remove gio-2.0 pkgconfig file so that it isn't picked up by post-install script.
-rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
 # oldest version that works, due to use of "@available" macro
 export MACOSX_DEPLOYMENT_TARGET=10.14
@@ -39,6 +37,9 @@ meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
+
+# Remove gio-2.0 pkgconfig file so that it isn't picked up by post-install script.
+rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 
 # post-install script is disabled when cross-compiling
 glib-compile-schemas ${prefix}/share/glib-2.0/schemas
@@ -62,4 +63,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", clang_use_lld=false)
