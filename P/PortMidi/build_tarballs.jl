@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PortMidi"
-version = v"0.0.1"
+version = v"2.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PortMidi/portmidi.git", "928520f7b79f371854387cb480b4e3b5bf5dac95")
+    GitSource("https://github.com/PortMidi/portmidi.git", "b808babecdc5d05205467dab5c1006c5ac0fdfd4")
 ]
 
 # Bash recipe for building across all platforms
