@@ -1,0 +1,28 @@
+diff --git a/squashfs-tools/unsquashfs_xattr_system.c b/squashfs-tools/unsquashfs_xattr_system.c
+index a5a2952..d609cc0 100644
+--- a/squashfs-tools/unsquashfs_xattr_system.c
++++ b/squashfs-tools/unsquashfs_xattr_system.c
+@@ -25,7 +25,9 @@
+ #include "unsquashfs.h"
+ #include "xattr.h"
+ 
++#ifdef XATTR_OS_SUPPORT
+ #include <sys/xattr.h>
++#endif
+ 
+ #ifdef XATTR_NOFOLLOW /* Apple's xattrs */
+ 	#define lsetxattr(path_, name_, val_, sz_, flags_) \
+diff --git a/squashfs-tools/xattr_system.c b/squashfs-tools/xattr_system.c
+index 0ab5e18..6052963 100644
+--- a/squashfs-tools/xattr_system.c
++++ b/squashfs-tools/xattr_system.c
+@@ -28,7 +28,9 @@
+ #include <dirent.h>
+ #include <string.h>
+ #include <stdlib.h>
++#ifdef XATTR_OS_SUPPORT
+ #include <sys/xattr.h>
++#endif
+ #include <regex.h>
+ 
+ #include "squashfs_fs.h"

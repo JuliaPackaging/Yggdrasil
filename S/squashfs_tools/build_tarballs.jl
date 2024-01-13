@@ -14,6 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools/
 
+# `XATTR_OS_SUPPORT=0` seems to have a bug
+atomic_patch -p1 ../../patches/xattr_os_support.patch
+
 if [[ $target == *-freebsd* ]] || [[ $target == *-mingw* ]]; then
     # Disable OS xattr support on FreeBSD and Windows
     XATTR_OS_SUPPORT=0
