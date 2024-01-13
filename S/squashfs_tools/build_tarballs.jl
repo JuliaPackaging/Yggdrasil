@@ -8,31 +8,24 @@ version = v"4.6.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/plougher/squashfs-tools.git", "d8cb82d9840330f9344ec37b992595b5d7b44184"),
-    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools/
+cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools
 
-# `XATTR_OS_SUPPORT=0` seems to have a bug
-atomic_patch -p1 ../../patches/xattr_os_support.patch
-
-if [[ $target == *-freebsd* ]] || [[ $target == *-mingw* ]]; then
-    # Disable OS xattr support on FreeBSD and Windows
-    XATTR_OS_SUPPORT=0
-else
-    XATTR_OS_SUPPORT=1
-fi
-
-env CONFIG=1 make XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1 XATTR_OS_SUPPORT=${XATTR_OS_SUPPORT} -j${nproc}
+env CONFIG=1 make XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1 -j${nproc}
 cp mksquashfs unsquashfs ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
+# FreeBSD and Windows don't support extended attributes.
+# (The master branch of squashfs-tools already supports disabling host
+# support for them, version 4.6.1 does not yet.  See
+# `XATTR_OS_SUPPORT`.)
+filter!(p -> !Sys.isfreebsd(p) && !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
