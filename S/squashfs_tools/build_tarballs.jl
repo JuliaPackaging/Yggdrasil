@@ -8,6 +8,7 @@ version = v"4.6.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/plougher/squashfs-tools.git", "d8cb82d9840330f9344ec37b992595b5d7b44184"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
