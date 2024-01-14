@@ -1,7 +1,7 @@
 include("../common.jl")
 
 name = "SuiteSparse"
-version = v"7.5.0"
+version = v"7.5.1"
 
 sources = suitesparse_sources(version)
 
