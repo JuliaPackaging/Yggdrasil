@@ -5,7 +5,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
-name = "MLIR_JL_TBLGEN"
+name = "mlir_jl_tblgen"
 repo = "https://github.com/JuliaLabs/MLIR.jl.git"
 version = v"0.0.1"
 
