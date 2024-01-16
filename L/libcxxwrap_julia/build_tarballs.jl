@@ -7,16 +7,17 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-name = "libcxxwrap_julia"
-version = v"0.11.2"
+# needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+name = "libcxxwrap_julia"
+version = v"0.12.0"
 
 git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "f1c42d9602e32f566847c253270b4fd536db6554"),
+    GitSource(git_repo, "513d33f55819aad87e68235a3c229c456830e91f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +38,6 @@ install_license $WORKSPACE/srcdir/libcxxwrap-julia*/LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -49,11 +49,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.7")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.8")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"9", julia_compat = "1.6")
-
-# rebuild trigger: 4
