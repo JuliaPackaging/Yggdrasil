@@ -96,7 +96,7 @@ const cuda_full_versions = [
     v"12.0.1",
     v"12.1.1",
     v"12.2.2",
-    v"12.3.1",
+    v"12.3.2",
 ]
 
 function full_version(ver::VersionNumber)
@@ -128,11 +128,11 @@ function supported_platforms(; min_version=v"11", max_version=nothing)
         #Platform("x86_64", "windows"),
     ]
 
-    cuda_full_versions = filter(v -> (isnothing(min_version) || v >= min_version) && (isnothing(max_version) || v <= max_version), cuda_full_versions)
+    cuda_versions = filter(v -> (isnothing(min_version) || v >= min_version) && (isnothing(max_version) || v <= max_version), cuda_full_versions)
 
     # augment with CUDA versions
     platforms = Platform[]
-    for version in cuda_full_versions
+    for version in cuda_versions
         for base_platform in base_platforms
             platform = deepcopy(base_platform)
             platform["cuda"] = "$(version.major).$(version.minor)"

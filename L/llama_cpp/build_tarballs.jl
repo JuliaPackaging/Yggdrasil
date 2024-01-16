@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.13"  # fake version number
+version = v"0.0.15"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -22,11 +22,15 @@ version = v"0.0.13"  # fake version number
 #   - OpenCL/CLBLAST (LLAMA_CLBLAST)
 
 # Build notes and failures
-# - k_quants disabled for armv{6,7}-linux due to compile errors
+# - k_quants disabled for armv{6,7}-linux due to compile errors -- re-enabled as LLAMA_K_QUANTS option is no longer available
 # - k_quants fails to compile on aarch64-linux for gcc-9 and below
 # - missing arch: powerpc64le (code tests for __POWER9_VECTOR__)
 # - fails on i686-w64-mingw32
 #   /workspace/srcdir/llama.cpp/examples/main/main.cpp:249:81: error: invalid static_cast from type ‘main(int, char**)::<lambda(DWORD)>’ to type ‘PHANDLER_ROUTINE’ {aka ‘int (__attribute__((stdcall)) *)(long unsigned int)’}
+# - removed armv{6,7} specific CMAKE ARGS as the flag `LLAMA_K_QUANTS` is no longer available
+# - removed Product "embd_input_test" as it's no longer part of the project
+# - removed Library "libembdinput" as it's no longer part of the project
+# - disabled METAL (LLAMA_METAL=OFF) on Intel-based MacOS as it's not supported (supported on Apple Silicon only)
 
 # versions: fake_version to github_version mapping
 #
@@ -45,10 +49,13 @@ version = v"0.0.13"  # fake version number
 # 0.0.11          2023-06-13       master-9254920    https://github.com/ggerganov/llama.cpp/releases/tag/master-9254920
 # 0.0.12          2023-07-24       master-41c6741    https://github.com/ggerganov/llama.cpp/releases/tag/master-41c6741
 # 0.0.13          2023-07-29       master-11f3ca0    https://github.com/ggerganov/llama.cpp/releases/tag/master-11f3ca0
+# 0.0.14          2024-01-04       b1767             https://github.com/ggerganov/llama.cpp/releases/tag/b1767
+# 0.0.15          2024-01-09       b1796             https://github.com/ggerganov/llama.cpp/releases/tag/b1796
+
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "11f3ca06b8c66b0427aab0a472479da22553b472"),
+        "18c2e1752c3b387689e9e73d7d8a1a3b1511ce23"),
 ]
 
 script = raw"""
@@ -64,16 +71,11 @@ if [[ "${target}" == *-linux-* ]]; then
     EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
 fi
 
-# compilation errors using k_quants on armv{6,7}l-linux-*
-if [[ "${proc_family}" == "arm" && "${nbits}" == 32 ]]; then
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=OFF"
-else
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_K_QUANTS=ON"
-fi
-
-# Use Metal on Apple Silicon
+# Use Metal on Apple Silicon, disable otherwise (eg, disable for Intel-based MacOS)
 if [[ "${target}" == aarch64-apple-darwin* ]]; then
     EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=ON"
+else
+    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=OFF"
 fi
 
 mkdir build && cd build
@@ -107,13 +109,12 @@ done
 install_license ../LICENSE
 """
 
-platforms = supported_platforms(; exclude = p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)))
+platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)))
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("baby-llama", :baby_llama),
     ExecutableProduct("benchmark", :benchmark),
-    ExecutableProduct("embd-input-test", :embd_input_test),
     ExecutableProduct("embedding", :embedding),
     ExecutableProduct("main", :main),
     ExecutableProduct("perplexity", :perplexity),
@@ -123,7 +124,6 @@ products = [
     ExecutableProduct("server", :server),
     ExecutableProduct("simple", :simple),
     ExecutableProduct("train-text-from-scratch", :train_text_from_scratch),
-    LibraryProduct("libembdinput", :libembdinput),
     LibraryProduct("libggml_shared", :libggml),
     LibraryProduct("libllama", :libllama),
 ]
@@ -132,4 +132,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"10")
+    julia_compat="1.6", preferred_gcc_version=v"10")

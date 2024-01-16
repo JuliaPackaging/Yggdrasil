@@ -14,12 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tiff-*
-LDFLAGS=()
-if [[ $target = *-darwin* ]]; then
-    # See <https://github.com/JuliaPackaging/Yggdrasil/issues/7745>
-    LDFLAGS=('-fuse-ld=ld')
-fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --docdir=/tmp LDFLAGS="${LDFLAGS[@]}"
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --docdir=/tmp
 make -j${nproc}
 make install
 """
@@ -43,4 +38,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", clang_use_lld=false)
