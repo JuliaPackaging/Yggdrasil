@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Htop"
-version = v"3.2.2"
+version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/htop-dev/htop/releases/download/$(version)/htop-$(version).tar.xz",
-                  "bac9e9ab7198256b8802d2e3b327a54804dc2a19b77a5f103645b11c12473dc8"),
+                  "a69acf9b42ff592c4861010fce7d8006805f0d6ef0e8ee647a6ee6e59b743d5c"),
 ]
 
 # Bash recipe for building across all platforms
