@@ -14,9 +14,9 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/arpack-ng*
 
 if [[ "${target}" == *-mingw* ]]; then
-    LBT=libblastrampoline-5
+    LBT=blastrampoline-5
 else
-    LBT=libblastrampoline
+    LBT=blastrampoline
 fi
 
 mkdir build
@@ -40,7 +40,7 @@ else
 fi
 
 make -j${nproc}
-make install VERBOSE=1
+make install
 
 # Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
 if [[ "${target}" == *-mingw* ]]; then
