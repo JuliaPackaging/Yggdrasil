@@ -23,21 +23,18 @@ mkdir build
 cd build
 
 if [[ ${nbits} == 64 ]]; then
-    cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
-        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
-        -DBLAS_LIBRARIES=${LBT} -DBLAS_LINKER_FLAGS="-L${libdir}" \
-        -DLAPACK_LIBRARIES=${LBT} -DLAPACK_LINKER_FLAGS="-L${libdir}" \
-        -DEXAMPLES=OFF \
-        -DBUILD_SHARED_LIBS=ON \
-        -DINTERFACE64=1 -DSYMBOLSUFFIX=_64
-else
-    cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
-        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
-        -DBLAS_LIBRARIES=${LBT} -DBLAS_LINKER_FLAGS="-L${libdir}" \
-        -DLAPACK_LIBRARIES=${LBT} -DLAPACK_LINKER_FLAGS="-L${libdir}" \
-        -DEXAMPLES=OFF \
-        -DBUILD_SHARED_LIBS=ON
+    FLAGS=(-DINTERFACE64=1 -DSYMBOLSUFFIX=_64)
 fi
+cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBLAS_LIBRARIES=${LBT} \
+    -DBLAS_LINKER_FLAGS="-L${libdir}" \
+    -DLAPACK_LIBRARIES=${LBT} \
+    -DLAPACK_LINKER_FLAGS="-L${libdir}" \
+    -DEXAMPLES=OFF \
+    -DBUILD_SHARED_LIBS=ON \
+    "${FLAGS[@]}"
 
 make -j${nproc}
 make install
