@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.12.0"
+version = v"4.12.1"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "2a6007872ba85abd9901914826f6986a2437ab7104f564ccefa1b7a3de742c17"),
+                  "59ee2118ba7b099e9d1502572c9af4221501af955103d2b687aaa3890d13325e"),
 ]
 
 # Bash recipe for building across all platforms
