@@ -60,16 +60,16 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-platforms = expand_cxxstring_abis(platforms)
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc")
 ]
+
+platforms = expand_cxxstring_abis(platforms)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
