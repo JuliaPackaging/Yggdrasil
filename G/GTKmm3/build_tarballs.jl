@@ -34,7 +34,7 @@ ninja -j${nproc}
 ninja install
 
 # Remove temporary links
-rm ${prefix}/bin/gdk-pixbuf-pixdata ${prefix}/bin/glib-compile-{resources,schemas}
+rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 """
 
 # These are the platforms we will build for by default, unless further
