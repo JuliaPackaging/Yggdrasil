@@ -7,8 +7,10 @@ version = v"4.12.1"
 
 # Collection of sources required to build Gmsh
 sources = [
-    ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "59ee2118ba7b099e9d1502572c9af4221501af955103d2b687aaa3890d13325e"),
+    # ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
+    #               "59ee2118ba7b099e9d1502572c9af4221501af955103d2b687aaa3890d13325e"),
+    GitSource("https://gitlab.onelab.info/gmsh/gmsh.git",
+              "58708583355beaef36c5308c84e64ec61d9f7ab3"),
 ]
 
 # Bash recipe for building across all platforms
