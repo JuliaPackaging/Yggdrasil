@@ -32,6 +32,9 @@ mkdir output && cd output
 meson --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson .. -Dbuild-demos=false -Dbuild-tests=false
 ninja -j${nproc}
 ninja install
+
+# Remove temporary links
+rm ${prefix}/bin/gdk-pixbuf-pixdata ${prefix}/bin/glib-compile-{resources,schemas}
 """
 
 # These are the platforms we will build for by default, unless further
