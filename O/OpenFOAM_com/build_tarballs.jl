@@ -1,22 +1,27 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenFOAM_com"
-version = v"2306.0.0"
+version = v"2312.0.0"
+openfoam_version=v"2312"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://develop.openfoam.com/Development/openfoam.git", "a6e826bd55d5ce93d94d18fbd96c27ee7d90aeeb"),
+    GitSource("https://develop.openfoam.com/Development/openfoam.git", "1d8f0d55f79e6488dae75e4b839e358a88af77b5"),
     DirectorySource("./bundled")
 ]
+# In order to set up OpenFOAM, we need to know the version of some of the
+# dependencies.
+const SCOTCH_VERSION = "6.1.3"
 
 # Bash recipe for building across all platforms
-script = raw"""
-cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bashrc-compilerflags.patch
 
 cd ${WORKSPACE}/srcdir/openfoam
 LDFLAGS=""
@@ -30,14 +35,29 @@ sed -i 's/WM_MPLIB=SYSTEMOPENMPI/WM_MPLIB=SYSTEMMPI/g' etc/bashrc
 export MPI_ROOT="${prefix}"
 export MPI_ARCH_FLAGS=""
 export MPI_ARCH_INC="-I${includedir}"
-if grep -q MPICH_NAME $prefix/include/mpi.h; then     export MPI_ARCH_LIBS="-L${libdir} -lmpi"; elif grep -q MPItrampoline $prefix/include/mpi.h; then     export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline"; elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then     export MPI_ARCH_LIBS="-L${libdir} -lmpi"; fi
+if grep -q MPICH_NAME $prefix/include/mpi.h; then 
+    export MPI_ARCH_LIBS="-L${libdir} -lmpi"; 
+elif grep -q MPItrampoline $prefix/include/mpi.h; then     
+    export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline"; 
+elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    export MPI_ARCH_LIBS="-L${libdir} -lmpi"; 
+fi
+
 source etc/bashrc || true
+
 ./Allwmake -j${nproc}
+
 mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
 cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,mpi-system/}*.${dlext}* "${libdir}/."
 cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
 cp -r etc/ "${prefix}/share/openfoam/."
 exit
+"""
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
@@ -46,6 +66,12 @@ platforms = [
     Platform("x86_64", "linux"; libc = "glibc")
 ]
 
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
