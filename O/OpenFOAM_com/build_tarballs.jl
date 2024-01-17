@@ -60,6 +60,11 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
+platforms = expand_cxxstring_abis(platforms)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
@@ -211,4 +216,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+                augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0")
