@@ -29,9 +29,7 @@ meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                      --prefix=$prefix \
                      -Dlibhwloc=$HWLOC \
                      -Dlibblas=$LBT \
-                     -Dliblapack=$LBT \
-                     -Dexamples=true \
-                     -Dtests=true
+                     -Dliblapack=$LBT
 
 meson compile -C builddir
 meson install -C builddir
