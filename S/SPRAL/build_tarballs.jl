@@ -28,8 +28,8 @@ fi
 meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                      --prefix=$prefix \
                      -Dlibhwloc=$HWLOC \
-                     -Dlibblas=openblas \
-                     -Dliblapack=openblas \
+                     -Dlibblas=$LBT \
+                     -Dliblapack=$LBT \
                      -Dexamples=true \
                      -Dtests=true
 
