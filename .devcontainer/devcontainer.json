@@ -5,11 +5,11 @@
     },
   },
   "containerEnv": {
-    "JULIA_PROJECT": ".ci"
+    "JULIA_PROJECT": "${containerWorkspaceFolder}/.ci"
   },
   "hostRequirements": {
     "gpu": "optional"
   },
   "privileged": true,
-  "onCreateCommand": "julia -e 'using Pkg; Pkg.instantiate(); Pkg.precompile();'"
+  "onCreateCommand": "julia -e 'using Pkg; Pkg.precompile();'"
 }
