@@ -30,9 +30,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Ncurses_jll"),
+    Dependency("Ncurses_jll"; compat="6.4.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # Only with GCC 6+ ${includedir} by default in header search path for musl.
+               julia_compat = "1.6", preferred_gcc_version=v"6")
 
