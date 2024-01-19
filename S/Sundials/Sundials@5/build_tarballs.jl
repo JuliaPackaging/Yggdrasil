@@ -91,7 +91,7 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
-    Dependency("SuiteSparse_jll"; compat="~7.2"),
+    Dependency("SuiteSparse_jll"; compat="7.2"),
 ]
 
 # Build the tarballs.
