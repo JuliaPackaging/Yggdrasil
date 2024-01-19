@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"5.2.2" # <-- There is no version 5.2.2, but we need to change versions for new Julia releases
+version = v"5.2.3" # <-- There is no version 5.2.x, but we need to change versions for new Julia releases
 
 # Collection of sources required to build Sundials
 sources = [
@@ -90,9 +90,9 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"; compat="5.4.0"),
-    Dependency("SuiteSparse_jll"; compat="7.2"),
+    Dependency("libblastrampoline_jll"; compat="5.8.0"),
+    Dependency("SuiteSparse_jll"; compat="7.5"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.11")
