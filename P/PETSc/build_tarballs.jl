@@ -7,15 +7,10 @@ name = "PETSc"
 version = v"3.18.7"
 petsc_version = v"3.18.6"
 MUMPS_COMPAT_VERSION = "5.6.2"
-SUITESPARSE_COMPAT_VERSION = "7.2.1" 
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
 MPItrampoline_compat_version="5.2.1"
 BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
 
-SCALAPACK32_COMPAT_VERSION="2.2.1"
-METIS_COMPAT_VERSION="5.1.2"
-SCOTCH_COMPAT_VERSION="6.1.3"
-PARMETIS_COMPAT_VERSION="4.0.6"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
@@ -30,9 +25,15 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
+if [[ "${target}" == *-apple* ]]; then
+    #BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+    BLAS_LAPACK_LIB=""
+else
+    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+fi
+
 if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS="${libdir}/msmpi.${dlext}"
-
 else
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
         MPI_FFLAGS=
@@ -85,11 +86,6 @@ build_petsc()
         SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${includedir}"
     fi
     
-    USE_SUITESPARSE=0
-    if [ "${1}" == "double" ]; then
-        USE_SUITESPARSE=1    
-    fi
-
     Machine_name=$(uname -m)
     if [ "${3}" == "Int64" ]; then
         case "${Machine_name}" in
@@ -156,10 +152,9 @@ build_petsc()
     echo "DEBUG="${DEBUG_FLAG}
     echo "COPTFLAGS="${_COPTFLAGS}
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
-    echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
-    
-    mkdir $libdir/petsc/${PETSC_CONFIG}
 
+
+    mkdir $libdir/petsc/${PETSC_CONFIG}
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         --CC=${CC} \
         --FC=${FC} \
@@ -190,10 +185,9 @@ build_petsc()
         --with-mumps=${USE_MUMPS} \
         ${MUMPS_LIB} \
         ${MUMPS_INCLUDE} \
-        --with-suitesparse=${USE_SUITESPARSE} \
         --SOSUFFIX=${PETSC_CONFIG} \
-        --with-shared-libraries=1 \
         --with-clean=1
+
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
     elif [[ "${target}" == powerpc64le-* ]]; then
@@ -207,7 +201,7 @@ build_petsc()
         FFLAGS="${FFLAGS}"
     make install
 
-    # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
+    # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
     # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
     # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
@@ -240,10 +234,22 @@ build_petsc()
         fi
         install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
 
+        # this is the example that PETSc uses to test the correct installation        
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        install -Dvm 755 ${workdir}/ex19${exeext} "${bindir}/ex19${exeext}"
+
     fi
 
     # we don't particularly care about the examples
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
+
 }
 
 build_petsc double real Int64 opt
@@ -288,6 +294,7 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 products = [
     ExecutableProduct("ex4", :ex4)
     ExecutableProduct("ex42", :ex42)
+    ExecutableProduct("ex19", :ex19)
 
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
@@ -307,8 +314,7 @@ dependencies = [
     Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms)),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
-    Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
-    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
+    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION,  platforms=filter(!Sys.iswindows, platforms)),
     Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("SCALAPACK32_jll"),
@@ -324,8 +330,9 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
-# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.10", 
-               preferred_gcc_version = v"9",  
-               preferred_llvm_version=v"13")
+               augment_platform_block, 
+               julia_compat="1.6", 
+               preferred_gcc_version = v"9",
+               preferred_llvm_version = v"13",
+               clang_use_lld=false)
