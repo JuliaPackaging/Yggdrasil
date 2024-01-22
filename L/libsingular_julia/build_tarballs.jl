@@ -54,7 +54,7 @@ dependencies = [
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
-    Dependency("Singular_jll", compat = "^403.212.1200"),
+    Dependency("Singular_jll", compat = "^403.214.1400"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
