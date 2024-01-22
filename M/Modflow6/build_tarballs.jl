@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Modflow6"
-version = v"6.3.0"
+version = v"6.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/MODFLOW-USGS/modflow6/archive/refs/tags/$version.tar.gz",
-                  "07c4ceda5adcda21426ab7936be1c9133350e206357baeb1313863ee6a837171")
+    GitSource("https://github.com/MODFLOW-USGS/modflow6.git",
+              "43f6198125867c487eedc64b17e9adaceb73f5ab")
 ]
 
 # Bash recipe for building across all platforms
