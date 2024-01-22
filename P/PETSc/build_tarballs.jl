@@ -306,7 +306,7 @@ products = [
 dependencies = [
     Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms)),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
+    Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION, platforms=filter(!Sys.iswindows, platforms)),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION,  platforms=filter(!Sys.iswindows, platforms)),
     Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
