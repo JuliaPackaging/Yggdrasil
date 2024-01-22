@@ -63,20 +63,20 @@ else
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
         MPI_INC=--with-mpi-include=${includedir}
     elif grep -q MPItrampoline $prefix/include/mpi.h; then
+        USE_MPI=1
         MPI_FFLAGS="-fcray-pointer"
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpitrampoline.${dlext}]"
         MPI_INC=--with-mpi-include=${includedir}
-        USE_MPI=1
     elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+        USE_MPI=1
         MPI_FFLAGS=""
         MPI_LIBS=--with-mpi-lib="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
         MPI_INC=--with-mpi-include=${includedir}
-        USE_MPI=1
     else
+        USE_MPI=0
         MPI_FFLAGS=""
         MPI_LIBS=""
         MPI_INC=""
-        USE_MPI=0
     fi
 
 fi
@@ -362,7 +362,6 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, 
-               julia_compat="1.6", 
+               julia_compat="1.9", 
                preferred_gcc_version = v"9",
-               preferred_llvm_version = v"13",
                clang_use_lld=false)
