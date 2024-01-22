@@ -29,12 +29,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-if [[ "${target}" == *-apple* ]]; then
-    # use default Accelerate framework
-    BLAS_LAPACK_LIB=""
-else
-    BLAS_LAPACK_LIB=--with-blaslapack-lib="${libdir}/libopenblas.${dlext}"
-fi
 
 if [[ "${target}" == *-mingw* ]]; then
     # On windows, it compiles fine but we obtain a following runtime error:
@@ -146,12 +140,22 @@ build_petsc()
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
     fi
-    
+
     LIBFLAGS="-L${libdir}" 
     if [[ "${target}" == *-mingw* ]]; then
         LIBFLAGS="-L${libdir} -lssp" 
     fi
 
+    if [[ "${target}" == aarch64-apple-* ]]; then    
+        LIBFLAGS="-L${libdir}" 
+        # Linking requires the function `__divdc3`, which is implemented in
+        # `libclang_rt.osx.a` from LLVM compiler-rt.
+        BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+        CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    else
+        BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+        CLINK_FLAGS=""
+    fi
 
     if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
@@ -188,11 +192,12 @@ build_petsc()
         --COPTFLAGS=${_COPTFLAGS} \
         --CXXOPTFLAGS=${_CXXOPTFLAGS} \
         --FOPTFLAGS=${_FOPTFLAGS}  \
-        ${BLAS_LAPACK_LIB}  \
+        --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix=""  \
         --CFLAGS='-fno-stack-protector '  \
         --FFLAGS="${MPI_FFLAGS}"  \
         --LDFLAGS="${LIBFLAGS}"  \
+        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
         --with-debugging=${DEBUG_FLAG}  \
         --with-batch \
@@ -333,11 +338,11 @@ products = [
     LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
     LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
     LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
-
 ]
 
 dependencies = [
-    Dependency("OpenBLAS32_jll"),
+    Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION, platforms=filter(!Sys.iswindows, platforms)),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION, platforms=filter(!Sys.iswindows, platforms)),
