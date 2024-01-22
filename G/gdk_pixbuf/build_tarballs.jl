@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gdk_pixbuf"
-version = v"2.42.8"
+version = v"2.42.10"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
-                  "d122cb5d0ef32349c52c37f1dfd936c734886643b49a37706acccfe3af6aba77"),
+                  "efb6110873a94bddc2ab09a0e1c81acadaac014d2e622869529e0042c0e81d9b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,7 +54,7 @@ find ${prefix}/lib -name loaders.cache -delete
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -78,7 +78,7 @@ dependencies = [
     Dependency("Glib_jll"; compat="2.68.3"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
