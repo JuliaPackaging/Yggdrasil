@@ -3,19 +3,17 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.12.1"
+version = v"4.12.2"
 
 # Collection of sources required to build Gmsh
 sources = [
-    # ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-    #               "59ee2118ba7b099e9d1502572c9af4221501af955103d2b687aaa3890d13325e"),
-    GitSource("https://gitlab.onelab.info/gmsh/gmsh.git",
-              "58708583355beaef36c5308c84e64ec61d9f7ab3"),
+    ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
+                  "13e09d9ca8102e5c40171d6ee150c668742b98c3a6ca57f837f7b64e1e2af48f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/gmsh
+cd ${WORKSPACE}/srcdir/gmsh-*
 if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
