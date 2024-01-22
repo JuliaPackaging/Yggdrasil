@@ -25,13 +25,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-if [[ "${target}" == *-apple* ]]; then
-    #BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
-    BLAS_LAPACK_LIB=""
-else
-    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
-fi
-
 if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS="${libdir}/msmpi.${dlext}"
 else
@@ -152,9 +145,10 @@ build_petsc()
     echo "DEBUG="${DEBUG_FLAG}
     echo "COPTFLAGS="${_COPTFLAGS}
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
-
-
+    echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
+    
     mkdir $libdir/petsc/${PETSC_CONFIG}
+
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
         --CC=${CC} \
         --FC=${FC} \
@@ -186,8 +180,8 @@ build_petsc()
         ${MUMPS_LIB} \
         ${MUMPS_INCLUDE} \
         --SOSUFFIX=${PETSC_CONFIG} \
+        --with-shared-libraries=1 \
         --with-clean=1
-
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
     elif [[ "${target}" == powerpc64le-* ]]; then
@@ -201,7 +195,7 @@ build_petsc()
         FFLAGS="${FFLAGS}"
     make install
 
-    # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case insensitive file-systems.
+    # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
     # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
     # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
@@ -249,7 +243,6 @@ build_petsc()
 
     # we don't particularly care about the examples
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
-
 }
 
 build_petsc double real Int64 opt
@@ -330,6 +323,7 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs.
+# NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, 
                julia_compat="1.6", 

@@ -1,7 +1,7 @@
 include("../common.jl")
 
 name = "SuiteSparse"
-version = v"7.3.0"
+version = v"7.5.1"
 
 sources = suitesparse_sources(version)
 
@@ -15,10 +15,11 @@ apk del cmake
 # Disable OpenMP as it will probably interfere with blas threads and Julia threads
 FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include" CFOPENMP=)
 
+BLAS_NAME=blastrampoline
 if [[ "${target}" == *-mingw* ]]; then
-    BLAS_NAME=blastrampoline-5
+    BLAS_LIB=${BLAS_NAME}-5
 else
-    BLAS_NAME=blastrampoline
+    BLAS_LIB=${BLAS_NAME}
 fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
@@ -29,37 +30,38 @@ fi
 if [[ ${nbits} == 64 ]]; then
     CMAKE_OPTIONS=(
         -DBLAS64_SUFFIX="_64"
-        -DALLOW_64BIT_BLAS=YES
+        -DSUITESPARSE_USE_64BIT_BLAS=YES
     )
 else
     CMAKE_OPTIONS=(
-        -DALLOW_64BIT_BLAS=NO
+        -DSUITESPARSE_USE_64BIT_BLAS=NO
     )
 fi
 
-for proj in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD LDL KLU UMFPACK RBio SPQR; do
-    cd ${proj}/build
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_INSTALL_PREFIX=${prefix} \
-             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-             -DENABLE_CUDA=0 \
-             -DNFORTRAN=1 \
-             -DNOPENMP=1 \
-             -DNPARTITION=0 \
-             -DNSTATIC=1 \
-             -DBLAS_FOUND=1 \
-             -DBLAS_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-             -DBLAS_LINKER_FLAGS="${BLAS_NAME}" \
-             -DBLAS_UNDERSCORE=ON \
-             -DBLA_VENDOR="${BLAS_NAME}" \
-             -DLAPACK_FOUND=1 \
-             -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_NAME}.${dlext}" \
-             -DLAPACK_LINKER_FLAGS="${BLAS_NAME}" \
-             "${CMAKE_OPTIONS[@]}"
-    make -j${nproc}
-    make install
-    cd ../..
-done
+PROJECTS_TO_BUILD="suitesparse_config;amd;btf;camd;ccolamd;colamd;cholmod;klu;ldl;umfpack;rbio;spqr"
+
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DBUILD_STATIC_LIBS=OFF \
+      -DBUILD_TESTING=OFF \
+      -DSUITESPARSE_ENABLE_PROJECTS=${PROJECTS_TO_BUILD} \
+      -DSUITESPARSE_DEMOS=OFF \
+      -DSUITESPARSE_USE_STRICT=ON \
+      -DSUITESPARSE_USE_CUDA=OFF \
+      -DSUITESPARSE_USE_FORTRAN=OFF \
+      -DSUITESPARSE_USE_OPENMP=OFF \
+      -DCHOLMOD_PARTITION=ON \
+      -DBLAS_FOUND=1 \
+      -DBLAS_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+      -DBLAS_LINKER_FLAGS="${BLAS_LIB}" \
+      -DBLA_VENDOR="${BLAS_NAME}" \
+      -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+      -DLAPACK_LINKER_FLAGS="${BLAS_LIB}" \
+      "${CMAKE_OPTIONS[@]}" \
+      .
+make -j${nproc}
+make install
 
 # For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
 # Eventually, this should be fixed upstream
@@ -88,4 +90,4 @@ install_license LICENSE.txt
 """
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10")
+               julia_compat="1.11")

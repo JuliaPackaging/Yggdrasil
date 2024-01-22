@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "dSFMT"
-version = v"2.2.4"
+version = v"2.2.5"
 
 # Collection of sources required to build dSFMT
 sources = [
     GitSource("https://github.com/MersenneTwister-Lab/dSFMT.git",
-              "5a02974a257ae74dbab12bde3ef6a5ffc0cfbbc2"),
+              "6929b76f2ab07e6302f8daece28045d5bec6ff5c"),
 ]
 
 # Bash recipe for building across all platforms

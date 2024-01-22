@@ -13,7 +13,7 @@ version = v"0.40.9"
 
 # Collection of sources required to build libsingular-julia
 sources = [
-    GitSource("https://github.com/oscar-system/Singular.jl.git", "2f97ab912592fe7b4287795548ad6cdcc1d20c65"),
+    GitSource("https://github.com/oscar-system/Singular.jl.git", "37c38e694dea464f61464304883f1522662d8de3"),
 ]
 
 # Bash recipe for building across all platforms
