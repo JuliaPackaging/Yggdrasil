@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
-version = v"0.1.13"
+version = v"0.1.14"
 
 # reminder: change the above version if restricting the supported julia versions
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
@@ -12,7 +12,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "170dd339ec59b4e341a1138577d93543d0c73c7c"),
+              "7279f542cb6502a0db62623b2f069ed1d32d7c29"),
 ]
 
 # Bash recipe for building across all platforms
