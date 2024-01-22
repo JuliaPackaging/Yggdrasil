@@ -11,6 +11,10 @@ SUPERLUDIST_COMPAT_VERSION = "8.1.2"
 MPItrampoline_compat_version="5.2.1"
 BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
 
+SCALAPACK32_COMPAT_VERSION="2.2.1"
+METIS_COMPAT_VERSION="5.1.2"
+SCOTCH_COMPAT_VERSION="7.0.4"
+PARMETIS_COMPAT_VERSION="4.0.6"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
@@ -25,25 +29,63 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
+if [[ "${target}" == *-apple* ]]; then
+    # use default Accelerate framework
+    BLAS_LAPACK_LIB=""
+else
+    BLAS_LAPACK_LIB=--with-blaslapack-lib="${libdir}/libopenblas.${dlext}"
+fi
+
 if [[ "${target}" == *-mingw* ]]; then
-    MPI_LIBS="${libdir}/msmpi.${dlext}"
+    # On windows, it compiles fine but we obtain a following runtime error:
+    # 
+    # Mingw-w64 runtime failure:
+    # 32 bit pseudo relocation at 00000000093934AA out of range, targeting 00007FF8B7756530, yielding the value 00007FF8AE3C3082.
+    #
+    # (see https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444842322/job/20251986258#step:7:236)
+    #
+    # Interestingly, this error does NOT occur if we use the originally compiled PETSc_jll version 3.18.6 from May 2023.
+    # (e.g., https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444942534/job/20252261704#step:6:49). 
+    #
+    # If we recompile it using the same versions of all packages (while fixing llvm to version 13, as was used in May 2023 for compilation), we have the runtime error above
+    #
+    # The same issue occured in HDF5_jll (https://github.com/eschnett/Yggdrasil/pull/6)
+    #
+    # Interestingly, SuperLU_Dist_jll does not have this issue and runs fine in serial & parallel on windows 
+    # (see e.g. https://github.com/boriskaus/test_SuperLU_DIST_jll/actions/runs/7595261750/job/20687625690#step:7:181)
+    #
+    # Despite a significant time-effort from my side, I have been unable to fix the issue, so I deactivate MPI on windows as a workaround.
+    #MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
+    #MPI_INC=--with-mpi-include=${includedir}
+
+    MPI_FFLAGS=""
+    MPI_LIBS=""
+    MPI_INC=""
+    USE_MPI=0
 else
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
-        MPI_FFLAGS=
-        MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
+        USE_MPI=1
+        MPI_FFLAGS=""
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
+        MPI_INC=--with-mpi-include=${includedir}
     elif grep -q MPItrampoline $prefix/include/mpi.h; then
         MPI_FFLAGS="-fcray-pointer"
-        MPI_LIBS="[${libdir}/libmpitrampoline.${dlext}]"
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpitrampoline.${dlext}]"
+        MPI_INC=--with-mpi-include=${includedir}
+        USE_MPI=1
     elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-        MPI_FFLAGS=
-        MPI_LIBS="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
+        MPI_FFLAGS=""
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
+        MPI_INC=--with-mpi-include=${includedir}
+        USE_MPI=1
     else
-        MPI_FFLAGS=
-        MPI_LIBS=
+        MPI_FFLAGS=""
+        MPI_LIBS=""
+        MPI_INC=""
+        USE_MPI=0
     fi
 
 fi
-
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         
@@ -96,7 +138,7 @@ build_petsc()
 
     # See if we can install MUMPS
     USE_MUMPS=0    
-    if [ -f "${libdir}/libdmumps.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+    if [ -f "${libdir}/libdmumpspar.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_MUMPS=1    
         MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
         MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
@@ -110,16 +152,6 @@ build_petsc()
         LIBFLAGS="-L${libdir} -lssp" 
     fi
 
-    if [[ "${target}" == aarch64-apple-* ]]; then    
-        LIBFLAGS="-L${libdir}" 
-        # Linking requires the function `__divdc3`, which is implemented in
-        # `libclang_rt.osx.a` from LLVM compiler-rt.
-        BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
-        CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-    else
-        BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
-        CLINK_FLAGS=""
-    fi
 
     if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
@@ -156,18 +188,18 @@ build_petsc()
         --COPTFLAGS=${_COPTFLAGS} \
         --CXXOPTFLAGS=${_CXXOPTFLAGS} \
         --FOPTFLAGS=${_FOPTFLAGS}  \
-        --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
+        ${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix=""  \
         --CFLAGS='-fno-stack-protector '  \
         --FFLAGS="${MPI_FFLAGS}"  \
         --LDFLAGS="${LIBFLAGS}"  \
-        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
         --with-debugging=${DEBUG_FLAG}  \
         --with-batch \
-        --with-mpi-lib="${MPI_LIBS}" \
+        --with-mpi=${USE_MPI} \
+        ${MPI_LIBS} \
+        ${MPI_INC} \
         --known-mpi-int64_t=0 \
-        --with-mpi-include="${includedir}" \
         --with-sowing=0 \
         --with-precision=${1}  \
         --with-scalar-type=${2} \
@@ -182,6 +214,7 @@ build_petsc()
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
+
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
     elif [[ "${target}" == powerpc64le-* ]]; then
@@ -304,16 +337,14 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms)),
+    Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION, platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION,  platforms=filter(!Sys.iswindows, platforms)),
-    Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
-    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
-    Dependency("SCALAPACK32_jll"),
-    Dependency("METIS_jll"),
-    Dependency("SCOTCH_jll"),
-    Dependency("PARMETIS_jll"),
+    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION, platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("SCALAPACK32_jll";compat=SCALAPACK32_COMPAT_VERSION),
+    Dependency("METIS_jll", compat=METIS_COMPAT_VERSION),
+    Dependency("SCOTCH_jll"; compat=SCOTCH_COMPAT_VERSION),
+    Dependency("PARMETIS_jll"; compat=PARMETIS_COMPAT_VERSION),
 ]
 append!(dependencies, platform_dependencies)
 
