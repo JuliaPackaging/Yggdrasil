@@ -4,13 +4,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.18.7"
-petsc_version = v"3.18.6"
+version = v"3.19.6"
+petsc_version = v"3.19.6"
 MUMPS_COMPAT_VERSION = "5.6.2"
 SUITESPARSE_COMPAT_VERSION = "7.2.1" 
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
-MPItrampoline_compat_version="5.2.1"
+MPItrampoline_compat_version="5.3.1"
 BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
+HDF5_COMPAT_VERSION="1.14.2"
 
 SCALAPACK32_COMPAT_VERSION="2.2.1"
 METIS_COMPAT_VERSION="5.1.2"
@@ -20,10 +21,11 @@ PARMETIS_COMPAT_VERSION="4.0.6"
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
-    ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-$(petsc_version).tar.gz",
-    "8b53c8b6652459ba0bbe6361b5baf8c4d17c1d04b6654a76e3b6a9ab4a576680"),
+    ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
+    "6045e379464e91bb2ef776f22a08a1bc1ff5796ffd6825f15270159cbb2464ae"),
     DirectorySource("./bundled"),
 ]
+
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -53,7 +55,7 @@ fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         
-atomic_patch -p1 $WORKSPACE/srcdir/patches/macos_version.patch
+#atomic_patch -p1 $WORKSPACE/srcdir/patches/macos_version.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch   
 
 mkdir $libdir/petsc
@@ -116,21 +118,32 @@ build_petsc()
         MUMPS_INCLUDE=""
     fi
     
+    # See if we can install HDF5
+    USE_HDF5=0    
+    if [ -f "${libdir}/libhdf5.${dlext}" ]; then
+        USE_HDF5=1    
+    fi
+    
     LIBFLAGS="-L${libdir}" 
     if [[ "${target}" == *-mingw* ]]; then
         LIBFLAGS="-L${libdir} -lssp" 
     fi
 
+    # BLAS/LAPACK
+    if [[ "${target}" == *-mingw* ]]; then
+        BLAS_NAME=blastrampoline-5
+    else
+        BLAS_NAME=blastrampoline
+    fi
     if [[ "${target}" == aarch64-apple-* ]]; then    
         LIBFLAGS="-L${libdir}" 
         # Linking requires the function `__divdc3`, which is implemented in
         # `libclang_rt.osx.a` from LLVM compiler-rt.
-        BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
         CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
     else
-        BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
         CLINK_FLAGS=""
     fi
+    BLAS_LAPACK_LIB="${libdir}/lib${BLAS_NAME}.${dlext}"
 
     if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
@@ -142,9 +155,6 @@ build_petsc()
         _FOPTFLAGS='-O3' 
     fi
 
-    echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
-    echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_MUMPS="$USE_MUMPS
     echo "1="${1}
     echo "2="${2}
     echo "3="${3}
@@ -157,7 +167,11 @@ build_petsc()
     echo "COPTFLAGS="${_COPTFLAGS}
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
     echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
-    
+    echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
+    echo "USE_SUITESPARSE="$USE_SUITESPARSE
+    echo "USE_MUMPS="$USE_MUMPS
+    echo "USE_HDF5="$USE_HDF5
+
     mkdir $libdir/petsc/${PETSC_CONFIG}
 
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
@@ -191,6 +205,7 @@ build_petsc()
         ${MUMPS_LIB} \
         ${MUMPS_INCLUDE} \
         --with-suitesparse=${USE_SUITESPARSE} \
+        --with-hdf5=${USE_HDF5} \
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
@@ -209,8 +224,6 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
-    # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
-    # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
 
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
@@ -309,6 +322,7 @@ dependencies = [
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
     Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
+    Dependency("HDF5_jll"; compat=HDF5_COMPAT_VERSION),
     Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("SCALAPACK32_jll"),
@@ -326,6 +340,7 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs.
 # NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.10", 
+               augment_platform_block, julia_compat="1.7", 
                preferred_gcc_version = v"9",  
                preferred_llvm_version=v"13")
+
