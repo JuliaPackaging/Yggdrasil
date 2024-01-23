@@ -3,23 +3,17 @@
 using BinaryBuilder
 
 name = "adwaita_icon_theme"
-version = v"43.0.1"
+version = v"3.33.93" # new patch version to build for all platforms
 
 # Collection of sources required to build adwaita-icon-theme
 sources = [
-    ArchiveSource("https://download.gnome.org/sources/adwaita-icon-theme/$(version.major)/adwaita-icon-theme-$(version.major).tar.xz",
-                  "2e3ac77d32a6aa5554155df37e8f0a0dd54fc5a65fd721e88d505f970da32ec6"),
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/adwaita_icon_theme_jll.jl/releases/download/adwaita_icon_theme-v3.33.92+4/adwaita_icon_theme.v3.33.92.any.tar.gz",
+    "f50f3c85710f7dfbd6959bfaa6cc3a940195cd09dadddefb3b5ae9a2f97adad3"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/adwaita-icon-theme-*/
-
-# Install native gtk+3.0 so that we get `gtk-encode-symbolic-svg`
-apk add gtk+3.0 librsvg
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+rsync -a $WORKSPACE/srcdir/share ${prefix}
 """
 
 # These are the platforms we will build for by default, unless further
