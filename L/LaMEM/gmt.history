@@ -1,8 +1,0 @@
-# GMT 6 Session common arguments shelf
-BEGIN GMT 6.5.0
-B	afWSen
-J	X
-JX	X15c/0
-R	0/1/0/1
-@L	1
-END
