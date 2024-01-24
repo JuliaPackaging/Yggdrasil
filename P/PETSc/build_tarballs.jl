@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.18.7"
+version = v"3.18.8"
 petsc_version = v"3.18.6"
 MUMPS_COMPAT_VERSION = "5.6.2"
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
