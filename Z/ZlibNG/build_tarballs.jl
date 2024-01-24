@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ZlibNG"
-version = v"2.1.0"
+version = v"2.1.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zlib-ng/zlib-ng.git", "b3dcf11b4204a16fde71fa8224d7b7054e225b93")
+    GitSource("https://github.com/zlib-ng/zlib-ng.git", "74253725f884e2424a0dd8ae3f69896d5377f325")
 ]
 
 # Bash recipe for building across all platforms
