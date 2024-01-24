@@ -1,0 +1,90 @@
+From 7fcc22dae70af4202fe83b9ecb642fd6333464a2 Mon Sep 17 00:00:00 2001
+From: Hongyu Wang <hongyu.wang@intel.com>
+Date: Wed, 3 Nov 2021 13:58:52 +0800
+Subject: [PATCH] i386: Fix wrong result for AMX-TILE intrinsic when parsing
+ expression.
+
+_tile_loadd, _tile_stored, _tile_streamloadd intrinsics are defined by
+macro, so the parameters should be wrapped by parentheses to accept
+expressions.
+
+gcc/ChangeLog:
+
+	* config/i386/amxtileintrin.h (_tile_loadd_internal): Add
+	parentheses to base and stride.
+	(_tile_stream_loadd_internal): Likewise.
+	(_tile_stored_internal): Likewise.
+
+gcc/testsuite/ChangeLog:
+	* gcc.target/i386/amxtile-3.c: New test.
+---
+ gcc/config/i386/amxtileintrin.h           |  6 ++---
+ gcc/testsuite/gcc.target/i386/amxtile-3.c | 28 +++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 3 deletions(-)
+ create mode 100644 gcc/testsuite/gcc.target/i386/amxtile-3.c
+
+diff --git a/gcc/config/i386/amxtileintrin.h b/gcc/config/i386/amxtileintrin.h
+index 75d784ad16031..3a0a6b44c170b 100644
+--- a/gcc/config/i386/amxtileintrin.h
++++ b/gcc/config/i386/amxtileintrin.h
+@@ -62,7 +62,7 @@ _tile_release (void)
+ #define _tile_loadd_internal(dst,base,stride)				\
+   __asm__ volatile							\
+   ("{tileloadd\t(%0,%1,1), %%tmm"#dst"|tileloadd\t%%tmm"#dst", [%0+%1*1]}" \
+-   :: "r" ((const void*) base), "r" ((long) stride))
++   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+ 
+ #define _tile_stream_loadd(dst,base,stride)		\
+   _tile_stream_loadd_internal (dst, base, stride)
+@@ -70,7 +70,7 @@ _tile_release (void)
+ #define _tile_stream_loadd_internal(dst,base,stride)			\
+   __asm__ volatile							\
+   ("{tileloaddt1\t(%0,%1,1), %%tmm"#dst"|tileloaddt1\t%%tmm"#dst", [%0+%1*1]}" \
+-   :: "r" ((const void*) base), "r" ((long) stride))
++   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+ 
+ #define _tile_stored(dst,base,stride)		\
+   _tile_stored_internal (dst, base, stride)
+@@ -78,7 +78,7 @@ _tile_release (void)
+ #define _tile_stored_internal(src,base,stride)				\
+   __asm__ volatile							\
+   ("{tilestored\t%%tmm"#src", (%0,%1,1)|tilestored\t[%0+%1*1], %%tmm"#src"}" \
+-   :: "r" ((void*) base), "r" ((long) stride) \
++   :: "r" ((void*) (base)), "r" ((long) (stride)) \
+    : "memory")
+ 
+ #define _tile_zero(dst)				\
+diff --git a/gcc/testsuite/gcc.target/i386/amxtile-3.c b/gcc/testsuite/gcc.target/i386/amxtile-3.c
+new file mode 100644
+index 0000000000000..31b34d0ed15f3
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/i386/amxtile-3.c
+@@ -0,0 +1,28 @@
++/* { dg-do compile { target { ! ia32 } } } */
++/* { dg-options "-O2 -mamx-tile " } */
++/* { dg-final { scan-assembler "tileloadd\[ \\t]+\[^\n\]*\\(%\[a-z0-9]*\,%\[a-z0-9\]*\,\[124\]\\)+\[^\n\]*%tmm\[0-9\]"  } } */
++/* { dg-final { scan-assembler "tileloaddt1\[ \\t]+\[^\n\]*\\(%\[a-z0-9]*\,%\[a-z0-9\]*\,\[124\]\\)+\[^\n\]*%tmm\[0-9\]"  } } */
++/* { dg-final { scan-assembler "tilestored\[ \\t]+\[^\n\]*%tmm\[0-9\]+\[^\n\]*\\(%\[a-z0-9]*\,%\[a-z0-9\]*\,\[124\]\\)"  } } */
++/* { dg-final { scan-assembler "leaq\[ \\t]+4" } } */
++/* { dg-final { scan-assembler "leaq\[ \\t]+8" } } */
++/* { dg-final { scan-assembler "addq\[ \\t]+\\\$12" } } */
++/* { dg-final { scan-assembler-not "leaq\[ \\t]+1" } } */
++/* { dg-final { scan-assembler-not "leaq\[ \\t]+2" } } */
++/* { dg-final { scan-assembler-not "addq\[ \\t]+\\\$3" } } */
++#include <immintrin.h>
++
++extern int a[];
++extern const float* base;
++extern const int stride;
++
++#define TMM0 0
++#define TMM1 1
++#define TMM2 2
++#define TMM3 3
++
++void TEST ()
++{
++  _tile_loadd (TMM3, base + 1, stride);
++  _tile_stream_loadd (TMM2, base + 2, stride);
++  _tile_stored (TMM2, base + 3, stride);
++}

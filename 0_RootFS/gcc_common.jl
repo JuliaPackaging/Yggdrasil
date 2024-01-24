@@ -38,6 +38,10 @@ function gcc_script(compiler_target::Platform)
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
 
+    # Increase max file descriptors
+    fd_lim=$(ulimit -n -H)
+    ulimit -n $fd_lim
+
     # Update list of packages before installing new packages
     apk update
     # Install `gcc` from `apk`, which we'll use to bootstrap ourselves a BETTER `gcc`
