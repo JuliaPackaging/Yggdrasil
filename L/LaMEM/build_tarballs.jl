@@ -9,7 +9,7 @@ name = "LaMEM"
 version = v"2.1.3"
 
 
-PETSc_COMPAT_VERSION = "3.18.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
+PETSc_COMPAT_VERSION = "~3.18.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
 MPItrampoline_compat_version="5.2.1"  
 
 # Collection of sources required to complete build
