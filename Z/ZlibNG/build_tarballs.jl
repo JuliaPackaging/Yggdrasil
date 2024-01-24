@@ -7,12 +7,15 @@ version = v"2.1.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zlib-ng/zlib-ng.git", "74253725f884e2424a0dd8ae3f69896d5377f325")
+    GitSource("https://github.com/zlib-ng/zlib-ng.git", "74253725f884e2424a0dd8ae3f69896d5377f325"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/zlib-ng
+# Correct Power build (see <https://github.com/zlib-ng/zlib-ng/issues/1648>)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/power.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \

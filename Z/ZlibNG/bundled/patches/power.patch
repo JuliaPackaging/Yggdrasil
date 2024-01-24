@@ -1,0 +1,12 @@
+diff --git a/arch/power/power_features.c b/arch/power/power_features.c
+index 35145177..a5c0a470 100644
+--- a/arch/power/power_features.c
++++ b/arch/power/power_features.c
+@@ -7,6 +7,7 @@
+ #ifdef HAVE_SYS_AUXV_H
+ #  include <sys/auxv.h>
+ #endif
++#include <linux/auxvec.h>
+ #ifdef __FreeBSD__
+ #  include <machine/cpu.h>
+ #endif
