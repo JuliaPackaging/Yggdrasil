@@ -1,4 +1,5 @@
 using BinaryBuilder
+using Pkg
 using BinaryBuilderBase: sanitize
 
 # zlib version
@@ -42,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
