@@ -3,13 +3,13 @@ using BinaryBuilderBase: sanitize
 
 # zlib version
 name = "Zlib"
-version = v"1.3"
+version = v"1.3.1"
 
 # Collection of sources required to build zlib
 sources = [
     # use Git source because zlib has a track record of deleting release tarballs of old versions
     GitSource("https://github.com/madler/zlib.git",
-              "09155eaa2f9270dc4ed1fa13e2b4b2613e6e4851"),
+              "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf"),
 ]
 
 # Bash recipe for building across all platforms
