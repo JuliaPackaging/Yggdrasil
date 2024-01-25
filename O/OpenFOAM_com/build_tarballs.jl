@@ -1,9 +1,12 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderPlatforms
+const YGGDRASIL_DIR = "../.."
 
 name = "OpenFOAM_com"
 version = v"2312.0.0"
+openfoam_version=v"2312"
 
 # Collection of sources required to complete build
 sources = [
@@ -11,26 +14,58 @@ sources = [
     DirectorySource("./bundled")
 ]
 
+# In order to set up OpenFOAM, we need to know the version of some of the
+# dependencies.
+const SCOTCH_VERSION = "6.1.3"
+
 # Bash recipe for building across all platforms
-script = raw"""
+script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
+
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bashrc-compilerflags.patch
+
 cd ${WORKSPACE}/srcdir/openfoam
+
+# Set rpath-link in all C/C++ compilers for Linux64
 LDFLAGS=""
-for dir in "" "/dummy" "/sys-mpi"; do     LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"; done
-echo "export SCOTCH_VERSION=6.1.0" > etc/config.sh/scotch
+for dir in "" "/dummy" "/sys-mpi"; do     
+LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"; 
+done
+
+# Set version of Scotch
+echo "export SCOTCH_VERSION=${SCOTCH_VERSION}" > etc/config.sh/scotch
 echo "export SCOTCH_ARCH_PATH=${prefix}"      >> etc/config.sh/scotch
+
+# Setup to use our MPI
 sed -i 's/WM_MPLIB=SYSTEMOPENMPI/WM_MPLIB=SYSTEMMPI/g' etc/bashrc
 export MPI_ROOT="${prefix}"
 export MPI_ARCH_FLAGS=""
 export MPI_ARCH_INC="-I${includedir}"
-if grep -q MPICH_NAME $prefix/include/mpi.h; then      export MPI_ARCH_LIBS="-L${libdir} -lmpi";  elif grep -q MPItrampoline $prefix/include/mpi.h; then          export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline";  elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then     export MPI_ARCH_LIBS="-L${libdir} -lmpi";  fi
+
+if grep -q MPICH_NAME $prefix/include/mpi.h; then
+    export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
+elif grep -q MPItrampoline $prefix/include/mpi.h; then
+    export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline";  
+elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
+fi
+
+# Setup the environment. Failures allowed
 source etc/bashrc || true
+
+# Build!
 ./Allwmake -j${nproc} -q -s
+
+# Copying the binaries and etc to the correct directories
 mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
 cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
 cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
 cp -r etc/ "${prefix}/share/openfoam/."
-exit
+"""
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,7 +73,16 @@ exit
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc")
 ]
+platforms = expand_cxxstring_abis(platforms)
 
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -431,17 +475,20 @@ products = [
     ExecutableProduct("overRhoSimpleFoam", :overRhoSimpleFoam),
     ExecutableProduct("pisoFoam", :pisoFoam),
     ExecutableProduct("rhoPimpleFoam", :rhoPimpleFoam),
-    ExecutableProduct("engineFoam", :engineFoam)
+    ExecutableProduct("engineFoam", :engineFoam),
+    FileProduct("share/openfoam/etc", :openfoam_etc)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"))
+    Dependency(PackageSpec(name="SCOTCH_jll", compat=SCOTCH_VERSION))
     Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
+append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+    preferred_gcc_version = v"12")
