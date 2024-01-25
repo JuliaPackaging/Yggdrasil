@@ -54,9 +54,6 @@ if [[ ${target} -ne x86_64-linux-gnu ]]; then
     CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-utilities"
 fi
 
-# https://github.com/JuliaPackaging/Yggdrasil/issues/5031#issuecomment-1155000045
-rm -f /workspace/destdir/lib/*.la
-
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
