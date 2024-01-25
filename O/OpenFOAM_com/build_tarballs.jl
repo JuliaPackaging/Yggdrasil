@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderPlatforms
+using BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 
 name = "OpenFOAM_com"
