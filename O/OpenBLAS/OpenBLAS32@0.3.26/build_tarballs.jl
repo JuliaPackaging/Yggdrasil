@@ -7,7 +7,7 @@ name = "OpenBLAS32"
 version = v"0.3.26"
 
 sources = openblas_sources(version)
-script = openblas_script(openblas32=true)
+script = openblas_script(openblas32=true, bfloat16=true)
 platforms = openblas_platforms()
 products = openblas_products()
 dependencies = openblas_dependencies(platforms)
