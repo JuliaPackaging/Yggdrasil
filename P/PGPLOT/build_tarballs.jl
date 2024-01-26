@@ -14,14 +14,13 @@ script = raw"""
 cd $WORKSPACE/srcdir
 
 if [[ "${target}" == *-apple-* ]]; then
-    cd pgplot
-    for f in ../patch-*;
-    do
-    patch -p0 <$f;
+    pushd pgplot
+    for f in ../patch-*; do
+        atomic_patch -p0 "${f}"
     done
     mkdir sys_darwin
     cp ../bb.conf ./sys_darwin/bb.conf
-    cd ..
+    popd
 fi
 
 mkdir pgplot_build && cd pgplot_build/
