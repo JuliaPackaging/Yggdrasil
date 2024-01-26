@@ -9,9 +9,9 @@ sources = [
     ),
 ]
 script = raw"""
-cd $WORKSPACE/srcdir/Flavio.jl/deps/
-julia build.jl
-install -Dvm 755 "flavioso/target/${rust_target}/release/"*flavioso.${dlext} "${libdir}/libflavioso.${dlext}"
+cd $WORKSPACE/srcdir/Flavio.jl/deps/flavioso/
+cargo build --release
+install -Dvm 755 "target/${rust_target}/release/"*flavioso.${dlext} "${libdir}/libflavioso.${dlext}"
 """
 
 platforms = supported_platforms()
