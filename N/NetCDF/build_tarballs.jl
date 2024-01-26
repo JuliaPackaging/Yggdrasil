@@ -64,8 +64,6 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libcurl.*
     rm /usr/lib/libevent*
     rm /usr/lib/libnghttp2.*
-
-    CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS CPPFLAGS=\"-I/workspace/x86_64-linux-musl-libgfortran3-cxx11/destdir/include/\""
 fi
 
 ./configure --prefix=${prefix} \
