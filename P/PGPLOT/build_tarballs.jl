@@ -36,7 +36,7 @@ else
     make lib SHARED_LD="${FC} -shared  -o libpgplot.${dlext}"
 fi
 
-cp libpgplot.${dlext} "${libdir}/libpgplot.${dlext}"
+install -Dvm 755 libpgplot.${dlext} "${libdir}/libpgplot.${dlext}"
 install_license ../pgplot/copyright.notice
 """
 
