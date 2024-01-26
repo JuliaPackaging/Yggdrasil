@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "mimalloc"
-version = v"2.0.7"
+version = v"2.1.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/mimalloc.git",
-              "91ba1f374da66e624841f53f6659da3a8f8f93ea"),
+              "43ce4bd7fd34bcc730c1c7471c99995597415488"),
 ]
 
 # Bash recipe for building across all platforms
