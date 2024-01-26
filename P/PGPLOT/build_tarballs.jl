@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "PGPLOT"
-version = v"5.2"
+version = v"5.2.2"
 
 sources = [
     ArchiveSource("ftp://ftp.astro.caltech.edu/pub/pgplot/pgplot5.2.tar.gz", "a5799ff719a510d84d26df4ae7409ae61fe66477e3f1e8820422a9a4727a5be4"),
