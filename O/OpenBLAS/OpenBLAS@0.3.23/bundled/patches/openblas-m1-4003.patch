@@ -1,3 +1,27 @@
+From caa2945138f3c8a6f3f0dacbaf653c283e3cd2cb Mon Sep 17 00:00:00 2001
+From: Martin Kroeker <martin@ruby.chemie.uni-freiburg.de>
+Date: Tue, 11 Apr 2023 00:04:09 +0200
+Subject: [PATCH] Support Apple A15/M2 cpus through the existing VORTEX target
+
+---
+ cpuid_arm64.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/cpuid_arm64.c b/cpuid_arm64.c
+index 1080ea974..809f48e95 100644
+--- a/cpuid_arm64.c
++++ b/cpuid_arm64.c
+@@ -268,7 +268,8 @@ int detect(void)
+ #else
+ #ifdef __APPLE__
+ 	sysctlbyname("hw.cpufamily",&value,&length,NULL,0);
+-	if (value ==131287967|| value == 458787763 ) return CPU_VORTEX;
++	if (value ==131287967|| value == 458787763 ) return CPU_VORTEX; //A12/M1
++	if (value == 3660830781) return CPU_VORTEX; //A15/M2
+ #endif
+ 	return CPU_ARMV8;
+ #endif
+
 From cda29633a30bf7ecbc64f85e4bcc6517ad954f1c Mon Sep 17 00:00:00 2001
 From: Martin Kroeker <martin@ruby.chemie.uni-freiburg.de>
 Date: Thu, 13 Apr 2023 17:59:48 +0200
