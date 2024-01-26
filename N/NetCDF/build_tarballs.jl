@@ -54,6 +54,20 @@ if [[ ${target} -ne x86_64-linux-gnu ]]; then
     CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-utilities"
 fi
 
+
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # see
+    # https://github.com/JuliaPackaging/Yggdrasil/blob/48af117395188f48d361a46ea929ee7563d9c2e4/A/ADIOS2/build_tarballs.jl
+
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
+    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libevent*
+    rm /usr/lib/libnghttp2.*
+
+    CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS CPPFLAGS=\"-I/workspace/x86_64-linux-musl-libgfortran3-cxx11/destdir/include/\""
+fi
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
