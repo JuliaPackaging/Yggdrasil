@@ -60,45 +60,20 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-## These are the platforms we will build for by default, unless further
-## platforms are passed in on the command line
-#platforms = supported_platforms()
-#platforms = expand_gfortran_versions(platforms)
-
-#platforms, platform_dependencies = MPI.augment_platforms(platforms)
-
-## Avoid platforms where the MPI implementation isn't supported
-## OpenMPI
-#platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-## MPItrampoline
-#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-#1platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
 
-#Platform("i686", "windows"),
-platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686","linux"; libc="musl"),
-                                                                  Platform("i686","linux"; libc="gnu"),
-                                                                  Platform("x86_64","freebsd"),
-                                                                  Platform("armv6l","linux"; libc="musl"),
-                                                                  Platform("armv7l","linux"; libc="musl"),
-                                                                  Platform("armv7l","linux"; libc="gnu"),
-                                                                  Platform("aarch64","linux"; libc="musl")]))
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
-
 
 # The products that we will ensure are always built
 products = [
