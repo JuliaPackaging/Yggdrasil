@@ -32,6 +32,9 @@ platforms = supported_platforms()
 
 platforms = expand_gfortran_versions(platforms)
 
+# Since smesh requires Fortran 2018, we can only build for libgfortran5 or newer
+
+filter!(p -> libgfortran_version(p) >= v"5", platforms)
 
 # The products that we will ensure are always built
 products = [
