@@ -117,7 +117,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     for platform in platforms
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
-        gcc_version = version > v"15" ? v"10" ? v"8"
+        gcc_version = version > v"15" ? v"10" : v"8"
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;
             dependencies, products,
