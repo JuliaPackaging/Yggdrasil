@@ -8,6 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "MAGEMin"
 version = v"1.3.6" 
 
+MPItrampoline_compat_version="5.2.1"  
+
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
                     "0a4106a9c9f070b300d64a877c02e425ac0f1d05")                 ]
