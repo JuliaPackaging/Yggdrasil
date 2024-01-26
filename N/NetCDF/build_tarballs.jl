@@ -105,8 +105,7 @@ dependencies = [
     Dependency("Zstd_jll"),
     Dependency("libzip_jll"),
     Dependency("Blosc_jll"),
-    # OpenMPI v5 isn't available on 32-bit platforms nor FreeBSD, explicitly request v41.6 to link HDF5
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32 || Sys.isfreebsd(p), platforms)),
+    Dependency("OpenMPI_jll", compat="4.1.6,5"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
