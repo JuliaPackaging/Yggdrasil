@@ -1,0 +1,12 @@
+--- sys/grtermio.c.orig	1994-12-29 15:00:33.000000000 -0500
++++ sys/grtermio.c	2022-12-01 11:15:23.000000000 -0500
+@@ -7,6 +7,9 @@
+ 
+ #include <stdio.h>
+ #include <termios.h>
++#include <string.h>
++#include <fcntl.h>
++#include <unistd.h>
+ 
+ #ifdef PG_PPU
+ #define GROTER groter_
