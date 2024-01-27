@@ -211,7 +211,7 @@ products = [
     LibraryProduct("libpyrolysisModels", :libpyrolysisModels; dont_dlopen=true),
     LibraryProduct("libincompressibleTurbulenceModels", :libincompressibleTurbulenceModels; dont_dlopen=true),
     LibraryProduct("libfluidThermophysicalModels", :libfluidThermophysicalModels; dont_dlopen=true),
-    ExecutableProduct("cumulativeDisplacement", :cumulativeDisplacement; dont_dlopen=true),
+    ExecutableProduct("cumulativeDisplacement", :cumulativeDisplacement),
     ExecutableProduct("chemFoam", :chemFoam),
     ExecutableProduct("driftFluxFoam", :driftFluxFoam),
     ExecutableProduct("stitchMesh", :stitchMesh),
