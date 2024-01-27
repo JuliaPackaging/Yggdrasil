@@ -28,7 +28,7 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 script = raw"""
 cd Enzyme
 
-if [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+15.asserts* ]] || [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+16.asserts* ]] then
+if [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+15.asserts* ]] || [[ "${bb_full_target}" == x86_64-apple-darwin*llvm_version+16.asserts* ]]; then
     # LLVM 15 requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
