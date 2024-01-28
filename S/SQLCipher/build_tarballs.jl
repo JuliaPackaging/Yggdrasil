@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SQLCipher"
-version = v"4.5.0"
+version = v"4.5.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sqlcipher/sqlcipher.git", "f7e9e9052397a0313dde44175a7840e36c9abf56")
+    GitSource("https://github.com/sqlcipher/sqlcipher.git", "befb0709091fa29fa0f3b7eb3944de7b753d1a44")
 ]
 
 # Bash recipe for building across all platforms
