@@ -6,20 +6,27 @@ name = "difmap"
 # difmap version is 2.5q, mapped here to numerical value of 2.5.17
 version = v"2.5.17"
 
-sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5q.tar.gz", "18f61641a56d41624e603bf64794c9f1b072eea320a0c1e0a22ac0ca4d3cef95")]
+sources = [
+    ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5q.tar.gz", "18f61641a56d41624e603bf64794c9f1b072eea320a0c1e0a22ac0ca4d3cef95"),
+    DirectorySource("./bundled"),
+]
 
 script = raw"""
 cd $WORKSPACE/srcdir/uvf_difmap*
-sed -i 's|^USE_TECLA="1"|USE_TECLA="0"|' configure  # required only for platforms with musl
+
+for f in ../patch*; do
+    atomic_patch -p0 "${f}"
+done
+
 if [[ ${target} == *apple* ]]; then
-    ./configure arm-osx-gcc
-    CC=gcc
-    CXX=g++
+    # disable GUI support: X11 jlls not available for this platform
+    sed -i 's|^PGPLOT_LIB="-lpgplot -lX11"$|PGPLOT_LIB="-lpgplot"|' configure
+    CC=gcc CXX=g++ CCOMPL=gcc ./configure arm-osx-gcc
 else
     ./configure linux-i486-gcc
 fi
 ./makeall
-cp ./difmap $bindir
+install difmap "${bindir}/difmap"
 install_license ./README
 """
 
