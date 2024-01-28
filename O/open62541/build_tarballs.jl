@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.3.9"
+version = v"1.3.10"
 
 # Collection of sources required to complete build
 sources = [
@@ -26,6 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_ENABLE_AMALGAMATION=ON \
     -DUA_ENABLE_IMMUTABLE_NODES=ON \
     -DUA_ENABLE_HISTORIZING=ON \
+    -DUA_ENABLE_ENCRYTPION=MBEDTLS \
     -DBUILD_SHARED_LIBS=ON \
     -DUA_FORCE_WERROR=OFF \
     ..
@@ -44,8 +45,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("MbedTLS_jll"; compat="~2.28"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
