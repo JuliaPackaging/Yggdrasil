@@ -3,14 +3,13 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.12.4"
+version = v"4.12.5"
 
 # Collection of sources required to build GTK
 sources = [
     # https://download.gnome.org/sources/gtk/
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
-                  "ba67c6498e5599f928edafb9e08a320adfaa50ab2f0da6fc6ab2252fc2d57520"),
-    DirectorySource("./bundled"),
+                  "28b356d590ee68ef626e2ef9820b2dd21441484a9a042a5a3f0c40e9dfc4f4f8"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
 ]
@@ -33,7 +32,6 @@ rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
-    atomic_patch -p1 ../patches/NSPasteboard.patch
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland-backend=false)
 elif [[ "${target}" == *-mingw* ]]; then
@@ -105,6 +103,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("gdk_pixbuf_jll"),
     Dependency("Libepoxy_jll"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("HarfBuzz_jll"),
     Dependency("xkbcommon_jll"; platforms=x11_platforms),
     Dependency("iso_codes_jll"),
