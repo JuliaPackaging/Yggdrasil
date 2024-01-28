@@ -66,8 +66,9 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-if [[ ${target} == x86_64-unknown-freebsd ]]; then
-    CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-parallel4"
+if [[ ${target} == x86_64-unknown-freebsd* ]]; then
+     # based on the output of mpicc --showme
+     export LIBS="-lmpi -lm -lexecinfo -lutil -lz"
 fi
 
 
