@@ -26,12 +26,6 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bashrc-compilerflags.patch
 
 cd ${WORKSPACE}/srcdir/openfoam
 
-# Set rpath-link in all C/C++ compilers for Linux64
-LDFLAGS=""
-for dir in "" "/dummy" "/sys-mpi"; do     
-LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"; 
-done
-
 # Set version of Scotch
 echo "export SCOTCH_VERSION=${SCOTCH_VERSION}" > etc/config.sh/scotch
 echo "export SCOTCH_ARCH_PATH=${prefix}"      >> etc/config.sh/scotch
@@ -61,6 +55,7 @@ mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
 cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
 cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
 cp -r etc/ "${prefix}/share/openfoam/."
+cp -r bin/ "${prefix}/share/openfoam/."
 """
 
 augment_platform_block = """
@@ -477,7 +472,8 @@ products = [
     ExecutableProduct("pisoFoam", :pisoFoam),
     ExecutableProduct("rhoPimpleFoam", :rhoPimpleFoam),
     ExecutableProduct("engineFoam", :engineFoam),
-    FileProduct("share/openfoam/etc", :openfoam_etc)
+    FileProduct("share/openfoam/etc", :openfoam_etc), 
+    FileProduct("share/openfoam/bin", :openfoam_bin)
 ]
 
 # Dependencies that must be installed before this package can be built
