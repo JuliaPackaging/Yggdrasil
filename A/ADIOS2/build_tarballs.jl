@@ -24,7 +24,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 # Declare `arm8_rt_call_link`. See <https://github.com/ornladios/ADIOS2/issues/3925>.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
 # Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
@@ -99,7 +99,7 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 # We need to use the same compat bounds as HDF5
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0", OpenMPI_compat="4,5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
