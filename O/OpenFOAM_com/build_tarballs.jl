@@ -25,6 +25,7 @@ script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bashrc-compilerflags.patch
 
 cd ${WORKSPACE}/srcdir/openfoam
+git submodule --init modules/cfmesh modules/avalanche
 
 # Set version of Scotch
 echo "export SCOTCH_VERSION=${SCOTCH_VERSION}" > etc/config.sh/scotch
