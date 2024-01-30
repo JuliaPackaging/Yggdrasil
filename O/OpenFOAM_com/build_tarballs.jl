@@ -34,45 +34,45 @@ done
 LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${libdir}"
 
 # Set rpath-link in all C/C++ compilers
-sed -i 's|cc         := gcc\$(COMPILER_VERSION)|cc         := gcc\$(COMPILER_VERSION) ${LDFLAGS}|' wmake/rules/General/Gcc/c
-sed -i 's|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := g++\$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}|' wmake/rules/General/Gcc/c++
+sed -i "s|cc         := gcc\$(COMPILER_VERSION)|cc         := gcc\$(COMPILER_VERSION) ${LDFLAGS}|" wmake/rules/General/Gcc/c
+sed -i "s|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := g++\$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}|" wmake/rules/General/Gcc/c++
 
 cat wmake/rules/General/Gcc/c
 cat wmake/rules/General/Gcc/c++
 
 # Set version of Scotch
-sed -i 's|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION=${SCOTCH_VERSION}|' etc/config.sh/scotch
-sed -i 's|export SCOTCH_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$SCOTCH_VERSION|export SCOTCH_ARCH_PATH=${prefix}|' etc/config.sh/scotch
+sed -i "s|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION=${SCOTCH_VERSION}|" etc/config.sh/scotch
+sed -i "s|export SCOTCH_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$SCOTCH_VERSION|export SCOTCH_ARCH_PATH=${prefix}|" etc/config.sh/scotch
 cat etc/config.sh/scotch
 
 # Setup to use our MPI
-sed -i 's|WM_MPLIB=SYSTEMOPENMPI|WM_MPLIB=SYSTEMMPI|' etc/bashrc
+sed -i "s|WM_MPLIB=SYSTEMOPENMPI|WM_MPLIB=SYSTEMMPI|" etc/bashrc
 cat etc/bashrc
 
-export MPI_ROOT="${prefix}"
-export MPI_ARCH_FLAGS=""
-export MPI_ARCH_INC="-I${includedir}"
+# export MPI_ROOT="${prefix}"
+# export MPI_ARCH_FLAGS=""
+# export MPI_ARCH_INC="-I${includedir}"
 
-if grep -q MPICH_NAME $prefix/include/mpi.h; then
-    export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
-elif grep -q MPItrampoline $prefix/include/mpi.h; then
-    export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline";  
-elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
-fi
+# if grep -q MPICH_NAME $prefix/include/mpi.h; then
+#     export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
+# elif grep -q MPItrampoline $prefix/include/mpi.h; then
+#     export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline";  
+# elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+#     export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
+# fi
 
-# Setup the environment. Failures allowed
-source etc/bashrc || true
+# # Setup the environment. Failures allowed
+# source etc/bashrc || true
 
-# Build!
-./Allwmake -j${nproc} -q -s
+# # Build!
+# ./Allwmake -j${nproc} -q -s
 
-# Copying the binaries and etc to the correct directories
-mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
-cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
-cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
-cp -r etc/ "${prefix}/share/openfoam/."
-cp -r bin/ "${prefix}/share/openfoam/."
+# # Copying the binaries and etc to the correct directories
+# mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
+# cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
+# cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
+# cp -r etc/ "${prefix}/share/openfoam/."
+# cp -r bin/ "${prefix}/share/openfoam/."
 """
 
 augment_platform_block = """
