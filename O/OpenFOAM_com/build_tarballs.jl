@@ -26,7 +26,7 @@ cd ${WORKSPACE}/srcdir/openfoam
 git submodule update --init modules/cfmesh modules/avalanche
 
 # Adding -rpath-links #TODO need to automate for other platforms
-## For linux64GccDPInt32Opt
+## For linux64
 LDFLAGS=""
 for dir in "" "/dummy" "/mpi-system"; do
     LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"
@@ -49,30 +49,30 @@ cat etc/config.sh/scotch
 sed -i "s|WM_MPLIB=SYSTEMOPENMPI|WM_MPLIB=SYSTEMMPI|" etc/bashrc
 cat etc/bashrc
 
-# export MPI_ROOT="${prefix}"
-# export MPI_ARCH_FLAGS=""
-# export MPI_ARCH_INC="-I${includedir}"
+export MPI_ROOT="${prefix}"
+export MPI_ARCH_FLAGS=""
+export MPI_ARCH_INC="-I${includedir}"
 
-# if grep -q MPICH_NAME $prefix/include/mpi.h; then
-#     export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
-# elif grep -q MPItrampoline $prefix/include/mpi.h; then
-#     export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline";  
-# elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-#     export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
-# fi
+if grep -q MPICH_NAME $prefix/include/mpi.h; then
+    export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
+elif grep -q MPItrampoline $prefix/include/mpi.h; then
+    export MPI_ARCH_LIBS="-L${libdir} -lmpitrampoline";  
+elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
+    export MPI_ARCH_LIBS="-L${libdir} -lmpi";  
+fi
 
-# # Setup the environment. Failures allowed
-# source etc/bashrc || true
+# Setup the environment. Failures allowed
+source etc/bashrc || true
 
-# # Build!
-# ./Allwmake -j${nproc} -q -s
+# Build!
+./Allwmake -j${nproc} -q -s
 
-# # Copying the binaries and etc to the correct directories
-# mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
-# cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
-# cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
-# cp -r etc/ "${prefix}/share/openfoam/."
-# cp -r bin/ "${prefix}/share/openfoam/."
+# Copying the binaries and etc to the correct directories
+mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
+cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
+cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
+cp -r etc/ "${prefix}/share/openfoam/."
+cp -r bin/ "${prefix}/share/openfoam/."
 """
 
 augment_platform_block = """
