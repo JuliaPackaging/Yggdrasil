@@ -20,19 +20,18 @@ cp ${host_bindir}/date /usr/local/bin/
 ./bootstrap
 
 # Disable multiple personalities as our 64-bit compilers do not have 32-bit capabilities
-# Also build as a static executable so that the libc is embedded within `strace`.
 # Disable -Werror
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
             --enable-mpers=no \
-            --disable-gcc-Werror \
-            LDFLAGS='-static -pthread'
+            --disable-gcc-Werror
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> Sys.islinux(p) && libc(p) == "glibc", supported_platforms())
+platforms = filter(p -> Sys.islinux(p), supported_platforms())
+platforms = filter(p -> !(libc(p) == "musl" && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
