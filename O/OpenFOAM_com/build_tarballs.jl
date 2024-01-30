@@ -11,8 +11,7 @@ openfoam_version=v"2312"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://develop.openfoam.com/Development/openfoam.git", "1d8f0d55f79e6488dae75e4b839e358a88af77b5"),
-    DirectorySource("./bundled")
+    GitSource("https://develop.openfoam.com/Development/openfoam.git", "1d8f0d55f79e6488dae75e4b839e358a88af77b5")
 ]
 
 # In order to set up OpenFOAM, we need to know the version of some of the
