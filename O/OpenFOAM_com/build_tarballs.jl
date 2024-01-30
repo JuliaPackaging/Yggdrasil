@@ -484,6 +484,7 @@ dependencies = [
     Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     RuntimeDependency(PackageSpec(name = "M4_jll", uuid = "9051c120-a745-5e86-aaa7-8cbc404dba28"))
 ]
 append!(dependencies, platform_dependencies)
