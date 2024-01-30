@@ -34,8 +34,8 @@ done
 LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${libdir}"
 
 # Set rpath-link in all C/C++ compilers
-sed -i "s|cc         := gcc\$(COMPILER_VERSION)|cc         := gcc\$(COMPILER_VERSION) ${LDFLAGS}|" wmake/rules/General/Gcc/c
-sed -i "s|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := g++\$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}| wmake/rules/General/Gcc/c++
+sed -i 's|cc         := gcc\$(COMPILER_VERSION)|cc         := gcc\$(COMPILER_VERSION) ${LDFLAGS}|' wmake/rules/General/Gcc/c
+sed -i 's|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := g++\$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}|' wmake/rules/General/Gcc/c++
 
 
 # Set version of Scotch
