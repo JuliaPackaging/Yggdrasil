@@ -37,13 +37,17 @@ LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${libdir}"
 sed -i 's|cc         := gcc\$(COMPILER_VERSION)|cc         := gcc\$(COMPILER_VERSION) ${LDFLAGS}|' wmake/rules/General/Gcc/c
 sed -i 's|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := g++\$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}|' wmake/rules/General/Gcc/c++
 
+cat wmake/rules/General/Gcc/c
+cat wmake/rules/General/Gcc/c++
 
 # Set version of Scotch
 sed -i 's|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION=${SCOTCH_VERSION}|' etc/config.sh/scotch
 sed -i 's|export SCOTCH_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$SCOTCH_VERSION|export SCOTCH_ARCH_PATH=${prefix}|' etc/config.sh/scotch
+cat etc/config.sh/scotch
 
 # Setup to use our MPI
 sed -i 's|WM_MPLIB=SYSTEMOPENMPI|WM_MPLIB=SYSTEMMPI|' etc/bashrc
+cat etc/bashrc
 
 export MPI_ROOT="${prefix}"
 export MPI_ARCH_FLAGS=""
