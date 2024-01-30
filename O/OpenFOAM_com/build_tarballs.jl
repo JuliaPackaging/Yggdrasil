@@ -22,17 +22,29 @@ const SCOTCH_VERSION = "6.1.3"
 # Bash recipe for building across all platforms
 script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bashrc-compilerflags.patch
-
 cd ${WORKSPACE}/srcdir/openfoam
 git submodule update --init modules/cfmesh modules/avalanche
 
+# Adding -rpath-links #TODO need to automate for other platforms
+## For linux64GccDPInt32Opt
+LDFLAGS=""
+for dir in "" "/dummy" "/mpi-system"; do
+    LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"
+done
+LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${libdir}"
+
+# Set rpath-link in all C/C++ compilers
+sed -i "s|cc         := gcc$(COMPILER_VERSION)|cc         := gcc$(COMPILER_VERSION) ${LDFLAGS}|" wmake/rules/General/Gcc/c
+sed -i "s|CC         := g++$(COMPILER_VERSION) -std=c++14|CC         := g++$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}| wmake/rules/General/Gcc/c++
+
+
 # Set version of Scotch
-echo "export SCOTCH_VERSION=${SCOTCH_VERSION}" > etc/config.sh/scotch
-echo "export SCOTCH_ARCH_PATH=${prefix}"      >> etc/config.sh/scotch
+sed -i 's|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION={SCOTCH_VERSION}|' etc/config.sh/scotch
+sed -i 's|export SCOTCH_ARCH_PATH=$WM_THIRD_PARTY_DIR/platforms/$WM_ARCH$WM_COMPILER$WM_PRECISION_OPTION$WM_LABEL_OPTION/$SCOTCH_VERSION|export SCOTCH_ARCH_PATH=${prefix}|' etc/config.sh/scotch
 
 # Setup to use our MPI
-sed -i 's/WM_MPLIB=SYSTEMOPENMPI/WM_MPLIB=SYSTEMMPI/g' etc/bashrc
+sed -i 's|WM_MPLIB=SYSTEMOPENMPI|WM_MPLIB=SYSTEMMPI|' etc/bashrc
+
 export MPI_ROOT="${prefix}"
 export MPI_ARCH_FLAGS=""
 export MPI_ARCH_INC="-I${includedir}"
@@ -515,7 +527,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"))
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat=$(SCOTCH_VERSION))
     Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
