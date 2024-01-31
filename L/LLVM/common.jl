@@ -225,7 +225,7 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
 # Julia expects the produced LLVM tools to be installed into tools and not bin
 # We can't simply move bin to tools since on MingW64 it will also contain the shlib.
-CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR="tools")
 
 # Also build and install utils, since we want FileCheck, and lit
 CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="tools")
@@ -352,8 +352,6 @@ fi
 
 #This breaks things on LLVM15 and above, but probably should be off everywhere because we only build one runtime per run
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF)
-#For some reason clang doesn't install it's symlinks without this
-CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="${prefix}/tools")
 
 # Tell LLVM which compiler target to use, because it loses track for some reason
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
