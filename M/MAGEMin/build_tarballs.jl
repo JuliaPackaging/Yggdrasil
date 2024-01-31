@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MAGEMin"
-version = v"1.3.7" 
+version = v"1.3.7"
 
 MPItrampoline_compat_version="5.2.1"  
 
