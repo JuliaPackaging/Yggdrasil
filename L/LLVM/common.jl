@@ -370,16 +370,16 @@ ninja -j${nproc} -vv
 ninja install
 
 if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
-    #We can now tell cmake to put the dlls in the right place, and the verifier doesn't find them
+    # We can now tell cmake to put the dlls in the right place, and the verifier doesn't find them
     if [[ "${target}" == *mingw* ]]; then
-        cp ${prefix}/tools/*.dll ${prefix}/bin/
+        cp -v ${prefix}/tools/*.dll ${libdir}/.
     fi
 else
     # Life is harsh on Windows and dynamic libraries are
     # expected to live alongside the binaries. So we have
     # to copy the *.dll from bin/ to tools/ as well...
     if [[ "${target}" == *mingw* ]]; then
-        cp ${prefix}/bin/*.dll ${prefix}/tools/
+        cp -v ${libdir}/*.dll ${prefix}/tools/.
     fi
 fi
 
