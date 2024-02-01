@@ -225,7 +225,12 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
 # Julia expects the produced LLVM tools to be installed into tools and not bin
 # We can't simply move bin to tools since on MingW64 it will also contain the shlib.
-CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR="tools")
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR="tools")
+else
+    CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
+    CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="tools")
+fi
 
 # Also build and install utils, since we want FileCheck, and lit
 CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="tools")
@@ -364,11 +369,18 @@ ninja -j${nproc} -vv
 # Install!
 ninja install
 
-# Life is harsh on Windows and dynamic libraries are
-# expected to live alongside the binaries. So we have
-# to copy the *.dll from bin/ to tools/ as well...
-if [[ "${target}" == *mingw* ]]; then
-    cp ${prefix}/bin/*.dll ${prefix}/tools/
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    #We can now tell cmake to put the dlls in the right place, and the verifier doesn't find them
+    if [[ "${target}" == *mingw* ]]; then
+        cp ${prefix}/tools/*.dll ${prefix}/bin/
+    fi
+else
+    # Life is harsh on Windows and dynamic libraries are
+    # expected to live alongside the binaries. So we have
+    # to copy the *.dll from bin/ to tools/ as well...
+    if [[ "${target}" == *mingw* ]]; then
+        cp ${prefix}/bin/*.dll ${prefix}/tools/
+    fi
 fi
 
 # Work around llvm-config bug by creating versioned symlink to libLLVM
