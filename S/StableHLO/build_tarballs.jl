@@ -26,7 +26,7 @@ cmake .. -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_LLD="$LLVM_ENABLE_LLD" \
     -DLLVM_ENABLE_ASSERTIONS=OFF \
-    -DMLIR_DIR=${PWD}/../llvm-build/lib/cmake/mlir \
+    -DMLIR_DIR=${prefix}/lib/cmake/mlir \
     -DBUILD_SHARED_LIBS=ON
 cmake --build . --target install
 """
