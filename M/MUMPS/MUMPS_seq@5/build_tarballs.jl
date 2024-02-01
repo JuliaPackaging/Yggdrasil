@@ -15,7 +15,7 @@ using BinaryBuilder, Pkg
 
 name = "MUMPS_seq"
 upstream_version = v"5.6.2"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -52,9 +52,9 @@ else
   BLAS_LAPACK="-L${libdir} -lblastrampoline"
 fi
 
-make_args+=(OPTF="-O3 -fopenmp"
-            OPTL="-O3 -fopenmp"
-            OPTC="-O3 -fopenmp"
+make_args+=(OPTF="-O3"
+            OPTL="-O3"
+            OPTC="-O3"
             CDEFS=-DAdd_
             LMETISDIR=${libdir}
             IMETIS=-I${includedir}
