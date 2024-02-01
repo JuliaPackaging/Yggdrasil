@@ -1,7 +1,7 @@
 include("../coin-or-common.jl")
 
 name = "Ipopt"
-version = Ipopt_version
+version = Ipopt_version  # v3.14.14
 
 sources = [
     GitSource("https://github.com/coin-or/Ipopt.git", Ipopt_gitsha)
