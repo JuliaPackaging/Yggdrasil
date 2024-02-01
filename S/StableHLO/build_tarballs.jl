@@ -16,9 +16,6 @@ cd $WORKSPACE/srcdir/stablehlo
 
 [[ "$(uname)" != "Darwin" ]] && LLVM_ENABLE_LLD="ON" || LLVM_ENABLE_LLD="OFF"
 
-# build MLIR
-cd stablehlo
-
 mkdir build && cd build
 cmake .. -GNinja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
