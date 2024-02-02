@@ -41,6 +41,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("MLIR_jll", compat="17.0.6"),
+    Dependency("LLVM_jll", compat="17.0.6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
