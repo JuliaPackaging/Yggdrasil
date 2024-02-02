@@ -22,7 +22,7 @@ install_license ${WORKSPACE}/srcdir/VIC5.c/LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
