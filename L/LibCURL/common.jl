@@ -26,11 +26,15 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     # Collection of sources required to build LibCURL
     sources = [
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
+        DirectorySource("../patches"),
     ]
 
     # Bash recipe for building across all platforms
     script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * raw"""
     cd $WORKSPACE/srcdir/curl-*
+
+    # Address <https://github.com/curl/curl/issues/12849>
+    atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
 
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
