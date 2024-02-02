@@ -8,6 +8,7 @@ const curl_hashes = Dict(
     v"8.2.1"  => "f98bdb06c0f52bdd19e63c4a77b5eb19b243bcbbd0f5b002b9f3cba7295a3a42",
     v"8.4.0"  => "816e41809c043ff285e8c0f06a75a1fa250211bbfb2dc0a037eeef39f1a9e427",
     v"8.5.0"  => "05fc17ff25b793a437a0906e0484b82172a9f4de02be5ed447e0cab8c3475add",
+    v"8.6.0"  => "9c6db808160015f30f3c656c0dec125feb9dc00753596bf858a272b5dd8dc398",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber)
@@ -25,11 +26,15 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     # Collection of sources required to build LibCURL
     sources = [
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
+        DirectorySource("../patches"),
     ]
 
     # Bash recipe for building across all platforms
     script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * raw"""
     cd $WORKSPACE/srcdir/curl-*
+
+    # Address <https://github.com/curl/curl/issues/12849>
+    atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
 
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
