@@ -17,9 +17,10 @@ sources = [
 # In order to set up OpenFOAM, we need to know the version of some of the
 # dependencies.
 const SCOTCH_VERSION = "6.1.3"
+const FFTW_VERSION = "3.3.10"
 
 # Bash recipe for building across all platforms
-script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * raw"""
+script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * "FFTW_VERSION=$(FFTW_VERSION)\n" *  raw"""
 
 cd ${WORKSPACE}/srcdir/openfoam
 git submodule update --init modules/cfmesh modules/avalanche
@@ -39,10 +40,16 @@ sed -i "s|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := g++\$(C
 cat wmake/rules/General/Gcc/c
 cat wmake/rules/General/Gcc/c++
 
-# Set version of Scotch
+# Setup Scotch
 sed -i "s|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION=${SCOTCH_VERSION}|" etc/config.sh/scotch
 sed -i "s|export SCOTCH_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$SCOTCH_VERSION|export SCOTCH_ARCH_PATH=${prefix}|" etc/config.sh/scotch
 cat etc/config.sh/scotch
+
+# Setup FFWT
+sed -i "s|fftw_version=fftw-3.3.10|fftw_version=${FFTW_VERSION}|" etc/config.sh/FFTW
+sed -i "s|export FFTW_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$fftw_version|export FFTW_ARCH_PATH=${prefix}|" etc/config.sh/FFTW
+cat etc/config.sh/FFTW
+
 
 # Setup to use our MPI
 sed -i "s|WM_MPLIB=SYSTEMOPENMPI|WM_MPLIB=SYSTEMMPI|" etc/bashrc
@@ -531,6 +538,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat=SCOTCH_VERSION)
+    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat=FFTW_VERSION)
     Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
