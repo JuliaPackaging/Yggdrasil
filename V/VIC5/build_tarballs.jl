@@ -13,7 +13,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/VIC5.c/vic
 
-target=${libdir}/libvic5_classic.${dlext} make dll
+mkdir -p "${libdir}"
+mkdir -p "${bindir}"
+
+target=${libdir}/libvic5_classic.${dlext} make dll -j${nproc}
+install_license ${WORKSPACE}/srcdir/VIC5.c/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
