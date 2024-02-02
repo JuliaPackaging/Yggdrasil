@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/VIC5.c/vic
 mkdir -p "${libdir}"
 mkdir -p "${bindir}"
 
-target=${libdir}/libvic5_classic.${dlext} make dll -j${nproc}
+target=${libdir}/libvic5_classic.${dlext} make dll CC=${CC} -j${nproc}
 install_license ${WORKSPACE}/srcdir/VIC5.c/LICENSE.txt
 """
 
