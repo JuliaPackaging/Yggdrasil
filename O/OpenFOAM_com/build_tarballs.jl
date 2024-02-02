@@ -45,10 +45,22 @@ sed -i "s|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION=${SCOTCH_VERSION}|" etc/con
 sed -i "s|export SCOTCH_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$SCOTCH_VERSION|export SCOTCH_ARCH_PATH=${prefix}|" etc/config.sh/scotch
 cat etc/config.sh/scotch
 
-# Setup FFWT
+# Setup METIS
+sed -i "s|METIS_VERSION=metis-5.1.0|METIS_VERSION=metis-system|" etc/config.sh/metis
+sed -i "s|export METIS_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$METIS_VERSION|export METIS_ARCH_PATH=${prefix}|" etc/config.sh/metis
+cat etc/config.sh/metis
+
+# Setup FFTW
 sed -i "s|fftw_version=fftw-3.3.10|fftw_version=${FFTW_VERSION}|" etc/config.sh/FFTW
 sed -i "s|export FFTW_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$fftw_version|export FFTW_ARCH_PATH=${prefix}|" etc/config.sh/FFTW
 cat etc/config.sh/FFTW
+
+# Setup CGAL, BOOST
+sed -i "s|boost_version=boost_1_74_0|boost_version=boost-system|" etc/config.sh/CGAL
+sed -i "s|cgal_version=CGAL-4.14.3|cgal_version=cgal-system|" etc/config.sh/CGAL
+sed -i "s|export BOOST_ARCH_PATH=\"\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$boost_version\"|export BOOST_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
+sed -i "s|export CGAL_ARCH_PATH=\"\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$cgal_version\"|export CGAL_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
+cat etc/config.sh/CGAL
 
 
 # Setup to use our MPI
