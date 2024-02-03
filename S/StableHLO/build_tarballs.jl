@@ -2,6 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
+
 name = "StableHLO"
 version = v"0.14.6"
 
@@ -10,6 +14,8 @@ sources = [
     GitSource("https://github.com/openxla/stablehlo.git", "8816d0581d9a5fb7d212affef858e991a349ad6b"),
     DirectorySource(joinpath(@__DIR__, "bundled/")),
 ]
+
+llvm_versions = [v"17.0.6"]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -79,11 +85,44 @@ products = [
     LibraryProduct("libStablehloPasses", :libStablehloPasses),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency("MLIR_jll", compat="17.0.6"),
-    Dependency("LLVM_full_jll", compat="17.0.6"),
-]
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(LLVM.augment)
+    function augment_platform!(platform::Platform)
+        augment_llvm!(platform)
+    end"""
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version=v"8", preferred_llvm_version=v"17")
+builds = []
+for llvm_version in llvm_versions
+
+    dependencies = [
+        Dependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
+        HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+        BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+    ]
+
+    for platform in platforms
+        augmented_platform = deepcopy(platform)
+        llvm_assertions = false
+        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
+
+        should_build_platform(triplet(augmented_platform)) || continue
+        push!(builds, (; dependencies, platforms=[augmented_platform]))
+    end
+end
+
+for (i, build) in builds
+    build_tarballs(ARGS,
+        name,
+        version,
+        sources,
+        script,
+        build.platforms,
+        products,
+        build.dependencies;
+        julia_compat="1.10",
+        preferred_gcc_version=v"8",
+        preferred_llvm_version=v"17",
+        augment_platform_block,
+        lazy_artifacts=true)
+end
