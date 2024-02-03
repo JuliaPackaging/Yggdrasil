@@ -7,7 +7,6 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenFOAM_com"
 version = v"2312.0.0"
-openfoam_version=v"2312"
 
 # Collection of sources required to complete build
 sources = [
@@ -132,7 +131,9 @@ products = [
     LibraryProduct("libcompressibleTurbulenceModels", :libcompressibleTurbulenceModels; dont_dlopen=true),
     LibraryProduct("libcompressibleTwoPhaseMixtureTurbulenceModels", :libcompressibleTwoPhaseMixtureTurbulenceModels; dont_dlopen=true),
     LibraryProduct("libcompressibleTwoPhaseSystem", :libcompressibleTwoPhaseSystem; dont_dlopen=true),
+    LibraryProduct("libconformalVoronoiMesh", :libconformalVoronoiMesh; dont_dlopen=true),
     LibraryProduct("libconversion", :libconversion; dont_dlopen=true),
+    LibraryProduct("libcv2DMesh", :libcv2DMesh; dont_dlopen=true),
     LibraryProduct("libdecompose", :libdecompose; dont_dlopen=true),
     LibraryProduct("libdecompositionMethods", :libdecompositionMethods; dont_dlopen=true),
     LibraryProduct("libdistributed", :libdistributed; dont_dlopen=true),
@@ -196,11 +197,14 @@ products = [
     LibraryProduct("libphaseCompressibleTurbulenceModels", :libphaseCompressibleTurbulenceModels; dont_dlopen=true),
     LibraryProduct("libphaseFunctionObjects", :libphaseFunctionObjects; dont_dlopen=true),
     LibraryProduct("libphaseTemperatureChangeTwoPhaseMixtures", :libphaseTemperatureChangeTwoPhaseMixtures; dont_dlopen=true),
+    LibraryProduct("libPolyhedronReader", :libPolyhedronReader; dont_dlopen=true),
     LibraryProduct("libpotential", :libpotential; dont_dlopen=true),
     LibraryProduct("libPstream", :libPstream; dont_dlopen=true),
     LibraryProduct("libptscotchDecomp", :libptscotchDecomp; dont_dlopen=true),
     LibraryProduct("libpyrolysisModels", :libpyrolysisModels; dont_dlopen=true),
     LibraryProduct("libradiationModels", :libradiationModels; dont_dlopen=true),
+    LibraryProduct("librandomProcesses", :librandomProcesses; dont_dlopen=true),
+    LibraryProduct("librandomProcessesFunctionObjects", :librandomProcessesFunctionObjects; dont_dlopen=true),
     LibraryProduct("libreactingMultiphaseSystem", :libreactingMultiphaseSystem; dont_dlopen=true),
     LibraryProduct("libreactingTwoPhaseSystem", :libreactingTwoPhaseSystem; dont_dlopen=true),
     LibraryProduct("libreactionThermophysicalModels", :libreactionThermophysicalModels; dont_dlopen=true),
@@ -218,6 +222,7 @@ products = [
     LibraryProduct("libsixDoFRigidBodyMotion", :libsixDoFRigidBodyMotion; dont_dlopen=true),
     LibraryProduct("libsixDoFRigidBodyState", :libsixDoFRigidBodyState; dont_dlopen=true),
     LibraryProduct("libSLGThermo", :libSLGThermo; dont_dlopen=true),
+    LibraryProduct("libSloanRenumber", :libSloanRenumber; dont_dlopen=true),
     LibraryProduct("libsnappyHexMesh", :libsnappyHexMesh; dont_dlopen=true),
     LibraryProduct("libsolidChemistryModel", :libsolidChemistryModel; dont_dlopen=true),
     LibraryProduct("libsolidParticle", :libsolidParticle; dont_dlopen=true),
@@ -256,6 +261,7 @@ products = [
     ExecutableProduct("autoPatch", :autoPatch),
     ExecutableProduct("blockMesh", :blockMesh),
     ExecutableProduct("boundaryFoam", :boundaryFoam),
+    ExecutableProduct("boxTurb", :boxTurb),
     ExecutableProduct("buoyantBoussinesqPimpleFoam", :buoyantBoussinesqPimpleFoam),
     ExecutableProduct("buoyantBoussinesqSimpleFoam", :buoyantBoussinesqSimpleFoam),
     ExecutableProduct("buoyantPimpleFoam", :buoyantPimpleFoam),
@@ -295,6 +301,7 @@ products = [
     ExecutableProduct("datToFoam", :datToFoam),
     ExecutableProduct("decomposePar", :decomposePar),
     ExecutableProduct("deformedGeom", :deformedGeom),
+    ExecutableProduct("dnsFoam", :dnsFoam),
     ExecutableProduct("DPMDyMFoam", :DPMDyMFoam),
     ExecutableProduct("DPMFoam", :DPMFoam),
     ExecutableProduct("driftFluxFoam", :driftFluxFoam),
@@ -341,6 +348,8 @@ products = [
     ExecutableProduct("foamToTetDualMesh", :foamToTetDualMesh),
     ExecutableProduct("foamToVTK", :foamToVTK),
     ExecutableProduct("foamUpgradeCyclics", :foamUpgradeCyclics),
+    ExecutableProduct("foamyHexMesh", :foamyHexMesh),
+    ExecutableProduct("foamyQuadMesh", :foamyQuadMesh),
     ExecutableProduct("gambitToFoam", :gambitToFoam),
     ExecutableProduct("generateBoundaryLayers", :generateBoundaryLayers),
     ExecutableProduct("gmshToFoam", :gmshToFoam),
@@ -392,6 +401,7 @@ products = [
     ExecutableProduct("multiphaseEulerFoam", :multiphaseEulerFoam),
     ExecutableProduct("multiphaseInterFoam", :multiphaseInterFoam),
     ExecutableProduct("netgenNeutralToFoam", :netgenNeutralToFoam),
+    ExecutableProduct("noise", :noise),
     ExecutableProduct("nonNewtonianIcoFoam", :nonNewtonianIcoFoam),
     ExecutableProduct("objToVTK", :objToVTK),
     ExecutableProduct("orientFaceZone", :orientFaceZone),
@@ -542,7 +552,7 @@ products = [
     ExecutableProduct("XiDyMFoam", :XiDyMFoam),
     ExecutableProduct("XiEngineFoam", :XiEngineFoam),
     ExecutableProduct("XiFoam", :XiFoam),
-    ExecutableProduct("zipUpMesh", :zipUpMesh),
+    ExecutableProduct("zipUpMesh", :zipUpMesh)
     
     FileProduct("share/openfoam/etc", :openfoam_etc), 
     FileProduct("share/openfoam/bin", :openfoam_bin)
