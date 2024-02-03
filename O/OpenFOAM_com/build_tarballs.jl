@@ -59,7 +59,7 @@ cat etc/config.sh/FFTW
 sed -i "s|boost_version=boost_1_74_0|boost_version=boost-system|" etc/config.sh/CGAL
 sed -i "s|cgal_version=CGAL-4.14.3|cgal_version=cgal-system|" etc/config.sh/CGAL
 sed -i "s|export BOOST_ARCH_PATH="""\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$boost_version"""|export BOOST_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
-sed -i "s|export CGAL_ARCH_PATH="""\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$cgal_version\"""|export CGAL_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
+sed -i "s|export CGAL_ARCH_PATH="""\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$cgal_version"""|export CGAL_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
 cat etc/config.sh/CGAL
 
 
@@ -554,6 +554,7 @@ dependencies = [
     Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    Dependency(PackageSpec(name="CGAL_jll", uuid="8fcd9439-76b0-55f4-a525-bad0597c05d8"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     RuntimeDependency(PackageSpec(name = "M4_jll", uuid = "9051c120-a745-5e86-aaa7-8cbc404dba28"))
 ]
