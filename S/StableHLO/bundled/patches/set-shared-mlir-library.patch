@@ -1,0 +1,246 @@
+diff --git a/stablehlo/api/CMakeLists.txt b/stablehlo/api/CMakeLists.txt
+index f6702298..6322ef52 100644
+--- a/stablehlo/api/CMakeLists.txt
++++ b/stablehlo/api/CMakeLists.txt
+@@ -25,4 +25,6 @@ add_mlir_dialect_library(StablehloPortableApi
+   MLIRBytecodeWriter
+   MLIRFuncDialect
+   MLIRIR
++
++  SHARED
+ )
+diff --git a/stablehlo/conversions/tosa/transforms/CMakeLists.txt b/stablehlo/conversions/tosa/transforms/CMakeLists.txt
+index 5f92f9ba..e625a2b5 100644
+--- a/stablehlo/conversions/tosa/transforms/CMakeLists.txt
++++ b/stablehlo/conversions/tosa/transforms/CMakeLists.txt
+@@ -37,4 +37,6 @@ add_mlir_library(StablehloTOSATransforms
+   MLIRIR
+   MLIRPass
+   MLIRTransforms
++
++  SHARED
+ )
+diff --git a/stablehlo/dialect/CMakeLists.txt b/stablehlo/dialect/CMakeLists.txt
+index ac4f34bc..99c3dad6 100644
+--- a/stablehlo/dialect/CMakeLists.txt
++++ b/stablehlo/dialect/CMakeLists.txt
+@@ -32,6 +32,8 @@ add_mlir_library(StablehloBase
+   MLIRQuantDialect
+   MLIRShapeDialect
+   MLIRSupport
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloBroadcastUtils
+@@ -42,6 +44,8 @@ add_mlir_library(StablehloBroadcastUtils
+   MLIRIR
+   MLIRShapeDialect
+   MLIRSupport
++
++  SHARED
+ )
+ 
+ set(LLVM_TARGET_DEFINITIONS ChloOps.td)
+@@ -72,6 +76,8 @@ add_mlir_dialect_library(ChloOps
+   MLIRIR
+   MLIRQuantDialect
+   MLIRTransformUtils
++
++  SHARED
+ )
+ 
+ target_include_directories(ChloOps INTERFACE
+@@ -92,6 +98,8 @@ add_mlir_dialect_library(StablehloRegister
+   ChloOps
+   StablehloOps
+   VhloOps
++
++  SHARED
+ )
+ 
+ add_mlir_dialect_library(StablehloAssemblyFormat
+@@ -101,6 +109,8 @@ add_mlir_dialect_library(StablehloAssemblyFormat
+   LINK_LIBS PUBLIC
+   StablehloBase
+   MLIRIR
++
++  SHARED
+ )
+ 
+ add_mlir_dialect_library(StablehloSerialization
+@@ -114,6 +124,8 @@ add_mlir_dialect_library(StablehloSerialization
+   VhloOps
+   MLIRBytecodeWriter
+   MLIRIR
++
++  SHARED
+ )
+ 
+ add_mlir_dialect_library(StablehloTypeInference
+@@ -125,6 +137,8 @@ add_mlir_dialect_library(StablehloTypeInference
+   MLIRIR
+   StablehloAssemblyFormat
+   StablehloBase
++
++  SHARED
+ )
+ 
+ set(LLVM_TARGET_DEFINITIONS StablehloOps.td)
+@@ -158,6 +172,8 @@ add_mlir_dialect_library(StablehloOps
+   MLIRSparseTensorDialect
+   MLIRSupport
+   MLIRTensorDialect
++
++  SHARED
+ )
+ 
+ target_include_directories(StablehloOps INTERFACE
+@@ -172,6 +188,8 @@ add_mlir_dialect_library(Version
+   LINK_LIBS PUBLIC
+   MLIRIR
+   MLIRSupport
++
++  SHARED
+ )
+ 
+ set(LLVM_TARGET_DEFINITIONS VhloOps.td)
+@@ -213,6 +231,8 @@ add_mlir_dialect_library(VhloOps
+   MLIRQuantDialect
+   MLIRShapeDialect
+   MLIRSupport
++
++  SHARED
+ )
+ 
+ add_mlir_dialect_library(VhloTypes
+@@ -230,4 +250,6 @@ add_mlir_dialect_library(VhloTypes
+   MLIRShapeDialect
+   MLIRSupport
+   MLIRTransformUtils
++
++  SHARED
+ )
+diff --git a/stablehlo/integrations/c/CMakeLists.txt b/stablehlo/integrations/c/CMakeLists.txt
+index 5a8e8371..b6934d5b 100644
+--- a/stablehlo/integrations/c/CMakeLists.txt
++++ b/stablehlo/integrations/c/CMakeLists.txt
+@@ -20,6 +20,8 @@ add_mlir_public_c_api_library(ChloCAPI
+ 
+   LINK_LIBS PUBLIC
+   ChloOps
++
++  SHARED
+ )
+ 
+ add_mlir_public_c_api_library(StablehloCAPI
+@@ -30,6 +32,8 @@ add_mlir_public_c_api_library(StablehloCAPI
+ 
+   LINK_LIBS PUBLIC
+   StablehloOps
++
++  SHARED
+ )
+ 
+ add_mlir_public_c_api_library(VhloCAPI
+@@ -38,4 +42,6 @@ add_mlir_public_c_api_library(VhloCAPI
+ 
+   LINK_LIBS PUBLIC
+   VhloOps
++
++  SHARED
+ )
+diff --git a/stablehlo/reference/CMakeLists.txt b/stablehlo/reference/CMakeLists.txt
+index ee6aa8c4..c4a84cb7 100644
+--- a/stablehlo/reference/CMakeLists.txt
++++ b/stablehlo/reference/CMakeLists.txt
+@@ -18,6 +18,8 @@ add_mlir_library(StablehloReferenceAxes
+ 
+   LINK_LIBS PUBLIC
+   MLIRIR
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloReferenceElement
+@@ -28,6 +30,8 @@ add_mlir_library(StablehloReferenceElement
+   MLIRIR
+   MLIRSupport
+   StablehloReferenceTypes
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloReferenceIndex
+@@ -37,6 +41,8 @@ add_mlir_library(StablehloReferenceIndex
+   LINK_LIBS PUBLIC
+   MLIRIR
+   MLIRSupport
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloReferenceInterpreterValue
+@@ -47,6 +53,8 @@ add_mlir_library(StablehloReferenceInterpreterValue
+   MLIRIR
+   StablehloReferenceTensor
+   StablehloReferenceToken
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloReferenceOps
+@@ -64,6 +72,8 @@ add_mlir_library(StablehloReferenceOps
+   StablehloReferenceTensor
+   StablehloReferenceToken
+   StablehloTypeInference
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloReferenceScope
+@@ -75,6 +85,8 @@ add_mlir_library(StablehloReferenceScope
+   StablehloReferenceTensor
+   StablehloReferenceToken
+   MLIRSupport
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloReferenceTensor
+@@ -87,6 +99,8 @@ add_mlir_library(StablehloReferenceTensor
+   StablehloReferenceElement
+   StablehloReferenceIndex
+   StablehloReferenceTypes
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloReferenceToken
+@@ -97,6 +111,8 @@ add_mlir_library(StablehloReferenceToken
+   MLIRIR
+   MLIRSupport
+   StablehloOps
++
++  SHARED
+ )
+ 
+ add_mlir_library(StablehloReferenceTypes
+@@ -105,4 +121,6 @@ add_mlir_library(StablehloReferenceTypes
+ 
+   LINK_LIBS PUBLIC
+   MLIRIR
++
++  SHARED
+ )
+diff --git a/stablehlo/transforms/CMakeLists.txt b/stablehlo/transforms/CMakeLists.txt
+index 68a01dfc..65b9c73b 100644
+--- a/stablehlo/transforms/CMakeLists.txt
++++ b/stablehlo/transforms/CMakeLists.txt
+@@ -41,4 +41,6 @@ add_mlir_dialect_library(StablehloPasses
+   StablehloTypeInference
+   StablehloOps
+   VhloOps
++
++  SHARED
+ )

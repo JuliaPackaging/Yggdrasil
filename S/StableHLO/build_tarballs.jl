@@ -8,11 +8,15 @@ version = v"0.14.6"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openxla/stablehlo.git", "8816d0581d9a5fb7d212affef858e991a349ad6b"),
+    DirectorySource(joinpath(@__DIR__, "bundled/")),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/stablehlo
+
+# apply patch to produce shared libraries
+atomic_patch -p1 ${WORKSPACE}/srcdir/bundled/patches/set-shared-mlir-library.patch
 
 [[ "$(uname)" != "Darwin" ]] && LLVM_ENABLE_LLD="ON" || LLVM_ENABLE_LLD="OFF"
 
