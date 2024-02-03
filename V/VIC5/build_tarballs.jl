@@ -1,22 +1,20 @@
 using BinaryBuilder
 
 name = "VIC5"
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to build
 sources = [
     GitSource("https://github.com/CUG-hydro/VIC5.c.git",
-    "339d9666ce17e9638e16193c43637e453e3b03ef"), # v0.1.1
+    "b3fb3564599501f03596c14c532bdf83acc15809"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/VIC5.c/vic
+cd $WORKSPACE/srcdir/VIC5.c/vic/drivers/classic
 
-mkdir -p "${libdir}"
-mkdir -p "${bindir}"
-
-target=${libdir}/libvic5_classic.${dlext} make dll CC=${CC} -j${nproc}
+make CC=${CC} -j${nproc}
+make install
 install_license ${WORKSPACE}/srcdir/VIC5.c/LICENSE.txt
 """
 
@@ -27,6 +25,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libvic5_classic", :libvic5_classic),
+    ExecutableProduct("vic_classic.exe", :vic5_classic),
 ]
 
 # Dependencies that must be installed before this package can be built
