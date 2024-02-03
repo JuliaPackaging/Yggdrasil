@@ -22,7 +22,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/stablehlo
 
 # apply patch to produce shared libraries
-atomic_patch -p1 ${WORKSPACE}/srcdir/bundled/patches/set-shared-mlir-library.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set-shared-mlir-library.patch
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
