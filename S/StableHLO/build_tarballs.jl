@@ -97,7 +97,6 @@ for llvm_version in llvm_versions
 
     dependencies = [
         Dependency("MLIR_jll", llvm_version; compat=string(llvm_version.major)),
-        HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
         BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     ]
 
