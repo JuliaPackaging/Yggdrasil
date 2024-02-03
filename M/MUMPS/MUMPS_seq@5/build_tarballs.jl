@@ -80,10 +80,10 @@ cp lib/*.${dlext} ${libdir}
 make clean
 
 for sym in isamax idamax ilaenv slamch dlamch \
-           saxpy scopy sgemm sgemv slarfg snrm2 sorgqr sscal sswap strsm \
-           daxpy dcopy dgemm dgemv dlarfg dnrm2 dorgqr dscal dswap dtrsm \
-           caxpy ccopy cgemm cgemv clarfg scnrm2 cungqr cscal cswap ctrsm \
-           zaxpy zcopy zgemm zgemv zlarfg dznrm2 zungqr zscal zswap ztrsm
+           saxpy scopy sgemm sgemv slarfg sorgqr sscal sswap strsv strsm snrm2 \
+           daxpy dcopy dgemm dgemv dlarfg dorgqr dscal dswap dtrsv dtrsm dnrm2 \
+           caxpy ccopy cgemm cgemv clarfg cungqr cscal cswap ctrsv ctrsm scnrm2 \
+           zaxpy zcopy zgemm zgemv zlarfg zungqr zscal zswap ztrsv ztrsm dznrm2
 do
     FFLAGS+=("-D${sym}=${sym}_64")
 done
