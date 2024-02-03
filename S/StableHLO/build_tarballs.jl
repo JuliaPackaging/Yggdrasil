@@ -96,7 +96,7 @@ builds = []
 for llvm_version in llvm_versions
 
     dependencies = [
-        Dependency("MLIR_jll", string(llvm_version)),
+        Dependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
         BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     ]
