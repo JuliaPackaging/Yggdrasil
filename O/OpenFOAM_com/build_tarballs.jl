@@ -552,7 +552,7 @@ products = [
     ExecutableProduct("XiDyMFoam", :XiDyMFoam),
     ExecutableProduct("XiEngineFoam", :XiEngineFoam),
     ExecutableProduct("XiFoam", :XiFoam),
-    ExecutableProduct("zipUpMesh", :zipUpMesh)
+    ExecutableProduct("zipUpMesh", :zipUpMesh),
     
     FileProduct("share/openfoam/etc", :openfoam_etc), 
     FileProduct("share/openfoam/bin", :openfoam_bin)
