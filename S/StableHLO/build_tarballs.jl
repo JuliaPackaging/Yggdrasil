@@ -111,7 +111,7 @@ for llvm_version in llvm_versions
     end
 end
 
-for (i, build) in builds
+for (i, build) in enumerate(builds)
     build_tarballs(ARGS,
         name,
         version,
