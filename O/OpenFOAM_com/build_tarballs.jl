@@ -60,6 +60,8 @@ sed -i "s|boost_version=boost_1_74_0|boost_version=boost-system|" etc/config.sh/
 sed -i "s|cgal_version=CGAL-4.14.3|cgal_version=cgal-system|" etc/config.sh/CGAL
 sed -i "s|export BOOST_ARCH_PATH=|export BOOST_ARCH_PATH=${prefix} #|" etc/config.sh/CGAL
 sed -i "s|export CGAL_ARCH_PATH=|export CGAL_ARCH_PATH=${prefix} #|" etc/config.sh/CGAL
+sed -i "s|# export GMP_ARCH_PATH=...|export GMP_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
+sed -i "s|# export MPFR_ARCH_PATH=...|export MPFR_ARCH_PATH=${prefix}|" etc/config.sh/CGAL
 cat etc/config.sh/CGAL
 
 
