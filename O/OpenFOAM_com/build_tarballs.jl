@@ -20,7 +20,7 @@ const SCOTCH_VERSION = "6.1.3"
 const FFTW_VERSION = "3.3.10"
 
 # Bash recipe for building across all platforms
-script = "SCOTCH_VERSION=$(SCOTCH_VERSION)\n" * "FFTW_VERSION=$(FFTW_VERSION)\n" *  raw"""
+script = raw"""
 
 cd ${WORKSPACE}/srcdir/openfoam
 git submodule update --init modules/cfmesh modules/avalanche
@@ -41,7 +41,7 @@ cat wmake/rules/General/Gcc/c
 cat wmake/rules/General/Gcc/c++
 
 # Setup Scotch
-sed -i "s|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION=${SCOTCH_VERSION}|" etc/config.sh/scotch
+sed -i "s|SCOTCH_VERSION=scotch_6.1.0|SCOTCH_VERSION=scotch-system|" etc/config.sh/scotch
 sed -i "s|export SCOTCH_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER\$WM_PRECISION_OPTION\$WM_LABEL_OPTION/\$SCOTCH_VERSION|export SCOTCH_ARCH_PATH=${prefix}|" etc/config.sh/scotch
 cat etc/config.sh/scotch
 
@@ -51,7 +51,7 @@ sed -i "s|export METIS_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_CO
 cat etc/config.sh/metis
 
 # Setup FFTW
-sed -i "s|fftw_version=fftw-3.3.10|fftw_version=${FFTW_VERSION}|" etc/config.sh/FFTW
+sed -i "s|fftw_version=fftw-3.3.10|fftw_version=fftw-system|" etc/config.sh/FFTW
 sed -i "s|export FFTW_ARCH_PATH=\$WM_THIRD_PARTY_DIR/platforms/\$WM_ARCH\$WM_COMPILER/\$fftw_version|export FFTW_ARCH_PATH=${prefix}|" etc/config.sh/FFTW
 cat etc/config.sh/FFTW
 
