@@ -18,18 +18,28 @@ cd $WORKSPACE/srcdir/stablehlo
 # apply patch to produce shared libraries
 atomic_patch -p1 ${WORKSPACE}/srcdir/bundled/patches/set-shared-mlir-library.patch
 
-[[ "$(uname)" != "Darwin" ]] && LLVM_ENABLE_LLD="ON" || LLVM_ENABLE_LLD="OFF"
+CMAKE_FLAGS=()
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 
-mkdir build && cd build
-cmake .. -GNinja \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_ENABLE_LLD="$LLVM_ENABLE_LLD" \
-    -DLLVM_ENABLE_ASSERTIONS=OFF \
-    -DMLIR_DIR=${prefix}/lib/cmake/mlir \
-    -DBUILD_SHARED_LIBS=ON
-cmake --build . --target install
+CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS=OFF)
+CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
+
+CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
+
+CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+
+if [[ "$(uname)" != "Darwin" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="ON")
+else
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
+fi
+
+cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
+ninja -C build -j ${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
