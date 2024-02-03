@@ -108,7 +108,7 @@ make_args_64+=(PLAT="64"
                LIBBLAS="${BLAS_LAPACK}"
                LAPACK="${BLAS_LAPACK}")
 
-make -j${nproc} allshared "${make_args_64[@]}"
+make allshared "${make_args_64[@]}"
 
 cp lib/*.${dlext} ${libdir}
 """
