@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PDAL"
-version = v"2.5.4"
+version = v"2.5.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PDAL/PDAL.git", "4d01a1b9486ae84b42192a36999b42fb75d0715e"),
+    GitSource("https://github.com/PDAL/PDAL.git", "a302bc095693354b46f8993b0ef576ed8f09824b"),
     DirectorySource("./bundled"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
