@@ -13,7 +13,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/VIC5.c/vic/drivers/classic
 
-# mkdir -p ${prefix}/bin ${prefix}/lib
+mkdir -p ${prefix}/bin ${prefix}/lib
 
 make CC=${CC} -j${nproc}
 make install
