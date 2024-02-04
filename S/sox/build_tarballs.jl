@@ -12,28 +12,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd sox/
+cd $WORKSPACE/srcdir/sox/
 autoreconf -i
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "freebsd"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
@@ -42,7 +30,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
