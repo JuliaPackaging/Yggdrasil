@@ -6,7 +6,7 @@ version = v"0.1.2"
 # Collection of sources required to build
 sources = [
     GitSource("https://github.com/CUG-hydro/VIC5.c.git",
-    "ef532866ffca49890bbab7ae0c6ce580b7483daf"),
+    "a999edf4624101a647ba8b9a6f8981aa353fd4ac"),
 ]
 
 # Bash recipe for building across all platforms
