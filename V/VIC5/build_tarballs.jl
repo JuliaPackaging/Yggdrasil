@@ -6,24 +6,17 @@ version = v"0.1.2"
 # Collection of sources required to build
 sources = [
     GitSource("https://github.com/CUG-hydro/VIC5.c.git",
-    "4d9d72a6bcc573cc19144493dc09898054e72d18"),
+    "ef532866ffca49890bbab7ae0c6ce580b7483daf"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/VIC5.c/vic/drivers/classic
 
-mkdir -p ${prefix}/bin ${prefix}/lib
-
+mkdir -p ${bindir} ${libdir}
 make CC=${CC} -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/VIC5.c/LICENSE.txt
-
-## debug
-echo $bindir $libdir
-ls ${prefix}/bin
-ls $bindir
-ls $libdir
 """
 
 # These are the platforms we will build for by default, unless further
