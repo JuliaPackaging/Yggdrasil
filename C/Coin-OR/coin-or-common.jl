@@ -39,7 +39,7 @@ Cbc_gitsha = "3c1d759619f38bbd5916380df292cfc1dafba7f5"
 Cgl_version = offset_version(v"0.60.6", v"0.0.0")
 Cgl_gitsha = "8952b9e737e434b730fab5967cd28180b43d7234"
 
-Clp_version = offset_version(v"1.17.7", v"0.0.0")
+Clp_version = offset_version(v"1.17.9", v"0.0.0")
 Clp_gitsha = "1c2586a08d33ecc59ed67d319c29044802c0866b"
 
 Osi_version = offset_version(v"0.108.10", v"0.0.0")
@@ -85,6 +85,8 @@ MUMPS_seq_version = v"5.4.1"
 MUMPS_seq_version_LBT = v"500.600.201"
 SPRAL_version_LBT = v"2024.1.18"
 OpenBLAS32_version = v"0.3.26"
+GLPK_version = v"5.0.1"
+SuiteSparse32_version = v"5.10.1"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
