@@ -26,7 +26,20 @@ index 793c767e..412bea5d 100644
 +static int seek(sox_format_t UNUSED * ft, sox_uint64_t UNUSED offset)
  {
    /* Seek relative to current position. */
-   return SOX_SUCCESS;" > macos.patch
+   return SOX_SUCCESS;
+diff --git a/src/sox_i.h b/src/sox_i.h
+index c8552f97..301bb5e8 100644
+--- a/src/sox_i.h
++++ b/src/sox_i.h
+@@ -237,7 +237,7 @@ size_t lsx_rawread(sox_format_t * ft, sox_sample_t *buf, size_t nsamp);
+ int lsx_rawstopread(sox_format_t * ft);
+ int lsx_rawstartwrite(sox_format_t * ft);
+ size_t lsx_rawwrite(sox_format_t * ft, const sox_sample_t *buf, size_t nsamp);
+-int lsx_rawseek(sox_format_t * ft, uint64_t offset);
++int lsx_rawseek(sox_format_t * ft, sox_uint64_t offset);
+ int lsx_rawstart(sox_format_t * ft, sox_bool default_rate, sox_bool default_channels, sox_bool default_length, sox_encoding_t encoding, unsigned bits_per_sample);
+ #define lsx_rawstartread(ft) lsx_rawstart(ft, sox_false, sox_false, sox_false, SOX_ENCODING_UNKNOWN, 0)
+ #define lsx_rawstartwrite lsx_rawstartread" > macos.patch
     git apply macos.patch
 fi
 autoreconf -i
