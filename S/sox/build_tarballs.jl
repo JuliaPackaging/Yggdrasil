@@ -14,8 +14,20 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sox/
 if [[ "${target}" == *-apple-darwin* ]]; then # Apply patch from https://github.com/chirlu/sox/pull/2
-    wget -q https://patch-diff.githubusercontent.com/raw/chirlu/sox/pull/2.patch
-    git am 2.patch
+    echo "diff --git a/src/skelform.c b/src/skelform.c
+index 793c767e..412bea5d 100644
+--- a/src/skelform.c
++++ b/src/skelform.c
+@@ -183,7 +183,7 @@ static int stopwrite(sox_format_t UNUSED * ft)
+   return SOX_SUCCESS;
+ }
+ 
+-static int seek(sox_format_t UNUSED * ft, uint64_t UNUSED offset)
++static int seek(sox_format_t UNUSED * ft, sox_uint64_t UNUSED offset)
+ {
+   /* Seek relative to current position. */
+   return SOX_SUCCESS;" > macos.patch
+    git apply macos.patch
 fi
 autoreconf -i
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
