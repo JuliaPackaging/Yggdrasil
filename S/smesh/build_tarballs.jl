@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "smesh"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/trixi-framework/smesh.git",
-              "5c2d06f191e173fc92382bae0e391463517c3cc9"),
+              "55ea1baf2722b3507ec1b8628c41067a211c7e56"),
 ]
 
 # Bash recipe for building across all platforms
