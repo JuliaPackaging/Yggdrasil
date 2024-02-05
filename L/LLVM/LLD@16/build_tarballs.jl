@@ -8,7 +8,7 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
-# Include common tools.
+# Include common tools..
 include("../common.jl")
 
 augment_platform_block = """
