@@ -52,18 +52,15 @@ fi
     lt_cv_deplibs_check_method=pass_all \
     --with-blas="-L${libdir} ${LBT}" \
     --with-lapack="-L${libdir} ${LBT}" \
+    --with-coinutils \
     --with-coinutils-lflags="-lCoinUtils" \
     --with-coinutils-cflags="${includedir}" \
+    --with-osi \
     --with-osi-lflags="-lOsi" \
     --with-osi-cflags="${includedir}" \
+    --with-mumps \
     --with-mumps-lflags="-L${libdir} -ldmumps" \
-    --with-mumps-cflags="${includedir}/mumps_seq" \
-    --with-glpk-lflags="-L${libdir} -lglpk" \
-    --with-glpk-cflags="-I${includedir}" \
-    --with-amd-lflags="-L${libdir} -lamd" \
-    --with-amd-cflags="-I${includedir}" \
-    --with-cholmod-lflags="-L${libdir} -lcholmod" \
-    --with-cholmod-cflags="-I${includedir}"
+    --with-mumps-cflags="${includedir}/mumps_seq"
 
 make -j${nproc}
 make install
@@ -84,8 +81,6 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CoinUtils_jll", uuid="be027038-0da8-5614-b30d-e42594cb92df"), compat="$(CoinUtils_version)"),
     Dependency(PackageSpec(name="Osi_jll", uuid="7da25872-d9ce-5375-a4d3-7a845f58efdd"), compat="$(Osi_version)"),
-    Dependency(PackageSpec(name="SuiteSparse32_jll", uuid="ca45d3f4-326b-53b0-9957-23b75aacb3f2"), compat="$(SuiteSparse32_version)"),
-    Dependency(PackageSpec(name="GLPK_jll", uuid="e8aa6df9-e6ca-548a-97ff-1f85fc5b8b98"), compat="$(GLPK_version)"),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="$(MUMPS_seq_version_LBT)"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
