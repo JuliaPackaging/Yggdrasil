@@ -14,7 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sox/
 if [[ "${target}" == *-apple-darwin* ]]; then # Apply patch from https://github.com/chirlu/sox/pull/2
-    sed -i '141s/uint64_t/sox_uint64_t/' src/formats_i.c # Replace uint64_t by sox_uint64_t at line 141
+    wget -q https://patch-diff.githubusercontent.com/raw/chirlu/sox/pull/2.patch
+    git am 2.patch
 fi
 autoreconf -i
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
