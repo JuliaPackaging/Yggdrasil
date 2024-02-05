@@ -85,8 +85,6 @@ MUMPS_seq_version = v"5.4.1"
 MUMPS_seq_version_LBT = v"500.600.201"
 SPRAL_version_LBT = v"2024.1.18"
 OpenBLAS32_version = v"0.3.26"
-GLPK_version = v"5.0.1"
-SuiteSparse32_version = v"5.10.1"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
