@@ -40,11 +40,11 @@ CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 
-if [[ "$(uname)" != "Darwin" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="ON")
-else
+# if [[ "$(uname)" != "Darwin" ]]; then
+#     CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="ON")
+# else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
-fi
+# fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -101,6 +101,7 @@ for llvm_version in llvm_versions
         RuntimeDependency("MLIR_jll"; compat=string(llvm_version.major)),
         HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
         BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+        HostBuildDependency(PackageSpec(name="Clang_jll", version=llvm_version)),
     ]
 
     for platform in platforms
