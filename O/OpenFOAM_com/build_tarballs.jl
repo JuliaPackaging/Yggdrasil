@@ -33,8 +33,8 @@ done
 LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${libdir}"
 
 # Set rpath-link in all C/C++ compilers
-sed -i "s|cc         := gcc\$(COMPILER_VERSION)|cc         := gcc\$(COMPILER_VERSION) ${LDFLAGS}|" wmake/rules/General/Gcc/c
-sed -i "s|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := g++\$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}|" wmake/rules/General/Gcc/c++
+sed -i "s|cc         := gcc\$(COMPILER_VERSION)|cc         := cc\$(COMPILER_VERSION) ${LDFLAGS}|" wmake/rules/General/Gcc/c
+sed -i "s|CC         := g++\$(COMPILER_VERSION) -std=c++14|CC         := c++\$(COMPILER_VERSION) -std=c++14 ${LDFLAGS}|" wmake/rules/General/Gcc/c++
 
 cat wmake/rules/General/Gcc/c
 cat wmake/rules/General/Gcc/c++
@@ -560,17 +560,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
+    HostBuildDependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
+    HostBuildDependency(PackageSpec(name="CGAL_jll", uuid="8fcd9439-76b0-55f4-a525-bad0597c05d8"))
     Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat=SCOTCH_VERSION)
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat=FFTW_VERSION)
     Dependency(PackageSpec(name="PTSCOTCH_jll", uuid="b3ec0f5a-9838-5c9b-9e77-5f2c6a4b089f"))
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"))
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    HostBuildDependency(PackageSpec(name="CGAL_jll", uuid="8fcd9439-76b0-55f4-a525-bad0597c05d8"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version = v"8")
+    preferred_gcc_version = v"9")
