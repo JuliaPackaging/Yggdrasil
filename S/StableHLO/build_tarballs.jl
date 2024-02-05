@@ -12,25 +12,24 @@ version = v"0.14.6"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openxla/stablehlo.git", "8816d0581d9a5fb7d212affef858e991a349ad6b"),
-    DirectorySource(joinpath(@__DIR__, "bundled/")),
 ]
 
-llvm_versions = [v"17.0.6"]
+llvm_versions = [v"17.0.6+0"]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/stablehlo
 
-# apply patch to produce shared libraries
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/set-shared-mlir-library.patch
+# need to run mlir-tblgen and mlir-pdll on the host
+rm ${prefix}/bin/mlir-tblgen ${prefix}/bin/mlir-pdll
+ln -s ${host_prefix}/bin/mlir-tblgen ${prefix}/bin/mlir-tblgen
+ln -s ${host_prefix}/bin/mlir-pdll ${prefix}/bin/mlir-pdll
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
-CMAKE_FLAGS+=(-DCMAKE_C_COMPILER=clang)
-CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER=clang++)
 
 CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS=OFF)
@@ -38,16 +37,20 @@ CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
 
 CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 
-CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=OFF)
 
-# if [[ "$(uname)" != "Darwin" ]]; then
-#     CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="ON")
-# else
+if [[ "$(uname)" != "Darwin" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="ON")
+else
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
-# fi
+fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
+
+# build shared library from static libraries
+gcc -shared -o libStablehlo.${dlext} -lLLVM -lMLIR -lc++ -Lbuild/lib -Wl,$(flagon --whole-archive) $(find build/lib -name "*.a" -exec sh -c "basename {} .a" ';' | sed "s/lib/-l/g")
+install libStablehlo.${dlext} ${prefix}/lib
 """
 
 # These are the platforms we will build for by default, unless further
@@ -58,33 +61,8 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("stablehlo-opt", :stablehlo_opt),
     ExecutableProduct("stablehlo-translate", :stablehlo_translate),
-    LibraryProduct("libStablehloCAPI", :libStablehloCAPI),
-    LibraryProduct("libStablehloPortableApi", :libStablehloPortableApi),
-    LibraryProduct("libStablehloTOSATransforms", :libStablehloTOSATransforms),
-    LibraryProduct("libStablehloBase", :libStablehloBase),
-    LibraryProduct("libStablehloBroadcastUtils", :libStablehloBroadcastUtils),
-    LibraryProduct("libChloOps", :libChloOps),
-    LibraryProduct("libStablehloRegister", :libStablehloRegister),
-    LibraryProduct("libStablehloAssemblyFormat", :libStablehloAssemblyFormat),
-    LibraryProduct("libStablehloSerialization", :libStablehloSerialization),
-    LibraryProduct("libStablehloTypeInference", :libStablehloTypeInference),
-    LibraryProduct("libStablehloOps", :libStablehloOps),
-    LibraryProduct("libVersion", :libVersion),
-    LibraryProduct("libVhloOps", :libVhloOps),
-    LibraryProduct("libVhloTypes", :libVhloTypes),
-    LibraryProduct("libChloCAPI", :libChloCAPI),
-    LibraryProduct("libStablehloCAPI", :libStablehloCAPI),
-    LibraryProduct("libVhloCAPI", :libVhloCAPI),
-    LibraryProduct("libStablehloReferenceAxes", :libStablehloReferenceAxes),
-    LibraryProduct("libStablehloReferenceElement", :libStablehloReferenceElement),
-    LibraryProduct("libStablehloReferenceIndex", :libStablehloReferenceIndex),
-    LibraryProduct("libStablehloReferenceInterpreterValue", :libStablehloReferenceInterpreterValue),
-    LibraryProduct("libStablehloReferenceOps", :libStablehloReferenceOps),
-    LibraryProduct("libStablehloReferenceScope", :libStablehloReferenceScope),
-    LibraryProduct("libStablehloReferenceTensor", :libStablehloReferenceTensor),
-    LibraryProduct("libStablehloReferenceToken", :libStablehloReferenceToken),
-    LibraryProduct("libStablehloReferenceTypes", :libStablehloReferenceTypes),
-    LibraryProduct("libStablehloPasses", :libStablehloPasses),
+    ExecutableProduct("stablehlo-lsp-server", :stablehlo_lsp_server),
+    LibraryProduct("libStablehlo", :libStablehlo),
 ]
 
 augment_platform_block = """
@@ -98,10 +76,9 @@ builds = []
 for llvm_version in llvm_versions
 
     dependencies = [
-        RuntimeDependency("MLIR_jll"; compat=string(llvm_version.major)),
-        HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
+        Dependency("MLIR_jll", llvm_version),
         BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-        HostBuildDependency(PackageSpec(name="Clang_jll", version=llvm_version)),
+        HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
     ]
 
     for platform in platforms
