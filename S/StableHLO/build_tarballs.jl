@@ -9,14 +9,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "StableHLO"
 version = v"0.14.6"
 
-# Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openxla/stablehlo.git", "8816d0581d9a5fb7d212affef858e991a349ad6b"),
 ]
 
 llvm_versions = [v"17.0.6+0"]
 
-# Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/stablehlo
 
@@ -38,6 +36,7 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
 
 CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 
+# building shared libraries crashes on linking, so build static libraries and link them manually
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=OFF)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
@@ -51,12 +50,9 @@ gcc -shared -o libStablehlo.${dlext} -lLLVM -lMLIR -lc++ -Lbuild/lib -Wl,$(flago
 install libStablehlo.${dlext} ${prefix}/lib
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(==(64) ∘ wordsize, platforms)
 
-# The products that we will ensure are always built
 products = [
     ExecutableProduct("stablehlo-opt", :stablehlo_opt),
     ExecutableProduct("stablehlo-translate", :stablehlo_translate),
