@@ -57,7 +57,8 @@ install libStablehlo.${dlext} ${prefix}/lib
 
 platforms = supported_platforms()
 filter!(==(64) ∘ wordsize, platforms)
-filter!(!=("powerpc64le-linux-gnu") ∘ triplet, platforms)
+filter!(!=("powerpc64le") ∘ arch, platforms)
+filter!(!Sys.iswindows, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
