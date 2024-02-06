@@ -47,11 +47,11 @@ install build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehl
 
 # build shared library from static libraries
 cd build/lib
-for i in $(ls *.a); do
-    echo $i;
-    ar x $i;
+for i in *.a; do
+    echo $i
+    ar x $i
 done
-c++ -shared -o libStablehlo.${dlext} -lLLVM -lMLIR $(ls *.cpp.o)
+c++ -shared -o libStablehlo.${dlext} -lLLVM -lMLIR *.cpp.o
 install libStablehlo.${dlext} ${prefix}/lib
 """
 
