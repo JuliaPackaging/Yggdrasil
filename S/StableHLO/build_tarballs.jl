@@ -43,6 +43,9 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=OFF)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
 
+# NOTE no idea why they are not installed by default
+install stablehlo-opt stablehlo-translate stablehlo-lsp-server ${prefix}/bin
+
 # build shared library from static libraries
 gcc -shared -o libStablehlo.${dlext} -lLLVM -lMLIR -lc++ -Lbuild/lib -Wl,$(flagon --whole-archive) $(find build/lib -name "*.a" -exec sh -c "basename {} .a" ';' | sed "s/lib/-l/g")
 install libStablehlo.${dlext} ${prefix}/lib
