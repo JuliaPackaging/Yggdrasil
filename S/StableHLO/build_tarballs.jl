@@ -44,7 +44,7 @@ cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
 
 # NOTE no idea why they are not installed by default
-install stablehlo-opt stablehlo-translate stablehlo-lsp-server ${prefix}/bin
+install build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehlo-lsp-server ${prefix}/bin
 
 # build shared library from static libraries
 gcc -shared -o libStablehlo.${dlext} -lLLVM -lMLIR -lc++ -Lbuild/lib -Wl,$(flagon --whole-archive) $(find build/lib -name "*.a" -exec sh -c "basename {} .a" ';' | sed "s/lib/-l/g")
