@@ -40,7 +40,7 @@ CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=OFF)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j ${nproc} install
+ninja -C build -j 1 install
 
 # NOTE no idea why they are not installed by default
 install build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehlo-lsp-server ${prefix}/bin
@@ -96,7 +96,7 @@ for (i, build) in enumerate(builds)
         products,
         build.dependencies;
         julia_compat="1.10",
-        preferred_gcc_version=v"8",
+        preferred_gcc_version=v"9",
         preferred_llvm_version=v"17",
         augment_platform_block,
         lazy_artifacts=true)
