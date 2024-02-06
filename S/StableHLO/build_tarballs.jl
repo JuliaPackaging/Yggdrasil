@@ -40,7 +40,7 @@ CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=OFF)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j 1 install
+ninja -C build -j 1 all
 
 # NOTE no idea why they are not installed by default
 install -v build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehlo-lsp-server ${bindir}
