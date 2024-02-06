@@ -58,6 +58,7 @@ install libStablehlo.${dlext} ${prefix}/lib
 platforms = supported_platforms()
 filter!(==(64) ∘ wordsize, platforms)
 filter!(!=("powerpc64le-linux-gnu") ∘ triplet, platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("stablehlo-opt", :stablehlo_opt),
