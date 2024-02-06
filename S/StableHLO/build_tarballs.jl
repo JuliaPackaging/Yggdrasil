@@ -34,16 +34,11 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS=OFF)
 CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
 
 CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=OFF)
-
-if [[ "$(uname)" != "Darwin" ]]; then
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="ON")
-else
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
-fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
