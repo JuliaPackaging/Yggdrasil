@@ -43,7 +43,7 @@ cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j 1 install
 
 # NOTE no idea why they are not installed by default
-install build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehlo-lsp-server ${prefix}/bin
+install -v build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehlo-lsp-server ${prefix}/bin
 
 # build shared library from static libraries
 cd build/lib
@@ -52,7 +52,7 @@ for i in *.a; do
     ar x $i
 done
 c++ -shared -o libStablehlo.${dlext} -lLLVM -lMLIR *.cpp.o
-install libStablehlo.${dlext} ${prefix}/lib
+install -v libStablehlo.${dlext} ${libdir}
 """
 
 platforms = supported_platforms()
@@ -105,7 +105,6 @@ for (i, build) in enumerate(builds)
         build.dependencies;
         julia_compat="1.10",
         preferred_gcc_version=v"9",
-        preferred_llvm_version=v"17",
         augment_platform_block,
         lazy_artifacts=true)
 end
