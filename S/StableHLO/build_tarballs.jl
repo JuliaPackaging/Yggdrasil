@@ -43,7 +43,7 @@ cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j 1 install
 
 # NOTE no idea why they are not installed by default
-install -v build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehlo-lsp-server ${prefix}/bin
+install -v build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehlo-lsp-server ${bindir}
 
 # build shared library from static libraries
 cd build/lib
