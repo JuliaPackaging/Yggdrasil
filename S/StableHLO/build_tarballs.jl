@@ -46,7 +46,12 @@ ninja -C build -j 1 install
 install build/bin/stablehlo-opt build/bin/stablehlo-translate build/bin/stablehlo-lsp-server ${prefix}/bin
 
 # build shared library from static libraries
-c++ -shared -o libStablehlo.${dlext} -lLLVM -lMLIR -Lbuild/lib -Wl,$(flagon --whole-archive) $(find build/lib -name "*.a" -exec sh -c "basename {} .a" ';' | sed "s/lib/-l/g")
+cd build/lib
+for i in $(ls *.a); do
+    echo $i;
+    ar x $i;
+done
+c++ -shared -o libStablehlo.${dlext} -lLLVM -lMLIR $(ls *.cpp.o)
 install libStablehlo.${dlext} ${prefix}/lib
 """
 
