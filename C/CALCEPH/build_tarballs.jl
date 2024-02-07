@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CALCEPH"
-version = v"3.5.4"
+version = v"3.5.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.imcce.fr/content/medias/recherche/equipes/asd/calceph/calceph-$(version).tar.gz", "c9a834e823cf376de6c0f826458b5f19555ed45dfd26880781e61a91849925b5")
+    ArchiveSource("https://www.imcce.fr/content/medias/recherche/equipes/asd/calceph/calceph-$(version).tar.gz", "F7ACF529A9267793126D7FDBDF79D4D26AE33274C99D09A9FC9D6191A3C72ACA")
 ]
 
 # Bash recipe for building across all platforms
