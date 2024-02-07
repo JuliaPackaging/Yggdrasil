@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.6.1"
+version = v"1.6.0"
 
 sources = [
     GitSource(
