@@ -19,6 +19,7 @@ dependencies = [
     # is a build-only dependency, in the other cases it's also a runtime one.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
+    Dependency("Zlib_jll"),
 ]
 
 build_tarballs(
