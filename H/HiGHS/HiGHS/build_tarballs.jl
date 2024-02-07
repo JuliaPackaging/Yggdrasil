@@ -15,6 +15,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("Zlib_jll", compat="1"),
 ]
 
 build_tarballs(
