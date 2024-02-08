@@ -54,7 +54,6 @@ cmake -B build-native -S enzyme -GNinja "${NATIVE_CMAKE_FLAGS[@]}"
 
 # Only build blasheaders and tblgen
 ninja -C build-native -j ${nproc} blasheaders enzyme-tblgen
-
 # 2. Cross-compile
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DENZYME_EXTERNAL_SHARED_LIB=ON)
@@ -66,7 +65,11 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+if [[ "${target}" == *mingw* && "${bb_full_target}" == *llvm_version+16* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 # Tell CMake where LLVM is
 CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
@@ -119,11 +122,6 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     if llvm_version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-    end
-
-    if llvm_version >= v"16"
-        # Windows is broken for LLVM16_jll see https://github.com/JuliaPackaging/Yggdrasil/pull/8017#issuecomment-1930838052
-        filter!(p -> !(os(p) == "windows"), platforms)
     end
 
     for platform in platforms
