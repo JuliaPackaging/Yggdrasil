@@ -115,8 +115,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     end
 
     if llvm_version >= v"16"
-        # Mingw is broken for LLVM16_jll see https://github.com/JuliaPackaging/Yggdrasil/pull/8017#issuecomment-1930838052
-        filter!(p -> !(os(p) == "mingw32"), platforms)
+        # Windows is broken for LLVM16_jll see https://github.com/JuliaPackaging/Yggdrasil/pull/8017#issuecomment-1930838052
+        filter!(p -> !(os(p) == "windows"), platforms)
     end
 
     for platform in platforms
