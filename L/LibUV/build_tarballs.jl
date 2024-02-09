@@ -41,9 +41,11 @@ products = [
     LibraryProduct("libuv", :libuv),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
@@ -51,4 +53,4 @@ dependencies = [
 version = v"2.0.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     # We need GCC 4.9+ for stdatomic.h
-    julia_compat="1.6", preferred_gcc_version=v"5")
+    julia_compat="1.6", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
