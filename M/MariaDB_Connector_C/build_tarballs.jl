@@ -55,7 +55,8 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DOPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext} \
     -DOPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext} \
     -DICONV_LIBRARIES=${libdir}/libiconv.${dlext} \
-    -DICONV_INCLUDE_DIR=${includedir}
+    -DICONV_INCLUDE_DIR=${includedir} \
+    -DCLIENT_PLUGIN_SHA256_PASSWORD=OFF
 make -j${nproc}
 make install
 install_license ../COPYING.LIB
