@@ -1,4 +1,6 @@
 using BinaryBuilder
+using Pkg
+using BinaryBuilderBase: sanitize
 
 name = "LibUV"
 version = v"2"
@@ -41,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
