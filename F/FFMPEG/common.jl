@@ -3,18 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version_string = "4.4.4"   # when patch number is zero, they use X.Y format
+version_string = "6.1.1"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
-    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-                  "e80b380d595c809060f66f96a5d849511ef4a76a26b76eacf5778b94c3570309"),
+    ArchiveSource(
+        "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
+        "8684f4b00f94b85461884c3719382f1261f0d9eb3d59640a1f4ac0873616f968",
+    ),
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
-function script(; ffplay=false)
+function script(; ffplay = false)
     "FFPLAY=$(ffplay)\n" * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
@@ -48,15 +50,7 @@ else
     export ccARCH="x86_64"
 fi
 
-if [[ "${target}" == arm-* ]]; then
-    export CUDA_ARGS=""
-elif [[ "${target}" == *-apple-* ]]; then
-    export CUDA_ARGS=""
-elif [[ "${target}" == *-unknown-freebsd* ]]; then
-    export CUDA_ARGS=""
-else
-    export CUDA_ARGS="--enable-nvenc --enable-cuda-llvm"
-fi
+export CUDA_ARGS=""
 
 EXTRA_FLAGS=()
 if [[ "${target}" == *-darwin* ]]; then
@@ -93,7 +87,6 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --enable-pic         \
   --disable-debug      \
   --disable-doc        \
-  --enable-avresample  \
   --enable-libaom      \
   --enable-libass      \
   --enable-libfdk-aac  \
