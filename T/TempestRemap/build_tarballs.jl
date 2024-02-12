@@ -78,7 +78,7 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("HDF5_jll", v"1.14.2", compat="~1.14"),
+    Dependency("HDF5_jll", v"1.14.3", compat="~1.14"),
     Dependency("NetCDF_jll", v"400.902.209", compat="~400.902.207"),
 ]
 
