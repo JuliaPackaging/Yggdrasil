@@ -84,4 +84,5 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.7",
+    clang_use_lld = false,
 )
