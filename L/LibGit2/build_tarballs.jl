@@ -1,4 +1,5 @@
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "LibGit2"
 version = v"1.7.2"
