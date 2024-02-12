@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "LibGit2"
 version = v"1.7.2"
