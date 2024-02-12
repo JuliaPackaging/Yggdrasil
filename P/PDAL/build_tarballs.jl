@@ -8,7 +8,6 @@ version = v"2.6.3"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/PDAL/PDAL.git", "d37b077053116f4b76d360d379dbcaf890fd4a39"),
-    DirectorySource("./bundled"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
