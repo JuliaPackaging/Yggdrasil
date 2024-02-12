@@ -79,10 +79,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
-    Dependency(PackageSpec(name="libgeotiff_jll", uuid="06c338fa-64ff-565b-ac2f-249532af990e"))
-    #repo is carrying around a vendored version of LAZperf
-    #Dependency(PackageSpec(name="LAZperf_jll", uuid="498468b5-6726-5392-b148-b36d48e22663"))
+    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c")),
+    Dependency(PackageSpec(name="libgeotiff_jll", uuid="06c338fa-64ff-565b-ac2f-249532af990e")),
+    # From GDAL recipe, for 32-bit platforms, when we need to link to OpenMP we need version 4,
+    # because version 5 dropped support for these architectures
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
