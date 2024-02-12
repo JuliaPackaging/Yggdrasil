@@ -4,7 +4,7 @@
 using BinaryBuilder, Pkg
 
 name = "casacore"
-version = v"3.5.0"
+version = v"3.5.0+1"
 
 # Collection of sources required to complete build
 sources = [
