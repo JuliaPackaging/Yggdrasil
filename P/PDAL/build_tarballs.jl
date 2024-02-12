@@ -28,11 +28,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
-if [[ "${target}" == *-mingw* ]]; then
-    #upstreamed at https://github.com/PDAL/PDAL/pull/4071
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-modify-plugin-basename.patch
-fi
-
 mkdir -p build/dimbuilder && cd build/dimbuilder
 
 # Build dimbuilder with the host compiler before main library.
