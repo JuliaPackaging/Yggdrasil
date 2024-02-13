@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
@@ -7,15 +7,16 @@ name = "PETSc"
 version = v"3.19.6"
 petsc_version = v"3.19.6"
 MUMPS_COMPAT_VERSION = "5.6.2"
-SUITESPARSE_COMPAT_VERSION = "7.2.1" 
 SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
 MPItrampoline_compat_version="5.3.1"
+OpenMPI_compat_version="~5.0.1"
+
 BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
 HDF5_COMPAT_VERSION="1.14.2"
 
 SCALAPACK32_COMPAT_VERSION="2.2.1"
 METIS_COMPAT_VERSION="5.1.2"
-SCOTCH_COMPAT_VERSION="6.1.3"
+SCOTCH_COMPAT_VERSION="7.0.4"
 PARMETIS_COMPAT_VERSION="4.0.6"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
@@ -92,24 +93,9 @@ build_petsc()
         USE_SUITESPARSE=1    
     fi
 
-    Machine_name=$(uname -m)
-    if [ "${3}" == "Int64" ]; then
-        case "${Machine_name}" in
-            "armv7l")
-                USE_SUITESPARSE=0
-            ;;
-            "armv6l")
-                USE_SUITESPARSE=0
-            ;;
-            "i686")
-                USE_SUITESPARSE=0
-            ;;
-        esac
-    fi
-
     # See if we can install MUMPS
     USE_MUMPS=0    
-    if [ -f "${libdir}/libdmumps.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
+    if [ -f "${libdir}/libdmumpspar.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ]; then
         USE_MUMPS=1    
         MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
         MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
@@ -129,22 +115,24 @@ build_petsc()
         LIBFLAGS="-L${libdir} -lssp" 
     fi
 
-    # BLAS/LAPACK
-    if [[ "${target}" == *-mingw* ]]; then
-        BLAS_NAME=blastrampoline-5
-    else
-        BLAS_NAME=blastrampoline
-    fi
-    if [[ "${target}" == aarch64-apple-* ]]; then    
-        LIBFLAGS="-L${libdir}" 
-        # Linking requires the function `__divdc3`, which is implemented in
-        # `libclang_rt.osx.a` from LLVM compiler-rt.
-        CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-    else
-        CLINK_FLAGS=""
-    fi
-    BLAS_LAPACK_LIB="${libdir}/lib${BLAS_NAME}.${dlext}"
+    ## BLAS/LAPACK
+    #if [[ "${target}" == *-mingw* ]]; then
+    #    BLAS_NAME=blastrampoline-5
+    #else
+    #    BLAS_NAME=blastrampoline
+    #fi
+    #if [[ "${target}" == aarch64-apple-* ]]; then    
+    #    LIBFLAGS="-L${libdir}" 
+    #    # Linking requires the function `__divdc3`, which is implemented in
+    #    # `libclang_rt.osx.a` from LLVM compiler-rt.
+    #    CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    #else
+    #    CLINK_FLAGS=""
+    #fi
+    #BLAS_LAPACK_LIB="${libdir}/lib${BLAS_NAME}.${dlext}"
 
+    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
+    
     if  [ ${DEBUG_FLAG} == 1 ]; then
         _COPTFLAGS='-O0 -g'
         _CXXOPTFLAGS='-O0 -g'
@@ -168,7 +156,6 @@ build_petsc()
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
     echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
-    echo "USE_SUITESPARSE="$USE_SUITESPARSE
     echo "USE_MUMPS="$USE_MUMPS
     echo "USE_HDF5="$USE_HDF5
 
@@ -199,12 +186,10 @@ build_petsc()
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
         --with-superlu_dist=${USE_SUPERLU_DIST} \
-        ${SUPERLU_DIST_LIB} \
-        ${SUPERLU_DIST_INCLUDE} \
+        --download-superlu_dist=1 \
         --with-mumps=${USE_MUMPS} \
         ${MUMPS_LIB} \
         ${MUMPS_INCLUDE} \
-        --with-suitesparse=${USE_SUITESPARSE} \
         --with-hdf5=${USE_HDF5} \
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
@@ -215,7 +200,10 @@ build_petsc()
         export CFLAGS="-fPIC"
         export FFLAGS="-fPIC"
     fi
-
+        "nio"
+    #${SUPERLU_DIST_LIB} \
+    #${SUPERLU_DIST_INCLUDE} \
+        
     make -j${nproc} \
         CPPFLAGS="${CPPFLAGS}" \
         CFLAGS="${CFLAGS}" \
@@ -252,8 +240,52 @@ build_petsc()
             fi
         fi
         install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
+        
+        # this is the example that PETSc uses to test the correct installation        
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        install -Dvm 755 ${workdir}/ex19${exeext} "${bindir}/ex19${exeext}"
 
     fi
+
+    if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "deb" ]; then
+        
+        # this is the example that PETSc uses to test the correct installation        
+        # We compile it with debug flags (helpful to catch issues)
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        mv ${file}${exeext} ${file}_int64_deb${exeext}
+        install -Dvm 755 ${workdir}/ex19_int64_deb${exeext} "${bindir}/ex19_int64_deb${exeext}"
+
+
+        # This is a staggered grid Stokes example, as discussed in https://joss.theoj.org/papers/10.21105/joss.04531 
+        # This can later be run with:
+        # julia> run(`$(PETSc_jll.ex4()) -ksp_monitor -log_view` )
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/dm/impls/stag/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex4
+        file=${workdir}/ex4
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        mv ${file}${exeext} ${file}_int64_deb${exeext}
+        install -Dvm 755 ${workdir}/ex4_int64_deb${exeext} "${bindir}/ex4_int64_deb${exeext}"
+
+    fi
+
 
     # we don't particularly care about the examples
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
@@ -261,13 +293,13 @@ build_petsc()
 
 build_petsc double real Int64 opt
 build_petsc double real Int64 deb       # compile at least one debug version
-build_petsc double real Int32 opt
-build_petsc single real Int32 opt
-build_petsc double complex Int32 opt
-build_petsc single complex Int32 opt
-build_petsc single real Int64 opt
-build_petsc double complex Int64 opt
-build_petsc single complex Int64 opt
+#build_petsc double real Int32 opt
+#build_petsc single real Int32 opt
+#build_petsc double complex Int32 opt
+#build_petsc single complex Int32 opt
+#build_petsc single real Int64 opt
+#build_petsc double complex Int64 opt
+#build_petsc single complex Int64 opt
 """
 
 augment_platform_block = """
@@ -285,7 +317,9 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv7l","linux"; libc="musl"),
                                                                   Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; 
+                        MPItrampoline_compat=MPItrampoline_compat_version,
+                        OpenMPI_compat=OpenMPI_compat_version)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -301,35 +335,39 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 products = [
     ExecutableProduct("ex4", :ex4)
     ExecutableProduct("ex42", :ex42)
-
+    ExecutableProduct("ex19", :ex19)
+    ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
+    ExecutableProduct("ex4_int64_deb", :ex4_int64_deb)
+    
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+    #LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    #LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    #LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    #LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    #LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    #LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    #LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 
 ]
 
 dependencies = [
-    Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms)),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
-    Dependency("SuiteSparse_jll"; compat=SUITESPARSE_COMPAT_VERSION),
     Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION),
     Dependency("HDF5_jll"; compat=HDF5_COMPAT_VERSION),
-    Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
-    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
+#    Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
+#    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("SCALAPACK32_jll"),
     Dependency("METIS_jll"),
     Dependency("SCOTCH_jll"),
-    Dependency("PARMETIS_jll"),
+    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); platforms=filter(!Sys.iswindows, platforms), compat="4.0.6"),
 ]
+
+
 append!(dependencies, platform_dependencies)
 
 # Don't look for `mpiwrapper.so` when BinaryBuilder examines and
@@ -341,6 +379,5 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # NOTE: llvm16 seems to have an issue with PETSc 3.18.x as on apple architectures it doesn't know how to create dynamic libraries  
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.7", 
-               preferred_gcc_version = v"9",  
-               preferred_llvm_version=v"13")
+               preferred_gcc_version = v"8")
 
