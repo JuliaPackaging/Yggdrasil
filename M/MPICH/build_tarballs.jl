@@ -83,7 +83,7 @@ fi
     --enable-static=no \
     --mandir=/tmp \
     --with-device=ch3 \
-    --with-hwloc \
+    --with-hwloc=${prefix} \
     "${EXTRA_FLAGS[@]}"
 
 # Remove empty `-l` flags from libtool
