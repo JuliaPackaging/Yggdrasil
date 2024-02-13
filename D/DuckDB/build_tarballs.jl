@@ -31,6 +31,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBUILD_ICU_EXTENSION=TRUE \
       -DBUILD_JSON_EXTENSION=TRUE \
       -DBUILD_UNITTESTS=FALSE .. \
+      -DBUILD_SHELL=FALSE .. \
       -DDUCKDB_EXPLICIT_PLATFORM="${target}"
 make -j${nproc}
 make install
