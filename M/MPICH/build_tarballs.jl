@@ -4,14 +4,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version_str = "4.1.2"
+version_str = "4.2.0"
 version = VersionNumber(version_str)
 
 # build trigger: 1
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
+                  "a64a66781b9e5312ad052d32689e23252f745b27ee8818ac2ac0c8209bc0b90e"),
     DirectorySource("bundled"),
 ]
 
@@ -77,11 +77,13 @@ fi
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
 # * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared=yes --enable-static=no \
-    --with-device=ch3 --disable-dependency-tracking \
-    --enable-fast=all,O3 \
+    --disable-dependency-tracking \
     --docdir=/tmp \
+    --enable-fast=all,O3 \
+    --enable-static=no \
     --mandir=/tmp \
+    --with-device=ch3 \
+    --with-hwloc \
     "${EXTRA_FLAGS[@]}"
 
 # Remove empty `-l` flags from libtool
@@ -110,10 +112,14 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
+platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
+filter!(!Sys.iswindows, platforms)
 
 # Add `mpi+mpich` platform tag
-foreach(p -> (p["mpi"] = "MPICH"), platforms)
+for p in platforms
+    p["mpi"] = "MPICH"
+end
 
 products = [
     # MPICH
@@ -124,9 +130,10 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("Hwloc_jll"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-                      compat="0.1", top_level=true),
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs.
