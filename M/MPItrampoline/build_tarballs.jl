@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "MPItrampoline"
 
 mpitrampoline_version = v"5.3.1"
-version = mpitrampoline_version
-mpich_version_str = "4.1.2"
+version = v"5.3.2"
+mpich_version_str = "4.2.0"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.10.4"
 
@@ -18,7 +18,7 @@ sources = [
     GitSource("https://github.com/eschnett/MPItrampoline", "25efb0f7a4cd00ed82bafb8b1a6285fc50d297ed"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
+                  "a64a66781b9e5312ad052d32689e23252f745b27ee8818ac2ac0c8209bc0b90e"),
     GitSource("https://github.com/eschnett/MPIwrapper", "64f663cfaa36139882c5d92dc974b1a755cd6f5d"),
 ]
 
