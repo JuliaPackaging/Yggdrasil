@@ -169,6 +169,7 @@ fi
     --enable-threads=multiple \
     --enable-opencl=no \
     --with-device=ch3 \
+    --with-hwloc=${prefix} \
     --prefix=${prefix}/lib/mpich \
     "${EXTRA_FLAGS[@]}"
 
@@ -196,7 +197,7 @@ mkdir build
 cd build
 # Yes, this is tedious. No, without being this explicit, cmake will
 # not properly auto-detect the MPI libraries on Darwin.
-if [[ "${target}" == *-apple-* ]]; then
+if [[ XXX"${target}" == *-apple-* ]]; then
     ext='a'
     cmake \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -207,6 +208,10 @@ if [[ "${target}" == *-apple-* ]]; then
         -DMPI_C_COMPILER=${CC} \
         -DMPI_CXX_COMPILER=${CXX} \
         -DMPI_Fortran_COMPILER=${FC} \
+        -DCMAKE_EXE_LINKER_FLAGS_INIT='-framework CoreFoundation' \
+        -DCMAKE_MODULE_LINKER_FLAGS_INIT='-framework;CoreFoundation' \
+        -DCMAKE_SHARED_LINKER_FLAGS_INIT='-framework;CoreFoundation' \
+        -DCMAKE_STATIC_LINKER_FLAGS_INIT='-framework;CoreFoundation' \
         -DMPI_C_LIB_NAMES='mpi;pmpi' \
         -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
@@ -285,7 +290,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("Hwloc_jll"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                compat="0.1", top_level=true),
 ]
