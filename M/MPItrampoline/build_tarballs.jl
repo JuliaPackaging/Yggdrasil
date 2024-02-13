@@ -197,8 +197,7 @@ mkdir build
 cd build
 # Yes, this is tedious. No, without being this explicit, cmake will
 # not properly auto-detect the MPI libraries on Darwin.
-if [[ XXX"${target}" == *-apple-* ]]; then
-    ext='a'
+if [[ "${target}" == *-apple-* ]]; then
     cmake \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
@@ -208,17 +207,14 @@ if [[ XXX"${target}" == *-apple-* ]]; then
         -DMPI_C_COMPILER=${CC} \
         -DMPI_CXX_COMPILER=${CXX} \
         -DMPI_Fortran_COMPILER=${FC} \
-        -DCMAKE_EXE_LINKER_FLAGS_INIT='-framework CoreFoundation' \
-        -DCMAKE_MODULE_LINKER_FLAGS_INIT='-framework;CoreFoundation' \
-        -DCMAKE_SHARED_LINKER_FLAGS_INIT='-framework;CoreFoundation' \
-        -DCMAKE_STATIC_LINKER_FLAGS_INIT='-framework;CoreFoundation' \
-        -DMPI_C_LIB_NAMES='mpi;pmpi' \
-        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
-        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${ext} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
+        -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
+        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
+        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi;hwloc' \
+        -DMPI_hwloc_LIBRARY=${prefix}/lib/libhwloc.dylib \
+        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.a \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.a \
+        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.a \
+        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.a \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         ..
 else
