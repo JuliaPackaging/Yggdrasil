@@ -20,7 +20,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 export OPENVAF_LLVM_LIBNAMES="LLVM"
 if [[ "${target}" == *-mingw* ]]; then
-    export OPENVAF_LLVM_LIBNAMES="LLVM-15jl"
+    export OPENVAF_LLVM_LIBNAMES="LLVM-16jl"
 fi
 
 LLVM_LINK_SHARED=1 LLVM_CONFIG="${host_prefix}/tools/llvm-config" OPENVAF_LLVM_LIBDIR="${libdir}" OPENVAF_LLVM_INCLUDEDIR="${includedir}" cargo build --release --bin openvaf
@@ -43,14 +43,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+9")),
+    HostBuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")),
     Dependency("Libiconv_jll", platforms=filter(Sys.isapple, platforms)),
-    Dependency(get_addable_spec("LLVM_full_jll", v"15.0.7+9"); compat="15"),
+    Dependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4"); compat="16"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6",
                preferred_gcc_version=v"9", # GCC >= 9 required for `-fuse-ld=lld`
+               preferred_llvm_version=v"16.0.6", # This must match the version of LLVM above
                lock_microarchitecture=false, # Cargo sometimes inserts `-march` flags that we have to accept
                compilers=[:rust, :c])
