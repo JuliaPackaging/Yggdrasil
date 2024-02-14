@@ -33,11 +33,7 @@ CMAKE_FLAGS+=(-Drun_result="0")
 CMAKE_FLAGS+=(-Drun_result__TRYRUN_OUTPUT="ok")
 CMAKE_FLAGS+=(-Dblas_complex_return=return)
 
-if [[ ${nbits} == 32 ]]; then
-    CMAKE_FLAGS+=(-Dblas_int=int32)
-else
-    CMAKE_FLAGS+=(-Dblas_int=int64)
-fi
+CMAKE_FLAGS+=(-Dblas_int=int${nbits})
 
 cmake ${CMAKE_FLAGS[@]} ..
 make -j${nproc}
