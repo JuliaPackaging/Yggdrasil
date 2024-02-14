@@ -31,6 +31,7 @@ CMAKE_FLAGS+=(-DMPI_RUN_RESULT_CXX_libver_mpi_normal="0")
 CMAKE_FLAGS+=(-DMPI_RUN_RESULT_CXX_libver_mpi_normal__TRYRUN_OUTPUT="")
 CMAKE_FLAGS+=(-Drun_result="0")
 CMAKE_FLAGS+=(-Drun_result__TRYRUN_OUTPUT="ok")
+CMAKE_FLAGS+=(-Dblas_complex_return=return)
 
 if [[ ${nbits} == 32 ]]; then
     CMAKE_FLAGS+=(-Dblas_int=int32)
