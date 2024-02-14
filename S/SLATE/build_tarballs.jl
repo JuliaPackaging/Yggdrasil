@@ -19,18 +19,26 @@ script = raw"""
 cd slate
 git submodule update --init
 mkdir build && cd build
-cmake \
-  -DCMAKE_INSTALL_PREFIX=${prefix} \
-  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-  -DCMAKE_BUILD_TYPE="Release" \
-  -Dblas=openblas \
-  -Dbuild_tests=no \
-  -DMPI_RUN_RESULT_CXX_libver_mpi_normal="0" \
-  -DMPI_RUN_RESULT_CXX_libver_mpi_normal__TRYRUN_OUTPUT="" \
-  -Drun_result="0" \
-  -Drun_result__TRYRUN_OUTPUT="ok" \
-  -Dc_api=yes \
-  ..
+
+CMAKE_FLAGS=()
+CMAKE_FLAGS=()
+CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE="Release")
+CMAKE_FLAGS+=(-Dblas=openblas)
+CMAKE_FLAGS+=(-Dbuild_tests=no)
+CMAKE_FLAGS+=(-DMPI_RUN_RESULT_CXX_libver_mpi_normal="0")
+CMAKE_FLAGS+=(-DMPI_RUN_RESULT_CXX_libver_mpi_normal__TRYRUN_OUTPUT="")
+CMAKE_FLAGS+=(-Drun_result="0")
+CMAKE_FLAGS+=(-Drun_result__TRYRUN_OUTPUT="ok")
+
+if [[ ${nbits} == 32 ]]; then
+    CMAKE_FLAGS+=(-Dblas_int=int32)
+else
+    CMAKE_FLAGS+=(-Dblas_int=int64)
+fi
+
+cmake ${CMAKE_FLAGS[@]} ..
 make -j${nproc}
 make install
 """
