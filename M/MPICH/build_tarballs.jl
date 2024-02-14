@@ -80,6 +80,7 @@ fi
     --disable-dependency-tracking \
     --docdir=/tmp \
     --enable-fast=all,O3 \
+    --enable-mpi-abi \
     --enable-static=no \
     --mandir=/tmp \
     --with-device=ch3 \
@@ -126,6 +127,7 @@ products = [
     LibraryProduct("libmpicxx", :libmpicxx),
     LibraryProduct("libmpifort", :libmpifort),
     LibraryProduct("libmpi", :libmpi),
+    LibraryProduct("libmpi_abi", :libmpi_abi),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
