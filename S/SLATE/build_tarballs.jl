@@ -4,13 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SLATE"
-version = v"2022.05.01"
-slate_version = v"2022.05.00"
+version = v"2023.11.05"
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
-    GitSource("https://bitbucket.org/icl/slate.git", "5fb57877effa06d2ef090402a39341ebeb44f180")
+    GitSource("https://github.com/icl-utk-edu/slate.git", "f1c849074616e6d180a9aaac10407180cccfbe7f")
 ]
 
 # Bash recipe for building across all platforms
