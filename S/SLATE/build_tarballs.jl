@@ -35,7 +35,7 @@ CMAKE_FLAGS+=(-Dblas_complex_return=return)
 
 CMAKE_FLAGS+=(-Dblas_int=int${nbits})
 
-cmake ${CMAKE_FLAGS[@]} ..
+cmake "${CMAKE_FLAGS[@]}" ..
 make -j${nproc}
 make install
 """
