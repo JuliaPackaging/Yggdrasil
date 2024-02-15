@@ -19,40 +19,28 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built.
-# TODO: Theora once it's available 
+# TODO: Theora once it's available
 dependencies = [
     HostBuildDependency("YASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
-    Dependency("libass_jll"; compat = "0.15.1"),
+    Dependency("libass_jll"; compat="0.15.1"),
     Dependency("libfdk_aac_jll"),
     Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"; compat = "2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("LAME_jll"),
     Dependency("libvorbis_jll"),
     Dependency("libaom_jll"),
     Dependency("Ogg_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
-    Dependency("x264_jll"; compat = "~2021.05.05"),
-    Dependency("x265_jll"; compat = "~3.5"),
-    Dependency("Bzip2_jll"; compat = "1.0.8"),
+    Dependency("x264_jll"; compat="~2021.05.05"),
+    Dependency("x265_jll"; compat="~3.5"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"; compat = "3.0.9"),
+    Dependency("OpenSSL_jll"; compat="3.0.9"),
     Dependency("Opus_jll"),
-    Dependency("PCRE2_jll"; compat = "10.35"),
-    Dependency("Xorg_xproto_jll"),
+    Dependency("PCRE2_jll"; compat="10.35"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(
-    ARGS,
-    name,
-    version,
-    sources,
-    script(; ffplay = false),
-    platforms,
-    products,
-    dependencies;
-    julia_compat = "1.6",
-    preferred_gcc_version = preferred_gcc_version,
-    clang_use_lld=false,
-)
+build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies;
+    julia_compat="1.6", preferred_gcc_version=preferred_gcc_version)
