@@ -12,7 +12,6 @@ products = [
     LibraryProduct(["libavdevice", "avdevice"], :libavdevice),
     LibraryProduct(["libavfilter", "avfilter"], :libavfilter),
     LibraryProduct(["libavformat", "avformat"], :libavformat),
-    LibraryProduct(["libavresample", "avresample"], :libavresample),
     LibraryProduct(["libavutil", "avutil"], :libavutil),
     LibraryProduct(["libpostproc", "postproc"], :libpostproc),
     LibraryProduct(["libswresample", "swresample"], :libswresample),
@@ -44,4 +43,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script(; ffplay=false), platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=preferred_gcc_version)
+    julia_compat="1.6", preferred_gcc_version=preferred_gcc_version, clang_use_lld=false)
