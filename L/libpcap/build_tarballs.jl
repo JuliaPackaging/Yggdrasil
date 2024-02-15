@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "libpcap"
-version = v"1.10.1"
+version = v"1.10.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/the-tcpdump-group/libpcap.git", "1babd5dd63e4d5266e111d7f4f710ea77f4d7b5c")
+    GitSource("https://github.com/the-tcpdump-group/libpcap.git", "104271ba4a14de6743e43bcf87536786d8fddea4")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd libpcap/
+cd libpcap
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
@@ -22,19 +22,9 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "freebsd"; )
-]
-
+platforms = supported_platforms()
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
