@@ -7,7 +7,7 @@ version = v"0.10.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "20b1486d1192f9fbd2328d1122b5afe5f1747fce"),
+    GitSource("https://github.com/duckdb/duckdb.git", "21389fa53053fb36c4d37d922e34041b46969576"),
 ]
 
 # Bash recipe for building across all platforms
