@@ -54,4 +54,5 @@ build_tarballs(
     dependencies;
     julia_compat = "1.6",
     preferred_gcc_version = preferred_gcc_version,
+    clang_use_lld=false,
 )
