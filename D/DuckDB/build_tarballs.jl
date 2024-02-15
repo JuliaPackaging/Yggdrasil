@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"0.9.2"
+version = v"0.10.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "3c695d7ba94d95d9facee48d395f46ed0bd72b46"),
+    GitSource("https://github.com/duckdb/duckdb.git", "21389fa53053fb36c4d37d922e34041b46969576"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,7 +30,9 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DENABLE_SANITIZER=FALSE \
       -DBUILD_ICU_EXTENSION=TRUE \
       -DBUILD_JSON_EXTENSION=TRUE \
-      -DBUILD_UNITTESTS=FALSE ..
+      -DBUILD_UNITTESTS=FALSE .. \
+      -DBUILD_SHELL=FALSE .. \
+      -DDUCKDB_EXPLICIT_PLATFORM="${target}"
 make -j${nproc}
 make install
 
