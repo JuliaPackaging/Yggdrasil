@@ -60,7 +60,8 @@ build_parmetis()
     -DGKLIB_PATH=$(realpath ../metis/GKlib) \
     -DMETIS_PATH="${METIS_PATH}" \
     -DMPI_INCLUDE_PATH="${prefix}/include" \
-    -DMPI_LIBRARIES="-L${libdir} ${mpi_libraries}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}" \
+    -DMPI_LIBRARIES="${mpi_libraries}" \
     -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${1} -DREALTYPEWIDTH=${2}" \
     -DBINARY_NAME="${PARMETIS_NAME}" \
     -DMETIS_LIBRARY="${METIS_NAME}"
