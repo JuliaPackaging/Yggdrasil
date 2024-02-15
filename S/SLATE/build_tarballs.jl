@@ -20,18 +20,18 @@ cd slate
 git submodule update --init
 mkdir build && cd build
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix})
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE="Release")
-CMAKE_FLAGS+=(-Dblas=openblas)
-CMAKE_FLAGS+=(-Dbuild_tests=no)
-CMAKE_FLAGS+=(-DMPI_RUN_RESULT_CXX_libver_mpi_normal="0")
-CMAKE_FLAGS+=(-DMPI_RUN_RESULT_CXX_libver_mpi_normal__TRYRUN_OUTPUT="")
-CMAKE_FLAGS+=(-Drun_result="0")
-CMAKE_FLAGS+=(-Drun_result__TRYRUN_OUTPUT="ok")
-CMAKE_FLAGS+=(-Dblas_complex_return=return)
-
-CMAKE_FLAGS+=(-Dblas_int=int${nbits})
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE="Release"
+    -Dblas=openblas
+    -Dbuild_tests=no
+    -DMPI_RUN_RESULT_CXX_libver_mpi_normal="0"
+    -DMPI_RUN_RESULT_CXX_libver_mpi_normal__TRYRUN_OUTPUT=""
+    -Drun_result="0"
+    -Drun_result__TRYRUN_OUTPUT="ok"
+    -Dblas_complex_return=return
+    -Dblas_int=int${nbits}
+)
 
 cmake "${CMAKE_FLAGS[@]}" ..
 make -j${nproc}
@@ -46,16 +46,12 @@ augment_platform_block = """
 
 # We attempt to build for all defined platforms
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; exclude=!Sys.islinux)))
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
-
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
@@ -74,4 +70,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"7")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"11.1.0")
