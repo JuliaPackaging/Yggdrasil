@@ -51,6 +51,11 @@ products = [
 
     # shim layer
     LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn),
+
+    # internal libraries that need to be available
+    LibraryProduct(["libcudnn_engines_precompiled", "cudnn_engines_precompiled64_$(version.major)"], :libcudnn_engines_precompiled),
+    LibraryProduct(["libcudnn_heuristic", "cudnn_heuristic64_$(version.major)"], :libcudnn_heuristic),
+    LibraryProduct(["libcudnn_engines_runtime_compiled", "cudnn_engines_runtime_compiled64_$(version.major)"], :libcudnn_engines_runtime_compiled),
 ]
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
