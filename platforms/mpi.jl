@@ -9,28 +9,29 @@ const augment = raw"""
 
     # Keep logic in sync with MPIPreferences.jl
     function augment_mpi!(platform)
-        # Doesn't need to be `const` since we depend on MPIPreferences so we
-        # invalidate the cache when it changes.
+        # Doesn't need to be `const` since we depend on MPIPreferences,
+        # so we invalidate the cache when it changes.
         binary = get(preferences, "binary", Sys.iswindows() ? "MicrosoftMPI_jll" : "MPICH_jll")
 
         abi = if binary == "system"
             let abi = get(preferences, "abi", nothing)
                 if abi === nothing
-                    error("MPIPreferences: Inconsistent state detected, binary set to system, but no ABI set.")
-                else
-                    abi
+                    error("MPIPreferences: Inconsistent state detected, binary set to system, but no ABI set")
                 end
+                abi
             end
-        elseif binary == "MicrosoftMPI_jll"
-            "MicrosoftMPI"
+        elseif binary == "MPIABI_jll"
+            "MPIABI"
         elseif binary == "MPICH_jll"
             "MPICH"
-        elseif binary == "OpenMPI_jll"
-            "OpenMPI"
         elseif binary == "MPItrampoline_jll"
             "MPItrampoline"
+        elseif binary == "MicrosoftMPI_jll"
+            "MicrosoftMPI"
+        elseif binary == "OpenMPI_jll"
+            "OpenMPI"
         else
-            error("Unknown binary: $binary")
+            error("MPIPreferences: Unknown binary: $binary")
         end
 
         if !haskey(platform, "mpi")
@@ -43,32 +44,40 @@ const augment = raw"""
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-mpi_abis = (
-    ("MPICH", PackageSpec(name="MPICH_jll"), "", !Sys.iswindows) ,
-    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "", p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc")),
+const mpi_abis = (
+    ("MPIABI", PackageSpec(name="MPIABI_jll"), "", p -> true),
+    ("MPICH", PackageSpec(name="MPICH_jll"), "", !Sys.iswindows),
+    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.0.1 - 5", p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl")),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.0.1 - 5", p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"))
+    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "", p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc")),
 )
 
 """
-    augment_platforms(platforms; MPICH_compat = nothing, OpenMPI_compat = nothing, MicrosoftMPI_compat=nothing, MPItrampoline_compat=nothing)
+    augment_platforms(platforms;
+                      MPIABI_compat=nothing,
+                      MPICH_compat=nothing,
+                      MPItrampoline_compat=nothing,
+                      MicrosoftMPI_compat=nothing,
+                      OpenMPI_compat=nothing)
 
 This augments the platforms with different MPI versions. Compatibilities with different versions can be specified
 """
 function augment_platforms(platforms;
-                MPICH_compat = nothing,
-                OpenMPI_compat = nothing,
-                MicrosoftMPI_compat=nothing,
-                MPItrampoline_compat=nothing)
+                           MPIABI_compat=nothing,
+                           MPICH_compat=nothing,
+                           MPItrampoline_compat=nothing,
+                           MicrosoftMPI_compat=nothing,
+                           OpenMPI_compat=nothing)
     all_platforms = AbstractPlatform[]
     dependencies = []
     for (abi, pkg, compat, f) in mpi_abis
 
         # set specific versions of MPI packages
-        if (abi=="OpenMPI" && !isnothing(OpenMPI_compat)) compat = OpenMPI_compat; end
+        if (abi=="MPIABI" && !isnothing(MPIABI_compat)) compat = MPIABI_compat; end
         if (abi=="MPICH" && !isnothing(MPICH_compat)) compat = MPICH_compat; end
-        if (abi=="MicrosoftMPI" && !isnothing(MicrosoftMPI_compat)) compat = MicrosoftMPI_compat; end
         if (abi=="MPItrampoline" && !isnothing(MPItrampoline_compat)) compat = MPItrampoline_compat; end
+        if (abi=="MicrosoftMPI" && !isnothing(MicrosoftMPI_compat)) compat = MicrosoftMPI_compat; end
+        if (abi=="OpenMPI" && !isnothing(OpenMPI_compat)) compat = OpenMPI_compat; end
 
         pkg_platforms = deepcopy(filter(f, platforms))
         foreach(pkg_platforms) do p
@@ -77,9 +86,10 @@ function augment_platforms(platforms;
         append!(all_platforms, pkg_platforms)
         push!(dependencies, Dependency(pkg; compat, platforms=pkg_platforms))
     end
-    # NOTE: packages using this platform tag, must depend on MPIPreferences otherwise
-    #       they will not be invalidated when the Preference changes.
-    push!(dependencies, Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true))
+    # NOTE: packages using this platform tag, must depend on MPIPreferences,
+    #       otherwise they will not be invalidated when the Preference changes.
+    push!(dependencies, Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                                   compat="0.1", top_level=true))
     return all_platforms, dependencies
 end
 
