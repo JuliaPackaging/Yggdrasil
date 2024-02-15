@@ -12,11 +12,16 @@ sources = [
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
         "8684f4b00f94b85461884c3719382f1261f0d9eb3d59640a1f4ac0873616f968",
     ),
+    ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
+    ),
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
-function script(; ffplay = false)
+function script(; ffplay=false)
     "FFPLAY=$(ffplay)\n" * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
@@ -49,6 +54,15 @@ elif [[ "${target}" == powerpc64le-* ]]; then
 else
     export ccARCH="x86_64"
 fi
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then 
+    export MACOSX_DEPLOYMENT_TARGET=10.13 
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk 
+    rm -rf /opt/${target}/${target}/sys-root/System 
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/" 
+    cp -a System "/opt/${target}/${target}/sys-root/" 
+    popd
+fi 
 
 export CUDA_ARGS=""
 
