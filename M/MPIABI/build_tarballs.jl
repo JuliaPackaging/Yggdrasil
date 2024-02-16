@@ -18,6 +18,9 @@ cd header_and_stub_library
 cmake -Bbuild -DCMAKE_FIND_ROOT_PATH=${prefix} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build build --parallel ${nproc}
 cmake --install build
+if [[ "$target" == *-mingw* ]]; then
+   mv ${prefix}/lib/lib*.dll ${libdir}
+fi
 install_license LICENSE
 
 # Build additional Fortran library
@@ -32,6 +35,10 @@ install -Dvm 644 mpi.mod ${includedir}/mpi.mod
 install -Dvm 644 libmpif_abi.${dlext} ${libdir}/libmpif_abi.${dlext}
 install -Dvm 755 mpifc ${bindir}/mpifc
 install -Dvm 755 mpifort ${bindir}/mpifort
+if [[ "$target" == *-mingw* ]]; then
+   gfortran -g -fPIC -shared -o libmpif_abi.${dlext} -Wl,--out-implib,libmpif_abi.${dlext}.a mpifstubs.o
+   install -Dvm 644 libmpif_abi.${dlext}.a ${prefix}/lib/libmpif_abi.${dlext}.a
+fi
 """
 
 augment_platform_block = """
@@ -54,6 +61,7 @@ products = [
 ]
 
 dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                compat="0.1", top_level=true),
 ]
