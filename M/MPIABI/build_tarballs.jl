@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPIABI"
-version = v"4.2.0"
+version = v"0.1.0"
 
 sources = [
     GitSource("https://github.com/mpiwg-abi/header_and_stub_library", "8d187fc938c59f54e0435718dc16e45812904c2c"),
