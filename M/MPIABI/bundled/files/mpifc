@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# install-dirs
+includedir="@includedir@"
+libdir="@libdir@"
+
+FC=gfortran
+if [[ -n "$MPI_FC" ]]; then
+    # shellcheck disable=SC2034
+    MPI_FC_OLD="$FC"
+    FC="$MPI_FC"
+fi
+
+Exec="exec"
+mode="link"
+arglist=("$@")
+argindex=0
+for arg in "$@" ; do
+    addarg=no
+    case "$arg" in
+        -c|-S|-E|-M|-MM)
+            mode="compile"
+            addarg=yes
+            ;;
+        -fc=*)
+            FC="${arg#*=}"
+            ;;
+        -show|-showme)
+            Exec="echo"
+            ;;
+        -show-compile-info|-showme:compile)
+            mode="show-compile"
+            ;;
+        -show-link-info|-showme:link)
+            mode="show-link"
+            ;;
+        -show-incdir|-showme:incdir)
+            mode="show-incdir"
+            ;;
+        -show-libdir|-showme:libdir)
+            mode="show-libdir"
+            ;;
+        -show-libs|-showme:libs)
+            mode="show-libs"
+            ;;
+        *)
+            addarg=yes
+            ;;
+    esac
+    if [[ "$addarg" = "no" ]]; then
+        unset 'arglist[$argindex]'
+    fi
+    argindex=$((argindex + 1))
+    unset addarg
+done
+unset argindex
+
+if [[ $# -eq 0 ]]; then
+    printf "%s: command line argument is required\n" "$0"
+    "$FC" --help
+    exit 1
+fi
+if [[ "@${arglist[*]}" = "@-v" ]]; then
+    mode=""
+fi
+
+if [[ "$mode" = "compile" ]]; then
+    $Exec "${FC}" "${arglist[@]}" -I"${includedir}" -fcray-pointer
+elif [[ "$mode" = "link" ]]; then
+    $Exec "${FC}" "${arglist[@]}" -I"${includedir}" -fcray-pointer -L"${libdir}" -lmpif_abi
+elif [[ "$mode" = "" ]]; then
+    $Exec "${FC}" "${arglist[@]}"
+else
+    case "$mode" in
+        show-compile) printf -- "-I%s -fcray-pointer\n" "${includedir}";;
+        show-link)    printf -- "-L%s -l%s\n" "${libdir}" mpif_abi;;
+        show-incdir)  printf -- "%s\n" "${includedir}";;
+        show-libdir)  printf -- "%s\n" "${libdir}";;
+        show-libs)    printf -- "%s\n" mpif_abi;;
+    esac
+fi
