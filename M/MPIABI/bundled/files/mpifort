@@ -65,14 +65,14 @@ if [[ "@${arglist[*]}" = "@-v" ]]; then
 fi
 
 if [[ "$mode" = "compile" ]]; then
-    $Exec "${FC}" "${arglist[@]}" -I"${includedir}" -fcray-pointer
+    $Exec "${FC}" "${arglist[@]}" -I"${includedir}"
 elif [[ "$mode" = "link" ]]; then
-    $Exec "${FC}" "${arglist[@]}" -I"${includedir}" -fcray-pointer -L"${libdir}" -lmpif_abi
+    $Exec "${FC}" "${arglist[@]}" -I"${includedir}" -L"${libdir}" -lmpif_abi
 elif [[ "$mode" = "" ]]; then
     $Exec "${FC}" "${arglist[@]}"
 else
     case "$mode" in
-        show-compile) printf -- "-I%s -fcray-pointer\n" "${includedir}";;
+        show-compile) printf -- "-I%s\n" "${includedir}";;
         show-link)    printf -- "-L%s -l%s\n" "${libdir}" mpif_abi;;
         show-incdir)  printf -- "%s\n" "${includedir}";;
         show-libdir)  printf -- "%s\n" "${libdir}";;
