@@ -34,7 +34,7 @@ make lib \
     CC=${CC} \
     CXX=${CXX} \
     CFLAGS="${CFLAGS}" \
-    CXXFLAGS="${CFLAGS} -std=c++14 -DFFTW_PLAN_SAFE" \
+    CXXFLAGS="${CFLAGS} -std=c++14" \
     LIBSFFT="-lfftw3 -lfftw3f -lm" \
     DYNLIB="lib/libfinufft.${dlext}"
 install -Dvm 0755 "lib/libfinufft.${dlext}" "${libdir}/libfinufft.${dlext}"
