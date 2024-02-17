@@ -35,7 +35,11 @@ install -t ${bindir} ${GOPATH}/bin/rclone${exeext}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
+
+# Disable 32-bit ARM platforms because the compiler reports an error:
+# `internal compiler error: typebits.Set: invalid initial alignment: type Fs has alignment 8, but offset is 4`
+filter!(p -> arch(p) ∉ ["armv6l", "armv7l"], platforms)
 
 # The products that we will ensure are always built
 products = [
