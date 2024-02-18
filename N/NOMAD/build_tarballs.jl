@@ -1,38 +1,36 @@
 using BinaryBuilder, Pkg
 
 name = "NOMAD"
-version = v"4.3.1"
+version = v"4.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bbopt/nomad.git", "b74f6c5f63c79fe0c10fa8b41411de4fe2b9da38"),
+    GitSource("https://github.com/bbopt/nomad.git", "4cfa402d8a7dcfa8a8b1ad4b98111d88242d8fe4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd "${WORKSPACE}/srcdir/nomad"
-mkdir "${WORKSPACE}/path"
-export PATH="${WORKSPACE}/path:$PATH}"
-export WADF=${WORKSPACE}/srcdir/nomad/src/Attribute/WriteAttributeDefinitionFile.cpp
-${CXX_FOR_BUILD} ${WADF} -o ${WORKSPACE}/path/WriteAttributeDefinitionFile
 
 mkdir build
 cd build
 
 cmake -DBUILD_INTERFACE_C=ON \
-    -DTEST_OPENMP=OFF \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release ..
+      -DSETSONAME=OFF \
+      -DTEST_OPENMP=OFF \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release ..
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-# The products that we will ensure are always built
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
+# The products that we will ensure are always built
 products = [
     LibraryProduct("libnomadCInterface", :libnomadCInterface),
     LibraryProduct("libnomadAlgos", :libnomadAlgos),
