@@ -1,9 +1,12 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-
 name = "WrapIt"
 version = v"1.1.1"
+
+#Clang_jll version used for the build. Required clang libraries will be shipped with the package.
+clang_vers=v"16.0.6+3"
+clang_vers_maj=string(clang_vers.major)
 
 # Collection of sources required to complete build
 sources = [
@@ -40,6 +43,7 @@ cmake --install .
 
 ######################################################################
 # Install dependencies for the wrapit executable to ship with the tarball
+
 [ "$dlext" = dll ] && (cd $prefix/lib && ln -s libLLVM-*.dll.a libLLVM.dll.a )
 
 cd "$(readlink -f "$prefix")"
@@ -47,20 +51,33 @@ cd "$(readlink -f "$prefix")"
    clangversiontag=
    llvmversiontag=
  else
-   clangversiontag=".16jl"
-   llvmversiontag=`echo $clangversiontag | sed 's/^\./-/'` #.16jl -> -16jl
+   clangversiontag=".""" * clang_vers_maj * raw"""jl"
+   llvmversiontag=`echo $clangversiontag | sed 's/^\./-/'` #.NNjl -> -NNjl
  fi
  clanglib=libclang.$dlext$clangversiontag
  clangcpplib=libclang-cpp.$dlext$clangversiontag
  llvmlib=libLLVM$llvmversiontag.${dlext}
 
- clang_uuid="`echo ../artifacts/*/lib/$clanglib | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
- llvm_uuid="`echo ../artifacts/*/lib/$llvmlib | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
+ echo "Looking for ../artifacts/*/lib/$clanglib and ../artifacts/*/lib/$llvmlib" 1>&2
 
- if echo "$clang_uuid $llvm_uuid" | grep -q '*'; then
-    echo "Failed to find clang or llvm library." 1>&1
-    false
+ clang_search="../artifacts/*/lib/$clanglib"
+ llvm_search="../artifacts/*/lib/$llvmlib"
+ clang_uuid="`echo $clang_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
+ llvm_uuid="`echo $llvm_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
+
+ ret=0
+ if echo "$clang_uuid" | grep -q '*'; then
+    echo "Failed to find clang library under path $clang_search" 1>&2
+    ret=1
  fi
+
+ if echo "$llvm_uuid" | grep -q '*'; then
+    echo "Failed to find llvm library under path $llvm_search" 1>&2
+    ret=1
+ fi
+
+ #trigger exit if at least one of the two library was not found
+ [ $ret = 0 ] || false
 
  cat <<EOF 1>&2
 Clang artifact uuid: $clang_uuid
@@ -70,7 +87,7 @@ EOF
 # Add a link to the clang resource directory
 ln -sf artifacts/$clang_uuid ..
 mkdir -p lib/$clang_resource_dir
-cp -rp ../artifacts/$clang_uuid/lib/clang/16/include lib/"$clang_resource_dir"
+cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw"""/include lib/"$clang_resource_dir"
 
 # Add libraries used by wrapit. Make copy as we haven't found how
 # To get symlinks to regular files included in the genrated tarball.
@@ -104,7 +121,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
-    BuildDependency(PackageSpec(name="Clang_jll", uuid="0ee61d77-7f21-5576-8119-9fcc46b10100"))
+    BuildDependency(PackageSpec(name="Clang_jll", uuid="0ee61d77-7f21-5576-8119-9fcc46b10100", version=clang_vers))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
