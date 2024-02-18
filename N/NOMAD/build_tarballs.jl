@@ -11,6 +11,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd "${WORKSPACE}/srcdir/nomad"
+mkdir "${WORKSPACE}/path"
+export PATH="${WORKSPACE}/path:$PATH}"
+export WADF=${WORKSPACE}/srcdir/nomad/src/Attribute/WriteAttributeDefinitionFile.cpp
+${CXX_FOR_BUILD} ${WADF} -o ${WORKSPACE}/path/WriteAttributeDefinitionFile
 
 mkdir build
 cd build
