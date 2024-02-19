@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "AlphaMolWrapper"
-version = v"0.2"
+version = v"0.2.1"
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
