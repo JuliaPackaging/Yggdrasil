@@ -27,7 +27,7 @@ products = [
 
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.11.2"),
     Dependency("GMP_jll"; compat="6.2.1"),
 ]
 
