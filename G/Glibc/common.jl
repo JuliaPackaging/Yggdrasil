@@ -52,7 +52,7 @@ function glibc_script()
     mkdir -p $WORKSPACE/srcdir/glibc_build
 
     if [[ -d ../debian ]]; then
-        echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories
+        echo "https://dl-cdn.alpinelinux.org/alpine/edge/community/" >> /etc/apk/repositories
         apk update
         apk add quilt
         QUILT_PATCHES=$PWD/../debian/patches quilt push
