@@ -66,8 +66,9 @@ autoreconf -vi
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
-    # Needed for https://github.com/JuliaLang/julia/issues/48081
-    export LDFLAGS="-L$prefix/bin -L/opt/*-w64-mingw32/*-w64-mingw32/sys-root/lib"
+    # work around missing strtoll strtoull, see https://github.com/JuliaLang/julia/issues/48081
+    make -C deps install-csl
+    cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/lib/libmsvcrt.a ./usr/lib/libmsvcrt.a
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
