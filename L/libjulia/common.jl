@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-rc2", v"1.11.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.1", v"1.11.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -48,6 +48,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.7.0" => "8e870dbef71bc72469933317a1a18214fd1b4b12f1080784af7b2c56177efcb4",
         v"1.8.2" => "3e2cea35bf5df963ed7b75a83e8febfc000acf1e664ecd657a0772508eb1fb5d",
         v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
+        v"1.10.1" => "698dc594fce302c465135b32d158aadbea3122ece516a2ae5f39b68035ebc719",
     )
 
     if version == v"1.10.0-rc2"
@@ -300,11 +301,6 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # choose make targets which compile libjulia but don't try to build a sysimage
     MAKE_TARGET="julia-src-release julia-cli-release julia-src-debug julia-cli-debug"
 
-    # work around missing strtoll strtoull, see https://github.com/JuliaLang/julia/issues/48081
-    if [[ "${target}" == *mingw* ]]; then
-        make -C deps install-csl
-        cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/lib/libmsvcrt.a ./usr/lib/libmsvcrt.a
-    fi
     # Start the actual build. We pass DSYMUTIL='true -ignore' to skip the
     # unnecessary step calling dsymutil, which in our cross compilation
     # environment results in a segfault.
