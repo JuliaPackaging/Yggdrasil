@@ -3,28 +3,55 @@
 using BinaryBuilder, Pkg
 
 name = "ROOT"
-version = v"6.30.00"
-version_slug = "6.30.00"
+version = v"6.30.04"
+
+rootgithash = Dict(v"6.30.4" => "ebd5b65997c3dff10fc38472a40ddffc26fb982a")
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://root.cern.ch/download/root_v$(version_slug).source.tar.gz",
-    "0592c066954cfed42312957c9cb251654456064fe2d8dabdcb8826f1c0099d71")
+    GitSource("https://github.com/root-project/root.git", rootgithash[version])
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-apk add util-linux pciutils usbutils coreutils binutils findutils grep iproute2
-apk add dateutils
-apk add bash bash-completion
-apk add cmake extra-cmake-modules
+
+if echo "$target" | grep musl; then #build wih musl library
+# Disabling what is not working with musl:
+    CMAKE_EXTRA_OPTS="-Ddavix=OFF -Dxrootd=OFF -Dssl=OFF"
+fi
+
+# build-in compilation of the libAfterImage library needs this directory
+mkdir -p /tmp/user/0
+
 cd $WORKSPACE/srcdir
-mkdir build
-cd build/
-cmake -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -Droot7=OFF -Droofit=OFF -Dclad=OFF -Dpyroot=OFF -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=Release ../root-*
-make -j${nproc}
-make
-make install
+
+# For the cross-compiling, LLVM needs to compile the llvm-tblgen tool
+# for the host. The ROOT LLVM code tree does not include the test and
+# benchmark directories cmake will need to configure for the host for
+# this bootstrap. We need to disable the build of the test and benchmarks
+sed -i 's/\(option(LLVM_INCLUDE_TESTS[[:space:]].*[[:space:]]\)on)\(.*\)/\1OFF)\2/i
+        s/\(option(LLVM_INCLUDE_BENCHMARKS[[:space:]].*[[:space:]]\)on)\(.*\)/\1OFF)\2/i' \
+        root/interpreter/llvm-project/llvm/CMakeLists.txt
+
+# N llvm links. LLVM link command needs 15GB
+LLVM_PARALLEL_LINK_JOBS=`grep MemTot /proc/meminfo  | awk '{a=int($2/15100000); if(a>'"$nproc"') a='"$nproc"'; if(a<1) a=1; print a;}'`
+
+# For the rootcling execution performed during the build:
+echo "include_directories(SYSTEM /opt/$target/$target/sys-root/usr/include)" >> ${CMAKE_TARGET_TOOLCHAIN}
+
+# Build with debug info, while we are debugging this script:
+BUILD_TYPE=Debug
+
+cmake -GNinja \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DLLVM_PARALLEL_LINK_JOBS=$LLVM_PARALLEL_LINK_JOBS \
+      $CMAKE_EXTRA_OPTS \
+      -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DLLVM_BUILD_TYPE=$BUILD_TYPE \
+      -B build -S root
+
+cmake --build build -j${nproc} 
+cmake --install build --prefix $prefix
 """
 
 # These are the platforms we will build for by default, unless further
@@ -50,15 +77,16 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Xorg_libX11_jll")
+    #Mandatory dependencies
     BuildDependency("Xorg_xorgproto_jll")
+    Dependency("Xorg_libX11_jll")
     Dependency("Xorg_libXpm_jll")
+    Dependency("Xorg_libXft_jll")    
+
+    #Optionnal dependencies (if absent, either a feature will be disabled or a built-in version will be compiled)
     Dependency("VDT_jll")
-    Dependency("Xorg_libXft_jll")
     Dependency("XRootD_jll")
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
-    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"13.0.1"))
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"13.0.1"))
     Dependency("Lz4_jll")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="Giflib_jll", uuid="59f7168a-df46-5410-90c8-f2779963d0ec"))
@@ -68,6 +96,19 @@ dependencies = [
     Dependency(PackageSpec(name="xxHash_jll", uuid="5fdcd639-92d1-5a06-bf6b-28f2061df1a9"))
     Dependency("XZ_jll")
     Dependency(PackageSpec(name="Librsvg_jll", uuid="925c91fb-5dd6-59dd-8e8c-345e74382d89"))
+    Dependency("FreeType2_jll")
+    Dependency("Xorg_libICE_jll")
+    Dependency("Xorg_libSM_jll")
+    Dependency("Xorg_libXfixes_jll")
+    Dependency("Xorg_libXi_jll")
+    Dependency("Xorg_libXinerama_jll")
+    Dependency("Xorg_libXmu_jll")
+    Dependency("Xorg_libXt_jll")
+    Dependency("Xorg_libXtst_jll")
+    Dependency("Xorg_xcb_util_jll")
+    Dependency("Xorg_libxkbfile_jll")
+    Dependency("Libglvnd_jll")
+    Dependency("OpenBLAS_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
