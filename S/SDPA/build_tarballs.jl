@@ -65,8 +65,6 @@ autoreconf -vi
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
-    cp /opt/i686-w64-mingw32/i686-w64-mingw32/sys-root/lib/libmsvcrt.a ${libdir}
-    cp /opt/i686-w64-mingw32/i686-w64-mingw32/sys-root/lib/libmsvcrt.a ${prefix}/bin
     export LDFLAGS="-L$prefix/bin -L/opt/i686-w64-mingw32/i686-w64-mingw32/sys-root/lib -lmsvcrt"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
