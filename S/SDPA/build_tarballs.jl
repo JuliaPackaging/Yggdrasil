@@ -59,7 +59,6 @@ update_configure_scripts
 
 # Apply patches
 atomic_patch -p1 $WORKSPACE/srcdir/patches/shared.diff
-mv configure.in configure.ac
 atomic_patch -p1 $WORKSPACE/srcdir/patches/lt_init.diff
 autoreconf -vi
 
