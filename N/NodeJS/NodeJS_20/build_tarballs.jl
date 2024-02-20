@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-_name = "NodeJS_20"
+name = "NodeJS_20"
 version = v"20.11.1"
 
 url_prefix = "https://nodejs.org/dist/v$version/node-v$version"
