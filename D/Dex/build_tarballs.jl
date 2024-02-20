@@ -19,7 +19,9 @@ cd dex/
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-install_license LICENSE 
+install_license LICENSE
+go mod tidy
+go mod download entgo.io/ent
 make build
 mkdir -p $bindir
 mv bin/dex "$bindir/dex${exeext}"

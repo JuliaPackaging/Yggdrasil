@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "tree_sitter_julia"
-version = v"0.0.4"
+version = v"0.19.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://github.com/tree-sitter/tree-sitter-julia/archive/v$(version).tar.gz",
-        "58e6413cbad3e945f884aa3628305c8258e08807537263911afa6ffca31f03fc"
+        "005b2206116012bc3bf8315818e7e269580467899d77a24f0c7fc8223e78387b"
     ),
     DirectorySource("./bundled")
 ]
@@ -48,4 +48,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")

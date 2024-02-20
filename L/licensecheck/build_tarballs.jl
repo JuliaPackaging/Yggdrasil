@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "licensecheck"
-version = v"0.3.1"
+version = v"0.3.101"
 
 sources = [
     GitSource("https://github.com/google/licensecheck",
@@ -43,4 +43,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :go], preferred_gcc_version=v"6", julia_compat="1.6")

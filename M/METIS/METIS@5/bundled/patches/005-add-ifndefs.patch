@@ -1,0 +1,32 @@
+diff --git a/include/metis.h b/include/metis.h
+index e951270..f92026d 100644
+--- a/include/metis.h
++++ b/include/metis.h
+@@ -30,8 +30,9 @@
+  GCC does provides these definitions in stdint.h, but it may require some
+  modifications on other architectures.
+ --------------------------------------------------------------------------*/
+-#define IDXTYPEWIDTH 32
+-
++#ifndef IDXTYPEWIDTH
++  #define IDXTYPEWIDTH 32
++#endif
+ 
+ /*--------------------------------------------------------------------------
+  Specifies the data type that will hold floating-point style information.
+@@ -40,9 +41,9 @@
+    32 : single precission floating point (float)
+    64 : double precission floating point (double)
+ --------------------------------------------------------------------------*/
+-#define REALTYPEWIDTH 32
+-
+-
++#ifndef REALTYPEWIDTH
++  #define REALTYPEWIDTH 32
++#endif
+ 
+ /****************************************************************************
+ * In principle, nothing needs to be changed beyond this point, unless the
+-- 
+2.37.2
+

@@ -1,50 +1,62 @@
-using BinaryBuilder
+using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "Qemu"
-version = v"6.2.0"
+version = v"7.1.0"
 
 # Collection of sources required to build libffi
 sources = [
-    ArchiveSource("https://download.qemu.org/qemu-6.2.0.tar.xz",
-                  "68e15d8e45ac56326e0b9a4afa8b49a3dfe8aba3488221d098c84698bca65b45"),
+    ArchiveSource("https://download.qemu.org/qemu-$(version).tar.xz",
+                  "a0634e536bded57cf38ec8a751adb124b89c776fe0846f21ab6c6728f1cbbbe6"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qemu-*
+install_license COPYING
 
-# Patch out usage of MADV_NOHUGEPAGE which does not exist in glibc 2.12.X
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_madv_nohugepage.patch"
+# check if we need to use a more recent glibc
+if [[ -f "$prefix/usr/include/sched.h" ]]; then
+    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
+    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+fi
 
-# Patch to include `falloc` header in `strace.c`
+# include `falloc` header in `strace.c` (requires glibc 2.25)
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_falloc.patch"
 
 if [[ "${target}" == *-*-musl ]]; then
-    # Patch to fix messy header situation on musl
+    # fix messy header situation on musl
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_syscall.patch"
+
+    # include kernel headers for a definition of speculation control prctls (musl 1.1.20)
+    sed -i 's/#include <sys\/prctl.h>/#include <linux\/prctl.h>/g' linux-user/syscall.c
 fi
 
-# Patch to disable tests
+# disable tests
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_disable_tests.patch"
 
-# Patch to properly link to rt
+# properly link to rt
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_link_rt.patch"
 
-## Patch in adapter for `clock_gettime()` on macOS 10.12-
+# hacks for macOS
+## adapter for `clock_gettime()` on macOS 10.12-
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_clock_gettime.patch"
-#
-## Patch to fix pointer mismatch between `size_t` and `uint64_t`
+## disable adding the icon to the binary
+#echo '#!/bin/true ' > /usr/bin/Rez
+#echo '#!/bin/true ' > /usr/bin/SetFile
+#chmod +x /usr/bin/Rez
+#chmod +x /usr/bin/SetFile
+
+## fix pointer mismatch between `size_t` and `uint64_t`
 #atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_size_uint64.patch"
 
 # Configure, ignoring some warnings that we don't need, etc...
-./configure --host-cc="${HOSTCC}" --extra-cflags="-I${prefix}/include -Wno-unused-result" --disable-cocoa --prefix=$prefix
+./configure --prefix=$prefix --host-cc="${HOSTCC}" \
+    --extra-cflags="-I${prefix}/include -Wno-unused-result" \
+    --disable-cocoa
 
-echo '#!/bin/true ' > /usr/bin/Rez
-echo '#!/bin/true ' > /usr/bin/SetFile
-chmod +x /usr/bin/Rez
-chmod +x /usr/bin/SetFile
-make -j${nproc} || true
+make -j${nproc}
+
 make install
 """
 
@@ -57,38 +69,85 @@ platforms = [
 ]
 platforms = expand_cxxstring_abis(platforms)
 
+# some platforms need a newer glibc, because the default one is too old
+glibc_platforms = filter(platforms) do p
+    libc(p) == "glibc" && proc_family(p) in ["intel", "power"]
+end
+
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("qemu-system-xtensaeb"    , :qemu_system_xtensaeb    ),
-    ExecutableProduct("qemu-system-xtensa"      , :qemu_system_xtensa      ),
-    ExecutableProduct("qemu-system-tricore"     , :qemu_system_tricore     ),
-    ExecutableProduct("qemu-system-sparc64"     , :qemu_system_sparc64     ),
-    ExecutableProduct("qemu-system-sparc"       , :qemu_system_sparc       ),
-    ExecutableProduct("qemu-system-x86_64"      , :qemu_system_x86_64      ),
-    ExecutableProduct("qemu-system-sh4eb"       , :qemu_system_sh4eb       ),
-    ExecutableProduct("qemu-system-s390x"       , :qemu_system_s390x       ),
-    ExecutableProduct("qemu-system-sh4"         , :qemu_system_sh4         ),
-    ExecutableProduct("qemu-system-rx"          , :qemu_system_rx          ),
-    ExecutableProduct("qemu-system-riscv32"     , :qemu_system_riscv32     ),
-    ExecutableProduct("qemu-system-riscv64"     , :qemu_system_riscv64     ),
-    ExecutableProduct("qemu-system-ppc64"       , :qemu_system_ppc64       ),
-    ExecutableProduct("qemu-system-ppc"         , :qemu_system_ppc         ),
-    ExecutableProduct("qemu-system-or1k"        , :qemu_system_or1k        ),
-    ExecutableProduct("qemu-system-nios2"       , :qemu_system_nios2       ),
-    ExecutableProduct("qemu-system-microblazeel", :qemu_system_microblazeel),
-    ExecutableProduct("qemu-system-microblaze"  , :qemu_system_microblaze  ),
-    ExecutableProduct("qemu-system-m68k"        , :qemu_system_m68k        ),
-    ExecutableProduct("qemu-system-i386"        , :qemu_system_i386        ),
+    # system-mode emulation
+    ExecutableProduct("qemu-system-aarch64"     , :qemu_system_aarch64     ),
+    ExecutableProduct("qemu-system-alpha"       , :qemu_system_alpha       ),
+    ExecutableProduct("qemu-system-arm"         , :qemu_system_arm         ),
+    ExecutableProduct("qemu-system-avr"         , :qemu_system_avr         ),
     ExecutableProduct("qemu-system-cris"        , :qemu_system_cris        ),
     ExecutableProduct("qemu-system-hppa"        , :qemu_system_hppa        ),
-    ExecutableProduct("qemu-system-avr"         , :qemu_system_avr         ),
-    ExecutableProduct("qemu-system-arm"         , :qemu_system_arm         ),
-    ExecutableProduct("qemu-system-alpha"       , :qemu_system_alpha       ),
-    ExecutableProduct("qemu-system-aarch64"     , :qemu_system_aarch64     ),
+    ExecutableProduct("qemu-system-i386"        , :qemu_system_i386        ),
+    ExecutableProduct("qemu-system-m68k"        , :qemu_system_m68k        ),
+    ExecutableProduct("qemu-system-microblaze"  , :qemu_system_microblaze  ),
+    ExecutableProduct("qemu-system-microblazeel", :qemu_system_microblazeel),
     ExecutableProduct("qemu-system-mips"        , :qemu_system_mips        ),
-    ExecutableProduct("qemu-system-mipsel"      , :qemu_system_mipsel      ),
-    ExecutableProduct("qemu-system-mips64el"    , :qemu_system_mips64el    ),
     ExecutableProduct("qemu-system-mips64"      , :qemu_system_mips64      ),
+    ExecutableProduct("qemu-system-mips64el"    , :qemu_system_mips64el    ),
+    ExecutableProduct("qemu-system-mipsel"      , :qemu_system_mipsel      ),
+    ExecutableProduct("qemu-system-nios2"       , :qemu_system_nios2       ),
+    ExecutableProduct("qemu-system-or1k"        , :qemu_system_or1k        ),
+    ExecutableProduct("qemu-system-ppc"         , :qemu_system_ppc         ),
+    ExecutableProduct("qemu-system-ppc64"       , :qemu_system_ppc64       ),
+    ExecutableProduct("qemu-system-riscv32"     , :qemu_system_riscv32     ),
+    ExecutableProduct("qemu-system-riscv64"     , :qemu_system_riscv64     ),
+    ExecutableProduct("qemu-system-rx"          , :qemu_system_rx          ),
+    ExecutableProduct("qemu-system-s390x"       , :qemu_system_s390x       ),
+    ExecutableProduct("qemu-system-sh4"         , :qemu_system_sh4         ),
+    ExecutableProduct("qemu-system-sh4eb"       , :qemu_system_sh4eb       ),
+    ExecutableProduct("qemu-system-sparc"       , :qemu_system_sparc       ),
+    ExecutableProduct("qemu-system-sparc64"     , :qemu_system_sparc64     ),
+    ExecutableProduct("qemu-system-tricore"     , :qemu_system_tricore     ),
+    ExecutableProduct("qemu-system-x86_64"      , :qemu_system_x86_64      ),
+    ExecutableProduct("qemu-system-xtensa"      , :qemu_system_xtensa      ),
+    ExecutableProduct("qemu-system-xtensaeb"    , :qemu_system_xtensaeb    ),
+
+    # user-mode emulation
+    ExecutableProduct("qemu-aarch64"            , :qemu_aarch64            ),
+    ExecutableProduct("qemu-aarch64_be"         , :qemu_aarch64_be         ),
+    ExecutableProduct("qemu-alpha"              , :qemu_alpha              ),
+    ExecutableProduct("qemu-arm"                , :qemu_arm                ),
+    ExecutableProduct("qemu-armeb"              , :qemu_armeb              ),
+    ExecutableProduct("qemu-cris"               , :qemu_cris               ),
+    ExecutableProduct("qemu-edid"               , :qemu_edid               ),
+    ExecutableProduct("qemu-ga"                 , :qemu_ga                 ),
+    ExecutableProduct("qemu-hexagon"            , :qemu_hexagon            ),
+    ExecutableProduct("qemu-hppa"               , :qemu_hppa               ),
+    ExecutableProduct("qemu-i386"               , :qemu_i386               ),
+    ExecutableProduct("qemu-img"                , :qemu_img                ),
+    ExecutableProduct("qemu-io"                 , :qemu_io                 ),
+    ExecutableProduct("qemu-m68k"               , :qemu_m68k               ),
+    ExecutableProduct("qemu-microblaze"         , :qemu_microblaze         ),
+    ExecutableProduct("qemu-microblazeel"       , :qemu_microblazeel       ),
+    ExecutableProduct("qemu-mips"               , :qemu_mips               ),
+    ExecutableProduct("qemu-mips64"             , :qemu_mips64             ),
+    ExecutableProduct("qemu-mips64el"           , :qemu_mips64el           ),
+    ExecutableProduct("qemu-mipsel"             , :qemu_mipsel             ),
+    ExecutableProduct("qemu-mipsn32"            , :qemu_mipsn32            ),
+    ExecutableProduct("qemu-mipsn32el"          , :qemu_mipsn32el          ),
+    ExecutableProduct("qemu-nbd"                , :qemu_nbd                ),
+    ExecutableProduct("qemu-nios2"              , :qemu_nios2              ),
+    ExecutableProduct("qemu-or1k"               , :qemu_or1k               ),
+    ExecutableProduct("qemu-ppc"                , :qemu_ppc                ),
+    ExecutableProduct("qemu-ppc64"              , :qemu_ppc64              ),
+    ExecutableProduct("qemu-ppc64le"            , :qemu_ppc64le            ),
+    ExecutableProduct("qemu-riscv32"            , :qemu_riscv32            ),
+    ExecutableProduct("qemu-riscv64"            , :qemu_riscv64            ),
+    ExecutableProduct("qemu-s390x"              , :qemu_s390x              ),
+    ExecutableProduct("qemu-sh4"                , :qemu_sh4                ),
+    ExecutableProduct("qemu-sh4eb"              , :qemu_sh4eb              ),
+    ExecutableProduct("qemu-sparc"              , :qemu_sparc              ),
+    ExecutableProduct("qemu-sparc32plus"        , :qemu_sparc32plus        ),
+    ExecutableProduct("qemu-sparc64"            , :qemu_sparc64            ),
+    ExecutableProduct("qemu-x86_64"             , :qemu_x86_64             ),
+    ExecutableProduct("qemu-xtensa"             , :qemu_xtensa             ),
+    ExecutableProduct("qemu-xtensaeb"           , :qemu_xtensaeb           ),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -98,7 +157,13 @@ dependencies = [
     Dependency("PCRE_jll"),
     BuildDependency("Gettext_jll"),
     Dependency("libcap_jll"),
+
+    # qemu needs glibc >=2.14 for CLOCK_BOOTTIME
+    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+                    platforms=glibc_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"8", julia_compat="1.6",
+               lock_microarchitecture=false)

@@ -15,11 +15,11 @@ elif [[ $flag == "--exec-prefix" ]]; then
 elif [[ $flag == "--includes" ]]; then
     echo "-I$prefix/include/python3.8"
 elif [[ $flag == "--libs" ]]; then
-    echo "-lpython3.8 -lcrypt -lpthread -ldl -lpthread -lutil -lrt -lm -lm"
+    echo "-lpython3.8 -lpthread -ldl -lpthread -lutil -lrt -lm -lm"
 elif [[ $flag == "--cflags" ]]; then
     echo "-I$prefix/include/python3.8 -I$prefix/include/python3.8 -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall"
 elif [[ $flag == "--ldflags" ]]; then
-    echo "-lpython3.8 -lcrypt -lpthread -ldl -lpthread -lutil -lrt -lm -lm -Xlinker -export-dynamic"
+    echo "-lpython3.8 -lpthread -ldl -lpthread -lutil -lrt -lm -lm -Xlinker -export-dynamic"
 else
     echo "Unknown flag: $flag"
     exit 1

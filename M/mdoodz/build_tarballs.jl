@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "mdoodz"
-version = v"0.7.3"
+version = v"0.7.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "c12c33b0fa3ff5844d458e0a3a9853a893551963")
+    GitSource("https://github.com/tduretz/MDOODZ7.0.git", "c142c835c7c805a712b2a0ab64ce1b8e36602303")
 ]
 
 # Bash recipe for building across all platforms
@@ -43,7 +43,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CXSparse_jll", uuid="c77e7b6a-7cf9-58ed-a396-e1da12b05d87")),
-    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59")),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="HDF5_jll", uuid="0234f1f7-429e-5d53-9886-15a909be8d59"); compat="~1.12"),
     Dependency(PackageSpec(name="SuiteSparse_jll", uuid="bea87d4a-7f5b-5778-9afe-8cc45184846c")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),

@@ -91,6 +91,17 @@ function upload_compiler_shard(repo, name, version, hash, archive_type; platform
     filename = BinaryBuilderBase.artifact_name(cs)
     tarball_hash = publish_artifact(repo, tag, hash, filename)
 
+    # Upload also the logs tarball, but do it only once (e.g. only with unpacked archives).
+    if archive_type == :unpacked
+        # Note (Mosè): I'm not 100% sure this is always the correct platform, but looked
+        # like the best option from what I could gather.  Note also that the logs tarball
+        # may not always exist (e.g. for RustToolchain), so we need to guard this with
+        # `isfile(logs_filename)`.
+        p = isnothing(target) ? platform : target
+        logs_filename = joinpath("products", "$(name)-logs.v$(version).$(triplet(p)).tar.gz")
+        isfile(logs_filename) && BinaryBuilder.upload_to_github_releases(repo, tag, logs_filename)
+    end
+
     return [
         ("https://github.com/$(repo)/releases/download/$(tag)/$(filename).tar.gz", tarball_hash),
     ]
@@ -143,7 +154,7 @@ function jrun(script::String, args::String...; verbose=verbose, debug=debug, dep
     run(`$(Base.julia_cmd()) --color=yes $(script) $(filter(x -> !isempty(x), [@flag(verbose), @flag(debug), @flag(deploy), @flag(register), args...]))`)
 end
 
-import BinaryBuilder: build_tarballs 
+import BinaryBuilder: build_tarballs
 function build_tarballs(project_path::String, args::String...; deploy=false, register=false)
     @info("Building $(project_path)...")
     cd(project_path) do

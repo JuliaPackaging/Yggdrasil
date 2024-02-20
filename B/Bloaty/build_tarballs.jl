@@ -3,38 +3,34 @@
 using BinaryBuilder, Pkg
 
 name = "Bloaty"
-version = v"1.0.0"
+version_string = "1.1"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/google/bloaty/releases/download/v1.0/bloaty-1.0.tar.bz2",
-                  "e1cf9830ba6c455218fdb50e7a8554ff256da749878acfaf77c032140d7ddde0")
+    ArchiveSource("https://github.com/google/bloaty/releases/download/v$(version_string)/bloaty-$(version_string).tar.bz2",
+                  "a308d8369d5812aba45982e55e7c3db2ea4780b7496a5455792fb3dcba9abd6f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/bloaty*/
-apk add protobuf
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -G Ninja \
+    `# Encourage CMake to find re2` \
+    -DRE2_FOUND=TRUE \
+    -DRE2_LIBRARIES='re2' \
     ..
-make -j${nproc}
-make install
-
-# Remove extra stuff
-rm ${bindir}/protoc*
-rm ${libdir}/*.a
-rm -r ${prefix}/include
-rm -r ${prefix}/lib/cmake/
-rm -r ${prefix}/lib/pkgconfig/
-rm -rf ${prefix}/lib64/
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis([p for p in supported_platforms() if !Sys.iswindows(p)])
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=Sys.iswindows))
 
 # The products that we will ensure are always built
 products = [
@@ -43,8 +39,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll")
+    Dependency("Capstone_jll"),
+    Dependency("protoc_jll"),
+    Dependency("RE2_jll"),
+    Dependency("Zlib_jll"),
+    HostBuildDependency("protoc_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")

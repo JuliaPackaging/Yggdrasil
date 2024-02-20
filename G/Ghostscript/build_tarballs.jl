@@ -21,10 +21,10 @@ cd $WORKSPACE/srcdir/ghostscript*
 if [[ "${target}" == *-mingw* ]]; then
     # Patches adapted from
     # https://github.com/msys2/MINGW-packages/tree/d87e68ae356d773901e5c477854312e5de0548cf/mingw-w64-ghostscript
-    # (we don't need to patch configure.ac)
     atomic_patch -p1 ../patches/001-mingw-build.patch
     atomic_patch -p1 ../patches/003-libspectre.patch
 fi
+autoreconf -v
 
 # Specify the native compiler for the programs that need to be run on the host
 export CCAUX=${CC_BUILD}
@@ -41,10 +41,26 @@ export CCAUX=${CC_BUILD}
     --without-tesseract
 
 # create the binaries
+make -j${nproc} so
 make -j${nproc}
 
 # install to prefixes
 make install
+if [[ "${target}" == *-mingw* ]]; then
+    # make soinstall creates broken symlinks for mingw
+    install -Dvm 755 "sobin/libgs-9-55.${dlext}" "${libdir}/libgs-9-55.${dlext}"
+    ln -s "${libdir}/libgs-9-55.${dlext}" "${libdir}/libgs-9.${dlext}"
+    ln -s "${libdir}/libgs-9-55.${dlext}" "${libdir}/libgs.${dlext}"
+
+    install -Dvm 755 "psi/iapi.h" "${includedir}/ghostscript/iapi.h"
+    install -Dvm 755 "psi/ierrors.h" "${includedir}/ghostscript/ierrors.h"
+    install -Dvm 755 "base/gserrors.h" "${includedir}/ghostscript/gserrors.h"
+
+    install -Dvm 755 "sobin/gsc${exeext}" "${bindir}/gsc${exeext}"
+    install -Dvm 755 "sobin/gsx${exeext}" "${bindir}/gsx${exeext}"
+else
+    make soinstall
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,6 +69,9 @@ platforms = supported_platforms()
 
 products = [
     ExecutableProduct("gs", :gs),
+    ExecutableProduct("gsc", :gsc),
+    ExecutableProduct("gsx", :gsx),
+    LibraryProduct("libgs", :libgs),
     # These are shell wrappers around gs, not binary executables
     FileProduct("bin/dvipdf", :dvipdf),
     FileProduct("bin/eps2eps", :eps2eps),
@@ -77,6 +96,10 @@ products = [
     FileProduct("bin/ps2pdfwr", :ps2pdfwr),
     FileProduct("bin/ps2ps", :ps2ps),
     FileProduct("bin/ps2ps2", :ps2ps2),
+    # header files
+    FileProduct("include/ghostscript/iapi.h", :iapi_h),
+    FileProduct("include/ghostscript/ierrors.h", :ierrors_h),
+    FileProduct("include/ghostscript/gserrors.h", :gserrors_h),
 ]
 
 dependencies = Dependency[

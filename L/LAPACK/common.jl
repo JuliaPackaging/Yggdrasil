@@ -1,13 +1,13 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 # LAPACK mirrors the OpenBLAS build, whereas LAPACK32 mirrors the OpenBLAS32 build.
 
-version = v"3.10.0"
+version = v"3.11.0"
 
 # Collection of sources required to build lapack
 sources = [
-    GitSource("https://github.com/Reference-LAPACK/lapack-release",
-              "aa631b4b4bd13f6ae2dbab9ae9da209e1e05b0fc"),
+    GitSource("https://github.com/Reference-LAPACK/lapack",
+              "7866626840f5d5e7e27f027a55182da8b3303872"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,18 +19,23 @@ function lapack_script(;lapack32::Bool=false)
 
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
-    FFLAGS=(-cpp -ffixed-line-length-none -DUSE_ISNAN)
-    if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
-        FFLAGS="${FFLAGS} -fdefault-integer-8"
+
+    if [[ "${target}" == *-mingw* ]]; then
+        BLAS="blastrampoline-5"
+    else
+        BLAS="blastrampoline"
     fi
 
+    FFLAGS=-ffixed-line-length-none
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
+      FFLAGS="${FFLAGS} -cpp -DUSE_ISNAN -fdefault-integer-8"
+
       syms=(CAXPBY CAXPY CBBCSD CBDSQR
       CCOPY CDOTC CDOTU CGBBRD CGBCON CGBEQU CGBEQUB CGBMV CGBRFS
       CGBSV CGBSVX CGBTF2 CGBTRF CGBTRS CGEADD CGEBAK CGEBAL CGEBD2
       CGEBRD CGECON CGEEQU CGEEQUB CGEES CGEESX CGEEV CGEEVX CGEHD2
       CGEHRD CGEJSV CGELQ2 CGELQ CGELQF CGELQT3 CGELQT CGELS CGELSD
-      CGELSS CGELSY CGEMLQ CGEMLQT CGEMM3M CGEMM CGEMQR CGEMQRT CGEMV
+      CGELSS CGELSY CGELST CGEMLQ CGEMLQT CGEMM3M CGEMM CGEMQR CGEMQRT CGEMV
       CGEQL2 CGEQLF CGEQP3 CGEQR2 CGEQR2P CGEQR CGEQRF CGEQRFP CGEQRT2
       CGEQRT3 CGEQRT CGERC CGERFS CGERQ2 CGERQF CGERU CGESC2 CGESDD
       CGESV CGESVD CGESVDQ CGESVDX CGESVJ CGESVX CGETC2 CGETF2 CGETRF2
@@ -93,7 +98,7 @@ function lapack_script(;lapack32::Bool=false)
       DGBSV DGBSVX DGBTF2 DGBTRF DGBTRS DGEADD DGEBAK DGEBAL DGEBD2
       DGEBRD DGECON DGEEQU DGEEQUB DGEES DGEESX DGEEV DGEEVX DGEHD2
       DGEHRD DGEJSV DGELQ2 DGELQ DGELQF DGELQT3 DGELQT DGELS DGELSD
-      DGELSS DGELSY DGEMLQ DGEMLQT DGEMM DGEMQR DGEMQRT DGEMV DGEQL2
+      DGELSS DGELSY DGELST DGEMLQ DGEMLQT DGEMM DGEMQR DGEMQRT DGEMV DGEQL2
       DGEQLF DGEQP3 DGEQR2 DGEQR2P DGEQR DGEQRF DGEQRFP DGEQRT2
       DGEQRT3 DGEQRT DGER DGERFS DGERQ2 DGERQF DGESC2 DGESDD DGESV
       DGESVD DGESVDQ DGESVDX DGESVJ DGESVX DGETC2 DGETF2 DGETRF2
@@ -155,16 +160,13 @@ function lapack_script(;lapack32::Bool=false)
       IDMIN IEEECK ILACLC ILACLR ILADIAG ILADLC ILADLR ILAENV2STAGE
       ILAENV ILAPREC ILASLC ILASLR ILATRANS ILAUPLO ILAVER ILAZLC
       ILAZLR IPARAM2STAGE IPARMQ ISAMAX ISAMIN ISMAX ISMIN IZAMAX
-      IZAMIN IZMAX1 LSAME LSAMEN OPENBLASGETCONFIG OPENBLASGETCORENAME
-      OPENBLASGETNUMPROCS OPENBLASGETNUMPROCS OPENBLASGETNUMTHREADS
-      OPENBLASGETNUMTHREADS OPENBLASGETPARALLEL OPENBLASGETPARALLEL
-      OPENBLASSETNUMTHREADS OPENBLASSETNUMTHREADS SAMAX SAMIN SASUM
+      IZAMIN IZMAX1 LSAME LSAMEN SAMAX SAMIN SASUM
       SAXPBY SAXPY SBBCSD SBDSDC SBDSQR SBDSVDX SCABS1 SCAMAX SCAMIN
       SCASUM SCNRM2 SCOMBSSQ SCOPY SCSUM1 SCSUM SDISNA SDOT SDSDOT
       SECOND SGBBRD SGBCON SGBEQU SGBEQUB SGBMV SGBRFS SGBSV SGBSVX
       SGBTF2 SGBTRF SGBTRS SGEADD SGEBAK SGEBAL SGEBD2 SGEBRD SGECON
       SGEEQU SGEEQUB SGEES SGEESX SGEEV SGEEVX SGEHD2 SGEHRD SGEJSV
-      SGELQ2 SGELQ SGELQF SGELQT3 SGELQT SGELS SGELSD SGELSS SGELSY
+      SGELQ2 SGELQ SGELQF SGELQT3 SGELQT SGELS SGELSD SGELSS SGELSY SGELST
       SGEMLQ SGEMLQT SGEMM SGEMQR SGEMQRT SGEMV SGEQL2 SGEQLF SGEQP3
       SGEQR2 SGEQR2P SGEQR SGEQRF SGEQRFP SGEQRT2 SGEQRT3 SGEQRT SGER
       SGERFS SGERQ2 SGERQF SGESC2 SGESDD SGESV SGESVD SGESVDQ SGESVDX
@@ -226,7 +228,7 @@ function lapack_script(;lapack32::Bool=false)
       ZDSCAL ZGBBRD ZGBCON ZGBEQU ZGBEQUB ZGBMV ZGBRFS ZGBSV ZGBSVX
       ZGBTF2 ZGBTRF ZGBTRS ZGEADD ZGEBAK ZGEBAL ZGEBD2 ZGEBRD ZGECON
       ZGEEQU ZGEEQUB ZGEES ZGEESX ZGEEV ZGEEVX ZGEHD2 ZGEHRD ZGEJSV
-      ZGELQ2 ZGELQ ZGELQF ZGELQT3 ZGELQT ZGELS ZGELSD ZGELSS ZGELSY
+      ZGELQ2 ZGELQ ZGELQF ZGELQT3 ZGELQT ZGELS ZGELSD ZGELSS ZGELSY ZGELST
       ZGEMLQ ZGEMLQT ZGEMM3M ZGEMM ZGEMQR ZGEMQRT ZGEMV ZGEQL2 ZGEQLF
       ZGEQP3 ZGEQR2 ZGEQR2P ZGEQR ZGEQRF ZGEQRFP ZGEQRT2 ZGEQRT3
       ZGEQRT ZGERC ZGERFS ZGERQ2 ZGERQF ZGERU ZGESC2 ZGESDD ZGESV
@@ -300,25 +302,46 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
-       -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline"
+       -DTEST_FORTRAN_COMPILER=OFF \
+       -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
 
-    make -j${nproc} all
+    make -j${nproc}
     make install
+
+    if [[ -f "${libdir}/libblas.${dlext}" ]]; then
+        echo "Error: libblas.${dlext} has been built, linking to libblastrampoline did not work"
+        exit 1
+    fi
+
+    # Rename liblapack.${dlext} into liblapack32.${dlext}
+    if [[ "${LAPACK32}" == "true" ]]; then
+        mv -v ${libdir}/liblapack.${dlext} ${libdir}/liblapack32.${dlext}
+        # If there were links that are now broken, fix 'em up
+        for l in $(find ${prefix}/lib -xtype l); do
+          if [[ $(basename $(readlink ${l})) == liblapack ]]; then
+            ln -vsf liblapack32.${dlext} ${l}
+          fi
+        done
+        PATCHELF_FLAGS=()
+        # ppc64le and aarch64 have 64 kB page sizes, don't muck up the ELF section load alignment
+        if [[ ${target} == aarch64-* || ${target} == powerpc64le-* ]]; then
+          PATCHELF_FLAGS+=(--page-size 65536)
+        fi
+        if [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
+          patchelf ${PATCHELF_FLAGS[@]} --set-soname liblapack32.${dlext} ${libdir}/liblapack32.${dlext}
+        elif [[ ${target} == *apple* ]]; then
+          install_name_tool -id liblapack32.${dlext} ${libdir}/liblapack32.${dlext}
+        fi
+    fi
     """
 end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) == v"3"), platforms)
-
-# The products that we will ensure are always built
-products = [
-    LibraryProduct("liblapack", :liblapack),
-]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-        Dependency("CompilerSupportLibraries_jll")
-        Dependency("libblastrampoline_jll"; compat="5.1.1")
+    Dependency("CompilerSupportLibraries_jll")
+    Dependency("libblastrampoline_jll"; compat="5.4.0")
 ]

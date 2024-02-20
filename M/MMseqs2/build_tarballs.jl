@@ -3,13 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MMseqs2"
-version = v"13"
+version = v"15"
+# official version: "major version + first 5 characters of tagged commit"
 
-# MMseqs2 seem to use as versioning scheme of "major version + first 5
-# characters of the tagged commit"
-# https://github.com/soedinglab/MMseqs2/releases
-version_commitprefix = "45111"
-
+# url = "https://github.com/soedinglab/MMseqs2"
+# description = "Search and cluster huge protein and nucleotide sequence sets"
 
 # Possible build variants
 # - OpenMP (default)
@@ -32,17 +30,14 @@ version_commitprefix = "45111"
 # - powerpc build fails with g++-7.x (tries to compile for x86 simd),
 #   works with g++-8.x and above
 
-# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/soedinglab/MMseqs2/archive/refs/tags/$(version.major)-$(version_commitprefix).tar.gz",
-                  "6444bb682ebf5ced54b2eda7a301fa3e933c2a28b7661f96ef5bdab1d53695a2"),
+    GitSource("https://github.com/soedinglab/MMseqs2",
+              "6f45232ac8daca14e354ae320a4359056ec524c2"),
     DirectorySource("./bundled")
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd MMseqs2-*/
+cd $WORKSPACE/srcdir/MMseqs2*/
 
 # patch CMakeLists.txt so it doesn't set -march unnecessarily on ARM
 atomic_patch -p1 ../patches/arm-simd-march-cmakefile.patch
@@ -68,18 +63,14 @@ make install
 install_license ../LICENSE.md
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true, exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || arch(p) == "i686")
 # expand cxxstring abis on platforms where we use g++
-platforms = expand_cxxstring_abis(platforms; skip = p -> Sys.isfreebsd(p) || (Sys.isapple(p) && arch(p) == "aarch64"))
+platforms = expand_cxxstring_abis(platforms)
 
-# The products that we will ensure are always built
 products = [
     ExecutableProduct("mmseqs", :mmseqs)
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency(PackageSpec(name="Zlib_jll")),
     Dependency(PackageSpec(name="Bzip2_jll")),
@@ -91,6 +82,5 @@ dependencies = Dependency[
                platforms=filter(Sys.isbsd, platforms)),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version = v"8")

@@ -1,21 +1,16 @@
 using BinaryBuilder, Pkg
 
 name = "RDKit"
-version = v"2022.03.1"
+version = v"2022.09.5"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "7e205e0d93a3046c1eaab37120c9f6971194ddf2"),
+    GitSource("https://github.com/rdkit/rdkit.git", "723e05d46f4c91988622a4035433d016729e2ed2"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/rdkit
 
-# Fix name of static libraries dependencies of `librdkitcffi` when building for Windows.
-atomic_patch -p1 ../patches/static-libraries-windows.patch
-# To check whether to optimise popcnt you must check the _*TARGET*_ system, not
-# the host one.
-atomic_patch -p1 ../patches/popcnt-target-system.patch
 # Windows build fails to link a test, despite the fact we don't want tests.
 atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
 
@@ -60,11 +55,12 @@ products = [
 ]
 
 dependencies = [
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("boost_jll"; compat="=1.76.0"),
     BuildDependency("Eigen_jll"),
     Dependency("Zlib_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-               preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # GCC 8 is needed for `std::from_chars`
+               preferred_gcc_version=v"8", julia_compat="1.6")

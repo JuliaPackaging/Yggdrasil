@@ -1,6 +1,4 @@
-dependencies = [BuildDependency(PackageSpec(name="CUDA_full_jll", version=v"10.2.89"))]
-
-script = raw"""
+get_script() = raw"""
 # First, find (true) CUDA toolkit directory in ~/.artifacts somewhere
 CUDA_ARTIFACT_DIR=$(dirname $(dirname $(realpath $prefix/cuda/bin/ptxas${exeext})))
 cd ${CUDA_ARTIFACT_DIR}
@@ -18,7 +16,7 @@ rm -rf ${prefix}/include/thrust
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
-if [[ ${target} == x86_64-linux-gnu || ${target} == aarch64-linux-gnu ]]; then
+if [[ ${target} == *-linux-gnu ]]; then
     # CUDA Runtime
     mv lib64/libcudart.so* lib64/libcudadevrt.a ${libdir}
 
@@ -51,9 +49,6 @@ if [[ ${target} == x86_64-linux-gnu || ${target} == aarch64-linux-gnu ]]; then
 
     # CUDA Profiling Tools Interface (CUPTI) Library
     mv extras/CUPTI/lib64/libcupti.so* ${libdir}
-
-    # NVIDIA Tools Extension Library
-    mv lib64/libnvToolsExt.so* ${libdir}
 
     # Additional binaries
     mv bin/ptxas ${bindir}
@@ -92,9 +87,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Profiling Tools Interface (CUPTI) Library
     mv extras/CUPTI/lib64/cupti64_*.dll ${bindir}
 
-    # NVIDIA Tools Extension Library
-    mv bin/nvToolsExt64_1.dll ${bindir}
-
     # Additional binaries
     mv bin/ptxas.exe ${bindir}
     mv bin/nvdisasm.exe ${bindir}
@@ -105,7 +97,8 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 fi
 """
 
-products = [
+get_products() = [
+    LibraryProduct(["libcudart", "cudart64_102"], :libcudart),
     LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm),
     LibraryProduct(["libcufft", "cufft64_10"], :libcufft),
     LibraryProduct(["libcublas", "cublas64_10"], :libcublas),
@@ -113,16 +106,9 @@ products = [
     LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
     LibraryProduct(["libcurand", "curand64_10"], :libcurand),
     LibraryProduct(["libcupti", "cupti64_102"], :libcupti),
-    LibraryProduct(["libnvToolsExt", "nvToolsExt64_1"], :libnvtoolsext),
     FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
     FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
     ExecutableProduct("ptxas", :ptxas),
     ExecutableProduct("nvdisasm", :nvdisasm),
     ExecutableProduct("nvlink", :nvlink),
-]
-
-platforms = [
-    Platform("aarch64", "linux"; cuda="10.2"),
-    Platform("x86_64", "linux"; cuda="10.2"),
-    Platform("x86_64", "windows"; cuda="10.2")
 ]

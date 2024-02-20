@@ -3,13 +3,13 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "Rscape"
-upstream_version = "2.0.0.k"
+upstream_version = "2.0.0.p"
 version = VersionNumber(replace(upstream_version, r"([0-9]+\.[0-9]+\.[0-9]+).*" => s"\1"))
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://rivaslab.org/software/rscape/rscape_v$(upstream_version).tar.gz",
-                  "b4d76d7e4d875564ba5b97c9e96a9a1ef2c1fd7a5ad390850b04fd5eb7efc8b9"),
+                  "e70f8b1a389c3c29888cba2f99034ede53d3c6aa3f798ce3e467935b267e59cc"),
     DirectorySource("./bundled")
 ]
 

@@ -1,19 +1,21 @@
 using BinaryBuilder
+using Pkg
+using BinaryBuilderBase: sanitize
 
 # zlib version
 name = "Zlib"
-version = v"1.2.12"
-
+version = v"1.3.1"
 
 # Collection of sources required to build zlib
 sources = [
-    ArchiveSource("https://zlib.net/zlib-$(version).tar.gz",
-                  "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9"),
+    # use Git source because zlib has a track record of deleting release tarballs of old versions
+    GitSource("https://github.com/madler/zlib.git",
+              "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/zlib-*
+cd $WORKSPACE/srcdir/zlib*
 mkdir build && cd build
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
@@ -31,7 +33,7 @@ install_license ../README
 """
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
@@ -39,9 +41,12 @@ products = [
     LibraryProduct("libz", :libz),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.9", preferred_llvm_version=llvm_version)

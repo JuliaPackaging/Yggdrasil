@@ -1,37 +1,21 @@
-diff --git before/kahypar/.git/config after/kahypar/.git/config
-index 2b788ab..9e824f6 100644
---- before/kahypar/.git/config
-+++ after/kahypar/.git/config
-@@ -9,3 +9,12 @@
- [branch "master"]
- 	remote = origin
- 	merge = refs/heads/master
-+[submodule "external_tools/WHFC"]
-+	active = true
-+	url = https://github.com/larsgottesbueren/WHFC.git
-+[submodule "external_tools/googletest"]
-+	active = true
-+	url = https://github.com/google/googletest.git
-+[submodule "python/pybind11"]
-+	active = true
-+	url = https://github.com/pybind/pybind11.git
-diff --git before/kahypar/CMakeLists.txt after/kahypar/CMakeLists.txt
-index 3e5849e..f58a509 100644
---- before/kahypar/CMakeLists.txt
-+++ after/kahypar/CMakeLists.txt
-@@ -253,8 +253,8 @@ if(NOT MSVC)
-   endif()
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9065a70e..c7ad682b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -251,14 +251,8 @@ if(NOT MSVC)
  
    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pthread -g3")
--  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -mtune=native -march=native")
--  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -mtune=native -march=native -g3 ") 
+ 
+-  if(CMAKE_SYSTEM_NAME MATCHES "Darwin" AND CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64")
+-    # M1 doesn't seem to support -mtune=native -march=native
+-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g3 ")
+-  else()
+-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -mtune=native -march=native")
+-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -mtune=native -march=native -g3 ")
+-  endif()
 +  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
-+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g3 ") 
-   
++  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g3 ")
+ 
  if(DEFINED ENV{TRAVIS_ENV})  
    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mno-avx")
-@@ -328,4 +328,3 @@ add_subdirectory(kahypar/application)
- add_subdirectory(tools)
- add_subdirectory(lib)
- add_subdirectory(tests)
--add_subdirectory(python)

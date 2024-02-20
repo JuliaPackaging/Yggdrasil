@@ -1,70 +1,70 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support"
-version = v"0.1"
+version = v"0.2.2"
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 generic_sources = [
-    GitSource("https://github.com/JuliaGPU/oneAPI.jl", "c9f21108139d0b186e83f183aacc4df9a65b895a")
+    GitSource("https://github.com/JuliaGPU/oneAPI.jl", "ab65719ed81a1237ef7afc7b3a0afb36bd9f3c36")
 ]
 
 platform_sources = Dict(
     # https://conda.anaconda.org/intel/linux-64
     Platform("x86_64", "linux"; libc="glibc") => [
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/dpcpp-cpp-rt-2022.1.0-intel_3768.tar.bz2",
-            "1472da83f109dbead10835e49d204035272b9727eb71863e5a64688e13e6bacf";
+            "https://conda.anaconda.org/intel/linux-64/dpcpp-cpp-rt-2023.0.0-intel_25370.tar.bz2",
+            "8aa30359fd1c0939cdcf0c36fa76e2fb07c8384a1f51acc2ccd563289c845010";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/dpcpp_impl_linux-64-2022.1.0-intel_3768.tar.bz2",
-            "4ff8f0a0c482aa6ffeb419fe9d0d38a697d2db8d86e65ca499f47d5d68747436";
+            "https://conda.anaconda.org/intel/linux-64/dpcpp_impl_linux-64-2023.0.0-intel_25370.tar.bz2",
+            "e4d53ac4000f4a3774d1860561ba1305791b7254173e8b0057845aedc1a3aa99";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/dpcpp_linux-64-2022.1.0-intel_3768.tar.bz2",
-            "96a13c1fb673bcb0b6b0ddb6c436312113292d7ea21a55395a7efa34e70af0b1";
+            "https://conda.anaconda.org/intel/linux-64/dpcpp_linux-64-2023.0.0-intel_25370.tar.bz2",
+            "b271aff70c99acc24f3ffccef4c246a943541dac98059c824a2f0f8b1c68df49";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/icc_rt-2022.1.0-intel_3768.tar.bz2",
-            "b81f4838a930d08edec2aab4d3eebd89ce3b321ca602792bcc9433926836da07";
+            "https://conda.anaconda.org/intel/linux-64/icc_rt-2023.0.0-intel_25370.tar.bz2",
+            "189ec80a95810ca2d2f4d8659792d7cc662872b0aa5dabb1d803e684eca1f072";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lib-rt-2022.1.0-intel_3768.tar.bz2",
-            "8c86ea88d46cb13b3b537203e15fc6e6ec2d803b7bd0bde8561d347b18ba426e";
+            "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lib-rt-2023.0.0-intel_25370.tar.bz2",
+            "10ae52d6480ce511b1b345391d2246140ba92e3f34c9fb2fdb72b88a6f2d0f66";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lic-rt-2022.1.0-intel_3768.tar.bz2",
-            "fd3b6a0e75f06b1bf22b070a7b61b09d2a3e9d9e01a64b60b746b35f45681acb";
+            "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lic-rt-2023.0.0-intel_25370.tar.bz2",
+            "f3d4270cd182efd8c795c669d6fb95b046172acacf003921bd7baef70d595540";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-opencl-rt-2022.1.0-intel_3768.tar.bz2",
-            "f4086002b4d5699dea78659777e412ef6c6ea2fa1d3984d135848f0b75144b81";
+            "https://conda.anaconda.org/intel/linux-64/intel-opencl-rt-2023.0.0-intel_25370.tar.bz2",
+            "6f236af7c3c6e1b6026052b60799089f49548cdcd2abdaf56b2c335df0d7ab20";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-openmp-2022.1.0-intel_3768.tar.bz2",
-            "498dc37ce1bd513f591b633565151c4de8f11a12914814f2bf85afebbd35ee23";
+            "https://conda.anaconda.org/intel/linux-64/intel-openmp-2023.0.0-intel_25370.tar.bz2",
+            "0eae400bf40e9c5d6cddf1750ce223602fa773864fdb05a794f78b07b97c54e3";
         ),
 
 
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-2022.1.0-intel_223.tar.bz2",
-            "31c225ce08d3dc129f0881e5d36a1ef0ba8dc9fdc0e168397c2ac144d5f0bf54";
+            "https://conda.anaconda.org/intel/linux-64/mkl-2023.0.0-intel_25398.tar.bz2",
+            "b7ccc9f8a5d1c6c41a1a13fce3a7af4226f1382920765284d5d64ba6f86db53d";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-devel-2022.1.0-intel_223.tar.bz2",
-            "4e014e6ac31e8961f09c937b66f53d2c0d75f074f39abfa9f378f4659ed2ecbb";
+            "https://conda.anaconda.org/intel/linux-64/mkl-devel-2023.0.0-intel_25398.tar.bz2",
+            "d9c314768a67966c9cb6258653557daaa4bc42037a18f39ab7dd04cb3961f857";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-devel-dpcpp-2022.1.0-intel_223.tar.bz2",
-            "25e38a5466245ce289c77a4bb1c38d26d3a4ec762b0207f6f03af361a3529322";
+            "https://conda.anaconda.org/intel/linux-64/mkl-devel-dpcpp-2023.0.0-intel_25398.tar.bz2",
+            "4a53862549650dc5950884cf676a02d0a3334205419c0449eba3b375038b44c7";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-dpcpp-2022.1.0-intel_223.tar.bz2",
-            "79af3aa775168128054d8e2cb04717fea55b1779885d3472286106e1f24d0fc4";
+            "https://conda.anaconda.org/intel/linux-64/mkl-dpcpp-2023.0.0-intel_25398.tar.bz2",
+            "d8029d7636f10e60bc66e93848561bb986df40c621b659a8e9346fdb24cb6851";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-include-2022.1.0-intel_223.tar.bz2",
-            "704e658a9b25a200f8035f3d0a8f2e094736496a2169f87609f1cfed2e2eb0a9";
+            "https://conda.anaconda.org/intel/linux-64/mkl-include-2023.0.0-intel_25398.tar.bz2",
+            "ac06e55127ab6389d516fb07665862a315ae6dfc1331ee6e8248ce19a26cd7fd";
         ),
     ]
 )
@@ -105,12 +105,13 @@ rm -rf ${includedir}
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["liboneapi_support"], :liboneapi_support, dont_dlopen=true),
+    LibraryProduct(["liboneapi_support"], :liboneapi_support),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("oneAPI_Level_Zero_Headers_jll")
+    BuildDependency("oneAPI_Level_Zero_Headers_jll"),
+    Dependency("oneAPI_Level_Zero_Loader_jll")
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
@@ -127,5 +128,5 @@ for (idx, (platform, sources)) in enumerate(platform_sources)
         args = ARGS
     end
     build_tarballs(args, name, version, [generic_sources; sources], script, [platform],
-                   products, dependencies; skip_audit=true, preferred_gcc_version=v"8")
+                   products, dependencies; preferred_gcc_version=v"8")
 end

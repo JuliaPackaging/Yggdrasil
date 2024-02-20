@@ -1,0 +1,13 @@
+diff --git a/src/utilities.cpp b/src/utilities.cpp
+index 9d41e26..f79867e 100644
+--- a/src/utilities.cpp
++++ b/src/utilities.cpp
+@@ -70,7 +70,7 @@ std::string get_version_nr()
+ 
+ #ifdef _WIN32
+ }
+-#include <Windows.h>
++#include <windows.h>
+ #include <libloaderapi.h>
+ #include <wincon.h>
+ 

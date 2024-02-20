@@ -1,10 +1,18 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
-function build_libcurl(ARGS, name::String)
-    version = v"7.84.0"
-    hash = "3c6893d38d054d4e378267166858698899e9d87258e8ff1419d020c395384535"
+const curl_hashes = Dict(
+    v"7.88.1" => "cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded82bbf3c7",
+    v"8.2.1"  => "f98bdb06c0f52bdd19e63c4a77b5eb19b243bcbbd0f5b002b9f3cba7295a3a42",
+    v"8.4.0"  => "816e41809c043ff285e8c0f06a75a1fa250211bbfb2dc0a037eeef39f1a9e427",
+    v"8.5.0"  => "05fc17ff25b793a437a0906e0484b82172a9f4de02be5ed447e0cab8c3475add",
+    v"8.6.0"  => "9c6db808160015f30f3c656c0dec125feb9dc00753596bf858a272b5dd8dc398",
+)
+
+function build_libcurl(ARGS, name::String, version::VersionNumber)
+    hash = curl_hashes[version]
 
     if name == "CURL"
         this_is_curl_jll = true
@@ -18,21 +26,26 @@ function build_libcurl(ARGS, name::String)
     # Collection of sources required to build LibCURL
     sources = [
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
+        DirectorySource("../patches"),
     ]
 
     # Bash recipe for building across all platforms
     script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * raw"""
     cd $WORKSPACE/srcdir/curl-*
 
+    # Address <https://github.com/curl/curl/issues/12849>
+    atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
+
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
         # Disable....almost everything
-        --without-ssl --without-gnutls
+        --without-gnutls
         --without-libidn2 --without-librtmp
         --without-nss --without-libpsl
-	--disable-ares --disable-manual
+        --disable-ares --disable-manual
         --disable-ldap --disable-ldaps --without-zsh-functions-dir
         --disable-static --without-libgsasl
+        --without-brotli
 
         # A few things we actually enable
         --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
@@ -107,6 +120,8 @@ function build_libcurl(ARGS, name::String)
         ]
     end
 
+    llvm_version = v"13.0.1+1"
+
     # Dependencies that must be installed before this package can be built
     dependencies = [
         Dependency("LibSSH2_jll"),
@@ -116,7 +131,8 @@ function build_libcurl(ARGS, name::String)
         # we default to schannel/SecureTransport on Windows/MacOS.
         Dependency("MbedTLS_jll"; compat="~2.28.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-        BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                        platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
 
     if this_is_curl_jll
@@ -125,5 +141,6 @@ function build_libcurl(ARGS, name::String)
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+                   julia_compat="1.8", preferred_llvm_version=llvm_version)
 end

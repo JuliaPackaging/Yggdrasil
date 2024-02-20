@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "AzStorage"
-version = v"0.4.0"
+version = v"0.9.0"
 
 # Collection of sources required to build AzStorage
 sources = [
     GitSource(
         "https://github.com/ChevronETC/AzStorage.jl.git",
-        "2d45d02ac9a7b36a1e35e3e46dd54c73895a2c74"
+        "bc5a23b7694f8b0feecdb99d7fbd5bb56ca2ca03"
     )
 ]
 
@@ -22,9 +22,10 @@ if [[ ${target} == *mingw* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
 
-make
+make yggdrasil
 
-cp libAzStorage.so ${libdir}/libAzStorage.${dlext}
+install -Dvm 755 libAzStorage.${dlext} "${libdir}/libAzStorage.${dlext}"
+install -Dvm 644 AzStorage.h "${includedir}/AzStorage.h"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -34,18 +35,27 @@ platforms = supported_platforms(; experimental=true)
 # The products that we will ensure are always built
 # TODO - add libgomp dependency
 products = [
-    LibraryProduct("libAzStorage", :libAzStorage)
+    LibraryProduct("libAzStorage", :libAzStorage),
+    FileProduct("include/AzStorage.h", :AzStorage_h),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     Dependency("LibCURL_jll", v"7.73.0"),
     # MbedTLS is only an indirect dependency (through LibCURL), but we want to
     # be sure to have the right version of MbedTLS for the corresponding version
     # of Julia.
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version="2.24.0")),
+    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
 
+#=
+The motivation for the preferred gcc version here is compatability with the libgomp that nvc 23.5 ships with. If we use a gcc version prior to 5,
+then AzStorage seg-faults in one of its OpenMP blocks.
+=#
+
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")

@@ -15,14 +15,19 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 apk add texinfo
+
 cd $WORKSPACE/srcdir/gdb-*/
+install_license COPYING
+
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 CONFIGURE_FLAGS+=(--with-expat)
+CONFIGURE_FLAGS+=(--with-system-zlib)   # to avoid linking against libcrypt.so.1
 if [[ ${target} != *mingw* ]]; then
     # Python_jll is not yet available for Windows
     CONFIGURE_FLAGS+=(--with-python=${WORKSPACE}/srcdir/python-cross-configure.sh)
 fi
 ./configure ${CONFIGURE_FLAGS[@]}
+
 make -j${nproc} all
 make install
 """
@@ -51,6 +56,7 @@ dependencies = [
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
     Dependency("Expat_jll"),
     Dependency("Python_jll"; compat="~3.8.8"),
+    Dependency("Zlib_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

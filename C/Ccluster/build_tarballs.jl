@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Ccluster"
-version = v"1.1.7"
+version = v"1.1.8" # <-- This version is a lie, we needed to bump it to update dependencies
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/rimbach/Ccluster/archive/refs/tags/v1.1.7.tar.gz", "725ab22cf7e74afe5a5133ac75ee4a101d7b4ff5f0f25a6b74f5d9bfda8a18d5")
+    ArchiveSource("https://github.com/rimbach/Ccluster/archive/refs/tags/v1.1.7.tar.gz",
+                  "725ab22cf7e74afe5a5133ac75ee4a101d7b4ff5f0f25a6b74f5d9bfda8a18d5")
 ]
 
 # Bash recipe for building across all platforms
@@ -43,11 +44,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Arb_jll", uuid="d9960996-1013-53c9-9ba4-74a4155039c3"))
-    Dependency(PackageSpec(name="FLINT_jll", uuid="e134572f-a0d5-539d-bddf-3cad8db41a82"))
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.1.2"; compat="6.1.2")
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3"))
+    Dependency("Arb_jll", compat = "~200.2300.000")
+    Dependency("FLINT_jll", compat = "~200.900.000")
+    Dependency("GMP_jll", v"6.2.0")
+    Dependency("MPFR_jll", v"4.1.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+

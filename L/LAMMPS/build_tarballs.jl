@@ -6,16 +6,25 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.2.3" # Equivalent to 29Sep2021_update2
+version = v"2.4.0" # Equivalent to patch_28Mar2023_update1
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
 # 2.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021
 # 2.2.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021_update2
+# 2.3.0 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update1
+# 2.3.2 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update3
+# 2.4.0 -> https://github.com/lammps/lammps/releases/tag/patch_28Mar2023_update1
+
+# https://docs.lammps.org/Manual_version.html
+# We have "stable" releases and we have feature/patch releases
+# We are going with:
+# 2.ODD -> stable
+# 2.EVEN -> features
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "7586adbb6a61254125992709ef2fda9134cfca6c")
+    GitSource("https://github.com/lammps/lammps.git", "07982d997df8fdd467585577dc40274d16e1d1fe")
 ]
 
 # Bash recipe for building across all platforms
@@ -29,15 +38,22 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DPKG_MPI=ON \
+    -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
+    -DPKG_ML-POD=ON \
     -DPKG_DPD-BASIC=OFF \
     -DPKG_DPD-MESO=OFF \
     -DPKG_DPD-REACT=OFF \
+    -DPKG_DPD-SMOOTH=OFF \
     -DPKG_USER-MESODPD=OFF \
     -DPKG_USER-DPD=OFF \
     -DPKG_USER-SDPD=OFF \
-    -DPKG_DPD-SMOOTH=OFF
+    -DPKG_MANYBODY=ON \
+    -DPKG_MOLECULE=ON \
+    -DPKG_REPLICA=ON \
+    -DPKG_SHOCK=ON \
+    -DLEPTON_ENABLE_JIT=no
 
 make -j${nproc}
 make install

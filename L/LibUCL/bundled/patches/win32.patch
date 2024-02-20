@@ -1,0 +1,13 @@
+diff --git a/src/ucl_util.c b/src/ucl_util.c
+index 938f1fe..a39daa9 100644
+--- a/src/ucl_util.c
++++ b/src/ucl_util.c
+@@ -67,7 +67,7 @@ typedef kvec_t(ucl_object_t *) ucl_array_t;
+ #include <fetch.h>
+ #endif
+ 
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+ #include <windows.h>
+ #include <io.h>
+ #include <direct.h>

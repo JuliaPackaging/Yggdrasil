@@ -48,19 +48,21 @@ function reset_downloader()
     end
 end
 
-function download_cached_binaries(download_dir, platforms)
-    # Grab things out of the aether for maximum consistency
-    bb_hash = ENV["BB_HASH"]
-    proj_hash = ENV["PROJ_HASH"]
-
-    for platform in platforms, suffix in ("", "-logs")
-        url = "https://julia-bb-buildcache.s3.amazonaws.com/$(bb_hash)/$(proj_hash)/$(triplet(platform))$(suffix).tar.gz"
-        filename = "$(name)$(suffix).v$(version).$(triplet(platform)).tar.gz"
-        reset_downloader()
-        println("Downloading $url...")
-        Downloads.download(url, joinpath(download_dir, filename))
-        println()
+function mvdir(src, dest)
+    for file in readdir(src)
+        mv(joinpath(src, file), joinpath(dest, file))
     end
+end
+
+function download_cached_binaries(download_dir)
+    NAME = ENV["NAME"]
+    PROJECT = ENV["PROJECT"]
+    artifacts = "$(PROJECT)/products/$(NAME)*.tar.gz"
+    cmd = `buildkite-agent artifact download $artifacts $download_dir`
+    if !success(pipeline(cmd; stderr))
+        error("Download failed")
+    end
+    mvdir(joinpath(download_dir, PROJECT, "products"), download_dir)
 end
 
 function download_binaries_from_release(download_dir)
@@ -74,7 +76,7 @@ function download_binaries_from_release(download_dir)
         println("done")
     end
 
-    # Doownload the tarballs reading the information in the current `Artifacts.toml`.
+    # Download the tarballs reading the information in the current `Artifacts.toml`.
     artifacts = Pkg.Artifacts.load_artifacts_toml(joinpath(code_dir, "Artifacts.toml"))[name]
     if artifacts isa Dict
         # If it's a Dict, that means this is an AnyPlatform artifact, act accordingly.
@@ -103,7 +105,7 @@ mktempdir() do download_dir
     else
         # We are going to publish the new binaries we've just baked, take them
         # out of the cache while they're hot.
-        download_cached_binaries(download_dir, merged["platforms"])
+        download_cached_binaries(download_dir)
     end
 
     # Push up the JLL package (pointing to as-of-yet missing tarballs)

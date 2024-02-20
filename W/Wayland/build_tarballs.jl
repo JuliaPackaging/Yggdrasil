@@ -3,29 +3,35 @@
 using BinaryBuilder
 
 name = "Wayland"
-version = v"1.19.0"
+version = v"1.21.0"
 
 # Collection of sources required to build Wayland
 sources = [
-    ArchiveSource("https://wayland.freedesktop.org/releases/wayland-$(version).tar.xz",
-                  "baccd902300d354581cd5ad3cc49daa4921d55fb416a5883e218750fef166d15"),
+    ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
+                  "6dc64d7fc16837a693a51cfdb2e568db538bfdc9f457d4656285bb9594ef11ac"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wayland-*/
 
-# We need to run `wayland-scanner` on the host system
-apk add wayland-dev
+ln -s `which wayland-scanner` $bindir
+cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-documentation --with-host-scanner
-make -j${nproc}
-make install
+mkdir build-wayland
+
+cd build-wayland
+meson .. \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    -Ddocumentation=false
+ninja -j${nproc}
+ninja install
+rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(Sys.islinux, supported_platforms(; experimental=true))
+platforms = filter(p -> arch(p) != "armv6l" && (Sys.islinux(p) || Sys.isfreebsd(p)), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -41,6 +47,8 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
+    Dependency("EpollShim_jll"),
+    HostBuildDependency("Wayland_jll"),
 ]
 
 # Build the tarballs.

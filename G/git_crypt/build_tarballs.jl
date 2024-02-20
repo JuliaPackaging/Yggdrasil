@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "git_crypt"
-version = v"0.6.0"
+version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/AGWA/git-crypt/archive/$(version).tar.gz" =>
-    "777c0c7aadbbc758b69aff1339ca61697011ef7b92f1d1ee9518a8ee7702bb78",
+    GitSource("https://github.com/AGWA/git-crypt.git",
+              "a1e6311f5622fb6b9027fc087d16062c7261280f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/git-crypt-*/
+cd $WORKSPACE/srcdir/git-crypt
 make CPPFLAGS="-I${prefix}/include" LDFLAGS="-L${libdir} -lcrypto"
 make install PREFIX=$prefix
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
@@ -32,8 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "OpenSSL_jll",
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")

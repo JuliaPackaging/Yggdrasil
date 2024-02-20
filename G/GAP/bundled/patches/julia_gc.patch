@@ -1,7 +1,7 @@
-From 739f802c85c747e509670c56606563e2570839ea Mon Sep 17 00:00:00 2001
+From 658460c9b3dcf63c5cfa55148b78b3cef1a50a10 Mon Sep 17 00:00:00 2001
 From: Max Horn <max@quendi.de>
 Date: Tue, 13 Sep 2022 16:09:19 +0200
-Subject: [PATCH 2/3] Don't invoke jl_init()
+Subject: [PATCH 1/2] Don't invoke jl_init()
 
 This is not needed when running this code from within Julia
 ---
@@ -9,17 +9,17 @@ This is not needed when running this code from within Julia
  1 file changed, 1 deletion(-)
 
 diff --git a/src/julia_gc.c b/src/julia_gc.c
-index db02b5d39..c5c536467 100644
+index 4bd676d4e..d7539137d 100644
 --- a/src/julia_gc.c
 +++ b/src/julia_gc.c
-@@ -759,7 +759,6 @@ void GAP_InitJuliaMemoryInterface(jl_module_t *   module,
+@@ -779,7 +779,6 @@ void GAP_InitJuliaMemoryInterface(jl_module_t *   module,
      // that we can track objects allocated during `jl_init()`.
-     max_pool_obj_size = jl_gc_max_internal_obj_size();
+     MaxPoolObjSize = jl_gc_max_internal_obj_size();
      jl_gc_enable_conservative_gc_support();
 -    jl_init();
  
      SetJuliaTLS();
  #ifdef SKIP_GUARD_PAGES
 -- 
-2.37.3
+2.39.0
 

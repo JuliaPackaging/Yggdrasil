@@ -1,0 +1,73 @@
+From 8047cdbe21a53fa91de8614b4bed4a6c013757b3 Mon Sep 17 00:00:00 2001
+From: cmhamel <cmhamel32@gmail.com>
+Date: Sun, 19 Feb 2023 11:15:34 -0500
+Subject: [PATCH] Patch for changes to some library names and NetCDF cmake
+ build to accomodate for Windows builds with the BinaryBuilder.jl toolset.
+ Four files were changed minimally
+
+---
+ cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake | 6 +++---
+ packages/seacas/applications/epu/EP_Internals.C         | 2 +-
+ packages/seacas/applications/epu/EP_ParallelDisks.C     | 2 +-
+ packages/seacas/libraries/suplib_cpp/sys_info.C         | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake b/cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake
+index b3e70fe3cd..2f424bd3f8 100644
+--- a/cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake
++++ b/cmake/tribits/common_tpls/find_modules/FindNetCDF.cmake
+@@ -270,9 +270,9 @@ if ( NetCDF_ROOT OR NetCDF_BIN_DIR )
+         set(NetCDF_NEEDS_PNetCDF "${netCDF_HAS_PNETCDF}")
+     else()
+         # Otherwise, try calling the nc-config shell script
+-        if (WIN32)
+-            message(FATAL_ERROR "nc-config can't be used on Windows, please use CMake to install NetCDF")
+-        endif()
++        #if (WIN32)
++        #    message(FATAL_ERROR "nc-config can't be used on Windows, please use CMake to install NetCDF")
++        #endif()
+         find_program(netcdf_config nc-config
+                        PATHS ${NetCDF_ROOT}/bin ${NetCDF_BIN_DIR}
+ 		           NO_DEFAULT_PATH
+diff --git a/packages/seacas/applications/epu/EP_Internals.C b/packages/seacas/applications/epu/EP_Internals.C
+index 39700e0dcd..0e86f3d7f2 100644
+--- a/packages/seacas/applications/epu/EP_Internals.C
++++ b/packages/seacas/applications/epu/EP_Internals.C
+@@ -23,7 +23,7 @@
+ 
+ #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER) ||                \
+     defined(__MINGW32__) || defined(_WIN64) || defined(__MINGW64__)
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #endif
+ 
+ extern "C" {
+diff --git a/packages/seacas/applications/epu/EP_ParallelDisks.C b/packages/seacas/applications/epu/EP_ParallelDisks.C
+index f5496b983e..e11ca5c47a 100644
+--- a/packages/seacas/applications/epu/EP_ParallelDisks.C
++++ b/packages/seacas/applications/epu/EP_ParallelDisks.C
+@@ -15,7 +15,7 @@
+ 
+ #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER) ||                \
+     defined(__MINGW32__) || defined(_WIN64) || defined(__MINGW64__)
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #endif
+ 
+ /*****************************************************************************/
+diff --git a/packages/seacas/libraries/suplib_cpp/sys_info.C b/packages/seacas/libraries/suplib_cpp/sys_info.C
+index cc034e1815..5f36b1f8b1 100644
+--- a/packages/seacas/libraries/suplib_cpp/sys_info.C
++++ b/packages/seacas/libraries/suplib_cpp/sys_info.C
+@@ -12,7 +12,7 @@
+ #ifndef NOMINMAX
+ #define NOMINMAX
+ #endif
+-#include <Windows.h>
++#include <windows.h>
+ #undef IN
+ #undef OUT
+ #include <fmt/ostream.h>
+-- 
+2.37.2
+

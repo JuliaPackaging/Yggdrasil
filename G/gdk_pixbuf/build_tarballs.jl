@@ -3,36 +3,18 @@
 using BinaryBuilder
 
 name = "gdk_pixbuf"
-version = v"2.42.8"
+version = v"2.42.10"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
-                  "d122cb5d0ef32349c52c37f1dfd936c734886643b49a37706acccfe3af6aba77"),
+                  "efb6110873a94bddc2ab09a0e1c81acadaac014d2e622869529e0042c0e81d9b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gdk-pixbuf-*/
 mkdir build && cd build
-
-# As seen in the GTK4 build, llvm-ar seems to generate corrupted static archives:
-#
-#   [119/165] Linking target gdk-pixbuf/pixops/timescale
-#   ninja: job failed: [...]
-#   ld: warning: ignoring file gdk-pixbuf/pixops/libpixops.a, building for macOS-arm64 but attempting to link with file built for unknown-unsupported file format ( 0x21 0x3C 0x74 0x68 0x69 0x6E 0x3E 0x0A 0x2F 0x20 0x20 0x20 0x20 0x20 0x20 0x20 )
-#   Undefined symbols for architecture arm64:
-#     "__pixops_composite", referenced from:
-#         _main in timescale.c.o
-#     "__pixops_composite_color", referenced from:
-#         _main in timescale.c.o
-#     "__pixops_scale", referenced from:
-#         _main in timescale.c.o
-#   ld: symbol(s) not found for architecture arm64
-
-if [[ "${target}" == *apple* ]]; then
-    sed -i "s?^ar = .*?ar = '/opt/${target}/bin/${target}-ar'?g" "${MESON_TARGET_TOOLCHAIN}"
-fi
 
 FLAGS=()
 if [[ "${target}" == x86_64-linux-gnu ]]; then
@@ -54,7 +36,7 @@ find ${prefix}/lib -name loaders.cache -delete
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -75,10 +57,10 @@ dependencies = [
     HostBuildDependency("Gettext_jll"),
     # Need a host glib for glib-compile-resources
     HostBuildDependency("Glib_jll"),
-    Dependency("Glib_jll"; compat="2.68.3"),
+    Dependency("Glib_jll"; compat="2.76.5"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
@@ -86,4 +68,5 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", clang_use_lld=false)

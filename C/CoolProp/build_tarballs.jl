@@ -3,31 +3,28 @@
 using BinaryBuilder
 
 name = "CoolProp"
-version = v"6.4.1"
+version = v"6.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "b10b2be2f88675b7e46cae653880be93558009c8970d23e50ea917ce095791f6"),
+    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "ba3077ad24b36617fd7ab24310ce646a65bcbc8fde47f8de128cde2c72124b84"),
 ]
-
-# Adjusted version for Mac M1 support
-version = v"6.4.2"
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
-sed -i 's/Windows/windows/' CoolProp.sources/dev/Tickets/60.cpp
-sed -i 's/Windows/windows/' CoolProp.sources/src/CPfilepaths.cpp
-sed -i 's/.*-m.*BITNESS.*//' CoolProp.sources/CMakeLists.txt
+sed -i 's/Windows/windows/' source/dev/Tickets/60.cpp
+sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
+# Do not add `-m32`/`-m64` flags
+sed -i 's/-m${BITNESS}//' source/CMakeLists.txt
 
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCOOLPROP_SHARED_LIBRARY=ON ../CoolProp*/
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCOOLPROP_SHARED_LIBRARY=ON ../source/
 VERBOSE=ON cmake --build . --config Release --target CoolProp -- -j${nproc}
-mkdir -p ${libdir}
-cp -a *CoolProp* ${libdir}
-install_license $WORKSPACE/srcdir/CoolProp*/LICENSE
+install -Dvm 0755 "libCoolProp.${dlext}" "${libdir}/libCoolProp.${dlext}"
+install_license $WORKSPACE/srcdir/source/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further

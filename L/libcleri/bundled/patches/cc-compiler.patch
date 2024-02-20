@@ -1,0 +1,36 @@
+diff --git a/Release/makefile b/Release/makefile
+index 9b2dbc1..c5ce2b5 100644
+--- a/Release/makefile
++++ b/Release/makefile
+@@ -32,8 +32,8 @@ all: libcleri
+ # Tool invocations
+ libcleri: $(OBJS) $(USER_OBJS)
+ 	@echo 'Building target: $@'
+-	@echo 'Invoking: Cross GCC Linker'
+-	gcc -shared -Wl,-$(SO_NAME),$(FN).$(MAJOR) -o $(FN) $(OBJS) $(USER_OBJS) $(LIBS) $(LDFLAGS)
++	@echo 'Invoking: Cross CC Linker'
++	cc -shared -Wl,-$(SO_NAME),$(FN).$(MAJOR) -o $(FN) $(OBJS) $(USER_OBJS) $(LIBS) $(LDFLAGS)
+ 	@chmod -x $(FN)
+ 	@echo 'Finished building target: $@'
+ 	@echo ' '
+@@ -49,4 +49,4 @@ clean:
+ -include ../makefile.targets
+ 
+ test:
+-	@cd ../test && ./test.sh
+\ No newline at end of file
++	@cd ../test && ./test.sh
+diff --git a/Release/src/subdir.mk b/Release/src/subdir.mk
+index a24b4c0..e9a74b3 100644
+--- a/Release/src/subdir.mk
++++ b/Release/src/subdir.mk
+@@ -76,7 +76,7 @@ C_DEPS += \
+ 
+ src/%.o: ../src/%.c
+ 	@echo 'Building file: $<'
+-	@echo 'Invoking: Cross GCC Compiler'
+-	gcc -DNDEBUG -I../inc -O3 -Winline -Wall $(CPPFLAGS) $(CFLAGS) -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
++	@echo 'Invoking: Cross CC Compiler'
++	cc -DNDEBUG -I../inc -O3 -Winline -Wall $(CPPFLAGS) $(CFLAGS) -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+ 	@echo 'Finished building: $<'
+ 	@echo ' '

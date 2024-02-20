@@ -1,9 +1,9 @@
 diff --git a/modules/julia/CMakeLists.txt b/modules/julia/CMakeLists.txt
-index 77158cac..27bae233 100644
+index fcf380d7..27bae233 100644
 --- a/modules/julia/CMakeLists.txt
 +++ b/modules/julia/CMakeLists.txt
 @@ -1,46 +1,8 @@
--if(NOT HAVE_JULIA MATCHES "YES")
+-if(NOT HAVE_JULIA)
 -    message(STATUS "Julia not found. Not compiling Julia Bindings. ${HAVE_JULIA}")
 -    ocv_module_disable(julia)
 -elseif(NOT PYTHON_DEFAULT_EXECUTABLE)
@@ -170,7 +170,7 @@ index 61439925..9c065818 100644
 +)
 \ No newline at end of file
 diff --git a/modules/julia/cmake/init.cmake b/modules/julia/cmake/init.cmake
-index 09e83ccb..36f241c4 100644
+index be69080f..ea90ca17 100644
 --- a/modules/julia/cmake/init.cmake
 +++ b/modules/julia/cmake/init.cmake
 @@ -1,4 +1,4 @@
@@ -179,7 +179,7 @@ index 09e83ccb..36f241c4 100644
  
  ocv_assert(OPENCV_INITIAL_PASS)
  
-@@ -8,15 +8,8 @@ endif()
+@@ -8,11 +8,9 @@ endif()
  
  # --- Julia ---
  if(WITH_JULIA AND NOT DEFINED Julia_FOUND)
@@ -188,14 +188,12 @@ index 09e83ccb..36f241c4 100644
 -    message(WARNING "Julia was not found. Disabling Julia bindings...")
 -    ocv_module_disable(julia)
 -  endif()
--
--  # publish vars for status() dumper
--  set(Julia_FOUND "${Julia_FOUND}" PARENT_SCOPE)
--  set(Julia_EXECUTABLE "${Julia_EXECUTABLE}" PARENT_SCOPE)
 +  set(Julia_FOUND "YES" PARENT_SCOPE)
 +  set(Julia_EXECUTABLE "dummy_for_bb" PARENT_SCOPE)
-   set(HAVE_JULIA "YES" CACHE STRING ADVANCED)
++  set(HAVE_JULIA "YES" CACHE STRING ADVANCED)
++
  
+-  set(HAVE_JULIA ON)
  endif()
 diff --git a/modules/julia/gen/jl_cxx_files/OpenCV.jl b/modules/julia/gen/jl_cxx_files/OpenCV.jl
 index 448d0055..53dc610a 100644
@@ -215,7 +213,7 @@ index 448d0055..53dc610a 100644
 -end
 \ No newline at end of file
 diff --git a/modules/julia/gen/jl_cxx_files/cv_cxx.jl b/modules/julia/gen/jl_cxx_files/cv_cxx.jl
-index 948b22ac..4061ef16 100644
+index 948b22ac..347894ce 100644
 --- a/modules/julia/gen/jl_cxx_files/cv_cxx.jl
 +++ b/modules/julia/gen/jl_cxx_files/cv_cxx.jl
 @@ -1,12 +1,14 @@

@@ -26,17 +26,15 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.12.0"
-version = v"400.1200.000"
+upstream_version = v"4.12.2"
+version = v"400.1200.200"
 
-julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
-    # GAP 4.12.0 git tag
-    GitSource("https://github.com/gap-system/gap.git", "7ba252e2bc68ceccb5d267118d47fa5ca20bc513"),
-#    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-#                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
+    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
+                  "5d73e77f0b2bbe8dd0233dfad48666aeb1fcbffd84c5dbb58c8ea2a8dd9687b5"),
     DirectorySource("./bundled"),
 ]
 
@@ -73,31 +71,29 @@ julia_version=$(./julia_version)
     --with-zlib=${prefix} \
     --with-gc=julia \
     --with-julia
-mkdir -p build
 
 # WORKAROUND: avoid error: /usr/local/include: No such file or directory
 export CPPFLAGS="$CPPFLAGS -Wno-missing-include-dirs"
-# WORKAROUND: avoid error: redundant redeclaration of ‘jl_gc_safepoint’ for Julia 1.8 & 1.9
-# (see https://github.com/JuliaLang/julia/pull/45120 for a proper fix)
-#export CPPFLAGS="$CPPFLAGS -Wredundant-decls"
 
-# configure & compile a native version of GAP to generate ffdata.{c,h}, c_oper1.c and c_type1.c
-mkdir native-build
-cd native-build
-../configure --build=${MACHTYPE} --host=${MACHTYPE} \
-    --enable-Werror \
-    --with-gmp=${host_prefix} \
-    --without-readline \
-    --with-zlib=${host_prefix} \
-    CC=${CC_BUILD} CXX=${CXX_BUILD}
-make -j${nproc}
-cp build/c_*.c ../src/
-cp ffgen ..
-cp build/ffdata.* ../build/
-cd ..
+# When building a git snapshot, configure & compile a native version of GAP to
+# generate ffdata.{c,h}, c_oper1.c and c_type1.c -- in a GAP release tarball
+# this is not necessary.
+if [ ! -f src/c_oper1.c ] ; then
+    mkdir native-build
+    cd native-build
+    ../configure --build=${MACHTYPE} --host=${MACHTYPE} \
+        --enable-Werror \
+        --with-gmp=${host_prefix} \
+        --without-readline \
+        --with-zlib=${host_prefix} \
+        CC=${CC_BUILD} CXX=${CXX_BUILD}
+    make -j${nproc}
+    cp build/c_*.c build/ffdata.* ../src/
+    cd ..
 
-# remove the native build, it has done its job
-rm -rf native-build
+    # remove the native build, it has done its job
+    rm -rf native-build
+fi
 
 # compile GAP
 make -j${nproc}
@@ -136,15 +132,22 @@ dependencies = [
     HostBuildDependency("Zlib_jll"),
 
     Dependency("GMP_jll"),
-    Dependency("Readline_jll"),
+    Dependency("Readline_jll", v"8.1.1"),
     Dependency("Zlib_jll"),
-    BuildDependency("libjulia_jll"),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.6")),
 ]
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"7", julia_compat="1.6", init_block="""
 
-    sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
-    ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
+    try
+        cglobal(:jl_reinit_foreign_type)
+    catch
+        # no jl_reinit_foreign_type -> fall back to old behavior
+        sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
+        ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
+    end
 """)
+
+# rebuild trigger: 2

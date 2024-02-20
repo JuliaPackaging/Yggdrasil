@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "coordgenlibs"
-version = v"1.4.0"
+version = v"3.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mojaie/coordgenlibs.git", "d8aacab47875a6f3c6da5fda24b53910358563be"),
+    GitSource("https://github.com/mojaie/coordgenlibs.git", "bcef648e86257513b07a00f802d370aa443152c2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,4 +33,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

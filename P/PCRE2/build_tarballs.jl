@@ -3,22 +3,25 @@
 using BinaryBuilder
 
 name = "PCRE2"
-version = v"10.40"
+version_string = "10.42"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.gz",
-                  "ded42661cab30ada2e72ebff9e725e745b4b16ce831993635136f2ef86177724"),
+    GitSource("https://github.com/PCRE2Project/pcre2",
+              "52c08847921a324c804cabf2814549f50bce1265"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/pcre2-*/
+cd $WORKSPACE/srcdir/pcre2*/
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
+
+./autogen.sh
 
 # Update configure scripts
 update_configure_scripts
@@ -27,7 +30,6 @@ update_configure_scripts
 export CFLAGS="${CFLAGS} -O3"
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-static \
     --enable-jit \
     --enable-pcre2-16 \
     --enable-pcre2-32

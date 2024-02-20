@@ -3,24 +3,25 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.8.8"
-
-# NOTE: Python 3.8.9+ contains configure changes that break our build.
-#       see https://github.com/python/cpython/issues/88201
+version = v"3.10.13"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "7c664249ff77e443d6ea0e4cf0e587eae918ca3c48d081d1915fe2a1f1bcc5cc"),
+                  "5c88848668640d3e152b35b4536ef1c23b2ca4bd2c957ef1ecbb053f571dd3f6"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Python's autoconf scripts use non-default macros
+apk add autoconf-archive
+
 # Having a global `python3` screws things up a bit, so get rid of that
 rm -f $(which python3)
 
 # We need these for the host python build
+apk update
 apk add zlib-dev libffi-dev
 
 # Create fake `arch` command:
@@ -35,15 +36,18 @@ chmod +x /usr/bin/arch
 # Patch out cross compile limitations
 cd ${WORKSPACE}/srcdir/Python-*/
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross_compile_configure_ac.patch
+
+# Disable detection of multiarch as it breaks with clang >= 13, which adds a
+# major.minor version number in -print-multiarch output, confusing Python.
+# https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=258377
 if [[ "${target}" == *-freebsd* || ${target} == *darwin* ]]; then
-    # disable detection of multiarch as it breaks with clang >= 13, which adds a
-    # major.minor version number in -print-multiarch output, confusing Python.
-    # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=258377
     sed -i 's|^MULTIARCH=.*|MULTIARCH=|' configure.ac
 fi
-# don't link against libcrypt, because we provide libcrypt.so.1 while most systems will
+
+# Don't link against libcrypt, because we provide libcrypt.so.1 while most systems will
 # have libcrypt.so.2 (backported from Python 3.11)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libcrypt.patch
+
 autoreconf -i
 
 # Next, build host version
@@ -57,24 +61,33 @@ make -j${nproc} python sharedmods
 # Next, build target version
 cd ${WORKSPACE}/srcdir/Python-*/
 mkdir build_target && cd build_target
+
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export PATH=$(echo ${WORKSPACE}/srcdir/Python-*/build_host):$PATH
+
 conf_args=()
 conf_args+=(--enable-shared)
 conf_args+=(--disable-ipv6)
 conf_args+=(--with-ensurepip=no)
+conf_args+=(--disable-test-modules)
+conf_args+=(--with-system-expat)
+conf_args+=(--with-system-ffi)
+conf_args+=(--with-system-libmpdec)
+conf_args+=(--enable-optimizations)
 conf_args+=(ac_cv_file__dev_ptmx=no)
 conf_args+=(ac_cv_file__dev_ptc=no)
 conf_args+=(ac_cv_have_chflags=no)
+
 ../configure --prefix="${prefix}" --host="${target}" --build="${MACHTYPE}" "${conf_args[@]}"
+
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # Disable windows for now, until we can sort through all of these patches
 # and choose the ones that we need:
@@ -83,8 +96,8 @@ filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
-    ExecutableProduct(["python", "python3"], :python),
-    LibraryProduct(["libpython3", "libpython3.8"], :libpython),
+    ExecutableProduct("python3", :python),
+    LibraryProduct("libpython3", :libpython),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -92,9 +105,11 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
+    Dependency("SQLite_jll"),
+    Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.12"),
 ]
 
 init_block = raw"""

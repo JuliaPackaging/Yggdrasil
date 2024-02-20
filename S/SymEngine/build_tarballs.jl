@@ -4,19 +4,20 @@ using BinaryBuilder
 
 # Collection of sources required to build SymEngine
 name = "SymEngine"
-version = v"0.9.0"
+version = v"0.11.1"
 
 sources = [
-    ArchiveSource("https://github.com/symengine/symengine/releases/download/v$(version)/symengine-$(version).tar.gz",
-                  "dcf174ac708ed2acea46691f6e78b9eb946d8a2ba62f75e87cf3bf4f0d651724"),
+    GitSource("https://github.com/symengine/symengine.git",
+              "72a01e4c1fc88796796d6ef37e6ed6d15728bd7f"),
 ]
 
 # Bash recipe for building across all platforms
 
 script = raw"""
-cd $WORKSPACE/srcdir/symengine-*
-mkdir build
-cd build
+cd $WORKSPACE/srcdir/symengine
+
+mkdir build && cd build
+
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_TESTS=no \

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.4.4"
+version = v"0.6.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "4d164d6d0b8c62f03ae8b3981ced67387b0324b2")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "29b490fea9a603066ae4d9cbadd4c7d87082d8e1")
 ]
 
 # Bash recipe for building across all platforms
@@ -39,6 +39,8 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("FLINT_jll", compat = "~200.900.000"),
+    Dependency("MPFR_jll", v"4.1.1"),
+
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),

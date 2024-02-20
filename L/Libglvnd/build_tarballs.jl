@@ -3,32 +3,34 @@
 using BinaryBuilder
 
 name = "Libglvnd"
-version = v"1.3.0"
+version = v"1.6.0"
 
 # Collection of sources required to build Libglvnd
 sources = [
-    ArchiveSource("https://gitlab.freedesktop.org/glvnd/libglvnd/uploads/d164b4e6bed74290f4d60e9a5b9bc31c/libglvnd-$(version).tar.gz",
-                  "0f43bd9f6c20e6a75ff8cd57736bd78071da7a68e078ed39c81bcc710af30dc7"),
+    ArchiveSource("https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v$(version)/libglvnd-v$(version).tar.gz",
+                  "efc756ffd24b24059e1c53677a9d57b4b237b00a01c54a6f1611e1e51661d70c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libglvnd-*/
-export CPPFLAGS="-I${includedir}"
+mkdir build && cd build
 FLAGS=()
 if [[ "${target}" == *musl* ]]; then
-    FLAGS=(--disable-tls)
+    FLAGS=(-Dtls=false)
 fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
-make -j${nproc}
-make install
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release "${FLAGS[@]}" ..
+ninja -j${nproc}
+ninja install
 # The license is embedded in the README file
-install_license README.md
+install_license ../README.md
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(p ->Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
+# Remove when X11 stack will support armv6l
+filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -49,5 +51,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

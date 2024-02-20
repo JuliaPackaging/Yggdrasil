@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
+
 name = "Torch"
 version = v"1.10.2"
 
@@ -38,21 +40,18 @@ if [[ $bb_full_target == *cxx11* ]]; then
     cmake_extra_args+="-DGLIBCXX_USE_CXX11_ABI=1 "
 fi
 
-if [[ $target == i686-linux-gnu*
-    || $target == x86_64-linux-gnu*
-    || $target == x86_64-apple-darwin*
+# MKL is avoided for all platforms are excluded due to https://github.com/JuliaRegistries/General/pull/68946#issuecomment-1257308450
+if [[ 0 -eq 1
+    # || $target == i686-linux-gnu*
+    # || $target == x86_64-linux-gnu*
+    # || $target == x86_64-apple-darwin*
 ]]; then
     cmake_extra_args+="-DBLAS=MKL "
-elif [[ $target == aarch64-linux-gnu*
-    || $bb_full_target == armv7l-linux-gnu*
-    || $target == x86_64-linux-musl*
-    || $target == x86_64-unknown-freebsd*
+elif [[ $target == x86_64-apple-darwin*
     || $target == aarch64-apple-darwin*
-    || $target == i686-w64-mingw32*
-    || $target == x86_64-w64-mingw32*
 ]]; then
-    cmake_extra_args+="-DBLAS=BLIS "
-elif [[ $bb_full_target == armv6l-linux-gnu* ]]; then
+    cmake_extra_args+="-DBLAS=vecLib "
+else
     cmake_extra_args+="-DBLAS=OpenBLAS "
 fi
 
@@ -203,25 +202,20 @@ filter!(p -> arch(p) != "armv7l", platforms) # armv7l is not supported by XNNPAC
 filter!(p -> arch(p) != "powerpc64le", platforms) # PowerPC64LE is not supported by XNNPACK
 filter!(!Sys.isfreebsd, platforms) # Build fails: Clang v12 crashes compiling aten/src/ATen/native/cpu/MaxUnpoolKernel.cpp.
 
-mkl_platforms = [
-    Platform("x86_64", "Linux"),
-    Platform("i686", "Linux"),
-    Platform("x86_64", "MacOS"),
-    Platform("x86_64", "Windows"),
-]
-
-blis_platforms = filter(p -> p ∉ mkl_platforms, [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("x86_64", "freebsd"),
+accelerate_platforms = [
     Platform("aarch64", "macos"),
     Platform("x86_64", "macos"),
-    Platform("x86_64", "windows"),
-])
+]
 
-openblas_platforms = filter(p -> p ∉ union(mkl_platforms, blis_platforms), platforms)
+# MKL is avoided for all platforms due to https://github.com/JuliaRegistries/General/pull/68946#issuecomment-1257308450
+mkl_platforms = Platform[
+    # Platform("x86_64", "Linux"),
+    # Platform("i686", "Linux"),
+    # Platform("x86_64", "MacOS"),
+    # Platform("x86_64", "Windows"),
+]
+
+openblas_platforms = filter(p -> p ∉ union(mkl_platforms, accelerate_platforms), platforms)
 
 cuda_platforms = [
     Platform("x86_64", "Linux"; cuda = "10.2"),
@@ -232,13 +226,14 @@ for p in cuda_platforms
 end
 
 platforms = expand_cxxstring_abis(platforms)
+accelerate_platforms = expand_cxxstring_abis(accelerate_platforms)
 mkl_platforms = expand_cxxstring_abis(mkl_platforms)
-blis_platforms = expand_cxxstring_abis(blis_platforms)
 openblas_platforms = expand_cxxstring_abis(openblas_platforms)
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 # The products that we will ensure are always built
 products = [
+    FileProduct("share/ATen/Declarations.yaml", :declarations_yaml),
     LibraryProduct(["libtorch", "torch"], :libtorch),
     LibraryProduct(["libtorch_cpu", "torch_cpu"], :libtorch_cpu),
 ]
@@ -246,23 +241,24 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("blis_jll"; platforms = blis_platforms),
     Dependency("CPUInfo_jll"; compat = "0.0.20201217"),
     Dependency("CUDNN_jll", v"8.2.4"; compat = "8", platforms = cuda_platforms),
     Dependency("Gloo_jll";  compat = "0.0.20210521", platforms = filter(p -> nbits(p) == 64, platforms)),
     Dependency("LAPACK_jll"; platforms = openblas_platforms),
-    Dependency("MKL_jll"; platforms = mkl_platforms),
-    BuildDependency("MKL_Headers_jll"; platforms = mkl_platforms),
-    Dependency("OpenBLAS_jll"; platforms = openblas_platforms),
+    # Dependency("MKL_jll"; platforms = mkl_platforms), # MKL is avoided for all platforms
+    # BuildDependency("MKL_Headers_jll"; platforms = mkl_platforms), # MKL is avoided for all platforms
+    Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     Dependency("PThreadPool_jll"; compat = "0.0.20210414"),
     Dependency("SLEEF_jll", v"3.5.2"; compat = "3"),
-#    Dependency("TensorRT_jll"; platforms = cuda_platforms), # Building with TensorRT is not supported: https://github.com/pytorch/pytorch/issues/60228
+    # Dependency("TensorRT_jll"; platforms = cuda_platforms), # Building with TensorRT is not supported: https://github.com/pytorch/pytorch/issues/60228
     Dependency("XNNPACK_jll"; compat = "0.0.20210622"),
     Dependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110")); compat="~3.13.0"),
     HostBuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.13.0")),
+    RuntimeDependency("CUDA_Runtime_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
-    julia_compat = "1.6")
+    julia_compat = "1.6",
+    augment_platform_block = CUDA.augment)

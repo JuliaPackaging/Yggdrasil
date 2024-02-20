@@ -1,32 +1,47 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "MbedTLS"
 
 # Collection of sources required to build MbedTLS
 sources_by_version = Dict(
     v"2.24.0" => [
-        GitSource("https://github.com/ARMmbed/mbedtls.git",
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
                   "523f0554b6cdc7ace5d360885c3f5bbcc73ec0e8"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
     v"2.25.0" => [
-        GitSource("https://github.com/ARMmbed/mbedtls.git",
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
                   "1c54b5410fd48d6bcada97e30cac417c5c7eea67"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
     v"2.26.0" => [
-        GitSource("https://github.com/ARMmbed/mbedtls.git",
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
                   "e483a77c85e1f9c1dd2eb1c5a8f552d2617fe400"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
     v"2.27.0" => [
-        GitSource("https://github.com/ARMmbed/mbedtls.git",
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
                   "f71e2878084126737cc39083e1e15afc459bd93d"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
     v"2.28.0" => [
-        GitSource("https://github.com/ARMmbed/mbedtls.git",
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
                   "8b3f26a5ac38d4fdccbc5c5366229f3e01dafcc0"),
+        DirectorySource("./bundled"; follow_symlinks=true),
+    ],
+    v"2.28.1" => [
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "dd79db10014d85b26d11fe57218431f2e5ede6f2"),
+        DirectorySource("./bundled"; follow_symlinks=true),
+    ],
+    v"2.28.2" => [
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "89f040a5c938985c5f30728baed21e49d0846a53"),
+        DirectorySource("./bundled"; follow_symlinks=true),
+    ],
+    v"2.28.6" => [
+        GitSource("https://github.com/Mbed-TLS/mbedtls.git",
+                  "3a91dad9dceb484eea8b41f8941facafc4520021"),
         DirectorySource("./bundled"; follow_symlinks=true),
     ],
 )
@@ -88,7 +103,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+llvm_version = v"13.0.1+1"
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
-

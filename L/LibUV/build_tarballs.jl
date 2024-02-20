@@ -1,4 +1,6 @@
 using BinaryBuilder
+using Pkg
+using BinaryBuilderBase: sanitize
 
 name = "LibUV"
 version = v"2"
@@ -6,7 +8,7 @@ version = v"2"
 # Collection of sources required to build libuv
 sources = [
     GitSource("https://github.com/JuliaLang/libuv.git",
-              "e6f0e4900e195c8352f821abe2b3cffc3089547b"),
+              "afa1c67fa496eb49ade1e520f76fd018a1409eaa"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,13 +41,16 @@ products = [
     LibraryProduct("libuv", :libuv),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 # Note: we explicitly lie about this because we don't have the new
 # versioning APIs worked out in BB yet.
 version = v"2.0.1"
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    # We need GCC 4.9+ for stdatomic.h
+    julia_compat="1.6", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
