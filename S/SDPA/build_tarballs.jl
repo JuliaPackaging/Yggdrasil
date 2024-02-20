@@ -39,7 +39,7 @@ sources = [
     DirectorySource("./bundled")
 ]
 
-MUMPS_seq_version = v"500.500.101"
+MUMPS_seq_version = v"500.400.100"
 MUMPS_seq_packagespec = PackageSpec(; name = "MUMPS_seq_jll",
                                     uuid = "d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d",
                                     version = MUMPS_seq_version)
