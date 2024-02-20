@@ -26,8 +26,8 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "SDPA"
-upstream_version = v"7.3.8"
-version_offset = v"0.1.1" # reset to 0.0.0 once the upstream version changes
+upstream_version = v"7.3.17"
+version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -35,7 +35,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build SDPABuilder
 sources = [
     ArchiveSource("https://sourceforge.net/projects/sdpa/files/sdpa/sdpa_$(upstream_version).tar.gz",
-                  "c7541333da2f0bb2d18e90dbf758ac7cc099f3f7da3f256b284b0725f96d4117")
+                  "3983489392c9ac7ae30d699ed708da346700d387560a79a1f704034a377281a8")
     DirectorySource("./bundled")
 ]
 
