@@ -68,7 +68,7 @@ if [[ ${target} == *mingw* ]]; then
     # Needed for https://github.com/JuliaLang/julia/issues/48081
     echo $MACHTYPE
     echo $proc_family
-    export LDFLAGS="-L$prefix/bin -L/opt/i686-w64-mingw32/i686-w64-mingw32/sys-root/lib -L/opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/lib -lmsvcrt"
+    export LDFLAGS="-L$prefix/bin -L/opt/*-w64-mingw32/*-w64-mingw32/sys-root/lib -lmsvcrt"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
