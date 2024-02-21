@@ -2,13 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"6.9.12-89"
+upstream_version = v"6.9.13-6"
 version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
 
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://github.com/ImageMagick/ImageMagick6",
-              "a8cd2a3216ae889b52e26db825ca1bae022bd6d0"),
+              "3da057d31756970cb50b1567922e9caf94d36d84"),
     DirectorySource("./bundled"),
 ]
 
@@ -61,7 +61,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"),
     Dependency("Ghostscript_jll"),
     Dependency("OpenJpeg_jll"),
 ]
