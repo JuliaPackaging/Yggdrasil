@@ -26,8 +26,8 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "SDPA"
-upstream_version = v"7.3.8"
-version_offset = v"0.1.0" # reset to 0.0.0 once the upstream version changes
+upstream_version = v"7.3.17"
+version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -35,7 +35,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build SDPABuilder
 sources = [
     ArchiveSource("https://sourceforge.net/projects/sdpa/files/sdpa/sdpa_$(upstream_version).tar.gz",
-                  "c7541333da2f0bb2d18e90dbf758ac7cc099f3f7da3f256b284b0725f96d4117")
+                  "3983489392c9ac7ae30d699ed708da346700d387560a79a1f704034a377281a8")
     DirectorySource("./bundled")
 ]
 
@@ -59,14 +59,14 @@ update_configure_scripts
 
 # Apply patches
 atomic_patch -p1 $WORKSPACE/srcdir/patches/shared.diff
-mv configure.in configure.ac
 atomic_patch -p1 $WORKSPACE/srcdir/patches/lt_init.diff
 autoreconf -vi
 
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="-L$prefix/bin"
+    # Needed for https://github.com/JuliaLang/julia/issues/48081
+    export LDFLAGS="-L/opt/$target/$target/sys-root/lib"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
@@ -144,4 +144,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
+    clang_use_lld = false,
     julia_compat)
