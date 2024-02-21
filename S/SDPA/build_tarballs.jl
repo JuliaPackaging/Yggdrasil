@@ -66,16 +66,7 @@ export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
     # Needed for https://github.com/JuliaLang/julia/issues/48081
-    echo $MACHTYPE
-    echo $proc_family
-    echo $target
-    echo $bb_target
-    echo $bb_full_target
-    echo $rust_target
-    echo $rust_host
-    echo $prefix
-    echo $libdir
-    export LDFLAGS="-L$prefix/bin -L/opt/$target/$target/sys-root/lib -lmsvcrt"
+    export LDFLAGS="-L$prefix/bin -L/opt/$target/$target/sys-root/lib"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
