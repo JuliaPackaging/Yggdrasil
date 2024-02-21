@@ -61,7 +61,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"),
+    Dependency("Libtiff_jll"; compat="4.6"),
     Dependency("Ghostscript_jll"),
     Dependency("OpenJpeg_jll"),
 ]
