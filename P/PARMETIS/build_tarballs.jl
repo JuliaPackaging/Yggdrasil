@@ -36,8 +36,8 @@ popd
 
 grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
 grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
-grep -iq OMPI $prefix/include/mpi.h && mpi_libraries='mpi'
 grep -iq MSMPI $prefix/include/mpi.h && mpi_libraries='msmpi'
+grep -iq OMPI $prefix/include/mpi.h && mpi_libraries='mpi'
 
 cd build
 # {1} is inttype (32 or 64) and {2} is realtype (32 or 64)
