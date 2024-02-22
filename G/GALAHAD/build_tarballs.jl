@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"4.1.1"
+version = v"4.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "33214d72ac384e77682dc2a947a9d99bdca87009")
+    GitSource("https://github.com/ralna/GALAHAD.git", "4ca7f9433250ad93e0a1a4e236b2ea4fe7253a14")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,12 +19,17 @@ cd ${WORKSPACE}/srcdir/GALAHAD
 
 if [[ "${target}" == *mingw* ]]; then
   LBT="blastrampoline-5"
+  HWLOC="hwloc-15"
 else
   LBT="blastrampoline"
+  HWLOC="hwloc"
 fi
 
 meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
-                     --prefix=$prefix -Dlibblas=$LBT -Dliblapack=$LBT
+                     --prefix=$prefix \
+                     -Dlibhwloc=$HWLOC \
+                     -Dlibblas=$LBT \
+                     -Dliblapack=$LBT
 
 meson compile -C builddir
 meson install -C builddir
