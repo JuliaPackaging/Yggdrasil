@@ -73,6 +73,7 @@ cmake .. \
 make -j${nproc}
 make install
 
+rm -r $prefix/share/bash-completion
 rm -r $prefix/share/doc
 rm -r $prefix/lib/pkgconfig
 rm -r $prefix/lib/cmake
