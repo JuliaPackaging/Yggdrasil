@@ -81,9 +81,10 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll")
     Dependency("Xorg_libX11_jll")
     Dependency("Xorg_libXpm_jll")
-    Dependency("Xorg_libXft_jll")    
+    Dependency("Xorg_libXft_jll")
 
     #Optionnal dependencies (if absent, either a feature will be disabled or a built-in version will be compiled)
+    Dependency("oneTBB_jll")
     Dependency("VDT_jll")
     Dependency("XRootD_jll")
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
