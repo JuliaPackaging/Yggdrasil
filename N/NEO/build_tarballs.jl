@@ -85,7 +85,7 @@ products = [
 dependencies = [
     Dependency("gmmlib_jll"; compat="=22.3.11"),
     Dependency("libigc_jll"; compat="=1.0.15985"),
-    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.7.8"; compat="1.7.8"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.9.1"; compat="1.7.8"),
 ]
 
 augment_platform_block = raw"""
