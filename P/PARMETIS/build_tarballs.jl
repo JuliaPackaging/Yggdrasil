@@ -34,9 +34,9 @@ if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
 fi
 popd
 
-grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
 grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
 grep -iq MSMPI $prefix/include/mpi.h && mpi_libraries='msmpi'
+grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
 grep -iq OMPI $prefix/include/mpi.h && mpi_libraries='mpi'
 
 cd build
