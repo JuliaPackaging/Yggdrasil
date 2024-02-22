@@ -41,6 +41,8 @@ sources = [
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     script = raw"""
+        apk add py3-mako
+
         # the build system uses git
         export HOME=$(pwd)
         git config --global user.name "Binary Builder"
