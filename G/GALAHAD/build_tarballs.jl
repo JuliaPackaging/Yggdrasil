@@ -7,7 +7,7 @@ version = v"4.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "4ca7f9433250ad93e0a1a4e236b2ea4fe7253a14")
+    GitSource("https://github.com/ralna/GALAHAD.git", "0a5c178015e77ec56787f32cd10a3693595041da")
 ]
 
 # Bash recipe for building across all platforms
