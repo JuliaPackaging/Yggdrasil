@@ -373,21 +373,21 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # will work and allow people to build JLL binaries ready for Julia 1.7
     if version.major == 1 && version.minor == 6
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.4.1+1")))
-        push!(dependencies, Dependency("LibUV_jll"))
-        push!(dependencies, Dependency("LibUnwind_jll"))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+5")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.3.2+6")))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"11.0.1+3")))
         push!(dependencies, BuildDependency(get_addable_spec("OpenBLAS_jll", v"0.3.10+10")))
         push!(dependencies, BuildDependency(get_addable_spec("LibGit2_jll", v"1.2.3+0")))
     elseif version.major == 1 && version.minor == 7
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency("LibUV_jll"))
-        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+5")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.3.2+6"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+3")))
     elseif version.major == 1 && version.minor == 8
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
-        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+1"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+3")))
     elseif version.major == 1 && version.minor == 9
