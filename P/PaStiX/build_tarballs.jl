@@ -74,16 +74,10 @@ make -j${nproc}
 make install
 
 rm -r $prefix/share/doc
+rm -r $prefix/lib/pkgconfig
+rm -r $prefix/lib/cmake
 rm -r $prefix/lib/julia
-rm -r $prefix/lib/python
-rm $bindir/pastix_completion.sh
-rm $bindir/pastix_env.sh
-
-if [[ "${target}" == *mingw* ]]; then
-    cp kernels/libpastix_kernels.dll $libdir/libpastix_kernels.dll
-    mv spm/src/libspm.dll $libdir/libspm.dll
-    mv $libdir/libspm.dll.a $prefix/lib/libspm.dll.a
-fi
+rm -r $prefix/lib/python.
 """
 
 # These are the platforms we will build for by default, unless further
