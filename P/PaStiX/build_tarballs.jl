@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "PaStiX"
-version = v"6.3.0"
+version = v"6.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/solverstack/pastix.git", "ee20a7ded080bf6b48e11cc3229feba89507c68c"),
+    GitSource("https://gitlab.inria.fr/solverstack/pastix.git", "bff79df1a462e5be8b3cbdaef5787a9017aa8622"),
     DirectorySource("./bundled")
 ]
 
@@ -44,20 +44,10 @@ mkdir build
 cd build
 
 # BLAS and LAPACK
-LBT="-lopenblas"
-
-# Let's compile a version supported by Julia LTS before
-# if [[ "${target}" == *mingw* ]]; then
-#   LBT="-lblastrampoline-5"
-# else
-#   LBT="-lblastrampoline"
-# fi
-
-# SCOTCH
-if [[ "${target}" == *freebsd* ]]; then
-    BOOL=OFF
+if [[ "${target}" == *mingw* ]]; then
+  LBT="-lblastrampoline-5"
 else
-    BOOL=ON
+  LBT="-lblastrampoline"
 fi
 
 if [[ "${target}" == *linux* ]]; then
@@ -65,9 +55,9 @@ if [[ "${target}" == *linux* ]]; then
 fi
 
 LINKER_FLAGS=""
-if [[ "${target}" == *aarch64-apple-darwin* ]]; then
-    LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-fi
+# if [[ "${target}" == *aarch64-apple-darwin* ]]; then
+#     LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+# fi
 
 cmake .. \
     -DBUILD_SHARED_LIBS=ON \
@@ -79,7 +69,7 @@ cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DPASTIX_INT64=OFF \
-    -DPASTIX_ORDERING_SCOTCH=$BOOL \
+    -DPASTIX_ORDERING_SCOTCH=ON \
     -DPASTIX_ORDERING_METIS=ON
 
 make -j${nproc}
@@ -114,14 +104,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=[Platform("aarch64", "macos")]),
+    # BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=[Platform("aarch64", "macos")]),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
-    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="7.0.4", platforms=filter(!Sys.isfreebsd, platforms)),
+    Dependency(PackageSpec(name="SCOTCH_jll", uuid="a8d0f55d-b80e-548d-aff6-1a04c175f0f9"); compat="7.0.4"),
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    # Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0")
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=v"13.0.1")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_llvm_version=v"13.0.1")
