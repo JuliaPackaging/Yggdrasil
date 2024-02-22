@@ -21,6 +21,10 @@ function get_script(; debug::Bool)
         cd compute-runtime
         install_license LICENSE.md
 
+        # revert a change that breaks the cxx03 build
+        # https://github.com/intel/compute-runtime/issues/708
+        git revert 18c25e5aa3fc00c7d47469713adeace08a9aec07
+
         # work around compilation failures
         ## already defined in gmmlib
         sed -i '/__stdcall/d' shared/source/gmm_helper/gmm_lib.h
