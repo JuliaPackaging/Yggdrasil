@@ -98,7 +98,7 @@ dependencies = [
     Dependency("Libtiff_jll"),
     Dependency("libpng_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("GSL_jll"),
+    Dependency("GSL_jll; compat="~2.7.2""),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
