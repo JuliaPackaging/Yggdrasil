@@ -19,7 +19,7 @@ atomic_patch -p0 ${WORKSPACE}/srcdir/patches/Makefile.patch
 atomic_patch -p0 ${WORKSPACE}/srcdir/patches/malloc-2.8.6.c.patch
 update_configure_scripts
 make config
-make all -j${nproc}
+make all
 make prefix="${prefix}/usr" install
 install_license ${WORKSPACE}/srcdir/xictools/license/LICENSE-2.0.txt
 cd ${prefix}/usr/xictools
