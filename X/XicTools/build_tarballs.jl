@@ -8,16 +8,15 @@ version = v"4.3.19"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wrcad/xictools", "c7a50a5fcd71966730e45a5358b8507227ae098c"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/xictools/
 cp Makefile.sample Makefile
-sed -i "s|enable-itopok=no|enable-itopok=yes|g" Makefile
-sed -i "s|GFXLOC = --enable-gtk2=yes|#GFXLOC = --enable-gtk2=yes|g" Makefile
-#sed -i "s|^SUBDIRS =.*|SUBDIRS = xt_base adms KLU vl wrspice|g" Makefile
-sed -i "766c\#include <malloc.h>" xt_base/malloc/malloc-2.8.6.c
+atomic_patch -p0 ${WORKSPACE}/srcdir/patches/Makefile.patch
+atomic_patch -p0 ${WORKSPACE}/srcdir/patches/malloc-2.8.6.c.patch
 update_configure_scripts
 make config
 make all -j${nproc}
