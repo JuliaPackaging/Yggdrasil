@@ -20,7 +20,7 @@ sed -i "s|GFXLOC = --enable-gtk2=yes|#GFXLOC = --enable-gtk2=yes|g" Makefile
 sed -i "766c\#include <malloc.h>" xt_base/malloc/malloc-2.8.6.c
 update_configure_scripts
 make config
-make all -j$(nproc)
+make all -j${nproc}
 make prefix="${prefix}/usr" install
 install_license ${WORKSPACE}/srcdir/xictools/license/LICENSE-2.0.txt
 cd ${prefix}/usr/xictools
