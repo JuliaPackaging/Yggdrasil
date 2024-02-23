@@ -25,29 +25,53 @@ make prefix="${prefix}/usr" install
 install_license ${WORKSPACE}/srcdir/xictools/license/LICENSE-2.0.txt
 cd ${prefix}/usr/xictools
 install -Dvm 755 wrspice.current/bin/mmjco "${bindir}/mmjco"
+rm wrspice.current/bin/mmjco
 install -Dvm 755 wrspice.current/bin/multidec "${bindir}/multidec"
+rm wrspice.current/bin/multidec
 install -Dvm 755 wrspice.current/bin/printtoraw "${bindir}/printtoraw"
+rm wrspice.current/bin/printtoraw
 install -Dvm 755 wrspice.current/bin/proc2mod "${bindir}/proc2mod"
+rm wrspice.current/bin/proc2mod
 install -Dvm 755 wrspice.current/bin/wrspice "${bindir}/wrspice"
+rm wrspice.current/bin/wrspice
 install -Dvm 755 wrspice.current/bin/wrspiced "${bindir}/wrspiced"
+rm wrspice.current/bin/wrspiced
 install -Dvm 755 bin/admsXml "${bindir}/admsXml"
+rm bin/admsXml
 install -Dvm 755 bin/busgen "${bindir}/busgen"
+rm bin/busgen
 install -Dvm 755 bin/capgen "${bindir}/capgen"
+rm bin/capgen
 install -Dvm 755 bin/cubegen "${bindir}/cubegen"
+rm bin/cubegen
 install -Dvm 755 bin/fastcap "${bindir}/fastcap"
+rm bin/fastcap
 install -Dvm 755 bin/fasthenry "${bindir}/fasthenry"
+rm bin/fasthenry
 install -Dvm 755 bin/fcpp "${bindir}/fcpp"
+rm bin/fcpp
 install -Dvm 755 bin/lstpack "${bindir}/lstpack"
+rm bin/lstpack
 install -Dvm 755 bin/lstunpack "${bindir}/lstunpack"
+rm bin/lstunpack
 install -Dvm 755 bin/mrouter "${bindir}/mrouter"
+rm bin/mrouter
 install -Dvm 755 bin/pipedgen "${bindir}/pipedgen"
+rm bin/pipedgen
 install -Dvm 755 bin/pyragen "${bindir}/pyragen"
+rm bin/pyragen
 install -Dvm 755 bin/vl "${bindir}/vl"
+rm bin/vl
 install -Dvm 755 xic.current/bin/wrdecode "${bindir}/wrdecode"
+rm xic.current/bin/wrdecode
 install -Dvm 755 xic.current/bin/wrencode "${bindir}/wrencode"
+rm xic.current/bin/wrencode
 install -Dvm 755 xic.current/bin/wrsetpass "${bindir}/wrsetpass"
+rm xic.current/bin/wrsetpass
 install -Dvm 755 xic.current/bin/xic "${bindir}/xic"
+rm xic.current/bin/xic
 install -Dvm 755 bin/zbuf "${bindir}/zbuf"
+rm bin/zbuf
 """
 
 
@@ -95,10 +119,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libtiff_jll""; compat="4.5.1"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("libpng_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("GSL_jll; compat="~2.7.2""),
+    Dependency("GSL_jll"; compat="~2.7.2"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
