@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "XicTools"
-version = v"0.1.0"
+version = v"4.3.19"
 
 # Collection of sources required to complete build
 sources = [
