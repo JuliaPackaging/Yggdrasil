@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0-rc2", v"1.11.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.0-DEV", v"1.12.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -48,16 +48,17 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.7.0" => "8e870dbef71bc72469933317a1a18214fd1b4b12f1080784af7b2c56177efcb4",
         v"1.8.2" => "3e2cea35bf5df963ed7b75a83e8febfc000acf1e664ecd657a0772508eb1fb5d",
         v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
+        v"1.10.0" => "a4136608265c5d9186ae4767e94ddc948b19b43f760aba3501a161290852054d",
     )
 
-    if version == v"1.10.0-rc2"
+    if version == v"1.11.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "dbb9c46795b0e45b770254542854526f3db119b5"),
+            GitSource("https://github.com/JuliaLang/julia.git", "aecd8fd379a53afa780bc8a8404728b6aa22d6bc"),
             DirectorySource("./bundled"),
         ]
-    elseif version == v"1.11.0-DEV"
+    elseif version == v"1.12.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "2fe4190b3d26b4eee52b2b1b1054ddd6e38a941e"),
+            GitSource("https://github.com/JuliaLang/julia.git", "ccba6c91e24ebc0940acc2f8c390e6391ce0e292"),
             DirectorySource("./bundled"),
         ]
     else
@@ -159,7 +160,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elif [[ "${version}" == 1.10.* ]]; then
         LLVMVERMAJOR=15
     elif [[ "${version}" == 1.11.* ]]; then
-        LLVMVERMAJOR=15
+        LLVMVERMAJOR=16
+    elif [[ "${version}" == 1.12.* ]]; then
+        LLVMVERMAJOR=16
     else
         echo "Error, LLVM version not specified"
         exit 1
@@ -276,6 +279,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         echo "MARCH=armv7-a" >>Make.user
     fi
 
+    # macos 10.12 has aligned alloc in the header but not in libc++
+    # leading to linker errors
+    if [[ "${target}" == *x86_64-apple* ]]; then
+        CXXFLAGS=-fno-aligned-allocation
+    fi
+
     # Add file to one of the `STD_LIB_PATH`
     if [[ "${target}" == *mingw* ]]; then
         cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
@@ -370,21 +379,21 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # will work and allow people to build JLL binaries ready for Julia 1.7
     if version.major == 1 && version.minor == 6
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"5.4.1+1")))
-        push!(dependencies, Dependency("LibUV_jll"))
-        push!(dependencies, Dependency("LibUnwind_jll"))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+5")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.3.2+6")))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"11.0.1+3")))
         push!(dependencies, BuildDependency(get_addable_spec("OpenBLAS_jll", v"0.3.10+10")))
         push!(dependencies, BuildDependency(get_addable_spec("LibGit2_jll", v"1.2.3+0")))
     elseif version.major == 1 && version.minor == 7
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
-        push!(dependencies, Dependency("LibUV_jll"))
-        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+5")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.3.2+6"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"11.0.1+1"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"12.0.1+3")))
     elseif version.major == 1 && version.minor == 8
         push!(dependencies, BuildDependency("SuiteSparse_jll"))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+11")))
-        push!(dependencies, Dependency("LibUnwind_jll"; platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+1"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"13.0.1+3")))
     elseif version.major == 1 && version.minor == 9
@@ -394,17 +403,23 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"14.0.6+2")))
     elseif version.major == 1 && version.minor == 10
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.0+1")))
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.1+1")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+14")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.5.0+5"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+8")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+10")))
     elseif version.major == 1 && version.minor == 11
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.1+1")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+14")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+15")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.7.2+2"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"15.0.7+9")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
+    elseif version.major == 1 && version.minor == 12
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.1+1")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+15")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.7.2+2"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
     else
         error("Unsupported Julia version")
     end
