@@ -279,6 +279,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         echo "MARCH=armv7-a" >>Make.user
     fi
 
+    # macos 10.12 has aligned alloc in the header but not in libc++
+    # leading to linker errors
+    if [[ "${target}" == *x86_64-apple* ]]; then
+        CXXFLAGS=-fno-aligned-allocation
+    fi
+
     # Add file to one of the `STD_LIB_PATH`
     if [[ "${target}" == *mingw* ]]; then
         cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
