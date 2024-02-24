@@ -26,7 +26,10 @@ platforms = expand_cxxstring_abis( supported_platforms() )
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liblfrbenchmark", :liblfrbenchmark)
+    LibraryProduct("liblfrsymmunwgt"   , :liblfrsymmunwgt   ),
+    LibraryProduct("liblfrsymmwgt"     , :liblfrsymmwgt     ),
+    LibraryProduct("liblfrnonsymmunwgt", :liblfrnonsymmunwgt),
+    LibraryProduct("liblfrnonsymmwgt"  , :liblfrnonsymmwgt  ),
 ]
 
 # Dependencies that must be installed before this package can be built
