@@ -31,7 +31,7 @@ mkdir build
 cd build
 # optional dependencies I can't build but might be useful
 # Avahi Jack LIRC tdb WebRTC 
-meson ..  -Ddatabase="gdbm" --cross-file=${MESON_TARGET_TOOLCHAIN}
+meson ..  -Ddatabase="gdbm" --cross-file=${MESON_TARGET_TOOLCHAIN} -Dtests=false
 ninja -j${nproc}
 ninja install
 """
@@ -139,7 +139,6 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
     Dependency(PackageSpec(name="BlueZ_jll", uuid="471b5b61-da80-5748-8755-67d5084d21f2"))
-    Dependency(PackageSpec(name="Check_jll", uuid="491db154-c145-5abe-9c32-446728d60cce"))
     Dependency(PackageSpec(name="Dbus_jll", uuid="ee1fde0b-3d02-5ea6-8484-8dfef6360eab"))
     Dependency(PackageSpec(name="eudev_jll", uuid="35ca27e7-8b34-5b7f-bca9-bdc33f59eb06"))
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
