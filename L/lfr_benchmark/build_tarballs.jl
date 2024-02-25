@@ -7,7 +7,7 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/DiNiXi/lfr-benchmark-c.git", "539f1dda6c155d0ec227d8da645908c71fd3dbb6")
+    GitSource("https://github.com/DiNiXi/lfr-benchmark-c.git", "a41befda585bc53f085e12df2b3eac960278b3cc")
 ]
 
 # Bash recipe for building across all platforms
