@@ -1,13 +1,13 @@
-# Note that this script can accept some limited command-line arguments, run
+1# Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.13.1"
+version = v"2.13.2"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "edcf96d4f1d288db3849abae60c1721ee40e881d"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "ed9002c99a0d2e70984ad01d1bfcff0ca5d45f0d"),
     DirectorySource("./bundled"),
 ]
 
