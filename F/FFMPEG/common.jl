@@ -124,7 +124,7 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
 make -j${nproc}
 if [[ "${FFPLAY}" == "true" ]]; then
     # Manually install only the FFplay binary
-    mv "ffplay${exeext}" "${bindir}/ffplay${exeext}"
+    install -Dvm 755 "ffplay${exeext}" "${bindir}/ffplay${exeext}"
 else
     # Install all FFMPEG stuff: libraries, executables, header files, etc...
     make install
