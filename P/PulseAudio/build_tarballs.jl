@@ -39,6 +39,8 @@ ninja install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude=!Sys.islinux)
+# Many dependencies are missing for armv6l
+filter!(p->arch(p)!="armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
