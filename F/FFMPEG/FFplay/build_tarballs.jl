@@ -18,11 +18,9 @@ dependencies = [
     BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency("FFMPEG_jll"; compat=string(version)),
     Dependency("SDL2_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.9"),
 ]
-
-# FFplay 4.4.4 does not build on aarch64-apple
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script(; ffplay=true), platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=preferred_gcc_version)
+               julia_compat="1.6", preferred_gcc_version, clang_use_lld=false)
