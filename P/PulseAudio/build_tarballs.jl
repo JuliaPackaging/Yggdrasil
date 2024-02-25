@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "PulseAudio"
-version = v"15.0.0"
+version = v"15.0.1"
 
 short_version = "$(version.major).$(version.minor)"
 
@@ -15,14 +15,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/pulseaudio-*
 apk update
 apk add bash-completion doxygen gettext glib orc-compiler perl-xml-parser 
-# make sure meson can find everything
-sed -i -e "s~c_args = .*~c_args = ['-I${includedir}', '-L${libdir}']~" ${MESON_TARGET_TOOLCHAIN}
-# For some reason, librt fails to get linked correctly, so add a flag
 sed -i -e "s~c_link_args = .*~c_link_args = ['-lrt']~" ${MESON_TARGET_TOOLCHAIN}
-cd pulseaudio-*
 # make rpath work with cross compilation
 atomic_patch -p2 $WORKSPACE/srcdir/patches/rpath.patch
 # disable fastmath
@@ -36,15 +32,13 @@ cd build
 # optional dependencies I can't build but might be useful
 # Avahi Jack LIRC tdb WebRTC 
 meson ..  -Ddatabase="gdbm" --cross-file=${MESON_TARGET_TOOLCHAIN}
-ninja
+ninja -j${nproc}
 ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude=!Sys.islinux)
-# Remove "experimental" architecture armv6l
-filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -157,7 +151,7 @@ dependencies = [
     Dependency(PackageSpec(name="libcap_jll", uuid="eef66a8b-8d7a-5724-a8d2-7c31ae1e29ed"))
     Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
     Dependency(PackageSpec(name="Libtool_jll", uuid="a76c16ae-fb8f-5ff0-8826-da3b7a640f0b"))
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8")
     Dependency(PackageSpec(name="SBC_jll", uuid="da37f231-8920-5702-a09a-bdd970cb6ddc"))
     Dependency(PackageSpec(name="SoXResampler_jll", uuid="fbe68eb6-6641-54c6-99e3-f7c7c4d73a57"))
     Dependency(PackageSpec(name="SpeexDSP_jll", uuid="f2f9631b-9a4e-5b48-9975-88f638ec36a7"))
@@ -165,4 +159,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
