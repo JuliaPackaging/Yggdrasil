@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.4.6"
+version = v"5.6.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/tukaani-project/xz/releases/download/v$(version)/xz-$(version).tar.xz",
-                  "b92d4e3a438affcf13362a1305cd9d94ed47ddda22e456a42791e630a5644f5c"),
+                  "cdafe1632f139c82937cc1ed824f7a60b7b0a0619dfbbd681dcac02b1ac28f5b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,8 +17,8 @@ cd $WORKSPACE/srcdir/xz-*
 BUILD_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic)
 
 # i686 error "configure works but build fails at crc32_x86.S"
-# See 4.3 from https://git.tukaani.org/?p=xz.git;a=blob_plain;f=INSTALL;hb=HEAD
-if [[ "${target}" == i686-linux-* ]]; then
+# See 5.3 from https://git.tukaani.org/?p=xz.git;a=blob_plain;f=INSTALL;hb=HEAD
+if [[ "${target}" == i686-linux-gnu ]]; then
     BUILD_FLAGS+=(--disable-assembler)
 fi
 
@@ -63,4 +63,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"7")
