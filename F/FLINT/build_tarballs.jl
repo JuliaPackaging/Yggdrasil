@@ -22,19 +22,18 @@ using BinaryBuilder, Pkg
 #
 
 # WARNING WARNING WARNING: any change to the the version of this JLL should be carefully
-# coordinated with corresponding changes to Singular_jll.jl, LoadFlint.jl, Nemo.jl,
+# coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"2.9.0"
-version_offset = v"0.0.1"
+upstream_version = v"3.0.0"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/wbhart/flint2.git", "e143df4b0f19d2f841e36234a12b69f48c4359b9"), # git tag v2.9.0
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/flintlib/flint2.git", "904aeb3752dae4f23b635f1633e9261dc042ffe2"), # v3.0.0 + a few commits, including the blas detection fix
 ]
 
 # Bash recipe for building across all platforms
@@ -44,16 +43,13 @@ if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
    export CFLAGS=-D_GNU_SOURCE
 elif [[ ${target} == *mingw* ]]; then
-   extraflags=--reentrant
+   extraflags=--enable-reentrant
 fi
 
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
-
-./configure --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
+./bootstrap.sh
+./configure --host=${target} --prefix=$prefix --disable-static --enable-shared --with-gmp=$prefix --with-mpfr=$prefix --with-blas=$prefix ${extraflags}
 make -j${nproc}
-make install LIBDIR=$(basename ${libdir})
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -74,7 +70,7 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.6",
+               julia_compat = "1.6", preferred_gcc_version=v"6",
                init_block = """
   if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
     #to match the global gmp ones

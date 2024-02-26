@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg, BinaryBuilderBase
 
 name = "WhiteboxTools"
-version = v"2.0.0"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/jblindsay/whitebox-tools/archive/refs/tags/v$(version).tar.gz", "18705fc948bdb2f96cd816e5a72d36b9cc460aa8c910383d23fdbd61641aab60")
+    GitSource("https://github.com/jblindsay/whitebox-tools.git", "d4f252c84b37a6b70331c59fd930ffa9a574c5e1")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/whitebox-tools-*/
+cd $WORKSPACE/srcdir/whitebox-tools/
 
 cargo build --release
 mkdir -p "${bindir}"

@@ -1,9 +1,13 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
 name = "SLICOT"
-version = v"5.8.0"
+
+# NOTE: upstream library version is v5.8 + apparently cosmetic commits  
+# patch number is added here to avoid poisoning the JLL version sequence
+version = v"5.8.1"
 
 # Collection of sources required to complete build
 # Note to maintainers: extracts from LAPACK are deprecated routines, so probably don't want
@@ -52,6 +56,7 @@ ZGESVD ZGETRF ZGETRI ZGETRS ZHGEQZ ZLACGV ZLACON ZLACP2 ZLACPY ZLADIV
 ZLAHQR ZLAIC1 ZLANGE ZLANHS ZLANTR ZLAPMT ZLARF ZLARFG ZLARNV ZLARTG
 ZLASCL ZLASET ZLASSQ ZLATRS ZLATZM ZROT ZSCAL ZSWAP ZTRSM ZTZRZF
 ZUNGQR ZUNMQR ZUNMRQ ZUNMRZ ZGERC ZGERU DGGHRD
+ZTRMM ZDOTU ZTREXC ZTRMV ZGERQF ZSTEIN ZGGES
 )
 
 
@@ -71,12 +76,20 @@ if [[ ${nbits} == 64 ]]; then
   FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
 
+if [[ "${target}" == *mingw* && ${nbits} == 32 ]]; then
+  BLAS_LAPACK="-L${libdir} -lopenblas"
+elif [[ "${target}" == *mingw* && ${nbits} == 64 ]]; then
+  BLAS_LAPACK="-L${libdir} -lopenblas64_"
+else
+  BLAS_LAPACK="-L${libdir} -lblastrampoline"
+fi
+
 mkdir ../build
 cd ../build/
 # Above on the fly added CMake code builds shared library with specified LAPACK/BLAS
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DLAPACK_blas_LIBRARIES="-L${libdir} -lblastrampoline" \
+    -DLAPACK_blas_LIBRARIES="${BLAS_LAPACK}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}" \
     ..
@@ -103,9 +116,20 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="3.0.4"),
+    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"), platforms=filter(Sys.iswindows, platforms)),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), platforms=filter(!Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    julia_compat="1.8"
+)

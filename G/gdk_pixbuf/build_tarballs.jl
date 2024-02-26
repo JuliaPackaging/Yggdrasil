@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gdk_pixbuf"
-version = v"2.42.6"
+version = v"2.42.10"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
-                  "8a76cffe6a85f2602cf246c1c974eb475aea41c363a932f0c34695fa968f01fd"),
+                  "efb6110873a94bddc2ab09a0e1c81acadaac014d2e622869529e0042c0e81d9b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,12 +17,11 @@ cd $WORKSPACE/srcdir/gdk-pixbuf-*/
 mkdir build && cd build
 
 FLAGS=()
-if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-mingw* ]]; then
-    FLAGS+=(-Dx11=false)
+if [[ "${target}" == x86_64-linux-gnu ]]; then
+    FLAGS+=(-Dintrospection=enabled)
 fi
 
 meson .. \
-    -Dgir=false \
     -Dman=false \
     -Dinstalled_tests=false \
     -Dgio_sniffing=false \
@@ -37,7 +36,7 @@ find ${prefix}/lib -name loaders.cache -delete
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -49,20 +48,25 @@ products = [
 # Some dependencies are needed only on Linux and FreeBSD
 linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 
+# gobject_introspection is needed only on x86_64-linux-gnu
+introspect_platform = filter(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) == "x86_64", platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     # Need a host glib for glib-compile-resources
     HostBuildDependency("Glib_jll"),
-    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("Glib_jll"; compat="2.76.5"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
+    BuildDependency("gobject_introspection_jll"; platforms=introspect_platform)
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", clang_use_lld=false)

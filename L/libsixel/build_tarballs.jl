@@ -3,36 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "libsixel"
-version = v"1.8.6"
+version = v"1.10.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/saitoha/libsixel.git", "5db717dfef6fa327cd4025e7352550f63d20699c"),
+    GitSource("https://github.com/libsixel/libsixel.git", "e2c493768ee0d48b38f7f9a6dde114215f1c3b8a"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libsixel/
+cd $WORKSPACE/srcdir/libsixel
 
-# This patch fixes https://github.com/johnnychen94/Sixel.jl/issues/5
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ../patches/01-libsixel-win32.patch
-fi
+atomic_patch -p1 ../patches/01-headers.patch
 
-./configure --prefix=${prefix} \
-    --build=${MACHTYPE} \
-    --host=${target} \
-    --includedir=$WORKSPACE/destdir/include \
-    --libdir=$WORKSPACE/destdir/lib \
-    --enable-python=no
-make -j${nproc}
-make install
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" build
+cd build
+
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -40,7 +34,9 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("libpng_jll"),
+    Dependency("JpegTurbo_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

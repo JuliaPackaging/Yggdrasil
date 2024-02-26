@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Hwloc"
-version = v"2.7.1"
+version = v"2.10.0"
 
 # Collection of sources required to build hwloc
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/hwloc/v$(version.major).$(version.minor)/hwloc-$(version).tar.bz2",
-                  "0d4e1d36c3a72c5d61901bfd477337f5a4c7e0a975da57165237d00e35ef528d")
+                  "0305dd60c9de2fbe6519fe2a4e8fdc6d3db8de574a0ca7812b92e80c05ae1392")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +25,8 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libhwloc", :libhwloc)
+    LibraryProduct("libhwloc", :libhwloc),
+    ExecutableProduct("lstopo-no-graphics", :lstopo_no_graphics)
 ]
 
 # Dependencies that must be installed before this package can be built

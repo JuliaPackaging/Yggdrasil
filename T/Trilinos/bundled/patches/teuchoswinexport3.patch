@@ -1,0 +1,19 @@
+commit 7abc99081dc1abf45c162c99d344419deff79cfa
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sun Oct 15 01:31:52 2023 +0000
+
+    One more missing teuchos windows export
+
+diff --git a/packages/teuchos/comm/src/Teuchos_StackedTimer.hpp b/packages/teuchos/comm/src/Teuchos_StackedTimer.hpp
+index d228f2b5545..9019282f803 100644
+--- a/packages/teuchos/comm/src/Teuchos_StackedTimer.hpp
++++ b/packages/teuchos/comm/src/Teuchos_StackedTimer.hpp
+@@ -218,7 +218,7 @@ protected:
+  * timer.report(std::cout); // dump to screen
+  *
+  */
+-class StackedTimer
++class TEUCHOSCOMM_LIB_DLL_EXPORT StackedTimer
+ {
+ protected:
+ 

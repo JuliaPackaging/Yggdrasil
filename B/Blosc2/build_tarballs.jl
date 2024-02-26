@@ -1,18 +1,32 @@
-# Note that this script can accept some limited command-line arguments, run
+1# Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.2.0"
+version = v"2.13.2"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "38da659cd5862dccbb0457266fe752cfd6541d4f"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "ed9002c99a0d2e70984ad01d1bfcff0ca5d45f0d"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/c-blosc2/
+
+# Blosc2 mis-detects whether the system headers provide `_xsetbv`
+# (probably on several platforms), and on `x86_64-w64-mingw32` the
+# functions have incompatible return types (although both are 64-bit
+# integers).
+atomic_patch -p1 ../patches/_xsetbv.patch
+
+# Clang on Apple does not (yet?) properly support `__builtin_cpu_supports`.
+# The symbol `__cpu_model` is not provided by any standard library.
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    perl -pi -e 's/#define HAVE_CPU_FEAT_INTRIN/#undef HAVE_CPU_FEAT_INTRIN/' blosc/shuffle.c
+fi
+
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -21,7 +35,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_BENCHMARKS=OFF \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_STATIC=OFF \
-    -DCMAKE_SHARED_LIBRARY_LINK_C_FLAGS="" \
     -DPREFER_EXTERNAL_ZLIB=ON \
     -DPREFER_EXTERNAL_ZSTD=ON \
     -DPREFER_EXTERNAL_LZ4=ON \
@@ -33,7 +46,7 @@ install_license ../LICENSES/*.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -43,9 +56,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
-    Dependency("Lz4_jll"),
+    Dependency("Zstd_jll"; compat="1.5.0"),
+    Dependency("Lz4_jll"; compat="1.9.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5.2")
+# We need at least GCC 8 for powerpc.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")

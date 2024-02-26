@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenEXR"
-version = v"3.1.1"
+version = v"3.1.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.1.1.tar.gz", "045254e201c0f87d1d1a4b2b5815c4ae54845af2e6ec0ab88e979b5fdb30a86e")
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "3c3074026309dca667247e2544c4645b6fedeeca")
 ]
 
 
@@ -44,9 +44,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Imath_jll"; compat="=3.1.2"),
+    Dependency("Imath_jll"; compat="=3.1.7"),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat = "1.6")

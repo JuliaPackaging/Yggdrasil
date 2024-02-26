@@ -2,19 +2,15 @@
 using BinaryBuilder, Pkg
 
 name = "SBML"
-version = v"5.19.6"
+version = v"5.20.1"
 sources = [
-    ArchiveSource(
-        "https://github.com/sbmlteam/libsbml/archive/v$(version).tar.gz",
-        "77990b0f7b7419269061fbe671540c10f87f52bf8a8568953675ee615584efa6"),
-    DirectorySource("./bundled"),
+    GitSource(
+        "https://github.com/sbmlteam/libsbml.git",
+        "c30da11bcfd2200a6b518c3dd0f59e81254637d6")
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/libsbml-*
-
-# https://github.com/sbmlteam/libsbml/pull/252
-atomic_patch -p1 ../patches/0001-FbcModelPlugin-C-API-for-createObjective-and-createG.patch
+cd ${WORKSPACE}/srcdir/libsbml
 
 mkdir build
 cd build

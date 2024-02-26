@@ -1,9 +1,13 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "TempestModel"
-version = v"0.1"
+version = v"0.1.1"
+tempestmodel_version = v"0.1"
 sources = [
     GitSource("https://github.com/paullric/tempestmodel",
 	      "4ecf5146f3100fb24d36156a2f99433f049f0f66"),
@@ -21,6 +25,18 @@ atomic_patch -p1 ../patches/mk_system_macosx.patch
 # linux system fallback
 atomic_patch -p1 ../patches/mk_system_agri.patch
 atomic_patch -p1 ../patches/netcdf_cpp.patch
+
+# Override MPItrampoline's built-in compiler paths
+export MPITRAMPOLINE_CC=cc
+export MPITRAMPOLINE_CXX=c++
+export MPITRAMPOLINE_FC=gfortran
+
+# Use `mpicxx` if `mpic++` is not available
+if ! which mpic++; then
+    mkdir -p bin
+    ln -s $(which mpicxx) bin/mpic++
+    export PATH="${PATH}:$(pwd)/bin"
+fi
 
 export CXXFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
@@ -54,13 +70,28 @@ cp -v test/shallowwater_sphere/MountainRossbyTest ${bindir}
 cp -v test/shallowwater_sphere/RossbyHaurwitzWaveTest ${bindir}
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 # Note: We are restricted to the platforms that NetCDF supports, the library is Unix only
 platforms = [
     Platform("x86_64", "linux"),
     Platform("x86_64", "macos"),
 ] 
 platforms = expand_cxxstring_abis(platforms)
-  
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
 products = [
     # non-hydro sphere test cases
     ExecutableProduct("ScharMountainSphereTest", :ScharMountainSphereTest_exe),
@@ -94,14 +125,15 @@ products = [
 
 dependencies = [
     Dependency("MKL_jll"),
-    Dependency("MPICH_jll"),
     Dependency("NetCDF_jll"; compat="400.701.400 - 400.799"),
-    Dependency("HDF5_jll"),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.12"),
     # `MbedTLS_jll` is an indirect dependency through NetCDF, we need to specify
     # a compatible build version for this to work.
     BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
 ]
+append!(dependencies, platform_dependencies)
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6",
+    augment_platform_block, julia_compat="1.6",
 )

@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "MiniZinc"
 
-version = v"2.6.2"
+version = v"2.7.6"
 
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "a56602765b4294b796c063664733b28f5a663af7",
+        "3eacc4cd3e6ba1b5414e9fa1639beaefa270f24b",
     ),
     DirectorySource("./bundled"),
 ]
@@ -25,9 +25,13 @@ find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 mkdir -p build
 cd build
 
+# FAST_BUILD is needed when linking HiGHS, because that's what
+# we used when compiling HiGHS_jll.
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS="-I${includedir}/highs" \
+    -DFAST_BUILD=ON \
     ..
 
 if [[ "${target}" == *-linux-* ]]; then
@@ -48,13 +52,15 @@ products = [
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-
-# TODO(odow): fix build issues on Windows
-platforms = filter(!Sys.iswindows, platforms)
+platforms = expand_cxxstring_abis(
+    supported_platforms(; exclude = p -> arch(p) == "i686" && Sys.iswindows(p)),
+)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    # Use an exact version for HiGHS. @odow has observed segfaults with
+    # HiGHS_jll v1.5.3 when libminizinc compiled with v1.5.1.
+    Dependency("HiGHS_jll"; compat="=1.6.0"),
 ]
 
 build_tarballs(

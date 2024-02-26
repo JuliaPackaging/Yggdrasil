@@ -3,14 +3,15 @@ using BinaryBuilder
 # Collection of pre-build pandoc binaries
 name = "pandoc_crossref"
 
-version = v"0.3.11"
-crossref_ver = "0.3.11.0"
+crossref_ver = "0.3.17.0"
+version = v"0.3.17"
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
 sources = [
-    ArchiveSource("$(url_prefix)-Linux.tar.xz", "eca741b75d909a60b8ab52653d4b8797058ec90ae168f10189ea94b6b6cd5f5e"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macOS.tar.xz", "a1866a1d35e8afc16faf13b7cbbc7e492163e3ab91a9705b284006c4c5eb049b"; unpack_target = "x86_64-apple-darwin14"),
-    FileSource("$(url_prefix)-Windows.7z", "7eeea4920876e0432b07813be064ab993c52c3a47387a48274415bce7ab881ab"; filename = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-Linux.tar.xz", "15a49a07ac99696d58cf36fe717810d71172311b6f0ddff63a991b4402f3ebcd"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-macOS.tar.xz", "d8629ac747709869342fce00e56b56eca06b7d6a17541cf9a026530874a9fffe"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-macOS.tar.xz", "d8629ac747709869342fce00e56b56eca06b7d6a17541cf9a026530874a9fffe"; unpack_target = "aarch64-apple-darwin20"),
+    FileSource("$(url_prefix)-Windows.7z", "4fa210feb55265f87e255c8c176caa8de906dad224c9d3cd482609c6070d8e5c"; filename = "x86_64-w64-mingw32"),
     FileSource("https://raw.githubusercontent.com/lierdakil/pandoc-crossref/v$(crossref_ver)/LICENSE", "39db8f9acf036595a2566ea3fe560bc7bd65d8749f088e0f4a4ef2f8a6cb4b34"),
 ]
 
@@ -33,6 +34,7 @@ platforms = [
     Platform("x86_64", "linux"),
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows"),
+    Platform("aarch64", "macos"),
 ]
 
 # The products that we will ensure are always built
@@ -46,4 +48,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")

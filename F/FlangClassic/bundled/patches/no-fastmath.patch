@@ -1,0 +1,26 @@
+commit 992ba1030064ec38b85dbe0163fbe9683c61a571 (HEAD -> master)
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sun Aug 14 12:20:57 2022 -0400
+
+    Drop fastmath
+
+diff --git a/runtime/flang/CMakeLists.txt b/runtime/flang/CMakeLists.txt
+index aefc4a4a..340ab9b0 100644
+--- a/runtime/flang/CMakeLists.txt
++++ b/runtime/flang/CMakeLists.txt
+@@ -606,14 +606,14 @@ if (NOT MSVC  OR "${CMAKE_C_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU")
+     ${I8_FILES_DIR}/red_norm2_stride1.c
+     red_norm2_stride1.c
+     PROPERTIES
+-    COMPILE_FLAGS "-ffast-math"
++    COMPILE_FLAGS ""
+     )
+ else()
+   set_source_files_properties(
+     ${I8_FILES_DIR}/red_norm2_stride1.c
+     red_norm2_stride1.c
+     PROPERTIES
+-    COMPILE_FLAGS "/fp:fast"
++    COMPILE_FLAGS ""
+     )
+ endif()

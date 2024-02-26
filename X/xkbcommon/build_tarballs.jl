@@ -3,36 +3,33 @@
 using BinaryBuilder
 
 name = "xkbcommon"
-version = v"0.9.1"
+version = v"1.4.1"
 
 # Collection of sources required to build xkbcommon
 sources = [
     ArchiveSource("https://xkbcommon.org/download/libxkbcommon-$(version).tar.xz",
-                  "d4c6aabf0a5c1fc616f8a6a65c8a818c03773b9a87da9fbc434da5acd1199be0"),
-    DirectorySource("./bundled"),
+                  "943c07a1e2198026d8102b17270a1f406e4d3d6bbc4ae105b9e1b82d7d136b39"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libxkbcommon-*/
-
-# We need to run `wayland-scanner` on the host system
-apk add wayland-dev
-
-atomic_patch -p1 ../patches/meson_build.patch
-atomic_patch -p1 ../patches/meson_options.patch
-
+mv $bindir/wayland-scanner $bindir/wayland-scanner_
+ln -s `which wayland-scanner` $bindir
 mkdir build && cd build
+cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
 meson .. --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-    -Denable-docs=false \
-    -Dnative-wayland-scanner="/usr/bin/wayland-scanner"
+    -Denable-docs=false
 ninja -j${nproc}
 ninja install
+rm $bindir/wayland-scanner
+mv $bindir/wayland-scanner_ $bindir/wayland-scanner
+rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p)]
+platforms = filter(p -> arch(p) != "armv6l" && (Sys.islinux(p) || Sys.isfreebsd(p)), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -47,7 +44,10 @@ dependencies = [
     Dependency("Xorg_libxcb_jll"),
     Dependency("Wayland_jll"),
     Dependency("Wayland_protocols_jll"),
+    BuildDependency("EpollShim_jll"),
+    HostBuildDependency("Wayland_jll"),
+    HostBuildDependency("Wayland_protocols_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

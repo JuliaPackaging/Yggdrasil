@@ -1,7 +1,11 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "RAxML"
-version = v"8.2.12"
+version = v"8.2.13"
+raxml_version = v"8.2.12"
 hash = "a33ff40640b4a76abd5ea3a9e2f57b7dd8d854f6"
 sources = [
     GitSource("https://github.com/stamatak/standard-RAxML.git", hash),
@@ -72,8 +76,23 @@ for f in raxmlHPC*; do
 done
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 # currently RAxML assumes intel cpus with at least SSE instructions
 platforms = filter(p -> BinaryBuilder.proc_family(p) == "intel", supported_platforms())
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 products = [
     ExecutableProduct("raxmlHPC", :raxmlHPC),
@@ -88,9 +107,9 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="MPICH_jll", uuid="7cb0a576-ebde-5e09-9194-50597f1243b4"); platforms=filter(!Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="MicrosoftMPI_jll", uuid="9237b28f-5490-5468-be7b-bb81f5f5e6cf"); platforms=filter(Sys.iswindows, platforms)),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
 ]
+append!(dependencies, platform_dependencies)
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6")

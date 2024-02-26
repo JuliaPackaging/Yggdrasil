@@ -1,0 +1,11 @@
+--- a/blosc/shuffle.c
+--- b/blosc/shuffle.c
+@@ -143,7 +143,7 @@
+ 
+ // GCC folks added _xgetbv in immintrin.h starting in GCC 9
+ // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71659
+-#if !(defined(_IMMINTRIN_H_INCLUDED) && (BLOSC_GCC_VERSION >= 900)) && !defined(__IMMINTRIN_H)
++#if !(defined(_IMMINTRIN_H_INCLUDED) && (BLOSC_GCC_VERSION >= 900)) && !defined(__IMMINTRIN_H) && !defined(_XSAVEINTRIN_H_INCLUDED)
+ /* Reads the content of an extended control register.
+    https://software.intel.com/en-us/articles/how-to-detect-new-instruction-support-in-the-4th-generation-intel-core-processor-family
+ */

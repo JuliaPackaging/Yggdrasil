@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "HelloWorldC"
-version = v"1.1.3"
+version = v"1.3.0"
 
 # No sources, we're just building the testsuite
 sources = [
@@ -10,7 +10,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir -p ${prefix}/bin
+mkdir -p ${bindir}
 cc -o ${prefix}/bin/hello_world${exeext} -g -O2 /usr/share/testsuite/c/hello_world/hello_world.c
 
 # Also build with cmake
@@ -28,6 +28,9 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("hello_world", :hello_world),
+
+    # This ExecutableProduct is used in tests that change one of the paths
+    ExecutableProduct("hello_world", :hello_world_doppelganger),
 ]
 
 # Dependencies that must be installed before this package can be built

@@ -2,23 +2,23 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1192.000"
-gap_lib_version = v"400.1192.000"
+gap_version = v"400.1200.200"
+gap_lib_version = v"400.1201.200"
 name = "cvec"
-upstream_version = v"2.7.5" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "2.7.6" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-# Collection of sources required to build libsingular-julia
+# Collection of sources required to build this JLL
 sources = [
-    ArchiveSource("https://github.com/gap-packages/$(name)/releases/download/v$(upstream_version)/$(name)-$(upstream_version).tar.bz2",
-                  "b9b51356e88f5a4bbdb25edaa41738338567dcdaa0b8a04e4b2807803953e5c5"),
+    ArchiveSource("https://github.com/gap-packages/cvec/releases/download/v$(upstream_version)/cvec-$(upstream_version).tar.gz",
+                  "a06b10295a8a109b27a8f48d86d92ad94e0efcde1f37b6b7d88efbb297b8bd5e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd cvec*
-./configure ${prefix}/share/gap
+./configure ${prefix}/lib/gap
 make -j${nproc}
 
 # copy the loadable module
@@ -39,3 +39,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+

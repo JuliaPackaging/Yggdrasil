@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "EarCut"
-# use https://github.com/mapbox/earcut.hpp/releases/tag/v2.2.3
-version = v"2.2.3"
+# use https://github.com/mapbox/earcut.hpp/releases/tag/v2.2.4
+version = v"2.2.4"
 sources = [
     GitSource("https://github.com/mapbox/earcut.hpp.git",
-              "b28acde132cdb8e0ef536a96ca7ada8a651f9169"),
+              "4811a2b69b91f6127a75e780de6e2113609ddabb"),
     DirectorySource("./bundled")
 
 ]
@@ -17,11 +17,12 @@ script = raw"""
 cp $WORKSPACE/srcdir/earcut.hpp/include/mapbox/earcut.hpp ./earcut.h
 mkdir "${libdir}"
 ${CXX} -std=c++11 -fPIC -shared -o "${libdir}/libearcut.${dlext}" cwrapper.cpp
+install_license earcut.hpp/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

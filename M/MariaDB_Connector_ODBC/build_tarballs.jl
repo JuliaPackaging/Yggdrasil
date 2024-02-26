@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_ODBC"
-version = v"3.1.9"
+version = v"3.1.16"
 
 # Collection of sources required to build MariaDB_Connector_ODBC
 sources = [
-    ArchiveSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-ga-src.tar.gz",
-                  "5ead3f69ccde539fd7e3de6f4b8f0e6f9f6c32b4b4f082adf0e2ff110971fe1e"),
+    ArchiveSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-src.tar.gz",
+                  "4fd0de9d0e9da883ac9801cbf97953be9cc9010830417c44e8b339deca48463d"),
     DirectorySource("./bundled"),
     FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win64.msi",
-               "c526714f4a65d672b86bf9c24962d55bec70661b37863d891f007f680dae71f7"; filename = "x86_64-w64-mingw32.msi"),
+               "9d027383b88b7f82203081402242828cf3b54cdd9d1ea7a60be145e9a3dd750e"; filename = "x86_64-w64-mingw32.msi"),
     FileSource("https://downloads.mariadb.com/Connectors/odbc/connector-odbc-$(version)/mariadb-connector-odbc-$(version)-win32.msi",
-               "5ef098aefee1d30e6e349bf2363a601007e1376508e6b4a0e23e1eb3ed5a51e2"; filename = "i686-w64-mingw32.msi"),
+               "341bb7126cc40314244dd62a5c77799d2f9429ac5142880320f3bbc3fd8dc4ee"; filename = "i686-w64-mingw32.msi"),
     ## Keep the patches just in case some day we decide to build for Windows
     ## from source
     # DirectorySource("./bundled"),
@@ -100,11 +100,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("MariaDB_Connector_C_jll"),
+    Dependency("MariaDB_Connector_C_jll"),
     Dependency("iODBC_jll"),
     Dependency("Libiconv_jll"),
     Dependency("unixODBC_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Zlib_jll"),
 ]
 

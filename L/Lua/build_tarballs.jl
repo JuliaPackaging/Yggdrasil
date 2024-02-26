@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Lua"
-version = v"5.4.3"
+version = v"5.4.6"
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
-                  "f8612276169e3bfcbcfb8f226195bfc6e466fe13042f1076cbde92b7ec96bbfb"),
+                  "7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88"),
     DirectorySource("./bundled"),
 ]
 
@@ -43,7 +43,7 @@ make install INSTALL_TOP="${prefix}" INSTALL_LIB="${libdir}" TO_BIN="${TO_BIN}" 
 install_license "${WORKSPACE}/srcdir/LICENSE"
 """
 
-platforms = supported_platforms(experimental=true)
+platforms = supported_platforms()
 
 products = [
     ExecutableProduct("lua", :lua),

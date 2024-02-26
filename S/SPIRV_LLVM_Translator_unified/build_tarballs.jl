@@ -6,25 +6,27 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "SPIRV_LLVM_Translator_unified"
-repo = "https://github.com/maleadt/SPIRV-LLVM-Translator.git"
-version = v"0.2"
+repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
+version = v"0.3"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
+llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.6", v"15.0.7"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"11.0.1" => [GitSource(repo, "4c46e06d7b8833af95233ab9c1ad43220bf63684")],
-    v"12.0.1" => [GitSource(repo, "3227a34ccc21f8e456d5991b42e161eb7d15578d")],
-    v"13.0.1" => [GitSource(repo, "5d69690864d8e7d5bf221284a37c57f016ce7d98")],
-    v"14.0.2" => [GitSource(repo, "a16f3db323862cc49d31135697309a3188a024a8")],
+    v"11.0.1" => [GitSource(repo, "474cc8f991e5208fa805720250f0901a4d5265ec")],
+    v"12.0.1" => [GitSource(repo, "a14a95a92e1a358e58b1a544f00c413508308b70")],
+    v"13.0.1" => [GitSource(repo, "828bdebefa56d34d72a3fe7bb59e53f13953ecaf")],
+    v"14.0.6" => [GitSource(repo, "60c0cb0078658e0bc33d93724ffbe70ed4be6c51")],
+    v"15.0.7" => [GitSource(repo, "e82ecc2bd7295604fcf1824e47c95fa6a09c6e63")],
 )
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+filter!(p -> libc(p) != "musl", platforms)  # LLVM_full+asserts isn't available for musl
 
 # Bash recipe for building across all platforms
-script = raw"""
+get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator
 install_license LICENSE.TXT
 
@@ -45,6 +47,9 @@ CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
 
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+
+# Use our LLVM version
+CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * raw""")
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} llvm-spirv install
@@ -84,6 +89,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
             dependencies,
             sources=sources[llvm_version],
             platforms=[augmented_platform],
+            script=get_script(llvm_version)
         ))
     end
 end
@@ -97,7 +103,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, script,
+                   name, version, build.sources, build.script,
                    build.platforms, products, build.dependencies;
                    preferred_gcc_version=v"7", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)

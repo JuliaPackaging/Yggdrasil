@@ -3,24 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "glmnet"
-version = v"4.0.2"
+version = v"2.0.13"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cran/glmnet.git", "b1a4b50de01e0cd24343959d7cf86452bac17b26")
+    GitSource("https://github.com/cran/glmnet.git", "6de9dbc14c515d08999a7af77ff01e44218a4f4e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/glmnet/src
-
-# Add stub for `setpb`, which normally comes from `pb.c` to connect the 
-# progress meter to R, but we don't need that
-echo "
-      subroutine setpb(val)
-      return
-      end
-" > pb.f
 
 flags="-fdefault-real-8 -ffixed-form -shared -O3"
 if [[ ${target} != *mingw* ]]; then
@@ -30,10 +22,9 @@ if [[ ${target} != aarch64* ]] && [[ ${target} != arm* ]]; then
     flags="${flags} -m${nbits}";
 fi
 mkdir -p ${libdir}
-${FC} ${LDFLAGS} ${flags} glmnet5dpclean.f wls.f pb.f -o ${libdir}/libglmnet.${dlext}
+${FC} ${LDFLAGS} ${flags} glmnet5.f90 -o ${libdir}/libglmnet.${dlext}
 install_license ../DESCRIPTION
 """
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
@@ -49,4 +40,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

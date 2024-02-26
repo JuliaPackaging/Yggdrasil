@@ -3,13 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MiniFB"
-version = v"0.2.0"
+version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
-	    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.13.sdk.tar.xz",
-                  "1d2984acab2900c73d076fbd40750035359ee1abe1a6c61eafcd218f68923a5a"),
-	    GitSource("https://github.com/emoon/minifb.git", "5066489cd81b23b0c79952f7d6f464b20c54867c") #master as of 24Feb2022
+	    GitSource("https://github.com/emoon/minifb.git", "19b1a867762f92ea9f28c0195ef51f60d329aaa7") #master as of 12May2022
 ]
 
 # Bash recipe for building across all platforms
@@ -21,15 +19,6 @@ sed -i -e 's/add_library(minifb STATIC/add_library(minifb SHARED/' \
     CMakeLists.txt
 sed -i -e 's?<gl/gl.h>?<GL/gl.h>?' src/gl/MiniFB_GL.c
 mkdir build && cd build
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Workaround for https://github.com/emoon/minifb/issues/88
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-fi
 if [[ "$target}" == *-musl* || "${target}" == *-freebsd* ]]; then
     export CFLAGS="-I${includedir}"
 fi

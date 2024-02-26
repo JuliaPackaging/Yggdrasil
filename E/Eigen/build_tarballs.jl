@@ -1,22 +1,21 @@
 using BinaryBuilder
 
 name = "Eigen"
-version = v"3.3.9"
+version = v"3.4.0"
 
 sources = [
-    ArchiveSource("https://gitlab.com/libeigen/eigen/-/archive/$(version)/eigen-$(version).tar.bz2",
-                  "0fa5cafe78f66d2b501b43016858070d52ba47bd9b1016b0165a7b8e04675677")
+    GitSource("https://gitlab.com/libeigen/eigen.git",
+              "3147391d946bb4b6c68edd901f2add6ac1f31f8c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/eigen-*
-
-mkdir build
-cd build/
+cd $WORKSPACE/srcdir/eigen
+mkdir build && cd build
 
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_Fortran_COMPILER=/opt/${MACHTYPE}/bin/${MACHTYPE}-gfortran \
     ..
 make -j${nproc}

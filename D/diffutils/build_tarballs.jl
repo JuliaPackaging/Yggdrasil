@@ -3,13 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "diffutils"
-version = v"3.7.0"
+version_string = "3.10"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://ftp.gnu.org/gnu/diffutils/diffutils-3.7.tar.xz",
-        "b3a7a6221c3dc916085f0d205abf6b8e1ba443d4dd965118da364a1dc1cb3a26",
+        "https://ftp.gnu.org/gnu/diffutils/diffutils-$(version_string).tar.xz",
+        "90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e",
     ),
     DirectorySource("./bundled"),
 ]
@@ -17,10 +18,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/diffutils-*/
+
 if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/win_sa_restart.patch
     atomic_patch -p1 ../patches/win_signal_handling.patch
 fi
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-dependency-tracking
+
 # skip gnulib-tests on mingw
 if [[ "${target}" == *-mingw* ]]; then
     make -j${nproc} SUBDIRS="lib src tests doc man po"
@@ -48,4 +53,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

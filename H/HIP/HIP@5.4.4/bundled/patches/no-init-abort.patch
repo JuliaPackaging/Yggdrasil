@@ -1,0 +1,22 @@
+commit 36197535c13bacc735b5423b9d900c5d6ec77117
+Author: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date:   Mon Sep 18 09:07:08 2023 -0500
+
+    No init abort
+
+diff --git a/src/hip_code_object.cpp b/src/hip_code_object.cpp
+index 7070c4e5..e432ad60 100644
+--- a/src/hip_code_object.cpp
++++ b/src/hip_code_object.cpp
+@@ -482,8 +482,9 @@ hipError_t CodeObject::extractCodeObjectFromFatBinary(
+       }
+     }
+ 
+-    LogPrintfError("hipErrorNoBinaryForGpu: Unable to find code object for all current devices! - %d",hipErrorNoBinaryForGpu);
+-    return hipErrorNoBinaryForGpu;
++    /* LogPrintfError("hipErrorNoBinaryForGpu: Unable to find code object for all current devices! - %d",hipErrorNoBinaryForGpu); */
++    /* return hipErrorNoBinaryForGpu; */
++    return hipSuccess;
+   }
+ }
+ 

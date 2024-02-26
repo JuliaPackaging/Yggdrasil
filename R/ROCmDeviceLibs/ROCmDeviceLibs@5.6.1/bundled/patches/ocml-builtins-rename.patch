@@ -1,0 +1,25 @@
+diff --git a/irif/inc/irif.h b/irif/inc/irif.h
+index ab7b0fb..90e5d05 100644
+--- a/irif/inc/irif.h
++++ b/irif/inc/irif.h
+@@ -21,6 +21,7 @@ extern __attribute__((const)) float2 __llvm_fma_2f32(float2, float2, float2) __a
+ extern __attribute__((const)) half2 __llvm_fma_2f16(half2, half2, half2) __asm("llvm.fma.v2f16");
+ extern __attribute__((const)) half2 __llvm_round_2f16(half2) __asm("llvm.round.v2f16");
+ extern __attribute__((const)) half2 __llvm_rint_2f16(half2) __asm("llvm.rint.v2f16");
++extern __attribute__((const)) half2 __llvm_copysign_2f16(half2, half2) __asm("llvm.copysign.v2f16");
+ 
+ #define BUILTIN_CLZ_U8(x) (uchar)(x == 0u ? 8 : __builtin_clz(x) - 24)
+ #define BUILTIN_CLZ_U16(x) (ushort)(x == 0u ? 16 : __builtin_clzs(x))
+diff --git a/ocml/src/builtins.h b/ocml/src/builtins.h
+index 26f0299..06a0cd2 100644
+--- a/ocml/src/builtins.h
++++ b/ocml/src/builtins.h
+@@ -83,7 +83,7 @@
+ #define BUILTIN_COPYSIGN_F32 __builtin_copysignf
+ #define BUILTIN_COPYSIGN_F64 __builtin_copysign
+ #define BUILTIN_COPYSIGN_F16 __builtin_copysignf16
+-#define BUILTIN_COPYSIGN_2F16 __builtin_elementwise_copysign
++#define BUILTIN_COPYSIGN_2F16 __llvm_copysign_2f16
+ 
+ #define BUILTIN_FLOOR_F32 __builtin_floorf
+ #define BUILTIN_FLOOR_F64 __builtin_floor

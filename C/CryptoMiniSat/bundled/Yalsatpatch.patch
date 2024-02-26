@@ -1,24 +1,16 @@
---- a/CMakeLists.txt	2021-04-28 11:29:14.157223857 -0400
-+++ b/CMakeLists.txt	2021-04-28 11:30:48.141922745 -0400
-@@ -572,14 +572,15 @@
-     endif()
+--- a/CMakeLists.txt	2022-12-22 13:34:39
++++ b/CMakeLists.txt	2022-12-22 13:35:40
+@@ -569,11 +569,13 @@
  endif()
- 
--include(CheckFloatPrecision)
--check_float_precision()
--if (HAVE__FPU_SETCW)
--    add_definitions(-DYALSAT_FPU)
--    message(STATUS "Found FPU code for yalsat: fpu_control.h, _FPU_SINGLE, _FPU_DOUBLE")
+
+
 +if (NOT CMAKE_CROSSCOMPILING)
-+    include(CheckFloatPrecision)
-+    check_float_precision()
-+    if (HAVE__FPU_SETCW)
-+        add_definitions(-DYALSAT_FPU)
-+        message(STATUS "Found FPU code for yalsat: fpu_control.h, _FPU_SINGLE, _FPU_DOUBLE")
-+    endif()
+ include(CheckFloatPrecision)
+ check_float_precision()
+ if (HAVE__FPU_SETCW)
+     add_definitions(-DYALSAT_FPU)
+     message(STATUS "Found FPU code for yalsat: fpu_control.h, _FPU_SINGLE, _FPU_DOUBLE")
  endif()
- 
--
++endif()
+
  option(WEIGHTED_SAMPLING "Allow for weighted sampling" OFF)
- if (WEIGHTED_SAMPLING)
-     add_definitions( -DWEIGHTED_SAMPLING )

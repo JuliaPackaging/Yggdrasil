@@ -405,6 +405,114 @@
 +else
 +	MINGW_FONTPATH_PATCH_OR_EMPTY_COMMAND=
 +endif
+--- a/configure.ac
++++ b/configure.ac
+@@ -312,6 +312,25 @@ case $host in
+             CC_DBG_FLAGS_TO_TRY="-gdwarf-2 -g3 -O0"
+             CC_VISIBILITY_FLAGS_TO_TRY="-fvisibility=hidden"
+         fi
++        MINGW_BUILD=1
++        MINGW_PLATFORM=`uname`
++        MINGW_XTLIBS="-lwinspool"
++        LIBS="$LIBS $MINGW_XTLIBS"
++
++        # inner MINGW case statement: 32/64 bits
++        case $MINGW_PLATFORM in
++            MINGW32*)
++            MINGW_PLATFORM_BITS=32
++            ;;
++            MINGW64*)
++            MINGW_PLATFORM_BITS=64
++            ;;
++        esac
++
++        AC_SUBST(MINGW_BUILD)
++        AC_SUBST(MINGW_PLATFORM)
++        AC_SUBST(MINGW_PLATFORM_BITS)
++        AC_SUBST(MINGW_XTLIBS)
+         SET_DT_SONAME=""
+         ;;
+         *-sun*|*-solaris*)
+@@ -2316,12 +2335,41 @@ AC_SUBST(CAL_SSE4_2_CFLAGS)
+ AC_SUBST(CAL_AVX2_CFLAGS)
+ AC_SUBST(CAL_NEON_CFLAGS)
+ 
++dnl checks for MinGW shared object name and gdi must precede the gtk checks
++dnl check whether MinGW should use the MSVC dll names
++AC_ARG_WITH([winlib-names], AC_HELP_STRING([--with-winlib-names],
++                                             [MSys/MinGW only: dll and executable names should be gsdll32.dll (gsdll64.dll), gswin32.exe (gswin64.exe), and gswin32c.exe (gswin64c.exe)]),
++            [], [with_winlib_names=no])
++if test "x$with_winlib_names" = "xyes"; then
++    MINGW_WITH_WINLIB_NAMES=1
++fi
++
++dnl check whether MinGW should use the gdi-based (dwmain.c, dwmainc.c) front end
++AC_ARG_WITH([gdi], AC_HELP_STRING([--with-gdi],
++                                             [MSys/MinGW only: use the gdi-based Shared Object loaders (dwmain.c & dwmainc.c; implies --with-winlib-names=yes): not yet implemented]),
++            [], [with_gdi=no])
++if test "x$with_gdi" = "xyes"; then
++    MINGW_WITH_WINLIB_NAMES=1
++    MINGW_WITH_GDI=1
++    # SOC_LOADER value will be set after the initial gtk test
++fi
++
++AC_SUBST(MINGW_WITH_WINLIB_NAMES)
++AC_SUBST(MINGW_WITH_GDI)
++
+ dnl check if we can/should build the gtk loader
+ AC_ARG_ENABLE([gtk], AS_HELP_STRING([--disable-gtk],
+     [Do not build the gtk loader]))
+ SOC_CFLAGS=""
+ SOC_LIBS=""
+-SOC_LOADER=""
++SOC_LOADER="" # default may not be set before the gtk+-2.0 test
++SOC_LOADER_PLAIN=""
++
++if test "x$with_gdi" = "xyes"; then
++    AC_MSG_WARN([the gdi front end under MSys/MinGW is not yet implemented])
++    enable_gtk=yes # try to use gtk+ instead
++fi
++
+ if test "x$enable_gtk" != "xno"; then
+     # Try GTK+ 3.x first...
+     if test "x$PKGCONFIG" != x; then
+@@ -2354,9 +2402,15 @@ if test "x$SOC_LOADER" = "x"; then
+   SOC_LOADER="dxmainc"
+ fi
+ 
++dnl set default SOC_LOADER_PLAIN as necessary
++if test "x$SOC_LOADER_PLAIN" = x; then
++	SOC_LOADER_PLAIN="dxmainc"
++fi
++
+ AC_SUBST(SOC_CFLAGS)
+ AC_SUBST(SOC_LIBS)
+ AC_SUBST(SOC_LOADER)
++AC_SUBST(SOC_LOADER_PLAIN)
+ 
+ dnl optional X11 for display devices
+ if test x"$enable_auxtools_only" = x"yes" ; then
+@@ -3198,6 +3252,20 @@ if test "x$datadir" = 'x${prefix}/share'; then
+ fi
+ 
+ dnl Fix "fontpath" variable...
++if test $MINGW_BUILD = 1; then
++    # Add a reference to the Windows Fonts directory.
++    # This must take place priot to the test below,
++    # as it is also our way to avoid inclusion
++    # of the various unix font directories.
++    # Since gs uses here a colon as delimiter,
++    # we must refer to %windir% as /c/Windows
++    if test "x$fontpath" = "x"; then
++        fontpath="/c/Windows/Fonts"
++    else
++        fontpath="${fontpath}:/c/Windows/Fonts"
++    fi
++fi
++
+ if test "x$fontpath" = "x"; then
+         # These font directories are used by various Linux distributions...
+         fontpath="$datadir/fonts/default/ghostscript"
 --- a/Makefile.in
 +++ b/Makefile.in
 @@ -433,7 +441,7 @@

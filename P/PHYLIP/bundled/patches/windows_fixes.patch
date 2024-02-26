@@ -1,0 +1,241 @@
+diff --git a/src/Makefile.cyg b/src/Makefile.cyg
+index c4cc924..5a2586f 100644
+--- a/src/Makefile.cyg
++++ b/src/Makefile.cyg
+@@ -97,12 +97,12 @@ CC		= /usr/bin/i686-w64-mingw32-gcc-4.5.3.exe
+ # ----------------------------------------------------------------------------
+ #
+ # This is the CFLAGS statement. It specifies compiler behavior.
+-CFLAGS  = -MNO-CYGWIN -DWIN32 -O3 -fomit-frame-pointer -ffast-math
++CFLAGS  = -DWIN32 -O3 -fomit-frame-pointer
+ #CFLAGS  = -fomit-frame-pointer -ffast-math
+ #
+ # This is the DFLAGS statement. It specifies compiler behavior for the
+ # programs drawgram and drawtree.
+-DFLAGS  = -MNO-CYGWIN -lgdi32
++DFLAGS  = -lgdi32
+ #DFLAGS  =  
+ #
+ # ----------------------------------------------------------------------------
+@@ -314,79 +314,79 @@ printree.o:   phylip.h printree.h
+ clique.o:       clique.c disc.h phylip.h
+ 
+ clique.exe:       clique.o disc.o phylip.o clique.res 
+-	$(CC) $(CFLAGS) clique.o disc.o phylip.o clique.res $(LIBS) -o clique
++	$(CC) $(CFLAGS) clique.o disc.o phylip.o clique.res $(LIBS) -o clique.exe
+ 
+ cons.o:         cons.c cons.h phylip.h 
+ 
+ consense.o:     consense.c cons.h phylip.h
+ 
+ consense.exe:     consense.o phylip.o cons.o consense.res
+-	$(CC) $(CFLAGS) consense.o phylip.o cons.o consense.res $(LIBS) -o consense
++	$(CC) $(CFLAGS) consense.o phylip.o cons.o consense.res $(LIBS) -o consense.exe
+ 
+ contml.o:       contml.c cont.h phylip.h
+ 
+ contml.exe:       contml.o cont.o phylip.o contml.res
+-	$(CC) $(CFLAGS) contml.o cont.o phylip.o contml.res $(LIBS) -o contml
++	$(CC) $(CFLAGS) contml.o cont.o phylip.o contml.res $(LIBS) -o contml.exe
+ 
+ contrast.o:       contrast.c cont.h phylip.h
+ 
+ contrast.exe:       contrast.o contrast.res cont.o phylip.o
+-	$(CC) $(CFLAGS) contrast.o cont.o phylip.o contrast.res $(LIBS) -o contrast
++	$(CC) $(CFLAGS) contrast.o cont.o phylip.o contrast.res $(LIBS) -o contrast.exe
+ 
+ dnacomp.o:      dnacomp.c seq.h phylip.h
+ 
+ dnacomp.exe:      dnacomp.o seq.o phylip.o dnacomp.res
+-	$(CC) $(CFLAGS) dnacomp.o seq.o phylip.o dnacomp.res $(LIBS) -o dnacomp
++	$(CC) $(CFLAGS) dnacomp.o seq.o phylip.o dnacomp.res $(LIBS) -o dnacomp.exe
+ 
+ dnadist.o:      dnadist.c seq.h phylip.h
+ 
+ dnadist.exe:      dnadist.o seq.o phylip.o dnadist.res
+-	$(CC) $(CFLAGS) dnadist.o seq.o phylip.o dnadist.res $(LIBS) -o dnadist
++	$(CC) $(CFLAGS) dnadist.o seq.o phylip.o dnadist.res $(LIBS) -o dnadist.exe
+ 
+ dnainvar.o:      dnainvar.c seq.h phylip.h
+ 
+ dnainvar.exe:      dnainvar.o seq.o phylip.o dnainvar.res
+-	$(CC) $(CFLAGS) dnainvar.o seq.o phylip.o dnainvar.res $(LIBS) -o dnainvar
++	$(CC) $(CFLAGS) dnainvar.o seq.o phylip.o dnainvar.res $(LIBS) -o dnainvar.exe
+ 
+ dnaml.o:      dnaml.c seq.h phylip.h
+ 
+ dnaml.exe:      dnaml.o seq.o phylip.o dnaml.res
+-	$(CC) $(CFLAGS) dnaml.o seq.o phylip.o dnaml.res $(LIBS) -o dnaml
++	$(CC) $(CFLAGS) dnaml.o seq.o phylip.o dnaml.res $(LIBS) -o dnaml.exe
+ 
+ dnamlk.o: dnamlk.c seq.h phylip.h mlclock.h printree.h
+ 
+ dnamlk.exe:      dnamlk.o seq.o phylip.o mlclock.o printree.o dnamlk.res
+-	$(CC) $(CFLAGS) dnamlk.o seq.o phylip.o mlclock.o printree.o dnamlk.res $(LIBS) -o dnamlk
++	$(CC) $(CFLAGS) dnamlk.o seq.o phylip.o mlclock.o printree.o dnamlk.res $(LIBS) -o dnamlk.exe
+ 
+ dnamove.o:	dnamove.c seq.h moves.h phylip.h
+ 
+ dnamove.exe:	dnamove.o seq.o moves.o phylip.o dnamove.res
+-	$(CC) $(CFLAGS) dnamove.o seq.o moves.o phylip.o dnamove.res $(LIBS) -o dnamove
++	$(CC) $(CFLAGS) dnamove.o seq.o moves.o phylip.o dnamove.res $(LIBS) -o dnamove.exe
+ 
+ dnapenny.o:      dnapenny.c seq.h phylip.h
+ 
+ dnapenny.exe:      dnapenny.o seq.o phylip.o dnapenny.res
+-	$(CC) $(CFLAGS) dnapenny.o seq.o phylip.o dnapenny.res $(LIBS) -o dnapenny
++	$(CC) $(CFLAGS) dnapenny.o seq.o phylip.o dnapenny.res $(LIBS) -o dnapenny.exe
+ 
+ dnapars.o:      dnapars.c seq.h phylip.h
+ 
+ dnapars.exe:      dnapars.o seq.o phylip.o dnapars.res
+-	$(CC) $(CFLAGS) dnapars.o seq.o phylip.o dnapars.res $(LIBS) -o dnapars
++	$(CC) $(CFLAGS) dnapars.o seq.o phylip.o dnapars.res $(LIBS) -o dnapars.exe
+ 
+ dolmove.o:       dolmove.c disc.h moves.h dollo.h phylip.h
+ 
+ dolmove.exe:       dolmove.o disc.o moves.o dollo.o phylip.o dolmove.res
+-	$(CC) $(CFLAGS) dolmove.o disc.o moves.o dollo.o phylip.o dolmove.res $(LIBS) -o dolmove
++	$(CC) $(CFLAGS) dolmove.o disc.o moves.o dollo.o phylip.o dolmove.res $(LIBS) -o dolmove.exe
+ 
+ dollop.o:       dollop.c disc.h dollo.h phylip.h
+ 
+ dollop.exe:       dollop.o disc.o dollo.o phylip.o dollop.res
+-	$(CC) $(CFLAGS) dollop.o disc.o dollo.o phylip.o dollop.res $(LIBS) -o dollop
++	$(CC) $(CFLAGS) dollop.o disc.o dollo.o phylip.o dollop.res $(LIBS) -o dollop.exe
+ 
+ dolpenny.o:       dolpenny.c disc.h dollo.h phylip.h
+ 
+ dolpenny.exe:       dolpenny.o disc.o dollo.o phylip.o dolpenny.res
+-	$(CC) $(CFLAGS) dolpenny.o disc.o dollo.o phylip.o dolpenny.res $(LIBS) -o dolpenny
++	$(CC) $(CFLAGS) dolpenny.o disc.o dollo.o phylip.o dolpenny.res $(LIBS) -o dolpenny.exe
+ 	
+ draw.o:   draw.c draw.h phylip.h 
+ 	$(CC) $(CFLAGS) -c draw.c
+@@ -398,13 +398,13 @@ drawgram.o:     drawgram.c draw.h phylip.h
+ 	$(CC) $(CFLAGS) -c drawgram.c
+ 
+ drawgram.exe:     drawgram.o draw.o draw2.o phylip.o drawgram.res
+-	$(CC) $(CFLAGS) drawgram.o draw.o draw2.o phylip.o drawgram.res $(LIBS) -o drawgram
++	$(CC) $(CFLAGS) drawgram.o draw.o draw2.o phylip.o drawgram.res $(LIBS) -o drawgram.exe
+ 
+ drawtree.o:     drawtree.c draw.h phylip.h
+ 	$(CC) $(CFLAGS) -c drawtree.c
+ 
+ drawtree.exe:     drawtree.o draw.o draw2.o phylip.o drawtree.res
+-	$(CC) $(CFLAGS) drawtree.o draw.o draw2.o phylip.o drawtree.res	$(LIBS) -o drawtree		
++	$(CC) $(CFLAGS) drawtree.o draw.o draw2.o phylip.o drawtree.res	$(LIBS) -o drawtree.exe	
+ 
+ # needed by java	
+ phylipDlib.o:     phylip.c phylip.h
+@@ -432,92 +432,92 @@ drawtree.dll:     drawtreeDlib.o drawDlib.o draw2Dlib.o phylipDlib.o
+ factor.o:       factor.c phylip.h
+ 
+ factor.exe:       factor.o phylip.o factor.c factor.res
+-	$(CC) $(CFLAGS) factor.o phylip.o factor.res $(LIBS) -o factor
++	$(CC) $(CFLAGS) factor.o phylip.o factor.res $(LIBS) -o factor.exe
+ 
+ fitch.o:        fitch.c dist.h phylip.h
+ 
+ fitch.exe:        fitch.o dist.o phylip.o fitch.res
+-	$(CC) $(CFLAGS) fitch.o dist.o phylip.o fitch.res $(LIBS) -o fitch
++	$(CC) $(CFLAGS) fitch.o dist.o phylip.o fitch.res $(LIBS) -o fitch.exe
+ 
+ gendist.o:      gendist.c phylip.h
+ 
+ gendist.exe:      gendist.o phylip.o gendist.res
+-	$(CC) $(CFLAGS) gendist.o phylip.o gendist.res $(LIBS) -o gendist
++	$(CC) $(CFLAGS) gendist.o phylip.o gendist.res $(LIBS) -o gendist.exe
+ 
+ kitsch.o:        kitsch.c dist.h phylip.h
+ 
+ kitsch.exe:        kitsch.o dist.o phylip.o kitsch.res
+-	$(CC) $(CFLAGS) kitsch.o dist.o phylip.o kitsch.res $(LIBS) -o kitsch
++	$(CC) $(CFLAGS) kitsch.o dist.o phylip.o kitsch.res $(LIBS) -o kitsch.exe
+ 
+ mix.o:        mix.c disc.h wagner.h phylip.h
+ 
+ mix.exe:        mix.o disc.o wagner.o phylip.o mix.res
+-	$(CC) $(CFLAGS) mix.o disc.o wagner.o phylip.o mix.res $(LIBS) -o mix
++	$(CC) $(CFLAGS) mix.o disc.o wagner.o phylip.o mix.res $(LIBS) -o mix.exe
+ 
+ move.o:        move.c disc.h moves.h wagner.h phylip.h
+ 
+ move.exe:        move.o disc.o moves.o wagner.o phylip.o move.c move.res
+-	$(CC) $(CFLAGS) move.o disc.o moves.o wagner.o phylip.o move.res $(LIBS) -o move
++	$(CC) $(CFLAGS) move.o disc.o moves.o wagner.o phylip.o move.res $(LIBS) -o move.exe
+ 
+ neighbor.o:        neighbor.c dist.h phylip.h
+ 
+ neighbor.exe:        neighbor.o dist.o phylip.o neighbor.res 
+-	$(CC) $(CFLAGS) neighbor.o dist.o phylip.o neighbor.res $(LIBS) -o neighbor
++	$(CC) $(CFLAGS) neighbor.o dist.o phylip.o neighbor.res $(LIBS) -o neighbor.exe
+ 
+ pars.o:   pars.c discrete.c discrete.h phylip.h
+ 
+ pars.exe: pars.o discrete.o phylip.o pars.res
+-	$(CC) $(CFLAGS) pars.o discrete.o phylip.o pars.res $(LIBS) -o pars
++	$(CC) $(CFLAGS) pars.o discrete.o phylip.o pars.res $(LIBS) -o pars.exe
+ 
+ penny.o:  penny.c disc.h wagner.h phylip.h
+ 
+ penny.exe:  penny.o disc.o wagner.o phylip.o penny.res
+-	$(CC) $(CFLAGS) penny.o disc.o wagner.o  phylip.o penny.res $(LIBS) -o penny
++	$(CC) $(CFLAGS) penny.o disc.o wagner.o  phylip.o penny.res $(LIBS) -o penny.exe
+ 
+ proml.o:      proml.c seq.h phylip.h
+ 
+ proml.exe:      proml.o seq.o phylip.o proml.res
+-	$(CC) $(CFLAGS) proml.o seq.o phylip.o proml.res $(LIBS) -o proml
++	$(CC) $(CFLAGS) proml.o seq.o phylip.o proml.res $(LIBS) -o proml.exe
+ 
+ promlk.o: seq.h phylip.h mlclock.h printree.h
+ 
+ promlk.exe: promlk.o seq.o phylip.o mlclock.o printree.o promlk.res
+-	$(CC) $(CFLAGS) promlk.o seq.o phylip.o mlclock.o printree.o promlk.res $(LIBS) -o promlk
++	$(CC) $(CFLAGS) promlk.o seq.o phylip.o mlclock.o printree.o promlk.res $(LIBS) -o promlk.exe
+ 
+ protdist.o:      protdist.c seq.h phylip.h
+ 
+ protdist.exe:      protdist.o seq.o phylip.o protdist.res
+-	$(CC) $(CFLAGS) protdist.o seq.o phylip.o protdist.res $(LIBS) -o protdist
++	$(CC) $(CFLAGS) protdist.o seq.o phylip.o protdist.res $(LIBS) -o protdist.exe
+ 
+ protpars.o: protpars.c seq.h phylip.h
+ 
+ protpars.exe: protpars.o seq.o phylip.o protpars.res
+-	$(CC) $(CFLAGS) protpars.o seq.o phylip.o protpars.res $(LIBS) -o protpars
++	$(CC) $(CFLAGS) protpars.o seq.o phylip.o protpars.res $(LIBS) -o protpars.exe
+ 
+ restdist.o: restdist.c seq.h phylip.h
+ 
+ restdist.exe: restdist.o restdist.res seq.o phylip.o restdist.res
+-	$(CC) $(CFLAGS) restdist.o seq.o phylip.o restdist.res $(LIBS) -o restdist
++	$(CC) $(CFLAGS) restdist.o seq.o phylip.o restdist.res $(LIBS) -o restdist.exe
+ 
+ restml.o: restml.c seq.h phylip.h
+ 
+ restml.exe: restml.o seq.o phylip.o restml.res
+-	$(CC) $(CFLAGS) restml.o seq.o phylip.o restml.res $(LIBS) -o restml
++	$(CC) $(CFLAGS) restml.o seq.o phylip.o restml.res $(LIBS) -o restml.exe
+ 
+ retree.o:       retree.c moves.h phylip.h
+ 
+ retree.exe:       retree.o moves.o phylip.o retree.res
+-	$(CC) $(CFLAGS) retree.o moves.o phylip.o retree.res $(LIBS) -o retree
++	$(CC) $(CFLAGS) retree.o moves.o phylip.o retree.res $(LIBS) -o retree.exe
+ 
+ seqboot.o:      seqboot.c phylip.h
+ 
+ seqboot.exe:      seqboot.o seq.o phylip.o seqboot.res
+-	$(CC) $(CFLAGS) seqboot.o seq.o phylip.o seqboot.res $(LIBS) -o seqboot
++	$(CC) $(CFLAGS) seqboot.o seq.o phylip.o seqboot.res $(LIBS) -o seqboot.exe
+ 
+ treedist.o:     treedist.c cons.c cons.h phylip.h
+ 
+ treedist.exe:     treedist.o phylip.o cons.o treedist.res
+-	$(CC) $(CFLAGS) treedist.o cons.o phylip.o treedist.res $(LIBS) -o treedist
++	$(CC) $(CFLAGS) treedist.o cons.o phylip.o treedist.res $(LIBS) -o treedist.exe
+ 
+ %.res: icons/%.rc
+ 	$(WINDRES) $< -O coff -o $@

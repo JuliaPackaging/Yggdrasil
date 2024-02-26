@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "gh_cli"
-version = v"2.2.0"
+version = v"2.35.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cli/cli.git", "a843cbd72813025817a2293a09b31c4597a3f655"),
+    GitSource("https://github.com/cli/cli.git", "94fbbdf9b5b81a433c8bb60cd16b8d179822d834"),
 ]
 
 # Bash recipe for building across all platforms

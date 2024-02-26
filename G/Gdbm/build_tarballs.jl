@@ -3,18 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "Gdbm"
-version = v"1.18.1"
+version_string = "1.19"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gdbm/gdbm-1.18.1.tar.gz", "86e613527e5dba544e73208f42b78b7c022d4fa5a6d5498bf18c8d6f745b91dc"),
+    ArchiveSource("https://ftp.gnu.org/gnu/gdbm/gdbm-$(version_string).tar.gz",
+                  "37ed12214122b972e18a0d94995039e57748191939ef74115b1d41d8811364bc"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd gdbm-1.18.1/
+cd $WORKSPACE/srcdir/gdbm-*/
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/gdbm-1.15-win32.patch
@@ -27,7 +28,8 @@ if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-mingw* ]]; then
     autoreconf -vi
 fi
 
-export CPPFLAGS="-I${includedir}"
+# `LDFLAGS` needed to let the linker find our readline on macOS
+export LDFLAGS="-L${libdir}"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-libiconv-prefix=${prefix}
 make -j${nproc}
 make install
@@ -36,7 +38,6 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
 
 # The products that we will ensure are always built
 products = [
@@ -59,4 +60,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

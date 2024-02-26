@@ -1,0 +1,25 @@
+From b7dc5e42d82238845581d06ad33ad19326f9e096 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Sun, 1 May 2022 22:10:14 -0400
+Subject: [PATCH] [PATCH] disable OSX 10.12 optimization
+
+---
+ llvm/lib/Support/Unix/Path.inc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/llvm/lib/Support/Unix/Path.inc b/llvm/lib/Support/Unix/Path.inc
+index 788460d657fe..80b334b78b20 100644
+--- a/llvm/lib/Support/Unix/Path.inc
++++ b/llvm/lib/Support/Unix/Path.inc
+@@ -1462,7 +1462,7 @@ namespace fs {
+ std::error_code copy_file(const Twine &From, const Twine &To) {
+   std::string FromS = From.str();
+   std::string ToS = To.str();
+-#if __has_builtin(__builtin_available)
++#if __has_builtin(__builtin_available) && 0
+   if (__builtin_available(macos 10.12, *)) {
+     // Optimistically try to use clonefile() and handle errors, rather than
+     // calling stat() to see if it'll work.
+-- 
+2.35.1
+

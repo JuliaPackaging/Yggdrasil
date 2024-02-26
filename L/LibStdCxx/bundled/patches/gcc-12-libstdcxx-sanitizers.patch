@@ -1,0 +1,203 @@
+commit 1943c28ed0841561d7f379fd4d23210b03096c04
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Thu Aug 18 22:00:49 2022 +0000
+
+    Apply patches
+
+diff --git a/libstdc++-v3/config/locale/gnu/ctype_members.cc b/libstdc++-v3/config/locale/gnu/ctype_members.cc
+index bd190712eac..94fb7f32cb6 100644
+--- a/libstdc++-v3/config/locale/gnu/ctype_members.cc
++++ b/libstdc++-v3/config/locale/gnu/ctype_members.cc
+@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 	this->_S_create_c_locale(this->_M_c_locale_ctype, __s);
+ 	this->_M_toupper = this->_M_c_locale_ctype->__ctype_toupper;
+ 	this->_M_tolower = this->_M_c_locale_ctype->__ctype_tolower;
+-	this->_M_table = this->_M_c_locale_ctype->__ctype_b;
++	this->_M_table = (mask*)this->_M_c_locale_ctype->__ctype_b;
+       }
+   }
+ 
+diff --git a/libstdc++-v3/libsupc++/Makefile.am b/libstdc++-v3/libsupc++/Makefile.am
+index 65b5c1a87fd..251add2e199 100644
+--- a/libstdc++-v3/libsupc++/Makefile.am
++++ b/libstdc++-v3/libsupc++/Makefile.am
+@@ -138,7 +138,7 @@ atomicity.cc: ${atomicity_file}
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion call for it.
+ AM_CXXFLAGS = \
+-	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
++	-std=c++17 $(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(FREESTANDING_FLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS)
+ 
+diff --git a/libstdc++-v3/libsupc++/Makefile.in b/libstdc++-v3/libsupc++/Makefile.in
+index a4402009b85..745a1569e96 100644
+--- a/libstdc++-v3/libsupc++/Makefile.in
++++ b/libstdc++-v3/libsupc++/Makefile.in
+@@ -586,7 +586,7 @@ atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion call for it.
+ AM_CXXFLAGS = \
+-	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
++	-std=c++17 $(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(FREESTANDING_FLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS)
+ 
+diff --git a/libstdc++-v3/src/c++11/Makefile.am b/libstdc++-v3/src/c++11/Makefile.am
+index 222e2a8c618..ac2f8a9c91b 100644
+--- a/libstdc++-v3/src/c++11/Makefile.am
++++ b/libstdc++-v3/src/c++11/Makefile.am
+@@ -141,12 +141,12 @@ if ENABLE_DUAL_ABI
+ rewrite_ios_failure_typeinfo = sed -e '/^_*_ZTISt13__ios_failure:/,/_ZTVN10__cxxabiv120__si_class_type_infoE/s/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt19__iosfail_type_info/'
+ 
+ cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
+-	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
++	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+ 	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
+ 	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ 	-rm -f tmp-$@
+ cxx11-ios_failure.s: cxx11-ios_failure.cc
+-	$(CXXCOMPILE) -gno-as-loc-support -S $< -o tmp-$@
++	$(CXXCOMPILE) -S $< -o tmp-$@
+ 	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ 	-rm -f tmp-$@
+ 
+diff --git a/libstdc++-v3/src/c++11/Makefile.in b/libstdc++-v3/src/c++11/Makefile.in
+index 892c505eddc..03f393f79a2 100644
+--- a/libstdc++-v3/src/c++11/Makefile.in
++++ b/libstdc++-v3/src/c++11/Makefile.in
+@@ -860,12 +860,12 @@ limits.o: limits.cc
+ 	$(CXXCOMPILE) -fchar8_t -c $<
+ 
+ @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
+-@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
++@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+ @ENABLE_DUAL_ABI_TRUE@	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
+ @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
+ @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.s: cxx11-ios_failure.cc
+-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -gno-as-loc-support -S $< -o tmp-$@
++@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -S $< -o tmp-$@
+ @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
+ 
+diff --git a/libstdc++-v3/src/c++17/Makefile.am b/libstdc++-v3/src/c++17/Makefile.am
+index 3d53f652fac..1ce770611e6 100644
+--- a/libstdc++-v3/src/c++17/Makefile.am
++++ b/libstdc++-v3/src/c++17/Makefile.am
+@@ -79,7 +79,7 @@ endif
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++17 -nostdinc++ \
++	-std=c++20 -fsized-deallocation -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++17/Makefile.in b/libstdc++-v3/src/c++17/Makefile.in
+index b88917e101a..0999867a187 100644
+--- a/libstdc++-v3/src/c++17/Makefile.in
++++ b/libstdc++-v3/src/c++17/Makefile.in
+@@ -463,7 +463,7 @@ libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++17 -nostdinc++ \
++	-std=c++20 -fsized-deallocation -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++17/floating_from_chars.cc b/libstdc++-v3/src/c++17/floating_from_chars.cc
+index e7f3a58cf18..462b9349b94 100644
+--- a/libstdc++-v3/src/c++17/floating_from_chars.cc
++++ b/libstdc++-v3/src/c++17/floating_from_chars.cc
+@@ -92,7 +92,7 @@ namespace
+   // a single allocation, so there's no need for anything more complex.
+   struct buffer_resource : pmr::memory_resource
+   {
+-    ~buffer_resource() { if (m_ptr) operator delete(m_ptr, m_bytes); }
++    ~buffer_resource() { if (m_ptr) operator delete(m_ptr, (std::align_val_t)m_bytes); }
+ 
+     void*
+     do_allocate(size_t bytes, size_t alignment [[maybe_unused]]) override
+diff --git a/libstdc++-v3/src/c++17/floating_to_chars.cc b/libstdc++-v3/src/c++17/floating_to_chars.cc
+index 4599d68a39c..0e43dbe513c 100644
+--- a/libstdc++-v3/src/c++17/floating_to_chars.cc
++++ b/libstdc++-v3/src/c++17/floating_to_chars.cc
+@@ -1029,7 +1029,7 @@ template<typename T>
+ 	    // writing out fd.mantissa followed by fd.exponent many 0s.
+ 	    if (fd.sign)
+ 	      *first++ = '-';
+-	    to_chars_result result = to_chars(first, last, fd.mantissa);
++	    to_chars_result result = to_chars(first, last, (int)fd.mantissa);
+ 	    __glibcxx_assert(result.ec == errc{});
+ 	    memset(result.ptr, '0', fd.exponent);
+ 	    result.ptr += fd.exponent;
+@@ -1085,7 +1085,7 @@ template<typename T>
+ 	    const int leading_zeros = -fd.exponent - mantissa_length;
+ 	    memset(first, '0', leading_zeros);
+ 	    first += leading_zeros;
+-	    const to_chars_result result = to_chars(first, last, fd.mantissa);
++	    const to_chars_result result = to_chars(first, last, (int)fd.mantissa);
+ 	    const int output_length = result.ptr - orig_first;
+ 	    __glibcxx_assert(output_length == expected_output_length
+ 			     && result.ec == errc{});
+@@ -1097,7 +1097,7 @@ template<typename T>
+ 	    const auto orig_first = first;
+ 	    if (fd.sign)
+ 	      *first++ = '-';
+-	    to_chars_result result = to_chars(first, last, fd.mantissa);
++	    to_chars_result result = to_chars(first, last, (int)fd.mantissa);
+ 	    __glibcxx_assert(result.ec == errc{});
+ 	    // Make space for and write the decimal point in the correct spot.
+ 	    memmove(&result.ptr[fd.exponent+1], &result.ptr[fd.exponent],
+diff --git a/libstdc++-v3/src/c++17/fs_path.cc b/libstdc++-v3/src/c++17/fs_path.cc
+index 047082350ec..9ac18c5f822 100644
+--- a/libstdc++-v3/src/c++17/fs_path.cc
++++ b/libstdc++-v3/src/c++17/fs_path.cc
+@@ -254,7 +254,7 @@ void path::_List::_Impl_deleter::operator()(_Impl* p) const noexcept
+     {
+       __glibcxx_assert(p->_M_size <= p->_M_capacity);
+       p->clear();
+-      ::operator delete(p, sizeof(*p) + p->_M_capacity * sizeof(value_type));
++      ::operator delete(p, (std::align_val_t)(sizeof(*p) + p->_M_capacity * sizeof(value_type)));
+     }
+ }
+ 
+@@ -1984,8 +1984,8 @@ struct fs::filesystem_error::_Impl
+   static std::string
+   make_what(string_view s, const path* p1, const path* p2)
+   {
+-    const std::string pstr1 = p1 ? p1->u8string() : std::string{};
+-    const std::string pstr2 = p2 ? p2->u8string() : std::string{};
++    const std::string pstr1 = p1 ? p1->string() : std::string{};
++    const std::string pstr2 = p2 ? p2->string() : std::string{};
+     const size_t len = 18 + s.length()
+       + (pstr1.length() ? pstr1.length() + 3 : 0)
+       + (pstr2.length() ? pstr2.length() + 3 : 0);
+diff --git a/libstdc++-v3/src/c++17/memory_resource.cc b/libstdc++-v3/src/c++17/memory_resource.cc
+index bb6334c9694..384431aa3ce 100644
+--- a/libstdc++-v3/src/c++17/memory_resource.cc
++++ b/libstdc++-v3/src/c++17/memory_resource.cc
+@@ -36,6 +36,8 @@
+ #  define __constinit [[clang::require_constant_initialization]]
+ #endif
+ 
++
++#define __constinit constinit
+ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+diff --git a/libstdc++-v3/src/c++98/bitmap_allocator.cc b/libstdc++-v3/src/c++98/bitmap_allocator.cc
+index a3250a70d44..05f220a268c 100644
+--- a/libstdc++-v3/src/c++98/bitmap_allocator.cc
++++ b/libstdc++-v3/src/c++98/bitmap_allocator.cc
+@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 
+   size_t*
+   free_list::
+-  _M_get(size_t __sz) throw(std::bad_alloc)
++  _M_get(size_t __sz) _GLIBCXX_THROW(std::bad_alloc)
+   {
+ #if defined __GTHREADS
+     __mutex_type& __bfl_mutex = _M_get_mutex();

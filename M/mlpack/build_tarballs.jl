@@ -6,22 +6,15 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.4.3"
-source_version = v"3.4.2"
+source_version = v"4.3.0"
+version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "9e5c4af5c276c86a0dcc553289f6fe7b1b340d61c1e59844b53da0debedbb171"),
-    DirectorySource("./bundled"),
+                  "08cd54f711fde66fc3b6c9db89dc26776f9abf1a6256c77cfa3556e2a56f1a3d"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
-
-# Apply any patches that are needed.
-for f in ${WORKSPACE}/srcdir/patches/*.patch;
-do
-    atomic_patch -p1 ${f};
-done
 
 mkdir build && cd build
 
@@ -31,17 +24,15 @@ mkdir build && cd build
 # version.  So we'll just create a crappy little script, since Julia may not
 # be available in the build environment.
 echo "#!/bin/bash" > julia
-echo "echo \"Fake Julia version 1.3.0\"" >> julia
+echo "echo \"Fake Julia version 1.9.4\"" >> julia
 chmod +x julia
 
 FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+       -DCMAKE_CROSSCOMPILING=OFF
        -DCMAKE_INSTALL_PREFIX=${prefix}
-       -DBUILD_SHARED_LIBS=ON
-       -DDEBUG=OFF
-       -DPROFILE=OFF
-       -DUSE_OPENMP=OFF
-       -DBoost_NO_BOOST_CMAKE=1
+       -DUSE_OPENMP=ON
        -DBUILD_JULIA_BINDINGS=ON
+       -DBUILD_SHARED_LIBS=ON
        -DJULIA_EXECUTABLE="${PWD}/julia"
        -DBUILD_CLI_EXECUTABLES=OFF
        -DBUILD_GO_BINDINGS=OFF
@@ -101,6 +92,8 @@ if [[ ${target} == *mingw* ]]; then
 else
     cp -v src/mlpack/bindings/julia/mlpack/src/*.${dlext} "${libdir}"
 fi
+
+install_license ../LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -109,8 +102,6 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built.
 products = [
-    # The main mlpack library.
-    LibraryProduct("libmlpack", :libmlpack),
     # Utility library with functionality to call the mlpack::CLI singleton.
     LibraryProduct("libmlpack_julia_util", :libmlpack_julia_util),
     # Each of these contains a mlpackMain() implementation for the given
@@ -121,8 +112,6 @@ products = [
         :libmlpack_julia_bayesian_linear_regression),
     LibraryProduct("libmlpack_julia_cf", :libmlpack_julia_cf),
     LibraryProduct("libmlpack_julia_dbscan", :libmlpack_julia_dbscan),
-    LibraryProduct("libmlpack_julia_decision_stump",
-        :libmlpack_julia_decision_stump),
     LibraryProduct("libmlpack_julia_decision_tree",
         :libmlpack_julia_decision_tree),
     LibraryProduct("libmlpack_julia_det", :libmlpack_julia_det),
@@ -185,10 +174,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.76.0"),
-    Dependency("armadillo_jll"),
-    Dependency("OpenBLAS_jll", v"0.3.13")
+    Dependency("armadillo_jll"; compat="12.2.0"),
+    Dependency("OpenBLAS_jll", v"0.3.13"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
+    # These are header-only libraries just needed for the build process.
+    BuildDependency("cereal_jll"),
+    BuildDependency("ensmallen_jll"),
+    BuildDependency("stb_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.7")

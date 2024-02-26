@@ -1,25 +1,43 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "QuantumEspresso"
-version = v"7.0.0"
+version = v"7.0.1"
+quantumespresso_version = v"7.0.0"
+
+# ES 2022-08-01: I tried updating to 7.1, but I encountered build problems:
+# - v7.1 encounters ICEs in gfortran; requires at least GCC 10
+# - the build fails because the directory "../W90" is not found at some point
+# version = v"7.1"
+# quantumespresso_version = v"7.1"
 
 sources = [
     ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.0/q-e-qe-7.0.tar.gz",
                   "85beceb1aaa1678a49e774c085866d4612d9d64108e0ac49b23152c8622880ee"),
+    # ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.1/q-e-qe-7.1.tar.gz",
+    #               "d56dea096635808843bd5a9be2dee3d1f60407c01dbeeda03f8256a3bcfc4eb6"),
     DirectorySource("bundled"),
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd q-e-qe-*
 atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
+# atomic_patch -p1 ../patches/0000-pass-host-to-configure-7.1.patch
 
 export BLAS_LIBS="-L${libdir} -lopenblas"
 export LAPACK_LIBS="-L${libdir} -lopenblas"
 export FFTW_INCLUDE=${includedir}
 export FFT_LIBS="-L${libdir} -lfftw3"
-export FC=mpif90
+export MPITRAMPOLINE_FC=gfortran
+export MPITRAMPOLINE_CC=cc
+if which mpif90; then
+    export FC=mpif90
+else
+    export FC=mpifort
+fi
 export CC=mpicc
 export LD=
 
@@ -30,14 +48,12 @@ if [ "${nbits}" == 64 ]; then
     flags+=(--with-libxc=yes --with-libxc-prefix=${prefix})
 fi
 
-if [[    "${target}" == powerpc64le-linux-* \
-      || "${bb_full_target}" == armv6l-linux-* \
-      || "${target}" == aarch64-apple-darwin* ]]; then
-    # No scalapack binary available on these platforms
-    flags+=(--with-scalapack=no)
-else
-    export SCALAPACK_LIBS="-L${libdir} -lscalapack"
+if [ -e ${libdir}/libscalapack32.* ]; then
+    export SCALAPACK_LIBS="-L${libdir} -lscalapack32"
     flags+=(--with-scalapack=yes)
+else
+    # No scalapack binary available on this platforms
+    flags+=(--with-scalapack=no)
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
@@ -47,13 +63,28 @@ make install
 chmod +x "${bindir}"/*
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 filter!(!Sys.iswindows, platforms)
-# On aarch64-apple-darwin we get
-#    f951: internal compiler error: in doloop_contained_procedure_code, at fortran/frontend-passes.c:2464
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# MPItrampoline is not supported
+filter!(p -> p["mpi"] ≠ "mpitrampoline", platforms)
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -78,11 +109,11 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("FFTW_jll"),
     Dependency("Libxc_jll"),
-    Dependency("MPICH_jll"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
-    Dependency("SCALAPACK_jll"),
+    Dependency("SCALAPACK32_jll"),
 ]
+append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6", julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")

@@ -1,0 +1,12 @@
+diff --git before/Chipmunk2D/CMakeLists.txt after/Chipmunk2D/CMakeLists.txt
+index b1372b4..7169982 100644
+--- before/Chipmunk2D/CMakeLists.txt
++++ after/Chipmunk2D/CMakeLists.txt
+@@ -56,7 +56,6 @@ if(NOT MSVC)
+   if(FORCE_CLANG_BLOCKS)
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fblocks")
+   endif()
+-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -ffast-math") # extend release-profile with fast-math
+   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall") # extend debug-profile with -Wall
+ endif()
+ 

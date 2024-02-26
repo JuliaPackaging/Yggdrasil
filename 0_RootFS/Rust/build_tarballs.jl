@@ -15,16 +15,21 @@ include("../common.jl")
 
 # We first download Rustup, and use that to install rust
 rustup_name = "RustStage1"
+# NOTE: we can't update to newer versions because of
+# <https://github.com/rust-lang/rustup/issues/3116>.
 rustup_version = v"1.24.3"
 
 # This is the version of the Rust toolchain we install
-version = v"1.61.0"
+version = v"1.73.0"
 
 sources = [
     # We'll use rustup to install rust
     FileSource("https://static.rust-lang.org/rustup/archive/$(rustup_version)/x86_64-unknown-linux-musl/rustup-init",
                "bdf022eb7cba403d0285bb62cbc47211f610caec24589a72af70e1e900663be9"),
 ]
+
+# Check if deploy flag is set
+deploy = "--deploy" in ARGS
 
 # The first thing we're going to do is to install Rust for all targets into a single prefix
 script = "version=$(version)\n" * raw"""
@@ -72,7 +77,7 @@ products = [
     ExecutableProduct("cargo", :cargo),
 ]
 dependencies = [
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
 ]
 ndARGS = filter(a -> !occursin("--deploy", a), ARGS)
 build_info = build_tarballs(ndARGS, rustup_name, rustup_version, sources, script, platforms, products, dependencies; skip_audit=true)
@@ -112,7 +117,9 @@ for target_platform in supported_platforms()
     squashfs_hash = unpacked_to_squashfs(unpacked_hash, "RustToolchain", version; platform=rust_host, target=target_platform)
 
     # Upload them both to GH releases on Yggdrasil
-    upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustToolchain", version, unpacked_hash, squashfs_hash, rust_host; target=target_platform)
+    if deploy
+        upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustToolchain", version, unpacked_hash, squashfs_hash, rust_host; target=target_platform)
+    end
 end
 
 # Finally, we do RustBase:
@@ -127,4 +134,7 @@ unpacked_hash = create_artifact() do dir
 end
 
 squashfs_hash = unpacked_to_squashfs(unpacked_hash, "RustBase", version; platform=rust_host)
-upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustBase", version, unpacked_hash, squashfs_hash, rust_host)
+
+if deploy
+    upload_and_insert_shards("JuliaPackaging/Yggdrasil", "RustBase", version, unpacked_hash, squashfs_hash, rust_host)
+end

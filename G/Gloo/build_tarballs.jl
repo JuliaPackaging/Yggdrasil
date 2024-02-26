@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Gloo"
-version = v"0.0.20200317"
+version = v"0.0.20210521"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/facebookincubator/gloo.git", "113bde13035594cafdca247be953610b53026553"),
+    GitSource("https://github.com/facebookincubator/gloo.git", "c22a5cfba94edf8ea4f53a174d38aa0c629d070f"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,6 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gloo
 atomic_patch -p1 ../patches/mingw32.patch
+atomic_patch -p1 ../patches/mingw-lowercase-include.patch
+atomic_patch -p1 ../patches/mingw32-link-with-ws2_32.patch
+atomic_patch -p1 ../patches/musl-caddr.patch
 mkdir build
 cd build
 if [[ $target != *w64-mingw32* ]]; then

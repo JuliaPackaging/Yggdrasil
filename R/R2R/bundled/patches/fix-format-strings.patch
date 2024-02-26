@@ -1,0 +1,68 @@
+diff --git a/src/ParseOneStockholm.cpp b/src/ParseOneStockholm.cpp
+index c2399e4..c4ab211 100755
+--- a/src/ParseOneStockholm.cpp
++++ b/src/ParseOneStockholm.cpp
+@@ -259,15 +259,15 @@ void DumpInfoFile(const OtherDrawingStuff& otherDrawingStuff,const DrawingParams
+ 
+ 	fprintf(f,"drawingName\t%s\n",otherDrawingStuff.name.c_str());
+ 
+-	fprintf(f,"posToAlignCol\t%u\n",otherDrawingStuff.currPosToOriginalPosMap.size());
++	fprintf(f,"posToAlignCol\t%lu\n",otherDrawingStuff.currPosToOriginalPosMap.size());
+ 	for (size_t pos=0; pos<otherDrawingStuff.currPosToOriginalPosMap.size(); pos++) {
+-		fprintf(f,"%u\t%d\n",pos,otherDrawingStuff.currPosToOriginalPosMap[pos]);
++		fprintf(f,"%zu\t%d\n",pos,otherDrawingStuff.currPosToOriginalPosMap[pos]);
+ 	}
+ 
+-	fprintf(f,"layout\t%u\n",posInfoVector.size());
++	fprintf(f,"layout\t%lu\n",posInfoVector.size());
+ 	for (size_t i=0; i<posInfoVector.size(); i++) {
+ 		const PosInfo& p=posInfoVector[i];
+-		fprintf(f,"%u\t%s\t%lg\t%lg\t%d\t%d",i,p.nuc.c_str(),p.pos.GetX(),p.pos.GetY(),p.flipLeftRight?1:0,p.partOfCircleThreePrime.isPartOfCircle?1:0);
++		fprintf(f,"%zu\t%s\t%lg\t%lg\t%d\t%d",i,p.nuc.c_str(),p.pos.GetX(),p.pos.GetY(),p.flipLeftRight?1:0,p.partOfCircleThreePrime.isPartOfCircle?1:0);
+ 		if (p.partOfCircleThreePrime.isPartOfCircle) {
+ 			fprintf(f,"\t0\t%lg\t%lg\t%d", // the first hard-coded '0' is for p.dir, which is undefined for circular
+ 				p.partOfCircleThreePrime.center.GetX(),p.partOfCircleThreePrime.center.GetY(),(!p.partOfCircleThreePrime.circleDoesNotIntersectNextPoint)?1:0);
+@@ -3064,7 +3064,7 @@ void OneStockholm_try (IndividualStructList& structList,const OtherDrawingStuff&
+ 	if (doOneSeq) {
+ 		for (size_t i=0; i<posInfoVector.size(); i++) {
+ 			posInfoVector[i].cleavageCode=oneSeqCleavage[i];
+-                        printf("posInfoVector[%d].cleavageCode=%c\n",i,oneSeqCleavage[i]);
++                        printf("posInfoVector[%zu].cleavageCode=%c\n",i,oneSeqCleavage[i]);
+ 			if ((i+1)%10==0 && drawingParams.defaultOneseqLabeling && !disableOneSeqNumbering) {
+ 				if (!posInfoVector[i].nucTickLabel.empty()) {
+ 					posInfoVector[i].nucTickLabel += " , ";
+@@ -3095,7 +3095,7 @@ void OneStockholm_try (IndividualStructList& structList,const OtherDrawingStuff&
+ 
+ 		if (n>1) {
+ 			doublyPaired=true;
+-			printf("ERROR: position %d (raw %d) belongs to two pairs in different SS_cons lines (%s)\n",
++			printf("ERROR: position %d (raw %zu) belongs to two pairs in different SS_cons lines (%s)\n",
+ 				FindTextColOfPos(otherDrawingStuff,(int)i),i,ssNames.c_str());
+ 		}
+ 	}
+diff --git a/src/PositionBackbone_MultiStemCircularSolver.cpp b/src/PositionBackbone_MultiStemCircularSolver.cpp
+index ccfa0a4..776ed08 100755
+--- a/src/PositionBackbone_MultiStemCircularSolver.cpp
++++ b/src/PositionBackbone_MultiStemCircularSolver.cpp
+@@ -300,7 +300,7 @@ void DumpNucPosAtEachIterMessageReceiver::PreEvaluateObjectiveFunc (const vector
+ 	}
+ 	for (size_t stem=0; stem<stemPosVector.size(); stem++) {
+ 		double frac=stemPosVector[stem].circleIntersectFraction.Eval(problemVars);
+-		fprintf(f,"frac-intersect\t%d\t%lg\n",stem,frac);
++		fprintf(f,"frac-intersect\t%zu\t%lg\n",stem,frac);
+ 	}
+ 	iter++;
+ }
+diff --git a/src/RnaDrawer.cpp b/src/RnaDrawer.cpp
+index 13f0654..14dec43 100755
+--- a/src/RnaDrawer.cpp
++++ b/src/RnaDrawer.cpp
+@@ -492,7 +492,7 @@ void RnaDrawer::CheckPathError (LineOrArcList& l,size_t i,int lineNum)
+ 				printf("WARNING: some points along the backbone could not be joined in aesthetically pleasing ways.  This is probably the fault of this program, as it does not have all cases implemented.  The problematic segments will be drawn as a simple straight line.  Subsequent warning messages will say which positions are problematic.  Note that it is possible to have a connector from position X to position X (again), if that position has a variable-length backbone, terminal loop or hairpin.\n");
+ 				warnedAboutBadConnectors=true;
+ 			}
+-			printf("WARNING: in %s I had problems with joining the backbone from text alignment column %d (raw %d) to column %d (raw %d).  code %d.  See note above.  (cpp line #%d)\n",
++			printf("WARNING: in %s I had problems with joining the backbone from text alignment column %d (raw %zu) to column %d (raw %zu).  code %d.  See note above.  (cpp line #%d)\n",
+ 				otherDrawingStuff.name.c_str(),
+ 				FindTextColOfPos(otherDrawingStuff,(int)i),i,
+ 				FindTextColOfPos(otherDrawingStuff,(int)(i+1)),i+1,

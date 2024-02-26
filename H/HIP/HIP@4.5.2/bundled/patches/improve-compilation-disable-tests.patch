@@ -1,0 +1,83 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b1ab39e7..a0f6b3c0 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -35,6 +35,11 @@ project(hip)
+ #  By default, CMake will search for a folder named vdi or ROCclr relative to the current path. Specify -DROCCLR_PATH=$ROCCLR_DIR if rocclr source is in obscure location.
+ #  By default, CMake will search for a folder named opencl or ROCm-OpenCL-Runtime relative to the current path. Specify -DAMD_OPENCL_PATH=$OPENCL_DIR if opencl source is in obscure location.
+ list(APPEND CMAKE_MODULE_PATH ${HIP_COMMON_DIR}/cmake)
++
++set(CMAKE_SKIP_BUILD_RPATH TRUE)
++set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
++set(CMAKE_INSTALL_RPATH "$ORIGIN/../../lib")
++
+ #############################
+ # Options
+ #############################
+@@ -87,7 +87,17 @@ string(REPLACE "-" ";" VERSION_LIST ${HIP_VERSION_PATCH_GITHASH})
+ list(GET VERSION_LIST 0 HIP_VERSION_PATCH)
+ set(HIP_VERSION_GITDATE 0)
+ 
+-find_package(Git)
++# only look for git when we have a git repo
++if (IS_DIRECTORY "${PROJECT_SOURCE_DIR}/.git")
++  find_package(Git)
++endif()
++
++set(HIP_PACKAGING_VERSION_PATCH "0")
++set(HIP_VERSION_GITDATE "0")
++set(HIP_VERSION_PATCH "0")
++set(HIP_VERSION_GITHASH "0")
++set(HIP_VERSION_PATCH_GITHASH "0")
++set(HIP_LIB_VERSION_PATCH "0")
+ 
+ # FIXME: Two different version strings used.
+ # Below we use UNIX commands, not compatible with Windows.
+@@ -484,35 +494,6 @@ if(CLANGFORMAT_EXE)
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+ endif()
+ 
+-#############################
+-# Testing steps
+-#############################
+-# HIT is not compatible with Windows
+-if(NOT WIN32)
+-set(HIP_ROOT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+-set(HIP_SRC_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+-if(HIP_PLATFORM STREQUAL "nvidia")
+-    execute_process(COMMAND "${CMAKE_COMMAND}" -E copy_directory "${HIP_SRC_PATH}/include" "${HIP_ROOT_DIR}/include" RESULT_VARIABLE RUN_HIT ERROR_QUIET)
+-endif()
+-execute_process(COMMAND "${CMAKE_COMMAND}" -E copy_directory "${HIP_COMMON_INCLUDE_DIR}/hip/" "${HIP_ROOT_DIR}/include/hip/" RESULT_VARIABLE RUN_HIT ERROR_QUIET)
+-execute_process(COMMAND "${CMAKE_COMMAND}" -E copy_directory "${HIP_COMMON_DIR}/cmake" "${HIP_ROOT_DIR}/cmake" RESULT_VARIABLE RUN_HIT ERROR_QUIET)
+-if(${RUN_HIT} EQUAL 0)
+-    execute_process(COMMAND "${CMAKE_COMMAND}" -E copy_directory "${HIP_COMMON_BIN_DIR}" "${HIP_ROOT_DIR}/bin" RESULT_VARIABLE RUN_HIT ERROR_QUIET)
+-endif()
+-if(HIP_CATCH_TEST EQUAL "1")
+-    enable_testing()
+-    add_subdirectory(${HIP_COMMON_DIR}/tests/catch ${PROJECT_BINARY_DIR}/catch)
+-else()
+-    if(${RUN_HIT} EQUAL 0)
+-        set(CMAKE_MODULE_PATH "${HIP_ROOT_DIR}/cmake" ${CMAKE_MODULE_PATH})
+-        include(${HIP_COMMON_DIR}/tests/hit/HIT.cmake)
+-        include(${HIP_COMMON_DIR}/tests/Tests.cmake)
+-    else()
+-        message(STATUS "Testing targets will not be available. To enable them please ensure that the HIP installation directory is writeable. Use -DCMAKE_INSTALL_PREFIX to specify a suitable location")
+-    endif()
+-endif()
+-endif()
+-
+ #############################
+ # Code analysis
+ #############################
+diff --git a/hip-config.cmake.in b/hip-config.cmake.in
+index 2edce6cd..90860e88 100755
+--- a/hip-config.cmake.in
++++ b/hip-config.cmake.in
+@@ -271,7 +271,6 @@ if(HIP_COMPILER STREQUAL "clang")
+   endif()
+ 
+   # Add support for __fp16 and _Float16, explicitly link with compiler-rt
+-  hip_add_interface_link_flags(hip::host   -L\"${HIP_CLANG_INCLUDE_PATH}/../lib/linux\" -lclang_rt.builtins-x86_64)
+   hip_add_interface_link_flags(hip::device -L\"${HIP_CLANG_INCLUDE_PATH}/../lib/linux\" -lclang_rt.builtins-x86_64)
+ endif()
+ 

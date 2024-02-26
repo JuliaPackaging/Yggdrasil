@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.10.2"
+version = v"4.12.2"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "d921109e6c419f68d5507d9612ee815d40b5239a5db175f28285e0cd0dbf2517"),
+                  "13e09d9ca8102e5c40171d6ee150c668742b98c3a6ca57f837f7b64e1e2af48f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,11 +44,12 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libgmsh", "gmsh"], :libgmsh),
+    ExecutableProduct("gmsh", :gmsh),
     FileProduct("lib/gmsh.jl", :gmsh_api)
 ]
 
 # Some dependencies are needed or available only on certain platforms
-x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 hdf5_platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"; libc="glibc"),
@@ -64,10 +65,11 @@ dependencies = [
     Dependency("Cairo_jll"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="1.12.1"),
+    # Updating to a newer HDF5 version requires rebuilding this package
+    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.12.1"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),

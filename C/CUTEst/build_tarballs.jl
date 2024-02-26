@@ -1,18 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.0.4"
+version = v"2.0.27"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    ArchiveSource("https://github.com/ralna/ARCHDefs/archive/v2.0.4x.tar.gz",
-                  "c9465129952d10a4e6fd049c4741b6e968421c1825c8fc924c1402042e2edb50"),
-    ArchiveSource("https://github.com/ralna/SIFDecode/archive/v2.0.3.tar.gz",
-                  "3a4aa817e1bf4e3595d0e4378da6172b65f02861f3a7c39f9da632a5cc31b1b2"),
-    ArchiveSource("https://github.com/ralna/CUTEst/archive/v2.0.3.tar.gz",
-                  "d21a65c975302296f9856c09034cf46edc5da34b6efd96eed6cc94af6d2c8a55"),
+    GitSource("https://github.com/ralna/ARCHDefs.git" ,"fe046f073a657c6f8a063e1875e929110b021d51"), # v2.2.1
+    GitSource("https://github.com/ralna/SIFDecode.git","d88f40b1c4df2c07981812bb877cf49b92822fcb"), # v2.1.0
+    GitSource("https://github.com/ralna/CUTEst.git"   ,"52274eea4334f2e8058385b3a7c9a8d11c3398b1"), # v2.0.27
 ]
 
 # Bash recipe for building across all platforms
@@ -20,75 +17,50 @@ script = raw"""
 echo "building for ${target}"
 
 # setup
-mkdir -p ${prefix}/libexec
 mkdir -p ${bindir}
 mkdir -p ${libdir}
-cp -r ARCHDefs-2.0.4x ${prefix}/libexec/
-cp -r SIFDecode-2.0.3 ${prefix}/libexec/
-cp -r CUTEst-2.0.3 ${prefix}/libexec/
-export ARCHDEFS=${prefix}/libexec/ARCHDefs-2.0.4x
-export SIFDECODE=${prefix}/libexec/SIFDecode-2.0.3
-export CUTEST=${prefix}/libexec/CUTEst-2.0.3
+
+cp -r ARCHDefs ${prefix}
+cp -r SIFDecode ${prefix}
+cp -r CUTEst ${prefix}
+
+export ARCHDEFS=${prefix}/ARCHDefs
+export SIFDECODE=${prefix}/SIFDecode
+export CUTEST=${prefix}/CUTEst
+
+# ARCHDefs requires tput
+apk update
+apk add ncurses
 
 # build SIFDecode
 cd $SIFDECODE
-
-if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
-  echo "6" > sifdecode.opts   # PC64
-  echo "2" >> sifdecode.opts  # Linux
-  echo "6" >> sifdecode.opts  # gfortran
-elif [[ "${target}" == *-apple* ]]; then
-  echo "13" > sifdecode.opts  # macOS
-  echo "2" >> sifdecode.opts  # gfortran
-elif [[ "${target}" == *-mingw* ]]; then
-  cd $ARCHDEFS
-  cd $SIFDECODE
-  echo "6" > sifdecode.opts   # PC64
-  echo "1" >> sifdecode.opts  # Windows
-  echo "3" >> sifdecode.opts  # gfortran
-fi
-echo "nny" >> sifdecode.opts
+echo "7" > sifdecode.opts  # Cross-compiler BinaryBuilder
+echo "n" >> sifdecode.opts
+echo "4" >> sifdecode.opts # Fortran compiler for BinaryBuilder
+echo "n" >> sifdecode.opts
+echo "y" >> sifdecode.opts
 ./install_sifdecode < sifdecode.opts
 
 # build CUTEst
 cd $CUTEST
-if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
-  echo "6" > cutest.opts   # PC64
-  echo "2" >> cutest.opts  # Linux
-  echo "6" >> cutest.opts  # gfortran
-  echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "8" >> cutest.opts  # gcc
-  export MYARCH=pc64.lnx.gfo
-elif [[ "${target}" == *-apple* ]]; then
-  echo "13" > cutest.opts  # macOS
-  echo "2" >> cutest.opts  # gfortran
-  echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "5" >> cutest.opts  # gcc
-  export MYARCH=mac64.osx.gfo
-elif [[ "${target}" == *-mingw* ]]; then
-  echo "5" > cutest.opts   # PC64
-  echo "1" >> cutest.opts  # Windows
-  echo "3" >> cutest.opts  # gfortran
-  echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "5" >> cutest.opts  # gcc
-  export MYARCH=pc64.mgw.gfo
-fi
+echo "7" > cutest.opts  # Cross-compiler BinaryBuilder
+echo "n" >> cutest.opts
+echo "4" >> cutest.opts # Fortran compiler for BinaryBuilder
+echo "2" >> cutest.opts # Everything except Matlab support
+echo "3" >> cutest.opts # C and C++ compilers for BinaryBuilder
 echo "nnydy" >> cutest.opts
+export MYARCH=binarybuilder.bb.fc
 ./install_cutest < cutest.opts
 
 # build shared libs
-all_load="--whole-archive"
-noall_load="--no-whole-archive"
 extra=""
 if [[ "${target}" == *-apple-* ]]; then
-    all_load="-all_load"
-    noall_load="-noall_load"
-    extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
+  extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
 fi
-cd $CUTEST/objects/$MYARCH/double
-gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_double.${dlext}
 cd $CUTEST/objects/$MYARCH/single
-gfortran -fPIC -shared ${extra} -Wl,${all_load} libcutest.a -Wl,${noall_load} -o libcutest_single.${dlext}
+gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_single.${dlext}
+cd $CUTEST/objects/$MYARCH/double
+gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
 
 ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
 ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
@@ -101,17 +73,20 @@ install_license $CUTEST/lgpl-3.0.txt
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
 platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = filter!(p -> !(os(p) == "freebsd" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("sifdecoder", :sifdecoder),
-    ExecutableProduct("slct", :slct),
-    ExecutableProduct("clsf", :clsf),
+    # ExecutableProduct("slct", :slct),
+    # ExecutableProduct("clsf", :clsf),
+    # LibraryProduct("libcutest_single", :libcutest_single),
+    # LibraryProduct("libcutest_double", :libcutest_double),
 ]
 
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

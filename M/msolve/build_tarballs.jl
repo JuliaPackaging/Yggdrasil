@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.4.2"
+version = v"0.6.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.lip6.fr/safey/msolve.git", "91bd6734b6e4721fe0c4f18e9fef82ab50b4948c")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "5e72b9d99eaea55fe87eb8ac945ec9e914a69327")
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +24,10 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
 filter!(!Sys.iswindows, platforms)  # no FLINT_jll available
+# At the moment we cannot add optimized versions for specific architectures
+# since the logic of artifact selection when loading the package is not
+# working well.
+# platforms = expand_microarchitectures(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -35,6 +39,8 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("FLINT_jll", compat = "~200.900.000"),
+    Dependency("MPFR_jll", v"4.1.1"),
+
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),

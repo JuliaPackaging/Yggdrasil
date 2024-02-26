@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "GibbsSeaWater"
-version = v"3.5.1"
+version = v"3.5.2"
 
 # Collection of sources required to build GibbsSeaWater
 # note 3.05.0-4 is too old to be cross-compiled on FreeBSD
 sources = [
     ArchiveSource(
-        "https://github.com/TEOS-10/GSW-C/archive/d392e91cb63341f543ed1609c4eff613055ab3cb.zip", "454c46ec00468aeba048fa4f3cee095f927925ab699b1d1b3a25a838cef2d22c"),
+        "https://github.com/TEOS-10/GSW-C/archive/83c1eb7503a6eac8231f3cde4e10f17aed52f30f.zip", "85e20a7f081cb098ef2c348cfe1978d14570832bf234129c0402ef8f9c849006"),
 ]
 
 

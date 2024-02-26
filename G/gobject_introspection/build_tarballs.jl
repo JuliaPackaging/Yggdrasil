@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "gobject_introspection"
-version = v"1.72.0"
+version = v"1.76.1"
 
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/gobject-introspection/$(version.major).$(version.minor)/gobject-introspection-$(version).tar.xz",
-              "02fe8e590861d88f83060dd39cda5ccaa60b2da1d21d0f95499301b186beaabc"),
+              "196178bf64345501dcdc4d8469b36aa6fe80489354efe71cb7cb8ab82a3738bf"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> triplet(p) == "x86_64-linux-gnu", supported_platforms())
+platforms = filter(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) == "x86_64", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -41,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Glib_jll"; compat="2.68.3")
+    Dependency("Glib_jll"; compat="2.74.0")
     ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
