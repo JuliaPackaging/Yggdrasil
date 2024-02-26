@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
+apk del cmake
+
 mkdir build
 cd build
 
