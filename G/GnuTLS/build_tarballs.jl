@@ -6,7 +6,7 @@ version = v"3.7.10"
 # Collection of sources required to build GnuTLS
 sources = [
     ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
-                  "c58ad39af0670efe6a8aee5e3a8b2331a1200418b64b7c51977fb396d4617114"),
+                  "b6e4e8bac3a950a3a1b7bdb0904979d4ab420a81e74de8636dd50b467d36f5a9"),
     DirectorySource("./bundled"),
 ]
 
