@@ -18,7 +18,8 @@ cd $WORKSPACE/srcdir/openjpeg/
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC_LIBS=OFF
+cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC_LIBS=OFF
 make -j${nproc}
 make install
 """
@@ -39,7 +40,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="LittleCMS_jll", uuid="d3a379c0-f9a3-5b72-a4c0-6bf4d2e8af0f"))
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f"))
-    Dependency("Libtiff_jll"; compat="~4.5.1")
+    Dependency("Libtiff_jll"; compat="4.5.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
