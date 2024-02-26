@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.7.8"
+version = v"3.7.10"
 
 # Collection of sources required to build GnuTLS
 sources = [
