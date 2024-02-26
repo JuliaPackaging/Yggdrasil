@@ -134,7 +134,7 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll", v"8.1.1"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.6")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
 ]
 
 # Build the tarballs.
@@ -150,4 +150,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     end
 """)
 
-# rebuild trigger: 2
+# rebuild trigger: 0
