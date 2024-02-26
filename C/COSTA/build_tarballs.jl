@@ -15,9 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
-#Hack, because very hard to change CMake version in here
-sed -i 's/VERSION 3.22 FATAL_ERROR/VERSION 3.21.7 FATAL_ERROR/' ./CMakeLists.txt
-
 mkdir build
 cd build
 
