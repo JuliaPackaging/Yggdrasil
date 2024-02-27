@@ -12,7 +12,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libzmq
-atomic_patch -p1 ../patches/tests-missing-headers.patch
 if [[ "${target}" == *-mingw* ]]; then
     # Apply patch from
     # https://github.com/msys2/MINGW-packages/blob/66c0195ad84836161c48797241a1c7611ac4a435/mingw-w64-zeromq/001-testutil_different_signedness-fix.patch
