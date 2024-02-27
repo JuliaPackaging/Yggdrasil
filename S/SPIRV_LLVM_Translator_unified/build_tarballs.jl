@@ -9,12 +9,10 @@ name = "SPIRV_LLVM_Translator_unified"
 repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
 version = v"0.4"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"11.0.1" => [GitSource(repo, "72214e0bd45bf59da4319b0f8b558d2feab401b2")],
-    v"12.0.1" => [GitSource(repo, "f06ef6d5ecaa5aac700a17430e18b591c80c3e50")],
     v"13.0.1" => [GitSource(repo, "6fbace895422d2b2d8b8eda1a3f6aef3729fc9f4")],
     v"14.0.6" => [GitSource(repo, "e7f5440a40117cc11799b9306c7ea489b8596e55")],
     v"15.0.7" => [GitSource(repo, "6b82481abc6df8de5b67c72ba1da57bcb58b75b0")],
