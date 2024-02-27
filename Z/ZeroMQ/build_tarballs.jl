@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "ZeroMQ"
-version = v"4.3.4"
+version = v"4.3.5"
 
 # Collection of sources required to build ZMQ
 sources = [
-    GitSource("https://github.com/zeromq/libzmq.git", "4097855ddaaa65ed7b5e8cb86d143842a594eebd"),
+    GitSource("https://github.com/zeromq/libzmq.git", "622fc6dde99ee172ebaa9c8628d85a7a1995a21d"),
     DirectorySource("./bundled"),
 ]
 
