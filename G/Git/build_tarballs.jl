@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.36.1"
+version = v"2.44.0"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "405d4a0ff6e818d1f12b3e92e1ac060f612adcb454f6299f70583058cb508370"),
+                  "e358738dcb5b5ea340ce900a0015c03ae86e804e7ff64e47aa4631ddee681de3"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "7b7cce2d1a29bb18b661720c692b39a27b406cd4916d75cc62d5fe1bfd9a57ea"; unpack_target = "i686-w64-mingw32"),
+                  "14541119fe97b4d34126ee136cbdba8da171b8cbd42543185a259128a3eed6b3"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "38f4888db497ebe11f67c42a88ac1708fb5c68d53a398b4030b51a6116cce0e5"; unpack_target = "x86_64-w64-mingw32"),
+                  "d78c40d768eb7af7e14d5cd47dac89a2e50786c89a67be6249e1a041ae5eb20d"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ install_license ${WORKSPACE}/srcdir/git-*/COPYING
 
 if [[ "${target}" == *-ming* ]]; then
     # Fast path for Windows: just copy the content of the tarball to the prefix
-    cp -r ${WORKSPACE}/srcdir/${target}/mingw${nbits}/* ${prefix}
+    cp -r ${WORKSPACE}/srcdir/${target}/* ${prefix}
     exit
 fi
 
@@ -114,7 +114,7 @@ dependencies = [
     HostBuildDependency("Gettext_jll"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Libiconv_jll"),
     Dependency("PCRE2_jll"; compat="10.35.0"),
     Dependency("Zlib_jll"),

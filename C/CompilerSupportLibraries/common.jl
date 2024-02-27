@@ -1,4 +1,5 @@
 using BinaryBuilder, SHA
+using BinaryBuilderBase: aatriplet
 
 include("../../fancy_toys.jl")
 
@@ -63,7 +64,7 @@ done
 
     ## Now that we've got those tarballs, we're going to use them as sources to overwrite
     ## the libstdc++ and libgomp that we would otherwise get from our compiler shards:
-    script = "WINDOWS_STATICLIBS=$(windows_staticlibs)\nPREFERRED_GCC_VERSION=$(preferred_gcc_version)\n" * raw"""
+    script = "WINDOWS_STATICLIBS=$(windows_staticlibs)\nPREFERRED_GCC_VERSION=$(preferred_gcc_version)\nVERSION=$(version.major * 100 ^ 2 + version.minor * 100 + version.patch)\n" * raw"""
 # Start by extracting LatestLibraries
 tar -zxvf ${WORKSPACE}/srcdir/LatestLibraries*.tar.gz -C ${prefix}
 
@@ -82,9 +83,16 @@ done
 if [[ ${target} == *mingw* ]]; then
     cp -uav /opt/${target}/${target}/sys-root/bin/*.${dlext}* ${libdir}/
     if [[ "${WINDOWS_STATICLIBS}" == "true" ]]; then
-        # Install also some static and import libraries, needed for linking
+        # From v1.1.0 of CSL we move the Windows `*.a` files to a subdir of `${prefix}/lib`.
+        # See <https://github.com/JuliaLang/julia/issues/48081>.
+        if [[ "${VERSION}" -ge 10100 ]]; then
+           destdir="${prefix}/lib/gcc/${target}/${PREFERRED_GCC_VERSION%.*.*}"
+        else
+           destdir="${prefix}/lib"
+        fi
+        # Install also some static and import libraries, needed for linking of pkgimages.
         for lib in libmsvcrt.a libgcc.a libgcc_s.a libssp.dll.a; do
-            qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${prefix}/lib/${lib}" \;
+            qfind "/opt/${target}" -name "${lib}" -exec install -Dvm 0644 '{}' "${destdir}/${lib}" \;
         done
     fi
 fi
@@ -154,11 +162,12 @@ install_license /usr/share/licenses/GPL-3.0+
                 common_products
             end
             if windows_staticlibs && Sys.iswindows(platform)
+                destdir = version >= v"1.1.0" ? "lib/gcc/$(aatriplet(platform))/$(preferred_gcc_version.major)" : "lib"
                 products = vcat(products,
-                                [FileProduct("lib/libmsvcrt.a", :libmsvcrt_a),
-                                 FileProduct("lib/libgcc.a", :libgcc_a),
-                                 FileProduct("lib/libgcc_s.a", :libgcc_s_a),
-                                 FileProduct("lib/libssp.dll.a", :libssp_dll_a),
+                                [FileProduct("$(destdir)/libmsvcrt.a", :libmsvcrt_a),
+                                 FileProduct("$(destdir)/libgcc.a", :libgcc_a),
+                                 FileProduct("$(destdir)/libgcc_s.a", :libgcc_s_a),
+                                 FileProduct("$(destdir)/libssp.dll.a", :libssp_dll_a),
                                  ])
             end
             if libc(platform) != "musl"

@@ -6,39 +6,31 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
-version = v"2.1.0"
-
+version = v"2.2.0"
+commit_hash = "51892059a4b457a99a2569ac11e9e91cd2e289e7";
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "042a96cab8a3c17a544125b7890616b1dd5eacd1b50ce0464617903b01bddd54")
+    GitSource("https://github.com/flatironinstitute/finufft.git", commit_hash)
 ]
 
-# Bash recipe for building across all platforms
+# Bash recipe for building across all platforms - now using cmake which fixes the broken binaries for Apple Silicon
+# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that again?
+# NOTE: This may have been due to use of GCC8, which is not recommended by FINUFFT
+# TODO: Check performance on computer with AVX512, to see if we can remove this fix
 script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
 
-CFLAGS="-fopenmp -fPIC -O3 -funroll-loops -Iinclude"
-if [[ "${target}" != *-freebsd* ]] && [[ "${target}" != *-apple-* ]]; then
-    CFLAGS="${CFLAGS} -fcx-limited-range"
-fi
-if [[ "${proc_family}" == *intel* ]]; then
-    CFLAGS="${CFLAGS} -mno-avx512f"
-fi
-
-# Overwrite LIBSFFT such that we do not require fftw3_threads or fftw3_omp for OMP support. Since the libraries in FFTW_jll already provide for threading, we do not loose anything.
-# Make use of the -DFFTW_PLAN_SAFE flag to allow for multiple threads using finufft at the same time.
-make lib \
-    CC=${CC} \
-    CXX=${CXX} \
-    CFLAGS="${CFLAGS}" \
-    CXXFLAGS="${CFLAGS} -std=c++14 -DFFTW_PLAN_SAFE" \
-    LIBSFFT="-lfftw3 -lfftw3f -lm" \
-    DYNLIB="lib/libfinufft.${dlext}"
-install -Dvm 0755 "lib/libfinufft.${dlext}" "${libdir}/libfinufft.${dlext}"
+mkdir build && cd build
+cmake .. \
+    -DCMAKE_PREFIX_PATH="${prefix}" \
+    -DCMAKE_INSTALL_PREFIX="${prefix}" \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DFINUFFT_FFTW_SUFFIX=""
+cmake --build . --parallel $nproc
+cmake --install .
 """
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
 platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"]); skip=!Sys.iswindows)
 
 augment_platform_block = """
@@ -70,4 +62,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8", julia_compat="1.6", augment_platform_block)
+               preferred_gcc_version=v"10", julia_compat="1.6", augment_platform_block)

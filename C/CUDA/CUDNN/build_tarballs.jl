@@ -8,11 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"8.9.4"
-full_version = "8.9.4.25"
-
-# XXX: the server's redistrib json does not list both CUDA variants, so provide our own.
-json = read("redistrib.json", String)
+version = v"9.0.0"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -45,15 +41,21 @@ fi
 augment_platform_block = CUDA.augment
 
 products = [
-    LibraryProduct(["libcudnn_ops_infer", "cudnn_ops_infer64_$(version.major)"], :libcudnn_ops_infer64),
-    LibraryProduct(["libcudnn_ops_train", "cudnn_ops_train64_$(version.major)"], :libcudnn_ops_train64),
-    LibraryProduct(["libcudnn_cnn_infer", "cudnn_cnn_infer64_$(version.major)"], :libcudnn_cnn_infer64),
-    LibraryProduct(["libcudnn_cnn_train", "cudnn_cnn_train64_$(version.major)"], :libcudnn_cnn_train64),
-    LibraryProduct(["libcudnn_adv_infer", "cudnn_adv_infer64_$(version.major)"], :libcudnn_adv_infer64),
-    LibraryProduct(["libcudnn_adv_train", "cudnn_adv_train64_$(version.major)"], :libcudnn_adv_train64),
+    # declarative API
+    LibraryProduct(["libcudnn_graph", "cudnn_graph64_$(version.major)"], :libcudnn_graph),
+
+    # legacy imperative APIs
+    LibraryProduct(["libcudnn_cnn", "cudnn_cnn64_$(version.major)"], :libcudnn_cnn),
+    LibraryProduct(["libcudnn_ops", "cudnn_ops64_$(version.major)"], :libcudnn_ops),
+    LibraryProduct(["libcudnn_adv", "cudnn_adv64_$(version.major)"], :libcudnn_adv),
 
     # shim layer
     LibraryProduct(["libcudnn", "cudnn64_$(version.major)"], :libcudnn),
+
+    # internal libraries that need to be available
+    LibraryProduct(["libcudnn_engines_precompiled", "cudnn_engines_precompiled64_$(version.major)"], :libcudnn_engines_precompiled),
+    LibraryProduct(["libcudnn_heuristic", "cudnn_heuristic64_$(version.major)"], :libcudnn_heuristic),
+    LibraryProduct(["libcudnn_engines_runtime_compiled", "cudnn_engines_runtime_compiled64_$(version.major)"], :libcudnn_engines_runtime_compiled),
 ]
 
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
@@ -69,8 +71,8 @@ for cuda_version in [v"11", v"12"], platform in platforms
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
 
-    sources = parse_sources(json, "cudnn", ["cudnn"]; version=full_version, platform,
-                            variant="cuda$(cuda_version.major)")
+    sources = get_sources("cudnn", ["cudnn"]; version, platform,
+                           variant="cuda$(cuda_version.major)")
 
     if platform == Platform("x86_64", "windows")
         push!(sources,

@@ -6,35 +6,36 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"1.2.4"
+version = v"2.1.3"
 
 
-PETSc_COMPAT_VERSION = "3.16.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
+PETSc_COMPAT_VERSION = "~3.18.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
+MPItrampoline_compat_version="5.2.1"  
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/bkaus/lamem.git", 
-    "e106f62e19a90b4153564a1dd07bc8778245936c")
+    GitSource("https://github.com/UniMainzGeo/LaMEM", 
+    "34ff97e62086a384be4b9a63a9b326b67f976027")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Create required directories
-mkdir $WORKSPACE/srcdir/lamem/bin
-mkdir $WORKSPACE/srcdir/lamem/bin/opt
-mkdir $WORKSPACE/srcdir/lamem/dep
-mkdir $WORKSPACE/srcdir/lamem/dep/opt
-mkdir $WORKSPACE/srcdir/lamem/lib
-mkdir $WORKSPACE/srcdir/lamem/lib/opt
+mkdir $WORKSPACE/srcdir/LaMEM/bin
+mkdir $WORKSPACE/srcdir/LaMEM/bin/opt
+mkdir $WORKSPACE/srcdir/LaMEM/dep
+mkdir $WORKSPACE/srcdir/LaMEM/dep/opt
+mkdir $WORKSPACE/srcdir/LaMEM/lib
+mkdir $WORKSPACE/srcdir/LaMEM/lib/opt
 
-cd $WORKSPACE/srcdir/lamem/src
+cd $WORKSPACE/srcdir/LaMEM/src
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
 make mode=opt all -j${nproc}
 
 # compile dynamic library
 make mode=opt dylib -j${nproc}
 
-cd $WORKSPACE/srcdir/lamem/bin/opt
+cd $WORKSPACE/srcdir/LaMEM/bin/opt
 
 # On some windows versions it automatically puts the .exe extension; on others not. 
 if [[ -f LaMEM ]]
@@ -42,9 +43,8 @@ then
     mv LaMEM LaMEM${exeext}
 fi
 
-cp LaMEM${exeext} $WORKSPACE/srcdir/lamem/
-cp LaMEM${exeext} $WORKSPACE/srcdir
-cd $WORKSPACE/srcdir/lamem
+cp LaMEM${exeext} $WORKSPACE/srcdir/LaMEM/
+cd $WORKSPACE/srcdir/LaMEM
 
 # Install binaries
 install -Dvm 755 LaMEM* "${bindir}/LaMEM${exeext}"
@@ -64,13 +64,22 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
-                                                                  Platform("i686", "linux"; libc = "musl")]))
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms, MPICH_compat="4.0.2", OpenMPI_compat="4.1.3")
+                                                                  Platform("i686","linux"; libc="musl"),
+                                                                  Platform("i686","linux"; libc="gnu"),
+                                                                  Platform("x86_64","freebsd"),
+                                                                  Platform("armv6l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="gnu"),
+                                                                  Platform("aarch64","linux"; libc="musl")]))
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
+
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
@@ -88,6 +97,12 @@ dependencies = [
 ]
 append!(dependencies, platform_dependencies)
 
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and
+# `dlopen`s the shared libraries. (MPItrampoline will skip its
+# automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
+
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9")
+               

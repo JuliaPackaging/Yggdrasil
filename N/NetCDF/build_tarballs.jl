@@ -11,7 +11,7 @@ name = "NetCDF"
 upstream_version = v"4.9.2"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.8"
+version_offset = v"0.2.9"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -54,8 +54,23 @@ if [[ ${target} -ne x86_64-linux-gnu ]]; then
     CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-utilities"
 fi
 
-# https://github.com/JuliaPackaging/Yggdrasil/issues/5031#issuecomment-1155000045
-rm /workspace/destdir/lib/*.la
+
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # see
+    # https://github.com/JuliaPackaging/Yggdrasil/blob/48af117395188f48d361a46ea929ee7563d9c2e4/A/ADIOS2/build_tarballs.jl
+
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
+    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libevent*
+    rm /usr/lib/libnghttp2.*
+fi
+
+if [[ ${target} == x86_64-unknown-freebsd* ]]; then
+     # based on the output of mpicc --showme
+     export LIBS="-lmpi -lm -lexecinfo -lutil -lz"
+fi
+
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -94,6 +109,9 @@ dependencies = [
     Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
+    Dependency("libzip_jll"),
+    Dependency("Blosc_jll"),
+    Dependency("OpenMPI_jll", compat="4.1.6,5"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

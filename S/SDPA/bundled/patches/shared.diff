@@ -1,5 +1,5 @@
 diff --git a/Makefile.am b/Makefile.am
-index afadcff..400b3cf 100644
+index deefb65..eacbb87 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -20,20 +20,22 @@ sdpa_call.h sdpa_chordal.h sdpa_dataset.h sdpa_dpotrf.h \
@@ -25,7 +25,7 @@ index afadcff..400b3cf 100644
  
  bin_PROGRAMS = sdpa
  sdpa_SOURCES = sdpa_exe.cpp
--sdpa_LDADD =  -L. -lsdpa $(MUMPS_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(PTHREAD_LIBS) $(FCLIBS)
+-sdpa_LDADD =  ./libsdpa.a $(MUMPS_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(PTHREAD_LIBS) $(FCLIBS)
 +sdpa_LDADD =  libsdpa.la $(MUMPS_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(PTHREAD_LIBS) $(FCLIBS)
  sdpa_CXXFLAGS = $(pthread_cflags) $(MUMPS_INCLUDE) $(PTHREAD_INCLUDE)
  

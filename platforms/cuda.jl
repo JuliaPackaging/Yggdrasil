@@ -85,8 +85,9 @@ end
 platform(cuda::String) = cuda
 
 # BinaryBuilder.jl currently does not allow selecting a BuildDependency by compat,
-# so we need the full version for CUDA_full_jll (JuliaPackaging/BinaryBuilder.jl#/1212).
+# so we need the full version for CUDA_SDK_jll (JuliaPackaging/BinaryBuilder.jl#/1212).
 const cuda_full_versions = [
+    v"10.2.89",
     v"11.4.4",
     v"11.5.2",
     v"11.6.2",
@@ -95,7 +96,9 @@ const cuda_full_versions = [
     v"12.0.1",
     v"12.1.1",
     v"12.2.2",
+    v"12.3.2",
 ]
+
 function full_version(ver::VersionNumber)
     ver == Base.thisminor(ver) || error("Cannot specify a patch version")
     for full_ver in cuda_full_versions
@@ -107,11 +110,15 @@ function full_version(ver::VersionNumber)
 end
 
 """
-    supported_platforms()
+    supported_platforms(; <keyword arguments>)
 
 Return a list of supported platforms to build CUDA artifacts for.
+
+# Arguments
+- `min_version=v"11"`: Min. CUDA version to target.
+- `max_version=nothing`: Max. CUDA version to target.
 """
-function supported_platforms()
+function supported_platforms(; min_version=v"11", max_version=nothing)
     base_platforms = [
         Platform("x86_64", "linux"; libc = "glibc"),
         Platform("aarch64", "linux"; libc = "glibc"),
@@ -121,9 +128,11 @@ function supported_platforms()
         #Platform("x86_64", "windows"),
     ]
 
+    cuda_versions = filter(v -> (isnothing(min_version) || v >= min_version) && (isnothing(max_version) || v <= max_version), cuda_full_versions)
+
     # augment with CUDA versions
     platforms = Platform[]
-    for version in cuda_full_versions
+    for version in cuda_versions
         for base_platform in base_platforms
             platform = deepcopy(base_platform)
             platform["cuda"] = "$(version.major).$(version.minor)"
@@ -144,7 +153,7 @@ only ever be used if there is _also_ a CUDA-enabled build available.
 function is_supported(platform)
     if Sys.islinux(platform)
         return arch(platform) in ["x86_64", "aarch64", "powerpc64le"]
-    elseif is Sys.iswindows(platform)
+    elseif Sys.iswindows(platform)
         # see note in `supported_platforms()`
         return false
     else
@@ -153,20 +162,27 @@ function is_supported(platform)
 end
 
 """
-    required_dependencies(platform)
+    required_dependencies(platform; static_sdk=false)
 
 Return a list of dependencies required to build and use CUDA artifacts for a given platform.
+Optionally include the CUDA static libraries with `static_sdk` for toolchains that require them.
 """
-function required_dependencies(platform)
+function required_dependencies(platform; static_sdk=false)
     dependencies = Dependency[]
     if !haskey(tags(platform), "cuda") || tags(platform)["cuda"] == "none"
         return BinaryBuilder.AbstractDependency[]
     end
     release = VersionNumber(tags(platform)["cuda"])
-    return BinaryBuilder.AbstractDependency[
-        BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(release))),
+    deps = BinaryBuilder.AbstractDependency[
+        BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=CUDA.full_version(release))),
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))
     ]
+
+    if static_sdk
+        push!(deps, BuildDependency(PackageSpec(name="CUDA_SDK_static_jll", version=CUDA.full_version(release))))
+    end
+
+    return deps
 end
 
 end

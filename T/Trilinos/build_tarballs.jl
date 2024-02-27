@@ -56,6 +56,7 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/kokkostpl.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/tekoepetraguard.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport2.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/teuchoswinexport3.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/stratikimosnotpetra.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/muslunistd.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/muslmallinfo.patch

@@ -1,0 +1,51 @@
+commit ae2a7df383abbba003db2bea570f101ee86e10db
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Thu Oct 12 05:26:11 2023 +0000
+
+    rm duplicate constants
+
+diff --git a/src/bc_strategies/Charon_BCStrategy_Neumann_DynamicTraps_impl.hpp b/src/bc_strategies/Charon_BCStrategy_Neumann_DynamicTraps_impl.hpp
+index 9eeaf36..dd2fe54 100644
+--- a/src/bc_strategies/Charon_BCStrategy_Neumann_DynamicTraps_impl.hpp
++++ b/src/bc_strategies/Charon_BCStrategy_Neumann_DynamicTraps_impl.hpp
+@@ -30,9 +30,6 @@
+ #include <vector>
+ 
+ 
+-const int MAX_NUM_TRAPS = 50;
+-
+-
+ ///////////////////////////////////////////////////////////////////////////////
+ //
+ //  BCStrategy_Neumann_DynamicTraps()
+diff --git a/src/evaluators/Charon_RecombRate_DynamicTraps_impl.hpp b/src/evaluators/Charon_RecombRate_DynamicTraps_impl.hpp
+index 0d66946..021ede9 100644
+--- a/src/evaluators/Charon_RecombRate_DynamicTraps_impl.hpp
++++ b/src/evaluators/Charon_RecombRate_DynamicTraps_impl.hpp
+@@ -14,11 +14,6 @@
+ #include "Kokkos_ViewFactory.hpp"
+ 
+ 
+-const int MAX_NUM_TRAPS = 50;
+-const int DEF_NL = 20;
+-
+-
+-
+ namespace charon {
+ 
+ 
+diff --git a/src/evaluators/Charon_RecombRate_TrapSRH_impl.hpp b/src/evaluators/Charon_RecombRate_TrapSRH_impl.hpp
+index 784ef48..3595578 100644
+--- a/src/evaluators/Charon_RecombRate_TrapSRH_impl.hpp
++++ b/src/evaluators/Charon_RecombRate_TrapSRH_impl.hpp
+@@ -17,10 +17,8 @@
+ #include "Kokkos_DynRankView.hpp"
+ #include "Kokkos_ViewFactory.hpp"
+ // #include <chrono>
+ // #include <ctime> 
+ 
+-const int MAX_NUM_TRAPS = 50;
+-const int DEF_NL = 20;
+ const int MAX_NUM_ENERGIES = 200;
+ const int ENERGY_GRID_RATIO = 4;
+ const double MIN_ELECTRIC_FIELD = 1e5;  // [V/m]

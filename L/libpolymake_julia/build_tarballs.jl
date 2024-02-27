@@ -13,7 +13,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
-version = v"0.10.4"
+version = v"0.11.4"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl
@@ -22,13 +22,19 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "a219a55aaf72d470d1d95ec0a0626e16cadc32d8"),
+              "56a5401082e90340d55208bc41a107aa444f82ba"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # remove default perl which interferes with the hostbuild perl
 rm -f /usr/bin/perl
+
+# needed to avoid errors when linking to openblas32_jll with -flat_namespace
+# ld64.lld: error: No LC_DYLD_INFO_ONLY or LC_DYLD_EXPORTS_TRIE found in /workspace/destdir/lib/libgcc_s.1.1.dylib
+if [[ $target = x86_64-apple* ]]; then
+   export LDFLAGS=-fuse-ld=ld
+fi
 
 cmake libpolymake-j*/ -B build \
    -DJulia_PREFIX="$prefix" \
@@ -61,18 +67,18 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.5")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FLINT_jll", compat = "~200.900.004"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.0"),
-    Dependency("polymake_jll"; compat = "~400.1000.1"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
+    Dependency("polymake_jll"; compat = "~400.1100.1"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1000.1")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1100.1")),
     HostBuildDependency(PackageSpec(name="lib4ti2_jll", version=v"1.6.10")),
     HostBuildDependency(PackageSpec(name="TOPCOM_jll", version=v"0.17.8")),
 ]

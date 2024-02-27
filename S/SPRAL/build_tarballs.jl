@@ -3,41 +3,36 @@
 using BinaryBuilder, Pkg
 
 name = "SPRAL"
-version = v"2023.09.07"
+version = v"2024.1.18"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/spral.git", "04133cdacbc35c868ef8e3b5eb63ee76715625d4")
+    GitSource("https://github.com/ralna/spral.git", "c1dfe13538c621ede929bb13bbaa54070b63e02e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Update Ninja
+cp ${host_prefix}/bin/ninja /usr/bin/ninja
+
 cd ${WORKSPACE}/srcdir/spral
 
 if [[ "${target}" == *mingw* ]]; then
-  LBT="-lblastrampoline-5"
+  HWLOC="hwloc-15"
+  LBT="blastrampoline-5"
 else
-  LBT="-lblastrampoline"
+  HWLOC="hwloc"
+  LBT="blastrampoline"
 fi
 
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-    CC=gcc
-    CXX=g++
-fi
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                     --prefix=$prefix \
+                     -Dlibhwloc=$HWLOC \
+                     -Dlibblas=$LBT \
+                     -Dliblapack=$LBT
 
-./autogen.sh
-mkdir build
-cd build
-export CFLAGS="-O3 -fPIC"
-export CXXFLAGS="-O3 -fPIC"
-export FFLAGS="-O3 -fPIC"
-export FCFLAGS="-O3 -fPIC"
-../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-blas="-L${libdir} ${LBT}" --with-lapack="-L${libdir} ${LBT}" \
-    --with-metis="-L${libdir} -lmetis" --with-metis-inc-dir="${includedir}"
-make
-gfortran -fPIC -shared $(flagon -Wl,--whole-archive) libspral.a $(flagon -Wl,--no-whole-archive) -lgomp ${LBT} -lhwloc -lmetis -lstdc++ -o ${libdir}/libspral.${dlext}
-make install
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,6 +48,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),

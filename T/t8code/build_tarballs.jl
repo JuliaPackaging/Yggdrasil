@@ -6,19 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"1.1.2"
+version = v"1.6.1"
+
+tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8-$(version).tar.gz"
+sha256sum = "dc96effa7c1ad1d50437fefdd0963f6ef7c943eb10a372a4e8546a5f2970a412"
 
 # Collection of sources required to complete build
-sources = [
-    ArchiveSource("https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8code_v$(version).tar.gz",
-                  "8a30206a8fb47013b3dafe7565cf8e09023df8373c1049e7e231d9fd36b011e4"),
-
-    DirectorySource("./bundled")
-]
+sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/t8code
+cd $WORKSPACE/srcdir/t8*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
 
 # Set default preprocessor and linker flags
@@ -105,4 +103,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"8.1.0")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0", clang_use_lld=false)

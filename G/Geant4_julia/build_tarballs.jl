@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "Geant4_julia"
-version = v"0.1.9"
+version = v"0.1.15"
 
 # reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.7", v"1.8", v"1.9"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "a406d1c260957a8fc7f5d5a3c5b23cf99cf38930"),
+              "c50f41ae8837149aa1cb968cb37e4d1de7c360a8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +36,7 @@ include("../../L/libjulia/common.jl")
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 # platforms supported by Geant4
-platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l", platforms)
+platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "armv7l", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -48,8 +48,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.9.7"),
-    Dependency("Geant4_jll"; compat = "~11.1.1"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.11.2"),
+    Dependency("Geant4_jll"; compat = "~11.2.0"),
     Dependency("Expat_jll"),
     Dependency("Xerces_jll"),
 ]

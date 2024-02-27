@@ -1,9 +1,21 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.26" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.26/OpenBLAS-0.3.26.tar.gz",
+                          "4e6e4f5cb14c209262e33e6816d70221a2fe49eb69eaf0a06f065598ac602c68")
+        ],
+        v"0.3.25" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.25/OpenBLAS-0.3.25.tar.gz",
+                          "4c25cb30c4bb23eddca05d7d0a85997b8db6144f5464ba7f8c09ce91e2f35543")
+        ],
+        v"0.3.24" => [
+            ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.24/OpenBLAS-0.3.24.tar.gz",
+                          "ceadc5065da97bd92404cac7254da66cc6eb192679cf1002098688978d4d5132")
+        ],
         v"0.3.23" => [
             ArchiveSource("https://github.com/xianyi/OpenBLAS/releases/download/v0.3.23/OpenBLAS-0.3.23.tar.gz",
                           "5d9491d07168a5d00116cdc068a40022c3455bf9293c7cb86a65b1054d7e5114")
@@ -61,13 +73,14 @@ end
 
 # Do not override the default `num_64bit_threads` here, instead pass a custom from specific OpenBLAS versions
 # that should opt into a higher thread count.
-function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, kwargs...)
+function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false, aarch64_ilp64::Bool=false, consistent_fpcsr::Bool=false, bfloat16::Bool=false, kwargs...)
     # Allow some basic configuration
     script = """
     NUM_64BIT_THREADS=$(num_64bit_threads)
     OPENBLAS32=$(openblas32)
     AARCH64_ILP64=$(aarch64_ilp64)
     CONSISTENT_FPCSR=$(consistent_fpcsr)
+    BFLOAT16=$(bfloat16)
     version_patch=$(version.patch)
     """
     # Bash recipe for building across all platforms
@@ -78,6 +91,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         cat /opt/bin/${bb_full_target}/${target}-clang | sed 's/clang/flang/g' > /opt/bin/${bb_full_target}/${target}-flang
         chmod +x /opt/bin/${bb_full_target}/${target}-flang
         ln -s ${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/bin/flang /opt/x86_64-linux-musl/bin/flang
+        cp ${WORKSPACE}/x86_64-linux-musl-cxx11/destdir/include/*.mod /opt/x86_64-linux-musl/include
         export FC=${target}-flang
 
         # Install flang rt libraries to sysroot
@@ -95,6 +109,11 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     flags=(USE_THREAD=1 GEMM_MULTITHREADING_THRESHOLD=400 NO_AFFINITY=1)
     if [[ "${CONSISTENT_FPCSR}" == "true" ]]; then
         flags+=(CONSISTENT_FPCSR=1)
+    fi
+
+    # Build BFLOAT16 kernels
+    if [[ "${BFLOAT16}" == "true" ]]; then
+        flags+=(BUILD_BFLOAT16=1)
     fi
 
     # We are cross-compiling
@@ -240,9 +259,9 @@ end
 
 function openblas_dependencies(platforms; kwargs...)
     return [
-        Dependency("CompilerSupportLibraries_jll"),
-        HostBuildDependency("FlangClassic_jll"),
-        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
-        BuildDependency("FlangClassic_RTLib_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms))
+        Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+        HostBuildDependency(PackageSpec(name="FlangClassic_jll", uuid="b3f849d4-7198-5f76-a9c5-8e4f35f75d39")),
+        BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1"); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency(PackageSpec(name="FlangClassic_RTLib_jll", uuid="48abaad9-6585-5455-9ce3-84cd0709264b"); platforms=filter(p -> sanitize(p)=="memory", platforms))
     ]
 end

@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-adios2_version = v"2.9.1"
-version = v"2.9.2"
+adios2_version = v"2.9.2"
+version = v"2.9.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ornladios/ADIOS2.git", "d143154f3bbebfdd7ac3c46b4e31fdfda7e8e79c"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "83cb06ae66700a8d5cc37f3c1af5c9e917a1236f"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,17 +21,27 @@ cd $WORKSPACE/srcdir
 cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
-
-mkdir build
-cd build
+# Declare `arm8_rt_call_link`. See <https://github.com/ornladios/ADIOS2/issues/3925>.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
+# Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
+    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
     rm /usr/lib/libcurl.*
+    rm /usr/lib/libevent*
     rm /usr/lib/libnghttp2.*
 fi
 
 archopts=()
+
+if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
+    # This feature only works with MPICH
+    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
+else
+    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=1 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
+fi
 
 if grep -q MSMPI_VER ${includedir}/mpi.h; then
     # Microsoft MPI
@@ -48,35 +58,29 @@ else
     archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
 fi
 
-if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
-    # This feature only works with MPICH
-    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
-else
-    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=1 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
-fi
-
 # Fortran is not supported with Clang
-cmake \
+# We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
+cmake -B build -S . \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DADIOS2_BUILD_EXAMPLES=OFF \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
     -DADIOS2_USE_Blosc2=ON \
+    -DADIOS2_Blosc2_PREFER_SHARED=ON \
     -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
-    -DADIOS2_USE_SZ=ON \
     -DADIOS2_USE_ZeroMQ=ON \
     -DMPI_HOME=$prefix \
     ${archopts[@]} \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
-install_license ../Copyright.txt ../LICENSE
+    -DCMAKE_INSTALL_PREFIX=$prefix
+cmake --build build --config RelWithDebInfo --parallel $nproc
+cmake --build build --config RelWithDebInfo --parallel $nproc --target install
+install_license Copyright.txt LICENSE
 """
 
 augment_platform_block = """
@@ -92,7 +96,6 @@ platforms = supported_platforms()
 # <https://github.com/ornladios/ADIOS2/issues/2704>
 platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
-# Windows doesn't build with libcxx="cxx03"
 platforms = expand_gfortran_versions(platforms)
 
 # We need to use the same compat bounds as HDF5
@@ -100,7 +103,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
@@ -141,7 +144,6 @@ dependencies = [
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
-    Dependency(PackageSpec(name="SZ_jll")),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll"); compat="1"),

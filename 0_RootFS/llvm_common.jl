@@ -33,6 +33,7 @@ llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"13.0.1" => "75e33f71c2dae584b13a7d1186ae0a038ba98838",
+    v"16.0.6" => "7cbf1a2591520c2491aa35339f227775f4d3adf6",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -77,7 +78,36 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
 
     cd ${WORKSPACE}/srcdir/llvm-project
     # Apply all our patches
+    if [ -d $WORKSPACE/srcdir/llvm_patches ]; then
+    for f in $WORKSPACE/srcdir/llvm_patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
+    if [ -d $WORKSPACE/srcdir/clang_patches ]; then
+    cd ${WORKSPACE}/srcdir/llvm-project/clang
+    for f in $WORKSPACE/srcdir/clang_patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
+    if [ -d $WORKSPACE/srcdir/crt_patches ]; then
+    cd ${WORKSPACE}/srcdir/llvm-project/compiler-rt
+    for f in $WORKSPACE/srcdir/crt_patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
+    if [ -d $WORKSPACE/srcdir/libcxx_patches ]; then
+    cd ${WORKSPACE}/srcdir/llvm-project/libcxx
+    for f in $WORKSPACE/srcdir/libcxx_patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
+    # Patches from the monorepo
     if [ -d $WORKSPACE/srcdir/patches ]; then
+    cd ${WORKSPACE}/srcdir/llvm-project
     for f in $WORKSPACE/srcdir/patches/*.patch; do
         echo "Applying patch ${f}"
         atomic_patch -p1 ${f}
@@ -97,7 +127,10 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE})
 
     # We want a lot of projects
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;libcxx;libcxxabi;libunwind;polly')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;polly;lld')
+
+    # Build runtimes
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt;libcxx;libcxxabi;libunwind')
 
     # We want a build with no bindings
     CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST=)

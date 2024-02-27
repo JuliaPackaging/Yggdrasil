@@ -13,7 +13,7 @@ include("../../L/libjulia/common.jl")
 
 # reminder: change the version when changing the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.2.7"
+version = v"0.2.11"
 
 # julia_versions is now taken from libjulia/common.jl
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
@@ -21,7 +21,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "9946ee4b341240fca2cfc1a7db90918e9bd7686c")
+              "409e0afd819541aa7494890b7b2ae447eb08eb5a")
     DirectorySource("./bundled")
 ]
 
@@ -83,11 +83,11 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 
-    BuildDependency("libjulia_jll"),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
 
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.0"),
-    Dependency("libpolymake_julia_jll", compat = "~0.10.4"),
-    Dependency("polymake_jll", compat = "~400.1000.001"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
+    Dependency("libpolymake_julia_jll", compat = "~0.11.4"),
+    Dependency("polymake_jll", compat = "~400.1100.001"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

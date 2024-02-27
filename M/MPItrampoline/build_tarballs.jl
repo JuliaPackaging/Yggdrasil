@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "MPItrampoline"
 
 mpitrampoline_version = v"5.3.1"
-version = mpitrampoline_version
-mpich_version_str = "4.1.2"
+version = v"5.3.2"
+mpich_version_str = "4.2.0"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.10.4"
 
@@ -18,7 +18,7 @@ sources = [
     GitSource("https://github.com/eschnett/MPItrampoline", "25efb0f7a4cd00ed82bafb8b1a6285fc50d297ed"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
+                  "a64a66781b9e5312ad052d32689e23252f745b27ee8818ac2ac0c8209bc0b90e"),
     GitSource("https://github.com/eschnett/MPIwrapper", "64f663cfaa36139882c5d92dc974b1a755cd6f5d"),
 ]
 
@@ -53,6 +53,15 @@ cmake \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+# Post-process the compiler wrappers. They remember the original
+# compiler used to build MPItrampoline, but this compiler is too
+# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
+# `$FC` etc.
+sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
+sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
+sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
+cp ${bindir}/mpifc ${bindir}/mpifort
 
 ################################################################################
 # Install MPIconstants
@@ -160,6 +169,7 @@ fi
     --enable-threads=multiple \
     --enable-opencl=no \
     --with-device=ch3 \
+    --with-hwloc=${prefix} \
     --prefix=${prefix}/lib/mpich \
     "${EXTRA_FLAGS[@]}"
 
@@ -188,23 +198,23 @@ cd build
 # Yes, this is tedious. No, without being this explicit, cmake will
 # not properly auto-detect the MPI libraries on Darwin.
 if [[ "${target}" == *-apple-* ]]; then
-    ext='a'
     cmake \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         "${INSTALL_RPATH[@]}" \
         -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_CXX_COMPILER=c++ \
-        -DMPI_Fortran_COMPILER=gfortran \
-        -DMPI_C_LIB_NAMES='mpi;pmpi' \
-        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
-        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${ext} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
+        -DMPI_C_COMPILER=${CC} \
+        -DMPI_CXX_COMPILER=${CXX} \
+        -DMPI_Fortran_COMPILER=${FC} \
+        -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
+        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
+        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi;hwloc' \
+        -DMPI_hwloc_LIBRARY=${prefix}/lib/libhwloc.dylib \
+        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.a \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.a \
+        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.a \
+        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.a \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         ..
 else
@@ -276,11 +286,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("Hwloc_jll"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-                      compat="0.1", top_level=true),
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", clang_use_lld=false)

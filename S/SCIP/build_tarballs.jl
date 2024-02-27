@@ -3,11 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"800.0.400"
+version = v"800.100.000"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.4.tgz", "be4f978be7f8f97371ddcdac7a60af69a4fea5f975090fe35f1ae4308db692d3"),
+    ArchiveSource(
+        "https://scipopt.org/download/release/scipoptsuite-8.1.0.tgz",
+        "a3c1b45220252865d4cedf41d6327b6023608feb360d463f2e68ec4ac41cda06"
+    ),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +25,14 @@ elif [[ "${target}" == *-mingw* ]]; then
    export LDFLAGS=-L${libdir}
 fi
 
+if [[ "${target}" == *w64* ]]; then
+    export CFLAGS="-O0"
+fi
+
 cd scipoptsuite*
+
+# for soplex threadlocal
+export CXXFLAGS="-DTHREADLOCAL=''"
 
 mkdir build
 cd build/
@@ -54,9 +64,7 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP/
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

@@ -54,7 +54,7 @@ for p in platforms
     end
 end
 
-push!(dependencies, BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.5")))
+push!(dependencies, BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")))
 
 # The products that we will ensure are always built
 products = [
@@ -65,4 +65,4 @@ products = [
 build_tarballs(ARGS, name, version, sources, script, julia_platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
 
-# rebuild trigger: 3
+# rebuild trigger: 0
