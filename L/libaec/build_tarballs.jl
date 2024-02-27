@@ -34,7 +34,7 @@ platforms = supported_platforms()
 products = [
     LibraryProduct("libsz", :libsz),
     LibraryProduct("libaec", :libaec),
-    ExecutableProduct("aec", :aec)
+    ExecutableProduct("graec", :aec)
 ]
 
 # Dependencies that must be installed before this package can be built
