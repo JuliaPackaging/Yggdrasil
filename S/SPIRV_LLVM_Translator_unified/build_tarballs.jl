@@ -51,6 +51,9 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 # Use our LLVM version
 CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * raw""")
 
+# Suppress certain errors
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion")
+
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} llvm-spirv install
 install -Dm755 build/tools/llvm-spirv/llvm-spirv${exeext} -t ${bindir}
