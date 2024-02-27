@@ -56,6 +56,7 @@ products = [
     LibraryProduct(["libpango", "libpango-1", "libpango-1.0"], :libpango),
     LibraryProduct(["libpangocairo", "libpangocairo-1", "libpangocairo-1.0"], :libpangocairo),
     LibraryProduct(["libpangoft2", "libpangoft2-1", "libpangoft2-1.0"], :libpangoft),
+    LibraryProduct(["libpangofc", "libpangofc-1", "libpangofc-1.0"], :libpangofc),
 ]
 
 # Dependencies that must be installed before this package can be built
