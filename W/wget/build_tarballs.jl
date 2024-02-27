@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "wget"
-version = v"1.21.1"
+version = v"1.21.4"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/wget/wget-$(version).tar.gz",
-                  "59ba0bdade9ad135eda581ae4e59a7a9f25e3a4bde6a5419632b31906120e26e")
+                  "81542f5cefb8faacc39bbbc6c82ded80e3e4a88505ae72ea51df27525bcde04c")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,9 +26,10 @@ make -j${nproc}
 make install
 """
 
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # Disable windows because GnuTLS_jll is not available there
 filter!(!Sys.iswindows, platforms)
@@ -45,4 +46,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
