@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "PCRE2"
-version_string = "10.42"
+version_string = "10.43"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/PCRE2Project/pcre2",
-              "52c08847921a324c804cabf2814549f50bce1265"),
+              "3864abdb713f78831dd12d898ab31bbb0fa630b6"),
 ]
 
 # Bash recipe for building across all platforms
