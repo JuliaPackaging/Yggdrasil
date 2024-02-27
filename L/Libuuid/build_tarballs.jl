@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Libuuid"
-version = v"2.39.3"
+version_string = "2.39.3"
+version = VersionNumber(version_string)
 
-# Collection of sources required to build FriBidi
+# Collection of sources required to build Libuuid
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version.major).$(version.minor).tar.xz",
-                  "32b30a336cda903182ed61feb3e9b908b762a5e66fe14e43efb88d37162075cb"),
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version).tar.xz",
+                  "7b6605e48d1a49f43cc4b4cfc59f313d0dd5402fa40b96810bd572e167dfed0f"),
 ]
 
 # Bash recipe for building across all platforms
