@@ -14,7 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/snappy*
+cd $WORKSPACE/srcdir/snappy
 
 atomic_patch -p1 ../patches/snappy.patch
 
