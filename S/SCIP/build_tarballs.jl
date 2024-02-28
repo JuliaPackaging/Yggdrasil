@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"800.100.000"
+version = v"900.000.000"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://scipopt.org/download/release/scipoptsuite-8.1.0.tgz",
+        "https://scipopt.org/download/release/scipoptsuite-9.0.0.tgz",
         "a3c1b45220252865d4cedf41d6327b6023608feb360d463f2e68ec4ac41cda06"
     ),
 ]
