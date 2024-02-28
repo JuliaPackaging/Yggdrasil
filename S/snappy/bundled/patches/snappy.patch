@@ -1,24 +1,25 @@
-From f78dad304918275a38701b308eccbcf000d215a7 Mon Sep 17 00:00:00 2001
-From: Max Horn <max@quendi.de>
-Date: Fri, 22 Oct 2021 22:40:34 +0200
-Subject: [PATCH] Work around compiler not being able to inline
+License: https://github.com/google/snappy?tab=License-1-ov-file#readme
+Source: https://github.com/google/snappy/commit/27f34a580be4a3becf5f8c0cba13433f53c21337
+From 27f34a580be4a3becf5f8c0cba13433f53c21337 Mon Sep 17 00:00:00 2001
+From: Richard O'Grady <rjogrady@google.com>
+Date: Wed, 12 Jul 2023 10:12:01 -0700
+Subject: [PATCH] Fix -Wsign-compare warning
 
+PiperOrigin-RevId: 547529709
 ---
- snappy.cc | 1 -
- 1 file changed, 1 deletion(-)
+ snappy.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/snappy.cc b/snappy.cc
-index 79dc0e8..48faad2 100644
+index 688065b5..6473123e 100644
 --- a/snappy.cc
 +++ b/snappy.cc
-@@ -1013,7 +1013,6 @@ void MemMove(ptrdiff_t dst, const void* src, size_t size) {
-   (void)size;
- }
- 
--SNAPPY_ATTRIBUTE_ALWAYS_INLINE
- size_t AdvanceToNextTag(const uint8_t** ip_p, size_t* tag) {
-   const uint8_t*& ip = *ip_p;
-   // This section is crucial for the throughput of the decompression loop.
--- 
-2.21.1 (Apple Git-122.3)
-
+@@ -1289,7 +1289,7 @@ std::pair<const uint8_t*, ptrdiff_t> DecompressBranchless(
+         DeferMemCopy(&deferred_src, &deferred_length, from, len);
+       }
+     } while (ip < ip_limit_min_slop &&
+-             (op + deferred_length) < op_limit_min_slop);
++             static_cast<ptrdiff_t>(op + deferred_length) < op_limit_min_slop);
+   exit:
+     ip--;
+     assert(ip <= ip_limit);
