@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cli/
+cd $WORKSPACE/srcdir/cli
 go build -v ./cmd/gh
 mkdir ${bindir}
 mv gh${exeext} ${bindir}/gh${exeext}
@@ -20,7 +20,10 @@ mv gh${exeext} ${bindir}/gh${exeext}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
+# We disable Windows because the Go compiler reports an internal error there:
+#     `<unknown line number>: internal compiler error: assertion failed`
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
