@@ -12,10 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd softhsm-2.6.1/
-export LDFLAGS="-L${libdir}"
-export CPPFLAGS="-I${includedir}"
+cd $WORKSPACE/srcdir/softhsm-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nprocs}
 make install
