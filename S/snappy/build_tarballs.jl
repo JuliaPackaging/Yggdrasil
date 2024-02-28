@@ -3,20 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "snappy"
-version = v"1.1.9"
+version = v"1.1.10"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/google/snappy.git",
-              "2b63814b15a2aaae54b7943f0cd935892fae628f"),
+              "dc05e026488865bc69313a68bcc03ef2e4ea8e83"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/snappy*
+cd $WORKSPACE/srcdir/snappy
+
 atomic_patch -p1 ../patches/snappy.patch
-atomic_patch -p1 ../patches/0001-Fix-compilation-for-older-GCC-and-Clang-versions.patch
+
 mkdir cmake-build
 cd cmake-build
 cmake \
@@ -25,9 +26,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DSNAPPY_BUILD_BENCHMARKS=OFF \
-    -DSNAPPY_USE_BUNDLED_BENCHMARK_LIB=OFF \
     -DSNAPPY_BUILD_TESTS=OFF \
-    -DSNAPPY_USE_BUNDLED_GTEST=OFF \
     ..
 make -j${nproc}
 make install
