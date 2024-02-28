@@ -9,7 +9,7 @@ version = v"900.000.000"
 sources = [
     ArchiveSource(
         "https://scipopt.org/download/release/scipoptsuite-9.0.0.tgz",
-        "a3c1b45220252865d4cedf41d6327b6023608feb360d463f2e68ec4ac41cda06"
+        "c49a0575003322fcbfe2d3765de7e3e60ff7c08d1e8b17d35409be40476cb98a"
     ),
 ]
 
