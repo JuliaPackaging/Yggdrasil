@@ -20,7 +20,7 @@ version = VersionNumber(version_str)
 
 sources = [
     ArchiveSource(
-        "https://go.dev/dl/go$(version).linux-amd64.tar.gz",
+        "https://go.dev/dl/go$(version_str).linux-amd64.tar.gz",
         "f6c8a87aa03b92c4b0bf3d558e28ea03006eb29db78917daec5cfb6ec1046265",
     )
 ]
