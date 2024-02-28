@@ -15,8 +15,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/snappy*
-# atomic_patch -p1 ../patches/snappy.patch
-# atomic_patch -p1 ../patches/0001-Fix-compilation-for-older-GCC-and-Clang-versions.patch
+
+atomic_patch -p1 ../patches/snappy.patch
+
 mkdir cmake-build
 cd cmake-build
 cmake \
