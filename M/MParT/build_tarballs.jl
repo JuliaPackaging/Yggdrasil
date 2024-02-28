@@ -14,7 +14,7 @@ version = v"2.2.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/MeasureTransport/MParT.git",
-    "fd3ebebcbe1835c4ea88de2243cf53bed465714d")
+    "6e84606395fe8d8509c3f17d10a72f78d80c2665")
 ]
 
 # Bash recipe for building across all platforms
