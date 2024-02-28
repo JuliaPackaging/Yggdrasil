@@ -19,9 +19,13 @@ sources = [
 script = raw"""
 install_license ${WORKSPACE}/srcdir/git-*/COPYING
 
-if [[ "${target}" == *-ming* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
+    cd ${WORKSPACE}/srcdir/${target}
+    # Delete symbolic links, which can't be created on Windows
+    echo "Deleting symbolic links..."
+    find . -type l -print -delete
     # Fast path for Windows: just copy the content of the tarball to the prefix
-    cp -r ${WORKSPACE}/srcdir/${target}/* ${prefix}
+    cp -r * ${prefix}
     exit
 fi
 
