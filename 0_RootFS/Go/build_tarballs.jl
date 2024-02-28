@@ -15,7 +15,8 @@ using BinaryBuilder
 include("../common.jl")
 
 name = "Go"
-version = v"1.22.0"
+version_str = "1.22.0"
+version = VersionNumber(version_str)
 
 sources = [
     ArchiveSource(
