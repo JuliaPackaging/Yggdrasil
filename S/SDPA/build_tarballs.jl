@@ -122,6 +122,7 @@ products = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
+platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"4", platforms)
