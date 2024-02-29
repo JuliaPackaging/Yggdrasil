@@ -127,6 +127,8 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"4", platforms)
 
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"; compat="=0.11"),
@@ -141,4 +143,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
     clang_use_lld = false,
-)
+    julia_compat)
