@@ -8,10 +8,6 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-# reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
-
 # The version of this JLL is decoupled from the upstream version.
 # Whenever we package a new upstream release, we initially map its
 # version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
@@ -126,7 +122,6 @@ products = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
-platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"4", platforms)
@@ -145,4 +140,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
     clang_use_lld = false,
-    julia_compat)
+)
