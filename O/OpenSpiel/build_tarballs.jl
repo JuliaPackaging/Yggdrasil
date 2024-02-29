@@ -58,13 +58,11 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
     ../open_spiel/
-      
 
 make -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 """
-
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -80,7 +78,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
     BuildDependency("libjulia_jll")
 ]
 
