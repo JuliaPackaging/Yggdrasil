@@ -58,7 +58,6 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
     ../open_spiel/
-      
 
 make -j${nproc}
 make install
