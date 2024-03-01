@@ -20,7 +20,7 @@ cd scipoptsuite*
 
 # for soplex threadlocal and large files
 export CXXFLAGS="-DTHREADLOCAL='' -Wa,-mbig-obj"
-
+ 
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
