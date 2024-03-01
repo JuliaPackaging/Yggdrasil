@@ -21,6 +21,9 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
+autoreconf -i
+automake
+autoconf
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} --enable-lib-only
 make -j${nproc}
 make install
