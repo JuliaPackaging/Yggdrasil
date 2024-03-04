@@ -87,11 +87,10 @@ source etc/bashrc || true
 ./Allwmake -j${nproc} -q -s
 
 # Copying the binaries and etc to the correct directories
-mkdir -p "${libdir}" "${bindir}" "${prefix}/share/openfoam"
+mkdir -p "${libdir}" "${bindir}"
 cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
 cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
-cp -r etc/ "${prefix}/share/openfoam/."
-cp -r bin/ "${prefix}/share/openfoam/."
+cp -r etc/ "${prefix}/."
 """
 
 augment_platform_block = """
@@ -554,10 +553,10 @@ products = [
     ExecutableProduct("XiFoam", :XiFoam),
     ExecutableProduct("zipUpMesh", :zipUpMesh),
     
-    FileProduct("share/openfoam/etc", :openfoam_etc), 
-    FileProduct("share/openfoam/bin", :openfoam_bin)
+    FileProduct("etc", :openfoam_etc), 
 ]
 
+init_block = raw"""ENV["WM_PROJECT_DIR"] = artifact_dir"""
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="flex_jll", uuid="48a596b8-cc7a-5e48-b182-65f75e8595d0"))
@@ -573,4 +572,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version = v"9")
+    preferred_gcc_version = v"9", init_block)
