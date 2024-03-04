@@ -11,13 +11,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libcxxwrap_julia"
-version = v"0.11.2"
+version = v"0.12.1"
 
 git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "f1c42d9602e32f566847c253270b4fd536db6554"),
+    GitSource(git_repo, "5a13d1e173d269038fc74339e2237ed0cdcdb6eb"),
 ]
 
 # Bash recipe for building across all platforms
