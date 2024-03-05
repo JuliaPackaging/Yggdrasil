@@ -21,18 +21,16 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-darwin* ]]; then
 else
     OPTFLAGS="-O3 -ftree-loop-vectorize"
 fi
-if [[ "${target}" == x86_64-linux-gnu ]]; then
-    # Needs to explicitly link to libdl for `dlerror` symbol
-    ADDFLAGS="-ldl"
-else
-    ADDFLAGS=""
-fi
 if [[ "${target}" == x86_64-linux-gnu ]] || [[ "${target}" == aarch64-linux-gnu ]]; then
     # Enable GPU also on aarch64
     GPU_SUPPORT=true
+    # But this needs to explicitly link to libdl for `dlerror` symbol
+    ADDFLAGS="-ldl"
 else
     GPU_SUPPORT=false
+    ADDFLAGS=""
 fi
+
 make -j${nproc} OPTFLAGS="${OPTFLAGS}" ADDFLAGS="${ADDFLAGS}" GPU_SUPPORT="${GPU_SUPPORT}"
 make install PREFIX=${prefix}
 """
