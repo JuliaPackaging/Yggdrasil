@@ -14,12 +14,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/btop*/
-if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-darwin* ]]; then
-    # Don't use `-ftree-loop-vectorize`, Clang doesn't know it.  Also, don't do lto,
-    # doesn't seem to work on FreeBSD
-    OPTFLAGS="-O3"
+if [[ "${target}" == *-freebsd* ]]; then
+    # Don't do lto, doesn't seem to work on FreeBSD
+    OPTFLAGS="-O3 -ftree-vectorize"
 else
-    OPTFLAGS="-O3 -ftree-loop-vectorize"
+    OPTFLAGS="-O3 -ftree-vectorize -flto=${nprocs}"
 fi
 if [[ "${target}" == x86_64-linux-gnu ]] || [[ "${target}" == aarch64-linux-gnu ]]; then
     # Enable GPU also on aarch64
