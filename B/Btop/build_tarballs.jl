@@ -14,23 +14,20 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/btop*/
-if [[ "${target}" == *-freebsd* ]]; then
-    # Don't do lto, doesn't seem to work on FreeBSD
-    OPTFLAGS="-O3 -ftree-vectorize"
-else
-    OPTFLAGS="-O3 -ftree-vectorize -flto=${nproc}"
+
+FLAGS=(THREADS=${nproc})
+if [[ "${target}" == *-darwin* ]] || [[ "${target}" == *-freebsd* ]]; then
+    # Can't compile with Clang
+    FLAGS+=(CXX=g++)
 fi
 if [[ "${target}" == x86_64-linux-gnu ]] || [[ "${target}" == aarch64-linux-gnu ]]; then
-    # Enable GPU also on aarch64
-    GPU_SUPPORT=true
-    # But this needs to explicitly link to libdl for `dlerror` symbol
-    ADDFLAGS="-ldl"
+    # Enable GPU also on aarch64, this needs to explicitly link to libdl for `dlerror` symbol.
+    FLAGS+=(GPU_SUPPORT=true ADDFLAGS="-ldl")
 else
-    GPU_SUPPORT=false
-    ADDFLAGS=""
+    FLAGS+=(GPU_SUPPORT=false ADDFLAGS="")
 fi
 
-make -j${nproc} OPTFLAGS="${OPTFLAGS}" ADDFLAGS="${ADDFLAGS}" GPU_SUPPORT="${GPU_SUPPORT}"
+make -j${nproc} "${FLAGS[@]}"
 make install PREFIX=${prefix}
 """
 
