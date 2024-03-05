@@ -27,7 +27,13 @@ if [[ "${target}" == x86_64-linux-gnu ]]; then
 else
     ADDFLAGS=""
 fi
-make -j${nproc} OPTFLAGS="${OPTFLAGS}" ADDFLAGS="${ADDFLAGS}"
+if [[ "${target}" == x86_64-linux-gnu ]] || [[ "${target}" == aarch64-linux-gnu ]]; then
+    # Enable GPU also on aarch64
+    GPU_SUPPORT=true
+else
+    GPU_SUPPORT=false
+fi
+make -j${nproc} OPTFLAGS="${OPTFLAGS}" ADDFLAGS="${ADDFLAGS}" GPU_SUPPORT="${GPU_SUPPORT}"
 make install PREFIX=${prefix}
 """
 
