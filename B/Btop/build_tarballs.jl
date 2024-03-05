@@ -18,7 +18,7 @@ if [[ "${target}" == *-freebsd* ]]; then
     # Don't do lto, doesn't seem to work on FreeBSD
     OPTFLAGS="-O3 -ftree-vectorize"
 else
-    OPTFLAGS="-O3 -ftree-vectorize -flto=${nprocs}"
+    OPTFLAGS="-O3 -ftree-vectorize -flto=${nproc}"
 fi
 if [[ "${target}" == x86_64-linux-gnu ]] || [[ "${target}" == aarch64-linux-gnu ]]; then
     # Enable GPU also on aarch64
