@@ -34,6 +34,11 @@ make install PREFIX=${prefix}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; exclude=Sys.iswindows); skip=Returns(false))
+# This platform fails with
+#     ld: in section __TEXT,__text reloc 41: symbol index out of range file '/tmp/ccnDkAmM.ltrans16.ltrans.o' for architecture arm64
+#     collect2: fatal error: ld returned 1 exit status
+# but it's also very unlikely to be used in practice, so let's just disable it.
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64" && cxxstring_abi(p) == "cxx03"), platforms)
 
 # The products that we will ensure are always built
 products = [
