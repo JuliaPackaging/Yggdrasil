@@ -21,7 +21,13 @@ if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-darwin* ]]; then
 else
     OPTFLAGS="-O3 -ftree-loop-vectorize"
 fi
-make -j${nproc} OPTFLAGS="${OPTFLAGS}"
+if [[ "${target}" == x86_64-linux-gnu ]]; then
+    # Needs to explicitly link to libdl for `dlerror` symbol
+    ADDFLAGS="-ldl"
+else
+    ADDFLAGS=""
+fi
+make -j${nproc} OPTFLAGS="${OPTFLAGS}" ADDFLAGS="${ADDFLAGS}"
 make install PREFIX=${prefix}
 """
 
@@ -40,4 +46,6 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # Contrary to documentation (<https://github.com/aristocratos/btop/blob/c767099d765b0094c50b8c66030aeacff26f56ef/README.md#compilation-linux>),
+               # this requires GCC 11
                julia_compat = "1.6", preferred_gcc_version=v"11")
