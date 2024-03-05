@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Btop"
-version = v"1.2.8"
+version = v"1.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/aristocratos/btop/archive/refs/tags/v$(version).tar.gz",
-                  "7944b06e3181cc1080064adf1e9eb4f466af0b84a127df6697430736756a89ac"),
+    GitSource("https://github.com/aristocratos/btop.git",
+              "fd2a2acdad6fbaad76846cb5e802cf2ae022d670"),
 ]
 
 # Bash recipe for building across all platforms
