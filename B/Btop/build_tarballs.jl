@@ -14,8 +14,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/btop*/
-# Don't do lto, doesn't seem to work on FreeBSD
-make -j${nproc} OPTFLAGS="-O2 -ftree-loop-vectorize"
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-darwin* ]]; then
+    # Don't use `-ftree-loop-vectorize`, Clang doesn't know it.  Also, don't do lto,
+    # doesn't seem to work on FreeBSD
+    OPTFLAGS="-O3"
+else
+    OPTFLAGS="-O3 -ftree-loop-vectorize"
+fi
+make -j${nproc} OPTFLAGS="${OPTFLAGS}"
 make install PREFIX=${prefix}
 """
 
