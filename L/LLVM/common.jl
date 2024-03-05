@@ -364,7 +364,7 @@ CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
 # Set the bug report URL to the Julia issue tracker
-CMAKE_FLAGS+=("-DBUG_REPORT_URL="https://github.com/julialang/julia")
+CMAKE_FLAGS+=(-DBUG_REPORT_URL="https://github.com/julialang/julia")
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
 ninja -j${nproc} -vv
