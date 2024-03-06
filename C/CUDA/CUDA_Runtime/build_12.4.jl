@@ -5,7 +5,7 @@ function get_products(platform)
         LibraryProduct(["libnvJitLink", "nvJitLink_120_0"], :libnvJitLink),
         LibraryProduct(["libnvrtc", "nvrtc64_120_0"], :libnvrtc),
         LibraryProduct(["libnvrtc-builtins", "nvrtc-builtins64_124"], :libnvrtc_builtins),
-        LibraryProduct(["libcufft", "cufft64_11"], :libcufft)
+        LibraryProduct(["libcufft", "cufft64_11"], :libcufft),
         LibraryProduct(["libcublas", "cublas64_12"], :libcublas),
         LibraryProduct(["libcublasLt", "cublasLt64_12"], :libcublasLt),
         LibraryProduct(["libcusparse", "cusparse64_12"], :libcusparse),
