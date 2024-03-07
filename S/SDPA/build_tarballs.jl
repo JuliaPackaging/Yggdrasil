@@ -8,10 +8,6 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-# reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
-
 # The version of this JLL is decoupled from the upstream version.
 # Whenever we package a new upstream release, we initially map its
 # version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
@@ -27,7 +23,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 
 name = "SDPA"
 upstream_version = v"7.3.17"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -133,7 +129,7 @@ filter!(p -> libgfortran_version(p) >= v"4", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.11.2"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency("libjulia_jll"),
@@ -145,4 +141,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
     clang_use_lld = false,
-    julia_compat)
+    julia_compat = "1.6")
