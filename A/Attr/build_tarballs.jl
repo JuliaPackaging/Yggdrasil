@@ -24,6 +24,7 @@ install_license doc/COPYING*
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
 platforms = supported_platforms()
+filter!(Sys.islinux, platforms)
 
 # The products that we will ensure are always built
 products = [
