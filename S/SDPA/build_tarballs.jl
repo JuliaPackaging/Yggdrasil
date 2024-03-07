@@ -53,6 +53,11 @@ cd $WORKSPACE/srcdir/sdpa-*
 rm -f ${prefix}/lib/*.la
 update_configure_scripts
 
+if [[ "${target}" == *-mingw* ]]; then
+    # Needed for https://github.com/JuliaPackaging/Yggdrasil/issues/7904
+    rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
+fi
+
 # Apply patches
 atomic_patch -p1 $WORKSPACE/srcdir/patches/shared.diff
 atomic_patch -p1 $WORKSPACE/srcdir/patches/lt_init.diff
