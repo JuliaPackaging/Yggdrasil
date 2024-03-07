@@ -47,7 +47,7 @@ else
 fi
 make install
 
-install_license ../LICENSE
+install_license ../LICENSE.txt
 
 if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     # Delete the static library to save space
