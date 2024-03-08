@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.76.5"
+version = v"2.78.3"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "ed3a9953a90b20da8e5578a79f7d1c8a532eacbe2adac82aa3881208db8a3abe"),
+                  "609801dd373796e515972bf95fc0b2daa44545481ee2f465c4f204d224b2bc21"),
     DirectorySource("./bundled"),
 ]
 
@@ -85,4 +85,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)
