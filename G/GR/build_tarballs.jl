@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.73.2"
+version = v"0.73.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "eb444397b006c02e91201fcfe48c79b00c7009e7"),
+    GitSource("https://github.com/sciapp/gr.git", "9a2d15ddf0946274f9d662aaff857a7373b5ecd7"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "56e34e09194f8d168853206bd737fa34439b88edea49a0e675d52536bba5ae7a", "gr.js"),
+               "f572f7f21733a3ba2c9b442c1a835b704bfca1dcfc1faee59832d0fc3766b4ef", "gr.js"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
@@ -108,4 +108,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC version 10 because of Qt6.5
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"10", julia_compat="1.6")
+               preferred_gcc_version = v"10", julia_compat="1.6", clang_use_lld=false)
