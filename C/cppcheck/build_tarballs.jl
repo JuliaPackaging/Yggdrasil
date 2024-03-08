@@ -40,7 +40,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("PCRE_jll")
+    Dependency("PCRE_jll"; compat="8.44.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
