@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "IREE"
-version = v"0.0.820" # corresponds to tag `candidate-20240304.820`
+version = v"0.0.599" # corresponds to tag `candidate-20230731.599`, last release with LLVM 17
 
 sources = [
-    GitSource("https://github.com/openxla/iree.git", "eda28bf01d10d13f86df9018cb1f35a2dcb1cadc"),
+    GitSource("https://github.com/openxla/iree.git", "cf5d348e78eaa893589d8f8553ddc967e38fa2cf"),
 ]
 
 llvm_versions = [v"17.0.6+0"]
@@ -117,7 +117,7 @@ for (i, build) in enumerate(builds)
         build.platforms,
         products,
         build.dependencies;
-        julia_compat="1.10",
+        julia_compat="1.11",
         preferred_gcc_version=v"9",
         augment_platform_block,
         lazy_artifacts=true)
