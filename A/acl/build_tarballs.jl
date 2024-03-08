@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "acl"
-version = v"2.3.1"
+version = v"2.3.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://download.savannah.nongnu.org/releases/acl/acl-$(version).tar.xz",
-                  "c0234042e17f11306c23c038b08e5e070edb7be44bef6697fb8734dcff1c66b1")
+                  "97203a72cae99ab89a067fe2210c1cbf052bc492b479eca7d226d9830883b0bd")
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,8 @@ install_license doc/COPYING*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(Sys.islinux, supported_platforms(; experimental=true))
+platforms = supported_platforms()
+filter!(Sys.islinux, platforms)
 
 # The products that we will ensure are always built
 products = [
