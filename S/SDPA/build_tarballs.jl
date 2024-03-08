@@ -8,10 +8,6 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-# reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
-
 # The version of this JLL is decoupled from the upstream version.
 # Whenever we package a new upstream release, we initially map its
 # version X.Y.Z to X00.Y00.Z00 (i.e., multiply each component by 100).
@@ -27,7 +23,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 
 name = "SDPA"
 upstream_version = v"7.3.17"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -52,6 +48,28 @@ METIS_packagespec = PackageSpec(; name = "METIS4_jll",
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sdpa-*
+
+if [[ "${target}" == *-mingw* ]]; then
+    # This is needed because otherwise we get unusable binaries (error "The specified
+    # executable is not a valid application for this OS platform"). These come from
+    # CompilerSupportLibraries_jll.
+    # xref: https://github.com/JuliaPackaging/Yggdrasil/issues/7904
+    #
+    # The remove path pattern matches `lib/gcc/<triple>/<major>/`, where `<triple>` is the
+    # platform triplet and `<major>` is the GCC major version with which CSL was built
+    # xref: https://github.com/JuliaPackaging/Yggdrasil/pull/7535
+    #
+    # However, before CSL v1.1, these files were located in just `lib/`, thus we clean this
+    # directory as well.
+    if test -n "$(find $prefix/lib/gcc/*mingw*/*/libgcc*)"; then
+        rm $prefix/lib/gcc/*mingw*/*/libgcc* $prefix/lib/gcc/*mingw*/*/libmsvcrt*
+    elif test -n "$(find $prefix/lib/libgcc*)"; then
+        rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
+    else
+        echo "Could not find any libraries to remove :-/"
+        find $prefix/lib
+    fi
+fi
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
@@ -133,7 +151,7 @@ filter!(p -> libgfortran_version(p) >= v"4", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.11.2"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency("libjulia_jll"),
@@ -145,4 +163,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
     clang_use_lld = false,
-    julia_compat)
+    julia_compat = "1.6")
