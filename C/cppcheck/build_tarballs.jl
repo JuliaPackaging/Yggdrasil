@@ -39,7 +39,7 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("PCRE_jll")
 ]
 
