@@ -31,7 +31,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude=[Platform("x86_64", "freebsd"; )])
+platforms = supported_platforms(exclude=Sys.isfreebsd)
 
 # The products that we will ensure are always built
 products = Product[
