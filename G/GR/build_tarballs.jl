@@ -108,4 +108,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC version 10 because of Qt6.5
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"10", julia_compat="1.6")
+               preferred_gcc_version = v"10", julia_compat="1.6", clang_use_lld=false)
