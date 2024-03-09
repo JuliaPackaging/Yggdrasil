@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "OpenFHE"
-version = v"1.1.3"
+version = v"1.1.4"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openfheorg/openfhe-development.git",
-              "7b08ce10bcb577887d636a0db5a5fdda5f5ccb77"),
+              "94fd76a1d965cfde13f2a540d78ce64146fc2700"),
     DirectorySource("./bundled")
 ]
 
