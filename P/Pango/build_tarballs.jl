@@ -37,7 +37,7 @@ cd $WORKSPACE/srcdir/pango-*/
 MESON_FLAGS=(--cross-file="${MESON_TARGET_TOOLCHAIN}" -Dintrospection=disabled)
 
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
-# See https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md
+# See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 if [[ "${target}" == *-mingw* ]]; then
     MESON_FLAGS+=(-Dfontconfig=enabled -Dfreetype=enabled)
 fi
