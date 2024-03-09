@@ -24,6 +24,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
+# This package on macOS creates more problems than it solves:
+# <https://github.com/JuliaPackaging/Yggdrasil/issues/8256>.
+filter!(!Sys.isapple, platforms)
 
 # The products that we will ensure are always built
 products = [
