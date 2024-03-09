@@ -14,19 +14,26 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libpng-*/
-mkdir build && cd build
+FLAGS=()
 if [[ "${target}" == aarch64-apple-darwin* ]]; then
     # Let CMake know this platform supports NEON extension
-    FLAGS=(-DPNG_ARM_NEON=on)
+    FLAGS+=(-DPNG_ARM_NEON=on)
+fi
+if [[ "${target}" == *-darwin* ]]; then
+    # The framework is somehow confusing the linker
+    # e.g. in GR (<https://github.com/JuliaPackaging/Yggdrasil/pull/8259>):
+    #    error: cannot open /workspace/destdir/lib/png.framework: Is a directory
+    #    error: linker command failed with exit code 1 (use -v to see invocation)
+    FLAGS+=(-DPNG_FRAMEWORK=OFF)
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DPNG_STATIC=OFF \
     "${FLAGS[@]}" \
-    ..
-make -j${nproc}
-make install
+    -B build
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
