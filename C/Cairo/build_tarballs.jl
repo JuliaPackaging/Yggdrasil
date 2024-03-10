@@ -32,6 +32,7 @@ mkdir output && cd output/
 
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dfreetype=enabled \
+    -Dfontconfig=enabled \
     -Dtee=enabled \
     -Dpng=enabled \
     -Dzlib=enabled \
@@ -88,4 +89,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6", clang_use_lld=false)
