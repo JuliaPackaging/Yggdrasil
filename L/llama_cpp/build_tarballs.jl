@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.15"  # fake version number
+version = v"0.0.16"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -31,6 +31,7 @@ version = v"0.0.15"  # fake version number
 # - removed Product "embd_input_test" as it's no longer part of the project
 # - removed Library "libembdinput" as it's no longer part of the project
 # - disabled METAL (LLAMA_METAL=OFF) on Intel-based MacOS as it's not supported (supported on Apple Silicon only)
+# - temporary disabled armv{6,7} builds due to compile errors (missing vld1q_u8_x2, vqtbl1q_u8, uint8x16_t), issue: https://github.com/ggerganov/llama.cpp/issues/5748
 
 # versions: fake_version to github_version mapping
 #
@@ -51,11 +52,12 @@ version = v"0.0.15"  # fake version number
 # 0.0.13          2023-07-29       master-11f3ca0    https://github.com/ggerganov/llama.cpp/releases/tag/master-11f3ca0
 # 0.0.14          2024-01-04       b1767             https://github.com/ggerganov/llama.cpp/releases/tag/b1767
 # 0.0.15          2024-01-09       b1796             https://github.com/ggerganov/llama.cpp/releases/tag/b1796
+# 0.0.16          2024-03-10       b2382             https://github.com/ggerganov/llama.cpp/releases/tag/b2382
 
 
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git",
-        "18c2e1752c3b387689e9e73d7d8a1a3b1511ce23"),
+        "621e86b331f8b0e71f79fd82a4ae1cd54c3e4396"),
 ]
 
 script = raw"""
@@ -109,7 +111,7 @@ done
 install_license ../LICENSE
 """
 
-platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)))
+platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)) || (arch(p) in ["armv6l", "armv7l"]))
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
