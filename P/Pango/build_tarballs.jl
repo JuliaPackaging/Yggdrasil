@@ -34,14 +34,21 @@ fi
 
 cd $WORKSPACE/srcdir/pango-*/
 
-MESON_FLAGS=(--cross-file="${MESON_TARGET_TOOLCHAIN}" -Dintrospection=disabled -Dfontconfig=enabled -Dfreetype=enabled)
+if [[ "${target}" == "${MACHTYPE}" ]]; then
+    # When building for the host platform, the system libexpat is picked up
+    rm /usr/lib/libexpat.so*
+fi
 
 # If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
 # See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
 
 pip3 install gi-docgen
 mkdir build && cd build
-meson "${MESON_FLAGS[@]}" ..
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    -Dintrospection=disabled \
+    -Dfontconfig=enabled \
+    -Dfreetype=enabled \
+    ..
 ninja -j${nproc}
 ninja install
 
