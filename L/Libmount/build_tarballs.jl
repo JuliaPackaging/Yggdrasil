@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libmount"
-version = v"2.35"
+version = v"2.39.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version.major).$(version.minor).tar.xz",
-                  "b3081b560268c1ec3367e035234e91616fa7923a0afc2b1c80a2a6d8b9dfe2c9")
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version).tar.xz",
+                  "7b6605e48d1a49f43cc4b4cfc59f313d0dd5402fa40b96810bd572e167dfed0f")
 ]
 
 # Bash recipe for building across all platforms
