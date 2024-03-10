@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.50.14"
+version = v"1.52.1"
 
 # Collection of sources required to build Pango
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "1d67f205bfc318c27a29cfdfb6828568df566795df0cb51d2189cde7f2d581e8"),
-    DirectorySource("./bundled"),
+                  "58728a0a2d86f60761208df9493033d18ecb2497abac80ee1a274ad0c6e55f0f"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
 ]
@@ -34,12 +33,21 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/pango-*/
-# fix a windows build issue: see https://gitlab.gnome.org/GNOME/pango/-/merge_requests/702
-atomic_patch -p1 ../patches/dwrite.patch
+
+if [[ "${target}" == "${MACHTYPE}" ]]; then
+    # When building for the host platform, the system libexpat is picked up
+    rm /usr/lib/libexpat.so*
+fi
+
+# If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
+# See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
+
 pip3 install gi-docgen
 mkdir build && cd build
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
+    -Dfontconfig=enabled \
+    -Dfreetype=enabled \
     ..
 ninja -j${nproc}
 ninja install
@@ -70,4 +78,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)
