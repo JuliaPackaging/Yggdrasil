@@ -85,5 +85,8 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# Windows does not build with GCC 6.
+# Trying GCC 12 in a binary search.
+# Builds locally for me.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"12")
