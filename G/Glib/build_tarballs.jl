@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.76.5"
+version = v"2.80.0"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "ed3a9953a90b20da8e5578a79f7d1c8a532eacbe2adac82aa3881208db8a3abe"),
+                  "8228a92f92a412160b139ae68b6345bd28f24434a7b5af150ebe21ff587a561d"),
     DirectorySource("./bundled"),
 ]
 
