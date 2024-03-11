@@ -25,7 +25,7 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"3.0.0"
+upstream_version = v"3.1.1"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -33,7 +33,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/flintlib/flint2.git", "904aeb3752dae4f23b635f1633e9261dc042ffe2"), # v3.0.0 + a few commits, including the blas detection fix
+    GitSource("https://github.com/flintlib/flint.git", "f1ec31e79c1923823f87afa524a060a880da6afa"), # v3.1.1
 ]
 
 # Bash recipe for building across all platforms
@@ -63,7 +63,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS32_jll", v"0.3.10"),
 ]
