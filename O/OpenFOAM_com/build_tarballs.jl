@@ -25,9 +25,9 @@ cd ${WORKSPACE}/srcdir/openfoam
 git submodule update --init modules/cfmesh modules/avalanche
 
 if [[ "${target}" == *x86_64-linux* ]]; then
-    BUILD_FOLDER = "linux64GccDPInt32Opt"
+    BUILD_FOLDER="linux64GccDPInt32Opt"
 elif [[ "${target}" == *aarch64-linux* ]]; then
-    BUILD_FOLDER = "linuxARM64GccDPInt32Opt"    
+    BUILD_FOLDER="linuxARM64GccDPInt32Opt"    
 fi
 
 # Adding -rpath-links 
