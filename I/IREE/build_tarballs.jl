@@ -69,7 +69,7 @@ CMAKE_FLAGS+=(-DLLVM_EXTERNAL_LIT=${prefix}/tools/lit/lit.py)
 CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j 1 all
+ninja -C build -j ${nproc} all
 """
 
 platforms = supported_platforms()
