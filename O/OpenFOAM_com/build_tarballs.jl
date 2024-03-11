@@ -24,11 +24,16 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/openfoam
 git submodule update --init modules/cfmesh modules/avalanche
 
-# Adding -rpath-links #TODO need to automate for other platforms
-## For linux64
+if [[ "${target}" == *x86_64-linux* ]]; then
+    BUILD_FOLDER = "linux64GccDPInt32Opt"
+elif [[ "${target}" == *aarch64-linux* ]]; then
+    BUILD_FOLDER = "linuxARM64GccDPInt32Opt"    
+fi
+
+# Adding -rpath-links 
 LDFLAGS=""
 for dir in "" "/dummy" "/mpi-system"; do
-    LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/linux64GccDPInt32Opt/lib${dir}"
+    LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${PWD}/platforms/${BUILD_FOLDER}/lib${dir}"
 done
 LDFLAGS="${LDFLAGS} -Wl,-rpath-link=${libdir}"
 
@@ -88,8 +93,8 @@ source etc/bashrc || true
 
 # Copying the binaries and etc to the correct directories
 mkdir -p "${libdir}" "${bindir}"
-cp platforms/linux64GccDPInt32Opt/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
-cp platforms/linux64GccDPInt32Opt/bin/* "${bindir}/."
+cp platforms/${BUILD_FOLDER}/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
+cp platforms/${BUILD_FOLDER}/bin/* "${bindir}/."
 cp -r etc/ "${prefix}/."
 """
 
@@ -102,7 +107,8 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc")
 ]
 platforms = expand_cxxstring_abis(platforms)
 
