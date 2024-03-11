@@ -1,15 +1,15 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.78.3"
+version = v"2.80.0"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "609801dd373796e515972bf95fc0b2daa44545481ee2f465c4f204d224b2bc21"),
-    DirectorySource("./bundled"),
+                  "8228a92f92a412160b139ae68b6345bd28f24434a7b5af150ebe21ff587a561d"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -103,4 +103,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version = v"6")
