@@ -54,7 +54,7 @@ products = [
 dependencies = [
     Dependency("Glib_jll", v"2.76.5"; compat="2.76"),
     Dependency("GTK4_jll"),
-    Dependency("Cairo_jll"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FriBidi_jll"),
     BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)),
 ]
