@@ -73,6 +73,12 @@ cmake \
 cmake --build build --parallel ${nproc}
 cmake --install build
 
+if [[ "${target}" == *-mingw* ]]; then
+    # Move all shared libraries to `${libdir}`.
+    # Ref: <https://github.com/JuliaPackaging/Yggdrasil/issues/7968>.
+    mv -v ${prefix}/lib/*.${dlext} ${libdir}/.
+fi
+
 install_license LICENSE
 """
 
