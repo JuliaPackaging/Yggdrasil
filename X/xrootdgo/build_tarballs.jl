@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "xrootdgo"
-version = v"0.32.1"
+version = v"0.34.1"
 
 sources = [
     GitSource("https://github.com/go-hep/hep/",
-              "18cd86eeb7ce2e816e349c2e53ddda93feb98948"),
+              "09d53c4df12f4313bca3c9ab2dde77ab4e9f5742"),
     DirectorySource("./bundled")
 ]
 
