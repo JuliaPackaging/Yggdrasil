@@ -34,9 +34,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/
-mkdir -p "${bindir}"
-cp ${target}/biber${exeext} ${bindir}
-chmod +x ${bindir}/*
+install -Dvm 755 "${target}/biber${exeext}" "${bindir}/biber${exeext}"
 install_license LICENSE
 """
 
