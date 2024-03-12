@@ -13,7 +13,7 @@ sources = [
     GitSource("https://github.com/openxla/iree.git", "cf5d348e78eaa893589d8f8553ddc967e38fa2cf"),
 ]
 
-llvm_versions = [v"17.0.6+0"]
+llvm_versions = [v"17.0.6+1"]
 
 script = raw"""
 cd $WORKSPACE/srcdir/iree
