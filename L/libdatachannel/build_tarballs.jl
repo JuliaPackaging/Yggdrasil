@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg
 
 name = "libdatachannel"
 version = v"0.20.2"
-ccc
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/paullouisageneau/libdatachannel.git", "9cbe6a2a1f21cde901bca9571581a96c6cda03cf")
