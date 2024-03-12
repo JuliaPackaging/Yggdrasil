@@ -88,6 +88,8 @@ fi
 # Setup the environment. Failures allowed
 source etc/bashrc || true
 
+echo ${WM_ARCH}
+echo ${WM_COMPILER}
 # Build!
 ./Allwmake -j${nproc} -q -s
 
