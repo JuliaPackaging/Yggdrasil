@@ -25,6 +25,8 @@ git \
     -c submodule."third_party/pybind11".update=none \
     -c submodule."third_party/tracy".update=none \
     -c submodule."third_party/webgpu-headers".update=none \
+    -c submodule."third_party/pybind11".update=none \
+    -c submodule."third_party/tracy".update=none \
     submodule update --init --recursive
 
 # need to run mlir-tblgen and mlir-pdll on the host
