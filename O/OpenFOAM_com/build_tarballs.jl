@@ -91,13 +91,16 @@ source etc/bashrc || true
 echo ${WM_ARCH}
 echo ${WM_COMPILER}
 # Build!
-./Allwmake -j${nproc} -q -s
+echo [ "${WM_COMPILER%Mingw}" != "$WM_COMPILER" ] && [ "$WM_ARCH" != win64 ]
+wmake/src/Allmake -j${nproc}
+applications/test/00-dummy/Allwmake
+# ./Allwmake -j${nproc} -q -s
 
 # Copying the binaries and etc to the correct directories
-mkdir -p "${libdir}" "${bindir}"
-cp platforms/${BUILD_FOLDER}/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
-cp platforms/${BUILD_FOLDER}/bin/* "${bindir}/."
-cp -r etc/ "${prefix}/."
+# mkdir -p "${libdir}" "${bindir}"
+# cp platforms/${BUILD_FOLDER}/lib/{,dummy/,sys-mpi/}*.${dlext}* "${libdir}/."
+# cp platforms/${BUILD_FOLDER}/bin/* "${bindir}/."
+# cp -r etc/ "${prefix}/."
 """
 
 augment_platform_block = """
