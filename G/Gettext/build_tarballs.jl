@@ -8,7 +8,6 @@ version = VersionNumber(version_string)
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
                   "fe10c37353213d78a5b83d48af231e005c4da84db5ce88037d88355938259640"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
