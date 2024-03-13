@@ -8,6 +8,7 @@ version = VersionNumber(version_string)
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
                   "fe10c37353213d78a5b83d48af231e005c4da84db5ce88037d88355938259640"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +18,12 @@ cd $WORKSPACE/srcdir/gettext-*
 export CFLAGS="-O2"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
+
+# Correct Windows build error:
+#    .libs/libgettextsrc_la-write-catalog.o:write-catalog.c:(.text+0x7bf):
+#    undefined reference to `close_used_without_requesting_gnulib_module_close':
+# See <https://savannah.gnu.org/bugs/?63371>
+atomic_patch -p1 ../patches/close.patch
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \

@@ -1,0 +1,52 @@
+diff -ruN gettext-0.22.5/autogen.sh gettext-0.22.5-dirty/autogen.sh
+--- gettext-0.22.5/autogen.sh	2024-03-13 12:42:20
++++ gettext-0.22.5-dirty/autogen.sh	2024-03-13 12:44:07
+@@ -152,6 +152,7 @@
+     c-strcasestr
+     c-strstr
+     clean-temp
++    close
+     closedir
+     closeout
+     configmake
+diff -ruN gettext-0.22.5/gettext-tools/gnulib-lib/Makefile.gnulib gettext-0.22.5-dirty/gettext-tools/gnulib-lib/Makefile.gnulib
+--- gettext-0.22.5/gettext-tools/gnulib-lib/Makefile.gnulib	2024-03-13 12:46:16
++++ gettext-0.22.5-dirty/gettext-tools/gnulib-lib/Makefile.gnulib	2024-03-13 12:46:33
+@@ -62,6 +62,7 @@
+ #  c-strcasestr \
+ #  c-strstr \
+ #  clean-temp \
++#  close \
+ #  closedir \
+ #  closeout \
+ #  configmake \
+diff -ruN gettext-0.22.5/gettext-tools/gnulib-lib/Makefile.in gettext-0.22.5-dirty/gettext-tools/gnulib-lib/Makefile.in
+--- gettext-0.22.5/gettext-tools/gnulib-lib/Makefile.in	2024-03-13 12:48:23
++++ gettext-0.22.5-dirty/gettext-tools/gnulib-lib/Makefile.in	2024-03-13 12:48:40
+@@ -76,6 +76,7 @@
+ #  c-strcasestr \
+ #  c-strstr \
+ #  clean-temp \
++#  close \
+ #  closedir \
+ #  closeout \
+ #  configmake \
+diff -ruN gettext-0.22.5/gettext-tools/gnulib-m4/gnulib-cache.m4 gettext-0.22.5-dirty/gettext-tools/gnulib-m4/gnulib-cache.m4
+--- gettext-0.22.5/gettext-tools/gnulib-m4/gnulib-cache.m4	2024-03-13 12:45:46
++++ gettext-0.22.5-dirty/gettext-tools/gnulib-m4/gnulib-cache.m4	2024-03-13 12:46:06
+@@ -67,6 +67,7 @@
+ #  c-strcasestr \
+ #  c-strstr \
+ #  clean-temp \
++#  close \
+ #  closedir \
+ #  closeout \
+ #  configmake \
+@@ -214,6 +215,7 @@
+   c-strcasestr
+   c-strstr
+   clean-temp
++  close
+   closedir
+   closeout
+   configmake
