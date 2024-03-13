@@ -9,20 +9,14 @@ sources = [
     GitSource("https://github.com/paullouisageneau/libdatachannel.git", "9cbe6a2a1f21cde901bca9571581a96c6cda03cf")
 ]
 
-# x86_64 Apple needs MacOS SDK 10.14
-sources_apple = [
-    sources...,
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz", "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
-]
-
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ ${target} == x86_64*mingw* ]]; then
     export OPENSSL_ROOT_DIR="${prefix}/lib64"
 fi
-cd $WORKSPACE/srcdir/libdatachannel
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+    wget -qO- https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz | tar -xJ
     # LLVM 15+ requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
@@ -32,6 +26,7 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+cd $WORKSPACE/srcdir/libdatachannel
 git submodule update --init --recursive --depth 1
 cmake -B build \
     -DUSE_GNUTLS=0 \
@@ -46,8 +41,7 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-platforms = filter(x -> !(Sys.isapple(x) && arch(x) == "x86_64"), expand_cxxstring_abis(platforms))
-apple_platform = filter(x -> Sys.isapple(x) && arch(x) == "x86_64", supported_platforms())
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -60,5 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources_apple, script, apple_platform, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13.2.0")
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13.2.0")
