@@ -11,8 +11,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libdatachannel
+cd $WORKSPACE/srcdir/libdatachannel
 git submodule update --init --recursive --depth 1
 cmake -B build -DUSE_GNUTLS=0 -DUSE_NICE=0 -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
