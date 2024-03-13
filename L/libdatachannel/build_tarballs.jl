@@ -11,6 +11,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ ${target} == x86_64*mingw* ]]; then
+    export OPENSSL_ROOT_DIR=$WORKSPACE/destdir/lib64
+fi
 cd $WORKSPACE/srcdir/libdatachannel
 git submodule update --init --recursive --depth 1
 cmake -B build \
