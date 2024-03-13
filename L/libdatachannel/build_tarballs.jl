@@ -6,7 +6,9 @@ name = "libdatachannel"
 version = v"0.20.2"
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/paullouisageneau/libdatachannel.git", "9cbe6a2a1f21cde901bca9571581a96c6cda03cf")
+    GitSource("https://github.com/paullouisageneau/libdatachannel.git", "9cbe6a2a1f21cde901bca9571581a96c6cda03cf"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz", 
+               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +18,6 @@ if [[ ${target} == x86_64*mingw* ]]; then
 fi
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
-    wget -qO- https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz | tar -xJ
     # LLVM 15+ requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
