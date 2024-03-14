@@ -18,13 +18,15 @@ if [[ ${target} == x86_64*mingw* ]]; then
 fi
 
 if [[ ${target} == *musl* ]]; then
-    mkdir -p ${prefix}/include/sys
-    touch ${prefix}/include/sys/random.h
-    cat >> ${prefix}/include/sys/random.h <<EOF
-        #include <sys/syscall.h>
-        #define getrandom(buf, sz, flags) syscall(SYS_getrandom, buf, sz, flags)
-        #endif
-    EOF
+mkdir -p ${prefix}/include/sys
+touch ${prefix}/include/sys/random.h
+cat >> ${prefix}/include/sys/random.h <<EOF
+#include <sys/syscall.h>
+#define getrandom(buf, sz, flags) syscall(SYS_getrandom, buf, sz, flags)
+#endif
+
+EOF
+
 fi
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
