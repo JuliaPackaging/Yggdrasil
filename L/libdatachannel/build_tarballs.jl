@@ -17,6 +17,16 @@ if [[ ${target} == x86_64*mingw* ]]; then
     export OPENSSL_ROOT_DIR="${prefix}/lib64"
 fi
 
+if [[ ${target} == *musl* ]]; then
+    mkdir -p ${prefix}/include/sys
+    touch ${prefix}/include/sys/random.h
+    cat >> ${prefix}/include/sys/random.h <<EOF
+        #include <sys/syscall.h>
+        #define getrandom(buf, sz, flags) syscall(SYS_getrandom, buf, sz, flags)
+        #endif
+    EOF
+fi
+
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     # LLVM 15+ requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
