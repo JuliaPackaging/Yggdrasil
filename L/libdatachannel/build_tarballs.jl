@@ -21,10 +21,10 @@ if [[ ${target} == *musl* ]]; then
 mkdir -p ${prefix}/include/sys
 touch ${prefix}/include/sys/random.h
 cat >> ${prefix}/include/sys/random.h <<EOF
-#include <sys/syscall.h>
 #define _XOPEN_SOURCE 700
+#include <sys/types.h>
+#include <sys/syscall.h>
 #define getrandom(buf, sz, flags) syscall(SYS_getrandom, buf, sz, flags)
-#endif
 
 EOF
 
