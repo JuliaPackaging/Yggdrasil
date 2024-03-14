@@ -37,6 +37,7 @@ cmake -B build \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
+install_license $WORKSPACE/srcdir/libdatachannel/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
