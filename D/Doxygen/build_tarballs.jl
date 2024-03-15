@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "Doxygen"
-version = v"1.9.8"
+#TODO version = v"1.9.8"
+version = v"1.10.0"
 
 # Notes
 # - compile error on g++ < 8
@@ -11,16 +12,24 @@ version = v"1.9.8"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/doxygen/doxygen/releases/download/Release_$(version.major)_$(version.minor)_$(version.patch)/doxygen-$(version).src.tar.gz",
-                  "05e3d228e8384b5f3af9c8fd6246d22804acb731a3a24ce285c8986ed7e14f62"),
+                  #TODO "05e3d228e8384b5f3af9c8fd6246d22804acb731a3a24ce285c8986ed7e14f62"),
+                  "dd7c556b4d96ca5e682534bc1f1a78a5cfabce0c425b14c1b8549802686a4442"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/doxygen*/
+cd $WORKSPACE/srcdir/doxygen*
+
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/skip-iconv-in-glibc-test.patch
 fi
+
+# Avoid error
+# /workspace/srcdir/doxygen-1.10.0/deps/filesystem/filesystem.hpp:4681:11: error: no member named 'utimensat' in the global namespace
+# See <https://github.com/doxygen/doxygen/issues/10055>.
+atomic_patch -p1 ../patches/utimensat.patch
+
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
