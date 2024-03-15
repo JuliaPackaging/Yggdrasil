@@ -3,15 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "Doxygen"
-version = v"1.9.2"
+version = v"1.9.8"
 
 # Notes
 # - compile error on g++ < 8
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/doxygen/doxygen/archive/refs/tags/Release_$(version.major)_$(version.minor)_$(version.patch).tar.gz",
-                  "40f429241027ea60f978f730229d22e971786172fdb4dc74db6406e7f6c034b3"),
+    ArchiveSource("https://github.com/doxygen/doxygen/releases/download/Release_$(version.major)_$(version.minor)_$(version.patch)/doxygen-$(version).src.tar.gz",
+                  "05e3d228e8384b5f3af9c8fd6246d22804acb731a3a24ce285c8986ed7e14f62"),
     DirectorySource("./bundled"),
 ]
 
