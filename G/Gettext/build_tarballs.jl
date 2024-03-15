@@ -8,22 +8,28 @@ version = VersionNumber(version_string)
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
                   "fe10c37353213d78a5b83d48af231e005c4da84db5ce88037d88355938259640"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
+script = """
+VERSION_MAJOR=$(version.major)
+VERSION_MINOR=$(version.minor)
+VERSION_PATCH=$(version.patch)
+""" *
+raw"""
 cd $WORKSPACE/srcdir/gettext-*
 
 export CFLAGS="-O2"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
-# Correct Windows build error:
-#    .libs/libgettextsrc_la-write-catalog.o:write-catalog.c:(.text+0x7bf):
-#    undefined reference to `close_used_without_requesting_gnulib_module_close':
-# See <https://savannah.gnu.org/bugs/?63371>
-atomic_patch -p1 ../patches/close.patch
+if [[ "${target}" == *-mingw* ]]; then
+    # Correct Windows build error:
+    #    .libs/libgettextsrc_la-write-catalog.o:write-catalog.c:(.text+0x7bf):
+    #    undefined reference to `close_used_without_requesting_gnulib_module_close':
+    # See <https://github.com/NixOS/nixpkgs/pull/280197>
+    sed -i "s/@GNULIB_CLOSE@/1/" */*/unistd.in.h
+fi
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -35,6 +41,11 @@ atomic_patch -p1 ../patches/close.patch
     am_cv_func_iconv=yes
 make -j${nproc}
 make install
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Rename Windows library
+    mv ${bindir}/libgettextlib-${VERSION_MAJOR}-${VERSION_MINOR}-${VERSION_PATCH}.${dlext} ${bindir}/libgettextlib-${VERSION_MAJOR}.${dlext}
+fi
 """
 
 # These are the platforms we will build for by default, unless further
