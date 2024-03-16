@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Avro"
-version = v"11.1.3"
+version = v"1.11.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/apache/avro/archive/refs/tags/release-1.11.3.zip", "2bf7192eff598ef9b2fb1a4e4da2c39cf3929bf0c77719b8f8abe6ccf1a7bc3e")
+    GitSource("https://github.com/apache/avro.git", "c21a60943e5d1f9375d295809876b7b6dd4d58ae")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd avro-release-1.11.3/lang/c
+cd avro/lang/c/
 mkdir build
 cd build
 cmake .. -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DTHREADSAFE=true
@@ -36,7 +36,8 @@ platforms = [
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
     Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; )
+    Platform("aarch64", "macos"; ),
+    Platform("x86_64", "freebsd"; )
 ]
 
 
