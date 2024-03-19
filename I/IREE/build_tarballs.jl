@@ -34,12 +34,16 @@ git \
 # ln -s ${host_prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-tblgen
 # ln -s ${host_prefix}/tools/mlir-pdll ${prefix}/tools/mlir-pdll
 
+rm /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/local
+ln -s ${host_prefix} /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/local
+
 # 1. build IREE binaries for host
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
 CMAKE_FLAGS+=(-DIREE_ERROR_ON_MISSING_SUBMODULES=OFF)
-CMAKE_FLAGS+=(-DIREE_BUILD_COMPILER=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_COMPILER=ON)
 CMAKE_FLAGS+=(-DIREE_BUILD_TESTS=OFF)
 CMAKE_FLAGS+=(-DIREE_BUILD_DOCS=OFF)
 CMAKE_FLAGS+=(-DIREE_BUILD_SAMPLES=OFF)
@@ -50,6 +54,8 @@ CMAKE_FLAGS+=(-DIREE_BUILD_BINDINGS_TFLITE=OFF)
 CMAKE_FLAGS+=(-DIREE_BUILD_BINDINGS_TFLITE_JAVA=OFF)
 
 CMAKE_FLAGS+=(-DIREE_CUDA_AVAILABLE=OFF)
+CMAKE_FLAGS+=(-DIREE_HAL_DRIVER_CUDA=OFF)
+CMAKE_FLAGS+=(-DIREE_HAL_DRIVER_VULKAN=OFF)
 
 CMAKE_FLAGS+=(-DLLVM_DIR=${host_prefix}/lib/cmake/llvm)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS=OFF)
@@ -131,6 +137,7 @@ for llvm_version in llvm_versions
         BuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
+        HostBuildDependency(PackageSpec(name="LLD_jll", version=llvm_version)),
     ]
 
     for platform in platforms
