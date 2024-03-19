@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1200.200"
-gap_lib_version = v"400.1201.200"
+gap_version = v"400.1300.0"
+gap_lib_version = v"400.1300.0"
 name = "ferret"
-upstream_version = "1.0.9" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "1.0.10" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/ferret/releases/download/v$(upstream_version)/ferret-$(upstream_version).tar.gz",
-                  "ec332222e2858410f861b0b184fab13aaf251e7c91977e45f7bb9dfd3a56e424"),
+                  "4eed3189feb25a6acdc89a0903b4261225190997b6f958d4b389ddfe5dc40b5d"),
 ]
 
 # Bash recipe for building across all platforms
