@@ -149,4 +149,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     end
 """)
 
-# rebuild trigger: 1
+# rebuild trigger: 2
