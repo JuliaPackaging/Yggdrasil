@@ -7,39 +7,28 @@ version = v"1.11.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/avro.git", "c21a60943e5d1f9375d295809876b7b6dd4d58ae")
+    GitSource("https://github.com/apache/avro.git",
+              "c21a60943e5d1f9375d295809876b7b6dd4d58ae"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd avro/lang/c/
-mkdir build
-cd build
-cmake .. -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DTHREADSAFE=true
+cd ${WORKSPACE}/srcdir/avro/lang/c/
+atomic_patch -p3 ${WORKSPACE}/srcdir/patches/avro-windows.patch
+cmake -B build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DTHREADSAFE=true \
+      -DBUILD_TESTING=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "freebsd"; )
-]
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -48,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Jansson_jll", uuid="83cbd138-b029-500a-bd82-26ec0fbaa0df"))
+    Dependency(PackageSpec(name="Jansson_jll", uuid="83cbd138-b029-500a-bd82-26ec0fbaa0df"); compat="2.14.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
