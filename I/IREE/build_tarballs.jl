@@ -138,6 +138,7 @@ for llvm_version in llvm_versions
         HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="LLD_jll", version=llvm_version)),
+        HostBuildDependency(PackageSpec(name="Clang_jll", version=llvm_version)),
     ]
 
     for platform in platforms
