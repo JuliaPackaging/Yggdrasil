@@ -24,6 +24,9 @@ cmake -B build \
       -DBUILD_TESTING=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+# Delete static library
+rm ${prefix}/lib/libavro.a
 """
 
 # These are the platforms we will build for by default, unless further
