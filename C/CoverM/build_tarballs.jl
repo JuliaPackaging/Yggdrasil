@@ -26,7 +26,10 @@ platforms = filter!(supported_platforms()) do platform
     # Windows can't compile the dep htslib-rust for now, and I don't care about
     # other platforms
     (Sys.isapple(platform) || Sys.islinux(platform)) &&
-    in(arch(platform), ("x86_64", "aarch64"))
+    in(arch(platform), ("x86_64", "aarch64")) &&
+
+    # aarch64 linux errors, https://github.com/rust-bio/rust-htslib/issues/425
+    !(arch(platform) == "aarch64" && Sys.islinux(platform))
 end
 
 # The products that we will ensure are always built
