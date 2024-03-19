@@ -30,15 +30,44 @@ git \
     submodule update --init --recursive
 
 # need to run mlir-tblgen and mlir-pdll on the host
-rm ${prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-pdll
-ln -s ${host_prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-tblgen
-ln -s ${host_prefix}/tools/mlir-pdll ${prefix}/tools/mlir-pdll
+# rm ${prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-pdll
+# ln -s ${host_prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-tblgen
+# ln -s ${host_prefix}/tools/mlir-pdll ${prefix}/tools/mlir-pdll
 
+# 1. build IREE binaries for host
+CMAKE_FLAGS=()
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+
+CMAKE_FLAGS+=(-DIREE_ERROR_ON_MISSING_SUBMODULES=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_COMPILER=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_TESTS=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_DOCS=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_SAMPLES=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_PYTHON_BINDINGS=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_TRACY=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_BUNDLED_LLVM=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_BINDINGS_TFLITE=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_BINDINGS_TFLITE_JAVA=OFF)
+
+CMAKE_FLAGS+=(-DIREE_CUDA_AVAILABLE=OFF)
+
+CMAKE_FLAGS+=(-DLLVM_DIR=${host_prefix}/lib/cmake/llvm)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS=OFF)
+CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=ON)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
+CMAKE_FLAGS+=(-DLLVM_EXTERNAL_LIT=${host_prefix}/tools/lit/lit.py)
+
+cmake -B build/host -S . -GNinja ${CMAKE_FLAGS[@]}
+ninja -C build/host -j ${nproc} all
+
+# 2. build IREE for target
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
+
+CMAKE_FLAGS+=(-DIREE_HOST_BIN_DIR=${PWD}/build/host/bin)
 
 CMAKE_FLAGS+=(-DIREE_ERROR_ON_MISSING_SUBMODULES=OFF)
 CMAKE_FLAGS+=(-DIREE_BUILD_COMPILER=OFF)
@@ -73,8 +102,8 @@ CMAKE_FLAGS+=(-DLLVM_EXTERNAL_LIT=${prefix}/tools/lit/lit.py)
 
 CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 
-cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build -j ${nproc} all
+cmake -B build/target -S . -GNinja ${CMAKE_FLAGS[@]}
+ninja -C build/target -j ${nproc} all
 """
 
 platforms = supported_platforms()
@@ -99,8 +128,9 @@ for llvm_version in llvm_versions
 
     dependencies = [
         Dependency("MLIR_jll", llvm_version),
-        BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+        BuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
+        HostBuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
     ]
 
     for platform in platforms
