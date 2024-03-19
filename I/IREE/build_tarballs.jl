@@ -161,7 +161,7 @@ for (i, build) in enumerate(builds)
         products,
         build.dependencies;
         julia_compat="1.11",
-        preferred_gcc_version=v"12",
+        preferred_gcc_version=v"13",
         augment_platform_block,
         lazy_artifacts=true)
 end
