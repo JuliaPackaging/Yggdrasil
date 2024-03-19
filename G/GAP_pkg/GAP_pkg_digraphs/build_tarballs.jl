@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1200.200"
-gap_lib_version = v"400.1201.200"
+gap_version = v"400.1300.0"
+gap_lib_version = v"400.1300.0"
 name = "digraphs"
-upstream_version = "1.6.1" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "1.7.1" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/digraphs/Digraphs/releases/download/v$(upstream_version)/digraphs-$(upstream_version).tar.gz",
-                  "f5297d8aadd7ea7496725ec60591c515110b93d35fd74cd7c7aecac5a7578089"),
+                  "58331be5192d23f0af617822cedd77b0f613e7db7aba345d6d9eec226c4b8514"),
 ]
 
 # Bash recipe for building across all platforms
