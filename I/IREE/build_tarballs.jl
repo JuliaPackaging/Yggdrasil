@@ -80,7 +80,16 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
 CMAKE_FLAGS+=(-DLLVM_EXTERNAL_LIT=${host_prefix}/tools/lit/lit.py)
 
 cmake -B build/host -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build/host -j ${nproc} all
+ninja -C build/host -j ${nproc} iree-tblgen iree-flatcc-cli generate_embed_data iree-compile iree-opt iree-run-mlir iree-run-module
+install -c \
+    build/host/tools/iree-tblgen \
+    build/host/build_tools/third_party/flatcc/iree-flatcc-cli \
+    build/host/build_tools/embed_data/generate_embed_data \
+    build/host/tools/iree-compile \
+    build/host/tools/iree-opt \
+    build/host/tools/iree-run-mlir \
+    build/host/tools/iree-run-module \
+    ${host_prefix}/bin
 
 # 2. build IREE for target
 CMAKE_FLAGS=()
