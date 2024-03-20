@@ -72,8 +72,6 @@ CMAKE_FLAGS+=(-DIREE_INPUT_TOSA=OFF)
 
 CMAKE_FLAGS+=(-DIREE_TARGET_BACKEND_DEFAULTS=OFF)
 
-CMAKE_FLAGS+=(-DIREE_LINK_COMPILER_SHARED_LIBRARY=OFF)
-
 CMAKE_FLAGS+=(-DLLVM_DIR=${host_prefix}/lib/cmake/llvm)
 # disable LLVM assertions due to bug https://github.com/llvm/llvm-project/issues/73248
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS=OFF) 
