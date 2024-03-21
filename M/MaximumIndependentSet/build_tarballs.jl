@@ -7,13 +7,14 @@ version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "f10a3ff4de7d9d4f3fd37680ec8dbb08cd3555a6")
+    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "8a4d5f24f818800eb41ac4c7e8a3f663b96500d3")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/MaximumIndependentSet/src/
-cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+Julia_PREFIX=${prefix}
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DJulia_PREFIX=${Julia_PREFIX} -DJlCxx_DIR=$prefix/lib/cmake/JlCxx
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
@@ -21,6 +22,10 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+#platforms = [
+#    Platform("x86_64", "linux"; libc = "glibc"),
+#]
+
 
 # The products that we will ensure are always built
 products = Product[
@@ -29,6 +34,9 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+	Dependency("libcxxwrap_julia_jll"),
+	Dependency("libjulia_jll")
+	
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
