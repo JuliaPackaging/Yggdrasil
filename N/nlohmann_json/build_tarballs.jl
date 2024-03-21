@@ -25,7 +25,7 @@ make -j${nproc} install
 
 """
 
-platforms = supported_platforms()                                                       
+platforms = [AnyPlatform()]
 
 products = [
    FileProduct("include/nlohmann/json.hpp", :json_hpp),
