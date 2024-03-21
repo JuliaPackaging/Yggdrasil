@@ -3,7 +3,7 @@ using BinaryBuilder
 name = "MaximumIndependentSet"
 version = v"0.1.1"
 sources = [
-    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "8273981d35f45321658849db512f4e4c66987089"),
+    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "acf502d3e991952f554eda01c8b94a1114e50d02"),
 ]
 
 script = raw"""
