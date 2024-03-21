@@ -1,21 +1,22 @@
 using BinaryBuilder
 
 name = "MaximumIndependentSet"
-version = v"0.1"
+version = v"0.1.1"
 sources = [
-    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "3b37c113bd2e1b93bf38808f036632a731f0349b"),
+    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "8273981d35f45321658849db512f4e4c66987089"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/MaximumIndependentSet
-make -j${nproc}
-make install
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 platforms = supported_platforms()
-filter!(t -> os(t) in ["linux"], platforms)
-filter!(t -> arch(t) == "x86_64", platforms)
-filter!(t -> isnothing(libc(t)) ||  libc(t) == "glibc", platforms)
+#filter!(t -> os(t) in ["linux"], platforms)
+#filter!(t -> arch(t) == "x86_64", platforms)
+#filter!(t -> isnothing(libc(t)) || libc(t) == "glibc", platforms)
 
 products = [
     LibraryProduct("libmis", :libmis),
@@ -33,4 +34,4 @@ build_tarballs(ARGS,
                products,
                dependencies,
                julia_compat = "1.9";
-               preferred_gcc_version=v"11")
+               preferred_gcc_version=v"9")
