@@ -1,37 +1,35 @@
-using BinaryBuilder
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
 
 name = "MaximumIndependentSet"
-version = v"0.1.1"
+version = v"0.1.2"
+
+# Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "950f57e52d98dc511491a92eac12d487a427ed27"),
+    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "d16dda9b8cb2c1011ba0ba9fc3f68be36bbe1c7b")
 ]
 
+# Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/MaximumIndependentSet/build
-cmake -B . -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-cmake --build . --parallel ${nproc}
+cd $WORKSPACE/srcdir/MaximumIndependentSet/src/
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
 platforms = supported_platforms()
-#filter!(t -> os(t) in ["linux"], platforms)
-#filter!(t -> arch(t) == "x86_64", platforms)
-#filter!(t -> isnothing(libc(t)) || libc(t) == "glibc", platforms)
 
-products = [
-    LibraryProduct("libmis", :libmis),
+# The products that we will ensure are always built
+products = Product[
+	LibraryProduct(["libmis", "mislib"], :mis)
 ]
 
-dependencies = [
+# Dependencies that must be installed before this package can be built
+dependencies = Dependency[
 ]
 
-build_tarballs(ARGS,
-               name,
-               version,
-               sources,
-               script,
-               platforms,
-               products,
-               dependencies,
-               julia_compat = "1.9";
-               preferred_gcc_version=v"9")
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9.1.0")
