@@ -17,7 +17,6 @@ cd CoreBlas/
 cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
-logout
 """
 
 # These are the platforms we will build for by default, unless further
