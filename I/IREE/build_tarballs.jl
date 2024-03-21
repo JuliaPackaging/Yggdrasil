@@ -11,6 +11,7 @@ version = v"0.0.599" # corresponds to tag `candidate-20230731.599`, last release
 
 sources = [
     GitSource("https://github.com/openxla/iree.git", "cf5d348e78eaa893589d8f8553ddc967e38fa2cf"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 llvm_versions = [v"17.0.6+1"]
@@ -29,15 +30,21 @@ git \
     -c submodule."third_party/tracy".update=none \
     submodule update --init --recursive
 
-# need to run mlir-tblgen and mlir-pdll on the host
-# rm ${prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-pdll
-# ln -s ${host_prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-tblgen
-# ln -s ${host_prefix}/tools/mlir-pdll ${prefix}/tools/mlir-pdll
+# apply patch
+atomic_patch -p1 ../patches/fix-missing-link-to-hal_executable_loader.patch
+atomic_patch -p1 ../patches/fix-import-host-binaries-on-compiler-crosscompile.patch
+
+# binaries needed by target pipeline but to be run on host
+rm ${prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-pdll ${prefix}/tools/clang-17 ${prefix}/tools/llvm-link
+ln -s ${host_prefix}/tools/mlir-tblgen ${prefix}/tools/mlir-tblgen
+ln -s ${host_prefix}/tools/mlir-pdll ${prefix}/tools/mlir-pdll
+ln -s ${host_prefix}/tools/clang-17 ${prefix}/tools/clang-17
+ln -s ${host_prefix}/tools/llvm-link ${prefix}/tools/llvm-link
 
 rm /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/local
 ln -s ${host_prefix} /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/local
 
-# 1. build IREE binaries for host
+# 1. build IREE for host
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${host_prefix})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Debug)
@@ -80,16 +87,17 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_LLD="OFF")
 CMAKE_FLAGS+=(-DLLVM_EXTERNAL_LIT=${host_prefix}/tools/lit/lit.py)
 
 cmake -B build/host -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build/host -j ${nproc} iree-tblgen iree-flatcc-cli generate_embed_data iree-compile iree-opt iree-run-mlir iree-run-module
-install -c \
-    build/host/tools/iree-tblgen \
-    build/host/build_tools/third_party/flatcc/iree-flatcc-cli \
-    build/host/build_tools/embed_data/generate_embed_data \
-    build/host/tools/iree-compile \
-    build/host/tools/iree-opt \
-    build/host/tools/iree-run-mlir \
-    build/host/tools/iree-run-module \
-    ${host_prefix}/bin
+# ninja -C build/host -j ${nproc} iree-tblgen iree-flatcc-cli generate_embed_data iree-compile iree-opt iree-run-mlir iree-run-module
+# install -c \
+#     build/host/tools/iree-tblgen \
+#     build/host/build_tools/third_party/flatcc/iree-flatcc-cli \
+#     build/host/build_tools/embed_data/generate_embed_data \
+#     build/host/tools/iree-compile \
+#     build/host/tools/iree-opt \
+#     build/host/tools/iree-run-mlir \
+#     build/host/tools/iree-run-module \
+#     ${host_prefix}/bin
+cmake --build build/host --parallel ${nproc} --target install
 
 # 2. build IREE for target
 CMAKE_FLAGS=()
@@ -101,7 +109,7 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 CMAKE_FLAGS+=(-DIREE_HOST_BIN_DIR=${host_prefix}/bin)
 
 CMAKE_FLAGS+=(-DIREE_ERROR_ON_MISSING_SUBMODULES=OFF)
-CMAKE_FLAGS+=(-DIREE_BUILD_COMPILER=OFF)
+CMAKE_FLAGS+=(-DIREE_BUILD_COMPILER=ON)
 CMAKE_FLAGS+=(-DIREE_BUILD_TESTS=OFF)
 CMAKE_FLAGS+=(-DIREE_BUILD_DOCS=OFF)
 CMAKE_FLAGS+=(-DIREE_BUILD_SAMPLES=OFF)
@@ -123,6 +131,12 @@ CMAKE_FLAGS+=(-DIREE_INPUT_STABLEHLO=ON)
 CMAKE_FLAGS+=(-DIREE_INPUT_TORCH=OFF)
 CMAKE_FLAGS+=(-DIREE_INPUT_TOSA=ON)
 
+# avoid checks when cross-compiling
+CMAKE_FLAGS+=(-DHAVE_THREAD_SAFETY_ATTRIBUTES=0)
+CMAKE_FLAGS+=(-DHAVE_STD_REGEX=0)
+CMAKE_FLAGS+=(-DHAVE_POSIX_REGEX=0)
+CMAKE_FLAGS+=(-DHAVE_STEADY_CLOCK=0)
+
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 
 CMAKE_FLAGS+=(-DLLVM_DIR=${prefix}/lib/cmake/llvm)
@@ -134,7 +148,18 @@ CMAKE_FLAGS+=(-DLLVM_EXTERNAL_LIT=${prefix}/tools/lit/lit.py)
 CMAKE_FLAGS+=(-DMLIR_DIR=${prefix}/lib/cmake/mlir)
 
 cmake -B build/target -S . -GNinja ${CMAKE_FLAGS[@]}
-ninja -C build/target -j ${nproc} all
+
+# generate iree-tblgen
+# ninja -C build/target -j ${nproc} iree-tblgen
+
+# rename it and link host's version
+# mv build/target/tools/iree-tblgen build/target/tools/iree-tblgen-target
+# ln -s ${host_prefix}/bin/iree-tblgen build/target/tools/iree-tblgen
+
+cmake --build build/target --parallel ${nproc} --target install
+# rm build/target/tools/iree-tblgen
+# mv build/target/tools/iree-tblgen-target build/target/tools/iree-tblgen
+# install -c build/target/tools/iree-tblgen ${prefix}/bin
 """
 
 platforms = supported_platforms()
@@ -160,6 +185,8 @@ for llvm_version in llvm_versions
     dependencies = [
         Dependency("MLIR_jll", llvm_version),
         BuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
+        BuildDependency(PackageSpec(name="LLD_jll", version=llvm_version)),
+        BuildDependency(PackageSpec(name="Clang_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="LLVM_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="LLD_jll", version=llvm_version)),
