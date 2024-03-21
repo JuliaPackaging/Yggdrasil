@@ -12,7 +12,7 @@ MPItrampoline_compat_version="5.2.1"
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "681d11bd589952b137d062d4fc3567fa5ba3bc28")                 ]
+                    "21fde26b1d9047260933df73b45916af29ec6fc8")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
