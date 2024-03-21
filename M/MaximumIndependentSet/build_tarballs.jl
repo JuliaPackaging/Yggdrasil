@@ -7,7 +7,7 @@ version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "26faa2c3422c7b18f090d9865b16e272d9a6d90e")
+    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "f10a3ff4de7d9d4f3fd37680ec8dbb08cd3555a6")
 ]
 
 # Bash recipe for building across all platforms
