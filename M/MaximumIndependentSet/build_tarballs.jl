@@ -19,7 +19,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/MaximumIndependentSet/src/
 Julia_PREFIX=${prefix}
-cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DJulia_PREFIX=${Julia_PREFIX} -DJlCxx_DIR=$prefix/lib/cmake/JlCxx
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DJulia_PREFIX=${Julia_PREFIX} \
+    -DJlCxx_DIR=$prefix/lib/cmake/JlCxx
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
@@ -32,8 +37,8 @@ platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
-products = Product[
-	LibraryProduct(["libmis", "mislib"], :mis)
+products = [
+    LibraryProduct(["libmis", "mislib"], :mis)
 ]
 
 # Dependencies that must be installed before this package can be built
