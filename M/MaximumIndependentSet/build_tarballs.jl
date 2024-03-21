@@ -21,10 +21,10 @@ cmake --install build
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; 
-	exclude=[Platform("i686", "linux"; libc = "musl")
-		]
-)
+
+include("../../L/libjulia/common.jl") 
+platforms = vcat(libjulia_platforms.(julia_versions)...) 
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -32,9 +32,9 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-	Dependency("libcxxwrap_julia_jll"),
-	Dependency("libjulia_jll")
+dependencies = [
+	Dependency("libcxxwrap_julia_jll"; compat = "~0.12.2"),
+	BuildDependency(PackageSpec(; name = "libjulia_jll", version = v"1.10.9"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
