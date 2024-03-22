@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MaximumIndependentSet"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
