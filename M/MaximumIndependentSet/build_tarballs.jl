@@ -12,7 +12,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "8a4d5f24f818800eb41ac4c7e8a3f663b96500d3")
+    GitSource("https://github.com/claud10cv/MaximumIndependentSet.git", "e0cb96071fec44be214f3c9f874b5755e9257726")
 ]
 
 # Bash recipe for building across all platforms
