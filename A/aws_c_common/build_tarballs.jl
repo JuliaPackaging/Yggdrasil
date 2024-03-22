@@ -15,6 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-common
 
+mkdir build && cd build
+if [[ "${target}" =~ "mingw" ]]; then
+   # Require Windows 7
+   export CFLAGS="-D_WIN32_WINNT=0x0601"
+fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 	-DBUILD_TESTING=OFF \
