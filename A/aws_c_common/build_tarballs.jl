@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_common"
-version = v"0.9.3"
+version = v"0.9.14"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-c-common.git",
-              "997380c904671f88086847e8dc839bceab3d7821"),
+              "fcadc0dd5d8a26134c8bbf08c58e30eff50d177b"),
     DirectorySource("./bundled"),
 ]
 
