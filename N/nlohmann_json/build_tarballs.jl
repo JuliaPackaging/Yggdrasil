@@ -16,8 +16,8 @@ mkdir build
 cd build
 
 CMAKE_ARGS="-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-            -DCMAKE_FIND_ROOT_PATH='${prefix}/lib/mpich;${prefix}' \
-            -DCMAKE_INSTALL_PREFIX=$prefix"
+            -DCMAKE_FIND_ROOT_PATH=${prefix} \
+            -DCMAKE_INSTALL_PREFIX=${prefix}"
 
 cmake .. ${CMAKE_ARGS}
 
