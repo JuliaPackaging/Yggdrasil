@@ -47,6 +47,13 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
+# Add compatibity with older Julia versions
+platform_compat = [
+    "1.0" => filter(p -> !(arch(p) == "armv6l" || (Sys.isapple(p) && arch(p) == "aarch64")), platforms),
+    "1.6" => filter(p -> (arch(p) == "armv6l" || (Sys.isapple(p) && arch(p) == "aarch64")), platforms),
+]
+
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("lib_lightgbm", :lib_lightgbm),
@@ -62,4 +69,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
+for (julia_compat, platforms) in platform_compat
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat=julia_compat, preferred_gcc_version = v"8")
+end
