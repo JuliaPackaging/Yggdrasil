@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "neper"
-version = v"4.5.0"
+version = v"4.8.1"
 
 sources = [
-    GitSource("https://github.com/neperfepx/neper", "dc5ae599fbab702bdbd9bc55ec0074b0dbaf28c0")
+    GitSource("https://github.com/neperfepx/neper", "2a51636a76d7c91a3877e2fa96cb3039b45fd0c8")
 ]
 
 script = raw"""
