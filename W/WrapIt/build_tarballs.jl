@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 name = "WrapIt"
-version = v"1.1.1"
+version = v"1.3.1"
 
 #Clang_jll version used for the build. Required clang libraries will be shipped with the package.
 clang_vers=v"16.0.6+3"
@@ -10,7 +10,7 @@ clang_vers_maj=string(clang_vers.major)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "85276a28d1d1d0f7719d7d798534bb265f462606")
+    GitSource("https://github.com/grasph/wrapit.git", "d04af84417f2c3d580ce22695ceb7eb15d624e9a")
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
@@ -35,7 +35,14 @@ clang_resource_dir=clang/res
 cd "$WORKSPACE/srcdir"
 mkdir build
 cd build/
-cmake -GNinja -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=True -DCLANG_JLL=True -DCLANG_RESOURCE_DIR="$clang_resource_dir" ../wrapit/
+cmake -GNinja \
+-DCMAKE_INSTALL_PREFIX=$prefix \
+-DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
+-DCMAKE_BUILD_TYPE=Release \
+-DCLANG_JLL=True \
+-DOPENSSL_USE_STATIC_LIBS=True \
+-DCLANG_RESOURCE_DIR="$clang_resource_dir" \
+../wrapit/
 cmake --build .
 cmake --install .
 #
@@ -122,6 +129,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
     BuildDependency(PackageSpec(name="Clang_jll", uuid="0ee61d77-7f21-5576-8119-9fcc46b10100", version=clang_vers))
+    BuildDependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95", version=v"1.1.23+0"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
