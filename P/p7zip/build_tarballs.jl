@@ -1,4 +1,5 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "p7zip"
 version_string = "17.05"
@@ -80,9 +81,12 @@ products = [
     ExecutableProduct("7z", :p7zip),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=llvm_version)
