@@ -46,7 +46,7 @@ if [[ "${target}" == *-apple-mpitrampoline ]]; then
                -DMPI_hwloc_LIBRARY=${libdir}/libhwloc.dylib"
 fi
 
-cmake .. ${CMAKE_ARGS} || cmake .. ${CMAKE_ARGS}
+cmake .. ${CMAKE_ARGS}
 
 make -j${nproc} install
 
