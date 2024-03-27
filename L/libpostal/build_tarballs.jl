@@ -36,7 +36,7 @@ make install
 # platforms are passed in on the command line
 # aarch64-linux has an assembler error: "Error: conditional branch out of range"
 # This is a rare enough platform we just exclude for now
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true, exclude=p -> p.tags["os"] == "linux" && p.tags["arch"] == "aarch64"))
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> p.tags["os"] == "linux" && p.tags["arch"] == "aarch64"))
 
 # The products that we will ensure are always built
 products = [
