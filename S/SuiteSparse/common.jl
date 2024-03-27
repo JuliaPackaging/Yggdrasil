@@ -1,6 +1,5 @@
 using BinaryBuilder, Pkg
 
-
 # Collection of sources required to build SuiteSparse
 function suitesparse_sources(version::VersionNumber; kwargs...)
     suitesparse_version_sources = Dict(
