@@ -1,0 +1,50 @@
+From 35db9933bd3c2041d0accf6d67862f32c8dfe3a4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Wed, 27 Dec 2023 10:31:18 +0100
+Subject: [PATCH] Disable tblgen lsp server
+
+---
+ mlir/lib/Tools/CMakeLists.txt | 2 +-
+ mlir/test/CMakeLists.txt      | 2 +-
+ mlir/tools/CMakeLists.txt     | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/mlir/lib/Tools/CMakeLists.txt b/mlir/lib/Tools/CMakeLists.txt
+index 6175a1ce5..7c5f275df 100644
+--- a/mlir/lib/Tools/CMakeLists.txt
++++ b/mlir/lib/Tools/CMakeLists.txt
+@@ -7,4 +7,4 @@ add_subdirectory(mlir-tblgen)
+ add_subdirectory(mlir-translate)
+ add_subdirectory(PDLL)
+ add_subdirectory(Plugins)
+-add_subdirectory(tblgen-lsp-server)
++# add_subdirectory(tblgen-lsp-server)
+diff --git a/mlir/test/CMakeLists.txt b/mlir/test/CMakeLists.txt
+index c21984beb..f4ad0a6da 100644
+--- a/mlir/test/CMakeLists.txt
++++ b/mlir/test/CMakeLists.txt
+@@ -103,7 +103,7 @@ set(MLIR_TEST_DEPENDS
+   mlir-reduce
+   mlir-tblgen
+   mlir-translate
+-  tblgen-lsp-server
++  # tblgen-lsp-server
+   )
+ 
+ # The native target may not be enabled, in this case we won't
+diff --git a/mlir/tools/CMakeLists.txt b/mlir/tools/CMakeLists.txt
+index e9a1e4d62..014ebdbb2 100644
+--- a/mlir/tools/CMakeLists.txt
++++ b/mlir/tools/CMakeLists.txt
+@@ -7,7 +7,7 @@ add_subdirectory(mlir-shlib)
+ add_subdirectory(mlir-spirv-cpu-runner)
+ add_subdirectory(mlir-translate)
+ add_subdirectory(mlir-vulkan-runner)
+-add_subdirectory(tblgen-lsp-server)
++# add_subdirectory(tblgen-lsp-server)
+ 
+ # mlir-cpu-runner requires ExecutionEngine.
+ if(MLIR_ENABLE_EXECUTION_ENGINE)
+-- 
+2.31.0
+

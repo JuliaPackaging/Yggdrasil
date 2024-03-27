@@ -1,0 +1,17 @@
+diff --git a/mlir/CMakeLists.txt b/mlir/CMakeLists.txt
+index c91e9cd93dc8..9260cdc1c83e 100644
+--- a/mlir/CMakeLists.txt
++++ b/mlir/CMakeLists.txt
+@@ -17,6 +17,12 @@ endif()
+ include(GNUInstallDirs)
+ set(CMAKE_CXX_STANDARD 17)
+ 
++if(MINGW OR CYGWIN)
++  set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
++  set(CMAKE_C_VISIBILITY_PRESET hidden)
++  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
++endif()
++
+ if(MLIR_STANDALONE_BUILD)
+   find_package(LLVM CONFIG REQUIRED)
+   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${LLVM_CMAKE_DIR})
