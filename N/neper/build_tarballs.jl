@@ -4,7 +4,7 @@ name = "neper"
 version = v"4.8.2"
 
 sources = [
-    GitSource("https://github.com/neperfepx/neper", "/bdf117bb71755abcac19f33deb498343f1c8fdda")
+    GitSource("https://github.com/neperfepx/neper", "bdf117bb71755abcac19f33deb498343f1c8fdda")
 ]
 
 script = raw"""
