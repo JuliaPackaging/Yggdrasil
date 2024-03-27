@@ -7,7 +7,7 @@ version = v"23.8.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Rabab53/CoreBlas.git", "a03f4a518e8896cfbc0712cb71f0420449daf592")
+    GitSource("https://github.com/Rabab53/CoreBlas.git", "a0550b87d7b94aff49e65e8a79c5d884f5a08680")
 ]
 
 # Bash recipe for building across all platforms
