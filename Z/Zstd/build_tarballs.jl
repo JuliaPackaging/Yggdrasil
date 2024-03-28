@@ -22,7 +22,20 @@ elif [[ "${target}" == i686-*-mingw* ]]; then
     sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-D_WIN32_WINNT=_WIN32_WINNT_VISTA']/" ${MESON_TARGET_TOOLCHAIN}
 fi
 
+# Meson doesn't know how to handle the linker on
+# aarch64-apple-darwin. We thus pretend to use a different linker there.
+# We are going to switch back once Meson is done.
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    sed -i 's+aarch64-apple-darwin20-ld+aarch64-apple-darwin20-ld64.lld+' "${MESON_TARGET_TOOLCHAIN}"
+fi
+
+mkdir -p ${libdir}
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" ../build/meson
+
+# The different linker (see above) doesn't actually work, so we switch back.
+if [[ "${target}" == aarch64-apple-darwin* ]]; then
+    sed -i 's+aarch64-apple-darwin20-ld64.lld+aarch64-apple-darwin20-ld+' build.ninja
+fi
 
 # Meson beautifully forces thin archives, without checking whether the dynamic linker
 # actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
