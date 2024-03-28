@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "wget"
-version = v"1.21.4"
+version = v"1.24.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/wget/wget-$(version).tar.gz",
-                  "81542f5cefb8faacc39bbbc6c82ded80e3e4a88505ae72ea51df27525bcde04c")
+                  "fa2dc35bab5184ecbc46a9ef83def2aaaa3f4c9f3c97d4bd19dcb07d4da637de")
 ]
 
 # Bash recipe for building across all platforms
