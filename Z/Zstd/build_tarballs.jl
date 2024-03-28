@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Zstd"
-version = v"1.5.5"
+version = v"1.5.6"
 
 sources = [
     ArchiveSource("https://github.com/facebook/zstd/releases/download/v$version/zstd-$version.tar.gz",
-                  "9c4396cc829cfae319a6e2615202e82aad41372073482fce286fac78646d3ee4"),
+                  "8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1"),
 ]
 
 script = raw"""
