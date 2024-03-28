@@ -1,6 +1,5 @@
 using BinaryBuilder, Pkg
 
-
 # Collection of sources required to build SuiteSparse
 function suitesparse_sources(version::VersionNumber; kwargs...)
     suitesparse_version_sources = Dict(
@@ -39,6 +38,10 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
         v"7.6.1" => [
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "d4dad6c1d0b5cb3e7c5d7d01ef55653713567662")
+        ],
+        v"7.7.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "13806726cbf470914d012d132a85aea1aff9ee77")
         ],
     )
     return Any[
