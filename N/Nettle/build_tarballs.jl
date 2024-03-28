@@ -2,18 +2,17 @@ using BinaryBuilder
 
 # Collection of sources required to build Nettle
 name = "Nettle"
-version = v"3.7.2"
+version = v"3.9.1"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/nettle/nettle-$(version).tar.gz",
-                  "8d2a604ef1cde4cd5fb77e422531ea25ad064679ff0adf956e78b3352e0ef162"),
+                  "ccfeff981b0ca71bbd6fbcb054f407c60ffb644389a5be80d6716d5b550c6ce3"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/nettle-*/
-atomic_patch -p1 ../patches/alloca.patch
+cd $WORKSPACE/srcdir/nettle-*
 # Include patch for finding definition of `AT_HWCAP2` within the Linux
 # kernel headers, rather than the glibc headers, since our glibc is too old
 atomic_patch -p1 ../patches/AT_HWCAP2-linux_headers.patch
