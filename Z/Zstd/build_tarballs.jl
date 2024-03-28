@@ -9,7 +9,7 @@ sources = [
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/zstd-*/
+cd ${WORKSPACE}/srcdir/zstd-*
 mkdir build-zstd && cd build-zstd
 
 if [[ "${target}" == *86*-linux-gnu ]]; then
@@ -22,7 +22,7 @@ elif [[ "${target}" == i686-*-mingw* ]]; then
     sed -ri "s/^c_args = \[(.*)\]/c_args = [\1, '-D_WIN32_WINNT=_WIN32_WINNT_VISTA']/" ${MESON_TARGET_TOOLCHAIN}
 fi
 
-meson --cross-file="${MESON_TARGET_TOOLCHAIN}" ../build/meson/
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" ../build/meson
 
 # Meson beautifully forces thin archives, without checking whether the dynamic linker
 # actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
