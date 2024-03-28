@@ -44,4 +44,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Use GCC 7 to prevent errors on powerpc6ele:
+#     poly1305-internal-2.s:180: Error: unrecognized opcode: `mtvsrdd'
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"7")
