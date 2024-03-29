@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "NetCDFF"
-version = v"4.6.0"
+version = v"4.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v$(version).tar.gz",
-                  "8194aa70e400c0adfc456127c1d97af2c6489207171d13b10cd754a16da8b0ca"),
+    ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-fortran/$(version)/netcdf-fortran-$(version).tar.gz",
+                  "b50b0c72b8b16b140201a020936aa8aeda5c79cf265c55160986cd637807a37a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,4 +48,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # Note: for some reason GCC 4.8 is still linked to glibc 2.12, we
+               # need to use GCC 5 to have glibc 2.17.
+               julia_compat="1.6", preferred_gcc_version=v"5")
