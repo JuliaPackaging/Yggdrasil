@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"1.0.15985"#.7
+version = v"1.0.16238"#.4
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,12 +27,12 @@ version = v"1.0.15985"#.7
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "6cc111d262e1c3abcf4bc6b6d8a589ebf821a5c0"),
-    GitSource("https://github.com/intel/opencl-clang.git", "cf95b338d14685e4f3402ab1828bef31d48f1fd6" #= branch ocl-open-140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "493353d7fdc655f9f31abc874dd0adef7dd241c1" #= branch llvm_release_140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f0cc85efdbbe3a46eae90e0f915dc1509836d0fc" #= tag v2023.6.rc1 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "cca08c63cefa129d082abca0302adcb81610b465"),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "da892e1982b6c25b9a133f85b4ac97142d8a3def" #= latest version: v0.16.0 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "3e5856539819d7c0c65ff38218528bc6495f01c3"),
+    GitSource("https://github.com/intel/opencl-clang.git", "980f1691c5babcf824ee10375a04a0d0c5d7d44a" #= branch ocl-open-140 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "e60319207a24715a67534a1e4fd9727d37abf515" #= branch llvm_release_140 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "04896c462d9f3f504c99a4698605b6524af813c1" #= tag v2024.1.rc1 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "4f7b471f1a66b6d06462cd4ba57628cc0cd087d7"), #= master =#
+    GitSource("https://github.com/intel/vc-intrinsics.git", "f9c34404d0ea9abad83875a10bd48d88cea90ebd" #= latest version: v0.18.0 =#),
     GitSource("https://github.com/llvm/llvm-project.git", "c12386ae247c0d46e1d513942e322e3a0510b126" #= branch llvmorg-14.0.5 =#),
     # patches
     DirectorySource("./bundled"),
