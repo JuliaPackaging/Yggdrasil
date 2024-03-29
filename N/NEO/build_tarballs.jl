@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "NEO"
-version = v"24.05.28454"#.6
+version = v"24.09.28717"#.12
 
 # Collection of sources required to build this package.
 sources = [
     GitSource("https://github.com/intel/compute-runtime.git",
-              "23a9725e62c8181193c90e5e5207507a1f136587"),
+              "9e5ba367ca25915031955feff36ea0f6e61d4247"),
 ]
 
 # Bash recipe for building across all platforms
@@ -87,9 +87,9 @@ products = [
 #       when using a non-public release, refer to the compiled manifest
 #       https://github.com/intel/compute-runtime/blob/master/manifests/manifest.yml.
 dependencies = [
-    Dependency("gmmlib_jll"; compat="=22.3.11"),
-    Dependency("libigc_jll"; compat="=1.0.15985"),
-    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.9.1"; compat="1.7.8"),
+    Dependency("gmmlib_jll"; compat="=22.3.17"),
+    Dependency("libigc_jll"; compat="=1.0.16238"),
+    Dependency("oneAPI_Level_Zero_Headers_jll", v"1.9.2"; compat="1.7.8"),
 ]
 
 augment_platform_block = raw"""
