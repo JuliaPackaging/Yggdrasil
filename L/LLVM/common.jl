@@ -177,6 +177,9 @@ PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     PROJECTS+=(mlir)
 fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" && ( "${target}" == *linux* )]]; then
+    PROJECTS+=(bolt)
+fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
@@ -639,6 +642,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         push!(products, LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true))
         push!(products, ExecutableProduct("lld", :lld, "tools"))
         push!(products, ExecutableProduct("dsymutil", :dsymutil, "tools"))
+    end
+    if version >= v"14"
+        push!(products, ExecutableProduct("llvm-bolt", :llvm_bolt, "tools"))
     end
 
     name = "LLVM_full"
