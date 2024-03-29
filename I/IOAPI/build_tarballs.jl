@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "IOAPI"
-version = v"3.2.0"
+version = v"3.2.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -140,13 +140,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.701.400 - 400.799")
-    Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84"))
+    Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="400.902.208 - 400.999")
+    Dependency(PackageSpec(name="NetCDFF_jll", uuid="78e728a9-57fe-5d11-897c-5014b89e5f84"); compat="4.6.0")
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
-    # `MbedTLS_jll` is an indirect dependency through NetCDF, we need to specify
-    # a compatible build version for this to work.
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")
