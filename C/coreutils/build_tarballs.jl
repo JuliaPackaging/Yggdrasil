@@ -3,31 +3,37 @@
 using BinaryBuilder, Pkg
 
 name = "coreutils"
-version = v"9.1"
+version = v"9.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz",
-                  "61a1f410d78ba7e7f37a5a4f50e6d1320aca33375484a3255eddf17a38580423")
+                  "cd328edeac92f6a665de9f323c93b712af1858bc2e0d88f3f7100469470a1b8a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/coreutils-9.*
 
-# Fix `configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)`
-if [[ ${target} == x86_64-linux-musl* ]]; then
-    export FORCE_UNSAFE_CONFIGURE=1
-fi
+#TODO # Fix `configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)`
+#TODO if [[ ${target} == x86_64-linux-musl* ]]; then
+#TODO     export FORCE_UNSAFE_CONFIGURE=1
+#TODO fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+args=()
+#TODO if [[ ${nbits} == 32 ]]; then
+#TODO     args+=(--disable-year2038)
+#TODO fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> !(Sys.islinux(p) | Sys.isfreebsd(p)))
+#TODO platforms = supported_platforms(; exclude=p -> !(Sys.islinux(p) | Sys.isfreebsd(p)))
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
