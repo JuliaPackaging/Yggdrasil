@@ -13,27 +13,44 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/coreutils-9.*
+cd $WORKSPACE/srcdir/coreutils*
 
-#TODO # Fix `configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)`
-#TODO if [[ ${target} == x86_64-linux-musl* ]]; then
-#TODO     export FORCE_UNSAFE_CONFIGURE=1
-#TODO fi
+# Fix `configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)`
+if [[ ${target} == x86_64-linux-musl* ]]; then
+    export FORCE_UNSAFE_CONFIGURE=1
+fi
 
 args=()
-#TODO if [[ ${nbits} == 32 ]]; then
-#TODO     args+=(--disable-year2038)
-#TODO fi
+
+# Fix ```
+# configure: error: could not enable timestamps after mid-January 2038.
+# This package recommends support for these later
+# timestamps. However, to proceed with signed 32-bit
+# time_t even though it will fail then, configure with
+# '--disable-year2038'.
+# ```
+if [[ ${nbits} == 32 ]]; then
+    args+=(--disable-year2038)
+fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 make -j${nproc}
 make install
+
+if [[ "${dlext}" != "so" ]]; then
+    # Rename shared libraries on Darwin
+    mv ${prefix}/libexec/coreutils/libstdbuf.so ${prefix}/libexec/coreutils/libstdbuf.${dlext}
+fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#TODO platforms = supported_platforms(; exclude=p -> !(Sys.islinux(p) | Sys.isfreebsd(p)))
-platforms = supported_platforms()
+
+# The coreutils `configure` stage cannot determine how to get file
+# system stats, possily because it calls `AC_RUN` which doesn't work
+# when cross-compiling. This fails outright for Windows. For Apple,
+# everything works except that the `df` executable is not built.
+platforms = supported_platforms(; exclude=p->Sys.iswindows(p) || Sys.isapple(p))
 
 # The products that we will ensure are always built
 products = [
