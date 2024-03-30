@@ -29,10 +29,11 @@ rm ${prefix}/lib/*.a
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"),
     Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "windows"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
 ]
 platforms = expand_gfortran_versions(platforms)
 
