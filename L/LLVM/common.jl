@@ -177,7 +177,7 @@ PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     PROJECTS+=(mlir)
 fi
-if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
+if [[ "${LLVM_MAJ_VER}" -ge "14" ]]; then
     PROJECTS+=(bolt)
 fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
