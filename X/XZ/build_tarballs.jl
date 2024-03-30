@@ -3,12 +3,17 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.6.1"
+# NOTE: DO NOT UPDATE to v5.6.0 or later versions, unless it is demonstrated the
+# code is free from malicious backdoors, see for example
+# * https://www.openwall.com/lists/oss-security/2024/03/29/4
+# * https://boehs.org/node/everything-i-know-about-the-xz-backdoor
+version = v"5.4.6"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/tukaani-project/xz/releases/download/v$(version)/xz-$(version).tar.xz",
-                  "f334777310ca3ae9ba07206d78ed286a655aa3f44eec27854f740c26b2cd2ed0"),
+                  # NOTE: see comment above about changing version
+                  "cdafe1632f139c82937cc1ed824f7a60b7b0a0619dfbbd681dcac02b1ac28f5b"),
 ]
 
 # Bash recipe for building across all platforms
