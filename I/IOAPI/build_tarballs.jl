@@ -7,7 +7,9 @@ version = v"3.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cjcoats/ioapi-3.2.git", "ef5d5f4e112c249b593b19426421f25d79ae094b")
+    GitSource("https://github.com/cjcoats/ioapi-3.2.git",
+              "ef5d5f4e112c249b593b19426421f25d79ae094b"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -15,6 +17,8 @@ script = raw"""
 apk add tcsh # Build script is in csh
 
 cd $WORKSPACE/srcdir/ioapi-3.2/ioapi/
+# Patch from https://github.com/cjcoats/ioapi-3.2/pull/14
+atomic_patch -p2 ../../patches/clang-exit-stdlib.patch
 install_license ../LICENSE
 export HOME=${WORKSPACE}/srcdir
 export BIN=tmp
@@ -65,8 +69,8 @@ make CC=cc CXX=c++
 cd $BINDIR
 
 rm *.o 
-mv *.mod ${includedir} # Move FORTRAN mod files to include dir, they are used by some dependencies
-mv * $bindir # Move executables to bindir
+mv -v *.mod ${includedir} # Move FORTRAN mod files to include dir, they are used by some dependencies
+mv -v * $bindir # Move executables to bindir
 """
 
 # These are the platforms we will build for by default, unless further
