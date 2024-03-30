@@ -38,10 +38,14 @@ if [[ "${target}" == *mingw* ]]; then
     sed -i 's/\#include <sys\/wait.h>//g' systemf.c
 fi
 
-cp Makefile.nocpl Makefile
-cp Makeinclude.Linux2_x86_64gfort Makeinclude.$BIN
+cp -v Makefile.nocpl Makefile
+if [[ ${target} == aarch64-apple-* ]]; then
+   cp -v Makeinclude.Linux2_x86_64gfort10 Makeinclude.$BIN
+else
+   cp -v Makeinclude.Linux2_x86_64gfort Makeinclude.$BIN
+fi
 
-make # Parallel make (-j > 1) does not work
+make CC=cc CXX=c++ # Parallel make (-j > 1) does not work
 
 cp *.h ${includedir} # C header files
 cp fixed_src/* ${includedir} # FORTRAN .EXT (include) files
@@ -55,8 +59,8 @@ fi
 rm ${BINDIR}/libioapi.a
 
 cd ../m3tools/
-cp Makefile.nocpl Makefile
-make
+cp -v Makefile.nocpl Makefile
+make CC=cc CXX=c++
 
 cd $BINDIR
 
