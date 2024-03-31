@@ -7,7 +7,7 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/claud10cv/CutBranching.git", "9a1f5745eab88759aa6c3180030eb739a5d4f403")
+    GitSource("https://github.com/claud10cv/CutBranching.git", "46c14849e75e647045eac97764d31815d9a2f9d2")
 ]
 
 # Bash recipe for building across all platforms
