@@ -16,7 +16,6 @@ cd $WORKSPACE/srcdir/am-13.0/src/
 make am
 install -Dvm 755 "am${exeext}" "${bindir}/am${exeext}"
 install_license ./LICENSE
-exit
 """
 
 # These are the platforms we will build for by default, unless further
