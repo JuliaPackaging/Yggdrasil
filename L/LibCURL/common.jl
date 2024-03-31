@@ -74,8 +74,8 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
             export CFLAGS=-mmacosx-version-min=10.11
         fi
     else
-        # On all other systems, we use MbedTLS
-        FLAGS+=(--with-mbedtls=${prefix})
+        # On all other systems, we use OpenSSL
+        FLAGS+=(--with-openssl)
     fi
 
     if false; then
@@ -128,9 +128,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         Dependency("LibSSH2_jll"),
         Dependency("Zlib_jll"),
         Dependency("nghttp2_jll"),
-        # Note that while we unconditionally list MbedTLS as a dependency,
-        # we default to schannel/SecureTransport on Windows/MacOS.
-        Dependency("MbedTLS_jll"; compat="~2.28.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        Dependency("OpenSSL_jll"; compat="3.0.8", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),

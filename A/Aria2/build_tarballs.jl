@@ -15,13 +15,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/aria2-*/
 
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-
+# Note: we explicitly set `LIBSSH2_LIBS` to avoid pulling in mbedtls when
+# linking to older builds of libssh2.
 ./configure \
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-pic --enable-shared --enable-libaria2 \
-    --with-openssl --with-libxml2 --with-libz --with-libssh2
+    --with-openssl --with-libxml2 --with-libz --with-libssh2 \
+    LIBSSH2_LIBS="-L${libdir} -lssh2 "
 
 make -j${nproc}
 make install
@@ -45,11 +45,6 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="Cares_jll")),
     Dependency(PackageSpec(name="LibSSH2_jll")),
-    # `MbedTLS_jll` is a dependency of `LibSSH2_jll`.  Strangely, we
-    # are getting a newer version in the build than the one
-    # `LibSSH2_jll` was compiled with.  So we explicitly select the
-    # right version here.
-    BuildDependency(PackageSpec(name="MbedTLS_jll", version=v"2.28")),
     Dependency(PackageSpec(name="OpenSSL_jll"); compat="3.0.8"),
     Dependency(PackageSpec(name="XML2_jll")),
     Dependency(PackageSpec(name="Zlib_jll")),
