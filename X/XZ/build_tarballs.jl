@@ -7,18 +7,27 @@ name = "XZ"
 # code is free from malicious backdoors, see for example
 # * https://www.openwall.com/lists/oss-security/2024/03/29/4
 # * https://boehs.org/node/everything-i-know-about-the-xz-backdoor
-version = v"5.4.6"
+# v5.2.5 is the last stable version without commits from the backdoor author
+version = v"5.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/tukaani-project/xz/releases/download/v$(version)/xz-$(version).tar.xz",
-                  # NOTE: see comment above about changing version
-                  "cdafe1632f139c82937cc1ed824f7a60b7b0a0619dfbbd681dcac02b1ac28f5b"),
+    GitSource("https://git.tukaani.org/xz.git",
+              # NOTE: see comment above about changing version
+              "2327a461e1afce862c22269b80d3517801103c1b"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/xz-*
+cd $WORKSPACE/srcdir/xz*
+# Patch is only needed for version < v"5.2.6"
+git apply ../patches/xzgrep-ZDI-CAN-16587.patch
+if [[ "${target}" != "*mingw32*" ]]; then
+    # install `autopoint`
+    apk update && apk add gettext-dev po4a
+fi
+./autogen.sh
 BUILD_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic)
 
 # i686 error "configure works but build fails at crc32_x86.S"
@@ -44,6 +53,8 @@ else
         ./configure "${BUILD_FLAGS[@]}" "${TOGGLE[@]}"
         make -j${nproc}
         make install
+        # Toggle does not work with v5.2.5 without clean
+        make clean
     done
 fi
 """
