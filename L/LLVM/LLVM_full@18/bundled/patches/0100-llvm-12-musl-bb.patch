@@ -12,13 +12,13 @@ diff --git a/compiler-rt/lib/fuzzer/FuzzerInterceptors.cpp b/compiler-rt/lib/fuz
 index b87798603fda..452a08aafe0e 100644
 --- a/compiler-rt/lib/fuzzer/FuzzerInterceptors.cpp
 +++ b/compiler-rt/lib/fuzzer/FuzzerInterceptors.cpp
-@@ -26,6 +26,7 @@
- 
+@@ -27,6 +27,7 @@
  #include <cassert>
+ #include <cstddef> // for size_t
  #include <cstdint>
 +#include <stddef.h>
  #include <dlfcn.h> // for dlsym()
- 
+
  static void *getFuncAddr(const char *name, uintptr_t wrapper_addr) {
 diff --git a/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp b/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp
 index 12dd39e674ac..bb0f7a2daa8c 100644
@@ -32,6 +32,6 @@ index 12dd39e674ac..bb0f7a2daa8c 100644
  #include <sys/vt.h>
  #include <linux/cdrom.h>
  #include <linux/fd.h>
--- 
+--
 2.31.1
 
