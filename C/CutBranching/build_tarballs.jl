@@ -23,6 +23,7 @@ cmake --install build
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(x -> libc(x) != "musl", platforms)
+filter!(x -> os(x) != "windows", platforms)
 #platforms = [
 #    Platform("x86_64", "linux"; libc = "glibc"),
 #]
