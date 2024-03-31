@@ -13,8 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/am-13.0/src/
-make am
-install -Dvm 755 "am${exeext}" "${bindir}/am${exeext}"
+make -j ${nproc} am
+install -Dvm 755 "am" "${bindir}/am"
 install_license ./LICENSE
 """
 
