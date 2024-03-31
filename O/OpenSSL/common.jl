@@ -42,6 +42,10 @@ function translate_target()
 ./Configure shared --prefix=$prefix --libdir=${libdir} $(translate_target)
 make -j${nproc}
 make install_sw
+
+# Manually delete static libraries, not possible to skip them:
+# <https://github.com/openssl/openssl/issues/8823>.
+rm -v ${libdir}/lib{crypto,ssl}.a
 """
 
 # These are the platforms we will build for by default, unless further
@@ -51,4 +55,3 @@ platforms = supported_platforms(; experimental=true)
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
 ]
-
