@@ -39,7 +39,7 @@ function translate_target()
     fi
 }
 
-./Configure shared --prefix=$prefix $(translate_target)
+./Configure shared --prefix=$prefix --libdir=${libdir} $(translate_target)
 make -j${nproc}
 make install_sw
 """
