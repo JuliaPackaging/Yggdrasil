@@ -3,30 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_common"
-version = v"0.9.3"
+version = v"0.9.14"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-c-common.git",
-              "997380c904671f88086847e8dc839bceab3d7821"),
-    DirectorySource("./bundled"),
+              "fcadc0dd5d8a26134c8bbf08c58e30eff50d177b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-common
-
-# Upstreamed in <https://github.com/awslabs/aws-c-common/pull/1058>.
-# Patch for MinGW toolchain
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/add-winnt-h.patch"
-find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
-     -e 's/Shlwapi.h/shlwapi.h/g' \
-     '{}' \;
-sed -i -e 's/BCrypt/bcrypt/g' \
-    -e 's/Kernel32/kernel32/g' \
-    -e 's/Ws2_32/ws2_32/g' \
-    -e 's/Shlwapi/shlwapi/g' \
-    CMakeLists.txt
 
 mkdir build && cd build
 if [[ "${target}" =~ "mingw" ]]; then

@@ -9,15 +9,11 @@ version = v"1.11.0"
 sources = [
     ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
                   "3736161e41e2693324deb38c26cfdc3efe6209d634ba4258db1cecff6a5ad461"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*/
-
-# Apply patch from https://github.com/libssh2/libssh2/pull/1054
-atomic_patch -p1 ../patches/0001-mbedtls-use-more-size_t-to-sync-up-with-crypto.h.patch
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
@@ -26,7 +22,6 @@ fi
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
-    -DCRYPTO_BACKEND=mbedTLS
     -DBUILD_SHARED_LIBS=ON
     -DBUILD_STATIC_LIBS=OFF
     -DBUILD_EXAMPLES=OFF
@@ -35,6 +30,13 @@ BUILD_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 )
+
+# Use native backend on Windows, OpenSSL on others
+if [[ ${target} == *-mingw* ]]; then
+    BUILD_FLAGS+=(-DCRYPTO_BACKEND=WinCNG)
+else
+    BUILD_FLAGS+=(-DCRYPTO_BACKEND=OpenSSL)
+fi
 
 mkdir build && cd build
 
@@ -57,7 +59,7 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll"; compat="~2.28.0"),
+    Dependency("OpenSSL_jll"; compat="3.0.8", platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]

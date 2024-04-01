@@ -2,32 +2,35 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "oneAPI_Support_Headers"
-version = v"2024.1.0"
+name = "AM"
+version = v"13.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://anaconda.org/intel/mkl-devel-dpcpp/2024.1.0/download/linux-64/mkl-devel-dpcpp-2024.1.0-intel_691.tar.bz2",
-                  "abae8c0903e438bce8acfdf2b790d10863669490a87f19a908942268d5fabc82")
+    ArchiveSource("https://zenodo.org/records/8161261/files/am-13.0.tgz", "1298257dc6a1f50aabc495bc7055e27975f03b67bb28e8f59f812ff39ddd3a36")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir $includedir
-cp -r include/oneapi $includedir
+cd $WORKSPACE/srcdir/am-13.0/src/
+make -j ${nproc} am
+install -Dvm 755 "am" "${bindir}/am${exeext}"
+install_license ./LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [AnyPlatform()]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("include/oneapi/mkl.hpp", :mkl_hpp)
+    ExecutableProduct("am", :am)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

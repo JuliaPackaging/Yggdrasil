@@ -3,7 +3,7 @@ include("../common.jl")
 using Base.BinaryPlatforms: arch, os
 
 name = "SuiteSparse_GPU"
-version_str = "7.6.0"
+version_str = "7.7.0"
 version = VersionNumber(version_str)
 
 sources = suitesparse_sources(version)
