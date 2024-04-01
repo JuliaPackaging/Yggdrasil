@@ -1,8 +1,14 @@
 # To ensure a build, it isn't sufficient to modify highs_common.jl.
 # You also need to update a line in this file:
-#     Last updated: 2024-03-07
+#     Last updated: 2024-04-02
 
 include("../highs_common.jl")
+
+# !!! warning
+#     Temporarily over-ride the `version` so that we can make a new release that
+#     removes the Zlib_jll dependency. If you're updating HiGHS to a new version
+#     you should delete this line.
+version = v"1.7.1"
 
 script = build_script(shared_libs = "OFF")
 
@@ -19,7 +25,10 @@ dependencies = [
     # is a build-only dependency, in the other cases it's also a runtime one.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
-    Dependency("Zlib_jll"),
+    # !!! warning
+    #     TODOW(odow): temporarily disable Zlib_jll because it is not linked correctly.
+    #     Debug with upstream.
+    # Dependency("Zlib_jll"),
 ]
 
 build_tarballs(
