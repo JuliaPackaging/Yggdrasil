@@ -27,7 +27,6 @@ fi
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
-    -DCRYPTO_BACKEND=OpenSSL
     -DBUILD_SHARED_LIBS=ON
     -DBUILD_STATIC_LIBS=OFF
     -DBUILD_EXAMPLES=OFF
@@ -36,6 +35,13 @@ BUILD_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 )
+
+# Use native backend on Windows, OpenSSL on others
+if [[ ${target} == *-mingw* ]]; then
+    BUILD_FLAGS+=(-DCRYPTO_BACKEND=WinCNG)
+else
+    BUILD_FLAGS+=(-DCRYPTO_BACKEND=OpenSSL)
+fi
 
 mkdir build && cd build
 
