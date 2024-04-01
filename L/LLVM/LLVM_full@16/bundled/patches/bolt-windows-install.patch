@@ -1,5 +1,5 @@
 diff --git a/bolt/CMakeLists.txt b/bolt/CMakeLists.txt
-index a9bc770a95e93b..2e702d40668b4e 100644
+index 91b62cf4e250..bd04cde6c36a 100644
 --- a/bolt/CMakeLists.txt
 +++ b/bolt/CMakeLists.txt
 @@ -4,6 +4,9 @@ set(BOLT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -9,10 +9,10 @@ index a9bc770a95e93b..2e702d40668b4e 100644
 +# Add path for custom modules.
 +list(INSERT CMAKE_MODULE_PATH 0 "${BOLT_SOURCE_DIR}/cmake/modules")
 +
- # Determine default set of targets to build -- the intersection of
- # those BOLT supports and those LLVM is targeting.
- set(BOLT_TARGETS_TO_BUILD_all "AArch64;X86")
-@@ -111,6 +114,15 @@ endif()
+ set(BOLT_ENABLE_RUNTIME OFF)
+ if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+   set(BOLT_ENABLE_RUNTIME ON)
+@@ -73,6 +76,15 @@ endif()
 
  find_program(GNU_LD_EXECUTABLE NAMES ${LLVM_DEFAULT_TARGET_TRIPLE}-ld.bfd ld.bfd DOC "GNU ld")
 
@@ -30,7 +30,7 @@ index a9bc770a95e93b..2e702d40668b4e 100644
    ${CMAKE_CURRENT_BINARY_DIR}/include
 diff --git a/bolt/cmake/modules/AddBOLT.cmake b/bolt/cmake/modules/AddBOLT.cmake
 new file mode 100644
-index 00000000000000..1f69b9046320a7
+index 000000000000..1f69b9046320
 --- /dev/null
 +++ b/bolt/cmake/modules/AddBOLT.cmake
 @@ -0,0 +1,36 @@
@@ -71,7 +71,7 @@ index 00000000000000..1f69b9046320a7
 +  llvm_install_symlink(BOLT ${name} ${dest} ALWAYS_GENERATE COMPONENT bolt)
 +endmacro()
 diff --git a/bolt/test/CMakeLists.txt b/bolt/test/CMakeLists.txt
-index 216a785b7d69f1..89862fd59eb8ec 100644
+index 898ac3ee3b85..e5701b0f8798 100644
 --- a/bolt/test/CMakeLists.txt
 +++ b/bolt/test/CMakeLists.txt
 @@ -37,7 +37,6 @@ list(APPEND BOLT_TEST_DEPS
@@ -82,16 +82,17 @@ index 216a785b7d69f1..89862fd59eb8ec 100644
    llvm-bolt-heatmap
    llvm-bat-dump
    llvm-dwarfdump
-@@ -52,7 +51,6 @@ list(APPEND BOLT_TEST_DEPS
+@@ -51,7 +50,7 @@ list(APPEND BOLT_TEST_DEPS
    llvm-objcopy
    merge-fdata
    not
 -  perf2bolt
-   split-file
++  split-file
    yaml2obj
    )
+
 diff --git a/bolt/tools/CMakeLists.txt b/bolt/tools/CMakeLists.txt
-index 52050fb8b00561..22ea3b9bd805f3 100644
+index 52050fb8b005..22ea3b9bd805 100644
 --- a/bolt/tools/CMakeLists.txt
 +++ b/bolt/tools/CMakeLists.txt
 @@ -2,16 +2,6 @@ set(BOLT_TOOLS_INSTALL_DIR "${CMAKE_INSTALL_BINDIR}" CACHE PATH
@@ -112,7 +113,7 @@ index 52050fb8b00561..22ea3b9bd805f3 100644
  add_subdirectory(llvm-bolt-fuzzer)
  add_subdirectory(bat-dump)
 diff --git a/bolt/tools/bat-dump/CMakeLists.txt b/bolt/tools/bat-dump/CMakeLists.txt
-index 71d4f3e64ccda2..037b7d2662ae4c 100644
+index 71d4f3e64ccd..037b7d2662ae 100644
 --- a/bolt/tools/bat-dump/CMakeLists.txt
 +++ b/bolt/tools/bat-dump/CMakeLists.txt
 @@ -3,7 +3,7 @@ set(LLVM_LINK_COMPONENTS
@@ -131,7 +132,7 @@ index 71d4f3e64ccda2..037b7d2662ae4c 100644
 -
 -set_target_properties(llvm-bat-dump PROPERTIES FOLDER "BOLT")
 diff --git a/bolt/tools/driver/CMakeLists.txt b/bolt/tools/driver/CMakeLists.txt
-index 1c596194ffe802..9bf9ff85edc7b4 100644
+index 1c596194ffe8..9bf9ff85edc7 100644
 --- a/bolt/tools/driver/CMakeLists.txt
 +++ b/bolt/tools/driver/CMakeLists.txt
 @@ -30,22 +30,6 @@ target_link_libraries(llvm-bolt
@@ -160,7 +161,7 @@ index 1c596194ffe802..9bf9ff85edc7b4 100644
 -include_directories( ${BOLT_SOURCE_DIR}/lib )
 +include_directories(${BOLT_SOURCE_DIR}/lib)
 diff --git a/bolt/tools/heatmap/CMakeLists.txt b/bolt/tools/heatmap/CMakeLists.txt
-index 9f52ddb02102ee..acddc7a50e8b1f 100644
+index 9f52ddb02102..acddc7a50e8b 100644
 --- a/bolt/tools/heatmap/CMakeLists.txt
 +++ b/bolt/tools/heatmap/CMakeLists.txt
 @@ -17,4 +17,4 @@ target_link_libraries(llvm-bolt-heatmap
@@ -170,7 +171,7 @@ index 9f52ddb02102ee..acddc7a50e8b1f 100644
 -set_target_properties(llvm-bolt-heatmap PROPERTIES FOLDER "BOLT")
 +add_dependencies(bolt llvm-bolt-heatmap)
 diff --git a/bolt/tools/merge-fdata/CMakeLists.txt b/bolt/tools/merge-fdata/CMakeLists.txt
-index 9405acb6ab68d9..f6a87a2268982e 100644
+index 9405acb6ab68..f6a87a226898 100644
 --- a/bolt/tools/merge-fdata/CMakeLists.txt
 +++ b/bolt/tools/merge-fdata/CMakeLists.txt
 @@ -8,14 +8,8 @@ add_bolt_tool(merge-fdata
@@ -188,32 +189,11 @@ index 9405acb6ab68d9..f6a87a2268982e 100644
 
  # Emit relocations for BOLT meta test (bolt/test/runtime/meta-merge-fdata.test)
  if (BOLT_INCLUDE_TESTS AND UNIX AND NOT APPLE)
-diff --git a/clang/cmake/caches/Fuchsia-stage2.cmake b/clang/cmake/caches/Fuchsia-stage2.cmake
-index 6d868abf212020..78c123f1913057 100644
---- a/clang/cmake/caches/Fuchsia-stage2.cmake
-+++ b/clang/cmake/caches/Fuchsia-stage2.cmake
-@@ -6,7 +6,7 @@ set(LLVM_TARGETS_TO_BUILD X86;ARM;AArch64;RISCV CACHE STRING "")
-
- set(PACKAGE_VENDOR Fuchsia CACHE STRING "")
-
--set(_FUCHSIA_ENABLE_PROJECTS "clang;clang-tools-extra;lld;llvm;polly")
-+set(_FUCHSIA_ENABLE_PROJECTS "bolt;clang;clang-tools-extra;lld;llvm;polly")
- set(LLVM_ENABLE_RUNTIMES "compiler-rt;libcxx;libcxxabi;libunwind" CACHE STRING "")
-
- set(LLVM_ENABLE_BACKTRACES OFF CACHE BOOL "")
-@@ -329,6 +329,7 @@ set(LLVM_TOOLCHAIN_TOOLS
-   CACHE STRING "")
-
- set(LLVM_Toolchain_DISTRIBUTION_COMPONENTS
-+  bolt
-   clang
-   lld
-   clang-apply-replacements
 diff --git a/llvm/cmake/modules/AddLLVM.cmake b/llvm/cmake/modules/AddLLVM.cmake
-index 91d2c8bac6e038..5dadac02bee817 100644
+index 93e6d67551de..41a89664ab30 100644
 --- a/llvm/cmake/modules/AddLLVM.cmake
 +++ b/llvm/cmake/modules/AddLLVM.cmake
-@@ -2121,7 +2121,7 @@ function(llvm_install_symlink project name dest)
+@@ -2095,7 +2095,7 @@ function(llvm_install_symlink project name dest)
    if (NOT LLVM_ENABLE_IDE AND NOT ARG_ALWAYS_GENERATE)
      add_llvm_install_targets(install-${name}
                               DEPENDS ${name} ${dest}
