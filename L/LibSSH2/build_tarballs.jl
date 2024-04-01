@@ -20,11 +20,6 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-# Necessary for cmake to find openssl on Windows
-if [[ ${target} == x86_64-*-mingw* ]]; then
-    export OPENSSL_ROOT_DIR=${prefix}/lib64
-fi
-
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DBUILD_SHARED_LIBS=ON
