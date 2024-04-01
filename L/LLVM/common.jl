@@ -177,7 +177,7 @@ PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     PROJECTS+=(mlir)
 fi
-if [[ "${LLVM_MAJ_VER}" -ge "14" ]]; then
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
     PROJECTS+=(bolt)
 fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
@@ -643,7 +643,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         push!(products, ExecutableProduct("lld", :lld, "tools"))
         push!(products, ExecutableProduct("dsymutil", :dsymutil, "tools"))
     end
-    if version >= v"14"
+    if version >= v"16"
         push!(products, ExecutableProduct("llvm-bolt", :llvm_bolt, "tools"))
     end
 
