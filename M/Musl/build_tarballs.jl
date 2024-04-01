@@ -1,22 +1,20 @@
 using BinaryBuilder
 
 name = "Musl"
-version = v"1.2.2"
+version = v"1.2.4"
 
 # sources to build, such as mingw32, our patches, etc....
 sources = [
     ArchiveSource("https://www.musl-libc.org/releases/musl-$(version).tar.gz",
-                  "9b969322012d796dc23dda27a35866034fa67d8fb67e0e2c45c913c3d43219dd"),
-    DirectorySource("./bundled"),
+                  "7a35eae33d5372a7c0da1188de798726f68825513b7ae3ebe97aaaa52114f039"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/musl-*
-atomic_patch -p1 ../patches/qsort_r.patch
 
-mkdir ${WORKSPACE}/srcdir/musl_build
-cd ${WORKSPACE}/srcdir/musl_build
+mkdir musl_build && cd musl_build
+
 musl_arch()
 {
     case "${target}" in

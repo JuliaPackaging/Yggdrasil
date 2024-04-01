@@ -1,6 +1,6 @@
 # To ensure a build, it isn't sufficient to modify highs_common.jl.
 # You also need to update a line in this file:
-#     Last updated: 2022-04-22
+#     Last updated: 2024-03-07
 
 include("../highs_common.jl")
 
@@ -19,6 +19,7 @@ dependencies = [
     # is a build-only dependency, in the other cases it's also a runtime one.
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency("CompilerSupportLibraries_jll"; platforms=filter(Sys.iswindows, platforms)),
+    Dependency("Zlib_jll"),
 ]
 
 build_tarballs(

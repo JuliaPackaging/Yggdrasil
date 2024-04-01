@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "VegaFusion"
-version = v"0.3.0"
+version = v"0.10.0"
 
 sources = [
     GitSource("https://github.com/vegafusion/vegafusion.git",
-              "42606e505364beacd30452cbe76744cf0a7428c4"),
+              "4e2a93bbc70e3262007e544252ebd1bbf947c48e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    HostBuildDependency("protoc_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

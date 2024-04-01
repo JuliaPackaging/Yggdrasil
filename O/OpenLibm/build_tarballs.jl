@@ -22,6 +22,11 @@ if [[ ${target} == *mingw* ]]; then
     flags+=("OS=WINNT")
 fi
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 # Add `CC` override, since OpenLibm seems to think it knows best:
 flags+=("CC=$CC")
 
@@ -36,12 +41,14 @@ install_license ./LICENSE.md
 
 # We enable experimental platforms as this is a core Julia dependency
 platforms = supported_platforms(;experimental=true)
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 products = [
     LibraryProduct("libopenlibm", :libopenlibm),
 ]
 
 dependencies = [
+    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

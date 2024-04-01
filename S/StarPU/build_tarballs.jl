@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "StarPU"
-version = v"1.3.7"
+version = v"1.3.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://files.inria.fr/starpu/starpu-1.3.7/starpu-1.3.7.tar.gz", "1d7e01567fbd4a66b7e563626899374735e37883226afb96c8952fea1dab77c2"),
+    ArchiveSource("https://files.inria.fr/starpu/starpu-$(version)/starpu-$(version).tar.gz", "73adf2a5d25b04023132cfb1a8d9293b356354af7d1134e876122a205128d241"),
     DirectorySource("./bundled")
 ]
 
@@ -42,4 +42,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9.1.0")

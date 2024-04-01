@@ -9,25 +9,23 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1192.001"
-gap_lib_version = v"400.1192.001"
+gap_version = v"400.1300.0"
+gap_lib_version = v"400.1300.0"
 name = "JuliaInterface"
-upstream_version = v"0.8.0" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "0.9.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-julia_versions = [v"1.6", v"1.7", v"1.8", v"1.9"]
-
-# Collection of sources required to build libsingular-julia
+# Collection of sources required to build this JLL
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "576b5eaaefc4fa6b0b7b48f977dd4395f65e0ab7"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "bc4b5c2374299564184fb79f00fedbba4a255d39"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd GAP.jl/pkg/JuliaInterface
-./configure --with-gaproot=${prefix}/share/gap
-make -j${nproc} CFLAGS="-I${includedir} -I${includedir}/julia" LDFLAGS="-ljulia"
+./configure --with-gaproot=${prefix}/lib/gap
+make CFLAGS="-I${includedir} -I${includedir}/julia" LDFLAGS="-ljulia -lgap" V=1
 
 # copy the loadable module
 mkdir -p ${prefix}/lib/gap
@@ -43,10 +41,11 @@ name = gap_pkg_name(name)
 platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
 
 # expand julia platforms
+include("../../../L/libjulia/common.jl")
 julia_platforms = []
 for p in platforms
     for jv in julia_versions
-        if jv == v"1.6.0" && Sys.isapple(p) && arch(p) == "aarch64"
+        if jv == v"1.6.3" && Sys.isapple(p) && arch(p) == "aarch64"
             continue
         end
         p = deepcopy(p)
@@ -55,7 +54,23 @@ for p in platforms
     end
 end
 
-push!(dependencies, BuildDependency("libjulia_jll"))
+# Unlike other GAP_pkg_* JLLs, we do *not* set a compat bound for GAP_jll and
+# GAP_lib_jll here. Instead GAP.jl is expected to make sure that it uses right
+# combination of those JLLs with GAP_pkg_juliainterface. This decoupling is
+# important for smooth upgrades, since GAP.jl can in principle work with newer
+# GAP_jll versions by transparently building a fresh version of the code in
+# GAP_pkg_juliainterface, and ignoring the code in that JLL. But this is
+# thwarted if GAP_pkg_juliainterface has an explicit dependency on the old
+# GAP_jll.
+#
+# The only downside is that there is a risk of using a bad combination, but
+# that's a small risk, usually immediately detected in CI test, and fixing it
+# is easy as it only requires a change to GAP.jl, not to any JLLs.
+dependencies = [
+    Dependency("GAP_jll", gap_version),
+    Dependency("GAP_lib_jll", gap_lib_version),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
+]
 
 # The products that we will ensure are always built
 products = [
@@ -66,3 +81,4 @@ products = [
 build_tarballs(ARGS, name, version, sources, script, julia_platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
 
+# rebuild trigger: 0

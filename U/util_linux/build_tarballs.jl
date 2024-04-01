@@ -3,19 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "util_linux"
-version = v"2.35.0"
+version_string = "2.39.3"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version.major).$(version.minor).tar.gz",
-                  "98acab129a8490265052e6c1e033ca96d68758a13bb7fcd232c06bf16cc96238")
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version_string).tar.xz",
+                  "7b6605e48d1a49f43cc4b4cfc59f313d0dd5402fa40b96810bd572e167dfed0f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/util-linux-*
 export CPPFLAGS="-I${includedir}"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-makeinstall-chown
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-makeinstall-chown --enable-fdformat
 make -j${nproc}
 make install
 """
@@ -139,4 +140,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

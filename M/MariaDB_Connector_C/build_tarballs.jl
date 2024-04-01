@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "MariaDB_Connector_C"
-version = v"3.1.12"
+version = v"3.3.2"
 julia_compat = "1.6"
 
 # Collection of sources required to build MariaDB_Connector_C
 sources = [
     GitSource("https://github.com/mariadb-corporation/mariadb-connector-c.git",
-              "7d304d26c787a3f0430624db977b615aba56e4bb"),
+              "1bd8c8bf39c259a1b1713974684e24d168a09d13"),
     DirectorySource("./bundled"),
 ]
 
@@ -70,9 +70,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Libiconv_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Zlib_jll"),
 ]
 

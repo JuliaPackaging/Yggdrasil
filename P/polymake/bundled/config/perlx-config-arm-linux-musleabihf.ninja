@@ -1,5 +1,5 @@
 PERL=/workspace/x86_64-linux-musl-cxx11/destdir/bin/perl
-CXXglueFLAGS=-I/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.0/linux-musleabihf/CORE -I/workspace/destdir/include -fwrapv -fno-strict-aliasing -pipe -fstack-protector-strong -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_FORTIFY_SOURCE=2 -I/workspace/destdir/deps/Perl_jll/include -DPerlVersion=5340 -Wno-nonnull
-LIBperlFLAGS=-L/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.0/linux-musleabihf/CORE -lperl -Wl,-E
-ExtUtils_xsubpp=/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.0/ExtUtils/xsubpp
-ExtUtils_typemap=/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.0/ExtUtils/typemap
+CXXglueFLAGS=-I/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.1/linux-musleabihf/CORE -I/workspace/destdir/include -fwrapv -fno-strict-aliasing -pipe -fstack-protector-strong -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_FORTIFY_SOURCE=2 -I/workspace/destdir/deps/Perl_jll/include -DPerlVersion=5341 -Wno-nonnull
+LIBperlFLAGS=-L/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.1/linux-musleabihf/CORE -lperl -Wl,-E
+ExtUtils_xsubpp=/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.1/ExtUtils/xsubpp
+ExtUtils_typemap=/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.1/ExtUtils/typemap

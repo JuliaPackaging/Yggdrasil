@@ -1,0 +1,23 @@
+# This file represents what is put into the webUI.
+# It is purely for keeping track of the changes we make to the webUI configuration; modifying this file has no effect.
+steps:
+  - label: ":buildkite: Pipeline upload"
+    command: buildkite-agent pipeline upload
+    branches: "!gh-pages"
+    agents:
+      queue: "yggdrasil"
+    plugins:
+      - JuliaCI/merge-commit: ~
+      - staticfloat/cryptic#v2:
+          signed_pipelines:
+            - pipeline: .buildkite/pipeline.yml
+              signature_file: .buildkite/pipeline.yml.signature
+              inputs:
+                - .buildkite/generator.jl
+                - .buildkite/utils.jl
+                - .buildkite/Project.toml
+                - .buildkite/Manifest.toml
+                - .buildkite/path_processors/per-project
+                - .buildkite/init.sh
+                - .buildkite/register.sh
+    command: "true"

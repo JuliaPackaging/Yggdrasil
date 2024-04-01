@@ -1,0 +1,42 @@
+diff --git a/src/GSCConsensus.cpp b/src/GSCConsensus.cpp
+index b07cba1..97ce5fe 100755
+--- a/src/GSCConsensus.cpp
++++ b/src/GSCConsensus.cpp
+@@ -8,6 +8,7 @@
+ #include "stdafx.h"
+ #endif
+ #include <ctype.h>
++#include <cmath>
+ 
+ #ifdef _MSC_VER
+ #ifndef _CRT_SECURE_NO_DEPRECATE
+@@ -46,7 +47,7 @@ inline bool IsNormalNumber (double x)
+ 	return _finite(x)!=0;
+ #else
+ 	// assume gcc
+-	return finite(x)!=0;
++	return std::isfinite(x)!=0;
+ #endif
+ }
+ #include <algorithm>
+diff --git a/src/SymbolicMath.h b/src/SymbolicMath.h
+index db8cae7..c930e1e 100755
+--- a/src/SymbolicMath.h
++++ b/src/SymbolicMath.h
+@@ -9,6 +9,7 @@ inline double pow2 (double x) {
+ #define LOGPOW2DEFINED
+ #endif
+ 
++#include <cmath>
+ 
+ inline bool IsNormalNumber (double x)
+ {
+@@ -16,7 +17,7 @@ inline bool IsNormalNumber (double x)
+ 	return _finite(x)!=0;
+ #else
+ 	// assume gcc
+-	return finite(x)!=0;
++	return std::isfinite(x)!=0;
+ #endif
+ }
+ 

@@ -7,7 +7,7 @@ version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz", "3dce6601b495f5b3d45b59f7d2492a340ee7e84b5beca17e48f862502bd5603f")
+    ArchiveSource("http://www.tortall.net/projects/yasm/releases/yasm-$(version).tar.gz", "3dce6601b495f5b3d45b59f7d2492a340ee7e84b5beca17e48f862502bd5603f")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/yasm-*
 autoreconf -f -i
 export CCLD_FOR_BUILD="${CC_FOR_BUILD}"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_header_stdc=yes
 make -j${nproc}
 make install
 install_license COPYING
@@ -23,7 +23,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -33,8 +33,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="NASM_jll", uuid="08ca2550-6d73-57c0-8625-9b24120f3eae"))
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

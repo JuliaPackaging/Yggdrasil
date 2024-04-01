@@ -3,84 +3,97 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.5.0"
-version_offset = v"0.0.0"
+upstream_version = v"3.8.4"
+version_offset = v"1.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build GDAL
 sources = [
-    ArchiveSource("https://github.com/OSGeo/gdal/releases/download/v$upstream_version/gdal-$upstream_version.tar.gz",
-        "3affc513b8aa5a76b996eca55f45cb3e32acacf4a262ce4f686d4c8bba7ced40"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/OSGeo/gdal.git",
+        "c2d2a61739ca770bae5a26be3eeb25a045dd3458"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gdal-*/
+cd $WORKSPACE/srcdir/gdal
 
-if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="-L${libdir}"
-    # Apply patch to customise PROJ library
-    atomic_patch -p1 "$WORKSPACE/srcdir/patches/configure_ac_proj_libs.patch"
-    autoreconf -vi
-    export PROJ_LIBS="proj_9_0"
-elif [[ "${target}" == *-linux-* ]]; then
-    # Hint to find libstdc++, required to link against C++ libs when using C compiler
-    if [[ "${nbits}" == 32 ]]; then
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib"
-    else
-        export CFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib64"
-    fi
-    # Use same flags also for GEOS
-    atomic_patch -p1 "$WORKSPACE/srcdir/patches/geos-m4-extra-cflags.patch"
-    export EXTRA_GEOS_CFLAGS="${CFLAGS}"
-    if [[ "${target}" == powerpc64le-* ]]; then
-        atomic_patch -p1 "$WORKSPACE/srcdir/patches/sqlite3-m4-extra-libs.patch"
-        export EXTRA_GEOS_LIBS="${EXTRA_GEOS_LIBS} -lm"
-        export EXTRA_SQLITE3_LIBS="-lm"
-        # libpthread and libldl are needed for libgdal, so let's always use them
-        export LDFLAGS="$LDFLAGS -lpthread -ldl"
-    fi
-    autoreconf -vi
+atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
+
+if [[ "${target}" == *-freebsd* ]]; then
+    # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
+    # complain if this symbol is used in the built library, even if this won't
+    # be a problem at runtime. The flag `-undefined` allows having undefined symbols.
+    # The flag `-lexecinfo` fixes "undefined reference to `backtrace'".
+    export LDFLAGS="-lexecinfo -undefined"
 fi
 
-# same fix as used for PROJ
-if [[ "${target}" == x86_64-linux-musl* ]]; then
-    export LDFLAGS="$LDFLAGS -lcurl"
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Work around the issue
+    # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/local/include/arrow/type.h:1745:36: error: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' is unavailable: introduced in macOS 10.14
+    #     if (IsFieldPath()) return std::get<FieldPath>(impl_).indices().size() > 1;
+    #                                    ^
+    # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1/variant:1394:22: note: 'get<arrow::FieldPath, arrow::FieldPath, std::basic_string<char>, std::vector<arrow::FieldRef>>' has been explicitly marked unavailable here
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    # ...and install a newer SDK
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
 fi
 
-# Clear out `.la` files since they're often wrong and screw us up
-rm -f ${prefix}/lib/*.la
+mkdir build && cd build
 
-# Read the options in the log file
-./configure --help
+CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_PREFIX_PATH=${prefix}
+    -DCMAKE_FIND_ROOT_PATH=${prefix}
+    -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_PYTHON_BINDINGS=OFF
+    -DBUILD_JAVA_BINDINGS=OFF
+    -DBUILD_CSHARP_BINDINGS=OFF
+    -DGDAL_USE_CURL=ON
+    -DGDAL_USE_EXPAT=ON
+    -DGDAL_USE_GEOTIFF=ON
+    -DGDAL_USE_GEOS=ON
+    -DGDAL_USE_OPENJPEG=ON
+    -DGDAL_USE_SQLITE3=ON
+    -DGDAL_USE_TIFF=ON
+    -DGDAL_USE_ZLIB=ON
+    -DGDAL_USE_ZSTD=ON
+    -DGDAL_USE_POSTGRESQL=ON
+    -DGDAL_USE_LIBXML2=OFF
+    -DPostgreSQL_INCLUDE_DIR=${includedir}
+    -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
+    -DGDAL_USE_ARROW=ON
+    -DGDAL_USE_PARQUET=ON)
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --with-geos=${bindir}/geos-config \
-    --with-proj=$prefix \
-    --with-tiff=$prefix \
-    --with-geotiff=$prefix \
-    --with-libz=$prefix \
-    --with-expat=$prefix \
-    --with-zstd=$prefix \
-    --with-sqlite3=$prefix \
-    --with-curl=${bindir}/curl-config \
-    --with-openjpeg \
-    --with-python=no \
-    --enable-shared \
-    --disable-static
+# NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
+    CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=ON)
+else
+    echo "Disabling NetCDF support"
+    CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=OFF)
+fi
 
-# Make sure that some important libraries are found
-grep "HAVE_GEOS='yes'" config.log
-grep "HAVE_SQLITE='yes'" config.log
-grep "CURL_SETTING='yes'" config.log
-grep "ZSTD_SETTING='yes'" config.log
-grep "HAVE_EXPAT='yes'" config.log
+# HDF5 is also a restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
+    CMAKE_FLAGS+=(-DGDAL_USE_HDF5=ON)
+else
+    echo "Disabling HDF5 support"
+    CMAKE_FLAGS+=(-DGDAL_USE_HDF5=OFF)
+fi
 
-make -j${nproc}
-make install
+cmake .. ${CMAKE_FLAGS[@]}
+cmake --build . -j${nproc}
+cmake --build . -j${nproc} --target install
+
+install_license ../LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
@@ -111,20 +124,39 @@ products = [
     ExecutableProduct("ogrtindex", :ogrtindex_path),
 ]
 
+hdf5_platforms = [
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"),
+    Platform("armv6l", "linux"),
+    Platform("armv7l", "linux"),
+    Platform("i686", "linux"),
+    Platform("powerpc64le", "linux"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
+    Platform("x86_64", "windows"),
+    Platform("i686", "windows"),
+]
+hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GEOS_jll"; compat="~3.10"),
-    Dependency("PROJ_jll"; compat="~900.0"),
+    Dependency("GEOS_jll"; compat="3.11.2"),
+    Dependency("PROJ_jll"; compat="901.300.0"),
     Dependency("Zlib_jll"),
     Dependency("SQLite_jll"),
+    Dependency("LibPQ_jll"),
     Dependency("OpenJpeg_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Zstd_jll"),
-    Dependency("Libtiff_jll"; compat="4.3"),
-    Dependency("libgeotiff_jll"; compat="1.7.1"),
-    Dependency("LibCURL_jll"; compat="7.73"),
+    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("libgeotiff_jll"; compat="100.701.100"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
+    Dependency("NetCDF_jll"; compat="400.902.208", platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
+    Dependency("Arrow_jll"; compat="10"),
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.6", preferred_gcc_version=v"8")

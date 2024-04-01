@@ -12,6 +12,7 @@ platforms = openblas_platforms(;experimental=true)
 products = openblas_products()
 dependencies = openblas_dependencies()
 
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

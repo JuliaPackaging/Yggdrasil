@@ -21,51 +21,67 @@ using BinaryBuilder, Pkg
 # to all components.
 
 name = "GAP_lib"
-upstream_version = v"4.11.1"
-version = v"400.1192.002"
+upstream_version = v"4.13.0"
+version = v"400.1300.000"
 
 # Collection of sources required to complete build
 sources = [
-    # snapshot of GAP master branch leading up to GAP 4.12:
-    GitSource("https://github.com/gap-system/gap.git", "977fb055cf3793aa4c329e3d6ea765774fecc8ac"),
-#    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-#                  "2b6e2ed90fcae4deb347284136427105361123ac96d30d699db7e97d094685ce"),
+    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
+                  "6e6433b56c43ac4b2dab098bfb146dae1cb0dab62ae48a1a2144354af239c121"),
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/packages-required-v$(upstream_version).tar.gz",
-                  "5f66ac4053db34e4c0ebca25dd7666b891c812c084082db6cc28c551c57a3792";
+                  "b0472bed62875bc80ca9c0ae661fac3183b0eed8bacea5dc462d15c43dc3abd4";
                   unpack_target="pkg"),
+    #DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
 
-mv ../pkg .
-find pkg -name '._*' -exec rm \{\} \; # unwanted files
+if [ -d ${WORKSPACE}/srcdir/patches ] ; then
+  for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+  done
+fi
 
-# run autogen.sh if compiling from it source and/or if configure was patched
+# remove patch leftovers
+find . -name '*.orig' -exec rm {} \;
+
+# compress group database
+gzip -n grp/*.grp
+
+mv ../pkg .
+
+# must run autogen.sh if compiling from git snapshot and/or if configure was patched;
+# it doesn't hurt otherwise, too, so just always do it
 ./autogen.sh
 
 # compile a native version of GAP so we can use it to generate the manual
 # (the manual is only in FULL gap release tarballs, not in the -core tarball
-# nor in git snapshots)
-mkdir native-build
-cd native-build
-#apk add gmp-dev zlib-dev
-../configure --build=${MACHTYPE} --host=${MACHTYPE} CC=${CC_BUILD} CXX=${CXX_BUILD} --with-zlib=${prefix} --with-gmp=${prefix}
+# nor in git snapshots), and also so that we can invoke the
+# `install-gaproot` target (which is arch independent, so no need to use a
+# GAP built for the host arch.)
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} \
+    --with-gmp=${prefix} \
+    --without-readline \
+    --with-zlib=${prefix} \
+    CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
-make html   # build the manual (only HTML and txt; for PDF we'd need LaTeX)
-cd ..
 
-# remove the native build, it has done its job
-rm -rf native-build
+# build the manual if necessary (only HTML and txt; for PDF we'd need LaTeX)
+if [[ ! -f doc/ref/chap0.html ]] ; then
+  make html
+fi
 
 # the license
 install_license LICENSE
 
-# "install" most of the files
-rm -rf autom4te.cache dev extern hpcgap/extern pkg
-mkdir -p ${prefix}/share/gap/
-mv * ${prefix}/share/gap/
+# install documentation and library files
+make install-doc install-gaproot
+
+# delete the PDF manuals (they take up a lot of space and few people use them,
+# and those can use the online versions)
+rm ${prefix}/share/gap/doc/*/*.pdf
 """
 
 # These are the platforms we will build for by default, unless further

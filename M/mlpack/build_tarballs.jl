@@ -6,21 +6,15 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-version = v"3.4.2"
+source_version = v"4.3.0"
+version = source_version
 sources = [
-    ArchiveSource("https://www.mlpack.org/files/mlpack-$(version).tar.gz",
-                  "9e5c4af5c276c86a0dcc553289f6fe7b1b340d61c1e59844b53da0debedbb171"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
+                  "08cd54f711fde66fc3b6c9db89dc26776f9abf1a6256c77cfa3556e2a56f1a3d"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
-
-# Apply any patches that are needed.
-for f in ${WORKSPACE}/srcdir/patches/*.patch;
-do
-    atomic_patch -p1 ${f};
-done
 
 mkdir build && cd build
 
@@ -30,17 +24,15 @@ mkdir build && cd build
 # version.  So we'll just create a crappy little script, since Julia may not
 # be available in the build environment.
 echo "#!/bin/bash" > julia
-echo "echo \"Fake Julia version 1.3.0\"" >> julia
+echo "echo \"Fake Julia version 1.9.4\"" >> julia
 chmod +x julia
 
 FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+       -DCMAKE_CROSSCOMPILING=OFF
        -DCMAKE_INSTALL_PREFIX=${prefix}
-       -DBUILD_SHARED_LIBS=ON
-       -DDEBUG=OFF
-       -DPROFILE=OFF
-       -DUSE_OPENMP=OFF
-       -DBoost_NO_BOOST_CMAKE=1
+       -DUSE_OPENMP=ON
        -DBUILD_JULIA_BINDINGS=ON
+       -DBUILD_SHARED_LIBS=ON
        -DJULIA_EXECUTABLE="${PWD}/julia"
        -DBUILD_CLI_EXECUTABLES=OFF
        -DBUILD_GO_BINDINGS=OFF
@@ -48,10 +40,10 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DBUILD_PYTHON_BINDINGS=OFF
        -DBUILD_TESTS=OFF)
 
-if [[ "${nbits}" == 64 ]] && [[ "${target}" != aarch64* ]]; then
+if [[ "${nbits}" == 64 ]]; then
     # We need to rename some functions for compatibility with Julia's OpenBLAS
     SYMB_DEFS=()
-    for sym in cgbcon cgbsv cgbsvx cgbtrf cgbtrs cgecon cgees cgeev cgeevx cgehrd cgels cgelsd cgemm cgemv cgeqrf cgesdd cgesv cgesvd cgesvx cgetrf cgetri cgetrs cgges cggev cgtsv cgtsvx cheev cheevd cherk clangb clange clanhe clansy cpbtrf cpocon cposv cposvx cpotrf cpotri cpotrs ctrcon ctrsyl ctrtri ctrtrs cungqr dasum ddot dgbcon dgbsv dgbsvx dgbtrf dgbtrs dgecon dgees dgeev dgeevx dgehrd dgels dgelsd dgemm dgemv dgeqrf dgesdd dgesv dgesvd dgesvx dgetrf dgetri dgetrs dgges dggev dgtsv dgtsvx dlahqr dlangb dlange dlansy dlarnv dnrm2 dorgqr dpbtrf dpocon dposv dposvx dpotrf dpotri dpotrs dstedc dsyev dsyevd dsyrk dtrcon dtrevc dtrsyl dtrtri dtrtrs ilaenv sasum sdot sgbcon sgbsv sgbsvx sgbtrf sgbtrs sgecon sgees sgeev sgeevx sgehrd sgels sgelsd sgemm sgemv sgeqrf sgesdd sgesv sgesvd sgesvx sgetrf sgetri sgetrs sgges sggev sgtsv sgtsvx slahqr slangb slange slansy slarnv snrm2 sorgqr spbtrf spocon sposv sposvx spotrf spotri spotrs sstedc ssyev ssyevd ssyrk strcon strevc strsyl strtri strtrs zgbcon zgbsv zgbsvx zgbtrf zgbtrs zgecon zgees zgeev zgeevx zgehrd zgels zgelsd zgemm zgemv zgeqrf zgesdd zgesv zgesvd zgesvx zgetrf zgetri zgetrs zgges zggev zgtsv zgtsvx zheev zheevd zherk zlangb zlange zlanhe zlansy zpbtrf zpocon zposv zposvx zpotrf zpotri zpotrs ztrcon ztrsyl ztrtri ztrtrs zungqr; do
+    for sym in cgbcon cgbsv cgbsvx cgbtrf cgbtrs cgecon cgees cgeev cgeevx cgehrd cgels cgelsd cgemm cgemv cgeqp3 cgeqrf cgesdd cgesv cgesvd cgesvx cgetrf cgetri cgetrs cgges cggev cgtsv cgtsvx cheev cheevd cherk clangb clange clanhe clansy cpbtrf cpocon cposv cposvx cpotrf cpotri cpotrs cpstrf ctrcon ctrsyl ctrtri ctrtrs cungqr dasum ddot dgbcon dgbsv dgbsvx dgbtrf dgbtrs dgecon dgees dgeev dgeevx dgehrd dgels dgelsd dgemm dgemv dgeqp3 dgeqrf dgesdd dgesv dgesvd dgesvx dgetrf dgetri dgetrs dgges dggev dgtsv dgtsvx dlahqr dlangb dlange dlansy dlarnv dnrm2 dorgqr dpbtrf dpocon dposv dposvx dpotrf dpotri dpotrs dpstrf dstedc dsyev dsyevd dsyrk dtrcon dtrevc dtrsyl dtrtri dtrtrs ilaenv sasum sdot sgbcon sgbsv sgbsvx sgbtrf sgbtrs sgecon sgees sgeev sgeevx sgehrd sgels sgelsd sgemm sgemv sgeqrf sgeqp3 sgesdd sgesv sgesvd sgesvx sgetrf sgetri sgetrs sgges sggev sgtsv sgtsvx slahqr slangb slange slansy slarnv snrm2 sorgqr spbtrf spocon sposv sposvx spotrf spotri spotrs spstrf sstedc ssyev ssyevd ssyrk strcon strevc strsyl strtri strtrs zgbcon zgbsv zgbsvx zgbtrf zgbtrs zgecon zgees zgeev zgeevx zgehrd zgels zgelsd zgemm zgemv zgeqp3 zgeqrf zgesdd zgesv zgesvd zgesvx zgetrf zgetri zgetrs zgges zggev zgtsv zgtsvx zheev zheevd zherk zlangb zlange zlanhe zlansy zpbtrf zpocon zposv zposvx zpotrf zpotri zpotrs zpstrf ztrcon ztrsyl ztrtri ztrtrs zungqr; do
         SYMB_DEFS+=("-D${sym}=${sym}_64")
     done
     export CXXFLAGS="${SYMB_DEFS[@]}"
@@ -100,6 +92,8 @@ if [[ ${target} == *mingw* ]]; then
 else
     cp -v src/mlpack/bindings/julia/mlpack/src/*.${dlext} "${libdir}"
 fi
+
+install_license ../LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -108,8 +102,6 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built.
 products = [
-    # The main mlpack library.
-    LibraryProduct("libmlpack", :libmlpack),
     # Utility library with functionality to call the mlpack::CLI singleton.
     LibraryProduct("libmlpack_julia_util", :libmlpack_julia_util),
     # Each of these contains a mlpackMain() implementation for the given
@@ -120,8 +112,6 @@ products = [
         :libmlpack_julia_bayesian_linear_regression),
     LibraryProduct("libmlpack_julia_cf", :libmlpack_julia_cf),
     LibraryProduct("libmlpack_julia_dbscan", :libmlpack_julia_dbscan),
-    LibraryProduct("libmlpack_julia_decision_stump",
-        :libmlpack_julia_decision_stump),
     LibraryProduct("libmlpack_julia_decision_tree",
         :libmlpack_julia_decision_tree),
     LibraryProduct("libmlpack_julia_det", :libmlpack_julia_det),
@@ -184,10 +174,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.71.0"),
-    Dependency("armadillo_jll"),
-    Dependency("OpenBLAS_jll", v"0.3.10")
+    Dependency("armadillo_jll"; compat="12.2.0"),
+    Dependency("OpenBLAS_jll", v"0.3.13"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
+    # These are header-only libraries just needed for the build process.
+    BuildDependency("cereal_jll"),
+    BuildDependency("ensmallen_jll"),
+    BuildDependency("stb_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.7")

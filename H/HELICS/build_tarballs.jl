@@ -15,24 +15,39 @@
 
 using BinaryBuilder
 
-HELICS_VERSION = v"2.8.1"
-HELICS_SHA = "9485091fb1bf5d0dd3b21a2641dd78051bbf5374cd823425e458053abafdfa1f"
+HELICS_VERSION = v"3.5.1"
+HELICS_SHA = "546fc6e6a85de6ba841e4bd547b811cc81a67a22be5e212ccb54be139d740555"
 
 sources = [
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
                   "$HELICS_SHA"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+fi
+
 cd $WORKSPACE/srcdir
 
-mkdir build
-cd build
-CMAKE_ARGS="-DCMAKE_FIND_ROOT_PATH="${prefix}" -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release"
-HELICS_ARGS="-DHELICS_BUILD_TESTS=OFF"
-cmake ${CMAKE_ARGS} ${HELICS_ARGS} ..
-make -j${nproc}
-make install
+cmake -B build \
+   -DCMAKE_FIND_ROOT_PATH="${prefix}" \
+   -DCMAKE_INSTALL_PREFIX="${prefix}" \
+   -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TARGET_TOOLCHAIN" \
+   -DCMAKE_BUILD_TYPE=Release \
+   -DHELICS_BUILD_TESTS=OFF \
+   ./
+
+VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
+
 if [[ "${target}" == *-mingw* ]]; then
     # Remove a broken link that we don't need anyway
     rm ${prefix}/bin/libzmq.dll.a
@@ -40,10 +55,11 @@ fi
 """
 
 products = [
-    LibraryProduct("libhelicsSharedLib", :libhelicsSharedLib),
+    LibraryProduct("libhelics", :libhelics),
 ]
 
-platforms = expand_cxxstring_abis(supported_platforms(exclude = Sys.isfreebsd))
+
+platforms = expand_cxxstring_abis(supported_platforms())
 
 dependencies = [
     Dependency("ZeroMQ_jll"),
@@ -60,6 +76,6 @@ build_tarballs(
     platforms,
     products,
     dependencies,
-    ; preferred_gcc_version=v"7",
+    preferred_gcc_version=v"9",
     julia_compat="1.6",
 )

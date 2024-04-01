@@ -1,0 +1,13 @@
+--- a/config/FindKLU.cmake
++++ b/config/FindKLU.cmake
+@@ -19,6 +19,10 @@
+   set(CMAKE_FIND_LIBRARY_PREFIXES lib ${CMAKE_FIND_LIBRARY_PREFIXES})
+ endif()
+ 
++# Ensure on Windows we look for shared libraries `*.dll`, instead of just import
++# libraries (we don't have those for suitesparseconfig).
++set(CMAKE_FIND_LIBRARY_SUFFIXES ".$ENV{dlext}" ${CMAKE_FIND_LIBRARY_SUFFIXES})
++
+ ### Find include dir
+ find_path(temp_KLU_INCLUDE_DIR klu.h ${KLU_INCLUDE_DIR})
+ if (temp_KLU_INCLUDE_DIR)

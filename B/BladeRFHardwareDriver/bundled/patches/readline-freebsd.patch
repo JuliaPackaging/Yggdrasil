@@ -1,0 +1,16 @@
+diff --git a/host/utilities/bladeRF-cli/src/input/editline.c b/host/utilities/bladeRF-cli/src/input/editline.c
+index a832c45b..893bd83d 100644
+--- a/host/utilities/bladeRF-cli/src/input/editline.c
++++ b/host/utilities/bladeRF-cli/src/input/editline.c
+@@ -20,7 +20,11 @@
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <histedit.h>
++#ifdef __FreeBSD__
++#include <edit/readline/readline.h>
++#else
+ #include <editline/readline.h>
++#endif
+ #include <string.h>
+ #include <errno.h>
+ #include "input_impl.h"

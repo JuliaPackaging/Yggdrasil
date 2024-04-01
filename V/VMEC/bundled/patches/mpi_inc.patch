@@ -1,0 +1,25 @@
+diff --git a/Sources/LIBSTELL_minimal/mpi_inc.f b/Sources/LIBSTELL_minimal/mpi_inc.f
+index 9087aae..c0d1b64 100644
+--- a/Sources/LIBSTELL_minimal/mpi_inc.f
++++ b/Sources/LIBSTELL_minimal/mpi_inc.f
+@@ -10,14 +10,14 @@
+ 
+       MODULE mpi_inc
+       USE mpi_params, ONLY: MPI_COMM_PARVMEC
+-#if defined (MPI_OPT)
+-      USE mpi
+-#endif
++!#if defined (MPI_OPT)
++!      USE mpi
++!#endif
+ 
+       IMPLICIT NONE
+ 
+-!#if defined(MPI_OPT)
+-!      INCLUDE 'mpif.h'
+-!#endif
++#if defined(MPI_OPT)
++      INCLUDE 'mpif.h'
++#endif
+ 
+       END MODULE

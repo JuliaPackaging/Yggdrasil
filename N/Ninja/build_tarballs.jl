@@ -3,20 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "Ninja"
-version = v"1.10.3" # <-- This is a lie, we're bumping from 1.10.2 to 1.10.3 to create a Julia v1.6+ release with experimental platforms
+version = v"1.11.1"
 
 # Collection of sources required to build ninja
 sources = [
-    ArchiveSource("https://github.com/ninja-build/ninja/archive/v1.10.2.tar.gz",
-    "ce35865411f0490368a8fc383f29071de6690cbadc27704734978221f25e2bed")
+    ArchiveSource("https://github.com/ninja-build/ninja/archive/v$(version).tar.gz",
+    "31747ae633213f1eda3842686f83c2aa1412e0f5691d1c14dbbcc67fe7400cea")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ninja-*/
+cd $WORKSPACE/srcdir/ninja-*
 shorttarget=$(echo $target | grep -o 'linux\|darwin\|mingw\|freebsd')
-./configure.py --host=linux --platform=$shorttarget
+env CXXFLAGS=-std=c++11 ./configure.py --host=linux --platform=$shorttarget
 ninja -j${nproc}
 mkdir -p ${bindir}
 install ninja${exeext} ${bindir}
@@ -24,7 +23,7 @@ install ninja${exeext} ${bindir}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -32,7 +31,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")

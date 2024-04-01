@@ -3,15 +3,13 @@
 using BinaryBuilder
 
 name = "ATK"
-version = v"2.36.0"
+version = v"2.38.0"
 
 # Collection of sources required to build ATK
 sources = [
-    ArchiveSource("https://gitlab.gnome.org/GNOME/atk/-/archive/ATK_$(version.major)_$(version.minor)_$(version.patch)/atk-ATK_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-                  "395894d43f0628497f919dff1b769f5482af99a8991127277e365f9374f46d57"),
+    ArchiveSource("https://download.gnome.org/sources/atk/$(version.major).$(version.minor)/atk-$(version).tar.xz",
+                  "ac4de2a4ef4bd5665052952fe169657e65e895c5057dffb3c2a810f6191a0c36"),
 ]
-
-version = v"2.36.1" # <-- This version number is a lie to build for experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -24,7 +22,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -35,7 +33,7 @@ products = [
 dependencies = [
     # Need host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
-    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("Glib_jll", v"2.68.1"; compat="^2.38.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LASzip"
-version = v"3.4.3"
+version = v"3.4.3000"
 
 # Collection of sources required to complete build
 sources = [
@@ -25,6 +25,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_CXX_FLAGS="-std=c++11" -DCMAKE_TOOL
 cmake --build . --target install --config Release
 """
 
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -40,4 +41,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

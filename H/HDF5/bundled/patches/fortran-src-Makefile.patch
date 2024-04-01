@@ -1,0 +1,22 @@
+--- a/fortran/src/Makefile
++++ a/fortran/src/Makefile
+@@ -1531,14 +1531,15 @@
+ #Specify what Automake needs to create: first the H5fort_type_defines.h
+ # header, then H5match_types which includes that header, then
+ # it needs to run H5match_types.
+-H5fortran_types.F90 H5f90i_gen.h: H5match_types$(EXEEXT)
+-	$(RUNSERIAL) ./H5match_types$(EXEEXT)
++H5fortran_types.F90 H5f90i_gen.h:
++	cat ../../../saved/H5fortran_types.F90 >H5fortran_types.F90
++	cat ../../../saved/H5f90i_gen.h >H5f90i_gen.h
+ 
+ # H5_buildiface.F90 generates all the APIs that have a KIND type associated
+ # with them.
+ 
+-H5_gen.F90: H5_buildiface$(EXEEXT)
+-	$(RUNSERIAL) ./H5_buildiface$(EXEEXT)
++H5_gen.F90:
++	cat ../../../saved/H5_gen.F90 >H5_gen.F90
+ 
+ # Hardcode the dependencies of these files. There isn't a known way of
+ # determining this automagically (like we do with the C files). So, when

@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Xyce"
-version = v"7.4.99"
+version = v"7.6"
 
 # Collection of sources required to complete build
 sources = [
-            GitSource("https://github.com/Xyce/Xyce.git", "b7bb12d81f11d8b50141262537299b09d64b5565"),
-            DirectorySource("./bundled")
+            GitSource("https://github.com/Xyce/Xyce.git", "046a561ee2db376cf459edaeb8b6b67563da980d")
           ]
 
 # Bash recipe for building across all platforms
@@ -20,9 +19,6 @@ apk add flex-dev
 update_configure_scripts --reconf
 install_license ${WORKSPACE}/srcdir/Xyce/COPYING
 cd Xyce
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 ./bootstrap
 cd ..
 mkdir buildx
@@ -41,6 +37,12 @@ make install
 platforms = supported_platforms()
 
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+
+# Exclude some platforms that trigger internal compiler errors
+platforms = filter(platforms) do p
+    return !(arch(p) == "aarch64" && os(p) == "linux" && p["libgfortran_version"] ∈ ("3.0.0", "4.0.0"))
+end
 
 # The products that we will ensure are always built
 products = [
@@ -58,4 +60,4 @@ dependencies = [
                 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8", julia_compat="1.6.0")

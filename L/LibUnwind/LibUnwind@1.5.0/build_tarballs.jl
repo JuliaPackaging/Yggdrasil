@@ -5,9 +5,9 @@ name = "LibUnwind"
 version_string = "1.5"
 version = VersionNumber(version_string)
 
-# Collection of sources required to build libffi
+# Collection of sources required to build libunwind
 sources = [
-    ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version_string)/libunwind-$(version).tar.gz",
+    ArchiveSource("https://download.savannah.nongnu.org/releases/libunwind/libunwind-$(version).tar.gz",
                   "90337653d92d4a13de590781371c604f9031cdb50520366aa1e3a91e1efb1017"),
     DirectorySource("./bundled"),
 ]
@@ -24,6 +24,11 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-cfa-rsp.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-dwarf-table.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-non-empty-structs.patch
 
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
 export CFLAGS="-DPI -fPIC"
 ./configure \
     --prefix=${prefix} \
@@ -32,7 +37,8 @@ export CFLAGS="-DPI -fPIC"
     --libdir=${libdir} \
     --enable-minidebuginfo \
     --enable-zlibdebuginfo \
-    --disable-tests
+    --disable-tests \
+    --disable-conservative-checks
 make -j${nproc}
 make install
 
@@ -48,6 +54,7 @@ ar -qc ${prefix}/lib/libunwind.a unpacked/**/*
 # platforms are passed in on the command line.  libunwind is only used
 # on Linux or FreeBSD (e.g. ELF systems)
 platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
+push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
 products = [
@@ -58,6 +65,7 @@ products = [
 dependencies = [
     BuildDependency("XZ_jll"),
     Dependency("Zlib_jll"),
+    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
 # Build the tarballs.

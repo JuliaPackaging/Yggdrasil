@@ -1,121 +1,58 @@
 module CUDA
 
-const platform_name = "cuda"
+using Pkg
+
+using BinaryBuilder
+
+using Base.BinaryPlatforms
+using Base.BinaryPlatforms: arch, os, tags
+
+# the "cuda" platform tag contains the major and minor version of the CUDA runtime loaded
+# by CUDA_Runtime_jll, and is used to select artifacts that depend on the CUDA runtime.
+
 const augment = """
-    using Libdl
-    using Base: thisminor
+    using Base.BinaryPlatforms
 
-
-    #
-    # Augmentation for selecting the CUDA toolkit
-    #
-
-    # NOTE: we set the 'cuda' platform tag to the actual CUDA Toolkit version we'll be using
-    #       and not to the version that this driver supports (letting Pkg select an artifact
-    #       via a comparison strategy). This to simplify dependent packages; otherwise they
-    #       would need to know which toolkits are available to additionaly bound selection.
-
-    # provided by caller: `augment_cuda_toolkit!(platform)` method calling the version below
-    #                     with the available toolkit versions passed along
-
-    function driver_version()
-        libcuda_path = if Sys.iswindows()
-            Libdl.find_library("nvcuda")
-        else
-            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
-        end
-        if libcuda_path == ""
-            return nothing
-        end
-
-        libcuda = Libdl.dlopen(libcuda_path)
-        try
-            function_handle = Libdl.dlsym(libcuda, "cuDriverGetVersion")
-            version_ref = Ref{Cint}()
-            status = ccall(function_handle, UInt32, (Ptr{Cint},), version_ref)
-            if status != 0
-                # TODO: warn here about the error?
-                return nothing
-            end
-            major, ver = divrem(version_ref[], 1000)
-            minor, patch = divrem(ver, 10)
-            return VersionNumber(major, minor, patch)
-        finally
-            Libdl.dlclose(libcuda)
-        end
+    try
+        using CUDA_Runtime_jll
+    catch
+        # during initial package installation, CUDA_Runtime_jll may not be available.
+        # in that case, we just won't select an artifact.
     end
 
-    function toolkit_version(cuda_toolkits)
-        cuda_driver = driver_version()
-        if cuda_driver === nothing
-            return nothing
+    # can't use Preferences for the same reason
+    const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
+    const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
+    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
+    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
+    const local_toolkit = something(tryparse(Bool, get(preferences, "local", "false")), false)
+
+    function cuda_comparison_strategy(_a::String, _b::String, a_requested::Bool, b_requested::Bool)
+        # if we're using a local toolkit, we can't use artifacts
+        if local_toolkit
+            return false
         end
 
-        cuda_version_override = get(ENV, "JULIA_CUDA_VERSION", nothing)
-        # TODO: support for Preferences.jl-based override?
-
-        # "[...] applications built against any of the older CUDA Toolkits always continued
-        #  to function on newer drivers due to binary backward compatibility"
-        filter!(cuda_toolkits) do toolkit
-            if cuda_version_override !== nothing
-                toolkit == cuda_version_override
-            elseif cuda_driver >= v"11.1"
-                # enhanced compatibility
-                #
-                # "From CUDA 11 onwards, applications compiled with a CUDA Toolkit release
-                #  from within a CUDA major release family can run, with limited feature-set,
-                #  on systems having at least the minimum required driver version"
-                # TODO: check this minimum required driver version?
-                toolkit.major <= cuda_driver.major
-            else
-                thisminor(toolkit) <= thisminor(cuda_driver)
-            end
-        end
-        if isempty(cuda_toolkits)
-            return nothing
+        # if either isn't a version number (e.g. "none"), perform a simple equality check
+        a = tryparse(VersionNumber, _a)
+        b = tryparse(VersionNumber, _b)
+        if a === nothing || b === nothing
+            return _a == _b
         end
 
-        last(cuda_toolkits)
-    end
-
-    function augment_cuda_toolkit!(platform::Platform, cuda_toolkits::Vector{VersionNumber})
-        haskey(platform, "cuda") && return platform
-
-        cuda_toolkit = toolkit_version(cuda_toolkits)
-        platform["cuda"] = if cuda_toolkit !== nothing
-            "\$(cuda_toolkit.major).\$(cuda_toolkit.minor)"
-        else
-            # don't use an empty string here, because Pkg will then load *any* artifact
-            "none"
-        end
-
-        return platform
-    end
-
-
-    #
-    # Augmentation for selecting artifacts that depend on the CUDA toolkit
-    #
-
-    # imported by caller: CUDA_Runtime_jll
-
-    function cuda_comparison_strategy(a::String, b::String, a_requested::Bool, b_requested::Bool)
-        a = VersionNumber(a)
-        b = VersionNumber(b)
-
-        # If both b and a requested, then we fall back to equality:
+        # if both b and a requested, then we fall back to equality
         if a_requested && b_requested
-            return a == b
+            return Base.thisminor(a) == Base.thisminor(b)
         end
 
-        # Otherwise, do the comparison between the the single version cap and the single version:
+        # otherwise, do the comparison between the the single version cap and the single version:
         function is_compatible(artifact::VersionNumber, host::VersionNumber)
             if host >= v"11.0"
                 # enhanced compatibility, semver-style
-                artifact.major == host.major
-            else
                 artifact.major == host.major &&
-                artifact.minor == host.minor
+                Base.thisminor(artifact) <= Base.thisminor(host)
+            else
+                Base.thisminor(artifact) == Base.thisminor(host)
             end
         end
         if a_requested
@@ -125,14 +62,128 @@ const augment = """
         end
     end
 
-    function augment_cuda_dependent!(platform::Platform)
-        set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
-        haskey(platform, "cuda") && return platform
-        CUDA_Runtime_jll.augment_cuda_toolkit!(platform)
+    function augment_platform!(platform::Platform)
+        if !@isdefined(CUDA_Runtime_jll)
+            # don't set to nothing or Pkg will download any artifact
+            platform["cuda"] = "none"
+        end
+
+        if !haskey(platform, "cuda")
+            CUDA_Runtime_jll.augment_platform!(platform)
+        end
+        BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
+
+        # store the fact that we're using a local CUDA toolkit, for debugging purposes
+        platform["cuda_local"] = string(local_toolkit)
+
+        return platform
     end"""
 
 function platform(cuda::VersionNumber)
     return "$(cuda.major).$(cuda.minor)"
+end
+platform(cuda::String) = cuda
+
+# BinaryBuilder.jl currently does not allow selecting a BuildDependency by compat,
+# so we need the full version for CUDA_SDK_jll (JuliaPackaging/BinaryBuilder.jl#/1212).
+const cuda_full_versions = [
+    v"10.2.89",
+    v"11.4.4",
+    v"11.5.2",
+    v"11.6.2",
+    v"11.7.1",
+    v"11.8.0",
+    v"12.0.1",
+    v"12.1.1",
+    v"12.2.2",
+    v"12.3.2",
+    v"12.4.0",
+]
+
+function full_version(ver::VersionNumber)
+    ver == Base.thisminor(ver) || error("Cannot specify a patch version")
+    for full_ver in cuda_full_versions
+        if ver == Base.thisminor(full_ver)
+            return full_ver
+        end
+    end
+    error("CUDA version $ver not supported")
+end
+
+"""
+    supported_platforms(; <keyword arguments>)
+
+Return a list of supported platforms to build CUDA artifacts for.
+
+# Arguments
+- `min_version=v"11"`: Min. CUDA version to target.
+- `max_version=nothing`: Max. CUDA version to target.
+"""
+function supported_platforms(; min_version=v"11", max_version=nothing)
+    base_platforms = [
+        Platform("x86_64", "linux"; libc = "glibc"),
+        Platform("aarch64", "linux"; libc = "glibc"),
+        Platform("powerpc64le", "linux"; libc = "glibc"),
+
+        # nvcc isn't a cross compiler, so incompatible with BinaryBuilder
+        #Platform("x86_64", "windows"),
+    ]
+
+    cuda_versions = filter(v -> (isnothing(min_version) || v >= min_version) && (isnothing(max_version) || v <= max_version), cuda_full_versions)
+
+    # augment with CUDA versions
+    platforms = Platform[]
+    for version in cuda_versions
+        for base_platform in base_platforms
+            platform = deepcopy(base_platform)
+            platform["cuda"] = "$(version.major).$(version.minor)"
+            push!(platforms, platform)
+        end
+    end
+
+    return platforms
+end
+
+"""
+    is_supported(platform)
+
+Check if a platform is supported by CUDA, and whether we can build artifacts for it.
+This can be used to determine whether to also provide a `cuda+none` build, which should
+only ever be used if there is _also_ a CUDA-enabled build available.
+"""
+function is_supported(platform)
+    if Sys.islinux(platform)
+        return arch(platform) in ["x86_64", "aarch64", "powerpc64le"]
+    elseif Sys.iswindows(platform)
+        # see note in `supported_platforms()`
+        return false
+    else
+        return false
+    end
+end
+
+"""
+    required_dependencies(platform; static_sdk=false)
+
+Return a list of dependencies required to build and use CUDA artifacts for a given platform.
+Optionally include the CUDA static libraries with `static_sdk` for toolchains that require them.
+"""
+function required_dependencies(platform; static_sdk=false)
+    dependencies = Dependency[]
+    if !haskey(tags(platform), "cuda") || tags(platform)["cuda"] == "none"
+        return BinaryBuilder.AbstractDependency[]
+    end
+    release = VersionNumber(tags(platform)["cuda"])
+    deps = BinaryBuilder.AbstractDependency[
+        BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=CUDA.full_version(release))),
+        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))
+    ]
+
+    if static_sdk
+        push!(deps, BuildDependency(PackageSpec(name="CUDA_SDK_static_jll", version=CUDA.full_version(release))))
+    end
+
+    return deps
 end
 
 end

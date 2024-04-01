@@ -3,21 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "Libtool"
-version = v"2.4.6"
+version = v"2.4.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://gnu.mirrors.hoobly.com/libtool/libtool-2.4.6.tar.gz", "e3bd4d5d3d025a36c21dd6af7ea818a2afcd4dfc1ea5a17b39d7854bcd0c06e3")
+    ArchiveSource("https://ftpmirror.gnu.org/libtool/libtool-$(version).tar.gz",
+                  "04e96c2404ea70c590c546eba4202a4e12722c640016c12b9b2f1ce3d481e9a8")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libtool-2.4.6
+cd $WORKSPACE/srcdir/libtool-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
-exit
 """
 
 # These are the platforms we will build for by default, unless further
@@ -26,12 +25,13 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libltdl", :libltdl)
+    FileProduct("bin/libtool", :libtool),
+    FileProduct("bin/libtoolize", :libtoolize),
+    LibraryProduct("libltdl", :libltdl),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

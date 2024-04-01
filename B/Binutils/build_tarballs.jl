@@ -1,93 +1,80 @@
 using BinaryBuilder
 
-compiler_target = triplet(platform_key(ARGS[end]))
-if compiler_target == "unknown-unknown-unknown"
-    error("This is not a typical build_tarballs.jl!  Must provide exactly one platform as the last argument!")
-end
-deleteat!(ARGS, length(ARGS))
+name = "Binutils"
+version = v"2.41"
 
-# Encode the compiler target into the name
-name = "Binutils-$(compiler_target)"
-version = v"2.24"
-
-# Collection of sources required to build Binutils
 sources = [
-    "https://ftp.gnu.org/gnu/binutils/binutils-2.24.tar.bz2" =>
-	"e5e8c5be9664e7f7f96e0d09919110ab5ad597794f5b1809871177a0f0f14137",
-    "https://github.com/tpoechtrager/apple-libtapi.git" =>
-    "e56673694db395e25b31808b4fbb9a7005e6875f",
-    "https://github.com/tpoechtrager/cctools-port.git" =>
-    "ecb84d757b6f011543504967193375305ffa3b2f",
-    "./bundled",
+    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
+                  "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450"),
+    DirectorySource("bundled"),
 ]
 
-# Bash recipe for building across all platforms
-script = """
-# FreeBSD build system for binutils apparently requires that uname sit in /usr/bin/
-ln -sf \$(which uname) /usr/bin/uname
+script = raw"""
+cd ${WORKSPACE}/srcdir/binutils-*/
 
-# On MacOS, we don't actually install Binutils.  We install libtapi and cctools.  Le sigh.
-if [[ $(compiler_target) == *apple* ]]; then
-    mkdir -p \${WORKSPACE}/srcdir/apple-libtapi/build
-    cd \${WORKSPACE}/srcdir/apple-libtapi/build
+./configure --prefix=${prefix} \
+    --target=${target} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --disable-dependency-tracking \
+    --enable-deterministic-archives \
+    --disable-werror \
+    --disable-gprof \
+    --disable-gprofng \
+    --disable-gas \
+    --disable-gold \
+    --disable-ld \
+    --enable-install-libbfd \
+    --enable-install-libctf \
+    --enable-install-libiberty \
+    --enable-plugins \
+    --enable-targets=${target} \
+    --disable-nls \
+    --enable-64-bit-bfd \
+    --disable-static \
+    --enable-shared
 
-    # Install libtapi
-    cmake ../src/apple-llvm/src \\
-        -DLLVM_INCLUDE_TESTS=OFF \\
-        -DCMAKE_BUILD_TYPE=RELEASE \\
-        -DCMAKE_INSTALL_PREFIX=\${prefix}
-    make -j\${nproc} VERBOSE=1
-    make install
+make -j${nproc}
+make install
 
-    # Install cctools.  Someday, try this without disabling the clang assembler!
-    cd \${WORKSPACE}/srcdir/cctools-port/cctools
-    ./configure --prefix=\${prefix} \\
-        --target=$(compiler_target) \\
-        --host=\${MACHTYPE} \\
-        --with-libtapi=\${prefix}
-    make -j\${nproc}
-    make install
+# Install the `-fPIC` version of `libiberty.a` (which we built) but which isn't installed by default,
+# overwriting the non-pic version which was installed
+if test -f ${prefix}/lib64/libiberty.a; then
+    install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib64/libiberty.a
+elif test -f ${prefix}/lib/libiberty.a; then
+    install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib/libiberty.a
 else
-    cd \${WORKSPACE}/srcdir/binutils-*/
-
-    #atomic_patch -p1 "\${WORKSPACE}/srcdir/patches/binutils_COFF_bfd.patch"
-    update_configure_scripts
-
-    ./configure --prefix=\${prefix} \\
-        --target=$(compiler_target) \\
-        --host=\${MACHTYPE} \\
-        --with-sysroot="\${prefix}/$(compiler_target)/sys-root" \\
-        --enable-multilib \\
-        --disable-werror
-
-    make -j\${nproc}
-    make install
+    exit 1
 fi
-
-# Finally, create a bunch of symlinks stripping out the target so that
-# things like `nm` "just work", as long as we've got our path set properly.
-for f in \${prefix}/bin/$(compiler_target)-*; do
-    fbase=\$(basename \$f)
-    ln -s \$fbase \${prefix}/bin/\${fbase#$(compiler_target)-}
-done
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [Platform("x86_64", "linux")]
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
-# The products that we will ensure are always built
-products = prefix -> [
-    ExecutableProduct(prefix, "$(compiler_target)-as", :as),
-    ExecutableProduct(prefix, "$(compiler_target)-nm", :nm),
-    ExecutableProduct(prefix, "$(compiler_target)-ld", :ld),
-    ExecutableProduct(prefix, "$(compiler_target)-strip", :strip),
+products = [
+    ExecutableProduct("addr2line", :addr2line),
+    ExecutableProduct("ar", :ar),
+    # ExecutableProduct("as", :as),
+    ExecutableProduct("c++filt", :cxxfilt),
+    # ExecutableProduct("dwp", :dwp),
+    ExecutableProduct("elfedit", :elfedit),
+    # ExecutableProduct("gprof", :gprof),
+    # ExecutableProduct("gprofng", :gprofng),
+    # ExecutableProduct("ld", :ld),
+    # ExecutableProduct("ld.bfd", Symbol("ld.bfd")),
+    # ExecutableProduct("ld.gold", Symbol("ld.gold")),
+    ExecutableProduct("nm", :nm),
+    ExecutableProduct("objcopy", :objcopy),
+    ExecutableProduct("objdump", :objdump),
+    ExecutableProduct("ranlib", :ranlib),
+    ExecutableProduct("readelf", :readelf),
+    ExecutableProduct("size", :binutils_size),
+    ExecutableProduct("strings", :strings),
+    ExecutableProduct("strip", :binutils_strip),
+    LibraryProduct("libbfd", :libbfd),
+    LibraryProduct("libctf", :libctf),
+    LibraryProduct("libopcodes", :libopcodes),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = [
-    "https://github.com/staticfloat/KernelHeadersBuilder/releases/download/v4.12.0-0/build_KernelHeaders.v4.12.0.jl",
-]
+dependencies = Dependency[]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; skip_audit=true)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

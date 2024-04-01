@@ -1,0 +1,40 @@
+diff --git before/Clipper2/CPP/CMakeLists.txt after/Clipper2/CPP/CMakeLists.txt
+index bf121bf..47eded7 100644
+--- before/Clipper2/CPP/CMakeLists.txt
++++ after/Clipper2/CPP/CMakeLists.txt
+@@ -37,7 +37,7 @@ set(CLIPPER2_LIBS "") # one or both of Clipper2/Clipper2Z
+ # 2d version of Clipper2
+ if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
+   list(APPEND CLIPPER2_LIBS Clipper2)
+-  add_library(Clipper2 ${CLIPPER2_INC} ${CLIPPER2_SRC})
++  add_library(Clipper2 SHARED ${CLIPPER2_INC} ${CLIPPER2_SRC})
+ 
+   target_include_directories(Clipper2
+     PUBLIC Clipper2Lib/include
+@@ -54,7 +54,7 @@ endif()
+ # Clipper2 but with USINGZ defined
+ if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
+   list(APPEND CLIPPER2_LIBS Clipper2Z)
+-  add_library(Clipper2Z ${CLIPPER2_INC} ${CLIPPER2_SRC})
++  add_library(Clipper2Z SHARED ${CLIPPER2_INC} ${CLIPPER2_SRC})
+ 
+   target_compile_definitions(Clipper2Z PUBLIC USINGZ)
+ 
+@@ -93,7 +93,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
+ 
+   if (NOT (CLIPPER2_USINGZ STREQUAL "ONLY"))
+     list(APPEND CLIPPER2_UTILS Clipper2utils)
+-    add_library(Clipper2utils STATIC ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
++    add_library(Clipper2utils SHARED ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
+ 
+     target_link_libraries(Clipper2utils PUBLIC Clipper2)
+     target_include_directories(Clipper2utils
+@@ -103,7 +103,7 @@ if(CLIPPER2_UTILS OR CLIPPER2_TESTS OR CLIPPER2_EXAMPLES)
+ 
+   if (NOT (CLIPPER2_USINGZ STREQUAL "OFF"))
+     list(APPEND CLIPPER2_UTILS Clipper2Zutils)
+-    add_library(Clipper2Zutils STATIC ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
++    add_library(Clipper2Zutils SHARED ${CLIPPER2_UTILS_INC} ${CLIPPER2_UTILS_SRC})
+ 
+     target_link_libraries(Clipper2Zutils PUBLIC Clipper2Z)
+     target_include_directories(Clipper2Zutils

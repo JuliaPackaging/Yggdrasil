@@ -1,0 +1,83 @@
+From 8ee1b20a4f9ecb943e385164dc9065200c12cf7e Mon Sep 17 00:00:00 2001
+From: dylanxyz <jorge.brito.xyz@gmail.com>
+Date: Wed, 28 Sep 2022 19:01:18 -0300
+Subject: [PATCH] fixed missing headers
+
+---
+ src/nanovg_gl2.c   | 9 +++++++++
+ src/nanovg_gl3.c   | 9 +++++++++
+ src/nanovg_gles2.c | 9 +++++++++
+ src/nanovg_gles3.c | 9 +++++++++
+ 4 files changed, 36 insertions(+)
+ create mode 100644 src/nanovg_gl2.c
+ create mode 100644 src/nanovg_gl3.c
+ create mode 100644 src/nanovg_gles2.c
+ create mode 100644 src/nanovg_gles3.c
+
+diff --git a/src/nanovg_gl2.c b/src/nanovg_gl2.c
+new file mode 100644
+index 0000000..2e16e36
+--- /dev/null
++++ b/src/nanovg_gl2.c
+@@ -0,0 +1,9 @@
++#define NANOVG_GL2_IMPLEMENTATION
++
++#define GLEW_STATIC 
++#define GLEW_NO_GLU
++#include <GL/glew.h>
++
++#include "nanovg.h"
++#include "nanovg_gl.h"
++#include "nanovg_gl_utils.h"
+\ No newline at end of file
+diff --git a/src/nanovg_gl3.c b/src/nanovg_gl3.c
+new file mode 100644
+index 0000000..52a5895
+--- /dev/null
++++ b/src/nanovg_gl3.c
+@@ -0,0 +1,9 @@
++#define NANOVG_GL3_IMPLEMENTATION
++
++#define GLEW_STATIC 
++#define GLEW_NO_GLU
++#include <GL/glew.h>
++
++#include "nanovg.h"
++#include "nanovg_gl.h"
++#include "nanovg_gl_utils.h"
+\ No newline at end of file
+diff --git a/src/nanovg_gles2.c b/src/nanovg_gles2.c
+new file mode 100644
+index 0000000..5cf4d15
+--- /dev/null
++++ b/src/nanovg_gles2.c
+@@ -0,0 +1,9 @@
++#define NANOVG_GLES2_IMPLEMENTATION
++
++#define GLEW_STATIC 
++#define GLEW_NO_GLU
++#include <GL/glew.h>
++
++#include "nanovg.h"
++#include "nanovg_gl.h"
++#include "nanovg_gl_utils.h"
+\ No newline at end of file
+diff --git a/src/nanovg_gles3.c b/src/nanovg_gles3.c
+new file mode 100644
+index 0000000..5c34aed
+--- /dev/null
++++ b/src/nanovg_gles3.c
+@@ -0,0 +1,9 @@
++#define NANOVG_GLES3_IMPLEMENTATION
++
++#define GLEW_STATIC 
++#define GLEW_NO_GLU
++#include <GL/glew.h>
++
++#include "nanovg.h"
++#include "nanovg_gl.h"
++#include "nanovg_gl_utils.h"
+\ No newline at end of file
+-- 
+2.25.1
+

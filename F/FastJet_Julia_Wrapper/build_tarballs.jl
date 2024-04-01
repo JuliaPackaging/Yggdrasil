@@ -3,9 +3,15 @@
 using BinaryBuilder
 using Pkg
 
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+using Pkg
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
 name = "FastJet_Julia_Wrapper"
 version = v"0.8.7"
-julia_versions = [v"1.6", v"1.7", v"1.8"]
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to build FastJet_Julia_Wrapper
 sources = [

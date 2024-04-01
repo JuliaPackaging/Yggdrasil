@@ -1,46 +1,36 @@
 using BinaryBuilder
 
 name = "Triangle"
-version = v"1.6.1"
 
-# Collection of sources required to build Triangle by J. Shewchuk
-#
-# More info:
-# https://www.cs.cmu.edu/~quake/triangle.html
-# https://github.com/JuliaGeometry/Triangulate.jl
- #
-# Please be aware that triunsuitable.c is not part of the original Triangle distribution.
-# It provides the possibility to pass a cfunction created in Julia as  user refinement callback.
-# For this reason at least triunsiutable.c must be downloaded from Triangulate.jl repo, and
-# for simplicity, we do this for the whole code.
+version = v"1.6.2"
+
 sources = [
-    GitSource("https://github.com/JuliaGeometry/Triangulate.jl.git","b2ffb23ca7d89c567fd31367882bd216757cdb9c")
+    GitSource("https://github.com/JuliaGeometry/Triangle.git","2ef9213abd06f2dd6312b9ee90758fe91226c6b7")
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/Triangulate.jl/deps/src
+
+cd $WORKSPACE/srcdir/Triangle
+
 mkdir -p "${libdir}"
 
-# Patch the code in order to replace exit() calls in the C code  so that we can
-# throw an error instead.
-sed -e "s/  exit/extern void error_exit(int); error_exit/g" triangle/triangle.c > triangle_patched.c
+GENERICFLAGS=(-DREAL=double  -DTRILIBRARY  -DNDEBUG -DNO_TIMER -DEXTERNAL_TEST)
 
-# Concerning the suppression of int - pointer cast warnings,
-# see the following comment in triangle.c:
-#
-# encode() compresses an oriented triangle into a single pointer.  It 
-# relies on the assumption that all triangles are aligned to four-byte
-# boundaries, so the two least significant bits of (otri).tri are zero.
-#
-# So there is an inherent hack in the code which we have to allow and hope things keep working.
-$CC -Itriangle  -Wno-int-to-pointer-cast  -Wno-pointer-to-int-cast -DREAL=double -DTRILIBRARY -O3 -fPIC -DNDEBUG -DNO_TIMER -DEXTERNAL_TEST $LDFLAGS --shared -o "${libdir}/libtriangle.${dlext}" triangle_patched.c triwrap.c
+if [[ "${target}" == x86_64-w64-mingw32 ]]; then
+    ARCHFLAGS=(-DULONG="unsigned long long")
+else
+    ARCHFLAGS=(-DULONG="unsigned long" -fPIC)
+fi
 
-install_license triangle/README
+$CC "${ARCHFLAGS[@]}"  "${GENERICFLAGS[@]}" -O3  --shared -o "${libdir}/libtriangle.${dlext}" triangle.c triwrapjulia.c
+
+install_license README
 """
 
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
+
 products = [LibraryProduct("libtriangle", :libtriangle)]
+
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
-

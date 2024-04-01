@@ -1,0 +1,31 @@
+diff --git a/thread/thread.cpp b/thread/thread.cpp
+index c7a6c35b..75c97c04 100644
+--- a/thread/thread.cpp
++++ b/thread/thread.cpp
+@@ -121,7 +121,11 @@ void Thread::resume() {
+
+ namespace details {
+
++#ifdef __GLIBC__
+ __thread Thread* thread_ __attribute__((tls_model("initial-exec")));
++#else
++__thread Thread* thread_;
++#endif
+
+ }  // namespace details
+
+diff --git a/thread/thread.hpp b/thread/thread.hpp
+index ad88f7ff..1077785f 100644
+--- a/thread/thread.hpp
++++ b/thread/thread.hpp
+@@ -186,7 +186,11 @@ namespace details {
+
+ #if defined(__linux__)
+
++#ifdef __GLIBC__
+ extern __thread Thread* thread_ __attribute__((tls_model("initial-exec")));
++#else
++extern __thread Thread* thread_;
++#endif
+
+ static inline Thread* currentThread() { return thread_; }

@@ -1,0 +1,201 @@
+--- a/libstdc++-v3/src/c++17/memory_resource.cc
++++ a/libstdc++-v3/src/c++17/memory_resource.cc
+@@ -32,6 +32,8 @@
+ # include <bits/move.h>		// std::exchange
+ #endif
+ 
++
++#define __constinit constinit
+ namespace std _GLIBCXX_VISIBILITY(default)
+ {
+ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+--- a/libstdc++-v3/src/c++98/bitmap_allocator.cc
++++ a/libstdc++-v3/src/c++98/bitmap_allocator.cc
+@@ -48,7 +48,7 @@
+ 
+   size_t*
+   free_list::
+-  _M_get(size_t __sz) throw(std::bad_alloc)
++  _M_get(size_t __sz) _GLIBCXX_THROW(std::bad_alloc)
+   {
+ #if defined __GTHREADS
+     __mutex_type& __bfl_mutex = _M_get_mutex();
+--- a/libstdc++-v3/src/c++17/fs_path.cc
++++ a/libstdc++-v3/src/c++17/fs_path.cc
+@@ -253,7 +253,7 @@
+     {
+       __glibcxx_assert(p->_M_size <= p->_M_capacity);
+       p->clear();
+-      ::operator delete(p, sizeof(*p) + p->_M_capacity * sizeof(value_type));
++      ::operator delete(p, (std::align_val_t)(sizeof(*p) + p->_M_capacity * sizeof(value_type)));
+     }
+ }
+ 
+@@ -1988,8 +1988,8 @@
+   static std::string
+   make_what(string_view s, const path* p1, const path* p2)
+   {
+-    const std::string pstr1 = p1 ? p1->u8string() : std::string{};
+-    const std::string pstr2 = p2 ? p2->u8string() : std::string{};
++    const std::string pstr1 = p1 ? p1->string() : std::string{};
++    const std::string pstr2 = p2 ? p2->string() : std::string{};
+     const size_t len = 18 + s.length()
+       + (pstr1.length() ? pstr1.length() + 3 : 0)
+       + (pstr2.length() ? pstr2.length() + 3 : 0);
+--- a/libstdc++-v3/include/bits/std_thread.h
++++ a/libstdc++-v3/include/bits/std_thread.h
+@@ -270,7 +270,7 @@
+ #ifndef _GLIBCXX_HAS_GTHREADS
+   inline void thread::join() { std::__throw_system_error(EINVAL); }
+   inline void thread::detach() { std::__throw_system_error(EINVAL); }
+-  inline unsigned int thread::hardware_concurrency() { return 0; }
++  inline unsigned int thread::hardware_concurrency() noexcept { return 0; }
+ #endif
+ 
+   inline void
+--- a/libstdc++-v3/src/c++17/floating_from_chars.cc
++++ a/libstdc++-v3/src/c++17/floating_from_chars.cc
+@@ -65,7 +65,7 @@
+   // a single allocation, so there's no need for anything more complex.
+   struct buffer_resource : pmr::memory_resource
+   {
+-    ~buffer_resource() { if (m_ptr) operator delete(m_ptr, m_bytes); }
++    ~buffer_resource() { if (m_ptr) operator delete(m_ptr, (std::align_val_t)m_bytes); }
+ 
+     void*
+     do_allocate(size_t bytes, size_t alignment [[maybe_unused]]) override
+diff --git a/libstdc++-v3/config/locale/gnu/ctype_members.cc b/libstdc++-v3/config/locale/gnu/ctype_members.cc
+index bd190712eac..94fb7f32cb6 100644
+--- a/libstdc++-v3/config/locale/gnu/ctype_members.cc
++++ a/libstdc++-v3/config/locale/gnu/ctype_members.cc
+@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 	this->_S_create_c_locale(this->_M_c_locale_ctype, __s);
+ 	this->_M_toupper = this->_M_c_locale_ctype->__ctype_toupper;
+ 	this->_M_tolower = this->_M_c_locale_ctype->__ctype_tolower;
+-	this->_M_table = this->_M_c_locale_ctype->__ctype_b;
++	this->_M_table = (mask*)this->_M_c_locale_ctype->__ctype_b;
+       }
+   }
+ 
+diff --git a/libstdc++-v3/libsupc++/Makefile.am b/libstdc++-v3/libsupc++/Makefile.am
+index 65b5c1a87fd..25a4c551283 100644
+--- a/libstdc++-v3/libsupc++/Makefile.am
++++ a/libstdc++-v3/libsupc++/Makefile.am
+@@ -140,7 +140,7 @@ atomicity.cc: ${atomicity_file}
+ AM_CXXFLAGS = \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) \
+-	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS)
++	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS) -std=c++17
+ 
+ AM_MAKEFLAGS = \
+ 	"gxx_include_dir=$(gxx_include_dir)"
+diff --git a/libstdc++-v3/libsupc++/Makefile.in b/libstdc++-v3/libsupc++/Makefile.in
+index a4402009b85..525599f12c3 100644
+--- a/libstdc++-v3/libsupc++/Makefile.in
++++ a/libstdc++-v3/libsupc++/Makefile.in
+@@ -580,7 +580,7 @@ atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
+ AM_CXXFLAGS = \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) \
+-	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS)
++	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS)  $(CONFIG_CXXFLAGS) -std=c++17
+ 
+ AM_MAKEFLAGS = \
+ 	"gxx_include_dir=$(gxx_include_dir)"
+diff --git a/libstdc++-v3/src/c++11/Makefile.am b/libstdc++-v3/src/c++11/Makefile.am
+index ecd46aafc01..116c167d7f9 100644
+--- a/libstdc++-v3/src/c++11/Makefile.am
++++ a/libstdc++-v3/src/c++11/Makefile.am
+@@ -142,12 +142,12 @@ if ENABLE_DUAL_ABI
+ rewrite_ios_failure_typeinfo = sed -e '/^_*_ZTISt13__ios_failure:/,/_ZTVN10__cxxabiv120__si_class_type_infoE/s/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt19__iosfail_type_info/'
+ 
+ cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
+-	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
++	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+ 	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
+ 	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ 	-rm -f tmp-$@
+ cxx11-ios_failure.s: cxx11-ios_failure.cc
+-	$(CXXCOMPILE) -gno-as-loc-support -S $< -o tmp-$@
++	$(CXXCOMPILE) -S $< -o tmp-$@
+ 	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ 	-rm -f tmp-$@
+ 
+diff --git a/libstdc++-v3/src/c++11/Makefile.in b/libstdc++-v3/src/c++11/Makefile.in
+index 4db28bd8515..37592afbc25 100644
+--- a/libstdc++-v3/src/c++11/Makefile.in
++++ a/libstdc++-v3/src/c++11/Makefile.in
+@@ -862,12 +862,12 @@ limits.o: limits.cc
+ 	$(CXXCOMPILE) -fchar8_t -c $<
+ 
+ @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
+-@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
++@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+ @ENABLE_DUAL_ABI_TRUE@	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
+ @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
+ @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.s: cxx11-ios_failure.cc
+-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -gno-as-loc-support -S $< -o tmp-$@
++@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -S $< -o tmp-$@
+ @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
+ 
+diff --git a/libstdc++-v3/src/c++17/Makefile.am b/libstdc++-v3/src/c++17/Makefile.am
+index 3d53f652fac..1ce770611e6 100644
+--- a/libstdc++-v3/src/c++17/Makefile.am
++++ a/libstdc++-v3/src/c++17/Makefile.am
+@@ -79,7 +79,7 @@ endif
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++17 \
++	-std=c++20 -fsized-deallocation \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++17/Makefile.in b/libstdc++-v3/src/c++17/Makefile.in
+index b88917e101a..0999867a187 100644
+--- a/libstdc++-v3/src/c++17/Makefile.in
++++ a/libstdc++-v3/src/c++17/Makefile.in
+@@ -455,7 +455,7 @@ libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++17 \
++	-std=c++20 -fsized-deallocation \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++17/floating_to_chars.cc b/libstdc++-v3/src/c++17/floating_to_chars.cc
+index 1a0abb9e80f..6200827afd4 100644
+--- a/libstdc++-v3/src/c++17/floating_to_chars.cc
++++ a/libstdc++-v3/src/c++17/floating_to_chars.cc
+@@ -1019,7 +1019,7 @@ template<typename T>
+ 	    // writing out fd.mantissa followed by fd.exponent many 0s.
+ 	    if (fd.sign)
+ 	      *first++ = '-';
+-	    to_chars_result result = to_chars(first, last, fd.mantissa);
++	    to_chars_result result = to_chars(first, last, (int)fd.mantissa);
+ 	    __glibcxx_assert(result.ec == errc{});
+ 	    memset(result.ptr, '0', fd.exponent);
+ 	    result.ptr += fd.exponent;
+@@ -1075,7 +1075,7 @@ template<typename T>
+ 	    const int leading_zeros = -fd.exponent - mantissa_length;
+ 	    memset(first, '0', leading_zeros);
+ 	    first += leading_zeros;
+-	    const to_chars_result result = to_chars(first, last, fd.mantissa);
++	    const to_chars_result result = to_chars(first, last, (int)fd.mantissa);
+ 	    const int output_length = result.ptr - orig_first;
+ 	    __glibcxx_assert(output_length == expected_output_length
+ 			     && result.ec == errc{});
+@@ -1087,7 +1087,7 @@ template<typename T>
+ 	    const auto orig_first = first;
+ 	    if (fd.sign)
+ 	      *first++ = '-';
+-	    to_chars_result result = to_chars(first, last, fd.mantissa);
++	    to_chars_result result = to_chars(first, last, (int)fd.mantissa);
+ 	    __glibcxx_assert(result.ec == errc{});
+ 	    // Make space for and write the decimal point in the correct spot.
+ 	    memmove(&result.ptr[fd.exponent+1], &result.ptr[fd.exponent],
+

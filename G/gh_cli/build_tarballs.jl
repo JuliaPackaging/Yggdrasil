@@ -3,24 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "gh_cli"
-version = v"2.2.0"
+version = v"2.44.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cli/cli.git", "a843cbd72813025817a2293a09b31c4597a3f655"),
+    GitSource("https://github.com/cli/cli.git", "b07f955c23fb54c400b169d39255569e240b324e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cli/
+cd $WORKSPACE/srcdir/cli
 go build -v ./cmd/gh
-mkdir ${bindir}
-mv gh${exeext} ${bindir}/gh${exeext}
+install -Dvm 755 gh${exeext} ${bindir}/gh${exeext}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

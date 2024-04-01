@@ -3,67 +3,63 @@
 using BinaryBuilder, Pkg
 
 name = "Kokkos"
-version = v"3.5.0"
+version_string = "4.2.0"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/kokkos/kokkos/archive/refs/tags/3.5.00.tar.gz", "748f06aed63b1e77e3653cd2f896ef0d2c64cb2e2d896d9e5a57fec3ff0244ff"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/kokkos/kokkos.git", "71a9bcae52543bd065522bf3e41b5bfa467d8015"),
+    # Kokkos requires macOS 10.13 or later
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+                  "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/kokkos-*
+cd ${WORKSPACE}/srcdir/kokkos
 
-OPENMP_FLAG=()
-
-#inspired by https://github.com/JuliaPackaging/Yggdrasil/blob/b15a45949bf007072af7a2f335fe6e49165f7627/E/Entwine/build_tarballs.jl#L31-L40
-if [[ ${target} == *-linux-musl* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/disable-stacktrace-macro.patch
-
-elif [[  ${target} == *-mingw*  ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-windows-include.patch
-
-elif [[  ${target} == *-apple-*  ]]; then
-# Apple's Clang does not support OpenMP? - taken from AMRex build_tarballs.jl
-    OPENMP_FLAG+=(-DKokkos_ENABLE_OPENMP=OFF)
-else
-    OPENMP_FLAG+=(-DKokkos_ENABLE_OPENMP=ON)
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+    cp -a System "/opt/${target}/${target}/sys-root/"
+    popd
 fi
 
-mkdir build
-cd build/
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DKokkos_ENABLE_OPENMP=ON \
+    -DKokkos_ENABLE_SERIAL=ON
 
-cmake .. \
--DCMAKE_INSTALL_PREFIX=$prefix \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DCMAKE_BUILD_TYPE=Release \
--DBUILD_SHARED_LIBS=ON \
-"${OPENMP_FLAG[@]}"
-
-make -j${nproc}
-make install
-
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 #Kokkos assumes a 64-bit build, remove 32-bit platforms
 filter!(p -> nbits(p) != 32, platforms)
-
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libkokkoscore", :libkokkoscore),
-    LibraryProduct("libkokkoscontainers", :libkokkoscontainers)
+    LibraryProduct("libkokkoscontainers", :libkokkoscontainers),
+    LibraryProduct("libkokkossimd", :libkokkossimd)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#minimum supported gcc on x86_64 is 5.3.0, BB only has 5.2.0 so we bump up to 6
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")

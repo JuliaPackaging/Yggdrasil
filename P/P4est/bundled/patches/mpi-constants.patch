@@ -1,0 +1,42 @@
+--- a/sc/src/sc.c
++++ b/sc/src/sc.c
+@@ -98,7 +98,10 @@
+ static int          default_abort_mismatch = 1;
+ 
+ static int          sc_identifier = -1;
+-static sc_MPI_Comm  sc_mpicomm = sc_MPI_COMM_NULL;
++static sc_MPI_Comm  sc_mpicomm;
++__attribute__((__constructor__)) static void init_sc_mpicomm() {
++  sc_mpicomm = sc_MPI_COMM_NULL;
++}
+ 
+ static FILE        *sc_log_stream = NULL;
+ static sc_log_handler_t sc_default_log_handler = sc_log_handler;
+--- a/sc/src/sc_mpi.c
++++ b/sc/src/sc_mpi.c
+@@ -523,7 +523,10 @@
+ #if defined(SC_ENABLE_MPI) && defined (SC_ENABLE_MPICOMMSHARED)
+ 
+ /* Make this a parameter to sc_mpi_comm_attach_node_comms and friends! */
+-static int          sc_mpi_node_comm_keyval = sc_MPI_KEYVAL_INVALID;
++static int          sc_mpi_node_comm_keyval;
++__attribute__((__constructor__)) static void init_sc_mpi_node_comm_keyval() {
++  sc_mpi_node_comm_keyval = sc_MPI_KEYVAL_INVALID;
++}
+ 
+ static int
+ sc_mpi_node_comms_destroy (sc_MPI_Comm comm, int comm_keyval,
+--- a/sc/src/sc_shmem.c
++++ b/sc/src/sc_shmem.c
+@@ -30,7 +30,10 @@
+ #endif
+ 
+ #if defined(SC_ENABLE_MPI)
+-static int          sc_shmem_keyval = MPI_KEYVAL_INVALID;
++static int          sc_shmem_keyval;
++__attribute__((__constructor__)) static void init_sc_shmem_keyval() {
++  sc_shmem_keyval = MPI_KEYVAL_INVALID;
++}
+ #endif
+ 
+ const char         *sc_shmem_type_to_string[SC_SHMEM_NUM_TYPES] = {

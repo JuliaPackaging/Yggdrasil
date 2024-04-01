@@ -1,0 +1,3 @@
+bundled/patches/fix-format-strings.patch -text diff
+bundled/patches/fix-ptr-to-int-on-windows-64bit.patch -text diff
+bundled/patches/isfinite.patch -text diff

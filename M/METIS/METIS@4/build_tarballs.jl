@@ -15,7 +15,7 @@ using BinaryBuilder, Pkg
 
 name = "METIS4"
 upstream_version = v"4.0.3"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -42,12 +42,16 @@ cd Lib
 make -j${nproc} COPTIONS="${COPTIONS} -fPIC"
 cd ..
 
-# We copy the .a files into ${prefix}/lib since the main purpose is to link them in other builds.
-# Specifically this is in a separate location than the typical location for libraries on Windows.
-mkdir -p ${prefix}/lib
-mv libmetis.a ${prefix}/lib
-mkdir -p ${prefix}/include
-cp Lib/metis.h ${prefix}/include
+if [[ "${target}" == *apple* ]]; then
+    SONAME="-install_name"
+else
+    SONAME="-soname"
+fi
+
+mkdir -p $libdir
+mkdir -p $includedir
+cp Lib/metis.h $includedir
+$CC -shared -Wl,$SONAME,libmetis4.${dlext} $(flagon -Wl,--whole-archive) libmetis.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libmetis4.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -56,7 +60,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/libmetis.a", :libmetis_a)
+    LibraryProduct("libmetis4", :libmetis4),
 ]
 
 # Dependencies that must be installed before this package can be built

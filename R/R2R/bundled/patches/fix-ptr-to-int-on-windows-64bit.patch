@@ -1,0 +1,151 @@
+diff --git a/src/SymbolicMath.cpp b/src/SymbolicMath.cpp
+index d97f956..a3d7f5c 100755
+--- a/src/SymbolicMath.cpp
++++ b/src/SymbolicMath.cpp
+@@ -4,6 +4,8 @@
+ 
+ #include "SymbolicMath.h"
+ 
++#include <cinttypes>
++
+ const static double pi=3.14159265358979323846;
+ 
+ inline void AssertNormalNumber (double x)
+@@ -26,11 +28,12 @@ inline void AssertIsOkayForLog (double x)
+ ///////////////////////////////
+ // SymbolicMath
+ 
+-#ifdef _MSC_VER
+-#define PTR2UL(X) (unsigned long)((unsigned __int64)X)
+-#else
+-#define PTR2UL(X) (unsigned long)(X)
+-#endif
++// #ifdef _MSC_VER
++// #define PTR2UL(X) (unsigned long)((unsigned __int64)X)
++// #else
++// #define PTR2UL(X) (unsigned long)(X)
++// #endif
++#define PTR2UL(x) ((uintptr_t)(x))
+ 
+ SymbolicMath::SymbolicMath (Expression expression)
+ {
+@@ -305,7 +308,7 @@ void SymbolicMath::ExpressionNode::DumpSubtreeEvalCCode (FILE *out)
+ {
+ 	ClearValue();
+ 	Internal_DumpSubtreeEvalCCode(out);
+-	fprintf(out,"return t%lx;\n",PTR2UL(this));
++	fprintf(out,"return t%" PRIuPTR ";\n",PTR2UL(this));
+ }
+ void SymbolicMath::ExpressionNode::Internal_DumpSubtreeExprForEqualityTest (std::string& s,std::list<double>& constList,UniqueIdManager& uniqueIdManager)
+ {
+@@ -430,7 +433,7 @@ void SymbolicMath::ExpressionNode_Const::DumpExprForEqualityTest (std::string& s
+ }
+ void SymbolicMath::ExpressionNode_Const::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=%.15lg;\n",PTR2UL(this),x);
++	fprintf(out,"const double t%" PRIuPTR "=%.15lg;\n",PTR2UL(this),x);
+ }
+ bool SymbolicMath::ExpressionNode_Const::Is_LiteralConst (void) const
+ {
+@@ -509,7 +512,7 @@ void SymbolicMath::ExpressionNode_Var::DumpExpandedOneLine (FILE *out)
+ }
+ void SymbolicMath::ExpressionNode_Var::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=globalVars[%d];\n",PTR2UL(this),varNum);
++	fprintf(out,"const double t%" PRIuPTR "=globalVars[%d];\n",PTR2UL(this),varNum);
+ }
+ void SymbolicMath::ExpressionNode_Var::DumpExprForEqualityTest (std::string& s,std::list<double>& constList,UniqueIdManager& uniqueIdManager)
+ {
+@@ -612,12 +615,12 @@ void SymbolicMath::ExpressionNode_Summation::DumpExprForEqualityTest (std::strin
+ }
+ void SymbolicMath::ExpressionNode_Summation::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=",PTR2UL(this));
++	fprintf(out,"const double t%" PRIuPTR "=", PTR2UL(this));
+ 	for (ExpressionNodeList::const_iterator i=expressionNodeList.begin(); i!=expressionNodeList.end(); i++) {
+ 		if (i!=expressionNodeList.begin()) {
+ 			fprintf(out,"+");
+ 		}
+-		fprintf(out,"t%lx",PTR2UL(*i));
++		fprintf(out,"t%" PRIuPTR,PTR2UL(*i));
+ 	}
+ 	fprintf(out,";\n");
+ }
+@@ -815,7 +818,7 @@ void SymbolicMath::ExpressionNode_Log2::DumpExpandedOneLine (FILE *out)
+ }
+ void SymbolicMath::ExpressionNode_Log2::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=log(t%lx)/log(2.0);\n",PTR2UL(this),PTR2UL(f));
++	fprintf(out,"const double t%" PRIuPTR "=log(t%" PRIuPTR ")/log(2.0);\n",PTR2UL(this),PTR2UL(f));
+ }
+ const char *SymbolicMath::ExpressionNode_Log2::GetOpName() const
+ {
+@@ -886,7 +889,7 @@ void SymbolicMath::ExpressionNode_Sqrt::DumpExpandedOneLine (FILE *out)
+ }
+ void SymbolicMath::ExpressionNode_Sqrt::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=sqrt(t%lx);\n",PTR2UL(this),PTR2UL(f));
++	fprintf(out,"const double t%" PRIuPTR "=sqrt(t%" PRIuPTR ");\n",PTR2UL(this),PTR2UL(f));
+ }
+ const char *SymbolicMath::ExpressionNode_Sqrt::GetOpName() const
+ {
+@@ -1057,7 +1060,7 @@ void SymbolicMath::ExpressionNode_Add::DumpExpandedOneLine (FILE *out)
+ }
+ void SymbolicMath::ExpressionNode_Add::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=t%lx+t%lx;\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
++	fprintf(out,"const double t%" PRIuPTR "=t%" PRIuPTR "+t%" PRIuPTR ";\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
+ }
+ const char *SymbolicMath::ExpressionNode_Add::GetOpName () const
+ {
+@@ -1309,12 +1312,12 @@ void SymbolicMath::ExpressionNode_SumOfConstantTimesExpression::DumpExpandedOneL
+ }
+ void SymbolicMath::ExpressionNode_SumOfConstantTimesExpression::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=",PTR2UL(this));
++	fprintf(out,"const double t%" PRIuPTR "=",PTR2UL(this));
+ 	for (TermList::iterator i=termList.begin(); i!=termList.end(); i++) {
+ 		if (i!=termList.begin()) {
+ 			fprintf(out,"+");
+ 		}
+-		fprintf(out,"t%lx",PTR2UL(i->expressionNode));
++		fprintf(out,"t%" PRIuPTR,PTR2UL(i->expressionNode));
+ 	}
+ 	fprintf(out,";\n");
+ }
+@@ -1423,7 +1426,7 @@ void SymbolicMath::ExpressionNode_Minus::DumpExpandedOneLine (FILE *out)
+ }
+ void SymbolicMath::ExpressionNode_Minus::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=t%lx-t%lx;\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
++	fprintf(out,"const double t%" PRIuPTR "=t%" PRIuPTR "-t%" PRIuPTR ";\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
+ }
+ const char *SymbolicMath::ExpressionNode_Minus::GetOpName () const
+ {
+@@ -1480,7 +1483,7 @@ void SymbolicMath::ExpressionNode_Div::DumpExpandedOneLine (FILE *out)
+ }
+ void SymbolicMath::ExpressionNode_Div::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=t%lx/t%lx;\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
++	fprintf(out,"const double t%" PRIuPTR "=t%" PRIuPTR "/t%" PRIuPTR ";\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
+ }
+ const char *SymbolicMath::ExpressionNode_Div::GetOpName () const
+ {
+@@ -1528,7 +1531,7 @@ void SymbolicMath::ExpressionNode_Mult::DumpExpandedOneLine (FILE *out)
+ }
+ void SymbolicMath::ExpressionNode_Mult::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=t%lx*t%lx;\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
++	fprintf(out,"const double t%" PRIuPTR "=t%" PRIuPTR "*t%" PRIuPTR ";\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
+ }
+ bool SymbolicMath::ExpressionNode_Mult::Is_BinaryMult (void) const
+ {
+@@ -1582,7 +1585,7 @@ void SymbolicMath::ExpressionNode_Pow::DumpExpandedOneLine (FILE *out)
+ }
+ void SymbolicMath::ExpressionNode_Pow::DumpEvalCCode (FILE *out)
+ {
+-	fprintf(out,"const double t%lx=pow(t%lx,t%lx);\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
++	fprintf(out,"const double t%" PRIuPTR "=pow(t%" PRIuPTR ",t%" PRIuPTR ");\n",PTR2UL(this),PTR2UL(f),PTR2UL(g));
+ }
+ const char *SymbolicMath::ExpressionNode_Pow::GetOpName () const
+ {

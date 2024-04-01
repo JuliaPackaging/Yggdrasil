@@ -2,10 +2,10 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.6.0"
+version = v"0.6.2"
 sources = [
     ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "ae2db2fa808ca17c5dc5ac25b079eba2dbe598d061b9b4e14c948680870abc3c"),
+                  "fd00befcb0c20ba962a8744a7b9139355071ee95be70420de005b7c0f6e023aa"),
 ]
 
 # Bash recipe for building across all platforms

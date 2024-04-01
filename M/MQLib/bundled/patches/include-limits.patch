@@ -1,0 +1,45 @@
+diff --git a/src/heuristics/qubo/glover2010.cpp b/src/heuristics/qubo/glover2010.cpp
+index e926b6e..bc4ea48 100644
+--- a/src/heuristics/qubo/glover2010.cpp
++++ b/src/heuristics/qubo/glover2010.cpp
+@@ -3,6 +3,7 @@
+ #include <algorithm>
+ #include <iostream>
+ #include <vector>
++#include <limits>
+ #include "heuristics/qubo/glover2010.h"
+ #include "util/random.h"
+ 
+diff --git a/src/heuristics/qubo/katayama2000.cpp b/src/heuristics/qubo/katayama2000.cpp
+index 9a3c909..04595d5 100644
+--- a/src/heuristics/qubo/katayama2000.cpp
++++ b/src/heuristics/qubo/katayama2000.cpp
+@@ -1,5 +1,6 @@
+ #include <algorithm>
+ #include <iostream>
++#include <limits>
+ #include "heuristics/qubo/katayama2000.h"
+ #include "util/random.h"
+ 
+diff --git a/src/heuristics/qubo/merz2002.cpp b/src/heuristics/qubo/merz2002.cpp
+index 2c46d63..052bce0 100644
+--- a/src/heuristics/qubo/merz2002.cpp
++++ b/src/heuristics/qubo/merz2002.cpp
+@@ -1,5 +1,6 @@
+ #include <algorithm>
+ #include <iostream>
++#include <limits>
+ #include "heuristics/qubo/merz2002.h"
+ #include "util/random.h"
+ 
+diff --git a/src/heuristics/qubo/merz2004.cpp b/src/heuristics/qubo/merz2004.cpp
+index 40f2bb2..f680ddf 100644
+--- a/src/heuristics/qubo/merz2004.cpp
++++ b/src/heuristics/qubo/merz2004.cpp
+@@ -1,5 +1,6 @@
+ #include <algorithm>
+ #include <iostream>
++#include <limits>
+ #include "heuristics/qubo/merz2004.h"
+ #include "util/random.h"
+ 

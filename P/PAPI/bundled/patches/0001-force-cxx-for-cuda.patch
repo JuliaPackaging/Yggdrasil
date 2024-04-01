@@ -1,0 +1,25 @@
+From d6c6061f7b8c40ee46c360b9735399d68ad8c92d Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Thu, 9 Mar 2023 17:37:01 -0500
+Subject: [PATCH] force cxx for cuda
+
+---
+ src/components/cuda/tests/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/components/cuda/tests/Makefile b/src/components/cuda/tests/Makefile
+index 003fe4d1b..4748ed6b4 100644
+--- a/src/components/cuda/tests/Makefile
++++ b/src/components/cuda/tests/Makefile
+@@ -10,7 +10,7 @@ cuda_tests: $(TESTS)
+ 
+ PAPI_CUDA_ROOT ?= $(CUDA_PATH)
+ NVCC = $(PAPI_CUDA_ROOT)/bin/nvcc 
+-NVCFLAGS = -g -ccbin='$(CC)' $(NVPPC64LEFLAGS)
++NVCFLAGS = -g -ccbin='$(CXX)' $(NVPPC64LEFLAGS)
+ INCLUDE += -I$(PAPI_CUDA_ROOT)/include -I$(PAPI_CUPTI_ROOT)/include 
+ CUDALIBS = -L$(CUDRV_DIR)/lib64 -L$(PAPI_CUDA_ROOT)/lib64 -L$(PAPI_CUDA_ROOT)/lib64/stubs -L$(PAPI_CUPTI_ROOT)/lib64 -lcudart -lcupti -lcuda 
+ PAPILIB += -L../../../libpfm4/lib -lpfm
+-- 
+2.39.0
+

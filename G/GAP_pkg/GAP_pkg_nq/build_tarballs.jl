@@ -3,32 +3,35 @@
 include("../common.jl")
 
 name = "nq"
-upstream_version = v"2.5.5" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version
+upstream_version = "2.5.11" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
 # nq just produces a binary and does not need GAP for this at all.
 # So let's *not* use common.jl
 
-# Collection of sources required to build libsingular-julia
+# Collection of sources required to build this JLL
 sources = [
-    ArchiveSource("https://github.com/gap-packages/$(name)/releases/download/v$(upstream_version)/$(name)-$(upstream_version).tar.bz2",
-                  "b7a8fa12c02db78dc05ce047b451e7855345608bbfb0d11eb105056527694e42"),
-    DirectorySource("../bundled"),
+    ArchiveSource("https://github.com/gap-packages/nq/releases/download/v$(upstream_version)/nq-$(upstream_version).tar.gz",
+                  "6a8ad97023d90564d789be55b12bbc68d26a3714126f46bc75b415eec8f0f406"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd nq*
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/nq.patch
-autoreconf -fiv
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gmp=${prefix}
+# HACK to workaround need to pass --with-gaproot
+mkdir -p $prefix/lib/gap/ # HACK
+echo "GAParch=dummy" > $prefix/lib/gap/sysinfo.gap # HACK
+echo "GAP_CPPFLAGS=dummy" >> $prefix/lib/gap/sysinfo.gap # HACK
+
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gmp=${prefix} --with-gaproot=${prefix}/lib/gap
 make -j${nproc}
 
 # copy just the nq executable
 mkdir -p ${prefix}/bin/
-cp bin/nq ${prefix}/bin/
+cp bin/*/nq ${prefix}/bin/
 
 install_license LICENSE
 """
@@ -51,3 +54,4 @@ products = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
+

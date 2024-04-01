@@ -1,11 +1,15 @@
 using BinaryBuilder, Pkg
 
 name = "libgeotiff"
-version = v"1.7.1"
+upstream_version = v"1.7.1"
+version_offset = v"0.1.0"
+version = VersionNumber(upstream_version.major * 100 + version_offset.major,
+                        upstream_version.minor * 100 + version_offset.minor,
+                        upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/OSGeo/libgeotiff/releases/download/$version/libgeotiff-$version.tar.gz",
+    ArchiveSource("https://github.com/OSGeo/libgeotiff/releases/download/$upstream_version/libgeotiff-$upstream_version.tar.gz",
                   "05ab1347aaa471fc97347d8d4269ff0c00f30fa666d956baba37948ec87e55d6"),
 ]
 
@@ -41,9 +45,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("PROJ_jll"; compat="~900.0"),
-    Dependency("Libtiff_jll"; compat="4.3"),
-    Dependency("LibCURL_jll"),
+    Dependency("PROJ_jll"; compat="901.300.0"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

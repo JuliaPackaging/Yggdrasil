@@ -3,25 +3,27 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.22.2"
+version = v"3.28.1"
 
 # Collection of sources required to build CMake
 sources = [
-    ArchiveSource("https://github.com/Kitware/CMake/releases/download/v$(version)/cmake-$(version).tar.gz",
-                  "3c1c478b9650b107d452c5bd545c72e2fad4e37c09b89a1984b9a2f46df6aced"),
+    GitSource("https://github.com/Kitware/CMake", "1eed682d7cca9bb2c2b0709a6c3202a3b08613b2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cmake-*/
+cd ${WORKSPACE}/srcdir/CMake
 
 cmake \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE:STRING=Release \
-    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DBUILD_TESTING:BOOL=OFF \
+    -GNinja
 
-make -j${nproc}
-make install
+ninja
+ninja -j${nproc}
+ninja install
 """
 
 # Build for all supported platforms.
@@ -34,9 +36,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll")
+    Dependency("OpenSSL_jll"; compat="3.0.12")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
+# We use GCC 7 because we need C++17 (`std::make_unique`)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"7")

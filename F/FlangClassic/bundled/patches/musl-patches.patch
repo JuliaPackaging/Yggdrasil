@@ -1,0 +1,84 @@
+commit 4a7a5fc01f95f5548b28d284566298aff77fdb53 (HEAD -> master)
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sun Aug 14 12:21:28 2022 -0400
+
+    Fix build on musl
+    
+    Guard a few glibc-extensions by appropriate __GLIBC__ checks
+    and move some headers around since musl doesn't implicitly
+    include the same headers as glibc.
+
+diff --git a/runtime/flangrti/ktrap.c b/runtime/flangrti/ktrap.c
+index 573152d6..efbfddd3 100644
+--- a/runtime/flangrti/ktrap.c
++++ b/runtime/flangrti/ktrap.c
+@@ -52,8 +52,11 @@ __ktrap(void)
+         excepts |= FE_INEXACT;
+ #ifdef TARGET_OSX
+       __fenv_feenableexcept(excepts);
+-#else
++#elif defined(__GLIBC__)
+       feenableexcept(excepts);  /* glibc 2.2 extension to fenv.h */
++#else
++#warning "feenableexcept not available; -Ktrap will not work"
++      (void)excepts;
+ #endif
+     }
+   }
+diff --git a/runtime/flangrti/trace_lin.c b/runtime/flangrti/trace_lin.c
+index 57a57245..0182445c 100644
+--- a/runtime/flangrti/trace_lin.c
++++ b/runtime/flangrti/trace_lin.c
+@@ -11,7 +11,6 @@
+ #ifdef _WIN64
+ #include <windows.h>
+ #else
+-#include <execinfo.h>
+ #include <unistd.h>
+ #include <limits.h>
+ #include <sys/types.h>
+@@ -182,6 +181,7 @@ __abort_trace(int skip)
+     dumpregs(regs);
+   }
+ 
++#if defined(__GLIBC__)
+   size = backtrace(array, MAXTRACE);
+   if (skip + 1 >= size) {
+     fprintf(__io_stderr(), "  --- traceback not available\n");
+@@ -199,6 +199,9 @@ __abort_trace(int skip)
+       print_back_trace_line(strings[i], array[i]);
+   }
+   free(strings);
++#else
++  fprintf(__io_stderr(), "  --- traceback not available\n");
++#endif
+ }
+ 
+ /*
+diff --git a/runtime/include/komp.h b/runtime/include/komp.h
+index 33c0cd7e..40f56d4b 100644
+--- a/runtime/include/komp.h
++++ b/runtime/include/komp.h
+@@ -9,6 +9,9 @@
+ #define _PGOMP_H
+ 
+ #include <stdint.h>
++#if !defined(WIN32) && !defined(WIN64) && !defined(__WORDSIZE)
++#include <sys/reg.h>
++#endif
+ 
+ /* simple lock */
+ 
+diff --git a/tools/flang2/flang2exe/gbldefs.h b/tools/flang2/flang2exe/gbldefs.h
+index 366b3913..a3e594c7 100644
+--- a/tools/flang2/flang2exe/gbldefs.h
++++ b/tools/flang2/flang2exe/gbldefs.h
+@@ -19,6 +19,7 @@
+ #include "platform.h"
+ #include "pgifeat.h"
+ #include <scutil.h>
++#include <alloca.h>
+ 
+ #define NEW_ARG_PARSER
+ 
+

@@ -8,12 +8,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.8.14"
-julia_versions = [v"1.6.3", v"1.7.0", v"1.8.0", v"1.9.0"]
+version = v"4.12.6"
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Z3Prover/z3.git", "df8f9d7dcb8b9f9b3de1072017b7c2b7f63f0af8"),
+    ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3-solver-$(version).0.tar.gz",
+                  "9a0f30e9648ee2649adc301dbf91470bc1600f34112ffeaf1063f8a8075e1a48"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -36,19 +37,20 @@ fi
 
 # Bash recipe for building across all platforms
 script = macfix * raw"""
-cd $WORKSPACE/srcdir/z3/
+cd $WORKSPACE/srcdir/z3-*/core
 
-mkdir z3-build && cd z3-build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_FIND_ROOT_PATH="${prefix}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DZ3_USE_LIB_GMP=True \
     -DZ3_BUILD_JULIA_BINDINGS=True \
-    -DJulia_PREFIX="${prefix}" \
-    ..
-make -j${nproc}
-make install
-install_license ${WORKSPACE}/srcdir/z3/LICENSE.txt
+    -DZ3_ENABLE_EXAMPLE_TARGETS=False \
+    -DJulia_PREFIX="${prefix}"
+cmake --build build --parallel ${nproc}
+cmake --install build
+install_license LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -67,7 +69,9 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll")
+    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("libcxxwrap_julia_jll"),
+    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms,

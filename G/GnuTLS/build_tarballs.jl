@@ -1,23 +1,18 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.7.1"
+version = v"3.8.4"
 
 # Collection of sources required to build GnuTLS
 sources = [
     ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
-                  "3777d7963eca5e06eb315686163b7b3f5045e2baac5e54e038ace9835e5cac6f"),
+                  "2bea4e154794f3f00180fa2a5c51fe8b005ac7a31cd58bd44cdfa7f36ebc3a9b"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnutls-*/
-
-# Grumble-grumble apple grumble-grumble broken linkers...
-#if [[ ${target} == *-apple-* ]]; then
-#    export AR=/opt/${target}/bin/ar
-#fi
 
 if [[ ${target} == *darwin* ]]; then
     # Fix undefined reference to "_c_isdigit"
@@ -26,17 +21,25 @@ if [[ ${target} == *darwin* ]]; then
 
     # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
     # complain about: `Symbol not found: ___isOSVersionAtLeast`
-    if [[ "${target}" == aarch64* ]]; then
-        export CFLAGS="-mmacosx-version-min=11.0"
-    else
+    if [[ "${target}" == x86_64* ]]; then
         export CFLAGS="-mmacosx-version-min=10.11"
     fi
 fi
 
-GMP_CFLAGS="-I${prefix}/include" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+# Checks from macros `AC_FUNC_MALLOC` and `AC_FUNC_REALLOC` may fail when cross-compiling,
+# which can cause configure to remap `malloc` and `realloc` to replacement functions
+# `rpl_malloc` and `rpl_realloc`, which will cause a linking error.  For more information,
+# see https://stackoverflow.com/q/70725646/2442087
+FLAGS=(ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes)
+
+export GMP_CFLAGS="-I${includedir}"
+./configure \
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
     --with-included-libtasn1 \
     --with-included-unistring \
-    --without-p11-kit 
+    "${FLAGS[@]}"
 
 make -j${nproc}
 make install
@@ -44,10 +47,8 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-
 # Disable windows because O_NONBLOCK isn't defined
-filter!(!Sys.iswindows, platforms)
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = Product[
@@ -57,10 +58,11 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("GMP_jll", v"6.2.0"),
-    Dependency("Nettle_jll", v"3.7.2"; compat="~3.7.2"),
+    Dependency("GMP_jll", v"6.2.1"),
+    Dependency("Nettle_jll"; compat="~3.7.2"),
+    Dependency("P11Kit_jll"; compat="0.24.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6", lock_microarchitecture=false, julia_compat="1.6")
+               clang_use_lld=false, julia_compat="1.6", lock_microarchitecture=false, preferred_gcc_version=v"6")

@@ -3,6 +3,8 @@
 
 # author: Travis Askham (askhamwhat@gmail.com)
 #
+#TODO: there does not appear to be a way to use gfortran
+# with any openmp library other than libgomp.
 #TODO: there are a number of stumbling points for the
 # FAST_KER=ON option when cross-compiling. it is completely
 # disabled for now. Some issues:
@@ -16,67 +18,50 @@
 using BinaryBuilder, Pkg
 
 name = "FMM3D"
-version = v"0.1.0"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flatironinstitute/FMM3D.git", "e42473a8091d33a83cbdb631cff4660ce7f94a96")
+    GitSource("https://github.com/flatironinstitute/FMM3D.git", "9228240c090d1b8386617728ffa14372fe967b1a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd FMM3D/
+cd $WORKSPACE/srcdir/FMM3D/
 
-touch make.inc
+OMPFLAGS="-fopenmp"
+OMPLIBS="-lgomp"
 
-# clang has some issue with openmp (lomp not found)
-# force gcc
-if [[ ${target} = *apple* || ${target} = *freebsd* ]]; then
-  export CC="gcc"
-fi
-
-echo "CC=${CC}" >> make.inc;
-echo "CXX=${CXX}" >> make.inc;
-echo "FC=${FC}" >> make.inc;
-
+FFLAGS="-fPIC -O3 -funroll-loops -std=legacy"
 if [[ ${target} = *mingw* ]]; then
-    echo "FFLAGS= -fPIC -O3 -fno-asynchronous-unwind-tables -funroll-loops" >> make.inc;
-else
-    echo "FFLAGS= -fPIC -O3 -funroll-loops" >> make.inc;
+    FFLAGS="${FFLAGS} -fno-asynchronous-unwind-tables"
 fi
+LIBS="-lm"
 
-export OMPFLAGS="-fopenmp"
-export OMPLIBS="-lgomp"
-echo "OMPFLAGS= ${OMPFLAGS}" >> make.inc;
-echo "OMPLIBS= ${OMPLIBS}" >> make.inc;
-
-export LIBS="-lm -lgfortran"
-echo "LIBS = ${LIBS}" >> make.inc;
+echo "CC=${CC}" >> make.inc
+echo "CXX=${CXX}" >> make.inc
+echo "FC=${FC}" >> make.inc
+echo "FFLAGS= ${FFLAGS}" >> make.inc
+echo "OMPFLAGS= ${OMPFLAGS}" >> make.inc
+echo "OMPLIBS= ${OMPLIBS}" >> make.inc
+echo "LIBS = ${LIBS}" >> make.inc
 
 make -j${nproc} lib OMP=ON
 
-echo "${TARGET}"
-
 # build the correct type of dynamic library for
 # current target
-
-export SHAREFLAGS="-shared -fPIC"
+SHAREFLAGS="-shared -fPIC"
 
 cd lib-static
 ar x libfmm3d.a
-${CC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
-cd ..
+${FC} ${SHAREFLAGS} ${OMPFLAGS} *.o -o "${libdir}/libfmm3d.${dlext}" ${LIBS} ${OMPLIBS}
 
 install_license ${WORKSPACE}/srcdir/FMM3D/LICENSE
-rm make.inc
-exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+platforms = expand_gfortran_versions(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -84,7 +69,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

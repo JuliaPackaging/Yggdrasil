@@ -1,0 +1,100 @@
+commit a10027b2ca28c792d7e31016797bf327ff425a9e
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Thu Aug 18 22:08:28 2022 +0000
+
+    foo
+
+diff --git a/libstdc++-v3/libsupc++/eh_ptr.cc b/libstdc++-v3/libsupc++/eh_ptr.cc
+index 2c34bc10a02..1c7e0e6486f 100644
+--- a/libstdc++-v3/libsupc++/eh_ptr.cc
++++ b/libstdc++-v3/libsupc++/eh_ptr.cc
+@@ -220,4 +220,37 @@ std::rethrow_exception(std::exception_ptr ep)
+   std::terminate();
+ }
+ 
++std::exception_ptr::exception_ptr() _GLIBCXX_NOEXCEPT
++: _M_exception_object(0)
++{ }
++
++
++std::exception_ptr::exception_ptr(const std::exception_ptr& __other) _GLIBCXX_NOEXCEPT
++: _M_exception_object(__other._M_exception_object)
++{
++  if (_M_exception_object)
++_M_addref();
++}
++
++std::exception_ptr::~exception_ptr() _GLIBCXX_USE_NOEXCEPT
++{
++  if (_M_exception_object)
++_M_release();
++}
++
++std::exception_ptr&
++std::exception_ptr::operator=(const std::exception_ptr& __other) _GLIBCXX_USE_NOEXCEPT
++{
++  exception_ptr(__other).swap(*this);
++  return *this;
++}
++
++void
++std::exception_ptr::swap(std::exception_ptr &__other) _GLIBCXX_USE_NOEXCEPT
++{
++  void *__tmp = _M_exception_object;
++  _M_exception_object = __other._M_exception_object;
++  __other._M_exception_object = __tmp;
++}
++
+ #undef _GLIBCXX_EH_PTR_COMPAT
+diff --git a/libstdc++-v3/libsupc++/exception_ptr.h b/libstdc++-v3/libsupc++/exception_ptr.h
+index 6433f059e9c..6e093680e8c 100644
+--- a/libstdc++-v3/libsupc++/exception_ptr.h
++++ b/libstdc++-v3/libsupc++/exception_ptr.h
+@@ -177,47 +177,6 @@ namespace std
+ 	__attribute__ ((__pure__));
+     };
+ 
+-    _GLIBCXX_EH_PTR_USED
+-    inline
+-    exception_ptr::exception_ptr() _GLIBCXX_USE_NOEXCEPT
+-    : _M_exception_object(0)
+-    { }
+-
+-    _GLIBCXX_EH_PTR_USED
+-    inline
+-    exception_ptr::exception_ptr(const exception_ptr& __other)
+-    _GLIBCXX_USE_NOEXCEPT
+-    : _M_exception_object(__other._M_exception_object)
+-    {
+-      if (_M_exception_object)
+-	_M_addref();
+-    }
+-
+-    _GLIBCXX_EH_PTR_USED
+-    inline
+-    exception_ptr::~exception_ptr() _GLIBCXX_USE_NOEXCEPT
+-    {
+-      if (_M_exception_object)
+-	_M_release();
+-    }
+-
+-    _GLIBCXX_EH_PTR_USED
+-    inline exception_ptr&
+-    exception_ptr::operator=(const exception_ptr& __other) _GLIBCXX_USE_NOEXCEPT
+-    {
+-      exception_ptr(__other).swap(*this);
+-      return *this;
+-    }
+-
+-    _GLIBCXX_EH_PTR_USED
+-    inline void
+-    exception_ptr::swap(exception_ptr &__other) _GLIBCXX_USE_NOEXCEPT
+-    {
+-      void *__tmp = _M_exception_object;
+-      _M_exception_object = __other._M_exception_object;
+-      __other._M_exception_object = __tmp;
+-    }
+-
+     /// @relates exception_ptr
+     inline void
+     swap(exception_ptr& __lhs, exception_ptr& __rhs)

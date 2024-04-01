@@ -4,19 +4,19 @@
  #include <element.h>
  #include <limits.h>
  #include <intprops.h>
--#include <c-ctype.h>
+-#include "c-ctype.h"
  
  #ifdef DEBUG
  # define warn() fprintf(stderr, "%s: %d\n", __func__, __LINE__)
-@@ -353,7 +352,7 @@
+@@ -353,7 +352,7 @@ _asn1_get_time_der (unsigned type, const unsigned char *der, int der_len, int *r
        p = &der[len_len];
-       for (i=0;i<(unsigned)(str_len-1);i++)
-          {
--           if (c_isdigit(p[i]) == 0)
-+           if (isdigit(p[i]) == 0)
-              {
-                if (type == ASN1_ETYPE_GENERALIZED_TIME)
-                  {
+       for (i = 0; i < (unsigned) (str_len - 1); i++)
+ 	{
+-	  if (c_isdigit (p[i]) == 0)
++	  if (isdigit (p[i]) == 0)
+ 	    {
+ 	      if (type == ASN1_ETYPE_GENERALIZED_TIME)
+ 		{
 --- a/lib/minitasn1/element.c
 +++ b/lib/minitasn1/element.c
 @@ -30,7 +30,6 @@
@@ -27,7 +27,7 @@
  #include "element.h"
  
  void
-@@ -380,7 +379,7 @@
+@@ -380,7 +379,7 @@ asn1_write_value (asn1_node node_root, const char *name,
      case ASN1_ETYPE_ENUMERATED:
        if (len == 0)
  	{
@@ -36,7 +36,7 @@
  	    {
  	      value_temp = malloc (SIZEOF_UNSIGNED_LONG_INT);
  	      if (value_temp == NULL)
-@@ -453,7 +452,7 @@
+@@ -453,7 +452,7 @@ asn1_write_value (asn1_node node_root, const char *name,
  	  p = node->down;
  	  while (type_field (p->type) != ASN1_ETYPE_DEFAULT)
  	    p = p->right;
@@ -45,7 +45,7 @@
  	    {
  	      default_temp = malloc (SIZEOF_UNSIGNED_LONG_INT);
  	      if (default_temp == NULL)
-@@ -519,7 +518,7 @@
+@@ -519,7 +518,7 @@ asn1_write_value (asn1_node node_root, const char *name,
        break;
      case ASN1_ETYPE_OBJECT_ID:
        for (i = 0; i < _asn1_strlen (value); i++)
@@ -54,7 +54,7 @@
  	  return ASN1_VALUE_NOT_VALID;
        if (node->type & CONST_DEFAULT)
  	{
-@@ -540,7 +539,7 @@
+@@ -540,7 +539,7 @@ asn1_write_value (asn1_node node_root, const char *name,
  	if (len < 11)
  	  return ASN1_VALUE_NOT_VALID;
  	for (k = 0; k < 10; k++)
@@ -63,7 +63,7 @@
  	    return ASN1_VALUE_NOT_VALID;
  	switch (len)
  	  {
-@@ -549,7 +548,7 @@
+@@ -549,7 +548,7 @@ asn1_write_value (asn1_node node_root, const char *name,
  	      return ASN1_VALUE_NOT_VALID;
  	    break;
  	  case 13:
@@ -72,7 +72,7 @@
  		(value[12] != 'Z'))
  	      return ASN1_VALUE_NOT_VALID;
  	    break;
-@@ -557,16 +556,16 @@
+@@ -557,16 +556,16 @@ asn1_write_value (asn1_node node_root, const char *name,
  	    if ((value[10] != '+') && (value[10] != '-'))
  	      return ASN1_VALUE_NOT_VALID;
  	    for (k = 11; k < 15; k++)
@@ -92,7 +92,7 @@
  		return ASN1_VALUE_NOT_VALID;
  	    break;
  	  default:
-@@ -890,7 +889,7 @@
+@@ -890,7 +889,7 @@ asn1_read_value_type (asn1_node_const root, const char *name, void *ivalue,
  	  p = node->down;
  	  while (type_field (p->type) != ASN1_ETYPE_DEFAULT)
  	    p = p->right;
@@ -101,15 +101,14 @@
  	      || (p->value[0] == '+'))
  	    {
  	      result = _asn1_convert_integer
-
 --- a/lib/minitasn1/int.h
 +++ b/lib/minitasn1/int.h
 @@ -29,6 +29,7 @@
- #include <string.h>
- #include <stdlib.h>
- #include <stdio.h>
-+#include <ctype.h>
- #include <stdint.h>
+ # include <string.h>
+ # include <stdlib.h>
+ # include <stdio.h>
++# include <ctype.h>
+ # include <stdint.h>
  
  #ifdef HAVE_SYS_TYPES_H
 --- a/lib/minitasn1/parser_aux.c
@@ -122,7 +121,7 @@
  
  char _asn1_identifierMissing[ASN1_MAX_NAME_SIZE + 1];	/* identifier name not found */
  
-@@ -755,7 +754,7 @@
+@@ -755,7 +754,7 @@ _asn1_expand_object_id (list_type **list, asn1_node node)
  	      p2 = p->down;
  	      if (p2 && (type_field (p2->type) == ASN1_ETYPE_CONSTANT))
  		{
@@ -131,7 +130,7 @@
  		    {
  		      _asn1_str_cpy (name2, sizeof (name2), name_root);
  		      _asn1_str_cat (name2, sizeof (name2), ".");
-@@ -1067,7 +1066,7 @@
+@@ -1067,7 +1066,7 @@ _asn1_check_identifier (asn1_node_const node)
  	  p2 = p->down;
  	  if (p2 && (type_field (p2->type) == ASN1_ETYPE_CONSTANT))
  	    {

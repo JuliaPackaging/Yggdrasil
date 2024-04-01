@@ -4,23 +4,16 @@
 using BinaryBuilder, Pkg
 
 name = "casacore"
-version = v"3.4.0"
+version = v"3.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/casacore/casacore.git", "a735bf5f31ea012ac4f7f7378a1f89c1fc136a06"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/casacore/casacore.git", "ff766c49fdfddd34715fd017a08aaedcc01736e0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/casacore
-
-# Apply upstream patch that fixes i386 builds
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Fix-compilation-of-RefTable-on-i386-platform-1129.patch
-
-# Apply strerror patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Use-overloading-to-detect-strerror-variant.patch
 
 mkdir build && cd build
 CMAKE_FLAGS=()
@@ -38,7 +31,10 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DUSE_OPENMP=OFF)
 
 # Don't build python hooks
-CMAKE_FLAGS+=(-DBUILD_PYTHON=no)
+CMAKE_FLAGS+=(-DBUILD_PYTHON3=OFF)
+
+# Build "portable" code
+CMAKE_FLAGS+=(-DPORTABLE=ON)
 
 # Stock FFTW3 has threads already baked in
 CMAKE_FLAGS+=(-DFFTW3_DISABLE_THREADS=yes)
@@ -109,9 +105,10 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat = "3.3.10")
-    Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"); compat = "4.0.0")
+    Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"); compat = "4.3.1")
     Dependency(PackageSpec(name="WCS_jll", uuid="550c8279-ae0e-5d1b-948f-937f2608a23e"); compat = "7.7.0")
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"); compat = "8.1.1")
+    Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat = "2.7.2")
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]

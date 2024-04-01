@@ -6,19 +6,20 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
-version = v"4.0.2"
 
-mpich_version_str = "4.0.2"
-mpiwrapper_version = v"2.8.1"
+mpitrampoline_version = v"5.3.1"
+version = v"5.3.2"
+mpich_version_str = "4.2.0"
+mpiconstants_version = v"1.5.0"
+mpiwrapper_version = v"2.10.4"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eschnett/MPItrampoline/archive/refs/tags/v$(version).tar.gz",
-                  "89abda0526dba9e52a3b6334d1ac86709c12567ff114acd610471e66c6190b89"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "25efb0f7a4cd00ed82bafb8b1a6285fc50d297ed"),
+    GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
-    ArchiveSource("https://github.com/eschnett/MPIwrapper/archive/refs/tags/v$(mpiwrapper_version).tar.gz",
-                  "e6fc1c08ad778675e5b58b91b4658b12e3f985c6d4c5c2c3e9ed35986146780e"),
+                  "a64a66781b9e5312ad052d32689e23252f745b27ee8818ac2ac0c8209bc0b90e"),
+    GitSource("https://github.com/eschnett/MPIwrapper", "64f663cfaa36139882c5d92dc974b1a755cd6f5d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,16 +28,54 @@ script = raw"""
 # MPItrampoline
 ################################################################################
 
-cd $WORKSPACE/srcdir/MPItrampoline-*
+# When we build libraries linking to MPITrampoline, this library needs to find the
+# libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
+# need to give a little help to MPITrampoline to find it:
+# <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
+# apply this *hack* only when strictly needed, to avoid screwing something else up.
+if [[ "${target}" == x86_64-linux-gnu* ]]; then
+    INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
+else
+    INSTALL_RPATH=()
+fi
+
+cd $WORKSPACE/srcdir/MPItrampoline*
 mkdir build
 cd build
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_INSTALL_PREFIX=$prefix \
+    "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
     -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
+    ..
+cmake --build . --config RelWithDebInfo --parallel $nproc
+cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+
+# Post-process the compiler wrappers. They remember the original
+# compiler used to build MPItrampoline, but this compiler is too
+# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
+# `$FC` etc.
+sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
+sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
+sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
+cp ${bindir}/mpifc ${bindir}/mpifort
+
+################################################################################
+# Install MPIconstants
+################################################################################
+
+cd ${WORKSPACE}/srcdir/MPIconstants*
+mkdir build
+cd build
+cmake \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    "${INSTALL_RPATH[@]}" \
+    -DBUILD_SHARED_LIBS=ON \
     ..
 cmake --build . --config RelWithDebInfo --parallel $nproc
 cmake --build . --config RelWithDebInfo --parallel $nproc --target install
@@ -48,41 +87,39 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 cd ${WORKSPACE}/srcdir/mpich*
 
 EXTRA_FLAGS=()
-if [[ "${target}" != i686-linux-gnu ]] || [[ "${target}" != x86_64-linux-* ]]; then
-    # Define some obscure undocumented variables needed for cross compilation of
-    # the Fortran bindings.  See for example
-    # * https://stackoverflow.com/q/56759636/2442087
-    # * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
-    export CROSS_F77_SIZEOF_INTEGER=4
-    export CROSS_F77_SIZEOF_REAL=4
-    export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
-    export CROSS_F77_FALSE_VALUE=0
-    export CROSS_F77_TRUE_VALUE=1
+# Define some obscure undocumented variables needed for cross compilation of
+# the Fortran bindings.  See for example
+# * https://stackoverflow.com/q/56759636/2442087
+# * https://github.com/pmodels/mpich/blob/d10400d7a8238dc3c8464184238202ecacfb53c7/doc/installguide/cfile
+export CROSS_F77_SIZEOF_INTEGER=4
+export CROSS_F77_SIZEOF_REAL=4
+export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
+export CROSS_F77_FALSE_VALUE=0
+export CROSS_F77_TRUE_VALUE=1
 
-    if [[ ${nbits} == 32 ]]; then
-        export CROSS_F90_ADDRESS_KIND=4
-    else
-        export CROSS_F90_ADDRESS_KIND=8
-    fi
-    export CROSS_F90_OFFSET_KIND=8
-    export CROSS_F90_INTEGER_KIND=4
-    export CROSS_F90_INTEGER_MODEL=9
-    export CROSS_F90_REAL_MODEL=6,37
-    export CROSS_F90_DOUBLE_MODEL=15,307
-    export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
-    export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
+if [[ ${nbits} == 32 ]]; then
+    export CROSS_F90_ADDRESS_KIND=4
+else
+    export CROSS_F90_ADDRESS_KIND=8
+fi
+export CROSS_F90_OFFSET_KIND=8
+export CROSS_F90_INTEGER_KIND=4
+export CROSS_F90_INTEGER_MODEL=9
+export CROSS_F90_REAL_MODEL=6,37
+export CROSS_F90_DOUBLE_MODEL=15,307
+export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
+export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
 
-    if [[ "${target}" == i686-linux-musl ]]; then
-        # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
-        # but not C++ or Fortran.  `configure` runs a C program to determine
-        # whether it's cross-compiling or not, but when it comes to running
-        # Fortran programs, it fails.  In addition, `configure` ignores the
-        # above exported variables if it believes it's doing a native build.
-        # Small hack: edit `configure` script to force `cross_compiling` to be
-        # always "yes".
-        sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
-        EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
-    fi
+if [[ "${target}" == i686-linux-musl ]]; then
+    # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
+    # but not C++ or Fortran.  `configure` runs a C program to determine
+    # whether it's cross-compiling or not, but when it comes to running
+    # Fortran programs, it fails.  In addition, `configure` ignores the
+    # above exported variables if it believes it's doing a native build.
+    # Small hack: edit `configure` script to force `cross_compiling` to be
+    # always "yes".
+    sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
+    EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
 fi
 
 # Building with an external hwloc leads to problems loading the
@@ -103,10 +140,6 @@ export CXXFLAGS='-fPIC -DPIC'
 export FFLAGS='-fPIC -DPIC'
 export FCFLAGS='-fPIC -DPIC'
 
-if [[ "${target}" == aarch64-apple-* ]]; then
-    export FFLAGS="$FFLAGS -fallow-argument-mismatch"
-fi
-
 if [[ "${target}" == *-apple-* ]]; then
     # MPICH uses the link options `-flat_namespace` on Darwin. This
     # conflicts with MPItrampoline, which requires the option
@@ -121,16 +154,22 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
+# Do not install doc and man files which contain files which clashing names on
+# case-insensitive file systems:
+# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
+# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure \
     --build=${MACHTYPE} \
     --host=${target} \
     --disable-dependency-tracking \
     --docdir=/tmp \
+    --mandir=/tmp \
     --enable-shared=no \
     --enable-static=yes \
     --enable-threads=multiple \
     --enable-opencl=no \
     --with-device=ch3 \
+    --with-hwloc=${prefix} \
     --prefix=${prefix}/lib/mpich \
     "${EXTRA_FLAGS[@]}"
 
@@ -153,28 +192,29 @@ fi
 # Install MPIwrapper
 ################################################################################
 
-cd $WORKSPACE/srcdir/MPIwrapper-*
+cd $WORKSPACE/srcdir/MPIwrapper*
 mkdir build
 cd build
 # Yes, this is tedious. No, without being this explicit, cmake will
 # not properly auto-detect the MPI libraries on Darwin.
 if [[ "${target}" == *-apple-* ]]; then
-    ext='a'
     cmake \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
+        "${INSTALL_RPATH[@]}" \
         -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_CXX_COMPILER=c++ \
-        -DMPI_Fortran_COMPILER=gfortran \
-        -DMPI_C_LIB_NAMES='mpi;pmpi' \
-        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
-        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${ext} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
+        -DMPI_C_COMPILER=${CC} \
+        -DMPI_CXX_COMPILER=${CXX} \
+        -DMPI_Fortran_COMPILER=${FC} \
+        -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
+        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
+        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi;hwloc' \
+        -DMPI_hwloc_LIBRARY=${prefix}/lib/libhwloc.dylib \
+        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.a \
+        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.a \
+        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.a \
+        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.a \
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         ..
 else
@@ -184,6 +224,7 @@ else
         -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
+        "${INSTALL_RPATH[@]}" \
         ..
 fi
 
@@ -194,7 +235,7 @@ cmake --build . --config RelWithDebInfo --parallel $nproc --target install
 # Install licenses
 ################################################################################
 
-install_license $WORKSPACE/srcdir/MPItrampoline-*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
+install_license $WORKSPACE/srcdir/MPItrampoline*/LICENSE.md $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
 augment_platform_block = """
@@ -210,12 +251,9 @@ platforms = supported_platforms(; experimental=true)
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
 # not support musl or BSD.
 # FreeBSD: https://reviews.freebsd.org/D24841
-platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
-platforms = filter(!Sys.isfreebsd, platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
+
 platforms = expand_gfortran_versions(platforms)
-# libgfortran3 does not support `!GCC$ ATTRIBUTES NO_ARG_CHECK`. (We
-# could in principle build without Fortran support there.)
-platforms = filter(p -> libgfortran_version(p) ≠ v"3", platforms)
 
 # Add `mpi+mpitrampoline` platform tag
 foreach(p -> (p["mpi"] = "MPItrampoline"), platforms)
@@ -232,9 +270,13 @@ products = [
     # `MPI.jl` will find it
     LibraryProduct("libmpitrampoline", :libmpi),
 
+    # MPIconstants
+    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
+    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
+
     # MPICH
     ExecutableProduct("mpiexec", :mpich_mpiexec, "lib/mpich/bin"),
-    
+
     # MPIwrapper
     ExecutableProduct("mpiwrapperexec", :mpiwrapperexec),
     # `libmpiwrapper` is a plugin, not a library, and thus has the
@@ -244,10 +286,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("Hwloc_jll"),
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", clang_use_lld=false)
