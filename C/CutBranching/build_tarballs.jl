@@ -29,7 +29,7 @@ cmake --install build
 include("../../L/libjulia/common.jl") 
 platforms = supported_platforms()
 filter!(x -> libc(x) != "musl", platforms)
-filter!(x -> os(x) != "windows", platforms)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
