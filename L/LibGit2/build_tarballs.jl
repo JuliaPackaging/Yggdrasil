@@ -17,8 +17,6 @@ BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DUSE_THREADS=ON
     -DUSE_BUNDLED_ZLIB=ON
-    -DUSE_HTTPS=OpenSSL
-    -DUSE_SHA1=CollisionDetection
     -DUSE_SSH=ON
     -DBUILD_CLI=OFF
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
@@ -45,6 +43,9 @@ if [[ ${target} == *-mingw* ]]; then
 
     # For some reason, CMake fails to find libssh2 using pkg-config.
     BUILD_FLAGS+=(-Dssh2_RESOLVED=${bindir}/libssh2.dll)
+elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]] || [[ ${target} == *openbsd* ]]; then
+    # If we're on Linux or FreeBSD, explicitly ask for OpenSSL
+    BUILD_FLAGS+=(-DUSE_HTTPS=OpenSSL -DUSE_SHA1=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
 
 # Necessary for cmake to find openssl on Windows
