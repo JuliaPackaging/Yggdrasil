@@ -27,7 +27,7 @@ FLAGS=(
 
     # A few things we actually enable
     --with-libssh2=${prefix} --with-zlib=${prefix} --with-nghttp2=${prefix}
-    --enable-versioned-symbols
+    --disable-versioned-symbols
 )
 
 
