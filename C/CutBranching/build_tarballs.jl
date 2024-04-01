@@ -37,7 +37,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
 	Dependency("libcxxwrap_julia_jll"; compat = "~0.12.2"),
 	BuildDependency(PackageSpec(; name = "libjulia_jll", version = v"1.10.9"))
 	
