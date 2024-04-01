@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/am-13.0/src/
 make -j ${nproc} am
-install -Dvm 755 "am" "${bindir}/am"
+install -Dvm 755 "am" "${bindir}/am${exeext}"
 install_license ./LICENSE
 """
 
