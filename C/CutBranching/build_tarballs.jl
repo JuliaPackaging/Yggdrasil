@@ -32,8 +32,8 @@ filter!(x -> libc(x) != "musl", platforms)
 filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
-products = Product[
-	LibraryProduct(["libmiscb", "miscblib"], :miscb)
+products = [
+    LibraryProduct(["libmiscb", "miscblib"], :miscb)
 ]
 
 # Dependencies that must be installed before this package can be built
