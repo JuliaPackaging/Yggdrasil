@@ -5,7 +5,7 @@ set( BB_NBITS  $ENV{nbits} )
 set( BB_TARGET $ENV{target} )
 set( BB_DLLEXT $ENV{dlext} )
 set( BB_LIBDIR $ENV{libdir} )
-set( BB_INCDIR "$ENV{prefix}/include" )
+set( BB_INCDIR "$ENV{includedir}" )
 
 # Allow modifying the library name of libblastrampoline to link to. This isn't
 # going to be a standard option people use, but allow it just in case.

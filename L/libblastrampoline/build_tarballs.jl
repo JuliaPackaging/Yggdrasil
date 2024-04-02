@@ -24,7 +24,7 @@ fi
 
 make -j${nproc} prefix=${prefix} install
 
-install -Dvm755 ../../cmake/yggdrasilenv.cmake ${libdir}/cmake/blastrampoline/yggdrasilenv.cmake
+install -Dvm644 ../../cmake/yggdrasilenv.cmake ${libdir}/cmake/blastrampoline/yggdrasilenv.cmake
 install_license ../LICENSE
 """
 
