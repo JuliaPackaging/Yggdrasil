@@ -21,12 +21,19 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xz*
-# Patch is only needed for version < v"5.2.6"
-git apply ../patches/xzgrep-ZDI-CAN-16587.patch
 if [[ "${target}" != "*mingw32*" ]]; then
     # install `autopoint`
-    apk update && apk add gettext-dev po4a
+    apk update && apk add gettext-dev po4a gpg gpg-agent
 fi
+
+# From https://tukaani.org/misc/lasse_collin_pubkey.txt
+gpg --import ../keys/lasse_collin_pubkey.txt
+git verify-tag `git describe --exact-match --tags HEAD`
+
+# Patch is only needed for version < v"5.2.6"
+gpg --verify ../patches/xzgrep-ZDI-CAN-16587.patch.sig
+git apply ../patches/xzgrep-ZDI-CAN-16587.patch
+
 ./autogen.sh
 BUILD_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic)
 
@@ -57,6 +64,7 @@ else
         make clean
     done
 fi
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
