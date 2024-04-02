@@ -1,5 +1,5 @@
---- a/bwa.c
-+++ b/bwa.c
+--- bwa.c
++++ bwa.c
 @@ -39,7 +39,7 @@
  #  include "malloc_wrap.h"
  #endif
