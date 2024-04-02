@@ -22,6 +22,9 @@ function build_script(; shared_libs::String)
     return "BUILD_SHARED=$(shared_libs)\nBUILD_STATIC=$(build_static)\n" * raw"""
 cd $WORKSPACE/srcdir/HiGHS
 
+# Remove system CMake to use the jll version
+apk del cmake
+
 mkdir -p build
 cd build
 
