@@ -26,8 +26,8 @@ platform_sources = Dict(
             "9ab6468f7522e7b2a84e6f2b79664aea4ae4a928518c30688d1d1db1870cdc90";
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/icc_rt-2024.0.0-intel_49819.tar.bz2",
-            "2aae241f522fa2b9af449d87faf2469cbe8c149134d8a7a809bfd7a2b4743052";
+            "https://conda.anaconda.org/intel/linux-64/icc_rt-2024.0.3-intel_49895.tar.bz2",
+            "47db01c7d13ae938153b6339cf01f27086a19af352c3efb7e54d8e9fccade767";
         ),
         ArchiveSource(
             "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lib-rt-2024.0.0-intel_49819.tar.bz2",
@@ -100,6 +100,10 @@ platform_sources = Dict(
             "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-vm-2024.0.0-intel_49656.tar.bz2",
             "2d65f55ddc91d334abfb8e119303046e22d5b7070ad522a3d8a8681b1bd9cf26"
         ),
+        ArchiveSource(
+            "https://anaconda.org/intel/tbb/2021.12.0/download/linux-64/tbb-2021.12.0-intel_495.tar.bz2",
+            "ca912130d808de691ae4a80f7888a41fb883d577bc7e36722a09c792d2cefdf6"
+        ),
     ]
 )
 
@@ -114,7 +118,8 @@ mv lib/clang/*/include/CL ${includedir}
 rm -rf lib/clang
 cp -r include/* ${includedir}
 for lib in sycl OpenCL svml irng imf intlc pi_level_zero pi_opencl \
-           mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl; do
+           mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
+           mkl_avx mkl_def; do
     cp -a lib/lib${lib}*.so* ${libdir}
 done
 
