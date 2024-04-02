@@ -18,8 +18,13 @@ sources = [
 script = raw"""
 cd scipoptsuite*
 
-# for soplex threadlocal and large files
-export CXXFLAGS="-DTHREADLOCAL='' -Wa,-mbig-obj"
+# for soplex threadlocal
+export CXXFLAGS="-DTHREADLOCAL=''"
+
+# Enable large file support on mingw
+if [[ "${target}" == *-mingw* ]]; then
+    export CXXFLAGS="-Wa,-mbig-obj"
+fi
  
 mkdir build
 cd build/
