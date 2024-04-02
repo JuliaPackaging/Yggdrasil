@@ -1,10 +1,10 @@
 # Environment setup for libblastrampoline to allow the CMake FindBLAS and FindLAPACK
 # scripts work with this library in the Yggdrasil environment.
 
-set( BB_NBITS  $ENV{nbits} )
-set( BB_TARGET $ENV{target} )
-set( BB_DLLEXT $ENV{dlext} )
-set( BB_LIBDIR $ENV{libdir} )
+set( BB_NBITS  "$ENV{nbits}" )
+set( BB_TARGET "$ENV{target}" )
+set( BB_DLLEXT "$ENV{dlext}" )
+set( BB_LIBDIR "$ENV{libdir}" )
 set( BB_INCDIR "$ENV{includedir}" )
 
 # Allow modifying the library name of libblastrampoline to link to. This isn't
@@ -46,9 +46,22 @@ set( LAPACK_LINKER_FLAGS "${BLASTRAMPOLINE_LIB}" )
 set( BLAS_INCLUDE_DIRS "${BB_INCDIR}/libblastrampoline/${BLASTRAMPOLINE_INTEGER}/${BB_TARGET}" )
 set( LAPACK_INCLUDE_DIRS "${BB_INCDIR}/libblastrampoline/${BLASTRAMPOLINE_INTEGER}/${BB_TARGET}" )
 
+# CBLAS and LAPACKE don't have upstream CMake Find modules, but blastrampoline is complex
+# enough in its pathing that it is nice to define these for possible consumers.
+set( CBLAS_FOUND 1 )
+set( CBLAS_LIBRARIES "${BB_LIBDIR}/lib${BLASTRAMPOLINE_LIB}.${BB_DLLEXT}" )
+set( CBLAS_LINKER_FLAGS "${BLASTRAMPOLINE_LIB}" )
+set( CBLAS_INCLUDE_DIRS "${BB_INCDIR}/libblastrampoline/${BLASTRAMPOLINE_INTEGER}/${BB_TARGET}" )
+
+set( LAPACKE_FOUND 1 )
+set( LAPACKE_LIBRARIES "${BB_LIBDIR}/lib${BLASTRAMPOLINE_LIB}.${BB_DLLEXT}" )
+set( LAPACKE_LINKER_FLAGS "${BLASTRAMPOLINE_LIB}" )
+set( LAPACKE_INCLUDE_DIRS "${BB_INCDIR}/libblastrampoline/${BLASTRAMPOLINE_INTEGER}/${BB_TARGET}" )
+
 # Cleanup temporary variables so they don't leak into the user CMake
 unset( BB_NBITS )
 unset( BB_DLLEXT )
 unset( BB_LIBDIR )
 unset( BB_INCDIR )
 unset( BB_TARGET )
+
