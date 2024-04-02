@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "libblastrampoline"
 version = v"5.8.0"
@@ -9,6 +10,7 @@ version = v"5.8.0"
 sources = [
     GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
               "81316155d4838392e8462a92bcac3eebe9acd0c7"),
+    DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +23,8 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 make -j${nproc} prefix=${prefix} install
+
+install -Dvm755 ../../cmake/yggdrasilenv.cmake ${libdir}/cmake/blastrampoline/yggdrasilenv.cmake
 install_license ../LICENSE
 """
 
