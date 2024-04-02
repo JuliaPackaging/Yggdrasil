@@ -17,7 +17,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/bwa*/
 atomic_patch -p1 ../patches/makefile.patch
 atomic_patch -p1 ../patches/0001-Fix-building-against-GCC-10.patch
-atomic_patch -p1 ../patches/set_verbosity.patch
+# Reduce verbosity of the output to only have warnings and errors
+sed -i -e 's/int bwa_verbose = 3;/int bwa_verbose = 2/' bwa.c
 make -j${nproc}
 mkdir -p "${libdir}" "${bindir}"
 cp "bwa${exeext}" "${bindir}/bwa${exeext}"
