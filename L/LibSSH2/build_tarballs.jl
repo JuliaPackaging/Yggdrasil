@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/libssh2*/
 # Apply patch from https://github.com/libssh2/libssh2/pull/1054
 atomic_patch -p1 ../patches/0001-mbedtls-use-more-size_t-to-sync-up-with-crypto.h.patch
 # https://github.com/libssh2/libssh2/pull/1291
-atomic_patch -p1 ../patches/0001-mbedtls-use-more-size_t-to-sync-up-with-crypto.h.patch
+atomic_patch -p1 ../patches/0001-src-add-strict-KEX-to-fix-CVE-2023-48795-Terrapin-At.patch
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
