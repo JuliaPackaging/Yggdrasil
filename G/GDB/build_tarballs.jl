@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "GDB"
-version = v"14.2"
+version = v"12.1.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-$(version.major).$(version.minor).tar.xz",
-                  "2d4dd8061d8ded12b6c63f55e45344881e8226105f4d2a9b234040efa5ce7772"),
+                  "0e1793bf8f2b54d53f46dea84ccfd446f48f81b297b28c4f7fc017b818d69fed"),
     DirectorySource("./bundled")
 ]
 
@@ -18,8 +18,6 @@ apk add texinfo
 
 cd $WORKSPACE/srcdir/gdb-*/
 install_license COPYING
-# Patch for mingw/windows printf
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Fix-using-gnu-print.patch
 
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 CONFIGURE_FLAGS+=(--with-expat)
@@ -56,7 +54,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
-    Dependency(PackageSpec(name="MPFR_jll", uuid="3a97d323-0669-5f0c-9066-3539efd106a3")),
     Dependency("Expat_jll"),
     Dependency("Python_jll"; compat="~3.10.14"),
     Dependency("Zlib_jll")
@@ -64,4 +61,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"10.2.0")
+               preferred_gcc_version = v"8.1.0")
