@@ -18,6 +18,8 @@ apk add texinfo
 
 cd $WORKSPACE/srcdir/gdb-*/
 install_license COPYING
+# Patch for mingw/windows printf
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Fix-using-gnu-print.patch
 
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 CONFIGURE_FLAGS+=(--with-expat)
