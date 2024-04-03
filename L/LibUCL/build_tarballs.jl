@@ -43,7 +43,7 @@ platforms = supported_platforms()
 products = [LibraryProduct("libucl", :libucl)]
 
 dependencies = [
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("PCRE_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
