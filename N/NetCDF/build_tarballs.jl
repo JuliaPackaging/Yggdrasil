@@ -79,7 +79,9 @@ fi
     --disable-static \
     --disable-dap-remote-tests \
     --disable-plugins \
-    $CONFIGURE_OPTIONS
+    $CONFIGURE_OPTIONS || true
+
+cat config.log
 
 make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}
 
