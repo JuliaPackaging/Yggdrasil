@@ -5,11 +5,6 @@ using BinaryBuilder, Pkg
 name = "Qt6Base"
 version = v"6.5.3"
 
-# Set this to true first when updating the version. It will build only for the host (linux musl).
-# After that JLL is in the registyry, set this to false to build for the other platforms, using
-# this same package as host build dependency.
-const host_build = false
-
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
@@ -23,8 +18,6 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir
-
-BIN_DIR="/opt/bin/${bb_full_target}"
 
 mkdir build
 cd build/
@@ -45,6 +38,23 @@ export OPENSSL_LIBS="-L${libdir} -lssl -lcrypto"
 
 # temporarily allow march during configure
 sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-g++
+
+mkdir host_build
+cd host_build
+
+ln -vs ${host_prefix}/lib64/lib{crypto,ssl}.so* ${host_prefix}/lib/
+cp $host_prefix/lib/libz.a /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/local/lib/libz.a
+
+sed -i 's/exit 1/#exit 1/' $HOSTCXX
+../../qtbase-everywhere-src-*/configure -prefix $host_prefix -opensource -confirm-license -no-openssl -nomake examples -release -fontconfig -- \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -DCMAKE_PREFIX_PATH=${host_prefix} -DCMAKE_INSTALL_PREFIX=$host_prefix -DQT_FEATURE_xcb=ON \
+    -DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES=$host_prefix/include -DCMAKE_CXX_IMPLICIT_LINK_DIRECTORIES=$host_prefix/lib
+sed -i 's/#exit 1/exit 1/' $HOSTCXX
+
+cmake --build . --parallel ${nproc}
+cmake --install .
+
+cd ..
 
 case "$bb_full_target" in
 
@@ -75,8 +85,15 @@ case "$bb_full_target" in
         make -j${nproc}
         make install
 
+        if [[ "${target}" == x86_64-* ]]; then
+           # On x86_64 mingw32 the import libraries of OpenSSL are in `lib64/`,
+           # but there doesn't seem to be a sensible way to convince the build system to
+           # look into that directory, so we just have to link files around.
+           ln -vs ${prefix}/lib64/lib{crypto,ssl}.dll.a ${prefix}/lib/
+        fi
+
         cd $WORKSPACE/srcdir/build
-        ../qtbase-everywhere-src-*/configure -prefix $prefix -opensource -confirm-license -nomake examples -release -opengl dynamic -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix
+        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -opengl dynamic -- $commoncmakeoptions
     ;;
 
     *apple-darwin*)
@@ -113,18 +130,18 @@ sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-g++
 cmake --build . --parallel ${nproc}
 cmake --install .
 install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSES/LGPL-3.0-only.txt
+if [[ "${target}" == x86_64-*-mingw* ]]; then
+   # Remove temporary symlinks.
+   rm -v ${prefix}/lib/lib{crypto,ssl}.dll.a
+fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-if host_build
-    platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
-    platforms_macos = AbstractPlatform[]
-else
-    platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
-    filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
-    platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
-end
+platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
+filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
+filter!(p -> cxxstring_abi(p) == "cxx11" && Sys.iswindows(p) && arch(p) == "x86_64", platforms)
+platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 
 # The products that we will ensure are always built
 products = [
@@ -156,29 +173,30 @@ products_macos = [
 ]
 
 # We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
-llvm_version = v"13.0.1"
+llvm_version = v"16.0.6"
+
+linux_freebsd = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libinput_jll"),
-    Dependency("Xorg_libXext_jll"),
-    Dependency("Xorg_libxcb_jll"),
-    Dependency("Xorg_xcb_util_wm_jll"),
-    Dependency("Xorg_xcb_util_cursor_jll"),
-    Dependency("Xorg_xcb_util_image_jll"),
-    Dependency("Xorg_xcb_util_keysyms_jll"),
-    Dependency("Xorg_xcb_util_renderutil_jll"),
-    Dependency("Xorg_libXrender_jll"),
-    Dependency("Xorg_libSM_jll"),
-    Dependency("xkbcommon_jll"),
+    Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libxcb_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_wm_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_cursor_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_image_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_keysyms_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_xcb_util_renderutil_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
+    Dependency("Xorg_libSM_jll"; platforms=linux_freebsd),
+    Dependency("xkbcommon_jll"; platforms=linux_freebsd),
     Dependency("Libglvnd_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("Glib_jll", v"2.59.0"; compat="2.59.0"),
+    Dependency("Glib_jll"; compat="2.59.0"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Vulkan_Loader_jll"),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
     BuildDependency("Xorg_libX11_jll"),
@@ -189,17 +207,17 @@ dependencies = [
     BuildDependency("Vulkan_Headers_jll"),
 ]
 
-if !host_build
-    push!(dependencies, HostBuildDependency("Qt6Base_jll"))
+host_build_deps = []
+for dep in dependencies
+    push!(host_build_deps, HostBuildDependency(dep.pkg.name))
 end
+append!(dependencies, host_build_deps)
 
 include("../../fancy_toys.jl")
 
-@static if !host_build
-    if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
-    end
-end
+# if any(should_build_platform.(triplet.(platforms_macos)))
+#     build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
+# end
 if any(should_build_platform.(triplet.(platforms)))
     build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
 end
