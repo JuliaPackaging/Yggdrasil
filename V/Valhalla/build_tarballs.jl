@@ -69,13 +69,13 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.76.0")
-    Dependency("GEOS_jll")
-    Dependency("LibCURL_jll")
-    Dependency("Lz4_jll")
-    Dependency("protoc_jll")
-    HostBuildDependency("protoc_jll")
-    Dependency("Zlib_jll")
+    Dependency("boost_jll"; compat="=1.76.0"),
+    Dependency("GEOS_jll"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
+    Dependency("Lz4_jll"),
+    Dependency("protoc_jll"),
+    HostBuildDependency("protoc_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
