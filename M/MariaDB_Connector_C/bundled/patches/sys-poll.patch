@@ -1,0 +1,30 @@
+From dea7fea06fa589c163a8014d2c85eaab91a7f619 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <giordano@users.noreply.github.com>
+Date: Wed, 3 Apr 2024 21:21:35 +0100
+Subject: [PATCH] Fix `sys/poll.h` -> `poll.h`
+
+See https://pubs.opengroup.org/onlinepubs/7908799/xsh/poll.h.html, or the other files in this project referencing `poll.h`:
+```console
+% grep -r 'poll.h'
+libmariadb/ma_net.c:#include <poll.h>
+libmariadb/mariadb_lib.c:#include <poll.h>
+plugins/pvio/pvio_socket.c:#include <sys/poll.h>
+unittest/libmariadb/async.c:#include <poll.h>
+```
+---
+ plugins/pvio/pvio_socket.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/plugins/pvio/pvio_socket.c b/plugins/pvio/pvio_socket.c
+index 550fb831a..b9c70940c 100644
+--- a/plugins/pvio/pvio_socket.c
++++ b/plugins/pvio/pvio_socket.c
+@@ -39,7 +39,7 @@
+ #include <sys/un.h>
+ #endif
+ #ifdef HAVE_POLL
+-#include <sys/poll.h>
++#include <poll.h>
+ #endif
+ #ifdef HAVE_SYS_IOCTL_H
+ #include <sys/ioctl.h>
