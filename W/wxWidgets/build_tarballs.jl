@@ -6,7 +6,7 @@ name = "wxWidgets"
 version = v"3.2.4"
 
 version_mm = "$(version.major).$(version.minor)"
-version_no_sep = "$(version.major)$(version.minor)$(version.patch)"
+version_no_sep = "$(version.major)$(version.minor)"
 
 gen_libnames(lib) = ["libwx_gtk3u_$(lib)-$(version_mm)",
                     "wxmsw$(version_no_sep)u_$(lib)_gcc_custom",
