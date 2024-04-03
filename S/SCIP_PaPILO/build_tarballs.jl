@@ -12,6 +12,7 @@ sources = [
         "https://scipopt.org/download/release/scipoptsuite-9.0.0.tgz",
         "c49a0575003322fcbfe2d3765de7e3e60ff7c08d1e8b17d35409be40476cb98a"
     ),
+    DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +26,9 @@ export CXXFLAGS="-DTHREADLOCAL=''"
 if [[ "${target}" == *-mingw* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
 fi
- 
+
+atomic_patch -p0 $WORKSPACE/srcdir/patches/papilo_cmake.patch
+
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
