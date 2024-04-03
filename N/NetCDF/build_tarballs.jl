@@ -11,7 +11,7 @@ name = "NetCDF"
 upstream_version = v"4.9.2"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.9"
+version_offset = v"0.2.10"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -104,7 +104,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Bzip2_jll"),
-    Dependency("HDF5_jll"; compat = "~1.14"),
+    Dependency("HDF5_jll"; compat = "~1.14.3"),
     Dependency("LibCURL_jll"; compat = "7.73.0,8"),
     Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
@@ -117,3 +117,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")
+
+# Build trigger: 1
