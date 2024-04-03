@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "GDB"
-version = v"12.1.1"
+version_string = "12.1"
+version = v"12.1.1" # Different from VersionNumber(version_string) because we changed the dependencies
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-$(version.major).$(version.minor).tar.xz",
+    ArchiveSource("https://ftp.gnu.org/gnu/gdb/gdb-$(version_string).tar.xz",
                   "0e1793bf8f2b54d53f46dea84ccfd446f48f81b297b28c4f7fc017b818d69fed"),
     DirectorySource("./bundled")
 ]
