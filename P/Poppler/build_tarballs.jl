@@ -93,3 +93,5 @@ dependencies = [
 # We use GCC 8 since we need C++17 (`std::string_view` and `<charconv>`)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")
+
+# Build trigger: 1
