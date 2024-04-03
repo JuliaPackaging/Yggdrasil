@@ -62,4 +62,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"11.1.0")
+               julia_compat="1.6", preferred_gcc_version = v"11.1.0")
