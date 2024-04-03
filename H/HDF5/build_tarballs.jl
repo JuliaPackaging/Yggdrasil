@@ -287,7 +287,7 @@ products = [
 dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll"),
     # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
