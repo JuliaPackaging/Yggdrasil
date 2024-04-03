@@ -21,7 +21,7 @@ cd $WORKSPACE/srcdir/mariadb-*/
 atomic_patch -p1 ../patches/sys-poll.patch
 
 if [[ "${target}" == *-mingw* ]]; then
-    for p in ../patches/{0004-Add-ws2_32-to-remoteio-libraries,001-mingw-build,002-fix-prototype,003-gcc-fix-use_VA_ARGS,005-Add-definition-of-macros-and-structs-missing-in-MinG,006-Define-strerror_r-macro-also-for-MinGW,fix-undefined-sec-e-invalid-parameter}.patch; do
+    for p in ../patches/{0004-Add-ws2_32-to-remoteio-libraries,001-mingw-build,002-fix-prototype,003-gcc-fix-use_VA_ARGS,005-Add-definition-of-macros-and-structs-missing-in-MinG,fix-undefined-sec-e-invalid-parameter}.patch; do
         atomic_patch -p1 "${p}"
     done
     export CFLAGS="-std=c99"
