@@ -61,3 +61,5 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                # When using lld for AArch64 macOS, linking fails with
                #     ld64.lld: error: -dylib_current_version 10.4.3.1: malformed version
                julia_compat="1.6", clang_use_lld=false)
+
+# Build trigger: 1
