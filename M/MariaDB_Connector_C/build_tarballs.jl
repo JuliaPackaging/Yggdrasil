@@ -65,9 +65,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DOPENSSL_FOUND=ON \
     -DOPENSSL_CRYPTO_LIBRARY="${OPENSSL_CRYPTO_LIBRARY}" \
-    -DOPENSSL_SSL_LIBRARY="${OPENSSL_SSL_LIBRARY}" \
-    -DICONV_LIBRARIES=${libdir}/libiconv.${dlext} \
-    -DICONV_INCLUDE_DIR=${includedir}
+    -DOPENSSL_SSL_LIBRARY="${OPENSSL_SSL_LIBRARY}"
 make -j${nproc}
 make install
 install_license ../COPYING.LIB
