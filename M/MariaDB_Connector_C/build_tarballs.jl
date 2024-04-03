@@ -24,9 +24,7 @@ if [[ "${target}" == *-mingw* ]]; then
     export CFLAGS="-std=c99"
     # Minimum version of Windows supported by MariaDB is 7,
     # see tables in https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers
-    if [[ "${nbits}" == 32 ]]; then
-        export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0601"
-    elif [[ "${nbits}" == 64 ]]; then
+    if [[ "${nbits}" == 64 ]]; then
         export CFLAGS="${CFLAGS} -DNTDDI_VERSION=0x06010000"
     fi
 elif [[ "${target}" == *-apple-* ]]; then
