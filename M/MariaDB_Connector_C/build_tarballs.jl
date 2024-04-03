@@ -43,6 +43,15 @@ elif [[ "${target}" == *-apple-* ]]; then
     export CFLAGS="${SYMBS_DEFS[@]}"
 fi
 
+if [[ "${target}" == x86_64-linux-* ]] || [[ "${target}" == x86_64-*-mingw* ]]; then
+   # You can avoid this in the future when targeting OpenSSL_jll@v3.0.13+.
+   OPENSSL_CRYPTO_LIBRARY=${libdir}64/libcrypto.${dlext}
+   OPENSSL_SSL_LIBRARY=${libdir}64/libssl.${dlext}
+else
+   OPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext}
+   OPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext}
+fi
+
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -53,8 +62,8 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DOPENSSL_FOUND=ON \
-    -DOPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext} \
-    -DOPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext} \
+    -DOPENSSL_CRYPTO_LIBRARY="${OPENSSL_CRYPTO_LIBRARY}" \
+    -DOPENSSL_SSL_LIBRARY="${OPENSSL_SSL_LIBRARY}" \
     -DICONV_LIBRARIES=${libdir}/libiconv.${dlext} \
     -DICONV_INCLUDE_DIR=${includedir}
 make -j${nproc}
