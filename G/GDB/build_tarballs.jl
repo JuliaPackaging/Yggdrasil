@@ -53,8 +53,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d")),
-    Dependency("Expat_jll"),
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.0"),
+    Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Python_jll"; compat="~3.10.14"),
     Dependency("Zlib_jll")
 ]
