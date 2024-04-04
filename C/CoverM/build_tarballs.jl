@@ -8,8 +8,8 @@ version = v"0.7.0"
 # Collection of sources required to complete build
 sources = [
     GitSource(
-        "https://github.com/jakobnissen/CoverM",
-        "75cf1f91e8078c10c65829f30f99c60fc94bdb11"),
+        "https://github.com/wwood/CoverM",
+        "5edadabe744b3b92911179614468c43630450699"),
 ]
 
 # Bash recipe for building across all platforms
