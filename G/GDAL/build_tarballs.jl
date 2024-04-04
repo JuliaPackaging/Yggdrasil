@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.8.4"
-version_offset = v"1.0.1"
+upstream_version = v"3.8.5"
+version_offset = v"1.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "c2d2a61739ca770bae5a26be3eeb25a045dd3458"),
+        "1d418c1c1a1655c9f0afc944d6c928a60a7ad99a"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
