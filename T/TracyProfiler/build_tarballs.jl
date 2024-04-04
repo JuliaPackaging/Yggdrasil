@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "TracyProfiler"
-version = v"0.9.1"
+version = v"0.10.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wolfpld/tracy.git",
-              "897aec5b062664d2485f4f9a213715d2e527e0ca"), # v0.9.1
+              "37aff70dfa50cf6307b3fee6074d627dc2929143"), # v0.19
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
                   "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
     DirectorySource("./bundled"),
