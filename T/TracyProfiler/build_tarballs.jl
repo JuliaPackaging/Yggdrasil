@@ -88,8 +88,8 @@ dependencies = [
     Dependency("Dbus_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("GLFW_jll"),
     # Needed for `pkg-config glfw3`
-    Dependency("Xorg_xproto_jll", platforms=x11_platforms),
-    Dependency("Xorg_kbproto_jll", platforms=x11_platforms),
+    BuildDependency("Xorg_xproto_jll", platforms=x11_platforms),
+    BuildDependency("Xorg_kbproto_jll", platforms=x11_platforms),
 ]
 
 # requires std-c++17, full support in gcc 7+, clang 8+
