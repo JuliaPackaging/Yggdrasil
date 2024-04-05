@@ -7,7 +7,7 @@ include("../common.jl")
 products = Product[
     ExecutableProduct("flang", :flang),
     ExecutableProduct("flang1", :flang1),
-    ExecutableProduct("flang2", :flang2)
+    ExecutableProduct("flang2", :flang2),
 ]
 
 # We only build the compiler for musl. The rtlibs get built for all platforms in the RTLib jll

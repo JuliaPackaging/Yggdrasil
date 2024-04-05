@@ -83,6 +83,10 @@ else
     make -j$(nproc) -C runtime/
     make -j$(nproc) -C runtime/ install
 fi
+
+# There are two identical licence files, `LICENSE.TXT` and `LICENSE.txt`.
+# These file names conflict on case-insensitive file systems, and the generated package is then unusable there.
+rm -f ${prefix}/share/licenses/LICENSE.TXT
 install_license ../flang/LICENSE.txt
 """
 end
