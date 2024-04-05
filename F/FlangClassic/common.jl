@@ -54,6 +54,7 @@ cd flang-build
 atomic_patch -p1 -d ../flang ../patches/musl-patches.patch
 atomic_patch -p1 -d ../flang ../patches/no-fastmath.patch
 atomic_patch -p1 -d ../flang ../patches/flang2-install-dir.patch
+atomic_patch -p1 -d ../flang ../patches/flang-no-src-root.patch
 
 ## Create Compiler wrapper for flang
 if [[ ${build_compiler} == 1 ]]; then
@@ -84,10 +85,10 @@ else
     make -j$(nproc) -C runtime/ install
 fi
 
-# There are two identical licence files, `LICENSE.TXT` and `LICENSE.txt`.
-# These file names conflict on case-insensitive file systems, and the generated package is then unusable there.
-rm -f ${prefix}/share/licenses/LICENSE.TXT
-install_license ../flang/LICENSE.txt
+# We already installed the license as `LICENSE.TXT` above.
+# Do not install another license as `LICENSE.txt`.
+# These file names would conflict on case-insensitive file systems,
+# and the generated package is then unusable there.
 """
 end
 
