@@ -80,8 +80,8 @@ if [[ "${target}" != *mingw* ]]; then
     gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
 fi
 
-ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
-ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
+cp $ARCHDEFS/bin/helper_functions ${bindir}/helper_functions
+cp $SIFDECODE/bin/sifdecoder ${bindir}/sifdecoder
 cd $SIFDECODE/objects/$MYARCH/double
 if [[ "${target}" != *mingw* ]] && ! [[-e "slct.exe" ]]; then
     mv slct slct.exe
@@ -89,8 +89,8 @@ fi
 if [[ "${target}" != *mingw* ]] && ! [[-e "clsf.exe" ]]; then
     mv clsf clsf.exe
 fi
-ln -s slct$exeext ${bindir}/
-ln -s clsf$exeext ${bindir}/
+cp slct$exeext ${bindir}/slct$exeext
+cp clsf$exeext ${bindir}/clsf$exeext
 install_license $CUTEST/lgpl-3.0.txt
 """
 
@@ -102,6 +102,7 @@ platforms = filter!(p -> !(os(p) == "freebsd" && libgfortran_version(p) == v"3")
 
 # The products that we will ensure are always built
 products = [
+    FileProduct("bin/helper_functions", :helper_functions,
     FileProduct("bin/sifdecoder", :sifdecoder),
     FileProduct("lib/libcutest_single.a", :libcutest_single),
     FileProduct("lib/libcutest_double.a", :libcutest_double),
