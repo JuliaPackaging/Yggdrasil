@@ -82,15 +82,6 @@ fi
 
 cp $ARCHDEFS/bin/helper_functions ${bindir}/helper_functions
 cp $SIFDECODE/bin/sifdecoder ${bindir}/sifdecoder
-cd $SIFDECODE/objects/$MYARCH/double
-if [[ "${target}" != *mingw* ]] && ! [[-e "slct.exe" ]]; then
-    mv slct slct.exe
-fi
-if [[ "${target}" != *mingw* ]] && ! [[-e "clsf.exe" ]]; then
-    mv clsf clsf.exe
-fi
-cp slct$exeext ${bindir}/slct$exeext
-cp clsf$exeext ${bindir}/clsf$exeext
 install_license $CUTEST/lgpl-3.0.txt
 """
 
@@ -106,10 +97,6 @@ products = [
     FileProduct("bin/sifdecoder", :sifdecoder),
     FileProduct("lib/libcutest_single.a", :libcutest_single),
     FileProduct("lib/libcutest_double.a", :libcutest_double),
-    ExecutableProduct("slct", :slct),
-    ExecutableProduct("clsf", :clsf),
-    # LibraryProduct("libcutest_single", :libcutest_single),
-    # LibraryProduct("libcutest_double", :libcutest_double),
 ]
 
 dependencies = [
