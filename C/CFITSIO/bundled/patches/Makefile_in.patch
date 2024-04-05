@@ -1,6 +1,6 @@
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -40,12 +40,13 @@
+@@ -42,12 +42,13 @@
  CFLAGS =	@CFLAGS@
  CPPFLAGS =	@CPPFLAGS@
  SSE_FLAGS =	@SSE_FLAGS@
@@ -24,12 +24,12 @@
  		@if [ "x${CFITSIO_SHLIB_SONAME}" != x ]; then \
  			ln -sf ${CFITSIO_SHLIB} ${CFITSIO_SHLIB_SONAME}; \
  			ln -sf ${CFITSIO_SHLIB_SONAME} $@; \
-@@ -128,7 +129,7 @@
+@@ -130,7 +130,7 @@
  		done
  
- .c.o:
--		${CC} -c -o ${<D}/${@F} ${CFLAGS} ${CPPFLAGS} ${DEFS} $<
-+		${CC} -c -o ${<D}/${@F} ${CFLAGS} ${CURL_CFLAGS} ${CPPFLAGS} ${DEFS} $<
+ %.o: %.c
+-		${CC} -c -I. -o ${<D}/${@F} ${CFLAGS} ${CPPFLAGS} ${DEFS} $<
++		${CC} -c -I. -o ${<D}/${@F} ${CURL_CFLAGS} ${CFLAGS} ${CPPFLAGS} ${DEFS} $<
  
- UTILS		= cookbook fitscopy imcopy smem speed testprog
- 
+ swapproc.o:	swapproc.c
+ 		${CC} -c ${CFLAGS} ${CPPFLAGS} ${SSE_FLAGS} ${DEFS} $<
