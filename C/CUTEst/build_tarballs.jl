@@ -102,7 +102,7 @@ platforms = filter!(p -> !(os(p) == "freebsd" && libgfortran_version(p) == v"3")
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("bin/helper_functions", :helper_functions,
+    FileProduct("bin/helper_functions", :helper_functions),
     FileProduct("bin/sifdecoder", :sifdecoder),
     FileProduct("lib/libcutest_single.a", :libcutest_single),
     FileProduct("lib/libcutest_double.a", :libcutest_double),
