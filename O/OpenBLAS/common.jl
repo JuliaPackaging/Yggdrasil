@@ -6,9 +6,7 @@ function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
         v"0.3.27" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.27/OpenBLAS-0.3.27.tar.gz",
-                          "aa2d68b1564fe2b13bc292672608e9cdeeeb6dc34995512e65c3b10f4599e897"),
-            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                          "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                          "aa2d68b1564fe2b13bc292672608e9cdeeeb6dc34995512e65c3b10f4599e897")
         ],
         v"0.3.26" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.26/OpenBLAS-0.3.26.tar.gz",
@@ -91,18 +89,6 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     """
     # Bash recipe for building across all platforms
     script *= raw"""
-    if [[ "${target}" == aarch64-apple-darwin* ]]; then
-        # On aarch64-apple-darwin* (and for openBLAS 0.3.27) we need a newer compiler to support `svbfloat16_t`
-        if -d ${WORKSPACE}/srcdir/MacOSX10.*.sdk; then
-            pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-            rm -rf /opt/${target}/${target}/sys-root/System
-            cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-            cp -ra System "/opt/${target}/${target}/sys-root/."
-            export MACOSX_DEPLOYMENT_TARGET=10.15
-            popd
-        fi
-    fi
-
     if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
         # For msan, we need to use flang to compile.
         ## Create flang compiler wrapper
