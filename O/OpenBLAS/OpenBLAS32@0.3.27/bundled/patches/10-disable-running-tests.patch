@@ -1,17 +1,20 @@
-diff --git a/Makefile b/Makefile
-index fa210ad72..586e9cb4a 100644
---- a/Makefile
-+++ b/Makefile
-@@ -172,12 +172,6 @@ ifneq ($(ONLY_CBLAS), 1)
-        $(MAKE) -C utest all
+diff --git a/ctest/Makefile b/ctest/Makefile
+index bbaf96f8e..75ba5426a 100644
+--- a/ctest/Makefile
++++ b/ctest/Makefile
+@@ -203,7 +203,6 @@ ifeq ($(BUILD_COMPLEX16),1)
+        OPENBLAS_NUM_THREADS=2 ./xzcblat3 < zin3
  endif
- ifneq ($(NO_CBLAS), 1)
--ifneq ($(ONLY_CBLAS), 1)
--       $(MAKE) -C ctest all
--endif
--ifeq ($(CPP_THREAD_SAFETY_TEST), 1)
--       $(MAKE) -C cpp_thread_test all
--endif
  endif
+-endif
 
- libs :
+ ifeq ($(SUPPORT_GEMM3M),1)
+ ifeq ($(USE_OPENMP), 1)
+@@ -222,6 +221,7 @@ ifeq ($(BUILD_COMPLEX16),1)
+ endif
+ endif
+ endif
++endif
+
+
+
