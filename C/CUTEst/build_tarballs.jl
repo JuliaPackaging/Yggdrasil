@@ -80,8 +80,6 @@ if [[ "${target}" != *mingw* ]]; then
     gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
 fi
 
-bob
-
 ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
 ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
 cd $SIFDECODE/objects/$MYARCH/double
