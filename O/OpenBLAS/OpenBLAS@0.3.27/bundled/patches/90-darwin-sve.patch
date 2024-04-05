@@ -10,21 +10,18 @@ fallback to an older architecture.
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/Makefile.arm64 b/Makefile.arm64
-index ed52a9424..a8f3cb0f0 100644
+index eeb728735..9369429ea 100644
 --- a/Makefile.arm64
 +++ b/Makefile.arm64
-@@ -135,11 +135,7 @@ ifeq ($(CORE), NEOVERSEN2)
+@@ -142,11 +142,7 @@ ifeq ($(CORE), NEOVERSEN2)
  ifeq (1, $(filter 1,$(GCCVERSIONGTEQ7) $(ISCLANG)))
  ifeq (1, $(filter 1,$(GCCVERSIONGTEQ10) $(ISCLANG)))
  ifeq (1, $(filter 1,$(GCCMINORVERSIONGTEQ4) $(GCCVERSIONGTEQ11) $(ISCLANG)))
 -ifneq ($(OSNAME), Darwin)
  CCOMMON_OPT += -march=armv8.5-a+sve+sve2+bf16 -mtune=neoverse-n2
 -else
--CCOMMON_OPT += -march=armv8.2-a -mtune=cortex-a72
+-CCOMMON_OPT += -march=armv8.2-a+sve -mtune=cortex-a72
 -endif
  ifneq ($(F_COMPILER), NAG)
  FCOMMON_OPT += -march=armv8.5-a+sve+sve2+bf16 -mtune=neoverse-n2
  endif
--- 
-2.43.0
-
