@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.0.27"
+version = v"2.0.7"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    GitSource("https://github.com/ralna/ARCHDefs.git" ,"fe046f073a657c6f8a063e1875e929110b021d51"), # v2.2.1
-    GitSource("https://github.com/ralna/SIFDecode.git","d88f40b1c4df2c07981812bb877cf49b92822fcb"), # v2.1.0
-    GitSource("https://github.com/ralna/CUTEst.git"   ,"52274eea4334f2e8058385b3a7c9a8d11c3398b1"), # v2.0.27
+    GitSource("https://github.com/ralna/ARCHDefs.git" ,"5ab94bbbe45e13c1d00acdc09b8b7df470b98c29"),
+    GitSource("https://github.com/ralna/SIFDecode.git","42d3241205dc56e1f943687293e95586755a3c10"),
+    GitSource("https://github.com/ralna/CUTEst.git"   ,"1d2954ef69cfd541d3ec2299d29da7302cb8b6a3"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,54 +34,69 @@ apk add ncurses
 
 # build SIFDecode
 cd $SIFDECODE
-echo "7" > sifdecode.opts  # Cross-compiler BinaryBuilder
-echo "n" >> sifdecode.opts
-echo "4" >> sifdecode.opts # Fortran compiler for BinaryBuilder
-echo "n" >> sifdecode.opts
-echo "y" >> sifdecode.opts
+if [[ "${target}" == *-linux* || "${target}" == *-freebsd* || "${target}" == *-mingw* ]]; then
+  echo "6" > sifdecode.opts   # PC64
+  echo "2" >> sifdecode.opts  # Linux
+  echo "6" >> sifdecode.opts  # gfortran
+elif [[ "${target}" == *-apple* ]]; then
+  echo "13" > sifdecode.opts  # macOS
+  echo "2" >> sifdecode.opts  # gfortran
+fi
+echo "nny" >> sifdecode.opts
 ./install_sifdecode < sifdecode.opts
 
 # build CUTEst
 cd $CUTEST
-echo "7" > cutest.opts  # Cross-compiler BinaryBuilder
-echo "n" >> cutest.opts
-echo "4" >> cutest.opts # Fortran compiler for BinaryBuilder
-echo "2" >> cutest.opts # Everything except Matlab support
-echo "3" >> cutest.opts # C and C++ compilers for BinaryBuilder
+if [[ "${target}" == *-linux* || "${target}" == *-freebsd* || "${target}" == *-mingw* ]]; then
+  echo "6" > cutest.opts   # PC64
+  echo "2" >> cutest.opts  # Linux
+  echo "6" >> cutest.opts  # gfortran
+  echo "2" >> cutest.opts  # build all tools except Matlab
+  echo "8" >> cutest.opts  # gcc
+  export MYARCH=pc64.lnx.gfo
+elif [[ "${target}" == *-apple* ]]; then
+  echo "13" > cutest.opts  # macOS
+  echo "2" >> cutest.opts  # gfortran
+  echo "2" >> cutest.opts  # build all tools except Matlab
+  echo "5" >> cutest.opts  # gcc
+  export MYARCH=mac64.osx.gfo
+fi
 echo "nnydy" >> cutest.opts
-export MYARCH=binarybuilder.bb.fc
 ./install_cutest < cutest.opts
 
-# build shared libs
-extra=""
-if [[ "${target}" == *-apple-* ]]; then
-  extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
-fi
-cd $CUTEST/objects/$MYARCH/single
-gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_single.${dlext}
-cd $CUTEST/objects/$MYARCH/double
-gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
+# Static libraries
+cp $CUTEST/objects/$MYARCH/single/libcutest.a $prefix/lib/libcutest_single.a
+cp $CUTEST/objects/$MYARCH/double/libcutest.a $prefix/lib/libcutest_double.a
 
-ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
-ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
-ln -s $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/
-ln -s $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/
+# Shared libraries
+if [[ "${target}" != *mingw* ]]; then
+    extra=""
+    if [[ "${target}" == *-apple-* ]]; then
+        extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
+    fi
+    cd $CUTEST/objects/$MYARCH/single
+    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_single.${dlext}
+    cd $CUTEST/objects/$MYARCH/double
+    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
+fi
+
+cp $ARCHDEFS/bin/helper_functions ${bindir}/helper_functions
+cp $SIFDECODE/bin/sifdecoder ${bindir}/sifdecoder
 install_license $CUTEST/lgpl-3.0.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = expand_gfortran_versions(supported_platforms())
 platforms = filter!(p -> !(os(p) == "freebsd" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("sifdecoder", :sifdecoder),
-    # ExecutableProduct("slct", :slct),
-    # ExecutableProduct("clsf", :clsf),
-    # LibraryProduct("libcutest_single", :libcutest_single),
-    # LibraryProduct("libcutest_double", :libcutest_double),
+    FileProduct("bin/helper_functions", :helper_functions),
+    FileProduct("bin/sifdecoder", :sifdecoder),
+    FileProduct("lib/libcutest_single.a", :libcutest_single),
+    FileProduct("lib/libcutest_double.a", :libcutest_double),
 ]
 
 dependencies = [
