@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "PMIx"
-version = v"4.2.7"
+version = v"4.2.9"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/openpmix/openpmix/releases/download/v$(version)/pmix-$(version).tar.bz2",
-                  "ac9cf58a0bf01bfacd51d342100234f04c740ec14257e4492d1dd0207ff2a917")
+                  "6b11f4fd5c9d7f8e55fc6ebdee9af04b839f44d06044e58cea38c87c168784b3")
 ]
 
 # Bash recipe for building across all platforms
