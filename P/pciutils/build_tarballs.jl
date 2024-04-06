@@ -21,7 +21,7 @@ FLAGS=(
     PREFIX=${prefix}
     SHARED=yes
     SBINDIR=${bindir}
-    CFLAGS='-std=gnu99 -O2 -Wall'
+    CFLAGS='-std=gnu99 -fPIC -O2 -Wall'
     -j${nproc}
 )
 make "${FLAGS[@]}" install
