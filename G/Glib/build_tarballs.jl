@@ -82,11 +82,11 @@ platforms = supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libgio-2", "libgio-2.0"], :libgio),
     LibraryProduct(["libglib-2", "libglib-2.0"], :libglib),
     LibraryProduct(["libgmodule-2", "libgmodule-2.0"], :libgmodule),
     LibraryProduct(["libgobject-2", "libgobject-2.0"], :libgobject),
     LibraryProduct(["libgthread-2", "libgthread-2.0"], :libgthread),
+    LibraryProduct(["libgio-2", "libgio-2.0"], :libgio),
 ]
 
 # Dependencies that must be installed before this package can be built
