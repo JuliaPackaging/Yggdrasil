@@ -54,7 +54,7 @@ cd flang-build
 atomic_patch -p1 -d ../flang ../patches/musl-patches.patch
 atomic_patch -p1 -d ../flang ../patches/no-fastmath.patch
 atomic_patch -p1 -d ../flang ../patches/flang2-install-dir.patch
-atomic_patch -p1 -d ../flang ../patches/flang-no-src-root.patch
+# TODO atomic_patch -p1 -d ../flang ../patches/flang-no-src-root.patch
 
 ## Create Compiler wrapper for flang
 if [[ ${build_compiler} == 1 ]]; then
