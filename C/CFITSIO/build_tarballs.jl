@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"4.3.1"
+version = v"4.4.0"
 
 # Collection of sources required to build CFITSIO
 sources = [
     ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version).tar.gz",
-                  "47a7c8ee05687be1e1d8eeeb94fb88f060fbf3cd8a4df52ccb88d5eb0f5062be"),
+                  "95900cf95ae760839e7cb9678a7b2fad0858d6ac12234f934bd1cb6bfc246ba9"),
     DirectorySource("./bundled"),
 ]
 
