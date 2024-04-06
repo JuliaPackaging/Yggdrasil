@@ -33,6 +33,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# PMIx does not support 32-bit builds <https://docs.openpmix.org/en/latest/release-notes/platform.html>
+filter!(p -> nbits(p) != 32, platforms)
+
 # FreeBSD does not provide `pthread_setaffinity_np` which is a GNU extension
 filter!(!Sys.isfreebsd, platforms)
 
