@@ -17,8 +17,6 @@ BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DUSE_THREADS=ON
     -DUSE_BUNDLED_ZLIB=ON
-    -DUSE_HTTPS=OpenSSL
-    -DUSE_SHA1=CollisionDetection
     -DUSE_SSH=ON
     -DBUILD_CLI=OFF
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
@@ -45,11 +43,9 @@ if [[ ${target} == *-mingw* ]]; then
 
     # For some reason, CMake fails to find libssh2 using pkg-config.
     BUILD_FLAGS+=(-Dssh2_RESOLVED=${bindir}/libssh2.dll)
-fi
-
-# Necessary for cmake to find openssl on Windows
-if [[ ${target} == x86_64-*-mingw* ]]; then
-    export OPENSSL_ROOT_DIR=${prefix}/lib64
+elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]] || [[ ${target} == *openbsd* ]]; then
+    # If we're on Linux or FreeBSD, explicitly ask for OpenSSL
+    BUILD_FLAGS+=(-DUSE_HTTPS=OpenSSL -DUSE_SHA1=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
 
 mkdir build && cd build
@@ -74,7 +70,7 @@ llvm_version = v"13.0.1"
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LibSSH2_jll"; compat="1.11.0"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("OpenSSL_jll"; compat="3.0.8", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]

@@ -8,13 +8,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.12.6"
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+version = v"4.13.0"
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3-solver-$(version).0.tar.gz",
-                  "9a0f30e9648ee2649adc301dbf91470bc1600f34112ffeaf1063f8a8075e1a48"),
+                  "52588e92aec7cb338fd6288ce93758ae01770f62ca0c80e8f4f2b2333feaf51b"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
