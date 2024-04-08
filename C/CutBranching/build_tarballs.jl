@@ -12,7 +12,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/claud10cv/CutBranching.git", "892d48d21b815b6fb55580b33a99e7f251b37e54")
+    GitSource("https://github.com/claud10cv/CutBranching.git", "3aa36ddb6bc88c309abbf614a1d5e8b2fd79b3e3")
 ]
 
 # Bash recipe for building across all platforms
