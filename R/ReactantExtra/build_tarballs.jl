@@ -9,18 +9,27 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
 sources = [
-   GitSource(repo, "fcb0cf2a87deaf421af8ee804053debe754fea8c"),
+   GitSource(repo, "ee451901fe2ba1ee25aa391c659eb182c7b158dc"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd Reactant.jl/deps/ReactantExtra
 
-
+if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+    # LLVM requires macOS SDK 10.14.
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
 
 if command -v apk &> /dev/null
 then
     apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+    apk add py3-numpy py3-numpy-dev
 elif command -v brew &> /dev/null
 then
     brew install bazel
@@ -54,6 +63,7 @@ BAZEL_FLAGS+=(--output_user_root=/workspace/bazel_root)
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
+BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
 cp bazel-bin/libReactantExtra* ${prefix}
