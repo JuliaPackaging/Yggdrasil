@@ -54,9 +54,7 @@ fi
 mkdir .bazhome
 export HOME=`pwd`/.bazhome
 
-export CXXFLAGS="-std=c++17 $CXXFLAGS -std=c++17"
-
-env
+export BAZEL_CXXOPTS="-std=c++17"
 BAZEL_FLAGS=()
 BAZEL_BUILD_FLAGS=()
 
@@ -66,8 +64,11 @@ BAZEL_FLAGS+=(--output_user_root=/workspace/bazel_root)
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
+BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
 BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 
+""" * string(Base.julia_cmd().exec[1])*raw""" --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
+BAZEL_BUILD_FLAGS+=(--action_env=JULIA=""" * string(Base.julia_cmd().exec[1]) * raw""")
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
 cp bazel-bin/libReactantExtra* ${prefix}
 cp bazel-bin/*.jl ${prefix}
@@ -128,7 +129,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"8", julia_compat="1.6",
+                   preferred_gcc_version=v"10", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
 
