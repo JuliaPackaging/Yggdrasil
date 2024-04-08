@@ -32,8 +32,8 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl") 
-platforms = vcat(libjulia_platforms.(julia_versions)...)
-#platforms = supported_platforms()
+#platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = supported_platforms()
 filter!(x -> libc(x) != "musl", platforms)
 filter!(!Sys.iswindows, platforms)
 
