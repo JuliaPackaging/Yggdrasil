@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
 sources = [
-   GitSource(repo, "ee451901fe2ba1ee25aa391c659eb182c7b158dc"),
+   GitSource(repo, "a8bd6c1d15875d78d3f973bbbd873a69a4b38b46"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,6 +54,9 @@ fi
 mkdir .bazhome
 export HOME=`pwd`/.bazhome
 
+export CXXFLAGS="-std=c++17 $CXXFLAGS -std=c++17"
+
+env
 BAZEL_FLAGS=()
 BAZEL_BUILD_FLAGS=()
 
