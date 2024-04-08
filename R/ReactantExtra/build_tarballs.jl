@@ -48,8 +48,21 @@ else
     cd ..
 
     mv baz/output/bazel .local/bin/bazel
-    export PATH="$PATH:`pwd`/.local/bin"
 fi
+
+mkdir -p .julia
+cd .julia
+
+export JULIA_PATH=/usr/local/julia
+export PATH=$JULIA_PATH/bin:$PATH
+
+	wget -O julia.tar.gz "https://julialang-s3.julialang.org/bin/musl/x64/1.8/julia-1.8.5-musl-x86_64.tar.gz"
+	
+	mkdir -p "$JULIA_PATH"; 
+	tar -xzf julia.tar.gz -C "$JULIA_PATH" --strip-components 1; 
+	rm julia.tar.gz; 
+
+cd ..
 
 mkdir .bazhome
 export HOME=`pwd`/.bazhome
@@ -67,8 +80,8 @@ BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
 BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 
-""" * string(Base.julia_cmd().exec[1])*raw""" --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
-BAZEL_BUILD_FLAGS+=(--action_env=JULIA=""" * string(Base.julia_cmd().exec[1]) * raw""")
+julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
+BAZEL_BUILD_FLAGS+=(--action_env=JULIA=`which julia`)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
 cp bazel-bin/libReactantExtra* ${prefix}
 cp bazel-bin/*.jl ${prefix}
@@ -95,6 +108,7 @@ products = Product[
     FileProduct("StableHLO.inc.jl", Symbol("StableHLO.inc.jl")),
     FileProduct("CHLO.inc.jl", Symbol("CHLO.inc.jl")),
     FileProduct("VHLO.inc.jl", Symbol("VHLO.inc.jl")),
+    FileProduct("libMLIR_h.jl", Symbol("libMLIR_h.jl")),
 ]
 
 # These are the platforms we will build for by default, unless further
