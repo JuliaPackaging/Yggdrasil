@@ -7,15 +7,24 @@ version = v"2.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dist.opendnssec.org/source/softhsm-$(version).tar.gz", "61249473054bcd1811519ef9a989a880a7bdcc36d317c9c25457fc614df475f2")
+    GitSource("https://github.com/opendnssec/SoftHSMv2",
+              "7f99bedae002f0dd04ceeb8d86d59fc4a68a69a0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/softhsm-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nprocs}
-make install
+cd $WORKSPACE/srcdir/SoftHSMv2
+cmake -B build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DENABLE_STATIC=OFF \
+      -DRUN_ECC=0 \
+      -DRUN_GOST=0 \
+      -DRUN_AES_KEY_WRAP=0 \
+      -DRUN_AES_KEY_WRAP_PAD=0
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
