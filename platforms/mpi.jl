@@ -11,6 +11,7 @@ const augment = raw"""
     function augment_mpi!(platform)
         # Doesn't need to be `const` since we depend on MPIPreferences so we
         # invalidate the cache when it changes.
+        # Note: MPIPreferences uses `Sys.iswindows()` without the `platform` argument.
         binary = get(preferences, "binary", Sys.iswindows(platform) ? "MicrosoftMPI_jll" : "MPICH_jll")
 
         abi = if binary == "system"
