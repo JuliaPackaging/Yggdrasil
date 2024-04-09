@@ -3,11 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "CutBranching"
-version = v"0.1.0"
+version = v"0.1.1"
+
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/claud10cv/CutBranching.git", "892d48d21b815b6fb55580b33a99e7f251b37e54")
+    GitSource("https://github.com/claud10cv/CutBranching.git", "727975876b918ff71bae2c71442b2564cfaf2081")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +32,8 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl") 
-platforms = supported_platforms()
+platforms = vcat(libjulia_platforms.(julia_versions)...) 
+platforms = expand_cxxstring_abis(platforms)
 filter!(x -> libc(x) != "musl", platforms)
 filter!(!Sys.iswindows, platforms)
 
