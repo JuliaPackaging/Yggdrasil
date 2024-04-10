@@ -9,13 +9,14 @@ name = "LLVMDowngrader"
 repo = "https://github.com/JuliaGPU/llvm-metal"
 version = v"0.1"
 
-llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7"]
+llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6"]
 
 # Collection of sources required to build LLVMDowngrader
 sources = Dict(
     v"13.0.1" => [GitSource(repo, "3a1282502c9ddb9317b30c482baa0eef4ce31fed")],
     v"14.0.6" => [GitSource(repo, "35ccb54284e13876dded155fe8e56649774548e2")],
     v"15.0.7" => [GitSource(repo, "99b7d2fa236e01f13d2de78836aa1d1dcf6c96f4")],
+    v"16.0.6" => [GitSource(repo, "00bd4a1e808cfade4582eb1b26c748f1affd8718")],
 )
 
 # These are the platforms we will build for by default, unless further
