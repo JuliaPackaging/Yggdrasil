@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
 sources = [
-   GitSource(repo, "058a026d66e9717cea0fbcacd347cc2fc2c559a9"),
+   GitSource(repo, "dbe2d5d19cccc4deb867336f51d9bf5b2f937654"),
 ]
 
 # Bash recipe for building across all platforms
@@ -86,8 +86,11 @@ BAZEL_BUILD_FLAGS+=(--experimental_cc_shared_library)
 # julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
+rm bazel-bin/libReactantExtraLib*
 cp bazel-bin/libReactantExtra* ${prefix}
 cp bazel-bin/*.jl ${prefix}
+ls bazel-bin/
+find bazel-bin -iname "*.so*"
 """
 
 augment_platform_block = ""
