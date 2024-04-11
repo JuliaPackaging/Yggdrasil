@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd Reactant.jl/deps/ReactantExtra
 
-if [[ "${bb_full_target}" == *darwin* ]]; then
+if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
