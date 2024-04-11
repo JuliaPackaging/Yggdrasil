@@ -83,6 +83,14 @@ BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 BAZEL_BUILD_FLAGS+=(--build_tag_filters=-jlrule)
 BAZEL_BUILD_FLAGS+=(--experimental_cc_shared_library)
 
+if [[ "${bb_full_target}" == *darwin* ]]; then
+    BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
+fi
+
+if [[ "${bb_full_target}" == *i686* ]]; then
+    BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
+fi
+
 # julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
