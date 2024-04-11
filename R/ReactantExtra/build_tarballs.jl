@@ -22,7 +22,6 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
-    export MACOSX_DEPLOYMENT_TARGET=10.14
     popd
 fi
 
@@ -91,10 +90,33 @@ BAZEL_BUILD_FLAGS+=(--define=no_kafka_support=true)
 BAZEL_BUILD_FLAGS+=(--define=no_ignite_support=true)
 BAZEL_BUILD_FLAGS+=(--define=grpc_no_ares=true)
 
+BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
+BAZEL_BUILD_FLAGS+=(--verbose_failures)
+
 if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_2=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_aarch64=false)
+    BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=10.14)
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=10.14)
+    BAZEL_BUILD_FLAGS+=(--host_action_env=MACOSX_DEPLOYMENT_TARGET=10.14)
+    BAZEL_BUILD_FLAGS+=(--repo_env=MACOSX_DEPLOYMENT_TARGET=10.14)
+    BAZEL_BUILD_FLAGS+=(--test_env=MACOSX_DEPLOYMENT_TARGET=10.14)
+    BAZEL_BUILD_FLAGS+=(--noincompatible_remove_legacy_whole_archive)
+    BAZEL_BUILD_FLAGS+=(-s)
     env
+fi
+
+if [[ "${bb_full_target}" == *freebsd* ]]; then
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_2=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_aarch64=false)
+    BAZEL_BUILD_FLAGS+=(--define=freebsd=true)
 fi
 
 if [[ "${bb_full_target}" == *i686* ]]; then
@@ -158,6 +180,11 @@ platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
 # Windows has a cuda configure issue, to investigate either fixing/disabling cuda
 platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+
+# FreeBSD is weird
+# 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
+# [00:20:02] #include <linux/futex.h>
+# platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
 
 for platform in platforms
