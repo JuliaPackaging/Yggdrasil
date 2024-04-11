@@ -87,10 +87,9 @@ BAZEL_BUILD_FLAGS+=(--experimental_cc_shared_library)
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
 rm bazel-bin/libReactantExtraLib*
-cp bazel-bin/libReactantExtra* ${prefix}
+mkdir -p ${prefix}/lib
+cp bazel-bin/libReactantExtra* ${prefix}/lib
 cp bazel-bin/*.jl ${prefix}
-ls bazel-bin/
-find bazel-bin -iname "*.so*"
 """
 
 augment_platform_block = ""
