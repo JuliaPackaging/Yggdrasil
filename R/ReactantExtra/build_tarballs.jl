@@ -9,14 +9,14 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
 sources = [
-   GitSource(repo, "dbe2d5d19cccc4deb867336f51d9bf5b2f937654"),
+   GitSource(repo, "e132afd886a6d8333de42e99f5c0806c40c66482"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd Reactant.jl/deps/ReactantExtra
 
-if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+if [[ "${bb_full_target}" == *darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
@@ -83,8 +83,18 @@ BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 BAZEL_BUILD_FLAGS+=(--build_tag_filters=-jlrule)
 BAZEL_BUILD_FLAGS+=(--experimental_cc_shared_library)
 
+# Disable enabled-by-default TensorFlow features that we don't care about.
+BAZEL_BUILD_FLAGS+=(--define=no_aws_support=true)
+BAZEL_BUILD_FLAGS+=(--define=no_gcp_support=true)
+BAZEL_BUILD_FLAGS+=(--define=no_hdfs_support=true)
+BAZEL_BUILD_FLAGS+=(--define=no_kafka_support=true)
+BAZEL_BUILD_FLAGS+=(--define=no_ignite_support=true)
+BAZEL_BUILD_FLAGS+=(--define=grpc_no_ares=true)
+
 if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
+    BAZEL_BUILD_FLAGS+=(--macos_minimum_os=10.14)
+    env
 fi
 
 if [[ "${bb_full_target}" == *i686* ]]; then
@@ -127,6 +137,28 @@ products = Product[
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+
+# Don't even bother with powerpc
+platforms = filter(platforms) do p
+    !( (arch(p) == "powerpc64le") )
+end
+
+# 64-bit or bust (for xla runtime executable)
+platforms = filter(p -> arch(p) != "i686", platforms)
+
+# go sdk has weird issue for arm linux, removing for now
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p)), platforms)
+platforms = filter(p -> !(arch(p) == "armv6l" && Sys.islinux(p)), platforms)
+platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
+
+# XLA has weird issue on musl
+# [22:07:03] bazel-out/k8-opt/bin/external/xla/xla/autotuning.pb.h:249:11: error: expected unqualified-id before ‘unsigned’
+# [22:07:03]   249 |   int32_t major() const;
+platforms = filter(p -> !(libc(p) == "musl"), platforms)
+
+# Windows has a cuda configure issue, to investigate either fixing/disabling cuda
+platforms = filter(p -> !(Sys.iswindows(p)), platforms)
+
 
 for platform in platforms
     augmented_platform = deepcopy(platform)
