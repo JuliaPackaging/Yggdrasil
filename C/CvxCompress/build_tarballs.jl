@@ -26,17 +26,20 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 make -j${nproc} "${FLAGS[@]}"
 mkdir -p ${libdir}
+mkdir -p ${includedir}
 cp libcvxcompress.so ${libdir}/libcvxcompress.${dlext}
+cp CvxCompress.hxx ${includedir}/CvxCompress.hxx
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # TODO update make to adjust the intrinsic code generation to support more platforms
-platforms = [p for p in supported_platforms() if arch(p) === :x86_64 && !Sys.iswindows(p)]
+platforms = [p for p in supported_platforms() if arch(p) === "x86_64" && !Sys.iswindows(p) && !Sys.isapple(p)]
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcvxcompress", :libcvxcompress)
+    FileProduct("include/CvxCompress.hxx", :CvxCompress_hxx)
 ]
 
 # Dependencies that must be installed before this package can be built
