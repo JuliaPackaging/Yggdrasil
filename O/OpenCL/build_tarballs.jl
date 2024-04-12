@@ -3,13 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenCL"
-version = v"2022.09.23"
+version = v"2023.12.14"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KhronosGroup/OpenCL-ICD-Loader.git", "3dae4803532b11d74e4dc216ee72570c1a4bff24"),
-    FileSource("https://patch-diff.githubusercontent.com/raw/KhronosGroup/OpenCL-ICD-Loader/pull/185.patch",
-               "82725e3ec4e9fe333aeb53f75e13b74cef22c7cb662ee2af51108f0d764e1985")
+    GitSource("https://github.com/KhronosGroup/OpenCL-ICD-Loader.git", "229410f86a8c8c9e0f86f195409e5481a2bae067"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,9 +16,12 @@ cd $WORKSPACE/srcdir
 
 install_license ./OpenCL-ICD-Loader/LICENSE
 
-patch ./OpenCL-ICD-Loader/loader/icd_platform.h 185.patch
-
-cmake -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -S ./OpenCL-ICD-Loader -B ./OpenCL-ICD-Loader/build
+cmake -DCMAKE_PREFIX_PATH=${prefix} \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -S ./OpenCL-ICD-Loader \
+      -B ./OpenCL-ICD-Loader/build
 cmake --build ./OpenCL-ICD-Loader/build --target install -j${nproc}
 """
 
@@ -35,8 +36,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2022.09.23"))
+    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2023.12.14"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version = v"6.1.0")
