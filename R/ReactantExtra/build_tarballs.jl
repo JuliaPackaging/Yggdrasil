@@ -181,10 +181,11 @@ platforms = filter(p -> !(libc(p) == "musl"), platforms)
 # Windows has a cuda configure issue, to investigate either fixing/disabling cuda
 platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 
-# FreeBSD is weird
+# NSync is picking up wrong stuff for cross compile, to deal with later
 # 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
 # [00:20:02] #include <linux/futex.h>
-# platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(Sys.isapple(p)), platforms)
 
 
 for platform in platforms
