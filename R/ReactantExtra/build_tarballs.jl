@@ -124,15 +124,15 @@ dependencies = Dependency[]
 products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
                    :libReactantExtra),
-    FileProduct("Affine.inc.jl", :Affine_inc_jl)),
-    FileProduct("Arith.inc.jl", :Arith_inc_jl)),
-    FileProduct("Builtin.inc.jl", :Builtin_inc_jl)),
-    FileProduct("Enzyme.inc.jl", :Enzyme_inc_jl)),
-    FileProduct("Func.inc.jl", :Func_inc_jl)),
-    FileProduct("StableHLO.inc.jl", :StableHLO_inc_jl)),
-    FileProduct("CHLO.inc.jl", :CHLO_inc_jl)),
-    FileProduct("VHLO.inc.jl", :VHLO_inc_jl)),
-    # FileProduct("libMLIR_h.jl", :libMLIR_h_jl)),
+    FileProduct("Affine.inc.jl", :Affine_inc_jl),
+    FileProduct("Arith.inc.jl", :Arith_inc_jl),
+    FileProduct("Builtin.inc.jl", :Builtin_inc_jl),
+    FileProduct("Enzyme.inc.jl", :Enzyme_inc_jl),
+    FileProduct("Func.inc.jl", :Func_inc_jl),
+    FileProduct("StableHLO.inc.jl", :StableHLO_inc_jl),
+    FileProduct("CHLO.inc.jl", :CHLO_inc_jl),
+    FileProduct("VHLO.inc.jl", :VHLO_inc_jl),
+    # FileProduct("libMLIR_h.jl", :libMLIR_h_jl),
 ]
 
 # These are the platforms we will build for by default, unless further
