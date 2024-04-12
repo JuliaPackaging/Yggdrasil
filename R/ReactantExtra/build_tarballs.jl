@@ -127,8 +127,8 @@ fi
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
 rm bazel-bin/libReactantExtraLib*
-mkdir -p ${prefix}/lib
-cp bazel-bin/libReactantExtra* ${prefix}/lib
+mkdir -p ${libdir}
+cp -v bazel-bin/libReactantExtra* ${libdir}
 cp bazel-bin/*.jl ${prefix}
 """
 
@@ -158,7 +158,7 @@ products = Product[
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # Don't even bother with powerpc
 platforms = filter(platforms) do p
