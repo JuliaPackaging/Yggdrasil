@@ -25,29 +25,8 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-if command -v apk &> /dev/null
-then
-    apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-    apk add py3-numpy py3-numpy-dev
-elif command -v brew &> /dev/null
-then
-    brew install bazel
-elif command -v choco &> /dev/null
-then
-    choco install bazel
-else
-    mkdir -p .local/bin
-
-    mkdir baz && cd baz
-    wget https://github.com/bazelbuild/bazel/releases/download/6.1.2/bazel-6.1.2-dist.zip
-    unzip -q *.zip
-    rm *.zip
-    env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk" bash ./compile.sh
-    ls
-    cd ..
-
-    mv baz/output/bazel .local/bin/bazel
-fi
+apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+apk add py3-numpy py3-numpy-dev
 
 #mkdir -p .julia
 #cd .julia
@@ -144,16 +123,16 @@ dependencies = Dependency[]
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
-                   :libReactantExtra, dont_dlopen=true),
-    FileProduct("Affine.inc.jl", Symbol("Affine.inc.jl")),
-    FileProduct("Arith.inc.jl", Symbol("Arith.inc.jl")),
-    FileProduct("Builtin.inc.jl", Symbol("Builtin.inc.jl")),
-    FileProduct("Enzyme.inc.jl", Symbol("Enzyme.inc.jl")),
-    FileProduct("Func.inc.jl", Symbol("Func.inc.jl")),
-    FileProduct("StableHLO.inc.jl", Symbol("StableHLO.inc.jl")),
-    FileProduct("CHLO.inc.jl", Symbol("CHLO.inc.jl")),
-    FileProduct("VHLO.inc.jl", Symbol("VHLO.inc.jl")),
-    # FileProduct("libMLIR_h.jl", Symbol("libMLIR_h.jl")),
+                   :libReactantExtra),
+    FileProduct("Affine.inc.jl", :Affine_inc_jl)),
+    FileProduct("Arith.inc.jl", :Arith_inc_jl)),
+    FileProduct("Builtin.inc.jl", :Builtin_inc_jl)),
+    FileProduct("Enzyme.inc.jl", :Enzyme_inc_jl)),
+    FileProduct("Func.inc.jl", :Func_inc_jl)),
+    FileProduct("StableHLO.inc.jl", :StableHLO_inc_jl)),
+    FileProduct("CHLO.inc.jl", :CHLO_inc_jl)),
+    FileProduct("VHLO.inc.jl", :VHLO_inc_jl)),
+    # FileProduct("libMLIR_h.jl", :libMLIR_h_jl)),
 ]
 
 # These are the platforms we will build for by default, unless further
