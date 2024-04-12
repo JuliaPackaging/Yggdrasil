@@ -4,7 +4,7 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
-name = "ReactantExtra"
+name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
@@ -105,7 +105,8 @@ fi
 # julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
-rm bazel-bin/libReactantExtraLib*
+rm -f bazel-bin/libReactantExtraLib*
+rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
 cp -v bazel-bin/libReactantExtra* ${libdir}
 cp -v bazel-bin/*.jl ${prefix}
