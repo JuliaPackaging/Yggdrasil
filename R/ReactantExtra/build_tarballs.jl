@@ -129,7 +129,7 @@ bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
 rm bazel-bin/libReactantExtraLib*
 mkdir -p ${libdir}
 cp -v bazel-bin/libReactantExtra* ${libdir}
-cp bazel-bin/*.jl ${prefix}
+cp -v bazel-bin/*.jl ${prefix}
 """
 
 augment_platform_block = ""
@@ -139,10 +139,10 @@ builds = []
     
 # Dependencies that must be installed before this package can be built
 
-dependencies = []
+dependencies = Dependency[]
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
                    :libReactantExtra, dont_dlopen=true),
     FileProduct("Affine.inc.jl", Symbol("Affine.inc.jl")),
