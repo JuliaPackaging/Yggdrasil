@@ -675,7 +675,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
 
     if version >= v"16"
         products_bolt = copy(products)
-        push!(products, ExecutableProduct("llvm-bolt", :llvm_bolt, "tools"))
+        push!(products_bolt, ExecutableProduct("llvm-bolt", :llvm_bolt, "tools"))
         platforms_bolt = filter(p -> arch(p) ∈ ("i686", "x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
         platforms_no_bolt = setdiff(platforms, platforms_bolt)
         return (name, custom_version, sources, config * buildscript, platforms_bolt, products_bolt, dependencies), (name, custom_version, sources, config * buildscript, platforms_no_bolt, products, dependencies)
