@@ -7,7 +7,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
-              "5cce2dbf019eb78b1d208b475b8ec532aa6eaed1")
+              "18b0321644c9a32c94331df174c6d4c3dd5cc5cc")
 ]
 
 platform_sources = Dict(
