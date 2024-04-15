@@ -13,6 +13,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Necessary for cmake to find openssl on Windows 
+if [[ ${target} == x86_64-*-mingw* ]]; then 
+    export OPENSSL_ROOT_DIR=${prefix}/lib64 
+fi 
+
 cd $WORKSPACE/srcdir/open62541/
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -45,7 +50,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.13")
+    Dependency("OpenSSL_jll"; compat="3.0.8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
