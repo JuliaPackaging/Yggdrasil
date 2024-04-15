@@ -7,7 +7,8 @@ version = v"1.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/facebookresearch/faiss.git", "22f2292be4aa98559797e1dd6e45f12386b06099")
+    GitSource("https://github.com/facebookresearch/faiss.git", "22f2292be4aa98559797e1dd6e45f12386b06099"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,6 +17,8 @@ script = raw"""
 apk del cmake
 
 cd faiss
+
+atomic_patch -p1 ../patches/faiss-mingw32.patch
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=$prefix \
