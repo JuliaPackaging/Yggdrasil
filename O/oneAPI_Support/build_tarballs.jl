@@ -1,12 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support"
-version = v"0.3.3"
+version = v"0.4.0"
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 generic_sources = [
-    GitSource("https://github.com/JuliaGPU/oneAPI.jl", "949a457e6740929662445a8fb524e45b9bf6f7fd")
+    GitSource("https://github.com/JuliaGPU/oneAPI.jl",
+              "5cce2dbf019eb78b1d208b475b8ec532aa6eaed1")
 ]
 
 platform_sources = Dict(
@@ -36,10 +37,6 @@ platform_sources = Dict(
         ArchiveSource(
             "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lic-rt-2024.0.0-intel_49819.tar.bz2",
             "4c9b9784ae53f47781d11d7a507fa0ce3de150769e049042f148e4e1c14fab7d";
-        ),
-        ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-opencl-rt-2024.0.0-intel_49819.tar.bz2",
-            "618506a21a5ad8ce19369c65496ea8fa3b00fef16f2e22fd335b1ebb5846bd57";
         ),
         ArchiveSource(
             "https://conda.anaconda.org/intel/linux-64/intel-openmp-2024.0.0-intel_49819.tar.bz2",
@@ -117,7 +114,7 @@ mkdir -p ${libdir} ${includedir}
 mv lib/clang/*/include/CL ${includedir}
 rm -rf lib/clang
 cp -r include/* ${includedir}
-for lib in sycl OpenCL svml irng imf intlc pi_level_zero pi_opencl \
+for lib in sycl svml irng imf intlc pi_level_zero pi_opencl \
            mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
            mkl_avx mkl_def; do
     cp -a lib/lib${lib}*.so* ${libdir}
@@ -143,6 +140,14 @@ ninja -C build -j ${nproc} install
 
 # remove build-time dependencies we don't need
 rm -rf ${includedir}
+
+# XXX: MKL loads libOpenCL.so dynamically, and not by SONAME,
+#      which isn't covered by our OpenCL_jll dependency.
+#      to work around that, provide the actual library.
+#      this does result in two copies of libOpenCL.so loaded,
+#      but that seems to work fine...
+# XXX: have upstream fix this by dlopen'ing by SONAME first
+cp -f $(realpath ${libdir}/libOpenCL.so) ${libdir}/libOpenCL.so
 """
 
 # The products that we will ensure are always built
@@ -153,7 +158,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("oneAPI_Level_Zero_Headers_jll"),
-    Dependency("oneAPI_Level_Zero_Loader_jll")
+    Dependency("oneAPI_Level_Zero_Loader_jll"),
+    Dependency("OpenCL_jll"),
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
