@@ -45,7 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.8")
+    Dependency("OpenSSL_jll"; compat="3.0.13")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
