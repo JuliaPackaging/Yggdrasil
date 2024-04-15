@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.3.10"
+version = v"1.4.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "70ff3501ddecd7e7594ebc63e2365994d59e010d")
+              "84347820c8550b5750f2cd581c14ab201611c579")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,7 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_ENABLE_AMALGAMATION=ON \
     -DUA_ENABLE_IMMUTABLE_NODES=ON \
     -DUA_ENABLE_HISTORIZING=ON \
-    -DUA_ENABLE_ENCRYTPION=MBEDTLS \
+    -DUA_ENABLE_ENCRYTPION=OPENSSL \
     -DBUILD_SHARED_LIBS=ON \
     -DUA_FORCE_WERROR=OFF \
     ..
@@ -46,7 +46,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll"; compat="~2.28"),
+    Dependency("OpenSSL_jll"; compat="3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
