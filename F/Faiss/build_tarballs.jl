@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Faiss"
-version = v"1.7.4"
+version = v"1.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/facebookresearch/faiss.git", "d87888b13e7eb339bb9c45825e9d20def6665171"),
+    GitSource("https://github.com/facebookresearch/faiss.git", "22f2292be4aa98559797e1dd6e45f12386b06099")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,9 +35,6 @@ install -Dvm 755 build/c_api/libfaiss_c.$dlext $libdir/libfaiss_c.$dlext
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms) # musl builds fail - fixed in v1.8.0
-filter!(!Sys.isfreebsd, platforms) # freebsd builds fail - fixed in v1.8.0
-filter!(!Sys.iswindows, platforms) # Windows builds fail to link: undefined reference to `faiss::OnDiskInvertedListsIOHook::OnDiskInvertedListsIOHook()'
 
 mkl_platforms = Platform[
     Platform("x86_64", "Linux"),
