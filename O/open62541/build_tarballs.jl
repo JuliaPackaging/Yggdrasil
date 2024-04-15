@@ -23,7 +23,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_ENABLE_METHODCALLS=ON \
     -DUA_ENABLE_PARSING=ON \
     -DUA_ENABLE_NODEMANAGEMENT=ON \
-    -DUA_ENABLE_AMALGAMATION=ON \
+    -DUA_ENABLE_ENCRYPTION=OPENSSL \
     -DUA_ENABLE_IMMUTABLE_NODES=ON \
     -DUA_ENABLE_HISTORIZING=ON \
     -DBUILD_SHARED_LIBS=ON \
@@ -34,7 +34,7 @@ make install
 install_license ../LICENSE
 """
 
-#    -DUA_ENABLE_ENCRYPTION=OPENSSL \
+# -DUA_ENABLE_AMALGAMATION=ON \
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -47,7 +47,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
