@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.0.6" # <-- This is a lie, we're bumping to 2.0.6 to create a Julia v1.6+ release with experimental platforms
+version = v"2.0.7"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
@@ -34,24 +34,20 @@ apk add ncurses
 
 # build SIFDecode
 cd $SIFDECODE
-if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
+if [[ "${target}" == *-linux* || "${target}" == *-freebsd* || "${target}" == *-mingw* ]]; then
   echo "6" > sifdecode.opts   # PC64
   echo "2" >> sifdecode.opts  # Linux
   echo "6" >> sifdecode.opts  # gfortran
 elif [[ "${target}" == *-apple* ]]; then
   echo "13" > sifdecode.opts  # macOS
   echo "2" >> sifdecode.opts  # gfortran
-elif [[ "${target}" == *-mingw* ]]; then
-  echo "6" > sifdecode.opts   # PC64
-  echo "1" >> sifdecode.opts  # Windows
-  echo "3" >> sifdecode.opts  # gfortran
 fi
 echo "nny" >> sifdecode.opts
 ./install_sifdecode < sifdecode.opts
 
 # build CUTEst
 cd $CUTEST
-if [[ "${target}" == *-linux* || "${target}" == *-freebsd* ]]; then
+if [[ "${target}" == *-linux* || "${target}" == *-freebsd* || "${target}" == *-mingw* ]]; then
   echo "6" > cutest.opts   # PC64
   echo "2" >> cutest.opts  # Linux
   echo "6" >> cutest.opts  # gfortran
@@ -64,47 +60,43 @@ elif [[ "${target}" == *-apple* ]]; then
   echo "2" >> cutest.opts  # build all tools except Matlab
   echo "5" >> cutest.opts  # gcc
   export MYARCH=mac64.osx.gfo
-elif [[ "${target}" == *-mingw* ]]; then
-  echo "5" > cutest.opts   # PC64
-  echo "1" >> cutest.opts  # Windows
-  echo "3" >> cutest.opts  # gfortran
-  echo "2" >> cutest.opts  # build all tools except Matlab
-  echo "5" >> cutest.opts  # gcc
-  export MYARCH=pc64.mgw.gfo
 fi
 echo "nnydy" >> cutest.opts
 ./install_cutest < cutest.opts
 
-# build shared libs
-extra=""
-if [[ "${target}" == *-apple-* ]]; then
-  extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
-fi
-cd $CUTEST/objects/$MYARCH/single
-gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_single.${dlext}
-cd $CUTEST/objects/$MYARCH/double
-gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
+# Static libraries
+cp $CUTEST/objects/$MYARCH/single/libcutest.a $prefix/lib/libcutest_single.a
+cp $CUTEST/objects/$MYARCH/double/libcutest.a $prefix/lib/libcutest_double.a
 
-ln -s $ARCHDEFS/bin/helper_functions ${bindir}/
-ln -s $SIFDECODE/bin/sifdecoder ${bindir}/
-ln -s $SIFDECODE/objects/$MYARCH/double/slct ${bindir}/
-ln -s $SIFDECODE/objects/$MYARCH/double/clsf ${bindir}/
+# Shared libraries
+if [[ "${target}" != *mingw* ]]; then
+    extra=""
+    if [[ "${target}" == *-apple-* ]]; then
+        extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
+    fi
+    cd $CUTEST/objects/$MYARCH/single
+    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_single.${dlext}
+    cd $CUTEST/objects/$MYARCH/double
+    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcutest_double.${dlext}
+fi
+
+cp $ARCHDEFS/bin/helper_functions ${bindir}/helper_functions
+cp $SIFDECODE/bin/sifdecoder ${bindir}/sifdecoder
 install_license $CUTEST/lgpl-3.0.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # can't build shared libs on Windows, which imposes all symbols to be defined
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms()))
+platforms = expand_gfortran_versions(supported_platforms())
 platforms = filter!(p -> !(os(p) == "freebsd" && libgfortran_version(p) == v"3"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("sifdecoder", :sifdecoder),
-    ExecutableProduct("slct", :slct),
-    ExecutableProduct("clsf", :clsf),
-    # LibraryProduct("libcutest_single", :libcutest_single),
-    # LibraryProduct("libcutest_double", :libcutest_double),
+    FileProduct("bin/helper_functions", :helper_functions),
+    FileProduct("bin/sifdecoder", :sifdecoder),
+    FileProduct("lib/libcutest_single.a", :libcutest_single),
+    FileProduct("lib/libcutest_double.a", :libcutest_double),
 ]
 
 dependencies = [

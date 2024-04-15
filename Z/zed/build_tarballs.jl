@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "zed"
-version = v"1.2.0"
+version = v"1.15.0"
 
 # Collection of sources
 sources = [
-    GitSource("https://github.com/brimdata/zed", "76f0409f96a0208d15c4487505604cf6c0e2ae92"),
+    GitSource("https://github.com/brimdata/zed", "2a487ee2a63ed09700bb26f70f08324244227cc2"),
 ]
 
 # Bash recipe for building across all platforms

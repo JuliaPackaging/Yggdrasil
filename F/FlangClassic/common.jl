@@ -83,7 +83,11 @@ else
     make -j$(nproc) -C runtime/
     make -j$(nproc) -C runtime/ install
 fi
-install_license ../flang/LICENSE.txt
+
+# We already installed the license as `LICENSE.TXT` above.
+# Do not install another license as `LICENSE.txt`.
+# These file names would conflict on case-insensitive file systems,
+# and the generated package is then unusable there.
 """
 end
 

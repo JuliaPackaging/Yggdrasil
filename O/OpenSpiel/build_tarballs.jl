@@ -7,7 +7,6 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 name = "OpenSpiel"
 version = v"1.2"
 
@@ -58,13 +57,11 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
     ../open_spiel/
-      
 
 make -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/open_spiel/LICENSE
 """
-
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -80,7 +77,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
     BuildDependency("libjulia_jll")
 ]
 

@@ -8,6 +8,8 @@ const curl_hashes = Dict(
     v"8.2.1"  => "f98bdb06c0f52bdd19e63c4a77b5eb19b243bcbbd0f5b002b9f3cba7295a3a42",
     v"8.4.0"  => "816e41809c043ff285e8c0f06a75a1fa250211bbfb2dc0a037eeef39f1a9e427",
     v"8.5.0"  => "05fc17ff25b793a437a0906e0484b82172a9f4de02be5ed447e0cab8c3475add",
+    v"8.6.0"  => "9c6db808160015f30f3c656c0dec125feb9dc00753596bf858a272b5dd8dc398",
+    v"8.7.1"  => "f91249c87f68ea00cf27c44fdfa5a78423e41e71b7d408e5901a9896d905c495",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber)
@@ -25,11 +27,15 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     # Collection of sources required to build LibCURL
     sources = [
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
+        DirectorySource("../patches"),
     ]
 
     # Bash recipe for building across all platforms
     script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * raw"""
     cd $WORKSPACE/srcdir/curl-*
+
+    # Address <https://github.com/curl/curl/issues/12849>
+    atomic_patch -p1 $WORKSPACE/srcdir/memdup.patch
 
     # Holy crow we really configure the bitlets out of this thing
     FLAGS=(
@@ -68,8 +74,8 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
             export CFLAGS=-mmacosx-version-min=10.11
         fi
     else
-        # On all other systems, we use MbedTLS
-        FLAGS+=(--with-mbedtls=${prefix})
+        # On all other systems, we use OpenSSL
+        FLAGS+=(--with-openssl)
     fi
 
     if false; then
@@ -122,9 +128,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         Dependency("LibSSH2_jll"),
         Dependency("Zlib_jll"),
         Dependency("nghttp2_jll"),
-        # Note that while we unconditionally list MbedTLS as a dependency,
-        # we default to schannel/SecureTransport on Windows/MacOS.
-        Dependency("MbedTLS_jll"; compat="~2.28.0", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        Dependency("OpenSSL_jll"; compat="3.0.8", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),

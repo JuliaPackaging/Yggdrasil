@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.8.2"
+upstream_version = v"3.8.5"
 version_offset = v"1.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "f74cd4144199fd7667e5c151a251cdbad1f44641"),
+        "1d418c1c1a1655c9f0afc944d6c928a60a7ad99a"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
@@ -151,8 +151,8 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="~4.5.1"),
     Dependency("libgeotiff_jll"; compat="100.701.100"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("NetCDF_jll"; compat="400.902.208", platforms=hdf5_platforms),
-    Dependency("HDF5_jll"; compat="~1.14", platforms=hdf5_platforms),
+    Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]

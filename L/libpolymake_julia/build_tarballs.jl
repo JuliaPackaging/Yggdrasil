@@ -13,7 +13,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
-version = v"0.11.2"
+version = v"0.11.4"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl
@@ -67,7 +67,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.7")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),

@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "diffutils"
-version_string = "3.8"
+version_string = "3.10"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://ftp.gnu.org/gnu/diffutils/diffutils-$(version_string).tar.xz",
-        "a6bdd7d1b31266d11c4f4de6c1b748d4607ab0231af5188fc2533d0ae2438fec",
+        "90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e",
     ),
     DirectorySource("./bundled"),
 ]

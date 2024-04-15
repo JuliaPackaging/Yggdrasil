@@ -4,23 +4,26 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "nghttp2"
-version = v"1.58.0"
+version = v"1.61.0"
 
 # Collection of sources required to build LibCURL
 sources = [
-    ArchiveSource("https://github.com/nghttp2/nghttp2/releases/download/v$(version)/nghttp2-$(version).tar.xz",
-                  "4a68a3040da92fd9872c056d0f6b0cd60de8410de10b578f8ade9ecc14d297e0"),
+    GitSource("https://github.com/nghttp2/nghttp2.git",
+              "d76b8331d16200df3d969d94438a96495ffbe42b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/nghttp2-*
+cd $WORKSPACE/srcdir/nghttp2
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
+autoreconf -i
+automake
+autoconf
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} --enable-lib-only
 make -j${nproc}
 make install
@@ -28,7 +31,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built

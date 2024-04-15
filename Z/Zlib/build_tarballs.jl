@@ -1,15 +1,16 @@
 using BinaryBuilder
+using Pkg
 using BinaryBuilderBase: sanitize
 
 # zlib version
 name = "Zlib"
-version = v"1.3"
+version = v"1.3.1"
 
 # Collection of sources required to build zlib
 sources = [
     # use Git source because zlib has a track record of deleting release tarballs of old versions
     GitSource("https://github.com/madler/zlib.git",
-              "09155eaa2f9270dc4ed1fa13e2b4b2613e6e4851"),
+              "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +33,7 @@ install_license ../README
 """
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
@@ -40,10 +41,12 @@ products = [
     LibraryProduct("libz", :libz),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9")
+               julia_compat="1.9", preferred_llvm_version=llvm_version)

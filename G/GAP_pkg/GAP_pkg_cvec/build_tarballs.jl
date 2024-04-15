@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1200.200"
-gap_lib_version = v"400.1201.200"
+gap_version = v"400.1300.0"
+gap_lib_version = v"400.1300.0"
 name = "cvec"
-upstream_version = "2.7.6" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "2.8.1" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/cvec/releases/download/v$(upstream_version)/cvec-$(upstream_version).tar.gz",
-                  "a06b10295a8a109b27a8f48d86d92ad94e0efcde1f37b6b7d88efbb297b8bd5e"),
+                  "74b7bfbe669d1a912ccf048bbe5e3c5164d54adc564caedc54d1a46cc7bf4b8f"),
 ]
 
 # Bash recipe for building across all platforms

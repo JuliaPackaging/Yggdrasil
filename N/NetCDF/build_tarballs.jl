@@ -1,6 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 # The version of this JLL is decoupled from the upstream version.
 # Whenever we package a new upstream release, we initially map its
@@ -11,7 +14,7 @@ name = "NetCDF"
 upstream_version = v"4.9.2"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.8"
+version_offset = v"0.2.11"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -54,8 +57,23 @@ if [[ ${target} -ne x86_64-linux-gnu ]]; then
     CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-utilities"
 fi
 
-# https://github.com/JuliaPackaging/Yggdrasil/issues/5031#issuecomment-1155000045
-rm /workspace/destdir/lib/*.la
+
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # see
+    # https://github.com/JuliaPackaging/Yggdrasil/blob/48af117395188f48d361a46ea929ee7563d9c2e4/A/ADIOS2/build_tarballs.jl
+
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
+    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libevent*
+    rm /usr/lib/libnghttp2.*
+fi
+
+if [[ ${target} == x86_64-unknown-freebsd* ]]; then
+     # based on the output of mpicc --showme
+     export LIBS="-lmpi -lm -lexecinfo -lutil -lz"
+fi
+
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -77,9 +95,24 @@ make install
 nc-config --all
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -88,14 +121,21 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Blosc_jll"),
     Dependency("Bzip2_jll"),
-    Dependency("HDF5_jll"; compat = "~1.14"),
+    Dependency("HDF5_jll"; compat = "~1.14.3"),
     Dependency("LibCURL_jll"; compat = "7.73.0,8"),
     Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
+    Dependency("libzip_jll"),
 ]
+append!(dependencies, platform_dependencies)
+
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the shared libraries.
+# (MPItrampoline will skip its automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")

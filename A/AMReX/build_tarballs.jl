@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "23.12"
+version_string = "24.03"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "90e00410833d7a82bf6d9e71a70ce85d2bfb89770da7e34d0dda940f2bf5384a"),
+                  "024876fe65838d1021fcbf8530b992bff8d9be1d3f08a1723c4e2e5f7c28b427"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
@@ -72,6 +72,14 @@ cmake \
     ${mpiopts}
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Move all shared libraries to `${libdir}`.
+    # Ref: <https://github.com/JuliaPackaging/Yggdrasil/issues/7968>.
+    mv -v ${prefix}/lib/*.${dlext} ${libdir}/.
+fi
+
+install_license LICENSE
 """
 
 augment_platform_block = """
@@ -97,7 +105,7 @@ platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0", OpenMPI_compat="4.1.6")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.0", OpenMPI_compat="4.1.6, 5")
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)

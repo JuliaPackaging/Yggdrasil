@@ -6,16 +6,16 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"2.1.2"
+version = v"2.1.3"
 
 
-PETSc_COMPAT_VERSION = "3.18.6" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
+PETSc_COMPAT_VERSION = "~3.18.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
 MPItrampoline_compat_version="5.2.1"  
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/UniMainzGeo/LaMEM", 
-    "cb237fc07056a49d3af927e476dbf34e2dcb1366")
+    "34ff97e62086a384be4b9a63a9b326b67f976027")
 ]
 
 # Bash recipe for building across all platforms
@@ -65,13 +65,21 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686", "windows"),
                                                                   Platform("i686","linux"; libc="musl"),
+                                                                  Platform("i686","linux"; libc="gnu"),
+                                                                  Platform("x86_64","freebsd"),
+                                                                  Platform("armv6l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="musl"),
+                                                                  Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version,  OpenMPI_compat="4.1.5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
+
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)

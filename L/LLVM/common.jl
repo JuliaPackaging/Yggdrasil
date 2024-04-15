@@ -17,6 +17,7 @@ const llvm_tags = Dict(
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
     v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
+    v"17.0.6" => "057d350547cbbd3618ac647d687c176b91601388", # julia-17.0.6-1
 )
 
 const buildscript = raw"""
@@ -224,7 +225,12 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
 # Julia expects the produced LLVM tools to be installed into tools and not bin
 # We can't simply move bin to tools since on MingW64 it will also contain the shlib.
-CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR="tools")
+else
+    CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
+    CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="tools")
+fi
 
 # Also build and install utils, since we want FileCheck, and lit
 CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="tools")
@@ -351,13 +357,14 @@ fi
 
 #This breaks things on LLVM15 and above, but probably should be off everywhere because we only build one runtime per run
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF)
-#For some reason clang doesn't install it's symlinks without this
-CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="${prefix}/tools")
 
 # Tell LLVM which compiler target to use, because it loses track for some reason
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
+
+# Set the bug report URL to the Julia issue tracker
+CMAKE_FLAGS+=(-DBUG_REPORT_URL="https://github.com/julialang/julia")
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
 ninja -j${nproc} -vv
@@ -365,11 +372,18 @@ ninja -j${nproc} -vv
 # Install!
 ninja install
 
-# Life is harsh on Windows and dynamic libraries are
-# expected to live alongside the binaries. So we have
-# to copy the *.dll from bin/ to tools/ as well...
-if [[ "${target}" == *mingw* ]]; then
-    cp ${prefix}/bin/*.dll ${prefix}/tools/
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    # We can now tell cmake to put the dlls in the right place, and the verifier doesn't find them
+    if [[ "${target}" == *mingw* ]]; then
+        cp -v ${prefix}/tools/*.dll ${libdir}/.
+    fi
+else
+    # Life is harsh on Windows and dynamic libraries are
+    # expected to live alongside the binaries. So we have
+    # to copy the *.dll from bin/ to tools/ as well...
+    if [[ "${target}" == *mingw* ]]; then
+        cp -v ${libdir}/*.dll ${prefix}/tools/.
+    fi
 fi
 
 # Work around llvm-config bug by creating versioned symlink to libLLVM
@@ -471,6 +485,25 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/bin/mlir* ${prefix}/bin/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
+const mlirscript_v16 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over `libMLIR` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib/cmake
+mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
+find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "mlir*" -print0 -o -type l -name "mlir*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "mlir*" -print0 -o -type l -name "mlir*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
@@ -666,8 +699,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             mlirscript_v13
         elseif version < v"15"
             mlirscript_v14
-        else
+        elseif version < v"16"
             mlirscript_v15
+        else
+            mlirscript_v16
         end
         products = [
             LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),

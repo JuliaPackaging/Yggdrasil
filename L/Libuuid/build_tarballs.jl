@@ -3,17 +3,18 @@
 using BinaryBuilder
 
 name = "Libuuid"
-version = v"2.36"
+version_string = "2.39.3"
+version = VersionNumber(version_string)
 
-# Collection of sources required to build FriBidi
+# Collection of sources required to build Libuuid
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version.major).$(version.minor).tar.xz",
-                  "9e4b1c67eb13b9b67feb32ae1dc0d50e08ce9e5d82e1cccd0ee771ad2fa9e0b1"),
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version).tar.xz",
+                  "7b6605e48d1a49f43cc4b4cfc59f313d0dd5402fa40b96810bd572e167dfed0f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/util-linux-*/
+cd $WORKSPACE/srcdir/util-linux-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libuuid
 make -j${nproc}
 make install
@@ -21,7 +22,11 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> !(Sys.iswindows(p) || Sys.isapple(p)), supported_platforms(; experimental=true))
+platforms = supported_platforms()
+filter!(!Sys.iswindows, platforms)
+# This package on macOS creates more problems than it solves:
+# <https://github.com/JuliaPackaging/Yggdrasil/issues/8256>.
+filter!(!Sys.isapple, platforms)
 
 # The products that we will ensure are always built
 products = [

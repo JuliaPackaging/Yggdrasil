@@ -26,15 +26,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.12.2"
-version = v"400.1200.200"
-
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+upstream_version = v"4.13.0"
+version = v"400.1300.000"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "5d73e77f0b2bbe8dd0233dfad48666aeb1fcbffd84c5dbb58c8ea2a8dd9687b5"),
+                  "6e6433b56c43ac4b2dab098bfb146dae1cb0dab62ae48a1a2144354af239c121"),
     DirectorySource("./bundled"),
 ]
 
@@ -66,6 +64,7 @@ julia_version=$(./julia_version)
 # configure GAP
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     JULIA_VERSION="$julia_version" \
+    CPPFLAGS="$CPPFLAGS -DUSE_GAP_INSIDE_JULIA=1" \
     --with-gmp=${prefix} \
     --with-readline=${prefix} \
     --with-zlib=${prefix} \
@@ -134,7 +133,7 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll", v"8.1.1"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.6")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
 ]
 
 # Build the tarballs.
