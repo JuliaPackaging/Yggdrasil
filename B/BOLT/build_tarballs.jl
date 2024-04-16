@@ -166,4 +166,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, buildscript, platforms, products, dependencies;
-               preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.12")
+               preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.6")
