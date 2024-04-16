@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "alsa"
-# It's actually v1.2.5.1
-version = v"1.2.5"
+version = v"1.2.11"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.5.1.tar.bz2",
-                  "628421d950cecaf234de3f899d520c0a6923313c964ad751ffac081df331438e"),
+    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.11.tar.bz2",
+                  "9f3f2f69b995f9ad37359072fbc69a3a88bfba081fc83e9be30e14662795bb4d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,4 +35,3 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
