@@ -1,9 +1,7 @@
 using BinaryBuilder, Pkg, LibGit2
 
-const llvm_tags = Dict(
-    v"17.0.6" => "6009708b4367171ccdbf4b5905cb6a803753fe18",
-    v"18.1.3" => "c13b7485b87909fcf739f62cfa382b55407433c0",
-)
+version = v"18.1.3"
+git_sha = "c13b7485b87909fcf739f62cfa382b55407433c0"
 
 const buildscript = raw"""
 # We want to exit the program if errors occur.
@@ -56,7 +54,7 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-ninja -j${nproc} llvm-tblgen  llvm-config
+ninja -j${nproc} llvm-tblgen llvm-config
 popd
 
 # Release build for best performance
@@ -79,6 +77,10 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=Off)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_TERMINFO=Off)
 CMAKE_FLAGS+=(-DHAVE_LIBEDIT=Off)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_BENCHMARKS=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_EXAMPLES=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_TESTS=OFF)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_DOXYGEN=OFF)
 
 # Change this to check if we are building with clang?
 if [[ "${bb_full_target}" != *sanitize* && ( "${target}" == *linux* ) ]]; then
@@ -106,8 +108,6 @@ CMAKE_TARGET=${target}
 
 if [[ "${target}" == *apple* ]]; then
     # On OSX, we need to override LLVM's looking around for our SDK
-    CMAKE_FLAGS+=(-DDARWIN_macosx_CACHED_SYSROOT:STRING=/opt/${target}/${target}/sys-root)
-    CMAKE_FLAGS+=(-DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING="${MACOSX_DEPLOYMENT_TARGET}")
     # We need to link against libc++ on OSX
     CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBCXX=ON)
 
@@ -115,11 +115,6 @@ if [[ "${target}" == *apple* ]]; then
     # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
     if [[ "${target}" == aarch64* ]]; then
         CMAKE_TARGET=arm64-${target#*-}
-    fi
-
-    if [[ "${target}" == x86_64* ]]; then
-        CMAKE_FLAGS+=(-DDARWIN_osx_BUILTIN_ARCHS="x86_64")
-        CMAKE_FLAGS+=(-DDARWIN_osx_ARCHS="x86_64")
     fi
 fi
 
@@ -134,8 +129,8 @@ CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
-# Set the bug report URL to the Julia issue tracker
-CMAKE_FLAGS+=(-DBUG_REPORT_URL="https://github.com/julialang/julia")
+# Defaults to off when crosscompiling from LLVM 18
+CMAKE_FLAGS+=(-DBOLT_ENABLE_RUNTIME=true)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
 ninja -j${nproc} -vv bolt
@@ -143,37 +138,32 @@ ninja -j${nproc} -vv bolt
 # Install!
 ninja install-llvm-bolt
 
-install_license ${WORKSPACE}/srcdir/llvm-project/llvm/LICENSE.TXT
+install_license ${WORKSPACE}/srcdir/llvm-project/bolt/LICENSE.TXT
 """
 
-function configure_build(ARGS, version; git_path="https://github.com/llvm/llvm-project.git",
-    git_ver=llvm_tags[version])
+sources = BinaryBuilder.AbstractSource[
+    GitSource("https://github.com/llvm/llvm-project.git", git_sha),
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"
+    )
+]
 
-    sources = BinaryBuilder.AbstractSource[GitSource(git_path, git_ver)]
-    if version == v"16"
-        push!(sources, DirectorySource("./bundled"))
-    end
+platforms = expand_cxxstring_abis(supported_platforms())
+filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
 
-    platforms = expand_cxxstring_abis(supported_platforms())
-    filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
+products = [
+    ExecutableProduct("llvm-bolt", :llvm_bolt),
+    ExecutableProduct("merge-fdata", :merge_fdata)
+]
 
-    products = [ExecutableProduct("llvm-bolt", :llvm_bolt, "bin")]
+name = "BOLT"
 
-    name = "BOLT"
-    config = "LLVM_MAJ_VER=$(version.major)\nLLVM_MIN_VER=$(version.minor)\nLLVM_PATCH_VER=$(version.patch)\n"
+# Dependencies that must be installed before this package can be built
+# TODO: LibXML2
+dependencies = [
+    Dependency("Zlib_jll"), # for LLD&LTO
+]
 
-    # Dependencies that must be installed before this package can be built
-    # TODO: LibXML2
-    dependencies = [
-        Dependency("Zlib_jll"), # for LLD&LTO
-    ]
-    push!(sources,
-        ArchiveSource(
-            "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-    return name, version, sources, config * buildscript, platforms, products, dependencies
-end
-
-version = v"18.1.3"
-build_tarballs(ARGS, configure_build(ARGS, version)...;
+build_tarballs(ARGS, name, version, sources, buildscript, platforms, products, dependencies;
                preferred_gcc_version=v"10", preferred_llvm_version=v"16", julia_compat="1.12")
