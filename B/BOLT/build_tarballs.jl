@@ -138,10 +138,10 @@ CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DBUG_REPORT_URL="https://github.com/julialang/julia")
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
-ninja -j${nproc} -vv
+ninja -j${nproc} -vv bolt
 
 # Install!
-ninja install
+ninja install-llvm-bolt
 
 install_license ${WORKSPACE}/srcdir/llvm-project/llvm/LICENSE.TXT
 """
