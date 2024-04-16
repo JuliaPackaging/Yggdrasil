@@ -69,7 +69,7 @@ dependencies = [
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
     # Updating to a newer HDF5 version requires rebuilding this package
-    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.12.1"),
+    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.14.3"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),
