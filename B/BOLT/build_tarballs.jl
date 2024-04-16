@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg, LibGit2
+using BinaryBuilder
 
 version = v"18.1.3"
 git_sha = "c13b7485b87909fcf739f62cfa382b55407433c0"
@@ -141,7 +141,7 @@ ninja install-llvm-bolt
 install_license ${WORKSPACE}/srcdir/llvm-project/bolt/LICENSE.TXT
 """
 
-sources = BinaryBuilder.AbstractSource[
+sources = [
     GitSource("https://github.com/llvm/llvm-project.git", git_sha),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
@@ -154,7 +154,10 @@ filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), 
 
 products = [
     ExecutableProduct("llvm-bolt", :llvm_bolt),
-    ExecutableProduct("merge-fdata", :merge_fdata)
+    ExecutableProduct("llvm-boltdiff", :llvm_boltdiff),
+    ExecutableProduct("llvm-bolt-heatmap", :llvm_bolt_heatmap),
+    ExecutableProduct("merge-fdata", :merge_fdata),
+    ExecutableProduct("perf2bolt", :perf2bolt),
 ]
 
 name = "BOLT"
