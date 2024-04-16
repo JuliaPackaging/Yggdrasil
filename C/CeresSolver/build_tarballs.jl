@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "CeresSolver"
-version = v"2.1.0"
+version = v"2.2.0"
 
 sources = [
     GitSource("https://github.com/ceres-solver/ceres-solver.git",
-              "f68321e7de8929fbcdb95dd42877531e64f72f66")
+              "125c06882960d87f25f2e0ccb217a949528b017c")
 ]
 
 # Bash recipe for building across all platforms
@@ -46,8 +46,8 @@ dependencies = [
     Dependency("METIS_jll"),
     Dependency("OpenBLAS32_jll"),
     # Hard code the version now as the latest v7.0.1 does not get recognized
-    Dependency("SuiteSparse_jll", v"5.10.1")
+    Dependency("SuiteSparse_jll", v"7.2.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.10")
