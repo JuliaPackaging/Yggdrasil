@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "qr_mumps"
-version = v"3.0.4"
+version = v"3.0.5"
 
 # Collection of sources required to complete build
 sources = [
@@ -32,7 +32,7 @@ cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON \
                            -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
                            -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
                            -DMETIS_LIBRARIES="${libdir}/libmetis.${dlext}" \
-                           -DAMD_LIBRARIES="${libdir}/amd.${dlext};${libdir}/colamd.${dlext}" \
+                           -DAMD_LIBRARIES="${libdir}/libamd.${dlext};${libdir}/libcolamd.${dlext}" \
                            -DCMAKE_BUILD_TYPE=Release
 
 make -j${nproc}
@@ -66,4 +66,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version = v"9.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version=v"9.1.0", clang_use_lld=false)
