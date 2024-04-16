@@ -177,9 +177,6 @@ PROJECTS=(llvm clang clang-tools-extra compiler-rt lld)
 if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     PROJECTS+=(mlir)
 fi
-if [[ "${LLVM_MAJ_VER}" -ge "16" && ("${target}" == x86_64* || "${target}" == i686* || "${target}" == aarch64*) && ("${target}" == *linux* || "${target}" == *-apple-darwin*) ]]; then
-    PROJECTS+=(bolt)
-fi
 LLVM_PROJECTS=$(IFS=';' ; echo "${PROJECTS[*]}")
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
@@ -672,16 +669,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
                   "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
     end
-
-    if version >= v"16"
-        products_bolt = copy(products)
-        push!(products_bolt, ExecutableProduct("llvm-bolt", :llvm_bolt, "tools"))
-        platforms_bolt = filter(p -> arch(p) ∈ ("i686", "x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
-        platforms_no_bolt = setdiff(platforms, platforms_bolt)
-        return (name, custom_version, sources, config * buildscript, platforms_bolt, products_bolt, dependencies), (name, custom_version, sources, config * buildscript, platforms_no_bolt, products, dependencies)
-    else
-        return name, custom_version, sources, config * buildscript, platforms, products, dependencies
-    end
+    return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
 function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false, augmentation=false)
