@@ -155,7 +155,7 @@ function configure_build(ARGS, version; git_path="https://github.com/llvm/llvm-p
     end
 
     platforms = expand_cxxstring_abis(supported_platforms())
-    filter!(p -> arch(p) ∈ ("i686", "x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
+    filter!(p -> arch(p) ∈ ("x86_64", "aarch64") && os(p) ∈ ("linux", "macos"), platforms)
 
     products = [ExecutableProduct("llvm-bolt", :llvm_bolt, "bin")]
 
