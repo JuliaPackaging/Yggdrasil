@@ -32,7 +32,7 @@ cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON \
                            -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
                            -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" \
                            -DMETIS_LIBRARIES="${libdir}/libmetis.${dlext}" \
-                           -DAMD_LIBRARIES="${prefix}/lib/libamd.${dlext};${prefix}/lib/libcolamd.${dlext}" \
+                           -DAMD_LIBRARIES="${libdir}/libamd.${dlext};${libdir}/libcolamd.${dlext}" \
                            -DCMAKE_BUILD_TYPE=Release
 
 make -j${nproc}
