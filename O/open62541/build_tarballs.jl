@@ -20,27 +20,7 @@ fi
 
 cd $WORKSPACE/srcdir/open62541/
 mkdir build && cd build/
-
-# Attempting to hotfix FreeBSD build (https://github.com/open62541/open62541/issues/5236#issue-1294259430)
-# Remove "if" part once https://github.com/open62541/open62541/issues/6414 is addressed.
-if [[ ${target} == x86_64-unknown-freebsd ]]; then 
-    cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DUA_MULTITHREADING=100 \
-        -DUA_ENABLE_SUBSCRIPTIONS=ON \
-        -DUA_ENABLE_METHODCALLS=ON \
-        -DUA_ENABLE_PARSING=ON \
-        -DUA_ENABLE_NODEMANAGEMENT=ON \
-        -DUA_ENABLE_ENCRYPTION=OPENSSL \
-        -DUA_ENABLE_IMMUTABLE_NODES=ON \
-        -DUA_ENABLE_HISTORIZING=ON \
-        -DBUILD_SHARED_LIBS=ON \
-        -DUA_FORCE_WERROR=OFF \
-        -D__BSD_VISIBLE=1 \
-        .. 
-else
-    cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DUA_MULTITHREADING=100 \
@@ -54,7 +34,6 @@ else
     -DBUILD_SHARED_LIBS=ON \
     -DUA_FORCE_WERROR=OFF \
     ..
-fi 
 make -j${nproc}
 make install
 install_license ../LICENSE
