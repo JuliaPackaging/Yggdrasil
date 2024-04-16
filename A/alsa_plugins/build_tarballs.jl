@@ -25,20 +25,20 @@ platforms = filter(Sys.islinux, supported_platforms(;experimental=true))
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libasound_module_pcm_a52", :libasound_module_pcm_a52),
-    LibraryProduct("libasound_module_pcm_pulse", :libasound_module_pcm_pulse),
-    LibraryProduct("libasound_module_rate_lavrate", :libasound_module_rate_lavrate),
-    LibraryProduct("libasound_module_pcm_speex", :libasound_module_pcm_speex),
-    LibraryProduct("libasound_module_conf_pulse", :libasound_module_conf_pulse),
-    LibraryProduct("libasound_module_ctl_pulse", :libasound_module_ctl_pulse),
-    LibraryProduct("libasound_module_pcm_oss", :libasound_module_pcm_oss),
-    LibraryProduct("libasound_module_rate_samplerate", :libasound_module_rate_samplerate),
-    LibraryProduct("libasound_module_ctl_arcam_av", :libasound_module_ctl_arcam_av),
-    LibraryProduct("libasound_module_pcm_usb_stream", :libasound_module_pcm_usb_stream),
-    LibraryProduct("libasound_module_pcm_vdownmix", :libasound_module_pcm_vdownmix),
-    LibraryProduct("libasound_module_pcm_upmix", :libasound_module_pcm_upmix),
-    LibraryProduct("libasound_module_rate_speexrate", :libasound_module_rate_speexrate),
-    LibraryProduct("libasound_module_ctl_oss", :libasound_module_ctl_oss),
+    LibraryProduct("libasound_module_pcm_a52", :libasound_module_pcm_a52, "alsa-lib"),
+    LibraryProduct("libasound_module_pcm_pulse", :libasound_module_pcm_pulse, "alsa-lib"),
+    LibraryProduct("libasound_module_rate_lavrate", :libasound_module_rate_lavrate, "alsa-lib"),
+    LibraryProduct("libasound_module_pcm_speex", :libasound_module_pcm_speex, "alsa-lib"),
+    LibraryProduct("libasound_module_conf_pulse", :libasound_module_conf_pulse, "alsa-lib"),
+    LibraryProduct("libasound_module_ctl_pulse", :libasound_module_ctl_pulse, "alsa-lib"),
+    LibraryProduct("libasound_module_pcm_oss", :libasound_module_pcm_oss, "alsa-lib"),
+    LibraryProduct("libasound_module_rate_samplerate", :libasound_module_rate_samplerate, "alsa-lib"),
+    LibraryProduct("libasound_module_ctl_arcam_av", :libasound_module_ctl_arcam_av, "alsa-lib"),
+    LibraryProduct("libasound_module_pcm_usb_stream", :libasound_module_pcm_usb_stream, "alsa-lib"),
+    LibraryProduct("libasound_module_pcm_vdownmix", :libasound_module_pcm_vdownmix, "alsa-lib"),
+    LibraryProduct("libasound_module_pcm_upmix", :libasound_module_pcm_upmix, "alsa-lib"),
+    LibraryProduct("libasound_module_rate_speexrate", :libasound_module_rate_speexrate, "alsa-lib"),
+    LibraryProduct("libasound_module_ctl_oss", :libasound_module_ctl_oss, "alsa-lib"),
 ]
 
 # Dependencies that must be installed before this package can be built
