@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/alsa-lib*/
-./configure --prefix=${prefix} --with-configdir=/usr/share/alsa --with-plugindir=/usr/lib/alsa-lib --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
 """
