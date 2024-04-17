@@ -16,8 +16,8 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DBUILD_SHARED_LIBS=ON
               -DBUILD_EXAMPLES=OFF
               -DBUILD_TESTING=OFF
-              -DBLAS_LIBRARIES=${libdir}/libopenblas.${dlext}
-              -DLAPACK_LIBRARIES=${libdir}/libopenblas.${dlext}
+              -DBLAS_LIBRARIES=${libdir}/libblastrampoline.${dlext}
+              -DLAPACK_LIBRARIES=${libdir}/libblastrampoline.${dlext}
               -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
               )
 
@@ -37,15 +37,10 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # CeresSolver is removing OpenMP and dependencies for OpenMP are dropped
-    # https://github.com/ceres-solver/ceres-solver/issues/886
-    # Eigen_jll v0.3.4 throws errors on powerpc64le with older GCC versions
     BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
-    # Metis replaces SuiteSparse on Windows
     Dependency("METIS_jll"),
-    Dependency("OpenBLAS32_jll"),
-    # Hard code the version now as the latest v7.0.1 does not get recognized
+    Dependency("libblastrampoline_jll"),
     Dependency("SuiteSparse_jll", v"7.2.1")
 ]
 
