@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "openfhe_julia"
-version = v"0.2.9"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sloede/openfhe-julia.git",
-              "b13ae59187963c563f7ea61e51a32655d0f24601"),
+              "04867e12f5e10004267083a263846db50c9bf18b"),
 ]
 
 # Bash recipe for building across all platforms
