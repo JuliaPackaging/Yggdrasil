@@ -40,7 +40,7 @@ dependencies = [
     BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
-    Dependency("libblastrampoline_jll"; compat="5.4.0"),
+    Dependency("libblastrampoline_jll"; compat="5.8.0"),
     Dependency("SuiteSparse_jll"; compat="7.2.1"),
 ]
 
