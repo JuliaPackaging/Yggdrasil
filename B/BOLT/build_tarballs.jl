@@ -1,7 +1,7 @@
 using BinaryBuilder
 
-version = v"18.1.3"
-git_sha = "c13b7485b87909fcf739f62cfa382b55407433c0"
+version = v"18.1.4"
+git_sha = "e6c3289804a67ea0bb6a86fadbe454dd93b8d855"
 
 const buildscript = raw"""
 # We want to exit the program if errors occur.
