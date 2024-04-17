@@ -40,8 +40,8 @@ dependencies = [
     BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
-    Dependency("libblastrampoline_jll"),
-    Dependency("SuiteSparse_jll", v"7.2.1")
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
+    Dependency("SuiteSparse_jll"; compat="7.2.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
