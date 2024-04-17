@@ -1,14 +1,9 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-name = "Faiss"
 version = v"1.8.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/facebookresearch/faiss.git", "22f2292be4aa98559797e1dd6e45f12386b06099"),
-    DirectorySource("./bundled"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +15,16 @@ cd faiss
 
 atomic_patch -p1 ../patches/faiss-mingw32.patch
 
+cmake_extra_args=()
+
+if [[ $bb_full_target == *cuda* ]]; then
+    cmake_extra_args+=(
+        -DFAISS_ENABLE_GPU=ON
+        -DCUDAToolkit_ROOT=$prefix/cuda
+        -DCMAKE_CUDA_ARCHITECTURES="70;75;80;86;89;90"
+    )
+fi
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -28,7 +33,8 @@ cmake -B build \
     -DFAISS_ENABLE_PYTHON=OFF \
     -DBUILD_TESTING=OFF \
     -DBUILD_SHARED_LIBS=ON \
-    -DFAISS_ENABLE_C_API=ON
+    -DFAISS_ENABLE_C_API=ON \
+    ${cmake_extra_args[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
 
@@ -70,6 +76,3 @@ dependencies = [
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     HostBuildDependency(PackageSpec("CMake_jll", v"3.23.3")),
 ]
-
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
