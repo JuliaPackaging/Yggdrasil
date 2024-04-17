@@ -13,11 +13,15 @@ version = v"0.1.0"
 # Collection of sources required to build DACE
 sources = [
     GitSource("https://github.com/a-ev/dace.git", "9fe534f9b27c147a171bce1ad7dc8b4706a9457e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/dace
+
+git apply ../patches/no-safe-strings.patch
+
 cmake . -B build \
     -DJulia_PREFIX=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
