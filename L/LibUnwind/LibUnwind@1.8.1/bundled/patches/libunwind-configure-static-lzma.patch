@@ -5,7 +5,7 @@
  else
    ac_check_lib_save_LIBS=$LIBS
 -LIBS="-llzma  $LIBS"
-+LIBS="-L/workspace/destdir/lib -l:liblzma.a $LIBS"
++LIBS="-L${libdir} -l:liblzma.a $LIBS"
  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
  /* end confdefs.h.  */
  
@@ -14,7 +14,7 @@
  $as_echo "$ac_cv_lib_lzma_lzma_mf_is_supported" >&6; }
  if test "x$ac_cv_lib_lzma_lzma_mf_is_supported" = xyes; then :
 -  LIBLZMA=-llzma
-+  LIBLZMA="-L/workspace/destdir/lib -l:liblzma.a"
++  LIBLZMA="-L${libdir} -l:liblzma.a"
  
  $as_echo "#define HAVE_LZMA 1" >>confdefs.h
  

@@ -1,4 +1,5 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "LibUnwind"
 version = v"1.8.1"
@@ -67,15 +68,17 @@ products = [
     LibraryProduct("libunwind", :libunwind),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("XZ_jll"),
     Dependency("Zlib_jll"),
-    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 # Build the tarballs. Note that libunwind started using `stdatomic.h`, which is only
 # available with GCC version 4.9 or later, so we need to set a higher preferred version
 # than the default.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"6")
+               julia_compat="1.10", preferred_gcc_version=v"6", preferred_llvm_version=llvm_version)
