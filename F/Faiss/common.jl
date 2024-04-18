@@ -18,6 +18,7 @@ atomic_patch -p1 ../patches/faiss-mingw32.patch
 cmake_extra_args=()
 
 if [[ $bb_full_target == *cuda* ]]; then
+    export CUDACXX=$prefix/cuda/bin/nvcc
     cmake_extra_args+=(
         -DFAISS_ENABLE_GPU=ON
         -DCUDAToolkit_ROOT=$prefix/cuda
