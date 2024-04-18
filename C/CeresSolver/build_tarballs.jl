@@ -16,10 +16,11 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DBUILD_SHARED_LIBS=ON
               -DBUILD_EXAMPLES=OFF
               -DBUILD_TESTING=OFF
-              -DBLAS_LIBRARIES=${libdir}/libblastrampoline.${dlext}
-              -DLAPACK_LIBRARIES=${libdir}/libblastrampoline.${dlext}
+              -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="${libdir}/cmake/blastrampoline/yggdrasilenv.cmake"
               -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
               )
+
+apk del cmake
 
 cd $WORKSPACE/srcdir/ceres-solver/
 mkdir build && cd build
@@ -42,6 +43,7 @@ dependencies = [
     Dependency("METIS_jll"),
     Dependency("libblastrampoline_jll"; compat="5.8.0"),
     Dependency("SuiteSparse_jll"; compat="7.2.1"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
