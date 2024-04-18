@@ -16,7 +16,7 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DBUILD_SHARED_LIBS=ON
               -DBUILD_EXAMPLES=OFF
               -DBUILD_TESTING=OFF
-              -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="${libdir}/cmake/blastrampoline/yggdrasilenv.cmake"
+              -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=${libdir}/cmake/blastrampoline/yggdrasilenv.cmake
               -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
               )
 
