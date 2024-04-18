@@ -1,27 +1,25 @@
 diff --git a/arch/posix/ua_architecture.h b/arch/posix/ua_architecture.h
-index c42768548..70a06eddf 100644
+index c42768548..8e6159818 100644
 --- a/arch/posix/ua_architecture.h
 +++ b/arch/posix/ua_architecture.h
-@@ -26,6 +26,8 @@
- #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
- # include <sys/param.h>
- # if defined(BSD)
-+#  include <netinet/in.h
-+#  include <sys/types.h>
- #  include <sys/socket.h>
- # endif
- #endif
+@@ -14,6 +14,7 @@
+
+ #include <errno.h>
+ #include <arpa/inet.h>
++#include <netinet/in.h
+ #include <netinet/tcp.h>
+ #include <netdb.h>
+ #include <sys/ioctl.h>
 diff --git a/include/open62541/config.h.in b/include/open62541/config.h.in
-index 5b20497ed..d9c519b7d 100644
+index 5b20497ed..7758f2ab3 100644
 --- a/include/open62541/config.h.in
 +++ b/include/open62541/config.h.in
-@@ -126,9 +126,6 @@
-  * These feature flags have to be set before including the first POSIX
+@@ -127,7 +127,7 @@
   * header. */
  #ifdef UA_ARCHITECTURE_POSIX
--# if !defined(_XOPEN_SOURCE)
+ # if !defined(_XOPEN_SOURCE)
 -#  define _XOPEN_SOURCE 600
--# endif
++// #  define _XOPEN_SOURCE 600
+ # endif
  # ifndef _DEFAULT_SOURCE
  #  define _DEFAULT_SOURCE
- # endif
