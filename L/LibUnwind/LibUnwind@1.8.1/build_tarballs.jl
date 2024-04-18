@@ -33,6 +33,9 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 export CFLAGS="-DPI -fPIC"
+if [[ ${target} == aarch64-linux-* ]]; then
+    export CFLAGS="${CFLAGS} -fomit-frame-pointer"
+fi
 ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
