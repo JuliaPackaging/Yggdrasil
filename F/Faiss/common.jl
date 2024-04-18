@@ -21,7 +21,7 @@ if [[ $bb_full_target == *cuda* ]]; then
     cmake_extra_args+=(
         -DFAISS_ENABLE_GPU=ON
         -DCUDAToolkit_ROOT=$prefix/cuda
-        -DCMAKE_CUDA_ARCHITECTURES="70;75;80;86;89;90"
+        -DCMAKE_CUDA_ARCHITECTURES="60"
     )
 fi
 
