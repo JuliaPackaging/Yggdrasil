@@ -57,7 +57,7 @@ install_license ../COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -70,7 +70,7 @@ products = [
 dependencies = [
     Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.1"),
     Dependency("FriBidi_jll"),
     Dependency("Glib_jll"; compat="2.68.1"),
     Dependency("HarfBuzz_jll"; compat="2.8.1"),
