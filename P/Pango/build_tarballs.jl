@@ -72,7 +72,7 @@ dependencies = [
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.13.1"),
     Dependency("FriBidi_jll"),
-    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("Glib_jll"; compat="2.74.0"),
     Dependency("HarfBuzz_jll"; compat="2.8.1"),
     BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)),
 ]
