@@ -22,7 +22,7 @@ filter!(p -> p["cuda"] in cuda_versions, platforms)
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    cuda_deps = CUDA.required_dependencies(platform)
+    cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; cuda_deps];
                    lazy_artifacts=true,
