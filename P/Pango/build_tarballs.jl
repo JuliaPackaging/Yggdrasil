@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.52.1"
+version = v"1.52.2"
 
-# Collection of sources required to build Pango
+# Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "58728a0a2d86f60761208df9493033d18ecb2497abac80ee1a274ad0c6e55f0f"),
+                  "d0076afe01082814b853deec99f9349ece5f2ce83908b8e58ff736b41f78a96b"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
 ]
@@ -32,7 +32,7 @@ if [[ "${target}" == *-mingw* ]]; then
     make install
 fi
 
-cd $WORKSPACE/srcdir/pango-*/
+cd $WORKSPACE/srcdir/pango*/
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
@@ -68,7 +68,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Cairo_jll"; compat="1.16.1"),
+    Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("FriBidi_jll"),
