@@ -6,7 +6,7 @@ index c42768548..8e6159818 100644
 
  #include <errno.h>
  #include <arpa/inet.h>
-+#include <netinet/in.h
++#include <netinet/in.h>
  #include <netinet/tcp.h>
  #include <netdb.h>
  #include <sys/ioctl.h>
