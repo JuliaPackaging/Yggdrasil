@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.12.2"
+version = v"4.13.0"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "13e09d9ca8102e5c40171d6ee150c668742b98c3a6ca57f837f7b64e1e2af48f"),
+                  "2a286195e27fe11ee48ce3c98a07c6a4b9961f1e03878e0e3681cf2cfc08db11"),
 ]
 
 # Bash recipe for building across all platforms
@@ -69,7 +69,7 @@ dependencies = [
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
     # Updating to a newer HDF5 version requires rebuilding this package
-    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.12.1"),
+    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.14.3"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),
