@@ -10,14 +10,21 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_NAME=libblastrampoline-5
+else
+    BLAS_NAME=libblastrampoline
+fi
+
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
               -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
               -DCMAKE_BUILD_TYPE=Release
               -DBUILD_SHARED_LIBS=ON
               -DBUILD_EXAMPLES=OFF
               -DBUILD_TESTING=OFF
-              -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=${libdir}/cmake/blastrampoline/yggdrasilenv.cmake
               -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
+              -DBLAS_LIBRARIES=${libdir}/${BLAS_NAME}.${dlext} 
+              -DLAPACK_LIBRARIES=${libdir}/${BLAS_NAME}.${dlext} 
               )
 
 apk del cmake
