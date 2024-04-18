@@ -24,7 +24,7 @@ apk del cmake
 
 cd $WORKSPACE/srcdir/ceres-solver/
 mkdir build && cd build
-cmake .. ${CMAKE_FLAGS[@]}
+cmake -S .. -B . "${CMAKE_FLAGS[@]}"
 make -j${nproc}
 make install
 """
