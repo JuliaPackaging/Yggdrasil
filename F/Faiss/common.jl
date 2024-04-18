@@ -74,5 +74,5 @@ dependencies = [
     Dependency("MKL_jll"; platforms = mkl_platforms),
     BuildDependency("MKL_Headers_jll"; platforms = mkl_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
-    HostBuildDependency(PackageSpec("CMake_jll", v"3.23.3")),
+    HostBuildDependency(PackageSpec("CMake_jll", v"3.28.1")),
 ]
