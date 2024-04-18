@@ -20,7 +20,10 @@ if [[ ${target} == x86_64-*-mingw* ]]; then
 fi 
 
 cd $WORKSPACE/srcdir/open62541/
-atomic_patch -p1 ../0001-freebsd.patch
+if [[ "${target}" == *-freebsd* ]]; then
+    # https://github.com/open62541/open62541/issues/6414
+    atomic_patch -p1 ../0001-freebsd.patch
+fi
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
