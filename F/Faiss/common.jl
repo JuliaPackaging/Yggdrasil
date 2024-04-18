@@ -23,6 +23,7 @@ if [[ $bb_full_target == *cuda* ]]; then
         -DFAISS_ENABLE_GPU=ON
         -DCUDAToolkit_ROOT=$prefix/cuda
         -DCMAKE_CUDA_ARCHITECTURES="60"
+        -DCUDA_CUDART_LIBRARY=$prefix/cuda/lib64/libcudart.$dlext
     )
 fi
 
