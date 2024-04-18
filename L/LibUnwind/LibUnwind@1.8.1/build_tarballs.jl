@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "LibUnwind"
-version = v"1.8.0"
+version = v"1.8.1"
 
 # Collection of sources required to build libunwind
 sources = [
     ArchiveSource("https://github.com/libunwind/libunwind/releases/download/v$(version)/libunwind-$(version).tar.gz",
-                  "b6b3df40a0970c8f2865fb39aa2af7b5d6f12ad6c5774e266ccca4d6b8b72268"),
+                  "ddf0e32dd5fafe5283198d37e4bf9decf7ba1770b6e7e006c33e6df79e6a6157"),
     DirectorySource("./bundled"),
 ]
 
@@ -75,4 +75,4 @@ dependencies = [
 # available with GCC version 4.9 or later, so we need to set a higher preferred version
 # than the default.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"12")
+               julia_compat="1.10", preferred_gcc_version=v"6")
