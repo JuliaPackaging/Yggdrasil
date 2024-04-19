@@ -49,7 +49,7 @@ dependencies = [
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
     Dependency("libblastrampoline_jll"; compat="5.8.0"),
-    Dependency("SuiteSparse_jll"; compat="7.2.1"),
+    Dependency("SuiteSparse_jll"; compat="~7.2.1"),
     HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
