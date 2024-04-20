@@ -34,9 +34,6 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 export CFLAGS="-DPI -fPIC"
-if [[ ${target} == aarch64-linux-* ]]; then
-    export CFLAGS="${CFLAGS} -fomit-frame-pointer"
-fi
 ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -74,11 +71,15 @@ llvm_version = v"13.0.1"
 dependencies = [
     BuildDependency("XZ_jll"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
+                                uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
+                                version=llvm_version);
+                    platforms=filter(p -> sanitize(p) == "memory", platforms)),
 ]
 
 # Build the tarballs. Note that libunwind started using `stdatomic.h`, which is only
 # available with GCC version 4.9 or later, so we need to set a higher preferred version
 # than the default.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"6", preferred_llvm_version=llvm_version)
+               julia_compat="1.10", preferred_gcc_version=v"12",
+               preferred_llvm_version=llvm_version)
