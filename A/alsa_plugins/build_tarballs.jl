@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> Sys.islinux(p) & (arch(p) != "armv6l"), supported_platforms(;experimental=true))
+platforms = filter(p -> Sys.islinux(p) & (arch(p) != "armv6l"), supported_platforms())
 
 # The products that we will ensure are always built
 products = [
