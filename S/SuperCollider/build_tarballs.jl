@@ -39,6 +39,7 @@ products = [
 
 dependencies = [
     Dependency("libportaudio_jll", v"19.7.0"),
+    Dependency("libsndfile_jll", v"1.1.0"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
