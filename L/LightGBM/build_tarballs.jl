@@ -33,7 +33,7 @@ cmake \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
   -DCMAKE_BUILD_TYPE=Release \
   $cmake_extra_args
-make -j${nproc} "${FLAGS[@]}"
+make -j1 "${FLAGS[@]}"
 make install
 install_license LICENSE
 """
