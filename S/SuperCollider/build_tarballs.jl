@@ -9,6 +9,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/supercollider
+git submodule update --init --recursive
 
 cmake -G Ninja \
     -S . \
