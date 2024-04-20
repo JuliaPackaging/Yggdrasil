@@ -40,4 +40,4 @@ dependencies = [
     Dependency("libportaudio_jll", v"19.7.0"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
