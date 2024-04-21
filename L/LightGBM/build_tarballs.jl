@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "LightGBM"
-version = v"3.3.5"
+version = v"4.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/microsoft/LightGBM.git", "ca035b2ee0c2be85832435917b1e0c8301d2e0e0"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/microsoft/LightGBM.git", "d73c6b530b39a18a3cacaafc4e42550be853c036"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,10 +24,6 @@ fi
 FLAGS=()
 
 if [[ "${target}" == *-mingw* ]]; then
-  # Parches windows
-  for p in $WORKSPACE/srcdir/patches/windows/*.patch; do
-    atomic_patch -p1 "${p}"
-  done
   cmake_extra_args="-DWIN32=1 -DMINGW=1"
   FLAGS+=(LDFLAGS="-no-undefined")
 fi
@@ -50,7 +45,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("lib_lightgbm", :lib_lightgbm),
-    ExecutableProduct("lightgbm", :lightgbm)
+    ExecutableProduct("lightgbm", :lightgbm),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -62,4 +57,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8.1.0")
