@@ -27,7 +27,7 @@ if [[ ${target} == *i686-w64-mingw* ]]; then
     mv ${target}/bin32/* "${libdir}/."
 fi
 if [[ ${target} == *x86_64-w64-mingw* ]]; then
-    mv ${target}/bin/* "${libdir}/."
+    mv ${target}/Library/bin/* "${libdir}/."
 
     # These import libraries go inside the actual lib folder, not the bin folder with the DLLs
     mkdir -p $WORKSPACE/destdir/lib
