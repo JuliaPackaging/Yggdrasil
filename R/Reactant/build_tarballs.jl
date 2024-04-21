@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
 sources = [
-   GitSource(repo, "e132afd886a6d8333de42e99f5c0806c40c66482"),
+   GitSource(repo, "5c431deb326f54501e542da197926ab60947380e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,9 +19,9 @@ cd Reactant.jl/deps/ReactantExtra
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    rm -rf /opt/${target}/${target}/sys-root/System | echo "failed to rm"
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/." | echo "failed to cp"
+    cp -ra System "/opt/${target}/${target}/sys-root/." | echo "failed to cp2"
     popd
 fi
 
@@ -78,14 +78,18 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_2=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_aarch64=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_ppc64=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_s390x=false)
+    BAZEL_BUILD_FLAGS+=(--apple_platform_type=macos)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
+    BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=10.14)
     export MACOSX_DEPLOYMENT_TARGET=10.14
     BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=10.14)
     BAZEL_BUILD_FLAGS+=(--host_action_env=MACOSX_DEPLOYMENT_TARGET=10.14)
     BAZEL_BUILD_FLAGS+=(--repo_env=MACOSX_DEPLOYMENT_TARGET=10.14)
     BAZEL_BUILD_FLAGS+=(--test_env=MACOSX_DEPLOYMENT_TARGET=10.14)
-    BAZEL_BUILD_FLAGS+=(--noincompatible_remove_legacy_whole_archive)
+    BAZEL_BUILD_FLAGS+=(--incompatible_remove_legacy_whole_archive)
     BAZEL_BUILD_FLAGS+=(-s)
     env
 fi
@@ -95,7 +99,10 @@ if [[ "${bb_full_target}" == *freebsd* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_2=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_aarch64=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_ppc64=false)
+    BAZEL_BUILD_FLAGS+=(--define=gcc_linux_s390x=false)
     BAZEL_BUILD_FLAGS+=(--define=freebsd=true)
+    BAZEL_BUILD_FLAGS+=(--cpu=freebsd)
 fi
 
 if [[ "${bb_full_target}" == *i686* ]]; then
@@ -104,7 +111,7 @@ fi
 
 # julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
-bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} ...
+bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} ...
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
@@ -165,7 +172,8 @@ platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 # 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(Sys.isapple(p)), platforms)
+ platforms = filter(p -> (Sys.isapple(p)), platforms)
+# platforms = filter(p -> !(Sys.isapple(p)), platforms)
 
 
 for platform in platforms
