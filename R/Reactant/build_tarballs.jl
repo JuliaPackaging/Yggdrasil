@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
 sources = [
-   GitSource(repo, "5c431deb326f54501e542da197926ab60947380e"),
+   GitSource(repo, "b30b50410dbbd6c2fa50fbcb221507535ea43b17"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,9 +19,9 @@ cd Reactant.jl/deps/ReactantExtra
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System | echo "failed to rm"
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/." | echo "failed to cp"
-    cp -ra System "/opt/${target}/${target}/sys-root/." | echo "failed to cp2"
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/." 
     popd
 fi
 
@@ -111,7 +111,7 @@ fi
 
 # julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
-bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} ...
+bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} //...
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
