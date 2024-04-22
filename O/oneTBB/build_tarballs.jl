@@ -24,17 +24,21 @@ if [[ ${target} == *mingw* ]]; then
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
-mkdir build && cd build/
+if [[ ${target} == i686-linux-musl* ]]; then
+    # Disable stack smashing protection. Our musl version doesn't
+    # provide the symbol `__stack_chk_fail_local` in the way GCC expects.
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/i686-musl.patch"
+fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DTBB_STRICT=OFF \
     -DTBB_TEST=OFF \
-    -DTBB_EXAMPLES=OFF \
-    ..
-make -j${nproc}
-make install
+    -DTBB_EXAMPLES=OFF
+cmake --build build
+cmake --install build
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -51,6 +55,6 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC 9, 10, 11 encounter an ICE on Windows builds
+# GCC <13 encounter an ICE on Windows
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"12")
+               julia_compat="1.6", preferred_gcc_version=v"13")
