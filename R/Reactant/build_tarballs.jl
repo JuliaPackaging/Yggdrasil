@@ -71,6 +71,10 @@ BAZEL_BUILD_FLAGS+=(--define=grpc_no_ares=true)
 
 BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
+    
+BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
+BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
+BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
 if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
@@ -81,6 +85,15 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_ppc64=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_s390x=false)
     BAZEL_BUILD_FLAGS+=(--apple_platform_type=macos)
+    BAZEL_BUILD_FLAGS+=(--define=no_nccl_support=true)
+    if [[ "${bb_full_target}" == *86* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@xla//tools/toolchains/cross_compile/config:darwin_x86_64)
+        BAZEL_BUILD_FLAGS+=(--cpu=darwin)
+    else
+        BAZEL_BUILD_FLAGS+=(--platforms=@xla//tools/toolchains/cross_compile/config:darwin_arm64)
+        BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
+    fi
+    BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=10.14)
