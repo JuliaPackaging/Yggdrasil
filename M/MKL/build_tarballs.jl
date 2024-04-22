@@ -1,17 +1,17 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2024.0.0"
+version = v"2024.1.0"
 
 sources = [
-    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/win-32/mkl-2024.0.0-intel_49657.tar.bz2",
-                  "c9418f0c982f6d914f147bf1262a6d4dc631a3a2de61bae92ffc4e8d9e9d4b14"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/win-64/mkl-2024.0.0-intel_49657.tar.bz2",
-                  "5e69fd6314f5ed95da076bdf1a4701aa234dc842d5dfc845d5b2e05e12cd7fcc"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/linux-32/mkl-2024.0.0-intel_49656.tar.bz2",
-                  "0445142acaec7f2371682ddce8016049bff8d2ec015a2431b650f3dc03d14720"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/linux-64/mkl-2024.0.0-intel_49656.tar.bz2",
-                  "e02ad8cf2b0d1c18c4c0a6a06cb23ec6dc076678ab1e5bbc55876aa56f390458"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2024.1.0/download/win-32/mkl-2024.1.0-intel_692.tar.bz2",
+                  "7d4cc1172df2caf2465225f571d24e2befe55f8f41d0058e4f12a48985d7cf77"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2024.1.0/download/win-64/mkl-2024.1.0-intel_692.tar.bz2",
+                  "f301d74eb748064a88ba77a26b5e250066601fdf78f77219f39facf04093af5e"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2024.1.0/download/linux-32/mkl-2024.1.0-intel_691.tar.bz2",
+                  "44b4bc4a730d3b73e798995a9ef2b2227b89d33b5e099412e322a0f570fd6337"; unpack_target="i686-linux-gnu"),
+    ArchiveSource("https://anaconda.org/intel/mkl/2024.1.0/download/linux-64/mkl-2024.1.0-intel_691.tar.bz2",
+                  "419f0522a7ffa1133deddaa8eec5d8f9a383993b118cfaa2e897c439200549ef"; unpack_target="x86_64-linux-gnu"),
 ]
 
 # Bash recipe for building across all platforms
