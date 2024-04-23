@@ -143,13 +143,6 @@ if [[ "${target}" == *-apple-* ]]; then
     EXTRA_FLAGS+=(--enable-two-level-namespace)
 fi
 
-if [[ "${target}" == aarch64-apple-* ]]; then
-    EXTRA_FLAGS+=(
-        FFLAGS=-fallow-argument-mismatch
-        FCFLAGS=-fallow-argument-mismatch
-    )
-fi
-
 # Do not install doc and man files which contain files which clashing names on
 # case-insensitive file systems:
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
