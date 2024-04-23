@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "rsync"
-version = v"3.2.7"
+version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.samba.org/pub/rsync/src/rsync-$(version).tar.gz",
-                  "4e7d9d3f6ed10878c58c5fb724a67dacf4b6aac7340b13e488fb2dc41346f2bb")
+                  "7399e9a6708c32d678a72a63219e96f23be0be2336e50fd1348498d07041df90")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,9 +35,9 @@ make -j${nproc} install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> libc(p) != "musl", platforms)  # missing dependencies
-filter!(!Sys.isfreebsd, platforms)          # missing dependencies
-filter!(!Sys.iswindows, platforms)          # compilation failure
+#TODO filter!(p -> libc(p) != "musl", platforms)  # missing dependencies
+#TODO filter!(!Sys.isfreebsd, platforms)          # missing dependencies
+#TODO filter!(!Sys.iswindows, platforms)          # compilation failure
 
 # The products that we will ensure are always built
 products = [
@@ -51,7 +51,7 @@ dependencies = [
     Dependency(PackageSpec(name="Lz4_jll", uuid="5ced341a-0733-55b8-9ab6-a4889d929147")),
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4")),
     Dependency(PackageSpec(name="xxHash_jll", uuid="5fdcd639-92d1-5a06-bf6b-28f2061df1a9")),
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10"),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.13"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
