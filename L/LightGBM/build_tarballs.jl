@@ -7,7 +7,7 @@ version = v"3.3.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/characat0/LightGBM", "ca035b2ee0c2be85832435917b1e0c8301d2e0e0"),
+    GitSource("https://github.com/microsoft/LightGBM", "ca035b2ee0c2be85832435917b1e0c8301d2e0e0"),
     DirectorySource("./bundled"),
 ]
 
