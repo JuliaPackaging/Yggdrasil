@@ -40,19 +40,17 @@ else
 fi
 
 cd $WORKSPACE/srcdir/MPItrampoline*
-mkdir build
-cd build
-cmake \
+cmake -B build \
+    -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
-    -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
-    ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+    -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec"
+cmake --build build --parallel ${nproc}
+cmake --install build
 
 # Post-process the compiler wrappers. They remember the original
 # compiler used to build MPItrampoline, but this compiler is too
@@ -68,17 +66,15 @@ cp ${bindir}/mpifc ${bindir}/mpifort
 ################################################################################
 
 cd ${WORKSPACE}/srcdir/MPIconstants*
-mkdir build
-cd build
-cmake \
+cmake -B build \
+    -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     "${INSTALL_RPATH[@]}" \
-    -DBUILD_SHARED_LIBS=ON \
-    ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+    -DBUILD_SHARED_LIBS=ON
+cmake --build build --parallel ${nproc}
+cmake --install build
 
 ################################################################################
 # Install MPICH
@@ -166,7 +162,6 @@ fi
     --enable-shared=no \
     --enable-static=yes \
     --enable-threads=multiple \
-    --enable-opencl=no \
     --with-device=ch3 \
     --prefix=${prefix}/lib/mpich \
     "${EXTRA_FLAGS[@]}"
@@ -191,42 +186,30 @@ fi
 ################################################################################
 
 cd $WORKSPACE/srcdir/MPIwrapper*
-mkdir build
-cd build
-# Yes, this is tedious. No, without being this explicit, cmake will
-# not properly auto-detect the MPI libraries on Darwin.
-if [[ "${target}" == *-apple-* ]]; then
-    cmake \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        "${INSTALL_RPATH[@]}" \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=${CC} \
-        -DMPI_CXX_COMPILER=${CXX} \
-        -DMPI_Fortran_COMPILER=${FC} \
-        -DMPI_C_LIB_NAMES='mpi;pmpi' \
-        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
-        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.a \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.a \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.a \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.a \
-        -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
-        ..
-else
-    cmake \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-        -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
-        -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        "${INSTALL_RPATH[@]}" \
-        ..
-fi
 
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+EXTRA_FLAGS=()
+if [[ "${target}" == *-apple-* ]]; then
+    EXTRA_FLAGS+=(
+        -DMPI_C_LINK_FLAGS='-framework Foundation -framework IOKit'
+        -DMPI_CXX_LINK_FLAGS='-framework Foundation -framework IOKit'
+        -DMPI_Fortran_LINK_FLAGS='-framework Foundation -framework IOKit'
+    )
+fi
+cmake -B build \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
+    -DMPI_HOME=${prefix}/lib/mpich \
+    -DMPI_C_LINK_FLAGS='-framework Foundation -framework IOKit' \
+    -DMPI_CXX_LINK_FLAGS='-framework Foundation -framework IOKit' \
+    -DMPI_Fortran_LINK_FLAGS='-framework Foundation -framework IOKit' \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    "${INSTALL_RPATH[@]}" \
+    "${EXTRA_FLAGS[@]}"
+
+cmake --build build --parallel ${nproc}
+cmake --install build
 
 ################################################################################
 # Install licenses
@@ -243,7 +226,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
 # not support musl or BSD.
