@@ -7,6 +7,7 @@ version = v"1.11.0"
 
 # Collection of sources required to build LibSSH2
 sources = [
+    DirectorySource("./bundled"),
     ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
                   "3736161e41e2693324deb38c26cfdc3efe6209d634ba4258db1cecff6a5ad461"),
 ]
@@ -14,6 +15,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libssh2*/
+
+# https://github.com/libssh2/libssh2/pull/1291
+atomic_patch -p1 ../patches/0001-src-add-strict-KEX-to-fix-CVE-2023-48795-Terrapin-At.patch
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
