@@ -40,9 +40,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-#TODO filter!(p -> libc(p) != "musl", platforms)  # missing dependencies
-#TODO filter!(!Sys.isfreebsd, platforms)          # missing dependencies
-#TODO filter!(!Sys.iswindows, platforms)          # compilation failure
+# We don't know how to link against OpenSSL (this should be fixable)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
