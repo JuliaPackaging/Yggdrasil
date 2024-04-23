@@ -200,9 +200,6 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
     -DMPI_HOME=${prefix}/lib/mpich \
-    -DMPI_C_LINK_FLAGS='-framework Foundation -framework IOKit' \
-    -DMPI_CXX_LINK_FLAGS='-framework Foundation -framework IOKit' \
-    -DMPI_Fortran_LINK_FLAGS='-framework Foundation -framework IOKit' \
     -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     "${INSTALL_RPATH[@]}" \
