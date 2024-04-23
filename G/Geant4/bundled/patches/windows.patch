@@ -25,14 +25,16 @@ index 8c80180f71..7c5a6e0158 100644
  #endif
  
 diff --git a/source/global/management/src/G4Threading.cc b/source/global/management/src/G4Threading.cc
-index 3c6bd77b14..fe09e672c7 100644
+index 3c6bd77b14..d793a7abff 100644
 --- a/source/global/management/src/G4Threading.cc
 +++ b/source/global/management/src/G4Threading.cc
-@@ -35,7 +35,7 @@
+@@ -34,8 +34,8 @@
+ #include "G4AutoLock.hh"
  #include "globals.hh"
  
- #if defined(WIN32) || defined(__MINGW32__)
+-#if defined(WIN32) || defined(__MINGW32__)
 -#  include <Windows.h>
++#if defined(_WIN32)
 +#  include <windows.h>
  #else
  #  include <sys/syscall.h>
@@ -64,18 +66,26 @@ index e11303d2f4..3e4fa17887 100644
  #endif
  
 diff --git a/source/processes/hadronic/models/lend/include/nf_specialFunctions.h b/source/processes/hadronic/models/lend/include/nf_specialFunctions.h
-index 4321f47a59..fe65149e68 100644
+index 4321f47a59..4868a156da 100644
 --- a/source/processes/hadronic/models/lend/include/nf_specialFunctions.h
 +++ b/source/processes/hadronic/models/lend/include/nf_specialFunctions.h
-@@ -11,7 +11,7 @@
+@@ -6,15 +6,12 @@
+ #ifndef specialFunctions_h_included
+ #define specialFunctions_h_included
+ 
++#define _USE_MATH_DEFINES
+ #include <math.h>
+ #include <float.h>
  
  #include "nf_utilities.h"
  
 -#ifdef WIN32
-+#ifdef _WIN32
- #define M_PI 3.141592653589793238463
- #endif
- 
+-#define M_PI 3.141592653589793238463
+-#endif
+-
+ #if defined __cplusplus
+     extern "C" {
+     namespace GIDI {
 diff --git a/source/processes/hadronic/models/lend/src/MCGIDI_energy.cc b/source/processes/hadronic/models/lend/src/MCGIDI_energy.cc
 index 65644c9727..d94d42eb78 100644
 --- a/source/processes/hadronic/models/lend/src/MCGIDI_energy.cc
@@ -102,7 +112,7 @@ index d22caeb84d..86a3fbccef 100644
  #include <cmath>
  
 diff --git a/source/processes/hadronic/models/lend/src/xDataTOM_importXML.cc b/source/processes/hadronic/models/lend/src/xDataTOM_importXML.cc
-index afa8a06987..e6e8edfe26 100644
+index afa8a06987..07245f1a2c 100644
 --- a/source/processes/hadronic/models/lend/src/xDataTOM_importXML.cc
 +++ b/source/processes/hadronic/models/lend/src/xDataTOM_importXML.cc
 @@ -11,8 +11,8 @@
@@ -111,7 +121,7 @@ index afa8a06987..e6e8edfe26 100644
  
 -#if defined(WIN32) || defined(__MINGW32__)
 -#include <BaseTsd.h>
-+#if defined(_WIN32) || defined(__MINGW32__)
++#if defined(_WIN32)
 +#include <basetsd.h>
  #include <io.h>
  #include <windows.h>
