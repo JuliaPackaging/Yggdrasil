@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
 sources = [
-   GitSource(repo, "b30b50410dbbd6c2fa50fbcb221507535ea43b17"),
+   GitSource(repo, "f1166efa69d8a656bc472fd911ac239ae683a50b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -73,7 +73,7 @@ BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
     
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
-BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
+BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_x86_toolchain)
 BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
 if [[ "${bb_full_target}" == *darwin* ]]; then
@@ -90,8 +90,8 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@xla//tools/toolchains/cross_compile/config:darwin_x86_64)
         BAZEL_BUILD_FLAGS+=(--cpu=darwin)
     else
-        BAZEL_BUILD_FLAGS+=(--platforms=@xla//tools/toolchains/cross_compile/config:darwin_arm64)
-        BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
+        BAZEL_BUILD_FLAGS+=(--platforms=@platforms//os:macos)
+        BAZEL_BUILD_FLAGS+=(--platforms=@platforms//cpu:aarch64)
     fi
     BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
