@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.1"
+version = v"0.0.2"
 
 sources = [
-   GitSource(repo,"23de1939a0f5a798079cd80a336654b11ad53047"),
+   GitSource(repo, "16c3d49318226e67c8eaa966b4e5e98c9c2d4361"),
 ]
 
 # Bash recipe for building across all platforms
@@ -77,7 +77,6 @@ BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
 if [[ "${bb_full_target}" == *darwin* ]]; then
-    BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_2=false)
@@ -86,11 +85,30 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_s390x=false)
     BAZEL_BUILD_FLAGS+=(--apple_platform_type=macos)
     BAZEL_BUILD_FLAGS+=(--define=no_nccl_support=true)
-    if [[ "${bb_full_target}" == *86* ]]; then
-        BAZEL_BUILD_FLAGS+=(--platforms=@xla//tools/toolchains/cross_compile/config:darwin_x86_64)
-        BAZEL_BUILD_FLAGS+=(--cpu=darwin)
+    BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
+    BAZEL_BUILD_FLAGS+=(--@tsl//tsl/framework/contraction:disable_onednn_contraction_kernel=True)
+    
+	pushd $WORKSPACE/srcdir/llvm*
+	mkdir build
+	cd build
+	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
+	ninja lld
+	export LLD2=`pwd`/bin/ld64.lld
+	popd
+    
+	if [[ "${bb_full_target}" == *86* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
+        BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
+    else
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_aarch64)
+        sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
+        sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang++"
+        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
+        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
+        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
+        BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     fi
-    BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
+    # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=10.14)
@@ -100,6 +118,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--repo_env=MACOSX_DEPLOYMENT_TARGET=10.14)
     BAZEL_BUILD_FLAGS+=(--test_env=MACOSX_DEPLOYMENT_TARGET=10.14)
     BAZEL_BUILD_FLAGS+=(--incompatible_remove_legacy_whole_archive)
+    BAZEL_BUILD_FLAGS+=(--nolegacy_whole_archive)
     BAZEL_BUILD_FLAGS+=(-s)
     env
 fi
@@ -121,11 +140,30 @@ fi
 
 # julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
-bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} //...
+bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
+sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
+if [[ "${bb_full_target}" == *darwin* ]]; then
+	bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+	sed -i.bak1 "/whole-archive/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	sed -i.bak0 "/lld/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	echo "-fuse-ld=lld" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	echo "--ld-path=$LLD2" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	cat bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	$CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	# $CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+else
+	bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
-cp -v bazel-bin/libReactantExtra* ${libdir}
+cp -v bazel-bin/libReactantExtra.so ${libdir}
+if [[ "${bb_full_target}" == *darwin* ]]; then
+    mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dylib
+fi
+if [[ "${bb_full_target}" == *mingw* ]]; then
+    mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
+fi
 cp -v bazel-bin/*.jl ${prefix}
 """
 
@@ -165,14 +203,14 @@ end
 # 64-bit or bust (for xla runtime executable)
 platforms = filter(p -> arch(p) != "i686", platforms)
 
-# go sdk has weird issue for arm linux, removing for now
+# linux aarch has onednn issues
 platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(arch(p) == "armv6l" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
 
-# XLA has weird issue on musl
-# [22:07:03] bazel-out/k8-opt/bin/external/xla/xla/autotuning.pb.h:249:11: error: expected unqualified-id before ‘unsigned’
-# [22:07:03]   249 |   int32_t major() const;
+# TSL exec info rewriting needed
+# external/tsl/tsl/platform/default/stacktrace.h:29:10: fatal error: execinfo.h: No such file or directory
+# [01:23:40]    29 | #include <execinfo.h>
 platforms = filter(p -> !(libc(p) == "musl"), platforms)
 
 # Windows has a cuda configure issue, to investigate either fixing/disabling cuda
@@ -182,7 +220,11 @@ platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 # 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
- platforms = filter(p -> (Sys.isapple(p)), platforms)
+
+# platforms = filter(p -> (Sys.isapple(p)), platforms)
+# platforms = filter(p -> arch(p) != "x86_64", platforms)
+
+# platforms = filter(p -> (Sys.isapple(p)), platforms)
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
 
 
@@ -194,6 +236,9 @@ for platform in platforms
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+		push!(platform_sources,
+              ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
+                            "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
