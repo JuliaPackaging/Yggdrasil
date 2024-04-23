@@ -91,7 +91,6 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--cpu=darwin)
     else
         BAZEL_BUILD_FLAGS+=(--platforms=@platforms//os:macos)
-        BAZEL_BUILD_FLAGS+=(--platforms=@platforms//cpu:aarch64)
     fi
     BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
