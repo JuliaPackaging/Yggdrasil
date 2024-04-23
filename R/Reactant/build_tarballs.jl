@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.1"
 
 sources = [
-   GitSource(repo, "b72273ab903341561e4bcceea0fd1d235ab1e5e5"),
+   GitSource(repo, "56cc4b794bac3410bc3a69be1056d36d2ff25550"),
 ]
 
 # Bash recipe for building across all platforms
@@ -73,7 +73,7 @@ BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
     
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
-BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_x86_toolchain)
+BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
 if [[ "${bb_full_target}" == *darwin* ]]; then
