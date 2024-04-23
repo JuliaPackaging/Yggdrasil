@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "MPItrampoline"
 
 mpitrampoline_version = v"5.3.1"
-version = v"5.3.2"
-mpich_version_str = "4.2.0"
+version = v"5.3.3"
+mpich_version_str = "4.2.1"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.10.4"
 
@@ -18,7 +18,7 @@ sources = [
     GitSource("https://github.com/eschnett/MPItrampoline", "25efb0f7a4cd00ed82bafb8b1a6285fc50d297ed"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "a64a66781b9e5312ad052d32689e23252f745b27ee8818ac2ac0c8209bc0b90e"),
+                  "23331b2299f287c3419727edc2df8922d7e7abbb9fd0ac74e03b9966f9ad42d7"),
     GitSource("https://github.com/eschnett/MPIwrapper", "64f663cfaa36139882c5d92dc974b1a755cd6f5d"),
 ]
 
@@ -162,14 +162,12 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --disable-dependency-tracking \
-    --docdir=/tmp \
-    --mandir=/tmp \
+    --disable-doc \
     --enable-shared=no \
     --enable-static=yes \
     --enable-threads=multiple \
     --enable-opencl=no \
     --with-device=ch3 \
-    --with-hwloc=${prefix} \
     --prefix=${prefix}/lib/mpich \
     "${EXTRA_FLAGS[@]}"
 
@@ -207,10 +205,9 @@ if [[ "${target}" == *-apple-* ]]; then
         -DMPI_C_COMPILER=${CC} \
         -DMPI_CXX_COMPILER=${CXX} \
         -DMPI_Fortran_COMPILER=${FC} \
-        -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
-        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
-        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi;hwloc' \
-        -DMPI_hwloc_LIBRARY=${prefix}/lib/libhwloc.dylib \
+        -DMPI_C_LIB_NAMES='mpi;pmpi' \
+        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
+        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
         -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.a \
         -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.a \
         -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.a \
@@ -287,7 +284,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Hwloc_jll"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                compat="0.1", top_level=true),
 ]
