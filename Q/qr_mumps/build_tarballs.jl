@@ -8,6 +8,7 @@ version = v"3.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.com/qr_mumps/qr_mumps.git" ,"51cd72362fa23e7d3053a9ae4258bba79070e6a7"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
