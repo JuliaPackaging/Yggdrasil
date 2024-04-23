@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LightGBM"
-version = v"4.0.0"
+version = v"3.3.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/microsoft/LightGBM.git", "d73c6b530b39a18a3cacaafc4e42550be853c036"),
+    GitSource("https://github.com/microsoft/LightGBM.git", "ca035b2ee0c2be85832435917b1e0c8301d2e0e0"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +25,10 @@ fi
 FLAGS=()
 
 if [[ "${target}" == *-mingw* ]]; then
+  # Parches windows
+  for p in $WORKSPACE/srcdir/patches/windows/*.patch; do
+    atomic_patch -p1 "${p}"
+  done
   cmake_extra_args="-DWIN32=1 -DMINGW=1"
   FLAGS+=(LDFLAGS="-no-undefined")
 fi
