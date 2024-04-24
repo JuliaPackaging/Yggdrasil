@@ -3,17 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Blosc2"
-version = v"2.14.1"
+# Note: 2.14.4 is available. Its only change is to increase the SOVERSION of the shared library. We need to be careful with this.
+version = v"2.14.3"
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "fd932171089f4df40fb0f70f6766350217b0ff98"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "cfaa9c72f25566f630c5f3d32ac9321372c6c93f"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/c-blosc2/
+cd $WORKSPACE/srcdir/c-blosc2
 
 # Blosc2 mis-detects whether the system headers provide `_xsetbv`
 # (probably on several platforms), and on `x86_64-w64-mingw32` the
@@ -27,21 +28,20 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     perl -pi -e 's/#define HAVE_CPU_FEAT_INTRIN/#undef HAVE_CPU_FEAT_INTRIN/' blosc/shuffle.c
 fi
 
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_TESTS=OFF \
     -DBUILD_BENCHMARKS=OFF \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_STATIC=OFF \
+    -DBUILD_TESTS=OFF \
+    -DPREFER_EXTERNAL_LZ4=ON  \
     -DPREFER_EXTERNAL_ZLIB=ON \
-    -DPREFER_EXTERNAL_ZSTD=ON \
-    -DPREFER_EXTERNAL_LZ4=ON \
-    ..
-make -j${nproc}
-make install
-install_license ../LICENSES/*.txt
+    -DPREFER_EXTERNAL_ZSTD=ON
+cmake --build build --parallel ${nproc}
+cmake --install build
+install_license LICENSES/*.txt
 """
 
 # These are the platforms we will build for by default, unless further
@@ -55,9 +55,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Lz4_jll"; compat="1.9.3"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"; compat="1.5.0"),
-    Dependency("Lz4_jll"; compat="1.9.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
