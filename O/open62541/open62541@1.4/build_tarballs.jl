@@ -9,7 +9,7 @@ version = v"1.4.0"
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
               "84347820c8550b5750f2cd581c14ab201611c579"),
-    DirectorySource("./bundled")
+    DirectorySource("../bundled@1.4")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +22,7 @@ fi
 cd $WORKSPACE/srcdir/open62541/
 if [[ "${target}" == *-freebsd* ]]; then
     # https://github.com/open62541/open62541/issues/6414
-    atomic_patch -p1 ../0001-freebsd.patch
+    atomic_patch -p1 ../patches/0001-freebsd.patch
 fi
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
