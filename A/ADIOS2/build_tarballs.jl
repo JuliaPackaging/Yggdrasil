@@ -60,9 +60,11 @@ fi
 
 # Fortran is not supported with Clang
 # We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
-cmake -B build -S . \
+cmake -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DADIOS2_BUILD_EXAMPLES=OFF \
@@ -74,12 +76,12 @@ cmake -B build -S . \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_ZeroMQ=ON \
-    -DMPI_HOME=$prefix \
-    ${archopts[@]} \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
-    -DCMAKE_INSTALL_PREFIX=$prefix
-cmake --build build --config RelWithDebInfo --parallel $nproc
-cmake --build build --config RelWithDebInfo --parallel $nproc --target install
+    -DMPI_HOME=${prefix} \
+    -DCMAKE_CXX_FLAGS='-lcurl' \
+    ${archopts[@]}
+cmake --build build --parallel $nproc
+cmake --install build
 install_license Copyright.txt LICENSE
 """
 
@@ -144,7 +146,6 @@ dependencies = [
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
-    Dependency(PackageSpec(name="LibCURL_jll"); compat="7.73,8"),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll"); compat="1"),
