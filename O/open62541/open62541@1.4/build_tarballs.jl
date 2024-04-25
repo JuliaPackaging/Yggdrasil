@@ -22,7 +22,7 @@ fi
 cd $WORKSPACE/srcdir/open62541/
 if [[ "${target}" == *-freebsd* ]]; then
     # https://github.com/open62541/open62541/issues/6414
-    atomic_patch -p1 ../0001-freebsd.patch
+    atomic_patch -p1 ../patches/0001-freebsd.patch
 fi
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -46,7 +46,7 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
