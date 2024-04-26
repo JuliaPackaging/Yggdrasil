@@ -25,6 +25,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
 # Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
+# Make FileHTTP compile on windows
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/4132.patch
+# Make FileHTTP compile on FreeBSD
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/4138.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
