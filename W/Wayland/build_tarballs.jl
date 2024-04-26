@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Wayland"
-version = v"1.21.0"
+version = v"1.22.0"
 
 # Collection of sources required to build Wayland
 sources = [
     ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
-                  "6dc64d7fc16837a693a51cfdb2e568db538bfdc9f457d4656285bb9594ef11ac"),
+                  "b2649cb3ee6bd70828a17e50beb16591e6066288"),
 ]
 
 # Bash recipe for building across all platforms
