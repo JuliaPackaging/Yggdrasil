@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/wayland/
 
 # We need to run `wayland-scanner` of the same version on the host system Alpine v3.18 has v1.22
-apk add wayland-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.18/main
+apk add wayland-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.20/main
 
 # ln -s `which wayland-scanner` $bindir
 # cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
