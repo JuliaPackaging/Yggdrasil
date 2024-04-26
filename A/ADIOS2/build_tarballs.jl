@@ -60,9 +60,7 @@ fi
 
 # Fortran is not supported with Clang
 # We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
-mkdir build && cd build
-# cmake -B build -G Ninja \
-cmake -G Ninja \
+cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -80,12 +78,9 @@ cmake -G Ninja \
     -DADIOS2_USE_ZeroMQ=ON \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
     -DMPI_HOME=${prefix} \
-    ${archopts[@]} \
-    ..
-# cmake --build build --parallel ${nproc}
-# cmake --install build
-cmake --build . --parallel ${nproc}
-cmake --install .
+    ${archopts[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
 install_license Copyright.txt LICENSE
 """
 
@@ -102,7 +97,7 @@ platforms = supported_platforms()
 # <https://github.com/ornladios/ADIOS2/issues/2704>
 platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
-platforms = expand_gfortran_versions(platforms)
+#TODO platforms = expand_gfortran_versions(platforms)
 
 # We need to use the same compat bounds as HDF5
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
