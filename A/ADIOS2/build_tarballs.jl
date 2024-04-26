@@ -17,7 +17,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd ${WORKSPACE}/srcdir
 cd ADIOS2
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
@@ -36,7 +36,7 @@ fi
 
 archopts=()
 
-if grep -q MPICH_NAME $prefix/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
+if grep -q MPICH_NAME ${prefix}/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
     # This feature only works with MPICH
     archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
 else
@@ -45,12 +45,12 @@ fi
 
 if grep -q MSMPI_VER ${includedir}/mpi.h; then
     # Microsoft MPI
-    archopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=$libdir/msmpi.dll
-               -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=$libdir/msmpi.dll
-               -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS= -DMPI_Fortran_LIBRARIES=$libdir/msmpi.dll)
+    archopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=$l{ibdir}/msmpi.dll
+               -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll
+               -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS= -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.dll)
 fi
 
-if [[ "$target" == *-mingw* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
     # Windows: Some options do not build
     # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
     archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF)
@@ -78,9 +78,8 @@ cmake -B build -G Ninja \
     -DADIOS2_USE_ZeroMQ=ON \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
     -DMPI_HOME=${prefix} \
-    -DCMAKE_CXX_FLAGS='-lcurl' \
     ${archopts[@]}
-cmake --build build --parallel $nproc
+cmake --build build --parallel ${nproc}
 cmake --install build
 install_license Copyright.txt LICENSE
 """
@@ -145,7 +144,7 @@ dependencies = [
     Dependency(PackageSpec(name="Blosc2_jll")),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="zfp_jll"); compat="1"),
