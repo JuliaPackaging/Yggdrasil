@@ -7,13 +7,13 @@ version = v"1.22.0"
 
 # Collection of sources required to build Wayland
 sources = [
-    ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
-                  "b2649cb3ee6bd70828a17e50beb16591e6066288"),
+   GitSource("https://gitlab.freedesktop.org/wayland/wayland.git",
+             "b2649cb3ee6bd70828a17e50beb16591e6066288"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/wayland-*/
+cd $WORKSPACE/srcdir/wayland/
 
 ln -s `which wayland-scanner` $bindir
 cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
