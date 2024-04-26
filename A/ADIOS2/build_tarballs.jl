@@ -60,7 +60,9 @@ fi
 
 # Fortran is not supported with Clang
 # We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
-cmake -B build -G Ninja \
+mkdir build && cd build
+# cmake -B build -G Ninja \
+cmake -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -78,9 +80,12 @@ cmake -B build -G Ninja \
     -DADIOS2_USE_ZeroMQ=ON \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
     -DMPI_HOME=${prefix} \
-    ${archopts[@]}
-cmake --build build --parallel ${nproc}
-cmake --install build
+    ${archopts[@]} \
+    ..
+# cmake --build build --parallel ${nproc}
+# cmake --install build
+cmake --build . --parallel ${nproc}
+cmake --install .
 install_license Copyright.txt LICENSE
 """
 
