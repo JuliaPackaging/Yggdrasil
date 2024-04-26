@@ -1,0 +1,18 @@
+--- a/thirdparty/EVPath/EVPath//cm_internal.h
++++ a/thirdparty/EVPath/EVPath//cm_internal.h
+@@ -572,15 +572,6 @@
+ #ifdef _MSC_VER
+ #include <process.h>
+ #include <time.h>
+-#define CLOCK_MONOTONIC 1
+-static int clock_gettime(int cl, struct timespec* spec)
+-{
+-    __int64 wintime; GetSystemTimeAsFileTime((FILETIME*)&wintime);
+-    wintime -= 116444736000000000i64;  //1jan1601 to 1jan1970
+-    spec->tv_sec = (long)(wintime / 10000000i64);           //seconds
+-    spec->tv_nsec = wintime % 10000000i64 * 100;      //nano-seconds
+-    return 0;
+-}
+ #define HAVE_CLOCK_GETTIME
+ #endif
+ #ifdef HAVE_CLOCK_GETTIME

@@ -11,7 +11,9 @@ version = v"2.10.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ornladios/ADIOS2.git", "6b7b4e43b9187c99b39657e0eae1fa49393bf6b4"),
+    # GitSource("https://github.com/ornladios/ADIOS2.git", "6b7b4e43b9187c99b39657e0eae1fa49393bf6b4"),
+    # This is a few commits after the 2.10.0 release to pick up patches for FreeBSD and Windows build problems
+    GitSource("https://github.com/ornladios/ADIOS2.git", "fcbea67f57bedcb8622adf3a2b165bb4d5ce7696"),
     DirectorySource("./bundled"),
 ]
 
@@ -25,10 +27,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
 # Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
-# Make FileHTTP compile on windows
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/4132.patch
-# Make FileHTTP compile on FreeBSD
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/4138.patch
+# Don't redefine `getpid` nor `close` on Windows
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/getpid.patch
+# Don't redefine `clock_gettime` on Windows
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime_windows.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
@@ -57,7 +59,7 @@ fi
 if [[ "${target}" == *-mingw* ]]; then
     # Windows: Some options do not build
     # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF)
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF -DCMAKE_C_FLAGS='-D_MSC_VER=1')
 else
     archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
 fi

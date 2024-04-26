@@ -1,0 +1,30 @@
+--- a/source/adios2/engine/bp5/BP5Reader.cpp
++++ b/source/adios2/engine/bp5/BP5Reader.cpp
+@@ -1274,7 +1274,6 @@
+ 
+ #if defined(_WIN32)
+ #include <windows.h>
+-#define getpid() GetCurrentProcessId();
+ #elif defined(__linux) || defined(__APPLE__) || defined(__OpenBSD__) || defined(__FreeBSD__) ||    \
+     defined(__NetBSD__) || defined(__DragonFly__) || defined(__CYGWIN__)
+ #include <sys/types.h>
+--- a/thirdparty/EVPath/EVPath/cmudp.c
++++ b/thirdparty/EVPath/EVPath/cmudp.c
+@@ -6,7 +6,6 @@
+ #define FD_SETSIZE 1024
+ #include <winsock2.h>
+ #include <windows.h>
+-#define getpid()	_getpid()
+ #else
+ #ifdef HAVE_SYS_TIME_H
+ #include <sys/time.h>
+--- a/thirdparty/EVPath/EVPath/cmmulticast.c
++++ b/thirdparty/EVPath/EVPath/cmmulticast.c
+@@ -8,7 +8,5 @@
+ #include <ws2ipdef.h>
+ #include <windows.h>
+-#define getpid()	_getpid()
+-#define close(x) closesocket(x)
+ #else
+ #ifdef HAVE_SYS_TIME_H
+ #include <sys/time.h>

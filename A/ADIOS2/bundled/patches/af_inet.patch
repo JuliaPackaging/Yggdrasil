@@ -1,0 +1,10 @@
+--- a/source/adios2/toolkit/transport/file/FileHTTP.cpp
++++ b/source/adios2/toolkit/transport/file/FileHTTP.cpp
+@@ -12,6 +12,7 @@
+ #include <cstring>
+ #include <netdb.h>
+ #include <unistd.h>
++#include <sys/socket.h>
+ namespace adios2
+ {
+ namespace transport
