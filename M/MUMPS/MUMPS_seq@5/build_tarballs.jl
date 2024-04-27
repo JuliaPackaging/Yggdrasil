@@ -61,6 +61,7 @@ make_args+=(OPTF="-O3"
             LMETIS="-L${libdir} -lmetis"
             ORDERINGSF="-Dpord -Dmetis"
             LIBEXT_SHARED=".${dlext}"
+            SHARED_OPT = "-shared"
             SONAME="${SONAME}"
             CC="$CC ${CFLAGS[@]}"
             FC="gfortran ${FFLAGS[@]}"
@@ -95,4 +96,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.9", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.9", preferred_gcc_version=v"6", clang_use_lld=false)
