@@ -109,6 +109,10 @@ platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
 #TODO platforms = expand_gfortran_versions(platforms)
 
+# Windows builds worked in 2.9 but are broken in 2.10.0. We're hoping
+# for 2.10.1. Until then we punt.
+platforms = filter(p -> os(p) ≠ "windows", platforms)
+
 # We need to use the same compat bounds as HDF5
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.3", OpenMPI_compat="4.1.6, 5")
 
