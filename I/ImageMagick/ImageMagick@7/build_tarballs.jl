@@ -2,13 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"7.1.1-11"
+upstream_version = v"7.1.1-31"
 version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
 
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://github.com/ImageMagick/ImageMagick",
-              "11ffa6eb4548644a718158daa286295ed3174054"),
+              "2f6d2de838390a054af74822e80d74b7799633cb"),
     DirectorySource("./bundled"),
 ]
 
