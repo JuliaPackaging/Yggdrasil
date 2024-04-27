@@ -24,6 +24,10 @@ platforms = filter(p -> wordsize(p) > 32, supported_platforms())
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("zed", :zed),
+    ExecutableProduct("zq", :zq),
+    ExecutableProduct("gentoken", :gentoken),
+    ExecutableProduct("mockzui", :mockzui),
+    ExecutableProduct("zc", :zc)
 ]
 
 # Dependencies that must be installed before this package can be built

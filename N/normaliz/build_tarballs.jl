@@ -22,8 +22,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.1000.150"
-upstream_version = v"3.10.1"
+version = v"300.1000.200"
+upstream_version = v"3.10.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -31,16 +31,12 @@ sources = [
     #              "365e1d1e2a338dc4df1947a440e606bb66dd261307e617905e8eca64eaafcf6e"),
     # this is basically 3.10.1 + flint3 support
     GitSource("https://github.com/Normaliz/Normaliz.git",
-              "2574138e27363721811112e811b4e612cd3f184a"),
-    DirectorySource("./bundled"),
+              "3bc242209e82488886eada17006e372fd89aa032"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ?ormaliz*
-
-atomic_patch -p1 ../patches/fmpz_inc.patch
-atomic_patch -p1 ../patches/time_inc.patch
 
 [ -e configure ] || ./bootstrap.sh
 
@@ -75,7 +71,7 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll"; compat = "~300.000.000"),
+    Dependency("FLINT_jll"; compat = "~300.100.300"),
     Dependency("nauty_jll"; compat = "~2.6.13"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
