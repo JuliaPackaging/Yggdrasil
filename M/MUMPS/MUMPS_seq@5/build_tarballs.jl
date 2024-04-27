@@ -32,6 +32,7 @@ cd $WORKSPACE/srcdir/MUMPS*
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
+sed -i Makefile.inc 's/cd examples; $(MAKE) all//'
 
 # Add `-fallow-argument-mismatch` if supported
 : >empty.f
