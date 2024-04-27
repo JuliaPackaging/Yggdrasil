@@ -64,6 +64,10 @@ else
     archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
 fi
 
+export MPITRAMPOLINE_CC=${CC}
+export MPITRAMPOLINE_CXX=${CXX}
+export MPITRAMPOLINE_FC=${FC}
+
 # Fortran is not supported with Clang
 # We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
 cmake -B build -G Ninja \
