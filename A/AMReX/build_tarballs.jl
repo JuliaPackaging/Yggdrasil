@@ -58,6 +58,10 @@ else
     hdf5opts="-DAMReX_HDF5=ON"
 fi
 
+export MPITRAMPOLINE_CC=${CC}
+export MPITRAMPOLINE_CXX=${CXX}
+export MPITRAMPOLINE_FC=${FC}
+
 cmake \
     -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
