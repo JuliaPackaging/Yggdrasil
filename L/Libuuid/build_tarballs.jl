@@ -8,7 +8,7 @@ version = VersionNumber(version_string)
 
 # Collection of sources required to build Libuuid
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version).tar.xz",
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version_string).tar.xz",
                   "d57a626081f9ead02fa44c63a6af162ec19c58f53e993f206ab7c3a6641c2cd7")
 ]
 
