@@ -14,8 +14,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/util-linux-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libblkid --enable-libmount
+cd $WORKSPACE/srcdir/util-linux-*
+
+configure_flags=()
+if [[ ${nbits} == 32 ]]; then
+   # We disable the year 2038 check because we don't have an alternative on the affected systems
+   configure_flags+=(--disable-year2038)
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libblkid --enable-libmount ${configure_flags[@]}
 make -j${nproc}
 make install
 """
