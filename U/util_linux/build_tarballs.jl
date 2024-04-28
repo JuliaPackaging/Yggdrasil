@@ -71,7 +71,8 @@ products = [
     ExecutableProduct("readprofile", :readprofile, "sbin"),
     ExecutableProduct("fdformat", :fdformat, "sbin"),
     ExecutableProduct("lscpu", :lscpu),
-    ExecutableProduct("col", :col),
+    # `col` requires glibc and thus doesn't work on musl systems
+    # ExecutableProduct("col", :col),
     ExecutableProduct("addpart", :addpart, "sbin"),
     ExecutableProduct("sulogin", :sulogin, "sbin"),
     ExecutableProduct("getopt", :getopt),
