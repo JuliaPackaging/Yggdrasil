@@ -37,7 +37,7 @@ filter!(!Sys.isapple, platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libuuid", :libuuid)
+    LibraryProduct("libuuid", :libuuid),
 ]
 
 # Dependencies that must be installed before this package can be built
