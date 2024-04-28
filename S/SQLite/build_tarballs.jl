@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.45.0"
+version = v"3.45.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sqlite.org/2024/sqlite-autoconf-3450000.tar.gz",
-                  "72887d57a1d8f89f52be38ef84a6353ce8c3ed55ada7864eb944abd9a495e436"),
+    ArchiveSource("https://sqlite.org/2024/sqlite-autoconf-3450300.tar.gz",
+                  "b2809ca53124c19c60f42bf627736eae011afdcc205bb48270a5ee9a38191531"),
     FileSource("https://raw.githubusercontent.com/archlinux/svntogit-community/cf0a3337bd854104252dc1ff711e95cc8bc7ffb3/trunk/license.txt",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d";
                filename="LICENSE"),
