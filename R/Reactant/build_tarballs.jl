@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.2"
+version = v"0.0.3"
 
 sources = [
-   GitSource(repo, "16c3d49318226e67c8eaa966b4e5e98c9c2d4361"),
+   GitSource(repo, "deee3bf8ee4f627ef9563265d7f4b0530154a745"),
 ]
 
 # Bash recipe for building across all platforms
@@ -119,8 +119,6 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--test_env=MACOSX_DEPLOYMENT_TARGET=10.14)
     BAZEL_BUILD_FLAGS+=(--incompatible_remove_legacy_whole_archive)
     BAZEL_BUILD_FLAGS+=(--nolegacy_whole_archive)
-    BAZEL_BUILD_FLAGS+=(-s)
-    env
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
@@ -140,10 +138,10 @@ fi
 
 # julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
-bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
+bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
-	bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
 	sed -i.bak1 "/whole-archive/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
 	sed -i.bak0 "/lld/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
 	echo "-fuse-ld=lld" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
@@ -152,7 +150,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	$CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
 	# $CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
 else
-	bazel ${BAZEL_FLAGS[@]} build -s ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
