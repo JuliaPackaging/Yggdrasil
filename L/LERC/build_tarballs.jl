@@ -14,6 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/lerc
 
+# Don't use `_assert` as identifier
+sed -i -e 's/_assert/lerc_assert/g' src/LercLib/fpl_EsriHuffman.cpp src/LercLib/fpl_Lerc2Ext.cpp
+
 cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
