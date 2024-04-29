@@ -35,7 +35,7 @@ products = [
     LibraryProduct("libOpenEXRCore-3_2", :libOpenEXRCore),
     LibraryProduct("libOpenEXR-3_2", :libOpenEXR),
     LibraryProduct("libIlmThread-3_2", :libIlmThread),
-    LibraryProduct("libIex-3_2", :libIex)
+    LibraryProduct("libIex-3_2", :libIex),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -45,5 +45,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We need at least GCC 6 on aarch64 to support assembler intrinsics there
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.6", preferred_gcc_version = v"5.2.0")
+               julia_compat = "1.6", preferred_gcc_version = v"6")
