@@ -48,12 +48,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"),
-    Dependency("libpng_jll"),
+    Dependency("Ghostscript_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"; compat="4.3.0"),
-    Dependency("Ghostscript_jll"),
     Dependency("OpenJpeg_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("libpng_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
