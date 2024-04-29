@@ -38,6 +38,8 @@ cmake -B build \
 
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
