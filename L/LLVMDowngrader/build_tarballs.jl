@@ -21,11 +21,7 @@ sources = Dict(
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "macos"; ),
-    Platform("aarch64", "macos"; )
-]
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # Bash recipe for building across all platforms
 script = raw"""
