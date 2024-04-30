@@ -28,7 +28,7 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     pushd 3rd-party
     tar xzf libevent-2.1.12-stable.tar.gz
     cd libevent-2.1.12-stable
-    atomic_patch -p1 ../../../bundled/patches/build_with_no_undefined.patch
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/build_with_no_undefined.patch
     popd
 fi
 
