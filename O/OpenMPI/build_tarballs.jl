@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.2"
+version = v"5.0.3"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "095ab1cddb0fa0f9e7fc211a1d33185c6727c5237d0ee55f80a7e4311e5d279c"),
+                  "3e12160dd1d6f5cd8897bbab63a05fb9223a1e20a1726db23607aac25dc1aa19"),
     DirectorySource("./bundled"),
 ]
 
@@ -40,7 +40,11 @@ export LIBS='-ldl'
     --enable-static=no \
     --host=${target} \
     --prefix=${prefix} \
+    --docdir=/tmp \
+    --infodir=/tmp \
+    --mandir=/tmp \
     --with-cross=${WORKSPACE}/srcdir/${target} \
+    --with-libevent=internal \
     --without-cs-fs
 
 # Build the library
@@ -61,8 +65,8 @@ install_license $WORKSPACE/srcdir/openmpi*/LICENSE
 platforms = supported_platforms()
 # OpenMPI 5 supports only 64-bit systems
 filter!(p -> nbits(p) == 64, platforms)
-# Disable FreeBSD, it is not supported by PMIx (which we need)
-filter!(!Sys.isfreebsd, platforms)
+#TODO # Disable FreeBSD, it is not supported by PMIx (which we need)
+#TODO filter!(!Sys.isfreebsd, platforms)
 # Disable Windows, we do not know how to cross-compile
 filter!(!Sys.iswindows, platforms)
 
@@ -77,13 +81,15 @@ products = [
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
+# Use an internal `libevent` to prevent hangs in MPI_Init.
+# Also use internal `PMix` and `prrte` packages since they might otherwise use an external `libevent`.
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Hwloc_jll"),    # compat="2.0.0"
-    Dependency("PMIx_jll"),     # compat="4.2.0"
+    # Dependency("PMIx_jll"),     # compat="4.2.0"
     Dependency("Zlib_jll"),
-    Dependency("libevent_jll"), # compat="2.0.21"
-    Dependency("prrte_jll"),    # compat="3.0.0"
+    # Dependency("libevent_jll"), # compat="2.0.21"
+    # Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 
