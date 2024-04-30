@@ -9,7 +9,7 @@ version = v"5.0.3"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
                   "3e12160dd1d6f5cd8897bbab63a05fb9223a1e20a1726db23607aac25dc1aa19"),
-    DirectorySource("./bundled"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
@@ -19,6 +19,18 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    # Build internal `libevent` without `-Wl,--no-undefined`
+    # (taken from `L/libevent/build_tarballs.jl`)
+
+    # Expand libeven tarball so that we can patch it
+    pushd 3rd-party
+    tar xzf libevent-2.1.12-stable.tar.gz
+    cd libevent-2.1.12-stable
+    atomic_patch -p1 ../../../bundled/patches/build_with_no_undefined.patch
+    popd
+fi
 
 # Autotools doesn't add `${includedir}` as an include directory on some platforms
 export CPPFLAGS="-I${includedir}"
@@ -65,8 +77,8 @@ install_license $WORKSPACE/srcdir/openmpi*/LICENSE
 platforms = supported_platforms()
 # OpenMPI 5 supports only 64-bit systems
 filter!(p -> nbits(p) == 64, platforms)
-#TODO # Disable FreeBSD, it is not supported by PMIx (which we need)
-#TODO filter!(!Sys.isfreebsd, platforms)
+# Disable FreeBSD, it is not supported by PMIx (which we need)
+filter!(!Sys.isfreebsd, platforms)
 # Disable Windows, we do not know how to cross-compile
 filter!(!Sys.iswindows, platforms)
 
