@@ -257,7 +257,7 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 
 # The products that we will ensure are always built
 products = [
-    # # HDF5 tools
+    # HDF5 tools
     ExecutableProduct("h5clear", :h5clear),
     ExecutableProduct("h5copy", :h5copy),
     ExecutableProduct("h5debug", :h5debug),
