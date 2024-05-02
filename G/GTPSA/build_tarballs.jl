@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GTPSA"
-version = v"1.2.1"
+version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mattsignorelli/gtpsa.git", "b2889d45f0546dbddcfc3a345c3e43d657e9acb3")
+    GitSource("https://github.com/mattsignorelli/gtpsa.git", "49245a21f2ee576d74168828755f667a04b1eb13")
 ]
 
 # Bash recipe for building across all platforms
