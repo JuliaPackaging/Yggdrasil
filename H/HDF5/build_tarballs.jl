@@ -6,12 +6,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.3"
+version = v"1.14.4"
+version_dir = "$(version).2"
+version_file ="$(version)-2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.bz2",
-                  "9425f224ed75d1280bb46d6f26923dd938f9040e7eaebf57e66ec7357c08f917"),
+    ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/hdf5_$(version_dir)/hdf5-$(version_file).tar.gz",
+                  "618934b9d45e34f328393e1fde73a8a67e973f8e5a6bae8b609d098a84cb0efe"),
     DirectorySource("./bundled"),
 ]
 
@@ -130,9 +132,9 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         # Do not enable MPI; the function MPI_File_close is not defined
         # in the 32-bit version of Microsoft MPI 10.1.12498.18
         :
-    elif false; then
-        # DISABLED
+    else
         # 64-bit system
+        # DISABLED
         # Do not enable MPI
         # Mingw-w64 runtime failure:
         # 32 bit pseudo relocation at 0000000007828E2C out of range, targeting 00007FFDE78BAD90, yielding the value 00007FFDE0091F60.
@@ -140,13 +142,13 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         # gendef msmpi.dll - creates msmpi.def
         # x86_64-w64-mingw32-dlltool -d msmpi.def -l libmsmpi.a -D msmpi.dll - creates libmsmpi.a
 
-        # Hide static libraries
-        rm ${prefix}/lib/msmpi*.lib
-        # Make shared libraries visible
-        ln -s msmpi.dll ${libdir}/libmsmpi.dll
-        ENABLE_PARALLEL=yes
-        export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
-        export LIBS="-L${libdir} -lmsmpi"
+        # # Hide static libraries
+        # rm ${prefix}/lib/msmpi*.lib
+        # # Make shared libraries visible
+        # ln -s msmpi.dll ${libdir}/libmsmpi.dll
+        # ENABLE_PARALLEL=yes
+        # export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
+        # export LIBS="-L${libdir} -lmsmpi"
     fi
 else
     ENABLE_PARALLEL=yes
@@ -242,7 +244,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.3", OpenMPI_compat="4.1.6, 5")
 # TODO: Use MPI only on non-Windows platforms
 # platforms = [filter(!Sys.iswindows, mpi_platforms); filter(Sys.iswindows, platforms)]
 
@@ -286,12 +288,13 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
-    Dependency("Zlib_jll"),
-    # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll"),   # This is the successor of szlib
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"1.1.1";
+               compat="1.1"),
+    Dependency("LibCURL_jll", v"8.7.1"; compat="7, 8"),
+    Dependency("OpenSSL_jll", v"3.0.13"; compat="3"),
+    Dependency("Zlib_jll", v"1.3.1"; compat="1.2"),
+    # Dependency("dlfcn_win32_jll", v"1.3.1"; compat="1.3", platforms=filter(Sys.iswindows, platforms)),
+    Dependency("libaec_jll", v"1.1.2"; compat="1.1"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 
@@ -303,5 +306,3 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 5 reports an ICE on i686-linux-gnu-libgfortran3-cxx11-mpi+mpich
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Trigger build: 1

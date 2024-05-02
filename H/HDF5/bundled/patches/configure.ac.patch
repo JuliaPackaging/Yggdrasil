@@ -18,16 +18,21 @@
    AC_DEFINE_UNQUOTED([PAC_C_MAX_REAL_PRECISION], $PAC_C_MAX_REAL_PRECISION, [Determine the maximum decimal precision in C])
    AC_MSG_RESULT([$PAC_C_MAX_REAL_PRECISION])
  
-@@ -668,14 +665,37 @@
+@@ -668,19 +665,36 @@
+     fi
+   fi
  
-   ## See if the fortran compiler supports the intrinsic module "ISO_FORTRAN_ENV"
-   PAC_PROG_FC_ISO_FORTRAN_ENV
 -  ## Check KIND and size of native integer
 -  PAC_FC_NATIVE_INTEGER
- 
+-
 -  ## Find all available KINDs
--  PAC_FC_AVAIL_KINDS
--  ## Find all sizeofs for available KINDs
+-  if test "X$HAVE_ISO_FORTRAN_ENV" = "X1";then
+-    PAC_FC_AVAIL_KINDS_F08
+-  else
+-    PAC_FC_AVAIL_KINDS
+-  fi
+-
+-  ## Find all SIZEOFs for available KINDs
 -  PAC_FC_SIZEOF_INT_KINDS
 -  PAC_FC_SIZEOF_REAL_KINDS
 +  PAC_FC_ALL_REAL_KINDS="$hdf5_cv_PAC_FC_ALL_REAL_KINDS"
