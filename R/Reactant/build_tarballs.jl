@@ -3,17 +3,19 @@ using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.3"
 
 sources = [
-   GitSource(repo, "deee3bf8ee4f627ef9563265d7f4b0530154a745"),
+   GitSource(repo, "3157b2fd16dec4964f33e4b1ec925adf782c6514"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+
 cd Reactant.jl/deps/ReactantExtra
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
@@ -27,6 +29,16 @@ fi
 
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 apk add py3-numpy py3-numpy-dev
+
+ln -s `which ar` /usr/bin/ar
+
+# wget https://github.com/JuliaLang/julia/releases/download/v1.10.3/julia-1.10.3.tar.gz
+# tar -zxf  julia-1.10.3.tar.gz
+# cd julia-1.10.3
+# CC=$HOSTCC CXX=$HOSTCXX make -j
+# export JULIA=`pwd`/julia
+# $JULIA -c "add CUDA"
+# cd ..
 
 #mkdir -p .julia
 #cd .julia
@@ -45,6 +57,10 @@ apk add py3-numpy py3-numpy-dev
 mkdir .bazhome
 export HOME=`pwd`/.bazhome
 
+mkdir .tmp
+export TMPDIR=`pwd`/.tmp
+export TMP=$TMPDIR
+export TEMP=$TMPDIR
 export BAZEL_CXXOPTS="-std=c++17"
 BAZEL_FLAGS=()
 BAZEL_BUILD_FLAGS=()
@@ -72,6 +88,7 @@ BAZEL_BUILD_FLAGS+=(--define=grpc_no_ares=true)
 BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
     
+BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
@@ -121,6 +138,33 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--nolegacy_whole_archive)
 fi
 
+
+if [[ "${bb_full_target}" == *linux* ]]; then
+    export CUDA_HOME=${WORKSPACE}/destdir;
+    export PATH=$PATH:$CUDA_HOME/bin
+    export CUDACXX=$CUDA_HOME/bin/nvcc
+    sed -i "s/getopts \\"/getopts \\"p/g" /sbin/ldconfig
+    mkdir -p .local/bin
+    echo "#!/bin/sh" > .local/bin/ldconfig
+    echo "" >> .local/bin/ldconfig
+    chmod +x .local/bin/ldconfig
+    export PATH="`pwd`/.local/bin:$PATH"
+    BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
+    BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_VERSION=$CUDA_VERSION)
+    BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_PATHS="$CUDA_HOME/cuda,$CUDA_HOME")
+    BAZEL_BUILD_FLAGS+=(--repo_env CUDA_TOOLKIT_PATH=$CUDA_HOME/cuda)
+    BAZEL_BUILD_FLAGS+=(--repo_env CUDNN_INSTALL_PATH=$CUDA_HOME)
+    BAZEL_BUILD_FLAGS+=(--repo_env TENSORRT_INSTALL_PATH=$CUDA_HOME)
+    BAZEL_BUILD_FLAGS+=(--repo_env TF_NCCL_USE_STUB=1)
+    BAZEL_BUILD_FLAGS+=(--action_env TF_CUDA_COMPUTE_CAPABILITIES="sm_50,sm_60,sm_70,sm_80,compute_90")
+    # BAZEL_BUILD_FLAGS+=(--action_env CLANG_CUDA_COMPILER_PATH="/home/wmoses/llvms/llvm16/build/bin/clang")
+    BAZEL_BUILD_FLAGS+=(--crosstool_top=@local_config_cuda//crosstool:toolchain)
+    BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:enable_cuda)
+    BAZEL_BUILD_FLAGS+=(--@xla//xla/python:enable_gpu=true)
+    BAZEL_BUILD_FLAGS+=(--@xla//xla/python:jax_cuda_pip_rpaths=true)
+    BAZEL_BUILD_FLAGS+=(--define=xla_python_enable_gpu=true)
+fi
+
 if [[ "${bb_full_target}" == *freebsd* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
@@ -136,8 +180,8 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-# julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
-BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
+# $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
+BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
@@ -165,8 +209,6 @@ fi
 cp -v bazel-bin/*.jl ${prefix}
 """
 
-augment_platform_block = ""
-
 # determine exactly which tarballs we should build
 builds = []
     
@@ -177,7 +219,7 @@ dependencies = Dependency[]
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
-                   :libReactantExtra),
+                   :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
     FileProduct("Affine.inc.jl", :Affine_inc_jl),
     FileProduct("Arith.inc.jl", :Arith_inc_jl),
     FileProduct("Builtin.inc.jl", :Builtin_inc_jl),
@@ -223,12 +265,15 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
-# platforms = filter(p -> !(Sys.isapple(p)), platforms)
+#platforms = filter(p -> !(Sys.isapple(p)), platforms)
 
 
 for platform in platforms
     augmented_platform = deepcopy(platform)
+    cuda_deps = []
+    augment_platform_block=""
 
+    prefix=""
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
@@ -237,12 +282,22 @@ for platform in platforms
 		push!(platform_sources,
               ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
                             "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
+
+    end
+
+    if CUDA.is_supported(platform)
+        cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
+        push!(cuda_deps, BuildDependency(PackageSpec(name="CUDNN_jll")))
+        push!(cuda_deps, BuildDependency(PackageSpec(name="TensorRT_jll")))
+        push!(cuda_deps, BuildDependency(PackageSpec(name="CUDA_full_jll")))
+        augment_platform_block=CUDA.augment
+        prefix = "export CUDA_VERSION=\"\"\n"
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
     push!(builds, (;
-        dependencies, products, sources=platform_sources,
-        platforms=[augmented_platform],
+                   dependencies=[dependencies; cuda_deps], products, sources=platform_sources,
+        platforms=[augmented_platform], augment_platform_block, script=prefix*script
     ))
 end
 
@@ -255,9 +310,9 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, script,
+                   name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=v"10", julia_compat="1.6",
-                   augment_platform_block, lazy_artifacts=true)
+                   build.augment_platform_block, lazy_artifacts=true)
 end
 
