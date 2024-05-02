@@ -40,8 +40,8 @@ products = [
     ExecutableProduct("hrepack", :hrepack),
     ExecutableProduct("ncdump", :ncdump),
     ExecutableProduct("ncgen", :ncgen),
-    LibraryProduct("libhdf", :libhdf),,
-    LibraryProduct("libmfhdf", :libmfhdf)
+    LibraryProduct("libhdf", :libhdf),
+    LibraryProduct("libmfhdf", :libmfhdf),
 ]
 
 # Dependencies that must be installed before this package can be built
