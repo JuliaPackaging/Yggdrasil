@@ -292,7 +292,7 @@ for platform in platforms
         push!(cuda_deps, BuildDependency(PackageSpec(name="CUDNN_jll")))
         push!(cuda_deps, BuildDependency(PackageSpec(name="TensorRT_jll")))
         push!(cuda_deps, BuildDependency(PackageSpec(name="CUDA_full_jll")))
-        augment_platform_block=CUDA.augment
+        # augment_platform_block=CUDA.augment
         prefix = "export CUDA_VERSION=\"\"\n"
     end
 
