@@ -57,8 +57,8 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("node", :node),
-    ExecutableProduct("bin/npm", :npm),
-    ExecutableProduct("bin/npx", :npx),
+    FileProduct("bin/npm", :npm),
+    FileProduct("bin/npx", :npx),
 ]
 
 # Dependencies that must be installed before this package can be built
