@@ -3,26 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "Imath"
-version = v"3.1.7"
+version = v"3.1.11"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/Imath.git", "a4f9d5c6205482e1f1a86c84bb97bafa247fb774")
+    GitSource("https://github.com/AcademySoftwareFoundation/Imath.git", "5ac1d5335cb34f0f356c5f2461a57c845b96b115")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/Imath*
-mkdir build
-cd build/
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_TESTING=OFF \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    ..
-make -j${nproc}
-make install
-exit
+    -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,4 +36,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat = "1.6", preferred_gcc_version = v"5.2.0")

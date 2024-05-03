@@ -31,10 +31,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("JpegTurbo_jll"),
-    Dependency("LERC_jll"),
-    Dependency("XZ_jll"),
+    # Can probably upgrade to LERC_jll@4 in next build
+    Dependency("LERC_jll"; compat="3"),
+    Dependency("XZ_jll"; compat="5.2.5"),
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

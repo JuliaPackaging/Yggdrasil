@@ -3,25 +3,33 @@
 using BinaryBuilder
 
 name = "Libmount"
-version = v"2.35"
+version_string = "2.40"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version.major).$(version.minor).tar.xz",
-                  "b3081b560268c1ec3367e035234e91616fa7923a0afc2b1c80a2a6d8b9dfe2c9")
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version_string).tar.xz",
+                  "d57a626081f9ead02fa44c63a6af162ec19c58f53e993f206ab7c3a6641c2cd7")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/util-linux-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libblkid --enable-libmount
+cd $WORKSPACE/srcdir/util-linux-*
+
+configure_flags=()
+if [[ ${nbits} == 32 ]]; then
+   # We disable the year 2038 check because we don't have an alternative on the affected systems
+   configure_flags+=(--disable-year2038)
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libblkid --enable-libmount ${configure_flags[@]}
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(Sys.islinux, supported_platforms(; experimental=true))
+platforms = filter!(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -33,4 +41,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

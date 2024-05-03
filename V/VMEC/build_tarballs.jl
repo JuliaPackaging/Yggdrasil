@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "VMEC"
-upstream_version = v"1.2.0"
+upstream_version = v"1.3.0"
 version_patch_offset = 0
 version = VersionNumber(upstream_version.major,
                         upstream_version.minor,
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major,
 
 sources = [
     ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
-                  "58a99cd0e7b4add481124e75ed7b8ccd5452e83b07230aefe4c4334de020b1cf"),
+                  "4c13c0312a6b4061357be35122ac507b0a25c2d5cd0dd03dd1b9e31818318528"),
     DirectorySource("./bundled"),
 ]
 
@@ -101,8 +101,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # MbedTLS is an indirect dependency, fix the version for building 
-    BuildDependency(PackageSpec(name = "MbedTLS_jll")),
     Dependency("SCALAPACK_jll"),
     Dependency("OpenBLAS_jll"),
     Dependency("MKL_jll"), 

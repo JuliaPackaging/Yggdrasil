@@ -2,18 +2,19 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "GraphicsMagick"
-version = v"1.3.42"
+version = v"1.3.43"
 
 # Collection of sources required to build GraphicsMagick
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
-                  "484fccfd2b2faf6c2ba9151469ece5072bcb91ba4ed73e75ed3d8e46c759d557"),
-    DirectorySource("bundled"),
+                  "2b88580732cd7e409d9e22c6116238bef4ae06fcda11451bf33d259f9cbf399f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/GraphicsMagick*
+
 # Don't use `clock_realtime` if it isn't available
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
 
@@ -83,7 +84,7 @@ dependencies = [
     Dependency("Zstd_jll"),
     Dependency("gperftools_jll"),
     Dependency("libpng_jll"),
-    Dependency("libwebp_jll"),
+    Dependency("libwebp_jll"; compat="1.2.4"),
     # TODO:
     # - ralcgm <http://www.agocg.ac.uk/train/cgm/ralcgm.htm>
     # - cdraw <https://www.dechifro.org/dcraw/>

@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "BerkeleyDB"
-version = v"18.1.40"
+version_string = "18.1.40"
+version = v"18.1.41" # We need to change version number to build for "experimental" platforms
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.oracle.com/berkeley-db/db-$(version).tar.gz",
+    ArchiveSource("https://download.oracle.com/berkeley-db/db-$(version_string).tar.gz",
                   "0cecb2ef0c67b166de93732769abdeba0555086d51de1090df325e18ee8da9c8"),
 ]
 
@@ -26,16 +27,13 @@ fi
 
 cd ../build_unix
 ../dist/configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude=Sys.iswindows)
-# Exclude "experimental" platforms
-filter!(p -> arch(p) != "armv6l", platforms)
-filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -59,8 +57,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

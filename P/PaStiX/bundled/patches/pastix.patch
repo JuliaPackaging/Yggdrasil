@@ -37,7 +37,7 @@ diff --git before/pastix/CMakeLists.txt after/pastix/CMakeLists.txt
 index fb526d2..cc7416e 100644
 --- before/pastix/CMakeLists.txt
 +++ after/pastix/CMakeLists.txt
-@@ -810,9 +810,9 @@ add_library( pastix
+@@ -837,9 +837,9 @@ add_library( pastix
    ${PASTIX_LIB_SRCS}
    )
  
@@ -50,8 +50,8 @@ index fb526d2..cc7416e 100644
  
  add_dependencies(pastix
    kernels_headers_tgt
-@@ -913,12 +913,12 @@ install(TARGETS pastix
-         LIBRARY DESTINATION lib)
+@@ -945,12 +945,12 @@ install(TARGETS pastix
+         PUBLIC_HEADER DESTINATION include )
  
  ## Executable and tests
 -enable_testing()
@@ -71,7 +71,7 @@ diff --git before/pastix/wrappers/fortran90/CMakeLists.txt after/pastix/wrappers
 index 2b4de1e..4570462 100644
 --- before/pastix/wrappers/fortran90/CMakeLists.txt
 +++ after/pastix/wrappers/fortran90/CMakeLists.txt
-@@ -43,8 +43,8 @@ target_include_directories(pastixf INTERFACE
+@@ -46,8 +46,8 @@ target_include_directories(pastixf INTERFACE
    $<INSTALL_INTERFACE:include>
    )
  

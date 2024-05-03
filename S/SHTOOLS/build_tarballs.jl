@@ -2,19 +2,14 @@ using BinaryBuilder
 
 # Collection of sources required to build SHTOOLS
 name = "SHTOOLS"
-version = v"4.10.4"
+version = v"4.12.2"
 sources = [
-    ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v$(version)/SHTOOLS-$(version).tar.gz",
-                  "f31ab09e960d85ad23d046fa427b692ffb80915a2c96773725bb83ad90bdec20"),
-    DirectorySource("bundled"),
+    GitSource("https://github.com/SHTOOLS/SHTOOLS", "77ecaabbe90aee89ecc252317c8c6b4258e59bad"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SHTOOLS-*
-
-# Add missing underscore to call to `dggglm`
-atomic_patch -p1 ../patches/dggglm.patch
+cd $WORKSPACE/srcdir/SHTOOLS
 
 # Build and install static libraries
 make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"

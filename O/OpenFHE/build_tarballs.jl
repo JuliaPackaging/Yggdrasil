@@ -3,23 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "OpenFHE"
-version = v"1.1.2"
+version = v"1.1.4"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openfheorg/openfhe-development.git",
-              "b2869aef5cf61afd364b3eaea748dcc8a7020b9c"),
+              "94fd76a1d965cfde13f2a540d78ce64146fc2700"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openfhe-development/
-
-# Add missing `<cmath>` header to avoid disambiguities in macOS builds
-if [[ "${target}" == *-apple* ]]; then
-  atomic_patch -p1 "${WORKSPACE}/srcdir/patches/macos-include-cmath.patch"
-fi
 
 # Set proper install directories for libraries on Windows
 if [[ "${target}" == *-mingw* ]]; then

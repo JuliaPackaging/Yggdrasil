@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "casacorecxx"
-version = v"0.2.1"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
-sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "bf73cbd1cf6c681102b8314172970dc1ca1618da")]
+sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "0595c37a84d58fd200c926db74db21d637357123")]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -41,8 +41,8 @@ end
 products = Product[LibraryProduct("libcasacorecxx", :libcasacorecxx),]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [Dependency("libcxxwrap_julia_jll"),
-                Dependency("casacore_jll"),
+dependencies = [Dependency("libcxxwrap_julia_jll", compat="0.11.2"),
+                Dependency("casacore_jll", compat="3.5.1"),
                 BuildDependency("libjulia_jll")]
 
 # Build the tarballs, and possibly a `build.jl` as well.

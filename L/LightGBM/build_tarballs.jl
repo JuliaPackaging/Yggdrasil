@@ -50,7 +50,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("lib_lightgbm", :lib_lightgbm),
-    ExecutableProduct("lightgbm", :lightgbm)
+    ExecutableProduct("lightgbm", :lightgbm),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -62,4 +62,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8.1.0")

@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "openfhe_julia"
-version = v"0.2.9"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sloede/openfhe-julia.git",
-              "b13ae59187963c563f7ea61e51a32655d0f24601"),
+              "04867e12f5e10004267083a263846db50c9bf18b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -77,8 +77,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.7")),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.11.2"),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.12.2"),
     Dependency(PackageSpec(name="OpenFHE_jll", uuid="a2687184-f17b-54bc-b2bb-b849352af807")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.

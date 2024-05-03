@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "wxWidgets"
-version = v"3.1.5"
+version = v"3.2.4"
 
 version_mm = "$(version.major).$(version.minor)"
-version_no_sep = "$(version.major)$(version.minor)$(version.patch)"
+version_no_sep = "$(version.major)$(version.minor)"
 
 gen_libnames(lib) = ["libwx_gtk3u_$(lib)-$(version_mm)",
                     "wxmsw$(version_no_sep)u_$(lib)_gcc_custom",
@@ -15,7 +15,7 @@ gen_libnames(lib) = ["libwx_gtk3u_$(lib)-$(version_mm)",
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wxWidgets/wxWidgets/archive/refs/tags/v$version.tar.gz", "e8fd5f9fbff864562aa4d9c094f898c97f5e1274c90f25beb0bfd5cb61319dea"),
+    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$version/wxWidgets-$version.tar.bz2", "0640e1ab716db5af2ecb7389dbef6138d7679261fbff730d23845ba838ca133e"),
     DirectorySource("./bundled")
 ]
 
@@ -26,10 +26,6 @@ cd $WORKSPACE/srcdir/wxWidgets-*
 
 if [[ "${target}" == *-linux-musl* ]]; then
 
-    #derived from https://github.com/wxWidgets/wxWidgets/commit/f4eae4df2a256d0c1bab1657438c2de449cdcd67?branch=f4eae4df2a256d0c1bab1657438c2de449cdcd67&diff=split
-    #this was merged on master, so probably can get rid of next release
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/musl-add-locale-functions.patch
-    
     #help find zlib for some reason
     export CPPFLAGS="-I${includedir}"
 
@@ -41,12 +37,8 @@ elif [[ "${target}" == *-freebsd* ]]; then
     #help find libpng for some reason
     export CPPFLAGS="-I${includedir}"
 
-elif [[ "${target}" == *-apple* ]]; then
+elif [[ "${target}" == *-darwin* ]]; then
 
-    #see https://trac.wxwidgets.org/ticket/19159 for issue tracker and https://github.com/wxWidgets/wxWidgets/pull/2354 for source of patch
-    #this has since been merged into master, unsure about future status?
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/apple-add-bridging-commit.patch
-    
     #fix missing symbols error - Undefined symbols for architecture x86_64: "___isPlatformVersionAtLeast". I think something to do with cross-compiling and we don't have access to XCode libraries??
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/osx-disable-builtin-platform-check.patch
 
@@ -123,7 +115,7 @@ dependencies = [
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f"))
     Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
-    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"))
+    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"); compat="7.73,8")
     Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6"))
     Dependency(PackageSpec(name="Zlib_jll", uuid = "83775a58-1f1d-513f-b197-d71354ab007a"))
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
@@ -131,5 +123,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-#wxMSW fails on gcc4 and 5, wxGTK works on everything
+# wxMSW fails on gcc4 and 5, wxGTK works on everything
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",preferred_gcc_version=v"6")

@@ -3,14 +3,15 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"11.2.0"
+version = v"11.2.1"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v$(version)/geant4-v$(version).tar.gz",
-                  "9ff544739b243a24dac8f29a4e7aab4274fc0124fd4e1c4972018213dc6991ee"),
+                  "76c9093b01128ee2b45a6f4020a1bcb64d2a8141386dea4674b5ae28bcd23293"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,10 +28,17 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/windows.patch
+fi
+
 mkdir build && cd build
 FLAGS=()
-if [[ "${target}" != *-apple-* ]]; then
+if [[ "${target}" != *-w64-* && "${target}" != *-apple-* ]]; then
     FLAGS=(-DGEANT4_USE_OPENGL_X11=ON)
+fi
+if [[ "${target}" == *-w64-* ]]; then
+    FLAGS+=(-DGEANT4_BUILD_MULTITHREADED=OFF)
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -50,7 +58,7 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l", platforms)
+platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "i686", platforms)
 
 
 # The products that we will ensure are always built
@@ -101,4 +109,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", julia_compat="1.6")

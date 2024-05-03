@@ -1,6 +1,9 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 # The version of this JLL is decoupled from the upstream version.
 # Whenever we package a new upstream release, we initially map its
@@ -11,7 +14,7 @@ name = "NetCDF"
 upstream_version = v"4.9.2"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.9"
+version_offset = v"0.2.11"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -92,9 +95,24 @@ make install
 nc-config --all
 """
 
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+
+# Avoid platforms where the MPI implementation isn't supported
+# OpenMPI
+filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# MPItrampoline
+filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -103,17 +121,21 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Blosc_jll"),
     Dependency("Bzip2_jll"),
-    Dependency("HDF5_jll"; compat = "~1.14"),
+    Dependency("HDF5_jll"; compat = "~1.14.3"),
     Dependency("LibCURL_jll"; compat = "7.73.0,8"),
     Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
     Dependency("libzip_jll"),
-    Dependency("Blosc_jll"),
-    Dependency("OpenMPI_jll", compat="4.1.6,5"),
 ]
+append!(dependencies, platform_dependencies)
+
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the shared libraries.
+# (MPItrampoline will skip its automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")

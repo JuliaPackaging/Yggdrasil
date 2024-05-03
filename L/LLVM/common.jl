@@ -17,7 +17,7 @@ const llvm_tags = Dict(
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
     v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
-    v"17.0.6" => "8a2c8f5770440a08240aa240c972204b950662cd", # julia-17.0.6-0
+    v"17.0.6" => "0424864b3ac348210aab171668eea1a669956a31", # julia-17.0.6-3
 )
 
 const buildscript = raw"""
@@ -364,7 +364,7 @@ CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 
 # Set the bug report URL to the Julia issue tracker
-CMAKE_FLAGS+=("-DBUG_REPORT_URL="https://github.com/julialang/julia")
+CMAKE_FLAGS+=(-DBUG_REPORT_URL="https://github.com/julialang/julia")
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
 ninja -j${nproc} -vv

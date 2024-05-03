@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "rr"
-version = v"5.6"
+version = v"5.7"
 
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/JuliaLang/rr.git",
-              "674ccc3748a499e87dd2f7bb872ffb3d2960e113")
+              "39f8a2923be89e2df2997d85f8ea2574ea1bc203")
 ]
 
 # Bash recipe for building across all platforms

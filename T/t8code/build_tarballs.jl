@@ -6,10 +6,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"1.6.1"
+version = v"2.0.0"
 
 tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/t8-$(version).tar.gz"
-sha256sum = "dc96effa7c1ad1d50437fefdd0963f6ef7c943eb10a372a4e8546a5f2970a412"
+sha256sum = "b83f6c204cdb663cec7e0c1059406afc4c06df236b71d7b190fb698bec44c1e0"
 
 # Collection of sources required to complete build
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
@@ -59,7 +59,7 @@ fi
   ${mpiopts}
 
 # Build & install
-make -j${nproc} "${FLAGS[@]}"
+make -j${nproc} "${FLAGS[@]}" 
 make install
 """
 
