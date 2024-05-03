@@ -3,18 +3,17 @@
 using BinaryBuilder
 
 name = "Xorg_libXext"
-version = v"1.3.4"
+version = v"1.3.6"
 
 # Collection of sources required to build libXext
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXext-$(version).tar.bz2",
-                  "59ad6fcce98deaecc14d39a672cf218ca37aba617c9a0f691cac3bcd28edf82b"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXext-$(version).tar.xz",
+                  "edb59fa23994e405fdc5b400afdf5820ae6160b94f35e3dc3da4457a16e89753"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXext-*/
-CPPFLAGS="-I${prefix}/include"
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
@@ -24,7 +23,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->Sys.isapple(p) || Sys.iswindows(p))
 
 products = [
     LibraryProduct("libXext", :libXext),
@@ -34,8 +33,9 @@ products = [
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
-    Dependency("Xorg_libX11_jll"),
+    Dependency("Xorg_libX11_jll"; compat="1.8.6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"6")
