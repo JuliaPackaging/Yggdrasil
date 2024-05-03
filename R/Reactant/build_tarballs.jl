@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.3"
+version = v"0.0.4"
 
 sources = [
-   GitSource(repo, "3157b2fd16dec4964f33e4b1ec925adf782c6514"),
+   GitSource(repo, "3aed0ea8b0f3a782b8b827ceaa6a32fc535e1694"),
 ]
 
 # Bash recipe for building across all platforms
@@ -265,7 +265,9 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
-#platforms = filter(p -> !(Sys.isapple(p)), platforms)
+
+# platforms = filter(p -> !(Sys.isapple(p)), platforms)
+# platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 
 for platform in platforms
