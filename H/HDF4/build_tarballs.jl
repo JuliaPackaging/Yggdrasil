@@ -31,7 +31,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("h4cc", :h4cc),
+    # ExecutableProduct("h4cc", :h4cc),   # `h4cc` is not built on Windows
     ExecutableProduct("hdfed", :hdfed),
     ExecutableProduct("hdfimport", :hdfimport),
     ExecutableProduct("hdfls", :hdfls),
