@@ -149,6 +149,7 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         # ENABLE_PARALLEL=yes
         # export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
         # export LIBS="-L${libdir} -lmsmpi"
+        :
     fi
 else
     ENABLE_PARALLEL=yes
