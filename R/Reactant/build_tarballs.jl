@@ -299,7 +299,7 @@ for platform in platforms
     should_build_platform(triplet(augmented_platform)) || continue
     push!(builds, (;
                    dependencies=[dependencies; cuda_deps], products, sources=platform_sources,
-        platforms=[augmented_platform], augment_platform_block::String, script=prefix*script
+        platforms=[augmented_platform], augment_platform_block=augment_platform_block::String, script=prefix*script
     ))
 end
 
