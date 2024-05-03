@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Libgpg_error"
-version = v"1.42"
+version_string = "1.49"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build Libgpg-Error
 sources = [
-    ArchiveSource("https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$(version.major).$(version.minor).tar.bz2",
-                  "fc07e70f6c615f8c4f590a8e37a9b8dd2e2ca1e9408f8e60459c67452b925e23"),
+    ArchiveSource("https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$(version_string).tar.bz2",
+                  "8b79d54639dbf4abc08b5406fb2f37e669a2dec091dd024fb87dd367131c63a9"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,7 +25,7 @@ done
 cp -iv src/syscfg/lock-obj-pub.i686-unknown-linux-gnu.h src/syscfg/lock-obj-pub.i686-unknown-linux-musl.h
 cp -iv src/syscfg/lock-obj-pub.aarch64-unknown-linux-gnu.h src/syscfg/lock-obj-pub.aarch64-unknown-linux-musl.h
 cp -iv src/syscfg/lock-obj-pub.arm-unknown-linux-gnueabi.h src/syscfg/lock-obj-pub.arm-unknown-linux-musleabihf.h
-cp -iv src/syscfg/lock-obj-pub.x86_64-unknown-linux-gnu.h src/syscfg/lock-obj-pub.freebsd11.1.h
+cp -iv src/syscfg/lock-obj-pub.x86_64-unknown-linux-gnu.h src/syscfg/lock-obj-pub.freebsd13.2.h
 
 # Use libgpg-specific mapping for triplets
 TARGET="${target}"
@@ -44,7 +45,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
