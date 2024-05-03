@@ -292,14 +292,14 @@ for platform in platforms
         push!(cuda_deps, BuildDependency(PackageSpec(name="CUDNN_jll")))
         push!(cuda_deps, BuildDependency(PackageSpec(name="TensorRT_jll")))
         push!(cuda_deps, BuildDependency(PackageSpec(name="CUDA_full_jll")))
-        augment_platform_block=CUDA.augment
+        augment_platform_block=CUDA.augment::String
         prefix = "export CUDA_VERSION=\"\"\n"
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
     push!(builds, (;
                    dependencies=[dependencies; cuda_deps], products, sources=platform_sources,
-        platforms=[augmented_platform], augment_platform_block, script=prefix*script
+        platforms=[augmented_platform], augment_platform_block=augment_platform_block::String, script=prefix*script
     ))
 end
 
@@ -315,6 +315,6 @@ for (i,build) in enumerate(builds)
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=v"10", julia_compat="1.6",
-                   build.augment_platform_block, lazy_artifacts=true)
+                   augment_platform_block=build.augment_platform_block::String, lazy_artifacts=true)
 end
 
