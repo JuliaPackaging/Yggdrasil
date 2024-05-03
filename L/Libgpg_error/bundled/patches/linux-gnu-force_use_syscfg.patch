@@ -1,6 +1,8 @@
+diff --git a/configure.ac b/configure.ac
+index 6e54f62..00dadf1 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -595,33 +595,8 @@
+@@ -619,33 +619,8 @@ if test "$have_w32_system" = yes; then
      fi
      force_use_syscfg=yes
  fi
@@ -12,7 +14,7 @@
 -  AC_MSG_NOTICE([generated src/lock-obj-pub.native.h for $host])
 -elif test x$cross_compiling = xyes; then
 -  case $host in
--    *-*-linux-gnu*)
+-    *-*-gnu* | *-*-linux-gnu* | *-*-linux-musl*)
 -    AC_CHECK_TOOL(OBJDUMP, [objdump])
 -    if test -n "$OBJDUMP"; then
 -      lock_obj_h_generated=yes
