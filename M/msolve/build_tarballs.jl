@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.6.5"
+upstream_version = v"0.6.5"
 
 version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
