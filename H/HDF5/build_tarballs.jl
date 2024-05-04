@@ -221,6 +221,13 @@ fi
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran-src-Makefile.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hl-fortran-src-Makefile.patch
 
+# Remove empty `-l` flags from libtool
+# (Why are they there? They should not be.)
+# Run the command several times to handle multiple (overlapping) occurrences.
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
 # probably caused by a bug in automake, or in how automake was used.
