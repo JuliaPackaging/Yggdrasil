@@ -5,6 +5,11 @@ using BinaryBuilder, Pkg
 name = "msolve"
 version = v"0.6.5"
 
+version_offset = v"0.0.1"
+version = VersionNumber(upstream_version.major*100+version_offset.major,
+                        upstream_version.minor*100+version_offset.minor,
+                        version_offset.patch)
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/algebraic-solving/msolve.git", "5e72b9d99eaea55fe87eb8ac945ec9e914a69327")
@@ -38,7 +43,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
-    Dependency("FLINT_jll", compat = "~200.900.000"),
+    Dependency("FLINT_jll", compat = "~300.100.300"),
     Dependency("MPFR_jll", v"4.1.1"),
 
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
