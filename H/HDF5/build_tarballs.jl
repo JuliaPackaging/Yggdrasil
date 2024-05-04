@@ -110,18 +110,20 @@ FLAGS=()
 if [[ ${target} == *-mingw* ]]; then
     FLAGS+=(LDFLAGS='-no-undefined')
     # For OpenSSL's libcrypto for ROS3-VFD
-    export CFLAGS="${CFLAGS} -L${prefix}/lib64"
-    export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
+    export CFLAGS="${CFLAGS} -L${prefix}/lib"
+    export FCFLAGS="${FCFLAGS} -L${prefix}/lib"
 fi
 
 # Check which VFD are available
 ENABLE_DIRECT_VFD=yes
 ENABLE_MIRROR_VFD=yes
+ENABLE_ROS3_VFD=yes
 if [[ ${target} == *-darwin* ]]; then
     ENABLE_DIRECT_VFD=no
 elif [[ ${target} == *-w64-mingw32 ]]; then
     ENABLE_DIRECT_VFD=no
     ENABLE_MIRROR_VFD=no
+    ENABLE_ROS3_VFD=no          # libcrypto isn't found (why?)
 fi
 
 # Configure MPI
@@ -177,7 +179,7 @@ fi
     --enable-hl=yes \
     --enable-mirror-vfd="$ENABLE_MIRROR_VFD" \
     --enable-parallel="$ENABLE_PARALLEL" \
-    --enable-ros3-vfd=yes \
+    --enable-ros3-vfd="$ENABLE_ROS3_VFD" \
     --enable-static=no \
     --enable-tests=no \
     --enable-tools=yes \
