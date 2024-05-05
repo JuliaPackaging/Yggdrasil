@@ -32,12 +32,12 @@ cd $WORKSPACE/srcdir/MUMPS*
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
-sed -i 's/cd examples; $(MAKE) all//' Makefile
 
 # Add `-fallow-argument-mismatch` if supported
 : >empty.f
+FFLAGS=()
 if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
-    FFLAGS=("-fallow-argument-mismatch")
+    FFLAGS+=("-fallow-argument-mismatch")
 fi
 rm -f empty.*
 
@@ -77,6 +77,36 @@ mkdir ${includedir}/libseq
 cp include/*.h ${includedir}
 cp libseq/*.h ${includedir}/libseq
 cp lib/*.${dlext} ${libdir}
+
+make clean
+for sym in isamax idamax ilaenv slamch dlamch \
+           saxpy scopy sgemm sgemv sgeqpf sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
+           daxpy dcopy dgemm dgemv dgeqpf dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
+           caxpy ccopy cgemm cgemv cgeqpf cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
+           zaxpy zcopy zgemm zgemv zgeqpf zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
+do
+    FFLAGS+=("-D${sym}=${sym}_64")
+done
+FFLAG="${FFLAGS[@]}"
+make_args_64+=(PLAT="64"
+               OPTF="-O3 -fdefault-integer-8 -ffixed-line-length-none"
+               OPTL="-O3"
+               OPTC="-O3 -DINTSIZE64"
+               CDEFS=-DAdd_
+               LMETISDIR="${libdir}/metis/metis_Int64_Real32/lib"
+               IMETIS="-I${libdir}/metis_Int64_Real32/include"
+               LMETIS="-L${libdir}/metis/metis_Int64_Real32/lib -lmetis_Int64_Real32"
+               ORDERINGSF="-Dpord -Dmetis"
+               LIBEXT_SHARED=".${dlext}"
+               SONAME="${SONAME}"
+               CC="$CC ${CFLAGS[@]}"
+               FC="gfortran $FFLAG"
+               FL="gfortran"
+               RANLIB="echo"
+               LPORD="-L./PORD/lib -lpord64"
+               LIBBLAS="${BLAS_LAPACK}"
+               LAPACK="${BLAS_LAPACK}")
+make allshared "${make_args_64[@]}"
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
@@ -87,6 +117,10 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
+    LibraryProduct("libsmumps64", :libsmumps64),
+    LibraryProduct("libdmumps64", :libdmumps64),
+    LibraryProduct("libcmumps64", :libcmumps64),
+    LibraryProduct("libzmumps64", :libzmumps64),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -97,4 +131,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.9", preferred_gcc_version=v"6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.11", preferred_gcc_version=v"6", clang_use_lld=false)
