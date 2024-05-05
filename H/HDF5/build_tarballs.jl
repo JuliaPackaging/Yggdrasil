@@ -123,7 +123,7 @@ if [[ ${target} == *-darwin* ]]; then
 elif [[ ${target} == *-w64-mingw32 ]]; then
     ENABLE_DIRECT_VFD=no
     ENABLE_MIRROR_VFD=no
-    ENABLE_ROS3_VFD=no          # libcrypto isn't found (why?)
+    #TODO ENABLE_ROS3_VFD=no          # libcrypto isn't found (why?)
 fi
 
 # Configure MPI
@@ -298,13 +298,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"1.1.1";
-               compat="1.1"),
-    Dependency("LibCURL_jll", v"8.7.1"; compat="7, 8"),
-    Dependency("OpenSSL_jll", v"3.0.13"; compat="3"),
-    Dependency("Zlib_jll", v"1.3.1"; compat="1.2"),
-    # Dependency("dlfcn_win32_jll", v"1.3.1"; compat="1.3", platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll", v"1.1.2"; compat="1.1"), # This is the successor of szlib
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.0.0"),
+    Dependency("LibCURL_jll"; compat="7.73.0, 8"),
+    Dependency("OpenSSL_jll", compat="3.0.8"),
+    Dependency("Zlib_jll"; compat="1.2.1"),
+    # Dependency("dlfcn_win32_jll"; compat="1.3.1", platforms=filter(Sys.iswindows, platforms)),
+    Dependency("libaec_jll"; compat="1.0.6"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 
