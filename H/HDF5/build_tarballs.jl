@@ -117,13 +117,11 @@ fi
 # Check which VFD are available
 ENABLE_DIRECT_VFD=yes
 ENABLE_MIRROR_VFD=yes
-ENABLE_ROS3_VFD=yes
 if [[ ${target} == *-darwin* ]]; then
     ENABLE_DIRECT_VFD=no
 elif [[ ${target} == *-w64-mingw32 ]]; then
     ENABLE_DIRECT_VFD=no
     ENABLE_MIRROR_VFD=no
-    #TODO ENABLE_ROS3_VFD=no          # libcrypto isn't found (why?)
 fi
 
 # Configure MPI
@@ -179,7 +177,7 @@ fi
     --enable-hl=yes \
     --enable-mirror-vfd="$ENABLE_MIRROR_VFD" \
     --enable-parallel="$ENABLE_PARALLEL" \
-    --enable-ros3-vfd="$ENABLE_ROS3_VFD" \
+    --enable-ros3-vfd=yes \
     --enable-static=no \
     --enable-tests=no \
     --enable-tools=yes \
@@ -212,7 +210,10 @@ fi
     "$(../saved/get_config_setting H5CONFIG_F_RKIND ../saved/config.status)" \
     "$(../saved/get_config_setting H5CONFIG_F_RKIND_SIZEOF ../saved/config.status)" \
     "$(../saved/get_config_setting H5CONFIG_F_NUM_IKIND ../saved/config.status)" \
-    "$(../saved/get_config_setting H5CONFIG_F_IKIND ../saved/config.status)"
+    "$(../saved/get_config_setting H5CONFIG_F_IKIND ../saved/config.status)" \
+    CC="$CC" \
+    CXX="$CXX" \
+    FC="$FC"
 
 # Patch the generated `Makefile`:
 # (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
