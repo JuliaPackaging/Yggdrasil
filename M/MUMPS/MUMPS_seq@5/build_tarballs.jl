@@ -107,7 +107,9 @@ make_args_64+=(PLAT="64"
                LPORD="-L./PORD/lib -lpord64"
                LIBBLAS="${BLAS_LAPACK}"
                LAPACK="${BLAS_LAPACK}")
-make allshared "${make_args_64[@]}"
+
+make -j${nproc} allshared "${make_args_64[@]}"
+cp lib/*.${dlext} ${libdir}
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
