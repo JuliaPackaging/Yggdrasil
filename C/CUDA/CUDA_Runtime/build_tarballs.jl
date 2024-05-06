@@ -37,9 +37,6 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv cuda_cupti/lib/libnvperf_host.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_target.so* ${libdir}
 
-    rm -r cuda_sanitizer_api/compute-sanitizer/{docs,include}
-    mv cuda_sanitizer_api/compute-sanitizer/* ${bindir}
-
     if [[ -d libnvjitlink ]]; then
         mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
     fi
@@ -65,9 +62,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_cupti/bin/cupti64_*.dll ${bindir}
     mv cuda_cupti/bin/nvperf_host.dll* ${libdir}
     mv cuda_cupti/bin/nvperf_target.dll* ${libdir}
-
-    rm -r cuda_sanitizer_api/compute-sanitizer/{docs,include}
-    mv cuda_sanitizer_api/compute-sanitizer/* ${bindir}
 
     if [[ -d libnvjitlink ]]; then
         mv libnvjitlink/lib/libnvJitLink.so* ${libdir}

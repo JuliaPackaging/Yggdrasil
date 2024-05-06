@@ -12,6 +12,5 @@ function get_products(platform)
         LibraryProduct(["libnvperf_host", "nvperf_host"], :libnvperf_host),
         LibraryProduct(["libnvperf_target", "nvperf_target"], :libnvperf_target),
         LibraryProduct(["libnvJitLink", "nvJitLink_120_0"], :libnvJitLink),
-        ExecutableProduct("compute-sanitizer", :compute_sanitizer),
     ]
 end
