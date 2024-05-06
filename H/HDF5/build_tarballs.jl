@@ -107,12 +107,14 @@ if [[ ${target} == x86_64-linux-musl ]]; then
 fi
 
 #TODO FLAGS=()
-#TODO if [[ ${target} == *-mingw* ]]; then
-#TODO     FLAGS+=(LDFLAGS='-no-undefined')
-#TODO     # For OpenSSL's libcrypto for ROS3-VFD
-#TODO     export CFLAGS="${CFLAGS} -L${prefix}/lib"
-#TODO     export FCFLAGS="${FCFLAGS} -L${prefix}/lib"
-#TODO fi
+if [[ ${target} == *-mingw* ]]; then
+    #TODO FLAGS+=(LDFLAGS='-no-undefined')
+    # For OpenSSL's libcrypto for ROS3-VFD
+    export CFLAGS="${CFLAGS} -L${prefix}/lib"
+    export FCFLAGS="${FCFLAGS} -L${prefix}/lib"
+    # For string functions `strtoull` etc.
+    export LDFLAGS="${LDFLAGS} -no-undefined"
+fi
 
 # Check which VFD are available
 ENABLE_DIRECT_VFD=yes
@@ -228,9 +230,9 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 
-#TODO # `AM_V_P` is not defined. This must be a shell command that returns
-#TODO # true or false depending on whether `make` should be verbose. This is
-#TODO # probably caused by a bug in automake, or in how automake was used.
+# `AM_V_P` is not defined. This must be a shell command that returns
+# true or false depending on whether `make` should be verbose. This is
+# probably caused by a bug in automake, or in how automake was used.
 #TODO make -j${nproc} AM_V_P=: "${FLAGS[@]}"
 make -j${nproc} AM_V_P=:
 
