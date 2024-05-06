@@ -1,18 +1,19 @@
 using BinaryBuilder
 
 name = "XSLT"
-version = v"1.1.34"
+version = v"1.1.39"
 
 # Collection of sources required to build XSLT
 sources = [
-    ArchiveSource("http://xmlsoft.org/sources/libxslt-$(version).tar.gz",
-                  "98b1bd46d6792925ad2dfe9a87452ea2adebf69dcb9919ffd55bf926a7f93f7f"),
+    GitSource("https://gitlab.gnome.org/GNOME/libxslt.git",
+              "743ab691bed98ed11ac99bbd9d903d59fb814ab8"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libxslt-*/
+cd $WORKSPACE/srcdir/libxslt/
 
+autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
@@ -23,7 +24,7 @@ rm -rf ${prefix}/share/doc/libxslt-*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -33,11 +34,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll", v"1.42.0"; compat="1.42.0"),
-    Dependency("Libgcrypt_jll"),
+    Dependency("Libgpg_error_jll"; compat="1.49.0"),
+    Dependency("Libgcrypt_jll"; compat="1.8.11"),
     Dependency("Libiconv_jll"),
     Dependency("XML2_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
