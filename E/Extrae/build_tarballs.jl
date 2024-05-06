@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/extrae-*
 
-atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0004-cuda-cupti-undefined-structs-since-v12.patch
+# atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0004-cuda-cupti-undefined-structs-since-v12.patch
 
 if [[ $bb_target = aarch64* ]]; then
     export ENABLE_ARM64=1
