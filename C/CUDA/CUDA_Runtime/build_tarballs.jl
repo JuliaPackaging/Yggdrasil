@@ -40,6 +40,10 @@ if [[ ${target} == *-linux-gnu ]]; then
     rm -r cuda_sanitizer_api/compute-sanitizer/{docs,include}
     mv cuda_sanitizer_api/compute-sanitizer/* ${bindir}
 
+    if [[ -d libnvjitlink ]]; then
+        mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
+    fi
+
     mv libcufft/lib/libcufft.so* libcufft/lib/libcufftw.so* ${libdir}
 
     mv libcublas/lib/libcublas.so* libcublas/lib/libcublasLt.so* ${libdir}
