@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMDowngrader"
-repo = "https://github.com/JuliaGPU/llvm-metal"
+repo = "https://github.com/JuliaGPU/llvm-downgrade"
 version = v"0.2"
 
 llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6"]
@@ -25,7 +25,7 @@ platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd llvm-metal/llvm
+cd llvm-downgrade/llvm
 LLVM_SRCDIR=$(pwd)
 
 install_license LICENSE.TXT
