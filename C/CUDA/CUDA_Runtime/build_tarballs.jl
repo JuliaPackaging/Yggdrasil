@@ -65,6 +65,10 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     rm -r cuda_sanitizer_api/compute-sanitizer/{docs,include}
     mv cuda_sanitizer_api/compute-sanitizer/* ${bindir}
 
+    if [[ -d libnvjitlink ]]; then
+        mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
+    fi
+
     mv libcufft/bin/cufft64_*.dll libcufft/bin/cufftw64_*.dll ${bindir}
 
     mv libcublas/bin/cublas64_*.dll libcublas/bin/cublasLt64_*.dll ${bindir}
@@ -98,6 +102,9 @@ for version in CUDA.cuda_full_versions
         "libcusolver",
         "libcusparse",
     ]
+    if version >= v"12"
+        push!(components, "libnvjitlink")
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)

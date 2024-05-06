@@ -33,8 +33,6 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     mv cuda_nvdisasm/bin/nvdisasm ${bindir}
 
-    mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
-
     # Convert the static compiler library to a dynamic one
     ${CC} -std=c99 -fPIC -shared -lm \
           -L cuda_nvcc/lib -Wl,--whole-archive -lnvptxcompiler_static -Wl,--no-whole-archive \
@@ -73,7 +71,6 @@ platforms = [Platform("x86_64", "linux"),
 
 function get_products(platform)
     products = [
-        LibraryProduct(["libnvJitLink", "nvJitLink_120_0"], :libnvJitLink),
         LibraryProduct(["libnvrtc", "nvrtc64_120_0"], :libnvrtc),
         LibraryProduct(["libnvrtc-builtins", "nvrtc-builtins64_124"], :libnvrtc_builtins),
         FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
@@ -98,7 +95,6 @@ for platform in platforms
         "cuda_nvcc",
         "cuda_nvrtc",
         "cuda_nvdisasm",
-        "libnvjitlink"
     ]
     sources = get_sources("cuda", components; version, platform)
     products = get_products(platform)
