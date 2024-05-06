@@ -32,11 +32,6 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv cuda_nvrtc/lib/libnvrtc-builtins.so* ${libdir}
 
     mv cuda_nvdisasm/bin/nvdisasm ${bindir}
-
-    # Convert the static compiler library to a dynamic one
-    ${CC} -std=c99 -fPIC -shared -lm \
-          -L cuda_nvcc/lib -Wl,--whole-archive -lnvptxcompiler_static -Wl,--no-whole-archive \
-          -o ${libdir}/libnvPTXCompiler.so
 elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_cudart/lib/x64/cudadevrt.lib ${prefix}/lib
 
@@ -49,15 +44,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_nvrtc/bin/nvrtc-builtins64_* ${bindir}
 
     mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
-
-    mv libnvjitlink/bin/nvJitLink_*.dll ${bindir}
-
-    # Convert the static compiler library to a dynamic one
-    # XXX: nvptxcompiler_static.lib is a MSVC-generated library, which doesn't work with
-    #      our toolchain (__GSHandlerCheck and __security_check_cookie are missing)
-    #${CC} -std=c99 -shared -lm \
-    #      -L cuda_nvcc/lib -Wl,--whole-archive -lnvptxcompiler_static -Wl,--no-whole-archive \
-    #      -o ${libdir}/nvPTXCompiler.dll
 
     # Fix permissions
     chmod +x ${bindir}/*.{exe,dll}
@@ -78,9 +64,6 @@ function get_products(platform)
         ExecutableProduct("nvdisasm", :nvdisasm),
         ExecutableProduct("nvlink", :nvlink),
     ]
-    if !Sys.iswindows(platform)
-        push!(products, LibraryProduct("libnvPTXCompiler", :libnvPTXCompiler))
-    end
     return products
 end
 
