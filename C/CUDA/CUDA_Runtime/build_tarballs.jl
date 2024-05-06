@@ -64,7 +64,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_cupti/bin/nvperf_target.dll* ${libdir}
 
     if [[ -d libnvjitlink ]]; then
-        mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
+        mv libnvjitlink/bin/nvJitLink_*.dll ${bindir}
     fi
 
     mv libcufft/bin/cufft64_*.dll libcufft/bin/cufftw64_*.dll ${bindir}
