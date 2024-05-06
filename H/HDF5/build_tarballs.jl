@@ -92,13 +92,6 @@ env \
 mkdir build
 pushd build
 
-#TODO # Required for x86_64-linux-musl:
-#TODO # - Some HDF5 C code requires C99, but configure only requests C89.
-#TODO # - Some HDF5 C++ code requires C++11, but configure does not request this.
-#TODO # This might not be necessary if we switch to newer GCC versions.
-#TODO export CFLAGS="${CFLAGS} -std=c99"
-#TODO export CXXFLAGS="${CXXFLAGS} -std=c++11"
-
 if [[ ${target} == x86_64-linux-musl ]]; then
     # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
     # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
@@ -106,14 +99,15 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-#TODO FLAGS=()
+MAKEFLAGS=()
 if [[ ${target} == *-mingw* ]]; then
-    #TODO FLAGS+=(LDFLAGS='-no-undefined')
+    MAKEFLAGS+=(LDFLAGS='-no-undefined')
     # For OpenSSL's libcrypto for ROS3-VFD
-    export CFLAGS="${CFLAGS} -L${prefix}/lib"
-    export FCFLAGS="${FCFLAGS} -L${prefix}/lib"
-    # For string functions `strtoull` etc.
-    export LDFLAGS="${LDFLAGS} -no-undefined"
+    # Note: Don't add `-L${prefix}/lib`, this activates Windows libraries that don't work
+    #TODO export CFLAGS="${CFLAGS} -L${prefix}/lib64"
+    #TODO export CXXFLAGS="${CXXFLAGS} -L${prefix}/lib64"
+    #TODO export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
+    export LDFLAGS="${LDFLAGS} -L${prefix}/lib64"
 fi
 
 # Check which VFD are available
@@ -162,12 +156,6 @@ else
     export CXX=mpicxx
     export FC=mpifort
 fi
-
-#TODO # This is a bug in HDF5; see
-#TODO # <https://github.com/HDFGroup/hdf5/issues/3925>. The file
-#TODO # `config/freebsd` includes `config/classic-fflags` which is
-#TODO # missing.
-#TODO : >../config/classic-fflags
 
 ../configure \
     --prefix=${prefix} \
@@ -233,8 +221,7 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
 # probably caused by a bug in automake, or in how automake was used.
-#TODO make -j${nproc} AM_V_P=: "${FLAGS[@]}"
-make -j${nproc} AM_V_P=:
+make -j${nproc} AM_V_P=: "${MAKEFLAGS[@]}"
 
 make install
 
