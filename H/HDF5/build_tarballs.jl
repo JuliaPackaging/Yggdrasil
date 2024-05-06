@@ -232,7 +232,7 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 #TODO # true or false depending on whether `make` should be verbose. This is
 #TODO # probably caused by a bug in automake, or in how automake was used.
 #TODO make -j${nproc} AM_V_P=: "${FLAGS[@]}"
-make -j${nproc}
+make -j${nproc} AM_V_P=:
 
 make install
 
