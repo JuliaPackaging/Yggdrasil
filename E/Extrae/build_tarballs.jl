@@ -46,7 +46,8 @@ autoreconf -fvi
     --with-binutils=$prefix \
     --with-unwind=$prefix \
     --with-xml-prefix=$prefix \
-    --with-papi=$prefix
+    --with-papi=$prefix \
+    --with-xml2-headers=${includedir}/libxml2
 
 make -j${nproc}
 make install
