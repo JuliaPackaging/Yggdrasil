@@ -7,9 +7,9 @@ include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
 
 
 name = "Extrae"
-version = v"4.0.3"
+version = v"4.1.2"
 sources = [
-    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "b5139a07dbb1f4aa9758c1d62d54e42c01125bcfa9aa0cb9ee4f863afae93db1"),
+    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "adbc1d3aefde7649262426d471237dc96f070b93be850a6f15280ed86fd0b952"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
@@ -66,6 +66,7 @@ products = [
     ExecutableProduct("extrae-cmd", :extrae_cmd),
     ExecutableProduct("extrae-header", :extrae_header),
     ExecutableProduct("extrae-loader", :extrae_loader),
+    ExecutableProduct("mpi2prv", :mpi2prv)
 ]
 
 cuda_products = [
