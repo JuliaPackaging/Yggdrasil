@@ -291,6 +291,17 @@ function cuda_comparison_strategy(a::String, b::String, a_requested::Bool, b_req
     return a == b
 end
 
+function is_tegra()
+    if isfile("/etc/nv_tegra_release")
+        return true
+    end
+    if isfile("/proc/device-tree/compatible") &&
+        contains(read("/proc/device-tree/compatible", String), "tegra")
+        return true
+    end
+    return false
+end
+
 function augment_platform!(platform::Platform)
     if !haskey(platform, "cuda")
         platform["cuda"] = something(cuda_toolkit_tag(), "none")
@@ -302,6 +313,15 @@ function augment_platform!(platform::Platform)
     # store the fact that we're using a local CUDA toolkit, so that we can more easily
     # query it from CUDA.jl without having to parse the preference again.
     platform["cuda_local"] = string(local_preference !== missing && local_preference)
+
+    # if we're on an arm64 platform, identify the CUDA subplatform
+    if Sys.islinux() && arch(platform) == "aarch64"
+        platform["cuda_platform"] = if is_tegra()
+            "jetson"
+        else
+            "sbsa"
+        end
+    end
 
     return platform
 end

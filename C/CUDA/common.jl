@@ -1,5 +1,6 @@
 using JSON3, Downloads
 using BinaryBuilder
+using Base: thisminor
 
 function get_sources(product::String, components::Vector{String};
                      version::Union{VersionNumber,String}, platform::Platform,
@@ -21,8 +22,9 @@ function parse_sources(json::String, product::String, components::Vector{String}
         libc(platform) == "glibc" || error("Only glibc is supported on Linux")
         if arch(platform) == "x86_64"
             "linux-x86_64"
-        elseif arch(platform) == "aarch64"
-            # XXX: 11.7+ also has linux-aarch64
+        elseif arch(platform) == "aarch64" && platform["cuda_platform"] == "jetson"
+            "linux-aarch64"
+        elseif arch(platform) == "aarch64" && platform["cuda_platform"] == "sbsa"
             "linux-sbsa"
         elseif arch(platform) == "powerpc64le"
             "linux-ppc64le"
@@ -115,8 +117,7 @@ fi"""
         "libcurand",
         "libcusolver",
         "libcusparse",
-        "libnpp",
-        "libnvjpeg"
+        "libnpp"
     ]
     if version >= v"11.8"
         push!(components, "cuda_profiler_api")
@@ -124,12 +125,16 @@ fi"""
     if version >= v"12"
         push!(components, "libnvjitlink")
     end
-
+    if version >= v"12.2"
+        # available earlier, but not for aarch64
+        push!(components, "libnvjpeg")
+    end
     for platform in platforms
         should_build_platform(triplet(platform)) || continue
+
         push!(builds,
                 (; script, platforms=[platform], products=Product[],
-                sources=get_sources("cuda", components; version, platform)
+                   sources=get_sources("cuda", components; version, platform)
         ))
     end
 
