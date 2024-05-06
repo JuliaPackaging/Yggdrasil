@@ -78,7 +78,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv libcurand/bin/curand64_*.dll ${bindir}
 
     # Fix permissions
-    chmod +x ${bindir}/*.{exe,dll}
+    chmod +x ${bindir}/*.dll
 fi
 """
 
