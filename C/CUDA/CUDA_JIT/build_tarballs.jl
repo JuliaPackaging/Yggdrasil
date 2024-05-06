@@ -57,8 +57,6 @@ platforms = [Platform("x86_64", "linux"),
 
 function get_products(platform)
     products = [
-        LibraryProduct(["libnvrtc", "nvrtc64_120_0"], :libnvrtc),
-        LibraryProduct(["libnvrtc-builtins", "nvrtc-builtins64_124"], :libnvrtc_builtins),
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
         ExecutableProduct("ptxas", :ptxas),
