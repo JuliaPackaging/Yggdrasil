@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libNVVM"
-version = v"4.0.1"
+version = v"4.0.2"
 cuda_version = v"12.4.1"
 
 script = raw"""
@@ -31,7 +31,6 @@ platforms = [Platform("x86_64", "linux"),
 
 products = [
     LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm),
-    FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
 ]
 
 dependencies = []
