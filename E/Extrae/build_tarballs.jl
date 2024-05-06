@@ -58,7 +58,7 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
 ]
 
-cuda_versions_to_build = Any[v"11.0", nothing] #= v"12.1", =#
+cuda_versions_to_build = Any[v"11.4", nothing] #= v"12.1", =#
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
@@ -73,7 +73,7 @@ cuda_products = [
 ]
 
 dependencies = BinaryBuilder.AbstractDependency[
-    Dependency("Binutils_jll"),
+    Dependency("Binutils_jll"; compat="~2.39"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"),
     Dependency("XML2_jll"),
