@@ -92,12 +92,12 @@ env \
 mkdir build
 pushd build
 
-# Required for x86_64-linux-musl:
-# - Some HDF5 C code requires C99, but configure only requests C89.
-# - Some HDF5 C++ code requires C++11, but configure does not request this.
-# This might not be necessary if we switch to newer GCC versions.
-export CFLAGS="${CFLAGS} -std=c99"
-export CXXFLAGS="${CXXFLAGS} -std=c++11"
+#TODO # Required for x86_64-linux-musl:
+#TODO # - Some HDF5 C code requires C99, but configure only requests C89.
+#TODO # - Some HDF5 C++ code requires C++11, but configure does not request this.
+#TODO # This might not be necessary if we switch to newer GCC versions.
+#TODO export CFLAGS="${CFLAGS} -std=c99"
+#TODO export CXXFLAGS="${CXXFLAGS} -std=c++11"
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
@@ -106,13 +106,13 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-FLAGS=()
-if [[ ${target} == *-mingw* ]]; then
-    FLAGS+=(LDFLAGS='-no-undefined')
-    # For OpenSSL's libcrypto for ROS3-VFD
-    export CFLAGS="${CFLAGS} -L${prefix}/lib"
-    export FCFLAGS="${FCFLAGS} -L${prefix}/lib"
-fi
+#TODO FLAGS=()
+#TODO if [[ ${target} == *-mingw* ]]; then
+#TODO     FLAGS+=(LDFLAGS='-no-undefined')
+#TODO     # For OpenSSL's libcrypto for ROS3-VFD
+#TODO     export CFLAGS="${CFLAGS} -L${prefix}/lib"
+#TODO     export FCFLAGS="${FCFLAGS} -L${prefix}/lib"
+#TODO fi
 
 # Check which VFD are available
 ENABLE_DIRECT_VFD=yes
@@ -161,11 +161,11 @@ else
     export FC=mpifort
 fi
 
-# This is a bug in HDF5; see
-# <https://github.com/HDFGroup/hdf5/issues/3925>. The file
-# `config/freebsd` includes `config/classic-fflags` which is
-# missing.
-: >../config/classic-fflags
+#TODO # This is a bug in HDF5; see
+#TODO # <https://github.com/HDFGroup/hdf5/issues/3925>. The file
+#TODO # `config/freebsd` includes `config/classic-fflags` which is
+#TODO # missing.
+#TODO : >../config/classic-fflags
 
 ../configure \
     --prefix=${prefix} \
@@ -210,10 +210,7 @@ fi
     "$(../saved/get_config_setting H5CONFIG_F_RKIND ../saved/config.status)" \
     "$(../saved/get_config_setting H5CONFIG_F_RKIND_SIZEOF ../saved/config.status)" \
     "$(../saved/get_config_setting H5CONFIG_F_NUM_IKIND ../saved/config.status)" \
-    "$(../saved/get_config_setting H5CONFIG_F_IKIND ../saved/config.status)" \
-    CC="$CC" \
-    CXX="$CXX" \
-    FC="$FC"
+    "$(../saved/get_config_setting H5CONFIG_F_IKIND ../saved/config.status)"
 
 # Patch the generated `Makefile`:
 # (We could instead patch `Makefile.in`, or maybe even `Makefile.am`.)
@@ -231,10 +228,11 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 
-# `AM_V_P` is not defined. This must be a shell command that returns
-# true or false depending on whether `make` should be verbose. This is
-# probably caused by a bug in automake, or in how automake was used.
-make -j${nproc} AM_V_P=: "${FLAGS[@]}"
+#TODO # `AM_V_P` is not defined. This must be a shell command that returns
+#TODO # true or false depending on whether `make` should be verbose. This is
+#TODO # probably caused by a bug in automake, or in how automake was used.
+#TODO make -j${nproc} AM_V_P=: "${FLAGS[@]}"
+make -j${nproc}
 
 make install
 
