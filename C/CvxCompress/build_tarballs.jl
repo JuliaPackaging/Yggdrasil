@@ -9,7 +9,8 @@ version = v"1.1.0"
 sources = [
     GitSource(
         "https://github.com/ChevronETC/CvxCompress.git",
-        "c2dcde383443a357f869417d04921f0b6b29100f"
+        # "c2dcde383443a357f869417d04921f0b6b29100f"
+        "04dc59a4fab76ac612580ac69a9266e15db4fe17"
     ),
     DirectorySource("./bundled"),
 ]
@@ -29,19 +30,18 @@ mkdir -p ${libdir}
 mkdir -p ${includedir}
 cp libcvxcompress.so ${libdir}/libcvxcompress.${dlext}
 cp CvxCompress.hxx ${includedir}/CvxCompress.hxx
-cp CvxCompress.h ${includedir}/CvxCompress.h
 """
-
+# cp CvxCompress.h ${includedir}/CvxCompress.h
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # TODO update make to adjust the intrinsic code generation to support more platforms
-platforms = [p for p in supported_platforms() if arch(p) === "x86_64" && !Sys.iswindows(p) && !Sys.isapple(p)]
+platforms = [p for p in supported_platforms() if arch(p) === "x86_64" && !Sys.iswindows(p)]
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcvxcompress", :libcvxcompress)
     FileProduct("include/CvxCompress.hxx", :CvxCompress_hxx)
-    FileProduct("include/CvxCompress.h", :CvxCompress_h)
+    # FileProduct("include/CvxCompress.h", :CvxCompress_h)
 ]
 
 # Dependencies that must be installed before this package can be built
