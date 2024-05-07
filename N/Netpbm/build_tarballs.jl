@@ -436,7 +436,7 @@ dependencies = [
     Dependency("Xorg_libX11_jll"; compat="1.6.8"), # "1.6.8" - "1.8.6"
     Dependency("Xorg_xproto_jll"; compat="7.0.31"), # "7.0.31" - "7.0.31"
     Dependency("Zlib_jll"; compat="1.2.12"),   # "1.2.11" - "1.3.1"
-    Dependency("libpng_jll"; compat="1.6.37"), # "1.6.37" - "1.6.43"
+    Dependency("libpng_jll"; compat="1.6.38"), # "1.6.37" - "1.6.43"
     RuntimeDependency("Ghostscript_jll"; compat="9.53.3"), # "9.53.3" - "9.55.0"
 ]
 

@@ -205,7 +205,7 @@ PKG_CONFIG = pkg-config
 # a dependency on it.
 #OpenBSD:
 #CFLAGS = -I/usr/local/include
-CFLAGS = -O3 -fno-common
+CFLAGS = -O3 -fno-common -D_POSIX_C_SOURCE=900000L
 
 # EXE is a suffix that the linker puts on any executable it generates.
 # In cygwin, this is .exe and most programs deal with its existence without
@@ -588,13 +588,19 @@ SUFFIXMANUALS5 = 5
 #Netpbm library functions.  The value is used only in make file tests.
 # "unixshared" means a unix-style shared library, typically named like 
 # libxyz.so.2.3
+ifeq ($(dlext),so)
 NETPBMLIBTYPE = unixshared
+endif
 # "unixstatic" means a unix-style static library, (like libxyz.a)
 #NETPBMLIBTYPE = unixstatic
 # "dll" means a Windows DLL shared library
-#NETPBMLIBTYPE = dll
+ifeq ($(dlext),dll)
+NETPBMLIBTYPE = dll
+endif
 # "dylib" means a Darwin/Mac OS shared library
-#NETPBMLIBTYPE = dylib
+ifeq ($(dlext),dylib)
+NETPBMLIBTYPE = dylib
+endif
 
 #NETPBMLIBSUFFIX is the suffix used on whatever kind of library is 
 #selected above.  All this is used for is to construct library names.
