@@ -184,7 +184,8 @@ products = [
     ExecutableProduct("pamunlookup", :pamunlookup),
     ExecutableProduct("pamvalidate", :pamvalidate),
     ExecutableProduct("pamwipeout", :pamwipeout),
-    ExecutableProduct("pamx", :pamx),
+    # pamx requires X11 which is not built for Apple
+    # ExecutableProduct("pamx", :pamx),
     ExecutableProduct("pbmclean", :pbmclean),
     ExecutableProduct("pbmlife", :pbmlife),
     ExecutableProduct("pbmmake", :pbmmake),
