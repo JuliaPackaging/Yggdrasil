@@ -1,0 +1,55 @@
+--- a/lib/libsystem.c
++++ b/lib/libsystem.c
+@@ -263,8 +263,10 @@
+         return "SIGQUIT";
+     case SIGILL: /* POSIX.1 */
+         return "SIGILL";
++#ifdef SIGTRAP
+     case SIGTRAP:
+         return "SIGTRAP";
++#endif
+     case SIGABRT: /* POSIX.1 */
+         return "SIGABRT";
+     case SIGBUS:
+@@ -301,14 +303,22 @@
+     case SIGURG:
+         return "SIGURG";
+ #endif
++#ifdef SIGXCPU
+     case SIGXCPU:
+         return "SIGXCPU";
++#endif
++#ifdef SIGXFSZ
+     case SIGXFSZ:
+         return "SIGXFSZ";
++#endif
++#ifdef SIGVTALRM
+     case SIGVTALRM:
+         return "SIGVTALRM";
++#endif
++#ifdef SIGPROF
+     case SIGPROF:
+         return "SIGPROF";
++#endif
+ #ifdef SIGWINCH
+     case SIGWINCH:
+         return "SIGWINCH";
+--- a/converter/ppm/ppmtompeg/psocket.c
++++ b/converter/ppm/ppmtompeg/psocket.c
+@@ -33,16 +33,6 @@
+ 
+ #include "pm_config.h" /* For POSIX_IS_IMPLIED */
+ 
+-#ifdef POSIX_IS_IMPLIED
+-/* The OpenBSD C library, at least, is broken in that when _XOPEN_SOURCE
+-   is defined, its sys/socket.h refers to types "u_char", etc. but does
+-   not define them.  But it is also one of the C libraries where
+-   POSIX is implied so that we don't need to define _XOPEN_SOURCE in order
+-   to get the POSIX routines such as pclose() defined.  So we circumvent
+-   the problem by undefining _XOPEN_SOURCE:
+-*/
+-#undef _XOPEN_SOURCE
+-#endif
+ 
+ #include <stdarg.h>
+ #include <netinet/in.h>

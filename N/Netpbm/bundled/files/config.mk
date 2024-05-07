@@ -206,7 +206,7 @@ PKG_CONFIG = pkg-config
 #OpenBSD:
 #CFLAGS = -I/usr/local/include
 CFLAGS = -O3 -fno-common
-ifeq ($(dlext),dylib)
+ifeq ($(cctype),clang)
 CFLAGS += -D_POSIX_C_SOURCE=900000L
 endif
 
