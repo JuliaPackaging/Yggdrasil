@@ -96,9 +96,12 @@ products = [
     ExecutableProduct("papi_xml_event_info", :papi_xml_event_info),
 ]
 
-cuda_platforms = CUDA.supported_platforms()
-# filter!(p -> arch(p) != "aarch64", cuda_platforms)
-filter!(p -> !(arch(p) == "powerpc64le" && p["cuda"] == "11.0"), cuda_platforms)
+# Compiling for CUDA 12.4 fails with
+#     components/cuda/cupti_common.c: In function ‘cuptic_load_dynamic_syms’:
+#     components/cuda/cupti_common.c:114:23: error: ‘CUPTIU_MAX_FILES’ undeclared (first use in this function)
+#          char *found_files[CUPTIU_MAX_FILES];
+#                            ^
+cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3")
 
 for platform in [platforms; cuda_platforms]
     should_build_platform(triplet(platform)) || continue
