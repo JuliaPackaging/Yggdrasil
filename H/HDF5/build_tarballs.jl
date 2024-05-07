@@ -103,10 +103,7 @@ MAKEFLAGS=()
 if [[ ${target} == *-mingw* ]]; then
     MAKEFLAGS+=(LDFLAGS='-no-undefined')
     # For OpenSSL's libcrypto for ROS3-VFD
-    # Note: Don't add `-L${prefix}/lib`, this activates Windows libraries that don't work
-    #TODO export CFLAGS="${CFLAGS} -L${prefix}/lib64"
-    #TODO export CXXFLAGS="${CXXFLAGS} -L${prefix}/lib64"
-    #TODO export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
+    # Note: Do not add `-L${prefix}/lib`, this activates Windows libraries that don't work
     export LDFLAGS="${LDFLAGS} -L${prefix}/lib64"
 fi
 
@@ -253,6 +250,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# FOR TESTING ONLY:
+platforms = filter(Sys.iswindows, platforms)
+
 # The products that we will ensure are always built
 products = [
     # HDF5 tools
@@ -286,7 +286,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.0.0"),
+    # 1.0.[012345] 1.1.[01]
+    # broken: 1.0.0
+    # testing: 1.1.1
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.1.1"),
     Dependency("LibCURL_jll"; compat="7.73.0, 8"),
     Dependency("OpenSSL_jll", compat="3.0.8"),
     Dependency("Zlib_jll"; compat="1.2.12"),
