@@ -289,7 +289,8 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.1.0"),
     Dependency("LibCURL_jll"; compat="7.73.0, 8"),
     # 3.0.8: broken
-    Dependency("OpenSSL_jll", compat="3.0.13"),
+    # 3.0.13: broken
+    Dependency("OpenSSL_jll", compat="3.0.12"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     # Dependency("dlfcn_win32_jll"; compat="1.3.1", platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.0.6"), # This is the successor of szlib
