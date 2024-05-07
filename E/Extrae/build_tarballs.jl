@@ -1,4 +1,5 @@
 using BinaryBuilder
+using BinaryBuilderBase
 using Base.BinaryPlatforms
 using Pkg
 
@@ -7,16 +8,24 @@ include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
 
 
 name = "Extrae"
-version = v"4.0.3"
+version = v"4.1.2"
 sources = [
-    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "b5139a07dbb1f4aa9758c1d62d54e42c01125bcfa9aa0cb9ee4f863afae93db1"),
+    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "adbc1d3aefde7649262426d471237dc96f070b93be850a6f15280ed86fd0b952"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/extrae-*
 
-atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0004-cuda-cupti-undefined-structs-since-v12.patch
+# check if we need to use a more recent glibc
+if [[ -f "${prefix}/usr/include/bits/mman-linux.h" ]]; then
+    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(dirname $(realpath "${prefix}/usr/include/bits/mman-linux.h")))))
+    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+fi
+
+# Work around https://github.com/bsc-performance-tools/extrae/issues/103
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-missing-XML2_CFLAGS.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Add-missing-lxml2.patch
 
 if [[ $bb_target = aarch64* ]]; then
     export ENABLE_ARM64=1
@@ -28,6 +37,7 @@ fi
 
 if [[ $bb_full_target = *cuda\+[0-9]* ]]; then
     export ENABLE_CUDA=1
+    export CPPFLAGS="-I${prefix}/cuda/include"
 fi
 
 autoreconf -fvi
@@ -57,8 +67,14 @@ platforms = [
     Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
-cuda_versions_to_build = Any[v"11.4", nothing] #= v"12.1", =#
+# some platforms need glibc 2.19+, because the default one is too old
+glibc_platforms = filter(platforms) do p
+    libc(p) == "glibc" && proc_family(p) in ("intel", "power")
+end
+
+cuda_versions_to_build = Any[v"11.4", v"12", nothing]
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
@@ -66,6 +82,7 @@ products = [
     ExecutableProduct("extrae-cmd", :extrae_cmd),
     ExecutableProduct("extrae-header", :extrae_header),
     ExecutableProduct("extrae-loader", :extrae_loader),
+    ExecutableProduct("mpi2prv", :mpi2prv)
 ]
 
 cuda_products = [
@@ -73,6 +90,10 @@ cuda_products = [
 ]
 
 dependencies = BinaryBuilder.AbstractDependency[
+    # `MADV_HUGEPAGE` and `MAP_HUGE_SHIFT` require glibc 2.19, but we only
+    # package glibc 2.17.
+    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.19");
+                    platforms=glibc_platforms),
     Dependency("Binutils_jll"; compat="~2.39"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"),
