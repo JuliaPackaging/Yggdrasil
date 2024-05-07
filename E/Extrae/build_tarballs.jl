@@ -67,6 +67,7 @@ platforms = [
     Platform("powerpc64le", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # some platforms need glibc 2.19+, because the default one is too old
 glibc_platforms = filter(platforms) do p
