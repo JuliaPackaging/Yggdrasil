@@ -429,14 +429,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("JpegTurbo_jll"; compat="3.0.1"), # "2.0.1" - "2.1.91", "3.0.1" - "3.0.2"
+    Dependency("Libtiff_jll"; compat="4.0.10"),  # "4.0.10" - "4.6.0"
     Dependency("XML2_jll"; compat="2.9.9"), # "2.9.9" - "2.12.6"
     Dependency("Xorg_kbproto_jll"; compat="1.0.7"), # "1.0.7" - "1.0.7"
     Dependency("Xorg_libX11_jll"; compat="1.6.8"), # "1.6.8" - "1.8.6"
     Dependency("Xorg_xproto_jll"; compat="7.0.31"), # "7.0.31" - "7.0.31"
     Dependency("Zlib_jll"; compat="1.2.12"),   # "1.2.11" - "1.3.1"
     Dependency("libpng_jll"; compat="1.6.37"), # "1.6.37" - "1.6.43"
-    Dependency("JpegTurbo_jll"; compat="3.0.1"), # "2.0.1" - "2.1.91", "3.0.1" - "3.0.2"
-    Depencency("Libtiff_jll"; compat="4.0.10"),  # "4.0.10" - "4.6.0"
     RuntimeDependency("Ghostscript_jll"; compat="9.53.3"), # "9.53.3" - "9.55.0"
 ]
 
