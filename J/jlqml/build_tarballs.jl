@@ -11,11 +11,11 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "jlqml"
-version = v"0.6.0"
+version = v"0.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaGraphics/jlqml.git", "ad599834e6292401e1a5e9529cbaae505753c3ee"),
+    GitSource("https://github.com/JuliaGraphics/jlqml.git", "4cf890e6a556f546082e442a8f21178b195f39d6"),
 ]
 
 # Bash recipe for building across all platforms
