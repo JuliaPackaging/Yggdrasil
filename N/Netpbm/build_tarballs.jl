@@ -34,7 +34,7 @@ for file in $(cd ${WORKSPACE}/installdir/include/netpbm && ls); do
     install -Dvm 644 ${WORKSPACE}/installdir/include/netpbm/${file} ${includedir}/netpbm/${file}
 done
 
-for lfile in $(cd ${WORKSPACE}/installdir/lib && ls); do
+for file in $(cd ${WORKSPACE}/installdir/lib && ls); do
     install -Dvm 644 ${WORKSPACE}/installdir/lib/${file} ${libdir}/${file}
 done
 
