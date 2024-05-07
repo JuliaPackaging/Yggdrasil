@@ -205,7 +205,7 @@ PKG_CONFIG = pkg-config
 # a dependency on it.
 #OpenBSD:
 #CFLAGS = -I/usr/local/include
-CFLAGS = -O3 -fno-common -D_POSIX_C_SOURCE=900000L
+CFLAGS = -O3 -fno-common
 
 # EXE is a suffix that the linker puts on any executable it generates.
 # In cygwin, this is .exe and most programs deal with its existence without
@@ -251,7 +251,9 @@ EXE = $(exeext)
 
 # Here, $(SONAME) resolves to the soname for the shared library being created.
 # The following are gcc options.  This works on GNU libc systems.
+ifneq ($(dlext),dylib)
 LDSHLIB = -shared -Wl,-soname,$(SONAME)
+endif
 # You need -nostart instead of -shared on BeOS.  Though the BeOS compiler is
 # ostensibly gcc, it has the -nostart option, which is not mentioned in gcc
 # documentation and doesn't exist in at least one non-BeOS installation.
@@ -281,7 +283,9 @@ LDSHLIB = -shared -Wl,-soname,$(SONAME)
 # comes from the install_name option with which the library was
 # built.  It's an alternative to the -rpath option on other systems.
 #LDSHLIB=-dynamiclib
-#LDSHLIB=-dynamiclib -install_name $(NETPBMLIB_RUNTIME_PATH)/libnetpbm.$(MAJ).dylib
+ifeq ($(dlext),dylib)
+LDSHLIB=-dynamiclib -install_name $(NETPBMLIB_RUNTIME_PATH)/libnetpbm.$(MAJ).dylib
+endif
 
 # LDRELOC is the command to combine two .o files (relocateable object files)
 # into a single .o file that can later be linked into something else.  NONE

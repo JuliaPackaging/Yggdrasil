@@ -18,6 +18,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/netpbm-*
 
+# Make sure `strdup` is defined in `<string.h>` on Darwin
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strdup.patch
+
 cp ${WORKSPACE}/srcdir/files/config.mk .
 
 make -j${nproc}

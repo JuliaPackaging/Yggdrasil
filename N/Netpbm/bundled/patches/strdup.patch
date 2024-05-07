@@ -1,0 +1,10 @@
+--- a/lib/util/nstring.c
++++ b/lib/util/nstring.c
+@@ -108,6 +108,7 @@
+ #define _DEFAULT_SOURCE /* New name for SVID & BSD source defines */
+ #define _C99_SOURCE  /* Make sure snprintf() is in stdio.h */
+ #define _XOPEN_SOURCE 500  /* Make sure strdup() is in string.h */
++#define _POSIX_C_SOURCE 900000L  /* Make sure snprintf() is in stdio.h and strdup() is in string.h */
+ #define _BSD_SOURCE  /* Make sure strdup() is in string.h */
+ #define _GNU_SOURCE
+    /* Because of conditional compilation, this is GNU source only if the C
