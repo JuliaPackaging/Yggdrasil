@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-version = v"0.9.0"
+version = v"0.9.1" # Not tagged as v0.9.1, but is a v1.0.0 release candidate
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "14c86f66b20901b60ee276da355c1b62642c18d2"),
+    GitSource("https://github.com/flame/blis.git", "cad51491e8a0b306015a5a02881dc2a9b60dd8d9"),
     DirectorySource("../bundled")
 ]
 
@@ -86,10 +86,6 @@ function blis_script(;blis32::Bool=false)
 
         # Unscreen Arm SVE code for metaconfig.
         patch kernels/armsve/bli_kernels_armsve.h \
-            < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
-        patch kernels/armsve/1m/old/bli_dpackm_armsve512_int_12xk.c \
-            < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
-        patch kernels/armsve/1m/bli_dpackm_armsve256_int_8xk.c \
             < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
 
         # Screen out A64FX sector cache.
