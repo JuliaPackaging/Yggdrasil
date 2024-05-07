@@ -8,3 +8,23 @@
  #define _BSD_SOURCE  /* Make sure strdup() is in string.h */
  #define _GNU_SOURCE
     /* Because of conditional compilation, this is GNU source only if the C
+--- a/lib/colorname.c
++++ b/lib/colornam.c
+@@ -15,6 +15,7 @@
+ #define _DEFAULT_SOURCE 1  /* New name for SVID & BSD source defines */
+ #define _BSD_SOURCE 1      /* Make sure strdup() is in string.h */
+ #define _XOPEN_SOURCE 500  /* Make sure strdup() is in string.h */
++#define _POSIX_C_SOURCE 900000L  /* Make sure snprintf() is in stdio.h and strdup() is in string.h */
+ 
+ #include "netpbm/pm_c_util.h"
+ #include <ctype.h>
+--- a/lib/pmfileio.c
++++ b/lib/pmfileio.c
+@@ -13,6 +13,7 @@
+     */
+ #define _BSD_SOURCE    /* Make sure strdup is defined */
+ #define _XOPEN_SOURCE 500    /* Make sure ftello, fseeko, strdup are defined */
++#define _POSIX_C_SOURCE 900000L  /* Make sure snprintf() is in stdio.h and strdup() is in string.h */
+ #define _LARGEFILE_SOURCE 1  /* Make sure ftello, fseeko are defined */
+ #define _LARGEFILE64_SOURCE 1
+ #define _FILE_OFFSET_BITS 64

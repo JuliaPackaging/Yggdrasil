@@ -18,8 +18,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/netpbm-*
 
-# Make sure `strdup` is defined in `<string.h>` on Darwin
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strdup.patch
+#TODO # Make sure `strdup` is defined in `<string.h>` on Darwin
+#TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strdup.patch
 
 cp ${WORKSPACE}/srcdir/files/config.mk .
 
@@ -436,9 +436,12 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="4.0.10"),  # "4.0.10" - "4.6.0"
     Dependency("XML2_jll"; compat="2.9.9"), # "2.9.9" - "2.12.6"
     Dependency("Xorg_kbproto_jll"; compat="1.0.7"), # "1.0.7" - "1.0.7"
-    Dependency("Xorg_libX11_jll"; compat="1.6.8"), # "1.6.8" - "1.8.6"
+    # Need at least Xorg_libX11 v1.8.6 for armv6l support
+    Dependency("Xorg_libX11_jll"; compat="1.8.6"), # "1.6.8" - "1.8.6"
     Dependency("Xorg_xproto_jll"; compat="7.0.31"), # "7.0.31" - "7.0.31"
+    # Need at least Zlib v1.2.12; older versions don't work with libpng
     Dependency("Zlib_jll"; compat="1.2.12"),   # "1.2.11" - "1.3.1"
+    # Need at least libpng v1.8.6 for armv6l support
     Dependency("libpng_jll"; compat="1.6.38"), # "1.6.37" - "1.6.43"
     RuntimeDependency("Ghostscript_jll"; compat="9.53.3"), # "9.53.3" - "9.55.0"
 ]

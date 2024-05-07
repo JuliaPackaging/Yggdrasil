@@ -206,6 +206,9 @@ PKG_CONFIG = pkg-config
 #OpenBSD:
 #CFLAGS = -I/usr/local/include
 CFLAGS = -O3 -fno-common
+ifeq ($(dlext),dylib)
+CFLAGS += -D_POSIX_C_SOURCE=900000L
+endif
 
 # EXE is a suffix that the linker puts on any executable it generates.
 # In cygwin, this is .exe and most programs deal with its existence without
