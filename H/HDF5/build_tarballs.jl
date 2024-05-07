@@ -101,9 +101,10 @@ fi
 
 MAKEFLAGS=()
 if [[ ${target} == *-mingw* ]]; then
-    MAKEFLAGS+=(LDFLAGS='-no-undefined -L${prefix}/lib64')
-    # For OpenSSL's libcrypto for ROS3-VFD
-    # Note: Do not add `-L${prefix}/lib`, this activates Windows libraries that don't work
+    # We need `-L${prefix}/lib64` for OpenSSL's libcrypto for ROS3-VFD.
+    # Note: Do not add `-L${prefix}/lib`, this activates Windows libraries that don't work.
+    # We need `-no-undefined` when running `make`, but cannot have it when running `configure.
+    #TODO MAKEFLAGS+=(LDFLAGS='-no-undefined -L${prefix}/lib64')
     export LDFLAGS="${LDFLAGS} -L${prefix}/lib64"
 fi
 
@@ -288,11 +289,9 @@ dependencies = [
     # We need at least v1.1.0 of `CompilerSupportLibraries_jll` to define `strtoul` etc.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.1.0"),
     Dependency("LibCURL_jll"; compat="7.73.0, 8"),
-    # Need v"3.0.8"
-    # v"3.0.13" is broken (cannot build ROS3-VFD).
-    # v"3.1.12" works.
-    # No version provides `libcrypto` for x86-64-w64.
-    Dependency("OpenSSL_jll", compat="3.0.11"),
+    # We are building with OpenSSL v"3.0.8".
+    # Note that building with OpenSSL v"3.0.13" is broken (cannot build ROS3-VFD). That might bite us later.
+    Dependency("OpenSSL_jll", compat="3.0.8"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     # Dependency("dlfcn_win32_jll"; compat="1.3.1", platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.0.6"), # This is the successor of szlib
