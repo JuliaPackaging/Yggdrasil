@@ -285,15 +285,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # To ensure that the correct version of libgfortran is found at runtime
-    # 1.0.[012345] 1.1.[01]
-    # broken: 1.0.0
-    # 
-    # works: 1.1.0
-    # works: 1.1.1
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.0.5"),
+    # We need at least v1.1.0 of `CompilerSupportLibraries_jll` to define `strtoul` etc.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.1.0"),
     Dependency("LibCURL_jll"; compat="7.73.0, 8"),
-    Dependency("OpenSSL_jll", compat="3.0.8"),
+    # 3.0.8: broken
+    Dependency("OpenSSL_jll", compat="3.0.13"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     # Dependency("dlfcn_win32_jll"; compat="1.3.1", platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.0.6"), # This is the successor of szlib
