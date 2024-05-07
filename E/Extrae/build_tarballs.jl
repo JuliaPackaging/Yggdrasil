@@ -1,4 +1,5 @@
 using BinaryBuilder
+using BinaryBuilderBase
 using Base.BinaryPlatforms
 using Pkg
 
@@ -15,6 +16,12 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/extrae-*
+
+# check if we need to use a more recent glibc
+if [[ -f "${prefix}/usr/include/bits/mman-linux.h" ]]; then
+    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(dirname $(realpath "${prefix}/usr/include/bits/mman-linux.h")))))
+    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+fi
 
 # Work around https://github.com/bsc-performance-tools/extrae/issues/103
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-missing-XML2_CFLAGS.patch
@@ -60,6 +67,11 @@ platforms = [
     Platform("aarch64", "linux"; libc="glibc"),
 ]
 
+# some platforms need glibc 2.19+, because the default one is too old
+glibc_platforms = filter(platforms) do p
+    libc(p) == "glibc" && proc_family(p) in ("intel", "power")
+end
+
 cuda_versions_to_build = Any[v"11.4", nothing] #= v"12.1", =#
 
 products = [
@@ -76,6 +88,10 @@ cuda_products = [
 ]
 
 dependencies = BinaryBuilder.AbstractDependency[
+    # `MADV_HUGEPAGE` and `MAP_HUGE_SHIFT` require glibc 2.19, but we only
+    # package glibc 2.17.
+    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.19");
+                    platforms=glibc_platforms),
     Dependency("Binutils_jll"; compat="~2.39"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"),
