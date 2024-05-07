@@ -73,7 +73,7 @@ glibc_platforms = filter(platforms) do p
     libc(p) == "glibc" && proc_family(p) in ("intel", "power")
 end
 
-cuda_versions_to_build = Any[v"11.4", nothing] #= v"12.1", =#
+cuda_versions_to_build = Any[v"11.4", v"12", nothing]
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
