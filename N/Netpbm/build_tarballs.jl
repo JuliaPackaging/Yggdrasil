@@ -26,7 +26,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
 
 if cc --version | grep -q ^clang; then
     export cctype=clang
-elif cc --version | grep -q ^gcc; then
+elif cc --version | grep -q GCC; then
     export cctype=gcc
 else
     false
