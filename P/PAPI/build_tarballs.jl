@@ -7,11 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "PAPI"
-version = v"7.0.1"
+version = v"7.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/icl-utk-edu/papi.git", "cf3ef8872e30236a3d354e34a173e620738266b2"),
+    GitSource("https://github.com/icl-utk-edu/papi.git", "3ce9001dff49e1b6b1653ffb429808795f71a0bd"),
     DirectorySource("./bundled")
 ]
 
@@ -79,11 +79,25 @@ platforms = [
 # The products that we will ensure are always built
 products = [
  #    LibraryProduct("libpfm", :libpfm),
-    LibraryProduct("libpapi", :libpapi)
+    LibraryProduct("libpapi", :libpapi),
+    ExecutableProduct("papi_avail", :papi_avail),
+    ExecutableProduct("papi_clockres", :papi_clockres),
+    ExecutableProduct("papi_command_line", :papi_command_line),
+    ExecutableProduct("papi_component_avail", :papi_component_avail),
+    ExecutableProduct("papi_cost", :papi_cost),
+    ExecutableProduct("papi_decode", :papi_decode),
+    ExecutableProduct("papi_error_codes", :papi_error_codes),
+    ExecutableProduct("papi_event_chooser", :papi_event_chooser),
+    ExecutableProduct("papi_hardware_avail", :papi_hardware_avail),
+    ExecutableProduct("papi_mem_info", :papi_mem_info),
+    ExecutableProduct("papi_multiplex_cost", :papi_multiplex_cost),
+    ExecutableProduct("papi_native_avail", :papi_native_avail),
+    ExecutableProduct("papi_version", :papi_version),
+    ExecutableProduct("papi_xml_event_info", :papi_xml_event_info),
 ]
 
 cuda_platforms = CUDA.supported_platforms()
-filter!(p -> arch(p) != "aarch64", cuda_platforms)
+# filter!(p -> arch(p) != "aarch64", cuda_platforms)
 filter!(p -> !(arch(p) == "powerpc64le" && p["cuda"] == "11.0"), cuda_platforms)
 
 for platform in [platforms; cuda_platforms]
