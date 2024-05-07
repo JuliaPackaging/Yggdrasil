@@ -16,7 +16,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/extrae-*
 
-# atomic_patch -p0 ${WORKSPACE}/srcdir/patches/0004-cuda-cupti-undefined-structs-since-v12.patch
+# Work around https://github.com/bsc-performance-tools/extrae/issues/103
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-missing-XML2_CFLAGS.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Add-missing-lxml2.patch
 
 if [[ $bb_target = aarch64* ]]; then
     export ENABLE_ARM64=1
@@ -46,8 +48,7 @@ autoreconf -fvi
     --with-binutils=$prefix \
     --with-unwind=$prefix \
     --with-xml-prefix=$prefix \
-    --with-papi=$prefix \
-    --with-xml2-headers=${includedir}/libxml2
+    --with-papi=$prefix
 
 make -j${nproc}
 make install

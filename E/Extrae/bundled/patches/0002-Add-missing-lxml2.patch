@@ -1,0 +1,43 @@
+From 78fe8251e6ccd27f64c1f7452e84022f3bf7e102 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
+Date: Tue, 7 May 2024 17:20:14 +0200
+Subject: [PATCH 2/2] Add missing `-lxml2`
+
+---
+ src/tracer/Makefile.am | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/tracer/Makefile.am b/src/tracer/Makefile.am
+index 0098689e..c0e55b49 100644
+--- a/src/tracer/Makefile.am
++++ b/src/tracer/Makefile.am
+@@ -834,7 +834,7 @@ liboclgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+ libnanosmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+ libnanosgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+ 
+-libseqtrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
++libseqtrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
+ 
+ libmpitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(COMMON_LINKER_FLAGS)
+ libmpitracef_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) # -static 
+@@ -862,7 +862,7 @@ if SINGLE_MPI_LIBRARY
+   liboacccudampitracecf_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+ endif
+ 
+-libcudatrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
++libcudatrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
+ libcudampitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+ libcudampitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+ libcudaomptrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+@@ -915,7 +915,7 @@ if SINGLE_MPI_LIBRARY
+   libnanosmpitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS)
+ endif
+ 
+-libpttrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS)
++libpttrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS) -lxml2
+ 
+ libopenshmemtrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(OPENSHMEM_LDFLAGS)
+ 
+-- 
+2.44.0
+
