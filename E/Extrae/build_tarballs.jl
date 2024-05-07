@@ -37,6 +37,7 @@ fi
 
 if [[ $bb_full_target = *cuda\+[0-9]* ]]; then
     export ENABLE_CUDA=1
+    export CPPFLAGS="-I${prefix}/cuda/include"
 fi
 
 autoreconf -fvi
