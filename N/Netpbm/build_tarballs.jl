@@ -434,7 +434,8 @@ products = [
 dependencies = [
     Dependency("JpegTurbo_jll"; compat="3.0.1"), # "2.0.1" - "2.1.91", "3.0.1" - "3.0.2"
     Dependency("Libtiff_jll"; compat="4.0.10"),  # "4.0.10" - "4.6.0"
-    Dependency("XML2_jll"; compat="2.9.9"), # "2.9.9" - "2.12.6"
+    # Need at least XML2 v2.9.11 for armv6l support
+    Dependency("XML2_jll"; compat="2.9.11"), # "2.9.9" - "2.12.6"
     Dependency("Xorg_kbproto_jll"; compat="1.0.7"), # "1.0.7" - "1.0.7"
     # Need at least Xorg_libX11 v1.8.6 for armv6l support
     Dependency("Xorg_libX11_jll"; compat="1.8.6"), # "1.6.8" - "1.8.6"
