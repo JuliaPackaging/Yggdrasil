@@ -101,7 +101,7 @@ fi
 
 MAKEFLAGS=()
 if [[ ${target} == *-mingw* ]]; then
-    MAKEFLAGS+=(LDFLAGS='-no-undefined')
+    MAKEFLAGS+=(LDFLAGS='-no-undefined -L${prefix}/lib64')
     # For OpenSSL's libcrypto for ROS3-VFD
     # Note: Do not add `-L${prefix}/lib`, this activates Windows libraries that don't work
     export LDFLAGS="${LDFLAGS} -L${prefix}/lib64"
