@@ -11,6 +11,7 @@ version = VersionNumber(version_string)
 sources = [
     ArchiveSource("https://sourceforge.net/projects/netpbm/files/super_stable/$(version_string)/netpbm-$(version_string).tgz",
                   "045f7796224a801512efb5e7d6150a321674cbfb566128b21abf8d4ba65b4513"),
+    GitSource("https://github.com/win32ports/sys_wait_h", "229dee8de9cb4c29a3a31115112a4175df84a8eb"),
     DirectorySource("bundled"),
 ]
 
@@ -20,6 +21,11 @@ cd ${WORKSPACE}/srcdir/netpbm-*
 
 # Ensure that BSD functions can be found on FreeBSD
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
+
+# Provide <sys/wait.h> for Windows
+if [[ ${target} == *-mingw32* ]]; then
+    cp ${WORKSPACE}/srcdir/sys_wait_h/sys/wait.h /opt/${target}/${target}/sys-root/include/sys/wait.h
+fi
 
 cp ${WORKSPACE}/srcdir/files/config.mk .
 
@@ -55,6 +61,9 @@ install_license doc/CONTRIBUTORS doc/COPYRIGHT.PATENT doc/GPL_LICENSE.txt doc/co
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+# The build doesn't succeed on Windows. I'm sure this could be fixed.
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -433,19 +442,19 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("JpegTurbo_jll"; compat="3.0.1"), # "2.0.1" - "2.1.91", "3.0.1" - "3.0.2"
-    Dependency("Libtiff_jll"; compat="4.0.10"),  # "4.0.10" - "4.6.0"
+    Dependency("JpegTurbo_jll"; compat="3.0.1"),
+    Dependency("Libtiff_jll"; compat="4.0.10"),
     # Need at least XML2 v2.9.11 for armv6l support
-    Dependency("XML2_jll"; compat="2.9.11"), # "2.9.9" - "2.12.6"
-    Dependency("Xorg_kbproto_jll"; compat="1.0.7"), # "1.0.7" - "1.0.7"
+    Dependency("XML2_jll"; compat="2.9.11"),
+    Dependency("Xorg_kbproto_jll"; compat="1.0.7"),
     # Need at least Xorg_libX11 v1.8.6 for armv6l support
-    Dependency("Xorg_libX11_jll"; compat="1.8.6"), # "1.6.8" - "1.8.6"
-    Dependency("Xorg_xproto_jll"; compat="7.0.31"), # "7.0.31" - "7.0.31"
+    Dependency("Xorg_libX11_jll"; compat="1.8.6"),
+    Dependency("Xorg_xproto_jll"; compat="7.0.31"),
     # Need at least Zlib v1.2.12; older versions don't work with libpng
-    Dependency("Zlib_jll"; compat="1.2.12"),   # "1.2.11" - "1.3.1"
+    Dependency("Zlib_jll"; compat="1.2.12"),
     # Need at least libpng v1.8.6 for armv6l support
-    Dependency("libpng_jll"; compat="1.6.38"), # "1.6.37" - "1.6.43"
-    RuntimeDependency("Ghostscript_jll"; compat="9.53.3"), # "9.53.3" - "9.55.0"
+    Dependency("libpng_jll"; compat="1.6.38"),
+    RuntimeDependency("Ghostscript_jll"; compat="9.53.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
