@@ -9,7 +9,6 @@ version = v"1.1.0"
 sources = [
     GitSource(
         "https://github.com/ChevronETC/CvxCompress.git",
-        # "c2dcde383443a357f869417d04921f0b6b29100f"
         "04dc59a4fab76ac612580ac69a9266e15db4fe17"
     ),
     DirectorySource("./bundled"),
