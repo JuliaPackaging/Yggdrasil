@@ -90,3 +90,11 @@
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
+--- a/converter/other/cameratopam/util.c
++++ b/converter/other/cameratopam/util.c
+@@ -1,4 +1,5 @@
++#define _DEFAULT_SOURCE /* New name for SVID & BSD source defines */
+ #define _XOPEN_SOURCE   /* Make sure unistd.h contains swab() */
+ #include <unistd.h>
+ #include <stdio.h>
+ 
