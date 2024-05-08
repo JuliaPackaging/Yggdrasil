@@ -99,3 +99,12 @@
  #include <unistd.h>
  #include <stdio.h>
  
+--- a/converter/other/cameratopam/ljpeg.c
++++ b/converter/other/cameratopam/ljpeg.c
+@@ -1,5 +1,6 @@
+ #define _DEFAULT_SOURCE /* New name for SVID & BSD source defines */
+ #define _BSD_SOURCE    /* Make sure string.h containst strcasecmp() */
++#define __BSD_VISIBLE 1
+ #include <stdlib.h>
+ #include <string.h>
+ #include <stdio.h>
