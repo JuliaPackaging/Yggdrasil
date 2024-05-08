@@ -25,10 +25,8 @@ if [[ "${target}" == *-apple-* ]]; then
     FLAGS=(LDFLAGS="-fopenmp -lm")
 fi
 make -j${nproc} "${FLAGS[@]}"
-mkdir -p ${libdir}
-mkdir -p ${includedir}
-cp libcvxcompress.so ${libdir}/libcvxcompress.${dlext}
-cp CvxCompress.hxx ${includedir}/CvxCompress.hxx
+install -Dvm 755 libcvxcompress.so "${libdir}/libcvxcompress.${dlext}"
+install -Dvm 644 CvxCompress.hxx "${includedir}/CvxCompress.hxx"
 """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
