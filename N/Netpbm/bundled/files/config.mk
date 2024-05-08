@@ -207,6 +207,7 @@ PKG_CONFIG = pkg-config
 #CFLAGS = -I/usr/local/include
 CFLAGS = -O3 -fno-common
 ifeq ($(cctype),clang)
+# This is necessary for Darwin
 CFLAGS += -D_POSIX_C_SOURCE=900000L
 endif
 

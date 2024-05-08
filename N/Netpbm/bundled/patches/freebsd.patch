@@ -36,12 +36,47 @@
          return "SIGWINCH";
 --- a/converter/ppm/ppmtompeg/psocket.c
 +++ b/converter/ppm/ppmtompeg/psocket.c
-@@ -9,7 +9,7 @@
-
-============================================================================*/
-
+@@ -9,41 +9,16 @@
+ 
+ ============================================================================*/
+ 
 -#define _XOPEN_SOURCE 500 /* Make sure stdio.h contains pclose() */
 +#define _XOPEN_SOURCE 700 /* Make sure stdio.h contains pclose() */
++#define __BSD_VISIBLE 1
  /* _ALL_SOURCE is needed on AIX to make the C library include the 
     socket services (e.g. define struct sockaddr) 
  
+    Note that AIX standards.h actually sets feature declaration macros such
+    as _XOPEN_SOURCE, unless they are already set.
+ */
+ #define _ALL_SOURCE
+-#define __EXTENSIONS__
+-  /* __EXTENSIONS__ is for a broken Sun C library (uname SunOS kosh 5.8 
+-     generic_108528-16 sun4u sparc).  When you define _XOPEN_SOURCE,
+-     it's vnode.h and resource.h fail to define some data types that they
+-     need (e.g. timestruct_t).  But with __EXTENSIONS__, they declare the
+-     needed types anyway.  Our #include <sys/socket.h> causes the broken
+-     header files to get included.
+-  */
+ 
+-/* On AIX, pm_config.h includes standards.h, which expects to be included
+-   after feature declaration macros such as _XOPEN_SOURCE.  So we include
+-   pm_config.h as late as possible.
+-*/
+-
+-#include "pm_config.h" /* For POSIX_IS_IMPLIED */
+-
+-#ifdef POSIX_IS_IMPLIED
+-/* The OpenBSD C library, at least, is broken in that when _XOPEN_SOURCE
+-   is defined, its sys/socket.h refers to types "u_char", etc. but does
+-   not define them.  But it is also one of the C libraries where
+-   POSIX is implied so that we don't need to define _XOPEN_SOURCE in order
+-   to get the POSIX routines such as pclose() defined.  So we circumvent
+-   the problem by undefining _XOPEN_SOURCE:
+-*/
+-#undef _XOPEN_SOURCE
+-#endif
+-
+ #include <stdarg.h>
+ #include <netinet/in.h>
+ #include <unistd.h>
