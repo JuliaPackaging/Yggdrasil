@@ -206,12 +206,10 @@ PKG_CONFIG = pkg-config
 #OpenBSD:
 #CFLAGS = -I/usr/local/include
 CFLAGS = -O3 -fno-common
-#TODO ifeq ($(cctype),clang)
-#TODO # This is necessary for Darwin
-#TODO CFLAGS += -D_POSIX_C_SOURCE=900000L
-#TODO # This is necessary for FreeBSD
-#TODO CFLAGS += -D_POSIX_C_SOURCE=900000L
-#TODO endif
+ifneq ($(findstring darwin,$(target)),)
+# This is necessary for Darwin
+CFLAGS += -D_POSIX_C_SOURCE=900000L
+endif
 
 # EXE is a suffix that the linker puts on any executable it generates.
 # In cygwin, this is .exe and most programs deal with its existence without

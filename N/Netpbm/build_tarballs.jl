@@ -21,14 +21,6 @@ cd ${WORKSPACE}/srcdir/netpbm-*
 # Ensure that BSD functions can be found on FreeBSD
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
 
-if cc --version | grep -q ^clang; then
-    export cctype=clang
-elif cc --version | grep -q GCC; then
-    export cctype=gcc
-else
-    false
-fi
-
 cp ${WORKSPACE}/srcdir/files/config.mk .
 
 make -j${nproc}
