@@ -1,113 +1,3 @@
---- a/lib/libsystem.c
-+++ b/lib/libsystem.c
-@@ -263,8 +263,10 @@
-         return "SIGQUIT";
-     case SIGILL: /* POSIX.1 */
-         return "SIGILL";
-+#ifdef SIGTRAP
-     case SIGTRAP:
-         return "SIGTRAP";
-+#endif
-     case SIGABRT: /* POSIX.1 */
-         return "SIGABRT";
-     case SIGBUS:
-@@ -301,14 +303,22 @@
-     case SIGURG:
-         return "SIGURG";
- #endif
-+#ifdef SIGXCPU
-     case SIGXCPU:
-         return "SIGXCPU";
-+#endif
-+#ifdef SIGXFSZ
-     case SIGXFSZ:
-         return "SIGXFSZ";
-+#endif
-+#ifdef SIGVTALRM
-     case SIGVTALRM:
-         return "SIGVTALRM";
-+#endif
-+#ifdef SIGPROF
-     case SIGPROF:
-         return "SIGPROF";
-+#endif
- #ifdef SIGWINCH
-     case SIGWINCH:
-         return "SIGWINCH";
---- a/converter/ppm/ppmtompeg/psocket.c
-+++ b/converter/ppm/ppmtompeg/psocket.c
-@@ -9,41 +9,16 @@
- 
- ============================================================================*/
- 
--#define _XOPEN_SOURCE 500 /* Make sure stdio.h contains pclose() */
-+#define _XOPEN_SOURCE 700 /* Make sure stdio.h contains pclose() */
-+#define __BSD_VISIBLE 1
- /* _ALL_SOURCE is needed on AIX to make the C library include the 
-    socket services (e.g. define struct sockaddr) 
- 
-    Note that AIX standards.h actually sets feature declaration macros such
-    as _XOPEN_SOURCE, unless they are already set.
- */
- #define _ALL_SOURCE
--#define __EXTENSIONS__
--  /* __EXTENSIONS__ is for a broken Sun C library (uname SunOS kosh 5.8 
--     generic_108528-16 sun4u sparc).  When you define _XOPEN_SOURCE,
--     it's vnode.h and resource.h fail to define some data types that they
--     need (e.g. timestruct_t).  But with __EXTENSIONS__, they declare the
--     needed types anyway.  Our #include <sys/socket.h> causes the broken
--     header files to get included.
--  */
- 
--/* On AIX, pm_config.h includes standards.h, which expects to be included
--   after feature declaration macros such as _XOPEN_SOURCE.  So we include
--   pm_config.h as late as possible.
--*/
--
--#include "pm_config.h" /* For POSIX_IS_IMPLIED */
--
--#ifdef POSIX_IS_IMPLIED
--/* The OpenBSD C library, at least, is broken in that when _XOPEN_SOURCE
--   is defined, its sys/socket.h refers to types "u_char", etc. but does
--   not define them.  But it is also one of the C libraries where
--   POSIX is implied so that we don't need to define _XOPEN_SOURCE in order
--   to get the POSIX routines such as pclose() defined.  So we circumvent
--   the problem by undefining _XOPEN_SOURCE:
--*/
--#undef _XOPEN_SOURCE
--#endif
--
- #include <stdarg.h>
- #include <netinet/in.h>
- #include <unistd.h>
---- a/converter/pbm/pbmtoppa/pbmtoppa.c
-+++ b/converter/pbm/pbmtoppa/pbmtoppa.c
-@@ -7,6 +7,7 @@
- #define _DEFAULT_SOURCE /* New name for SVID & BSD source defines */
- #define _BSD_SOURCE
-     /* This makes sure strcasecmp() is in string.h */
-+#define __BSD_VISIBLE 1
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
---- a/converter/other/cameratopam/util.c
-+++ b/converter/other/cameratopam/util.c
-@@ -1,4 +1,5 @@
--#define _XOPEN_SOURCE   /* Make sure unistd.h contains swab() */
-+#define _DEFAULT_SOURCE /* New name for SVID & BSD source defines */
-+#define _XOPEN_SOURCE 700   /* Make sure unistd.h contains swab() */
- #include <unistd.h>
- #include <stdio.h>
- 
---- a/converter/other/cameratopam/ljpeg.c
-+++ b/converter/other/cameratopam/ljpeg.c
-@@ -1,5 +1,6 @@
- #define _DEFAULT_SOURCE /* New name for SVID & BSD source defines */
- #define _BSD_SOURCE    /* Make sure string.h containst strcasecmp() */
-+#define __BSD_VISIBLE 1
- #include <stdlib.h>
- #include <string.h>
- #include <stdio.h>
 --- a/converter/other/pstopnm.c
 +++ b/converter/other/pstopnm.c
 @@ -16,7 +16,7 @@
@@ -119,3 +9,15 @@
      /* Make sure fdopen() is in stdio.h and strdup() is in string.h */
  
  #include <assert.h>
+--- a/converter/ppm/ppmtompeg/psocket.c
++++ b/converter/ppm/ppmtompeg/psocket.c
+@@ -9,7 +9,8 @@
+ 
+ ============================================================================*/
+ 
+-#define _XOPEN_SOURCE 500 /* Make sure stdio.h contains pclose() */
++#define _XOPEN_SOURCE 700 /* Make sure stdio.h contains pclose() */
++#define __BSD_VISIBLE 1
+ /* _ALL_SOURCE is needed on AIX to make the C library include the 
+    socket services (e.g. define struct sockaddr) 
+ 

@@ -18,10 +18,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/netpbm-*
 
-#TODO # Make sure `strdup` is defined in `<string.h>` on Darwin
-#TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strdup.patch
-
-# Avoid unknown signals
+# Ensure that BSD functions can be found on FreeBSD
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/freebsd.patch
 
 if cc --version | grep -q ^clang; then
