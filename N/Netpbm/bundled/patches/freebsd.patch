@@ -80,3 +80,13 @@
  #include <stdarg.h>
  #include <netinet/in.h>
  #include <unistd.h>
+--- a/converter/pbm/pbmtoppa/pbmtoppa.c
++++ b/converter/pbm/pbmtoppa/pbmtoppa.c
+@@ -7,6 +7,7 @@
+ #define _DEFAULT_SOURCE /* New name for SVID & BSD source defines */
+ #define _BSD_SOURCE
+     /* This makes sure strcasecmp() is in string.h */
++#define __BSD_VISIBLE 1
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
