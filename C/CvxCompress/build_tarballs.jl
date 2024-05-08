@@ -31,7 +31,6 @@ mkdir -p ${includedir}
 cp libcvxcompress.so ${libdir}/libcvxcompress.${dlext}
 cp CvxCompress.hxx ${includedir}/CvxCompress.hxx
 """
-# cp CvxCompress.h ${includedir}/CvxCompress.h
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # TODO update make to adjust the intrinsic code generation to support more platforms
