@@ -1,0 +1,13 @@
+diff --git a/kernels/armsve/1m/bli_dpackm_armsve256_int_8x10.c b/kernels/armsve/1m/bli_dpackm_armsve256_int_8x10.c
+index 1665b539..1d67e6cb 100644
+--- a/kernels/armsve/1m/bli_dpackm_armsve256_int_8x10.c
++++ b/kernels/armsve/1m/bli_dpackm_armsve256_int_8x10.c
+@@ -35,7 +35,7 @@
+ 
+ #include "blis.h"
+ 
+-#if !defined(BLIS_FAMILY_A64FX)
++#if 1
+ #include <arm_sve.h>
+ 
+ // assumption:
