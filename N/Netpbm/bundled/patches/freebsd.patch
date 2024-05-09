@@ -1,0 +1,23 @@
+--- a/converter/other/pstopnm.c
++++ b/converter/other/pstopnm.c
+@@ -16,7 +16,7 @@
+ 
+ #define _DEFAULT_SOURCE 1 /* New name for SVID & BSD source defines */
+ #define _BSD_SOURCE 1   /* Make sure strdup() is in string.h */
+-#define _XOPEN_SOURCE 500
++#define _XOPEN_SOURCE 700
+     /* Make sure fdopen() is in stdio.h and strdup() is in string.h */
+ 
+ #include <assert.h>
+--- a/converter/ppm/ppmtompeg/psocket.c
++++ b/converter/ppm/ppmtompeg/psocket.c
+@@ -9,7 +9,8 @@
+ 
+ ============================================================================*/
+ 
+-#define _XOPEN_SOURCE 500 /* Make sure stdio.h contains pclose() */
++#define _XOPEN_SOURCE 700 /* Make sure stdio.h contains pclose() */
++#define __BSD_VISIBLE 1
+ /* _ALL_SOURCE is needed on AIX to make the C library include the 
+    socket services (e.g. define struct sockaddr) 
+ 
