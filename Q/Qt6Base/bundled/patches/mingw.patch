@@ -1,19 +1,19 @@
-diff --color -ur qtbase-everywhere-src-6.5.2/cmake/QtCompilerOptimization.cmake qtbase-everywhere-src-6.5.2-patched/cmake/QtCompilerOptimization.cmake
---- qtbase-everywhere-src-6.5.2/cmake/QtCompilerOptimization.cmake	2023-07-06 12:02:03.000000000 +0200
-+++ qtbase-everywhere-src-6.5.2-patched/cmake/QtCompilerOptimization.cmake	2023-09-17 19:17:41.738579711 +0200
-@@ -45,7 +45,7 @@
-     set(QT_CFLAGS_RDSEED     "-mrdseed")
-     set(QT_CFLAGS_AVX        "-mavx")
-     set(QT_CFLAGS_AVX2       "-mavx2")
--    set(QT_CFLAGS_ARCH_HASWELL "-march=haswell")
+diff --color -ur qtbase-everywhere-src-6.7.0-orig/cmake/QtCompilerOptimization.cmake qtbase-everywhere-src-6.7.0/cmake/QtCompilerOptimization.cmake
+--- qtbase-everywhere-src-6.7.0-orig/cmake/QtCompilerOptimization.cmake	2024-03-19 16:46:43.000000000 +0100
++++ qtbase-everywhere-src-6.7.0/cmake/QtCompilerOptimization.cmake	2024-05-09 09:35:27.459245484 +0200
+@@ -49,7 +49,7 @@
+     set(QT_CFLAGS_RDSEED     "${__prefix}-mrdseed")
+     set(QT_CFLAGS_AVX        "${__prefix}-mavx")
+     set(QT_CFLAGS_AVX2       "${__prefix}-mavx2")
+-    set(QT_CFLAGS_ARCH_HASWELL "${__prefix}-march=haswell")
 +    set(QT_CFLAGS_ARCH_HASWELL "-mavx2" "-mf16c" "-mfma" "-mbmi" "-mbmi2" "-mlzcnt")
-     set(QT_CFLAGS_AVX512F    "-mavx512f")
-     set(QT_CFLAGS_AVX512ER   "-mavx512er")
-     set(QT_CFLAGS_AVX512CD   "-mavx512cd")
-diff --color -ur qtbase-everywhere-src-6.5.2/src/gui/opengl/qopengl.cpp qtbase-everywhere-src-6.5.2-patched/src/gui/opengl/qopengl.cpp
---- qtbase-everywhere-src-6.5.2/src/gui/opengl/qopengl.cpp	2023-07-06 12:02:03.000000000 +0200
-+++ qtbase-everywhere-src-6.5.2-patched/src/gui/opengl/qopengl.cpp	2023-09-17 19:27:14.290816143 +0200
-@@ -187,6 +187,14 @@
+     set(QT_CFLAGS_AVX512F    "${__prefix}-mavx512f")
+     set(QT_CFLAGS_AVX512ER   "${__prefix}-mavx512er")
+     set(QT_CFLAGS_AVX512CD   "${__prefix}-mavx512cd")
+diff --color -ur qtbase-everywhere-src-6.7.0-orig/src/gui/opengl/qopengl.cpp qtbase-everywhere-src-6.7.0/src/gui/opengl/qopengl.cpp
+--- qtbase-everywhere-src-6.7.0-orig/src/gui/opengl/qopengl.cpp	2024-03-19 16:46:43.000000000 +0100
++++ qtbase-everywhere-src-6.7.0/src/gui/opengl/qopengl.cpp	2024-05-09 09:37:28.007209895 +0200
+@@ -187,6 +187,15 @@
      return result;
  }
  
@@ -25,10 +25,11 @@ diff --color -ur qtbase-everywhere-src-6.5.2/src/gui/opengl/qopengl.cpp qtbase-e
 +                                                             10, 0, 22000 };
 +}
 +
++
  // OS term consisting of name and optional version found in
  // under "os" in main array and in "exceptions" lists.
  struct OsTypeTerm
-@@ -196,7 +204,7 @@
+@@ -196,7 +205,7 @@
      static QVersionNumber hostKernelVersion() { return QVersionNumber::fromString(QSysInfo::kernelVersion()); }
      static QString hostOsRelease() {
  #ifdef Q_OS_WIN
@@ -37,10 +38,10 @@ diff --color -ur qtbase-everywhere-src-6.5.2/src/gui/opengl/qopengl.cpp qtbase-e
              return u"11"_s;
          return u"10"_s;
  #else
-diff --color -ur qtbase-everywhere-src-6.5.2/src/plugins/platforms/windows/qwindowsintegration.cpp qtbase-everywhere-src-6.5.2-patched/src/plugins/platforms/windows/qwindowsintegration.cpp
---- qtbase-everywhere-src-6.5.2/src/plugins/platforms/windows/qwindowsintegration.cpp	2023-07-06 12:02:03.000000000 +0200
-+++ qtbase-everywhere-src-6.5.2-patched/src/plugins/platforms/windows/qwindowsintegration.cpp	2023-09-17 20:02:28.197790564 +0200
-@@ -651,6 +651,14 @@
+diff --color -ur qtbase-everywhere-src-6.7.0-orig/src/plugins/platforms/windows/qwindowsintegration.cpp qtbase-everywhere-src-6.7.0/src/plugins/platforms/windows/qwindowsintegration.cpp
+--- qtbase-everywhere-src-6.7.0-orig/src/plugins/platforms/windows/qwindowsintegration.cpp	2024-03-19 16:46:43.000000000 +0100
++++ qtbase-everywhere-src-6.7.0/src/plugins/platforms/windows/qwindowsintegration.cpp	2024-05-09 09:48:55.118045498 +0200
+@@ -611,6 +611,14 @@
      MessageBeep(MB_OK);  // For QApplication
  }
  
@@ -55,7 +56,7 @@ diff --color -ur qtbase-everywhere-src-6.5.2/src/plugins/platforms/windows/qwind
  void QWindowsIntegration::setApplicationBadge(qint64 number)
  {
      // Clamp to positive numbers, as the Windows API doesn't support negative numbers
-@@ -659,7 +667,7 @@
+@@ -619,7 +627,7 @@
      // Persist, so we can re-apply it on setting changes and Explorer restart
      m_applicationBadgeNumber = number;
  
