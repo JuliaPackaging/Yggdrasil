@@ -8,11 +8,17 @@ version = v"20240116.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/abseil/abseil-cpp", "d7aaad83b488fd62bd51c81ecf16cd938532cc0a"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/abseil-cpp
+
+# Avoid problems with `-march`, `-ffast-math` etc.
+sed -i -e 's!set(CMAKE_C_COMPILER.*!set(CMAKE_C_COMPILER '${WORKSPACE}/srcdir/files/ccsafe')!' ${CMAKE_TARGET_TOOLCHAIN}
+sed -i -e 's!set(CMAKE_CXX_COMPILER.*!set(CMAKE_CXX_COMPILER '${WORKSPACE}/srcdir/files/c++safe')!' ${CMAKE_TARGET_TOOLCHAIN}
+
 cmake -B build -G Ninja \
     -DABSL_PROPAGATE_CXX_STD=OFF \
     -DBUILD_SHARED_LIBS=ON \
