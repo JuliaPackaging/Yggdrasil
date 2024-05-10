@@ -33,11 +33,10 @@ fi
 #TODO make -j${nproc}
 #TODO make install
 
-mkdir build
-cd build
-meson setup --prefix=${prefix} --buildtype=release ..
-ninja -j ${nproc}
-ninja -j ${nproc} install
+mkdir build && cd build
+meson --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release ..
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
