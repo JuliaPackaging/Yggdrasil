@@ -15,8 +15,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir
-# Patch taken from master branch
-cd numactl-*
+# Patch taken from master branch, with <https://github.com/numactl/numactl/issues/219> added
+cd numactl*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/home_node.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc} numademo_CFLAGS="-O3 -funroll-loops"
