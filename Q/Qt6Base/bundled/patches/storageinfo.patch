@@ -1,0 +1,54 @@
+From 2626a5bf1f5fdad213de62f7f4ef00d9f43df203 Mon Sep 17 00:00:00 2001
+From: Thiago Macieira <thiago.macieira@intel.com>
+Date: Tue, 02 Apr 2024 17:12:55 -0700
+Subject: [PATCH] QStorageInfo/Linux: remove dependency on linux/mount.h
+
+It was introduced in December 2018, which is apparently too recent for
+some Linux distributions. So remove the dependency that was there only
+to give us MS_RDONLY and revert to the old statfs.h / sys/vfs.h flag.
+
+We still don't include <sys/vfs.h> because it is absent on some old
+Android versions.
+
+Amends ea6abe583f8534495c3c43e2b6aab95742b102a3.
+
+Fixes: QTBUG-123932
+Change-Id: If1bf59ecbe014b569ba1fffd17c29cc448d16358
+Reviewed-by: Ahmad Samir <a.samirh78@gmail.com>
+(cherry picked from commit 73003f3b41edb7f363a2492ad349899c54a2b890)
+Reviewed-by: Qt Cherry-pick Bot <cherrypick_bot@qt-project.org>
+---
+
+diff --git a/src/corelib/io/qstorageinfo_linux.cpp b/src/corelib/io/qstorageinfo_linux.cpp
+index 5bdc09c..c5cc9c6 100644
+--- a/src/corelib/io/qstorageinfo_linux.cpp
++++ b/src/corelib/io/qstorageinfo_linux.cpp
+@@ -12,7 +12,6 @@
+ 
+ #include <q20memory.h>
+ 
+-#include <linux/mount.h>
+ #include <sys/ioctl.h>
+ #include <sys/statfs.h>
+ 
+@@ -24,6 +23,11 @@
+ #  define FS_IOC_GETFSLABEL     _IOR(0x94, 49, char[FSLABEL_MAX])
+ #endif
+ 
++// or <linux/statfs.h>
++#ifndef ST_RDONLY
++#  define ST_RDONLY             0x0001  /* mount read-only */
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ using namespace Qt::StringLiterals;
+@@ -176,7 +180,7 @@
+         bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
+         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
+         blockSize = int(statfs_buf.f_bsize);
+-        readOnly = (statfs_buf.f_flags & MS_RDONLY) != 0;
++        readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
+     }
+ }
+ 
