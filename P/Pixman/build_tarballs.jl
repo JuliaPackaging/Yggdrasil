@@ -2,11 +2,11 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build Pixman
 name = "Pixman"
-version = v"0.42.2"
+version = v"0.43.4"
 
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
-                  "ea1480efada2fd948bc75366f7c349e1c96d3297d09a3fe62626e38e234a625e"),
+                  "a0624db90180c7ddb79fc7a9151093dc37c646d8c38d3f232f767cf64b85a226"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,14 +29,20 @@ if [[ ${target} == aarch64-apple-darwin* ]]; then
     args+=(--disable-arm-a64-neon --disable-arm-neon)
 fi
 
-./configure ${args[@]}
-make -j${nproc}
-make install
+#TODO ./configure ${args[@]}
+#TODO make -j${nproc}
+#TODO make install
+
+mkdir build
+cd build
+meson setup --prefix=${prefix} --buildtype=release ..
+ninja -j ${nproc}
+ninja -j ${nproc} install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
