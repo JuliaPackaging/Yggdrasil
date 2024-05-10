@@ -9,12 +9,15 @@ version = v"2.0.18"
 sources = [
     ArchiveSource("https://github.com/numactl/numactl/releases/download/v$(version)/numactl-$(version).tar.gz",
                   "b4fc0956317680579992d7815bc43d0538960dc73aa1dd8ca7e3806e30bc1274"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd ${WORKSPACE}/srcdir
+# Patch taken from master branch
 cd numactl-*
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/home_node.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc} numademo_CFLAGS="-O3 -funroll-loops"
 make install
