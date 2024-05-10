@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "minimap2"
-version = v"2.24.0"
+version = v"2.28.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lh3/minimap2.git", "fe35e679e95d936698e9e937acc48983f16253d6")
+    GitSource("https://github.com/lh3/minimap2.git", "8170693de39b667d11c8931d343c94a23a7690d2"),
 ]
 
 # Bash recipe for building across all platforms
