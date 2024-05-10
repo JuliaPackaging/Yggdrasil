@@ -20,21 +20,13 @@ cd ${WORKSPACE}/srcdir/pixman-*/
 # <https://gitlab.freedesktop.org/rth7680/pixman/-/tree/general>
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/general_blt.patch
 
-args=(--prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static)
-if [[ ${target} == aarch64-apple-darwin* ]]; then
-    # Work around a but; see
-    # <https://lists.freedesktop.org/archives/pixman/2023-February/005002.html>
-    # and
-    # <https://gitlab.freedesktop.org/rth7680/pixman/-/tree/general>
-    args+=(--disable-arm-a64-neon --disable-arm-neon)
+if [[ ${target} = *darwin* ]]; then
+    # Use `ld64.lld` instead of `ld` on Apple
+    sed -i -e 's/x86_64-apple-darwin14-ld/x86_64-apple-darwin14-ld64.lld/' ${MESON_TARGET_TOOLCHAIN}
 fi
 
-#TODO ./configure ${args[@]}
-#TODO make -j${nproc}
-#TODO make install
-
 mkdir build && cd build
-meson --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release ..
+meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release ..
 ninja -j${nproc}
 ninja install
 """
