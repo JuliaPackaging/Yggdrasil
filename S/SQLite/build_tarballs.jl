@@ -57,7 +57,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Readline_jll"),
     Dependency("Zlib_jll"),
 ]
 
