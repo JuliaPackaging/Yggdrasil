@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/pixman-*/
+cd ${WORKSPACE}/srcdir/pixman-*
 
 # Define `generic_blt`; see
 # <https://lists.freedesktop.org/archives/pixman/2023-February/005002.html>
@@ -20,13 +20,8 @@ cd ${WORKSPACE}/srcdir/pixman-*/
 # <https://gitlab.freedesktop.org/rth7680/pixman/-/tree/general>
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/general_blt.patch
 
-if [[ ${target} = *darwin* ]]; then
-    # Use `ld64.lld` instead of `ld` on Apple
-    sed -i -e 's/x86_64-apple-darwin14-ld/x86_64-apple-darwin14-ld64.lld/' ${MESON_TARGET_TOOLCHAIN}
-fi
-
 mkdir build && cd build
-meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release ..
+meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release -Dtests=disabled -Ddemos=disabled ..
 ninja -j${nproc}
 ninja install
 """
@@ -52,4 +47,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"6")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
