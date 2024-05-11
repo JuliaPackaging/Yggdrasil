@@ -2,17 +2,17 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build Pixman
 name = "Pixman"
-version = v"0.42.2"
+version = v"0.43.4"
 
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
-                  "ea1480efada2fd948bc75366f7c349e1c96d3297d09a3fe62626e38e234a625e"),
+                  "a0624db90180c7ddb79fc7a9151093dc37c646d8c38d3f232f767cf64b85a226"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/pixman-*/
+cd ${WORKSPACE}/srcdir/pixman-*
 
 # Define `generic_blt`; see
 # <https://lists.freedesktop.org/archives/pixman/2023-February/005002.html>
@@ -20,23 +20,15 @@ cd ${WORKSPACE}/srcdir/pixman-*/
 # <https://gitlab.freedesktop.org/rth7680/pixman/-/tree/general>
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/general_blt.patch
 
-args=(--prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static)
-if [[ ${target} == aarch64-apple-darwin* ]]; then
-    # Work around a but; see
-    # <https://lists.freedesktop.org/archives/pixman/2023-February/005002.html>
-    # and
-    # <https://gitlab.freedesktop.org/rth7680/pixman/-/tree/general>
-    args+=(--disable-arm-a64-neon --disable-arm-neon)
-fi
-
-./configure ${args[@]}
-make -j${nproc}
-make install
+mkdir build && cd build
+meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release -Dtests=disabled -Ddemos=disabled ..
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -54,4 +46,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
