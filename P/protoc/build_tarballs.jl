@@ -37,7 +37,7 @@ products = [
     LibraryProduct("libprotoc", :libprotoc),
     LibraryProduct("libprotobuf", :libprotobuf),
     LibraryProduct("libprotobuf-lite", :libprotobuf_lite),
-    ExecutableProduct("protoc", :protoc)
+    ExecutableProduct("protoc", :protoc),
 
     # `protoc` builds and installs a copy of `abseil_cpp`.
     # We declare this prominently so that others are aware.
