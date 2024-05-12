@@ -62,7 +62,7 @@ hdf5_platforms = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("Cairo_jll"),
+    Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
     Dependency("FreeType2_jll"; compat="2.10.4"),
