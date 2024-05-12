@@ -32,7 +32,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/."
     export MACOSX_DEPLOYMENT_TARGET=10.14
     popd
->fi
+fi
 
 export PATH=${host_bindir}:${PATH}
 
