@@ -21,9 +21,7 @@ if [[ "${target}" == "${MACHTYPE}" ]]; then
     rm /usr/lib/libexpat.so*
 fi
 
-mkdir ${WORKSPACE}/bin
-ln -s ${bindir}/cmake ${WORKSPACE}/bin
-export PATH=${WORKSPACE}/bin:${PATH}
+export PATH=${host_bindir}:${PATH}
 
 # cmake doesn't find FreeType2 without help
 export FREETYPE_DIR=${prefix}
@@ -75,8 +73,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec("CMake_jll", v"3.22.2")), # we need 3.22.0
-    BuildDependency("Xorg_xorgproto_jll"),
+    HostBuildDependency(PackageSpec("CMake_jll", v"3.22.2")), # we need 3.22.0
+    HostBuildDependency("Xorg_xorgproto_jll"),
     Dependency("Cairo_jll"; compat="1.16.1"),       # we need 1.16.0
     Dependency("Fontconfig_jll"; compat="2.13.93"), # we need 2.13
     Dependency("FreeType2_jll"; compat="2.13.1"),   # we need 2.11
