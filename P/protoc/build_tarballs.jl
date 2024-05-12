@@ -8,11 +8,17 @@ version = v"26.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/protocolbuffers/protobuf.git", "2434ef2adf0c74149b9d547ac5fb545a1ff8b6b5"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/protobuf
+
+# Avoid problems with `-march`, `-ffast-math` etc.
+sed -i -e 's!set(CMAKE_C_COMPILER.*!set(CMAKE_C_COMPILER '${WORKSPACE}/srcdir/files/ccsafe')!' ${CMAKE_TARGET_TOOLCHAIN}
+sed -i -e 's!set(CMAKE_CXX_COMPILER.*!set(CMAKE_CXX_COMPILER '${WORKSPACE}/srcdir/files/c++safe')!' ${CMAKE_TARGET_TOOLCHAIN}
+
 git submodule update --init --recursive
 cmake -B build -G Ninja \
     -DBUILD_SHARED_LIBS=ON \
