@@ -147,8 +147,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # TOOD: verify Gettext is actually needed at runtime
-    Dependency("Gettext_jll", v"0.20.1"; compat="=0.20.1"),
+    #TODO # TOOD: verify Gettext is actually needed at runtime
+    #TODO Dependency("Gettext_jll", v"0.20.1"; compat="=0.20.1"),
     Dependency("SQLite_jll"),
     Dependency("Zlib_jll"),
 ]
