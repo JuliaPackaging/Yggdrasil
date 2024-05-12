@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "PCRE"
-version = v"8.44"
+version = v"8.45"
 
 # Collection of sources required to build Pcre
 sources = [
-    ArchiveSource("https://ftp.pcre.org/pub/pcre/pcre-$(version.major).$(version.minor).tar.bz2",
-                  "19108658b23b3ec5058edc9f66ac545ea19f9537234be1ec62b714c84399366d")
+    ArchiveSource("https://sourceforge.net/projects/pcre/files/pcre/$(version.major).$(version.minor)/pcre-$(version.major).$(version.minor).tar.bz2",
+                  "4dae6fdcd2bb0bb6c37b5f97c33c2be954da743985369cddac3546e3218bffb8"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ make install VERBOSE=1
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -36,4 +36,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6")
