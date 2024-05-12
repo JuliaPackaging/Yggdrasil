@@ -10,8 +10,6 @@ version = VersionNumber(version_str)
 sources = [
     ArchiveSource("https://poppler.freedesktop.org/poppler-$(version_str).tar.xz",
                   "d8c5eb30b50285ad9f0af8c6335cc2d3b9597fca475cbc2598a5479fa379f779"),
-    #TODO ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-    #TODO               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -88,7 +86,7 @@ products = [
 dependencies = [
     HostBuildDependency(PackageSpec("CMake_jll", v"3.22.2")), # we need 3.22.0
     HostBuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Cairo_jll"; compat="1.16.1"),       # we need 1.16.0
+    Dependency("Cairo_jll"; compat="1.18.0"),       # we need 1.16.0
     Dependency("Fontconfig_jll"; compat="2.13.93"), # we need 2.13
     Dependency("FreeType2_jll"; compat="2.13.1"),   # we need 2.11
     Dependency("Glib_jll"; compat="2.74.0"),        # we need 2.72
@@ -103,6 +101,3 @@ dependencies = [
 # We use GCC 9 since we need modern C++17 (`std::string_view` and `<charconv>`)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"9")
-
-# TODO clang_use_lld=false,
-# TODO preferred_clang_version=v"17"
