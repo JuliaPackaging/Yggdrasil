@@ -22,6 +22,7 @@ cd ${WORKSPACE}/srcdir/tensorstore
 # export PATH=${WORKSPACE}/bin:${PATH}
 
 export PATH=${host_bindir}:${PATH}
+ln -s ${WORKSPACE}/bin/protoc ${WORKSPACE}/bin/protobuf::protoc
 
 # TensorStore builds some vendored other packages. We have basically
 # no control over this. We use `ccsafe` etc. to avoid problems with
@@ -80,6 +81,11 @@ install_license Copyright.txt LICENSE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+
+# TODO
+platforms = [
+    Pkg.BinaryPlatforms.Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11")
+]
 
 # The products that we will ensure are always built
 products = [
