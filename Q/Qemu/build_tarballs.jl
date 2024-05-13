@@ -15,11 +15,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/qemu-*
 install_license COPYING
 
-# check if we need to use a more recent glibc
-if [[ -f "$prefix/usr/include/sched.h" ]]; then
-    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
-    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
-fi
+# # check if we need to use a more recent glibc
+# if [[ -f "$prefix/usr/include/sched.h" ]]; then
+#     GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
+#     rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
+# fi
 
 # include `falloc` header in `strace.c` (requires glibc 2.25)
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/qemu_falloc.patch"
@@ -69,10 +69,10 @@ platforms = [
 ]
 platforms = expand_cxxstring_abis(platforms)
 
-# some platforms need a newer glibc, because the default one is too old
-glibc_platforms = filter(platforms) do p
-    libc(p) == "glibc" && proc_family(p) in ["intel", "power"]
-end
+#TODO # some platforms need a newer glibc, because the default one is too old
+#TODO glibc_platforms = filter(platforms) do p
+#TODO     libc(p) == "glibc" && proc_family(p) in ["intel", "power"]
+#TODO end
 
 # The products that we will ensure are always built
 products = [
@@ -158,9 +158,9 @@ dependencies = [
     BuildDependency("Gettext_jll"),
     Dependency("libcap_jll"),
 
-    # qemu needs glibc >=2.14 for CLOCK_BOOTTIME
-    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
-                    platforms=glibc_platforms),
+    #TODO # qemu needs glibc >=2.14 for CLOCK_BOOTTIME
+    #TODO BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
+    #TODO                 platforms=glibc_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
