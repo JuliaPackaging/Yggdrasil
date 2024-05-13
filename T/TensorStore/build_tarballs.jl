@@ -22,7 +22,7 @@ cd ${WORKSPACE}/srcdir/tensorstore
 # export PATH=${WORKSPACE}/bin:${PATH}
 
 export PATH=${host_bindir}:${PATH}
-ln -s ${WORKSPACE}/bin/protoc ${WORKSPACE}/bin/protobuf::protoc
+ln -s ${host_bindir}/protoc ${host_bindir}/protobuf::protoc
 
 # TensorStore builds some vendored other packages. We have basically
 # no control over this. We use `ccsafe` etc. to avoid problems with
