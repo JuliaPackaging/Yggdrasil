@@ -19,7 +19,6 @@ mkdir build && cd build
 meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release -Denable_tests=false ..
 ninja -j${nproc}
 ninja install
-#TODO install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
