@@ -100,6 +100,7 @@ products = [
 dependencies = [
     # TODO: add compat versions
     HostBuildDependency(PackageSpec("CMake_jll", v"3.24.3")), # we need 3.24
+    HostBuildDependency("NASM_jll"),
     HostBuildDependency(PackageSpec("protoc_jll", v"26.1")),
     Dependency("Blosc_jll"),
     Dependency("Bzip2_jll"),
@@ -108,7 +109,6 @@ dependencies = [
     Dependency("LibCURL_jll"),
     Dependency("Libtiff_jll"),
     Dependency("Lz4_jll"),
-    Dependency("NASM_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.8"),
     # Dependency("TinyXML_jll"),
     Dependency("XZ_jll"),
@@ -125,4 +125,7 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6",
+               #TODO preferred_gcc_version=v"10",
+               preferred_gcc_version=v"13",
+               )
