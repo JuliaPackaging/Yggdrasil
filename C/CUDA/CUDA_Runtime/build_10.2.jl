@@ -106,5 +106,10 @@ function get_products(platform)
         LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
         LibraryProduct(["libcurand", "curand64_10"], :libcurand),
         LibraryProduct(["libcupti", "cupti64_102"], :libcupti),
+        FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
+        FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+        ExecutableProduct("ptxas", :ptxas),
+        ExecutableProduct("nvdisasm", :nvdisasm),
+        ExecutableProduct("nvlink", :nvlink),
     ]
 end
