@@ -31,11 +31,19 @@ install_license cuda_cudart/LICENSE
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
 if [[ ${target} == *-linux-gnu ]]; then
-    mv cuda_cudart/lib/libcudart.so* ${libdir}
+    mv cuda_cudart/lib/libcudart.so* cuda_cudart/lib/libcudadevrt.a ${libdir}
 
     mv cuda_cupti/lib/libcupti.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_host.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_target.so* ${libdir}
+
+    mkdir ${prefix}/share/libdevice
+    mv cuda_nvcc/nvvm/lib64/libnvvm.so* ${libdir}
+    mv cuda_nvcc/bin/ptxas ${bindir}
+    mv cuda_nvcc/bin/nvlink ${bindir}
+    mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+
+    mv cuda_nvdisasm/bin/nvdisasm ${bindir}
 
     if [[ -d libnvjitlink ]]; then
         mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
@@ -58,10 +66,23 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     done
 
     mv cuda_cudart/bin/cudart64_*.dll ${bindir}
+    if [[ -d cuda_cudart/lib/x64 ]]; then
+        mv cuda_cudart/lib/x64/cudadevrt.lib ${prefix}/lib
+    else
+        mv cuda_cudart/lib/cudadevrt.lib ${prefix}/lib
+    fi
 
     mv cuda_cupti/bin/cupti64_*.dll ${bindir}
     mv cuda_cupti/bin/nvperf_host.dll* ${libdir}
     mv cuda_cupti/bin/nvperf_target.dll* ${libdir}
+
+    mkdir ${prefix}/share/libdevice
+    mv cuda_nvcc/nvvm/bin/nvvm64_*.dll ${bindir}
+    mv cuda_nvcc/bin/ptxas.exe ${bindir}
+    mv cuda_nvcc/bin/nvlink.exe ${bindir}
+    mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+
+    mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
 
     if [[ -d libnvjitlink ]]; then
         mv libnvjitlink/bin/nvJitLink_*.dll ${bindir}
@@ -78,7 +99,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv libcurand/bin/curand64_*.dll ${bindir}
 
     # Fix permissions
-    chmod +x ${bindir}/*.dll
+    chmod +x ${bindir}/*.{exe,dll}
 fi
 """
 
@@ -92,7 +113,9 @@ for version in CUDA.cuda_full_versions
     components = [
         "cuda_cudart",
         "cuda_cupti",
-        "cuda_sanitizer_api",
+        "cuda_nvcc",
+        "cuda_nvrtc",
+        "cuda_nvdisasm",
 
         "libcublas",
         "libcufft",
