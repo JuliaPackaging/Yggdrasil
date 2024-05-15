@@ -45,6 +45,7 @@ cmake -B build -G Ninja \
     -DTENSORSTORE_USE_SYSTEM_BZIP2=ON \
     -DTENSORSTORE_USE_SYSTEM_CURL=ON \
     -DTENSORSTORE_USE_SYSTEM_C_ARES=ON \
+    -DTENSORSTORE_USE_SYSTEM_DAV1D=ON \
     -DTENSORSTORE_USE_SYSTEM_JPEG=ON \
     -DTENSORSTORE_USE_SYSTEM_LIBLZMA=ON \
     -DTENSORSTORE_USE_SYSTEM_LZ4=ON \
@@ -73,7 +74,6 @@ cmake -B build -G Ninja \
 # option(TENSORSTORE_USE_SYSTEM_HALF "Use an installed version of half")
 # option(TENSORSTORE_USE_SYSTEM_AOM "Use an installed version of aom")
 # option(TENSORSTORE_USE_SYSTEM_AVIF "Use an installed version of AVIF")
-# option(TENSORSTORE_USE_SYSTEM_DAV1D "Use an installed version of dav1d")
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -116,6 +116,7 @@ dependencies = [
     Dependency("Zstd_jll"),
     # Dependency("abseil_cpp_jll"),
     Dependency("brotli_jll"),
+    Dependency("dav1d_jll"),
     Dependency("libpng_jll"),
     Dependency("libwebp_jll"),
     Dependency("nghttp2_jll"),
@@ -126,6 +127,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6",
-               #TODO preferred_gcc_version=v"10",
-               preferred_gcc_version=v"13",
+               preferred_gcc_version=v"10",
                )
