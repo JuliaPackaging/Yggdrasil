@@ -1,0 +1,12 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,7 +1,9 @@
+ cmake_minimum_required(VERSION 3.6)
+ 
+ project(LAPACK)
+ 
++enable_language(C Fortran)
++
+ set(LAPACK_MAJOR_VERSION 3)
+ set(LAPACK_MINOR_VERSION 12)
+ set(LAPACK_PATCH_VERSION 0)
