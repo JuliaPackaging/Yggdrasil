@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "libmn"
+name = "libmng"
 version = v"2.0.3"
 
 # Collection of sources required to build libpng
