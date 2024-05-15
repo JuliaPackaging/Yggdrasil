@@ -11,7 +11,7 @@ sources = [
     DirectorySource("bundled"),
 ]
 
-# Bash recipe for building across all 64-bit platforms
+# Bash recipe for building across all *64-bit* platforms
 # We try to maintain consistency with the blis Yggdrasil build scripts.
 
 script = raw"""
@@ -20,8 +20,10 @@ cd $WORKSPACE/srcdir/libflame
 # We might need newer `config.guess`` and `config.sub` files
 update_configure_scripts
 
-# disable time & clock functions on windows (mingw): sys/times.h is missing
+windows_flags=""
 if [[ "${target}" == *-w64-mingw32* ]]; then
+    windows_flags+=" --enable-windows-build "
+    # disable time & clock functions on windows (mingw): sys/times.h is missing
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows-remove-time.patch
 fi
 
@@ -29,12 +31,13 @@ fi
 # - If a static library is not needed, use --disable-static-build
 # - Enable a dynamic build with --enable-dynamic-build
 ./configure \
---prefix=${prefix} --build=${MACHTYPE} --host=${target} \
---enable-multithreading=openmp \
---enable-lapack2flame \
---enable-dynamic-build \
---enable-cblas-interfaces \
---disable-autodetect-f77-ldflags --disable-autodetect-f77-name-mangling
+    --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
+    --enable-multithreading=openmp \
+    --enable-lapack2flame \
+    --enable-dynamic-build \
+    --enable-cblas-interfaces \
+    --disable-autodetect-f77-ldflags --disable-autodetect-f77-name-mangling \
+    $windows_flags
 
 make -j${nproc}
 make install
