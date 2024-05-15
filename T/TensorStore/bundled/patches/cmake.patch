@@ -1,0 +1,12 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,8 +15,8 @@
+ # NOTE: This is still very much a work in progress; It is not yet expected to
+ # build.
+ 
+ cmake_minimum_required(VERSION 3.24)
+-project(tensorstore LANGUAGES C CXX)
++project(tensorstore LANGUAGES C CXX NASM_ASM)
+ 
+ # Enable CMP0077 (option honors variables) for subprojects.
+ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)

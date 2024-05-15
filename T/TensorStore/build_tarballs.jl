@@ -15,11 +15,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/tensorstore
 
-# mkdir ${WORKSPACE}/bin
-# ln -s ${prefix}/bin/cmake ${WORKSPACE}/bin/cmake
-# ln -s ${prefix}/bin/protoc ${WORKSPACE}/bin/protoc
-# ln -s ${prefix}/bin/protoc ${WORKSPACE}/bin/protobuf::protoc
-# export PATH=${WORKSPACE}/bin:${PATH}
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake.patch
 
 export PATH=${host_bindir}:${PATH}
 ln -s ${host_bindir}/protoc ${host_bindir}/protobuf::protoc
@@ -34,6 +30,8 @@ cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_MODULE_PATH=${WORKSPACE}/srcdir/files \
+    -DCMAKE_NASM_ASM_COMPILER=${host_bindir}/nasm \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     \
     -DBUILD_SHARED_LIBS=ON \
