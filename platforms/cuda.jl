@@ -168,17 +168,17 @@ function supported_platforms(; min_version=v"11", max_version=nothing)
 
             if arch(platform) == "aarch64"
                 # CUDA 10.x: our CUDA 10.2 build recipe for arm64 only provides jetson binaries
-                if thisminor(version) == "10.2" && platform["cuda_platform"] != "jetson"
+                if Base.thisminor(version) == "10.2" && platform["cuda_platform"] != "jetson"
                     continue
                 end
 
                 # CUDA 11.x: only 11.8 has jetson binaries on the redist server
-                if v"11.0" <= thisminor(version) < v"11.8" && platform["cuda_platform"] == "jetson"
+                if v"11.0" <= Base.thisminor(version) < v"11.8" && platform["cuda_platform"] == "jetson"
                     continue
                 end
 
                 # CUDA 12.x: the jetson binaries for 12.3 seem to be missing
-                if thisminor(version) == v"12.3" && platform["cuda_platform"] == "jetson"
+                if Base.thisminor(version) == v"12.3" && platform["cuda_platform"] == "jetson"
                     continue
                 end
             end
