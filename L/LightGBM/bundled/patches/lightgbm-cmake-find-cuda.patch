@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1ff289b9..cfda9e20 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -198,7 +198,7 @@ if(__INTEGRATE_OPENCL)
+ endif()
+ 
+ if(USE_CUDA)
+-    find_package(CUDA 11.0 REQUIRED)
++    find_package(CUDAToolkit 11.0 REQUIRED)
+     include_directories(${CUDA_INCLUDE_DIRS})
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=${OpenMP_CXX_FLAGS} -Xcompiler=-fPIC -Xcompiler=-Wall")
+ 

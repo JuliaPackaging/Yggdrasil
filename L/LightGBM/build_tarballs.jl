@@ -13,6 +13,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/microsoft/LightGBM.git", "252828fd86627d7405021c3377534d6a8239dd69"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +21,12 @@ script = raw"""
 cd $WORKSPACE/srcdir/LightGBM
 git submodule update --init --depth=1
 git submodule update --checkout --depth=1
+
+for p in $WORKSPACE/srcdir/patches/*.patch; do
+  atomic_patch -p1 "${p}"
+done
+
+cat CMakeLists.txt
 
 FLAGS=()
 cmake_extra_args=""
@@ -53,16 +60,12 @@ if  [[ ("${bb_full_target}" == *-cuda*) && ("${bb_full_target}" != *-cuda+none*)
     -DCUDA_TOOLKIT_INCLUDE=$CUDA_HOME/include \
     -DCUDA_CUDART_LIBRARY=$CUDA_HOME/lib64/libcudart.$dlext "
 fi
-configure () {
-  cmake . \
-    -DCMAKE_INSTALL_PREFIX=$prefix\
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    $cmake_extra_args
-}
 
-# Need to call twice due to FindCUDA issues in cmake
-configure || configure
+cmake . \
+  -DCMAKE_INSTALL_PREFIX=$prefix\
+  -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+  -DCMAKE_BUILD_TYPE=Release \
+  $cmake_extra_args
 
 make -j${nproc} "${FLAGS[@]}"
 make install
