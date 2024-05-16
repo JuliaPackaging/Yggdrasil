@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 # GCC >=11 is necessary because the source code uses the two-argument version
-# of the attribute malloc, see lines 73-75 in mad_mem.h (also unsupported by clang)
+# of the attribute malloc, see https://github.com/mattsignorelli/gtpsa/blob/394a20847b869a842c6a89f2af1a889c3a1c2813/code/mad_mem.h#L73-L75 (also unsupported by clang)
 script = raw"""
 cd $WORKSPACE/srcdir
 cd gtpsa/
