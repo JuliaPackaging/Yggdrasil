@@ -15,7 +15,8 @@ augment_platform_block = """
 
 platforms = [Platform("x86_64", "linux"),
              Platform("powerpc64le", "linux"),
-             Platform("aarch64", "linux"),
+             Platform("aarch64", "linux"; cuda_platform="jetson"),
+             Platform("aarch64", "linux"; cuda_platform="sbsa"),
              Platform("x86_64", "windows")]
 
 script = raw"""
@@ -31,11 +32,19 @@ install_license cuda_cudart/LICENSE
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
 if [[ ${target} == *-linux-gnu ]]; then
-    mv cuda_cudart/lib/libcudart.so* ${libdir}
+    mv cuda_cudart/lib/libcudart.so* cuda_cudart/lib/libcudadevrt.a ${libdir}
 
     mv cuda_cupti/lib/libcupti.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_host.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_target.so* ${libdir}
+
+    mkdir ${prefix}/share/libdevice
+    mv cuda_nvcc/nvvm/lib64/libnvvm.so* ${libdir}
+    mv cuda_nvcc/bin/ptxas ${bindir}
+    mv cuda_nvcc/bin/nvlink ${bindir}
+    mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+
+    mv cuda_nvdisasm/bin/nvdisasm ${bindir}
 
     if [[ -d libnvjitlink ]]; then
         mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
@@ -58,10 +67,23 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     done
 
     mv cuda_cudart/bin/cudart64_*.dll ${bindir}
+    if [[ -d cuda_cudart/lib/x64 ]]; then
+        mv cuda_cudart/lib/x64/cudadevrt.lib ${prefix}/lib
+    else
+        mv cuda_cudart/lib/cudadevrt.lib ${prefix}/lib
+    fi
 
     mv cuda_cupti/bin/cupti64_*.dll ${bindir}
     mv cuda_cupti/bin/nvperf_host.dll* ${libdir}
     mv cuda_cupti/bin/nvperf_target.dll* ${libdir}
+
+    mkdir ${prefix}/share/libdevice
+    mv cuda_nvcc/nvvm/bin/nvvm64_*.dll ${bindir}
+    mv cuda_nvcc/bin/ptxas.exe ${bindir}
+    mv cuda_nvcc/bin/nvlink.exe ${bindir}
+    mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+
+    mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
 
     if [[ -d libnvjitlink ]]; then
         mv libnvjitlink/bin/nvJitLink_*.dll ${bindir}
@@ -78,7 +100,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv libcurand/bin/curand64_*.dll ${bindir}
 
     # Fix permissions
-    chmod +x ${bindir}/*.dll
+    chmod +x ${bindir}/*.{exe,dll}
 fi
 """
 
@@ -92,7 +114,9 @@ for version in CUDA.cuda_full_versions
     components = [
         "cuda_cudart",
         "cuda_cupti",
-        "cuda_sanitizer_api",
+        "cuda_nvcc",
+        "cuda_nvrtc",
+        "cuda_nvdisasm",
 
         "libcublas",
         "libcufft",
@@ -109,20 +133,36 @@ for version in CUDA.cuda_full_versions
         augmented_platform["cuda"] = CUDA.platform(version)
 
         should_build_platform(triplet(augmented_platform)) || continue
+
+        if arch(platform) == "aarch64"
+            # CUDA 10.x: our CUDA 10.2 build recipe for arm64 only provides jetson binaries
+            if thisminor(version) == "10.2" && platform["cuda_platform"] != "jetson"
+                continue
+            end
+
+            # CUDA 11.x: only 11.8 has jetson binaries on the redist server
+            if v"11.0" <= thisminor(version) < v"11.8" && platform["cuda_platform"] == "jetson"
+                continue
+            end
+
+            # CUDA 12.x: the jetson binaries for 12.3 seem to be missing
+            if thisminor(version) == v"12.3" && platform["cuda_platform"] == "jetson"
+                continue
+            end
+        end
+
         if Base.thisminor(version) == v"10.2"
             push!(builds,
-                (; dependencies=[
-                        Dependency("CUDA_Driver_jll"; compat="0.8"),
-                        BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=v"10.2.89")),
-                    ],
-                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
-                    sources=[]
+                (; dependencies=[Dependency("CUDA_Driver_jll"; compat="0.8"),
+                                 BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=v"10.2.89"))],
+                   script=get_script(), platforms=[augmented_platform], products=get_products(platform),
+                   sources=[]
             ))
         else
             push!(builds,
                 (; dependencies=[Dependency("CUDA_Driver_jll"; compat="0.8")],
-                    script, platforms=[augmented_platform], products=get_products(platform),
-                    sources=get_sources("cuda", components; version, platform)
+                   script, platforms=[augmented_platform], products=get_products(platform),
+                   sources=get_sources("cuda", components; version, platform)
             ))
         end
     end
@@ -139,5 +179,5 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   julia_compat="1.6",lazy_artifacts=true, augment_platform_block)
+                   julia_compat="1.6", lazy_artifacts=true, augment_platform_block)
 end

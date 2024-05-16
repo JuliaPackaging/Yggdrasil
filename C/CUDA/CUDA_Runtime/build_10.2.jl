@@ -40,9 +40,6 @@ if [[ ${target} == *-linux-gnu ]]; then
     # CUDA Random Number Generation Library
     mv lib64/libcurand.so* ${libdir}
 
-    # NVIDIA Optimizing Compiler Library
-    mv nvvm/lib64/libnvvm.so* ${libdir}
-
     # NVIDIA Common Device Math Functions Library
     mkdir ${prefix}/share/libdevice
     mv nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
@@ -77,9 +74,6 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     # CUDA Random Number Generation Library
     mv bin/curand64_*.dll ${bindir}
 
-    # NVIDIA Optimizing Compiler Library
-    mv nvvm/bin/nvvm64_*.dll ${bindir}
-
     # NVIDIA Common Device Math Functions Library
     mkdir ${prefix}/share/libdevice
     mv nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
@@ -106,5 +100,10 @@ function get_products(platform)
         LibraryProduct(["libcusolver", "cusolver64_10"], :libcusolver),
         LibraryProduct(["libcurand", "curand64_10"], :libcurand),
         LibraryProduct(["libcupti", "cupti64_102"], :libcupti),
+        FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
+        FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
+        ExecutableProduct("ptxas", :ptxas),
+        ExecutableProduct("nvdisasm", :nvdisasm),
+        ExecutableProduct("nvlink", :nvlink),
     ]
 end
