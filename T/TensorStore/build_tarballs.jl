@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/tensorstore
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake.patch
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake.patch
 
 export PATH=${host_bindir}:${PATH}
 ln -s ${host_bindir}/protoc ${host_bindir}/protobuf::protoc
@@ -26,18 +26,20 @@ ln -s ${host_bindir}/protoc ${host_bindir}/protobuf::protoc
 sed -i -e 's!set(CMAKE_C_COMPILER.*!set(CMAKE_C_COMPILER '${WORKSPACE}/srcdir/files/ccsafe')!' ${CMAKE_TARGET_TOOLCHAIN}
 sed -i -e 's!set(CMAKE_CXX_COMPILER.*!set(CMAKE_CXX_COMPILER '${WORKSPACE}/srcdir/files/c++safe')!' ${CMAKE_TARGET_TOOLCHAIN}
 
+#    -DCMAKE_NASM_ASM_COMPILER=${host_bindir}/nasm
+#    -DCMAKE_MODULE_PATH=${WORKSPACE}/srcdir/files
+
 cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_MODULE_PATH=${WORKSPACE}/srcdir/files \
-    -DCMAKE_NASM_ASM_COMPILER=${host_bindir}/nasm \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     \
     -DTENSORSTORE_USE_SYSTEM_ABSL=OFF \
+    -DTENSORSTORE_USE_SYSTEM_AOM=ON \
     -DTENSORSTORE_USE_SYSTEM_BLOSC=ON \
     -DTENSORSTORE_USE_SYSTEM_BROTLI=ON \
     -DTENSORSTORE_USE_SYSTEM_BZIP2=ON \
@@ -70,7 +72,6 @@ cmake -B build -G Ninja \
 # option(TENSORSTORE_USE_SYSTEM_RIEGELI "Use an installed version of riegeli")
 # option(TENSORSTORE_USE_SYSTEM_ENVOY "Use an installed version of envoy")
 # option(TENSORSTORE_USE_SYSTEM_HALF "Use an installed version of half")
-# option(TENSORSTORE_USE_SYSTEM_AOM "Use an installed version of aom")
 # option(TENSORSTORE_USE_SYSTEM_AVIF "Use an installed version of AVIF")
 
 cmake --build build --parallel ${nproc}
@@ -98,7 +99,7 @@ products = [
 dependencies = [
     # TODO: add compat versions
     HostBuildDependency(PackageSpec("CMake_jll", v"3.24.3")), # we need 3.24
-    HostBuildDependency("NASM_jll"),
+    # HostBuildDependency("NASM_jll"),
     HostBuildDependency(PackageSpec("protoc_jll", v"26.1")),
     Dependency("Blosc_jll"),
     Dependency("Bzip2_jll"),
@@ -115,6 +116,7 @@ dependencies = [
     # Dependency("abseil_cpp_jll"),
     Dependency("brotli_jll"),
     Dependency("dav1d_jll"),
+    Dependency("libaom_jll"),
     Dependency("libpng_jll"),
     Dependency("libwebp_jll"),
     Dependency("nghttp2_jll"),
