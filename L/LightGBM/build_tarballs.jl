@@ -94,7 +94,7 @@ dependencies = [
     Dependency(PackageSpec(name="OpenCL_jll", uuid="6cb37087-e8b6-5417-8430-1f242f1e46e4"); platforms=filter(Sys.islinux, all_platforms)),
     BuildDependency(PackageSpec(name="OpenCL_Headers_jll", uuid="a7aa756b-2b7f-562a-9e9d-e94076c5c8ee"); platforms=filter(Sys.islinux, all_platforms)),
 
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); platforms=filter(Sys.islinux, all_platforms)),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0", platforms=filter(Sys.islinux, all_platforms)),
 ]
 
 for platform in all_platforms
