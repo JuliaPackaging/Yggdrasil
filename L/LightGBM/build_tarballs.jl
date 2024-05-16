@@ -26,8 +26,6 @@ for p in $WORKSPACE/srcdir/patches/*.patch; do
   atomic_patch -p1 "${p}"
 done
 
-cat CMakeLists.txt
-
 FLAGS=()
 cmake_extra_args=""
 
