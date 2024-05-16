@@ -34,8 +34,6 @@ fi
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-multithreading=openmp \
     --enable-lapack2flame \
-    --enable-dynamic-build \
-    --enable-cblas-interfaces \
     --disable-autodetect-f77-ldflags --disable-autodetect-f77-name-mangling \
     $windows_flags
 
@@ -47,22 +45,20 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("x86_64", "freebsd"),
-    Platform("x86_64", "windows"),
-    # Platform("x86_64", "macos"),
-    # Platform("aarch64", "macos"),
-]
+platforms = supported_platforms()
+
+filter!(!Sys.isapple(p), platforms)
+filter!(p -> arch(p) != "i686", platforms)
+filter!(p -> arch(p) != "armv7l", platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # Enable the following line if trying to link against Fortran code:
 # platforms = expand_gfortran_versions(platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    RuntimeDependency(PackageSpec(name="blis_jll", uuid="6136c539-28a5-5bf0-87cc-b183200dce32")),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.9.0"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
