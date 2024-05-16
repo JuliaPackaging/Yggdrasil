@@ -40,6 +40,7 @@ cmake -B build -G Ninja \
     \
     -DTENSORSTORE_USE_SYSTEM_ABSL=OFF \
     -DTENSORSTORE_USE_SYSTEM_AOM=ON \
+    -DTENSORSTORE_USE_SYSTEM_AVIF=ON \
     -DTENSORSTORE_USE_SYSTEM_BLOSC=ON \
     -DTENSORSTORE_USE_SYSTEM_BROTLI=ON \
     -DTENSORSTORE_USE_SYSTEM_BZIP2=ON \
@@ -72,7 +73,6 @@ cmake -B build -G Ninja \
 # option(TENSORSTORE_USE_SYSTEM_RIEGELI "Use an installed version of riegeli")
 # option(TENSORSTORE_USE_SYSTEM_ENVOY "Use an installed version of envoy")
 # option(TENSORSTORE_USE_SYSTEM_HALF "Use an installed version of half")
-# option(TENSORSTORE_USE_SYSTEM_AVIF "Use an installed version of AVIF")
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -117,6 +117,7 @@ dependencies = [
     Dependency("brotli_jll"),
     Dependency("dav1d_jll"),
     Dependency("libaom_jll"),
+    Dependency("libavif_jll"),
     Dependency("libpng_jll"),
     Dependency("libwebp_jll"),
     Dependency("nghttp2_jll"),
