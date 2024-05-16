@@ -118,11 +118,6 @@ install_license LICENSE
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-# TODO
-platforms = [
-    Pkg.BinaryPlatforms.Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11")
-]
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("tensorstore_array_test", :tensorstore_array_test),
@@ -841,7 +836,6 @@ products = [
 dependencies = [
     # TODO: add compat versions
     HostBuildDependency(PackageSpec("CMake_jll", v"3.24.3")), # we need 3.24
-    # HostBuildDependency("NASM_jll"),
     HostBuildDependency(PackageSpec("protoc_jll", v"26.1")),
     Dependency("Blosc_jll"),
     Dependency("Bzip2_jll"),
@@ -868,5 +862,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We skip the audit pass because it is too slow (it takes hours and would time out on CI)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",preferred_gcc_version=v"10")
+               julia_compat="1.6", preferred_gcc_version=v"10", skip_audit=true)
