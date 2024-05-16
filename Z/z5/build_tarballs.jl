@@ -50,11 +50,11 @@ dependencies = [
     BuildDependency("xsimd_jll"),
     BuildDependency("xtensor_jll"),
     BuildDependency("xtl_jll"),
-    Dependency("Blosc_jll"),
-    Dependency("Bzip2_jll"),
-    Dependency("Lz4_jll"),
-    Dependency("XZ_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Blosc_jll"; compat="1.21.1"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Lz4_jll"; compat="1.9.3"),
+    Dependency("XZ_jll"; compat="5.2.5"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
