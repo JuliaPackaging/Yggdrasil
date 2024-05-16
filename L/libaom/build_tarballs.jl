@@ -17,6 +17,7 @@ cd $WORKSPACE/srcdir/libaom-*
 
 CMAKE_FLAGS=()
 if [[ ${target} = arm-* ]]; then
+   # Not even GCC 13 can compile for 32-bit ARM
    CMAKE_FLAGS+=(-DAOM_TARGET_CPU=generic)
 fi
 
@@ -54,6 +55,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 9 for proper support of Intel SIMD intrinsics
-# We need at least GCC 10 for proper support of ARM SIMD intrinsics
+# We need at least GCC 10 for proper support of 64-bit ARM SIMD intrinsics
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"10")
