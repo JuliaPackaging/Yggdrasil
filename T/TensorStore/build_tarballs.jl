@@ -74,8 +74,40 @@ cmake --build build --parallel ${nproc}
 for file in $(cd build/bin && ls tensorstore*); do
     install -Dvm 755 build/bin/${file} ${bindir}/${file}
 done
-for file in $(cd build && ls libtensorstore*); do
-    install -Dvm 755 build/${file} ${libdir}/${file}
+libdirs=(
+    build
+    build/_local_mirror/lpm-build
+    build/_deps/tinyxml2-build
+    build/_deps/googleapis-build
+    build/_deps/benchmark-build
+    build/_deps/protobuf-build
+    build/_deps/udpa-build
+    build/_deps/envoy-build
+    build/_deps/re2-build
+    build/_deps/blake3-build
+    build/_deps/grpc-build
+    build/_deps/absl-build/absl/numeric
+    build/_deps/absl-build/absl/log
+    build/_deps/absl-build/absl/debugging
+    build/_deps/absl-build/absl/types
+    build/_deps/absl-build/absl/time
+    build/_deps/absl-build/absl/status
+    build/_deps/absl-build/absl/flags
+    build/_deps/absl-build/absl/random
+    build/_deps/absl-build/absl/base
+    build/_deps/absl-build/absl/container
+    build/_deps/absl-build/absl/hash
+    build/_deps/absl-build/absl/synchronization
+    build/_deps/absl-build/absl/strings
+    build/_deps/absl-build/absl/profiling
+    build/_deps/absl-build/absl/crc
+    build/_deps/riegeli-build
+    build/_deps/gtest-build
+)
+for dir in ${libdirs[@]}; do
+    for file in $(cd ${dir} && ls lib*); do
+        install -Dvm 755 ${dir}/${file} ${libdir}/${file}
+    done
 done
 
 install_license LICENSE
