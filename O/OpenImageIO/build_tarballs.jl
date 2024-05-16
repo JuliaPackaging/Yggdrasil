@@ -45,18 +45,18 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("FFMPEG_jll"),
-    Dependency("FreeType2_jll"),
-    Dependency("Giflib_jll"),
-    Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"),
-    Dependency("OpenEXR_jll"),
-    Dependency("OpenJpeg_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("boost_jll"),
-    Dependency("libpng_jll"),
-    Dependency("libwebp_jll"),
-    Dependency("pugixml_jll"),
+    Dependency("FFMPEG_jll"; compat="6.1.1"),
+    Dependency("FreeType2_jll"; compat="2.13.1"),
+    Dependency("Giflib_jll"; compat="5.2.1"),
+    Dependency("JpegTurbo_jll"; compat="3.0.1"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
+    Dependency("OpenEXR_jll"; compat="3.1.4"),
+    Dependency("OpenJpeg_jll"; compat="2.4.0"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("boost_jll"; compat="=1.76.0"),
+    Dependency("libpng_jll"; compat="1.6.38"),
+    Dependency("libwebp_jll"; compat="1.2.4"),
+    Dependency("pugixml_jll"; compat="1.11.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
