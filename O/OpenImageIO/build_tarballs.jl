@@ -51,7 +51,7 @@ dependencies = [
     Dependency("JpegTurbo_jll"; compat="3.0.1"),
     Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("OpenEXR_jll"; compat="3.1.4"),
-    Dependency("OpenJpeg_jll"; compat="2.4.0"),
+    Dependency("OpenJpeg_jll"; compat="2.5.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("boost_jll"; compat="=1.76.0"),
     Dependency("libpng_jll"; compat="1.6.38"),
