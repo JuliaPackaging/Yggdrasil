@@ -27,13 +27,11 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows-remove-time.patch
 fi
 
-BLAS_NAME=blastrampoline
-
-FLAGS+=(LDFLAGS="${LDFLAGS} -L${libdir}")
-FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
-
-
-FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
+if [[ "${target}" == *mingw* ]]; then
+    LBT="-L${libdir} -lblastrampoline-5"
+else
+    LBT="-L${libdir} -lblastrampoline"
+fi
 
 # - Compile and build a LAPACK compatibility layer with --enable-lapack2flame
 # - If a static library is not needed, use --disable-static-build
@@ -42,10 +40,11 @@ FLAGS+=(BLAS="-l${BLAS_NAME}" LAPACK="-l${BLAS_NAME}")
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-multithreading=openmp \
     --enable-lapack2flame \
+    --enable-dynamic-build \
     --disable-autodetect-f77-ldflags --disable-autodetect-f77-name-mangling \
     $windows_flags
 
-make -j${nproc} "${FLAGS[@]}"
+make -j${nproc} BLAS_LIB="${LBT}"
 make install
 
 install_license LICENSE
