@@ -47,16 +47,13 @@ if  [[ ("${bb_full_target}" == *-cuda*) && ("${bb_full_target}" != *-cuda+none*)
   # make it use the workspace instead
   export TMPDIR=${WORKSPACE}/tmpdir
   mkdir ${TMPDIR}
-  export CUDA_HOME=${WORKSPACE}/destdir/cuda
-  export PATH=$PATH:$CUDA_HOME/bin/
+  export CUDA_PATH=${WORKSPACE}/destdir/cuda
+  export PATH=$PATH:$CUDA_PATH/bin/
 
-  ln -s $CUDA_HOME/lib $CUDA_HOME/lib64
+  ln -s $CUDA_PATH/lib $CUDA_PATH/lib64
 
   cmake_extra_args+="\
-    -DUSE_CUDA=1 \
-    -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME \
-    -DCUDA_TOOLKIT_INCLUDE=$CUDA_HOME/include \
-    -DCUDA_CUDART_LIBRARY=$CUDA_HOME/lib64/libcudart.$dlext "
+    -DUSE_CUDA=1 "
 fi
 
 cmake . \
