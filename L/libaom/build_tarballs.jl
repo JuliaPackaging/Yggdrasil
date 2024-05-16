@@ -14,12 +14,19 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libaom-*
+
+CMAKE_FLAGS=()
+if [[ ${target} = arm-* ]]; then
+   CMAKE_FLAGS+=(-DAOM_TARGET_CPU=generic)
+fi
+
 cmake -B build-dir -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DENABLE_TESTS=OFF
+    -DENABLE_TESTS=OFF \
+    ${CMAKE_FLAGS[@]}
 cmake --build build-dir --parallel ${nproc}
 cmake --install build-dir
 """
@@ -47,5 +54,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 9 for proper support of Intel SIMD intrinsics
+# We need at least GCC 10 for proper support of ARM SIMD intrinsics
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.6", preferred_gcc_version=v"10")
