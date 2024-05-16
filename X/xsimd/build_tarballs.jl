@@ -27,7 +27,7 @@ cmake --install build
 platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     # This is a header-only library without any binary products
     FileProduct("include/xsimd/xsimd.hpp", :xsimd),
 ]
