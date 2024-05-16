@@ -7,7 +7,7 @@ version = v"1.3.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mattsignorelli/gtpsa.git", "d404bc12071680535b40cd4146572f3c54c2d77b")
+    GitSource("https://github.com/mattsignorelli/gtpsa.git", "394a20847b869a842c6a89f2af1a889c3a1c2813")
 ]
 
 # Bash recipe for building across all platforms
@@ -32,9 +32,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    Dependency(PackageSpec(name="LAPACK32_jll", uuid="17f450c3-bd24-55df-bb84-8c51b4b939e3"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
