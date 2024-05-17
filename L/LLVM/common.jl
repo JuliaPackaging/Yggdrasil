@@ -306,6 +306,7 @@ if [[ "${target}" == *apple* ]]; then
     # `arm64-apple-darwin`.  If this issue persists, we may have to change our triplet printing.
     if [[ "${target}" == aarch64* ]]; then
         CMAKE_TARGET=arm64-${target#*-}
+        CMAKE_FLAGS+=(-DDARWIN_osx_BUILTIN_ARCHS="arm64")
     fi
 
     if [[ "${target}" == x86_64* ]]; then
