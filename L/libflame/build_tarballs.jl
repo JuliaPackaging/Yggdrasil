@@ -20,9 +20,14 @@ cd $WORKSPACE/srcdir/libflame
 # We might need newer `config.guess`` and `config.sub` files
 update_configure_scripts
 
-windows_flags=""
+extra_flags=""
+
+if [[ "${target}" == *-apple-* ]]; then
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mac-update-makefile.patch
+fi
+
 if [[ "${target}" == *-w64-mingw32* ]]; then
-    windows_flags+=" --enable-windows-build "
+    extra_flags+=" --enable-windows-build "
     # disable time & clock functions on windows (mingw): sys/times.h is missing
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows-remove-time.patch
 fi
@@ -41,8 +46,9 @@ fi
     --enable-multithreading=openmp \
     --enable-lapack2flame \
     --enable-dynamic-build \
+    --disable-max-arg-list-hack \
     --disable-autodetect-f77-ldflags --disable-autodetect-f77-name-mangling \
-    $windows_flags
+    $extra_flags
 
 make -j${nproc} BLAS_LIB="${LBT}"
 make install
@@ -54,7 +60,6 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-filter!(p -> !Sys.isapple(p), platforms)
 filter!(p -> arch(p) != "i686", platforms)
 filter!(p -> arch(p) != "armv7l", platforms)
 filter!(p -> arch(p) != "armv6l", platforms)
