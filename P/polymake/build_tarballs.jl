@@ -159,7 +159,7 @@ dependencies = [
     Dependency("Perl_jll", compat = "=5.34.1"),
     Dependency("SCIP_jll", compat = "~900.0.000"),
     Dependency("bliss_jll", compat = "~0.77.0"),
-    Dependency("boost_jll", compat = "=1.76.0"),
+    Dependency("boost_jll", compat = "=1.79.0"),
     Dependency("cddlib_jll", compat = "~0.94.14"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
     Dependency("normaliz_jll", compat = "~300.1000.200"),
