@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.6"
+version = v"0.0.7"
 
 sources = [
-   GitSource(repo, "9e503f3c4be179d47bde87ad0023c558599bbde1"),
+   GitSource(repo, "292dc03593ceb1a7a1f022fd7d3289bd69b000b5"),
 ]
 
 # Bash recipe for building across all platforms
