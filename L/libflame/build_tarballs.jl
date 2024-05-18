@@ -46,7 +46,7 @@ fi
     --enable-multithreading=openmp \
     --enable-lapack2flame \
     --enable-dynamic-build \
-    --disable-max-arg-list-hack \
+    --enable-max-arg-list-hack \
     --disable-autodetect-f77-ldflags --disable-autodetect-f77-name-mangling \
     $extra_flags
 
