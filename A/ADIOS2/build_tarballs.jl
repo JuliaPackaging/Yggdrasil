@@ -13,14 +13,14 @@ version = v"2.10.0"
 sources = [
     # GitSource("https://github.com/ornladios/ADIOS2.git", "6b7b4e43b9187c99b39657e0eae1fa49393bf6b4"),
     # This is a few commits after the 2.10.0 release to pick up patches for FreeBSD and Windows build problems
-    GitSource("https://github.com/ornladios/ADIOS2.git", "fcbea67f57bedcb8622adf3a2b165bb4d5ce7696"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "deb06eb79f8ac6976a80fc762b7b441073e2c052"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir
-cd ADIOS2
+cd ${WORKSPACE}/srcdir/ADIOS2
+
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 # Declare `arm8_rt_call_link`. See <https://github.com/ornladios/ADIOS2/issues/3925>.
@@ -31,6 +31,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/getpid.patch
 # Don't redefine `clock_gettime` on Windows
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime_windows.patch
+# Include `ws2tcipi.h` on Windows
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/enet.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
@@ -59,7 +61,9 @@ fi
 if [[ "${target}" == *-mingw* ]]; then
     # Windows: Some options do not build
     # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF -DCMAKE_C_FLAGS='-D_MSC_VER=1')
+    #TODO archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF -DCMAKE_C_FLAGS='-D_MSC_VER=1')
+    #TODO archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=OFF -DCMAKE_C_FLAGS='-D_MSC_VER=1')
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=OFF)
 else
     archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
 fi
@@ -109,9 +113,9 @@ platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
 #TODO platforms = expand_gfortran_versions(platforms)
 
-# Windows builds worked in 2.9 but are broken in 2.10.0. We're hoping
-# for 2.10.1. Until then we punt.
-platforms = filter(p -> os(p) ≠ "windows", platforms)
+#TODO # Windows builds worked in 2.9 but are broken in 2.10.0. We're hoping
+#TODO # for 2.10.1. Until then we punt.
+#TODO platforms = filter(p -> os(p) ≠ "windows", platforms)
 
 # We need to use the same compat bounds as HDF5
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.3", OpenMPI_compat="4.1.6, 5")
@@ -123,8 +127,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-# We don't need HDF5 on Windows (see above)
-hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
+#TODO # We don't need HDF5 on Windows (see above)
+#TODO hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
+hdf5_platforms = platforms
 
 # The products that we will ensure are always built
 products = [
@@ -161,6 +166,8 @@ dependencies = [
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
+    Dependency(PackageSpec(name="pugixml_jll")),
+    Dependency(PackageSpec(name="yaml_cpp_jll")),
     Dependency(PackageSpec(name="zfp_jll"); compat="1"),
 ]
 append!(dependencies, platform_dependencies)
