@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "nghttp2"
-version = v"1.62.0"
+version = v"1.62.1"
 
 # Collection of sources required to build LibCURL
 sources = [
     GitSource("https://github.com/nghttp2/nghttp2.git",
-              "3e767d3003861c3ac1847ed537b4feb8265daa4e"),
+              "d13a5758373931064636c1641db6277db45552dc"),
 ]
 
 # Bash recipe for building across all platforms
