@@ -3,12 +3,12 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "Qemu_static"
-version = v"7.1.0"
+version = v"7.2.9"
 
 # Collection of sources required to build libffi
 sources = [
     ArchiveSource("https://download.qemu.org/qemu-$(version).tar.xz",
-                  "a0634e536bded57cf38ec8a751adb124b89c776fe0846f21ab6c6728f1cbbbe6"),
+                  "73f6583d68cc5af36ebc95feabc9df53098ccdce4278084cce2938babf28ab4a"),
     DirectorySource("./bundled"),
 ]
 
