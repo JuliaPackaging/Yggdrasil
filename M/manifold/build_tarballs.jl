@@ -8,7 +8,7 @@ version = v"2.4.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/elalish/manifold.git", "6d932a2c7f3a269f6d280545487131c38d05f0ee"),
-    DirectorySource("./bundled")
+    # DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,23 +26,23 @@ exit
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
+    # Platform("i686", "linux"; libc = "glibc"),
     Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
+    # Platform("aarch64", "linux"; libc = "glibc"),
+    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    # Platform("powerpc64le", "linux"; libc = "glibc"),
+    # Platform("aarch64", "linux"; libc = "musl"),
+    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
+    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
 ]
  platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libClipper2", :libClipper2),
-    LibraryProduct("libmanifold", :libmanifold),
-    LibraryProduct("libglm", :libglm),
+    # LibraryProduct("libClipper2", :libClipper2),
+    # LibraryProduct("libmanifold", :libmanifold),
+    # LibraryProduct("libglm", :libglm),
     LibraryProduct("libmanifoldc", :libmanifoldc)
 ]
 
