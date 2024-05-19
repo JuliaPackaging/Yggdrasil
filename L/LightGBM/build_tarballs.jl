@@ -50,8 +50,6 @@ if  [[ ("${bb_full_target}" == *-cuda*) && ("${bb_full_target}" != *-cuda+none*)
   export CUDA_PATH=${WORKSPACE}/destdir/cuda
   export PATH=$PATH:$CUDA_PATH/bin/
 
-  ln -s $CUDA_PATH/lib $CUDA_PATH/lib64
-
   cmake_extra_args+="\
     -DUSE_CUDA=1 "
 fi
