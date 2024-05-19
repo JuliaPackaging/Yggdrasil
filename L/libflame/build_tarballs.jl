@@ -30,6 +30,8 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
     extra_flags+=" --enable-windows-build "
     # disable time & clock functions on windows (mingw): sys/times.h is missing
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows-remove-time.patch
+    # update the make build scripts for windows cross-compiling with gcc:
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows-update-build.patch
 fi
 
 if [[ "${target}" == *mingw* ]]; then
