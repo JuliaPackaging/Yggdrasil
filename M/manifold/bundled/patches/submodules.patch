@@ -1,0 +1,14 @@
+diff --git before/manifold/.git/config after/manifold/.git/config
+index 6b19e65..46d2755 100644
+--- before/manifold/.git/config
++++ after/manifold/.git/config
+@@ -9,3 +9,9 @@
+ [branch "main"]
+ 	remote = origin
+ 	merge = refs/heads/main
++[submodule "bindings/python/third_party/nanobind"]
++	active = true
++	url = https://github.com/wjakob/nanobind
++[submodule "src/third_party/quickhull"]
++	active = true
++	url = https://github.com/akuukka/quickhull
