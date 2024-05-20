@@ -35,9 +35,15 @@ cmake --install .
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
-# Only build on Linux
-# platforms = filter(p -> Sys.islinux(p), platforms)
+platforms = filter(platforms) do p
+    if Sys.isfreebsd(p)
+        false
+    elseif Sys.islinux(p)
+        p.tags["libc"] == "glibc"
+    else
+        true
+    end
+end
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
