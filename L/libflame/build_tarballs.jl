@@ -47,6 +47,7 @@ fi
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-multithreading=openmp \
     --enable-lapack2flame \
+    --disable-static-build \
     --enable-dynamic-build \
     --enable-max-arg-list-hack \
     --disable-autodetect-f77-ldflags --disable-autodetect-f77-name-mangling \
