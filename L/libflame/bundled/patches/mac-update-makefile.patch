@@ -16,7 +16,7 @@ index c7a2b7f7..0c509288 100644
  	$(CAT) $(AR_OBJ_LIST_FILE).sotmp | xargs -n$(AR_CHUNK_SIZE) $(AR) $(ARFLAGS) $(LIBFLAME_A)
  ifeq ($(OS_NAME),Darwin)
 -	$(LINKER) $(SOFLAGS) -o $@ -Wl,-force_load,$(LIBFLAME_A) $(LDFLAGS)
-+	$(LINKER) $(SOFLAGS) -o $@ -Wl,-rpath,$(LIBFLAME_A_PATH) -Wl,-all_load $(LIBFLAME_A) $(LDFLAGS)
++	$(LINKER) $(SOFLAGS) -o $@ -Wl,-rpath,$(LIBFLAME_A_PATH) -Wl,-force_load,$(LIBFLAME_A_PATH) $(LDFLAGS)
  else
  	$(LINKER) $(SOFLAGS) -o $@ -Wl,--whole-archive $(LIBFLAME_A) -Wl,--no-whole-archive $(LDFLAGS)
  endif
@@ -25,7 +25,7 @@ index c7a2b7f7..0c509288 100644
  	@$(CAT) $(AR_OBJ_LIST_FILE).sotmp | xargs -n$(AR_CHUNK_SIZE) $(AR) $(ARFLAGS) $(LIBFLAME_A)
  ifeq ($(OS_NAME),Darwin)
 -	@$(LINKER) $(SOFLAGS) -o $@ -Wl,-force_load,$(LIBFLAME_A) $(LDFLAGS)
-+	@$(LINKER) $(SOFLAGS) -o $@ -Wl,-rpath,$(LIBFLAME_A_PATH) -Wl,-all_load $(LIBFLAME_A) $(LDFLAGS)
++	@$(LINKER) $(SOFLAGS) -o $@ -Wl,-rpath,$(LIBFLAME_A_PATH) -Wl,-force_load,$(LIBFLAME_A_PATH) $(LDFLAGS)
  else
  	@$(LINKER) $(SOFLAGS) -o $@ -Wl,--whole-archive $(LIBFLAME_A) -Wl,--no-whole-archive $(LDFLAGS)
  endif
