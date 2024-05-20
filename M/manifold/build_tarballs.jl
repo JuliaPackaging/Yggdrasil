@@ -60,4 +60,7 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0") # need support for C++17
+# Needs for gcc: version
+# * C++17: >= 7.1
+# * -Wno-alloc-size-larger-than: >= 8
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
