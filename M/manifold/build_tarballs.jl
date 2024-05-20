@@ -37,8 +37,8 @@ cmake --install .
 platforms = supported_platforms()
 
 # Only build on Linux
-platforms = filter(p -> Sys.islinux(p), platforms)
- platforms = expand_cxxstring_abis(platforms)
+# platforms = filter(p -> Sys.islinux(p), platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
