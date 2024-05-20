@@ -8,7 +8,7 @@ version = v"2.4.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/elalish/manifold.git", "6d932a2c7f3a269f6d280545487131c38d05f0ee"),
-    # DirectorySource("./bundled")
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -60,4 +60,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0") # need support for C++17
