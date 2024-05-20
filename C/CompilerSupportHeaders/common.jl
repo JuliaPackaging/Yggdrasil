@@ -10,7 +10,6 @@ function build_csh(ARGS, version::VersionNumber;
 
     script = raw"""
 mkdir -p ${includedir}
-install_license /usr/share/licenses/GPL-3.0+
 # Copy all the libstdc++ and libgomp headers:
 cp -Rv /opt/${target}/${target}/include/c++/ ${includedir} || true
 # This doesn't grab any of the std C headers, but they are in Clang_jll already
