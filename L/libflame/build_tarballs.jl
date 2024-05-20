@@ -20,9 +20,10 @@ cd $WORKSPACE/srcdir/libflame
 # We might need newer `config.guess`` and `config.sub` files
 update_configure_scripts
 
-extra_flags=""
+extra_flags=" --disable-static-build "
 
 if [[ "${target}" == *-apple-* ]]; then
+    extra_flags=" --enable-static-build "
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mac-update-makefile.patch
 fi
 
@@ -47,7 +48,6 @@ fi
     --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-multithreading=openmp \
     --enable-lapack2flame \
-    --disable-static-build \
     --enable-dynamic-build \
     --enable-max-arg-list-hack \
     --disable-autodetect-f77-ldflags --disable-autodetect-f77-name-mangling \
