@@ -1,33 +1,28 @@
 diff --git a/Makefile b/Makefile
-index c7a2b7f7..6c4690b8 100644
+index c7a2b7f7..a7e04c97 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -96,9 +96,13 @@ endif
+@@ -96,6 +96,8 @@ endif
  # The shared (dynamic) library file suffix is different for Linux and OS X.
  ifeq ($(OS_NAME),Darwin)
  SHLIB_EXT          := dylib
-+else 
-+ifeq ($(IS_WIN),yes)
++else ifeq ($(IS_WIN),yes)
 +SHLIB_EXT          := dll.a
  else
  SHLIB_EXT          := so
  endif
-+endif
- 
- # --- Library names ---
- 
-@@ -117,6 +121,10 @@ ifeq ($(OS_NAME),Darwin)
+@@ -117,6 +119,10 @@ ifeq ($(OS_NAME),Darwin)
  # OS X shared library extensions.
  LIBFLAME_SO_MAJ_EXT  := $(SO_MAJOR).$(SHLIB_EXT)
  LIBFLAME_SO_MMB_EXT  := $(SO_MMB).$(SHLIB_EXT)
 +else ifeq ($(IS_WIN),yes)
 +# Windows shared library extension.
-+LIBFLAME_SO_MAJ_EXT := $(SO_MAJOR).dll
++LIBFLAME_SO_MAJ_EXT := dll
 +LIBFLAME_SO_MMB_EXT :=
  else
  # Linux shared library extensions.
  LIBFLAME_SO_MAJ_EXT  := $(SHLIB_EXT).$(SO_MAJOR)
-@@ -127,7 +135,11 @@ LIBFLAME_SONAME      := $(LIBFLAME).$(LIBFLAME_SO_MAJ_EXT)
+@@ -127,7 +133,11 @@ LIBFLAME_SONAME      := $(LIBFLAME).$(LIBFLAME_SO_MAJ_EXT)
  LIBFLAME_SO_MAJ_PATH := $(BASE_LIB_PATH)/$(LIBFLAME_SONAME)
  
  # Construct the output path when building a shared library.
@@ -39,7 +34,7 @@ index c7a2b7f7..6c4690b8 100644
  
  
  
-@@ -140,13 +152,17 @@ LIBFLAME_SO_OUTPUT_NAME := $(LIBFLAME_SO_PATH)
+@@ -140,13 +150,17 @@ LIBFLAME_SO_OUTPUT_NAME := $(LIBFLAME_SO_PATH)
  ifeq ($(OS_NAME),Darwin)
  # OS X shared library link flags.
  SOFLAGS    := -dynamiclib
@@ -59,7 +54,7 @@ index c7a2b7f7..6c4690b8 100644
  
  
  #
-@@ -194,7 +210,14 @@ LIBFLAME_A_INST       := $(INSTALL_LIBDIR)/$(LIBFLAME_A)
+@@ -194,7 +208,14 @@ LIBFLAME_A_INST       := $(INSTALL_LIBDIR)/$(LIBFLAME_A)
  
  LIBFLAME_SO_INST      := $(INSTALL_LIBDIR)/$(LIBFLAME_SO)
  LIBFLAME_SO_MAJ_INST  := $(INSTALL_LIBDIR)/$(LIBFLAME_SONAME)
@@ -74,7 +69,7 @@ index c7a2b7f7..6c4690b8 100644
  
  # --- Determine which libraries to build ---
  
-@@ -670,9 +693,11 @@ ifeq ($(FLA_ENABLE_MAX_ARG_LIST_HACK),yes)
+@@ -670,9 +691,11 @@ ifeq ($(FLA_ENABLE_MAX_ARG_LIST_HACK),yes)
  	$(SORT) $(AR_OBJ_LIST_FILE) | $(UNIQ) > $(AR_OBJ_LIST_FILE).sotmp
  	$(CAT) $(AR_OBJ_LIST_FILE).sotmp | xargs -n$(AR_CHUNK_SIZE) $(AR) $(ARFLAGS) $(LIBFLAME_A)
  ifeq ($(OS_NAME),Darwin)
@@ -88,7 +83,7 @@ index c7a2b7f7..6c4690b8 100644
  endif
  	$(RM_F) $(AR_OBJ_LIST_FILE).sotmp
  else
-@@ -686,9 +711,11 @@ ifeq ($(FLA_ENABLE_MAX_ARG_LIST_HACK),yes)
+@@ -686,9 +709,11 @@ ifeq ($(FLA_ENABLE_MAX_ARG_LIST_HACK),yes)
  	@$(SORT) $(AR_OBJ_LIST_FILE) | $(UNIQ) > $(AR_OBJ_LIST_FILE).sotmp
  	@$(CAT) $(AR_OBJ_LIST_FILE).sotmp | xargs -n$(AR_CHUNK_SIZE) $(AR) $(ARFLAGS) $(LIBFLAME_A)
  ifeq ($(OS_NAME),Darwin)
@@ -102,7 +97,7 @@ index c7a2b7f7..6c4690b8 100644
  endif
  	@$(RM_F) $(AR_OBJ_LIST_FILE).sotmp
  else
-@@ -698,11 +725,14 @@ else
+@@ -698,11 +723,14 @@ else
  endif
  endif
  
@@ -117,7 +112,7 @@ index c7a2b7f7..6c4690b8 100644
  ifeq ($(ENABLE_VERBOSE),yes)
  	$(SYMLINK) $(<F) $(@F).loc
  	$(MV) $(@F).loc $(BASE_LIB_PATH)/$(@F)
-@@ -711,6 +741,7 @@ else # ifeq ($(ENABLE_VERBOSE),no)
+@@ -711,6 +739,7 @@ else # ifeq ($(ENABLE_VERBOSE),no)
  	@$(SYMLINK) $(<F) $(@F).loc
  	@$(MV) $(@F).loc $(BASE_LIB_PATH)/$(@F)
  endif
@@ -125,7 +120,7 @@ index c7a2b7f7..6c4690b8 100644
  
  # Original implementation of the rule above.
  # FGVZ: This rule has been observed to not work on at least one system, where
-@@ -777,7 +808,12 @@ else
+@@ -777,7 +806,12 @@ else
  	@$(INSTALL) -m 0644 $< $@
  endif
  
@@ -139,7 +134,7 @@ index c7a2b7f7..6c4690b8 100644
  $(INSTALL_LIBDIR)/%.$(LIBFLAME_SO_MMB_EXT): $(BASE_LIB_PATH)/%.$(SHLIB_EXT) $(CONFIG_MK_FILE)
  ifeq ($(ENABLE_VERBOSE),yes)
  	$(MKDIR) $(@D)
-@@ -788,11 +824,39 @@ else
+@@ -788,11 +822,39 @@ else
  	@$(INSTALL) -m 0755 $< $@
  endif
  
@@ -179,7 +174,7 @@ index c7a2b7f7..6c4690b8 100644
  $(INSTALL_LIBDIR)/%.$(SHLIB_EXT): $(INSTALL_LIBDIR)/%.$(LIBFLAME_SO_MMB_EXT)
  ifeq ($(ENABLE_VERBOSE),yes)
  	$(SYMLINK) $(<F) $(@F)
-@@ -814,6 +878,8 @@ else
+@@ -814,6 +876,8 @@ else
  	@$(MV) $(@F) $(INSTALL_LIBDIR)/
  endif
  
