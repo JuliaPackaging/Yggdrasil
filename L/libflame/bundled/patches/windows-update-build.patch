@@ -198,7 +198,7 @@ index cf2785fa..57d8fc4a 100644
  # that are substituted in via configure may be defined *in terms of* these
  # variables. For example, @libdir@ may be replaced with '${exec_prefix}/lib',
 diff --git a/configure b/configure
-index 1ff1bdb1..34c16216 100755
+index 1ff1bdb1..6b48ef78 100755
 --- a/configure
 +++ b/configure
 @@ -715,6 +715,7 @@ CC
@@ -233,7 +233,7 @@ index 1ff1bdb1..34c16216 100755
 -
 -
 +  { $as_echo "$as_me:${as_lineno-$LINENO}: building for windows: $is_win" >&5
-+$as_echo_ "building for windows... $is_win" >&6; }
++$as_echo "building for windows... $is_win" >&6; }
  
  
  	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GNU make" >&5
