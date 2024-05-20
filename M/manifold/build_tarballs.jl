@@ -8,7 +8,7 @@ version = v"2.4.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/elalish/manifold.git", "6d932a2c7f3a269f6d280545487131c38d05f0ee"),
-    DirectorySource("./bundled")
+    # DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
