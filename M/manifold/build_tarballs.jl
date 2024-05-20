@@ -36,13 +36,7 @@ cmake --install .
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = filter(platforms) do p
-    if Sys.isfreebsd(p)
-        false
-    elseif Sys.islinux(p)
-        p.tags["libc"] == "glibc"
-    else
-        true
-    end
+    !Sys.isfreebsd(p) && libc(p) != "musl"
 end
 platforms = expand_cxxstring_abis(platforms)
 
