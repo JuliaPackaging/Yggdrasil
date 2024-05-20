@@ -27,10 +27,6 @@ make install
 # build with cmake 
 cd $WORKSPACE/srcdir/spot_julia/spot_julia
 
-# Override compiler ID to silence the horrible "No features found" cmake error
-if [[ $target == *"apple-darwin"* ]]; then
-  macos_extra_flags="-DCMAKE_CXX_COMPILER_ID=AppleClang -DCMAKE_CXX_COMPILER_VERSION=10.0.0 -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
-fi
 Julia_PREFIX=$prefix
 mkdir build
 cd build
