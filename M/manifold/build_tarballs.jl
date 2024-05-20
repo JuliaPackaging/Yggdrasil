@@ -35,15 +35,15 @@ cmake --install .
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    # Platform("i686", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "glibc"),
     Platform("x86_64", "linux"; libc = "glibc"),
-    # Platform("aarch64", "linux"; libc = "glibc"),
-    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    # Platform("powerpc64le", "linux"; libc = "glibc"),
-    # Platform("aarch64", "linux"; libc = "musl"),
-    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
 ]
  platforms = expand_cxxstring_abis(platforms)
 
@@ -63,4 +63,4 @@ dependencies = Dependency[
 # Needs for gcc: version
 # * C++17: >= 7.1
 # * -Wno-alloc-size-larger-than
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9.5")
