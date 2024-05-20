@@ -30,7 +30,6 @@ cmake .. \
     -DBUILD_SHARED_LIBS=ON
 cmake --build . --parallel ${nproc}
 cmake --install .
-exit
 """
 
 # These are the platforms we will build for by default, unless further
