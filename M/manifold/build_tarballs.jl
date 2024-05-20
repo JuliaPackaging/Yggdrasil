@@ -49,9 +49,9 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libClipper2", :libClipper2),
-    LibraryProduct("libmanifold", :libmanifold),
-    LibraryProduct("libglm", :libglm),
+    # LibraryProduct("libClipper2", :libClipper2),
+    # LibraryProduct("libmanifold", :libmanifold),
+    # LibraryProduct("libglm", :libglm),
     LibraryProduct("libmanifoldc", :libmanifoldc)
 ]
 
