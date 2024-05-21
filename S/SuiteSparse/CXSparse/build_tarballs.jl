@@ -1,6 +1,6 @@
 include("../common.jl")
 
-name = "ParU"
+name = "CXSparse"
 version = v"4.4.0"
 SS_version_str = "7.7.0"
 SS_version = VersionNumber(SS_version_str)
