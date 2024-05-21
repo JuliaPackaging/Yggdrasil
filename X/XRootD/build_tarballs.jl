@@ -7,7 +7,7 @@ version = v"5.6.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", "48a3fe6e8768305b742dd2d08404114c")
+    ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", "44196167fbcf030d113e3749dfdecab934c43ec15e38e77481e29aac191ca3a8")
 ]
 
 # Bash recipe for building across all platforms
