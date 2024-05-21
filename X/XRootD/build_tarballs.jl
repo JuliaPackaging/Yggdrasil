@@ -15,7 +15,11 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir build && cd build
 install_license ../xrootd-*/LICENSE
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_PERL=FALSE ../xrootd-*/
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_STANDARD=17 \
+      ../xrootd-*/
 make -j${nproc}
 make install
 """
@@ -26,44 +30,44 @@ platforms = supported_platforms(exclude= p->libc(p) == "musl" || os(p) == "freeb
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libXrdPss-5", :libXrdPss),
-    LibraryProduct("libXrdClProxyPlugin-5", :libXrdClProxyPlugin),
+    LibraryProduct("libXrdPss-5", :libXrdPss; dont_dlopen=true),
+    LibraryProduct("libXrdClProxyPlugin-5", :libXrdClProxyPlugin; dont_dlopen=true),
     LibraryProduct("libXrdCl", :libXrdCl),
-    LibraryProduct("libXrdXrootd-5", :libXrdXrootd),
-    LibraryProduct("libXrdSecunix-5", :libXrdSecunix),
+    LibraryProduct("libXrdXrootd-5", :libXrdXrootd; dont_dlopen=true),
+    LibraryProduct("libXrdSecunix-5", :libXrdSecunix; dont_dlopen=true),
     LibraryProduct("libXrdHttpUtils", :libXrdHttpUtils),
-    LibraryProduct("libXrdSecpwd-5", :libXrdSecpwd),
+    LibraryProduct("libXrdSecpwd-5", :libXrdSecpwd; dont_dlopen=true),
     LibraryProduct("libXrdPosix", :libXrdPosix),
-    LibraryProduct("libXrdHttp-5", :libXrdHttp),
-    LibraryProduct("libXrdCksCalczcrc32-5", :libXrdCksCalczcrc32),
+    LibraryProduct("libXrdHttp-5", :libXrdHttp; dont_dlopen=true),
+    LibraryProduct("libXrdCksCalczcrc32-5", :libXrdCksCalczcrc32; dont_dlopen=true),
     LibraryProduct("libXrdServer", :libXrdServer),
-    LibraryProduct("libXrdPfc-5", :libXrdPfc),
+    LibraryProduct("libXrdPfc-5", :libXrdPfc; dont_dlopen=true),
     LibraryProduct("libXrdSsiLib", :libXrdSsiLib),
-    LibraryProduct("libXrdOfsPrepGPI-5", :libXrdOfsPrepGPI),
-    LibraryProduct("libXrdSec-5", :libXrdSec),
+    LibraryProduct("libXrdOfsPrepGPI-5", :libXrdOfsPrepGPI; dont_dlopen=true),
+    LibraryProduct("libXrdSec-5", :libXrdSec; dont_dlopen=true),
     LibraryProduct("libXrdPosixPreload", :libXrdPosixPreload),
-    LibraryProduct("libXrdSecgsiGMAPDN-5", :libXrdSecgsiGMAPDN),
+    LibraryProduct("libXrdSecgsiGMAPDN-5", :libXrdSecgsiGMAPDN; dont_dlopen=true),
     LibraryProduct("libXrdAppUtils", :libXrdAppUtils),
-    LibraryProduct("libXrdBlacklistDecision-5", :libXrdBlacklistDecision),
-    LibraryProduct("libXrdOssCsi-5", :libXrdOssCsi),
-    LibraryProduct("libXrdCmsRedirectLocal-5", :libXrdCmsRedirectLocal),
-    LibraryProduct("libXrdBwm-5", :libXrdBwm),
-    LibraryProduct("libXrdSsi-5", :libXrdSsi),
+    LibraryProduct("libXrdBlacklistDecision-5", :libXrdBlacklistDecision; dont_dlopen=true),
+    LibraryProduct("libXrdOssCsi-5", :libXrdOssCsi; dont_dlopen=true),
+    LibraryProduct("libXrdCmsRedirectLocal-5", :libXrdCmsRedirectLocal; dont_dlopen=true),
+    LibraryProduct("libXrdBwm-5", :libXrdBwm; dont_dlopen=true),
+    LibraryProduct("libXrdSsi-5", :libXrdSsi; dont_dlopen=true),
     LibraryProduct("libXrdXml", :libXrdXml),
-    LibraryProduct("libXrdOssSIgpfsT-5", :libXrdOssSIgpfsT),
-    LibraryProduct("libXrdSsiLog-5", :libXrdSsiLog),
+    LibraryProduct("libXrdOssSIgpfsT-5", :libXrdOssSIgpfsT; dont_dlopen=true),
+    LibraryProduct("libXrdSsiLog-5", :libXrdSsiLog; dont_dlopen=true),
     LibraryProduct("libXrdUtils", :libXrdUtils),
-    LibraryProduct("libXrdSecgsiAUTHZVO-5", :libXrdSecgsiAUTHZVO),
+    LibraryProduct("libXrdSecgsiAUTHZVO-5", :libXrdSecgsiAUTHZVO; dont_dlopen=true),
     LibraryProduct("libXrdCrypto", :libXrdCrypto),
-    LibraryProduct("libXrdCryptossl-5", :libXrdCryptossl),
-    LibraryProduct("libXrdSecProt-5", :libXrdSecProt),
-    LibraryProduct("libXrdSecgsi-5", :libXrfSecgsi),
-    LibraryProduct("libXrdSecsss-5", :libXrfSecsss),
+    LibraryProduct("libXrdCryptossl-5", :libXrdCryptossl; dont_dlopen=true),
+    LibraryProduct("libXrdSecProt-5", :libXrdSecProt; dont_dlopen=true),
+    LibraryProduct("libXrdSecgsi-5", :libXrfSecgsi; dont_dlopen=true),
+    LibraryProduct("libXrdSecsss-5", :libXrfSecsss; dont_dlopen=true),
     LibraryProduct("libXrdFfs", :libXrdFfs),
     LibraryProduct("libXrdCryptoLite", :libXrdCryptoLite),
     LibraryProduct("libXrdSsiShMap", :libXrdSsiShMap),
-    LibraryProduct("libXrdN2No2p-5", :libXrdN2No2p),
-    LibraryProduct("libXrdThrottle-5", :libXrdThrottle),
+    LibraryProduct("libXrdN2No2p-5", :libXrdN2No2p; dont_dlopen=true),
+    LibraryProduct("libXrdThrottle-5", :libXrdThrottle; dont_dlopen=true),
     ExecutableProduct("frm_xfragent", :frm_xfragent),
     ExecutableProduct("xrdmapc", :xrdmapc),
     ExecutableProduct("xrdsssadmin", :xrdsssadmin),
