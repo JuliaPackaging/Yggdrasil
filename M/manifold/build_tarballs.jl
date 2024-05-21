@@ -47,14 +47,13 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    # LibraryProduct("libClipper2", :libClipper2),
     # LibraryProduct("libmanifold", :libmanifold),
-    # LibraryProduct("libglm", :libglm),
     LibraryProduct("libmanifoldc", :libmanifoldc)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("OpenGLMathematics_jll")
     Dependency("Clipper2_jll")
 ]
 
