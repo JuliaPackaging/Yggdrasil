@@ -27,10 +27,6 @@ make install
 # build with cmake 
 cd $WORKSPACE/srcdir/spot_julia/spot_julia
 
-# Override compiler ID to silence the horrible "No features found" cmake error
-if [[ $target == *"apple-darwin"* ]]; then
-  macos_extra_flags="-DCMAKE_CXX_COMPILER_ID=AppleClang -DCMAKE_CXX_COMPILER_VERSION=10.0.0 -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
-fi
 Julia_PREFIX=$prefix
 mkdir build
 cd build
@@ -89,9 +85,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
-    BuildDependency("libjulia_jll")
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
+    Dependency("libcxxwrap_julia_jll"; compat="0.12.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10", clang_use_lld=false)
