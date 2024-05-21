@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "XRootD"
-version = v"5.5.4"
+version = v"5.6.9"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", "41a8557ea2d118b1950282b17abea9230b252aa5ee1a5959173e2534b7d611d3")
+    ArchiveSource("https://github.com/xrootd/xrootd/releases/download/v$(version)/xrootd-$(version).tar.gz", "48a3fe6e8768305b742dd2d08404114c")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,8 +22,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=p->libc(p) != "glibc"))
-
+platforms = supported_platforms(exclude= p->libc(p) == "musl" || os(p) == "freebsd" || os(p) == "windows") |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
