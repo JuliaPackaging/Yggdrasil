@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "qwtw"
-version = v"2.13.1"
+version = v"2.13.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "06577ea7fabad4c51f4b2c2ee08e6696029f3011")
+    GitSource("https://github.com/ig-or/qwtw.git", "05c27fcdf5476dafa32cf8f6d3f93798d507d5a8")
 ]
 
 # Bash recipe for building across all platforms
@@ -52,4 +52,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"9.1.0")
+               julia_compat="1.8", preferred_gcc_version = v"9.1.0")
