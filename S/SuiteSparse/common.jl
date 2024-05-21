@@ -153,13 +153,15 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     echo "-- Modifying library name for libblastrampoline"
 
     for nm in libcholmod libspqr libumfpack; do
-        # Figure out what version it probably latched on to:
-        if [[ ${target} == *-apple-* ]]; then
-            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
-            install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
-        elif [[ ${target} == *freebsd* ]]; then
-            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${LBT_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
+        if [[ *"${nm}"* == PROJECTS_TO_BUILD ]]; then
+            # Figure out what version it probably latched on to:
+            if [[ ${target} == *-apple-* ]]; then
+                LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
+                install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
+            elif [[ ${target} == *freebsd* ]]; then
+                LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
+                patchelf --replace-needed ${LBT_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
+            fi
         fi
     done
 fi
