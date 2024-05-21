@@ -1,7 +1,7 @@
 include("../common.jl")
 
 name = "ParU"
-version = v"4.4.0"
+version = v"0.1.3"
 SS_version_str = "7.7.0"
 SS_version = VersionNumber(SS_version_str)
 
@@ -9,19 +9,25 @@ sources = suitesparse_sources(SS_version)
 
 # Bash recipe for building across all platforms
 script = raw"""
-PROJECTS_TO_BUILD="cxsparse"
+PROJECTS_TO_BUILD="paru"
 CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_SUITESPARSE_CONFIG=ON
+        -DSUITESPARSE_USE_SYSTEM_AMD=ON
+        -DSUITESPARSE_USE_SYSTEM_COLAMD=ON
+        -DSUITESPARSE_USE_SYSTEM_CAMD=ON
+        -DSUITESPARSE_USE_SYSTEM_CCOLAMD=ON
+        -DSUITESPARSE_USE_SYSTEM_UMFPACK=ON
+        -DSUITESPARSE_USE_SYSTEM_CHOLMOD=ON
     )
 """ * build_script(true)
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
+    Dependency("CompilerSupportLibraries_jll"),
     Dependency("SuiteSparse_jll"; compat = "=$SS_version_str")
 ])
 products = [
-    LibraryProduct("libcxsparse", :libcxsparse)
+    LibraryProduct("libparu", :libparu),
 ]
 build_tarballs(ARGS, name, version, sources, script, platforms, products, 
-               dependencies; julia_compat="1.11")
-
+               dependencies; julia_compat="1.11",preferred_gcc_version=v"9")
