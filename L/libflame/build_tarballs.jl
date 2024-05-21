@@ -22,10 +22,10 @@ update_configure_scripts
 
 extra_flags=" --disable-static-build "
 
-if [[ "${target}" == *-apple-* ]]; then
-    extra_flags=" --enable-static-build "
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mac-update-makefile.patch
-fi
+# if [[ "${target}" == *-apple-* ]]; then
+#     extra_flags=" --enable-static-build "
+#     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mac-update-makefile.patch
+# fi
 
 if [[ "${target}" == *-w64-mingw32* ]]; then
     extra_flags+=" --enable-windows-build "
