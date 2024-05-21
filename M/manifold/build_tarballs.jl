@@ -8,11 +8,17 @@ version = v"2.4.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/elalish/manifold.git", "6d932a2c7f3a269f6d280545487131c38d05f0ee"),
+    DirectorySource("./bundled/"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/manifold
+
+# Fix CMake for Clipper2 on Windows
+# Sent upstream in https://github.com/elalish/manifold/pull/815
+atomic_patch -p1 $WORKSPACE/srcdir/patches/cmake_import_lib.patch
+
 mkdir build
 cd build/
 git submodule update --init --recursive
