@@ -135,7 +135,7 @@ for version in CUDA.cuda_full_versions
 
         if arch(platform) == "aarch64"
             # CUDA 10.x: our CUDA 10.2 build recipe for arm64 only provides jetson binaries
-            if thisminor(version) == "10.2" && platform["cuda_platform"] != "jetson"
+            if thisminor(version) == v"10.2" && platform["cuda_platform"] != "jetson"
                 continue
             end
 
