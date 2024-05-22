@@ -4,7 +4,7 @@ name = "CXSparse"
 version = v"4.4.0"
 SS_version_str = "7.7.0"
 SS_version = VersionNumber(SS_version_str)
-
+LLVM_version = v"16.0.6"
 sources = suitesparse_sources(SS_version)
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ fi
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=v"13.0.1+1");
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=LLVM_version);
         platforms=[Platform("aarch64", "macos")]),
     Dependency("SuiteSparse_jll"; compat = "=$SS_version_str"),
     Dependency("CompilerSupportLibraries_jll")
@@ -34,4 +34,4 @@ products = [
     LibraryProduct("libcxsparse", :libcxsparse)
 ]
 build_tarballs(ARGS, name, version, sources, script, platforms, products, 
-               dependencies; julia_compat="1.11")
+               dependencies; julia_compat="1.11", preferred_llvm_version=v"16.0.6")

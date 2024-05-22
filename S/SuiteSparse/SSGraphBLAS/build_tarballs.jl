@@ -10,6 +10,9 @@ sources = suitesparse_sources(SS_version)
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Until upstream is fixed, set the cache path to something useless
+# This is a runtime error that will be handled in the downstream library.
+export GRAPHBLAS_CACHE_PATH="${WORKSPACE}/destdir"
 PROJECTS_TO_BUILD="graphblas"
 CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_SUITESPARSE_CONFIG=ON
