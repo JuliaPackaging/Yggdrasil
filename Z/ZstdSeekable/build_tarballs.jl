@@ -15,7 +15,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/zstd-*/contrib/seekable_format/
-${CC} -O3 -g zstdseek_compress.c zstdseek_decompress.c -shared -o libzstd_seekable.${dlext} -lzstd -I${includedir} -I../../lib/common/ -L${libdir}
+${CC} -O3 -g -fPIC zstdseek_compress.c zstdseek_decompress.c -shared -o libzstd_seekable.${dlext} -lzstd -I${includedir} -I../../lib/common/ -L${libdir}
 install -Dvm 644 zstd_seekable.h "${includedir}/zstd_seekable.h"  # might as well I guess?
 install -Dvm 755 libzstd_seekable.${dlext} "${libdir}/libzstd_seekable.${dlext}"
 install_license ../../LICENSE
