@@ -18,7 +18,7 @@ cd ${WORKSPACE}/srcdir/zstd-*/contrib/seekable_format/
 FLAGS=(-O3 -g -fPIC -shared -L${libdir} -I${includedir} -I. -I../../lib/ -I../../lib/common/ -lzstd)
 SOURCES=(zstdseek_compress.c zstdseek_decompress.c)
 LIB=libzstd_seekable.${dlext}
-${CC} ${FLAGS[@]} -o ${LIB} ${SOURCES[@]}
+${CC} ${SOURCES[@]} -o ${LIB} ${FLAGS[@]}
 install -Dvm 644 zstd_seekable.h "${includedir}/zstd_seekable.h"  # might as well I guess?
 install -Dvm 755 ${LIB} "${libdir}/${LIB}"
 install_license ../../LICENSE
