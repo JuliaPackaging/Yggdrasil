@@ -15,7 +15,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/zstd-*/contrib/seekable_format/
-FLAGS=(-O3 -g -fPIC -shared -L${libdir} -I${includedir} -I. -I../../lib/ -I../../lib/common/ -lzstd)
+FLAGS=(-O3 -g -fPIC -shared -DXXH_NAMESPACE=ZSTD_ -L${libdir} -I${includedir} -I. -I../../lib/ -I../../lib/common/ -lzstd)
 SOURCES=(zstdseek_compress.c zstdseek_decompress.c)
 LIB=libzstd_seekable.${dlext}
 ${CC} ${SOURCES[@]} -o ${LIB} ${FLAGS[@]}
