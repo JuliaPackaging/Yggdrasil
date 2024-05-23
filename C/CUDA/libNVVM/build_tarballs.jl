@@ -6,8 +6,8 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libNVVM"
-version = v"4.0.2"
-cuda_version = v"12.4.1"
+version = v"4.0.3"
+cuda_version = v"12.5.0"
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/cuda_nvcc-*
@@ -25,8 +25,8 @@ mv nvvm/libdevice ${prefix}/share/
 """
 
 platforms = [Platform("x86_64", "linux"),
-             Platform("powerpc64le", "linux"),
-             Platform("aarch64", "linux"),
+             Platform("aarch64", "linux"; cuda_platform="jetson"),
+             Platform("aarch64", "linux"; cuda_platform="sbsa"),
              Platform("x86_64", "windows")]
 
 products = [
