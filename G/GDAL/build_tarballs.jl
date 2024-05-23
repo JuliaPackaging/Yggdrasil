@@ -69,6 +69,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_LZ4=ON
     -DGDAL_USE_OPENJPEG=ON
     -DGDAL_USE_PARQUET=ON
+    -DGDAL_USE_PNG=ON
     -DGDAL_USE_POSTGRESQL=ON
     -DGDAL_USE_QHULL=ON
     -DGDAL_USE_SQLITE3=ON
@@ -154,6 +155,7 @@ dependencies = [
     Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"),
+    Dependency("Libpng_jll"; compat="1.6.38"),
     Dependency("Libtiff_jll"; compat="~4.5.1"),
     Dependency("Libwebp_jll"; compat="1.2.0"),
     Dependency("Lz4_jll"; compat="1.9.3"),
