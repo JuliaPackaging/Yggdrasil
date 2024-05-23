@@ -196,7 +196,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	$CC @bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
 	# $CC @bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
 else
-	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} @nsync//...
 fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
@@ -237,39 +237,6 @@ products = [
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# Don't even bother with powerpc
-platforms = filter(platforms) do p
-    !( (arch(p) == "powerpc64le") )
-end
-
-# 64-bit or bust (for xla runtime executable)
-platforms = filter(p -> arch(p) != "i686", platforms)
-
-# linux aarch has onednn issues
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p)), platforms)
-platforms = filter(p -> !(arch(p) == "armv6l" && Sys.islinux(p)), platforms)
-platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
-
-# TSL exec info rewriting needed
-# external/tsl/tsl/platform/default/stacktrace.h:29:10: fatal error: execinfo.h: No such file or directory
-# [01:23:40]    29 | #include <execinfo.h>
-platforms = filter(p -> !(libc(p) == "musl"), platforms)
-
-# Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-platforms = filter(p -> !(Sys.iswindows(p)), platforms)
-
-# NSync is picking up wrong stuff for cross compile, to deal with later
-# 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
-# [00:20:02] #include <linux/futex.h>
-platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
-
-# platforms = filter(p -> (Sys.isapple(p)), platforms)
-# platforms = filter(p -> arch(p) != "x86_64", platforms)
-
-# platforms = filter(p -> (Sys.isapple(p)), platforms)
-
-# platforms = filter(p -> !(Sys.isapple(p)), platforms)
-# platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 augment_platform_block=CUDA.augment::String
 
