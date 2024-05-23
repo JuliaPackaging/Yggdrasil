@@ -19,7 +19,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/proj-*
 
-EXE_SQLite3=${host_bindir}/sqlite3
+EXE_SQLITE3=${host_bindir}/sqlite3
 
 if [[ ${target} == *mingw* ]]; then
     SQLite3_LIBRARY=${libdir}/libsqlite3-0.dll
@@ -45,7 +45,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
-    -DEXE_SQLite3=${EXE_SQLite3} \
+    -DEXE_SQLITE3=${EXE_SQLITE3} \
     -DSQLite3_INCLUDE_DIR=${includedir} \
     -DSQLite3_LIBRARY=${SQLite3_LIBRARY} \
     -DCURL_INCLUDE_DIR=${includedir} \
