@@ -8,7 +8,7 @@ version = v"6.7.0"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -31,7 +31,7 @@ cd build/
 
 qtsrcdir=`ls -d ../qtbase-everywhere-src-*`
 
-atomic_patch -p1 -d "${qtsrcdir}" ../patches/mingw.patch
+atomic_patch -p1 -d "${qtsrcdir}" ../patches/mingw-mac.patch
 atomic_patch -p1 -d "${qtsrcdir}" ../patches/storageinfo.patch
 
 commonoptions=" \
@@ -83,10 +83,9 @@ case "$bb_full_target" in
     *apple-darwin*)
         apple_sdk_root=$WORKSPACE/srcdir/MacOSX13.3.sdk
         sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-        if [[ "${target}" == x86_64-* ]]; then
-            export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
-            deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=11"
-        fi
+        sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+        deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=11"
+        export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DQT_INTERNAL_APPLE_SDK_VERSION=13.3 -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd -DQT_FEATURE_vulkan=OFF
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
@@ -157,7 +156,7 @@ products_macos = [
 ]
 
 # We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
-llvm_version = v"13.0.1"
+llvm_version = v"16.0.6"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -181,7 +180,7 @@ dependencies = [
     Dependency("Vulkan_Loader_jll"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
-                    platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
+                    platforms=filter(p -> Sys.isapple(p), platforms_macos)),
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_kbproto_jll"),
     BuildDependency("Xorg_renderproto_jll"),
