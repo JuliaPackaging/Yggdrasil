@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GDAL"
 upstream_version = v"3.9.0"
-version_offset = v"1.0.0"
+version_offset = v"1.1.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -58,6 +58,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DBUILD_JAVA_BINDINGS=OFF
     -DBUILD_PYTHON_BINDINGS=OFF
     -DGDAL_USE_ARROW=ON
+    -DGDAL_USE_BLOSC=ON
     -DGDAL_USE_CURL=ON
     -DGDAL_USE_EXPAT=ON
     -DGDAL_USE_GEOS=ON
@@ -71,6 +72,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_POSTGRESQL=ON
     -DGDAL_USE_SQLITE3=ON
     -DGDAL_USE_TIFF=ON
+    -DGDAL_USE_WEBP=ON
     -DGDAL_USE_ZLIB=ON
     -DGDAL_USE_ZSTD=ON
     -DGIF_LIBRARY=${libdir}/libgif.${dlext}
