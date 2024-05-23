@@ -25,8 +25,8 @@ mv nvvm/libdevice ${prefix}/share/
 """
 
 platforms = [Platform("x86_64", "linux"),
-             Platform("powerpc64le", "linux"),
-             Platform("aarch64", "linux"),
+             Platform("aarch64", "linux"; cuda_platform="jetson"),
+             Platform("aarch64", "linux"; cuda_platform="sbsa"),
              Platform("x86_64", "windows")]
 
 products = [
