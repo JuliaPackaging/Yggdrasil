@@ -77,6 +77,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_WEBP=ON
     -DGDAL_USE_ZLIB=ON
     -DGDAL_USE_ZSTD=ON
+    -DGIF_LIBRARY=${libdir}/libgif.${dlext}
     -DPostgreSQL_INCLUDE_DIR=${includedir}
     -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext})
 
