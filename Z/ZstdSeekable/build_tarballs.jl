@@ -15,7 +15,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/zstd-*/contrib/seekable_format/
-FLAGS=(-O3 -g -fPIC -shared -DXXH_NAMESPACE=ZSTD_ -L${libdir} -I${includedir} -I. -I../../lib/ -I../../lib/common/ -lzstd)
+FLAGS=(-O3 -g -fPIC -shared -DXXH_NAMESPACE="" -L${libdir} -I${includedir} -I. -I../../lib/ -I../../lib/common/ -lzstd -lxxhash)
 SOURCES=(zstdseek_compress.c zstdseek_decompress.c)
 LIB=libzstd_seekable.${dlext}
 ${CC} ${SOURCES[@]} -o ${LIB} ${FLAGS[@]}
@@ -33,7 +33,9 @@ products = [
 dependencies = [
     Dependency(PackageSpec(; name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4");
                compat="^$version"),
+    Dependency(PackageSpec(; name="xxHash_jll", uuid="5fdcd639-92d1-5a06-bf6b-28f2061df1a9");
+               compat="^0.8.2"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6")
+               julia_compat="1.6")
