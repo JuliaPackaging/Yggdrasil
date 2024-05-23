@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GDAL"
 upstream_version = v"3.9.0"
-version_offset = v"1.0.0"
+version_offset = v"1.1.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -54,24 +54,29 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_PREFIX_PATH=${prefix}
     -DCMAKE_FIND_ROOT_PATH=${prefix}
     -DCMAKE_BUILD_TYPE=Release
-    -DBUILD_PYTHON_BINDINGS=OFF
-    -DBUILD_JAVA_BINDINGS=OFF
     -DBUILD_CSHARP_BINDINGS=OFF
+    -DBUILD_JAVA_BINDINGS=OFF
+    -DBUILD_PYTHON_BINDINGS=OFF
+    -DGDAL_USE_ARROW=ON
+    -DGDAL_USE_BLOSC=ON
     -DGDAL_USE_CURL=ON
     -DGDAL_USE_EXPAT=ON
-    -DGDAL_USE_GEOTIFF=ON
     -DGDAL_USE_GEOS=ON
+    -DGDAL_USE_GEOTIFF=ON
+    -DGDAL_USE_GIF=ON
+    -DGDAL_USE_LIBLZMA=ON
+    -DGDAL_USE_LIBXML2=OFF
+    -DGDAL_USE_LZ4=ON
     -DGDAL_USE_OPENJPEG=ON
+    -DGDAL_USE_PARQUET=ON
+    -DGDAL_USE_POSTGRESQL=ON
+    -DGDAL_USE_QHULL=ON
     -DGDAL_USE_SQLITE3=ON
     -DGDAL_USE_TIFF=ON
     -DGDAL_USE_ZLIB=ON
     -DGDAL_USE_ZSTD=ON
-    -DGDAL_USE_POSTGRESQL=ON
-    -DGDAL_USE_LIBXML2=OFF
     -DPostgreSQL_INCLUDE_DIR=${includedir}
-    -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
-    -DGDAL_USE_ARROW=ON
-    -DGDAL_USE_PARQUET=ON)
+    -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext})
 
 # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
@@ -140,20 +145,25 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GEOS_jll"; compat="3.11.2"),
-    Dependency("PROJ_jll"; compat="901.300.0"),
-    Dependency("Zlib_jll"),
-    Dependency("SQLite_jll"),
-    Dependency("LibPQ_jll"),
-    Dependency("OpenJpeg_jll"),
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("Zstd_jll"),
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
-    Dependency("libgeotiff_jll"; compat="100.701.100"),
-    Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
-    Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
     Dependency("Arrow_jll"; compat="10"),
+    Dependency("Blosc_jll"; compat="1.21.1"),
+    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("GEOS_jll"; compat="3.11.2"),
+    Dependency("Giflib_jll"; compat="5.2.1"),
+    Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
+    Dependency("LibPQ_jll"),
+    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("Lz4_jll"; compat="1.9.3"),
+    Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
+    Dependency("OpenJpeg_jll"),
+    Dependency("PROJ_jll"; compat="901.300.0"),
+    Dependency("Qhull_jll"; compat="8.0.999"),
+    Dependency("SQLite_jll"),
+    Dependency("XZ_jll"; compat="5.2.5"),
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
+    Dependency("libgeotiff_jll"; compat="100.701.100"),
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]
 
