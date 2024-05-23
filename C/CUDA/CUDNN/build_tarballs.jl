@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"9.0.0"
+version = v"9.1.1"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
