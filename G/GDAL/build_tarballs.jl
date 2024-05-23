@@ -73,6 +73,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_QHULL=ON
     -DGDAL_USE_SQLITE3=ON
     -DGDAL_USE_TIFF=ON
+    -DGDAL_USE_WEBP=ON
     -DGDAL_USE_ZLIB=ON
     -DGDAL_USE_ZSTD=ON
     -DPostgreSQL_INCLUDE_DIR=${includedir}
@@ -154,6 +155,7 @@ dependencies = [
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"),
     Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("Libwebp_jll"; compat="1.2.0"),
     Dependency("Lz4_jll"; compat="1.9.3"),
     Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
     Dependency("OpenJpeg_jll"),
