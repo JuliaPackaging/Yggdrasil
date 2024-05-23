@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.7"
+version = v"0.0.8"
 
 sources = [
-   GitSource(repo, "292dc03593ceb1a7a1f022fd7d3289bd69b000b5"),
+   GitSource(repo, "0f7a912ca9cfd2ce1a96491052a16eab899cc9a7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -180,19 +180,21 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
+export BUILD=opt
+BAZEL_BUILD_FLAGS+=(-c $BUILD)
 # $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-	sed -i.bak1 "/whole-archive/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	sed -i.bak0 "/lld/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "-fuse-ld=lld" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	cat bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	$CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	# $CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	sed -i.bak0 "/lld/d" bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	echo "-fuse-ld=lld" >> bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	echo "--ld-path=$LLD2" >> bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	cat bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	$CC @bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	# $CC @bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
 else
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
