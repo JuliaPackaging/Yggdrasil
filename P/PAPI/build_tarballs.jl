@@ -104,7 +104,7 @@ products = [
 #     components/cuda/cupti_common.c:114:23: error: ‘CUPTIU_MAX_FILES’ undeclared (first use in this function)
 #          char *found_files[CUPTIU_MAX_FILES];
 #                            ^
-cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3")
+cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3.999")
 
 for platform in [platforms; cuda_platforms]
     should_build_platform(triplet(platform)) || continue
