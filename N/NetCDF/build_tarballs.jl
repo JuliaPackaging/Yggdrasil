@@ -117,7 +117,7 @@ filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 # The products that we will ensure are always built
 products = [
     # NetCDF tools
-    ExecutableProduct("nc-config", :nc_config),
+    # ExecutableProduct("nc-config", :nc_config),
     ExecutableProduct("nc4print", :nc4print),
     ExecutableProduct("nccopy", :nccopy),
     ExecutableProduct("ncdump", :ncdump),
