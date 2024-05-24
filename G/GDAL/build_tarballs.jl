@@ -50,10 +50,10 @@ fi
 mkdir build && cd build
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-    -DCMAKE_PREFIX_PATH=${prefix}
-    -DCMAKE_FIND_ROOT_PATH=${prefix}
     -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_FIND_ROOT_PATH=${prefix}
+    -DCMAKE_PREFIX_PATH=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DBUILD_CSHARP_BINDINGS=OFF
     -DBUILD_JAVA_BINDINGS=OFF
     -DBUILD_PYTHON_BINDINGS=OFF
@@ -65,7 +65,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_GEOTIFF=ON
     -DGDAL_USE_GIF=ON
     -DGDAL_USE_LIBLZMA=ON
-    -DGDAL_USE_LIBXML2=OFF
+    -DGDAL_USE_LIBXML2=ON
     -DGDAL_USE_LZ4=ON
     -DGDAL_USE_OPENJPEG=ON
     -DGDAL_USE_PARQUET=ON
@@ -78,8 +78,11 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_ZLIB=ON
     -DGDAL_USE_ZSTD=ON
     -DGIF_LIBRARY=${libdir}/libgif.${dlext}
+    -DPCRE2-8_LIBRARY=${libdir}/libpcre2-8.${dlext}
+    -DPCRE2_INCLUDE_DIR=${includedir}
     -DPostgreSQL_INCLUDE_DIR=${includedir}
-    -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext})
+    -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
+)
 
 # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
@@ -112,36 +115,37 @@ platforms = expand_cxxstring_abis(supported_platforms())
 products = [
     LibraryProduct("libgdal", :libgdal),
 
-    ExecutableProduct("gdal_contour", :gdal_contour),
-    ExecutableProduct("gdal_create", :gdal_create),
-    ExecutableProduct("gdal_footprint", :gdal_footprint),
-    ExecutableProduct("gdal_grid", :gdal_grid),
-    ExecutableProduct("gdal_rasterize", :gdal_rasterize),
-    ExecutableProduct("gdal_translate", :gdal_translate),
-    ExecutableProduct("gdal_viewshed", :gdal_viewshed),
-    ExecutableProduct("gdaladdo", :gdaladdo),
-    ExecutableProduct("gdalbuildvrt", :gdalbuildvrt),
-    ExecutableProduct("gdaldem", :gdaldem),
-    ExecutableProduct("gdalenhance", :gdalenhance),
-    ExecutableProduct("gdalinfo", :gdalinfo),
-    ExecutableProduct("gdallocationinfo", :gdallocationinfo),
-    ExecutableProduct("gdalmanage", :gdalmanage),
-    ExecutableProduct("gdalmdiminfo", :gdalmdiminfo),
-    ExecutableProduct("gdalmdimtranslate", :gdalmdimtranslate),
-    ExecutableProduct("gdalsrsinfo", :gdalsrsinfo),
-    ExecutableProduct("gdaltindex", :gdaltindex),
-    ExecutableProduct("gdaltransform", :gdaltransform),
-    ExecutableProduct("gdalwarp", :gdalwarp),
-    ExecutableProduct("gnmanalyse", :gnmanalyse),
-    ExecutableProduct("gnmmanage", :gnmmanage),
-    ExecutableProduct("nearblack", :nearblack),
-    ExecutableProduct("ogr2ogr", :ogr2ogr),
-    ExecutableProduct("ogrinfo", :ogrinfo),
-    ExecutableProduct("ogrlineref", :ogrlineref),
-    ExecutableProduct("ogrtindex", :ogrtindex),
-    ExecutableProduct("sozip", :sozip),
+    # Using a `_path` suffix here is very confusing because BinaryBuilder already adds a `_path` suffix.
+    ExecutableProduct("gdal_contour", :gdal_contour_exe),
+    ExecutableProduct("gdal_create", :gdal_create_exe),
+    ExecutableProduct("gdal_footprint", :gdal_footprint_exe),
+    ExecutableProduct("gdal_grid", :gdal_grid_exe),
+    ExecutableProduct("gdal_rasterize", :gdal_rasterize_exe),
+    ExecutableProduct("gdal_translate", :gdal_translate_exe),
+    ExecutableProduct("gdal_viewshed", :gdal_viewshed_exe),
+    ExecutableProduct("gdaladdo", :gdaladdo_exe),
+    ExecutableProduct("gdalbuildvrt", :gdalbuildvrt_exe),
+    ExecutableProduct("gdaldem", :gdaldem_exe),
+    ExecutableProduct("gdalenhance", :gdalenhance_exe),
+    ExecutableProduct("gdalinfo", :gdalinfo_exe),
+    ExecutableProduct("gdallocationinfo", :gdallocationinfo_exe),
+    ExecutableProduct("gdalmanage", :gdalmanage_exe),
+    ExecutableProduct("gdalmdiminfo", :gdalmdiminfo_exe),
+    ExecutableProduct("gdalmdimtranslate", :gdalmdimtranslate_exe),
+    ExecutableProduct("gdalsrsinfo", :gdalsrsinfo_exe),
+    ExecutableProduct("gdaltindex", :gdaltindex_exe),
+    ExecutableProduct("gdaltransform", :gdaltransform_exe),
+    ExecutableProduct("gdalwarp", :gdalwarp_exe),
+    ExecutableProduct("gnmanalyse", :gnmanalyse_exe),
+    ExecutableProduct("gnmmanage", :gnmmanage_exe),
+    ExecutableProduct("nearblack", :nearblack_exe),
+    ExecutableProduct("ogr2ogr", :ogr2ogr_exe),
+    ExecutableProduct("ogrinfo", :ogrinfo_exe),
+    ExecutableProduct("ogrlineref", :ogrlineref_exe),
+    ExecutableProduct("ogrtindex", :ogrtindex_exe),
+    ExecutableProduct("sozip", :sozip_exe),
 
-    # For backward compatibility keep the old names with an additional `_path` suffix
+    # For backward compatibility keep the old names (which have the confusing `_path` suffix)
     ExecutableProduct("gdal_contour", :gdal_contour_path),
     ExecutableProduct("gdal_grid", :gdal_grid_path),
     ExecutableProduct("gdal_rasterize", :gdal_rasterize_path),
@@ -179,6 +183,7 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
     Dependency("Arrow_jll"; compat="10"),
     Dependency("Blosc_jll"; compat="1.21.1"),
     Dependency("Expat_jll"; compat="2.2.10"),
@@ -191,16 +196,17 @@ dependencies = [
     Dependency("Lz4_jll"; compat="1.9.3"),
     Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
     Dependency("OpenJpeg_jll"),
+    Dependency("PCRE2_jll"; compat="10.35.0"),
     Dependency("PROJ_jll"; compat="901.300.0"),
     Dependency("Qhull_jll"; compat="8.0.999"),
     Dependency("SQLite_jll"),
+    Dependency("XML2_jll"; compat="2.9.11"),
     Dependency("XZ_jll"; compat="5.2.5"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.6"),
     Dependency("libgeotiff_jll"; compat="100.701.100"),
     Dependency("libpng_jll"; compat="1.6.38"),
     Dependency("libwebp_jll"; compat="1.2.4"),
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
