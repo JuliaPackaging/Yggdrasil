@@ -12,10 +12,12 @@ sources = suitesparse_sources(SS_version)
 script = raw"""
 # Until upstream is fixed, set the cache path to something useless
 # This is a runtime error that will be handled in the downstream library.
-export GRAPHBLAS_CACHE_PATH="${WORKSPACE}/destdir"
+export GRAPHBLAS_CACHE_PATH=/workspace/srcdir
 PROJECTS_TO_BUILD="graphblas"
 CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_SUITESPARSE_CONFIG=ON
+        -DGRAPHBLAS_CROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN}"
+        --debug-trycompile
     )
 if [[ "$target" == *-mingw* ]]; then
     CMAKE_OPTIONS+="-DGBNCPUFEAT=1"

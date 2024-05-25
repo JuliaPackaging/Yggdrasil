@@ -26,8 +26,8 @@ rm -f ${includedir}/suitesparse/spex_python_connect.h
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
-    Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("MPFR_jll"; compat="4.2.1"),
+    Dependency("GMP_jll", v"6.1.2"; compat="~6"),
+    Dependency("MPFR_jll", v"4.0.2"; compat="~4"),
     Dependency("SuiteSparse_jll"; compat = "=$SS_version_str")
 ])
 products = [
