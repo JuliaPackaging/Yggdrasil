@@ -63,18 +63,8 @@ make -j ${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
-]
-
+# These are the platforms we will build for by default
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
@@ -101,7 +91,7 @@ products = [
 #     components/cuda/cupti_common.c:114:23: error: ‘CUPTIU_MAX_FILES’ undeclared (first use in this function)
 #          char *found_files[CUPTIU_MAX_FILES];
 #                            ^
-cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3")
+cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3.999")
 
 for platform in [platforms; cuda_platforms]
     should_build_platform(triplet(platform)) || continue
