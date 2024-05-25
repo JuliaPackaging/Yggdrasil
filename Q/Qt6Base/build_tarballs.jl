@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.7.0"
+version = v"6.7.1"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "11b2e29e2e52fb0e3b453ea13bbe51a10fdff36e1c192d8868c5a40233b8b254"),
+                  "b7338da1bdccb4d861e714efffaa83f174dfe37e194916bfd7ec82279a6ace19"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
                   "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
@@ -32,7 +32,6 @@ cd build/
 qtsrcdir=`ls -d ../qtbase-everywhere-src-*`
 
 atomic_patch -p1 -d "${qtsrcdir}" ../patches/mingw-mac.patch
-atomic_patch -p1 -d "${qtsrcdir}" ../patches/storageinfo.patch
 
 commonoptions=" \
 -opensource -confirm-license \
