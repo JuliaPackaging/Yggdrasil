@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "mlir_jl_tblgen"
 repo = "https://github.com/JuliaLabs/MLIR.jl.git"
-version = v"0.0.7"
+version = v"0.0.8"
 
 llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
 
 sources = [
-    GitSource(repo, "98065ea986a135270b7eab1aeffda1b1412d526a")
+    GitSource(repo, "5c35af320732e6d3363cdf47e4d6f156b100756e")
 ]
 
 # Bash recipe for building across all platforms
