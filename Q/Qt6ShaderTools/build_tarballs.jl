@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6ShaderTools"
-version = v"6.5.2"
+version = v"6.7.1"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtshadertools-everywhere-src-$version.tar.xz",
-                  "ca3fb0db8576c59b9c38bb4b271cc6e10aebeb54e2121f429f4ee80671fc0a3d"),
+                  "e585e3a985b2e2bad8191a84489a04e69c3defc6022a8e746aad22a1f17910c2"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
 ]
