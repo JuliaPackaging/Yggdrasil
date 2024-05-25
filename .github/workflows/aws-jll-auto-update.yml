@@ -4,6 +4,9 @@ on:
   # schedule:
   #   - cron: '0 * * * *'  # Run every hour
   workflow_dispatch:
+  pull_request:
+    branches:
+      - master
 
 env:
   # libs: '["aws_c_auth","aws_c_cal","aws_c_common","aws_c_compression","aws_c_event_stream","aws_c_http","aws_c_io","aws_c_iot","aws_c_mqtt","aws_c_s3","aws_c_sdkutils","aws_checksums","aws_lc","s2n_tls"]'
