@@ -19,15 +19,17 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_UMFPACK=ON
         -DSUITESPARSE_USE_SYSTEM_CHOLMOD=ON
     )
-""" * build_script() * raw"""
+""" * build_script(true) * raw"""
 rm -f ${libdir}/libspexpython.*
 rm -f ${includedir}/suitesparse/spex_python_connect.h
 """ # remove python libs until a CMake variable is added.
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
-    Dependency("GMP_jll", v"6.1.2"; compat="~6"),
-    Dependency("MPFR_jll", v"4.0.2"; compat="~4"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("MPFR_jll"; compat="4.1.1"),
     Dependency("SuiteSparse_jll"; compat = "=$SS_version_str")
 ])
 products = [
