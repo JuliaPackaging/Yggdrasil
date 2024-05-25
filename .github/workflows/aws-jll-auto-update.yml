@@ -1,0 +1,90 @@
+name: Sync and Update Libraries
+
+on:
+  # schedule:
+  #   - cron: '0 * * * *'  # Run every hour
+  workflow_dispatch:
+
+env:
+  # libs: '["aws_c_auth","aws_c_cal","aws_c_common","aws_c_compression","aws_c_event_stream","aws_c_http","aws_c_io","aws_c_iot","aws_c_mqtt","aws_c_s3","aws_c_sdkutils","aws_checksums","aws_lc","s2n_tls"]'
+  libs: '["aws_c_common"]'
+
+jobs:
+  sync-and-update:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout forked repository
+      uses: actions/checkout@v4
+
+    - name: Sync with original repository
+      run: |
+        git remote add upstream https://github.com/JuliaPackaging/Yggdrasil.git
+        git fetch upstream
+        git pull --rebase upstream main
+        git push origin main
+
+  update-library:
+    needs: sync-and-update
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        library: ${{ fromJson(env.libs) }}
+
+    steps:
+    - name: Checkout forked repository
+      uses: actions/checkout@v4
+
+    - name: Check latest release version
+      id: latest-release
+      run: |
+        LIBRARY=${{ matrix.library }}
+        REPO="awslabs/$(echo "$LIBRARY" | tr '_' '-')" # Replace '_' with '-'
+        echo "REPO=$REPO"
+        LATEST_VERSION=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest" | jq -r .tag_name)
+        LATEST_SHA=$(curl -s "https://api.github.com/repos/${REPO}/releases/latest" | jq -r .target_commitish)
+        echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_OUTPUT
+        echo "LATEST_SHA=$LATEST_SHA" >> $GITHUB_OUTPUT
+        echo "LATEST_VERSION=$LATEST_VERSION, LATEST_SHA=$LATEST_SHA"
+
+    - name: Parse current version in build_tarballs.jl
+      id: current-version
+      run: |
+        LIBRARY=${{ matrix.library }}
+        LIBRARY_DIR=$(echo "${LIBRARY:0:1}" | tr '[:lower:]' '[:upper:]')/${LIBRARY}
+        CURRENT_VERSION=$(grep -oP '(?<=version = v")[^"]+' $LIBRARY_DIR/build_tarballs.jl)
+        echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "CURRENT_VERSION=$CURRENT_VERSION"
+
+    - name: Compare versions and update if necessary
+      id: compare-versions
+      run: |
+        REPO="awslabs/$(echo "${{ matrix.library }}" | tr '_' '-')" # Replace '_' with '-'
+        LV="${{ steps.latest-release.outputs.LATEST_VERSION }}"
+        LS="${{ steps.latest-release.outputs.LATEST_SHA }}"
+        CV="${{ steps.current-version.outputs.CURRENT_VERSION }}"
+        if [ "${LV}" != "${CV}" ]; then
+          sed -i "s/version = v\"${CV}\"/version = v\"${LV}\"/g" build_tarballs.jl
+          sed -i "s#https://github.com/${REPO}.git\",.*#https://github.com/${REPO}.git\",\n              \"${LS}\"),#g" build_tarballs.jl
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git checkout branch update-versions-${{ matrix.library }}
+          git add .
+          git commit -m "${{ matrix.library }} upgraded to ${LV}"
+          git push origin update-versions-${{ matrix.library }}
+          echo "updated=true" >> $GITHUB_OUTPUT
+        else
+          echo "updated=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create Pull Request
+      if: ${{ steps.compare-versions.outputs.updated == 'true' }}
+      uses: peter-evans/create-pull-request@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "${{ matrix.library }} upgraded to ${{ steps.latest-release.outputs.LATEST_VERSION }}"
+        branch: update-versions-${{ matrix.library }}
+        title: "Automated update of ${{ matrix.library }} to version ${{ steps.latest-release.outputs.LATEST_VERSION }}"
+        body: "This PR updates ${{ matrix.library }} to version ${{ steps.latest-release.outputs.LATEST_VERSION }}."
