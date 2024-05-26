@@ -34,4 +34,4 @@ products = [
     LibraryProduct("libcxsparse", :libcxsparse)
 ]
 build_tarballs(ARGS, name, version, sources, script, platforms, products, 
-               dependencies; julia_compat="1.11", preferred_llvm_version=v"16.0.6")
+               dependencies; julia_compat="1.11", preferred_llvm_version=LLVM_version)
