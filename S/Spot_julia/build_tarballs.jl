@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Spot_julia"
-version = v"2.9.7"
+version = v"2.12"
 julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.9.7.tar.gz","1eea67e3446cdbbbb705ee6e26fd869020cdb7d82c563fead9cb4394b9baa04c"),
+    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.12.tar.gz","26ba076ad57ec73d2fae5482d53e16da95c47822707647e784d8c7cec0d10455"),
     GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128")
     ]
     
@@ -19,7 +19,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/spot-2.9.7/
+cd $WORKSPACE/srcdir/spot-2.12/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
 make -j${nproc}
 make install
