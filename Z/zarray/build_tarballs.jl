@@ -35,10 +35,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("nlohmann_json_jll"),
-    BuildDependency("xsimd_jll"),
-    BuildDependency("xtensor_jll"),
-    BuildDependency("xtl_jll"),
+    Dependency("nlohmann_json_jll"),
+    Dependency("xsimd_jll"),
+    Dependency("xtensor_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
