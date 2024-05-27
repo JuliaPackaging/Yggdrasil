@@ -11,6 +11,8 @@ function get_products(platform)
         LibraryProduct(["libcupti", "cupti64_2022.1.1"], :libcupti),
         LibraryProduct(["libnvperf_host", "nvperf_host"], :libnvperf_host),
         LibraryProduct(["libnvperf_target", "nvperf_target"], :libnvperf_target),
+        LibraryProduct(["libnvrtc", "nvrtc64_112_0"], :libnvrtc),
+        LibraryProduct(["libnvrtc-builtins", "nvrtc-builtins64_116"], :libnvrtc_builtins),
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
         ExecutableProduct("ptxas", :ptxas),
