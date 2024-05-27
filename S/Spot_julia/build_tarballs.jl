@@ -19,6 +19,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Bash recipe for building across all platforms
 script = raw"""
+export MACOSX_DEPLOYMENT_TARGET=10.15
 cd $WORKSPACE/srcdir/spot-2.12/
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
 make -j${nproc}
