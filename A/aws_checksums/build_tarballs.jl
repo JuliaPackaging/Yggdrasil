@@ -8,6 +8,7 @@ version = v"0.1.17"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-checksums.git",
+              "aac442a2dbbb5e72d0a3eca8313cf65e7e1cac2f"),
               "321b805559c8e911be5bddba13fcbd222a3e2d3a"),
 ]
 
