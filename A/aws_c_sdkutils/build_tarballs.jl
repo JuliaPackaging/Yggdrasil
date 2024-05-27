@@ -8,6 +8,7 @@ version = v"0.1.12"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-c-sdkutils.git",
+              "8c7af71f91ed5b9d2a043d51f120495f43723f80"),
               "a6fd80cf7c163062d31abb28f309e47330fbfc17"),
 ]
 
