@@ -8,6 +8,7 @@ version = v"0.5.7"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-c-s3.git",
+              "774999fd89e710084251157c37c34f46e5ac74f8"),
               "3334843eb4e0e56c2565e481b2ef853d1cadde78"),
 ]
 
