@@ -34,7 +34,7 @@ install_license ../LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-filter!(p -> libc(p) != "musl", platforms) # LLVM_full+asserts isn't available for musl
+filter!(p -> !(libc(p) == "musl" && Sys.islinux(p) && arch(p) == "i686"), platforms) # LLVM_full+asserts isn't available for i686-linux-musl
 
 augment_platform_block = """
     using Base.BinaryPlatforms
