@@ -43,6 +43,9 @@ if [[ ${target} == *-linux-gnu ]]; then
     mv cuda_nvcc/bin/nvlink ${bindir}
     mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
 
+    mv cuda_nvrtc/lib/libnvrtc.so* ${libdir}
+    mv cuda_nvrtc/lib/libnvrtc-builtins.so* ${libdir}
+
     mv cuda_nvdisasm/bin/nvdisasm ${bindir}
 
     if [[ -d libnvjitlink ]]; then
@@ -81,6 +84,9 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv cuda_nvcc/bin/ptxas.exe ${bindir}
     mv cuda_nvcc/bin/nvlink.exe ${bindir}
     mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
+
+    mv cuda_nvrtc/bin/nvrtc64_* ${bindir}
+    mv cuda_nvrtc/bin/nvrtc-builtins64_* ${bindir}
 
     mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
 
