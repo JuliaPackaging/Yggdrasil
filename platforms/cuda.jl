@@ -124,6 +124,7 @@ const cuda_full_versions = [
     v"12.2.2",
     v"12.3.2",
     v"12.4.1",
+    v"12.5.0",
 ]
 
 function full_version(ver::VersionNumber)
@@ -150,7 +151,6 @@ function supported_platforms(; min_version=v"11", max_version=nothing)
         Platform("x86_64", "linux"; libc = "glibc"),
         Platform("aarch64", "linux"; libc = "glibc", cuda_platform="jetson"),
         Platform("aarch64", "linux"; libc = "glibc", cuda_platform="sbsa"),
-        Platform("powerpc64le", "linux"; libc = "glibc"),
 
         # nvcc isn't a cross compiler, so incompatible with BinaryBuilder
         #Platform("x86_64", "windows"),
@@ -168,7 +168,7 @@ function supported_platforms(; min_version=v"11", max_version=nothing)
 
             if arch(platform) == "aarch64"
                 # CUDA 10.x: our CUDA 10.2 build recipe for arm64 only provides jetson binaries
-                if Base.thisminor(version) == "10.2" && platform["cuda_platform"] != "jetson"
+                if Base.thisminor(version) == v"10.2" && platform["cuda_platform"] != "jetson"
                     continue
                 end
 

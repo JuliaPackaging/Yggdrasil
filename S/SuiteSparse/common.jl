@@ -71,17 +71,107 @@ products = [
     LibraryProduct("libspqr",                :libspqr),
 ]
 
-# Products for the GPU builds of SuiteSparse
-gpu_products = [
-    LibraryProduct("libcholmod_cuda",                :libcholmod),
-    LibraryProduct("libspqr_cuda",                   :libspqr),
-    LibraryProduct("libgpuqrengine_cuda",            :libgpuqrengine),
-    LibraryProduct("libsuitesparse_gpuruntime_cuda", :libsuitesparse_gpuruntime),
-]
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
 ]
+
+# Generate a common build script for most SuiteSparse packages.
+# use_omp=true will enable OpenMP, this may default to true in the future.
+# use_cuda=true will enable the CUDA CHOLMOD and CUDA SPQR builds,
+# but requires additional set up found in ../SuiteSparse_GPU.
+# CMAKE_OPTIONS prepended to this script can be used to pass additional arguments
+# for instance -DSUITESPARSE_USE_SYSTEM_*=ON to use pre-existing JLLs for
+# certain packages.
+# Use PROJECTS_TO_BUILD to specify which projects to build.
+function build_script(use_omp::Bool = false, use_cuda::Bool = false)
+    return "USEOMP=$(use_omp)\nUSECUDA=$(use_cuda)\n" * raw"""
+cd $WORKSPACE/srcdir/SuiteSparse
+
+# Needs cmake >= 3.24 provided by jll
+apk del cmake
+
+FLAGS+=(INSTALL="${prefix}" INSTALL_LIB="${libdir}" INSTALL_INCLUDE="${prefix}/include")
+
+BLAS_NAME=blastrampoline
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_LIB=${BLAS_NAME}-5
+else
+    BLAS_LIB=${BLAS_NAME}
+fi
+
+if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
+    # Install msan runtime (for clang)
+    cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
+fi
+
+if [[ ${nbits} == 64 ]]; then
+    CMAKE_OPTIONS+=(
+        -DBLAS64_SUFFIX="_64"
+        -DSUITESPARSE_USE_64BIT_BLAS=YES
+    )
+else
+    CMAKE_OPTIONS+=(
+        -DSUITESPARSE_USE_64BIT_BLAS=NO
+    )
+fi
+
+# some of these are not used for a particular builder
+# but most are. BLAS handling is the big one which isn't always used.
+# It's likely easier to keep them in common.jl than add them elsewhere.
+# TODO: Can BLAS handling be done by upstream now?
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DBUILD_STATIC_LIBS=OFF \
+      -DBUILD_TESTING=OFF \
+      -DSUITESPARSE_ENABLE_PROJECTS=${PROJECTS_TO_BUILD} \
+      -DSUITESPARSE_DEMOS=OFF \
+      -DSUITESPARSE_USE_STRICT=ON \
+      -DSUITESPARSE_USE_FORTRAN=OFF \
+      -DSUITESPARSE_USE_OPENMP=${USEOMP} \
+      -DSUITESPARSE_USE_CUDA=${USECUDA} \
+      -DCHOLMOD_PARTITION=ON \
+      -DBLAS_FOUND=1 \
+      -DBLAS_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+      -DBLAS_LINKER_FLAGS="${BLAS_LIB}" \
+      -DBLA_VENDOR="${BLAS_NAME}" \
+      -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+      -DLAPACK_LINKER_FLAGS="${BLAS_LIB}" \
+      "${CMAKE_OPTIONS[@]}" \
+      ..
+
+cmake --build . --parallel ${nproc}
+cmake --install .
+
+# For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
+# Eventually, this should be fixed upstream
+if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
+    echo "-- Modifying library name for libblastrampoline"
+
+    for nm in libcholmod libspqr libumfpack; do
+        if [[ *"${nm}"* == PROJECTS_TO_BUILD ]]; then
+            # Figure out what version it probably latched on to:
+            if [[ ${target} == *-apple-* ]]; then
+                LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS_NAME} | awk '{ print $1 }')
+                install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS_NAME}.dylib ${libdir}/${nm}.dylib
+            elif [[ ${target} == *freebsd* ]]; then
+                LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS_NAME} | sed -e 's/.*\[\(.*\)\].*/\1/')
+                patchelf --replace-needed ${LBT_LINK} lib${BLAS_NAME}.so ${libdir}/${nm}.so
+            fi
+        fi
+    done
+fi
+
+# Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
+if [[ "${target}" == *-mingw* ]]; then
+    rm -f ${libdir}/lib*.*.${dlext}
+    rm -f ${libdir}/lib*.*.*.${dlext}
+fi
+
+install_license ../LICENSE.txt
+"""
+end
