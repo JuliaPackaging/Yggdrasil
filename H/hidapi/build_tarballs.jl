@@ -19,10 +19,13 @@ mkdir build
 cd build
 
 if [[ ${target} == *-linux-* ]]; then
-    # We need this only to trick `configure` into thinking that udev is available,
-    # but we aren't going to actually use it
     apk add eudev-dev
-    linuxflags="-DHIDAPI_WITH_HIDRAW=false"
+    linuxflags="-DHIDAPI_WITH_LIBUSB=false"
+    export CPATH=/usr/include
+fi
+
+if [[ ${target} == *-freebsd ]]; then
+    apk add libiconv
 fi
 
 cmake  \
@@ -41,11 +44,12 @@ install_license ../hidapi/LICENSE*.txt
 platforms = supported_platforms()
 
 products = [
-    LibraryProduct(["libhidapi", "libhidapi-libusb"], :hidapi)
+    LibraryProduct(["libhidapi", "libhidapi-hidraw","libhidapi-libusb"], :hidapi)
 ]
 
 dependencies = [
-    Dependency("libusb_jll", platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms))
+    Dependency("libusb_jll", platforms=filter(p -> Sys.isfreebsd(p), platforms))
+    BuildDependency("libusb_jll", platforms=filter(p -> Sys.islinux(p), platforms))
 ]
 
 
