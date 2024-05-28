@@ -1,0 +1,778 @@
+From e086bb29f2191f1d4df484d15bfe1ae4397e48ad Mon Sep 17 00:00:00 2001
+From: Antony Lee <anntzer.lee@gmail.com>
+Date: Mon, 26 Jul 2021 14:22:25 +0200
+Subject: [PATCH] Switch to FORTRAN BLAS API to be able to use FindBLAS.cmake.
+
+(This also means declaring the function signatures ourselves.)
+---
+ CMakeLists.txt                     |  16 +-
+ Makefile                           |   4 +-
+ cmake/FindCBLAS.cmake              | 180 ------------------
+ cmake/FindMKL.cmake                | 288 -----------------------------
+ cminpack.h                         |   4 +-
+ cminpack.xcodeproj/project.pbxproj |   4 +-
+ cminpackP.h                        |  27 ++-
+ enorm.c                            |   8 +-
+ examples/Makefile                  |   4 +-
+ lmpar.c                            |  24 +--
+ qrsolv.c                           |   8 +-
+ 11 files changed, 55 insertions(+), 512 deletions(-)
+ delete mode 100644 cmake/FindCBLAS.cmake
+ delete mode 100644 cmake/FindMKL.cmake
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 314646d..cd3b4ae 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -132,16 +132,16 @@ foreach (cminpack_lib ${cminpack_libs})
+     endif ()
+   endif ()
+ 
+-  # Link with CBLAS library if requested
++  # Link with BLAS library if requested
+   if (USE_BLAS)
+     if (${cminpack_lib} STREQUAL cminpackld)
+       message (WARNING "BLAS cannot be used for the extended precision version")
+     else ()
+-      find_package (CBLAS)
+-      if (CBLAS_FOUND)
+-        target_link_libraries (${cminpack_lib} PUBLIC ${CBLAS_LIBRARIES})
+-        set_target_properties (${cminpack_lib} PROPERTIES LINK_FLAGS "${CBLAS_LINKER_FLAGS}")
+-        target_compile_definitions (${cminpack_lib} PUBLIC USE_CBLAS)
++      find_package (BLAS)
++      if (BLAS_FOUND)
++        target_link_libraries (${cminpack_lib} PUBLIC ${BLAS_LIBRARIES})
++        set_target_properties (${cminpack_lib} PROPERTIES LINK_FLAGS "${BLAS_LINKER_FLAGS}")
++        target_compile_definitions (${cminpack_lib} PUBLIC USE_BLAS)
+       endif ()
+     endif ()
+   endif ()
+@@ -163,8 +163,8 @@ foreach (cminpack_lib ${cminpack_libs})
+   if (HAVE_LIBM)
+     set (PC_CMINPACK_LIBM "-lm")
+   endif ()
+-  if (USE_BLAS AND CBLAS_FOUND)
+-    set (PC_CMINPACK_CFLAGS "-DUSE_CBLAS")
++  if (USE_BLAS AND BLAS_FOUND)
++    set (PC_CMINPACK_CFLAGS "-DUSE_BLAS")
+     if (NOT "${BLAS_LIBRARIES}" STREQUAL "")
+       string (REPLACE ";" " -l" PC_CMINPACK_LIBBLAS "${BLAS_LIBRARIES}")
+       set (PC_CMINPACK_LIBBLAS "-l${PC_CMINPACK_LIBBLAS}")
+diff --git a/Makefile b/Makefile
+index 5d3addb..30fa519 100644
+--- a/Makefile
++++ b/Makefile
+@@ -9,8 +9,8 @@ CFLAGS= -O3 -g -Wall -Wextra
+ ### configuration for the LAPACK/BLAS (double precision) version:
+ ## make LIBSUFFIX= CFLAGS="-O3 -g -Wall -Wextra -D__cminpack_float__"
+ #LIBSUFFIX=s
+-#CFLAGS="-O3 -g -Wall -Wextra -DUSE_CBLAS -DUSE_LAPACK"
+-CFLAGS_L=$(CFLAGS) -DUSE_CBLAS -DUSE_LAPACK
++#CFLAGS="-O3 -g -Wall -Wextra -DUSE_BLAS -DUSE_LAPACK"
++CFLAGS_L=$(CFLAGS) -DUSE_BLAS -DUSE_LAPACK
+ LDADD_L=-framework Accelerate
+ 
+ ### configuration for the long double version:
+diff --git a/cmake/FindCBLAS.cmake b/cmake/FindCBLAS.cmake
+deleted file mode 100644
+index e4fb422..0000000
+--- a/cmake/FindCBLAS.cmake
++++ /dev/null
+@@ -1,180 +0,0 @@
+-# - Find CBLAS library
+-#
+-# This module finds an installed fortran library that implements the CBLAS 
+-# linear-algebra interface (see http://www.netlib.org/blas/), with CBLAS
+-# interface.
+-#
+-# This module sets the following variables:
+-#  CBLAS_FOUND - set to true if a library implementing the CBLAS interface is found
+-#  CBLAS_LIBRARIES - list of libraries (using full path name) to link against to use CBLAS
+-#  CBLAS_INCLUDE_DIR - path to includes
+-#  CBLAS_INCLUDE_FILE - the file to be included to use CBLAS
+-#
+-
+-SET(CBLAS_LIBRARIES)
+-SET(CBLAS_INCLUDE_DIR)
+-SET(CBLAS_INCLUDE_FILE)
+-
+-# CBLAS in Intel mkl
+-FIND_PACKAGE(MKL)
+-IF (MKL_FOUND AND NOT CBLAS_LIBRARIES)
+-  SET(CBLAS_LIBRARIES ${MKL_LIBRARIES})
+-  SET(CBLAS_INCLUDE_DIR ${MKL_INCLUDE_DIR})
+-  SET(CBLAS_INCLUDE_FILE "mkl_cblas.h")
+-ENDIF (MKL_FOUND AND NOT CBLAS_LIBRARIES)
+-
+-# Old CBLAS search 
+-SET(_verbose TRUE)
+-INCLUDE(CheckFunctionExists)
+-INCLUDE(CheckIncludeFile)
+-
+-MACRO(CHECK_ALL_LIBRARIES LIBRARIES _prefix _name _flags _list _include _search_include)
+-  # This macro checks for the existence of the combination of fortran libraries
+-  # given by _list.  If the combination is found, this macro checks (using the 
+-  # Check_Fortran_Function_Exists macro) whether can link against that library
+-  # combination using the name of a routine given by _name using the linker
+-  # flags given by _flags.  If the combination of libraries is found and passes
+-  # the link test, LIBRARIES is set to the list of complete library paths that
+-  # have been found.  Otherwise, LIBRARIES is set to FALSE.
+-  # N.B. _prefix is the prefix applied to the names of all cached variables that
+-  # are generated internally and marked advanced by this macro.
+-  SET(__list)
+-  FOREACH(_elem ${_list})
+-    IF(__list)
+-      SET(__list "${__list} - ${_elem}")
+-    ELSE(__list)
+-      SET(__list "${_elem}")
+-    ENDIF(__list)
+-  ENDFOREACH(_elem)
+-  IF(_verbose)
+-    MESSAGE(STATUS "Checking for [${__list}]")
+-  ENDIF(_verbose)
+-  SET(_libraries_work TRUE)
+-  SET(${LIBRARIES})
+-  SET(_combined_name)
+-  SET(_paths)
+-  FOREACH(_library ${_list})
+-    SET(_combined_name ${_combined_name}_${_library})
+-    # did we find all the libraries in the _list until now?
+-    # (we stop at the first unfound one)
+-    IF(_libraries_work)      
+-      IF(APPLE) 
+-        FIND_LIBRARY(${_prefix}_${_library}_LIBRARY
+-          NAMES ${_library}
+-          PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV 
+-          DYLD_LIBRARY_PATH 
+-          )
+-      ELSE(APPLE)
+-        FIND_LIBRARY(${_prefix}_${_library}_LIBRARY
+-          NAMES ${_library}
+-          PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV 
+-          LD_LIBRARY_PATH 
+-          )
+-      ENDIF(APPLE)
+-      MARK_AS_ADVANCED(${_prefix}_${_library}_LIBRARY)
+-      IF(${_prefix}_${_library}_LIBRARY)
+-        GET_FILENAME_COMPONENT(_path ${${_prefix}_${_library}_LIBRARY} PATH)
+-        LIST(APPEND _paths ${_path}/../include ${_path}/../../include)
+-      ENDIF(${_prefix}_${_library}_LIBRARY)
+-      SET(${LIBRARIES} ${${LIBRARIES}} ${${_prefix}_${_library}_LIBRARY})
+-      SET(_libraries_work ${${_prefix}_${_library}_LIBRARY})
+-    ENDIF(_libraries_work)
+-  ENDFOREACH(_library ${_list})
+-  # Test include
+-  SET(_bug_search_include ${_search_include}) #CMAKE BUG!!! SHOULD NOT BE THAT
+-  IF(_bug_search_include)
+-    FIND_PATH(${_prefix}${_combined_name}_INCLUDE ${_include} ${_paths})
+-    MARK_AS_ADVANCED(${_prefix}${_combined_name}_INCLUDE)
+-    IF(${_prefix}${_combined_name}_INCLUDE)
+-      IF (_verbose)
+-        MESSAGE(STATUS "Includes found")
+-      ENDIF (_verbose)
+-      SET(${_prefix}_INCLUDE_DIR ${${_prefix}${_combined_name}_INCLUDE})
+-      SET(${_prefix}_INCLUDE_FILE ${_include})
+-    ELSE(${_prefix}${_combined_name}_INCLUDE)
+-      SET(_libraries_work FALSE)
+-    ENDIF(${_prefix}${_combined_name}_INCLUDE)
+-  ELSE(_bug_search_include)
+-    SET(${_prefix}_INCLUDE_DIR)
+-    SET(${_prefix}_INCLUDE_FILE ${_include})
+-  ENDIF(_bug_search_include)
+-  # Test this combination of libraries.
+-  IF(_libraries_work)
+-    SET(CMAKE_REQUIRED_LIBRARIES ${_flags} ${${LIBRARIES}})
+-    CHECK_FUNCTION_EXISTS(${_name} ${_prefix}${_combined_name}_WORKS)
+-    SET(CMAKE_REQUIRED_LIBRARIES)
+-    MARK_AS_ADVANCED(${_prefix}${_combined_name}_WORKS)
+-    SET(_libraries_work ${${_prefix}${_combined_name}_WORKS})
+-    IF(_verbose AND _libraries_work)
+-      MESSAGE(STATUS "Libraries found")
+-    ENDIF(_verbose AND _libraries_work)
+-  ENDIF(_libraries_work)
+-  # Fin
+-  IF(NOT _libraries_work)
+-    SET(${LIBRARIES} NOTFOUND)
+-  ENDIF(NOT _libraries_work)
+-ENDMACRO(CHECK_ALL_LIBRARIES)
+-
+-# Generic CBLAS library
+-IF(NOT CBLAS_LIBRARIES)
+-  CHECK_ALL_LIBRARIES(
+-    CBLAS_LIBRARIES
+-    CBLAS
+-    cblas_dgemm
+-    ""
+-    "cblas"
+-    "cblas.h"
+-    TRUE )
+-ENDIF()
+-
+-# CBLAS in ATLAS library? (http://math-atlas.sourceforge.net/)
+-IF(NOT CBLAS_LIBRARIES)
+-  CHECK_ALL_LIBRARIES(
+-    CBLAS_LIBRARIES
+-    CBLAS
+-    cblas_dgemm
+-    ""
+-    "cblas;atlas"
+-    "cblas.h"
+-    TRUE )
+-ENDIF()
+-
+-# CBLAS in BLAS library
+-IF(NOT CBLAS_LIBRARIES)
+-  CHECK_ALL_LIBRARIES(
+-    CBLAS_LIBRARIES
+-    CBLAS
+-    cblas_dgemm
+-    ""
+-    "blas"
+-    "cblas.h"
+-    TRUE )
+-ENDIF()
+-
+-# Apple CBLAS library?
+-IF(NOT CBLAS_LIBRARIES)
+-  CHECK_ALL_LIBRARIES(
+-    CBLAS_LIBRARIES
+-    CBLAS
+-    cblas_dgemm
+-    ""
+-    "Accelerate"
+-    "Accelerate/Accelerate.h"
+-    FALSE )
+-ENDIF()
+-
+-IF( NOT CBLAS_LIBRARIES )
+-  CHECK_ALL_LIBRARIES(
+-    CBLAS_LIBRARIES
+-    CBLAS
+-    cblas_dgemm
+-    ""
+-    "vecLib"
+-    "vecLib/vecLib.h"
+-    FALSE )
+-ENDIF()
+-
+-include ( FindPackageHandleStandardArgs )
+-find_package_handle_standard_args ( CBLAS DEFAULT_MSG CBLAS_LIBRARIES
+-)
+-
+diff --git a/cmake/FindMKL.cmake b/cmake/FindMKL.cmake
+deleted file mode 100644
+index dc2437b..0000000
+--- a/cmake/FindMKL.cmake
++++ /dev/null
+@@ -1,288 +0,0 @@
+-# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+-# file Copyright.txt or https://cmake.org/licensing for details.
+-
+-#.rst:
+-# FindMKL
+-# -------
+-#
+-# Find a Intel® Math Kernel Library (Intel® MKL) installation and provide
+-# all necessary variables and macros to compile software for it.
+-#
+-# MKLROOT is required in your system
+-#
+-# we use mkl_link_tool to get the library needed depending on variables
+-# There are few sets of libraries:
+-#
+-# Array indexes modes:
+-#
+-# ::
+-#
+-# LP - 32 bit indexes of arrays
+-# ILP - 64 bit indexes of arrays
+-#
+-#
+-#
+-# Threading:
+-#
+-# ::
+-#
+-# SEQUENTIAL - no threading
+-# INTEL - Intel threading library
+-# GNU - GNU threading library
+-# MPI support
+-# NOMPI - no MPI support
+-# INTEL - Intel MPI library
+-# OPEN - Open MPI library
+-# SGI - SGI MPT Library
+-#
+-#
+-#
+-#
+-# The following are set after the configuration is done:
+-#
+-# ::
+-#
+-#  MKL_FOUND        -  system has MKL
+-#  MKL_ROOT_DIR     -  path to the MKL base directory
+-#  MKL_INCLUDE_DIR  -  the MKL include directory
+-#  MKL_LIBRARIES    -  MKL libraries
+-#  MKL_LIBRARY_DIR  -  MKL library dir (for dlls!)
+-#
+-#
+-#
+-# Sample usage:
+-#
+-# If MKL is required (i.e., not an optional part):
+-#
+-# ::
+-#
+-#    find_package(MKL REQUIRED)
+-#    if (MKL_FOUND)
+-#        include_directories(${MKL_INCLUDE_DIR})
+-#        # and for each of your dependent executable/library targets:
+-#        target_link_libraries(<YourTarget> ${MKL_LIBRARIES})
+-#    endif()
+-
+-
+-# NOTES
+-#
+-# If you want to use the module and your build type is not supported
+-# out-of-the-box, please contact me to exchange information on how
+-# your system is setup and I'll try to add support for it.
+-#
+-# AUTHOR
+-#
+-# Joan MASSICH (joan.massich-vall.AT.inria.fr).
+-# Alexandre GRAMFORT (Alexandre.Gramfort.AT.inria.fr)
+-# Théodore PAPADOPOULO (papadop.AT.inria.fr)
+-
+-
+-#set(CMAKE_FIND_DEBUG_MODE 1)
+-
+-# Find MKL ROOT
+-find_path(MKL_ROOT_DIR NAMES include/mkl_cblas.h PATHS $ENV{MKLROOT})
+-
+-# Convert symlinks to real paths
+-get_filename_component(MKL_ROOT_DIR ${MKL_ROOT_DIR} REALPATH)
+-
+-if (NOT MKL_ROOT_DIR)
+-    if (MKL_FIND_REQUIRED)
+-        message(FATAL_ERROR "Could not find MKL: please set environment variable {MKLROOT}")
+-    else()
+-        unset(MKL_ROOT_DIR CACHE)
+-    endif()
+-else()
+-    set(MKL_INCLUDE_DIR ${MKL_ROOT_DIR}/include)
+-
+-    # set arguments to call the MKL provided tool for linking
+-    find_program(MKL_LINK_TOOL NAMES mkl_link_tool HINTS ${MKL_ROOT_DIR}/bin ${MKL_ROOT_DIR}/tools)
+-
+-    # check that the tools exists or quit
+-    if (NOT EXISTS "${MKL_LINK_TOOL}")
+-        message(FATAL_ERROR "cannot find MKL tool: ${MKL_LINK_TOOL}")
+-    endif()
+-
+-    # first the libs
+-    set(MKL_LINK_TOOL_COMMAND ${MKL_LINK_TOOL} "-libs")
+-
+-    # possible versions
+-    # <11.3|11.2|11.1|11.0|10.3|10.2|10.1|10.0|ParallelStudioXE2016|ParallelStudioXE2015|ComposerXE2013SP1|ComposerXE2013|ComposerXE2011|CompilerPro>
+-
+-    # not older than MKL 10 (2011)
+-    if (MKL_INCLUDE_DIR MATCHES "Composer.*2013")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=ComposerXE2013")
+-    elseif (MKL_INCLUDE_DIR MATCHES "Composer.*2011")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=ComposerXE2011")
+-    elseif (MKL_INCLUDE_DIR MATCHES "10.3")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=10.3")
+-    elseif(MKL_INCLUDE_DIR MATCHES "2013") # version 11 ...
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=11.1")
+-    elseif(MKL_INCLUDE_DIR MATCHES "2015")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=11.2")
+-    elseif(MKL_INCLUDE_DIR MATCHES "2016")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=11.3")
+-    elseif(MKL_INCLUDE_DIR MATCHES "2017")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=11.3")
+-    elseif(MKL_INCLUDE_DIR MATCHES "2018")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=11.3")
+-    elseif (MKL_INCLUDE_DIR MATCHES "10")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=10.2")
+-    else()
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--mkl=11.3")
+-    endif()
+-
+-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--compiler=clang")
+-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--compiler=intel_c")
+-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--compiler=ms_c")
+-    else()
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--compiler=gnu_c")
+-    endif()
+-
+-    if (APPLE)
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--os=mac")
+-    elseif(WIN32)
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--os=win")
+-    else()
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--os=lnx")
+-    endif()
+-
+-    set(MKL_LIB_DIR)
+-    if (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--arch=intel64")
+-        set(MKL_LIB_DIR "intel64")
+-    else()
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--arch=ia32")
+-        set(MKL_LIB_DIR "ia32")
+-    endif()
+-
+-    if (MKL_USE_sdl)
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--linking=sdl")
+-    else()
+-        if (BLA_STATIC)
+-            list(APPEND MKL_LINK_TOOL_COMMAND "--linking=static")
+-        else()
+-            list(APPEND MKL_LINK_TOOL_COMMAND "--linking=dynamic")
+-        endif()
+-    endif()
+-
+-    if (MKL_USE_parallel)
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--parallel=yes")
+-    else()
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--parallel=no")
+-    endif()
+-
+-    if (FORCE_BUILD_32BITS)
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--interface=cdecl")
+-        set(MKL_USE_interface "cdecl" CACHE STRING "disabled by FORCE_BUILD_32BITS" FORCE)
+-    else()
+-        list(APPEND MKL_LINK_TOOL_COMMAND "--interface=${MKL_USE_interface}")
+-    endif()
+-
+-    if (MKL_USE_parallel)
+-        if (UNIX AND NOT APPLE)
+-            list(APPEND MKL_LINK_TOOL_COMMAND "--openmp=gomp")
+-        else()
+-            list(APPEND MKL_LINK_TOOL_COMMAND "--threading-library=iomp5")
+-            list(APPEND MKL_LINK_TOOL_COMMAND "--openmp=iomp5")
+-        endif()
+-    endif()
+-
+-    execute_process(COMMAND ${MKL_LINK_TOOL_COMMAND}
+-                    OUTPUT_VARIABLE MKL_LIBS
+-                    RESULT_VARIABLE COMMAND_WORKED
+-                    TIMEOUT 2 ERROR_QUIET)
+-
+-    set(MKL_LIBRARIES)
+-
+-    if (NOT ${COMMAND_WORKED} EQUAL 0)
+-        message(FATAL_ERROR "Cannot find the MKL libraries correctly. Please check your MKL input variables and mkl_link_tool. The command executed was:\n ${MKL_LINK_TOOL_COMMAND}.")
+-    endif()
+-
+-    set(MKL_LIBRARY_DIR)
+-
+-    if (WIN32)
+-        set(MKL_LIBRARY_DIR "${MKL_ROOT_DIR}/lib/${MKL_LIB_DIR}/" "${MKL_ROOT_DIR}/../compiler/lib/${MKL_LIB_DIR}")
+-
+-        # remove unwanted break
+-        string(REGEX REPLACE "\n" "" MKL_LIBS ${MKL_LIBS})
+-
+-        # get the list of libs
+-        separate_arguments(MKL_LIBS)
+-        foreach(i ${MKL_LIBS})
+-            find_library(FULLPATH_LIB ${i} PATHS "${MKL_LIBRARY_DIR}")
+-
+-            if (FULLPATH_LIB)
+-                list(APPEND MKL_LIBRARIES ${FULLPATH_LIB})
+-            elseif(i)
+-                list(APPEND MKL_LIBRARIES ${i})
+-            endif()
+-            unset(FULLPATH_LIB CACHE)
+-        endforeach()
+-
+-    else() # UNIX and macOS
+-        # remove unwanted break
+-        string(REGEX REPLACE "\n" "" MKL_LIBS ${MKL_LIBS})
+-        if (MKL_LINK_TOOL_COMMAND MATCHES "static")
+-            string(REPLACE "$(MKLROOT)" "${MKL_ROOT_DIR}" MKL_LIBRARIES ${MKL_LIBS})
+-            # hack for lin with libiomp5.a
+-            if (APPLE)
+-                string(REPLACE "-liomp5" "${MKL_ROOT_DIR}/../compiler/lib/libiomp5.a" MKL_LIBRARIES ${MKL_LIBRARIES})
+-            else()
+-                string(REPLACE "-liomp5" "${MKL_ROOT_DIR}/../compiler/lib/${MKL_LIB_DIR}/libiomp5.a" MKL_LIBRARIES ${MKL_LIBRARIES})
+-            endif()
+-            separate_arguments(MKL_LIBRARIES)
+-        else() # dynamic or sdl
+-            # get the lib dirs
+-            string(REGEX REPLACE "^.*-L[^/]+([^\ ]+).*" "${MKL_ROOT_DIR}\\1" INTEL_LIB_DIR ${MKL_LIBS})
+-            if (NOT EXISTS ${INTEL_LIB_DIR})
+-                #   Work around a bug in mkl 2018
+-                set(INTEL_LIB_DIR1 "${INTEL_LIB_DIR}_lin")
+-                if (NOT EXISTS ${INTEL_LIB_DIR1})
+-                    message(FATAL_ERROR "MKL installation broken. Directory ${INTEL_LIB_DIR} does not exist.")
+-                endif()
+-                set(INTEL_LIB_DIR ${INTEL_LIB_DIR1})
+-            endif()
+-            set(MKL_LIBRARY_DIR ${INTEL_LIB_DIR} "${MKL_ROOT_DIR}/../compiler/lib/${MKL_LIB_DIR}")
+-
+-            # get the list of libs
+-            separate_arguments(MKL_LIBS)
+-
+-            # set full path to libs
+-            foreach(i ${MKL_LIBS})
+-                string(REGEX REPLACE " -" "-" i ${i})
+-                string(REGEX REPLACE "-l([^\ ]+)" "\\1" i ${i})
+-                string(REGEX REPLACE "-L.*" "" i ${i})
+-
+-                find_library(FULLPATH_LIB ${i} PATHS "${MKL_LIBRARY_DIR}")
+-
+-                if (FULLPATH_LIB)
+-                    list(APPEND MKL_LIBRARIES ${FULLPATH_LIB})
+-                elseif(i)
+-                    list(APPEND MKL_LIBRARIES ${i})
+-                endif()
+-                unset(FULLPATH_LIB CACHE)
+-            endforeach()
+-        endif()
+-    endif()
+-
+-    # now definitions
+-    string(REPLACE "-libs" "-opts" MKL_LINK_TOOL_COMMAND "${MKL_LINK_TOOL_COMMAND}")
+-    execute_process(COMMAND ${MKL_LINK_TOOL_COMMAND} OUTPUT_VARIABLE RESULT_OPTS TIMEOUT 2 ERROR_QUIET)
+-    string(REGEX MATCHALL "[-/]D[^\ ]*" MKL_DEFINITIONS ${RESULT_OPTS})
+-
+-    if (CMAKE_FIND_DEBUG_MODE)
+-        message(STATUS "Exectuted command: \n${MKL_LINK_TOOL_COMMAND}")
+-        message(STATUS "Found MKL_LIBRARIES:\n${MKL_LIBRARIES} ")
+-        message(STATUS "Found MKL_DEFINITIONS:\n${MKL_DEFINITIONS} ")
+-        message(STATUS "Found MKL_LIBRARY_DIR:\n${MKL_LIBRARY_DIR} ")
+-        message(STATUS "Found MKL_INCLUDE_DIR:\n${MKL_INCLUDE_DIR} ")
+-    endif()
+-
+-    include(FindPackageHandleStandardArgs)
+-    find_package_handle_standard_args(MKL DEFAULT_MSG MKL_INCLUDE_DIR MKL_LIBRARIES)
+-
+-    mark_as_advanced(MKL_INCLUDE_DIR MKL_LIBRARIES MKL_DEFINITIONS MKL_ROOT_DIR)
+-endif()
+diff --git a/cminpack.h b/cminpack.h
+index 15596d9..316d953 100644
+--- a/cminpack.h
++++ b/cminpack.h
+@@ -115,7 +115,7 @@ building a DLL on windows.
+ 
+ #ifdef __cminpack_double__
+ #define __cminpack_func__(func) func
+-#define __cminpack_cblas__(func) cblas_d ## func
++#define __cminpack_blas__(func) d ## func ## _
+ #define __cminpack_lapack__(func) d ## func
+ #endif
+ 
+@@ -125,7 +125,7 @@ building a DLL on windows.
+ 
+ #ifdef __cminpack_float__
+ #define __cminpack_func__(func) s ## func
+-#define __cminpack_cblas__(func) cblas_s ## func
++#define __cminpack_blas__(func) s ## func ## _
+ #define __cminpack_lapack__(func) s ## func
+ #endif
+ 
+diff --git a/cminpack.xcodeproj/project.pbxproj b/cminpack.xcodeproj/project.pbxproj
+index ba0fdbd..ccb6f21 100644
+--- a/cminpack.xcodeproj/project.pbxproj
++++ b/cminpack.xcodeproj/project.pbxproj
+@@ -1803,7 +1803,7 @@
+ 				GCC_OPTIMIZATION_LEVEL = 0;
+ 				GCC_PREPROCESSOR_DEFINITIONS = (
+ 					DEBUG,
+-					USE_CBLAS,
++					USE_BLAS,
+ 					USE_LAPACK,
+ 				);
+ 				ONLY_ACTIVE_ARCH = YES;
+@@ -1823,7 +1823,7 @@
+ 				GCC_OPTIMIZATION_LEVEL = 3;
+ 				GCC_PREPROCESSOR_DEFINITIONS = (
+ 					NDEBUG,
+-					USE_CBLAS,
++					USE_BLAS,
+ 					USE_LAPACK,
+ 				);
+ 				PRODUCT_NAME = cminpack;
+diff --git a/cminpackP.h b/cminpackP.h
+index 1b460ec..5155546 100644
+--- a/cminpackP.h
++++ b/cminpackP.h
+@@ -6,17 +6,28 @@
+ #error "cminpackP.h in an internal cminpack header, and must be included after all other headers (including cminpack.h)"
+ #endif
+ 
+-#if (defined (USE_CBLAS) || defined (USE_LAPACK)) && !defined (__cminpack_double__) && !defined (__cminpack_float__)
++#if (defined (USE_BLAS) || defined (USE_LAPACK)) && !defined (__cminpack_double__) && !defined (__cminpack_float__)
+ #error "cminpack can use cblas and lapack only in double or single precision mode"
+ #endif
+ 
+-#ifdef USE_CBLAS
+-#ifdef __APPLE__
+-#include <Accelerate/Accelerate.h>
+-#else
+-#include <cblas.h>
+-#endif
+-#define __cminpack_enorm__(n,x) __cminpack_cblas__(nrm2)(n,x,1)
++#ifdef USE_BLAS
++int __cminpack_blas__(dot)(
++  const int N, const __cminpack_real__ *X, const int incX,
++  const __cminpack_real__ *Y, const int incY);
++int __cminpack_blas__(nrm2)(
++  const int N, const __cminpack_real__ *X, const int incX);
++int __cminpack_blas__(swap)(
++  const int N, __cminpack_real__ *X, const int incX,
++  __cminpack_real__ *Y, const int incY);
++int __cminpack_blas__(rot)(
++  const int N, __cminpack_real__ *X, const int incX,
++  __cminpack_real__ *Y, const int incY, const __cminpack_real__ c, const __cminpack_real__ s);
++int __cminpack_blas__(trsv)(
++  const char *Uplo,
++  const char *TransA, const char *Diag,
++  const int N, const __cminpack_real__ *A, const int lda, __cminpack_real__ *X,
++  const int incX);
++#define __cminpack_enorm__(n,x) __cminpack_blas__(nrm2)(n,x,1)
+ #else
+ #define __cminpack_enorm__(n,x) __cminpack_func__(enorm)(n,x)
+ #endif
+diff --git a/enorm.c b/enorm.c
+index dc29972..9d56b15 100644
+--- a/enorm.c
++++ b/enorm.c
+@@ -49,9 +49,9 @@
+ __cminpack_attr__
+ real __cminpack_func__(enorm)(int n, const real *x)
+ {
+-#ifdef USE_CBLAS
+-    return __cminpack_cblas__(nrm2)(n, x, 1);
+-#else /* !USE_CBLAS */
++#ifdef USE_BLAS
++    return __cminpack_blas__(nrm2)(n, x, 1);
++#else /* !USE_BLAS */
+     /* System generated locals */
+     real ret_val, d1;
+ 
+@@ -152,6 +152,6 @@ real __cminpack_func__(enorm)(int n, const real *x)
+     return ret_val;
+ 
+ /*     last card of function enorm. */
+-#endif /* !USE_CBLAS */
++#endif /* !USE_BLAS */
+ } /* enorm_ */
+ 
+diff --git a/examples/Makefile b/examples/Makefile
+index fd28c12..caadf5b 100644
+--- a/examples/Makefile
++++ b/examples/Makefile
+@@ -25,8 +25,8 @@ FMINPACK=../fortran/libminpack.a
+ ### configuration for the LAPACK/BLAS (double precision) version:
+ ## make LIBSUFFIX= CFLAGS="-O3 -g -Wall -Wextra -D__cminpack_float__"
+ #LIBSUFFIX=s
+-#CFLAGS="-O3 -g -Wall -Wextra -DUSE_CBLAS -DUSE_LAPACK"
+-CFLAGS_L=$(CFLAGS) -DUSE_CBLAS -DUSE_LAPACK
++#CFLAGS="-O3 -g -Wall -Wextra -DUSE_BLAS -DUSE_LAPACK"
++CFLAGS_L=$(CFLAGS) -DUSE_BLAS -DUSE_LAPACK
+ LDADD_L=-framework vecLib
+ 
+ ### configuration for the long double version:
+diff --git a/lmpar.c b/lmpar.c
+index 52e0ce5..ef860d8 100644
+--- a/lmpar.c
++++ b/lmpar.c
+@@ -143,8 +143,8 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
+ 	    wa1[j] = 0.;
+ 	}
+     }
+-# ifdef USE_CBLAS
+-    __cminpack_cblas__(trsv)(CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit, nsing, r, ldr, wa1, 1);
++# ifdef USE_BLAS
++    __cminpack_blas__(trsv)("U", "N", "N", nsing, r, ldr, wa1, 1);
+ # else
+     if (nsing >= 1) {
+         int k;
+@@ -190,8 +190,8 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
+             l = ipvt[j]-1;
+             wa1[j] = diag[l] * (wa2[l] / dxnorm);
+         }
+-#     ifdef USE_CBLAS
+-        __cminpack_cblas__(trsv)(CblasColMajor, CblasUpper, CblasTrans, CblasNonUnit, n, r, ldr, wa1, 1);
++#     ifdef USE_BLAS
++        __cminpack_blas__(trsv)("U", "T", "N", n, r, ldr, wa1, 1);
+ #     else
+         for (j = 0; j < n; ++j) {
+             real sum = 0.;
+@@ -212,8 +212,8 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
+ 
+     for (j = 0; j < n; ++j) {
+         real sum;
+-#     ifdef USE_CBLAS
+-        sum = __cminpack_cblas__(dot)(j+1, &r[j*ldr], 1, qtb, 1);
++#     ifdef USE_BLAS
++        sum = __cminpack_blas__(dot)(j+1, &r[j*ldr], 1, qtb, 1);
+ #     else
+         int i;
+         sum = 0.;
+@@ -273,7 +273,7 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
+ 
+ /*        compute the newton correction. */
+ 
+-#     ifdef USE_CBLAS
++#     ifdef USE_BLAS
+         for (j = 0; j < nsing; ++j) {
+             l = ipvt[j]-1;
+             wa1[j] = diag[l] * (wa2[l] / dxnorm);
+@@ -282,12 +282,12 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
+             wa1[j] = 0.;
+         }
+         /* exchange the diagonal of r with sdiag */
+-        __cminpack_cblas__(swap)(n, r, ldr+1, sdiag, 1);
++        __cminpack_blas__(swap)(n, r, ldr+1, sdiag, 1);
+         /* solve lower(r).x = wa1, result id put in wa1 */
+-        __cminpack_cblas__(trsv)(CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit, nsing, r, ldr, wa1, 1);
++        __cminpack_blas__(trsv)("L", "N", "N", nsing, r, ldr, wa1, 1);
+         /* exchange the diagonal of r with sdiag */
+-        __cminpack_cblas__(swap)(n, r, ldr+1, sdiag, 1);
+-#     else /* !USE_CBLAS */
++        __cminpack_blas__(swap)(n, r, ldr+1, sdiag, 1);
++#     else /* !USE_BLAS */
+         for (j = 0; j < n; ++j) {
+             l = ipvt[j]-1;
+             wa1[j] = diag[l] * (wa2[l] / dxnorm);
+@@ -302,7 +302,7 @@ void __cminpack_func__(lmpar)(int n, real *r, int ldr,
+                 }
+             }
+         }
+-#     endif /* !USE_CBLAS */
++#     endif /* !USE_BLAS */
+         temp = __cminpack_enorm__(n, wa1);
+         parc = fp / delta / temp / temp;
+ 
+diff --git a/qrsolv.c b/qrsolv.c
+index 967b0b8..28f56c4 100644
+--- a/qrsolv.c
++++ b/qrsolv.c
+@@ -156,9 +156,9 @@ void __cminpack_func__(qrsolv)(int n, real *r, int ldr,
+                     wa[k] = temp;
+ 
+ /*           accumulate the tranformation in the row of s. */
+-#                 ifdef USE_CBLAS
+-                    __cminpack_cblas__(rot)( n-k, &r[k + k * ldr], 1, &sdiag[k], 1, cos, sin );
+-#                 else /* !USE_CBLAS */
++#                 ifdef USE_BLAS
++                    __cminpack_blas__(rot)( n-k, &r[k + k * ldr], 1, &sdiag[k], 1, cos, sin );
++#                 else /* !USE_BLAS */
+                     r[k + k * ldr] = cos * r[k + k * ldr] + sin * sdiag[k];
+                     if (n > k+1) {
+                         for (i = k+1; i < n; ++i) {
+@@ -167,7 +167,7 @@ void __cminpack_func__(qrsolv)(int n, real *r, int ldr,
+                             r[i + k * ldr] = temp;
+                         }
+                     }
+-#                 endif /* !USE_CBLAS */
++#                 endif /* !USE_BLAS */
+                 }
+             }
+         }
