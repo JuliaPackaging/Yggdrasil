@@ -1,8 +1,9 @@
 using BinaryBuilder
 
 name = "kubectl"
-version = v"1.25.0"
+version = v"1.27.14"
 
+# Release history can be found at: https://kubernetes.io/releases/
 # Links to downloads can found at: https://kubernetes.io/docs/tasks/tools/
 sources = [
     FileSource("https://dl.k8s.io/release/v$(version)/bin/linux/amd64/kubectl", "e23cc7092218c95c22d8ee36fb9499194a36ac5b5349ca476886b7edc0203885"; filename="x86_64-linux-gnu-kubectl"),
