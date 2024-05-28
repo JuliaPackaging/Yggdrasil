@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "aws_lc"
-version = v"1.23.0"
+version = v"1.28.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-lc.git",
-              "4e690737e0a386f8c5eb9a0a88becc7985b5d24e"),
+              "92bf53276029a71f01303e5adb1c5dbc379f1150"),
     DirectorySource("./bundled"),
 ]
 
@@ -40,7 +40,8 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=p->Sys.iswindows(p) || Sys.isapple(p)))
+# Disable 32-bit because it's too much for the time being
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=p->Sys.iswindows(p) || Sys.isapple(p) || arch(p) == "i686"))
 
 # The products that we will ensure are always built
 products = [
