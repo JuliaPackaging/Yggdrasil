@@ -40,7 +40,8 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=p->Sys.iswindows(p) || Sys.isapple(p)))
+# Disable 32-bit because it's too much for the time being
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=p->Sys.iswindows(p) || Sys.isapple(p) || arch(p) == "i686"))
 
 # The products that we will ensure are always built
 products = [
