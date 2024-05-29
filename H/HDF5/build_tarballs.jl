@@ -7,13 +7,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
 version = v"1.14.4"
-version_dir = "$(version).2"
-version_file ="$(version)-2"
+version_dir = "$(version).3"
+version_file ="$(version)-3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/hdf5_$(version_dir)/hdf5-$(version_file).tar.gz",
-                  "618934b9d45e34f328393e1fde73a8a67e973f8e5a6bae8b609d098a84cb0efe"),
+                  "019ac451d9e1cf89c0482ba2a06f07a46166caf23f60fea5ef3c37724a318e03"),
     DirectorySource("./bundled"),
 ]
 
