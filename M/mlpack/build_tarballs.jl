@@ -75,6 +75,10 @@ fi
 if [[ ${target} != *darwin* ]]; then
     # Needed to find libgfortran for OpenBLAS.
     export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64 ${CXXFLAGS}"
+else
+    # For darwin systems, disable the libcpp availability checks that cause
+    # std::optional compilation failures.
+    export CXXFLAGS="-D_LIBCPP_DISABLE_AVAILABILITY ${CXXFLAGS}"
 fi
 
 # Reduce number of cores used for builds on FreeBSD or ARM (they run out of
