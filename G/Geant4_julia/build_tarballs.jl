@@ -13,7 +13,7 @@ version = v"0.1.17"
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "6b211f16b4d0dbcc062648589f4c4db4bfd3a371"),
+              "7a77c8489de9fa2f00a1dfe7e24bb1c73087e36b"),
 ]
 
 # Bash recipe for building across all platforms
