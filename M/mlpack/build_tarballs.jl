@@ -16,6 +16,17 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
 
+# On macOS, we need to compile with 10.14 as a target to work around
+# std::optional availability issues.
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
+
 mkdir build && cd build
 
 # In order to convince mlpack to build Julia bindings, we have to use CMake
@@ -75,10 +86,6 @@ fi
 if [[ ${target} != *darwin* ]]; then
     # Needed to find libgfortran for OpenBLAS.
     export CXXFLAGS="-Wl,-rpath-link,/opt/${target}/${target}/lib -Wl,-rpath-link,/opt/${target}/${target}/lib64 ${CXXFLAGS}"
-else
-    # For darwin systems, disable the libcpp availability checks that cause
-    # std::optional compilation failures.
-    export CXXFLAGS="-D_LIBCPP_DISABLE_AVAILABILITY ${CXXFLAGS}"
 fi
 
 # Reduce number of cores used for builds on FreeBSD or ARM (they run out of
