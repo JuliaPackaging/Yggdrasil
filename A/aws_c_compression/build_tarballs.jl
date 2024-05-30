@@ -7,8 +7,7 @@ version = v"0.2.18"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-compression.git",
-              "ea1d421a421ad83a540309a94c38d50b6a5d836b"),
+    GitSource("https://github.com/awslabs/aws-c-compression.git", "ea1d421a421ad83a540309a94c38d50b6a5d836b"),
 ]
 
 # Bash recipe for building across all platforms
