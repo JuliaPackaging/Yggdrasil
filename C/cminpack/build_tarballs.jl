@@ -3,35 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "cminpack"
-version = v"1.3.8"
+version = v"1.3.9"
 
 # Collection of sources required to complete build
 sources = [
-    # We get 1.3.8, but it needs some patches
-    GitSource("https://github.com/devernay/cminpack.git", "cb7c3f6433ccea7eef58ff57b3a9a4c2563eb375"),
-    DirectorySource("bundled"),
+    GitSource("https://github.com/devernay/cminpack.git", "843a1a2a5cc7ec6c90d938687d3646bda2285254"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+# We need a newer version of CMake to support libblastrampoline
+apk del cmake
+
 cd $WORKSPACE/srcdir/cminpack
-
-# Upstream in master branch: https://github.com/devernay/cminpack/commit/dceef97837ac97eef3921bb22abf4a25851c8c76
-atomic_patch -p1 $WORKSPACE/srcdir/patches/01_CMakePath.patch
-
-# Upstream master branch commits that are needed even though FindMKL is getting deleted in patch 4
-atomic_patch -p1 $WORKSPACE/srcdir/patches/02_blas_mkl1.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/03_blas_mkl2.patch
-
-# Upstream in master branch: https://github.com/devernay/cminpack/commit/e086bb29f2191f1d4df484d15bfe1ae4397e48ad
-atomic_patch -p1 $WORKSPACE/srcdir/patches/04_blas.patch
-
-# Upstream in master branch: https://github.com/devernay/cminpack/commit/04200d5aa625fc86c2d81ffbf9dd5c70816fe4ce
-atomic_patch -p1 $WORKSPACE/srcdir/patches/05_libdir.patch
-
-# Upstream PR https://github.com/devernay/cminpack/pull/62
-atomic_patch -p1 $WORKSPACE/srcdir/patches/06_freebsd.patch
-
 
 # Build single precision library
 mkdir build_s
@@ -42,7 +27,8 @@ cmake -B build_s/ -S . \
     -DBUILD_SHARED_LIBS=ON \
     -DCMINPACK_PRECISION="s" \
     -DBUILD_EXAMPLES=OFF \
-    -DUSE_BLAS=OFF
+    -DBLA_VENDOR=libblastrampoline \
+    -DUSE_BLAS=ON
 cmake --build build_s/ --parallel ${nproc}
 cmake --install build_s/
 
@@ -55,7 +41,8 @@ cmake -B build_d/ -S . \
     -DBUILD_SHARED_LIBS=ON \
     -DCMINPACK_PRECISION="d" \
     -DBUILD_EXAMPLES=OFF \
-    -DUSE_BLAS=OFF
+    -DBLA_VENDOR=libblastrampoline \
+    -DUSE_BLAS=ON
 cmake --build build_d/ --parallel ${nproc}
 cmake --install build_d/
 
@@ -73,9 +60,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("libblastrampoline_jll"; compat="5.4"),
+    # We need at least 3.29 (Ygg version), or 3.30 upstream version
+    # for LBT support, so always pull the most recent CMake version.
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.9")
