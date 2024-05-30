@@ -1,24 +1,24 @@
-From 416a123977a9bebf0254f2b68a6f48497bc1debc Mon Sep 17 00:00:00 2001
+From 0bb2fbed98662088549a2f04a6cc36aa7c0091ce Mon Sep 17 00:00:00 2001
 From: Gnimuc <qiyupei@gmail.com>
 Date: Sun, 26 May 2024 00:18:19 +0900
-Subject: [PATCH 1/3] Rewrite CMake build scripts
+Subject: [PATCH] Rewrite CMake build scripts
 
 ---
- CMakeLists.txt                           | 481 +++--------------------
+ CMakeLists.txt                           | 510 +++--------------------
  include/CMakeLists.txt                   |   1 +
  include/clang/CMakeLists.txt             |   1 +
  include/clang/Interpreter/CMakeLists.txt |   1 +
  lib/Interpreter/CMakeLists.txt           | 116 +-----
- 5 files changed, 66 insertions(+), 534 deletions(-)
+ 5 files changed, 78 insertions(+), 551 deletions(-)
  create mode 100644 include/CMakeLists.txt
  create mode 100644 include/clang/CMakeLists.txt
  create mode 100644 include/clang/Interpreter/CMakeLists.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ca7a5bd..7130ce1 100644
+index b87a263..37820ab 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,445 +1,74 @@
+@@ -1,452 +1,76 @@
 -cmake_minimum_required(VERSION 3.13)
 +cmake_minimum_required(VERSION 3.21)
  
@@ -27,26 +27,24 @@ index ca7a5bd..7130ce1 100644
 +project(CppInterOp LANGUAGES CXX)
  
 -include(GNUInstallDirs)
-+# Turn on using VS solution folders
-+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
++set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
  
 -set(CMAKE_MODULE_PATH
 -  ${CMAKE_MODULE_PATH}
 -  "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 -  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
 -  )
-+set(CMAKE_SKIP_BUILD_RPATH FALSE)
-+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
++# Turn on using VS solution folders
++set_property(GLOBAL PROPERTY USE_FOLDERS ON)
  
 -# If we are not building as a part of LLVM, build CppInterOp as a standalone
 -# project, using LLVM as an external library:
 -if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 -  project(CppInterOp)
-+find_package(LLVM REQUIRED CONFIG)
-+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
++set(CMAKE_SKIP_BUILD_RPATH FALSE)
++set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
++set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
++set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
  
 -  # LLVM/Clang/Cling default paths
 -  if (DEFINED LLVM_DIR)
@@ -73,13 +71,16 @@ index ca7a5bd..7130ce1 100644
 -      set(Clang_DIR ${Cling_DIR})
 -    endif()
 -  endif()
++find_package(LLVM REQUIRED CONFIG)
++message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
++message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+ 
+-  option(USE_CLING "Use Cling as backend" OFF)
+-  option(USE_REPL "Use clang-repl as backend" OFF)
 +find_package(Clang REQUIRED CONFIG)
 +message(STATUS "Found Clang ${Clang_PACKAGE_VERSION}")
 +message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
  
--  option(USE_CLING "Use Cling as backend" OFF)
--  option(USE_REPL "Use clang-repl as backend" OFF)
--
 -  if (USE_CLING)
 -    add_definitions(-DUSE_CLING)
 -  endif()
@@ -246,7 +247,7 @@ index ca7a5bd..7130ce1 100644
 -
 -  endif()
 -
--  ##Replace \ with / in LLVM_DIR (attempt to fix path parsing issue Windows)
+-  #Replace \ with / in LLVM_DIR (attempt to fix path parsing issue Windows)
 -  string(REPLACE "\\" "/" LLVM_DIR "${LLVM_DIR}")
 -
 -  # When in debug mode the llvm package thinks it is built with -frtti.
@@ -337,13 +338,15 @@ index ca7a5bd..7130ce1 100644
 -  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-common -Woverloaded-virtual -Wcast-qual -fno-strict-aliasing -pedantic -Wno-long-long -Wall -W -Wno-unused-parameter -Wwrite-strings")
 -endif ()
 -
+-# Fixes "C++ exception handler used, but unwind semantics are not enabled" warning Windows
+-if (WIN32)
+-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+-endif ()
+-
 -if (APPLE)
 -  set(CMAKE_MODULE_LINKER_FLAGS "-Wl,-flat_namespace -Wl,-undefined -Wl,suppress")
 -endif ()
-+add_library(CppInterOp SHARED)
-+add_subdirectory(lib)
-+add_subdirectory(include)
- 
+-
 -# FIXME: Use merge this with the content from the LLVMConfig and ClangConfig.
 -if (NOT CPPINTEROP_BUILT_STANDALONE)
 -include_directories(BEFORE SYSTEM
@@ -351,32 +354,21 @@ index ca7a5bd..7130ce1 100644
 -  ${CMAKE_CURRENT_SOURCE_DIR}/../clang/include
 -  )
 -endif()
-+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
- 
+-
 -include_directories(BEFORE SYSTEM
 -  ${CMAKE_CURRENT_BINARY_DIR}/include
 -  ${CMAKE_CURRENT_SOURCE_DIR}/include
 -  )
-+target_include_directories(CppInterOp PUBLIC
-+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-+    $<BUILD_INTERFACE:${LLVM_INCLUDE_DIRS}>
-+    $<BUILD_INTERFACE:${Clang_INCLUDE_DIRS}>
-+    $<INSTALL_INTERFACE:include>)
-+    
-+target_compile_features(CppInterOp PRIVATE cxx_std_17)
- 
-+target_compile_definitions(CppInterOp PUBLIC "USE_REPL")
-+target_compile_definitions(CppInterOp PUBLIC "__STDC_FORMAT_MACROS") # see https://github.com/tensorflow/tensorflow/issues/12998
- 
+-
+-#Removes flag due to issue with Google test download when LLVM_ENABLE_WERROR=On
+-string(REPLACE "-Wcovered-switch-default" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+-
 -file(STRINGS "VERSION" CPPINTEROP_VERSION)
-+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" CPPINTEROP_VERSION)
- string(REGEX MATCH "([0-9]*)\.([0-9]*)\.([0-9]*)" CPPINTEROP_VERSION_ONLY "${CPPINTEROP_VERSION}")
- set(CPPINTEROP_VERSION_MAJOR "${CMAKE_MATCH_1}")
- set(CPPINTEROP_VERSION_MINOR "${CMAKE_MATCH_2}")
- set(CPPINTEROP_VERSION_PATCH "${CMAKE_MATCH_3}")
-+message(STATUS "CppInterOp Version: ${CPPINTEROP_VERSION}")
-+message(STATUS "LLVM Binary Directory: ${LLVM_BINARY_DIR}")
- 
+-string(REPLACE "." ";" VERSION_LIST "${CPPINTEROP_VERSION}")
+-list(GET VERSION_LIST 0 CPPINTEROP_VERSION_MAJOR)
+-list(GET VERSION_LIST 1 CPPINTEROP_VERSION_MINOR)
+-list(GET VERSION_LIST 2 CPPINTEROP_VERSION_PATCH)
+-
 -configure_file(
 -  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CppInterOp/CppInterOpConfig.cmake.in
 -  ${CMAKE_CURRENT_BINARY_DIR}/lib/cmake/CppInterOp/CppInterOpConfig.cmake
@@ -399,16 +391,13 @@ index ca7a5bd..7130ce1 100644
 -  PATTERN "*.h"
 -  PATTERN ".svn" EXCLUDE
 -  )
-+target_compile_definitions(CppInterOp PRIVATE "CPPINTEROP_VERSION=\"${CPPINTEROP_VERSION}\"")
-+target_compile_definitions(CppInterOp PRIVATE "LLVM_BINARY_DIR=\"${LLVM_BINARY_DIR}\";")
- 
+-
 -install(DIRECTORY tools/
 -  DESTINATION include/CppInterOp/tools
 -  FILES_MATCHING
 -  PATTERN "*.h"
 -)
-+target_link_libraries(CppInterOp LINK_PUBLIC LLVM clang-cpp)
- 
+-
 -install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/
 -  DESTINATION include
 -  FILES_MATCHING
@@ -491,6 +480,36 @@ index ca7a5bd..7130ce1 100644
 -
 -if (CPPINTEROP_INCLUDE_DOCS)
 -  add_subdirectory(docs)
++add_library(CppInterOp SHARED)
++add_subdirectory(lib)
++add_subdirectory(include)
++
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
++
++target_include_directories(CppInterOp PUBLIC
++    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
++    $<BUILD_INTERFACE:${LLVM_INCLUDE_DIRS}>
++    $<BUILD_INTERFACE:${Clang_INCLUDE_DIRS}>
++    $<INSTALL_INTERFACE:include>)
++    
++target_compile_features(CppInterOp PRIVATE cxx_std_17)
++
++target_compile_definitions(CppInterOp PUBLIC "USE_REPL")
++target_compile_definitions(CppInterOp PUBLIC "__STDC_FORMAT_MACROS") # see https://github.com/tensorflow/tensorflow/issues/12998
++
++file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" CPPINTEROP_VERSION)
++string(REGEX MATCH "([0-9]*)\.([0-9]*)\.([0-9]*)" CPPINTEROP_VERSION_ONLY "${CPPINTEROP_VERSION}")
++set(CPPINTEROP_VERSION_MAJOR "${CMAKE_MATCH_1}")
++set(CPPINTEROP_VERSION_MINOR "${CMAKE_MATCH_2}")
++set(CPPINTEROP_VERSION_PATCH "${CMAKE_MATCH_3}")
++message(STATUS "CppInterOp Version: ${CPPINTEROP_VERSION}")
++message(STATUS "LLVM Binary Directory: ${LLVM_BINARY_DIR}")
++
++target_compile_definitions(CppInterOp PRIVATE "CPPINTEROP_VERSION=\"${CPPINTEROP_VERSION}\"")
++target_compile_definitions(CppInterOp PRIVATE "LLVM_BINARY_DIR=\"${LLVM_BINARY_DIR}\";")
++
++target_link_libraries(CppInterOp PUBLIC LLVM clang-cpp)
++
 +# Install CompilationDatabase
 +set_target_properties(CppInterOp PROPERTIES EXPORT_COMPILE_COMMANDS true)
 +set(ccmds_json ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json)
@@ -665,58 +684,6 @@ index 7f4ca53..342c8f6 100644
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Paths.cpp)
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Paths.h)
 \ No newline at end of file
--- 
-2.39.3 (Apple Git-146)
-
-
-From ec8ad5d05439bb89c34ed878e433eda8dbc3ef3b Mon Sep 17 00:00:00 2001
-From: Gnimuc <qiyupei@gmail.com>
-Date: Tue, 28 May 2024 21:48:15 +0900
-Subject: [PATCH 2/3] Enable `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS`
-
----
- CMakeLists.txt | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7130ce1..cbd06e3 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.21)
- 
- project(CppInterOp LANGUAGES CXX)
- 
-+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-+
- # Turn on using VS solution folders
- set_property(GLOBAL PROPERTY USE_FOLDERS ON)
- 
--- 
-2.39.3 (Apple Git-146)
-
-
-From dd247cf687d1e0f13709cbdd0c3ebb0e6729b8b5 Mon Sep 17 00:00:00 2001
-From: Gnimuc <qiyupei@gmail.com>
-Date: Tue, 28 May 2024 23:31:23 +0900
-Subject: [PATCH 3/3] `LINK_PUBLIC` => `PUBLIC`
-
----
- CMakeLists.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index cbd06e3..37820ab 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -48,7 +48,7 @@ message(STATUS "LLVM Binary Directory: ${LLVM_BINARY_DIR}")
- target_compile_definitions(CppInterOp PRIVATE "CPPINTEROP_VERSION=\"${CPPINTEROP_VERSION}\"")
- target_compile_definitions(CppInterOp PRIVATE "LLVM_BINARY_DIR=\"${LLVM_BINARY_DIR}\";")
- 
--target_link_libraries(CppInterOp LINK_PUBLIC LLVM clang-cpp)
-+target_link_libraries(CppInterOp PUBLIC LLVM clang-cpp)
- 
- # Install CompilationDatabase
- set_target_properties(CppInterOp PROPERTIES EXPORT_COMPILE_COMMANDS true)
 -- 
 2.39.3 (Apple Git-146)
 
