@@ -7,8 +7,7 @@ version = v"0.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-event-stream.git",
-              "1a70c50f78a6e706f1f91a4ed138478271b6d9d3"),
+    GitSource("https://github.com/awslabs/aws-c-event-stream.git", "1a70c50f78a6e706f1f91a4ed138478271b6d9d3"),
 ]
 
 # Bash recipe for building across all platforms

@@ -7,8 +7,7 @@ version = v"0.5.9"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-s3.git",
-              "774999fd89e710084251157c37c34f46e5ac74f8"),
+    GitSource("https://github.com/awslabs/aws-c-s3.git", "774999fd89e710084251157c37c34f46e5ac74f8"),
 ]
 
 # Bash recipe for building across all platforms
