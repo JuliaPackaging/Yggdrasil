@@ -7,8 +7,7 @@ version = v"0.1.18"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-checksums.git",
-              "aac442a2dbbb5e72d0a3eca8313cf65e7e1cac2f"),
+    GitSource("https://github.com/awslabs/aws-checksums.git", "aac442a2dbbb5e72d0a3eca8313cf65e7e1cac2f"),
 ]
 
 # Bash recipe for building across all platforms

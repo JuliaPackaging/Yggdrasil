@@ -7,8 +7,7 @@ version = v"1.28.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-lc.git",
-              "92bf53276029a71f01303e5adb1c5dbc379f1150"),
+    GitSource("https://github.com/awslabs/aws-lc.git", "92bf53276029a71f01303e5adb1c5dbc379f1150"),
     DirectorySource("./bundled"),
 ]
 
