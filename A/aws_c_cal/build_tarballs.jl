@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_cal"
-version = v"0.6.14"
+version = v"0.6.15"
 
 # Collection of sources required to complete build
 sources = [
