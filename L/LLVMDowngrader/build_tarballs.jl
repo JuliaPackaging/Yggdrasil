@@ -13,10 +13,10 @@ llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6"]
 
 # Collection of sources required to build LLVMDowngrader
 sources = Dict(
-    v"13.0.1" => [GitSource(repo, "1ed141e332d4ce7f4235df4a32a4ce0968513e4b")],
-    v"14.0.6" => [GitSource(repo, "05f9927b4b282e875f25d36f9d740e187c440602")],
-    v"15.0.7" => [GitSource(repo, "be21ebd9abd465d873746e8b6612317e4925026e")],
-    v"16.0.6" => [GitSource(repo, "95e2b26bc32958fdb7e1e1830b2f9282475abf9f")],
+    v"13.0.1" => [GitSource(repo, "9c4fbba2dc8648ebed320883c8cc389b9e4375d0")],
+    v"14.0.6" => [GitSource(repo, "9c518c49bfc8bd141ac1a68259ea43f460f1753e")],
+    v"15.0.7" => [GitSource(repo, "2c071f6f56eb4c311eae39ad2f1bc58fd673c56c")],
+    v"16.0.6" => [GitSource(repo, "0a26f42f97908f6273b0be75e28895eb9fab166d")],
 )
 
 # These are the platforms we will build for by default, unless further
