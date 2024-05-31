@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/CoreBlas/
 BLAS_NAME=blastrampoline
 if [[ "${target}" == *-mingw* ]]; then
     BLAS_LIB=${BLAS_NAME}-5;
