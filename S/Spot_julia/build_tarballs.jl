@@ -32,7 +32,7 @@ if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
     popd
 fi
 
-cd $WORKSPACE/srcdir/spot*
+cd $WORKSPACE/srcdir/spot-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
 make -j${nproc}
 make install
