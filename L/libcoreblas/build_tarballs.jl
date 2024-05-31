@@ -26,8 +26,6 @@ else
     CMAKE_OPTIONS=(-DCOREBLAS_USE_64BIT_BLAS=OFF);
 fi
 
-cd CoreBlas/
-
  cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
         -DBLAS_FOUND=1 \
         -DBLAS_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
