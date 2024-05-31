@@ -36,6 +36,7 @@ cd $WORKSPACE/srcdir/spot*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
 make -j${nproc}
 make install
+install_license COPYING
 
 # build with cmake 
 cd $WORKSPACE/srcdir/spot_julia/spot_julia
