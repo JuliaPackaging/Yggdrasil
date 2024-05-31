@@ -13,12 +13,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/CoreBlas/
-BLAS_NAME=blastrampoline
-if [[ "${target}" == *-mingw* ]]; then
-    BLAS_LIB=${BLAS_NAME}-5;
-else
-    BLAS_LIB=${BLAS_NAME};
-fi
 
 if [[ ${nbits} == 64 ]]; then
     CMAKE_OPTIONS=(-DCOREBLAS_USE_64BIT_BLAS=ON);
