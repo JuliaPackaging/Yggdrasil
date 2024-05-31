@@ -27,11 +27,7 @@ else
 fi
 
  cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
-        -DBLAS_FOUND=1 \
-        -DBLAS_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
-        -DBLAS_LINKER_FLAGS="${BLAS_LIB}" \
-        -DBLA_VENDOR="${BLAS_NAME}" \
-        -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+        -DBLA_VENDOR="libblastrampoline" \
         -DLAPACK_LINKER_FLAGS="${BLAS_LIB}" \
         "${CMAKE_OPTIONS[@]}"  \
         -DCMAKE_C_FLAGS="-I/workspace/destdir/include/libblastrampoline/ILP64/${target}"
