@@ -41,7 +41,6 @@ cd CoreBlas/
 
 cmake --build build --parallel ${nproc}
 cmake --install build
-logout
 """
 
 # These are the platforms we will build for by default, unless further
