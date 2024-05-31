@@ -6,36 +6,35 @@ version = v"5.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/InsightSoftwareConsortium/ITK/releases/download/v$(version)/InsightToolkit-$(version).tar.gz", "57a4471133dc8f76bde3d6eb45285c440bd40d113428884a1487472b7b71e383")
+    GitSource("https://github.com/InsightSoftwareConsortium/ITK.git", "1fc47c7bec4ee133318c1892b7b745763a17d411")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cmake -B build \
--DCMAKE_INSTALL_PREFIX=${prefix} \
--DCMAKE_BUILD_TYPE=Release \
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DBUILD_SHARED_LIBS:BOOL=ON \
--DITK_USE_SYSTEM_EXPAT:BOOL=ON \
--DITK_USE_SYSTEM_FFTW:BOOL=ON \
--DITK_USE_SYSTEM_HDF5:BOOL=ON \
--DITK_USE_SYSTEM_JPEG:BOOL=ON \
--DITK_USE_SYSTEM_TIFF:BOOL=ON \
--DITK_USE_SYSTEM_PNG:BOOL=ON \
--DITK_USE_SYSTEM_EIGEN:BOOL=ON \
--DITK_USE_SYSTEM_ZLIB:BOOL=ON \
--DQNANHIBIT_VALUE:BOOL=0 \
--DQNANHIBIT_VALUE__TRYRUN_OUTPUT:STRING=0 \
--DVXL_HAS_SSE2_HARDWARE_SUPPORT:STRING=1 \
--DVCL_HAS_LFS:STRING=1 \
--DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
--DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
-InsightToolkit-5.3.0/
+cd $WORKSPACE/srcdir/ITK*
+mkdir build/
+cmake -B build -S . \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DBUILD_SHARED_LIBS:BOOL=ON \
+    -DITK_USE_SYSTEM_EXPAT:BOOL=ON \
+    -DITK_USE_SYSTEM_FFTW:BOOL=ON \
+    -DITK_USE_SYSTEM_HDF5:BOOL=ON \
+    -DITK_USE_SYSTEM_JPEG:BOOL=ON \
+    -DITK_USE_SYSTEM_TIFF:BOOL=ON \
+    -DITK_USE_SYSTEM_PNG:BOOL=ON \
+    -DITK_USE_SYSTEM_EIGEN:BOOL=ON \
+    -DITK_USE_SYSTEM_ZLIB:BOOL=ON \
+    -DQNANHIBIT_VALUE:BOOL=0 \
+    -DQNANHIBIT_VALUE__TRYRUN_OUTPUT:STRING=0 \
+    -DVXL_HAS_SSE2_HARDWARE_SUPPORT:STRING=1 \
+    -DVCL_HAS_LFS:STRING=1 \
+    -DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
+    -DHAVE_CLOCK_GETTIME_RUN:STRING=0
 cmake --build build --parallel ${nproc}
 cmake --install build
-install_license ${WORKSPACE}/srcdir/InsightToolkit-5.3.0/LICENSE
-exit
+install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -43,7 +42,6 @@ exit
 platforms = [
 
     Platform("x86_64", "windows"; ),
-    # Platform("x86_64", "macOS"; ),
     Platform("x86_64", "linux", libc=:glibc;)
 ]
 
