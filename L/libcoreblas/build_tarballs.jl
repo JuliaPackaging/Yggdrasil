@@ -28,7 +28,6 @@ fi
 
  cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
         -DBLA_VENDOR="libblastrampoline" \
-        -DLAPACK_LINKER_FLAGS="${BLAS_LIB}" \
         "${CMAKE_OPTIONS[@]}"  \
         -DCMAKE_C_FLAGS="-I/workspace/destdir/include/libblastrampoline/ILP64/${target}"
 
