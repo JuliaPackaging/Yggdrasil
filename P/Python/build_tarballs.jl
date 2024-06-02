@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.10.13"
+version = v"3.10.14"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "5c88848668640d3e152b35b4536ef1c23b2ca4bd2c957ef1ecbb053f571dd3f6"),
+                  "9c50481faa8c2832329ba0fc8868d0a606a680fc4f60ec48d26ce8e076751fda"),
     DirectorySource("./bundled"),
 ]
 

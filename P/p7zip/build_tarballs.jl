@@ -1,17 +1,18 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "p7zip"
-version_string = "17.04"
+version_string = "17.05"
 version = VersionNumber(version_string)
 
 # Collection of sources required to build p7zip
 sources = [
     GitSource("https://github.com/p7zip-project/p7zip",
-              "0b5b1b1a866d0e41cb7945e60a32262874e724aa"),
-    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/21.07/7z2107.exe",
-               "71e94e6038f4d42ed8f0f38c0e6c3846f21d13527139efa9ef8b8f6312ab6c90"),
-    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/21.07/7z2107-x64.exe",
-               "0b461f0a0eccfc4f39733a80d70fd1210fdd69f600fb6b657e03940a734e5fc1"),
+              "a45b8830cafda25e76d7120b0462daa82c382a7a"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/23.01/7z2301.exe",
+               "9b6682255bed2e415bfa2ef75e7e0888158d1aaf79370defaa2e2a5f2b003a59"),
+    FileSource("https://downloads.sourceforge.net/project/sevenzip/7-Zip/23.01/7z2301-x64.exe",
+               "26cb6e9f56333682122fafe79dbcdfd51e9f47cc7217dccd29ac6fc33b5598cd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,9 +29,9 @@ if [[ ${target} == *mingw* ]]; then
     apk add p7zip
 
     if [[ ${target} == i686* ]]; then
-        7z x -y ${WORKSPACE}/srcdir/7z2107.exe 7z.exe 7z.dll License.txt
+        7z x -y ${WORKSPACE}/srcdir/7z2301.exe 7z.exe 7z.dll License.txt
     else
-        7z x -y ${WORKSPACE}/srcdir/7z2107-x64.exe 7z.exe 7z.dll License.txt
+        7z x -y ${WORKSPACE}/srcdir/7z2301-x64.exe 7z.exe 7z.dll License.txt
     fi
 
     install_license License.txt
@@ -80,9 +81,12 @@ products = [
     ExecutableProduct("7z", :p7zip),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=llvm_version)

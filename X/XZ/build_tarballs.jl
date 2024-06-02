@@ -3,17 +3,38 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.6.1"
+# NOTE: DO NOT UPDATE to v5.6.0 or later versions, unless it is demonstrated the
+# code is free from malicious backdoors, see for example
+# * https://www.openwall.com/lists/oss-security/2024/03/29/4
+# * https://boehs.org/node/everything-i-know-about-the-xz-backdoor
+# v5.2.5 is the last stable version without commits from the backdoor author
+version = v"5.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/tukaani-project/xz/releases/download/v$(version)/xz-$(version).tar.xz",
-                  "f334777310ca3ae9ba07206d78ed286a655aa3f44eec27854f740c26b2cd2ed0"),
+    GitSource("https://git.tukaani.org/xz.git",
+              # NOTE: see comment above about changing version
+              "2327a461e1afce862c22269b80d3517801103c1b"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/xz-*
+cd $WORKSPACE/srcdir/xz*
+if [[ "${target}" != "*mingw32*" ]]; then
+    # install `autopoint`
+    apk update && apk add gettext-dev po4a gpg gpg-agent
+fi
+
+# From https://tukaani.org/misc/lasse_collin_pubkey.txt
+gpg --import ../keys/lasse_collin_pubkey.txt
+git verify-tag `git describe --exact-match --tags HEAD`
+
+# Patch is only needed for version < v"5.2.6"
+gpg --verify ../patches/xzgrep-ZDI-CAN-16587.patch.sig
+git apply ../patches/xzgrep-ZDI-CAN-16587.patch
+
+./autogen.sh
 BUILD_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic)
 
 # i686 error "configure works but build fails at crc32_x86.S"
@@ -39,8 +60,11 @@ else
         ./configure "${BUILD_FLAGS[@]}" "${TOGGLE[@]}"
         make -j${nproc}
         make install
+        # Toggle does not work with v5.2.5 without clean
+        make clean
     done
 fi
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further

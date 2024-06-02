@@ -4,14 +4,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version_str = "4.2.0"
+version_str = "4.2.1"
 version = VersionNumber(version_str)
 
 # build trigger: 1
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "a64a66781b9e5312ad052d32689e23252f745b27ee8818ac2ac0c8209bc0b90e"),
+                  "23331b2299f287c3419727edc2df8922d7e7abbb9fd0ac74e03b9966f9ad42d7"),
     DirectorySource("bundled"),
 ]
 
@@ -78,10 +78,9 @@ fi
 # * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-dependency-tracking \
-    --docdir=/tmp \
+    --disable-doc \
     --enable-fast=all,O3 \
     --enable-static=no \
-    --mandir=/tmp \
     --with-device=ch3 \
     --with-hwloc=${prefix} \
     "${EXTRA_FLAGS[@]}"
@@ -137,5 +136,6 @@ dependencies = [
 ]
 
 # Build the tarballs.
+# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", clang_use_lld=false)
+               augment_platform_block, julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"5")

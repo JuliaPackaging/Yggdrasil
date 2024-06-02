@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
-version = v"3.11.0"
+version = v"3.12.0"
 
 sources = [
     ArchiveSource("http://www.netlib.org/blas/blas-$version.tgz",
-                  "2d9fdee7d361954fee532100a50e602826c9cc1153f8cd057baa65ed57e90283"),
+                  "ccc41b5d088e50db0030317ae9b0c9af375710c1392acad1fe209602da5a5aad"),
     DirectorySource("../bundled"),
 ]
 

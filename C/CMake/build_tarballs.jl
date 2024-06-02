@@ -3,18 +3,27 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.28.1"
+version = v"3.29.3"
 
 # Collection of sources required to build CMake
 sources = [
-    GitSource("https://github.com/Kitware/CMake", "1eed682d7cca9bb2c2b0709a6c3202a3b08613b2"),
+    GitSource("https://github.com/Kitware/CMake", "b39fb31bf411c3925bd937f8cffbc471c2588c34"),
+    DirectorySource("bundled/"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/CMake
 
-cmake \
+# Add support for libblastrampoline to the FindBLAS/FindLAPACK modules
+# Upstream PR https://gitlab.kitware.com/cmake/cmake/-/merge_requests/9557
+# It will be included in 3.30
+atomic_patch -p1 $WORKSPACE/srcdir/patches/01_libblastrampoline.patch
+
+mkdir build
+cd build/
+
+cmake -B . -S .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE:STRING=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \

@@ -39,7 +39,7 @@ plugins() = Pair{String, Union{Nothing, Dict}}[
 ]
 
 env(NAME, PROJECT) = Dict(
-    "JULIA_PKG_SERVER" => "pkg.julia.csail.mit.edu",
+    "JULIA_PKG_SERVER" => "us-east.pkg.julialang.org",
     "JULIA_PKG_SERVER_REGISTRY_PREFERENCE" => "eager",
     "NAME" => NAME,
     "PROJECT" => PROJECT,

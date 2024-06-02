@@ -9,24 +9,20 @@ using BinaryBuilder, Pkg
 include("../../../fancy_toys.jl")
 
 name = "CUDA_Driver"
-version = v"0.8"
+version = v"0.9.0"
 
-cuda_version = v"12.4"
+cuda_version = v"12.5"
 cuda_version_str = "$(cuda_version.major)-$(cuda_version.minor)"
-driver_version_str = "550.54.14"
+driver_version_str = "555.42.02"
 build = 1
 
 sources_linux_x86 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).x86_64.rpm",
-               "d2d3425133556ec9501de52aae9c858e08a4ae454e7321e0035651032c088cfc", "compat.rpm")
-]
-sources_linux_ppc64le = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/ppc64le/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).ppc64le.rpm",
-               "4ecb6162fa1216455d67d0cafeb1f443fc603bb32cbf77d928ace931b5f362dd", "compat.rpm")
+               "b5f70dfd2149ef41a3decda1a398b805430d7129e487f17e9a4f154384be660e", "compat.rpm")
 ]
 sources_linux_aarch64 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).aarch64.rpm",
-               "f6add6a10c3ee381db97594185d847df051ca9616f223296b118788b51682a01", "compat.rpm")
+               "bce9fe958f8e0811bb5cc40cc0235de8453c6a4e89b12e8c0458d78768af908a", "compat.rpm")
 ]
 
 dependencies = []
@@ -69,12 +65,6 @@ non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 if should_build_platform("x86_64-linux-gnu")
     build_tarballs(non_reg_ARGS, name, version, sources_linux_x86, script,
                    [Platform("x86_64", "linux")], products, dependencies;
-                   lazy_artifacts=true, skip_audit=true, init_block)
-end
-
-if should_build_platform("powerpc64le-linux-gnu")
-    build_tarballs(non_reg_ARGS, name, version, sources_linux_ppc64le, script,
-                   [Platform("powerpc64le", "linux")], products, dependencies;
                    lazy_artifacts=true, skip_audit=true, init_block)
 end
 
