@@ -19,7 +19,7 @@ gfortran -fPIC -larpack -fopenmp -c ./bs.f90
 gfortran -fPIC -larpack -fopenmp -c ./op.f90
 gfortran -fPIC -larpack -fopenmp -c ./diag.f90
 gfortran -fPIC -larpack -fopenmp -c ./diag_re.f90
-gfortran -fPIC -shared -larpack -fopenmp -L ${libdir} -o $prefix/libfuzzified.$dlext ./*.o
+gfortran -fPIC -shared -larpack -fopenmp -L ${libdir} -o ${libdir}/libfuzzified.$dlext ./*.o
 """
 
 # These are the platforms we will build for by default, unless further
