@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "NASM"
-version_string = "2.16.01"
+version_string = "2.16.03"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.nasm.us/pub/nasm/releasebuilds/$(version_string)/nasm-$(version_string).tar.xz",
-                  "c77745f4802375efeee2ec5c0ad6b7f037ea9c87c92b149a9637ff099f162558"),
+                  "1412a1c760bbd05db026b6c0d1657affd6631cd0a63cddb6f73cc6d4aa616148"),
 ]
 
 # Bash recipe for building across all platforms

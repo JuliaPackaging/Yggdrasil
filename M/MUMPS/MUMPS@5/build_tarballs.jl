@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
-version = v"5.6.2"
+version = v"5.7.0"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
-                "13a2c1aff2bd1aa92fe84b7b35d88f43434019963ca09ef7e8c90821a8f1d59a")
+                "0ea2681a56246cb8eec578324cefa09f2142ea6f7c500a5fd6e0ad226a1a06cf")
 ]
 
 # Bash recipe for building across all platforms
@@ -75,6 +75,7 @@ make_args+=(PLAT="par" \
             LSCOTCH="${LSCOTCH}" \
             ORDERINGSF="-Dmetis -Dpord -Dparmetis ${FSCOTCH}" \
             LIBEXT_SHARED=".${dlext}" \
+            SHARED_OPT="-shared" \
             SONAME="${SONAME}" \
             CC="${MPICC} ${CFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \
             FC="${MPIFC} ${FFLAGS[@]} -DSCOTCH_VERSION_NUM=7" \

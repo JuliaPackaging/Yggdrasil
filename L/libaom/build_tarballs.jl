@@ -3,26 +3,33 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libaom"
-version = v"3.4.0"
+version = v"3.9.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz", "bd754b58c3fa69f3ffd29da77de591bd9c26970e3b18537951336d6c0252e354")
+    ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz",
+                  "a662e22299752547488c8e1412c0b41981efa8dbb1a25c696ded7ba9c472e919")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libaom-*
-mkdir build-dir
-cd build-dir
-CMAKE_ARGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=false -DBUILD_SHARED_LIBS=1"
-if [[ "${target}" != "*86*" ]]; then
-    CMAKE_ARGS="${CMAKE_ARGS} -DAOM_TARGET_CPU=generic"
+
+CMAKE_FLAGS=()
+if [[ ${target} = arm-* ]]; then
+   # Not even GCC 13 can compile for 32-bit ARM
+   CMAKE_FLAGS+=(-DAOM_TARGET_CPU=generic)
 fi
-cmake ${CMAKE_ARGS} ..
-make -j${nproc}
-make install
-install_license ../LICENSE
+
+cmake -B build-dir -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DENABLE_TESTS=OFF \
+    ${CMAKE_FLAGS[@]}
+cmake --build build-dir --parallel ${nproc}
+cmake --install build-dir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -47,4 +54,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We need at least GCC 9 for proper support of Intel SIMD intrinsics
+# We need at least GCC 10 for proper support of 64-bit ARM SIMD intrinsics
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"10")

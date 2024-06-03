@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Kokkos"
-version_string = "4.2.0"
+version_string = "4.3.1"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kokkos/kokkos.git", "71a9bcae52543bd065522bf3e41b5bfa467d8015"),
+    GitSource("https://github.com/kokkos/kokkos.git", "6ecdf605e0f7639adec599d25cf0e206d7b8f9f5"),
     # Kokkos requires macOS 10.13 or later
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
                   "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
@@ -38,6 +38,8 @@ cmake -B build \
 
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further

@@ -11,9 +11,7 @@ version = CUDA.full_version(v"12.3")
 
 platforms = [Platform("x86_64", "linux"),
              Platform("powerpc64le", "linux"),
-             Platform("aarch64", "linux"),
+             Platform("aarch64", "linux"; cuda_platform="sbsa"),
              Platform("x86_64", "windows")]
 
 build_sdk(name, version, platforms; static=true)
-
-# Bump for 12.3.2 build

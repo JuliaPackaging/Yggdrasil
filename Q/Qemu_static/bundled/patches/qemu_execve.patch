@@ -314,7 +314,7 @@ index f409121202..7d57d6edde 100644
  #ifdef TARGET_NR_getdents
  static int do_getdents(abi_long dirfd, abi_long arg2, abi_long count)
  {
-@@ -8833,17 +8961,7 @@ static abi_long do_syscall1(CPUArchState *cpu_env, int num, abi_long arg1,
+@@ -8833,21 +8961,11 @@ static abi_long do_syscall1(CPUArchState *cpu_env, int num, abi_long arg1,
  
              if (!(p = lock_user_string(arg1)))
                  goto execve_efault;
@@ -328,8 +328,16 @@ index f409121202..7d57d6edde 100644
 -             * before the execve completes and makes it the other
 -             * program's problem.
 -             */
--            ret = get_errno(safe_execve(p, argp, envp));
-+            ret = qemu_execve(p, argp, envp);
+-            if (is_proc_myself(p, "exe")) {
+-                ret = get_errno(safe_execve(exec_path, argp, envp));
+-            } else {
+-                ret = get_errno(safe_execve(p, argp, envp));
+-            }
++            if (is_proc_myself(p, "exe")) {
++                ret = qemu_execve(exec_path, argp, envp);
++            } else {
++                ret = qemu_execve(p, argp, envp);
++            }
              unlock_user(p, arg1, 0);
  
              goto execve_end;

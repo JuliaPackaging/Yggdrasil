@@ -7,19 +7,19 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.3.1"
-version = v"5.3.3"
+mpitrampoline_version = v"5.4.0"
+version = v"5.4.0"
 mpich_version_str = "4.2.1"
 mpiconstants_version = v"1.5.0"
-mpiwrapper_version = v"2.10.4"
+mpiwrapper_version = v"2.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/MPItrampoline", "25efb0f7a4cd00ed82bafb8b1a6285fc50d297ed"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "1c64b877799954f40b5d88c06a259e1a99a9676d"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
                   "23331b2299f287c3419727edc2df8922d7e7abbb9fd0ac74e03b9966f9ad42d7"),
-    GitSource("https://github.com/eschnett/MPIwrapper", "64f663cfaa36139882c5d92dc974b1a755cd6f5d"),
+    GitSource("https://github.com/eschnett/MPIwrapper", "1e991827041406f6d30e134187bcdbabb56f483d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -262,5 +262,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", clang_use_lld=false)
+               augment_platform_block, julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"5")

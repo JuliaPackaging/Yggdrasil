@@ -1,6 +1,6 @@
-From d6c6061f7b8c40ee46c360b9735399d68ad8c92d Mon Sep 17 00:00:00 2001
+From 32954bc902611067266fa9c99bcadf3df07db5f2 Mon Sep 17 00:00:00 2001
 From: Valentin Churavy <v.churavy@gmail.com>
-Date: Thu, 9 Mar 2023 17:37:01 -0500
+Date: Wed, 8 May 2024 01:00:07 +0200
 Subject: [PATCH] force cxx for cuda
 
 ---
@@ -8,18 +8,18 @@ Subject: [PATCH] force cxx for cuda
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/components/cuda/tests/Makefile b/src/components/cuda/tests/Makefile
-index 003fe4d1b..4748ed6b4 100644
+index 1f7c431de..92db49b63 100644
 --- a/src/components/cuda/tests/Makefile
 +++ b/src/components/cuda/tests/Makefile
-@@ -10,7 +10,7 @@ cuda_tests: $(TESTS)
+@@ -21,7 +21,7 @@ else
+ endif
  
- PAPI_CUDA_ROOT ?= $(CUDA_PATH)
- NVCC = $(PAPI_CUDA_ROOT)/bin/nvcc 
--NVCFLAGS = -g -ccbin='$(CC)' $(NVPPC64LEFLAGS)
-+NVCFLAGS = -g -ccbin='$(CXX)' $(NVPPC64LEFLAGS)
- INCLUDE += -I$(PAPI_CUDA_ROOT)/include -I$(PAPI_CUPTI_ROOT)/include 
- CUDALIBS = -L$(CUDRV_DIR)/lib64 -L$(PAPI_CUDA_ROOT)/lib64 -L$(PAPI_CUDA_ROOT)/lib64/stubs -L$(PAPI_CUPTI_ROOT)/lib64 -lcudart -lcupti -lcuda 
+ PAPI_FLAG = -DPAPI    # Comment this line for tests to run without PAPI profiling
+-NVCFLAGS += -g -ccbin='$(CC)' $(PAPI_FLAG)
++NVCFLAGS += -g -ccbin='$(CXX)' $(PAPI_FLAG)
+ INCLUDE += -I$(PAPI_CUDA_ROOT)/include
+ CUDALIBS = -L$(PAPI_CUDA_ROOT)/lib64 -lcudart -lcuda
  PAPILIB += -L../../../libpfm4/lib -lpfm
 -- 
-2.39.0
+2.44.0
 
