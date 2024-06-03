@@ -25,12 +25,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
 # Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
-# Don't redefine `getpid` nor `close` on Windows
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/getpid.patch
-# Don't redefine `clock_gettime` on Windows
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime_windows.patch
-# Include `ws2tcipi.h` on Windows
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/enet.patch
+# Apply mingw32 fixes; see <https://github.com/ornladios/ADIOS2/issues/4192>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw32.patch
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
@@ -59,9 +55,7 @@ fi
 if [[ "${target}" == *-mingw* ]]; then
     # Windows: Some options do not build
     # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
-    #TODO archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF -DCMAKE_C_FLAGS='-D_MSC_VER=1')
-    #TODO archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=OFF -DCMAKE_C_FLAGS='-D_MSC_VER=1')
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=OFF)
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF -DEVPATH_TRANSPORT_MODULES=OFF)
 else
     archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
 fi
@@ -109,11 +103,6 @@ platforms = supported_platforms()
 # <https://github.com/ornladios/ADIOS2/issues/2704>
 platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
-#TODO platforms = expand_gfortran_versions(platforms)
-
-#TODO # Windows builds worked in 2.9 but are broken in 2.10.0. We're hoping
-#TODO # for 2.10.1. Until then we punt.
-#TODO platforms = filter(p -> os(p) ≠ "windows", platforms)
 
 # We need to use the same compat bounds as HDF5
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.3", OpenMPI_compat="4.1.6, 5")
@@ -125,9 +114,8 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-#TODO # We don't need HDF5 on Windows (see above)
-#TODO hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
-hdf5_platforms = platforms
+# We don't need HDF5 on Windows (see above)
+hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
 
 # The products that we will ensure are always built
 products = [
