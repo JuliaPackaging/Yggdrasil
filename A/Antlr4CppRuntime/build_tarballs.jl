@@ -8,7 +8,7 @@ version = v"4.13.1"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/antlr/antlr4/archive/refs/tags/$(version).tar.gz",
-                  "efe4057d75ab48145d4683100fec7f77d7f87fa258707330cadd1f8e6f7eecae"),
+                  "da20d487524d7f0a8b13f73a8dc326de7fc2e5775f5a49693c0a4e59c6b1410c"),
     DirectorySource("./bundled"),
 ]
 
