@@ -6,14 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-adios2_version = v"2.10.0"
-version = v"2.10.0"
+adios2_version = v"2.10.1"
+version = v"2.10.1"
 
 # Collection of sources required to complete build
 sources = [
-    # GitSource("https://github.com/ornladios/ADIOS2.git", "6b7b4e43b9187c99b39657e0eae1fa49393bf6b4"),
-    # This is a few commits after the 2.10.0 release to pick up patches for FreeBSD and Windows build problems
-    GitSource("https://github.com/ornladios/ADIOS2.git", "deb06eb79f8ac6976a80fc762b7b441073e2c052"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "f626281e3dad99ca871396944a9091a60954fbb2"),
     DirectorySource("bundled"),
 ]
 
