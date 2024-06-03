@@ -14,7 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd FuzzifiED_Fortran/
-export MKL_THREADING_LAYER=GNU
 gfortran -fPIC -larpack -fopenmp -c ./cfs.f90
 gfortran -fPIC -larpack -fopenmp -c ./bs.f90
 gfortran -fPIC -larpack -fopenmp -c ./op.f90
