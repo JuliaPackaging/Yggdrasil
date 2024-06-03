@@ -46,7 +46,6 @@ platforms = [
     Platform("armv6l","linux"; call_abi="eabihf",libc="glibc"),
     Platform("armv7l","linux"; call_abi="eabihf",libc="glibc"),
     Platform("powerpc64le","linux"; libc="glibc"),
-    Platform("x86_64","linux"; libc="musl"),
     Platform("aarch64","linux"; libc="musl"),
     Platform("armv6l", "linux"; call_abi="eabihf", libc="musl"),
     Platform("armv7l", "linux"; call_abi="eabihf", libc="musl")
