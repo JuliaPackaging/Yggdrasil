@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Antlr4CppRuntime"
-version = v"4.9.3"
+version = v"4.13.1"
 
 # Collection of sources required to complete build
 sources = [
