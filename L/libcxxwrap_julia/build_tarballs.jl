@@ -11,13 +11,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libcxxwrap_julia"
-version = v"0.12.3"
+version = v"0.12.5"
 
 git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "deb630abfdc6b511359c69d4bbf18d376d57ac86"),
+    GitSource(git_repo, "93768c16d1beec0734dc951917e84372888d4422"),
 ]
 
 # Bash recipe for building across all platforms
@@ -49,7 +49,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.10")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
