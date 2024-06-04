@@ -1,31 +1,15 @@
-From 51b239b1d7596a305a1305e886e2bb74f91110a2 Mon Sep 17 00:00:00 2001
+From bde2a1f8254dced52a80b34aa435ab517a675abd Mon Sep 17 00:00:00 2001
 From: Jamie Mair <JamieMair@users.noreply.github.com>
-Date: Mon, 21 Aug 2023 11:13:20 +0100
-Subject: [PATCH 1/1] mingw patch
+Date: Tue, 4 Jun 2024 10:29:05 +0100
+Subject: [PATCH 1/6] Fixed syntax error for .rc files
 
 ---
- cmake/MujocoOptions.cmake         |  1 -
- dist/mujoco.rc                    |  2 +-
- dist/simulate.rc                  |  2 +-
- src/engine/engine_crossplatform.h | 10 +++++-----
- src/engine/engine_util_errmem.c   |  8 +++++---
- test/fixture.cc                   |  2 +-
- 6 files changed, 13 insertions(+), 12 deletions(-)
+ dist/mujoco.rc   | 2 +-
+ dist/simulate.rc | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/cmake/MujocoOptions.cmake b/cmake/MujocoOptions.cmake
-index 998b966..213f422 100644
---- a/cmake/MujocoOptions.cmake
-+++ b/cmake/MujocoOptions.cmake
-@@ -86,7 +86,6 @@ get_mujoco_extra_link_options(EXTRA_LINK_OPTIONS)
- 
- if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC))
-   set(EXTRA_COMPILE_OPTIONS
--      -Werror
-       -Wall
-       -Wimplicit-fallthrough
-       -Wunused
 diff --git a/dist/mujoco.rc b/dist/mujoco.rc
-index 4691253..9fb8faf 100644
+index 6ae69239..633b873d 100644
 --- a/dist/mujoco.rc
 +++ b/dist/mujoco.rc
 @@ -20,6 +20,6 @@ FILETYPE 0x1
@@ -37,7 +21,7 @@ index 4691253..9fb8faf 100644
    }
  }
 diff --git a/dist/simulate.rc b/dist/simulate.rc
-index 16ba684..194a137 100644
+index 68633346..9b9e17a5 100644
 --- a/dist/simulate.rc
 +++ b/dist/simulate.rc
 @@ -22,6 +22,6 @@ FILETYPE 0x1
@@ -48,82 +32,181 @@ index 16ba684..194a137 100644
 +    VALUE "Translation", 0x0409, 0x04B0
    }
  }
+-- 
+2.34.1
+
+
+From 944f8c71dc528ba23b26cdc9b667647003f69a4f Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Tue, 4 Jun 2024 10:29:20 +0100
+Subject: [PATCH 2/6] Fix strings library usage for mingw
+
+---
+ src/engine/engine_crossplatform.h | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
 diff --git a/src/engine/engine_crossplatform.h b/src/engine/engine_crossplatform.h
-index a73d892..8a3d4d0 100644
+index 5d506430..c2f1a971 100644
 --- a/src/engine/engine_crossplatform.h
 +++ b/src/engine/engine_crossplatform.h
-@@ -18,10 +18,14 @@
- #include <stdlib.h>
+@@ -26,17 +26,19 @@
+ // IWYU pragma: end_keep
  
- // Windows
+ // Sorting and case-insensitive comparison functions.
 -#ifdef _WIN32
-+#if defined(_WIN32) && !defined(__MINGW32__) && !defined(__MINGW64__)
++#ifdef _WIN32  && !defined(__MINGW32__) && !defined(__MINGW64__)
    #define strcasecmp _stricmp
    #define strncasecmp _strnicmp
+-
 +#else
 +  #include <strings.h>
 +#endif
- 
++ 
 +#if defined(_WIN32)
    #define mjQUICKSORT(buf, elnum, elsz, func, context) \
        qsort_s(buf, elnum, elsz, func, context)
    #define quicksortfunc(name, context, el1, el2) \
-@@ -29,16 +33,12 @@
- 
- // Unix-common
- #else
+       static int name(void* context, const void* el1, const void* el2)
+ #else  // assumes POSIX
 -  #include <strings.h>
 -
-   // Apple
    #ifdef __APPLE__
      #define mjQUICKSORT(buf, elnum, elsz, func, context) \
          qsort_r(buf, elnum, elsz, context, func)
-     #define quicksortfunc(name, context, el1, el2) \
-         static int name(void* context, const void* el1, const void* el2)
--
--  // non-Apple
-   #else
-     #define mjQUICKSORT(buf, elnum, elsz, func, context) \
-         qsort_r(buf, elnum, elsz, func, context)
+-- 
+2.34.1
+
+
+From 1ed37128be76dd0d246ea5542f0d9dbc6edeb8b5 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Tue, 4 Jun 2024 10:29:38 +0100
+Subject: [PATCH 3/6] Allow threadsafe time for mingw
+
+---
+ src/engine/engine_util_errmem.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
 diff --git a/src/engine/engine_util_errmem.c b/src/engine/engine_util_errmem.c
-index 125a64d..6d98872 100644
+index 7c63c1ce..d16fdbc0 100644
 --- a/src/engine/engine_util_errmem.c
 +++ b/src/engine/engine_util_errmem.c
-@@ -109,16 +109,18 @@ void mju_writeLog(const char* type, const char* msg) {
- 
- #if defined(_POSIX_C_SOURCE) || defined(__APPLE__) || defined(__STDC_VERSION_TIME_H__)
-     localtime_r(&rawtime, &timeinfo);
-+    fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
- #elif _MSC_VER
-     localtime_s(&timeinfo, &rawtime);
--#elif __STDC_LIB_EXT1__
-+    fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
-+#elif __STDC_LIB_EXT1__ 
+@@ -104,10 +104,11 @@ void mju_writeLog(const char* type, const char* msg) {
+ #elif __STDC_LIB_EXT1__
      localtime_s(&rawtime, &timeinfo);
-+    fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
  #else
 -    #error "Thread-safe version of `localtime` is not present in the standard C library"
 +    fprintf(fp, "%s%s: %s\n\n", asctime(localtime(&rawtime)), type, msg);
++    fclose(fp);
++    return
  #endif
  
-     // write to log file
--    fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
+-    // write to log file
+     fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
      fclose(fp);
    }
- }
-diff --git a/test/fixture.cc b/test/fixture.cc
-index 1043223..c818e3e 100644
---- a/test/fixture.cc
-+++ b/test/fixture.cc
-@@ -128,7 +128,7 @@ const std::string SaveAndReadXml(const mjModel* model) {
- #if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
-   int fd = mkstemp(filepath);
-   EXPECT_NE(fd, -1) << std::strerror(errno);
--#elif defined(_WIN32)
-+#elif defined(_WIN32) && !defined(__MINGW32__) && !defined(__MINGW32__)
-   EXPECT_NE(_mktemp_s(filepath), EINVAL);
+-- 
+2.34.1
+
+
+From c734bb9372f4d201666500a7229b7e14e555ceee Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Tue, 4 Jun 2024 10:40:23 +0100
+Subject: [PATCH 4/6] Removed whitespace from ifdef directive
+
+---
+ src/engine/engine_crossplatform.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/engine/engine_crossplatform.h b/src/engine/engine_crossplatform.h
+index c2f1a971..ac93c9e0 100644
+--- a/src/engine/engine_crossplatform.h
++++ b/src/engine/engine_crossplatform.h
+@@ -26,7 +26,7 @@
+ // IWYU pragma: end_keep
+ 
+ // Sorting and case-insensitive comparison functions.
+-#ifdef _WIN32  && !defined(__MINGW32__) && !defined(__MINGW64__)
++#if defined(_WIN32) && !defined(__MINGW32__) && !defined(__MINGW64__)
+   #define strcasecmp _stricmp
+   #define strncasecmp _strnicmp
+ #else
+-- 
+2.34.1
+
+
+From 52bf291194dec61e1f32ce834cce99d87dbe53cf Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Tue, 4 Jun 2024 10:56:31 +0100
+Subject: [PATCH 5/6] Fixed formatting errors for print function
+
+---
+ src/engine/engine_io.c    | 2 +-
+ src/thread/thread_pool.cc | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/engine/engine_io.c b/src/engine/engine_io.c
+index ee836546..fa65a1e2 100644
+--- a/src/engine/engine_io.c
++++ b/src/engine/engine_io.c
+@@ -1363,7 +1363,7 @@ static inline void* stackallocinternal(mjData* d, mjStackInfo* stack_info, size_
+   size_t stack_available_bytes = stack_info->top - stack_info->limit;
+   size_t stack_required_bytes = stack_info->top - new_top_ptr;
+   if (mjUNLIKELY(stack_required_bytes > stack_available_bytes)) {
+-    mju_error("mj_stackAlloc: insufficient memory: max = %zu, available = %zu, requested = %zu "
++    mju_error("mj_stackAlloc: insufficient memory: max = %llx, available = %llx, requested = %llx "
+               "(ne = %d, nf = %d, nefc = %d, ncon = %d)",
+               stack_info->bottom - stack_info->limit, stack_available_bytes, stack_required_bytes,
+               d->ne, d->nf, d->nefc, d->ncon);
+diff --git a/src/thread/thread_pool.cc b/src/thread/thread_pool.cc
+index 9bb03133..c2b60f07 100644
+--- a/src/thread/thread_pool.cc
++++ b/src/thread/thread_pool.cc
+@@ -198,7 +198,7 @@ mjStackInfo* mju_getStackInfoForThread(mjData* d, size_t thread_id) {
+   }
+ 
+   if (bytes_per_shard * number_of_shards > total_arena_size_bytes) {
+-    mju_error("Arena is not large enough for %zu shards", number_of_shards);
++    mju_error("Arena is not large enough for %llx shards", number_of_shards);
+   }
+ 
+   uintptr_t result = (end_of_arena_ptr - (thread_id + 1) * bytes_per_shard);
+@@ -238,8 +238,8 @@ static void  ConfigureMultiThreadedStack(mjData* d) {
+       // abort if the current stack is already larger than the portion of the stack
+       // that would be reserved for the main thread
+       if ((uintptr_t)end_shard_cursor_ptr > current_limit) {
+-        mju_error("mj_bindThreadPool: sharding stack - existing stack larger than shard size: current_size = %zu, "
+-                  "max_size = %zu", current_limit, (uintptr_t) end_shard_cursor_ptr);
++        mju_error("mj_bindThreadPool: sharding stack - existing stack larger than shard size: current_size = %llx, "
++                  "max_size = %llx", current_limit, (uintptr_t) end_shard_cursor_ptr);
+       }
+       end_shard_cursor_ptr->top = current_limit;
+       end_shard_cursor_ptr->stack_base = d->pbase;
+-- 
+2.34.1
+
+
+From 74da640cba3b54a0c04c59a823c134a3625b6df4 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Tue, 4 Jun 2024 10:56:49 +0100
+Subject: [PATCH 6/6] Added semicolon to return to avoid returning the next
+ value instead
+
+---
+ src/engine/engine_util_errmem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/engine/engine_util_errmem.c b/src/engine/engine_util_errmem.c
+index d16fdbc0..ff2c4cca 100644
+--- a/src/engine/engine_util_errmem.c
++++ b/src/engine/engine_util_errmem.c
+@@ -106,7 +106,7 @@ void mju_writeLog(const char* type, const char* msg) {
+ #else
+     fprintf(fp, "%s%s: %s\n\n", asctime(localtime(&rawtime)), type, msg);
+     fclose(fp);
+-    return
++    return;
  #endif
  
+     fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
 -- 
-2.41.0
-
+2.34.1
