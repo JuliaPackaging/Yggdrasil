@@ -8,11 +8,11 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "DACE"
-version = v"0.2.0"
+version = v"0.3.0"
 
 # Collection of sources required to build DACE
 sources = [
-    GitSource("https://github.com/a-ev/dace.git", "1d3b35beac7389feeef14364c0cc2f63541eff4e"),
+    GitSource("https://github.com/a-ev/dace.git", "94a812054f280db762a41a6bb807085ad2380c15"),
     DirectorySource("./bundled"),
 ]
 
