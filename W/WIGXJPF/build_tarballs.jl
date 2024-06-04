@@ -16,7 +16,6 @@ cd $WORKSPACE/srcdir/wigxjpf-1.13
 
 mkdir -p $WORKSPACE/destdir/lib
 mkdir -p $WORKSPACE/destdir/bin
-mkdir -p $WORKSPACE/destdir/shared/licenses
 
 if [ "$(uname)" == "Darwin" ]; then
     make lib/libwigxjpf_shared.dylib
