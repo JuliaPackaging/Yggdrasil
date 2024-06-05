@@ -11,7 +11,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "jlqml"
-version = v"0.6.1"
+version = v"0.6.2"
 
 # Collection of sources required to complete build
 sources = [
