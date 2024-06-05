@@ -1,7 +1,7 @@
 From 4942d65d1caa4d5beede00474755f8a0219bb1f4 Mon Sep 17 00:00:00 2001
 From: Jamie Mair <JamieMair@users.noreply.github.com>
 Date: Wed, 5 Jun 2024 09:54:33 +0000
-Subject: [PATCH] Added changes to allow cross compilation to Windows using
+Subject: [PATCH 1/2] Added changes to allow cross compilation to Windows using
  Clang
 
 ---
@@ -138,6 +138,95 @@ index 9bb03133..c2b60f07 100644
        }
        end_shard_cursor_ptr->top = current_limit;
        end_shard_cursor_ptr->stack_base = d->pbase;
+-- 
+2.44.0
+
+
+From be9f1dfc409f06509e9274e1c4fd81d6c54d0af9 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Wed, 5 Jun 2024 10:04:12 +0000
+Subject: [PATCH 2/2] Changed to using llx instead of zu for formatting
+
+---
+ src/engine/engine_print.c     |  2 +-
+ src/engine/engine_util_misc.c | 18 +++++++++---------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/src/engine/engine_print.c b/src/engine/engine_print.c
+index 8fee7ebf..401f237a 100644
+--- a/src/engine/engine_print.c
++++ b/src/engine/engine_print.c
+@@ -37,7 +37,7 @@
+ #define FLOAT_FORMAT "% -9.2g"
+ #define FLOAT_FORMAT_MAX_LEN 20
+ #define INT_FORMAT " %d"
+-#define SIZE_T_FORMAT " %zu"
++#define SIZE_T_FORMAT " %llx"
+ #define NAME_FORMAT "%-21s"
+ 
+ 
+diff --git a/src/engine/engine_util_misc.c b/src/engine/engine_util_misc.c
+index 3903d68b..97a42c05 100644
+--- a/src/engine/engine_util_misc.c
++++ b/src/engine/engine_util_misc.c
+@@ -1191,9 +1191,9 @@ const char* mju_writeNumBytes(size_t nbytes) {
+     }
+   }
+   if (i < 6) {
+-    mjSNPRINTF(message, "%zu%c", nbytes >> (10*(6-i)), suffix[6-i]);
++    mjSNPRINTF(message, "%llx%c", nbytes >> (10*(6-i)), suffix[6-i]);
+   } else {
+-    mjSNPRINTF(message, "%zu", nbytes >> (10*(6-i)));
++    mjSNPRINTF(message, "%llx", nbytes >> (10*(6-i)));
+   }
+   return message;
+ }
+@@ -1206,14 +1206,14 @@ const char* mju_warningText(int warning, size_t info) {
+ 
+   switch ((mjtWarning) warning) {
+   case mjWARN_INERTIA:
+-    mjSNPRINTF(str, "Inertia matrix is too close to singular at DOF %zu. Check model.", info);
++    mjSNPRINTF(str, "Inertia matrix is too close to singular at DOF %llx. Check model.", info);
+     break;
+ 
+   case mjWARN_CONTACTFULL:
+     mjSNPRINTF(str,
+                "Too many contacts. Either the arena memory is full, or nconmax is specified and is "
+                "exceeded. Increase arena memory allocation, or increase/remove nconmax. "
+-               "(ncon = %zu)", info);
++               "(ncon = %llx)", info);
+     break;
+ 
+   case mjWARN_CNSTRFULL:
+@@ -1223,23 +1223,23 @@ const char* mju_warningText(int warning, size_t info) {
+     break;
+ 
+   case mjWARN_VGEOMFULL:
+-    mjSNPRINTF(str, "Pre-allocated visual geom buffer is full. Increase maxgeom above %zu.", info);
++    mjSNPRINTF(str, "Pre-allocated visual geom buffer is full. Increase maxgeom above %llx.", info);
+     break;
+ 
+   case mjWARN_BADQPOS:
+-    mjSNPRINTF(str, "Nan, Inf or huge value in QPOS at DOF %zu. The simulation is unstable.", info);
++    mjSNPRINTF(str, "Nan, Inf or huge value in QPOS at DOF %llx. The simulation is unstable.", info);
+     break;
+ 
+   case mjWARN_BADQVEL:
+-    mjSNPRINTF(str, "Nan, Inf or huge value in QVEL at DOF %zu. The simulation is unstable.", info);
++    mjSNPRINTF(str, "Nan, Inf or huge value in QVEL at DOF %llx. The simulation is unstable.", info);
+     break;
+ 
+   case mjWARN_BADQACC:
+-    mjSNPRINTF(str, "Nan, Inf or huge value in QACC at DOF %zu. The simulation is unstable.", info);
++    mjSNPRINTF(str, "Nan, Inf or huge value in QACC at DOF %llx. The simulation is unstable.", info);
+     break;
+ 
+   case mjWARN_BADCTRL:
+-    mjSNPRINTF(str, "Nan, Inf or huge value in CTRL at ACTUATOR %zu. The simulation is unstable.",
++    mjSNPRINTF(str, "Nan, Inf or huge value in CTRL at ACTUATOR %llx. The simulation is unstable.",
+                info);
+     break;
+ 
 -- 
 2.44.0
 
