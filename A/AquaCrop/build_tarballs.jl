@@ -19,8 +19,10 @@ sed -i -e 's/-march=native//g' Makefile
 export FC
 make -j${nproc}
 
-install -Dvm 755 aquacrop${exeext} "${bindir}"/aquacrop${exeext}
-install -Dvm 755 libaquacrop.${dlext} "${libdir}"/libaquacrop.${dlext}
+# the executable and library built by the Makefile always have the
+# same file endings, regardless of platform
+install -Dvm 755 aquacrop "${bindir}"/aquacrop${exeext}
+install -Dvm 755 libaquacrop.so "${libdir}"/libaquacrop.${dlext}
 
 install_license ../LICENSE
 """
