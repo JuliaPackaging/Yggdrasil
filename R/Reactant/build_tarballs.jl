@@ -10,7 +10,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.8"
 
 sources = [
-   GitSource(repo, "2e3697ae055afcee8abc5b28f0be06e03a1c1592"),
+   GitSource(repo, "a950f1bb5ad3017f7afcafad7fe3b5f1ffbdb578"),
 ]
 
 # Bash recipe for building across all platforms
