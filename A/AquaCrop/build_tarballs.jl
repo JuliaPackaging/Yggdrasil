@@ -32,7 +32,7 @@ install_license ../LICENSE
 
 # we link against libgfortran
 # build fails for all libgfortran3 platforms (except freebsd)
-platforms = filter(p -> ! libgfortran_version(p) == v"3.0.0",
+platforms = filter(p -> !(libgfortran_version(p) == v"3.0.0"),
                    expand_gfortran_versions(supported_platforms()))
 
 products = [
