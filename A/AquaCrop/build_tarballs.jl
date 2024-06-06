@@ -19,8 +19,11 @@ sed -i -e 's/-march=native//g' Makefile
 export FC
 make -j${nproc}
 
-# the executable and library built by the Makefile always have the
-# same file endings, regardless of platform
+# on x86_64-w64-mingw32-libgfortran4, the binary is 'aquacrop'
+# on i686-w64-mingw32-libgfortran5, the binary is 'aquacrop.exe'
+if [ -f aquacrop.exe ]; then
+    mv aquacrop.exe aquacrop
+fi
 install -Dvm 755 aquacrop "${bindir}"/aquacrop${exeext}
 install -Dvm 755 libaquacrop.so "${libdir}"/libaquacrop.${dlext}
 
