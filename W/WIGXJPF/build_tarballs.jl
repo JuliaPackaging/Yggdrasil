@@ -14,17 +14,21 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wigxjpf-1.13
 
-mkdir -p $WORKSPACE/destdir/lib
-mkdir -p $WORKSPACE/destdir/bin
 
-if [ "$(uname)" == "Darwin" ]; then
-    make lib/libwigxjpf_shared.dylib
-    cp lib/libwigxjpf_shared.dylib $WORKSPACE/destdir/lib/  
-else
-    make lib/libwigxjpf_shared.so
-    cp lib/libwigxjpf_shared.so $WORKSPACE/destdir/lib/
-    cp lib/libwigxjpf_shared.so $WORKSPACE/destdir/bin/libwigxjpf_shared.dll                    
-fi
+# Patch the CMake workflow to fix the install directories and build the libraries as shared libraries
+echo -e "include(GNUInstallDirs)\n$(cat CMakeLists.txt)" > CMakeLists.txt
+sed -i 's/STATIC//' CMakeLists.txt
+
+mkdir -p build && cd build
+
+cmake -B . -S .. \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON
+
+cmake --build . --parallel ${nproc}
+cmake --install .
 
 cp README $WORKSPACE/destdir/shared/licenses/LICENSE
 """
