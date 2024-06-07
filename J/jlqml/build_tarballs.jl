@@ -11,7 +11,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "jlqml"
-version = v"0.6.1"
+version = v"0.6.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -28,6 +28,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
     ../jlqml/
 
 if [[ $target == *"apple-darwin"* ]]; then
@@ -52,10 +53,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat="~0.12.3"),
-    Dependency("Qt6Declarative_jll"; compat="~6.5.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.12.5"),
+    Dependency("Qt6Declarative_jll"; compat="~6.7.1"),
     HostBuildDependency("Qt6Declarative_jll"),
-    Dependency("Qt6Svg_jll"; compat="~6.5.2"),
+    Dependency("Qt6Svg_jll"; compat="~6.7.1"),
     BuildDependency("Libglvnd_jll"),
     BuildDependency("libjulia_jll"),
 ]

@@ -1,24 +1,24 @@
-From 0bb2fbed98662088549a2f04a6cc36aa7c0091ce Mon Sep 17 00:00:00 2001
+From 3e374944919e83f433aa0908ad0c235f9c8b45e7 Mon Sep 17 00:00:00 2001
 From: Gnimuc <qiyupei@gmail.com>
-Date: Sun, 26 May 2024 00:18:19 +0900
+Date: Sat, 1 Jun 2024 18:03:33 +0900
 Subject: [PATCH] Rewrite CMake build scripts
 
 ---
- CMakeLists.txt                           | 510 +++--------------------
+ CMakeLists.txt                           | 505 +++--------------------
  include/CMakeLists.txt                   |   1 +
  include/clang/CMakeLists.txt             |   1 +
  include/clang/Interpreter/CMakeLists.txt |   1 +
  lib/Interpreter/CMakeLists.txt           | 116 +-----
- 5 files changed, 78 insertions(+), 551 deletions(-)
+ 5 files changed, 73 insertions(+), 551 deletions(-)
  create mode 100644 include/CMakeLists.txt
  create mode 100644 include/clang/CMakeLists.txt
  create mode 100644 include/clang/Interpreter/CMakeLists.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b87a263..37820ab 100644
+index b87a263..1dfd11c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,452 +1,76 @@
+@@ -1,452 +1,71 @@
 -cmake_minimum_required(VERSION 3.13)
 +cmake_minimum_required(VERSION 3.21)
  
@@ -27,7 +27,7 @@ index b87a263..37820ab 100644
 +project(CppInterOp LANGUAGES CXX)
  
 -include(GNUInstallDirs)
-+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fno-rtti")
  
 -set(CMAKE_MODULE_PATH
 -  ${CMAKE_MODULE_PATH}
@@ -41,10 +41,7 @@ index b87a263..37820ab 100644
 -# project, using LLVM as an external library:
 -if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 -  project(CppInterOp)
-+set(CMAKE_SKIP_BUILD_RPATH FALSE)
-+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
++set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
  
 -  # LLVM/Clang/Cling default paths
 -  if (DEFINED LLVM_DIR)
@@ -483,8 +480,6 @@ index b87a263..37820ab 100644
 +add_library(CppInterOp SHARED)
 +add_subdirectory(lib)
 +add_subdirectory(include)
-+
-+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 +
 +target_include_directories(CppInterOp PUBLIC
 +    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

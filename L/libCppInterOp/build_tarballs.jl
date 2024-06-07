@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOp"
-version = v"0.1.2"
+version = v"0.1.3"
 
 llvm_versions = [v"17.0.6"]
 
@@ -33,11 +33,6 @@ make -j${nproc}
 make install
 install_license ../LICENSE.txt
 """
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-filter!(p -> !(libc(p) == "musl" && Sys.islinux(p) && arch(p) == "i686"), platforms) # LLVM_full+asserts isn't available for i686-linux-musl
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -65,6 +60,15 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         # so loading the library will always fail. We fix this in CppInterOp.jl
         LibraryProduct("libCppInterOp", :libCppInterOp, dont_dlopen=true),
     ]
+
+    # These are the platforms we will build for by default, unless further
+    # platforms are passed in on the command line
+    platforms = expand_cxxstring_abis(supported_platforms())
+
+    if llvm_version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl.
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
