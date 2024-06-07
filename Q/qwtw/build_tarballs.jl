@@ -7,7 +7,7 @@ version = v"2.13.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ig-or/qwtw.git", "b6385861fa3bd00cb855c0f0e7f6cb8c131951c4")
+    GitSource("https://github.com/ig-or/qwtw.git", "e4d0d8969b0828f7471fd1a646e0d512190f7497")
 ]
 
 # Bash recipe for building across all platforms
@@ -52,4 +52,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.8", preferred_gcc_version = v"9.1.0")
+               julia_compat="1.6", preferred_gcc_version = v"9.1.0")
