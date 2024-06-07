@@ -51,7 +51,9 @@ end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(x => !is_problematic_platform(x), platforms)  # macOS currently not supported because ...
+platforms = filter(platforms) do p
+    return !is_problematic_platform(p)
+end# macOS currently not supported because ...
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
