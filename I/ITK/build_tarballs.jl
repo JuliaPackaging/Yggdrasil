@@ -37,16 +37,27 @@ cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 """
 
+
+
+function is_problematic_platform(platform)
+    # Extract relevant information from the platform object
+    platform_string = string(platform)
+    # Check conditions to exclude the platform
+    return contains(platform_string, "i686") || #sse2 disabled errors in ITK with open issues on github
+           contains(platform_string, "macOS") || #CMAKE errors for _libcxx_run_result in cross compilation
+           contains(platform_string, "FreeBSD") || #CMAKE error for _libcxx_run_result in cross compilation
+           platform_string == "Linux x86_64 {libc=musl}" #CMAKE error for _libcxx_run_result result in cross compilation
+end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(!Sys.isapple, platforms)  # macOS currently not supported because ...
-platforms=expand_cxxstring_abis(platforms)
+filter!(x => !is_problematic_platform(x), platforms)  # macOS currently not supported because ...
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libITKRegistrationMethodsv4","libITKRegistrationMethodsv4-5.3"], :libITKRegistrationMethodsv4),
-    LibraryProduct(["libITKIOCSV","libITKIOCSV-5.3"], :libITKIOCSV),
+    LibraryProduct(["libITKRegistrationMethodsv4", "libITKRegistrationMethodsv4-5.3"], :libITKRegistrationMethodsv4),
+    LibraryProduct(["libITKIOCSV", "libITKIOCSV-5.3"], :libITKIOCSV),
     LibraryProduct(["libITKImageFeature", "libITKImageFeature-5.3"], :libITKImageFeature),
     LibraryProduct(["libITKIOStimulate", "libITKIOStimulate-5.3"], :libITKIOStimulate),
     LibraryProduct(["libITKIOMeshVTK", "libITKIOMeshVTK-5.3"], :libITKIOMeshVTK),
@@ -55,45 +66,45 @@ products = [
     LibraryProduct(["libitkgdcmDICT", "libitkgdcmDICT-5.3"], :libitkgdcmDICT),
     LibraryProduct(["libITKIOJPEG", "libITKIOJPEG-5.3"], :libITKIOJPEG),
     LibraryProduct(["libITKIOPNG", "libITKIOPNG-5.3"], :libITKIOPNG),
-    LibraryProduct(["libITKIOGE","libITKIOGE-5.3"], :libITKIOGE),
-    LibraryProduct(["libITKDenoising","libITKDenoising-5.3"], :libITKDenoising),
+    LibraryProduct(["libITKIOGE", "libITKIOGE-5.3"], :libITKIOGE),
+    LibraryProduct(["libITKDenoising", "libITKDenoising-5.3"], :libITKDenoising),
     LibraryProduct(["libITKIOLSM", "libITKIOLSM-5.3"], :libITKIOLSM),
-    LibraryProduct(["libITKniftiio","libITKniftiio-5.3"], :libITKniftiio),
-    LibraryProduct(["libITKIOImageBase","libITKIOImageBase-5.3"], :libITKIOImageBase),
-    LibraryProduct(["libITKTransform","libITKTransform-5.3"], :libITKTransform),
-    LibraryProduct(["libITKIOMeshFreeSurfer","libITKIOMeshFreeSurfer-5.3"], :libITKIOMeshFreeSurfer),
-    LibraryProduct(["libITKIOMeshOBJ","libITKIOMeshOBJ-5.3"], :libITKIOMeshOBJ),
-    LibraryProduct(["libITKDiffusionTensorImage","libITKDiffusionTensorImage-5.3"], :libITKDiffusionTensorImage),
-    LibraryProduct(["libITKImageIntensity","libITKImageIntensity-5.3"], :libITKImageIntensity),
-    LibraryProduct(["libITKIOHDF5","libITKIOHDF5-5.3"], :libITKIOHDF5),
-    LibraryProduct(["libITKIOIPL","libITKIOIPL-5.3"], :libITKIOIPL),
-    LibraryProduct(["libITKIOGDCM","libITKIOGDCM-5.3"], :libITKIOGDCM),
-    LibraryProduct(["libITKIOTransformBase","libITKIOTransformBase-5.3"], :libITKIOTransformBase),
-    LibraryProduct(["libITKIOMRC","libITKIOMRC-5.3"], :libITKIOMRC),
-    LibraryProduct(["libITKIOGIPL","libITKIOGIPL-5.3"], :libITKIOGIPL),
-    LibraryProduct(["libITKIOMeshBYU","libITKIOMeshBYU-5.3"], :libITKIOMeshBYU),
-    LibraryProduct(["libITKIOMeta","libITKIOMeta-5.3"], :libITKIOMeta),
-    LibraryProduct(["libITKIOMINC","libITKIOMINC-5.3"], :libITKIOMINC),
+    LibraryProduct(["libITKniftiio", "libITKniftiio-5.3"], :libITKniftiio),
+    LibraryProduct(["libITKIOImageBase", "libITKIOImageBase-5.3"], :libITKIOImageBase),
+    LibraryProduct(["libITKTransform", "libITKTransform-5.3"], :libITKTransform),
+    LibraryProduct(["libITKIOMeshFreeSurfer", "libITKIOMeshFreeSurfer-5.3"], :libITKIOMeshFreeSurfer),
+    LibraryProduct(["libITKIOMeshOBJ", "libITKIOMeshOBJ-5.3"], :libITKIOMeshOBJ),
+    LibraryProduct(["libITKDiffusionTensorImage", "libITKDiffusionTensorImage-5.3"], :libITKDiffusionTensorImage),
+    LibraryProduct(["libITKImageIntensity", "libITKImageIntensity-5.3"], :libITKImageIntensity),
+    LibraryProduct(["libITKIOHDF5", "libITKIOHDF5-5.3"], :libITKIOHDF5),
+    LibraryProduct(["libITKIOIPL", "libITKIOIPL-5.3"], :libITKIOIPL),
+    LibraryProduct(["libITKIOGDCM", "libITKIOGDCM-5.3"], :libITKIOGDCM),
+    LibraryProduct(["libITKIOTransformBase", "libITKIOTransformBase-5.3"], :libITKIOTransformBase),
+    LibraryProduct(["libITKIOMRC", "libITKIOMRC-5.3"], :libITKIOMRC),
+    LibraryProduct(["libITKIOGIPL", "libITKIOGIPL-5.3"], :libITKIOGIPL),
+    LibraryProduct(["libITKIOMeshBYU", "libITKIOMeshBYU-5.3"], :libITKIOMeshBYU),
+    LibraryProduct(["libITKIOMeta", "libITKIOMeta-5.3"], :libITKIOMeta),
+    LibraryProduct(["libITKIOMINC", "libITKIOMINC-5.3"], :libITKIOMINC),
     LibraryProduct(["libITKDeformableMesh", "libITKDeformableMesh-5.3"], :libITKDeformableMesh),
-    LibraryProduct(["libitkgdcmDSED","libitkgdcmDSED-5.3"], :libitkgdcmDSED),
-    LibraryProduct(["libITKIOSpatialObjects","libITKIOSpatialObjects-5.3"], :libITKIOSpatialObjects),
-    LibraryProduct(["libitkgdcmIOD","libitkgdcmIOD-5.3"], :libitkgdcmIOD),
-    LibraryProduct(["libitkgdcmCommon","libitkgdcmCommon-5.3"], :libitkgdcmCommon),
-    LibraryProduct(["libITKIONRRD","libITKIONRRD-5.3"], :libITKIONRRD),
-    LibraryProduct(["libITKIOTransformHDF5","libITKIOTransformHDF5-5.3"], :libITKIOTransformHDF5),
-    LibraryProduct(["libITKIOJPEG2000","libITKIOJPEG2000-5.3"], :libITKIOJPEG2000),
-    LibraryProduct(["libITKIOMeshBase","libITKIOMeshBase-5.3"], :libITKIOMeshBase),
-    LibraryProduct(["libITKIOBMP","libITKIOBMP-5.3"], :libITKIOBMP),
-    LibraryProduct(["libITKIOBioRad","libITKIOBioRad-5.3"], :libITKIOBioRad),
-    LibraryProduct(["libITKCommon","libITKCommon-5.3"], :libITKCommon),
-    LibraryProduct(["libITKSpatialObjects","libITKSpatialObjects-5.3"], :libITKSpatialObjects),
-    LibraryProduct(["libITKDICOMParser","libITKDICOMParser-5.3"], :libITKDICOMParser),
-    LibraryProduct(["libITKIOMeshOFF","libITKIOMeshOFF-5.3"], :libITKIOMeshOFF),
-    LibraryProduct(["libITKIOMeshGifti","libITKIOMeshGifti-5.3"], :libITKIOMeshGifti),
-    LibraryProduct(["libITKMetaIO","libITKMetaIO-5.3"], :libITKMetaIO),
-    LibraryProduct(["libITKIONIFTI","libITKIONIFTI-5.3"], :libITKIONIFTI),
-    LibraryProduct(["libITKNrrdIO","libITKNrrdIO-5.3"], :libITKNrrdIO),
-    LibraryProduct(["libITKConvolution","libITKConvolution-5.3"], :libITKConvolution)
+    LibraryProduct(["libitkgdcmDSED", "libitkgdcmDSED-5.3"], :libitkgdcmDSED),
+    LibraryProduct(["libITKIOSpatialObjects", "libITKIOSpatialObjects-5.3"], :libITKIOSpatialObjects),
+    LibraryProduct(["libitkgdcmIOD", "libitkgdcmIOD-5.3"], :libitkgdcmIOD),
+    LibraryProduct(["libitkgdcmCommon", "libitkgdcmCommon-5.3"], :libitkgdcmCommon),
+    LibraryProduct(["libITKIONRRD", "libITKIONRRD-5.3"], :libITKIONRRD),
+    LibraryProduct(["libITKIOTransformHDF5", "libITKIOTransformHDF5-5.3"], :libITKIOTransformHDF5),
+    LibraryProduct(["libITKIOJPEG2000", "libITKIOJPEG2000-5.3"], :libITKIOJPEG2000),
+    LibraryProduct(["libITKIOMeshBase", "libITKIOMeshBase-5.3"], :libITKIOMeshBase),
+    LibraryProduct(["libITKIOBMP", "libITKIOBMP-5.3"], :libITKIOBMP),
+    LibraryProduct(["libITKIOBioRad", "libITKIOBioRad-5.3"], :libITKIOBioRad),
+    LibraryProduct(["libITKCommon", "libITKCommon-5.3"], :libITKCommon),
+    LibraryProduct(["libITKSpatialObjects", "libITKSpatialObjects-5.3"], :libITKSpatialObjects),
+    LibraryProduct(["libITKDICOMParser", "libITKDICOMParser-5.3"], :libITKDICOMParser),
+    LibraryProduct(["libITKIOMeshOFF", "libITKIOMeshOFF-5.3"], :libITKIOMeshOFF),
+    LibraryProduct(["libITKIOMeshGifti", "libITKIOMeshGifti-5.3"], :libITKIOMeshGifti),
+    LibraryProduct(["libITKMetaIO", "libITKMetaIO-5.3"], :libITKMetaIO),
+    LibraryProduct(["libITKIONIFTI", "libITKIONIFTI-5.3"], :libITKIONIFTI),
+    LibraryProduct(["libITKNrrdIO", "libITKNrrdIO-5.3"], :libITKNrrdIO),
+    LibraryProduct(["libITKConvolution", "libITKConvolution-5.3"], :libITKConvolution)
 ]
 
 
@@ -106,9 +117,7 @@ dependencies = [
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f"))
     Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-   
-]
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
