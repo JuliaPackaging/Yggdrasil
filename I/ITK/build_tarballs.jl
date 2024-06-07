@@ -39,17 +39,8 @@ install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64","windows";),
-    Platform("aarch64","linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("armv6l","linux"; call_abi="eabihf",libc="glibc"),
-    Platform("armv7l","linux"; call_abi="eabihf",libc="glibc"),
-    Platform("powerpc64le","linux"; libc="glibc"),
-    Platform("aarch64","linux"; libc="musl"),
-    Platform("armv6l", "linux"; call_abi="eabihf", libc="musl"),
-    Platform("armv7l", "linux"; call_abi="eabihf", libc="musl")
-]
+platforms = supported_platforms()
+filter!(!Sys.isapple, platforms)  # macOS currently not supported because ...
 platforms=expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
