@@ -39,21 +39,12 @@ install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 
 
-function is_problematic_platform(platform)
-    # Extract relevant information from the platform object
-    platform_string = string(platform)
-    # Check conditions to exclude the platform
-    return contains(platform_string, "i686") || #sse2 disabled errors in ITK with open issues on github
-           contains(platform_string, "macOS") || #CMAKE errors for _libcxx_run_result in cross compilation
-           contains(platform_string, "FreeBSD") || #CMAKE error for _libcxx_run_result in cross compilation
-           platform_string == "Linux x86_64 {libc=musl}" #CMAKE error for _libcxx_run_result result in cross compilation
-end
+#sse2 disabled errors in ITK with open issues on github for i686 platforms
+#CMAKE errors for _libcxx_run_result in cross compilation for macOS, freebsd and x86_64 linux musl
+#
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = filter(platforms) do p
-    return !is_problematic_platform(p)
-end# macOS currently not supported because ...
+platforms = platforms = BinaryBuilder.supported_platforms(exclude=x -> (Sys.isapple(x) || Sys.isfreebsd(x) || arch(x) == "i686" || (arch(x) == "x86_64" && libc(x) == "musl")))
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
