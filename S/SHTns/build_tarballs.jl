@@ -5,11 +5,12 @@ using BinaryBuilder, Pkg
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "SHTns"
-version = v"3.5.2"
+version = v"3.6.1"
+sha256sum = "6609041baa2faa4199b1b09892748ffc0e5ee04d0c89fc17c34dc1c1e9193d41"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://bitbucket.org/nschaeff/shtns/downloads/shtns-$(version).tar.gz", "dc4ac08c09980e47c71d79d38696c5d1d631f86c2af1ce8aad5d21f7fd2c05b9")
+    ArchiveSource("https://bitbucket.org/nschaeff/shtns/downloads/shtns-$(version).tar.gz", sha256sum)
 ]
 
 # Bash recipe for building across all platforms
