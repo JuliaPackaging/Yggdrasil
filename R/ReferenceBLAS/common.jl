@@ -336,5 +336,5 @@ filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) 
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
