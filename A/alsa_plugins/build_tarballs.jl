@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "alsa_plugins"
-version = v"1.2.2"
+version = v"1.2.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("ftp://ftp.alsa-project.org/pub/plugins/alsa-plugins-1.2.2.tar.bz2", "1c0f06450c928d711719686c9dbece2d480184f36fab11b8f0534cb7b41e337d")
+    ArchiveSource("ftp://ftp.alsa-project.org/pub/plugins/alsa-plugins-1.2.7.1.tar.bz2", "8c337814954bb7c167456733a6046142a2931f12eccba3ec2a4ae618a3432511")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(Sys.islinux, supported_platforms(experimental=false, exclude=[Platform("aarch64","linux"), Platform("aarch64","linux", libc="musl"),Platform("armv6l","linux"),Platform("armv6l","linux",  libc="musl")]))
+platforms = filter!(Sys.islinux, supported_platforms(exclude=[Platform("armv6l","linux"),Platform("armv6l","linux",  libc="musl")]))
 
 
 # The products that we will ensure are always built
@@ -44,7 +44,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"), compat="~4.4")
+    Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"))
     Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
     Dependency(PackageSpec(name="libsamplerate_jll", uuid="9427e74d-4e05-59c1-8ff3-7d74b6e52ac8"))
     Dependency(PackageSpec(name="PulseAudio_jll", uuid="02771fc1-bdb7-5db5-8d11-300768e00fbd"))
