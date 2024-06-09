@@ -22,8 +22,9 @@ CXX=g++
 ../configure --enable-examples --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 
-cp ColPack${exeext} ${bindir}
-g++ -shared $(flagon -Wl,--whole-archive) libcolpack.a $(flagon -Wl,--no-whole-archive) -o ${libdir}/libcolpack.${dlext}
+mkdir -p ${bindir}
+cp ColPack${exeext} ${bindir}/ColPack${exeext}
+g++ -shared $(flagon -Wl,--whole-archive) libcolpack.a $(flagon -Wl,--no-whole-archive) -lgomp -o ${libdir}/libcolpack.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
