@@ -46,14 +46,14 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-
-
 # See https://discourse.julialang.org/t/binarybuilder-jl-cant-dlopen-because-of-libopenlibm-so/108486
 # It seems we need a separate build for each Julia version
 include("../../L/libjulia/common.jl")
-platforms = supported_platforms()
 
-# Platform for initial testing
+julia_versions=VersionNumber[v"1.9", v"1.10"]
+
+platforms = vcat(libjulia_platforms.(julia_versions)...)
+
 filter!(p-> (arch(p)=="x86_64" && Sys.islinux(p) && libc(p)=="glibc")
                     || Sys.isapple(p)
                     || Sys.iswindows(p), platforms)
