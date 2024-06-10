@@ -23,7 +23,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd ADOL-C/ && autoreconf -fi && ./configure --enable-atrig-erf --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+cd ADOL-C/
+autoreconf -fi
+./configure --enable-atrig-erf --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 mkdir ${prefix}/share/licenses/ADOLC
