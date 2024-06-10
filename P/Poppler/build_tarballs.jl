@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Poppler"
-version_str = "24.05.0"
+version_str = "24.06.0"
 version = VersionNumber(version_str)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://poppler.freedesktop.org/poppler-$(version_str).tar.xz",
-                  "d8c5eb30b50285ad9f0af8c6335cc2d3b9597fca475cbc2598a5479fa379f779"),
+                  "0cdabd495cada11f6ee9e75c793f80daf46367b66c25a63ee8c26d0f9ec40c76"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -98,6 +98,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We use GCC 9 since we need modern C++17 (`std::string_view` and `<charconv>`)
+# We use GCC 10 since we need modern C++17 (`std::string_view`, `<charconv>`, and `<span>`)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9")
+               julia_compat="1.6", preferred_gcc_version=v"10")
