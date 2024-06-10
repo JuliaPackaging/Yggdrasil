@@ -54,9 +54,9 @@ include("../../L/libjulia/common.jl")
 platforms = supported_platforms()
 
 # Platform for initial testing
-platforms = filter!(platforms, p-> (arch(p)=="x86_64" && Sys.islinux(p) && libc(p)=="glibc")
+filter!(p-> (arch(p)=="x86_64" && Sys.islinux(p) && libc(p)=="glibc")
                     || Sys.isapple(p)
-                    || Sys.iswindows(p))
+                    || Sys.iswindows(p), platforms)
 
 products = [
     LibraryProduct("libadolc_wrap", :libadolc_wrap)
