@@ -98,6 +98,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We use GCC 10 since we need modern C++17 (`std::string_view`, `<charconv>`, and `<spain>`)
+# We use GCC 10 since we need modern C++17 (`std::string_view`, `<charconv>`, and `<span>`)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"10")
