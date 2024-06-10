@@ -47,39 +47,16 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "macos"; ),
-    Platform("x86_64", "windows"; )
-    # Platform("i686", "linux"; libc = "glibc"),
-    # Platform("aarch64", "linux"; libc = "glibc"),
-    # Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    # Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    # Platform("powerpc64le", "linux"; libc = "glibc"),
-    # Platform("x86_64", "linux"; libc = "musl"),
-    # Platform("x86_64", "macos"; ),
-    # Platform("x86_64", "freebsd"; ),
-    # Platform("i686", "windows"; ),
-]
 
 # See https://discourse.julialang.org/t/binarybuilder-jl-cant-dlopen-because-of-libopenlibm-so/108486
 # It seems we need a separate build for each Julia version
-if isyggdrasil
-    include("../../L/libjulia/common.jl")
-else
-    # For local test, download
-    # https://github.com/JuliaPackaging/Yggdrasil/blob/master/L/libjulia/common.jl
-    # https://github.com/JuliaPackaging/Yggdrasil/blob/master/fancy_toys.jl
-    include("common.jl")
-end
-julia_versions=VersionNumber[v"1.9.0", v"1.10.0"]
-platforms = vcat(libjulia_platforms.(julia_versions)...)
+include("../../L/libjulia/common.jl")
+platforms = supported_platforms()
 
 # Platform for initial testing
-platforms = filter( p-> (arch(p)=="x86_64" && os(p)=="linux" && libc(p)=="glibc")
-                    || os(p)=="macos"
-                    || os(p)=="windows",
-                    platforms)
+platforms = filter!(platforms, p-> (arch(p)=="x86_64" && Sys.islinux(p) && libc(p)=="glibc")
+                    || Sys.isapple(p)
+                    || Sys.iswindows(p))
 
 products = [
     LibraryProduct("libadolc_wrap", :libadolc_wrap)
