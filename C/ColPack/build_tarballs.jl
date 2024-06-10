@@ -7,7 +7,7 @@ version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/amontoison/ColPack.git", "d0b8e5b65ddd5d6e602635776b5f2a6510459998")
+    GitSource("https://github.com/amontoison/ColPack.git", "981dffdfe75710c33270721d8490833542e73478")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +18,7 @@ autoreconf -vif
 
 mkdir build
 cd build
+CC=gcc
 CXX=g++
 ../configure --enable-examples --build=${MACHTYPE} --host=${target}
 make -j${nproc}
