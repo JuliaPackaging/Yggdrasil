@@ -13,8 +13,6 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 name = "ADOLC"
 version = v"0.0.24"
 
-isyggdrasil = get(ENV, "YGGDRASIL", "") == "true"
-
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/coin-or/ADOL-C.git", "b7ea10536a1e452f7dd47a90ef8c8118ce3e8432"),
