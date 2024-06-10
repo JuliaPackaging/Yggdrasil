@@ -39,12 +39,18 @@ install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 
 
-#sse2 disabled errors in ITK with open issues on github for i686 platforms
-#CMAKE errors for _libcxx_run_result in cross compilation for macOS, freebsd and x86_64 linux musl
-#
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = platforms = BinaryBuilder.supported_platforms(exclude=x -> (Sys.isapple(x) || Sys.isfreebsd(x) || arch(x) == "i686" || (arch(x) == "x86_64" && libc(x) == "musl")))
+platforms = supported_platforms()
+
+#sse2 disabled errors in ITK with open issues on github for i686 platforms
+filter!(p -> arch(p) == "i686", platforms)
+
+#CMAKE errors for _libcxx_run_result in cross compilation for macOS, freebsd and x86_64 linux musl
+filter!(!Sys.isapple, platforms)
+filter!(!Sys.isfreebsd, platforms)
+filter!(p -> !(arch(x) == "x86_64" && libc(x) == "musl"), platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
