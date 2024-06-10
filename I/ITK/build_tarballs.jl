@@ -44,7 +44,7 @@ install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 platforms = supported_platforms()
 
 #sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
-filter!(p -> arch(p) == "i686", platforms)
+filter!(p -> !(arch(p) == "i686"), platforms)
 
 #CMAKE errors for _libcxx_run_result in cross compilation for macOS, freebsd and x86_64 linux musl
 filter!(!Sys.isapple, platforms)
