@@ -5,13 +5,12 @@ using BinaryBuilder, Pkg
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "SHTns"
-version = v"3.6.6"
-sha256sum = "f060757ed6914c837cc2b251d370078e4c92b6894fef7aac189a9a1f5f1521a2"
-url = "https://gricad-gitlab.univ-grenoble-alpes.fr/schaeffn/shtns/-/archive/v3.6.6/shtns-v$(version).tar.gz"
+version = v"3.6.5"
 
-# Collection of sources required to complete build
+# Collection of sources required to complete build (use `sha256sum` to generate the checksum from tarball) 
 sources = [
-    ArchiveSource(url, sha256sum)
+    ArchiveSource("https://gricad-gitlab.univ-grenoble-alpes.fr/schaeffn/shtns/-/archive/v$(version)/shtns-v$(version).tar.gz",
+                  "54ff487df9cf6d682150109746dd621e205b7b360d291b9fbb24d51627256dc9")
 ]
 
 # Bash recipe for building across all platforms
