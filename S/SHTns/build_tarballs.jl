@@ -15,7 +15,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/shtns/
+cd $WORKSPACE/srcdir/shtns*/
 export CFLAGS="-fPIC -O3" #only -fPIC produces slow code on linux x86 and MacOS x86 (maybe others)
 
 #remove lfftw3_omp library references, as FFTW_jll does not provide it
