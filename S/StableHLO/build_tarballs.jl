@@ -19,9 +19,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/stablehlo
 
 # need to run mlir-tblgen and mlir-pdll on the host
-rm ${bindir}/mlir-tblgen ${bindir}/mlir-pdll
-ln -s ${host_prefix}/bin/mlir-tblgen ${bindir}/mlir-tblgen
-ln -s ${host_prefix}/bin/mlir-pdll ${bindir}/mlir-pdll
+# rm ${bindir}/mlir-tblgen ${bindir}/mlir-pdll
+# ln -s ${host_prefix}/bin/mlir-tblgen ${bindir}/mlir-tblgen
+# ln -s ${host_prefix}/bin/mlir-pdll ${bindir}/mlir-pdll
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
