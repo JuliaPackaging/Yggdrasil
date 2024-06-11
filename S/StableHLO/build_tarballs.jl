@@ -89,9 +89,9 @@ products = [
     ExecutableProduct("stablehlo-translate", :stablehlo_translate),
     ExecutableProduct("stablehlo-lsp-server", :stablehlo_lsp_server),
     LibraryProduct("libStablehlo", :libStablehlo),
-    FileProduct("share/stablehlo_jll/stablehlo.inc.jl"),
-    FileProduct("share/stablehlo_jll/chlo.inc.jl"),
-    FileProduct("share/stablehlo_jll/vhlo.inc.jl"),
+    FileProduct("share/stablehlo_jll/stablehlo.inc.jl", :stablehlo_inc_jl),
+    FileProduct("share/stablehlo_jll/chlo.inc.jl", :chlo_inc_jl),
+    FileProduct("share/stablehlo_jll/vhlo.inc.jl", :vhlo_inc_jl),
 ]
 
 augment_platform_block = """
