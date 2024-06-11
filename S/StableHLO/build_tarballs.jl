@@ -53,6 +53,29 @@ for i in *.a; do
 done
 c++ -shared -o libStablehlo.${dlext} -lLLVM -lMLIR *.cpp.o
 install -v libStablehlo.${dlext} ${libdir}
+
+# generate Julia bindings of the HLO dialects
+mkdir -p ${prefix}/share/stablehlo_jll/
+mlir-jl-tblgen --generator jl-op-defs \
+    --external \
+    -o ${prefix}/share/stablehlo_jll/stablehlo.inc.jl \
+    -I ../destdir/include/ \
+    -I stablehlo/ \
+    stablehlo/stablehlo/dialect/StablehloOps.td
+
+mlir-jl-tblgen --generator jl-op-defs \
+    --external \
+    -o ${prefix}/share/stablehlo_jll/chlo.inc.jl \
+    -I ../destdir/include/ \
+    -I stablehlo/ \
+    stablehlo/stablehlo/dialect/ChloOps.td
+
+mlir-jl-tblgen --generator jl-op-defs \
+    --external \
+    -o ${prefix}/share/stablehlo_jll/vhlo.inc.jl \
+    -I ../destdir/include/ \
+    -I stablehlo/ \
+    stablehlo/stablehlo/dialect/VhloOps.td
 """
 
 platforms = supported_platforms()
@@ -66,6 +89,9 @@ products = [
     ExecutableProduct("stablehlo-translate", :stablehlo_translate),
     ExecutableProduct("stablehlo-lsp-server", :stablehlo_lsp_server),
     LibraryProduct("libStablehlo", :libStablehlo),
+    FileProduct("share/stablehlo_jll/stablehlo.inc.jl"),
+    FileProduct("share/stablehlo_jll/chlo.inc.jl"),
+    FileProduct("share/stablehlo_jll/vhlo.inc.jl"),
 ]
 
 augment_platform_block = """
@@ -82,6 +108,7 @@ for llvm_version in llvm_versions
         Dependency("MLIR_jll", llvm_version),
         BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
         HostBuildDependency(PackageSpec(name="MLIR_jll", version=llvm_version)),
+        HostBuildDependency(PackageSpec(name="mlir_jl_tblgen_jll", version=v"0.0.8+0")),
     ]
 
     for platform in platforms
