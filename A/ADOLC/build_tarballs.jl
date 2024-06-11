@@ -50,13 +50,21 @@ make install
 # It seems we need a separate build for each Julia version
 include("../../L/libjulia/common.jl")
 
+
+
+# Current restriction: CxxWrap.jl seems to be not
+# adapted to 1.11. Typical error:
+# macro "jl_array_data" requires 2 arguments, but only 1 given
 julia_versions=VersionNumber[v"1.9", v"1.10"]
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
-filter!(p-> (arch(p)=="x86_64" && Sys.islinux(p) && libc(p)=="glibc")
-                    || Sys.isapple(p)
-                    || Sys.iswindows(p), platforms)
+# Current restriction:
+# ADOLC does not compile with musl libc.
+# Typical Error:
+# /opt/aarch64-linux-musl/aarch64-linux-musl/include/c++/7.1.0/cstdlib:144:11: error: ‘::calloc’ has not been declared 
+# Same for realloc and malloc.
+filter!(p->  (libc(p)!="musl"), platforms)
 
 products = [
     LibraryProduct("libadolc_wrap", :libadolc_wrap)
