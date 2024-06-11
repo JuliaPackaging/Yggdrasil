@@ -7,7 +7,7 @@ version = v"0.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/amontoison/ColPack.git", "981dffdfe75710c33270721d8490833542e73478")
+    GitSource("https://github.com/amontoison/ColPack.git", "114a6eb793f539edfe28a47af457c4a641f6ec16")
 ]
 
 # Bash recipe for building across all platforms
