@@ -28,6 +28,9 @@ fi
 # https://github.com/libunwind/libunwind/pull/203
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-revert_prelink_unwind.patch
 
+# https://github.com/libunwind/libunwind/pull/748
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-aarch64-inline-asm.patch
+
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
