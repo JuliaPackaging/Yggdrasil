@@ -51,7 +51,7 @@ make install
 # See https://discourse.julialang.org/t/binarybuilder-jl-cant-dlopen-because-of-libopenlibm-so/108486
 # It seems we need a separate build for each Julia version
 include("../../L/libjulia/common.jl")
-platforms = supported_platforms()
+platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # Platform for initial testing
 filter!(p-> (arch(p)=="x86_64" && Sys.islinux(p) && libc(p)=="glibc")
