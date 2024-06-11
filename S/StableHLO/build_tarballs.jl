@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "StableHLO"
-version = v"0.14.6"
+version = v"1.1.2"
 
 sources = [
-    GitSource("https://github.com/openxla/stablehlo.git", "8816d0581d9a5fb7d212affef858e991a349ad6b"),
+    GitSource("https://github.com/openxla/stablehlo.git", "14e2323f0ee3d308c1384fdb806dc6d0c98b16ca"),
 ]
 
 llvm_versions = [v"17.0.6+0"]
