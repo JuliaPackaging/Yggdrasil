@@ -55,7 +55,7 @@ include("../../L/libjulia/common.jl")
 # Current restriction: CxxWrap.jl seems to be not
 # adapted to 1.11. Typical error:
 # macro "jl_array_data" requires 2 arguments, but only 1 given
-julia_versions=VersionNumber[v"1.9", v"1.10"]
+julia_versions=VersionNumber[v"1.9", v"1.10", v"1.11"]
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
@@ -72,11 +72,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7");compat="0.11"),
-    Dependency(PackageSpec(name="libjulia_jll", uuid="5ad3ddd2-0711-543a-b040-befd59781bbf");compat="=1.10.7"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7");compat="0.13"),
+    Dependency(PackageSpec(name="libjulia_jll", uuid="5ad3ddd2-0711-543a-b040-befd59781bbf");compat="=1.10.10"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0", preferred_llvm_version = v"11.0.1")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8", preferred_llvm_version = v"11.0.1")
 
 
