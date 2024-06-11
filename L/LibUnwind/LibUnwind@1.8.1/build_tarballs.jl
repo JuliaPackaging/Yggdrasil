@@ -84,5 +84,5 @@ dependencies = [
 # available with GCC version 4.9 or later, so we need to set a higher preferred version
 # than the default.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"12",
+               julia_compat="1.10", preferred_gcc_version=v"5",
                preferred_llvm_version=llvm_version)
