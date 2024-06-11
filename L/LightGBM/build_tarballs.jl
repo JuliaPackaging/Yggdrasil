@@ -27,19 +27,19 @@ for p in $WORKSPACE/srcdir/patches/*.patch; do
 done
 
 FLAGS=()
-cmake_extra_args=""
+cmake_extra_args=()
 
 if [[ "${bb_full_target}" == *"apple-darwin"* ]]; then
-  cmake_extra_args+="-DAPPLE=1 -DAPPLE_OUTPUT_DYLIB=1 "
+  cmake_extra_args+=(-DAPPLE=1 -DAPPLE_OUTPUT_DYLIB=1)
 fi
 
 if [[ "${bb_full_target}" == *-mingw* ]]; then
-  cmake_extra_args+="-DWIN32=1 -DMINGW=1 "
+  cmake_extra_args+=(-DWIN32=1 -DMINGW=1)
   FLAGS+=(LDFLAGS="-no-undefined")
 fi
 
 if [[ "${bb_full_target}" == *-linux* ]]; then
-  cmake_extra_args+="-DUSE_GPU=1 "
+  cmake_extra_args+=(-DUSE_GPU=1)
 fi
 
 if  [[ ("${bb_full_target}" == *-cuda*) && ("${bb_full_target}" != *-cuda+none*) ]]; then
@@ -50,17 +50,14 @@ if  [[ ("${bb_full_target}" == *-cuda*) && ("${bb_full_target}" != *-cuda+none*)
   export CUDA_PATH=${WORKSPACE}/destdir/cuda
   export PATH=$PATH:$CUDA_PATH/bin/
 
-  ln -s $CUDA_PATH/lib $CUDA_PATH/lib64
-
-  cmake_extra_args+="\
-    -DUSE_CUDA=1 "
+  cmake_extra_args+=(-DUSE_CUDA=1 -DCMAKE_CUDA_FLAGS="-L${CUDA_PATH}/lib -L${CUDA_PATH}/lib/stubs")
 fi
 
 cmake . \
   -DCMAKE_INSTALL_PREFIX=$prefix\
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
   -DCMAKE_BUILD_TYPE=Release \
-  $cmake_extra_args
+  "${cmake_extra_args[@]}"
 
 make -j${nproc} "${FLAGS[@]}"
 make install
