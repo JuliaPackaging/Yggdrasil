@@ -34,6 +34,7 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS=-Wno-error \
     -DBUILD_SHARED_LIBS=ON \
     -DENABLE_DATA_TOOLS=OFF \
     -DENABLE_PYTHON_BINDINGS=OFF \
@@ -69,13 +70,13 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll"; compat="=1.76.0")
-    Dependency("GEOS_jll")
-    Dependency("LibCURL_jll")
-    Dependency("Lz4_jll")
-    Dependency("protoc_jll")
-    HostBuildDependency("protoc_jll")
-    Dependency("Zlib_jll")
+    Dependency("boost_jll"; compat="=1.76.0"),
+    Dependency("GEOS_jll"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
+    Dependency("Lz4_jll"),
+    Dependency("protoc_jll"),
+    HostBuildDependency("protoc_jll"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
