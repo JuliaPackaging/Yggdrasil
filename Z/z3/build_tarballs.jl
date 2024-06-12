@@ -9,7 +9,6 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
 version = v"4.13.0"
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
@@ -36,8 +35,11 @@ fi
 """
 
 # Bash recipe for building across all platforms
+# Patches Z3 to work around https://github.com/Z3Prover/z3/issues/6890 (closed but not fixed!)
 script = macfix * raw"""
 cd $WORKSPACE/srcdir/z3-*/core
+
+sed -i '16,30d' src/util/memory_manager.cpp
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
