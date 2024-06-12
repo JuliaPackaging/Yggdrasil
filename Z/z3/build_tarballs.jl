@@ -35,11 +35,11 @@ fi
 """
 
 # Bash recipe for building across all platforms
-# Patches Z3 to work around https://github.com/Z3Prover/z3/issues/6890 (closed but not fixed!)
 script = macfix * raw"""
 cd $WORKSPACE/srcdir/z3-*/core
 
-sed -i '16,30d' src/util/memory_manager.cpp
+# Patches Z3 to work around https://github.com/ahumenberger/Z3.jl/issues/28
+sed -i '31i #undef HAS_MALLOC_USABLE_SIZE' src/util/memory_manager.cpp
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
