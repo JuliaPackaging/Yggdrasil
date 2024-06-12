@@ -1,0 +1,29 @@
+diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
+index c31c57790..2e50be4c2 100644
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -35,7 +35,7 @@ set(IREE_PACKAGE_ROOT_PREFIX "")
+ # TODO(scotttodd): Should this be checking IREE_BUILD_COMPILER?
+ #   Maybe we should disallow setting both at the same time, since it's
+ #   ambigious which should be used
+-if(IREE_HOST_BIN_DIR AND NOT IREE_BUILD_COMPILER)
++if(IREE_HOST_BIN_DIR)
+   iree_import_binary(NAME iree-tblgen)
+   iree_import_binary(NAME iree-compile)
+   iree_import_binary(NAME iree-opt)
+@@ -235,6 +235,7 @@ if(IREE_BUILD_COMPILER)
+   # libraries. These targets are specially set up to link in the correct
+   # way. This is a necessary diversion from how Bazel deals with it (which
+   # must deep-link to everything to satisfy its checks).
++  if(NOT IREE_HOST_BIN_DIR)
+   iree_cc_binary(
+     NAME
+       iree-tblgen
+@@ -308,6 +309,7 @@ if(IREE_BUILD_COMPILER)
+     HOSTONLY
+     SETUP_INSTALL_RPATH
+   )
++  endif()
+ 
+   # Ensure FileCheck and associated binaries get built. Tests don't have
+   # dependencies in CMake because they aren't targets. So until we fix that, we
