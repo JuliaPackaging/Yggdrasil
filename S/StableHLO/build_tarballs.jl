@@ -78,11 +78,12 @@ mlir-jl-tblgen --generator jl-op-defs \
     stablehlo/dialect/VhloOps.td
 """
 
-platforms = supported_platforms()
-filter!(==(64) ∘ wordsize, platforms)
-filter!(!=("powerpc64le") ∘ arch, platforms)
-filter!(!Sys.iswindows, platforms)
-platforms = expand_cxxstring_abis(platforms)
+# platforms = supported_platforms()
+# filter!(==(64) ∘ wordsize, platforms)
+# filter!(!=("powerpc64le") ∘ arch, platforms)
+# filter!(!Sys.iswindows, platforms)
+# platforms = expand_cxxstring_abis(platforms)
+platforms = [AnyPlatform()]
 
 products = [
     # ExecutableProduct("stablehlo-opt", :stablehlo_opt),
