@@ -132,6 +132,7 @@ for (i, build) in enumerate(builds)
         build.dependencies;
         julia_compat="1.10",
         preferred_gcc_version=v"9",
+        preferred_llvm_version=v"17",
         augment_platform_block,
         lazy_artifacts=true)
 end
