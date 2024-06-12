@@ -59,21 +59,21 @@ mkdir -p ${prefix}/share/stablehlo_jll/
 mlir-jl-tblgen --generator jl-op-defs \
     --external \
     -o ${prefix}/share/stablehlo_jll/stablehlo.inc.jl \
-    -I ${prefix}/include/ \
+    -I ${host_prefix}/include/ \
     -I stablehlo/ \
     stablehlo/dialect/StablehloOps.td
 
 mlir-jl-tblgen --generator jl-op-defs \
     --external \
     -o ${prefix}/share/stablehlo_jll/chlo.inc.jl \
-    -I ${prefix}/include/ \
+    -I ${host_prefix}/include/ \
     -I stablehlo/ \
     stablehlo/dialect/ChloOps.td
 
 mlir-jl-tblgen --generator jl-op-defs \
     --external \
     -o ${prefix}/share/stablehlo_jll/vhlo.inc.jl \
-    -I ${prefix}/include/ \
+    -I ${host_prefix}/include/ \
     -I stablehlo/ \
     stablehlo/dialect/VhloOps.td
 """
