@@ -68,7 +68,7 @@ products = [
     LibraryProduct("libunwind", :libunwind),
 ]
 
-llvm_version = v"13.0.1"
+llvm_version = v"16.0.6"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
