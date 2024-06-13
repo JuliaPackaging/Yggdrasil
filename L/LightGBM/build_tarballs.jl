@@ -22,9 +22,8 @@ cd $WORKSPACE/srcdir/LightGBM
 git submodule update --init --depth=1
 git submodule update --checkout --depth=1
 
-for p in $WORKSPACE/srcdir/patches/*.patch; do
-  atomic_patch -p1 "${p}"
-done
+# https://github.com/microsoft/LightGBM/pull/6457
+atomic_patch -p1 "$WORKSPACE/srcdir/patches/lightgbm-cmake-find-cuda.patch"
 
 FLAGS=()
 cmake_extra_args=()
