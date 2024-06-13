@@ -39,7 +39,7 @@ script = macfix * raw"""
 cd $WORKSPACE/srcdir/z3-*/core
 
 # Patches Z3 to work around https://github.com/ahumenberger/Z3.jl/issues/28
-patch <<EOD
+patch -p0 <<EOD
 --- src/util/memory_manager.cpp 2024-03-07 11:10:51
 +++ src/util/memory_manager.cpp 2024-06-12 17:45:50
 @@ -28,6 +28,7 @@
