@@ -5,9 +5,9 @@ import Downloads
 using SHA
 using GZip
 
-upstream_version = v"4.13.0"
-gap_version = v"400.1300.000"
-gap_lib_version = v"400.1300.000"
+upstream_version = v"4.13.1"
+gap_version = v"400.1300.100"
+gap_lib_version = v"400.1300.100"
 
 function download_with_sha256(url)
     io = IOBuffer()
