@@ -51,6 +51,7 @@ include("../../L/libjulia/common.jl")
 julia_versions=VersionNumber[v"1.9", v"1.10", v"1.11"]
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = expand_cxxstring_abis(platforms)
 
 # Current restriction:
 # ADOLC does not compile with musl libc.
