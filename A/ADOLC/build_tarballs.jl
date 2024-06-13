@@ -22,8 +22,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ADOL-C/
+cd $WORKSPACE/srcdir/ADOL-C/
 autoreconf -fi
 ./configure --enable-atrig-erf --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
