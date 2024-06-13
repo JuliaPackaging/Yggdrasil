@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.79.0"
+version = v"1.85.0"
 
 # Collection of sources required to build boost
 sources = [
     ArchiveSource(
-        "https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-        "475d589d51a7f8b3ba2ba4eda022b170e562ca3b760ee922c146b6c65856ef39"),
+        "https://archives.boost.io/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+        "7009fe1faa1697476bdc7027703a2badb84e849b7b0baad5086b087b971f8617"),
 ]
 
 # Bash recipe for building across all platforms
