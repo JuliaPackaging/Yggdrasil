@@ -23,6 +23,10 @@ if [[ $target == *powerpc64le* ]]; then
     atomic_patch -p 1 ../patches/183.patch
 fi
 
+# Setting this variable prevents Windows-specific code from being included when building b2, the boost build system
+# The B2 build system needs to be built for the host, not the target.
+export B2_DONT_EMBED_MANIFEST=true
+
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
 rm project-config.jam
