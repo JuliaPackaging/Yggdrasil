@@ -6,7 +6,11 @@ name = "pandoc_crossref"
 
 crossref_ver = "0.3.17.1a"
 panddoc_jll_version = v"3.2.0"
-version = v"0.3.17"
+
+# Major and minor should match `crossref_ver`. The patch number should be incremented
+# whenver the `crossref_ver` is updated and does not correspond to the pandoc-crossref patch
+# number after the JLL version `0.3.17`.
+version = v"0.3.18"
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
 sources = [
