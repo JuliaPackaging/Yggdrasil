@@ -17,9 +17,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/boost*/
 
-# on PowerPC, apply https://github.com/boostorg/charconv/pull/183
+# on PowerPC, apply https://github.com/boostorg/charconv/pull/183, using the patch at
+# https://github.com/conda-forge/boost-feedstock/tree/main/recipe/patches
 if [[ $target == *powerpc64le* ]]; then
-    atomic_patch ../bundled/patches/183.patch
+    atomic_patch -p 1 ../patches/183.patch
 fi
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
