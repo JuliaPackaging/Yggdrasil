@@ -1,0 +1,1109 @@
+From f87edf549413cde58d51a27cd5c04d05b4639433 Mon Sep 17 00:00:00 2001
+From: Matt Borland <matt@mattborland.com>
+Date: Wed, 17 Apr 2024 09:01:39 +0200
+Subject: [PATCH 1/5] Fix from_chars unsupported long double macros
+
+---
+ include/boost/charconv/detail/bit_layouts.hpp |  1 +
+ include/boost/charconv/from_chars.hpp         | 12 ++++++++++++
+ src/from_chars.cpp                            |  8 +++++++-
+ 3 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/include/boost/charconv/detail/bit_layouts.hpp b/include/boost/charconv/detail/bit_layouts.hpp
+index 498b5bb8..5ae37b07 100644
+--- a/include/boost/charconv/detail/bit_layouts.hpp
++++ b/include/boost/charconv/detail/bit_layouts.hpp
+@@ -127,6 +127,7 @@ struct IEEEl2bits
+ 
+ #else // Unsupported long double representation
+ #  define BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#  define BOOST_CHARCONV_LDBL_BITS -1
+ #endif
+ 
+ struct IEEEbinary128
+diff --git a/include/boost/charconv/from_chars.hpp b/include/boost/charconv/from_chars.hpp
+index 50f911ae..44141149 100644
+--- a/include/boost/charconv/from_chars.hpp
++++ b/include/boost/charconv/from_chars.hpp
+@@ -139,7 +139,10 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_v
+ 
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const char* last, float& value, chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const char* last, double& value, chars_format fmt = chars_format::general) noexcept;
++
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const char* last, long double& value, chars_format fmt = chars_format::general) noexcept;
++#endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_QUADMATH
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const char* last, __float128& value, chars_format fmt = chars_format::general) noexcept;
+@@ -164,7 +167,10 @@ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const
+ 
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view sv, float& value, chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view sv, double& value, chars_format fmt = chars_format::general) noexcept;
++
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view sv, long double& value, chars_format fmt = chars_format::general) noexcept;
++#endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_FLOAT128
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view sv, __float128& value, chars_format fmt = chars_format::general) noexcept;
+@@ -193,7 +199,10 @@ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view
+ 
+ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, float& value, chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, double& value, chars_format fmt = chars_format::general) noexcept;
++
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long double& value, chars_format fmt = chars_format::general) noexcept;
++#endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_FLOAT128
+ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, __float128& value, chars_format fmt = chars_format::general) noexcept;
+@@ -216,7 +225,10 @@ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char*
+ 
+ BOOST_CHARCONV_DECL from_chars_result from_chars(boost::core::string_view sv, float& value, chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL from_chars_result from_chars(boost::core::string_view sv, double& value, chars_format fmt = chars_format::general) noexcept;
++
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL from_chars_result from_chars(boost::core::string_view sv, long double& value, chars_format fmt = chars_format::general) noexcept;
++#endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_FLOAT128
+ BOOST_CHARCONV_DECL from_chars_result from_chars(boost::core::string_view sv, __float128& value, chars_format fmt = chars_format::general) noexcept;
+diff --git a/src/from_chars.cpp b/src/from_chars.cpp
+index bbfaff29..8c450b0a 100644
+--- a/src/from_chars.cpp
++++ b/src/from_chars.cpp
+@@ -229,7 +229,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
+     return r;
+ }
+ 
+-#else
++#elif !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
+ 
+ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
+ {
+@@ -323,10 +323,12 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::cor
+     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
+ }
+ 
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, long double& value, boost::charconv::chars_format fmt) noexcept
+ {
+     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
+ }
++#endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_QUADMATH
+ boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, __float128& value, boost::charconv::chars_format fmt) noexcept
+@@ -396,10 +398,12 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
+     return from_chars_strict_impl(first, last, value, fmt);
+ }
+ 
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
+ {
+     return from_chars_strict_impl(first, last, value, fmt);
+ }
++#endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_QUADMATH
+ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, __float128& value, boost::charconv::chars_format fmt) noexcept
+@@ -453,10 +457,12 @@ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::stri
+     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+ }
+ 
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, long double& value, boost::charconv::chars_format fmt) noexcept
+ {
+     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+ }
++#endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_QUADMATH
+ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, __float128& value, boost::charconv::chars_format fmt) noexcept
+
+From b28d2c14520c897f6e9a328b6807fecee24f7a98 Mon Sep 17 00:00:00 2001
+From: Matt Borland <matt@mattborland.com>
+Date: Wed, 17 Apr 2024 09:03:11 +0200
+Subject: [PATCH 2/5] Fix to_chars macros for unsupported long double formats
+
+---
+ include/boost/charconv/to_chars.hpp | 6 ++++++
+ src/to_chars.cpp                    | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/include/boost/charconv/to_chars.hpp b/include/boost/charconv/to_chars.hpp
+index 53f0c56e..bfd74b0e 100644
+--- a/include/boost/charconv/to_chars.hpp
++++ b/include/boost/charconv/to_chars.hpp
+@@ -81,15 +81,21 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float valu
+                                              chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value,
+                                              chars_format fmt = chars_format::general) noexcept;
++
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
+                                              chars_format fmt = chars_format::general) noexcept;
++#endif
+ 
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float value,
+                                              chars_format fmt, int precision) noexcept;
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value, 
+                                              chars_format fmt, int precision) noexcept;
++
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
+                                              chars_format fmt, int precision) noexcept;
++#endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_QUADMATH
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, __float128 value,
+diff --git a/src/to_chars.cpp b/src/to_chars.cpp
+index 06be7e46..8e9b4721 100644
+--- a/src/to_chars.cpp
++++ b/src/to_chars.cpp
+@@ -602,7 +602,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
+     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
+ }
+ 
+-#elif (BOOST_CHARCONV_LDBL_BITS == 80 || BOOST_CHARCONV_LDBL_BITS == 128)
++#elif !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
+ 
+ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
+                                                            boost::charconv::chars_format fmt) noexcept
+
+From 27ed2a7634ef0da7e2c087baa2dc5aa388a05c4c Mon Sep 17 00:00:00 2001
+From: Matt Borland <matt@mattborland.com>
+Date: Wed, 17 Apr 2024 09:19:13 +0200
+Subject: [PATCH 3/5] Disable tests with unsupported long double layouts
+
+---
+ test/from_chars_float.cpp        | 33 +++++++++++++++++++-------------
+ test/from_chars_string_view.cpp  |  8 +++++++-
+ test/github_issue_110.cpp        |  3 +++
+ test/github_issue_122.cpp        |  3 +++
+ test/github_issue_152.cpp        |  9 ++++++---
+ test/github_issue_158.cpp        |  4 ++++
+ test/limits.cpp                  |  3 +++
+ test/limits_link_1.cpp           |  3 +++
+ test/limits_link_2.cpp           |  3 +++
+ test/roundtrip.cpp               |  4 +++-
+ test/to_chars_float.cpp          |  2 +-
+ test/to_chars_float_STL_comp.cpp | 21 ++++++++++++++++++--
+ test/to_chars_sprintf.cpp        |  2 ++
+ 13 files changed, 77 insertions(+), 21 deletions(-)
+
+diff --git a/test/from_chars_float.cpp b/test/from_chars_float.cpp
+index ff8d411f..888aa3e3 100644
+--- a/test/from_chars_float.cpp
++++ b/test/from_chars_float.cpp
+@@ -440,6 +440,7 @@ void test_issue_37()
+         overflow_spot_value("1.0e+9999", HUGE_VAL);
+         overflow_spot_value("-1.0e+9999", -HUGE_VAL);
+     }
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     else
+     {
+         overflow_spot_value("1e99999", HUGE_VALL);
+@@ -447,6 +448,7 @@ void test_issue_37()
+         overflow_spot_value("1.0e+99999", HUGE_VALL);
+         overflow_spot_value("-1.0e+99999", -HUGE_VALL);
+     }
++    #endif
+ 
+     overflow_spot_value("1e-99999", static_cast<T>(0.0L));
+     overflow_spot_value("-1.0e-99999", static_cast<T>(-0.0L));
+@@ -545,20 +547,22 @@ int main()
+     odd_strings_test<float>();
+     odd_strings_test<double>();
+ 
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     simple_integer_test<long double>();
+     simple_hex_integer_test<long double>();
+     simple_scientific_test<long double>();
+     simple_hex_scientific_test<long double>();
++    zero_test<long double>();
++    test_issue_37<long double>();
++    #endif
+ 
+     zero_test<float>();
+     zero_test<double>();
+-    zero_test<long double>();
+ 
+     boost_json_test<double>();
+ 
+     test_issue_37<float>();
+     test_issue_37<double>();
+-    test_issue_37<long double>();
+ 
+     test_issue_45<double>(static_cast<double>(-4109895455460520.5), "-4109895455460520.513430", 19);
+     test_issue_45<double>(1.035695536657502e-308, "1.0356955366575023e-3087", 23);
+@@ -1861,40 +1865,29 @@ int main()
+         spot_check_nan<float>("-nan", fmt);
+         spot_check_nan<double>("nan", fmt);
+         spot_check_nan<double>("-nan", fmt);
+-        spot_check_nan<long double>("nan", fmt);
+-        spot_check_nan<long double>("-nan", fmt);
+ 
+         spot_check_inf<float>("inf", fmt);
+         spot_check_inf<float>("-inf", fmt);
+         spot_check_inf<double>("inf", fmt);
+         spot_check_inf<double>("-inf", fmt);
+-        spot_check_inf<long double>("inf", fmt);
+-        spot_check_inf<long double>("-inf", fmt);
+ 
+         spot_check_nan<float>("NAN", fmt);
+         spot_check_nan<float>("-NAN", fmt);
+         spot_check_nan<double>("NAN", fmt);
+         spot_check_nan<double>("-NAN", fmt);
+-        spot_check_nan<long double>("NAN", fmt);
+-        spot_check_nan<long double>("-NAN", fmt);
+ 
+         spot_check_inf<float>("INF", fmt);
+         spot_check_inf<float>("-INF", fmt);
+         spot_check_inf<double>("INF", fmt);
+         spot_check_inf<double>("-INF", fmt);
+-        spot_check_inf<long double>("INF", fmt);
+-        spot_check_inf<long double>("-INF", fmt);
+ 
+         spot_check_nan<float>("nan(snan)", fmt);
+         spot_check_nan<float>("-nan(snan)", fmt);
+         spot_check_nan<double>("nan(snan)", fmt);
+         spot_check_nan<double>("-nan(snan)", fmt);
+-        spot_check_nan<long double>("nan(snan)", fmt);
+-        spot_check_nan<long double>("-nan(snan)", fmt);
+ 
+         spot_check_nan<float>("-nan(ind)", fmt);
+         spot_check_nan<double>("-nan(ind)", fmt);
+-        spot_check_nan<long double>("-nan(ind)", fmt);
+ 
+         spot_check_invalid_argument<float>("na7", fmt);
+         spot_check_invalid_argument<float>("na", fmt);
+@@ -1904,8 +1897,22 @@ int main()
+         spot_check_invalid_argument<float>("  1.23", fmt);
+         spot_check_invalid_argument<double>(" 1.23", fmt);
+         spot_check_invalid_argument<double>("  1.23", fmt);
++
++        #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++        spot_check_nan<long double>("nan", fmt);
++        spot_check_nan<long double>("-nan", fmt);
++        spot_check_inf<long double>("inf", fmt);
++        spot_check_inf<long double>("-inf", fmt);
++        spot_check_nan<long double>("NAN", fmt);
++        spot_check_nan<long double>("-NAN", fmt);
++        spot_check_inf<long double>("INF", fmt);
++        spot_check_inf<long double>("-INF", fmt);
++        spot_check_nan<long double>("nan(snan)", fmt);
++        spot_check_nan<long double>("-nan(snan)", fmt);
++        spot_check_nan<long double>("-nan(ind)", fmt);
+         spot_check_invalid_argument<long double>(" 1.23", fmt);
+         spot_check_invalid_argument<long double>("  1.23", fmt);
++        #endif
+     }
+ 
+     #ifdef BOOST_CHARCONV_HAS_FLOAT16
+diff --git a/test/from_chars_string_view.cpp b/test/from_chars_string_view.cpp
+index f1bcaf84..085bb830 100644
+--- a/test/from_chars_string_view.cpp
++++ b/test/from_chars_string_view.cpp
+@@ -116,17 +116,23 @@ int main()
+ 
+     test_float<float>();
+     test_float<double>();
+-    test_float<long double>();
+ 
+     test_float<float, std::string>();
+     test_float<double, std::string>();
++
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    test_float<long double>();
+     test_float<long double, std::string>();
++    #endif
+ 
+     #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+ 
+     test_float<float, std::string_view>();
+     test_float<double, std::string_view>();
++
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     test_float<long double, std::string_view>();
++    #endif
+ 
+     #endif
+ 
+diff --git a/test/github_issue_110.cpp b/test/github_issue_110.cpp
+index 378d5bcf..0aeaeac7 100644
+--- a/test/github_issue_110.cpp
++++ b/test/github_issue_110.cpp
+@@ -42,7 +42,10 @@ int main()
+ {
+     test<float>();
+     test<double>();
++
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     test<long double>();
++    #endif
+ 
+     #ifdef BOOST_CHARCONV_HAS_FLOAT128
+     test<__float128>();
+diff --git a/test/github_issue_122.cpp b/test/github_issue_122.cpp
+index 7bae0de9..0a380659 100644
+--- a/test/github_issue_122.cpp
++++ b/test/github_issue_122.cpp
+@@ -52,7 +52,10 @@ int main()
+ {
+     test<float>();
+     test<double>();
++
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     test<long double>();
++    #endif
+ 
+     return boost::report_errors();
+ }
+diff --git a/test/github_issue_152.cpp b/test/github_issue_152.cpp
+index 730f607f..b673cb4c 100644
+--- a/test/github_issue_152.cpp
++++ b/test/github_issue_152.cpp
+@@ -188,7 +188,6 @@ int main()
+ {
+     test_non_finite<float>();
+     test_non_finite<double>();
+-    test_non_finite<long double>();
+     #ifdef BOOST_CHARCONV_HAS_FLOAT16
+     test_non_finite<std::float16_t>();
+     #endif
+@@ -204,7 +203,6 @@ int main()
+ 
+     test_non_finite_fixed_precision<float>();
+     test_non_finite_fixed_precision<double>();
+-    test_non_finite_fixed_precision<long double>();
+     #ifdef BOOST_CHARCONV_HAS_FLOAT16
+     test_non_finite_fixed_precision<std::float16_t>();
+     #endif
+@@ -220,7 +218,6 @@ int main()
+ 
+     test_min_buffer_size<float>();
+     test_min_buffer_size<double>();
+-    test_min_buffer_size<long double>();
+     #ifdef BOOST_CHARCONV_HAS_FLOAT32
+     test_min_buffer_size<std::float32_t>();
+     #endif
+@@ -232,5 +229,11 @@ int main()
+     test_failed_values();
+     #endif
+ 
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    test_non_finite<long double>();
++    test_non_finite_fixed_precision<long double>();
++    test_min_buffer_size<long double>();
++    #endif
++
+     return boost::report_errors();
+ }
+diff --git a/test/github_issue_158.cpp b/test/github_issue_158.cpp
+index 95071963..f381bd23 100644
+--- a/test/github_issue_158.cpp
++++ b/test/github_issue_158.cpp
+@@ -93,6 +93,7 @@ void test_values_with_negative_exp()
+     BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000000000099999999999999990753745222790");
+ }
+ 
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ void test_long_double_with_negative_exp()
+ {
+     char buffer[256];
+@@ -126,6 +127,7 @@ void test_long_double_with_negative_exp()
+     // BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000000999999999999999999997135886174218");
+     BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000001000000000000000000000000000000000");
+ }
++#endif
+ 
+ void test_values_with_positive_exp()
+ {
+@@ -407,6 +409,7 @@ void test_zero()
+     BOOST_TEST_CSTR_EQ(buffer, "0");
+ }
+ 
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ void test_long_double_with_positive_exp()
+ {
+     char buffer[256];
+@@ -438,6 +441,7 @@ void test_long_double_with_positive_exp()
+     BOOST_TEST(res);
+     BOOST_TEST_CSTR_EQ(buffer, "100000000000000000.00000000000000000000000000000000000000000000000000");
+ }
++#endif
+ 
+ template <typename T>
+ void test_spot_value(T value, int precision, const char* result, boost::charconv::chars_format fmt = boost::charconv::chars_format::fixed)
+diff --git a/test/limits.cpp b/test/limits.cpp
+index 5d9926ba..d38a20b5 100644
+--- a/test/limits.cpp
++++ b/test/limits.cpp
+@@ -227,7 +227,10 @@ int main()
+ 
+     test_floating_point<float>();
+     test_floating_point<double>();
++
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     test_floating_point<long double>();
++    #endif
+ 
+     #ifdef BOOST_CHARCONV_HAS_FLOAT16
+     test_floating_point<std::float16_t>();
+diff --git a/test/limits_link_1.cpp b/test/limits_link_1.cpp
+index e4dd20e0..052b8ee0 100644
+--- a/test/limits_link_1.cpp
++++ b/test/limits_link_1.cpp
+@@ -3,6 +3,7 @@
+ // https://www.boost.org/LICENSE_1_0.txt
+ 
+ #include <boost/charconv/limits.hpp>
++#include <boost/charconv/detail/bit_layouts.hpp>
+ 
+ void test_odr_use( int const* );
+ 
+@@ -28,7 +29,9 @@ void f1()
+ 
+     test<float>();
+     test<double>();
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     test<long double>();
++    #endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_INT128
+ 
+diff --git a/test/limits_link_2.cpp b/test/limits_link_2.cpp
+index 12f3d0b7..0c9d24e6 100644
+--- a/test/limits_link_2.cpp
++++ b/test/limits_link_2.cpp
+@@ -3,6 +3,7 @@
+ // https://www.boost.org/LICENSE_1_0.txt
+ 
+ #include <boost/charconv/limits.hpp>
++#include <boost/charconv/detail/bit_layouts.hpp>
+ 
+ void test_odr_use( int const* );
+ 
+@@ -28,7 +29,9 @@ void f2()
+ 
+     test<float>();
+     test<double>();
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     test<long double>();
++    #endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_INT128
+ 
+diff --git a/test/roundtrip.cpp b/test/roundtrip.cpp
+index e702f755..d265f69a 100644
+--- a/test/roundtrip.cpp
++++ b/test/roundtrip.cpp
+@@ -347,6 +347,7 @@ template<typename FPType> int64_t Distance(FPType y, FPType x)
+     return ToOrdinal(y) - ToOrdinal(x);
+ }
+ 
++#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+ template <> void test_roundtrip<long double>(long double value)
+ {
+     char buffer[ 256 ];
+@@ -381,6 +382,7 @@ template <> void test_roundtrip<long double>(long double value)
+         // LCOV_EXCL_STOP
+     }
+ }
++#endif
+ 
+ // floating point types, boundary values
+ 
+@@ -601,7 +603,7 @@ int main()
+     #endif
+ 
+     // long double
+-    #if !(BOOST_CHARCONV_LDBL_BITS == 128)
++    #if !(BOOST_CHARCONV_LDBL_BITS == 128) && !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
+ 
+     {
+         long double const ql = std::pow( 1.0L, -64 );
+diff --git a/test/to_chars_float.cpp b/test/to_chars_float.cpp
+index 05864e13..56f22f31 100644
+--- a/test/to_chars_float.cpp
++++ b/test/to_chars_float.cpp
+@@ -228,7 +228,7 @@ int main()
+     non_finite_values<double>(boost::charconv::chars_format::hex, 2);
+ 
+     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57484
+-    #if !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 9 && defined(__i686__))
++    #if !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 9 && defined(__i686__)) && !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
+     non_finite_values<long double>();
+     #endif
+ 
+diff --git a/test/to_chars_float_STL_comp.cpp b/test/to_chars_float_STL_comp.cpp
+index 02a6b46a..ae546ee5 100644
+--- a/test/to_chars_float_STL_comp.cpp
++++ b/test/to_chars_float_STL_comp.cpp
+@@ -212,7 +212,10 @@ int main()
+     // General format
+     random_test<float>();
+     random_test<double>();
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     random_test<long double>();
++    #endif
++
+     test_spot<double>(0.0);
+     test_spot<double>(-0.0);
+ 
+@@ -224,7 +227,9 @@ int main()
+     // Scientific
+     random_test<float>(boost::charconv::chars_format::scientific);
+     random_test<double>(boost::charconv::chars_format::scientific);
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     random_test<long double>(boost::charconv::chars_format::scientific);
++    #endif
+     test_spot<double>(0.0, boost::charconv::chars_format::scientific);
+     test_spot<double>(-0.0, boost::charconv::chars_format::scientific);
+ 
+@@ -237,14 +242,20 @@ int main()
+     // Hex
+     random_test<float>(boost::charconv::chars_format::hex);
+     random_test<double>(boost::charconv::chars_format::hex);
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     random_test<long double>(boost::charconv::chars_format::hex);
++    #endif
+ 
+     #if !defined(_LIBCPP_VERSION)
++
+     random_test<float>(boost::charconv::chars_format::hex, -1e5F, 1e5F);
+     random_test<double>(boost::charconv::chars_format::hex, -1e5, 1e5);
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     random_test<long double>(boost::charconv::chars_format::hex, -1e5L, 1e5L);
+     #endif
+ 
++    #endif
++
+     test_spot<double>(-9.52743282403084637e+306, boost::charconv::chars_format::hex);
+     test_spot<double>(-9.52743282403084637e-306, boost::charconv::chars_format::hex);
+     test_spot<double>(-9.52743282403084637e+305, boost::charconv::chars_format::hex);
+@@ -261,13 +272,16 @@ int main()
+     // Various non-finite values
+     non_finite_test<float>();
+     non_finite_test<double>();
+-    non_finite_test<long double>();
+     non_finite_test<float>(boost::charconv::chars_format::scientific);
+     non_finite_test<double>(boost::charconv::chars_format::scientific);
+-    non_finite_test<long double>(boost::charconv::chars_format::scientific);
+     non_finite_test<float>(boost::charconv::chars_format::hex);
+     non_finite_test<double>(boost::charconv::chars_format::hex);
++
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    non_finite_test<long double>();
++    non_finite_test<long double>(boost::charconv::chars_format::scientific);
+     non_finite_test<long double>(boost::charconv::chars_format::hex);
++    #endif
+ 
+     #if (defined(__GNUC__) && __GNUC__ >= 11) || (defined(_MSC_VER) && _MSC_VER >= 1924)
+     // Selected additional values
+@@ -288,7 +302,10 @@ int main()
+     // Reported in issue #93
+     test_spot<float>(3.3F);
+     test_spot<double>(3.3);
++
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     test_spot<long double>(3.3L);
++    #endif
+ 
+     return boost::report_errors();
+ }
+diff --git a/test/to_chars_sprintf.cpp b/test/to_chars_sprintf.cpp
+index e8dcd60b..e590e09e 100644
+--- a/test/to_chars_sprintf.cpp
++++ b/test/to_chars_sprintf.cpp
+@@ -627,6 +627,7 @@ int main()
+ 
+     // long double
+ 
++    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
+     {
+         for( int i = 0; i < N; ++i )
+         {
+@@ -665,6 +666,7 @@ int main()
+ 
+         test_sprintf_bv_fp<long double>();
+     }
++    #endif
+ 
+     return boost::report_errors();
+ }
+
+From 0a82afd2643d4546651ba0142c4f2466a1336403 Mon Sep 17 00:00:00 2001
+From: Matt Borland <matt@mattborland.com>
+Date: Wed, 17 Apr 2024 09:23:56 +0200
+Subject: [PATCH 4/5] Remove cruft codeblock
+
+---
+ src/to_chars.cpp | 38 --------------------------------------
+ 1 file changed, 38 deletions(-)
+
+diff --git a/src/to_chars.cpp b/src/to_chars.cpp
+index 8e9b4721..7bcec5e4 100644
+--- a/src/to_chars.cpp
++++ b/src/to_chars.cpp
+@@ -621,44 +621,6 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
+     return boost::charconv::detail::to_chars_float_impl(first, last, value, fmt, precision);
+ }
+ 
+-#else
+-
+-boost::charconv::to_chars_result boost::charconv::to_chars( char* first, char* last, long double value,
+-                                                            boost::charconv::chars_format fmt, int precision) noexcept
+-{
+-    if (std::isnan(value))
+-    {
+-        bool is_negative = false;
+-        if (std::signbit(value))
+-        {
+-            is_negative = true;
+-            *first++ = '-';
+-        }
+-
+-        if (issignaling(value))
+-        {
+-            std::memcpy(first, "nan(snan)", 9);
+-            return { first + 9 + static_cast<int>(is_negative), std::errc() };
+-        }
+-        else
+-        {
+-            if (is_negative)
+-            {
+-                std::memcpy(first, "nan(ind)", 8);
+-                return { first + 9, std::errc() };
+-            }
+-            else
+-            {
+-                std::memcpy(first, "nan", 3);
+-                return { first + 3, std::errc() };
+-            }
+-        }
+-    }
+-
+-    // Fallback to printf
+-    return boost::charconv::detail::to_chars_printf_impl(first, last, value, fmt, precision);
+-}
+-
+ #endif
+ 
+ #ifdef BOOST_CHARCONV_HAS_QUADMATH
+
+From 8511677a1f12925d5b95814f81a0d6570d6695df Mon Sep 17 00:00:00 2001
+From: Matt Borland <matt@mattborland.com>
+Date: Wed, 17 Apr 2024 09:32:27 +0200
+Subject: [PATCH 5/5] Fix macro name
+
+---
+ include/boost/charconv/detail/bit_layouts.hpp |  2 +-
+ include/boost/charconv/from_chars.hpp         |  8 ++++----
+ include/boost/charconv/to_chars.hpp           |  4 ++--
+ src/from_chars.cpp                            |  8 ++++----
+ src/to_chars.cpp                              |  2 +-
+ test/from_chars_float.cpp                     |  6 +++---
+ test/from_chars_string_view.cpp               |  4 ++--
+ test/github_issue_110.cpp                     |  2 +-
+ test/github_issue_122.cpp                     |  2 +-
+ test/github_issue_152.cpp                     |  2 +-
+ test/github_issue_158.cpp                     |  4 ++--
+ test/limits.cpp                               |  2 +-
+ test/limits_link_1.cpp                        |  2 +-
+ test/limits_link_2.cpp                        |  2 +-
+ test/roundtrip.cpp                            |  4 ++--
+ test/to_chars_float.cpp                       |  2 +-
+ test/to_chars_float_STL_comp.cpp              | 12 ++++++------
+ test/to_chars_sprintf.cpp                     |  2 +-
+ 18 files changed, 35 insertions(+), 35 deletions(-)
+
+diff --git a/include/boost/charconv/detail/bit_layouts.hpp b/include/boost/charconv/detail/bit_layouts.hpp
+index 5ae37b07..c163ce06 100644
+--- a/include/boost/charconv/detail/bit_layouts.hpp
++++ b/include/boost/charconv/detail/bit_layouts.hpp
+@@ -126,7 +126,7 @@ struct IEEEl2bits
+ #define BOOST_CHARCONV_LDBL_BITS 64
+ 
+ #else // Unsupported long double representation
+-#  define BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#  define BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ #  define BOOST_CHARCONV_LDBL_BITS -1
+ #endif
+ 
+diff --git a/include/boost/charconv/from_chars.hpp b/include/boost/charconv/from_chars.hpp
+index 44141149..10e4cb4a 100644
+--- a/include/boost/charconv/from_chars.hpp
++++ b/include/boost/charconv/from_chars.hpp
+@@ -140,7 +140,7 @@ BOOST_CHARCONV_GCC5_CONSTEXPR from_chars_result from_chars(boost::core::string_v
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const char* last, float& value, chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const char* last, double& value, chars_format fmt = chars_format::general) noexcept;
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const char* last, long double& value, chars_format fmt = chars_format::general) noexcept;
+ #endif
+ 
+@@ -168,7 +168,7 @@ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(const char* first, const
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view sv, float& value, chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view sv, double& value, chars_format fmt = chars_format::general) noexcept;
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view sv, long double& value, chars_format fmt = chars_format::general) noexcept;
+ #endif
+ 
+@@ -200,7 +200,7 @@ BOOST_CHARCONV_DECL from_chars_result from_chars_erange(boost::core::string_view
+ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, float& value, chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, double& value, chars_format fmt = chars_format::general) noexcept;
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char* last, long double& value, chars_format fmt = chars_format::general) noexcept;
+ #endif
+ 
+@@ -226,7 +226,7 @@ BOOST_CHARCONV_DECL from_chars_result from_chars(const char* first, const char*
+ BOOST_CHARCONV_DECL from_chars_result from_chars(boost::core::string_view sv, float& value, chars_format fmt = chars_format::general) noexcept;
+ BOOST_CHARCONV_DECL from_chars_result from_chars(boost::core::string_view sv, double& value, chars_format fmt = chars_format::general) noexcept;
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL from_chars_result from_chars(boost::core::string_view sv, long double& value, chars_format fmt = chars_format::general) noexcept;
+ #endif
+ 
+diff --git a/include/boost/charconv/to_chars.hpp b/include/boost/charconv/to_chars.hpp
+index bfd74b0e..7192fda5 100644
+--- a/include/boost/charconv/to_chars.hpp
++++ b/include/boost/charconv/to_chars.hpp
+@@ -82,7 +82,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float valu
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value,
+                                              chars_format fmt = chars_format::general) noexcept;
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
+                                              chars_format fmt = chars_format::general) noexcept;
+ #endif
+@@ -92,7 +92,7 @@ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, float valu
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, double value, 
+                                              chars_format fmt, int precision) noexcept;
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ BOOST_CHARCONV_DECL to_chars_result to_chars(char* first, char* last, long double value,
+                                              chars_format fmt, int precision) noexcept;
+ #endif
+diff --git a/src/from_chars.cpp b/src/from_chars.cpp
+index 8c450b0a..2c01e73c 100644
+--- a/src/from_chars.cpp
++++ b/src/from_chars.cpp
+@@ -229,7 +229,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char
+     return r;
+ }
+ 
+-#elif !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
++#elif !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE)
+ 
+ boost::charconv::from_chars_result boost::charconv::from_chars_erange(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
+ {
+@@ -323,7 +323,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::cor
+     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
+ }
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ boost::charconv::from_chars_result boost::charconv::from_chars_erange(boost::core::string_view sv, long double& value, boost::charconv::chars_format fmt) noexcept
+ {
+     return boost::charconv::from_chars_erange(sv.data(), sv.data() + sv.size(), value, fmt);
+@@ -398,7 +398,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first
+     return from_chars_strict_impl(first, last, value, fmt);
+ }
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ boost::charconv::from_chars_result boost::charconv::from_chars(const char* first, const char* last, long double& value, boost::charconv::chars_format fmt) noexcept
+ {
+     return from_chars_strict_impl(first, last, value, fmt);
+@@ -457,7 +457,7 @@ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::stri
+     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+ }
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ boost::charconv::from_chars_result boost::charconv::from_chars(boost::core::string_view sv, long double& value, boost::charconv::chars_format fmt) noexcept
+ {
+     return from_chars_strict_impl(sv.data(), sv.data() + sv.size(), value, fmt);
+diff --git a/src/to_chars.cpp b/src/to_chars.cpp
+index 7bcec5e4..035a44a5 100644
+--- a/src/to_chars.cpp
++++ b/src/to_chars.cpp
+@@ -602,7 +602,7 @@ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* la
+     return boost::charconv::detail::to_chars_float_impl(first, last, static_cast<double>(value), fmt, precision);
+ }
+ 
+-#elif !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
++#elif !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE)
+ 
+ boost::charconv::to_chars_result boost::charconv::to_chars(char* first, char* last, long double value,
+                                                            boost::charconv::chars_format fmt) noexcept
+diff --git a/test/from_chars_float.cpp b/test/from_chars_float.cpp
+index 888aa3e3..cf810b55 100644
+--- a/test/from_chars_float.cpp
++++ b/test/from_chars_float.cpp
+@@ -440,7 +440,7 @@ void test_issue_37()
+         overflow_spot_value("1.0e+9999", HUGE_VAL);
+         overflow_spot_value("-1.0e+9999", -HUGE_VAL);
+     }
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     else
+     {
+         overflow_spot_value("1e99999", HUGE_VALL);
+@@ -547,7 +547,7 @@ int main()
+     odd_strings_test<float>();
+     odd_strings_test<double>();
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     simple_integer_test<long double>();
+     simple_hex_integer_test<long double>();
+     simple_scientific_test<long double>();
+@@ -1898,7 +1898,7 @@ int main()
+         spot_check_invalid_argument<double>(" 1.23", fmt);
+         spot_check_invalid_argument<double>("  1.23", fmt);
+ 
+-        #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++        #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+         spot_check_nan<long double>("nan", fmt);
+         spot_check_nan<long double>("-nan", fmt);
+         spot_check_inf<long double>("inf", fmt);
+diff --git a/test/from_chars_string_view.cpp b/test/from_chars_string_view.cpp
+index 085bb830..35889428 100644
+--- a/test/from_chars_string_view.cpp
++++ b/test/from_chars_string_view.cpp
+@@ -120,7 +120,7 @@ int main()
+     test_float<float, std::string>();
+     test_float<double, std::string>();
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test_float<long double>();
+     test_float<long double, std::string>();
+     #endif
+@@ -130,7 +130,7 @@ int main()
+     test_float<float, std::string_view>();
+     test_float<double, std::string_view>();
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test_float<long double, std::string_view>();
+     #endif
+ 
+diff --git a/test/github_issue_110.cpp b/test/github_issue_110.cpp
+index 0aeaeac7..0ccf6dec 100644
+--- a/test/github_issue_110.cpp
++++ b/test/github_issue_110.cpp
+@@ -43,7 +43,7 @@ int main()
+     test<float>();
+     test<double>();
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test<long double>();
+     #endif
+ 
+diff --git a/test/github_issue_122.cpp b/test/github_issue_122.cpp
+index 0a380659..c8495b28 100644
+--- a/test/github_issue_122.cpp
++++ b/test/github_issue_122.cpp
+@@ -53,7 +53,7 @@ int main()
+     test<float>();
+     test<double>();
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test<long double>();
+     #endif
+ 
+diff --git a/test/github_issue_152.cpp b/test/github_issue_152.cpp
+index b673cb4c..5409a476 100644
+--- a/test/github_issue_152.cpp
++++ b/test/github_issue_152.cpp
+@@ -229,7 +229,7 @@ int main()
+     test_failed_values();
+     #endif
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test_non_finite<long double>();
+     test_non_finite_fixed_precision<long double>();
+     test_min_buffer_size<long double>();
+diff --git a/test/github_issue_158.cpp b/test/github_issue_158.cpp
+index f381bd23..f1333e03 100644
+--- a/test/github_issue_158.cpp
++++ b/test/github_issue_158.cpp
+@@ -93,7 +93,7 @@ void test_values_with_negative_exp()
+     BOOST_TEST_CSTR_EQ(buffer, "0.00000000000000000000099999999999999990753745222790");
+ }
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ void test_long_double_with_negative_exp()
+ {
+     char buffer[256];
+@@ -409,7 +409,7 @@ void test_zero()
+     BOOST_TEST_CSTR_EQ(buffer, "0");
+ }
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ void test_long_double_with_positive_exp()
+ {
+     char buffer[256];
+diff --git a/test/limits.cpp b/test/limits.cpp
+index d38a20b5..d38e4a16 100644
+--- a/test/limits.cpp
++++ b/test/limits.cpp
+@@ -228,7 +228,7 @@ int main()
+     test_floating_point<float>();
+     test_floating_point<double>();
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test_floating_point<long double>();
+     #endif
+ 
+diff --git a/test/limits_link_1.cpp b/test/limits_link_1.cpp
+index 052b8ee0..a7b2eaf9 100644
+--- a/test/limits_link_1.cpp
++++ b/test/limits_link_1.cpp
+@@ -29,7 +29,7 @@ void f1()
+ 
+     test<float>();
+     test<double>();
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test<long double>();
+     #endif
+ 
+diff --git a/test/limits_link_2.cpp b/test/limits_link_2.cpp
+index 0c9d24e6..b45c627f 100644
+--- a/test/limits_link_2.cpp
++++ b/test/limits_link_2.cpp
+@@ -29,7 +29,7 @@ void f2()
+ 
+     test<float>();
+     test<double>();
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test<long double>();
+     #endif
+ 
+diff --git a/test/roundtrip.cpp b/test/roundtrip.cpp
+index d265f69a..2f4754a4 100644
+--- a/test/roundtrip.cpp
++++ b/test/roundtrip.cpp
+@@ -347,7 +347,7 @@ template<typename FPType> int64_t Distance(FPType y, FPType x)
+     return ToOrdinal(y) - ToOrdinal(x);
+ }
+ 
+-#ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++#ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+ template <> void test_roundtrip<long double>(long double value)
+ {
+     char buffer[ 256 ];
+@@ -603,7 +603,7 @@ int main()
+     #endif
+ 
+     // long double
+-    #if !(BOOST_CHARCONV_LDBL_BITS == 128) && !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
++    #if !(BOOST_CHARCONV_LDBL_BITS == 128) && !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE)
+ 
+     {
+         long double const ql = std::pow( 1.0L, -64 );
+diff --git a/test/to_chars_float.cpp b/test/to_chars_float.cpp
+index 56f22f31..c69c2a84 100644
+--- a/test/to_chars_float.cpp
++++ b/test/to_chars_float.cpp
+@@ -228,7 +228,7 @@ int main()
+     non_finite_values<double>(boost::charconv::chars_format::hex, 2);
+ 
+     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57484
+-    #if !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 9 && defined(__i686__)) && !defined(BOOST_MATH_UNSUPPORTED_LONG_DOUBLE)
++    #if !(defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ < 9 && defined(__i686__)) && !defined(BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE)
+     non_finite_values<long double>();
+     #endif
+ 
+diff --git a/test/to_chars_float_STL_comp.cpp b/test/to_chars_float_STL_comp.cpp
+index ae546ee5..c6f20a63 100644
+--- a/test/to_chars_float_STL_comp.cpp
++++ b/test/to_chars_float_STL_comp.cpp
+@@ -212,7 +212,7 @@ int main()
+     // General format
+     random_test<float>();
+     random_test<double>();
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     random_test<long double>();
+     #endif
+ 
+@@ -227,7 +227,7 @@ int main()
+     // Scientific
+     random_test<float>(boost::charconv::chars_format::scientific);
+     random_test<double>(boost::charconv::chars_format::scientific);
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     random_test<long double>(boost::charconv::chars_format::scientific);
+     #endif
+     test_spot<double>(0.0, boost::charconv::chars_format::scientific);
+@@ -242,7 +242,7 @@ int main()
+     // Hex
+     random_test<float>(boost::charconv::chars_format::hex);
+     random_test<double>(boost::charconv::chars_format::hex);
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     random_test<long double>(boost::charconv::chars_format::hex);
+     #endif
+ 
+@@ -250,7 +250,7 @@ int main()
+ 
+     random_test<float>(boost::charconv::chars_format::hex, -1e5F, 1e5F);
+     random_test<double>(boost::charconv::chars_format::hex, -1e5, 1e5);
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     random_test<long double>(boost::charconv::chars_format::hex, -1e5L, 1e5L);
+     #endif
+ 
+@@ -277,7 +277,7 @@ int main()
+     non_finite_test<float>(boost::charconv::chars_format::hex);
+     non_finite_test<double>(boost::charconv::chars_format::hex);
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     non_finite_test<long double>();
+     non_finite_test<long double>(boost::charconv::chars_format::scientific);
+     non_finite_test<long double>(boost::charconv::chars_format::hex);
+@@ -303,7 +303,7 @@ int main()
+     test_spot<float>(3.3F);
+     test_spot<double>(3.3);
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     test_spot<long double>(3.3L);
+     #endif
+ 
+diff --git a/test/to_chars_sprintf.cpp b/test/to_chars_sprintf.cpp
+index e590e09e..3439d817 100644
+--- a/test/to_chars_sprintf.cpp
++++ b/test/to_chars_sprintf.cpp
+@@ -627,7 +627,7 @@ int main()
+ 
+     // long double
+ 
+-    #ifndef BOOST_MATH_UNSUPPORTED_LONG_DOUBLE
++    #ifndef BOOST_CHARCONV_UNSUPPORTED_LONG_DOUBLE
+     {
+         for( int i = 0; i < N; ++i )
+         {

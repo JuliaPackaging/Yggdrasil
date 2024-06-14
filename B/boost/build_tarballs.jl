@@ -10,11 +10,17 @@ sources = [
     ArchiveSource(
         "https://archives.boost.io/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
         "7009fe1faa1697476bdc7027703a2badb84e849b7b0baad5086b087b971f8617"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/boost*/
+
+# on PowerPC, apply https://github.com/boostorg/charconv/pull/183
+if [[ $target == *powerpc64le* ]]; then
+    atomic_patch ../bundled/patches/183.patch
+end
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
