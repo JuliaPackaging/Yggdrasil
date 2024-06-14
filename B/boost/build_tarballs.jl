@@ -20,7 +20,7 @@ cd $WORKSPACE/srcdir/boost*/
 # on PowerPC, apply https://github.com/boostorg/charconv/pull/183
 if [[ $target == *powerpc64le* ]]; then
     atomic_patch ../bundled/patches/183.patch
-end
+fi
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
