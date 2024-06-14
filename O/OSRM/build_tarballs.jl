@@ -79,7 +79,8 @@ cp ../profiles/lib/*.lua ${prefix}/lib
 platforms = supported_platforms(; exclude=p -> 
     # Sys.iswindows(p) ||
     # Sys.isapple(p) ||
-    (libc(p) == "musl")
+    (libc(p) == "musl") ||
+    (nbits(p) == 32)
     )
 
 platforms = expand_cxxstring_abis(platforms)
