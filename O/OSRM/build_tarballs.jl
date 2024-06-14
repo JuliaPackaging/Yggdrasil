@@ -9,10 +9,26 @@ version = v"5.28.0" # UNTAGGED / ASK FOR NEW RELEASE TAG
 sources = [
     GitSource("https://github.com/Project-OSRM/osrm-backend.git", "aa4e6b1cf332db07dbccf3eaaa6529b83842e81f"),
     DirectorySource("./bundled"),
+    # OSRM requires C++20, which needs a newer SDK
+    ArchiveSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
+                  "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),    
 ]
 
+sdk_update_script = raw"""
+if [[ "${target}" == *-apple-darwin* ]]; then
+    # Install a newer SDK which supports C++20
+    pushd $WORKSPACE/srcdir/MacOSX12.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    rm -rf /opt/${target}/${target}/sys-root/usr/*
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+    export MACOSX_DEPLOYMENT_TARGET=12.3
+fi
+"""
+
 # Bash recipe for building across all platforms
-script = raw"""
+script = sdk_update_script * raw"""
 cd $WORKSPACE/srcdir/osrm-backend
 
 # if [[ ${target} == *mingw* ]]; then
