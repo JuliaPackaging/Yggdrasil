@@ -1,4 +1,5 @@
 {
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
   "features": {
     "ghcr.io/julialang/devcontainer-features/julia:1": {
       "channel": "1.7"
@@ -11,5 +12,5 @@
     "gpu": "optional"
   },
   "privileged": true,
-  "onCreateCommand": "julia -e 'using Pkg; Pkg.precompile();'"
+  "onCreateCommand": "julia -e 'using Pkg; Pkg.precompile();'",
 }
