@@ -1,10 +1,12 @@
 using BinaryBuilder
+using Pkg: PackageSpec
 
 # Collection of pre-build pandoc binaries
 name = "pandoc_crossref"
 
 crossref_ver = "0.3.17.1a"
-version = v"0.3.18"
+panddoc_jll_version = v"3.2.0"
+version = v"0.3.17"
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
 sources = [
@@ -45,6 +47,14 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("p7zip_jll"),
+
+    # Each `pandoc-crossref` release is built with a specific pandoc version and using
+    # another version can be problematic. In order to avoid compatibility issues we specify
+    # the exact version which `pandoc-crossref` was built with.
+    #
+    # TODO: Should actually be a `RuntimeDependency`:
+    # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1330
+    Dependency(PackageSpec(name="pandoc_jll"), compat="=$panddoc_jll_version"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
