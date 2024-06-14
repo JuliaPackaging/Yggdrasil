@@ -32,6 +32,8 @@ script = sdk_update_script * raw"""
 cd $WORKSPACE/srcdir/osrm-backend
 
 if [[ ${target} == *mingw* ]]; then
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
+
     # oneTBB requires at least Windows Vista/Server 2008:
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
@@ -43,7 +45,13 @@ mkdir build && cd build
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+
+if [[ ${target} == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+fi
+
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 CMAKE_FLAGS+=(-DENABLE_CCACHE=OFF)
