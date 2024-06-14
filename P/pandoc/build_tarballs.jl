@@ -13,7 +13,7 @@ sources = [
     ArchiveSource("$(url_prefix)-windows-x86_64.zip", "84395462eb08d74df3dbe9bb129ce3508e3eec3f29ac1f55559c2c5a1f34a8bf"; unpack_target = "x86_64-w64-mingw32"),
     ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "93d6c414e5994e254aec840be8428016a70167c835ca3227378217937bd9a01a"; unpack_target = "aarch64-linux-gnu"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "f8379c9c714577397f2bdf1a06d0f500844ec924dcb268d85bc047772c35b3d7"),
-    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"),
+    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "e7ea3adeab955103a837b692ca0017cb3abbed0d3dccbfa499d6b2b825d698c3"),
 ]
 
 # Bash recipe for building across all platforms
