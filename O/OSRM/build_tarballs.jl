@@ -31,10 +31,11 @@ fi
 script = sdk_update_script * raw"""
 cd $WORKSPACE/srcdir/osrm-backend
 
-# if [[ ${target} == *mingw* ]]; then
-#     # Patch to fix build on MINGW
-#     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw.patch
-# fi
+if [[ ${target} == *mingw* ]]; then
+    # oneTBB requires at least Windows Vista/Server 2008:
+    # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+fi
 
 CFLAGS="-Wno-error=suggest-override"
 
