@@ -1,18 +1,33 @@
-index 1876d6b85..baf7f7238 100644
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1876d6b85..37f842368 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -256,6 +256,11 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+@@ -256,6 +256,15 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
      add_dependency_defines(-DWIN32)
      set(OPTIONAL_SOCKET_LIBS ws2_32 wsock32)
    endif()
 +
-+  if (MINGW)
-+      set(MINGW_FLAGS "-U__STRICT_ANSI__")
-+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MINGW_FLAGS}")
-+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MINGW_FLAGS}")
-+      set(OSRM_CXXFLAGS "${OSRM_CXXFLAGS} ${MINGW_FLAGS}")
-+  endif()
++    if (MINGW)
++        set(MINGW_FLAGS "-U__STRICT_ANSI__")
++        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MINGW_FLAGS}")
++        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MINGW_FLAGS}")
++        set(OSRM_CXXFLAGS "${OSRM_CXXFLAGS} ${MINGW_FLAGS}")
++    endif()
++
 +
  elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
    # using Intel C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-intel -wd10237 -Wall -ipo -fPIC")
+diff --git a/include/util/isatty.hpp b/include/util/isatty.hpp
+index 05fbd5aaf..a449356e8 100644
+--- a/include/util/isatty.hpp
++++ b/include/util/isatty.hpp
+@@ -5,7 +5,7 @@
+ #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+ #include <unistd.h>
+ #else
+-#ifdef WIN32
++#if defined(__MINGW32__) || defined(__CYGWIN__)
+ #include <io.h>
+ #define isatty _isatty
+ #define fileno _fileno
