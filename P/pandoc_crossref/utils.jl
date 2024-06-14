@@ -10,7 +10,6 @@ function pandoc_crossref_jll_version(v::AbstractString)
         if !isnothing(m[:build])
             build_letter = only(collect(m[:build]))
             build_num = build_letter - 'a' + 1
-            1 <= build_num <= 9 || throw(ArgumentError("Found unexpected pandoc-crossref build value in: $v"))
         else
             build_num = 0
         end
@@ -19,7 +18,7 @@ function pandoc_crossref_jll_version(v::AbstractString)
         return VersionNumber(
             parse(Int, m[:major1]) * 100 + parse(Int, m[:major2]),
             parse(Int, m[:minor]),
-            parse(Int, m[:patch]) * 10 + build_num,
+            parse(Int, m[:patch]) * 100 + build_num,
         )
     else
         throw(ArgumentError("Unhandled pandoc-crossref version number: $v"))
