@@ -15,10 +15,10 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/osrm-backend
 
-if [[ ${target} == *mingw* ]]; then
-    # Patch to fix build on MINGW
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw.patch
-fi
+# if [[ ${target} == *mingw* ]]; then
+#     # Patch to fix build on MINGW
+#     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw.patch
+# fi
 
 CFLAGS="-Wno-error=suggest-override"
 
