@@ -46,11 +46,7 @@ mkdir build && cd build
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
-if [[ ${target} == *mingw* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-else
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
-fi
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
@@ -62,9 +58,6 @@ CMAKE_FLAGS+=(-DZLIB_LIBRARY="${libdir}/libz.${dlext}")
 CMAKE_FLAGS+=(-DZLIB_LIBRARIES="${libdir}/libz.${dlext}")
 
 if [[ ${target} == *mingw* ]]; then
-    # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
-    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
-
     CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
     CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
 fi
@@ -78,6 +71,8 @@ cp libosrm* ${libdir}
 
 cp ../profiles/*.lua ${prefix}
 cp ../profiles/lib/*.lua ${prefix}/lib
+
+install_license ../LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
@@ -150,4 +145,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12")
