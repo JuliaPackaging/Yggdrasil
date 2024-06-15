@@ -97,7 +97,8 @@ fi
 if [[ "${target}" == *mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
     CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
-    CMAKE_FLAGS+=(-DLINK_FLAGS=-pthread)
+    CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-pthread)
+    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS=-pthread)
 fi
 
 echo ${CMAKE_FLAGS[@]}
