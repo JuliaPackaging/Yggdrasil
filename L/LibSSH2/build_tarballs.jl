@@ -3,12 +3,13 @@ using Pkg
 using BinaryBuilderBase: sanitize
 
 name = "LibSSH2"
+# This is a lie, we actually build 1.11.0, but we needed to bump the patch version to change our compat below
 version = v"1.11.1"
 
 # Collection of sources required to build LibSSH2
 sources = [
     DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
+    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-1.11.0/libssh2-1.11.0.tar.gz",
                   "3736161e41e2693324deb38c26cfdc3efe6209d634ba4258db1cecff6a5ad461"),
 ]
 
