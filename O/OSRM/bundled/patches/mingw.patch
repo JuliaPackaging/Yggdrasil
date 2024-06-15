@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1876d6b85..d9dd4e9dd 100644
+index 1876d6b85..d9e326a0d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -256,6 +256,16 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
@@ -24,7 +24,7 @@ index 1876d6b85..d9dd4e9dd 100644
    add_dependency_defines(-D_CRT_SECURE_NO_WARNINGS)
    add_dependency_defines(-DNOMINMAX) # avoid min and max macros that can break compilation
 -  add_dependency_defines(-D_WIN32_WINNT=0x0501)
-+#  add_dependency_defines(-D_WIN32_WINNT=0x0501)
++  add_dependency_defines(-D_WIN32_WINNT=0x0600)
    add_dependency_defines(-DXML_STATIC)
    find_library(ws2_32_LIBRARY_PATH ws2_32)
    target_link_libraries(osrm-extract wsock32 ws2_32)
