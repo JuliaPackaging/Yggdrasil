@@ -53,7 +53,7 @@ NATIVE_CMAKE_FLAGS+=(-DBC_LOAD_FLAGS="-target ${target} --sysroot=/opt/${target}
 if [[ "${target}" == *mingw* ]]; then
     NATIVE_CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
     NATIVE_CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
-end
+fi
 
 cmake -B build-native -S enzyme -GNinja "${NATIVE_CMAKE_FLAGS[@]}"
 
