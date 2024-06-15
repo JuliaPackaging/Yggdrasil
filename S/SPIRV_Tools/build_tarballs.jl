@@ -43,6 +43,9 @@ CMAKE_FLAGS+=(-DSPIRV_SKIP_TESTS=ON)
 # Don't use -Werror
 CMAKE_FLAGS+=(-DSPIRV_WERROR=OFF)
 
+# Skip spirv-objdump, which fails to build on some platforms
+sed -i '/add_spvtools_tool(TARGET spirv-objdump/,+8d' tools/CMakeLists.txt
+
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
 """
@@ -55,12 +58,13 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("spirv-as", :spirv_as),
-    ExecutableProduct("spirv-cfg", :spirv_cfg),
     ExecutableProduct("spirv-dis", :spirv_dis),
-    ExecutableProduct("spirv-link", :spirv_link),
-    ExecutableProduct("spirv-opt", :spirv_opt),
-    ExecutableProduct("spirv-reduce", :spirv_reduce),
     ExecutableProduct("spirv-val", :spirv_val),
+    ExecutableProduct("spirv-opt", :spirv_opt),
+    ExecutableProduct("spirv-cfg", :spirv_cfg),
+    ExecutableProduct("spirv-link", :spirv_link),
+    ExecutableProduct("spirv-lint", :spirv_link),
+    ExecutableProduct("spirv-reduce", :spirv_reduce),
     LibraryProduct("libSPIRV-Tools-shared", :libSPIRV_Tools),
 ]
 
@@ -68,4 +72,4 @@ products = [
 dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"9") # requires C++17 + filesystem
+               julia_compat="1.6", preferred_gcc_version=v"8") # requires C++17 + filesystem
