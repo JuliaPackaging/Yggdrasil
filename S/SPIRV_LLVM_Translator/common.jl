@@ -8,7 +8,7 @@ repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
 platforms = expand_cxxstring_abis(supported_platforms())
 
 # Bash recipe for building across all platforms
-script = raw"""
+get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator
 install_license LICENSE.TXT
 
@@ -29,6 +29,12 @@ CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
 
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+
+# Use our LLVM version
+CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * raw""")
+
+# Suppress certain errors
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion")
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} llvm-spirv install
