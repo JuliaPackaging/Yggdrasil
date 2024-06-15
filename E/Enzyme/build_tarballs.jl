@@ -94,6 +94,11 @@ if [[ "${target}" == x86_64-apple* ]]; then
 fi
 fi
 
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
+    CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
+fi
+
 echo ${CMAKE_FLAGS[@]}
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
 
