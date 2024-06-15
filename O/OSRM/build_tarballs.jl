@@ -54,8 +54,7 @@ CMAKE_FLAGS+=(-DENABLE_CCACHE=OFF)
 CMAKE_FLAGS+=(-Wno-dev)
 CMAKE_FLAGS+=(-DENABLE_MASON=OFF)
 CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
-CMAKE_FLAGS+=(-DZLIB_LIBRARY="${libdir}/libz.${dlext}")
-CMAKE_FLAGS+=(-DZLIB_LIBRARIES="${libdir}/libz.${dlext}")
+CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 
 if [[ ${target} == *mingw* ]]; then
     CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
