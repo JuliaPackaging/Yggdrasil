@@ -84,7 +84,8 @@ platforms = supported_platforms(; exclude=p ->
     # Sys.iswindows(p) ||
     # Sys.isapple(p) ||
     (libc(p) == "musl") ||
-    (nbits(p) == 32)
+    (nbits(p) == 32) ||
+    Sys.iswindows(p) # Mingw verison compatibility issues
     )
 
 platforms = expand_cxxstring_abis(platforms)
