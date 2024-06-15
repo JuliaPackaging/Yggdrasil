@@ -19,6 +19,7 @@ if [[ "${target}" == *-mingw* ]]; then
     export LDFLAGS="-L${libdir}"
     export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
 fi
+mkdir build && cd build
 meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release ..
 ninja -j${nproc}
 ninja install
