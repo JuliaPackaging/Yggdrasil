@@ -11,7 +11,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/unpaper-*/
+cd $WORKSPACE/srcdir/unpaper*/
 if [[ "${target}" == *-mingw* ]]; then
     # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
     export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
