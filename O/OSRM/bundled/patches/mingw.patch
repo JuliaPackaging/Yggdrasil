@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1876d6b85..d9e326a0d 100644
+index 1876d6b85..fd793de08 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -256,6 +256,16 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+@@ -256,6 +256,18 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
      add_dependency_defines(-DWIN32)
      set(OPTIONAL_SOCKET_LIBS ws2_32 wsock32)
    endif()
@@ -13,13 +13,15 @@ index 1876d6b85..d9e326a0d 100644
 +        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MINGW_FLAGS}")
 +        set(OSRM_CXXFLAGS "${OSRM_CXXFLAGS} ${MINGW_FLAGS}")
 +        add_dependency_defines(-U__STRICT_ANSI__)
++       add_compile_definitions(-U__STRICT_ANSI__)
++       add_compile_definitions(-D_WIN32_WINNT=0x0600)
 +    endif()
 +
 +
  elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
    # using Intel C++
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-intel -wd10237 -Wall -ipo -fPIC")
-@@ -266,7 +276,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+@@ -266,7 +278,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
    add_dependency_defines(-DBOOST_LIB_DIAGNOSTIC)
    add_dependency_defines(-D_CRT_SECURE_NO_WARNINGS)
    add_dependency_defines(-DNOMINMAX) # avoid min and max macros that can break compilation
