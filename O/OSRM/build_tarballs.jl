@@ -141,6 +141,7 @@ dependencies = [
     Dependency("XML2_jll")
     Dependency("oneTBB_jll"; compat="2021.8.0")
     Dependency("Lua_jll"; compat="~5.4.3")
+    Dependency("Zlib_jll")
     HostBuildDependency("Lua_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
 ]
