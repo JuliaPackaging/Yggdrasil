@@ -130,6 +130,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
     end
+    filter!(p -> os(p) == "windows", platforms)
     for platform in platforms
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
