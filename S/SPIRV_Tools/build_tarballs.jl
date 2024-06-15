@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_Tools"
-version = v"2024.1"
+version = v"2024.2"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "04896c462d9f3f504c99a4698605b6524af813c1"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "dd4b663e13c07fea4fbb3f70c1c91c86731099f7"),
     # vendored dependencies, see the DEPS file
     GitSource("https://github.com/google/effcee.git", "19b4aa87af25cb4ee779a071409732f34bfc305c"),
-    GitSource("https://github.com/google/googletest", "5df0241ea4880e5a846775d3efc8b873f7b36c31"),
-    GitSource("https://github.com/google/re2.git", "ed9fc269e2fdb299afe59e912928d31ad3fdcf7d"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "8b246ff75c6615ba4532fe4fde20f1be090c3764"),
+    GitSource("https://github.com/google/googletest", "5a37b517ad4ab6738556f0284c256cae1466c5b4"),
+    GitSource("https://github.com/google/re2.git", "917047f3606d3ba9e2de0d383c3cd80c94ed732c"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "4f7b471f1a66b6d06462cd4ba57628cc0cd087d7"),
 ]
 
 # Bash recipe for building across all platforms
