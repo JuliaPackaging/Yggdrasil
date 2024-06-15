@@ -50,6 +50,11 @@ NATIVE_CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${host_prefix})
 NATIVE_CMAKE_FLAGS+=(-DLLVM_DIR="${host_prefix}/lib/cmake/llvm")
 NATIVE_CMAKE_FLAGS+=(-DBC_LOAD_FLAGS="-target ${target} --sysroot=/opt/${target}/${target}/sys-root --gcc-toolchain=/opt/${target}")
 
+if [[ "${target}" == *mingw* ]]; then
+    NATIVE_CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
+    NATIVE_CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
+end
+
 cmake -B build-native -S enzyme -GNinja "${NATIVE_CMAKE_FLAGS[@]}"
 
 # Only build blasheaders and tblgen
