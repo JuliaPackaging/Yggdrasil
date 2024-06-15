@@ -23,9 +23,14 @@ if [[ $target == *powerpc64le* ]]; then
     atomic_patch -p 1 ../patches/183.patch
 fi
 
-# Setting this variable prevents Windows-specific code from being included when building b2, the boost build system
-# The B2 build system needs to be built for the host, not the target.
-export B2_DONT_EMBED_MANIFEST=true
+# On Windows, apply code changes from https://github.com/boostorg/charconv/pull/197
+if [[ $target == *mingw* ]]; then
+    atomic_patch -p 1 ../patches/197.patch
+
+    # Setting this variable prevents Windows-specific code from being included when building b2, the boost build system
+    # The B2 build system needs to be built for the host, not the target.
+    export B2_DONT_EMBED_MANIFEST=true
+fi
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
