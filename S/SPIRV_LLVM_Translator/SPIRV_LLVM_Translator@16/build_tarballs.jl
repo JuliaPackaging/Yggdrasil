@@ -1,7 +1,6 @@
-include("../common.jl")
-
 version = v"16.0"
 llvm_version = v"16.0.6"
+include("../common.jl")
 
 # Collection of sources required to build attr
 sources = [GitSource(repo, "0b107dbf421593ed6f201ea2b7976e9456bc6bd3")]

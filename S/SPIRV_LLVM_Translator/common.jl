@@ -7,6 +7,18 @@ repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
+if llvm_version >= v"15"
+    # We don't build LLVM 15 for i686-linux-musl, see
+    # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1430063957>:
+    #     In file included from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_flags.h:16:0,
+    #                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_common.h:18,
+    #                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp:173:
+    #     /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h:352:30: error: static assertion failed
+    #      #define COMPILER_CHECK(pred) static_assert(pred, "")
+    #                                   ^
+    filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+end
+
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator
