@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.7"
+version = v"0.0.8"
 
 sources = [
-   GitSource(repo, "292dc03593ceb1a7a1f022fd7d3289bd69b000b5"),
+   GitSource(repo, "0f7a912ca9cfd2ce1a96491052a16eab899cc9a7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -149,20 +149,6 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     echo "" >> .local/bin/ldconfig
     chmod +x .local/bin/ldconfig
     export PATH="`pwd`/.local/bin:$PATH"
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_VERSION=$CUDA_VERSION)
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_PATHS="$CUDA_HOME/cuda,$CUDA_HOME")
-    BAZEL_BUILD_FLAGS+=(--repo_env CUDA_TOOLKIT_PATH=$CUDA_HOME/cuda)
-    BAZEL_BUILD_FLAGS+=(--repo_env CUDNN_INSTALL_PATH=$CUDA_HOME)
-    BAZEL_BUILD_FLAGS+=(--repo_env TENSORRT_INSTALL_PATH=$CUDA_HOME)
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_NCCL_USE_STUB=1)
-    BAZEL_BUILD_FLAGS+=(--action_env TF_CUDA_COMPUTE_CAPABILITIES="sm_50,sm_60,sm_70,sm_80,compute_90")
-    # BAZEL_BUILD_FLAGS+=(--action_env CLANG_CUDA_COMPILER_PATH="/home/wmoses/llvms/llvm16/build/bin/clang")
-    BAZEL_BUILD_FLAGS+=(--crosstool_top=@local_config_cuda//crosstool:toolchain)
-    BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:enable_cuda)
-    BAZEL_BUILD_FLAGS+=(--@xla//xla/python:enable_gpu=true)
-    BAZEL_BUILD_FLAGS+=(--@xla//xla/python:jax_cuda_pip_rpaths=true)
-    BAZEL_BUILD_FLAGS+=(--define=xla_python_enable_gpu=true)
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
@@ -180,21 +166,23 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
+export BUILD=opt
+BAZEL_BUILD_FLAGS+=(-c $BUILD)
 # $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-	sed -i.bak1 "/whole-archive/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	sed -i.bak0 "/lld/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "-fuse-ld=lld" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	cat bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	$CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	# $CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	sed -i.bak0 "/lld/d" bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	echo "-fuse-ld=lld" >> bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	echo "--ld-path=$LLD2" >> bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	cat bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	$CC @bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
+	# $CC @bazel-out/k8-$BUILD/bin/libReactantExtra.so-2.params
 else
-	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} @nsync//...
 fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
@@ -235,39 +223,6 @@ products = [
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# Don't even bother with powerpc
-platforms = filter(platforms) do p
-    !( (arch(p) == "powerpc64le") )
-end
-
-# 64-bit or bust (for xla runtime executable)
-platforms = filter(p -> arch(p) != "i686", platforms)
-
-# linux aarch has onednn issues
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p)), platforms)
-platforms = filter(p -> !(arch(p) == "armv6l" && Sys.islinux(p)), platforms)
-platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
-
-# TSL exec info rewriting needed
-# external/tsl/tsl/platform/default/stacktrace.h:29:10: fatal error: execinfo.h: No such file or directory
-# [01:23:40]    29 | #include <execinfo.h>
-platforms = filter(p -> !(libc(p) == "musl"), platforms)
-
-# Windows has a cuda configure issue, to investigate either fixing/disabling cuda
-platforms = filter(p -> !(Sys.iswindows(p)), platforms)
-
-# NSync is picking up wrong stuff for cross compile, to deal with later
-# 02] ./external/nsync//platform/c++11.futex/platform.h:24:10: fatal error: 'linux/futex.h' file not found
-# [00:20:02] #include <linux/futex.h>
-platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
-
-# platforms = filter(p -> (Sys.isapple(p)), platforms)
-# platforms = filter(p -> arch(p) != "x86_64", platforms)
-
-# platforms = filter(p -> (Sys.isapple(p)), platforms)
-
-# platforms = filter(p -> !(Sys.isapple(p)), platforms)
-# platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 augment_platform_block=CUDA.augment::String
 
