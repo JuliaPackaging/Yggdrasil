@@ -39,6 +39,16 @@ if [[ ${target} == *mingw* ]]; then
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
+if [[ ${target} == *apple* ]]; then
+    # Fix undefined symbols in linking. On Linux it just assumes undefined symbols will be available at
+    # runtime, but not so on macOS. This patch 1) ensures osrm_guidance is linked against the correct
+    # external dependencies, and 2) tells the linker that the osrm::guidance functions used in osrm_extract
+    # will be available at runtime.
+
+    # This is OSRM PR #6955
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/guidance_link.patch"
+fi
+
 CFLAGS="-Wno-error=suggest-override"
 
 mkdir build && cd build
