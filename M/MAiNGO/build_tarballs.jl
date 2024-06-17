@@ -24,6 +24,7 @@ common_cmake_options="-DCMAKE_BUILD_TYPE=Release \
                      -DMAiNGO_build_standalone=True \
                      -DMAiNGO_build_shared_c_api=True \
                      -DMAiNGO_build_parser=True \
+                     -DMAiNGO_build_test=False\
                      -DMAiNGO_use_cplex=False \
                      -DMAiNGO_use_melon=False"
 
