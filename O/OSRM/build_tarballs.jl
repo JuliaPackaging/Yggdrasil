@@ -54,6 +54,7 @@ CMAKE_FLAGS+=(-DENABLE_CCACHE=OFF)
 CMAKE_FLAGS+=(-Wno-dev)
 CMAKE_FLAGS+=(-DENABLE_MASON=OFF)
 CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
+CMAKE_FLAGS+=(-DOSMIUM_INCLUDE_DIR=${includedir})
 CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 
 if [[ ${target} == *mingw* ]]; then
@@ -142,6 +143,7 @@ dependencies = [
     Dependency("Lua_jll"; compat="~5.4.3")
     Dependency("Zlib_jll")
     HostBuildDependency("Lua_jll")
+    Dependency("osmium_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
 ]
 
