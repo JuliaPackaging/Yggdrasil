@@ -15,7 +15,7 @@ version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/coin-or/ADOL-C.git", "cc64dd852436c12cfc48cc2620c10edb78e43e94"),
+    GitSource("https://github.com/coin-or/ADOL-C.git", "b7ea10536a1e452f7dd47a90ef8c8118ce3e8432"),
     GitSource("https://github.com/TimSiebert1/libadolccxx.git", "fca9afa48743263176d73929a32865c2f5a0d529"),
 ]
 
