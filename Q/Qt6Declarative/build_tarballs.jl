@@ -106,60 +106,92 @@ else
     filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
     platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 end
+platforms_win = filter(Sys.iswindows, platforms)
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct(["Qt6LabsAnimation", "libQt6LabsAnimation", "QtLabsAnimation"], :libqt6labsanimation),
+    LibraryProduct(["Qt6LabsFolderListModel", "libQt6LabsFolderListModel", "QtLabsFolderListModel"], :libqt6labsfolderlistmodel),
+    LibraryProduct(["Qt6LabsQmlModels", "libQt6LabsQmlModels", "QtLabsQmlModels"], :libqt6labsqmlmodels),
+    LibraryProduct(["Qt6LabsSettings", "libQt6LabsSettings", "QtLabsSettings"], :libqt6labssettings),
+    LibraryProduct(["Qt6LabsSharedImage", "libQt6LabsSharedImage", "QtLabsSharedImage"], :libqt6labssharedimage),
+    LibraryProduct(["Qt6LabsWavefrontMesh", "libQt6LabsWavefrontMesh", "QtLabsWavefrontMesh"], :libqt6labswavefrontmesh),
     LibraryProduct(["Qt6Qml", "libQt6Qml", "QtQml"], :libqt6qml),
-    LibraryProduct(["Qt6QmlModels", "libQt6QmlModels", "QtQmlModels"], :libqt6qmlmodels),
+    LibraryProduct(["Qt6QmlCompiler", "libQt6QmlCompiler", "QtQmlCompiler"], :libqt6qmlcompiler),
     LibraryProduct(["Qt6QmlCore", "libQt6QmlCore", "QtQmlCore"], :libqt6qmlcore),
-    LibraryProduct(["Qt6QmlWorkerScript", "libQt6QmlWorkerScript", "QtQmlWorkerScript"], :libqt6qmlworkerscript),
     LibraryProduct(["Qt6QmlLocalStorage", "libQt6QmlLocalStorage", "QtQmlLocalStorage"], :libqt6qmllocalstorage),
+    LibraryProduct(["Qt6QmlModels", "libQt6QmlModels", "QtQmlModels"], :libqt6qmlmodels),
+    LibraryProduct(["Qt6QmlNetwork", "libQt6QmlNetwork", "QtQmlNetwork"], :libqt6qmlnetwork),
+    LibraryProduct(["Qt6QmlWorkerScript", "libQt6QmlWorkerScript", "QtQmlWorkerScript"], :libqt6qmlworkerscript),
     LibraryProduct(["Qt6QmlXmlListModel", "libQt6QmlXmlListModel", "QtQmlXmlListModel"], :libqt6qmlxmllistmodel),
     LibraryProduct(["Qt6Quick", "libQt6Quick", "QtQuick"], :libqt6quick),
+    LibraryProduct(["Qt6QuickControls2", "libQt6QuickControls2", "QtQuickControls2"], :libqt6quickcontrols2),
+    LibraryProduct(["Qt6QuickControls2Basic", "libQt6QuickControls2Basic", "QtQuickControls2Basic"], :libqt6quickcontrols2basic),
+    LibraryProduct(["Qt6QuickControls2BasicStyleImpl", "libQt6QuickControls2BasicStyleImpl", "QtQuickControls2BasicStyleImpl"], :libqt6quickcontrols2basicstyleimpl),
+    LibraryProduct(["Qt6QuickControls2Fusion", "libQt6QuickControls2Fusion", "QtQuickControls2Fusion"], :libqt6quickcontrols2fusion),
+    LibraryProduct(["Qt6QuickControls2FusionStyleImpl", "libQt6QuickControls2FusionStyleImpl", "QtQuickControls2FusionStyleImpl"], :libqt6quickcontrols2fusionstyleimpl),
+    LibraryProduct(["Qt6QuickControls2Imagine", "libQt6QuickControls2Imagine", "QtQuickControls2Imagine"], :libqt6quickcontrols2imagine),
+    LibraryProduct(["Qt6QuickControls2ImagineStyleImpl", "libQt6QuickControls2ImagineStyleImpl", "QtQuickControls2ImagineStyleImpl"], :libqt6quickcontrols2imaginestyleimpl),
+    LibraryProduct(["Qt6QuickControls2Impl", "libQt6QuickControls2Impl", "QtQuickControls2Impl"], :libqt6quickcontrols2impl),
+    LibraryProduct(["Qt6QuickControls2Material", "libQt6QuickControls2Material", "QtQuickControls2Material"], :libqt6quickcontrols2material),
+    LibraryProduct(["Qt6QuickControls2MaterialStyleImpl", "libQt6QuickControls2MaterialStyleImpl", "QtQuickControls2MaterialStyleImpl"], :libqt6quickcontrols2materialstyleimpl),
+    LibraryProduct(["Qt6QuickControls2Universal", "libQt6QuickControls2Universal", "QtQuickControls2Universal"], :libqt6quickcontrols2universal),
+    LibraryProduct(["Qt6QuickControls2UniversalStyleImpl", "libQt6QuickControls2UniversalStyleImpl", "QtQuickControls2UniversalStyleImpl"], :libqt6quickcontrols2universalstyleimpl),
+    LibraryProduct(["Qt6QuickDialogs2", "libQt6QuickDialogs2", "QtQuickDialogs2"], :libqt6quickdialogs2),
+    LibraryProduct(["Qt6QuickDialogs2QuickImpl", "libQt6QuickDialogs2QuickImpl", "QtQuickDialogs2QuickImpl"], :libqt6quickdialogs2quickimpl),
+    LibraryProduct(["Qt6QuickDialogs2Utils", "libQt6QuickDialogs2Utils", "QtQuickDialogs2Utils"], :libqt6quickdialogs2utils),
+    LibraryProduct(["Qt6QuickEffects", "libQt6QuickEffects", "QtQuickEffects"], :libqt6quickeffects),
     LibraryProduct(["Qt6QuickLayouts", "libQt6QuickLayouts", "QtQuickLayouts"], :libqt6quicklayouts),
-    LibraryProduct(["Qt6QuickTest", "libQt6QuickTest", "QtQuickTest"], :libqt6quicktest),
     LibraryProduct(["Qt6QuickParticles", "libQt6QuickParticles", "QtQuickParticles"], :libqt6quickparticles),
     LibraryProduct(["Qt6QuickShapes", "libQt6QuickShapes", "QtQuickShapes"], :libqt6quickshapes),
-    LibraryProduct(["Qt6QuickWidgets", "libQt6QuickWidgets", "QtQuickWidgets"], :libqt6quickwidgets),
     LibraryProduct(["Qt6QuickTemplates2", "libQt6QuickTemplates2", "QtQuickTemplates2"], :libqt6quicktemplates2),
-    LibraryProduct(["Qt6QuickControls2Impl", "libQt6QuickControls2Impl", "QtQuickControls2Impl"], :libqt6quickcontrols2impl),
-    LibraryProduct(["Qt6QuickControls2", "libQt6QuickControls2", "QtQuickControls2"], :libqt6quickcontrols2),
-    LibraryProduct(["Qt6QuickDialogs2Utils", "libQt6QuickDialogs2Utils", "QtQuickDialogs2Utils"], :libqt6quickdialogs2utils),
-    LibraryProduct(["Qt6QuickDialogs2QuickImpl", "libQt6QuickDialogs2QuickImpl", "QtQuickDialogs2QuickImpl"], :libqt6quickdialogs2quickimpl),
-    LibraryProduct(["Qt6QuickDialogs2", "libQt6QuickDialogs2", "QtQuickDialogs2"], :libqt6quickdialogs2),
-    LibraryProduct(["Qt6LabsSettings", "libQt6LabsSettings", "QtLabsSettings"], :libqt6labssettings),
-    LibraryProduct(["Qt6LabsQmlModels", "libQt6LabsQmlModels", "QtLabsQmlModels"], :libqt6labsqmlmodels),
-    LibraryProduct(["Qt6LabsFolderListModel", "libQt6LabsFolderListModel", "QtLabsFolderListModel"], :libqt6labsfolderlistmodel),
-    LibraryProduct(["Qt6LabsAnimation", "libQt6LabsAnimation", "QtLabsAnimation"], :libqt6labsanimation),
-    LibraryProduct(["Qt6LabsWavefrontMesh", "libQt6LabsWavefrontMesh", "QtLabsWavefrontMesh"], :libqt6labswavefrontmesh),
-    LibraryProduct(["Qt6LabsSharedImage", "libQt6LabsSharedImage", "QtLabsSharedImage"], :libqt6labssharedimage),
+    LibraryProduct(["Qt6QuickTest", "libQt6QuickTest", "QtQuickTest"], :libqt6quicktest),
+    LibraryProduct(["Qt6QuickWidgets", "libQt6QuickWidgets", "QtQuickWidgets"], :libqt6quickwidgets),
 ]
 
+products_win = vcat(products,
+    LibraryProduct(["Qt6QuickControls2WindowsStyleImpl", "libQt6QuickControls2WindowsStyleImpl", "QtQuickControls2WindowsStyleImpl"], :libqt6quickcontrols2windowsstyleimpl),
+)
+
 products_macos = [
+    FrameworkProduct("QtLabsAnimation", :libqt6labsanimation),
+    FrameworkProduct("QtLabsFolderListModel", :libqt6labsfolderlistmodel),
+    FrameworkProduct("QtLabsQmlModels", :libqt6labsqmlmodels),
+    FrameworkProduct("QtLabsSettings", :libqt6labssettings),
+    FrameworkProduct("QtLabsSharedImage", :libqt6labssharedimage),
+    FrameworkProduct("QtLabsWavefrontMesh", :libqt6labswavefrontmesh),
     FrameworkProduct("QtQml", :libqt6qml),
-    FrameworkProduct("QtQmlModels", :libqt6qmlmodels),
+    FrameworkProduct("QtQmlCompiler", :libqt6qmlcompiler),
     FrameworkProduct("QtQmlCore", :libqt6qmlcore),
-    FrameworkProduct("QtQmlWorkerScript", :libqt6qmlworkerscript),
     FrameworkProduct("QtQmlLocalStorage", :libqt6qmllocalstorage),
+    FrameworkProduct("QtQmlModels", :libqt6qmlmodels),
+    FrameworkProduct("QtQmlNetwork", :libqt6qmlnetwork),
+    FrameworkProduct("QtQmlWorkerScript", :libqt6qmlworkerscript),
     FrameworkProduct("QtQmlXmlListModel", :libqt6qmlxmllistmodel),
     FrameworkProduct("QtQuick", :libqt6quick),
+    FrameworkProduct("QtQuickControls2", :libqt6quickcontrols2),
+    FrameworkProduct("QtQuickControls2Basic", :libqt6quickcontrols2basic),
+    FrameworkProduct("QtQuickControls2BasicStyleImpl", :libqt6quickcontrols2basicstyleimpl),
+    FrameworkProduct("QtQuickControls2Fusion", :libqt6quickcontrols2fusion),
+    FrameworkProduct("QtQuickControls2FusionStyleImpl", :libqt6quickcontrols2fusionstyleimpl),
+    FrameworkProduct("QtQuickControls2Imagine", :libqt6quickcontrols2imagine),
+    FrameworkProduct("QtQuickControls2ImagineStyleImpl", :libqt6quickcontrols2imaginestyleimpl),
+    FrameworkProduct("QtQuickControls2Impl", :libqt6quickcontrols2impl),
+    FrameworkProduct("QtQuickControls2Material", :libqt6quickcontrols2material),
+    FrameworkProduct("QtQuickControls2MaterialStyleImpl", :libqt6quickcontrols2materialstyleimpl),
+    FrameworkProduct("QtQuickControls2Universal", :libqt6quickcontrols2universal),
+    FrameworkProduct("QtQuickControls2UniversalStyleImpl", :libqt6quickcontrols2universalstyleimpl),
+    FrameworkProduct("QtQuickDialogs2", :libqt6quickdialogs2),
+    FrameworkProduct("QtQuickDialogs2QuickImpl", :libqt6quickdialogs2quickimpl),
+    FrameworkProduct("QtQuickDialogs2Utils", :libqt6quickdialogs2utils),
+    FrameworkProduct("QtQuickEffects", :libqt6quickeffects),
     FrameworkProduct("QtQuickLayouts", :libqt6quicklayouts),
-    FrameworkProduct("QtQuickTest", :libqt6quicktest),
     FrameworkProduct("QtQuickParticles", :libqt6quickparticles),
     FrameworkProduct("QtQuickShapes", :libqt6quickshapes),
-    FrameworkProduct("QtQuickWidgets", :libqt6quickwidgets),
     FrameworkProduct("QtQuickTemplates2", :libqt6quicktemplates2),
-    FrameworkProduct("QtQuickControls2Impl", :libqt6quickcontrols2impl),
-    FrameworkProduct("QtQuickControls2", :libqt6quickcontrols2),
-    FrameworkProduct("QtQuickDialogs2Utils", :libqt6quickdialogs2utils),
-    FrameworkProduct("QtQuickDialogs2QuickImpl", :libqt6quickdialogs2quickimpl),
-    FrameworkProduct("QtQuickDialogs2", :libqt6quickdialogs2),
-    FrameworkProduct("QtLabsSettings", :libqt6labssettings),
-    FrameworkProduct("QtLabsQmlModels", :libqt6labsqmlmodels),
-    FrameworkProduct("QtLabsFolderListModel", :libqt6labsfolderlistmodel),
-    FrameworkProduct("QtLabsAnimation", :libqt6labsanimation),
-    FrameworkProduct("QtLabsWavefrontMesh", :libqt6labswavefrontmesh),
-    FrameworkProduct("QtLabsSharedImage", :libqt6labssharedimage),
+    FrameworkProduct("QtQuickTest", :libqt6quicktest),
+    FrameworkProduct("QtQuickWidgets", :libqt6quickwidgets),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -180,6 +212,9 @@ include("../../fancy_toys.jl")
 @static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
         build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
+    end
+    if any(should_build_platform.(triplet.(platforms_win)))
+        build_tarballs(ARGS, name, version, sources, script, platforms_win, products_win, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
