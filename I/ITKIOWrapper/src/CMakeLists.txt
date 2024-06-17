@@ -1,5 +1,5 @@
 cmake_policy(SET CMP0025 NEW)
-project(ITKWrapper)
+project(ITKIOWrapper)
 
 cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 17)
@@ -19,11 +19,11 @@ include(${ITK_USE_FILE})
 
 message(STATUS "Found ITK at ${ITK_USE_FILE}")
 
-add_library(ITKWrapper SHARED itklib.cpp)
+add_library(ITKIOWrapper SHARED itklib.cpp)
 
-target_link_libraries(ITKWrapper
+target_link_libraries(ITKIOWrapper
   JlCxx::cxxwrap_julia
   ${ITK_LIBRARIES}
 )
 
-install(TARGETS ITKWrapper LIBRARY)
+install(TARGETS ITKIOWrapper LIBRARY)

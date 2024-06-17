@@ -1,7 +1,7 @@
 # Note: this script will require BinaryBuilder.jl v0.3.0 or greater
 using BinaryBuilder, Pkg
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
-name = "ITKWrapper"
+name = "ITKIOWrapper"
 version = v"1.0.0"  # Update this to your package version
 
 # The following lines should be updated to reflect the actual URL and revision of your ITKWrapper package
@@ -45,7 +45,7 @@ filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libITKWrapper", :libITKWrapper),
+    LibraryProduct("libITKIOWrapper", :libITKIOWrapper),
 ]
 
 # Dependencies that must be installed before this package can be built
