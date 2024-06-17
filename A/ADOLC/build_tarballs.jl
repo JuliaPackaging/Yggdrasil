@@ -11,7 +11,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "ADOLC"
-version = v"1.0.0"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
