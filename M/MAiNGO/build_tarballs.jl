@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "MAiNGO"
-version = v"0.7.2"
+version = v"0.7.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://git.rwth-aachen.de/avt-svt/public/maingo.git", "252733413a29dbe5b84a4cdaf53e60e9934f372f"),
+    GitSource("https://git.rwth-aachen.de/avt-svt/public/maingo.git", "145e4ed773baab50cc76c83f82978bc638ebbbb3"),
 ]
 
 # Bash recipe for building across all platforms
