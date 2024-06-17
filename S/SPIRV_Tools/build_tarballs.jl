@@ -63,7 +63,7 @@ products = [
     ExecutableProduct("spirv-opt", :spirv_opt),
     ExecutableProduct("spirv-cfg", :spirv_cfg),
     ExecutableProduct("spirv-link", :spirv_link),
-    ExecutableProduct("spirv-lint", :spirv_link),
+    ExecutableProduct("spirv-lint", :spirv_lint),
     ExecutableProduct("spirv-reduce", :spirv_reduce),
     LibraryProduct("libSPIRV-Tools-shared", :libSPIRV_Tools),
 ]
