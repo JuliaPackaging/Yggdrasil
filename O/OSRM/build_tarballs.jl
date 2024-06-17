@@ -143,7 +143,7 @@ dependencies = [
     Dependency("Lua_jll"; compat="~5.4.3")
     Dependency("Zlib_jll")
     HostBuildDependency("Lua_jll")
-    Dependency("osmium_jll")
+    Dependency("libosmium_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
 ]
 
