@@ -8,7 +8,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/libtree-*/
+cd $WORKSPACE/srcdir/libtree*/
 make CFLAGS="-Os -fwhole-program" LDFLAGS="-Wl,-s" "PREFIX=$prefix" install
 """
 
