@@ -15,7 +15,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd jd
 go build -o ${bindir}
-exit
 """
 
 # These are the platforms we will build for by default, unless further
