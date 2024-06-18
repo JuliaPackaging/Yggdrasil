@@ -63,7 +63,7 @@ export TMP=$TMPDIR
 export TEMP=$TMPDIR
 export BAZEL_CXXOPTS="-std=c++17"
 BAZEL_FLAGS=()
-BAZEL_BUILD_FLAGS=()
+BAZEL_BUILD_FLAGS=(-c dbg)
 
 # don't run out of temporary space
 BAZEL_FLAGS+=(--output_user_root=/workspace/bazel_root)
@@ -186,13 +186,13 @@ bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-	sed -i.bak1 "/whole-archive/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	sed -i.bak0 "/lld/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "-fuse-ld=lld" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	cat bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	$CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	# $CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	sed -i.bak1 "/whole-archive/d" bazel-out/k8-dbg/bin/libReactantExtra.so-2.params
+	sed -i.bak0 "/lld/d" bazel-out/k8-dbg/bin/libReactantExtra.so-2.params
+	echo "-fuse-ld=lld" >> bazel-out/k8-dbg/bin/libReactantExtra.so-2.params
+	echo "--ld-path=$LLD2" >> bazel-out/k8-dbg/bin/libReactantExtra.so-2.params
+	cat bazel-out/k8-dbg/bin/libReactantExtra.so-2.params
+	$CC @bazel-out/k8-dbg/bin/libReactantExtra.so-2.params
+	# $CC @bazel-out/k8-dbg/bin/libReactantExtra.so-2.params
 else
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
@@ -264,7 +264,8 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
 
-# platforms = filter(p -> (Sys.isapple(p)), platforms)
+
+platforms = filter(p -> (Sys.isapple(p)), platforms)
 
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
