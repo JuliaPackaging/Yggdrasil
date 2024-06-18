@@ -8,13 +8,13 @@ version = v"2.4.7"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/libtool/libtool-$(version).tar.gz",
-                  "04e96c2404ea70c590c546eba4202a4e12722c640016c12b9b2f1ce3d481e9a8")
+                  "04e96c2404ea70c590c546eba4202a4e12722c640016c12b9b2f1ce3d481e9a8"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libtool-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} SHELL=/bin/bash
 make
 make install
 """
