@@ -7,7 +7,7 @@ version = v"5.28.0" # UNTAGGED / ASK FOR NEW RELEASE TAG
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "aa4e6b1cf332db07dbccf3eaaa6529b83842e81f"),
+    GitSource("https://github.com/mattwigway/osrm-backend.git", "f16983e668724d4fea1f248cb3e36509e1b5962e"),
     DirectorySource("./bundled"),
     # OSRM requires C++20, which needs a newer SDK
     ArchiveSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
@@ -37,16 +37,6 @@ if [[ ${target} == *mingw* ]]; then
     # oneTBB requires at least Windows Vista/Server 2008:
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
-fi
-
-if [[ ${target} == *apple* ]]; then
-    # Fix undefined symbols in linking. On Linux it just assumes undefined symbols will be available at
-    # runtime, but not so on macOS. This patch 1) ensures osrm_guidance is linked against the correct
-    # external dependencies, and 2) tells the linker that the osrm::guidance functions used in osrm_extract
-    # will be available at runtime.
-
-    # This is OSRM PR #6955
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/guidance_link.patch"
 fi
 
 CFLAGS="-Wno-error=suggest-override"
