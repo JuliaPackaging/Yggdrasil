@@ -14,8 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd jd
-go build
-cp jd $prefix/
+go build -o ${bindir}
 exit
 """
 
