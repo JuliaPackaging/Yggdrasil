@@ -91,11 +91,9 @@ install_license ../LICENSE.TXT
 # oneTBB_jll isn't available for armv6l, armv7l
 # musl builds with lots of TBB errors like 'undefined reference to `getcontext''
 platforms = supported_platforms(; exclude=p -> 
-    # Sys.iswindows(p) ||
-    # Sys.isapple(p) ||
     (libc(p) == "musl") ||
     (nbits(p) == 32) ||
-    Sys.iswindows(p) # Mingw verison compatibility issues
+    Sys.iswindows(p) # Mingw version compatibility issues
     )
 
 platforms = expand_cxxstring_abis(platforms)
