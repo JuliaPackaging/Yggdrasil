@@ -97,7 +97,10 @@ products = Product[
     ExecutableProduct("osrm-customize", :osrm_customize)
     ExecutableProduct("osrm-datastore", :osrm_datastore)
     ExecutableProduct("osrm-extract", :osrm_extract)
-    LibraryProduct("libosrm", :libosrm)
+    # We are not dlopening because the build images use Julia 1.7, which can't dlopen SOs built
+    # with GCC 12, which is required for OSRM. However, Julia 1.8+ can dlopen them (tested),
+    # and that is what our compat entry says, so the dlopen failure can safely be ignored.
+    LibraryProduct("libosrm", :libosrm, dont_dlopen=true)
     FileProduct("bicycle.lua", :bicycle)
     FileProduct("debug_way.lua", :debug_way)
     FileProduct("test.lua", :test)
