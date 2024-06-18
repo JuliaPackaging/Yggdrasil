@@ -367,13 +367,6 @@ CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
 # Set the bug report URL to the Julia issue tracker
 CMAKE_FLAGS+=(-DBUG_REPORT_URL="https://github.com/julialang/julia")
 
-# Visibility settings, ref: <https://github.com/llvm/llvm-project/issues/90881#issuecomment-2097042002>
-CMAKE_FLAGS+=(
-    -DCMAKE_VISIBILITY_INLINES_HIDDEN=ON
-    -DCMAKE_C_VISIBILITY_PRESET=hidden
-    -DCMAKE_CXX_VISIBILITY_PRESET=hidden
-)
-
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
 ninja -j${nproc} -vv
 
