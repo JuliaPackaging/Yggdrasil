@@ -1,7 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1876d6b85..cb0df27d6 100644
+index 1876d6b85c..7692d06c21 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
+@@ -490,7 +490,7 @@ set(BOOST_ENGINE_LIBRARIES
+ 
+ # Binaries
+ target_link_libraries(osrm-datastore osrm_store ${Boost_PROGRAM_OPTIONS_LIBRARY})
+-target_link_libraries(osrm-extract osrm_extract ${Boost_PROGRAM_OPTIONS_LIBRARY})
++target_link_libraries(osrm-extract osrm_extract osrm_guidance ${Boost_PROGRAM_OPTIONS_LIBRARY})
+ target_link_libraries(osrm-partition osrm_partition ${Boost_PROGRAM_OPTIONS_LIBRARY})
+ target_link_libraries(osrm-customize osrm_customize ${Boost_PROGRAM_OPTIONS_LIBRARY})
+ target_link_libraries(osrm-contract osrm_contract ${Boost_PROGRAM_OPTIONS_LIBRARY})
 @@ -566,7 +566,17 @@ set(UTIL_LIBRARIES
  target_link_libraries(osrm ${ENGINE_LIBRARIES})
  target_link_libraries(osrm_update ${UPDATER_LIBRARIES})
