@@ -64,7 +64,7 @@ CMAKE_FLAGS+=(-DENABLE_CCACHE=OFF)
 CMAKE_FLAGS+=(-Wno-dev)
 CMAKE_FLAGS+=(-DENABLE_MASON=OFF)
 CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
-CMAKE_FLAGS+=(-DOSMIUM_INCLUDE_DIR=${includedir})
+# CMAKE_FLAGS+=(-DOSMIUM_INCLUDE_DIR=${includedir})
 CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 
 if [[ ${target} == *mingw* ]]; then
@@ -144,14 +144,14 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.8")
-    Dependency("boost_jll"; compat="=1.76.0") # Earlier versions of boost seem uncompatible with C++20 deprecations
+    Dependency("boost_jll"; compat="=1.79.0") # Earlier versions of boost seem uncompatible with C++20 deprecations
     Dependency("Expat_jll"; compat="2.2.10")
     Dependency("XML2_jll")
     Dependency("oneTBB_jll"; compat="2021.8.0")
     Dependency("Lua_jll"; compat="~5.4.3")
     Dependency("Zlib_jll")
     HostBuildDependency("Lua_jll")
-    Dependency("libosmium_jll")
+    # Dependency("libosmium_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
 ]
 
