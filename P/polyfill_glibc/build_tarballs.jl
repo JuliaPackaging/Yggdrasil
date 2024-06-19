@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/polyfill-glibc/
 ninja -j${nproc} polyfill-glibc
-install -D ./polyfill-glibc ${prefix}/bin/polyfill-glibc
+install -Dvm 755 ./polyfill-glibc ${prefix}/bin/polyfill-glibc
 """
 
 # These are the platforms we will build for by default, unless further
