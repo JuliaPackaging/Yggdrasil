@@ -14,8 +14,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/gsd/
 mkdir -p "${libdir}"
-mkdir -p ${prefix}/share
-cp ./gsd/gsd.h ${prefix}/share/gsd.h
+install -Dv -m644 ./gsd/gsd.h ${includedir}/gsd.h
 ${CC} -std=c99 -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
 """
 
@@ -28,7 +27,7 @@ platforms = filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("share/gsd.h", :gsd_h), # header file is needed for the use of CBinding.jl in follow up wrapper of GSD.jl
+    FileProduct("include/gsd.h", :gsd_h), # header file is needed for the use of CBinding.jl in follow up wrapper of GSD.jl
     LibraryProduct("libgsd", :libgsd)
 ]
 
