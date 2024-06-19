@@ -45,6 +45,10 @@ cmake \
   ..
 cmake --build .
 cmake --install .
+
+# Copy license across manually
+mkdir -p $prefix/share/licenses/MuJoCo
+cp $WORKSPACE/srcdir/mujoco/LICENSE $prefix/share/licenses/MuJoCo/
 """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
