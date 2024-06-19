@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mujoco
 CPPFLAGS="-I${prefix}/include"
-CXXFLAGS="-I${prefix}/include"
+CXXFLAGS="-I${includedir}"
 
 if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/mingw.patch
