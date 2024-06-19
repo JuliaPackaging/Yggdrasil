@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/jd
 
-go build -o ${bindir}
+go build -o ${bindir}/
 """
 
 # These are the platforms we will build for by default, unless further
