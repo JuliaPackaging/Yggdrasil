@@ -10,11 +10,14 @@ sources = [
     GitSource("https://github.com/glotzerlab/gsd.git", "ad2417d0dbc455d1fb5aab525a919b36bc7f0851")
 ]
 
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gsd/
 mkdir -p "${libdir}"
-${CC} -std=c99 -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
+mkdir -p ${prefix}/share
+cp ./gsd/gsd.h ${prefix}/share/gsd.h
+${CC} -std=c99 -I"{includedir}" -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -26,6 +29,7 @@ platforms = filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
+    FileProduct("share/gsd.h", :gsd_h), # header file is needed for the use of CBinding.jl in follow up wrapper of GSD.jl
     LibraryProduct("libgsd", :libgsd)
 ]
 
