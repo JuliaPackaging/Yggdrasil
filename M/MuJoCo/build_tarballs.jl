@@ -14,7 +14,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mujoco
-CPPFLAGS="-I${prefix}/include"
 CXXFLAGS="-I${includedir}"
 
 if [[ "${target}" == *-mingw* ]]; then
