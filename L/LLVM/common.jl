@@ -18,6 +18,7 @@ const llvm_tags = Dict(
     v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
     v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
+    v"18.1.7" => "922424cf57b14a40f1c013cb7e9a8545854fcd9a", # julia-18.1.7-0
 )
 
 const buildscript = raw"""
@@ -583,10 +584,10 @@ rm -vrf {prefix}/lib/objects-Release
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
-                         git_path="https://github.com/JuliaLang/llvm-project.git",
-                         git_ver=llvm_tags[version], custom_name=nothing,
-                         custom_version=version, static=false, platform_filter=nothing,
-                         eh_rtti=false, update_sdk=version >= v"15")
+    git_path="https://github.com/JuliaLang/llvm-project.git",
+    git_ver=llvm_tags[version], custom_name=nothing,
+    custom_version=version, static=false, platform_filter=nothing,
+    eh_rtti=false, update_sdk=version >= v"15")
     # Parse out some args
     if "--assert" in ARGS
         assert = true
@@ -597,7 +598,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         DirectorySource("./bundled"),
     ]
 
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=experimental_platforms))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl, see
         # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1430063957>:
@@ -660,14 +661,14 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     # TODO: LibXML2
     dependencies = [
         Dependency("Zlib_jll"), # for LLD&LTO
-        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
     ]
     if update_sdk
         config *= "LLVM_UPDATE_MAC_SDK=1\n"
         push!(sources,
-              ArchiveSource(
-                  "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+            ArchiveSource(
+                "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
     end
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
@@ -739,7 +740,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         end
     end
 
-    platforms = supported_platforms(;experimental=experimental_platforms)
+    platforms = supported_platforms(; experimental=experimental_platforms)
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
