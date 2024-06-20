@@ -48,6 +48,7 @@ dependencies = [
     Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"))
     Dependency(PackageSpec(name="libsamplerate_jll", uuid="9427e74d-4e05-59c1-8ff3-7d74b6e52ac8"))
     Dependency(PackageSpec(name="PulseAudio_jll", uuid="02771fc1-bdb7-5db5-8d11-300768e00fbd"))
+    Dependency(PackageSpec(name="libavtp_jll", uuid="c33e1e51-3cb7-5762-8964-d0cfbd951039"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
