@@ -13,16 +13,21 @@ name = "cufinufft"
 version = v"2.2.0"
 
 commit_hash = "51892059a4b457a99a2569ac11e9e91cd2e289e7";
-preferred_gcc_version=v"13"
+preferred_gcc_version=v"11"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/flatironinstitute/finufft.git", commit_hash)
 ]
 
-# Build script: cufinufft, all possible archs
+# Build script: cufinufft, all possible archs available for each CUDA version
+# - CMake toolchain looks for compiler in CUDA_PATH/bin/nvcc
+#   and libs in CUDA_PATH/lib64, so create link.
 script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
+
+export CUDA_PATH="$prefix/cuda"
+ln -s $prefix/cuda/lib $prefix/cuda/lib64
 
 mkdir build && cd build
 cmake .. \
@@ -33,32 +38,40 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DFINUFFT_USE_CPU=OFF \
     -DFINUFFT_USE_CUDA=ON \
-    -DCMAKE_CUDA_ARCHITECTURES="50;60;70;80;90"
-cmake --build . --parallel $nproc --target cufinufft
+    -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}"
+cmake --build . --parallel $nproc
 cmake --install .
 """
 
-# Build for all supported CUDA platforms
-platforms = CUDA.supported_platforms(min_version=v"12.5")
+# Build for all supported CUDA platforms > v11
+platforms = CUDA.supported_platforms(min_version=v"11.0")
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("culibfinufft", :culibfinufft)
+    LibraryProduct("libcufinufft", :libcufinufft)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+# NVTX_jll is needed for nvToolsExt. (tested with v3.1.0+2)
+dependencies = [Dependency("NVTX_jll")]
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    cuda_deps = CUDA.required_dependencies(platform)
+    # Static SDK is used in CMake toolchain
+    cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-    @show platform
-    @show CUDA.is_supported(platform)
-    @show cuda_deps
-    
-    build_tarballs(ARGS, name, version, sources, script, [platform],
+    # Build for all major archs supported by SDK
+    # See https://en.wikipedia.org/wiki/CUDA
+    if VersionNumber(platform["cuda"]) < v"11.8"
+        cuda_archs = "50;60;70;80"
+    else
+        cuda_archs = "50;60;70;80;90"
+    end
+    arch_line = "export CUDA_ARCHS=\"$cuda_archs\"\n"
+    platform_script = arch_line * script
+
+    build_tarballs(ARGS, name, version, sources, platform_script, [platform],
                    products, [dependencies; cuda_deps];
                    preferred_gcc_version=preferred_gcc_version,
                    julia_compat="1.9",
