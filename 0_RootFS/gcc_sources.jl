@@ -236,7 +236,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.19.tar.xz",
                               "2d3997f588401ea095a0b27227b1d50cdfdd416236f6567b564549d3b46ea2a2"),
             ]
-        elseif arch(compiler_target) in ["x86_64", "i686", "powerpc64le"]
+        elseif arch(compiler_target) in ["x86_64", "i686", "powerpc64le", "riscv64"]
             libc_sources = [
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz",
                               "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),
