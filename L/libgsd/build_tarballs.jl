@@ -27,7 +27,7 @@ platforms = filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("include/gsd.h", :gsd_h), # header file is needed for the use of CBinding.jl in follow up wrapper of GSD.jl
+    FileProduct("include/gsd.h", :gsd_h), 
     LibraryProduct("libgsd", :libgsd)
 ]
 
