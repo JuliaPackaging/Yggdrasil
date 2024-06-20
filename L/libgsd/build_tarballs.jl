@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/gsd/
 mkdir -p "${libdir}"
+install -Dv -m644 ./gsd/gsd.h ${includedir}/gsd.h
 ${CC} -std=c99 -fPIC gsd/gsd.c -shared -o "${libdir}/libgsd.${dlext}"
 """
 
@@ -26,6 +27,7 @@ platforms = filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
+    FileProduct("include/gsd.h", :gsd_h), 
     LibraryProduct("libgsd", :libgsd)
 ]
 
