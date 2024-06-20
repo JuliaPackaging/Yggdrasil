@@ -22,7 +22,7 @@ cmake --install build
 # platforms are passed in on the command line
 platforms = supported_platforms()
 # Same limitations as isa_l
-filter!(p -> arch(p) -= "x86_64", platforms)
+filter!(p -> arch(p) == "x86_64", platforms)
 
 
 # The products that we will ensure are always built
