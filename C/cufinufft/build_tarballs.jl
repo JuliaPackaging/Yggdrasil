@@ -43,8 +43,10 @@ cmake --build . --parallel $nproc
 cmake --install .
 """
 
-# Build for all supported CUDA platforms > v11
+# Build for all supported CUDA > v11
 platforms = CUDA.supported_platforms(min_version=v"11.0")
+# Cmake toolchain breaks on aarch64, so only x86_64 for now
+filter!(p -> p["arch"]=="x86_64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -74,7 +76,8 @@ for platform in platforms
     build_tarballs(ARGS, name, version, sources, platform_script, [platform],
                    products, [dependencies; cuda_deps];
                    preferred_gcc_version=preferred_gcc_version,
-                   julia_compat="1.9",
-                   augment_platform_block=CUDA.augment
+                   julia_compat="1.6",
+                   augment_platform_block=CUDA.augment,
+                   lazy_artifacts=true
                    )
 end
