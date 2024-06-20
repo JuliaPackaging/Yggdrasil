@@ -45,8 +45,8 @@ Clp_gitsha = "1c2586a08d33ecc59ed67d319c29044802c0866b"
 Osi_version = offset_version(v"0.108.7", v"0.0.0")
 Osi_gitsha = "c67528fc8b2a36dc936b285fe34030439b9147c3"
 
-CoinUtils_version = offset_version(v"2.11.10", v"0.0.0")
-CoinUtils_gitsha = "5b98c4bb87ceebedb86c6e921dc4ad0af6166c8e"
+CoinUtils_version = offset_version(v"2.11.11", v"0.0.0")
+CoinUtils_gitsha = "15a819b7e8763b2557e4bf440f8cb62ee6734f36"
 
 Ipopt_upstream_version = v"3.14.14"
 Ipopt_gitsha = "5fd746337021543e78dc2d167cb1c15db81f68e1"
