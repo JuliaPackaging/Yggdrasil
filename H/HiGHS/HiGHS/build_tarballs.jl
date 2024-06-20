@@ -16,6 +16,7 @@ platforms = expand_cxxstring_abis(platforms)
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("Zlib_jll"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
 build_tarballs(

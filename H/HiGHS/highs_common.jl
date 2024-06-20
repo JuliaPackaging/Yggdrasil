@@ -17,8 +17,13 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-common_build_script = raw"""
+function build_script(; shared_libs::String)
+    build_static = shared_libs == "OFF" ? "ON" : "OFF"
+    return "BUILD_SHARED=$(shared_libs)\nBUILD_STATIC=$(build_static)\n" * raw"""
 cd $WORKSPACE/srcdir/HiGHS
+
+# Remove system CMake to use the jll version
+apk del cmake
 
 mkdir -p build
 cd build
@@ -58,20 +63,4 @@ if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     fi
 fi
 """
-
-function build_script(; shared_libs::String)
-    header = if shared_libs == "OFF"
-        """
-        BUILD_SHARED=OFF
-        BUILD_STATIC=ON
-        # Remove system CMake to use the jll version
-        apk del cmake
-        """
-    else
-        """
-        BUILD_SHARED=ON
-        BUILD_STATIC=OFF
-        """
-    end
-    return header * common_build_script
 end
