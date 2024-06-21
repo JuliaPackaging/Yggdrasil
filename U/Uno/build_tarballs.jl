@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = "v1.0.0"
+version = v"1.0.0"
 
 sources = [
     GitSource(
