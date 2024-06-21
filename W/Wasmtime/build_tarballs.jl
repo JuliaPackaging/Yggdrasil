@@ -42,10 +42,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-exclude(p) = (Sys.iswindows(p) && arch(p) == "i686") ||  # our Windows x86 Rust toolchain is unusable
-             libc(p) == "musl" ||                        # `cdylib` doesn't support musl
-             arch(p) == "powerpc64le"                    # `wasmtime-fibers` doesn't support PowerPC
-platforms = supported_platforms(; exclude)
+platforms = supported_platforms(; exclude=(p -> !(arch(p) in ("x86_64", "aarch64")) || libc(p) == "musl"))
 
 # TODO: Do we want headers too? There's a lot of them...
 products = [LibraryProduct("libwasmtime", :libwasmtime),
