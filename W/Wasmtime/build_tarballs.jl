@@ -13,6 +13,11 @@ cd ${WORKSPACE}/srcdir/wasmtime/
 export CARGO_PROFILE_RELEASE_STRIP=debuginfo
 export CARGO_PROFILE_RELEASE_PANIC=abort
 
+if [[ "${target}" == armv* ]] || [[ "${target}" == aarch64-linux* ]]; then
+    # The `ring` crate in the dependency tree requires this be set on ARM targets
+    export CFLAGS="-D__ARM_ARCH"
+fi
+
 cargo build \
     --release \
     --target ${rust_target} \
@@ -31,9 +36,16 @@ cmake ../../crates/c-api \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_INSTALL_LIBDIR=${libdir}
 cmake --build . --target install
+
+if [[ "${target}" == *-mingw* ]]; then
+    mv "${libdir}/wasmtime.dll" "${libdir}/libwasmtime.dll"
+fi
 """
 
-platforms = supported_platforms(; exclude=(p -> Sys.iswindows(p) && arch(p) == "i686"))
+exclude(p) = (Sys.iswindows(p) && arch(p) == "i686") ||  # our Windows x86 Rust toolchain is unusable
+             libc(p) == "musl" ||                        # `cdylib` doesn't support musl
+             arch(p) == "powerpc64le"                    # `wasmtime-fibers` doesn't support PowerPC
+platforms = supported_platforms(; exclude)
 
 # TODO: Do we want headers too? There's a lot of them...
 products = [LibraryProduct("libwasmtime", :libwasmtime),
