@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MUMPS"
-version = v"5.7.0"
+version = v"5.7.2"
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(version).tar.gz",
-                "0ea2681a56246cb8eec578324cefa09f2142ea6f7c500a5fd6e0ad226a1a06cf")
+                "1362d377ce7422fc886c55212b4a4d2c381918b5ca4478f682a22d0627a8fbf8")
 ]
 
 # Bash recipe for building across all platforms
