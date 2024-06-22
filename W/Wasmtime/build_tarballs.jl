@@ -18,6 +18,10 @@ if [[ "${target}" == armv* ]] || [[ "${target}" == aarch64-linux* ]]; then
     export CFLAGS="-D__ARM_ARCH"
 fi
 
+if [[ "${target}" == *-musl* ]]; then
+    export RUSTFLAGS="-C target-feature=-crt-static"
+fi
+
 cargo build \
     --release \
     --target ${rust_target} \
@@ -42,9 +46,9 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 """
 
-platforms = supported_platforms(; exclude=(p -> !(arch(p) in ("x86_64", "aarch64")) || libc(p) == "musl"))
+platforms = supported_platforms(; exclude=(p -> !(arch(p) in ("x86_64", "aarch64"))))
 
-# TODO: Do we want headers too? There's a lot of them...
+# NOTE: Headers get installed too but we aren't explicitly listing them as `FileProduct`s
 products = [LibraryProduct("libwasmtime", :libwasmtime),
             ExecutableProduct("wasmtime", :wasmtime)]
 
