@@ -14,7 +14,7 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "MUMPS_seq"
-upstream_version = v"5.7.0"
+upstream_version = v"5.7.2"
 version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -22,7 +22,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz",
-                "0ea2681a56246cb8eec578324cefa09f2142ea6f7c500a5fd6e0ad226a1a06cf")
+                "1362d377ce7422fc886c55212b4a4d2c381918b5ca4478f682a22d0627a8fbf8")
 ]
 
 # Bash recipe for building across all platforms
@@ -80,10 +80,10 @@ cp lib/*.${dlext} ${libdir}
 
 make clean
 for sym in isamax idamax ilaenv slamch dlamch \
-           saxpy scopy sgemm sgemv sgeqpf sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
-           daxpy dcopy dgemm dgemv dgeqpf dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
-           caxpy ccopy cgemm cgemv cgeqpf cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
-           zaxpy zcopy zgemm zgemv zgeqpf zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
+           saxpy scopy sgemm sgemv sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
+           daxpy dcopy dgemm dgemv dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
+           caxpy ccopy cgemm cgemv cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
+           zaxpy zcopy zgemm zgemv zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
 do
     FFLAGS+=("-D${sym}=${sym}_64")
 done
@@ -130,8 +130,8 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.9.0"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.11", preferred_gcc_version=v"6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.9", preferred_gcc_version=v"6", clang_use_lld=false)
