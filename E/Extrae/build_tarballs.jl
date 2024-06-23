@@ -5,6 +5,7 @@ using Pkg
 
 include(joinpath(dirname(dirname(@__DIR__)), "fancy_toys.jl"))
 include(joinpath(dirname(dirname(@__DIR__)), "platforms", "cuda.jl"))
+include(joinpath(dirname(dirname(@__DIR__)), "platforms", "mpi.jl"))
 
 
 name = "Extrae"
@@ -51,7 +52,7 @@ autoreconf -fvi
     --disable-openmp \
     --disable-nanos \
     --disable-smpss \
-    --without-mpi \
+    --with-mpi=${prefix} \
     ${ENABLE_CUDA:+--with-cuda=$prefix/cuda} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
@@ -76,6 +77,8 @@ cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 # `platform in non_cuda_platforms` test below is meaningless.
 all_platforms = [non_cuda_platforms; cuda_platforms]
 
+mpi_platforms, mpi_dependencies = MPI.augment_platforms(all_platforms)
+
 # Some platforms need glibc 2.19+, because the default one is too old
 glibc_platforms = filter(all_platforms) do p
     libc(p) == "glibc" && proc_family(p) in ("intel", "power")
@@ -94,19 +97,36 @@ cuda_products = [
     LibraryProduct("libcudatrace", :libcudatrace, dont_dlopen=true),
 ]
 
+mpi_products = [
+    LibraryProduct("libmpitrace", :libmpitrace, dont_dlopen=true),
+    LibraryProduct("libcudampitrace", :libcudampitrace, dont_dlopen=true),
+    LibraryProduct("libptmpitrace", :libptmpitrace, dont_dlopen=true),
+]
+
 dependencies = [
     # `MADV_HUGEPAGE` and `MAP_HUGE_SHIFT` require glibc 2.19, but we only
     # package glibc 2.17 on some architectures.
-    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.19");
-                    platforms=glibc_platforms),
+    BuildDependency(PackageSpec(name="Glibc_jll", version=v"2.19");
+        platforms=glibc_platforms),
     Dependency("Binutils_jll"; compat="~2.41"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"; compat="~7.1"),
     Dependency("XML2_jll"; compat="2.12.0"),
     RuntimeDependency("CUDA_Runtime_jll"),
+    mpi_dependencies...
 ]
 
-for platform in all_platforms
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+
+    module __CUDA
+        $(CUDA.augment)
+    end
+    augment_platform!(platform::Platform) = augment_mpi!(__CUDA.augment_platform!(platform))
+"""
+
+for platform in mpi_platforms
     # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
     if platform in non_cuda_platforms && CUDA.is_supported(platform)
         platform["cuda"] = "none"
@@ -125,6 +145,6 @@ for platform in all_platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, _dependencies; lazy_artifacts=true,
-                   julia_compat="1.6", augment_platform_block=CUDA.augment,
+                   julia_compat="1.6", augment_platform_block,
                    preferred_gcc_version=v"5")
 end
