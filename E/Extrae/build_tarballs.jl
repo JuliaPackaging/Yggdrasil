@@ -59,7 +59,7 @@ autoreconf -fvi
     ${ENABLE_CUDA:+--with-cuda=$prefix/cuda} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
-    --with-xml-prefix=$prefix \
+    --with-xml=$prefix \
     --with-papi=$prefix
 
 make -j${nproc}
