@@ -57,6 +57,9 @@ autoreconf -fvi
     --with-mpi-headers=${prefix}/include \
     --with-mpi-libs=${prefix}/lib \
     ${ENABLE_CUDA:+--with-cuda=$prefix/cuda} \
+    ${ENABLE_CUDA:+--with-cuda-binaries=$prefix/cuda/bin} \
+    ${ENABLE_CUDA:+--with-cuda-headers=$prefix/cuda/include} \
+    ${ENABLE_CUDA:+--with-cuda-libs=$prefix/cuda/lib} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
     --with-xml=$prefix \
@@ -123,7 +126,7 @@ augment_platform_block = """
     module __CUDA
         $(CUDA.augment)
     end
-    augment_platform!(platform::Platform) = augment_mpi!(__CUDA.augment_platform!(platform))
+    augment_platform!(platform::Platform) = __CUDA.augment_platform!(augment_mpi!(platform))
 """
 
 for platform in mpi_platforms
