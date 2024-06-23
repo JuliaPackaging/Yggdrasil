@@ -53,6 +53,9 @@ autoreconf -fvi
     --disable-nanos \
     --disable-smpss \
     --with-mpi=${prefix} \
+    --with-mpi-binaries=${prefix}/bin \
+    --with-mpi-headers=${prefix}/include \
+    --with-mpi-libs=${prefix}/lib \
     ${ENABLE_CUDA:+--with-cuda=$prefix/cuda} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
@@ -80,13 +83,15 @@ all_platforms = [non_cuda_platforms; cuda_platforms]
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(all_platforms)
 
 # Some platforms need glibc 2.19+, because the default one is too old
-glibc_platforms = filter(all_platforms) do p
+glibc_platforms = filter(mpi_platforms) do p
     libc(p) == "glibc" && proc_family(p) in ("intel", "power")
 end
 
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
     LibraryProduct("libpttrace", :libpttrace),
+    LibraryProduct("libmpitrace", :libmpitrace, dont_dlopen=true),
+    LibraryProduct("libptmpitrace", :libptmpitrace, dont_dlopen=true),
     ExecutableProduct("extrae-cmd", :extrae_cmd),
     ExecutableProduct("extrae-header", :extrae_header),
     ExecutableProduct("extrae-loader", :extrae_loader),
@@ -95,12 +100,7 @@ products = [
 
 cuda_products = [
     LibraryProduct("libcudatrace", :libcudatrace, dont_dlopen=true),
-]
-
-mpi_products = [
-    LibraryProduct("libmpitrace", :libmpitrace, dont_dlopen=true),
     LibraryProduct("libcudampitrace", :libcudampitrace, dont_dlopen=true),
-    LibraryProduct("libptmpitrace", :libptmpitrace, dont_dlopen=true),
 ]
 
 dependencies = [
@@ -140,6 +140,15 @@ for platform in mpi_platforms
         [
             dependencies;
             BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform["cuda"]))))
+        ]
+    end
+
+    _products = if !haskey(platform, "cuda") || platform["cuda"] == "none"
+        products
+    else
+        [
+            products;
+            cuda_products...
         ]
     end
 
