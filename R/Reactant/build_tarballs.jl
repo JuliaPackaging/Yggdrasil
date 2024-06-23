@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.10"
+version = v"0.0.11"
 
 sources = [
    GitSource(repo, "248a85f1962ee9e8d00df2739cb4e6afdcd33c88"),
