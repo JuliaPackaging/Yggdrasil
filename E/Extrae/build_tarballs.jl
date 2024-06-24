@@ -95,7 +95,7 @@ for platform in all_platforms
 end
 
 # Some platforms need glibc 2.19+, because the default one is too old
-glibc_platforms = filter(mpi_platforms) do p
+glibc_platforms = filter(all_platforms) do p
     libc(p) == "glibc" && proc_family(p) in ("intel", "power")
 end
 
