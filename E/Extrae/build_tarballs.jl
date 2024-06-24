@@ -37,12 +37,12 @@ if [[ $bb_target = powerpc64le* ]]; then
 fi
 
 if [[ $bb_full_target = *cuda\+[0-9]* ]]; then
-    export ENABLE_CUDA=1
+    export FLAGS_CUDA=--with-cuda=$prefix/cuda
     export CPPFLAGS="-I${prefix}/cuda/include"
 fi
 
 if [[ $bb_full_target = *mpi* ]]; then
-    export ENABLE_MPI=1
+    export FLAGS_MPI=--with-mpi=$prefix
 fi
 
 autoreconf -fvi
@@ -56,10 +56,8 @@ autoreconf -fvi
     --disable-openmp \
     --disable-nanos \
     --disable-smpss \
-    ${ENABLE_MPI:+--with-mpi=$prefix} \
-    ${ENABLE_MPI:---without-mpi} \
-    ${ENABLE_CUDA:+--with-cuda=$prefix/cuda} \
-    ${ENABLE_CUDA:---without-cuda} \
+    ${FLAGS_MPI:- --without-mpi} \
+    ${FLAGS_CUDA:- --without-cuda} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
     --with-xml=$prefix \
