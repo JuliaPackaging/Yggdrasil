@@ -83,6 +83,17 @@ mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 # `platform in platforms` test below is meaningless.
 all_platforms = [platforms; cuda_platforms; mpi_platforms]
 
+# Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
+for platform in all_platforms
+    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
+        platform["cuda"] = "none"
+    end
+
+    if !haskey(platform, "mpi")
+        platform["mpi"] = "none"
+    end
+end
+
 # Some platforms need glibc 2.19+, because the default one is too old
 glibc_platforms = filter(mpi_platforms) do p
     libc(p) == "glibc" && proc_family(p) in ("intel", "power")
@@ -118,18 +129,13 @@ dependencies = [
 ]
 
 for platform in all_platforms
-    # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-    if platform in platforms && CUDA.is_supported(platform)
-        platform["cuda"] = "none"
-    end
-
-    should_build_platform(triplet(platform)) || continue
+    should_build_platform(platform) || continue
 
     _dependencies = [
         dependencies;
-        if platform in cuda_platforms
+        if haskey(platform, "cuda") && platform["cuda"] != "none"
             [BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform["cuda"]))))]
-        elseif platform in mpi_platforms
+        elseif haskey(platform, "mpi")
             mpi_dependencies
         else
             []
@@ -138,18 +144,18 @@ for platform in all_platforms
 
     _products = [
         products;
-        if platform in cuda_platforms
+        if haskey(platform, "cuda") && platform["cuda"] != "none"
             cuda_products
-        elseif platform in mpi_platforms
+        elseif haskey(platform, "mpi")
             mpi_products
         else
             []
         end...
     ]
 
-    augment_platform_block = if platform in cuda_platforms
+    augment_platform_block = if haskey(platform, "cuda") && platform["cuda"] != "none"
         CUDA.augment
-    elseif platform in mpi_platforms
+    elseif haskey(platform, "mpi")
         MPI.augment
     else
         ""
