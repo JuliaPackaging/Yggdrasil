@@ -129,23 +129,23 @@ for platform in all_platforms
     _dependencies = [
         dependencies;
         if platform in cuda_platforms
-            [BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform["cuda"]))))]...
+            [BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform["cuda"]))))]
         elseif platform in mpi_platforms
-            mpi_dependencies...
+            mpi_dependencies
         else
-            []...
-        end
+            []
+        end...
     ]
 
     _products = [
         products;
         if platform in cuda_platforms
-            cuda_products...
+            cuda_products
         elseif platform in mpi_platforms
-            mpi_products...
+            mpi_products
         else
-            []...
-        end
+            []
+        end...
     ]
 
     augment_platform_block = if platform in cuda_platforms
