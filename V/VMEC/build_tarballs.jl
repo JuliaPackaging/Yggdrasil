@@ -4,11 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "VMEC"
-upstream_version = v"1.3.1"
+upstream_version = v"1.2.0"
+jll_version = v"1.3.1"
 version_patch_offset = 0
-version = VersionNumber(upstream_version.major,
-                        upstream_version.minor,
-                        upstream_version.patch * 100 + version_patch_offset)
+version = VersionNumber(jll_version.major,
+                        jll_version.minor,
+                        jll_version.patch * 100 + version_patch_offset)
 
 sources = [
     ArchiveSource("https://gitlab.com/wistell/VMEC2000/-/archive/v$(upstream_version).tar",
