@@ -41,7 +41,7 @@ if [[ $bb_full_target = *cuda\+[0-9]* ]]; then
     export CPPFLAGS="-I${prefix}/cuda/include"
 fi
 
-if [[ $bb_full_target = *mpi* ]]; then
+if [[ $bb_full_target = *mpi* ]] && [[ $bb_full_target != *mpi\+none* ]]; then
     export FLAGS_MPI="--with-mpi=$prefix --with-mpi-binaries=$prefix/bin --with-mpi-headers=$prefix/include --with-mpi-libs=$prefix/lib"
 fi
 
