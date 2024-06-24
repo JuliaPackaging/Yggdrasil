@@ -57,9 +57,9 @@ autoreconf -fvi
     --disable-nanos \
     --disable-smpss \
     ${ENABLE_MPI:+--with-mpi=$prefix} \
-    ${!ENABLE_MPI:+--without-mpi} \
+    ${ENABLE_MPI:---without-mpi} \
     ${ENABLE_CUDA:+--with-cuda=$prefix/cuda} \
-    ${!ENABLE_CUDA:+--without-cuda} \
+    ${ENABLE_CUDA:---without-cuda} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
     --with-xml=$prefix \
