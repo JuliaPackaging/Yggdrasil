@@ -106,7 +106,6 @@ cuda_products = [
 
 mpi_products = [
     LibraryProduct("libmpitrace", :libmpitrace, dont_dlopen=true),
-    LibraryProduct("libptmpitrace", :libptmpitrace, dont_dlopen=true),
 ]
 
 dependencies = [
