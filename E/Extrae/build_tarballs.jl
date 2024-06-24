@@ -42,7 +42,7 @@ if [[ $bb_full_target = *cuda\+[0-9]* ]]; then
 fi
 
 if [[ $bb_full_target = *mpi* ]]; then
-    export FLAGS_MPI=--with-mpi=$prefix
+    export FLAGS_MPI="--with-mpi=$prefix --with-mpi-binaries=$prefix/bin --with-mpi-headers=$prefix/include --with-mpi-libs=$prefix/lib"
 fi
 
 autoreconf -fvi
