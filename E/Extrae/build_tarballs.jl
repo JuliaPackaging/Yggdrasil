@@ -110,7 +110,7 @@ products = [
 
 cuda_products = [
     LibraryProduct("libcudatrace", :libcudatrace, dont_dlopen=true),
-    LibraryProduct("libcudampitrace", :libcudampitrace, dont_dlopen=true),
+    # LibraryProduct("libcudampitrace", :libcudampitrace, dont_dlopen=true),
 ]
 
 mpi_products = [
@@ -135,7 +135,7 @@ for platform in all_platforms
         dependencies;
         if haskey(platform, "cuda") && platform["cuda"] != "none"
             [BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform["cuda"]))))]
-        elseif haskey(platform, "mpi")
+        elseif haskey(platform, "mpi") && platform["mpi"] != "none"
             mpi_dependencies
         else
             []
@@ -146,7 +146,7 @@ for platform in all_platforms
         products;
         if haskey(platform, "cuda") && platform["cuda"] != "none"
             cuda_products
-        elseif haskey(platform, "mpi")
+        elseif haskey(platform, "mpi") && platform["mpi"] != "none"
             mpi_products
         else
             []
@@ -155,7 +155,7 @@ for platform in all_platforms
 
     augment_platform_block = if haskey(platform, "cuda") && platform["cuda"] != "none"
         CUDA.augment
-    elseif haskey(platform, "mpi")
+    elseif haskey(platform, "mpi") && platform["mpi"] != "none"
         MPI.augment
     else
         ""
