@@ -41,6 +41,10 @@ if [[ $bb_full_target = *cuda\+[0-9]* ]]; then
     export CPPFLAGS="-I${prefix}/cuda/include"
 fi
 
+if [[ $bb_full_target = *mpi* ]]; then
+    export ENABLE_MPI=1
+fi
+
 autoreconf -fvi
 ./configure \
     --prefix=${prefix} \
@@ -52,14 +56,8 @@ autoreconf -fvi
     --disable-openmp \
     --disable-nanos \
     --disable-smpss \
-    --with-mpi=${prefix} \
-    --with-mpi-binaries=${prefix}/bin \
-    --with-mpi-headers=${prefix}/include \
-    --with-mpi-libs=${prefix}/lib \
+    ${ENABLE_MPI:+--with-mpi=$prefix} \
     ${ENABLE_CUDA:+--with-cuda=$prefix/cuda} \
-    ${ENABLE_CUDA:+--with-cuda-binaries=$prefix/cuda/bin} \
-    ${ENABLE_CUDA:+--with-cuda-headers=$prefix/cuda/include} \
-    ${ENABLE_CUDA:+--with-cuda-libs=$prefix/cuda/lib} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
     --with-xml=$prefix \
@@ -69,21 +67,21 @@ make -j${nproc}
 make install
 """
 
-non_cuda_platforms = [
+platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("powerpc64le", "linux"; libc="glibc"),
 ]
-non_cuda_platforms = expand_cxxstring_abis(non_cuda_platforms)
+platforms = expand_cxxstring_abis(platforms)
 # (Almost) Same as PAPI
 cuda_platforms = CUDA.supported_platforms(; max_version=v"12.2")
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
-# Concatenate the platforms _after_ the C++ string ABI expansion, otherwise the
-# `platform in non_cuda_platforms` test below is meaningless.
-all_platforms = [non_cuda_platforms; cuda_platforms]
+mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 
-mpi_platforms, mpi_dependencies = MPI.augment_platforms(all_platforms)
+# Concatenate the platforms _after_ the C++ string ABI expansion, otherwise the
+# `platform in platforms` test below is meaningless.
+all_platforms = [platforms; cuda_platforms; mpi_platforms]
 
 # Some platforms need glibc 2.19+, because the default one is too old
 glibc_platforms = filter(mpi_platforms) do p
@@ -93,8 +91,6 @@ end
 products = [
     LibraryProduct("libseqtrace", :libseqtrace),
     LibraryProduct("libpttrace", :libpttrace),
-    LibraryProduct("libmpitrace", :libmpitrace, dont_dlopen=true),
-    LibraryProduct("libptmpitrace", :libptmpitrace, dont_dlopen=true),
     ExecutableProduct("extrae-cmd", :extrae_cmd),
     ExecutableProduct("extrae-header", :extrae_header),
     ExecutableProduct("extrae-loader", :extrae_loader),
@@ -106,57 +102,62 @@ cuda_products = [
     LibraryProduct("libcudampitrace", :libcudampitrace, dont_dlopen=true),
 ]
 
+mpi_products = [
+    LibraryProduct("libmpitrace", :libmpitrace, dont_dlopen=true),
+    LibraryProduct("libptmpitrace", :libptmpitrace, dont_dlopen=true),
+]
+
 dependencies = [
     # `MADV_HUGEPAGE` and `MAP_HUGE_SHIFT` require glibc 2.19, but we only
     # package glibc 2.17 on some architectures.
-    BuildDependency(PackageSpec(name="Glibc_jll", version=v"2.19");
-        platforms=glibc_platforms),
+    BuildDependency(PackageSpec(name="Glibc_jll", version=v"2.19"); platforms=glibc_platforms),
     Dependency("Binutils_jll"; compat="~2.41"),
     Dependency("LibUnwind_jll"),
     Dependency("PAPI_jll"; compat="~7.1"),
     Dependency("XML2_jll"; compat="2.12.0"),
-    RuntimeDependency("CUDA_Runtime_jll"),
-    mpi_dependencies...
+    RuntimeDependency("CUDA_Runtime_jll"; platforms=cuda_platforms),
 ]
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(MPI.augment)
-
-    module __CUDA
-        $(CUDA.augment)
-    end
-    augment_platform!(platform::Platform) = __CUDA.augment_platform!(augment_mpi!(platform))
-"""
-
-for platform in mpi_platforms
+for platform in all_platforms
     # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-    if platform in non_cuda_platforms && CUDA.is_supported(platform)
+    if platform in platforms && CUDA.is_supported(platform)
         platform["cuda"] = "none"
     end
 
     should_build_platform(triplet(platform)) || continue
 
-    _dependencies = if !haskey(platform, "cuda") || platform["cuda"] == "none"
-        dependencies
-    else
-        [
-            dependencies;
-            BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform["cuda"]))))
-        ]
-    end
+    _dependencies = [
+        dependencies;
+        if platform in cuda_platforms
+            [BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform["cuda"]))))]...
+        elseif platform in mpi_platforms
+            mpi_dependencies...
+        else
+            []...
+        end
+    ]
 
-    _products = if !haskey(platform, "cuda") || platform["cuda"] == "none"
-        products
-    else
-        [
-            products;
+    _products = [
+        products;
+        if platform in cuda_platforms
             cuda_products...
-        ]
+        elseif platform in mpi_platforms
+            mpi_products...
+        else
+            []...
+        end
+    ]
+
+    augment_platform_block = if platform in cuda_platforms
+        CUDA.augment
+    elseif platform in mpi_platforms
+        MPI.augment
+    else
+        ""
     end
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
-                   products, _dependencies; lazy_artifacts=true,
-                   julia_compat="1.6", augment_platform_block,
-                   preferred_gcc_version=v"5")
+        _products, _dependencies; lazy_artifacts=true,
+        julia_compat="1.6", augment_platform_block,
+        preferred_gcc_version=v"5")
 end
