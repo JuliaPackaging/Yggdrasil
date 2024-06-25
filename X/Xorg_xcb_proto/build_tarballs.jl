@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_proto"
-version = v"1.17.0"
+version_string = "1.17.0"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build xcb-proto
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/xcb/xcb-proto-$(version.major).$(version.minor).$(version.patch).tar.xz",
+    ArchiveSource("https://www.x.org/archive/individual/xcb/xcb-proto-$(version_string).tar.xz",
                   "2c1bacd2110f4799f74de6ebb714b94cf6f80fb112316b1219480fd22562148c"),
 ]
 
