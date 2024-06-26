@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.4.0" # Equivalent to patch_28Mar2023_update1
+version = v"2.4.1" # Equivalent to patch_28Mar2023_update1
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -15,6 +15,7 @@ version = v"2.4.0" # Equivalent to patch_28Mar2023_update1
 # 2.3.0 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update1
 # 2.3.2 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update3
 # 2.4.0 -> https://github.com/lammps/lammps/releases/tag/patch_28Mar2023_update1
+# 2.4.1 -- Enables DPD packages
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -42,13 +43,13 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
     -DPKG_ML-POD=ON \
-    -DPKG_DPD-BASIC=OFF \
-    -DPKG_DPD-MESO=OFF \
-    -DPKG_DPD-REACT=OFF \
-    -DPKG_DPD-SMOOTH=OFF \
-    -DPKG_USER-MESODPD=OFF \
-    -DPKG_USER-DPD=OFF \
-    -DPKG_USER-SDPD=OFF \
+    -DPKG_DPD-BASIC=ON \
+    -DPKG_DPD-MESO=ON \
+    -DPKG_DPD-REACT=ON \
+    -DPKG_DPD-SMOOTH=ON \
+    -DPKG_USER-MESODPD=ON \
+    -DPKG_USER-DPD=ON \
+    -DPKG_USER-SDPD=ON \
     -DPKG_MANYBODY=ON \
     -DPKG_MOLECULE=ON \
     -DPKG_REPLICA=ON \

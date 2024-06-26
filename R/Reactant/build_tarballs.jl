@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.4"
+version = v"0.0.11"
 
 sources = [
-   GitSource(repo, "3aed0ea8b0f3a782b8b827ceaa6a32fc535e1694"),
+   GitSource(repo, "248a85f1962ee9e8d00df2739cb4e6afdcd33c88"),
 ]
 
 # Bash recipe for building across all platforms
@@ -125,6 +125,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
         BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     fi
+    BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)

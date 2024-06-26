@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"0.10.2"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "1601d94f94a7e0d2eb805a94803eb1e3afbbe4ed"),
+    GitSource("https://github.com/duckdb/duckdb.git", "1f98600c2cf8722a6d2f2d805bb4af5e701319fc"),
 ]
 
 # Bash recipe for building across all platforms

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "GEOS"
-version = v"3.12.0"
+version = v"3.12.2"
 
 # Collection of sources required to build GEOS
 sources = [
     ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "d96db96011259178a35555a0f6d6e75a739e52a495a6b2aa5efb3d75390fbc39")
+                  "34c7770bf0090ee88488af98767d08e779f124fa33437e0aabec8abd4609fec6" )
 ]
 
 # Bash recipe for building across all platforms

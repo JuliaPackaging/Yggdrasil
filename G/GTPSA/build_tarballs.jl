@@ -3,19 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "GTPSA"
-version = v"1.3.0"
+version = v"1.3.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mattsignorelli/gtpsa.git", "49245a21f2ee576d74168828755f667a04b1eb13")
+    GitSource("https://github.com/mattsignorelli/gtpsa.git", "0fa045e01cb3f4b4f105009d071c4f09138719d5")
 ]
 
 # Bash recipe for building across all platforms
+# GCC >=11 is necessary because the source code uses the two-argument version
+# of the attribute malloc, see https://github.com/mattsignorelli/gtpsa/blob/394a20847b869a842c6a89f2af1a889c3a1c2813/code/mad_mem.h#L73-L75 (also unsupported by clang)
 script = raw"""
 cd $WORKSPACE/srcdir
 cd gtpsa/
 cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
-make
+make -j${nproc}
 make install
 """
 
@@ -33,7 +35,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    Dependency(PackageSpec(name="LAPACK32_jll", uuid="17f450c3-bd24-55df-bb84-8c51b4b939e3"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
