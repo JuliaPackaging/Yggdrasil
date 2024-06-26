@@ -101,8 +101,8 @@ glibc_platforms = filter(all_platforms) do p
 end
 
 products = [
-    LibraryProduct("libseqtrace", :libseqtrace),
-    LibraryProduct("libpttrace", :libpttrace),
+    LibraryProduct("libseqtrace", :libseqtrace, dont_dlopen=true),
+    LibraryProduct("libpttrace", :libpttrace, dont_dlopen=true),
     ExecutableProduct("extrae-cmd", :extrae_cmd),
     ExecutableProduct("extrae-header", :extrae_header),
     ExecutableProduct("extrae-loader", :extrae_loader),
