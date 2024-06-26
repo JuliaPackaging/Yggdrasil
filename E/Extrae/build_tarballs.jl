@@ -60,7 +60,7 @@ autoreconf -fvi
     ${FLAGS_CUDA:- --without-cuda} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
-    --with-xml=$prefix \
+    --with-xml=$prefix --with-xml2-binaries=${bindir} --with-xml2-headers=${includedir}/libxml2 --with-xml2-libs=${libdir} \
     --with-papi=$prefix
 
 make -j${nproc}
