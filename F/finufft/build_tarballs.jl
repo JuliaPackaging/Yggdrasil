@@ -22,10 +22,12 @@ cd $WORKSPACE/srcdir/finufft*/
 
 mkdir build && cd build
 cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH="${prefix}" \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-    -DFINUFFT_FFTW_SUFFIX=""
+    -DFINUFFT_FFTW_SUFFIX="" \
+    -DFINUFFT_ARCH_FLAGS=""
 cmake --build . --parallel $nproc
 cmake --install .
 """
