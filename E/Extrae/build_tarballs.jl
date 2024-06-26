@@ -56,8 +56,8 @@ autoreconf -fvi
     --disable-openmp \
     --disable-nanos \
     --disable-smpss \
-    ${FLAGS_MPI:- --without-mpi} \
-    ${FLAGS_CUDA:- --without-cuda} \
+    ${FLAGS_MPI:---without-mpi} \
+    ${FLAGS_CUDA:---without-cuda} \
     --with-binutils=$prefix \
     --with-unwind=$prefix \
     --with-xml=$prefix \
