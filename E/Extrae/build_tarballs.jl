@@ -78,6 +78,7 @@ cuda_platforms = CUDA.supported_platforms(; max_version=v"12.2")
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
+filter!(platform -> platform["mpi"] != "mpitrampoline", mpi_platforms)
 
 # Concatenate the platforms _after_ the C++ string ABI expansion, otherwise the
 # `platform in platforms` test below is meaningless.
