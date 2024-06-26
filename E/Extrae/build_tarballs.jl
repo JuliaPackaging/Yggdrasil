@@ -129,6 +129,10 @@ dependencies = [
     RuntimeDependency("CUDA_Runtime_jll"; platforms=cuda_platforms),
 ]
 
+init_block = raw"""
+ENV["EXTRAE_SKIP_AUTO_LIBRARY_INITIALIZE"] = "1"
+"""
+
 for platform in all_platforms
     should_build_platform(platform) || continue
 
@@ -164,6 +168,6 @@ for platform in all_platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
         _products, _dependencies; lazy_artifacts=true,
-        julia_compat="1.6", augment_platform_block,
+        julia_compat="1.6", augment_platform_block, init_block,
         preferred_gcc_version=v"5")
 end
