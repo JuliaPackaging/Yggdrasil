@@ -46,7 +46,7 @@ cmake --install .
 # Build for all supported CUDA > v11
 platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
-filter!(p -> p["arch"]=="x86_64", platforms)
+filter!(p -> arch(p)=="x86_64", platforms)
 
 # The products that we will ensure are always built
 products = [
