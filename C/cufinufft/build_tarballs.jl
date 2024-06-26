@@ -41,6 +41,8 @@ cmake .. \
     -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}"
 cmake --build . --parallel $nproc
 cmake --install .
+
+unlink $prefix/cuda/lib64
 """
 
 # Build for all supported CUDA > v11
