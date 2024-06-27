@@ -1,5 +1,5 @@
 diff --git a/src/tracer/Makefile.am b/src/tracer/Makefile.am
-index 0521e2cb..f8eee75c 100644
+index 3f9c030f..4fc21f6c 100644
 --- a/src/tracer/Makefile.am
 +++ b/src/tracer/Makefile.am
 @@ -821,103 +821,103 @@ COMMON_LINKER_FLAGS = \
@@ -164,3 +164,6 @@ index 0521e2cb..f8eee75c 100644
  
  lib_dyn_mpitracec_la_LDFLAGS = $(libmpitrace_la_LDFLAGS)
  lib_dyn_mpitracef_la_LDFLAGS = $(libmpitrace_la_LDFLAGS)
+-- 
+2.45.2
+
