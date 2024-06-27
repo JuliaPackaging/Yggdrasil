@@ -9,6 +9,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
+
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
