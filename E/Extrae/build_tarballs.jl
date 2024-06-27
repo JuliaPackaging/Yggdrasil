@@ -74,7 +74,7 @@ platforms = [
 ]
 platforms = expand_cxxstring_abis(platforms)
 # (Almost) Same as PAPI
-cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3.999")
+cuda_platforms = CUDA.supported_platforms(; max_version=v"12.2.999")
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
