@@ -74,7 +74,7 @@ platforms = [
 ]
 platforms = expand_cxxstring_abis(platforms)
 # (Almost) Same as PAPI
-cuda_platforms = CUDA.supported_platforms(; max_version=v"12.2.999")
+cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3.999")
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
@@ -139,7 +139,7 @@ for platform in all_platforms
     _dependencies = [
         dependencies;
         if haskey(platform, "cuda") && platform["cuda"] != "none"
-            [BuildDependency(PackageSpec(name="CUDA_full_jll", version=CUDA.full_version(VersionNumber(platform["cuda"]))))]
+            CUDA.required_dependencies(platform)
         elseif haskey(platform, "mpi") && platform["mpi"] != "none"
             mpi_dependencies
         else
