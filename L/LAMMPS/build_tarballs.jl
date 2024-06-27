@@ -16,6 +16,7 @@ version = v"2.4.1" # Equivalent to patch_28Mar2023_update1
 # 2.3.2 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update3
 # 2.4.0 -> https://github.com/lammps/lammps/releases/tag/patch_28Mar2023_update1
 # 2.4.1 -- Enables DPD packages
+# 2.5.0 -> https://github.com/lammps/lammps/releases/tag/stable_2Aug2023_update3
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -25,7 +26,7 @@ version = v"2.4.1" # Equivalent to patch_28Mar2023_update1
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "07982d997df8fdd467585577dc40274d16e1d1fe")
+    GitSource("https://github.com/lammps/lammps.git", "46265e36ce79e4b42c9e5229b72a0ce2485845cd")
 ]
 
 # Bash recipe for building across all platforms
