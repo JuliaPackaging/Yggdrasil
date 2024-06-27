@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.4.1" # Equivalent to patch_28Mar2023_update1
+version = v"2.5.0" # Equivalent to stable_2Aug2023_update3
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
