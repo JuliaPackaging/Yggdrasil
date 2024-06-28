@@ -34,7 +34,6 @@ install_license /usr/share/licenses/MIT
 # platforms are passed in on the command line
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-platforms = expand_cxxstring_abis(platforms)
 
 #Filtering all the platforms, that ITK filters https://github.com/JuliaPackaging/Yggdrasil/blob/master/I/ITK/build_tarballs.jl#L42-L53
 filter!(p -> !(arch(p) == "i686"), platforms)
@@ -42,6 +41,7 @@ filter!(!Sys.isapple, platforms)
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
