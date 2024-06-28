@@ -18,7 +18,7 @@ cd $WORKSPACE/srcdir/giflib-*/
 # Apply patch to make it possible to build for non Linux-like platforms.
 # Adapted from also https://sourceforge.net/p/giflib/bugs/133/
 atomic_patch -p1 ../patches/makefile.patch
-# We cannot build in parallel, building `libutil` fails. (But we don't need that anyway?)
+# We cannot build in parallel, building `libutil` fails.
 make
 make install
 rm "${libdir}/libgif.a"
