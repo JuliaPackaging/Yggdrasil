@@ -33,8 +33,6 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-platforms = supported_platforms()
-
 #Filtering all the platforms, that ITK filters https://github.com/JuliaPackaging/Yggdrasil/blob/master/I/ITK/build_tarballs.jl#L42-L53
 filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(!Sys.isapple, platforms)
