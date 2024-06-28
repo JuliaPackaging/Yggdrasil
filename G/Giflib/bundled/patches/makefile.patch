@@ -39,7 +39,7 @@ diff -ru giflib-5.2.2/Makefile giflib-5.2.2.new/Makefile
  $(LIBUTILSO): $(UOBJECTS) $(UHEADERS)
  ifeq ($(UNAME), Darwin)
 -	$(CC) $(CFLAGS) -dynamiclib -current_version $(LIBVER) $(OBJECTS) -o $(LIBUTILSO)
-+	$(CC) $(CFLAGS) -shared $(LDFLAGS) -current_version 8.0 -Wl,-install_name,$(LIBUTILSOMAJOR) -compatibility_version 8.0 $(OBJECTS) -o $(LIBUTILSO) -lgif -L.
++	$(CC) $(CFLAGS) -shared $(LDFLAGS) -current_version 8.0 -Wl,-install_name,$(LIBUTILSOMAJOR) -compatibility_version 8.0 -o $(LIBUTILSO) $(UOBJECTS) -L. -lgif
  else
  	$(CC) $(CFLAGS) -shared $(LDFLAGS) -Wl,-soname -Wl,$(LIBUTILMAJOR) -o $(LIBUTILSO) $(UOBJECTS)
  endif
