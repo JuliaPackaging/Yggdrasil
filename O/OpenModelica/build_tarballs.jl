@@ -5,7 +5,7 @@ version = v"1.23.0"
 
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica",
-              af881831d7c702a9afe1870d3b6e58cc57cdc926),
+             "af881831d7c702a9afe1870d3b6e58cc57cdc926"),
 ]
 
 # Bash recipe for building across all platforms
