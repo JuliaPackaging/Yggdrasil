@@ -151,7 +151,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
             platforms=[augmented_platform],
             gcc_version, script=script*"""
 ninja -C build -j \${nproc} Enzyme-$(llvm_version.major) EnzymeBCLoad-$(llvm_version.major)
-install -Dvm 755 "build/libEnzyme.\${dlext}" "\${libdir}/libEnzyme.\${dlext}"
+install -Dvm 755 "build/Enzyme/libEnzyme.\${dlext}" "\${libdir}/libEnzyme.\${dlext}"
+install -Dvm 755 "build/BCLoad/libEnzymeBCLoad.\${dlext}" "\${libdir}/libEnzyme.\${dlext}"
 """
         ))
     end
