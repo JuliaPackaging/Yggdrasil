@@ -10,19 +10,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-mkdir -p "${libdir}"
+cd $WORKSPACE/srcdir/OpenModelica
+git submodule update --force --init --recursive
 
 apk add openjdk17
 
-cd OpenModelica
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
       -DOM_ENABLE_GUI_CLIENTS=OFF 
-
-cat /workspace/srcdir/OpenModelica/build_cmake/CMakeFiles/CMakeError.log
 
 cmake --build build_cmake --parallel 10 --target install
 
