@@ -21,6 +21,9 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
       -DOM_ENABLE_GUI_CLIENTS=OFF 
+
+cat /workspace/srcdir/OpenModelica/build_cmake/CMakeFiles/CMakeError.log
+
 cmake --build build_cmake --parallel 10 --target install
 
 install_license OSMC-license.txt
