@@ -37,7 +37,7 @@ if [[ $bb_target = powerpc64le* ]]; then
 fi
 
 if [[ $bb_full_target = *cuda\+[0-9]* ]]; then
-    export FLAGS_CUDA=--with-cuda=$prefix/cuda --with-cuda-libs=$prefix/cuda/lib64
+    export FLAGS_CUDA="--with-cuda=$prefix/cuda --with-cuda-libs=$prefix/cuda/lib64"
     export CPPFLAGS="-I${prefix}/cuda/include"
 fi
 
