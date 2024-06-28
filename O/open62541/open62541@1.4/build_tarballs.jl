@@ -19,6 +19,14 @@ if [[ ${target} == x86_64-*-mingw* ]]; then
     export OPENSSL_ROOT_DIR=${prefix}/lib64 
 fi 
 
+# Deactivates stack protector under i686-linux-musl; necessary to avoid 
+# "undefined reference to `__stack_chk_fail_local`
+if [[ ${target} == i686-linux-musl ]]; then 
+    extraflags="-DUA_ENABLE_HARDENING=OFF" 
+else
+    extraflags=""
+fi 
+
 cd $WORKSPACE/srcdir/open62541/
 if [[ "${target}" == *-freebsd* ]]; then
     # https://github.com/open62541/open62541/issues/6414
@@ -38,6 +46,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_ENABLE_HISTORIZING=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DUA_FORCE_WERROR=OFF \
+    ${extraflags} \
     ..
 make -j${nproc}
 make install
@@ -59,4 +68,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")
