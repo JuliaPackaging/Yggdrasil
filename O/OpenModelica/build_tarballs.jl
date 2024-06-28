@@ -50,7 +50,8 @@ dependencies = [
     Dependency("boost_jll"),
     Dependency("flex_jll"),
     Dependency("LLVMOpenMP_jll"),
-    Dependency("OpenCL_jll"),   
+    Dependency("OpenCL_jll"),
+    BuildDependency("OpenCL_Headers_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
