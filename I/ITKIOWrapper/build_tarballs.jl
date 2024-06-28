@@ -12,6 +12,9 @@ sources = [
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
+#needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
+
 # Bash recipe for building across all platforms
 script = raw"""
 export CXXFLAGS="-I${includedir}/julia $CXXFLAGS"
@@ -29,7 +32,7 @@ install_license /usr/share/licenses/MIT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-include("../../L/libjulia/common.jl")
+
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -47,8 +50,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("ITK_jll"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("ITK_jll"; compat="5.3.0"),
+    Dependency("libcxxwrap_julia_jll"; compat = "0.13.2"),
     BuildDependency("libjulia_jll")
 ]
 
