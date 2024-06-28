@@ -40,7 +40,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"),
+    Dependency("libblastrampoline_jll"; compat="5.8.0"),
     Dependency("Ipopt_jll"),
     Dependency("LibCURL_jll"),
     Dependency("util_linux_jll"),
