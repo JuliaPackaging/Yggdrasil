@@ -101,8 +101,6 @@ fi
 
 echo ${CMAKE_FLAGS[@]}
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
-
-ninja -C build -j ${nproc} install
 """
 
 augment_platform_block = """
@@ -151,7 +149,11 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         push!(builds, (;
             dependencies, products,
             platforms=[augmented_platform],
-            gcc_version,
+            gcc_version, script=script*"""
+ninja -C build -j \${nproc} Enzyme-$(llvm_version.major) EnzymeBCLoad-$(llvm_version.major)
+install -Dvm 755 "build/Enzyme/libEnzyme-$(llvm_version.major).\${dlext}" "\${libdir}/libEnzyme-$(llvm_version.major).\${dlext}"
+install -Dvm 755 "build/BCLoad/libEnzymeBCLoad-$(llvm_version.major).\${dlext}" "\${libdir}/libEnzymeBCLoad-$(llvm_version.major).\${dlext}"
+"""
         ))
     end
 end
@@ -165,7 +167,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, sources, script,
+                   name, version, sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=build.gcc_version, julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true) # drop when julia_compat >= 1.7
