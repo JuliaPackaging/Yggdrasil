@@ -102,7 +102,8 @@ fi
 echo ${CMAKE_FLAGS[@]}
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
 
-ninja -C build -j ${nproc} install
+ninja -C build -j ${nproc} libEnzyme libEnzymeBCLoad
+cp build/libEnzyme*.{so,dylib,dll} ${prefix}
 """
 
 augment_platform_block = """
