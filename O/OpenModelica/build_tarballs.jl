@@ -43,17 +43,17 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"; compat="5.8.0"),
     Dependency("OpenBLAS32_jll"),
     Dependency("Ipopt_jll"),
     Dependency("LibCURL_jll"),
     Dependency("util_linux_jll"),
-    Dependency("OpenCL_jll"),
-    BuildDependency("flex_jll"),
-    BuildDependency("boost_jll"),
-    BuildDependency("LLVMOpenMP_jll"),
-    BuildDependency("OpenCL_Headers_jll"),
+    Dependency("boost_jll"),
+    Dependency("flex_jll"),
+    Dependency("LLVMOpenMP_jll"),
+    Dependency("OpenCL_jll"),   
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lazy_artifacts=true, julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+               julia_compat="1.6",
+               preferred_gcc_version=v"9")
