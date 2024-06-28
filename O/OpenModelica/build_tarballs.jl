@@ -19,7 +19,7 @@ cd OpenModelica
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DBLAS_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
+      -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
       -DOM_ENABLE_GUI_CLIENTS=OFF 
 cmake --build build_cmake --parallel 10 --target install
 
@@ -41,6 +41,7 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"; compat="5.8.0"),
+    Dependency("OpenBLAS32_jll"),
     Dependency("Ipopt_jll"),
     Dependency("LibCURL_jll"),
     Dependency("util_linux_jll"),
