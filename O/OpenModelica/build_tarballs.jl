@@ -28,13 +28,13 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    BinaryProduct("omc", :omc),
+    ExecutableProduct("omc", :omc),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="libblastrampoline_jll"),
+    Dependency("libblastrampoline_jll"),
     BuildDependency("flex_jll"),
     BuildDependency("boost_jll"),
 ]
