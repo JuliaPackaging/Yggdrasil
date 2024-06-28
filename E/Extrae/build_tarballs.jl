@@ -79,16 +79,15 @@ cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 filter!(platform -> platform["mpi"] != "mpitrampoline", mpi_platforms)
 
+cudampi_platforms, _ = MPI.augment_platforms(cuda_platforms)
+filter!(platform -> platform["mpi"] != "mpitrampoline", cudampi_platforms)
+
 # Concatenate the platforms _after_ the C++ string ABI expansion, otherwise the
 # `platform in platforms` test below is meaningless.
-all_platforms = [platforms; cuda_platforms; mpi_platforms]
+all_platforms = [platforms; cuda_platforms; mpi_platforms; cudampi_platforms]
 
 for platform in all_platforms
-# Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-# Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-for platform in all_platforms
     # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-for platform in all_platforms
     if CUDA.is_supported(platform) && !haskey(platform, "cuda")
         platform["cuda"] = "none"
     end
@@ -115,11 +114,18 @@ products = [
 
 cuda_products = [
     LibraryProduct("libcudatrace", :libcudatrace, dont_dlopen=true),
-    # LibraryProduct("libcudampitrace", :libcudampitrace, dont_dlopen=true),
+    LibraryProduct("libptcudatrace", :libptcudatrace, dont_dlopen=true),
 ]
 
 mpi_products = [
+    ExecutableProduct("mpimpi2prv", :mpimpi2prv),
     LibraryProduct("libmpitrace", :libmpitrace, dont_dlopen=true),
+    LibraryProduct("libptmpitrace", :libptmpitrace, dont_dlopen=true),
+]
+
+cudampi_products = [
+    LibraryProduct("libcudampitrace", :libcudampitrace, dont_dlopen=true),
+    LibraryProduct("libptcudampitrace", :libptcudampitrace, dont_dlopen=true),
 ]
 
 dependencies = [
@@ -140,31 +146,42 @@ ENV["EXTRAE_SKIP_AUTO_LIBRARY_INITIALIZE"] = "1"
 for platform in all_platforms
     should_build_platform(platform) || continue
 
-    _dependencies = [
-        dependencies;
-        if haskey(platform, "cuda") && platform["cuda"] != "none"
-            CUDA.required_dependencies(platform)
-        elseif haskey(platform, "mpi") && platform["mpi"] != "none"
-            mpi_dependencies
-        else
-            []
-        end...
-    ]
+    _dependencies = copy(dependencies)
+    if platform["cuda"] != "none"
+        append!(_dependencies, CUDA.required_dependencies(platform))
+    end
+    if platform["mpi"] != "none"
+        append!(_dependencies, mpi_dependencies)
+    end
 
-    _products = [
-        products;
-        if haskey(platform, "cuda") && platform["cuda"] != "none"
-            cuda_products
-        elseif haskey(platform, "mpi") && platform["mpi"] != "none"
-            mpi_products
-        else
-            []
-        end...
-    ]
+    _products = copy(products)
+    if platform["cuda"] != "none"
+        append!(_products, cuda_products)
+    end
+    if platform["mpi"] != "none"
+        append!(_products, mpi_products)
+    end
+    if platform["cuda"] != "none" && platform["mpi"] != "none"
+        append!(_products, cudampi_products)
+    end
 
-    augment_platform_block = if haskey(platform, "cuda") && platform["cuda"] != "none"
+    augment_platform_block = if platform["cuda"] != "none" && platform["mpi"] != "none"
+        """
+        using Base.BinaryPlatforms
+        module __CUDA
+            $(CUDA.augment)
+        end
+
+        $(MPI.augment)
+
+        function augment_platform!(platform::Platform)
+            augment_mpi!(platform)
+            __CUDA.augment_platform!(platform)
+        end
+        """
+    elseif platform["cuda"] != "none"
         CUDA.augment
-    elseif haskey(platform, "mpi") && platform["mpi"] != "none"
+    elseif platform["mpi"] != "none"
         MPI.augment
     else
         ""
