@@ -79,7 +79,7 @@ cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 filter!(platform -> platform["mpi"] != "mpitrampoline", mpi_platforms)
 
-cudampi_platforms, _ = MPI.augment_platforms(cuda_platforms)
+cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms)
 filter!(platform -> platform["mpi"] != "mpitrampoline", cudampi_platforms)
 
 # Concatenate the platforms _after_ the C++ string ABI expansion, otherwise the
@@ -147,10 +147,12 @@ for platform in all_platforms
     should_build_platform(platform) || continue
 
     _dependencies = copy(dependencies)
-    if platform["cuda"] != "none"
+    if platform["cuda"] != "none" && platform["mpi"] != "none"
+        append!(_dependencies, cudampi_dependencies)
         append!(_dependencies, CUDA.required_dependencies(platform))
-    end
-    if platform["mpi"] != "none"
+    elseif platform["cuda"] != "none"
+        append!(_dependencies, CUDA.required_dependencies(platform))
+    elseif platform["mpi"] != "none"
         append!(_dependencies, mpi_dependencies)
     end
 
