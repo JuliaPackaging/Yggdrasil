@@ -83,12 +83,17 @@ filter!(platform -> platform["mpi"] != "mpitrampoline", mpi_platforms)
 # `platform in platforms` test below is meaningless.
 all_platforms = [platforms; cuda_platforms; mpi_platforms]
 
+for platform in all_platforms
 # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
+# Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
+for platform in all_platforms
+    # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
 for platform in all_platforms
     if CUDA.is_supported(platform) && !haskey(platform, "cuda")
         platform["cuda"] = "none"
     end
 
+    # Only for the non-MPI platforms, add the mpi=none tag, if necessary.
     if !haskey(platform, "mpi")
         platform["mpi"] = "none"
     end
