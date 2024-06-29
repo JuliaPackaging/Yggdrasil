@@ -139,6 +139,20 @@ dependencies = [
     RuntimeDependency("CUDA_Runtime_jll"; platforms=cuda_platforms),
 ]
 
+augment_platform_block = """
+                         using Base.BinaryPlatforms
+                         module __CUDA
+                             $(CUDA.augment)
+                         end
+
+                         $(MPI.augment)
+
+                         function augment_platform!(platform::Platform)
+                             augment_mpi!(platform)
+                             __CUDA.augment_platform!(platform)
+                         end
+                         """
+
 init_block = raw"""
 ENV["EXTRAE_SKIP_AUTO_LIBRARY_INITIALIZE"] = "1"
 """
@@ -165,28 +179,6 @@ for platform in all_platforms
     end
     if platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_products, cudampi_products)
-    end
-
-    augment_platform_block = if platform["cuda"] != "none" && platform["mpi"] != "none"
-        """
-        using Base.BinaryPlatforms
-        module __CUDA
-            $(CUDA.augment)
-        end
-
-        $(MPI.augment)
-
-        function augment_platform!(platform::Platform)
-            augment_mpi!(platform)
-            __CUDA.augment_platform!(platform)
-        end
-        """
-    elseif platform["cuda"] != "none"
-        CUDA.augment
-    elseif platform["mpi"] != "none"
-        MPI.augment
-    else
-        ""
     end
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
