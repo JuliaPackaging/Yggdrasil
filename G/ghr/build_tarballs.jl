@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "ghr"
-version = v"0.14.0"
+version = v"0.16.2"
 
 # Collection of sources required to build ghr
 sources = [
     GitSource("https://github.com/tcnksm/ghr.git",
-              "668a85fd0ed2a35a6e5f42af13483ea4e16fb26f"),
+              "ac9295b8f6806b04d18e543f469821cbd0e0c1ef"),
 ]
 
 # Bash recipe for building across all platforms
