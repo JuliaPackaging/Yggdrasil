@@ -10,7 +10,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/OpenModelica
+cd $WORKSPACE/srcdir
+mv OpenModelica OM
+git clone https://github.com/OpenModelica/OpenModelica.git
+cd OpenModelica
+git checkout af881831d7c702a9afe1870d3b6e58cc57cdc926
 git submodule update --force --init --recursive
 
 apk add openjdk17
@@ -19,7 +23,8 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
-      -DOM_ENABLE_GUI_CLIENTS=OFF 
+      -DOM_ENABLE_GUI_CLIENTS=OFF \
+      -DOM_OMC_ENABLE_IPOPT=OFF
 
 cmake --build build_cmake --parallel 10 --target install
 
@@ -41,7 +46,6 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
-    Dependency("Ipopt_jll"),
     Dependency("LibCURL_jll"),
     Dependency("util_linux_jll"),
     Dependency("boost_jll"),
