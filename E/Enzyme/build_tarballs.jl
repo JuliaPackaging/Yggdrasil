@@ -15,7 +15,7 @@ llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2", v"15.0.7", v"16.0.6
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "cc545bc370886ab315da1871213b46c5175cec00"),
+    GitSource(repo, "015a772927b3ac653baf229ef49d558c6fbd083c"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
