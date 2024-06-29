@@ -4,7 +4,7 @@ name = "OpenModelica"
 version = v"1.23.0"
 
 sources = [
-   GitSource("https://github.com/OpenModelica/OpenModelica",
+   GitSource("https://github.com/OpenModelica/OpenModelica.git",
              "af881831d7c702a9afe1870d3b6e58cc57cdc926"),
 ]
 
