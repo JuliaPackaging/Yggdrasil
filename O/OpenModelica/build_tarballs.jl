@@ -26,7 +26,7 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMC_ENABLE_IPOPT=OFF
 
-cmake --build build_cmake --parallel 10 --target install
+cmake --build build_cmake --parallel 20 --target install
 
 install_license OSMC-license.txt
 """
@@ -52,10 +52,11 @@ dependencies = [
     Dependency("flex_jll"),
     Dependency("LLVMOpenMP_jll"),
     Dependency("OpenCL_jll"),
+    Dependency("Expat_jll"),
     BuildDependency("OpenCL_Headers_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                julia_compat="1.6",
-               preferred_gcc_version=v"9")
+               preferred_gcc_version=v"10")
