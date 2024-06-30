@@ -78,10 +78,12 @@ products = [
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
-    Dependency("HDF5_jll", v"1.14.2", compat="~1.14"),
-    Dependency("NetCDF_jll", v"400.902.208", compat="~400.902.207"),
+    Dependency("HDF5_jll", v"1.14.3", compat="~1.14"),
+    Dependency("NetCDF_jll", v"400.902.209", compat="~400.902.207"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.7",
+    clang_use_lld = false,
+    preferred_gcc_version = v"5",
 )
