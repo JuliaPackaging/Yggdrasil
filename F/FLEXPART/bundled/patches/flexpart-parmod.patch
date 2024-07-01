@@ -2,7 +2,7 @@ diff --git a/src/par_mod.f90 b/src/par_mod.f90
 index 776996f..0419fa3 100644
 --- a/src/par_mod.f90
 +++ b/src/par_mod.f90
-@@ -134,12 +134,12 @@ module par_mod
+@@ -137,12 +137,12 @@ module par_mod
  ! integer,parameter :: nxmax=361,nymax=181,nuvzmax=92,nwzmax=92,nzmax=92,nxshift=359 ! 1.0 degree 92 level
  !  integer,parameter :: nxmax=361,nymax=181,nuvzmax=138,nwzmax=138,nzmax=138,nxshift=0 ! 1.0 degree 138 level
  !   integer,parameter :: nxmax=361,nymax=181,nuvzmax=138,nwzmax=138,nzmax=138,nxshift=359 ! 1.0 degree 138 level
@@ -18,7 +18,7 @@ index 776996f..0419fa3 100644
  
  
    !*********************************************
-@@ -204,7 +204,7 @@ module par_mod
+@@ -207,7 +207,7 @@ module par_mod
    ! Maximum number of particles, species, and similar
    !**************************************************
  
