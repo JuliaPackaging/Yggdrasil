@@ -3,18 +3,34 @@
 using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.79.0"
+version = v"1.85.0"
 
 # Collection of sources required to build boost
 sources = [
     ArchiveSource(
-        "https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
-        "475d589d51a7f8b3ba2ba4eda022b170e562ca3b760ee922c146b6c65856ef39"),
+        "https://archives.boost.io/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+        "7009fe1faa1697476bdc7027703a2badb84e849b7b0baad5086b087b971f8617"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/boost*/
+
+# on PowerPC, apply https://github.com/boostorg/charconv/pull/183, using the patch at
+# https://github.com/conda-forge/boost-feedstock/tree/main/recipe/patches
+if [[ $target == *powerpc64le* ]]; then
+    atomic_patch -p 1 ../patches/183.patch
+fi
+
+# On Windows, apply code changes from https://github.com/boostorg/charconv/pull/197
+if [[ $target == *mingw* ]]; then
+    atomic_patch -p 1 ../patches/197.patch
+
+    # Setting this variable prevents Windows-specific code from being included when building b2, the boost build system
+    # The B2 build system needs to be built for the host, not the target.
+    export B2_DONT_EMBED_MANIFEST=true
+fi
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
