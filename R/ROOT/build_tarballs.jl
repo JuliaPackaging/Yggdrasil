@@ -28,7 +28,7 @@ fi
 #Uncomment for a minimal build for debugging purposes
 #CMAKE_EXTRA_OPTS="\$CMAKE_EXTRA_OPTS -Dclad=OFF -Dhtml=OFF -Dwebgui=OFF -Dcxxmodules=OFF -Dproof=OFF -Dtmva=OFF -Drootfit=OFF -Dxproofd=OFF -Dxrootd=OFF -Dssl=OFF -Dpyroot=OFF -Dtesting=OFF -Droot7=OFF -Dspectrum=OFF -Dunfold=OFF -Dasimage=OFF -Dgviz=OFF -Dfitiso=OFF -Dcocoa=OFF -Dopengl=OFF -Dproof=OFF -Dxml=OFF -Dgfal=OFF -Dmpi=OFF"
 
-export SYSTEM_INCLUDE_PATH="\`\$BUILD_CXX --sysroot="/opt/\$target/\$target/sys-root" -E -x c++ -v /dev/null  2>&1  | awk '{gsub("^ ", "")} /End of search list/{a=0} {if(a==1){s=s d \$0;d=":"}} /#include <...> search starts here/{a=1} END{print s}'\`"
+export SYSTEM_INCLUDE_PATH="\`\$target-g++ --sysroot="/opt/\$target/\$target/sys-root" -E -x c++ -v /dev/null  2>&1  | awk '{gsub("^ ", "")} /End of search list/{a=0} {if(a==1){s=s d \$0;d=":"}} /#include <...> search starts here/{a=1} END{print s}'\`"
 
 # build-in compilation of the libAfterImage library needs this directory
 mkdir -p /tmp/user/0
