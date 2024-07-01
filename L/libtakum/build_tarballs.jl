@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libtakum
 ./configure
 make PREFIX=${prefix} LDCONFIG= -j${nproc} install
+rm -f ${prefix}/lib/libtakum.a ${prefix}/lib/libtakum.lib
 """
 
 # These are the platforms we will build for by default, unless further
