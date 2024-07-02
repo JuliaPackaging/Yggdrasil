@@ -1,0 +1,44 @@
+diff -u -r a/root/cmake/modules/RootMacros.cmake b/root/cmake/modules/RootMacros.cmake
+--- a/root/cmake/modules/RootMacros.cmake	2024-01-31 09:17:06.000000000 +0100
++++ b/root/cmake/modules/RootMacros.cmake	2024-03-29 00:53:33.340075505 +0100
+@@ -605,7 +605,7 @@
+     if(MSVC AND CMAKE_ROOTTEST_DICT)
+       set(command ${CMAKE_COMMAND} -E ${CMAKE_BINARY_DIR}/bin/rootcling_stage1.exe)
+     else()
+-      set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}" $<TARGET_FILE:rootcling_stage1>)
++      set(command ${CMAKE_COMMAND} -E env LLVM_SYMBOLIZER_PATH=${CMAKE_BINARY_BUILD}/interpreter/llvm-project/llvm/NATIVE/tools/llvm-symbolizer CPLUS_INCLUDE_PATH=/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0:/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0/x86_64-linux-gnu:/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0/backward:/workspace/srcdir/build/etc/cling/lib/clang/13.0.0/include:/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/include:/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/include $<TARGET_FILE:rootcling_stage1>)
+     endif()
+     set(ROOTCINTDEP rconfigure)
+     set(pcm_name)
+@@ -615,7 +615,7 @@
+         set(command ${CMAKE_COMMAND} -E env "ROOTIGNOREPREFIX=1" ${CMAKE_BINARY_DIR}/bin/rootcling.exe)
+       else()
+         set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}"
+-                    "ROOTIGNOREPREFIX=1" $<TARGET_FILE:rootcling> -rootbuild)
++          "ROOTIGNOREPREFIX=1" CPLUS_INCLUDE_PATH=/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0:/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0/x86_64-linux-gnu:/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0/backward:/workspace/srcdir/build/etc/cling/lib/clang/13.0.0/include:/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/include:/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/include $<TARGET_FILE:rootcling> -rootbuild)
+         # Modules need RConfigure.h copied into include/.
+         set(ROOTCINTDEP rootcling rconfigure)
+       endif()
+@@ -623,7 +623,7 @@
+       if(APPLE)
+         set(command ${CMAKE_COMMAND} -E env "DYLD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}:$ENV{DYLD_LIBRARY_PATH}" $<TARGET_FILE:ROOT::rootcling>)
+       else()
+-        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH}" $<TARGET_FILE:ROOT::rootcling>)
++        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH}" CPLUS_INCLUDE_PATH=/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0:/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0/x86_64-linux-gnu:/opt/x86_64-linux-gnu/bin/../lib/gcc/x86_64-linux-gnu/8.1.0/../../../../x86_64-linux-gnu/include/c++/8.1.0/backward:/workspace/srcdir/build/etc/cling/lib/clang/13.0.0/include:/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/local/include:/opt/x86_64-linux-gnu/x86_64-linux-gnu/sys-root/usr/include $<TARGET_FILE:ROOT::rootcling>)
+       endif()
+     else()
+       set(command ${CMAKE_COMMAND} -E env rootcling)
+diff -u -r a/root/CMakeLists.txt b/root/CMakeLists.txt
+--- a/root/CMakeLists.txt	2024-01-31 09:17:06.000000000 +0100
++++ b/root/CMakeLists.txt	2024-04-01 15:50:12.827224904 +0200
+@@ -533,7 +533,9 @@
+       ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/build/unix/makepchinput.py
+       ${CMAKE_SOURCE_DIR} . ${pyroot_legacy} ${__cling_pch}
+     COMMAND
+-      ${CMAKE_COMMAND} -E env ROOTIGNOREPREFIX=1 ${PYTHON_EXECUTABLE}
++      ${CMAKE_COMMAND} -E env ROOTIGNOREPREFIX=1
++      CPLUS_INCLUDE_PATH="$ENV{SYSTEM_INCLUDE_PATH}"
++      ${PYTHON_EXECUTABLE}
+       ${CMAKE_SOURCE_DIR}/etc/dictpch/makepch.py etc/allDict.cxx.pch
+       ${__allIncludes} -I${CMAKE_BINARY_DIR}/include -I${CMAKE_SOURCE_DIR}/core
+     DEPENDS
