@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "fzf"
-version = v"0.49.0"
+version = v"0.53.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/junegunn/fzf.git", "62963dcefd6d74510ae2692cd0955177bae57543")
+    GitSource("https://github.com/junegunn/fzf.git", "c4a9ccd6afc3698a57a6b938ebba6d85238033e2")
 ]
 
 # Bash recipe for building across all platforms
