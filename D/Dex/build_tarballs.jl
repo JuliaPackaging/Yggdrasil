@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Dex"
-version = v"2.30.2"
+version = v"2.40.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/dexidp/dex.git", "6e30b362b7238d5de80b8277bb47ece3994fec95"),
+    GitSource("https://github.com/dexidp/dex.git", "23efe9200ccd9e0a69242bf61cd221462370d1f4"),
     DirectorySource("bundled"),
 ]
 
@@ -30,10 +30,7 @@ tar -czvf $prefix/share/webtemplates.tar.gz -C ./web static templates themes
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="glibc")
-]
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
@@ -47,4 +44,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go, :c])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go, :c], julia_compat  = "1.6")
