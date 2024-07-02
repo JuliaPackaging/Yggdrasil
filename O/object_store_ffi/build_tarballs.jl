@@ -26,7 +26,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libobject_store_ffi", :libobject_store_ffi; dont_dlopen=true),
+    LibraryProduct("libobject_store_ffi", :libobject_store_ffi),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -36,5 +36,5 @@ dependencies = Dependency[
 # Build the tarballs
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    compilers=[:c, :rust], julia_compat="1.9", preferred_gcc_version=v"5",
+    compilers=[:c, :rust], julia_compat="1.9", preferred_gcc_version=v"5", dont_dlopen=true,
 )
