@@ -4,8 +4,8 @@ name = "object_store_ffi"
 version = v"0.7.0"
 
 sources = [
-    # https://github.com/RelationalAI/object_store_ffi/commit/472a24617182d7a0f524eb27e3745fd17b112a9d
-    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "472a24617182d7a0f524eb27e3745fd17b112a9d")
+    # https://github.com/RelationalAI/object_store_ffi/commit/58623860cfec49fa44f87b7d624e4dbd178f997a
+    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "58623860cfec49fa44f87b7d624e4dbd178f997a")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,7 +26,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libobject_store_ffi", :libobject_store_ffi),
+    LibraryProduct("libobject_store_ffi", :libobject_store_ffi; dont_dlopen=true),
 ]
 
 # Dependencies that must be installed before this package can be built
