@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd Prodigal
-make install INSTALLDIR=${bindir}
+make install INSTALLDIR=${bindir} CC=cc
 install_license ${WORKSPACE}/srcdir/Prodigal/LICENSE
 """
 
