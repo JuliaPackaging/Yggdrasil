@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
 adios2_version = v"2.10.1"
-version = v"2.10.1"
+version = v"2.10.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -146,7 +146,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll")),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.0"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
