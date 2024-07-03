@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
 adios2_version = v"2.10.1"
-version = v"2.10.1"
+version = v"2.10.2"
 
 # Collection of sources required to complete build
 sources = [
