@@ -70,6 +70,7 @@ install_license LICENSE.txt
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
     # TODO: Build on Windows.
     # Might want to take some inspiration from https://github.com/google/gfbuild-swiftshader/blob/master/build.sh
     # Platform("x86_64", "windows"),
