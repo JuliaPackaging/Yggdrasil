@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd Prodigal
+cd $WORKSPACE/srcdir/Prodigal
 make install INSTALLDIR=${bindir} CC=cc TARGET="prodigal${exeext}"
 install_license ${WORKSPACE}/srcdir/Prodigal/LICENSE
 """
