@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ColPack"
-version = v"0.4.0"
+version = v"0.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/amontoison/ColPack.git", "114a6eb793f539edfe28a47af457c4a641f6ec16")
+    GitSource("https://github.com/amontoison/ColPack.git", "9900235940844fd80e41113c06b968d638bf11d6")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,8 +18,6 @@ autoreconf -vif
 
 mkdir build
 cd build
-CC=gcc
-CXX=g++
 ../configure --enable-examples --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 
@@ -41,7 +39,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
