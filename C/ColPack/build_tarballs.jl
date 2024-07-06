@@ -7,7 +7,7 @@ version = v"0.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/amontoison/ColPack.git", "9900235940844fd80e41113c06b968d638bf11d6")
+    GitSource("https://github.com/amontoison/ColPack.git", "d873bad2a269355ccf30924ad18bd53a6abfe590")
 ]
 
 # Bash recipe for building across all platforms
@@ -46,4 +46,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", clang_use_lld=false)
