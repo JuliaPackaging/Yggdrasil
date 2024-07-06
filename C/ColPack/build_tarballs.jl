@@ -24,7 +24,7 @@ make -j${nproc}
 mkdir -p ${bindir}
 cp ColPack${exeext} ${bindir}/ColPack${exeext}
 
-if [[ "${target}" == *apple* ] || [ "${target}" == *freebsd* ]]; then
+if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
   ${CXX} -shared $(flagon -Wl,--whole-archive) libcolpack.a $(flagon -Wl,--no-whole-archive) -lomp -o ${libdir}/libcolpack.${dlext}
 else
   ${CXX} -shared $(flagon -Wl,--whole-archive) libcolpack.a $(flagon -Wl,--no-whole-archive) -lgomp -o ${libdir}/libcolpack.${dlext}
