@@ -37,14 +37,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("xkbcommon_jll"; platforms),
-    Dependency("Dbus_jll"; platforms),
-    Dependency("Libglvnd_jll"; platforms),
-    Dependency("Pango_jll"; platforms),
-    Dependency("Wayland_jll"; platforms),
-    HostBuildDependency("Wayland_jll"; platforms),
-    BuildDependency("Wayland_protocols_jll"; platforms),
-    BuildDependency("Xorg_xorgproto_jll"; platforms),
+    Dependency("xkbcommon_jll"),
+    Dependency("Dbus_jll"),
+    Dependency("Libglvnd_jll"),
+    Dependency("Pango_jll"; compat="1.52.2"),
+    Dependency("Wayland_jll"),
+    HostBuildDependency("Wayland_jll"),
+    BuildDependency("Wayland_protocols_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 init_block = raw"""
