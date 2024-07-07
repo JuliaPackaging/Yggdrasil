@@ -3,51 +3,51 @@
 using BinaryBuilder, Pkg
 
 name = "MKL_Headers"
-version = v"2024.1.0"
+version = v"2024.2.0"
 
 # Collection of sources required to complete build
 sources = [
     # Archives for the headers
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2024.1.0/download/win-32/mkl-include-2024.1.0-intel_692.tar.bz2",
-        "8994e1c5b5599934e83eb964a136be98dc5a6355f3f5b35cab44cdc0e8b970dd";
+        "https://conda.anaconda.org/intel/win-32/mkl-include-2024.2.0-intel_661.tar.bz2",
+        "431feac62519a0d65c85e801d7329cb7caa66ced53a0b4d26f15420d06d1717d";
         unpack_target = "mkl-include-i686-w64-mingw32"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2024.1.0/download/win-64/mkl-include-2024.1.0-intel_692.tar.bz2",
-        "28229844aa6c19870531452e5805ab876da4a5df896a9e753e6b481da2d389cb";
+        "https://conda.anaconda.org/intel/win-64/mkl-include-2024.2.0-intel_661.tar.bz2",
+        "34f5cc20b6d2ab7c82f301b108fa2ac48e1f6c0acd8ad166897fb53184d5c93e";
         unpack_target = "mkl-include-x86_64-w64-mingw32"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2024.1.0/download/linux-32/mkl-include-2024.1.0-intel_691.tar.bz2",
-        "88529f8bea2498e88b2cf8dc7aa3735f46f348cf5047006dfc6455f8e2bbdd30";
+        "https://conda.anaconda.org/intel/linux-32/mkl-include-2024.2.0-intel_663.tar.bz2",
+        "d97e655707590ba38d1240a4f9be3f60df2bc82f3ab5f7b16cf2735d4d9ba401";
         unpack_target = "mkl-include-i686-linux-gnu"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2024.1.0/download/linux-64/mkl-include-2024.1.0-intel_691.tar.bz2",
-        "e36b2e74f5c28ff91565abe47a09dc246c9cf725e0d05b5fb08813b4073ea68b";
+        "https://conda.anaconda.org/intel/linux-64/mkl-include-2024.2.0-intel_663.tar.bz2",
+        "2e29ca36f199bafed778230b054256593c2d572aeb050389fd87355ba0466d13";
         unpack_target = "mkl-include-x86_64-linux-gnu"
     ),
 
     # Archives for the CMake/pkgconfig files
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-devel/2024.1.0/download/win-32/mkl-devel-2024.1.0-intel_692.tar.bz2",
-        "845156ebe08b1d3ac519da1a56d1b98a6f818158eaa88bd4bbaebb9b28aab6cd";
+        "https://conda.anaconda.org/intel/win-32/mkl-devel-2024.2.0-intel_661.tar.bz2",
+        "db2bdd63f774edaca6cdc23677a5cc7ad390cf2bee362140b80238736483ae8f";
         unpack_target = "mkl-devel-i686-w64-mingw32"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-devel/2024.1.0/download/win-64/mkl-devel-2024.1.0-intel_692.tar.bz2",
-        "d656781f53513be1cde1d33fd84fcd43a746453347afc2fcf1f61218b2d08783";
+        "https://conda.anaconda.org/intel/win-64/mkl-devel-2024.2.0-intel_661.tar.bz2",
+        "dd8758a3404d2bf6844463b16a3096820d7f7905bafdc057b9135eccf065e118";
         unpack_target = "mkl-devel-x86_64-w64-mingw32"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-devel/2024.1.0/download/linux-32/mkl-devel-2024.1.0-intel_691.tar.bz2",
-        "2145f2ae4f383cc46cf4e5f516b7709f727d21865f21d445454c52175c8fafd1";
+        "https://conda.anaconda.org/intel/linux-32/mkl-devel-2024.2.0-intel_663.tar.bz2",
+        "aabe1d37edc7d5d70891e25328d3bd2d8c9d7c5102cc5b400870164322df3a3c";
         unpack_target = "mkl-devel-i686-linux-gnu"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-devel/2024.1.0/download/linux-64/mkl-devel-2024.1.0-intel_691.tar.bz2",
-        "def8ca30d0560a712e5f010f26da26d723c6bc9148124d8a63f6d2fb64fd3e38";
+        "https://conda.anaconda.org/intel/linux-64/mkl-devel-2024.2.0-intel_663.tar.bz2",
+        "e3c37c75aa870aa8daa32e6cbfa6e34639f7e6fe6a67fc4b34fa2a94a497df15";
         unpack_target = "mkl-devel-x86_64-linux-gnu"
     ),
 ]
