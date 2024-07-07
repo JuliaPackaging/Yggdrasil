@@ -3,30 +3,55 @@
 using BinaryBuilder
 
 name = "Wayland"
-version = v"1.21.0"
+version = v"1.23.0"
 
 # Collection of sources required to build Wayland
 sources = [
     ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
-                  "6dc64d7fc16837a693a51cfdb2e568db538bfdc9f457d4656285bb9594ef11ac"),
+                  "05b3e1574d3e67626b5974f862f36b5b427c7ceeb965cb36a4e6c2d342e45ab2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wayland-*/
 
-ln -s `which wayland-scanner` $bindir
-cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
+# Build a native version of wayland-scanner
 
-mkdir build-wayland
+cat - >host_pkgconfig.meson <<EOF
+[binaries]
+pkgconfig = ['/usr/bin/pkg-config', '--define-variable=prefix=\${pcfiledir}/../..']
+EOF
 
-cd build-wayland
-meson .. \
+PKG_CONFIG_SYSROOT_DIR='' \
+PKG_CONFIG_PATH="${host_libdir}/pkgconfig" \
+meson setup host_build . \
+    --native-file="${MESON_HOST_TOOLCHAIN}" \
+    --native-file=host_pkgconfig.meson \
+    --buildtype=plain \
+    -Ddtd_validation=false \
+    -Dlibraries=false \
+    -Dscanner=true \
+    -Ddocumentation=false \
+    -Dtests=false
+ninja -C host_build -j${nproc}
+ninja -C host_build install
+
+# Then cross-compile the library, which will use the native wayland-scanner during build
+
+if [[ "$target" =~ "freebsd" ]]; then
+    # add location of epollshim pkg-config file
+    export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:$prefix/libdata/pkgconfig"
+fi
+meson setup build . \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-    -Ddocumentation=false
-ninja -j${nproc}
-ninja install
-rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
+    --buildtype=release \
+    --pkgconfig.relocatable \
+    -Dlibraries=true \
+    -Dscanner=true \
+    -Ddocumentation=false \
+    -Dtests=false
+ninja -C build -j${nproc}
+ninja -C build install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,11 +69,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("Expat_jll"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
-    Dependency("EpollShim_jll"),
-    HostBuildDependency("Wayland_jll"),
+    Dependency("EpollShim_jll"; platforms = filter(Sys.isfreebsd, platforms)),
 ]
 
 # Build the tarballs.
