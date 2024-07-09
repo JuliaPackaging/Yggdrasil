@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "libblastrampoline"
-version = v"5.9.0"
+version = v"5.10.1"
 
 # Collection of sources required to build libblastrampoline
 sources = [
     GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
-              "3c451b99639a984126c6a618d4394ee582e872a2"),
+              "ff05ebb4e450deda0aebe8dce4d4f054e23fecfc"),
     DirectorySource("./bundled/")
 ]
 

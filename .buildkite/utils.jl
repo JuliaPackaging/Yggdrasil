@@ -121,6 +121,13 @@ function register_step(NAME, PROJECT, SKIP_BUILD)
     if SKIP_BUILD
         register_env["SKIP_BUILD"] = "true"
     end
+    # For the time being, only for some packages we're aware of the fact that using too high
+    # parallelism during upload of the artifacts we exceed GitHub's API secondary rate
+    # limits.  Should that happen with more packages, we'll probably need to do this for
+    # more/all packages.  Ref: https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334.
+    if NAME in ("Enzyme", "mlir_jl_tblgen")
+        register_env["BINARYBUILDER_GHR_CONCURRENCY"] = "4"
+    end
 
     Dict(
         :label => "register -- $NAME",

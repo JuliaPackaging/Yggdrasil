@@ -105,7 +105,6 @@ products = [
     LibraryProduct(["libITKNrrdIO", "libITKNrrdIO-5.3"], :libITKNrrdIO),
     LibraryProduct(["libITKConvolution", "libITKConvolution-5.3"], :libITKConvolution),
     LibraryProduct(["libITKTestKernel", "libITKTestKernel-5.3"], :libITKTestKernel)
-
 ]
 
 

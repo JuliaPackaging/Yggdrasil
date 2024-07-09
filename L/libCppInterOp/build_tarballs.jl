@@ -8,21 +8,24 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOp"
-version = v"0.1.0"
+version = v"0.1.3"
 
 llvm_versions = [v"17.0.6"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Gnimuc/CppInterOp.git", "416a123977a9bebf0254f2b68a6f48497bc1debc")
+    GitSource("https://github.com/compiler-research/CppInterOp.git", "ecbffafe0016022e40b7dea6e7197ee062dde38f"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd CppInterOp/
+atomic_patch -p1 ../patches/cmake.patch
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+     -DBUILD_SHARED_LIBS=ON \
      -DLLVM_DIR=${prefix}/lib/cmake/llvm \
      -DClang_DIR=${prefix}/lib/cmake/clang \
      -DCMAKE_BUILD_TYPE=Release
@@ -30,11 +33,6 @@ make -j${nproc}
 make install
 install_license ../LICENSE.txt
 """
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-filter!(p -> !(libc(p) == "musl" && Sys.islinux(p) && arch(p) == "i686"), platforms) # LLVM_full+asserts isn't available for i686-linux-musl
 
 augment_platform_block = """
     using Base.BinaryPlatforms
@@ -62,6 +60,15 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         # so loading the library will always fail. We fix this in CppInterOp.jl
         LibraryProduct("libCppInterOp", :libCppInterOp, dont_dlopen=true),
     ]
+
+    # These are the platforms we will build for by default, unless further
+    # platforms are passed in on the command line
+    platforms = expand_cxxstring_abis(supported_platforms())
+
+    if llvm_version >= v"15"
+        # We don't build LLVM 15 for i686-linux-musl.
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)

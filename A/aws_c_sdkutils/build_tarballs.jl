@@ -7,8 +7,7 @@ version = v"0.1.16"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-sdkutils.git",
-              "8c7af71f91ed5b9d2a043d51f120495f43723f80"),
+    GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "8c7af71f91ed5b9d2a043d51f120495f43723f80"),
 ]
 
 # Bash recipe for building across all platforms

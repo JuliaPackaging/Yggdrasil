@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Giflib"
-version = v"5.2.1"
+version = v"5.2.2"
 
 # Collection of sources required to build Giflib
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/giflib/giflib-$(version).tar.gz",
-                  "31da5562f44c5f15d63340a09a4fd62b48c45620cd302f77a6d9acf0077879bd"),
+                  "be7ffbd057cadebe2aa144542fd90c6838c6a083b5e8a9048b8ee3b66b29d5fb"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,7 +18,8 @@ cd $WORKSPACE/srcdir/giflib-*/
 # Apply patch to make it possible to build for non Linux-like platforms.
 # Adapted from also https://sourceforge.net/p/giflib/bugs/133/
 atomic_patch -p1 ../patches/makefile.patch
-make -j${nproc}
+# We cannot build in parallel, building `libutil` fails.
+make
 make install
 rm "${libdir}/libgif.a"
 install_license COPYING
@@ -26,7 +27,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
