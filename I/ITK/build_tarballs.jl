@@ -121,7 +121,7 @@ products = [
     LibraryProduct(["libITKVTK", "libITKVTK-5.3"], :libITKVTK),
     LibraryProduct(["libITKWatersheds", "libITKWatersheds-5.3"], :libITKWatersheds),
     LibraryProduct(["libITKVideoIO", "libITKVideoIO-5.3"], :libITKVideoIO),
-    LibraryProduct(["libitkgdcmMSFF"."libitkgdcmMSFF-5.3"], :libitkgdcmMSFF),
+    LibraryProduct(["libitkgdcmMSFF","libitkgdcmMSFF-5.3"], :libitkgdcmMSFF),
     LibraryProduct(["libITKgiftiio", "libITKgiftiio-5.3"], :libITKgiftiio),
     LibraryProduct(["libITKQuadEdgeMesh", "libITKQuadEdgeMesh-5.3"], :libITKQuadEdgeMesh),
     LibraryProduct(["libITKznz", "libITKznz-5.3"], :libITKznz),
