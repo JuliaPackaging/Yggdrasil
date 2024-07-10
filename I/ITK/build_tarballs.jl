@@ -115,7 +115,7 @@ products = [
     LibraryProduct(["libITKIOTransformInsightLegacy", "libITKIOTransformInsightLegacy-5.3"], :libITKIOTransformInsightLegacy),
     LibraryProduct(["libITKIOTransformMatlab", "libITKIOTransformMatlab-5.3"], :libITKIOTransformMatlab),
     LibraryProduct(["libITKKLMRegionGrowing", "libITKKLMRegionGrowing-5.3"], :libITKKLMRegionGrowing),
-    LibraryProduct(["libITKMarkovRandomFieldsClassifiers"."libITKMarkovRandomFieldsClassifiers-5.3"], :libITKMarkovRandomFieldsClassifiers),
+    LibraryProduct(["libITKMarkovRandomFieldsClassifiers","libITKMarkovRandomFieldsClassifiers-5.3"], :libITKMarkovRandomFieldsClassifiers),
     LibraryProduct(["libITKQuadEdgeMeshFiltering", "libITKQuadEdgeMeshFiltering-5.3"], :libITKQuadEdgeMeshFiltering),
     LibraryProduct(["libITKRegionGrowing", "libITKRegionGrowing-5.3"], :libITKRegionGrowing),
     LibraryProduct(["libITKVTK", "libITKVTK-5.3"], :libITKVTK),
