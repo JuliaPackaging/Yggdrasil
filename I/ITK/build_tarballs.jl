@@ -11,6 +11,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
+    CONFIG=msys2-64
+    OS=Windows
+fi
 cd $WORKSPACE/srcdir/ITK*
 mkdir build/
 cmake -B build -S . \
@@ -115,13 +119,13 @@ products = [
     LibraryProduct(["libITKIOTransformInsightLegacy", "libITKIOTransformInsightLegacy-5.3"], :libITKIOTransformInsightLegacy),
     LibraryProduct(["libITKIOTransformMatlab", "libITKIOTransformMatlab-5.3"], :libITKIOTransformMatlab),
     LibraryProduct(["libITKKLMRegionGrowing", "libITKKLMRegionGrowing-5.3"], :libITKKLMRegionGrowing),
-    LibraryProduct(["libITKMarkovRandomFieldsClassifiers","libITKMarkovRandomFieldsClassifiers-5.3"], :libITKMarkovRandomFieldsClassifiers),
+    LibraryProduct(["libITKMarkovRandomFieldsClassifiers", "libITKMarkovRandomFieldsClassifiers-5.3"], :libITKMarkovRandomFieldsClassifiers),
     LibraryProduct(["libITKQuadEdgeMeshFiltering", "libITKQuadEdgeMeshFiltering-5.3"], :libITKQuadEdgeMeshFiltering),
     LibraryProduct(["libITKRegionGrowing", "libITKRegionGrowing-5.3"], :libITKRegionGrowing),
     LibraryProduct(["libITKVTK", "libITKVTK-5.3"], :libITKVTK),
     LibraryProduct(["libITKWatersheds", "libITKWatersheds-5.3"], :libITKWatersheds),
     LibraryProduct(["libITKVideoIO", "libITKVideoIO-5.3"], :libITKVideoIO),
-    LibraryProduct(["libitkgdcmMSFF","libitkgdcmMSFF-5.3"], :libitkgdcmMSFF),
+    LibraryProduct(["libitkgdcmMSFF", "libitkgdcmMSFF-5.3"], :libitkgdcmMSFF),
     LibraryProduct(["libITKgiftiio", "libITKgiftiio-5.3"], :libITKgiftiio),
     LibraryProduct(["libITKQuadEdgeMesh", "libITKQuadEdgeMesh-5.3"], :libITKQuadEdgeMesh),
     LibraryProduct(["libITKznz", "libITKznz-5.3"], :libITKznz),
