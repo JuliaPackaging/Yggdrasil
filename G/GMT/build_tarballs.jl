@@ -10,7 +10,7 @@ DCW_VERSION="2.1.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "eec0fc5b982ac9d721c2b99a7a15bc390da4379e"),
+    "157a1eae7d6079def72846f50b24954a50961788"),
     
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
