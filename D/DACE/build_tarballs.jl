@@ -8,11 +8,11 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "DACE"
-version = v"0.4.0"
+version = v"0.5.0"
 
 # Collection of sources required to build DACE
 sources = [
-    GitSource("https://github.com/a-ev/dace.git", "4056c47f1081ba16d2cf05a2435368a425ad10bb"),
+    GitSource("https://github.com/a-ev/dace.git", "3e2d3f4cf0f42eafcd7178106206c26196c17006"),
     DirectorySource("./bundled"),
 ]
 
@@ -31,6 +31,7 @@ cmake . -B build \
     -DWITH_PTHREAD=ON \
     -DWITH_ALGEBRAICMATRIX=ON \
     -DCMAKE_CXX_STANDARD=17 \
+    -DCUSTOM_EXIT=ON \
     -DWITH_JULIA=ON
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
