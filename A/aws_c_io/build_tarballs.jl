@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_io"
-version = v"0.14.11"
+version = v"0.14.12"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "d04508d113851f1bc15630d93490b2aa09676137"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "f8a9eed2076ae190fd193a2edd04df94e9cdf2cd"),
     DirectorySource("./bundled"),
 ]
 
