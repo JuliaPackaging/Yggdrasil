@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_io"
-version = v"0.14.10"
+version = v"0.14.11"
 
 # Collection of sources required to complete build
 sources = [
