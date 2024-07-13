@@ -32,7 +32,11 @@ make -j${nproc}
 make install V=1
 """
 
-platforms = supported_platforms()
+# NOTE cross-compilation is not working because `--host` is not getting propagated
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+]
 
 dependencies = []
 
