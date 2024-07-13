@@ -49,9 +49,5 @@ products = Product[
     ExecutableProduct("otf2-snapshots", :otf2_snapshots),
 ]
 
-for platform in platforms
-    should_build_platform(platform) || continue
-
-    build_tarballs(ARGS, name, version, sources, script, [platform],
-        products, dependencies; lazy_artifacts=true, julia_compat="1.6")
-end
+build_tarballs(ARGS, name, version, sources, script, platforms,
+    products, dependencies; julia_compat="1.6")
