@@ -42,7 +42,7 @@ make -j${nproc}
 make install V=1
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = expand_cxxstring_abis(supported_platforms(; exclude=Sys.iswindows))
 
 dependencies = Dependency[]
 
