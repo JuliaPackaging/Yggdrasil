@@ -1,9 +1,4 @@
 using BinaryBuilder
-using BinaryBuilderBase
-using Base.BinaryPlatforms
-using Pkg
-
-include(joinpath(dirname(dirname(@__DIR__)), "fancy_toys.jl"))
 
 name = "OTF2"
 version = v"3.0.3"
@@ -38,9 +33,9 @@ platforms = [
     Platform("x86_64", "linux"; libc="musl"),
 ]
 
-dependencies = []
+dependencies = Dependency[]
 
-products = Product[
+products = [
     LibraryProduct("libotf2", :libotf2),
     ExecutableProduct("otf2-config", :otf2_config),
     ExecutableProduct("otf2-estimator", :otf2_estimator),
