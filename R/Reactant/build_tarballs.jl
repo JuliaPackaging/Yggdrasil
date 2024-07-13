@@ -10,7 +10,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.12"
 
 sources = [
-   GitSource(repo, "f35f10ef850a09c2a84d3b7c255ab934cdc5711a"),
+   GitSource(repo, "606e3495dc672de67a26fa25f975b4e3528c951e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -103,7 +103,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--apple_platform_type=macos)
     BAZEL_BUILD_FLAGS+=(--define=no_nccl_support=true)
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
-    BAZEL_BUILD_FLAGS+=(--@tsl//tsl/framework/contraction:disable_onednn_contraction_kernel=True)
+    BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
     
 	pushd $WORKSPACE/srcdir/llvm*
 	mkdir build
