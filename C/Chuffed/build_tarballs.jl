@@ -20,8 +20,6 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     ..
-# https://github.com/chuffed/chuffed/issues/75
-rm ../chuffed/flatzinc/parser.tab.h
 make -j ${nproc}
 make install
 """
