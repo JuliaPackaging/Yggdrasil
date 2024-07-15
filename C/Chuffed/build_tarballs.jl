@@ -13,18 +13,15 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/chuffed
-mkdir -p build
-cd build
-cmake \
+cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    ..
-make -j ${nproc}
-make install
+    -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     ExecutableProduct("fzn-chuffed", :fznchuffed),
@@ -43,6 +40,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version = v"4.8",
+    preferred_gcc_version = v"5",
     julia_compat = "1.6",
 )
