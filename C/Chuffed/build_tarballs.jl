@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 name = "Chuffed"
 
-version = v"0.10.4"
+version = v"0.13.2"
 
 sources = [
     GitSource(
         "https://github.com/chuffed/chuffed.git",
-        "23b9fcee3bb30b11f68d82ef4534040ebae1a8fb",
+        "2016f7eb7943a86b9ce93bb70b821d701667a5ca",
     ),
 ]
 
