@@ -1,7 +1,12 @@
+# In addition to coin-or-common.jl, we need to modify this file to trigger a
+# rebuild.
+#
+# Last updated: 2024-07-16
+
 include("../coin-or-common.jl")
 
 name = "Clp"
-version = Clp_version  # v1.17.9
+version = Clp_version
 
 # Collection of sources required to build Clp
 sources = [
@@ -50,8 +55,10 @@ fi
     --disable-dependency-tracking \
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
-    --with-blas="-L${libdir} ${LBT}" \
-    --with-lapack="-L${libdir} ${LBT}" \
+    --with-blas \
+    --with-blas-lib="-L${libdir} ${LBT}" \
+    --with-lapack \
+    --with-lapack-lib="-L${libdir} ${LBT}" \
     --with-coinutils \
     --with-coinutils-lflags="-lCoinUtils" \
     --with-coinutils-cflags="${includedir}" \
@@ -79,9 +86,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CoinUtils_jll", uuid="be027038-0da8-5614-b30d-e42594cb92df"), compat="$(CoinUtils_version)"),
-    Dependency(PackageSpec(name="Osi_jll", uuid="7da25872-d9ce-5375-a4d3-7a845f58efdd"), compat="$(Osi_version)"),
-    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="$(MUMPS_seq_version_LBT)"),
+    Dependency(PackageSpec(name="CoinUtils_jll", uuid="be027038-0da8-5614-b30d-e42594cb92df"), compat="=$(CoinUtils_version)"),
+    Dependency(PackageSpec(name="Osi_jll", uuid="7da25872-d9ce-5375-a4d3-7a845f58efdd"), compat="=$(Osi_version)"),
+    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="=$(MUMPS_seq_version_LBT)"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
