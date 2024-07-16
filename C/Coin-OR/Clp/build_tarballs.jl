@@ -67,7 +67,7 @@ fi
     --with-metis-lib="-lmetis" \
     --with-mumps \
     --with-mumps-lib="-L${libdir} -ldmumps" \
-    --with-mumps-cflags="${includedir}/mumps_seq"
+    --with-mumps-incdir="${includedir}/mumps_seq"
 
 make -j${nproc}
 make install
