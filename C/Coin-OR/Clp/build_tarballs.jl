@@ -60,13 +60,11 @@ fi
     --with-lapack \
     --with-lapack-lib="-L${libdir} ${LBT}" \
     --with-coinutils \
-    --with-coinutils-lflags="-lCoinUtils" \
-    --with-coinutils-cflags="${includedir}" \
+    --with-coinutils-lib="-lCoinUtils" \
     --with-osi \
-    --with-osi-lflags="-lOsi" \
-    --with-osi-cflags="${includedir}" \
+    --with-osi-lib="-lOsi" \
     --with-mumps \
-    --with-mumps-lflags="-L${libdir} -ldmumps" \
+    --with-mumps-lib="-L${libdir} -ldmumps" \
     --with-mumps-cflags="${includedir}/mumps_seq"
 
 make -j${nproc}
