@@ -63,6 +63,8 @@ fi
     --with-coinutils-lib="-lCoinUtils" \
     --with-osi \
     --with-osi-lib="-lOsi" \
+    --with-metis \
+    --with-metis-lib="-lmetis" \
     --with-mumps \
     --with-mumps-lib="-L${libdir} -ldmumps" \
     --with-mumps-cflags="${includedir}/mumps_seq"
@@ -85,6 +87,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CoinUtils_jll", uuid="be027038-0da8-5614-b30d-e42594cb92df"), compat="=$(CoinUtils_version)"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"), compat="=$(METIS_version)"),
     Dependency(PackageSpec(name="Osi_jll", uuid="7da25872-d9ce-5375-a4d3-7a845f58efdd"), compat="=$(Osi_version)"),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="=$(MUMPS_seq_version_LBT)"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
