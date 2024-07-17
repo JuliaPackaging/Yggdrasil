@@ -1,3 +1,31 @@
+# The C/Coin-OR directory contains a number of inter-related packages. Their
+# dependency graph has the following topological order. Because we use strict
+# equality compat bounds (relaxing to SemVer has caused compatibility issues in
+# the past), when updating a package, you should also update all subsequent
+# packages in the order.
+#
+# The order is:
+#
+# [CoinUtils_jll]
+# [Osi_jll]
+# [Clp_jll]
+# [Cgl_jll]
+# [Cbc_jll]
+# [Bonmin_jll]
+# [Couenne_jll]
+# [SHOT_jll]
+# [SYMPHONY_jll]
+# [ALPS_jll]
+# [BiCePS_jll]
+# [CHIPPS_BLIS_jll]
+# [MibS_jll]
+#
+# The other packages in C/Coin-OR that do not have dependencies are:
+#
+# [Ipopt_jll]
+# [IpoptMKL_jll]
+# [CDSP_jll]
+
 using BinaryBuilder, Pkg
 
 """
@@ -39,8 +67,8 @@ Cbc_gitsha = "3c1d759619f38bbd5916380df292cfc1dafba7f5"
 Cgl_version = offset_version(v"0.60.6", v"0.0.0")
 Cgl_gitsha = "8952b9e737e434b730fab5967cd28180b43d7234"
 
-Clp_version = offset_version(v"1.17.7", v"0.0.0")
-Clp_gitsha = "1c2586a08d33ecc59ed67d319c29044802c0866b"
+Clp_version = offset_version(v"1.17.9", v"0.0.0")
+Clp_gitsha = "7b9daa62d4c2710a368a17385913ce59d8c67b68"
 
 Osi_version = offset_version(v"0.108.10", v"0.0.0")
 Osi_gitsha = "2997cda8e85ccc6712c4b05404e7aa70500e422f"
@@ -82,7 +110,7 @@ Julia_compat_version = "1.6"
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
 MUMPS_seq_version = v"5.4.1"
-MUMPS_seq_version_LBT = v"500.600.201"
+MUMPS_seq_version_LBT = v"500.700.200"
 SPRAL_version_LBT = v"2024.1.18"
 OpenBLAS32_version = v"0.3.26"
 
