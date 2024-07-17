@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_cal_jll"; compat="0.6.2"),
+    Dependency("aws_c_cal_jll"; compat="0.7.1"),
     Dependency("aws_c_http_jll"; compat="0.8.1"),
     Dependency("aws_c_sdkutils_jll"; compat="0.1.12"),
     BuildDependency("aws_lc_jll"),
