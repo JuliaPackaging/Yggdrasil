@@ -270,11 +270,31 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
-augment_platform_block=CUDA.augment::String
+augment_platform_block="""
+    using Base.BinaryPlatforms
+
+    const Reactant_UUID = Base.UUID("3c362404-f566-11ee-1572-e11a4b42c853")
+    const preferences = Base.get_preferences(Reactant_UUID)
+    
+    module __CUDA
+        $(CUDA.augment::String)
+    end
+
+    function augment_platform!(platform::Platform)
+        __CUDA.augment_platform!(platform)
+
+        mode = get(ENV, "REACTANT_MODE", get(preferences, "mode", "opt"))
+        if !haskey(platform, "mode")
+            platform["mode"] = mode
+        end
+
+        return platform
+    end
+    """
 
 for mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
-    augmented_platform["mode"]
+    augmented_platform["mode"] = mode
     cuda_deps = []
 
     prefix="export MODE="*mode*"\n\n"
