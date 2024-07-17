@@ -1,3 +1,31 @@
+# The C/Coin-OR directory contains a number of inter-related packages. Their
+# dependency graph has the following topological order. Because we use strict
+# equality compat bounds (relaxing to SemVer has caused compatibility issues in
+# the past), when updating a package, you should also update all subsequent
+# packages in the order.
+#
+# The order is:
+#
+# [CoinUtils_jll]
+# [Osi_jll]
+# [Clp_jll]
+# [Cgl_jll]
+# [Cbc_jll]
+# [Bonmin_jll]
+# [Couenne_jll]
+# [SHOT_jll]
+# [SYMPHONY_jll]
+# [ALPS_jll]
+# [BiCePS_jll]
+# [CHIPPS_BLIS_jll]
+# [MibS_jll]
+#
+# The other packages in C/Coin-OR that do not have dependencies are:
+#
+# [Ipopt_jll]
+# [IpoptMKL_jll]
+# [CDSP_jll]
+
 using BinaryBuilder, Pkg
 
 """
