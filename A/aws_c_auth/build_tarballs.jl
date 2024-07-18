@@ -10,7 +10,7 @@ sources = [
     GitSource("https://github.com/awslabs/aws-c-auth.git", "53a31bacf2918e848e00b052d2e25cba0be069d9"),
 ]
 
-# Bash recipe for building across all platforms
+# Bash recipe for building
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-auth
 mkdir build && cd build
@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_cal_jll"; compat="0.6.2"),
+    Dependency("aws_c_cal_jll"; compat="0.7.1"),
     Dependency("aws_c_http_jll"; compat="0.8.1"),
     Dependency("aws_c_sdkutils_jll"; compat="0.1.12"),
     BuildDependency("aws_lc_jll"),
