@@ -297,6 +297,11 @@ for mode in ("opt", "dbg"), platform in platforms
     augmented_platform["mode"] = mode
     cuda_deps = []
 
+    # Skip debug builds on linux
+    if mode == "dbg" && !Sys.isapple(platform)
+        continue
+    end
+
     prefix="export MODE="*mode*"\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
