@@ -10,7 +10,7 @@ sources = [
     GitSource("https://github.com/awslabs/aws-c-auth.git", "53a31bacf2918e848e00b052d2e25cba0be069d9"),
 ]
 
-# Bash recipe for building across all platforms
+# Bash recipe for building
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-auth
 mkdir build && cd build
