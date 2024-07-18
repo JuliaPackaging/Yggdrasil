@@ -63,7 +63,7 @@ export TMP=$TMPDIR
 export TEMP=$TMPDIR
 export BAZEL_CXXOPTS="-std=c++17"
 BAZEL_FLAGS=()
-BAZEL_BUILD_FLAGS=()
+BAZEL_BUILD_FLAGS=(-c $MODE)
 
 # don't run out of temporary space
 BAZEL_FLAGS+=(--output_user_root=/workspace/bazel_root)
@@ -187,13 +187,13 @@ bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-	sed -i.bak1 "/whole-archive/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	sed -i.bak0 "/lld/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "-fuse-ld=lld" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	cat bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	$CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	# $CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	sed -i.bak0 "/lld/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	echo "-fuse-ld=lld" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	echo "--ld-path=$LLD2" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	$CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	# $CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 else
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
@@ -270,13 +270,39 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
-augment_platform_block=CUDA.augment::String
+augment_platform_block="""
+    using Base.BinaryPlatforms
 
-for platform in platforms
+    const Reactant_UUID = Base.UUID("3c362404-f566-11ee-1572-e11a4b42c853")
+    const preferences = Base.get_preferences(Reactant_UUID)
+    
+    module __CUDA
+        $(CUDA.augment::String)
+    end
+
+    function augment_platform!(platform::Platform)
+        __CUDA.augment_platform!(platform)
+
+        mode = get(ENV, "REACTANT_MODE", get(preferences, "mode", "opt"))
+        if !haskey(platform, "mode")
+            platform["mode"] = mode
+        end
+
+        return platform
+    end
+    """
+
+for mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
+    augmented_platform["mode"] = mode
     cuda_deps = []
 
-    prefix=""
+    # Skip debug builds on linux
+    if mode == "dbg" && !Sys.isapple(platform)
+        continue
+    end
+
+    prefix="export MODE="*mode*"\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
@@ -293,7 +319,7 @@ for platform in platforms
         push!(cuda_deps, BuildDependency(PackageSpec(name="CUDNN_jll")))
         push!(cuda_deps, BuildDependency(PackageSpec(name="TensorRT_jll")))
         push!(cuda_deps, BuildDependency(PackageSpec(name="CUDA_full_jll")))
-        prefix = "export CUDA_VERSION=\"\"\n"
+        prefix *= "export CUDA_VERSION=\"\"\n"
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
