@@ -18,6 +18,8 @@ done
 
 mkdir build
 
+export TILEDB_DISABLE_AUTO_VCPKG=1
+
 cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
