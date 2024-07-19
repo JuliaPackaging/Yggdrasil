@@ -118,7 +118,6 @@ products = [
     LibraryProduct(["libITKBiasCorrection", "libITKBiasCorrection-5.3"], :libITKBiasCorrection),
     LibraryProduct(["libITKFastMarching", "libITKFastMarching-5.3"], :libITKFastMarching),
     LibraryProduct(["libITKPolynomials", "libITKPolynomials-5.3"], :libITKPolynomials),
-    LibraryProduct(["libITKBiasCorrection", "libITKBiasCorrection-5.3"], :libITKBiasCorrection),
     LibraryProduct(["libITKColormap", "libITKColormap-5.3"], :libITKColormap),
     LibraryProduct(["libITKPDEDeformableRegistration", "libITKPDEDeformableRegistration-5.3"], :libITKPDEDeformableRegistration),
     LibraryProduct(["libITKIOSiemens", "libITKIOSiemens-5.3"], :libITKIOSiemens),
