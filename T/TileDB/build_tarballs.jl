@@ -10,16 +10,22 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/TileDB*
 
 mkdir build
-cd build
 
-cmake \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DTILEDB_INSTALL_LIBDIR=${libdir} \
     -DTILEDB_WERROR=OFF \
     -DTILEDB_STATS=OFF \
     -DTILEDB_TESTS=OFF \
-    ..
+    -DTILEDB_S3=OFF \
+    -DTILEDB_AZURE=OFF \
+    -DTILEDB_GCS=OFF \
+    -DTILEDB_HDFS=OFF \
+    -DTILEDB_SERIALIZATION=OFF \
+    -DTILEDB_WEBP=OFF
 
 make -j${nproc}
 make install-tiledb
@@ -32,4 +38,4 @@ products = [LibraryProduct("libtiledb", :libtiledb)]
 dependencies = Dependency.(["Zlib", "Lz4", "Bzip2", "Zstd"] .* "_jll")
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"10")
