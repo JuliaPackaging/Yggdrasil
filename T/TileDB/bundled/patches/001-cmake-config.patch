@@ -1,0 +1,12 @@
+diff --git a/cmake/inputs/Config.cmake.in b/cmake/inputs/Config.cmake.in
+index df94a0f..d7f7f60 100644
+--- a/cmake/inputs/Config.cmake.in
++++ b/cmake/inputs/Config.cmake.in
+@@ -15,7 +15,6 @@ if(NOT @BUILD_SHARED_LIBS@) # NOT BUILD_SHARED_LIBS
+   include(CMakeFindDependencyMacro)
+   find_dependency(Threads)
+   find_dependency(BZip2)
+-  find_dependency(lz4)
+   find_dependency(spdlog)
+   find_dependency(ZLIB)
+   find_dependency(zstd)

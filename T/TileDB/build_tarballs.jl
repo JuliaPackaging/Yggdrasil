@@ -3,11 +3,18 @@ using BinaryBuilder
 name = "TileDB"
 version = v"2.24.2"
 
-sources = [GitSource("https://github.com/TileDB-Inc/TileDB.git",
-                     "76cd03c39d459b7659ccccb692864d81dd87d36c")]
+sources = [
+    GitSource("https://github.com/TileDB-Inc/TileDB.git",
+              "76cd03c39d459b7659ccccb692864d81dd87d36c"),
+    DirectorySource("./bundled"),
+]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/TileDB*
+
+for patch in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${patch}
+done
 
 mkdir build
 
