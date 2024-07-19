@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2_gfx"
-version = v"2.0.27"
+version = v"1.0.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ferzkopp/SDL_gfx.git",
-    "4cc9485e8b36fab6126ee390c5746bbe16dcd3e6")
+    "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-$(version).tar.gz" =>
+    "a4066bd467c96469935a4b1fe472893393e7d74e45f95d59f69726784befd8f8",
+    "./bundled",
 ]
 
 # Bash recipe for building across all platforms
