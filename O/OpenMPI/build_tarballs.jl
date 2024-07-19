@@ -24,13 +24,16 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     # Build internal `libevent` without `-Wl,--no-undefined`
     # (taken from `L/libevent/build_tarballs.jl`)
 
-    # Expand libeven tarball so that we can patch it
+    # Expand libevent tarball so that we can patch it
     pushd 3rd-party
-    tar xzf libevent-2.1.12-stable.tar.gz
-    cd libevent-2.1.12-stable
+    tar xzf libevent-2.1.12-stable-ompi.tar.gz
+    cd libevent-2.1.12-stable-ompi
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/build_with_no_undefined.patch
     popd
 fi
+
+# See <https://github.com/open-mpi/ompi/issues/12693>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aarch64.patch
 
 # Autotools doesn't add `${includedir}` as an include directory on some platforms
 export CPPFLAGS="-I${includedir}"
