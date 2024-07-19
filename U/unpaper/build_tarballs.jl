@@ -1,17 +1,17 @@
 using BinaryBuilder
 
 name = "unpaper"
-version = v"6.1.100" # <--- This version number is a lie, (it is v6.1) we just need to bump it to build for experimental platforms
+version = v"7.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.flameeyes.com/files/unpaper-6.1.tar.xz",
-                  "237c84f5da544b3f7709827f9f12c37c346cdf029b1128fb4633f9bafa5cb930"),
+    GitSource("https://github.com/unpaper/unpaper.git",
+                  "5211a623d48858eae154213a61bccbc368b19ca0"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/unpaper-*/
+cd $WORKSPACE/srcdir/unpaper*/
 if [[ "${target}" == *-mingw* ]]; then
     # FFMPEG_jll installs the pkgconfig files in the wrong directory for Windows
     export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:${libdir}/pkgconfig"
@@ -19,15 +19,15 @@ if [[ "${target}" == *-mingw* ]]; then
     export LDFLAGS="-L${libdir}"
     export LIBAV_LIBS="-lavformat -lavutil -lavcodec"
 fi
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc}
-make install
+mkdir build && cd build
+meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release ..
+ninja -j${nproc}
+ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
 
 # The products that we will ensure are always built
 products = [
