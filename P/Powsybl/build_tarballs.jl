@@ -6,8 +6,7 @@ sources = [
     GitSource("https://github.com/powsybl/powsybl.jl.git", "dc890a91ab706bf6d7fa3a5edf2b8ec7c191aedf")
 ]
 
-#julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_versions = [v"1.10"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 
 script = raw"""
 cd $WORKSPACE/srcdir
@@ -43,8 +42,7 @@ install_license $WORKSPACE/srcdir/powsybl.jl/LICENSE.md
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
-#filter!(p -> arch(p) == "x86_64" && os(p) ∈ ("windows", "linux", "macos"), platforms)
-filter!(p -> arch(p) == "x86_64" && os(p) ∈ ("linux", "linux"), platforms)
+filter!(p -> arch(p) == "x86_64" && os(p) ∈ ("windows", "linux", "macos"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 @show platforms
