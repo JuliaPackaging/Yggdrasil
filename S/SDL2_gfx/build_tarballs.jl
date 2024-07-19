@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2_gfx"
-version = v"1.0.3"
+version = v"2.0.27"
 
 # Collection of sources required to complete build
 sources = [
