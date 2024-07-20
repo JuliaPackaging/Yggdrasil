@@ -15,6 +15,18 @@ script = raw"""
 cd $WORKSPACE/srcdir/file/
 
 autoreconf -i -f
+(
+    # Do native build to get the correct version of `file` locally
+    mkdir build-native && cd build-native
+    export CC=${CC_BUILD}
+    export CXX=${CXX_BUILD}
+    export LD=${LD_BUILD}
+    ../configure --prefix=${host_prefix} --host=${MACHTYPE}
+    make -j${nproc}
+    make install
+)
+
+autoreconf -i -f
 ./configure --prefix=${prefix} --host=${target}
 make -j${nproc}
 make install
