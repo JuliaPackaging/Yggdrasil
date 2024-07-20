@@ -37,8 +37,8 @@ cmake -S . -B build \
     -DTILEDB_SERIALIZATION=OFF \
     -DTILEDB_WEBP=OFF
 
-make -j${nproc}
-make install-tiledb
+make -C build -j${nproc}
+make -C build install-tiledb
 """
 
 platforms = supported_platforms()
