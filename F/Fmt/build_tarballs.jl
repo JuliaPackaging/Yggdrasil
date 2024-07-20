@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Fmt"
-version = v"11.0.1"
+version = v"11.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fmtlib/fmt.git", "b50e685db996c167e6c831dcef582aba6e14276a")
+    GitSource("https://github.com/fmtlib/fmt.git", "0c9fce2ffefecfdce794e1859584e25877b7b592")
 ]
 
 # Bash recipe for building across all platforms
