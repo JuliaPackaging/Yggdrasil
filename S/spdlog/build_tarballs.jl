@@ -21,12 +21,7 @@ cmake -S .. -B . \
 make -j${nproc} install
 """
 
-platforms = map(supported_platforms()) do p
-    if !Sys.isbsd(p)
-        p["cxxstring_abi"] = "cxx11"
-    end
-    return p
-end
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [LibraryProduct("libspdlog", :libspdlog)]
 
