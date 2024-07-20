@@ -21,13 +21,13 @@ autoreconf -i -f
     export CC=${CC_BUILD}
     export CXX=${CXX_BUILD}
     export LD=${LD_BUILD}
-    ../configure --prefix=${host_prefix} --host=${MACHTYPE}
+    ../configure --prefix=${host_prefix} --host=${MACHTYPE} --build=${MACHTYPE}
     make -j${nproc}
     make install
 )
 
 autoreconf -i -f
-./configure --prefix=${prefix} --host=${target}
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
 make -j${nproc}
 make install
 
