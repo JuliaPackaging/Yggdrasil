@@ -16,7 +16,8 @@ cmake -S .. -B . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DSPDLOG_FMT_EXTERNAL=ON \
     -DSPDLOG_BUILD_SHARED=ON \
-    -DSPDLOG_BUILD_PIC=ON
+    -DSPDLOG_BUILD_PIC=ON \
+    -DSPDLOG_BUILD_EXAMPLE=OFF
 make -j${nproc} install
 """
 
