@@ -5,7 +5,7 @@
 # ```
 # using BinaryBuilder
 # using BinaryBuilder: aatriplet
-# for platform in supported_platforms()
+# for platform in supported_platforms(; experimental=true)
 #     # Append version numbers for BSD systems
 #     if Sys.isapple(platform)
 #         suffix = arch(platform) == "aarch64" ? "20" : "14"
@@ -81,6 +81,9 @@ target_to_linux_arch()
             ;;
         powerpc*)
             echo "powerpc"
+            ;;
+        riscv64*)
+            echo "riscv"
             ;;
         i686*)
             echo "x86"
