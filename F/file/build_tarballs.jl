@@ -2,15 +2,12 @@ using BinaryBuilder
 
 name = "file"
 
-# NOTE: the cross-compilation story of `file` is kind of broken
-# and requires a two-step build; we dodge this by providing `file`
-# in the rootfs right now, but this locks us to exactly this version.
-version = v"5.41"
+version = v"5.45"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/file/file.git",
-              "504206e53a89fd6eed71aeaf878aa3512418eab1")
+              "4cbd5c8f0851201d203755b76cb66ba991ffd8be")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,13 +22,11 @@ make install
 install_license COPYING
 """
 
-# Disable windows for now, as that requires `libgnurx`.
-platforms = filter(!Sys.iswindows, supported_platforms())
-# Disable i686-linux-musl because we end up in dynamic linker hell
-platforms = filter(p -> !(libc(p) == "musl" && arch(p) == "i686"), platforms)
+platforms = supported_platforms()
 
 products = [
-    ExecutableProduct("file", :file)
+    ExecutableProduct("file", :file),
+    LibraryProduct("libmagic", :libmagic),
 ]
 dependencies = [
     Dependency("Bzip2_jll"),
