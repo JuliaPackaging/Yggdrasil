@@ -25,7 +25,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [LibraryProduct("libspdlog", :libspdlog)]
 
-dependencies = [Dependency("Fmt_jll"; compat="11")]
+dependencies = [Dependency("Fmt_jll"; compat="11.0.1")]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")
