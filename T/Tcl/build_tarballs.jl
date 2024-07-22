@@ -38,6 +38,7 @@ install_license $WORKSPACE/srcdir/tcl*/license.terms
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -50,5 +51,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
+               julia_compat="1.6")
