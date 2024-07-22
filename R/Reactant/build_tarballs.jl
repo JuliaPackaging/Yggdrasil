@@ -270,7 +270,7 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
-augment_platform_block=raw"""
+augment_platform_block="""
     using Base.BinaryPlatforms
 
     const Reactant_UUID = Base.UUID("0192cb87-2b54-54ad-80e0-3be72ad8a3c0")
@@ -280,7 +280,7 @@ augment_platform_block=raw"""
         if isa(preferences["mode"], String) && preferences["mode"] in ["opt", "dbg"]
             preferences["mode"]
         else
-            @error "Mode preference is not valid; expected 'opt' or 'dbg', but got '$(preferences["debug"])'"
+            @error "Mode preference is not valid; expected 'opt' or 'dbg', but got '\$(preferences[\"debug\"])'"
             nothing
         end
     else
