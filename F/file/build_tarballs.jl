@@ -15,18 +15,28 @@ script = raw"""
 cd $WORKSPACE/srcdir/file/
 
 autoreconf -i -f
-(
-    # Do native build to get the correct version of `file` locally
-    mkdir build-native && cd build-native
-    export CC=${CC_BUILD}
-    export CXX=${CXX_BUILD}
-    export LD=${LD_BUILD}
-    ../configure --prefix=${host_prefix} --host=${MACHTYPE} --build=${MACHTYPE}
-    make -j${nproc}
-    make install
-)
 
-autoreconf -i -f
+# Do native build to get the correct version of `file` locally, as a native build of the
+# current version is required for cross compiling. We'll make it statically linked to
+# avoid any potential rpath woes.
+mkdir build-native && cd build-native
+../configure \
+    --prefix=$(pwd) \
+    --host=${MACHTYPE} \
+    --build=${MACHTYPE} \
+    --enable-static \
+    --disable-shared \
+    CC=${CC_BUILD} \
+    CXX=${CXX_BUILD} \
+    LD=${LD_BUILD}
+make -j${nproc}
+make install
+cd ..
+
+# Prepend the installation location of the native build to the PATH so it will get picked
+# up by the build system
+export PATH="${PWD}/build-native/bin:${PATH}"
+
 ./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
 make -j${nproc}
 make install
@@ -39,6 +49,7 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("file", :file),
     LibraryProduct("libmagic", :libmagic),
+    FileProduct("include/magic.h", :magic_h),
 ]
 dependencies = [
     Dependency("Bzip2_jll"),
