@@ -15,6 +15,8 @@ cd ${WORKSPACE}/srcdir/mingw-libgnurx-*
 make -j${nproc}
 make install
 
+install -Dvm 644 regex.h "${includedir}/regex.h"
+
 install_license COPYING.LIB
 """
 
@@ -22,7 +24,7 @@ platforms = supported_platforms(; exclude=!Sys.iswindows)
 
 products = [
     LibraryProduct(["libgnurx", "libgnurx-0"], :libgnurx),
-    FileProduct("regex.h", :regex_h),
+    FileProduct("include/regex.h", :regex_h),
 ]
 
 dependencies = Dependency[]
