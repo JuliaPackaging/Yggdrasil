@@ -12,7 +12,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/c-ares-*/
+cd $WORKSPACE/srcdir/c-ares*/
 
 mkdir build && cd build
 cmake .. \
