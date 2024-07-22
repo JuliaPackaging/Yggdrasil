@@ -7,8 +7,8 @@ version = v"1.32.2"
 # description = "C library for asynchronous DNS requests (including name resolves)"
 
 sources = [
-    ArchiveSource("https://c-ares.org/download/c-ares-$(version).tar.gz",
-                  "072ff6b30b9682d965b87eb9b77851dc1cd8e6d8090f6821a56bd8fa89595061"),
+    GitSource("https://github.com/c-ares/c-ares",
+              "80c2648f0a2ff0a934e1a8e119fb155ee0aebdd4"),
 ]
 
 script = raw"""
