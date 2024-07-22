@@ -1,0 +1,26 @@
+--- a/lib/CL/clReleaseCommandBufferKHR.c
++++ b/lib/CL/clReleaseCommandBufferKHR.c
+@@ -25,7 +25,11 @@
+ #include "pocl_mem_management.h"
+ #include "pocl_util.h"
+
++#if defined(__FreeBSD__)
++#include <stdlib.h>
++#else
+ #include <alloca.h>
++#endif
+
+ CL_API_ENTRY cl_int CL_API_CALL
+ POname (clReleaseCommandBufferKHR) (cl_command_buffer_khr command_buffer)
+--- a/lib/CL/devices/proxy/pocl_proxy.c
++++ b/lib/CL/devices/proxy/pocl_proxy.c
+@@ -31,7 +31,9 @@
+ #include "devices.h"
+
+ #include <assert.h>
++#if !defined(__FreeBSD__)
+ #include <alloca.h>
++#endif
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
