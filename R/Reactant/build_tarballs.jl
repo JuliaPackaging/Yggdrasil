@@ -273,8 +273,19 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 augment_platform_block="""
     using Base.BinaryPlatforms
 
-    const Reactant_UUID = Base.UUID("3c362404-f566-11ee-1572-e11a4b42c853")
+    const Reactant_UUID = Base.UUID("0192cb87-2b54-54ad-80e0-3be72ad8a3c0")
     const preferences = Base.get_preferences(Reactant_UUID)
+    Base.record_compiletime_preference(Reactant_UUID, "mode")
+    const mode_preference = if haskey(preferences, "mode")
+        if isa(preferences["mode"], String) && preferences["mode"] in ["opt", "dbg"]
+            preferences["mode"]
+        else
+            @error "Mode preference is not valid; expected 'opt' or 'dbg', but got '$(preferences["debug"])'"
+            nothing
+        end
+    else
+        nothing
+    end
     
     module __CUDA
         $(CUDA.augment::String)
@@ -283,7 +294,7 @@ augment_platform_block="""
     function augment_platform!(platform::Platform)
         __CUDA.augment_platform!(platform)
 
-        mode = get(ENV, "REACTANT_MODE", get(preferences, "mode", "opt"))
+        mode = get(ENV, "REACTANT_MODE", something(mode_preference, "opt"))
         if !haskey(platform, "mode")
             platform["mode"] = mode
         end
