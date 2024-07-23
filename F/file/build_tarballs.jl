@@ -62,4 +62,5 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("GNURX_jll"; compat="2.5.1", platforms=filter(Sys.iswindows, platforms)),
 ]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
