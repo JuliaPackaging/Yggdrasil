@@ -34,6 +34,11 @@ mkdir build-native && cd build-native
     LD=${LD_BUILD}
 make -j${nproc}
 make install
+if [[ $target == *mingw* ]]; then
+    # The build system looks for a local version with the same executable extension, so
+    # if we're building for Windows then pretend the local version is also .exe
+    mv bin/file bin/file.exe
+fi
 cd ..
 
 # Prepend the installation location of the native build to the PATH so it will get picked
