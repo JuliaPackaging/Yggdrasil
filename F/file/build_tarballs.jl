@@ -40,7 +40,9 @@ cd ..
 # up by the build system
 export PATH="${PWD}/build-native/bin:${PATH}"
 
-./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE}
+# Override the cross compilation check to ensure that builds for x86_64-linux-musl go
+# through the same code paths, since they also need the local static build
+./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} cross_compiling=yes
 make -j${nproc}
 make install
 
@@ -58,5 +60,6 @@ dependencies = [
     Dependency("Bzip2_jll"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
+    Dependency("GNURX_jll"; compat="2.5.1", platforms=filter(Sys.iswindows, platforms)),
 ]
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
