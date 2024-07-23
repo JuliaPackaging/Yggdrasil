@@ -15,8 +15,6 @@ cd ${WORKSPACE}/srcdir/mingw-libgnurx-*
 make -j${nproc}
 make install
 
-install -Dvm 644 regex.h "${includedir}/regex.h"
-
 install_license COPYING.LIB
 """
 
