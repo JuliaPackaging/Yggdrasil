@@ -7,12 +7,15 @@ version = v"5.45"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/file/file.git",
-              "4cbd5c8f0851201d203755b76cb66ba991ffd8be")
+              "4cbd5c8f0851201d203755b76cb66ba991ffd8be"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/file/
+
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fix-version-check.patch"
 
 autoreconf -i -f
 
@@ -48,7 +51,7 @@ platforms = supported_platforms()
 
 products = [
     ExecutableProduct("file", :file),
-    LibraryProduct("libmagic", :libmagic),
+    LibraryProduct(["libmagic", "libmagic-1"], :libmagic),
     FileProduct("include/magic.h", :magic_h),
 ]
 dependencies = [
