@@ -1,0 +1,12 @@
+diff --git a/lib/scopehal/CMakeLists.txt b/lib/scopehal/CMakeLists.txt
+index 6c30cf0..27ce0e4 100644
+--- a/lib/scopehal/CMakeLists.txt
++++ b/lib/scopehal/CMakeLists.txt
+@@ -14,6 +14,6 @@ if(WIN32)
+ 	# when using FindYAML.cmake, just set the library directly
+ 	set(YAML_LIBRARIES yaml-cpp)
+ else()
+-	set(LIN_LIBS dl)
++	set(LIN_LIBS dl rt)
+ 	find_package(YAML REQUIRED)
+ endif()
