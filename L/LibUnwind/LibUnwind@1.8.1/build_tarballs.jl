@@ -31,6 +31,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-revert_prelink_unwind.pat
 # https://github.com/libunwind/libunwind/pull/748
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-aarch64-inline-asm.patch
 
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-disable-initial-exec-tls.patch
+
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
@@ -45,7 +47,8 @@ export CFLAGS="-DPI -fPIC"
     --enable-minidebuginfo \
     --enable-zlibdebuginfo \
     --disable-tests \
-    --disable-conservative-checks
+    --disable-conservative-checks \
+    --enable-per-thread-cache
 make -j${nproc}
 make install
 
