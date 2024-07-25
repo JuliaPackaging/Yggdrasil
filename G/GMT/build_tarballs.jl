@@ -5,19 +5,21 @@ using BinaryBuilder, Pkg
 name = "GMT"
 version = v"6.5.2"
 GSHHG_VERSION="2.3.7"
-DCW_VERSION="2.1.2"
+DCW_VERSION="2.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "157a1eae7d6079def72846f50b24954a50961788"),
+    "2629b65b2e179ea9fbe001ee6a42da01c8adfa53"),
     
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
 
-    ArchiveSource("https://github.com/GenericMappingTools/dcw-gmt/releases/download/$DCW_VERSION/dcw-gmt-$DCW_VERSION.tar.gz",
-        "4bb840d075c8ba3e14aeb41cf17c24236bff787566314f9ff758ab9977745d99")
+    ArchiveSource("https://github.com/GenericMappingTools/DCW-type-files/releases/download/new/dcw-gmt-$(DCW_VERSION)_plus.tar.gz",
+        "096E64535A7E3CC1F870A9D6A569B5BAC63040B602D04F4077D41B62EC0F7BBB")
 ]
+
+#     ArchiveSource("https://github.com/GenericMappingTools/dcw-gmt/releases/download/$DCW_VERSION/dcw-gmt-$DCW_VERSION.tar.gz",
 
 # Bash recipe for building across all platforms
 script = """
