@@ -13,6 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lz4
+# See <https://github.com/lz4/lz4/issues/1474>
 if [[ "${target}" == *linux* ]]; then
     ldlibs=-lrt
 else
