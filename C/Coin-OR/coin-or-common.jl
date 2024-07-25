@@ -78,8 +78,8 @@ CoinUtils_version = offset_version(CoinUtils_upstream_version, v"0.0.0")
 CoinUtils_gitsha = "15a819b7e8763b2557e4bf440f8cb62ee6734f36"
 CoinUtils_hash = "27da344479f38c82112d738501643dcb229e4ee96a5f87d4f406456bdc1b2cb4"
 
-Ipopt_upstream_version = v"3.14.14"
-Ipopt_gitsha = "5fd746337021543e78dc2d167cb1c15db81f68e1"
+Ipopt_upstream_version = v"3.14.16"
+Ipopt_gitsha = "43a63412f73d9ad3ff9074d38b49362fc9d7f8f1"
 Ipopt_verson_offset = v"0.0.0"
 Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
@@ -111,7 +111,7 @@ ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
 MUMPS_seq_version = v"5.4.1"
 MUMPS_seq_version_LBT = v"500.700.300"
-SPRAL_version_LBT = v"2024.1.18"
+SPRAL_version_LBT = v"2024.5.8"
 OpenBLAS32_version = v"0.3.26"
 
 # These are the platforms we will build for by default, unless further
