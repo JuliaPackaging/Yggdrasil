@@ -31,7 +31,17 @@ for llvm_assertions in (false, true), llvm_full_version in llvm_full_versions
     _, _, sources, script, platforms, products, dependencies =
         configure_extraction(ARGS, llvm_full_version, "Clang", libllvm_version;
                              assert=llvm_assertions, augmentation=true)
-    # we ignore the version, as we want a unified JLL
+    # ignore the output version, as we want a unified JLL
+    dependencies = map(dependencies) do dep
+        # ignore the version of any LLVM dependency, as we'll automatically load
+        # an appropriate version of Clang via platform augmentations
+        # TODO: make this an argument to `configure_extraction`?
+        if isa(dep, Dependency) && contains(dep.pkg.name, "LLVM")
+            Dependency(dep.pkg.name; dep.platforms)
+        else
+            dep
+        end
+    end
     push!(builds, [name, version, sources, script, platforms, products, dependencies])
 end
 
