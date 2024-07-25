@@ -3,12 +3,11 @@
 using BinaryBuilder
 
 name = "Lz4"
-version = v"1.9.4"
+version = v"1.10.0"
 
 # Collection of sources required to build Lz4
 sources = [
-    GitSource("https://github.com/lz4/lz4.git",
-                  "5ff839680134437dbf4678f3d0c7b371d84f4964")
+    GitSource("https://github.com/lz4/lz4.git", "ebb370ca83af193212df4dcbadcc5d87bc0de2f0")
 ]
 
 # Bash recipe for building across all platforms
