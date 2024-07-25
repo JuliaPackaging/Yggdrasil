@@ -15,7 +15,7 @@ sources = [
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
 
-    ArchiveSource("https://github.com/GenericMappingTools/DCW-type-files/releases/download/new/dcw-gmt-$DCW_VERSION_plus.tar.gz",
+    ArchiveSource("https://github.com/GenericMappingTools/DCW-type-files/releases/download/new/dcw-gmt-$(DCW_VERSION)_plus.tar.gz",
         "096E64535A7E3CC1F870A9D6A569B5BAC63040B602D04F4077D41B62EC0F7BBB")
 ]
 
