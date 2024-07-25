@@ -13,7 +13,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/lz4
-make -j${nproc} CFLAGS="-O3 -fPIC" LDLIBS="-lrt"
+if [[ "${target}" == *linux* ]]; then
+    ldlibs=-lrt
+else
+    ldlibs=
+fi
+make -j${nproc} CFLAGS="-O3 -fPIC" LDLIBS="${ldlibs}"
 make install
 if [[ "${target}" == *-mingw* ]]; then
     mkdir -p "${prefix}/lib"
