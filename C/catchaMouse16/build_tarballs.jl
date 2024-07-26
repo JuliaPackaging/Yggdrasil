@@ -48,7 +48,7 @@ platforms = supported_platforms(; exclude=Sys.iswindows) # gsl fails to link on 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcatchaMouse16", :ccatchaMouse16)
+    LibraryProduct("libcatchaMouse16", :libcatchaMouse16)
 ]
 
 # Dependencies that must be installed before this package can be built
