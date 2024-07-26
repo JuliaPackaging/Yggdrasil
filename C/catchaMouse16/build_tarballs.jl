@@ -49,7 +49,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [Dependency("GSL_jll")]
+dependencies = [Dependency("GSL_jll"; compat="~2.7.2")]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
