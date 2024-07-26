@@ -13,38 +13,43 @@ sources = [
 
 # Bash recipe for building across all platforms
 makefile = raw"""
-CC = gcc
+CC = cc
+FLAGS = "${FLAGS}"
 CFLAGS = -std=c11 -fPIC -Wall -Wextra -g -O2 -lm -lgsl -lgslcblas
 LDFLAGS = -shared -lm -lgsl -lgslcblas
 RM = rm -f
 TARGET_LIB = "lib$(SRC_NAME).$(dlext)"
 
-SRCS = main.c fft.c stats.c helper_functions.c histcounts.c CO_AddNoise.c CO_AutoCorr.c CO_HistogramAMI.c CO_NonlinearAutocorr.c CO_TranslateShape.c DN_RemovePoints.c FC_LoopLocalSimple.c IN_AutoMutualInfoStats.c PH_Walker.c SC_FluctAnal.c ST_LocalExtrema.c SY_DriftingMean.c SY_SlidingWindow.c
+SRCS := $(shell find $(SRC_DIRS) -name "*.c")
 
 OBJS = $(SRCS:.c=.o)
 .PHONY: all;
 all: ${TARGET_LIB}
 $(TARGET_LIB): $(OBJS)
-	$(CC) ${LDFLAGS} -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 $(SRCS:.c=.d):%.d:%.c
 	$(CC) $(CFLAGS) -MM $< >$@\ninclude $(SRCS:.c=.d)
 .PHONY: clean
-clean:-${RM} ${TARGET_LIB} ${OBJS} $(SRCS:.c=.d)
+clean:-$(RM) $(TARGET_LIB) $(OBJS) $(SRCS:.c=.d)
 .PHONY: install
 install:
 	install -Dvm 755 "./lib${SRC_NAME}.$(dlext)" "$(libdir)/lib$(SRC_NAME).$(dlext)"
 """
 script = raw"""
-cd $WORKSPACE/srcdir
+cd ${WORKSPACE}/srcdir
 cd catchaMouse16/C/src/
 echo -e '""" * makefile * raw"""' >> Makefile
-    make -j${nproc}
+    if [[ ${target} == aarch64-apple-* ]]; then
+        FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    fi
+    make -j${nproc} FLAGS="${FLAGS}"
     make install
     """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows)
+# platforms = supported_platforms(; exclude=Sys.iswindows)
+platforms = supported_platforms()[[2, end - 4, end]]
 
 # The products that we will ensure are always built
 products = [
@@ -52,7 +57,15 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [Dependency("GSL_jll"; compat="~2.7.2")]
+llvm_version = v"13.0.1+1"
+dependencies = [
+    Dependency("GSL_jll"; compat = "~2.7.2"),
+    # libclang_rt.osx.a is required on aarch64-macos to provide `__divdc3`.
+    BuildDependency(PackageSpec(name = "LLVMCompilerRT_jll",
+                                uuid = "4e17d02c-6bf5-513e-be62-445f41c75a11",
+                                version = llvm_version);
+                    platforms = [Platform("aarch64", "macos")])
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
