@@ -130,6 +130,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, #=true=#)
         Dependency("Hwloc_jll"),
         Dependency("SPIRV_LLVM_Translator_unified_jll"),
         Dependency("SPIRV_Tools_jll"),
+        Dependency("Clang_unified_jll"),
     ]
 
     for platform in platforms
