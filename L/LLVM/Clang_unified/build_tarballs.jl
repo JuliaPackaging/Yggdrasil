@@ -30,7 +30,8 @@ for llvm_assertions in (false, true), llvm_full_version in llvm_full_versions
     libllvm_version = llvm_full_version
     _, _, sources, script, platforms, products, dependencies =
         configure_extraction(ARGS, llvm_full_version, "Clang", libllvm_version;
-                             assert=llvm_assertions, augmentation=true)
+                             assert=llvm_assertions, augmentation=true,
+                             dont_dlopen=false)
     # ignore the output version, as we want a unified JLL
     dependencies = map(dependencies) do dep
         # ignore the version of any LLVM dependency, as we'll automatically load
@@ -55,7 +56,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 for (i, build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    build...;
-                   skip_audit=true, julia_compat="1.10",
+                   skip_audit=true, dont_dlopen=true, julia_compat="1.10",
                    augment_platform_block)
 end
 
