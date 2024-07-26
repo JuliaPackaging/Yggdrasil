@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/lz4
 # See <https://github.com/lz4/lz4/issues/1474>
-if [[ "${target}" == *linux* ]]; then
+if [[ "${target}" == *86*linux-gnu ]]; then
     ldlibs=-lrt
 else
     ldlibs=
