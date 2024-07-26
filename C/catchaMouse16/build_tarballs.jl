@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 makefile = raw"""
 CC = cc
-CFLAGS = -std=c99 -fPIC -Wall -Wextra -g -O2 -lm -lgsl -lgslcblas
+CFLAGS = -std=c11 -fPIC -Wall -Wextra -g -O2 -lm -lgsl -lgslcblas
 LDFLAGS = -shared -lm -lgsl -lgslcblas
 RM = rm -f
 TARGET_LIB = "lib$(SRC_NAME).$(dlext)"
@@ -44,7 +44,7 @@ echo -e '""" * makefile * raw"""' >> Makefile
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows) # gsl fails to link on mingw?
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
