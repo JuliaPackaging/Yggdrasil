@@ -32,7 +32,7 @@ $(SRCS:.c=.d):%.d:%.c
 clean:-${RM} ${TARGET_LIB} ${OBJS} $(SRCS:.c=.d)
 .PHONY: install
 install:
-	install -Dvm 755 "./lib${SRC_NAME}.${dlext}" "${libdir}/lib${SRC_NAME}.${dlext}"
+	install -Dvm 755 "./lib${SRC_NAME}.$(dlext)" "$(libdir)/lib$(SRC_NAME).$(dlext)"
 """
 script = raw"""
 cd $WORKSPACE/srcdir
