@@ -36,7 +36,7 @@ cd $WORKSPACE/srcdir
 cd catchaMouse16/C/src/
 echo -e '""" * makefile * raw"""' >> Makefile
     make -j${nproc}
-    cp "./lib${SRC_NAME}.${dlext}" "${libdir}/lib${SRC_NAME}.${dlext}"
+    install -Dvm 755 "./lib${SRC_NAME}.${dlext}" "${libdir}/lib${SRC_NAME}.${dlext}"
     """
 
 # These are the platforms we will build for by default, unless further
