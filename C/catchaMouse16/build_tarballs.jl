@@ -30,13 +30,16 @@ $(SRCS:.c=.d):%.d:%.c
 	$(CC) $(CFLAGS) -MM $< >$@\ninclude $(SRCS:.c=.d)
 .PHONY: clean
 clean:-${RM} ${TARGET_LIB} ${OBJS} $(SRCS:.c=.d)
+.PHONY: install
+install:
+	install -Dvm 755 "./lib${SRC_NAME}.${dlext}" "${libdir}/lib${SRC_NAME}.${dlext}"
 """
 script = raw"""
 cd $WORKSPACE/srcdir
 cd catchaMouse16/C/src/
 echo -e '""" * makefile * raw"""' >> Makefile
     make -j${nproc}
-    install -Dvm 755 "./lib${SRC_NAME}.${dlext}" "${libdir}/lib${SRC_NAME}.${dlext}"
+    make install
     """
 
 # These are the platforms we will build for by default, unless further
@@ -53,4 +56,4 @@ dependencies = [Dependency("GSL_jll"; compat="~2.7.2")]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"9.1.0", julia_compat = "1.9")
+               preferred_gcc_version = v"9.1.0", julia_compat = "1.6")
