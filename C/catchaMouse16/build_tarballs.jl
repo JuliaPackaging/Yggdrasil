@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 makefile = raw"""
-CC = gcc
+CC = cc
 CFLAGS = -std=c99 -fPIC -Wall -Wextra -g -O2 -lm -lgsl -lgslcblas
 LDFLAGS = -shared -lm -lgsl -lgslcblas
 RM = rm -f
