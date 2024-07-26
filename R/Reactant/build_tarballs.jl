@@ -208,6 +208,11 @@ if [[ "${bb_full_target}" == *mingw* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
 fi
 cp -v bazel-bin/*.jl ${prefix}
+
+# process debug symbols
+if [[ "${bb_full_target}" == *mode\+dbg* ]]; then
+    dsymutil ${libdir}/libReactantExtra.dylib
+fi
 """
 
 # determine exactly which tarballs we should build
