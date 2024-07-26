@@ -673,7 +673,9 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false, augmentation=false)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing;
+                              experimental_platforms=false, assert=false,
+                              augmentation=false, dont_dlopen=true)
     if isempty(LLVM_full_version.build)
         error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
     end
@@ -685,14 +687,14 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if name == "libLLVM"
         script = libllvmscript
         products = [
-            LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true),
+            LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm; dont_dlopen),
             ExecutableProduct("llvm-config", :llvm_config, "tools"),
         ]
     elseif name == "Clang"
         script = clangscript
         products = [
-            LibraryProduct("libclang", :libclang, dont_dlopen=true),
-            LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
+            LibraryProduct("libclang", :libclang; dont_dlopen),
+            LibraryProduct("libclang-cpp", :libclang_cpp; dont_dlopen),
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
@@ -706,13 +708,13 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             mlirscript_v16
         end
         products = [
-            LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
+            LibraryProduct("libMLIR", :libMLIR; dont_dlopen),
         ]
         if v"12" <= version < v"13"
-            push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
+            push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI; dont_dlopen))
         end
         if version >= v"14"
-            push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c, dont_dlopen=true))
+            push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c; dont_dlopen))
         end
     elseif name == "LLD"
         script = lldscript
@@ -724,7 +726,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     elseif name == "LLVM"
         script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
-            LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
+            LibraryProduct(["LTO", "libLTO"], :liblto; dont_dlopen),
             ExecutableProduct("opt", :opt, "tools"),
             ExecutableProduct("llc", :llc, "tools"),
         ]
