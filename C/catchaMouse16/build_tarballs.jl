@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 makefile = raw"""
 CC = cc
-FLAGS = "${FLAGS}"
+FLAGS = "$(FLAGS)"
 CFLAGS = -std=c11 -fPIC -Wall -Wextra -g -O2 -lm -lgsl -lgslcblas
 LDFLAGS = -shared -lm -lgsl -lgslcblas
 RM = rm -f
@@ -28,7 +28,7 @@ all: ${TARGET_LIB}
 $(TARGET_LIB): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 $(SRCS:.c=.d):%.d:%.c
-	$(CC) $(CFLAGS) -MM $< >$@\ninclude $(SRCS:.c=.d)
+	$(CC) $(CFLAGS) $(FLAGS) -MM $< >$@\ninclude $(SRCS:.c=.d)
 .PHONY: clean
 clean:-$(RM) $(TARGET_LIB) $(OBJS) $(SRCS:.c=.d)
 .PHONY: install
