@@ -105,13 +105,13 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
     
-	pushd $WORKSPACE/srcdir/llvm*
-	mkdir build
-	cd build
-	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
-	ninja lld
-	export LLD2=`pwd`/bin/ld64.lld
-	popd
+	# pushd $WORKSPACE/srcdir/llvm*
+	# mkdir build
+	# cd build
+	# cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
+	# ninja lld
+	# export LLD2=`pwd`/bin/ld64.lld
+	# popd
     
 	if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
@@ -190,7 +190,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	sed -i.bak0 "/lld/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	echo "-fuse-ld=lld" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	# echo "--ld-path=$LLD2" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	$CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	# $CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
@@ -203,16 +203,16 @@ mkdir -p ${libdir}
 cp -v bazel-bin/libReactantExtra.so ${libdir}
 if [[ "${bb_full_target}" == *darwin* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dylib
+
+    # process debug symbols
+    if [[ "${bb_full_target}" == *mode\+dbg* ]]; then
+        dsymutil -j ${nproc} ${libdir}/libReactantExtra.dylib
+    fi
 fi
 if [[ "${bb_full_target}" == *mingw* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
 fi
 cp -v bazel-bin/*.jl ${prefix}
-
-# process debug symbols
-if [[ "${bb_full_target}" == *-apple-darwin-*mode\+dbg* ]]; then
-    dsymutil --verbose -j ${nproc} ${libdir}/libReactantExtra.dylib
-fi
 """
 
 # determine exactly which tarballs we should build
@@ -327,9 +327,15 @@ for mode in ("opt", "dbg"), platform in platforms
         prefix *= "export CUDA_VERSION=\"\"\n"
     end
 
+    apple_deps = if Sys.isapple(platform)
+        [HostBuildDependency(PackageSpec(name="LLD_jll"))]
+    else
+        Dependency[]
+    end
+
     should_build_platform(triplet(augmented_platform)) || continue
     push!(builds, (;
-        dependencies=[dependencies; cuda_deps], products, sources=platform_sources,
+        dependencies=[dependencies; cuda_deps; apple_deps], products, sources=platform_sources,
         platforms=[augmented_platform], script=prefix * script
     ))
 end
