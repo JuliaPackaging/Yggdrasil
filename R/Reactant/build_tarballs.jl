@@ -206,7 +206,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 
     # process debug symbols
     if [[ "${bb_full_target}" == *mode\+dbg* ]]; then
-        dsymutil -j ${nproc} ${libdir}/libReactantExtra.dylib
+        ${host_prefix}/tools/dsymutil -j ${nproc} ${libdir}/libReactantExtra.dylib
     fi
 fi
 if [[ "${bb_full_target}" == *mingw* ]]; then
