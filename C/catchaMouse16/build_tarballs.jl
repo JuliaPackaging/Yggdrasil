@@ -26,7 +26,7 @@ OBJS = $(SRCS:.c=.o)
 .PHONY: all;
 all: ${TARGET_LIB}
 $(TARGET_LIB): $(OBJS)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(FLAGS)
 $(SRCS:.c=.d):%.d:%.c
 	$(CC) $(CFLAGS) $(FLAGS) -MM $< >$@\ninclude $(SRCS:.c=.d)
 .PHONY: clean
