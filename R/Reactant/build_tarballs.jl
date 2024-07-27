@@ -211,7 +211,7 @@ cp -v bazel-bin/*.jl ${prefix}
 
 # process debug symbols
 if [[ "${bb_full_target}" == *-apple-darwin-*mode\+dbg* ]]; then
-    dsymutil ${libdir}/libReactantExtra.dylib
+    dsymutil --verbose -j ${nproc} ${libdir}/libReactantExtra.dylib
 fi
 """
 
