@@ -1,0 +1,60 @@
+Author: Andreas Beckmann <anbe@debian.org>
+Description: add support for a GENERIC cpu type that uses llvm defaults
+Forwarded: not-needed
+
+--- a/lib/kernel/host/CMakeLists.txt
++++ b/lib/kernel/host/CMakeLists.txt
+@@ -588,6 +588,11 @@ else()
+   set(LLC_CPUFLAGS "-mcpu=${VARIANT}")
+ endif()
+
++if("${VARIANT}" STREQUAL "GENERIC")
++  set(CLANG_CPUFLAGS "")
++  set(LLC_CPUFLAGS "")
++endif()
++
+ separate_arguments(CLANG_CPUFLAGS)
+ separate_arguments(LLC_CPUFLAGS)
+ set(CLANG_FLAGS ${HOST_CLANG_FLAGS} ${CLANG_CPUFLAGS}
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -1737,6 +1737,9 @@ pocl_init_default_device_infos (cl_devic
+   dev->kernellib_subdir = "host";
+   dev->llvm_abi = pocl_get_llvm_cpu_abi ();
+
++  if(dev->llvm_cpu && (!strcmp(dev->llvm_cpu, "GENERIC")))
++    dev->llvm_cpu = NULL;
++
+ #else /* No compiler, no CPU info */
+   dev->kernellib_name = NULL;
+   dev->kernellib_fallback_name = NULL;
+--- a/cmake/LLVM.cmake
++++ b/cmake/LLVM.cmake
+@@ -709,17 +709,25 @@ endif()
+ # Some architectures have -march and -mcpu reversed
+ if(NOT DEFINED CLANG_MARCH_FLAG)
+   message(STATUS "Checking clang -march vs. -mcpu flag")
+-  custom_try_compile_clang_silent("" "return 0;" RES ${CLANG_TARGET_OPTION}${LLC_TRIPLE} -march=${SELECTED_HOST_CPU})
++ if(LLC_HOST_CPU STREQUAL "GENERIC" AND NOT KERNELLIB_HOST_CPU_VARIANTS STREQUAL "distro")
++  set(CLANG_MARCH_FLAG "-None=")
++ else()
++  set(LLC_HOST_CPU_TEST "${SELECTED_HOST_CPU}")
++  if(LLC_HOST_CPU STREQUAL "GENERIC")
++    set(LLC_HOST_CPU_TEST "${LLC_HOST_CPU_AUTO}")
++  endif()
++  custom_try_compile_clang_silent("" "return 0;" RES ${CLANG_TARGET_OPTION}${LLC_TRIPLE} -march=${LLC_HOST_CPU_TEST})
+   if(NOT RES)
+     set(CLANG_MARCH_FLAG "-march=")
+   else()
+-    custom_try_compile_clang_silent("" "return 0;" RES ${CLANG_TARGET_OPTION}${LLC_TRIPLE} -mcpu=${SELECTED_HOST_CPU})
++    custom_try_compile_clang_silent("" "return 0;" RES ${CLANG_TARGET_OPTION}${LLC_TRIPLE} -mcpu=${LLC_HOST_CPU_TEST})
+     if(NOT RES)
+       set(CLANG_MARCH_FLAG "-mcpu=")
+     else()
+       message(FATAL_ERROR "Could not determine whether to use -march or -mcpu with clang")
+     endif()
+   endif()
++ endif()
+   message(STATUS "  Using ${CLANG_MARCH_FLAG}")
+
+   set(CLANG_MARCH_FLAG ${CLANG_MARCH_FLAG} CACHE INTERNAL "Clang option used to specify the target cpu")

@@ -1,18 +1,18 @@
 using BinaryBuilder, Pkg
 
 name = "Cares"
-version = v"1.27.0"
+version = v"1.32.3"
 
 # url = "https://c-ares.org/"
 # description = "C library for asynchronous DNS requests (including name resolves)"
 
 sources = [
-    ArchiveSource("https://c-ares.org/download/c-ares-$(version).tar.gz",
-                  "0a72be66959955c43e2af2fbd03418e82a2bd5464604ec9a62147e37aceb420b"),
+    GitSource("https://github.com/c-ares/c-ares",
+              "5899dea2b1f8e78f311aaed7db98b82b5537c9f9"),
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/c-ares-*/
+cd $WORKSPACE/srcdir/c-ares*/
 
 mkdir build && cd build
 cmake .. \
