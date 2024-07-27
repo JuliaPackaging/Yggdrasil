@@ -211,7 +211,7 @@ cp -v bazel-bin/*.jl ${prefix}
 
 # process debug symbols
 if [[ "${bb_full_target}" == *mode\+dbg* ]]; then
-    llvm-dsymutil ${libdir}/libReactantExtra.dylib
+    dsymutil ${libdir}/libReactantExtra.dylib
 fi
 """
 
