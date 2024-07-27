@@ -288,7 +288,7 @@ augment_platform_block = """
       function augment_platform!(platform::Platform)
           __CUDA.augment_platform!(platform)
 
-          mode = get(ENV, "REACTANT_MODE", get(preferences, "mode", "opt"))
+          mode = get(preferences, "mode", "opt")
           if !haskey(platform, "mode")
               platform["mode"] = mode
           end
