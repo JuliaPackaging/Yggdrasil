@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.2.0"
+version = v"2.2.1"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "05822b4a5d57fa65270b8d6e63c066da6da373d1"),
+    GitSource("https://github.com/ralna/CUTEst.git", "e692555a86bc6ef81977d3e7893566ee28f5b115"),
 ]
 
 # Bash recipe for building across all platforms
