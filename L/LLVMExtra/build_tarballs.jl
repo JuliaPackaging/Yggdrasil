@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.30"
+version = v"0.0.31"
 
 llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
 
 sources = [
-    GitSource(repo, "6c7bca448f5900009fec4e9b18bf72c52478c664")
+    GitSource(repo, "9950c8770aec234ea2dc5d1ebb357fada762964d")
 ]
 
 # Bash recipe for building across all platforms
