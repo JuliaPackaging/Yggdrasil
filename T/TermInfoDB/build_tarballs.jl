@@ -47,10 +47,10 @@ DUPS=(
     p/p9-w
 )
 for file in "${DUPS[@]}"; do
-    rm -f "${prefix}/share/terminfo/${file}"
+    rm -fv "${prefix}/share/terminfo/${file}"
 done
 # Remove empty directories
-find "${prefix}/share/terminfo/" -type d -empty -delete
+find "${prefix}/share/terminfo/" -type d -empty -print -delete
 
 install_license "${WORKSPACE}/srcdir/COPYING"
 """
