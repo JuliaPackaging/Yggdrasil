@@ -6,12 +6,12 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
-    version = v"2.8.1"
+    version = v"8.3.1"
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "4124f663ec4bf4e294d9cf230668370b4249a48ff34deaf0f06e8fc82d891300"),
+                      "f73e1eacd7e2ffae687bc3f056bb0c705b7a05aee86337686e09da8fc1c2030c"),
     ]
 
     # Bash recipe for building across all platforms
@@ -33,7 +33,9 @@ meson .. \
     -Dtests=disabled \
     -Dicu=auto \
     -Dicu_builtin=false \
-    -Dcoretext=enabled
+    -Dcoretext=enabled \
+    -Dgdi=enabled \
+    -Ddirectwrite=enabled
 ninja -j${nproc}
 if [[ "${ICU}" == true ]]; then
     # Manually install only ICU-related files
@@ -81,5 +83,5 @@ fi
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6", clang_use_lld=false)
 end
