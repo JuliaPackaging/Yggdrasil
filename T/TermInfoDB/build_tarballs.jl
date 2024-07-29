@@ -55,7 +55,7 @@ find "${prefix}/share/terminfo/" -type d -empty -delete
 install_license "${WORKSPACE}/srcdir/COPYING"
 """
 
-platforms = supported_platforms()
+platforms = [AnyPlatform()]
 
 # I'd rather not list out >2k individual `FileProduct`s so let's just call the entry
 # for xterm our "product" and hope the rest are there
