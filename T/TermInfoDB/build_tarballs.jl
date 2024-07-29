@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 gunzip terminfo-*
+mkdir -p "${prefix}/share/terminfo"
 tic -sx -o "${prefix}/share/terminfo" ./terminfo-*
 
 # When ignoring case, these files are duplicates of others. We'll remove them to ensure
