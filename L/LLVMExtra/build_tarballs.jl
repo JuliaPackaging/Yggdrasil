@@ -46,6 +46,8 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 
 ninja -C build -j ${nproc} install
+
+install_license LICENSE-APACHE LICENSE-MIT
 """
 
 augment_platform_block = """
