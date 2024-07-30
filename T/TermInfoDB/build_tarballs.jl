@@ -17,40 +17,27 @@ gunzip terminfo-*
 mkdir -p "${prefix}/share/terminfo"
 tic -sx -o "${prefix}/share/terminfo" ./terminfo-*
 
-# When ignoring case, these files are duplicates of others. We'll remove them to ensure
-# they don't cause trouble on case-insensitive filesystems
-DUPS=(
-    2/2621a
-    e/eterm
-    e/eterm-color
-    h/hp2621a
-    h/hp70092a
-    l/lft-pc850
-    n/ncr260vt300wpp
-    n/ncrvt100wpp
-    p/p12
-    p/p12-m
-    p/p12-m-w
-    p/p12-w
-    p/p14
-    p/p14-m
-    p/p14-m-w
-    p/p14-w
-    p/p4
-    p/p5
-    p/p7
-    p/p8
-    p/p8-w
-    p/p9
-    p/p9-8
-    p/p9-8-w
-    p/p9-w
-)
-for file in "${DUPS[@]}"; do
-    rm -fv "${prefix}/share/terminfo/${file}"
+# The terminfo filesystem-based database contains both upper- and lowercase directory
+# names, which presents a problem for case-insensitive filesystems. Let's rename all
+# files and directories to lowercase, dealing with conflicts by overwriting and hoping
+# for the best.
+pushd "${prefix}/share/terminfo/"
+for dir in $(ls); do
+    if [[ ${dir} =~ [A-Z]+ ]] && [[ -d ${dir,,} ]]; then
+        for file in $(ls ${dir}); do
+            mv -fv "${dir}/${file}" "${dir,,}/${file,,}"
+        done
+        if [ -z "$(ls -A "${dir}")" ]; then
+            rm -rfv "${dir}"
+        fi
+    elif [[ ${dir} =~ \d+ ]]; then
+        for file in $(ls ${dir}); do
+            mv -fv "${dir}/${file}" "${dir}/${file,,}"
+        done
+    fi
 done
-# Remove empty directories
-find "${prefix}/share/terminfo/" -type d -empty -print -delete
+tree
+popd
 
 install_license "${WORKSPACE}/srcdir/COPYING"
 """
