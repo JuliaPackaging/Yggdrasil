@@ -13,6 +13,11 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/
+
+# Install `tree` to get an overview of what's going to be included in the JLL
+apk update
+apk add tree
+
 gunzip terminfo-*
 mkdir -p "${prefix}/share/terminfo"
 tic -sx -o "${prefix}/share/terminfo" ./terminfo-*
