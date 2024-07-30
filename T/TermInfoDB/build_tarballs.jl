@@ -28,17 +28,17 @@ tic -sx -o "${prefix}/share/terminfo" ./terminfo-*
 # for the best.
 pushd "${prefix}/share/terminfo/"
 for dir in $(ls); do
-    if [[ ${dir} =~ [A-Z]+ ]] && [[ -d ${dir,,} ]]; then
-        for file in $(ls ${dir}); do
-            mv -fv "${dir}/${file}" "${dir,,}/${file,,}"
-        done
-        if [ -z "$(ls -A "${dir}")" ]; then
-            rm -rfv "${dir}"
+    lcdir="${dir,,}"
+    for file in $(ls ${dir}); do
+        lcfile="${file,,}"
+        if [ "${dir}/${file}" = "${lcdir}/${lcfile}" ]; then
+            # Already all lowercase, nothing to do
+            continue
         fi
-    elif [[ ${dir} =~ \d+ ]]; then
-        for file in $(ls ${dir}); do
-            mv -fv "${dir}/${file}" "${dir}/${file,,}"
-        done
+        mv -fv "${dir}/${file}" "${lcdir}/${lcfile}"
+    done
+    if [ -z "$(ls -A "${dir}")" ]; then
+        rm -rfv "${dir}"
     fi
 done
 tree
