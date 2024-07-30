@@ -14,13 +14,12 @@ sources = [
 # Bash recipe for building across all platforms
 makefile = raw"""
 CC = cc
-FLAGS = "$(FLAGS)"
 CFLAGS = -std=c11 -fPIC -Wall -Wextra -g -O2 -lm -lgsl -lgslcblas
 LDFLAGS = -shared -lm -lgsl -lgslcblas
 RM = rm -f
 TARGET_LIB = "lib$(SRC_NAME).$(dlext)"
 
-SRCS := $(shell find $(SRC_DIRS) -name "*.c")
+SRCS := $(wildcard $(SRC_DIRS)/*.c)
 
 OBJS = $(SRCS:.c=.o)
 .PHONY: all;
@@ -28,9 +27,11 @@ all: ${TARGET_LIB}
 $(TARGET_LIB): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(FLAGS)
 $(SRCS:.c=.d):%.d:%.c
-	$(CC) $(CFLAGS) $(FLAGS) -MM $< >$@\ninclude $(SRCS:.c=.d)
+	$(CC) $(CFLAGS) $(FLAGS) -MM $< >$@
+	include $(SRCS:.c=.d)
 .PHONY: clean
-clean:-$(RM) $(TARGET_LIB) $(OBJS) $(SRCS:.c=.d)
+clean:
+	$(RM) $(TARGET_LIB) $(OBJS) $(SRCS:.c=.d)
 .PHONY: install
 install:
 	install -Dvm 755 "./lib${SRC_NAME}.$(dlext)" "$(libdir)/lib$(SRC_NAME).$(dlext)"
