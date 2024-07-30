@@ -41,7 +41,7 @@ cd ${WORKSPACE}/srcdir
 cd catchaMouse16/C/src/
 echo -e '""" * makefile * raw"""' >> Makefile
     if [[ ${target} == aarch64-apple-* ]]; then
-        FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+        FLAGS="-L${libdir}/darwin -lclang_rt.osx -headerpad_max_install_names"
     fi
     make -j${nproc} FLAGS="${FLAGS}"
     make install
