@@ -15,7 +15,7 @@ sources = [
 makefile = raw"""
 CC = cc
 CFLAGS = -std=c11 -fPIC -Wall -Wextra -g -O2 -lm -lgsl -lgslcblas
-LDFLAGS = -shared -lm -lgsl -lgslcblas
+LDFLAGS = -shared -lm -lgsl -lgslcblas -Wl,-headerpad_max_install_names
 RM = rm -f
 TARGET_LIB = "lib$(SRC_NAME).$(dlext)"
 
@@ -41,7 +41,7 @@ cd ${WORKSPACE}/srcdir
 cd catchaMouse16/C/src/
 echo -e '""" * makefile * raw"""' >> Makefile
     if [[ ${target} == aarch64-apple-* ]]; then
-        FLAGS="-L${libdir}/darwin -lclang_rt.osx -headerpad_max_install_names"
+        FLAGS="-L${libdir}/darwin -lclang_rt.osx"
     fi
     make -j${nproc} FLAGS="${FLAGS}"
     make install
