@@ -36,6 +36,10 @@ for dir in $(ls); do
             continue
         fi
         mv -fv "${dir}/${file}" "${lcdir}/${lcfile}"
+        if [ -e "${dir}/${file}" ]; then
+            echo "ERROR: '${dir}/${file}' not successfully renamed to lowercase!!!"
+            exit 1
+        fi
     done
     if [ -z "$(ls -A "${dir}")" ]; then
         rm -rfv "${dir}"
