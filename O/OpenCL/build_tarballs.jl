@@ -25,6 +25,12 @@ cmake -DCMAKE_PREFIX_PATH=${prefix} \
 cmake --build ./OpenCL-ICD-Loader/build --target install -j${nproc}
 """
 
+# OpenCL drivers need to be registered by setting an envirnoment variable,
+# so we provide an array to store the drivers globally in a central place.
+init_block = raw"""
+global drivers = String[]
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude=Sys.iswindows)
@@ -41,4 +47,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"6.1.0")
+               julia_compat="1.6", preferred_gcc_version = v"6.1.0", init_block)
