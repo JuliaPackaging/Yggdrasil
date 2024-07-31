@@ -86,6 +86,10 @@ CMAKE_FLAGS+=(-DLLC_HOST_CPU_AUTO=$CPU)
 CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
 # Build POCL as an dynamic library loaded by the OpenCL runtime
 CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
+# XXX: work around pocl#1528, disabling FP16 support in i686
+if [[ ${target} == i686-* ]]; then
+    CMAKE_FLAGS+=(-DHOST_CPU_SUPPORTS_FLOAT16:BOOL=OFF)
+fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
