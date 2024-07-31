@@ -38,8 +38,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=${BUILD_SHARED} \
     -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
-    -DFAST_BUILD=ON \
-    -DJULIA=ON ..
+    -DFAST_BUILD=ON ..
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}
