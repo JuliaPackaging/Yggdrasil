@@ -15,11 +15,11 @@ sources = [
 makefile = raw"""
 CC = cc
 CFLAGS = -std=c11 -fPIC -Wall -Wextra -g -O2 -lm -lgsl -lgslcblas
-LDFLAGS = -shared -lm -lgsl -lgslcblas -Wl,-headerpad_max_install_names
+LDFLAGS = -shared -lm -lgsl -lgslcblas
 RM = rm -f
 TARGET_LIB = "lib$(SRC_NAME).$(dlext)"
 
-SRCS := $(wildcard $(SRC_DIRS)/*.c)
+SRCS := $(shell find ./ -name "*.c")
 
 OBJS = $(SRCS:.c=.o)
 .PHONY: all;
