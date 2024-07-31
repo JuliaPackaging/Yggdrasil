@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "OpenCL"
-version = v"2023.12.14"
+version = v"2024.05.08"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KhronosGroup/OpenCL-ICD-Loader.git", "229410f86a8c8c9e0f86f195409e5481a2bae067"),
+    GitSource("https://github.com/KhronosGroup/OpenCL-ICD-Loader.git",
+              "861b68b290e76d08e7241608479c16431f529945"),
 ]
 
 # Bash recipe for building across all platforms
@@ -42,7 +43,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2023.12.14"))
+    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2024.05.08"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
