@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/givaro
-./autogen.sh --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./autogen.sh CCNAM=gcc --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 
