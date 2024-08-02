@@ -4,7 +4,7 @@ name = "MKL_Pardiso"
 version = v"2024.2.0"
 
 sources = [
-    GitSource("https://github.com/amontoison/MKL_Pardiso.git", "f40139d73ec6618aedeacb2c881621ae3ded841e")
+    GitSource("https://github.com/amontoison/MKL_Pardiso.git", "cb70bc69c426a67ef9e4dd0fd526963d594600fb")
 ]
 
 # Bash recipe for building across all platforms
