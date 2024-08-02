@@ -31,7 +31,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="MKL_jll", uuid="856f044c-d86e-5d09-b602-aeab76dc8ba7"); compat="=$version"),
-    BuildDependency(PackageSpec(name="MKL_Headers_jll", uuid="b2f2f022-7a59-54f4-945e-e9b78c3fd545"); compat="=$version"),
+    BuildDependency(PackageSpec(name="MKL_Headers_jll", uuid="b2f2f022-7a59-54f4-945e-e9b78c3fd545"; version=version)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
