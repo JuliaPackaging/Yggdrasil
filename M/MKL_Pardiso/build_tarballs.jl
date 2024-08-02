@@ -10,8 +10,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/MKL_Pardiso
-$CC -shared -o $libdir/libmkl_pardiso_shim.${dlext} mkl_pardiso_shim.c -lmkl_rt
-$CC -shared -o $libdir/libmkl_pardiso.${dlext} mkl_pardiso.c -lmkl_pardiso_shim
+$CC -shared -o ${libdir}/libmkl_pardiso_shim.${dlext} mkl_pardiso_shim.c -L${libdir} -lmkl_rt
+$CC -shared -o ${libdir}/libmkl_pardiso.${dlext} mkl_pardiso.c -L${libdir} -lmkl_pardiso_shim
 """
 
 # These are the platforms we will build for by default, unless further
