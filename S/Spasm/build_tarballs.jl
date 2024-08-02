@@ -35,13 +35,16 @@ install_license ${WORKSPACE}/srcdir/spasm/COPYING
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+platforms = [Platform("x86_64", "linux")] # for testing, for now
+
 # The products that we will ensure are always built
 products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"; compat="5.4.0")
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
+    Dependency("GMP_jll", v"6")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
