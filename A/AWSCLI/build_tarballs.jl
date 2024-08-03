@@ -14,7 +14,9 @@ cd ${WORKSPACE}/srcdir/aws-cli
 export CMAKE_INSTALL_PREFIX="${prefix}"
 export CMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
 
-./scripts/install -i "${bindir}"
+PYTHON="$(which python3)" ./configure --prefix=${prefix} --with-download-deps --with-install-type=portable-exe
+make -j${nproc}
+make install
 
 install_license ./LICENSE.txt
 """
