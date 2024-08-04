@@ -1,7 +1,8 @@
-diff -u givaro.orig/macros/gmp-check.m4 givaro/macros/gmp-check.m4
---- givaro.orig/macros/gmp-check.m4	2023-12-21 13:31:35
-+++ givaro/macros/gmp-check.m4	2024-08-04 15:03:36
-@@ -105,21 +105,6 @@
+diff --git a/deps/givaro/macros/gmp-check.m4 b/deps/givaro/macros/gmp-check.m4
+index 72eba8c3..5b35ef09 100644
+--- a/deps/givaro/macros/gmp-check.m4
++++ b/deps/givaro/macros/gmp-check.m4
+@@ -105,21 +105,11 @@ AC_DEFUN([GIV_CHECK_GMP], [
  		exit 1
  	])
  
@@ -20,6 +21,11 @@ diff -u givaro.orig/macros/gmp-check.m4 givaro/macros/gmp-check.m4
 -		  AC_MSG_ERROR(your GMP is too old. GMP release >= $min_gmp_release needed)
 -		  exit 1]
 -	)
++	### Major hack! we need to add -lrt sometimes, let's do it here
++	AC_MSG_CHECKING(if we need -lrt)
++	AC_CHECK_LIB([rt], [AC_MSG_RESULT(yes)
++			GMP_LIBS="${GMPLIBS} -lrt"], [AC_MSG_RESULT(no)])
++
  	AC_LANG_POP([C++])
  	
  	AC_SUBST(GMP_CFLAGS)
