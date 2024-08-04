@@ -18,8 +18,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir
 
-env
-
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p0 ${f}
 done
