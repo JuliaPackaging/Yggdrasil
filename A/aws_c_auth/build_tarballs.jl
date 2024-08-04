@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_auth"
-version = v"0.7.24"
+version = v"0.7.25"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-auth.git", "d7895252915259d037f10be223369eb99e837471"),
+    GitSource("https://github.com/awslabs/aws-c-auth.git", "52bf591613d1a001c43ec99af7376f871759c5fe"),
 ]
 
 # Bash recipe for building
