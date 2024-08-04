@@ -1,7 +1,6 @@
-diff --git a/deps/givaro/macros/gmp-check.m4 b/deps/givaro/macros/gmp-check.m4
-index 72eba8c3..5b35ef09 100644
---- a/deps/givaro/macros/gmp-check.m4
-+++ b/deps/givaro/macros/gmp-check.m4
+diff --git givaro.orig/macros/gmp-check.m4 givaro/macros/gmp-check.m4
+--- givaro.orig/macros/gmp-check.m4
++++ givaro/macros/gmp-check.m4
 @@ -105,21 +105,11 @@ AC_DEFUN([GIV_CHECK_GMP], [
  		exit 1
  	])
