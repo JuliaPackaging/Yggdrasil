@@ -29,7 +29,7 @@ make -j${nproc}
 make install
 
 cd ${WORKSPACE}/srcdir/fflas-ffpack
-./autogen.sh PKG_CONFIG_PATH=$prefix/lib/pkgconfig --prefix=$prefix --build=${MACHTYPE} --host=${target}`)
+./autogen.sh PKG_CONFIG_PATH=$prefix/lib/pkgconfig --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make install
 
 cd ${WORKSPACE}/srcdir/spasm
