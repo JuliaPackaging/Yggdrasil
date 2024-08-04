@@ -10,6 +10,7 @@ sources = [
     GitSource("https://github.com/laurentbartholdi/spasm.git", "072719a40c837e447dfe4ae9e4941c60d9a28eda"),
     GitSource("https://github.com/linbox-team/givaro.git", "fc6cac7820539c900dde332326c71461ba7b910b"),
     GitSource("https://github.com/linbox-team/fflas-ffpack.git", "94aa88263f5c6032adb5c86bf806f007fec7aded"),
+    GitSource("https://github.com/ericonr/argp-standalone.git", "743004c68e7358fb9cd4737450f2d9a34076aadf"),
     DirectorySource("./bundled")
 ]
 
@@ -22,6 +23,13 @@ env
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p0 ${f}
 done
+
+cd ${WORKSPACE}/srcdir/argp-standalone
+autoreconf -i
+./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
+make
+install argp.h $includedir
+install libargp.a $libdir
 
 cd ${WORKSPACE}/srcdir/givaro
 ./autogen.sh CCNAM=gcc CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
