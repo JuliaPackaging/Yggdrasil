@@ -29,11 +29,11 @@ make -j${nproc}
 make install
 
 cd ${WORKSPACE}/srcdir/fflas-ffpack
-./autogen.sh PKG_CONFIG_PATH=$prefix/lib/pkgconfig --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./autogen.sh CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make install
 
 cd ${WORKSPACE}/srcdir/spasm
-PKG_CONFIG_PATH=$prefix/lib/pkgconfig cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
 
