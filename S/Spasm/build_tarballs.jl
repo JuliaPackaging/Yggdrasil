@@ -24,7 +24,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 
 cd ${WORKSPACE}/srcdir/givaro
-./autogen.sh CCNAM=gcc --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./autogen.sh CCNAM=gcc CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 
