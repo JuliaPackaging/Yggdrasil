@@ -22,8 +22,8 @@ diff --git givaro.orig/macros/gmp-check.m4 givaro/macros/gmp-check.m4
 -	)
 +	### Major hack! we need to add -lrt sometimes, let's do it here
 +	AC_MSG_CHECKING(if we need -lrt)
-+	AC_CHECK_LIB([rt], [AC_MSG_RESULT(yes)
-+			GMP_LIBS="${GMPLIBS} -lrt"], [AC_MSG_RESULT(no)])
++	AC_CHECK_LIB([rt], [main], [AC_MSG_RESULT(yes)
++			GMP_LIBS="${GMP_LIBS} -lrt"], [AC_MSG_RESULT(no)])
 +
  	AC_LANG_POP([C++])
  	
