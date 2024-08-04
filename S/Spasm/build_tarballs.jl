@@ -53,7 +53,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
-    Dependency("GMP_jll")
+    Dependency("GMP_jll"; compat="6.2.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
