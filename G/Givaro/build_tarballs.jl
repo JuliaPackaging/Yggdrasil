@@ -19,7 +19,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p0 ${f}
 done
 
-./autogen.sh CCNAM=gcc CC=gcc CXX=g++ CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./autogen.sh CCNAM=gcc CC=gcc CXX="g++ -D_POSIX_C_SOURCE=199309L" CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 
 make -j${nproc}
 make install
