@@ -30,8 +30,6 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-platforms = [Platform("x86_64", "linux")] # for testing, for now
-
 # The products that we will ensure are always built
 products = Product[
 ]
