@@ -1,5 +1,5 @@
---- givaro.orig/givaro.pc.in	2023-12-21 13:31:35
-+++ givaro/givaro.pc.in	2024-08-04 17:01:05
+--- givaro.pc.in.orig	2023-12-21 13:31:35
++++ givaro.pc.in	2024-08-04 17:01:05
 @@ -9,4 +9,4 @@
  Version: @VERSION@
  Requires:
