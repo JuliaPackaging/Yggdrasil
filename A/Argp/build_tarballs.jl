@@ -22,8 +22,8 @@ done
 autoreconf -i
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make CC=gcc
-install -Dvm 644 argp.h -t $includedir
-install -Dvm 644 libargp.a -t $libdir
+install -Dvm 644 argp.h -t $prefix/include
+install -Dvm 644 libargp.a -t $prefix/lib
 
 install_license ${WORKSPACE}/srcdir/argp-standalone/README.md
 """
@@ -35,7 +35,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = Product[
     # argp is meant as a build-time dependency to be included in other recipes, so static library only
-    LibraryProduct("libargp.a", :libargp),
+    FileProduct("lib/libargp.a", :libargp),
     FileProduct("include/argp.h", :argp_h),
 ]
 
