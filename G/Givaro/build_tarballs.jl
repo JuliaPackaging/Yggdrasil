@@ -21,9 +21,13 @@ done
 
 autoreconf -i
 ./configure CCNAM=${CC} CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
-#./configure CCNAM=gcc CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 
-make -j ${nproc} CXX=clang++
+# really ugly! but I see no other solution for now.
+if echo ${target} | grep -q .-apple-.; then
+    patch -p0 < ${WORKSPACE}/srcdir/patches/libtool.hack
+fi
+
+make -j ${nproc}
 make install
 
 install_license LICENSE
