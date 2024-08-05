@@ -34,6 +34,7 @@ for dir in *; do
     lcdir="${dir,,}"
     mkdir -vp "${lcdir}"
     for file in ${dir}/*; do
+        file=$(basename "${file}")
         lcfile="${file,,}"
         if [ "${dir}/${file}" = "${lcdir}/${lcfile}" ]; then
             # Already all lowercase, nothing to do
