@@ -4,7 +4,7 @@ name = "Powsybl"
 version = v"0.1"
 sources = [
     GitSource("https://github.com/powsybl/powsybl.jl.git", "554ae1c7804af8a32a8480c779fb1b0505d112a5"),
-    GitSource("https://github.com/powsybl/pypowsybl.git", "vBinariesDeployment")
+    GitSource("https://github.com/powsybl/pypowsybl.git", "eafe449f246343b5d9aedb9eb2e2757cd9dd76e1")
 ]
 
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
