@@ -20,10 +20,10 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 
 autoreconf -i
-./configure CCNAM=gcc CC=gcc CXX="g++ -D_POSIX_C_SOURCE=199309L" CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./configure CCNAM=${CC} CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 #./configure CCNAM=gcc CC=gcc CXX=g++ CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 
-make
+make -j ${nproc}
 make install
 
 install_license LICENSE
