@@ -19,7 +19,8 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p0 ${f}
 done
 
-./autogen.sh CCNAM=gcc CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./autogen.sh CCNAM=gcc CC=gcc CXX=g++ CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
+
 make -j${nproc}
 make install
 
@@ -28,7 +29,8 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [p for p=supported_platforms() if os(p) != "windows"] # life is too short
+platforms = [p for p=supported_platforms() if os(p) == "macos"] # testing
 
 # The products that we will ensure are always built
 products = Product[
