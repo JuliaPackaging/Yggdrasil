@@ -22,8 +22,8 @@ done
 autoreconf -i
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
 make CC=gcc
-install -Dvm 644 argp.h $includedir
-install -Dvm 644 libargp.a $libdir
+install -Dvm 644 argp.h -t $includedir
+install -Dvm 644 libargp.a -t $libdir
 
 install_license ${WORKSPACE}/srcdir/argp-standalone/README.md
 """
