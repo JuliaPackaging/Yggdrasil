@@ -14,6 +14,9 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 
+# Adopting the wisdom of https://mywiki.wooledge.org/ParsingLs (🙏 Mosè)
+shopt -s nullglob
+
 # Install `tree` to get an overview of what's going to be included in the JLL
 apk update
 apk add tree
@@ -27,16 +30,18 @@ tic -sx -o "${prefix}/share/terminfo" ./terminfo-*
 # files and directories to lowercase, dealing with conflicts by overwriting and hoping
 # for the best.
 pushd "${prefix}/share/terminfo/"
-for dir in $(ls); do
+for dir in *; do
     lcdir="${dir,,}"
-    for file in $(ls ${dir}); do
+    for file in ${dir}/*; do
         lcfile="${file,,}"
         if [ "${dir}/${file}" = "${lcdir}/${lcfile}" ]; then
             # Already all lowercase, nothing to do
             continue
         fi
-        mv -fv "${dir}/${file}" "${lcdir}/${lcfile}"
-        if [ -e "${dir}/${file}" ]; then
+        mv -fv "${dir}/${file}" "${lcdir}/${lcfile}.TEMP"
+        rm -fv "${lcdir}/${lcfile}"
+        mv -fv "${lcdir}/${lcfile}.TEMP" "${lcdir}/${lcfile}"
+        if [ -e "${dir}/${file}" ] || [ -e "${lcdir}/${lcfile}.TEMP" ]; then
             echo "ERROR: '${dir}/${file}' not successfully renamed to lowercase!!!"
             exit 1
         fi
