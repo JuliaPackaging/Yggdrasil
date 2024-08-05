@@ -28,7 +28,7 @@ if echo ${target} | grep -q aarch64-apple-darwin; then
 fi
 
 if echo ${target} | grep -q x86_64-apple-darwin; then
-    grep -5n master libtool
+    #grep -5n master libtool
     true
 #    patch -p0 < ${WORKSPACE}/srcdir/patches/libtool-aarch64-apple-darwin.hack
 fi
@@ -42,6 +42,8 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [p for p=supported_platforms() if os(p) != "windows"] # life is too short
+
+platforms = [p for p=supported_platforms() if triplet(p) == "x86_64-apple-darwin"]
 
 # The products that we will ensure are always built
 products = Product[
