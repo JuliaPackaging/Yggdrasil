@@ -21,7 +21,7 @@ done
 
 autoreconf -i
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target}
-make #CC=gcc
+make CC=gcc
 install -Dvm 644 argp.h -t $prefix/include
 install -Dvm 644 libargp.a -t $prefix/lib
 
