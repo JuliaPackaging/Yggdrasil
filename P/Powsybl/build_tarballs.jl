@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "Powsybl"
 version = v"0.1"
 sources = [
-    GitSource("https://github.com/powsybl/powsybl.jl.git", "dc890a91ab706bf6d7fa3a5edf2b8ec7c191aedf")
+    GitSource("https://github.com/powsybl/powsybl.jl.git", "554ae1c7804af8a32a8480c779fb1b0505d112a5")
 ]
 
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
@@ -30,7 +30,7 @@ cd cpp/pypowsybl/
 mkdir build
 cd build
 # Build powsybl-cpp API
-cmake ${WORKSPACE}/srcdir/powsybl.jl/cpp/pypowsybl/cpp/powsybl-cpp -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_ONLY_POWSYBL_CPP=ON -DPOWSYBL_JAVA_LIB_INSTALL_DIR=$prefix/lib -DPOWSYBL_INCLUDE_DIR=$prefix/include/powsybl-cpp -DCMAKE_INSTALL_PREFIX=$prefix
+cmake ${WORKSPACE}/srcdir/powsybl.jl/cpp/pypowsybl/cpp/powsybl-cpp -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$prefix/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$prefix/include -DCMAKE_INSTALL_PREFIX=$prefix
 cmake --build . --target install --config Release
 # Build julia wrapper
 cd ../../../build/
@@ -48,10 +48,10 @@ platforms = expand_cxxstring_abis(platforms)
 @show platforms
 
 products = [
-LibraryProduct(["PowsyblJlWrap", "libPowsyblJlWrap"], :libPowsyblJlWrap)
 LibraryProduct(["math", "libmath"], :libmath)
 LibraryProduct(["pypowsybl-java", "libpypowsybl-java"], :libpypowsybl_java)
 LibraryProduct(["powsybl-cpp", "libpowsybl-cpp"], :libpowsybl_cpp)
+LibraryProduct(["PowsyblJlWrap", "libPowsyblJlWrap"], :libPowsyblJlWrap)
 ]
 
 dependencies = [
