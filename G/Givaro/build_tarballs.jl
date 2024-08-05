@@ -7,21 +7,24 @@ version = v"4.2.0"
 
 # Collection of sources required to complete build
 sources = [
+#    ArchiveSource("https://github.com/linbox-team/givaro/releases/download/v4.2.0/givaro-4.2.0.tar.gz","865e228812feca971dfb6e776a7bc7ac959cf63ebd52b4f05492730a46e1f189"),
     GitSource("https://github.com/linbox-team/givaro.git", "fc6cac7820539c900dde332326c71461ba7b910b"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/givaro
+cd ${WORKSPACE}/srcdir/givaro*
 
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p0 ${f}
 done
 
-./autogen.sh CCNAM=gcc CC=gcc CXX="g++ -D_POSIX_C_SOURCE=199309L" CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
+autoreconf -i
+#./autogen.sh CCNAM=gcc CC=gcc CXX="g++ -D_POSIX_C_SOURCE=199309L" CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
+./configure CCNAM=gcc CC=gcc CXX=g++ CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 
-make -j${nproc}
+make
 make install
 
 install_license LICENSE
