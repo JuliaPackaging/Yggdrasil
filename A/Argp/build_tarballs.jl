@@ -35,8 +35,8 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = Product[
     # argp is meant as a build-time dependency to be included in other recipes, so static library only
-    FileProduct("lib/libargp.a", :libargp),
-    FileProduct("include/argp.h", :argp_h),
+    FileProduct("$libdir/libargp.a", :libargp),
+    FileProduct("$includedir/argp.h", :argp_h),
 ]
 
 # Dependencies that must be installed before this package can be built
