@@ -21,9 +21,9 @@ done
 
 autoreconf -i
 ./configure CCNAM=${CC} CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
-#./configure CCNAM=gcc CC=gcc CXX=g++ CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
+#./configure CCNAM=gcc CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 
-make -j ${nproc}
+make -j ${nproc} CXX=clang++
 make install
 
 install_license LICENSE
