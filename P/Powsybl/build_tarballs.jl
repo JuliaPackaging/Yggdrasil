@@ -9,6 +9,7 @@ sources = [
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
 
 script = raw"""
+
 cd $WORKSPACE/srcdir
 
 # Get binary for powsybl-java, generated with GraalVm
