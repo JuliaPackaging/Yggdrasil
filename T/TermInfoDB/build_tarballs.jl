@@ -32,6 +32,7 @@ tic -sx -o "${prefix}/share/terminfo" ./terminfo-*
 pushd "${prefix}/share/terminfo/"
 for dir in *; do
     lcdir="${dir,,}"
+    mkdir -vp "${lcdir}"
     for file in ${dir}/*; do
         lcfile="${file,,}"
         if [ "${dir}/${file}" = "${lcdir}/${lcfile}" ]; then
