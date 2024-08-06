@@ -32,9 +32,6 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     popd
 fi
 
-# # See <https://github.com/open-mpi/ompi/issues/12693>
-# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aarch64.patch
-
 # Autotools doesn't add `${includedir}` as an include directory on some platforms
 export CPPFLAGS="-I${includedir}"
 
