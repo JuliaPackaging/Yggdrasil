@@ -1,3 +1,4 @@
+# Build counter: 1
 include("../common.jl")
 
 name = "SuiteSparse"
