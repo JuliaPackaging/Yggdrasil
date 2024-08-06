@@ -43,6 +43,10 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "13806726cbf470914d012d132a85aea1aff9ee77")
         ],
+        v"7.8.0" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "58e6558408f6a51c08e35a5557d5e68cae32147e")
+        ],
     )
     return Any[
         suitesparse_version_sources[version]...,
@@ -75,7 +79,8 @@ products = [
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
+    # Need the most recent 3.29.3+1 version (or later) to get libblastrampoline support
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.29.3"))
 ]
 
 # Generate a common build script for most SuiteSparse packages.
@@ -86,7 +91,7 @@ dependencies = [
 # for instance -DSUITESPARSE_USE_SYSTEM_*=ON to use pre-existing JLLs for
 # certain packages.
 # Use PROJECTS_TO_BUILD to specify which projects to build.
-function build_script(use_omp::Bool = false, use_cuda::Bool = false)
+function build_script(; use_omp::Bool = false, use_cuda::Bool = false)
     return "USEOMP=$(use_omp)\nUSECUDA=$(use_cuda)\n" * raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
