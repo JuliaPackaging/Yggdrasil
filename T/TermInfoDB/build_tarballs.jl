@@ -17,22 +17,22 @@ cd ${WORKSPACE}/srcdir/
 # Adopting the wisdom of https://mywiki.wooledge.org/ParsingLs (🙏 Mosè)
 shopt -s nullglob
 
-# Install `tree` to get an overview of what's going to be included in the JLL
-apk update
-apk add tree
-
 gunzip terminfo-*
 mkdir -p "${prefix}/share/terminfo"
 tic -sx -o "${prefix}/share/terminfo" ./terminfo-*
 
+pushd "${prefix}/share/terminfo/"
+
 # The terminfo filesystem-based database contains both upper- and lowercase directory
 # names, which presents a problem for case-insensitive filesystems. Let's rename all
-# files and directories to lowercase, dealing with conflicts by overwriting and hoping
-# for the best.
-pushd "${prefix}/share/terminfo/"
+# files and directories to lowercase. Unfortunately, we can't just `mv` the filename
+# to its lowercase counterpart because many of these files, including but not limited
+# to those whose names differ only by case, are actually hard links to one another
+# (they have the same inode) so `mv` sees it as a no-op and just does nothing.
+# Hence... this.
 for dir in *; do
     lcdir="${dir,,}"
-    mkdir -vp "${lcdir}"
+    mkdir -p "${lcdir}"
     for file in ${dir}/*; do
         file=$(basename "${file}")
         lcfile="${file,,}"
@@ -40,19 +40,29 @@ for dir in *; do
             # Already all lowercase, nothing to do
             continue
         fi
-        mv -fv "${dir}/${file}" "${lcdir}/${lcfile}.TEMP"
-        rm -fv "${lcdir}/${lcfile}"
-        mv -fv "${lcdir}/${lcfile}.TEMP" "${lcdir}/${lcfile}"
+        mv -f "${dir}/${file}" "${lcdir}/${lcfile}.TEMP"
+        rm -f "${lcdir}/${lcfile}"
+        mv -f "${lcdir}/${lcfile}.TEMP" "${lcdir}/${lcfile}"
         if [ -e "${dir}/${file}" ] || [ -e "${lcdir}/${lcfile}.TEMP" ]; then
             echo "ERROR: '${dir}/${file}' not successfully renamed to lowercase!!!"
             exit 1
         fi
     done
     if [ -z "$(ls -A "${dir}")" ]; then
-        rm -rfv "${dir}"
+        rm -rf "${dir}"
     fi
 done
-tree
+
+# I'm not about to list the entire contents out as `FileProduct`s, so we'll do our
+# own mini-audit by checking that the expected directories exist. We know each is
+# non-empty based on the above.
+dirs=(*)
+expected=(1 2 3 4 5 6 7 8 9 a b c d e f g h i j k l m n o p q r s t u v w x z)
+if [ ! -z "$(echo ${dirs[@]} ${expected[@]} | tr ' ' '\n' | sort | uniq -u)" ]; then
+    echo "ERROR: Build did not produce the expected set of directories!!!"
+    exit 1
+fi
+
 popd
 
 install_license "${WORKSPACE}/srcdir/COPYING"
