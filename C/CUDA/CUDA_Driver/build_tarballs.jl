@@ -9,7 +9,7 @@ using BinaryBuilder, Pkg
 include("../../../fancy_toys.jl")
 
 name = "CUDA_Driver"
-version = v"0.9.2"
+version = v"0.10.0"
 
 cuda_version = v"12.6"
 cuda_version_str = "$(cuda_version.major)-$(cuda_version.minor)"
@@ -46,8 +46,7 @@ script = raw"""
 # CUDA_Driver.jl), but that complicates depending on it from other JLLs (like
 # CUDA_Runtime_jll). This will also simplify moving the logic into CUDA_Runtime_jll, which
 # we will have to at some point (because its pkg hooks shouldn't depend on CUDA_Driver_jll).
-init_block = "\nglobal compat_version = $(repr(cuda_version))\n" *
-             read(joinpath(@__DIR__, "init.jl"), String)
+init_block = read(joinpath(@__DIR__, "init.jl"), String)
 init_block = map(eachline(IOBuffer(init_block))) do line
         # indent non-empty lines
         (isempty(line) ? "" : "    ") * line * "\n"
