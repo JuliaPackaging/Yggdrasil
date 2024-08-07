@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http"
-version = v"0.8.6"
+version = v"0.8.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-http.git", "b5684c77f6247f182a0376f1371f250ffe8624a5"),
+    GitSource("https://github.com/awslabs/aws-c-http.git", "7db2452238caece2d3a91e6cbed75324edccea7d"),
 ]
 
 # Bash recipe for building across all platforms
