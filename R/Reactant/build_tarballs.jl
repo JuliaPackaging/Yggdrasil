@@ -105,13 +105,13 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
     
-	pushd $WORKSPACE/srcdir/llvm*
-	mkdir build
-	cd build
-	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
-	ninja lld
-	export LLD2=`pwd`/bin/ld64.lld
-	popd
+	# pushd $WORKSPACE/srcdir/llvm*
+	# mkdir build
+	# cd build
+	# cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
+	# ninja lld
+	# export LLD2=`pwd`/bin/ld64.lld
+	# popd
     
 	if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
@@ -190,7 +190,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	sed -i.bak0 "/lld/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	echo "-fuse-ld=lld" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	# echo "--ld-path=$LLD2" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	$CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	# $CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
@@ -203,6 +203,11 @@ mkdir -p ${libdir}
 cp -v bazel-bin/libReactantExtra.so ${libdir}
 if [[ "${bb_full_target}" == *darwin* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dylib
+
+    # process debug symbols
+    if [[ "${bb_full_target}" == *mode\+dbg* ]]; then
+        ${host_prefix}/tools/dsymutil -j ${nproc} ${libdir}/libReactantExtra.dylib
+    fi
 fi
 if [[ "${bb_full_target}" == *mingw* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
@@ -212,7 +217,7 @@ cp -v bazel-bin/*.jl ${prefix}
 
 # determine exactly which tarballs we should build
 builds = []
-    
+
 # Dependencies that must be installed before this package can be built
 
 dependencies = Dependency[]
@@ -220,7 +225,7 @@ dependencies = Dependency[]
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
-                   :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
+        :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
     FileProduct("Affine.inc.jl", :Affine_inc_jl),
     FileProduct("Arith.inc.jl", :Arith_inc_jl),
     FileProduct("Builtin.inc.jl", :Builtin_inc_jl),
@@ -238,7 +243,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # Don't even bother with powerpc
 platforms = filter(platforms) do p
-    !( (arch(p) == "powerpc64le") )
+    !((arch(p) == "powerpc64le"))
 end
 
 # 64-bit or bust (for xla runtime executable)
@@ -270,12 +275,13 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
-augment_platform_block="""
+augment_platform_block = """
     using Base.BinaryPlatforms
 
     const Reactant_UUID = Base.UUID("0192cb87-2b54-54ad-80e0-3be72ad8a3c0")
     const preferences = Base.get_preferences(Reactant_UUID)
     Base.record_compiletime_preference(Reactant_UUID, "mode")
+
     const mode_preference = if haskey(preferences, "mode")
         if isa(preferences["mode"], String) && preferences["mode"] in ["opt", "dbg"]
             preferences["mode"]
@@ -286,7 +292,7 @@ augment_platform_block="""
     else
         nothing
     end
-    
+
     module __CUDA
         $(CUDA.augment::String)
     end
@@ -294,14 +300,14 @@ augment_platform_block="""
     function augment_platform!(platform::Platform)
         __CUDA.augment_platform!(platform)
 
-        mode = get(ENV, "REACTANT_MODE", something(mode_preference, "opt"))
+        mode = get(preferences, "mode", "opt")
         if !haskey(platform, "mode")
             platform["mode"] = mode
         end
 
         return platform
     end
-    """
+"""
 
 for mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
@@ -313,15 +319,15 @@ for mode in ("opt", "dbg"), platform in platforms
         continue
     end
 
-    prefix="export MODE="*mode*"\n\n"
+    prefix = "export MODE=" * mode * "\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
-              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-		push!(platform_sources,
-              ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
-                            "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
+            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+        push!(platform_sources,
+            ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
+                "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
 
     end
 
@@ -333,10 +339,16 @@ for mode in ("opt", "dbg"), platform in platforms
         prefix *= "export CUDA_VERSION=\"\"\n"
     end
 
+    apple_deps = if Sys.isapple(platform)
+        [HostBuildDependency(PackageSpec(name="LLD_jll"))]
+    else
+        Dependency[]
+    end
+
     should_build_platform(triplet(augmented_platform)) || continue
     push!(builds, (;
-                   dependencies=[dependencies; cuda_deps], products, sources=platform_sources,
-        platforms=[augmented_platform], script=prefix*script
+        dependencies=[dependencies; cuda_deps; apple_deps], products, sources=platform_sources,
+        platforms=[augmented_platform], script=prefix * script
     ))
 end
 
@@ -347,11 +359,11 @@ non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 # `--register` should only be passed to the latest `build_tarballs` invocation
 non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
-for (i,build) in enumerate(builds)
+for (i, build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, build.script,
-                   build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"10", julia_compat="1.6",
-                   augment_platform_block, lazy_artifacts=true)
+        name, version, build.sources, build.script,
+        build.platforms, build.products, build.dependencies;
+        preferred_gcc_version=v"10", julia_compat="1.6",
+        augment_platform_block, lazy_artifacts=true)
 end
 
