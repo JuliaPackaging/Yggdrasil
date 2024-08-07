@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.2.0"
+version = v"2.2.1"
 
 # Collection of sources required to build ThinASLBuilder
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "05822b4a5d57fa65270b8d6e63c066da6da373d1"),
+    GitSource("https://github.com/ralna/CUTEst.git", "e692555a86bc6ef81977d3e7893566ee28f5b115"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,10 +18,19 @@ cp ${host_prefix}/bin/ninja /usr/bin/ninja
 cd ${WORKSPACE}/srcdir/CUTEst
 
 meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
-                     --prefix=$prefix
+                     --prefix=$prefix \
+                     -Dquadruple=true
 
 meson compile -C builddir
 meson install -C builddir
+
+meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                            --prefix=$prefix \
+                            -Dquadruple=true \
+                            -Ddefault_library=shared
+
+meson compile -C builddir_shared
+meson install -C builddir_shared
 
 install_license lgpl-3.0.txt
 """
@@ -32,8 +41,12 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("lib/libcutest_single.a", :libcutest_single),
-    FileProduct("lib/libcutest_double.a", :libcutest_double),
+    FileProduct("lib/libcutest_single.a", :libcutest_single_a),
+    FileProduct("lib/libcutest_double.a", :libcutest_double_a),
+    FileProduct("lib/libcutest_quadruple.a", :libcutest_quadruple_a),
+    LibraryProduct("libcutest_single", :libcutest_single),
+    LibraryProduct("libcutest_double", :libcutest_double),
+    LibraryProduct("libcutest_quadruple", :libcutest_quadruple),
 ]
 
 dependencies = [
