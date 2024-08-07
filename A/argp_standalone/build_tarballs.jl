@@ -3,30 +3,38 @@
 using BinaryBuilder
 
 name = "argp_standalone"
-version = v"1.3.1"
+version = v"1.4.1"
 
 # Collection of sources required to build argp-standalone
 sources = [
-    ArchiveSource("http://www.lysator.liu.se/~nisse/misc/argp-standalone-$(version.major).$(version.minor).tar.gz",
-                  "dec79694da1319acd2238ce95df57f3680fea2482096e483323fddf3d818d8be"),
-    FileSource("https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt", "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"; filename="LICENSE"),
+    GitSource("https://github.com/ericonr/argp-standalone.git", "743004c68e7358fb9cd4737450f2d9a34076aadf"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/argp-*/
+cd ${WORKSPACE}/srcdir/argp-standalone
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+
+autoreconf -i
 CFLAGS="-fPIC" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
-install_license $WORKSPACE/srcdir/LICENSE
-install -D -m644 argp.h ${includedir}/argp.h
-install -D -m755 libargp.a ${libdir}/libargp.a
+install -Dvm 644 argp.h -t $prefix/include
+install -Dvm 644 libargp.a -t $prefix/lib
+
+install_license ${WORKSPACE}/srcdir/argp-standalone/README.md
 """
 
-# Select Unix platforms
-platforms = filter(p->Sys.islinux(p) && libc(p) == "musl", supported_platforms(;experimental=true))
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = supported_platforms(;experimental=true)
 
 # The products that we will ensure are always built
-products = [
+products = Product[
+    # argp is meant as a build-time dependency to be included in other recipes, so static library only
     FileProduct("lib/libargp.a", :libargp),
     FileProduct("include/argp.h", :argp_h),
 ]
