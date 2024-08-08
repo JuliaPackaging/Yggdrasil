@@ -33,7 +33,7 @@ install_license ${WORKSPACE}/srcdir/argp-standalone/README.md
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     # argp is meant as a build-time dependency to be included in other recipes, so static library only
     FileProduct("lib/libargp.a", :libargp),
     FileProduct("include/argp.h", :argp_h),
