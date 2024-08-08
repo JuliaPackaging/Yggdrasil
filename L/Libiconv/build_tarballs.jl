@@ -37,9 +37,8 @@ Cflags: -I\${includedir}
 EOF
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+# Build for non-glibc platforms, as `glibc` contains its own `iconv` implementation 
+platforms = filter(p -> libc(p) != "glibc", supported_platforms(; experimental=true)
 
 # The products that we will ensure are always built
 products = [
