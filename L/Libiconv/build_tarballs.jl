@@ -38,7 +38,7 @@ EOF
 """
 
 # Build for non-glibc platforms, as `glibc` contains its own `iconv` implementation 
-platforms = filter(p -> libc(p) != "glibc", supported_platforms(; experimental=true)
+platforms = filter(p -> libc(p) != "glibc", supported_platforms(; experimental=true))
 
 # The products that we will ensure are always built
 products = [
