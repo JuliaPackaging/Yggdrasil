@@ -6,12 +6,12 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
-    version = v"2.8.1"
+    version = v"2.8.2"
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "4124f663ec4bf4e294d9cf230668370b4249a48ff34deaf0f06e8fc82d891300"),
+                      "d58461395ce28b9dc03903254374dd70c38c8c28c5046db123c08f7ab9417be7"),
     ]
 
     # Bash recipe for building across all platforms
@@ -81,5 +81,5 @@ fi
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6", clang_use_lld=false)
 end
