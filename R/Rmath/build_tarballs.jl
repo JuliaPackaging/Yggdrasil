@@ -1,28 +1,17 @@
 using BinaryBuilder
 
 name = "Rmath"
-version = v"0.4.2"
+version = v"0.4.3"
 
 sources = [
     GitSource("https://github.com/JuliaStats/Rmath-julia.git",
-              "18dcd7c259b031c3ce9c275b7dd136585d126017"),
+              "d560159af0a388d8afaf19f7bf2efc51afcf53d9"),
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/Rmath-julia*
-# The whole `USEGCC`/`USECLANG` business is wrong and backword. Until this this fixed upstream
-# (https://github.com/JuliaStats/Rmath-julia/issues/47),
-# we have to set `USEGCC`/`USECLANG` ourselves.
-if [[ ${target} == *-apple-* ]] || [[ ${target} == *-freebsd* ]]; then
-   USECLANG=1
-   USEGCC=0
-else
-   USECLANG=0
-   USEGCC=1
-fi
-make -j${nproc} USECLANG=${USECLANG} USEGCC=${USEGCC}
-mkdir -p "${libdir}"
-mv src/libRmath-julia.* "${libdir}"
+cd $WORKSPACE/srcdir/Rmath-julia
+make -j${nproc}
+cp -p libRmath-julia.${dlext} ${libdir}
 """
 
 platforms = supported_platforms()
