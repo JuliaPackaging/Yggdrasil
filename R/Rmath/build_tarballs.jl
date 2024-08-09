@@ -11,7 +11,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/Rmath-julia
 make -j${nproc} CC=${CC}
-cp -p libRmath-julia.${dlext} ${libdir}
+install -Dvm 755 libRmath-julia.${dlext} -t ${libdir}
 """
 
 platforms = supported_platforms()
