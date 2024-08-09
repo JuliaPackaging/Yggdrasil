@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libglvnd"
-version = v"1.6.0"
+version = v"1.7.0"
 
 # Collection of sources required to build Libglvnd
 sources = [
     ArchiveSource("https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v$(version)/libglvnd-v$(version).tar.gz",
-                  "efc756ffd24b24059e1c53677a9d57b4b237b00a01c54a6f1611e1e51661d70c"),
+                  "2b6e15b06aafb4c0b6e2348124808cbd9b291c647299eaaba2e3202f51ff2f3d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,11 @@ FLAGS=()
 if [[ "${target}" == *musl* ]]; then
     FLAGS=(-Dtls=false)
 fi
-meson --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release "${FLAGS[@]}" ..
+meson setup . .. \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    --buildtype=release \
+    --pkgconfig.relocatable \
+    "${FLAGS[@]}"
 ninja -j${nproc}
 ninja install
 # The license is embedded in the README file
@@ -50,5 +54,14 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 
+init_block = raw"""
+    if Sys.islinux()
+        get!(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
+    elseif Sys.isfreebsd()
+        get!(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/local/share/glvnd/egl_vendor.d")
+    end
+"""
+
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", init_block)
