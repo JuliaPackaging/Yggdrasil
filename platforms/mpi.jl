@@ -80,7 +80,7 @@ function augment_platforms(platforms;
     end
     # NOTE: packages using this platform tag, must depend on MPIPreferences otherwise
     #       they will not be invalidated when the Preference changes.
-    push!(dependencies, Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true))
+    push!(dependencies, RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true))
     return all_platforms, dependencies
 end
 
