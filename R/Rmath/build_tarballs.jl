@@ -10,12 +10,22 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/Rmath-julia*
-make -j${nproc}
+# The whole `USEGCC`/`USECLANG` business is wrong and backword. Until this this fixed upstream
+# (https://github.com/JuliaStats/Rmath-julia/issues/47),
+# we have to set `USEGCC`/`USECLANG` ourselves.
+if [[ ${target} == *-apple-* ]] || [[ ${target} == *-freebsd* ]]; then
+   USECLANG=1
+   USEGCC=0
+else
+   USECLANG=0
+   USEGCC=1
+fi
+make -j${nproc} USECLANG=${USECLANG} USEGCC=${USEGCC}
 mkdir -p "${libdir}"
 mv src/libRmath-julia.* "${libdir}"
 """
 
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 products = [
     LibraryProduct("libRmath-julia", :libRmath),
