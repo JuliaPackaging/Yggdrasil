@@ -4,7 +4,7 @@ name = "TorchCAPI"
 version = v"1.10.2"
 
 sources = [
-    GitSource("https://github.com/IHPSystems/Torch.jl.git", "b27df7dd4ae9b20e075ea239e2bd0d6c04b9827f"),
+    GitSource("https://github.com/FluxML/Torch.jl.git", "d1711d716c4993ca25e975aad5f7a638cfa7d7c2"),
     ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.3.1%2B1/CUDA_full.v11.3.1.x86_64-linux-gnu.tar.gz", "9ae00d36d39b04e8e99ace63641254c93a931dcf4ac24c8eddcdfd4625ab57d6"; unpack_target = "CUDA_full.v11.3"),
 ]
 
