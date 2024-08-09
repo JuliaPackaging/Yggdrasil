@@ -10,7 +10,7 @@ sources = [
 
 script = raw"""
 cd $WORKSPACE/srcdir/Rmath-julia
-make -j${nproc}
+make -j${nproc} CC=${CC}
 cp -p libRmath-julia.${dlext} ${libdir}
 """
 
