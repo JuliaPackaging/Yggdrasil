@@ -9,8 +9,8 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/Rmath-julia
-make -j${nproc} CC=${CC}
+cd $WORKSPACE/srcdir/Rmath-julia/src
+make -j${nproc}
 install -Dvm 755 libRmath-julia.${dlext} -t ${libdir}
 """
 
