@@ -21,8 +21,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd xdiag
+cd $WORKSPACE/srcdir/xdiag
 
 Julia_PREFIX=${prefix}
 
