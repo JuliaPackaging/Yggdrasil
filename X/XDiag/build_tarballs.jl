@@ -11,7 +11,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 name = "XDiag"
 version = v"0.2.0"
 
-include("common.jl")
+include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
