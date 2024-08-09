@@ -262,10 +262,17 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ]
         end
     elseif Sys.isfreebsd(compiler_target)
-        libc_sources = [
-            ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.2-RELEASE/base.txz",
-                          "3a9250f7afd730bbe274691859756948b3c57a99bcda30d65d46ae30025906f0"),
-        ]
+        if arch(compiler_target) == "aarch64"
+            libc_sources = [
+                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/13.2-RELEASE/base.txz",
+                              "7d1b032a480647a73d6d7331139268a45e628c9f5ae52d22b110db65fdcb30ff"),
+            ]
+        else
+            libc_sources = [
+                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.2-RELEASE/base.txz",
+                              "3a9250f7afd730bbe274691859756948b3c57a99bcda30d65d46ae30025906f0"),
+            ]
+        end
     elseif Sys.iswindows(compiler_target)
         libc_sources = [
             ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",

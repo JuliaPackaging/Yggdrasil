@@ -44,6 +44,7 @@ chmod +x rustup-init
 # Collection of all rust targets we will download toolchains for:
 RUST_TARGETS=(
     aarch64-apple-darwin
+    aarch64-unknown-freebsd
     aarch64-unknown-linux-gnu
     aarch64-unknown-linux-musl
     arm-unknown-linux-gnueabihf
