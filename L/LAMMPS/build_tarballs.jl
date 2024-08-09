@@ -86,7 +86,7 @@ platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), plat
 platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
 
 platforms = expand_cxxstring_abis(platforms)
-platforms = expand_gfortran_versions(platforms) # ABI dependent due to MPI
+# platforms = expand_gfortran_versions(platforms) # ABI dependent due to MPI
 
 # The products that we will ensure are always built
 products = [
