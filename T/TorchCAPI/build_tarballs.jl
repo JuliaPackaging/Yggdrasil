@@ -11,6 +11,7 @@ sources = [
 script = raw"""
 cmake_extra_args=""
 if [[ $bb_full_target == *cuda* ]]; then
+    export PATH=$PATH:/workspace/srcdir/CUDA_full.v11.3/cuda/bin
     cmake_extra_args+="\
         -DUSE_CUDA=ON \
         -DCUDA_TOOLKIT_ROOT_DIR=/workspace/srcdir/CUDA_full.v11.3/cuda \
