@@ -73,7 +73,7 @@ filter!(p -> (
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libxdiagjl", :xdiagjl)
+    LibraryProduct("libxdiagjl", :libxdiagjl)
 ]
 
 # Dependencies that must be installed before this package can be built
