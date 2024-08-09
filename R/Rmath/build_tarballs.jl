@@ -9,10 +9,10 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/Rmath-julia*
-make -j${nproc}
+cd $WORKSPACE/srcdir/Rmath-julia*/src
+${CC} -shared -fPIC -I../include -std=c99 -DNDEBUG -DMATHLIB_STANDALONE -o libRmath-julia.${dlext} *.c
 mkdir -p "${libdir}"
-mv src/libRmath-julia.* "${libdir}"
+cp libRmath-julia.${dlext} "${libdir}"
 """
 
 platforms = supported_platforms(;experimental=true)
