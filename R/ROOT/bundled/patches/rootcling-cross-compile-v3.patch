@@ -1,0 +1,55 @@
+--- a/root/cmake/modules/RootMacros.cmake	2024-01-31 09:17:06.000000000 +0100
++++ c/root/cmake/modules/RootMacros.cmake	2024-06-29 18:12:28.081464326 +0200
+@@ -8,6 +8,8 @@
+ #  RootMacros.cmake
+ #---------------------------------------------------------------------------------------------------
+ 
++set(NATIVE_BINARY_DIR FALSE CACHE FILEPATH "Path of native built in case of cross compiling.")
++
+ if(WIN32)
+   set(libprefix lib)
+   set(ld_library_path PATH)
+@@ -603,20 +605,37 @@
+   #---what rootcling command to use--------------------------
+   if(ARG_STAGE1)
+     if(MSVC AND CMAKE_ROOTTEST_DICT)
+-      set(command ${CMAKE_COMMAND} -E ${CMAKE_BINARY_DIR}/bin/rootcling_stage1.exe)
++      if(NATIVE_BINARY_DIR)
++        set(command ${CMAKE_COMMAND} -E ${NATIVE_BINARY_DIR}/bin/rootcling_stage1.exe)
++      else()
++        set(command ${CMAKE_COMMAND} -E ${CMAKE_BINARY_DIR}/bin/rootcling_stage1.exe)
++      endif()
+     else()
+-      set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}" $<TARGET_FILE:rootcling_stage1>)
++      if(NATIVE_BINARY_DIR)
++        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${NATIVE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}" ${NATIVE_BINARY_DIR}/core/rootcling_stage1/src/rootcling_stage1)
++      else()
++        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}" $<TARGET_FILE:rootcling_stage1>)
++      endif()
+     endif()
+     set(ROOTCINTDEP rconfigure)
+     set(pcm_name)
+   else()
+     if(CMAKE_PROJECT_NAME STREQUAL ROOT)
+       if(MSVC AND CMAKE_ROOTTEST_DICT)
+-        set(command ${CMAKE_COMMAND} -E env "ROOTIGNOREPREFIX=1" ${CMAKE_BINARY_DIR}/bin/rootcling.exe)
++        if(NATIVE_BINARY_DIR)
++          set(command ${CMAKE_COMMAND} -E env "ROOTIGNOREPREFIX=1" ${NATIVE_BINARY_DIR}/bin/rootcling.exe)
++        else()
++          set(command ${CMAKE_COMMAND} -E env "ROOTIGNOREPREFIX=1" ${CMAKE_BINARY_DIR}/core/rootcling_stage1/src/rootcling.exe)
++        endif()
+       else()
+-        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}"
+-                    "ROOTIGNOREPREFIX=1" $<TARGET_FILE:rootcling> -rootbuild)
+-        # Modules need RConfigure.h copied into include/.
++        if(NATIVE_BINARY_DIR)
++          set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${NATIVE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}"
++            "ROOTIGNOREPREFIX=1" ${NATIVE_BINARY_DIR}/core/rootcling_stage1/src/rootcling -rootbuild)
++        else()
++          set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}"
++            "ROOTIGNOREPREFIX=1" $<TARGET_FILE:rootcling> -rootbuild)
++        endif()
++          # Modules need RConfigure.h copied into include/.
+         set(ROOTCINTDEP rootcling rconfigure)
+       endif()
+     elseif(TARGET ROOT::rootcling)
