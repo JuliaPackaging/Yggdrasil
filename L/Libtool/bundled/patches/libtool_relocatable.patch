@@ -32,10 +32,10 @@ index 0c40fed..e82e467 100644
 -  aclocaldir="@aclocaldir@"
 +  scriptdir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 +  prefix="$scriptdir/.."
-+  datadir="$scriptdir/../res"
-+  pkgauxdir="$scriptdir/../res/libtool/build-aux"
-+  pkgltdldir="$scriptdir/../res/libtool"
-+  aclocaldir="$scriptdir/../res/aclocal"
++  datadir="$scriptdir/../share"
++  pkgauxdir="$scriptdir/../share/libtool/build-aux"
++  pkgltdldir="$scriptdir/../share/libtool"
++  aclocaldir="$scriptdir/../share/aclocal"
  
    # Allow the user to override the master libtoolize repository:
    if test -n "$_lt_pkgdatadir"; then
