@@ -123,6 +123,12 @@ init_block = """
     # Register this driver with OpenCL_jll
     if OpenCL_jll.is_available()
         push!(OpenCL_jll.drivers, libpocl)
+
+        # XXX: Clang_jll does not have a functional clang binary on macOS,
+        #      as it's configured without a default sdkroot (see #9221)
+        if Sys.isapple()
+            ENV["SDKROOT"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+        end
     end
 """
 
