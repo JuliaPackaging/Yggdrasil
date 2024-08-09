@@ -12,11 +12,15 @@ script = raw"""
 cmake_extra_args=""
 if [[ $bb_full_target == *cuda* ]]; then
     cmake_extra_args+="\
+        -DUSE_CUDA=ON \
         -DCUDA_TOOLKIT_ROOT_DIR=/workspace/srcdir/CUDA_full.v11.3/cuda \
         -DCUDA_CUDART_LIBRARY=$libdir/libcudart.$dlext \
         -DCUDA_cublas_LIBRARY=$libdir/libcublas.$dlext \
         -DCUDA_cufft_LIBRARY=$libdir/libcufft.$dlext \
-        -DCUDA_curand_LIBRARY=$libdir/libcurand.$dlext "
+        -DCUDA_curand_LIBRARY=$libdir/libcurand.$dlext"
+else
+    cmake_extra_args+="\
+        -DUSE_CUDA=OFF"
 fi
 
 cd Torch.jl/deps/c_wrapper
