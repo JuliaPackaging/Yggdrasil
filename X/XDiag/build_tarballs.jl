@@ -15,7 +15,7 @@ include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "9a91ed0511299ea9f5ab9fbc1d5b8d2fd74a750d")
+    GitSource("https://github.com/awietek/xdiag.git", "4fde50949155da6885fbf9458f52793447dc8c61")
 ]
 
 
