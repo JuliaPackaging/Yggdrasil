@@ -34,11 +34,11 @@ global drivers = String[]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libOpenCL", :libopencl)
+    LibraryProduct(["libOpenCL", "OpenCL"], :libopencl)
 ]
 
 # Dependencies that must be installed before this package can be built
