@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "tectonic"
-version = v"0.14.1"
+version = v"0.15.0"
 
 # Collection of sources required to build tar
 sources = [
     GitSource("https://github.com/tectonic-typesetting/tectonic.git",
-              "e9b786655cac895bb148c5bfa3fc4cec6a01d72f"),
+              "33ae8e755413c6b0d7adcbb550818683c6be645c"),
 ]
 
 # Bash recipe for building across all platforms
