@@ -37,16 +37,6 @@ done
 
 export CXXFLAGS="${SYMB_DEFS[@]}"
 
-if [[ "${target}" == *-apple-* ]]; then
-
-    # Needed to get std::visit working  
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-
-    # Finding OpenMP is a bit complicated
-    cmake -D XDIAG_DISABLE_HDF5=On -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DXDIAG_JULIA_WRAPPER=On -DJlCxx_DIR=$prefix/lib/cmake -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} -DOpenMP_libgomp_LIBRARY=${libdir}/libgomp.dylib -DOpenMP_ROOT=${libdir} -D OpenMP_CXX_LIB_NAMES="libgomp" -DOpenMP_CXX_FLAGS="-fopenmp=libgomp -Wno-unused-command-line-argument"  -S . -B build
-
-else
-
 cmake -S . \
      -B build \
     -D XDIAG_DISABLE_HDF5=On \
@@ -58,8 +48,6 @@ cmake -S . \
     -DJlCxx_DIR=$prefix/lib/cmake \
     -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
     -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext}
-
-fi
 
 cmake --build build -j${nproc}
 cmake --install build
