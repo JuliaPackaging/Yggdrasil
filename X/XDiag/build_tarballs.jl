@@ -37,8 +37,7 @@ done
 
 export CXXFLAGS="${SYMB_DEFS[@]}"
 
-if [[ "${target}" == *-apple-* ]]; then
-
+if [[ "${target}" == x86_64-apple-* ]]; then
     # Needed to get std::visit working  
     export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
