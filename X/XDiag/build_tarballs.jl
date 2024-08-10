@@ -61,7 +61,7 @@ cmake -S . \
 
 fi
 
-cmake --build build -j4
+cmake --build build -j${nproc}
 cmake --install build
 
 """
