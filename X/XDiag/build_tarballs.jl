@@ -47,7 +47,17 @@ if [[ "${target}" == *-apple-* ]]; then
 
 else
 
-    cmake -D XDIAG_DISABLE_HDF5=On -DJulia_PREFIX=$Julia_PREFIX -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DXDIAG_JULIA_WRAPPER=On -DJlCxx_DIR=$prefix/lib/cmake -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} -S . -B build
+cmake -S . \
+     -B build \
+    -D XDIAG_DISABLE_HDF5=On \
+    -DJulia_PREFIX=$Julia_PREFIX \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DXDIAG_JULIA_WRAPPER=On \
+    -DJlCxx_DIR=$prefix/lib/cmake \
+    -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
+    -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext}
 
 fi
 
