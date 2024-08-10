@@ -37,6 +37,12 @@ done
 
 export CXXFLAGS="${SYMB_DEFS[@]}"
 
+if [[ "${target}" == *-apple-* ]]; then
+
+    # Needed to get std::visit working  
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+fi
+
 cmake -S . \
      -B build \
     -D XDIAG_DISABLE_HDF5=On \
