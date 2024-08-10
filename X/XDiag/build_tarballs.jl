@@ -62,6 +62,7 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = expand_cxxstring_abis(platforms)
 
 filter!(p -> (
     (os(p) == "linux" && libc(p) != "musl" && arch(p) == "x86_64") ||
