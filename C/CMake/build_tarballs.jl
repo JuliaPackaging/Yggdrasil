@@ -8,7 +8,7 @@ version = v"3.30.2"
 # Collection of sources required to build CMake
 sources = [
     GitSource("https://github.com/Kitware/CMake", "d88682dff6bf053e5bbdc10accf5d6825303e656"),
-    DirectorySource("bundled/"),
+    #DirectorySource("bundled/"),
 ]
 
 # Bash recipe for building across all platforms
