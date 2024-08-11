@@ -15,7 +15,7 @@ include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "4fde50949155da6885fbf9458f52793447dc8c61")
+    GitSource("https://github.com/awietek/xdiag.git", "614f91cbe1beb679cbb687739c6b308e0f49b699")
 ]
 
 
@@ -71,7 +71,6 @@ filter!(p -> (
     (os(p) == "macos" && arch(p) == "aarch64") ||
     (os(p) == "windows" && arch(p) == "x86_64")) &&
     p.tags["julia_version"] !="1.6.3" &&
-    # p.tags["julia_version"] !="1.11.0" &&
     p.tags["julia_version"] !="1.12.0", platforms)
 
 
