@@ -35,7 +35,7 @@ for sym in cgbcon cgbsv cgbsvx cgbtrf cgbtrs cgecon cgees cgeev cgeevx cgehrd cg
     SYMB_DEFS+=("-D${sym}=${sym}_64")
 done
 
-export CXXFLAGS="${SYMB_DEFS[@]}"
+export CXXFLAGS="${SYMB_DEFS[@]} -DARMA_BLAS_LONG"
 
 if [[ "${target}" == x86_64-apple-* ]]; then
     # Needed to get std::visit working  
