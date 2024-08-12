@@ -1,0 +1,10 @@
+--- a/libunwind/src/DwarfParser.hpp
++++ b/libunwind/src/DwarfParser.hpp
+@@ -12,6 +12,7 @@
+ #ifndef __DWARF_PARSER_HPP__
+ #define __DWARF_PARSER_HPP__
+ 
++#define __STDC_FORMAT_MACROS
+ #include <inttypes.h>
+ #include <stdint.h>
+ #include <stdio.h>
