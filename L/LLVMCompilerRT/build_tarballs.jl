@@ -72,6 +72,9 @@ EOF
            )
 fi
 
+# Quick fix for https://github.com/llvm/llvm-project/pull/102980.
+# TODO: remove it after PR is merged.
+export CXXFLAGS="-D__STDC_FORMAT_MACROS=1"
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
