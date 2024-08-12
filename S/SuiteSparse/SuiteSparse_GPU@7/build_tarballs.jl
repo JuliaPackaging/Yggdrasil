@@ -35,7 +35,7 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_CCOLAMD=ON
         -DCMAKE_RELEASE_POSTFIX="_cuda"
     )
-""" * build_script(false, true)
+""" * build_script(use_omp = false, use_cuda = true)
 
 # Products for the GPU builds of SuiteSparse
 gpu_products = [
