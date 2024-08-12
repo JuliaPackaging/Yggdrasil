@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Tcl"
-version = v"8.6.12"
+version = v"8.6.14"
 
 # Collection of sources required to build Tcl
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/sourceforge/tcl/tcl$(version)-src.tar.gz",
-                  "26c995dd0f167e48b11961d891ee555f680c175f7173ff8cb829f4ebcde4c1a6"),
+                  "5880225babf7954c58d4fb0f5cf6279104ce1cd6aa9b71e9a6322540e1c4de66"),
 ]
 
 # Bash recipe for building across all platforms
