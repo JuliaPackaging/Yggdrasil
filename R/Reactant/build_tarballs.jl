@@ -10,7 +10,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.15"
 
 sources = [
-   GitSource(repo, "758194f42e5da33d15ed9c4aa2a22d80fe8de49f"),
+   GitSource(repo, "3a2b61c72817a59acc2f493f622dd1d7053acddc"),
 ]
 
 # Bash recipe for building across all platforms
@@ -262,8 +262,8 @@ platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
-platforms = filter(p -> (Sys.isapple(p)), platforms)
-platforms = filter(p -> arch(p) != "x86_64", platforms)
+# platforms = filter(p -> (Sys.isapple(p)), platforms)
+# platforms = filter(p -> arch(p) != "x86_64", platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 
