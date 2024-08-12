@@ -303,8 +303,7 @@ augment_platform_block="""
     end
     """
 
-for mode in ("dbg",), platform in platforms
-# for mode in ("opt", "dbg"), platform in platforms
+for mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     cuda_deps = []
