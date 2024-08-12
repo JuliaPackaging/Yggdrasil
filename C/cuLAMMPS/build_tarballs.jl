@@ -68,7 +68,8 @@ filter!(p -> arch(p)=="x86_64", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libcufinufft", :libcufinufft)
+    LibraryProduct("liblammps", :liblammps),
+    ExecutableProduct("lmp", :lmp),
 ]
 
 # Dependencies that must be installed before this package can be built
