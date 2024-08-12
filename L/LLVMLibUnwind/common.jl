@@ -12,7 +12,7 @@ function configure(version; experimental::Bool=false)
         v"12.0.1" => "0bea6089518395ca65cf58b0a450716c5c99ce1f041079d3aa42d280ace15ca4",
         # llvm-project-*.src.tar.xz
         v"14.0.6" => "8b3cfd7bc695bd6cea0f37f53f0981f34f87496e79e2529874fd03a2f9dd3a8a",
-        v"18.1.1" => "8f34c6206be84b186b4b31f47e1b52758fa38348565953fad453d177ef34c0ad",
+        v"18.1.7" => "74446ab6943f686391954cbda0d77ae92e8a60c432eff437b8666e121d748ec4",
     )
 
     # LLVM deprecated standalone builds for several projects, including libunwind, so
