@@ -10,7 +10,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.14"
 
 sources = [
-   GitSource(repo, "8f25b97054405ad827eddf62f571b72d397d3ae7"),
+           GitSource(repo, "87c4cf22434c27425d44a36fc1998c01a13ca876"),
 ]
 
 # Bash recipe for building across all platforms
@@ -262,8 +262,8 @@ platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
-# platforms = filter(p -> (Sys.isapple(p)), platforms)
-# platforms = filter(p -> arch(p) != "x86_64", platforms)
+platforms = filter(p -> (Sys.isapple(p)), platforms)
+platforms = filter(p -> arch(p) != "x86_64", platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 
@@ -303,7 +303,8 @@ augment_platform_block="""
     end
     """
 
-for mode in ("opt", "dbg"), platform in platforms
+for mode in ("dbg",), platform in platforms
+# for mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     cuda_deps = []
