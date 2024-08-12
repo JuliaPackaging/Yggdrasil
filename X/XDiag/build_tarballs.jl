@@ -15,7 +15,7 @@ include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "9a91ed0511299ea9f5ab9fbc1d5b8d2fd74a750d")
+    GitSource("https://github.com/awietek/xdiag.git", "614f91cbe1beb679cbb687739c6b308e0f49b699")
 ]
 
 
@@ -35,7 +35,7 @@ for sym in cgbcon cgbsv cgbsvx cgbtrf cgbtrs cgecon cgees cgeev cgeevx cgehrd cg
     SYMB_DEFS+=("-D${sym}=${sym}_64")
 done
 
-export CXXFLAGS="${SYMB_DEFS[@]}"
+export CXXFLAGS="${SYMB_DEFS[@]} -DARMA_BLAS_LONG"
 
 if [[ "${target}" == x86_64-apple-* ]]; then
     # Needed to get std::visit working  
@@ -71,7 +71,6 @@ filter!(p -> (
     (os(p) == "macos" && arch(p) == "aarch64") ||
     (os(p) == "windows" && arch(p) == "x86_64")) &&
     p.tags["julia_version"] !="1.6.3" &&
-    # p.tags["julia_version"] !="1.11.0" &&
     p.tags["julia_version"] !="1.12.0", platforms)
 
 
