@@ -27,15 +27,17 @@ import Pkg.Types: VersionSpec
 # to all components.
 #
 name = "Singular"
-upstream_version = v"4.3.2-0" # 4.3.2p1 plus some changes
-version_offset = v"0.1.0"
+
+upstream_version = v"4.4.0-3" # 4.4.0p3
+version_offset = v"0.0.1"
+
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
                         Int(upstream_version.prerelease[1]) * 100 + version_offset.patch)
 
 # Collection of sources required to build normaliz
 sources = [
-    GitSource("https://github.com/Singular/Singular.git", "a800fe4b3e9d37a38c5a10cc0ae9dfa0c15a4ee6"),
+    GitSource("https://github.com/Singular/Singular.git", "ecb28e2f43b3317414054fd7100d688a5ffba68f"),
     #ArchiveSource("https://www.mathematik.uni-kl.de/ftp/pub/Math/Singular/SOURCES/$(upstream_version.major)-$(upstream_version.minor)-$(upstream_version.patch)/singular-$(upstream_version).tar.gz",
     #              "5b0f6c036b4a6f58bf620204b004ec6ca3a5007acc8352fec55eade2fc9d63f6"),
     #DirectorySource("./bundled")
@@ -51,6 +53,13 @@ cd [Ss]ingular*
 
 ./autogen.sh
 export CPPFLAGS="-I${prefix}/include"
+
+# lld doesn't support -r and -keep_private_externs which the Singular build uses
+# switch back to ld on macos to avoid errors:
+if [[ "${target}" == *apple* ]]; then
+  export LDFLAGS="-fuse-ld=ld"
+fi
+
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
     --with-libparse \
     --enable-shared \
@@ -100,7 +109,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("cddlib_jll"),
-    Dependency(PackageSpec(name="FLINT_jll"), compat = "~200.900.000"),
+    Dependency(PackageSpec(name="FLINT_jll"), compat = "~300.100.300"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]

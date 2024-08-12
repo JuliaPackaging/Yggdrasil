@@ -1,0 +1,13 @@
+diff --git a/DALTON/gp/gptrygve.F b/DALTON/gp/gptrygve.F
+index c3719aa60..4e638050d 100644
+--- a/DALTON/gp/gptrygve.F
++++ b/DALTON/gp/gptrygve.F
+@@ -452,7 +452,7 @@ C
+       CHARACTER*(*) NAME, STATUS
+       LOGICAL OLDDX, FEXIST
+ #include "priunit.h"
+-#if defined (SYS_AIX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
++#if defined (SYS_AIX) || defined (SYS_LINUX) || defined (SYS_DARWIN) || defined (SYS_FREEBSD)
+ C
+ C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
+ C     Assume same for HP-UX  -- 21-Aug-1991 hjaaj

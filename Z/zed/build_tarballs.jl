@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "zed"
-version = v"1.2.0"
+version = v"1.15.0"
 
 # Collection of sources
 sources = [
-    GitSource("https://github.com/brimdata/zed", "76f0409f96a0208d15c4487505604cf6c0e2ae92"),
+    GitSource("https://github.com/brimdata/zed", "2a487ee2a63ed09700bb26f70f08324244227cc2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +24,10 @@ platforms = filter(p -> wordsize(p) > 32, supported_platforms())
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("zed", :zed),
+    ExecutableProduct("zq", :zq),
+    ExecutableProduct("gentoken", :gentoken),
+    ExecutableProduct("mockzui", :mockzui),
+    ExecutableProduct("zc", :zc)
 ]
 
 # Dependencies that must be installed before this package can be built

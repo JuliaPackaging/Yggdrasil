@@ -1,0 +1,14 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -34,11 +34,6 @@ option(SPM_USE_BUILTIN_PROTOBUF "Use built-in protobuf" ON)
+ option(SPM_USE_EXTERNAL_ABSL "Use external abseil" OFF)
+ option(SPM_ENABLE_MSVC_MT_BUILD, "Use /MT flag in MSVC build" OFF)
+ 
+-# Disable shared build on windows
+-if(WIN32)
+-  set(SPM_ENABLE_SHARED OFF)
+-endif()
+-
+ set(CMAKE_CXX_STANDARD 17)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 

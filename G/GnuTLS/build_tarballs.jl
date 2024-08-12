@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.7.8"
+version = v"3.8.4"
 
 # Collection of sources required to build GnuTLS
 sources = [
     ArchiveSource("https://www.gnupg.org/ftp/gcrypt/gnutls/v$(version.major).$(version.minor)/gnutls-$(version).tar.xz",
-                  "c58ad39af0670efe6a8aee5e3a8b2331a1200418b64b7c51977fb396d4617114"),
+                  "2bea4e154794f3f00180fa2a5c51fe8b005ac7a31cd58bd44cdfa7f36ebc3a9b"),
     DirectorySource("./bundled"),
 ]
 
@@ -65,4 +65,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"6", lock_microarchitecture=false, julia_compat="1.6")
+               clang_use_lld=false, julia_compat="1.6", lock_microarchitecture=false, preferred_gcc_version=v"6")

@@ -1,10 +1,13 @@
 const NAME = "hsakmt_roct"
 
-const ROCM_GIT = "https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface/"
+const ROCM_GIT = "https://github.com/RadeonOpenCompute/ROCT-Thunk-Interface.git"
 const ROCM_TAGS = Dict(
-    v"4.2.0" => "cc325d4b9a96062f2ad0515fce724a8c64ba56a7d7f1ac4a0753941b8599c52e",
-    v"4.5.2" => "fb8e44226b9e393baf51bfcb9873f63ce7e4fcf7ee7f530979cf51857ea4d24b",
-    v"5.2.3" => "8d313b8fd945a8d7248c00a2de9a2ee896fe77e464430a91b63400a986ec0bf0")
+    v"4.2.0" => "7cdd63475c36bb9f49bb960f90f9a8cdb7e80a21",
+    v"4.5.2" => "3277d5354ed623598a5cea82cc3790a577af177c",
+    v"5.2.3" => "026fae434a141faa10da109a2c1b03dc9e06db3f",
+    v"5.4.4" => "2d55276bfa186a47611cdd2fc20879dacb506a9a",
+    v"5.5.1" => "695ec62187ba0708e3f8a960c2b75b877c2521a9",
+)
 const ROCM_PLATFORMS = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
     Platform("x86_64", "linux"; libc="musl", cxxstring_abi="cxx11"),
@@ -32,8 +35,7 @@ install_license ${WORKSPACE}/srcdir/ROCT-Thunk-Interface*/LICENSE.md
 
 function configure_build(version)
     sources = [
-        ArchiveSource(
-            ROCM_GIT * "archive/rocm-$(version).tar.gz", ROCM_TAGS[version]),
+        GitSource(ROCM_GIT, ROCM_TAGS[version]),
         DirectorySource("./bundled"),
     ]
     products = [LibraryProduct(["libhsakmt"], :libhsakmt)]

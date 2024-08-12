@@ -1,0 +1,24 @@
+diff --git a/src/libscotch/context.c b/src/libscotch/context.c
+index 6becac0..aa78fae 100644
+--- a/src/libscotch/context.c
++++ b/src/libscotch/context.c
+@@ -70,7 +70,7 @@ static struct ContextValuesData_ {
+ #else /* ((defined SCOTCH_DETERMINISTIC) || (defined COMMON_RANDOM_FIXED_SEED)) */
+                               0
+ #endif /* ((defined SCOTCH_DETERMINISTIC) || (defined COMMON_RANDOM_FIXED_SEED)) */
+-  }, { } };
++  } };
+ 
+ /***********************************/
+ /*                                 */
+@@ -88,7 +88,7 @@ int
+ contextOptionsInit (
+ Context * const             contptr)
+ {
+-  return (contextValuesInit (contptr, &contextvaluesdat, sizeof (contextvaluesdat),
+-                             CONTEXTOPTIONNUMNBR, (void *) &contextvaluesdat.vinttab - (void *) &contextvaluesdat,
+-                             CONTEXTOPTIONDBLNBR, (void *) &contextvaluesdat.vdbltab - (void *) &contextvaluesdat));
++  size_t offset = sizeof(contextvaluesdat.vinttab);
++  return contextValuesInit(contptr, &contextvaluesdat, sizeof(contextvaluesdat), CONTEXTOPTIONNUMNBR,
++                           offset, CONTEXTOPTIONDBLNBR, offset + sizeof(contextvaluesdat.vinttab));
+ }

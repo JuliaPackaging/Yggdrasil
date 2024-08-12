@@ -1,21 +1,18 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "Cares"
-version = v"1.19.0"
+version = v"1.32.3"
 
 # url = "https://c-ares.org/"
 # description = "C library for asynchronous DNS requests (including name resolves)"
 
 sources = [
-    ArchiveSource("https://c-ares.org/download/c-ares-$(version).tar.gz",
-                  "bfceba37e23fd531293829002cac0401ef49a6dc55923f7f92236585b7ad1dd3"),
+    GitSource("https://github.com/c-ares/c-ares",
+              "5899dea2b1f8e78f311aaed7db98b82b5537c9f9"),
 ]
 
-
 script = raw"""
-cd $WORKSPACE/srcdir/c-ares-*/
+cd $WORKSPACE/srcdir/c-ares*/
 
 mkdir build && cd build
 cmake .. \
@@ -32,7 +29,6 @@ install_license ../LICENSE.md
 platforms = supported_platforms()
 
 products = [
-    ExecutableProduct("acountry", :acountry),
     ExecutableProduct("adig", :adig),
     ExecutableProduct("ahost", :ahost),
     LibraryProduct("libcares", :libcares),

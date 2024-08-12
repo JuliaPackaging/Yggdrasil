@@ -1,0 +1,11 @@
+index 8a008b5..c69cf3d 100644
+--- before/CMakeLists.txt
++++ after/CMakeLists.txt
+@@ -278,6 +278,7 @@ else()
+   add_compile_flag("-Wswitch") # we explicitly expect this in the code
+   add_compile_flag("-Wimplicit-fallthrough")
+   add_compile_flag("-Wnon-virtual-dtor")
++  add_compile_flag("-D__STDC_FORMAT_MACROS")
+ 
+   if(WIN32)
+     add_compile_flag("-D_GNU_SOURCE")

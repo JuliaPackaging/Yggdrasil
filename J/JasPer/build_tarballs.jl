@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "JasPer"
-version = v"2.0.28"
+version = v"2.0.33"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/jasper-software/jasper/archive/refs/tags/version-$version.tar.gz", "6b4e5f682be0ab1a5acb0eeb6bf41d6ce17a658bb8e2dbda95de40100939cc88")
+    GitSource("https://github.com/jasper-software/jasper", "fe00207dc10db1d7cc6f2757961c5c6bdfd10973"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
-cd $WORKSPACE/srcdir/jasper-version-*
+cd $WORKSPACE/srcdir/jasper*
 mkdir jll_build
 
 cmake -H. \
@@ -50,4 +50,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

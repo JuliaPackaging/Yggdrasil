@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "Vulkan_Headers"
-version = v"1.3.240"
+version = v"1.3.243"
 
 source = "https://github.com/KhronosGroup/Vulkan-Headers.git"
-commit = "9f93cbe76abe9f6cb4a36df10b08fa3b78ae0027"
+commit = "65ad768d8603671fc1085fe115019e72a595ced8"
 
 sources = [
     GitSource(source, commit)
@@ -32,7 +32,8 @@ platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 products = Product[
-    FileProduct("share/vulkan/registry/vk.xml", :vk_xml)
+    FileProduct("share/vulkan/registry/vk.xml", :vk_xml),
+    FileProduct("include/vulkan/vulkan.hpp", :vulkan_hpp),
 ]
 
 # Dependencies that must be installed before this package can be built

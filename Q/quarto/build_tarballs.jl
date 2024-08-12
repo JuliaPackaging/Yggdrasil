@@ -2,16 +2,16 @@ using BinaryBuilder, Pkg
 
 # Collection of pre-build quarto binaries
 name = "quarto"
-quarto_ver = "1.1.251"
+quarto_ver = "1.5.54"
 version = VersionNumber(quarto_ver)
 
 url_prefix = "https://github.com/quarto-dev/quarto-cli/releases/download/v$(quarto_ver)/quarto-$(quarto_ver)"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "544614108e31cd03d79724db0938405b69e904264d3c3279c767169e4373ed11"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macOS.tar.gz", "04a9f82fc5c66e87b7b64afe7c775c8b4977e0e6323e03c29adbd16918640a6f"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-win.zip", "57efeacbf6cdbaff66715bad50e2d10566381731ebeb905e5d4a896ab9f9f093"; unpack_target = "x86_64-w64-mingw32"),
-    FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/main/COPYRIGHT", "72e9878c027de95ff489de1ee25933176070a2f6f29c5c8ac613f6f16d72ffee"),
-    FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/main/COPYING.md", "2b7f990a2f8f094afbf8b51011737588acc3acc63e5c436cac3d1a7a25a6773f"),
+    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "424a8c59a6b97cbaca9a0af98b1d3c157d447ddae3efca0340ab8bb65d900749"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-macOS.tar.gz", "391b1a095cfc7e8a3fb33f723e42d0449f0146babf1311ff73e5262bc1129503"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-win.zip", "fb00b52ae7a7c5f897e16d1b023b978a683ab1bc1db71948734cc67e83029c6c"; unpack_target = "x86_64-w64-mingw32"),
+    FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/v$(quarto_ver)/COPYRIGHT", "490f3bfa035e325018ce9b0c8c2aec1f291c67ff55358a653d079488385af517"),
+    FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/v$(quarto_ver)/COPYING.md", "54a55511991726b38e3867966ab14fd62919114670f2178654cced9394af78fd"),
 ]
 
 # Bash recipe for building across all platforms

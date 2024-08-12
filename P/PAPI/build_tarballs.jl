@@ -7,11 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "PAPI"
-version = v"7.0.0"
+version = v"7.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://bitbucket.org/icl/papi.git", "de96060998cd9fc77396c5e100e52e0ea1cdc3c3"),
+    GitSource("https://github.com/icl-utk-edu/papi.git", "3ce9001dff49e1b6b1653ffb429808795f71a0bd"),
     DirectorySource("./bundled")
 ]
 
@@ -63,68 +63,50 @@ make -j ${nproc}
 make install
 """
 
-augment_platform_block = CUDA.augment
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
-]
-
+# These are the platforms we will build for by default
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
  #    LibraryProduct("libpfm", :libpfm),
-    LibraryProduct("libpapi", :libpapi)
+    LibraryProduct("libpapi", :libpapi),
+    ExecutableProduct("papi_avail", :papi_avail),
+    ExecutableProduct("papi_clockres", :papi_clockres),
+    ExecutableProduct("papi_command_line", :papi_command_line),
+    ExecutableProduct("papi_component_avail", :papi_component_avail),
+    ExecutableProduct("papi_cost", :papi_cost),
+    ExecutableProduct("papi_decode", :papi_decode),
+    ExecutableProduct("papi_error_codes", :papi_error_codes),
+    ExecutableProduct("papi_event_chooser", :papi_event_chooser),
+    ExecutableProduct("papi_hardware_avail", :papi_hardware_avail),
+    ExecutableProduct("papi_mem_info", :papi_mem_info),
+    ExecutableProduct("papi_multiplex_cost", :papi_multiplex_cost),
+    ExecutableProduct("papi_native_avail", :papi_native_avail),
+    ExecutableProduct("papi_version", :papi_version),
+    ExecutableProduct("papi_xml_event_info", :papi_xml_event_info),
 ]
 
-cuda_versions_to_build = Any[
-    v"10.2",
-    v"11.0",
-    "none"
-]
+# Compiling for CUDA 12.4 fails with
+#     components/cuda/cupti_common.c: In function ‘cuptic_load_dynamic_syms’:
+#     components/cuda/cupti_common.c:114:23: error: ‘CUPTIU_MAX_FILES’ undeclared (first use in this function)
+#          char *found_files[CUPTIU_MAX_FILES];
+#                            ^
+cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3.999")
 
-# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
-cuda_versions = Dict(
-    v"10.2" => v"10.2.89",
-    v"11.0" => v"11.0.3",
-)
-
-cuda_platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-]
-
-for cuda_version in cuda_versions_to_build, platform in platforms
-    tag = cuda_version == "none" ? "none" : CUDA.platform(cuda_version)
-    cuda_version != "none" && !(platform in cuda_platforms) && continue
-    augmented_platform = Platform(arch(platform), os(platform);
-                                  libc=libc(platform),
-                                  cuda=tag)
-    if platform == Platform("powerpc64le", "linux"; libc = "glibc") && cuda_version == v"11.0"
-        continue
-    end
-    should_build_platform(triplet(augmented_platform)) || continue
+for platform in [platforms; cuda_platforms]
+    should_build_platform(triplet(platform)) || continue
 
     dependencies = AbstractDependency[
         RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
+        CUDA.required_dependencies(platform)...
     ]
-    if cuda_version != "none"
-        if platform in cuda_platforms
-            push!(dependencies, BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                                            version=cuda_versions[cuda_version])))
-        end
+
+    if platform in platforms && CUDA.is_supported(platform)
+        platform["cuda"] = "none"
     end
 
-
-    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+    build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, dependencies; lazy_artifacts=true,
-                   julia_compat="1.6", augment_platform_block,
+                   julia_compat="1.6", augment_platform_block=CUDA.augment,
                    preferred_gcc_version=v"5")
 end

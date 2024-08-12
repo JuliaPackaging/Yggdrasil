@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 5d7a2ed..e032bc2 100644
+index 1787450..91b42b3 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1,8 +1,11 @@
+@@ -1,11 +1,14 @@
  include Makefile.inc
 +
 +EXE = luna$(exeext)
@@ -10,13 +10,17 @@ index 5d7a2ed..e032bc2 100644
  ifeq ($(ARCH),WINDOWS)
 -  TARGETS = luna destrat behead tocol
 +  TARGETS = $(EXE) libluna destrat behead tocol
- else
--  TARGETS = luna libluna destrat behead dmerge tocol fixrows cgi-mapper
-+  TARGETS = $(EXE) libluna destrat behead dmerge tocol fixrows cgi-mapper
+ else	
+   ifdef WASM
+-    TARGETS=luna libluna destrat
++    TARGETS=$(EXE) libluna destrat
+   else
+-    TARGETS = luna libluna destrat regional behead dmerge tocol fixrows cgi-mapper simassoc
++    TARGETS = $(EXE) libluna destrat regional behead dmerge tocol fixrows cgi-mapper simassoc
+   endif
  endif
  
- SRCS = globals.cpp eval.cpp cmddefs.cpp \
-@@ -46,7 +49,7 @@ DEPS := $(OBJS:.o=.d)
+@@ -55,7 +58,7 @@ DEPS := $(OBJS:.o=.d)
  
  all : $(TARGETS)
  
@@ -24,8 +28,8 @@ index 5d7a2ed..e032bc2 100644
 +$(EXE): main.o $(OBJS)
  	$(CXX) -o $@ $^ $(LDFLAGS)
  
- libluna: libluna.a $(SHARED_LIB)
-@@ -57,13 +60,8 @@ libluna: libluna.a $(SHARED_LIB)
+ 
+@@ -67,13 +70,8 @@ libluna: libluna.a $(SHARED_LIB)
  
  # shared library (libluna)
  
@@ -41,10 +45,10 @@ index 5d7a2ed..e032bc2 100644
  # objects
  libluna.a : $(OBJS)
 diff --git a/Makefile.inc b/Makefile.inc
-index 8840537..252c1ea 100644
+index a8e1a6f..c7cafdb 100644
 --- a/Makefile.inc
 +++ b/Makefile.inc
-@@ -15,17 +15,13 @@ endif
+@@ -15,22 +15,11 @@ endif
  DEP_INCLUDES=
  DEP_LIB=
  
@@ -58,50 +62,65 @@ index 8840537..252c1ea 100644
 -ifdef FFTW
 -DEP_INCLUDES += -I$(FFTW)/include
 -DEP_LIB = -L$(FFTW)/lib
-+DEP_INCLUDES += -I$(includedir)
-+DEP_LIB = -L$(libdir)
  ifeq ($(ARCH),LINUX)
 -DEP_LIB	+= -Wl,-rpath,$(FFTW)/lib
 -endif
+-endif
+-
+-ifdef LGBM_PATH
+-DEP_INCLUDES +=-I$(LGBM_PATH)/include
+-DEP_LIB +=-L$(LGBM_PATH)
 +DEP_LIB	+= -Wl,-rpath,$(libdir)
  endif
  
  
-@@ -33,24 +29,23 @@ endif
+@@ -38,16 +27,10 @@ endif
  ## Compiler flags
  ##
  
--CXX = g++
+-ifeq ($(WASM),1)
+- CXX = em++
+- CC = emcc
+-else
+- CXX = g++
+- CC = gcc
+-endif
 -
--CC = gcc
 +CFLAGS += -D$(ARCH)
 +CXXFLAGS += -D$(ARCH)
  
--CXXFLAGS=-O2 -std=gnu++11 -MMD -MP -I. -I..
-+CXXFLAGS+=-O2 -std=gnu++11 -MMD -MP -I. -I..
+-CXXFLAGS=-O2 -std=gnu++11 -MMD -MP -I. -I.. 
++CXXFLAGS+=-O2 -std=gnu++11 -MMD -MP -I. -I.. 
  #CXXFLAGS=-O0 -std=gnu++11 -MMD -MP -I. -I.. -pg
  
  CXXFLAGS +=$(DEP_INCLUDES)
+@@ -58,7 +41,7 @@ endif
+ 
  
  ifeq ($(ARCH),MAC)
--CXXFLAGS += -I/usr/local/include
-+CXXFLAGS += -I$(includedir)
+-CXXFLAGS+=-I/usr/local/include
++CXXFLAGS+=-I$(includedir)
  endif
  
  ifeq ($(ARCH),WINDOWS)
- CXXFLAGS += -DWINDOWS
+@@ -69,41 +52,18 @@ ifeq ($(LGBM),1)
+ CXXFLAGS+=-DHAS_LGBM
  endif
  
--CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
-+CFLAGS += -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
- #CFLAGS = -O0 -g -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
+-CFLAGS=-O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
++CFLAGS+=-O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
  
  
-@@ -58,17 +53,11 @@ CFLAGS = -O2 -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION
+ ##
  ## Linker flags
  ##
  
--LD = g++ 
+-ifeq ($(WASM),1)
+- LD = em++
+-else
+- LD = g++
+-endif
+-
 +LD = $(CXX)
  
  LDFLAGS = $(DEP_LIB) -L. -L..
@@ -109,14 +128,35 @@ index 8840537..252c1ea 100644
 -# assuming mingw64 for windows build:
 -
 -ifeq ($(ARCH),WINDOWS)
--LDFLAGS += -L/usr/local/lib -L/mingw64/lib/ -L/mingw64/bin/ -lfftw3 -lz -static -static-libgcc -static-libstdc++
+- LDFLAGS += -L/usr/local/lib -L/mingw64/lib/ -L/mingw64/bin/ -lfftw3 -lz -static -static-libgcc -static-libstdc++
 -else
--LDFLAGS += -L/usr/local/lib -lfftw3 -lz
+- ifeq ($(WASM),1)
+-  LDFLAGS += -L${WASM_DEPS} -lfftw3 -s USE_ZLIB=1
+- else
+-  LDFLAGS += -L/usr/local/lib -lfftw3 -lz
+- endif
+-endif
+-
+-ifdef LGBM_PATH
+-ifeq ($(ARCH),WINDOWS)
+-LDFLAGS += -L/mingw64/bin/
+-else
+-LDFLAGS += -Wl,-rpath,${LGBM_PATH}
+-endif
 -endif
 +LDFLAGS += -L$(libdir) -lfftw3 -lz
  
+ ifeq ($(LGBM),1)
+ ifeq ($(ARCH),WINDOWS)
+@@ -151,7 +111,7 @@ endif
+ ## Shared library name
  ##
- ## Static binary: 'make static STATIC=1', otherwise set PIC code
+ 
+-SHARED_LIB=libluna.dylib
++SHARED_LIB=libluna.$(dlext)
+ 
+ ##
+ ## Misc
 diff --git a/dsp/firWindowing/Makefile~ b/dsp/firWindowing/Makefile~
 index 44504f2..6b7da26 100644
 --- a/dsp/firWindowing/Makefile~

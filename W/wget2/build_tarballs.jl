@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "wget2"
-version = v"2.0.0"
+version = v"2.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/wget/wget2-$(version).tar.gz", "4fe2fba0abb653ecc1cc180bea7f04212c17e8fe05c85aaac8baeac4cd241544")
+    ArchiveSource("https://ftp.gnu.org/gnu/wget/wget2-$(version).tar.gz", "a05dc5191c6bad9313fd6db2777a78f5527ba4774f665d5d69f5a7461b49e2e7")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +18,9 @@ cd $WORKSPACE/srcdir/wget2*
 --prefix=${prefix} \
 --build=${MACHTYPE} \
 --host=${target} \
+--prefix=${prefix} \
+--libdir=${libdir} \
+--includedir=${includedir} \
 --enable-shared=yes \
 --enable-static=no \
 --without-libpsl \
@@ -59,8 +62,8 @@ dependencies = [
     Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d"))
     Dependency("Gettext_jll"; compat="=0.21.0")
     Dependency("Nettle_jll"; compat="~3.7.2")
-    Dependency("OpenSSL_jll")
+    Dependency("OpenSSL_jll"; compat="3.0.11")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")

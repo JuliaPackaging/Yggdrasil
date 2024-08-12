@@ -1,0 +1,35 @@
+commit 3078355cab7afa955835fe84e5870ec51514f291
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Wed Sep 20 20:48:11 2023 +0000
+
+    Kokkos: Move to TPL
+    
+    This is a non-upstreamable local patch that tells the Trilinos build
+    system to look for Kokkos as an external pacakge (which we provide as
+    a JLL) rather than building it itself.
+
+diff --git a/PackagesList.cmake b/PackagesList.cmake
+index db4136540ce..9706f13b411 100644
+--- a/PackagesList.cmake
++++ b/PackagesList.cmake
+@@ -61,7 +61,7 @@ TRIBITS_REPOSITORY_DEFINE_PACKAGES(
+   TrilinosFrameworkTests  commonTools/framework           PT
+   TrilinosATDMConfigTests cmake/std/atdm                  PT
+   Gtest                 commonTools/gtest                 PT
+-  Kokkos                packages/kokkos                   PT
++  #Kokkos                packages/kokkos                   PT
+   Teuchos               packages/teuchos                  PT
+   KokkosKernels         packages/kokkos-kernels           PT
+   RTOp                  packages/rtop                     PT
+diff --git a/TPLsList.cmake b/TPLsList.cmake
+index 4e5501f7cde..552c1572ef4 100644
+--- a/TPLsList.cmake
++++ b/TPLsList.cmake
+@@ -176,6 +176,7 @@ TRIBITS_REPOSITORY_DEFINE_TPLS(
+   SARMA           "cmake/TPLs/"    EX
+   CDT             "cmake/TPLs/"    EX
+   mpi_advance     "cmake/TPLs/"    EX
++  Kokkos	  TRIBITS_PKG      PT
+   )
+ 
+ # NOTES:

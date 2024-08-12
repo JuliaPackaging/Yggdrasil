@@ -1,0 +1,78 @@
+From 93e60642891abc85af7a2efb2b7095062e10719f Mon Sep 17 00:00:00 2001
+From: Jakub Jelinek <jakub@redhat.com>
+Date: Sat, 28 May 2022 08:30:47 +0200
+Subject: [PATCH] libgomp: Don't define GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC for
+ _aligned_malloc [PR105745]
+
+since apparently _aligned_malloc requires freeing with _aligned_free and:
+ /* Defined if gomp_aligned_alloc doesn't use fallback version
+    and free can be used instead of gomp_aligned_free.  */
+ #define GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC 1
+so the second condition isn't satisfied.  For uses inside of the OpenMP
+allocators we can still use _aligned_malloc but we need to call _aligned_free
+in gomp_aligned_free.
+
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/105745
+	* libgomp.h (GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC): Don't define for
+	defined(HAVE__ALIGNED_MALLOC) case.
+	* alloc.c (gomp_aligned_alloc): Move defined(HAVE__ALIGNED_MALLOC)
+	handling as last option before fallback instead of first.
+	(gomp_aligned_free): For defined(HAVE__ALIGNED_MALLOC) call
+	_aligned_free.
+
+(cherry picked from commit 42fd2cd932384288914174f4af7974a060972bff)
+---
+ libgomp/alloc.c   | 8 +++++---
+ libgomp/libgomp.h | 1 -
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/libgomp/alloc.c b/libgomp/alloc.c
+index a2a25befdf3..c1bd72db6f1 100644
+--- a/libgomp/alloc.c
++++ b/libgomp/alloc.c
+@@ -65,9 +65,7 @@ gomp_aligned_alloc (size_t al, size_t size)
+   void *ret;
+   if (al < sizeof (void *))
+     al = sizeof (void *);
+-#ifdef HAVE__ALIGNED_MALLOC
+-  ret = _aligned_malloc (size, al);
+-#elif defined(HAVE_MEMALIGN)
++#ifdef HAVE_MEMALIGN
+   {
+     extern void *memalign (size_t, size_t);
+     ret = memalign (al, size);
+@@ -83,6 +81,8 @@ gomp_aligned_alloc (size_t al, size_t size)
+     else
+       ret = NULL;
+   }
++#elif defined(HAVE__ALIGNED_MALLOC)
++  ret = _aligned_malloc (size, al);
+ #else
+   ret = NULL;
+   if ((al & (al - 1)) == 0 && size)
+@@ -106,6 +106,8 @@ gomp_aligned_free (void *ptr)
+ {
+ #ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
+   free (ptr);
++#elif defined(HAVE__ALIGNED_MALLOC)
++  _aligned_free (ptr);
+ #else
+   if (ptr)
+     free (((void **) ptr)[-1]);
+diff --git a/libgomp/libgomp.h b/libgomp/libgomp.h
+index b9e03919993..92f841981ef 100644
+--- a/libgomp/libgomp.h
++++ b/libgomp/libgomp.h
+@@ -87,7 +87,6 @@ enum memmodel
+ /* alloc.c */
+ 
+ #if defined(HAVE_ALIGNED_ALLOC) \
+-    || defined(HAVE__ALIGNED_MALLOC) \
+     || defined(HAVE_POSIX_MEMALIGN) \
+     || defined(HAVE_MEMALIGN)
+ /* Defined if gomp_aligned_alloc doesn't use fallback version
+-- 
+2.39.3
+

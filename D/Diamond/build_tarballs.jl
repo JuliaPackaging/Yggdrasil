@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Diamond"
-version = v"2.1.6"
+version = v"2.1.9"
 
 # url = "https://github.com/bbuchfink/diamond"
 # description = "Accelerated BLAST-compatible local sequence aligner"
@@ -13,9 +13,8 @@ version = v"2.1.6"
 #     error during compilation: unknown identifier __cpuidex
 
 sources = [
-    # v2.1.6
     GitSource("https://github.com/bbuchfink/diamond.git",
-              "0540f86d3d5965cf9a6ef8871068999ef61211dc"),
+              "ba088282666c06db0665dafc4851df45eae701f6"),
 ]
 
 script = raw"""

@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.5.1"
+version = v"1.7.2"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "93f1876e453eeec2d16e2a0c95874d0ef12c5b23",
+        "5ce7a27531a7f4166ee5a8343169a1014febb41a",
     ),
 ]
 
@@ -18,8 +18,12 @@ sources = [
 platforms = supported_platforms()
 
 function build_script(; shared_libs::String)
-    return "BUILD_SHARED=$(shared_libs)\n" * raw"""
+    build_static = shared_libs == "OFF" ? "ON" : "OFF"
+    return "BUILD_SHARED=$(shared_libs)\nBUILD_STATIC=$(build_static)\n" * raw"""
 cd $WORKSPACE/srcdir/HiGHS
+
+# Remove system CMake to use the jll version
+apk del cmake
 
 mkdir -p build
 cd build
@@ -33,8 +37,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=${BUILD_SHARED} \
-    -DFAST_BUILD=ON \
-    -DJULIA=ON ..
+    -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
+    -DFAST_BUILD=ON ..
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}
@@ -47,7 +51,7 @@ else
 fi
 make install
 
-install_license ../LICENSE
+install_license ../LICENSE.txt
 
 if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     # Delete the static library to save space

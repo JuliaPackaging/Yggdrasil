@@ -1,31 +1,46 @@
 using BinaryBuilder
 
 name = "IntelOpenMP"
-version = v"2018.0.3"
+version = v"2024.2.0"
 
 sources = [
-    ArchiveSource("https://anaconda.org/intel/openmp/2018.0.3/download/win-32/openmp-2018.0.3-intel_0.tar.bz2",
-                  "86ed603332ed7b4004e8a474943468589b222ef16d0d9aaf3ebb4ceaf743a39d"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/openmp/2018.0.3/download/win-64/openmp-2018.0.3-intel_0.tar.bz2",
-                  "0aee3d9debb8b1c2bb9a202b780c2b2d2179e4cee9158f7d0ad46125cf6f3fa2"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/openmp/2018.0.3/download/osx-64/openmp-2018.0.3-intel_0.tar.bz2",
-                  "110b94d5ff3c4df66fc89030c30ad42378da02817b3962f14cb5c268f9d94dae"; unpack_target="x86_64-apple-darwin14"),
-    ArchiveSource("https://anaconda.org/intel/openmp/2018.0.3/download/linux-32/openmp-2018.0.3-intel_0.tar.bz2",
-                  "f06edc0c52337658fd4b780d0b5c704b0ffb1c156dced7f5038c1ebbda3d891b"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/openmp/2018.0.3/download/linux-64/openmp-2018.0.3-intel_0.tar.bz2",
-                  "cae3ef59d900f12c723a3467e7122b559f0388c08c40c332da832131c024409b"; unpack_target="x86_64-linux-gnu"),
+    # Main OpenMP files
+    ArchiveSource("https://conda.anaconda.org/intel/win-32/intel-openmp-2024.2.0-intel_978.tar.bz2",
+                  "0f050fa361f22a3b7291daf7ec5ac208c6e652977643b2e289169d7475d64244"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://conda.anaconda.org/intel/win-64/intel-openmp-2024.2.0-intel_978.tar.bz2",
+                  "44d653f234ae35162ad2211d1281a21c613599e5dd68dd2e1229d27592f784f9"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://conda.anaconda.org/intel/linux-32/intel-openmp-2024.2.0-intel_981.tar.bz2",
+                  "38fac9228334cbaf61f1e7b0a70f4083d58a60dfc2e132a62881b976e1cb2301"; unpack_target="i686-linux-gnu"),
+    ArchiveSource("https://conda.anaconda.org/intel/linux-64/intel-openmp-2024.2.0-intel_981.tar.bz2",
+                  "db46064dbf0dbc096d92d8368ef8172ae335001b81055840c97fcfda3d09d64d"; unpack_target="x86_64-linux-gnu"),
+
+    # Archive for Windows linker file, only available for win64 currently
+    ArchiveSource("https://conda.anaconda.org/intel/win-64/dpcpp_impl_win-64-2024.2.0-intel_978.tar.bz2",
+                  "e899ae8ef10a5d2656a18cc45615889bffaa9c4f18053f90073dc50ac4586585"; unpack_target="x86_64-w64-mingw32-dpcpp"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p "${libdir}"
-    if [[ ${target} == *mingw* ]]; then
+if [[ ${target} == *i686-w64-mingw* ]]; then
+    mv ${target}/bin32/* "${libdir}/."
+fi
+if [[ ${target} == *x86_64-w64-mingw* ]]; then
     mv ${target}/Library/bin/* "${libdir}/."
-else
+
+    # These import libraries go inside the actual lib folder, not the bin folder with the DLLs
+    mkdir -p $WORKSPACE/destdir/lib
+    cp ${target}-dpcpp/Library/lib/libiomp5md.lib "$WORKSPACE/destdir/lib/"
+    cp ${target}-dpcpp/Library/lib/libiompstubs5md.lib "$WORKSPACE/destdir/lib/"
+fi
+if [[ ${target} == *i686-linux-gnu* ]]; then
+    mv ${target}/lib32/* "${libdir}/."
+fi
+if [[ ${target} == *x86_64-linux-gnu* ]]; then
     mv ${target}/lib/* "${libdir}/."
 fi
-install_license ${target}/info/*.txt
+install_license ${target}/info/licenses/*.txt
 """
 
 # The products that we will ensure are always built
@@ -33,20 +48,16 @@ products = [
     LibraryProduct(["libiomp5", "libiomp5md"], :libiomp),
 ]
 
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("i686", "linux"; libc="glibc"),
+    Platform("i686", "windows"),
+    Platform("x86_64", "windows"),
+]
+
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
 ]
 
-non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-include("../../fancy_toys.jl")
-no_autofix_platforms = [Platform("x86_64", "macos")]
-autofix_platforms = [Platform("i686", "windows"), Platform("x86_64", "windows"), Platform("x86_64", "linux"), Platform("i686", "linux")]
-if any(should_build_platform.(triplet.(no_autofix_platforms)))
-    # Need to disable autofix: setting the soname on libiomp breaks it:
-    # https://github.com/JuliaMath/FFTW.jl/pull/178#issuecomment-761904389
-    build_tarballs(non_reg_ARGS, name, version, sources, script, no_autofix_platforms, products, dependencies; autofix = false)
-end
-if any(should_build_platform.(triplet.(autofix_platforms)))
-    # Let's try to run autofix on the other platforms
-    build_tarballs(ARGS, name, version, sources, script, autofix_platforms, products, dependencies)
-end
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

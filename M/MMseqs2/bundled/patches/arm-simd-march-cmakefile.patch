@@ -1,17 +1,17 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1a677e3..fd56c05 100644
+index 3b67bb8..0d89306 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -70,7 +70,11 @@ elseif (HAVE_POWER8)
      set(MMSEQS_ARCH "${MMSEQS_ARCH} -mcpu=power8 -mvsx")
-     set(PPC64 1)
+     set(PPC64 1 CACHE INTERNAL "")
  elseif (HAVE_ARM8)
 -    set(MMSEQS_ARCH "${MMSEQS_ARCH} -march=armv8-a+simd")
 +    # Commented out for BinaryBuilder
 +    # -march=armv8-a already implies -march=armv8-a+simd, and
 +    # BinaryBuilder compiler wrappers don't accept -march
 +    # Ref: https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html
-+    #set(MMSEQS_ARCH "${MMSEQS_ARCH} -march=armv8-a+simd")
-     set(ARM 1)
++    # set(MMSEQS_ARCH "${MMSEQS_ARCH} -march=armv8-a+simd")
+     set(ARM 1 CACHE INTERNAL "")
  elseif (HAVE_S390X)
-     set(MMSEQS_ARCH "${MMSEQS_ARCH} -mzarch -march=z14")
+     set(MMSEQS_ARCH "${MMSEQS_ARCH} -march=z14 -mzarch -mzvector")

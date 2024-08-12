@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "adwaita_icon_theme"
-version = v"43"
+version = v"43.0.1"
 
 # Collection of sources required to build adwaita-icon-theme
 sources = [
@@ -24,7 +24,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [AnyPlatform()]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
@@ -37,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

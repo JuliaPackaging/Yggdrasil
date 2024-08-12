@@ -24,6 +24,9 @@ install_license COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms =  filter!(!Sys.iswindows, supported_platforms())
+# Remove this when we build a newer version for which we can target the former
+# experimental platforms
+filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64") && arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -36,7 +39,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
-    Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"))
+    Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"); compat="2.10.4")
     Dependency(PackageSpec(name="Fontconfig_jll", uuid="a3f928ae-7b40-5064-980b-68af3947d34b"))
     Dependency(PackageSpec(name="libudfread_jll", uuid="037e6697-03b9-52b7-b841-7aee0d773eb5"))
 ]

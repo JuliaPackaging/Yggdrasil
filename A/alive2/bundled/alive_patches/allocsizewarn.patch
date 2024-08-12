@@ -1,0 +1,25 @@
+commit 5d094dfd9b274a19cfaa78c49f2b52076cb12e3f (HEAD)
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Tue Jun 13 15:01:40 2023 +0000
+
+    Silence a compiler warning
+
+    GCC 11 complains about allocsize_0 being uninitialized. I don't see
+    any place where the uninitialized value is actually used, but let's
+    silence the compiler warning anyway.
+
+diff --git a/ir/attrs.h b/ir/attrs.h
+index 6f08319..3f9e383 100644
+--- a/ir/attrs.h
++++ b/ir/attrs.h
+@@ -98,8 +98,8 @@ public:
+   uint64_t derefOrNullBytes = 0; // DereferenceableOrNull
+   uint64_t align = 0;
+
+-  unsigned allocsize_0;
+-  unsigned allocsize_1 = -1u;
++  unsigned allocsize_0 = 0;      // AllocSize
++  unsigned allocsize_1 = -1u;    // AllocSize
+
+   std::string allocfamily;
+

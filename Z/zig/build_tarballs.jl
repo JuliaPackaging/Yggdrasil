@@ -2,19 +2,19 @@ using BinaryBuilder, Pkg
 
 # Collection of pre-build quarto binaries
 name = "zig"
-version = v"0.9.1"
+version = v"0.11.0"
 
 # TODO: When BinaryBuilder supports LLVM 15, then build from source
 url_prefix = "https://ziglang.org/download/$(version)/zig"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-x86_64-$(version).tar.xz", "be8da632c1d3273f766b69244d80669fe4f5e27798654681d77c992f17c237d7"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-i386-$(version).tar.xz", "e776844fecd2e62fc40d94718891057a1dbca1816ff6013369e9a38c874374ca"; unpack_target = "i686-linux-gnu"),
-    ArchiveSource("$(url_prefix)-linux-aarch64-$(version).tar.xz", "5d99a39cded1870a3fa95d4de4ce68ac2610cca440336cfd252ffdddc2b90e66"; unpack_target = "aarch64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macos-x86_64-$(version).tar.xz", "2d94984972d67292b55c1eb1c00de46580e9916575d083003546e9a01166754c"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-macos-aarch64-$(version).tar.xz", "8c473082b4f0f819f1da05de2dbd0c1e891dff7d85d2c12b6ee876887d438287"; unpack_target = "aarch64-apple-darwin20"),
-    ArchiveSource("$(url_prefix)-windows-x86_64-$(version).zip", "443da53387d6ae8ba6bac4b3b90e9fef4ecbe545e1c5fa3a89485c36f5c0e3a2"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-windows-i386-$(version).zip", "74a640ed459914b96bcc572183a8db687bed0af08c30d2ea2f8eba03ae930f69"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-freebsd-x86_64-$(version).tar.xz", "4e06009bd3ede34b72757eec1b5b291b30aa0d5046dadd16ecb6b34a02411254"; unpack_target = "x86_64-unknown-freebsd12.2"),
+    ArchiveSource("$(url_prefix)-linux-x86_64-$(version).tar.xz", "2d00e789fec4f71790a6e7bf83ff91d564943c5ee843c5fd966efc474b423047"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-x86-$(version).tar.xz", "7b0dc3e0e070ae0e0d2240b1892af6a1f9faac3516cae24e57f7a0e7b04662a8"; unpack_target = "i686-linux-gnu"),
+    ArchiveSource("$(url_prefix)-linux-aarch64-$(version).tar.xz", "956eb095d8ba44ac6ebd27f7c9956e47d92937c103bf754745d0a39cdaa5d4c6"; unpack_target = "aarch64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-macos-x86_64-$(version).tar.xz", "1c1c6b9a906b42baae73656e24e108fd8444bb50b6e8fd03e9e7a3f8b5f05686"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-macos-aarch64-$(version).tar.xz", "c6ebf927bb13a707d74267474a9f553274e64906fd21bf1c75a20bde8cadf7b2"; unpack_target = "aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)-windows-x86_64-$(version).zip", "142caa3b804d86b4752556c9b6b039b7517a08afa3af842645c7e2dcd125f652"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-windows-x86-$(version).zip", "e72b362897f28c671633e650aa05289f2e62b154efcca977094456c8dac3aefa"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-freebsd-x86_64-$(version).tar.xz", "ea430327f9178377b79264a1d492868dcff056cd76d43a6fb00719203749e958"; unpack_target = "x86_64-unknown-freebsd13.2"),
 ]
 
 # Bash recipe for building across all platforms

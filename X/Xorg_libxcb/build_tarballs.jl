@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Xorg_libxcb"
-version = v"1.13"
+version_string = "1.17.0"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build libxcb
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/xcb/libxcb-$(version.major).$(version.minor).tar.bz2",
-                  "188c8752193c50ff2dbe89db4554c63df2e26a2e47b0fa415a70918b5b851daa"),
+    ArchiveSource("https://www.x.org/archive/individual/xcb/libxcb-$(version_string).tar.xz",
+                  "599ebf9996710fea71622e6e184f3a8ad5b43d0e5fa8c4e407123c88a59a6d55"),
 ]
 
 # Bash recipe for building across all platforms
@@ -56,6 +57,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_util_macros_jll"),
+    BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_xcb_proto_jll"),
     Dependency("XSLT_jll"),
     Dependency("Xorg_libXau_jll"),
@@ -64,4 +66,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

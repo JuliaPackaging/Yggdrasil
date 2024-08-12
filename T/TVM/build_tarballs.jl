@@ -6,16 +6,16 @@ name = "TVM"
 version = v"0.5"
 
 sources = [
-    "https://github.com/dmlc/tvm.git" =>
-    "f08015e7fde92c835907d4c9b7ad6d3f634e94a5",
-    "https://github.com/dmlc/dlpack.git" =>
-    "0acb731e0e43d15deee27b66f10e4c5b4e667913",
-    "https://github.com/dmlc/dmlc-core.git" =>
-    "808f485387f9a03f78fa9f1159f387d0d91b7a28",
-    "https://github.com/agauniyal/rang.git" =>
-    "cabe04d6d6b05356fa8f9741704924788f0dd762",
-    "https://github.com/dmlc/HalideIR.git" =>
-    "b257a9221ee1e5180d994b3488ddcc259b0ac157",
+    GitSource("https://github.com/dmlc/tvm.git",
+              "f08015e7fde92c835907d4c9b7ad6d3f634e94a5"),
+    GitSource("https://github.com/dmlc/dlpack.git",
+              "0acb731e0e43d15deee27b66f10e4c5b4e667913"),
+    GitSource("https://github.com/dmlc/dmlc-core.git",
+              "808f485387f9a03f78fa9f1159f387d0d91b7a28"),
+    GitSource("https://github.com/agauniyal/rang.git",
+              "cabe04d6d6b05356fa8f9741704924788f0dd762"),
+    GitSource("https://github.com/dmlc/HalideIR.git",
+              "b257a9221ee1e5180d994b3488ddcc259b0ac157"),
 ]
 
 # Bash recipe for building across all platforms
@@ -51,7 +51,7 @@ platforms = [
 ]
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     LibraryProduct("libtvm", :libtvm),
     LibraryProduct("libtvm_topi", :libtvm_topi),
     LibraryProduct("libtvm_runtime", :libtvm_runtime),
@@ -60,8 +60,8 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    "Zlib_jll",
-    "LLVM_jll",
+    Dependency("Zlib_jll"),
+    Dependency("LLVM_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

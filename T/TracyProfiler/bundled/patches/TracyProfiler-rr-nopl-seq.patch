@@ -1,0 +1,43 @@
+commit 21a65e08372a37342e598422a2bd58263857807e
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sat Aug 19 01:40:18 2023 +0000
+
+    Use patchable rdtsc sequence to avoid slowdowns under rr
+    
+    We (Julia) ship both support for using tracy to trace julia applications,
+    as well as using `rr` (https://github.com/rr-debugger/rr) for record-replay debugging.
+    After our most recent rebuild of tracy, users have been reporting signfificant performance
+    slowdowns when `rr` recording a session that happens to also load the tracy library
+    (even if tracing is not enabled). Upon further examination, the recompile happened
+    to trigger a protective heuristic that disabled rr's patching of tracy's use of
+    `rdtsc` because an earlier part of the same function happened to look like a
+    conditional branch into the patch region. See https://github.com/rr-debugger/rr/pull/3580
+    for details. To avoid this issue occurring again in future rebuilds of tracy,
+    adjust tracy's `rdtsc` sequence to be `nopl; rdtsc`, which (as of of the
+    linked PR) is a sequence that is guaranteed to bypass this heuristic
+    and not incur the additional overhead when run under rr.
+
+diff --git a/public/client/TracyProfiler.hpp b/public/client/TracyProfiler.hpp
+index 1b825ea3..27f6bbbd 100644
+--- a/public/client/TracyProfiler.hpp
++++ b/public/client/TracyProfiler.hpp
+@@ -209,7 +209,18 @@ public:
+         if( HardwareSupportsInvariantTSC() )
+         {
+             uint64_t rax, rdx;
+-            asm volatile ( "rdtsc" : "=a" (rax), "=d" (rdx) );
++            // Some external tooling (such as rr) wants to patch our rdtsc and replace it by a
++            // branch to control the external input seen by a program. This kind of patching is
++            // not generally possible depending on the surrounding code and can lead to significant
++            // slowdowns if the compiler generated unlucky code and rr and tracy are used together.
++            // To avoid this, use the rr-safe `nopl 0(%rax, %rax, 1); rdtsc` instruction sequence,
++            // which rr promises will be patchable independent of the surrounding code.
++            asm volatile (
++                    // This is nopl 0(%rax, %rax, 1), but assemblers are inconsistent about whether
++                    // they emit that as a 4 or 5 byte sequence and we need to be guaranteed to use
++                    // the 5 byte one.
++                    ".byte 0x0f, 0x1f, 0x44, 0x00, 0x00\n\t"
++                    "rdtsc" : "=a" (rax), "=d" (rdx) );
+             return (int64_t)(( rdx << 32 ) + rax);
+         }
+ #  else

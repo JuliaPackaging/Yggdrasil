@@ -1,0 +1,46 @@
+commit ce1a2a876dabb5de81d1dcce507dda73d73d8991
+Author: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date:   Sat Oct 3 15:27:40 2020 -0500
+
+    Build correctly on musl
+
+diff --git a/src/libhsakmt.h b/src/libhsakmt.h
+index 55fc5a4..470c4e6 100644
+--- a/src/libhsakmt.h
++++ b/src/libhsakmt.h
+@@ -31,6 +31,7 @@
+ #include <pthread.h>
+ #include <stdint.h>
+ #include <limits.h>
++#include <sys/param.h>
+ 
+ extern int kfd_fd;
+ extern unsigned long kfd_open_count;
+@@ -56,6 +57,9 @@ extern HsaVersionInfo kfd_version_info;
+ 	do { if ((minor) > kfd_version_info.KernelInterfaceMinorVersion)\
+ 		return HSAKMT_STATUS_NOT_SUPPORTED; } while (0)
+ 
++#ifdef PAGE_SIZE
++#undef PAGE_SIZE
++#endif
+ extern int PAGE_SIZE;
+ extern int PAGE_SHIFT;
+ 
+@@ -206,13 +210,17 @@ extern int kmtIoctl(int fd, unsigned long request, void *arg);
+ #define VOID_PTR_SUB(ptr,n) (void*)((uint8_t*)(ptr) - n)/*ptr - offset*/
+ #define VOID_PTRS_SUB(ptr1,ptr2) (uint64_t)((uint8_t*)(ptr1) - (uint8_t*)(ptr2)) /*ptr1 - ptr2*/
+ 
++#ifndef MIN
+ #define MIN(a, b) ({				\
+ 	typeof(a) tmp1 = (a), tmp2 = (b);	\
+ 	tmp1 < tmp2 ? tmp1 : tmp2; })
++#endif
+ 
++#ifndef MIN
+ #define MAX(a, b) ({				\
+ 	typeof(a) tmp1 = (a), tmp2 = (b);	\
+ 	tmp1 > tmp2 ? tmp1 : tmp2; })
++#endif
+ 
+ void clear_events_page(void);
+ void fmm_clear_all_mem(void);

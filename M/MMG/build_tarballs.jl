@@ -7,15 +7,14 @@ version = v"5.6.0"
 
 # Collection of sources required to build MMG
 sources = [
-    ArchiveSource("https://github.com/MmgTools/mmg/archive/refs/tags/v$(version).tar.gz",
-                  "bbf9163d65bc6e0f81dd3acc5a51e4a8c47a7fdae849abc26277e01154fe2437"),
+    GitSource("https://github.com/MmgTools/mmg", "889d408419b5c48833c249695987cf6ec699d399"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Install genheader for host platform
-cp -r ${WORKSPACE}/srcdir/mmg-* ${WORKSPACE}/srcdir/mmg-genheader
+cp -r ${WORKSPACE}/srcdir/mmg ${WORKSPACE}/srcdir/mmg-genheader
 cd ${WORKSPACE}/srcdir/mmg-genheader
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/genheader.patch"
 mkdir build
@@ -29,7 +28,7 @@ make install
 cd ${WORKSPACE}/srcdir && rm -r ${WORKSPACE}/srcdir/mmg-genheader
 
 # Install MMG
-cd ${WORKSPACE}/srcdir/mmg-*
+cd ${WORKSPACE}/srcdir/mmg
 if [[ "${target}" == *mingw* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/MMG.mingw.patch"
     USE_SCOTCH=OFF
@@ -73,7 +72,7 @@ scotch_platforms = filter(!Sys.iswindows, platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LinearElasticity_jll"),
-    Dependency("SCOTCH_jll", platforms=scotch_platforms)
+    Dependency("SCOTCH_jll", platforms=scotch_platforms, compat="6.1.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

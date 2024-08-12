@@ -5,16 +5,17 @@ using BinaryBuilder, Pkg
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "SHTns"
-version = v"3.5.2"
+version = v"3.6.6"
 
-# Collection of sources required to complete build
+# Collection of sources required to complete build (note to self: use `sha256sum` to generate the checksum from tarball) 
 sources = [
-    ArchiveSource("https://bitbucket.org/nschaeff/shtns/downloads/shtns-$(version).tar.gz", "dc4ac08c09980e47c71d79d38696c5d1d631f86c2af1ce8aad5d21f7fd2c05b9")
+    ArchiveSource("https://gricad-gitlab.univ-grenoble-alpes.fr/schaeffn/shtns/-/archive/v$(version)/shtns-v$(version).tar.gz",
+                  "f060757ed6914c837cc2b251d370078e4c92b6894fef7aac189a9a1f5f1521a2")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/shtns/
+cd $WORKSPACE/srcdir/shtns*/
 export CFLAGS="-fPIC -O3" #only -fPIC produces slow code on linux x86 and MacOS x86 (maybe others)
 
 #remove lfftw3_omp library references, as FFTW_jll does not provide it

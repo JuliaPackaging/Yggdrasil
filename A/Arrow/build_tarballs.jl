@@ -7,15 +7,15 @@ version = v"10.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/apache/arrow/archive/refs/tags/apache-arrow-$(version).zip",
-                  "42995abe620c41c42b8fbc486f1c63a1e5b1da534718ac66dbc790a88efeaa37")
+    GitSource("https://github.com/apache/arrow.git",
+              "89f9a0948961f6e94f1ef5e4f310b707d22a3c11")
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
-cd $WORKSPACE/srcdir/arrow-apache-arrow-*
+cd $WORKSPACE/srcdir/arrow
 
 # Set toolchain for building external deps
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
@@ -79,7 +79,7 @@ dependencies = [
     Dependency("Zlib_jll")
     Dependency("Bzip2_jll", compat="1.0.8")
     Dependency("Lz4_jll")
-    Dependency("Thrift_jll")
+    Dependency("Thrift_jll"; compat="0.16")
     Dependency("snappy_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms))
 ]

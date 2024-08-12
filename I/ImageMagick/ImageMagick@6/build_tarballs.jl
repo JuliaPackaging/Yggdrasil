@@ -2,13 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"6.9.10-12"
-version = v"6.9.11" # needed because we bumped Julia compat
+upstream_version = v"6.9.13-6"
+version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
 
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://github.com/ImageMagick/ImageMagick6",
-              "d9d6f94ba8a40ca50d3b2fb748c1ec3014e335ef"),
+              "3da057d31756970cb50b1567922e9caf94d36d84"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,15 +16,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/ImageMagick6*/
 
-if [[ "${target}" == *-linux-gnu ]]; then
+if [[ "${target}" == *86*-linux-gnu ]]; then
+    # For `clock_gettime`
     atomic_patch -p1 ../patches/utilities-link-rt.patch
 elif [[ "${target}" == *-mingw* ]]; then
+    # For `clock_gettime`
+    atomic_patch -p1 ../patches/check-have-clock-realtime.patch
     # otherwise autotools looks in ${prefix}/lib
     export LDFLAGS=-L${libdir}
 fi
-#atomic_patch -p1 ../patches/check-have-clock-realtime.patch
-# included in v6.9.10-39, remove when bumping version
-atomic_patch -p1 ../patches/gs-null-init.patch
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -61,10 +61,11 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("Ghostscript_jll"),
     Dependency("OpenJpeg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", clang_use_lld=false)

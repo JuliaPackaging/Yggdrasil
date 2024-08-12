@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
@@ -11,7 +11,7 @@ parmetis_version = v"4.0.3"
 # The patch prevents building the source of METIS that ships with PARMETIS;
 # we rely on METIS_jll instead.
 sources = [
-    ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/parmetis-$(parmetis_version).tar.gz",
+    ArchiveSource("https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/parmetis/4.0.3-4/parmetis_4.0.3.orig.tar.gz",
                   "f2d9a231b7cf97f1fee6e8c9663113ebf6c240d407d3c118c55b3633d6be6e5f"),
     DirectorySource("./bundled"),
 ]
@@ -25,9 +25,19 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
   atomic_patch -p1 ${f}
 done
 
+pushd metis
+if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0001-mingw-w64-does-not-have-sys-resource-h.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0002-mingw-w64-do-not-use-reserved-double-underscored-names.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0003-WIN32-Install-RUNTIME-to-bin.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0004-Fix-GKLIB_PATH-default-for-out-of-tree-builds.patch
+fi
+popd
+
 grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
+grep -iq OMPI $prefix/include/mpi.h && mpi_libraries='mpi'
+grep -iq MSMPI $prefix/include/mpi.h && mpi_libraries='msmpi'
 grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
-grep -iq OpenMPI $prefix/include/mpi.h && mpi_libraries='mpi'
 
 cd build
 # {1} is inttype (32 or 64) and {2} is realtype (32 or 64)
@@ -63,6 +73,8 @@ build_parmetis 32 32
 build_parmetis 32 64
 build_parmetis 64 32
 build_parmetis 64 64
+
+install_license ../LICENSE.txt
 """
 
 augment_platform_block = """
@@ -71,10 +83,8 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-# OpenMPI and MPICH are not precompiled for Windows
-platforms = supported_platforms(; exclude=Sys.iswindows)
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms = supported_platforms()
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -93,7 +103,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("METIS_jll"; compat="5.1.2"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"); compat="5.1.2"),
 ]
 append!(dependencies, platform_dependencies)
 

@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/bison-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-relocatable
 make -j${nproc}
 make install
 """
@@ -29,8 +29,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("Libiconv_jll"),
+    # We don't, strictly speaking, need `Libiconv_jll` on linux because it's included in glibc
+    Dependency("Libiconv_jll"; platforms=filter(!Sys.islinux, platforms)),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# We require `gcc` v5+ to avoid the following error on some systems:
+# Inconsistency detected by ld.so: dl-version.c: 204: _dl_check_map_versions: Assertion `needed != NULL' failed!
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")

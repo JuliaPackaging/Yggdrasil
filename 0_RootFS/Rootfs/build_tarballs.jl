@@ -5,7 +5,7 @@
 #     select the branch corresponding to the version of Alpine you want to use, browse to
 #     the directory `x86_64` and obtain the permanent link of the image (press `Y`).  NOTE:
 #     if you upgrade version of Alpine Linux, makes sure to use the same version of Musl
-#     libc as upstream (see below), otherwise system application may not work
+#     libc as upstream (see below), otherwise system applications may not work
 #   * version of Meson (https://github.com/mesonbuild/meson/releases)
 #   * version of patchelf (https://github.com/NixOS/patchelf/releases/)
 #   * version of CSL in `bundled/libs/csl/download_csls.sh`
@@ -14,9 +14,14 @@
 #     (https://github.com/JuliaBinaryWrappers/Musl_jll.jl/releases and
 #     https://github.com/JuliaBinaryWrappers/Glibc_jll.jl/releases)
 #   * etc...
-# * to build and deploy the new image, run
+# * to build and deploy the new image:
 #
-#     julia build_tarballs.jl --debug --verbose --deploy
+#     - Ensure you are using the development version of `BinaryBuilderBase`:
+#         `]develop BinaryBuilderBase`
+#       Also ensure you are at the tip of the `master` branch.
+#     - Run: `julia build_tarballs.jl --debug --verbose --deploy`
+#     - This will update the file `Artifacts.toml` in `BinaryBuilderBase`.
+#       Create a pull request for these changes.
 
 using Pkg, BinaryBuilder, SHA, Dates
 if !isdefined(Pkg, :Artifacts)
@@ -113,21 +118,24 @@ insert_compiler_shard(name, version, rootfs_squashfs_hash, :squashfs)
 sources = [
     ArchiveSource(rootfs_url, rootfs_hash),
     # Objconv is very useful
-    ArchiveSource("https://github.com/staticfloat/objconv/archive/v2.49.tar.gz",
-                  "5fcdf0eda828fbaf4b3d31ba89b5011f649df3a7ef0cc7520d08fe481cac4e9f"),
+    GitSource("https://github.com/staticfloat/objconv.git",
+              "c68e441d2b93074b01ea193cb17e944ed751750f"), # v2.54
     # As is patchelf
+    # We don't want to upgrade patchelf unless there's a compelling and proved reason
+    # to do it because of previous problems we experienced with v0.18.0.
+    # We encountered the error "ELF load command address/offset not properly aligned" in #7728 and #7729.
     GitSource("https://github.com/NixOS/patchelf.git",
               "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
-    ArchiveSource("https://github.com/mesonbuild/meson/releases/download/0.61.2/meson-0.61.2.tar.gz",
-                  "0233a7f8d959079318f6052b0939c27f68a5de86ba601f25c9ee6869fb5f5889"),
+    GitSource("https://github.com/mesonbuild/meson.git",
+              "eaefe29463a61a311a6b1de6cd539f39500399ff"), # v1.4.0
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.2%2B0/ldid.v2.1.2.x86_64-linux-musl-cxx11.tar.gz",
-                  "960ebcd32842f81d140293157d90e4e829fd16241bf5b0a23929e4938256a572",
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.3%2B0/ldid.v2.1.3.x86_64-linux-musl-cxx11.tar.gz",
+                  "d37c2a8f5bfb75c6a4b9fafb97160c8065e1281b9fe85ac51557fe490edad142",
                   unpack_target="ldid"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.0%2B0/libplist.v2.2.0.x86_64-linux-musl.tar.gz",
-                  "1b02d6fd8b77b71eaf672f15fecd8b38ef1e167baf469399b7d52435c11d414b",
+    ArchiveSource("https://github.com/JuliaBinaryWrappers/libplist_jll.jl/releases/download/libplist-v2.2.1%2B0/libplist.v2.2.1.x86_64-linux-musl-cxx11.tar.gz",
+                  "f881818f288d3a82a1ca98e4a011f44289f2bc8c1ba8cfdafe4f1690af0cf4ae",
                   unpack_target="ldid"),
     # And also our own local patches, utilities, etc...
     DirectorySource("./bundled"),
@@ -243,16 +251,16 @@ for arch in x86_64 i686; do
 done
 
 # Build/install meson
-cd ${WORKSPACE}/srcdir/meson-*/
+cd ${WORKSPACE}/srcdir/meson
 python3 setup.py build
 python3 setup.py install --prefix=/usr --root="${prefix}"
 
 # Build/install objconv
-cd ${WORKSPACE}/srcdir/objconv*/
+cd ${WORKSPACE}/srcdir/objconv/
 g++ -O2 -o ${prefix}/usr/bin/objconv src/*.cpp
 
 # Build/install patchelf
-cd ${WORKSPACE}/srcdir/patchelf*/
+cd ${WORKSPACE}/srcdir/patchelf/
 ./bootstrap.sh
 ./configure --prefix=${prefix}/usr
 make -j${nproc}

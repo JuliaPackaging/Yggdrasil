@@ -1,0 +1,28 @@
+diff --git a/thirdparty/dill/dill/arm8.c b/thirdparty/dill/dill/arm8.c
+index d18946358..746d22462 100644
+--- a/thirdparty/dill/dill/arm8.c
++++ b/thirdparty/dill/dill/arm8.c
+@@ -1517,6 +1517,9 @@ arm8_PLT_emit(dill_stream s, int package)
+     }
+ }
+ 
++void
++arm8_rt_call_link(char *code, call_t *t);
++
+ static void
+ arm8_call_link(dill_stream s)
+ {
+diff --git a/thirdparty/ffs/ffs/fm/fm_formats.c b/thirdparty/ffs/ffs/fm/fm_formats.c
+index 83414a45a..3243d9991 100755
+--- a/thirdparty/ffs/ffs/fm/fm_formats.c
++++ b/thirdparty/ffs/ffs/fm/fm_formats.c
+@@ -12,6 +12,9 @@
+ #include <string.h>
+ #endif
+ #include <sys/types.h>
++#ifndef _WIN32
++#include <arpa/inet.h>
++#endif
+ #ifdef HAVE_NETINET_IN_H
+ #include <netinet/in.h>
+ #endif

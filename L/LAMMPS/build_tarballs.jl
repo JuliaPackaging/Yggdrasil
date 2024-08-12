@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.3.2" # Equivalent to 23Jun2022_update3
+version = v"2.5.0" # Equivalent to stable_2Aug2023_update3
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -14,10 +14,19 @@ version = v"2.3.2" # Equivalent to 23Jun2022_update3
 # 2.2.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Sep2021_update2
 # 2.3.0 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update1
 # 2.3.2 -> https://github.com/lammps/lammps/releases/tag/stable_23Jun2022_update3
+# 2.4.0 -> https://github.com/lammps/lammps/releases/tag/patch_28Mar2023_update1
+# 2.4.1 -- Enables DPD packages
+# 2.5.0 -> https://github.com/lammps/lammps/releases/tag/stable_2Aug2023_update3
+
+# https://docs.lammps.org/Manual_version.html
+# We have "stable" releases and we have feature/patch releases
+# We are going with:
+# 2.ODD -> stable
+# 2.EVEN -> features
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "83ba1c9d20a7370b629bbebe88238a2c3c8194b3")
+    GitSource("https://github.com/lammps/lammps.git", "46265e36ce79e4b42c9e5229b72a0ce2485845cd")
 ]
 
 # Bash recipe for building across all platforms
@@ -34,17 +43,19 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
-    -DPKG_DPD-BASIC=OFF \
-    -DPKG_DPD-MESO=OFF \
-    -DPKG_DPD-REACT=OFF \
-    -DPKG_DPD-SMOOTH=OFF \
-    -DPKG_USER-MESODPD=OFF \
-    -DPKG_USER-DPD=OFF \
-    -DPKG_USER-SDPD=OFF \
+    -DPKG_ML-POD=ON \
+    -DPKG_DPD-BASIC=ON \
+    -DPKG_DPD-MESO=ON \
+    -DPKG_DPD-REACT=ON \
+    -DPKG_DPD-SMOOTH=ON \
+    -DPKG_USER-MESODPD=ON \
+    -DPKG_USER-DPD=ON \
+    -DPKG_USER-SDPD=ON \
     -DPKG_MANYBODY=ON \
     -DPKG_MOLECULE=ON \
     -DPKG_REPLICA=ON \
-    -DPKG_SHOCK=ON
+    -DPKG_SHOCK=ON \
+    -DLEPTON_ENABLE_JIT=no
 
 make -j${nproc}
 make install

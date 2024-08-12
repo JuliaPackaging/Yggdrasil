@@ -38,9 +38,8 @@ make install
 augment_platform_block = CUDA.augment
 
 # Override the default platforms
-platforms = [
-    Platform("x86_64", "linux"),
-]
+platforms = CUDA.supported_platforms()
+filter!(p -> arch(p) == "x86_64", platforms)
 
 
 # The products that we will ensure are always built
@@ -53,30 +52,13 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
-# XXX: support only specifying major/minor version (JuliaPackaging/BinaryBuilder.jl#/1212)
-cuda_full_versions = Dict(
-    v"11.0" => v"11.0.3",
-    v"12.0" => v"12.0.0"
-)
-
 # Build Libxc for all supported CUDA toolkits
-#
-# The library doesn't have specific CUDA requirements, so we only build for CUDA 11.0 and 12.0,
-# which (per semantic versioning) should support every CUDA 11.x and 12.x version.
-#
-# TODO Note: 12 not yet fully rolled out.
-for cuda_version in [v"11.0"], platform in platforms
-    augmented_platform = Platform(arch(platform), os(platform); cuda=CUDA.platform(cuda_version))
-    should_build_platform(triplet(augmented_platform)) || continue
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
 
-    cuda_deps = [
-        BuildDependency(PackageSpec(name="CUDA_full_jll",
-                                    version=cuda_full_versions[cuda_version])),
-        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll",
-                                      version=v"0.2"), compat="0.2"),  # avoid pulling in CUDA 12 for now.
-    ]
+    cuda_deps = CUDA.required_dependencies(platform)
 
-    build_tarballs(ARGS, name, version, sources, script, [augmented_platform],
+    build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
                    julia_compat="1.7", augment_platform_block,
                    skip_audit=true, dont_dlopen=true)

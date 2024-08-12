@@ -1,0 +1,60 @@
+diff --git a/include/cif++/symmetry.hpp b/include/cif++/symmetry.hpp
+index ebf1b3a..2b151d7 100644
+--- a/include/cif++/symmetry.hpp
++++ b/include/cif++/symmetry.hpp
+@@ -34,6 +34,10 @@
+ #include <cstdint>
+ #include <string>
+ 
++#if defined(__cpp_impl_three_way_comparison)
++#include <compare>
++#endif
++
+ /// \file cif++/symmetry.hpp
+ /// This file contains code to do symmetry operations based on the
+ /// operations as specified in the International Tables.
+diff --git a/src/category.cpp b/src/category.cpp
+index 04eb4db..4f52b3a 100644
+--- a/src/category.cpp
++++ b/src/category.cpp
+@@ -968,7 +968,7 @@ condition category::get_children_condition(row_handle rh, const category &childC
+ 
+ 			if (parentValue.empty())
+ 				cond = std::move(cond) and key(childKey) == null;
+-			else if (link->m_parent_keys.size() > 1 and not mandatoryChildFields.contains(childKey))
++			else if (link->m_parent_keys.size() > 1 and mandatoryChildFields.find(childKey) == mandatoryChildFields.end())
+ 				cond = std::move(cond) and (key(childKey) == parentValue.text() or key(childKey) == null);
+ 			else
+ 				cond = std::move(cond) and key(childKey) == parentValue.text();
+@@ -2076,4 +2076,4 @@ bool category::operator==(const category &rhs) const
+ 	return true;
+ }
+ 
+-} // namespace cif
+\ No newline at end of file
++} // namespace cif
+diff --git a/src/condition.cpp b/src/condition.cpp
+index b006133..d36fba0 100644
+--- a/src/condition.cpp
++++ b/src/condition.cpp
+@@ -66,12 +66,14 @@ namespace detail
+ 		m_item_ix = c.get_column_ix(m_item_tag);
+ 		m_icase = is_column_type_uchar(c, m_item_tag);
+ 
+-		if (c.get_cat_validator() != nullptr and
+-			c.key_field_indices().contains(m_item_ix) and
+-			c.key_field_indices().size() == 1)
+-		{
+-			m_single_hit = c[{ { m_item_tag, m_value } }];
+-		}
++                if (c.get_cat_validator() != nullptr and
++                        c.key_field_indices().size() == 1)
++                {
++                        const auto field_keys = c.key_field_indices();
++                        if (field_keys.find(m_item_ix) != field_keys.end()) {
++                                m_single_hit = c[{ { m_item_tag, m_value } }];
++                        }
++                }
+ 
+ 		return this;
+ 	}

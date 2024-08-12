@@ -126,8 +126,9 @@ if !IS_PR
     push!(STEPS, wait_step())
     push!(STEPS, register_step(NAME, PROJECT, SKIP_BUILD))
 end
-
-definition = Dict(
-    :steps => Any[group_step(NAME, STEPS)]
-)
-upload_pipeline(definition)
+if !isempty(STEPS)
+    definition = Dict(
+        :steps => Any[group_step(NAME, STEPS)]
+    )
+    upload_pipeline(definition)
+end

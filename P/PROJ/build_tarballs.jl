@@ -3,15 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "PROJ"
-upstream_version = v"9.1.0"
-version_offset = v"0.0.0"
+upstream_version = v"9.4.0"
+version_offset = v"1.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz", "81b2239b94cad0886222cde4f53cb49d34905aad2a1317244a0c30a553db2315")
+    ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
+        "3643b19b1622fe6b2e3113bdb623969f5117984b39f173b4e3fb19a8833bd216")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,17 +22,20 @@ cd $WORKSPACE/srcdir/proj-*
 EXE_SQLITE3=${host_bindir}/sqlite3
 
 if [[ ${target} == *mingw* ]]; then
-    SQLITE3_LIBRARY=${libdir}/libsqlite3-0.dll
+    SQLite3_LIBRARY=${libdir}/libsqlite3-0.dll
     CURL_LIBRARY=${libdir}/libcurl-4.dll
-    TIFF_LIBRARY_RELEASE=${libdir}/libtiff-5.dll
+    TIFF_LIBRARY_RELEASE=${libdir}/libtiff-6.dll
 else
-    SQLITE3_LIBRARY=${libdir}/libsqlite3.${dlext}
+    SQLite3_LIBRARY=${libdir}/libsqlite3.${dlext}
     CURL_LIBRARY=${libdir}/libcurl.${dlext}
     TIFF_LIBRARY_RELEASE=${libdir}/libtiff.${dlext}
 fi
 
-if [[ "${target}" == x86_64-linux-musl* ]]; then
-    export LDFLAGS="-lcurl"
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
+    # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libnghttp2.*
 fi
 
 mkdir build
@@ -41,11 +45,11 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
-    -DEXE_SQLITE3=$EXE_SQLITE3 \
-    -DSQLITE3_INCLUDE_DIR=${includedir} \
-    -DSQLITE3_LIBRARY=$SQLITE3_LIBRARY \
+    -DEXE_SQLITE3=${EXE_SQLITE3} \
+    -DSQLite3_INCLUDE_DIR=${includedir} \
+    -DSQLite3_LIBRARY=${SQLite3_LIBRARY} \
     -DCURL_INCLUDE_DIR=${includedir} \
-    -DCURL_LIBRARY=$CURL_LIBRARY \
+    -DCURL_LIBRARY=${CURL_LIBRARY} \
     -DTIFF_INCLUDE_DIR=${includedir} \
     -DTIFF_LIBRARY_RELEASE=$TIFF_LIBRARY_RELEASE \
     ..
@@ -90,9 +94,12 @@ dependencies = [
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
     Dependency("SQLite_jll")
-    Dependency("Libtiff_jll")
-    Dependency("LibCURL_jll"; compat="7.73")
+    Dependency("Libtiff_jll"; compat="4.5.1")
+    Dependency("LibCURL_jll"; compat="7.73,8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")
+
+# Build trigger: 1

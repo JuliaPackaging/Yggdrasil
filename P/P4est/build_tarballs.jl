@@ -77,8 +77,8 @@ platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
 
-# Disable OpenMPI since it doesn't build. This could probably be fixed
-# via more explicit MPI configuraiton options.
+# Disable OpenMPI since the build is broken. This could probably be fixed
+# via more explicit MPI configuration options.
 platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
