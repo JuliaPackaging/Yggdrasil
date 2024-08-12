@@ -64,7 +64,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("Tcl_jll"; compat=string(version)),
+    Dependency("Tcl_jll"),
     Dependency("Xorg_libXft_jll"; platforms=x11_platforms)
 ]
 
