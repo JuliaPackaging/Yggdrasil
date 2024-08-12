@@ -1,0 +1,23 @@
+From 814ae56d48b147c98028b1692d949a7e95c32cd3 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Mon, 3 Jun 2024 14:59:59 +0100
+Subject: [PATCH] Ignored array bounds for cmake when compiling to linux
+
+---
+ cmake/MujocoOptions.cmake | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cmake/MujocoOptions.cmake b/cmake/MujocoOptions.cmake
+index 3e3f080f..4e06bbed 100644
+--- a/cmake/MujocoOptions.cmake
++++ b/cmake/MujocoOptions.cmake
+@@ -88,6 +88,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang
+   set(EXTRA_COMPILE_OPTIONS
+       -Werror
+       -Wall
++      -Wno-error=array-bounds
+       -Wpedantic
+       -Wimplicit-fallthrough
+       -Wunused
+-- 
+2.34.1

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Clipper2"
-version = v"1.0.4"
+version = v"1.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AngusJohnson/Clipper2.git", "8916ed19e113e1b84fa44d17ead56baef23fc394"),
+    GitSource("https://github.com/AngusJohnson/Clipper2.git", "756c5079aacab5837e812a143c59dc48a09f22e7"),
     DirectorySource("./bundled")
 ]
 
@@ -20,7 +20,13 @@ done
 cd Clipper2/CPP/
 mkdir build
 cd build/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCLIPPER2_TESTS=OFF -DCLIPPER2_EXAMPLES=OFF -DCLIPPER2_UTILS=OFF ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCLIPPER2_TESTS=OFF \
+    -DCLIPPER2_EXAMPLES=OFF \
+    -DCLIPPER2_UTILS=OFF \
+    ..
 make -j${nproc}
 make install
 """
@@ -28,7 +34,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [

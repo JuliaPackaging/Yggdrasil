@@ -32,6 +32,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libze_loader", :libze_loader),
+    LibraryProduct("libze_tracing_layer", :libze_tracing_layer),
     LibraryProduct("libze_validation_layer", :libze_validation_layer),
 ]
 
@@ -51,3 +52,5 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8")
+
+# bump

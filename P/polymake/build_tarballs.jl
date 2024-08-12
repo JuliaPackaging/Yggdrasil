@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.10"
+upstream_version = v"4.12"
 version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
-                  "295608e3dc797b5646c799153eb33e9fcc0a9e181b0b60b37f872fc2ea1a2d17"),
+                  "18df427e5c165a5b52c72e328de371eab3786626a7ecb2e6049a3de59217f3f8"),
     DirectorySource("./bundled")
 ]
 
@@ -45,7 +45,7 @@ cd $WORKSPACE/srcdir/polymake
 # to be able to generate a similiar dependency tree at runtime
 # we prepare a symlink tree for all dependencies
 mkdir -p ${prefix}/deps
-for dir in FLINT GMP MPFR PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
+for dir in FLINT GMP MPFR MongoC PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
    ln -s .. ${prefix}/deps/${dir}_jll
 done
 
@@ -90,6 +90,7 @@ else
               --with-cdd=${prefix}/deps/cddlib_jll \
               --with-lrs=${prefix}/deps/lrslib_jll \
               --with-libnormaliz=${prefix}/deps/normaliz_jll \
+              --with-mongoc=${prefix}/deps/MongoC_jll \
               --without-singular \
               --without-native \
               --without-prereq
@@ -152,15 +153,16 @@ dependencies = [
 
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~200.900.004"),
+    Dependency("FLINT_jll", compat = "~300.100.300"),
+    Dependency("MongoC_jll", compat = "~1.25.1"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.1"),
     Dependency("SCIP_jll", compat = "~800.0.301"),
     Dependency("bliss_jll", compat = "~0.77.0"),
     Dependency("boost_jll", compat = "=1.76.0"),
-    Dependency("cddlib_jll", compat = "~0.94.13"),
+    Dependency("cddlib_jll", compat = "~0.94.14"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.900.301"),
+    Dependency("normaliz_jll", compat = "~300.1000.200"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

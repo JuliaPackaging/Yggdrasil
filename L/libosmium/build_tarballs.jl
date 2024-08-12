@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libosmium"
-version = v"2.19.0"
+version = v"2.20.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/osmcode/libosmium.git", "a44ae7be0fc161dc4b110c01fa176cfe5bf45503")
+    GitSource("https://github.com/osmcode/libosmium.git", "cd892f98e8e355f5d0a4b717c153c7de0d15bb0d")
 ]
 
 # Bash recipe for building across all platforms

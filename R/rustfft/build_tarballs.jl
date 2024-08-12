@@ -8,13 +8,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "rustfft"
-version = v"0.1.1"
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9"]
+version = v"0.4.0"
+julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Taaitaaiger/rustfft-jl.git",
-              "dcbb0af226a470228104e2302c2982e503e973d2"),
+              "52aba0563a07d02e3d142f81901853bbf5c0e8a1"),
 ]
 
 # Bash recipe for building across all platforms

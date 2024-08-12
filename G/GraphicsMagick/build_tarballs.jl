@@ -2,22 +2,21 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "GraphicsMagick"
-version = v"1.3.40"
+version = v"1.3.43"
 
 # Collection of sources required to build GraphicsMagick
 sources = [
     ArchiveSource("https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/$(version)/GraphicsMagick-$(version).tar.xz",
-                  "97dc1a9d4e89c77b25a3b24505e7ff1653b88f9bfe31f189ce10804b8efa7746"),
-    DirectorySource("bundled"),
+                  "2b88580732cd7e409d9e22c6116238bef4ae06fcda11451bf33d259f9cbf399f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/GraphicsMagick*
+
 # Don't use `clock_realtime` if it isn't available
 atomic_patch -p1 ../patches/check-have-clock-realtime.patch
-# Don't use interlacing or lossless compression if they are not available
-atomic_patch -p1 ../patches/libjpeg_turbo.patch
 
 # While all libraries are available, only the last set of header files
 # (here depth=8) remain available.
@@ -73,7 +72,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
     Dependency("Bzip2_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     # Dependency("Ghostscript_jll"),
     Dependency("Graphviz_jll"),
     Dependency("JasPer_jll"),
@@ -85,7 +84,7 @@ dependencies = [
     Dependency("Zstd_jll"),
     Dependency("gperftools_jll"),
     Dependency("libpng_jll"),
-    Dependency("libwebp_jll"),
+    Dependency("libwebp_jll"; compat="1.2.4"),
     # TODO:
     # - ralcgm <http://www.agocg.ac.uk/train/cgm/ralcgm.htm>
     # - cdraw <https://www.dechifro.org/dcraw/>
@@ -105,4 +104,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", clang_use_lld=false)

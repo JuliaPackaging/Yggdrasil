@@ -1,0 +1,15 @@
+diff --git a/src/core/util/lnx/os_linux.cpp b/src/core/util/lnx/os_linux.cpp
+index b5d64fb..0035f82 100644
+--- a/src/core/util/lnx/os_linux.cpp
++++ b/src/core/util/lnx/os_linux.cpp
+@@ -466,8 +466,10 @@ SharedMutex CreateSharedMutex() {
+     assert(false && "rw lock attribute init failed.");
+     return nullptr;
+   }
++#ifdef __GLIBC__
+   err = pthread_rwlockattr_setkind_np(&attrib, PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP);
+   assert(err == 0 && "Set rw lock attribute failure.");
++#endif
+ 
+   pthread_rwlock_t* lock = new pthread_rwlock_t;
+   err = pthread_rwlock_init(lock, &attrib);

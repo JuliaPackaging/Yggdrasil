@@ -1,19 +1,20 @@
 using BinaryBuilder
 
 name = "XSLT"
-version = v"1.1.34"
+version = v"1.1.41"
 
 # Collection of sources required to build XSLT
 sources = [
-    ArchiveSource("http://xmlsoft.org/sources/libxslt-$(version).tar.gz",
-                  "98b1bd46d6792925ad2dfe9a87452ea2adebf69dcb9919ffd55bf926a7f93f7f"),
+    ArchiveSource("https://download.gnome.org/sources/libxslt/$(version.major).$(version.minor)/libxslt-$(version).tar.xz",
+                  "3ad392af91115b7740f7b50d228cc1c5fc13afc1da7f16cb0213917a37f71bda"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libxslt-*/
+cd $WORKSPACE/srcdir/libxslt-*
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
+# XSLT wants Python 2.7... XML2_jll disables Python, so let's do that here as well.
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --with-python=no
 make -j${nproc}
 make install
 
@@ -41,4 +42,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# XML2_jll builds with GCC 8 and we need to do the same to avoid linker errors
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8", )

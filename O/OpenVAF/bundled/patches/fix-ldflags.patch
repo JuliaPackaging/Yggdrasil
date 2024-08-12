@@ -1,0 +1,13 @@
+diff --git a/openvaf/linker/src/lib.rs b/openvaf/linker/src/lib.rs
+index 29c71eb..94c4b0f 100644
+--- a/openvaf/linker/src/lib.rs
++++ b/openvaf/linker/src/lib.rs
+@@ -214,7 +214,7 @@ impl dyn Linker + '_ {
+         if let Ok(flags) = std::env::var("OPENVAF_LDFLAGS") {
+             let flags = flags
+                 .split(' ')
+-                .filter(|flag| flag.is_empty() && !flag.chars().all(|c| c.is_whitespace()));
++                .filter(|flag| !flag.is_empty() && !flag.chars().all(|c| c.is_whitespace()));
+             self.args(flags)
+         }
+     }

@@ -1,0 +1,13 @@
+--- a/deps/filesystem/filesystem.hpp
++++ b/deps/filesystem/filesystem.hpp
+@@ -4650,9 +4650,7 @@
+     if (!::SetFileTime(file.get(), 0, 0, &ft)) {
+         ec = detail::make_system_error();
+     }
+-#elif defined(GHC_OS_MACOS) && \
+-    (__MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_13) || (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0) || \
+-    (__TV_OS_VERSION_MIN_REQUIRED < __TVOS_11_0) || (__WATCH_OS_VERSION_MIN_REQUIRED < __WATCHOS_4_0)
++#elif defined(GHC_OS_MACOS)
+     struct ::stat fs;
+     if (::stat(p.c_str(), &fs) == 0) {
+         struct ::timeval tv[2];

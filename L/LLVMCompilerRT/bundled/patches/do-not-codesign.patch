@@ -1,11 +1,19 @@
 --- a/cmake/Modules/AddCompilerRT.cmake
 +++ b/cmake/Modules/AddCompilerRT.cmake
-@@ -370,7 +370,7 @@
-         # Ad-hoc sign the dylibs
-         add_custom_command(TARGET ${libname}
-           POST_BUILD  
--          COMMAND codesign --sign - $<TARGET_FILE:${libname}>
-+          # COMMAND codesign --sign - $<TARGET_FILE:${libname}>
-           WORKING_DIRECTORY ${COMPILER_RT_OUTPUT_LIBRARY_DIR}
-         )
+@@ -420,11 +420,11 @@
+           endif()
+         endif()
+         if (NEED_EXPLICIT_ADHOC_CODESIGN)
+-          add_custom_command(TARGET ${libname}
+-            POST_BUILD
+-            COMMAND codesign --sign - $<TARGET_FILE:${libname}>
+-            WORKING_DIRECTORY ${COMPILER_RT_OUTPUT_LIBRARY_DIR}
+-          )
++          # add_custom_command(TARGET ${libname}
++          #   POST_BUILD
++          #   COMMAND codesign --sign - $<TARGET_FILE:${libname}>
++          #   WORKING_DIRECTORY ${COMPILER_RT_OUTPUT_LIBRARY_DIR}
++          # )
+         endif()
        endif()
+     endif()

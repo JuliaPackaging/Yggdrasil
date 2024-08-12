@@ -31,14 +31,13 @@ if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
     atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0002-mingw-w64-do-not-use-reserved-double-underscored-names.patch
     atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0003-WIN32-Install-RUNTIME-to-bin.patch
     atomic_patch -p1 $WORKSPACE/srcdir/metis_patches/0004-Fix-GKLIB_PATH-default-for-out-of-tree-builds.patch
-    ln -s $prefix/bin/msmpi.dll $prefix/lib/msmpi.dll
 fi
 popd
 
 grep -iq MPICH $prefix/include/mpi.h && mpi_libraries='mpi'
-grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
-grep -iq OpenMPI $prefix/include/mpi.h && mpi_libraries='mpi'
+grep -iq OMPI $prefix/include/mpi.h && mpi_libraries='mpi'
 grep -iq MSMPI $prefix/include/mpi.h && mpi_libraries='msmpi'
+grep -iq MPItrampoline $prefix/include/mpi.h && mpi_libraries='mpitrampoline'
 
 cd build
 # {1} is inttype (32 or 64) and {2} is realtype (32 or 64)
@@ -85,7 +84,7 @@ augment_platform_block = """
 """
 
 platforms = supported_platforms()
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI

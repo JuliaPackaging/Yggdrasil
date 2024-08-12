@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "CvxCompress"
-version = v"1.0.0"
+version = v"1.1.0"
 
 # Collection of sources required to build CvxCompress
 sources = [
     GitSource(
         "https://github.com/ChevronETC/CvxCompress.git",
-        "55e072862196e917e3ecece81f014e93d60cdf81"
+        "04dc59a4fab76ac612580ac69a9266e15db4fe17"
     ),
     DirectorySource("./bundled"),
 ]
@@ -25,18 +25,19 @@ if [[ "${target}" == *-apple-* ]]; then
     FLAGS=(LDFLAGS="-fopenmp -lm")
 fi
 make -j${nproc} "${FLAGS[@]}"
-mkdir -p ${libdir}
-cp libcvxcompress.so ${libdir}/libcvxcompress.${dlext}
+install -Dvm 755 libcvxcompress.so "${libdir}/libcvxcompress.${dlext}"
+install -Dvm 644 CvxCompress.hxx "${includedir}/CvxCompress.hxx"
 """
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # TODO update make to adjust the intrinsic code generation to support more platforms
-platforms = [p for p in supported_platforms() if arch(p) === :x86_64 && !Sys.iswindows(p)]
+platforms = [p for p in supported_platforms() if arch(p) === "x86_64" && !Sys.iswindows(p)]
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcvxcompress", :libcvxcompress)
+    FileProduct("include/CvxCompress.hxx", :CvxCompress_hxx)
+    # FileProduct("include/CvxCompress.h", :CvxCompress_h)
 ]
 
 # Dependencies that must be installed before this package can be built

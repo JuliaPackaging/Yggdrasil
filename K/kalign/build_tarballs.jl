@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "kalign"
-version = v"3.3.5"
+version = v"3.4.0"
 # url = "https://github.com/TimoLassmann/kalign"
 # description = "A fast multiple sequence alignment program."
 
@@ -12,7 +12,7 @@ version = v"3.3.5"
 
 sources = [
     GitSource("https://github.com/TimoLassmann/kalign",
-              "58ca06a51b53d76d3fb96ef335fbc7110c36cd46"),
+              "19156c577e8f959e97b2ec909cfd663df1ca969e"),
 ]
 
 script = raw"""
@@ -41,7 +41,6 @@ install_license ../COPYING
 """
 
 platforms = supported_platforms(; exclude = Sys.iswindows)
-platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("kalign", :kalign),

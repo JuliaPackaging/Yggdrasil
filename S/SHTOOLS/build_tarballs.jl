@@ -2,15 +2,14 @@ using BinaryBuilder
 
 # Collection of sources required to build SHTOOLS
 name = "SHTOOLS"
-version = v"4.10.2"
+version = v"4.12.2"
 sources = [
-    ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v$(version)/SHTOOLS-$(version).tar.gz",
-                  "0caece67d65ddde19a79ec79bc6244f447f6fa878e5b2dc3f635cae2a3d1ee8c"),
+    GitSource("https://github.com/SHTOOLS/SHTOOLS", "77ecaabbe90aee89ecc252317c8c6b4258e59bad"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SHTOOLS-*
+cd $WORKSPACE/srcdir/SHTOOLS
 
 # Build and install static libraries
 make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"

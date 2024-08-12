@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SentencePiece"
-version = v"0.1.96"
+version = v"0.1.99"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/google/sentencepiece/archive/refs/tags/v$(version).tar.gz",
-                  "5198f31c3bb25e685e9e68355a3bf67a1db23c9e8bdccc33dc015f496a44df7a"),
+    GitSource("https://github.com/google/sentencepiece",
+              "3863f7648e5d8edb571ac592f3ac4f5f0695275a"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,14 +16,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sentencepiece*
 
-# Resolve FreeBSD build issue per https://github.com/google/sentencepiece/pull/693/files
-if [[ "${target}" == *-freebsd* ]]; then
-    atomic_patch -p1 ../patches/freebsd.patch
-fi
+# There is no reason for not building the shared libraries on Windows.
+atomic_patch -p1 ../patches/build_shared_library_windows.patch
 
 mkdir build && cd build/
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      ..
 make -j${nproc}
 make install
 """
@@ -52,4 +53,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat = "1.6", preferred_gcc_version=v"8")

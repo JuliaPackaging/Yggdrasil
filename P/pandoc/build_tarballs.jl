@@ -2,17 +2,17 @@ using BinaryBuilder
 
 # Collection of pre-build pandoc binaries
 name = "pandoc"
-pandoc_ver = "3.1"
+pandoc_ver = "3.2"
 version = VersionNumber(pandoc_ver)
 
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "37de6be90055d9a7e1b4e3384cd7fc4c42e138a77f62ddeec12f362bfa3ee18e"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macOS.zip", "9eba0fa40cb21e12dbbb6876b195d51729273484b71d41979acb02f379da195b"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-macOS.zip", "9eba0fa40cb21e12dbbb6876b195d51729273484b71d41979acb02f379da195b"; unpack_target = "aarch64-apple-darwin20"),
-    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "21ef9294c91fb9e6bd106126d3ee67139510ea0f56256bb8d0376d97c9ab3d23"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "501d66de88c6e9d143e6631ded152ced7421bc32b6f16cadab18b2064916fe63"; unpack_target = "aarch64-linux-gnu"),
-    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "bec2a2261d16b5ffddde7e7f2f51d2131a1686006f32a61475a4054415d7e367"),
+    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "ea3f96dde56ae1577c81184694b8576d8efec52e168ce49a6e7df1441f428289"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-x86_64-macOS.zip", "0e11ca032fa452d69f8a06a0a4a1c26031ffd95d6f231a780b78bdbc8dd3488a"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-arm64-macOS.zip", "97b71204dd9b1a08f407d763695f54e71f96942c747a04bc16102c9eab5de3a0"; unpack_target = "aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "84395462eb08d74df3dbe9bb129ce3508e3eec3f29ac1f55559c2c5a1f34a8bf"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "93d6c414e5994e254aec840be8428016a70167c835ca3227378217937bd9a01a"; unpack_target = "aarch64-linux-gnu"),
+    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "f8379c9c714577397f2bdf1a06d0f500844ec924dcb268d85bc047772c35b3d7"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "e7ea3adeab955103a837b692ca0017cb3abbed0d3dccbfa499d6b2b825d698c3"),
 ]
 

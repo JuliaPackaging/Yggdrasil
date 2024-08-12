@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "librsync"
-version = v"2.3.1"
+version = v"2.3.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/librsync/librsync.git", "028d9432d05ba4b75239e0ba35bcb36fbfc17e35")
+    GitSource("https://github.com/librsync/librsync.git", "e364852674780e43d578e4239128ff7014190ed3")
 ]
 
 # Bash recipe for building across all platforms
@@ -32,12 +32,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"), v"1.0.6"; compat="=1.0.6")
+    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8")
     Dependency(PackageSpec(name="Popt_jll", uuid="e80236cf-ab1d-5f5d-8534-1d1285fe49e8"))
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

@@ -1,15 +1,22 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "LLVMCompilerRT"
-version = v"13.0.1"
+version = v"16.0.6"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/compiler-rt-$(version).src.tar.xz",
-        "7b33955031f9a9c5d63077dedb0f99d77e4e7c996266952c1cec55626dca5dfc"
+        "7911a2a9cca10393a17f637c01a6f5555b0a38f64ff47dc9168413a4190bc2db"
     ),
+    ArchiveSource(
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
+        "39d342a4161095d2f28fb1253e4585978ac50521117da666e2b1f6f28b62f514"
+    ),
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
     DirectorySource("./bundled"),
 ]
 
@@ -35,6 +42,22 @@ fi
 EOF
     chmod +x /usr/libexec/PlistBuddy
 
+    # Create official Apple-blessed `xcrun`
+    cat > $(which xcrun) << EOF
+#!/bin/bash
+if [[ "\${@}" == *"--show-sdk-path"* ]]; then
+   echo /opt/${target}/${target}/sys-root
+elif [[ "\${@}" == *"--show-sdk-version"* ]]; then
+   echo 10.12
+else
+   exec "\${@}"
+fi
+EOF
+
+    # Building this needs a newer SDK
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+
     # We use could use `${MACOSX_DEPLOYMENT_TARGET}` to specify the SDK version, but it's
     # set to 10.10 on x86_64, but compiler-rt requires at least 10.12 and we actually use
     # 10.12.  On aarch64 it's 11.0, but the CMake script doesn't seem to like values greater
@@ -42,6 +65,7 @@ EOF
     FLAGS+=(
             -DDARWIN_macosx_OVERRIDE_SDK_VERSION:STRING=10.12
             -DDARWIN_macosx_CACHED_SYSROOT=/opt/${target}/${target}/sys-root
+            -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks
            )
 fi
 
@@ -49,10 +73,15 @@ mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_MODULE_PATH=$(realpath ../../cmake-*.src/Modules) \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${target} \
+    -DCMAKE_LIBTOOL=$(which libtool) \
     "${FLAGS[@]}" \
     ..
 make -j${nproc}
 make install
+
+install_license ../LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
@@ -69,7 +98,10 @@ products = LibraryProduct[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("XML2_jll"),
+    Dependency("Zlib_jll"),
+    BuildDependency(PackageSpec(name="LLVM_full_jll"; version)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

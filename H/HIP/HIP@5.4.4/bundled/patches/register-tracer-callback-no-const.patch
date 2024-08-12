@@ -1,0 +1,19 @@
+commit 5deaf78e8c9b81a800855acb96b3d10929316642
+Author: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date:   Mon Sep 18 09:55:00 2023 -0500
+
+    hip_intercept: No const
+
+diff --git a/src/hip_intercept.cpp b/src/hip_intercept.cpp
+index e4e7e769..972ae7a3 100644
+--- a/src/hip_intercept.cpp
++++ b/src/hip_intercept.cpp
+@@ -47,7 +47,7 @@ const char* hipKernelNameRefByPtr(const void* host_function, hipStream_t stream)
+                                     : nullptr;
+ }
+ 
+-void hipRegisterTracerCallback(const void* function) {
++void hipRegisterTracerCallback(void* function) {
+   activity_prof::report_activity.store(
+       reinterpret_cast<decltype(activity_prof::report_activity.load())>(function),
+       std::memory_order_relaxed);

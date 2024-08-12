@@ -74,14 +74,3 @@
  endif
  libebl = ../libebl/libebl.a
  libeu = ../lib/libeu.a
---- a/libdw/Makefile.am.orig
-+++ b/libdw/Makefile.am
-@@ -109,7 +109,7 @@
- 		../libcpu/libcpu_pic.a libdw_pic.a ../libdwelf/libdwelf_pic.a \
- 		../libdwfl/libdwfl_pic.a
- libdw_so_DEPS = ../lib/libeu.a ../libelf/libelf.so
--libdw_so_LDLIBS = $(libdw_so_DEPS) -ldl -lz $(argp_LDADD) $(zip_LIBS) -pthread
-+libdw_so_LDLIBS = $(libdw_so_DEPS) -ldl -lz $(argp_LDADD) $(fts_LDADD) $(obstack_LDADD) $(zip_LIBS) -pthread
- libdw_so_SOURCES =
- libdw.so$(EXEEXT): $(srcdir)/libdw.map $(libdw_so_LIBS) $(libdw_so_DEPS)
- 	$(AM_V_CCLD)$(LINK) $(dso_LDFLAGS) -o $@ \

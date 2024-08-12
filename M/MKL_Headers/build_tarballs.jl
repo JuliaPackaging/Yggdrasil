@@ -3,35 +3,53 @@
 using BinaryBuilder, Pkg
 
 name = "MKL_Headers"
-version = v"2023.1.0"
+version = v"2024.2.0"
 
 # Collection of sources required to complete build
 sources = [
+    # Archives for the headers
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2023.1.0/download/win-32/mkl-include-2023.1.0-intel_46356.tar.bz2",
-        "81f7efd96cb35ee24ea79011bb12dd038113417c94afa9718a7f45c16b81d559";
+        "https://conda.anaconda.org/intel/win-32/mkl-include-2024.2.0-intel_661.tar.bz2",
+        "431feac62519a0d65c85e801d7329cb7caa66ced53a0b4d26f15420d06d1717d";
         unpack_target = "mkl-include-i686-w64-mingw32"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2023.1.0/download/win-64/mkl-include-2023.1.0-intel_46356.tar.bz2",
-        "19eb554a8c9c75325e26f4f4a8b9b80538d420016065d5ec918fd9c10354c96b";
+        "https://conda.anaconda.org/intel/win-64/mkl-include-2024.2.0-intel_661.tar.bz2",
+        "34f5cc20b6d2ab7c82f301b108fa2ac48e1f6c0acd8ad166897fb53184d5c93e";
         unpack_target = "mkl-include-x86_64-w64-mingw32"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2023.1.0/download/linux-32/mkl-include-2023.1.0-intel_46342.tar.bz2",
-        "a6aa2335954fc2ffb0e3e8a5580a101f955061b2086f1b408c7af7827f799a2e";
+        "https://conda.anaconda.org/intel/linux-32/mkl-include-2024.2.0-intel_663.tar.bz2",
+        "d97e655707590ba38d1240a4f9be3f60df2bc82f3ab5f7b16cf2735d4d9ba401";
         unpack_target = "mkl-include-i686-linux-gnu"
     ),
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2023.1.0/download/linux-64/mkl-include-2023.1.0-intel_46342.tar.bz2",
-        "b24d12a8e18ba23de5c659a33fb184a7ac6019d4b159e78f628d7c8de225f77a";
+        "https://conda.anaconda.org/intel/linux-64/mkl-include-2024.2.0-intel_663.tar.bz2",
+        "2e29ca36f199bafed778230b054256593c2d572aeb050389fd87355ba0466d13";
         unpack_target = "mkl-include-x86_64-linux-gnu"
     ),
+
+    # Archives for the CMake/pkgconfig files
     ArchiveSource(
-        "https://anaconda.org/intel/mkl-include/2023.1.0/download/osx-64/mkl-include-2023.1.0-intel_43558.tar.bz2",
-        "f7522e05e61d083e06a802d864c3cefcac8b7bcca35fd08b6cb95a2691808e43";
-        unpack_target = "mkl-include-x86_64-apple-darwin14"
-    )
+        "https://conda.anaconda.org/intel/win-32/mkl-devel-2024.2.0-intel_661.tar.bz2",
+        "db2bdd63f774edaca6cdc23677a5cc7ad390cf2bee362140b80238736483ae8f";
+        unpack_target = "mkl-devel-i686-w64-mingw32"
+    ),
+    ArchiveSource(
+        "https://conda.anaconda.org/intel/win-64/mkl-devel-2024.2.0-intel_661.tar.bz2",
+        "dd8758a3404d2bf6844463b16a3096820d7f7905bafdc057b9135eccf065e118";
+        unpack_target = "mkl-devel-x86_64-w64-mingw32"
+    ),
+    ArchiveSource(
+        "https://conda.anaconda.org/intel/linux-32/mkl-devel-2024.2.0-intel_663.tar.bz2",
+        "aabe1d37edc7d5d70891e25328d3bd2d8c9d7c5102cc5b400870164322df3a3c";
+        unpack_target = "mkl-devel-i686-linux-gnu"
+    ),
+    ArchiveSource(
+        "https://conda.anaconda.org/intel/linux-64/mkl-devel-2024.2.0-intel_663.tar.bz2",
+        "e3c37c75aa870aa8daa32e6cbfa6e34639f7e6fe6a67fc4b34fa2a94a497df15";
+        unpack_target = "mkl-devel-x86_64-linux-gnu"
+    ),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,6 +61,15 @@ else
     rsync -av include/ ${includedir}
 fi
 install_license info/licenses/*.txt
+
+cd $WORKSPACE/srcdir/mkl-devel-$target
+mkdir -p ${libdir}
+if [[ $target == *-mingw* ]]; then
+    # These toolchain files must still go inside the lib folder, not the ${libdir} folder
+    rsync -av Library/lib/ $WORKSPACE/destdir/lib
+else
+    rsync -av lib/ ${libdir}
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -50,7 +77,6 @@ install_license info/licenses/*.txt
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "macos"),
     Platform("i686", "windows"),
     Platform("x86_64", "windows"),
 ]
@@ -65,4 +91,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

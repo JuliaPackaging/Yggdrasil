@@ -1,0 +1,33 @@
+commit 03ccad6c3a5647e1066af4e2b590cb689e4a4c75
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 15:14:33 2023 +0000
+
+    stk: Work around lack of C11 aligned_alloc on windows
+
+diff --git a/packages/stk/stk_util/stk_util/util/FieldDataAllocator.hpp b/packages/stk/stk_util/stk_util/util/FieldDataAllocator.hpp
+index bf5faa4d861..1dd5e4e0258 100644
+--- a/packages/stk/stk_util/stk_util/util/FieldDataAllocator.hpp
++++ b/packages/stk/stk_util/stk_util/util/FieldDataAllocator.hpp
+@@ -127,14 +127,22 @@ public:
+   static Pointer allocate(SizeType num, const void* = 0)
+   {
+     size_t alignedSize = ((num * sizeof(ValueType) + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT + ASAN_FIELD_PADDING_SIZE;
++#ifdef _WIN32
++    void * allocatedMemory = _aligned_malloc(alignedSize, ALIGNMENT);
++#else
+     void * allocatedMemory = aligned_alloc(ALIGNMENT, alignedSize);
++#endif
+     ASAN_POISON_MEMORY_REGION(allocatedMemory, alignedSize);
+     return static_cast<Pointer>(allocatedMemory);
+   }
+ 
+   static void deallocate(Pointer p, SizeType)
+   {
++#ifdef _WIN32
++    _aligned_free(p);
++#else
+     free(p);
++#endif
+   }
+ };
+ 

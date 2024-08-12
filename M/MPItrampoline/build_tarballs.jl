@@ -7,19 +7,19 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.3.1"
-version = mpitrampoline_version
-mpich_version_str = "4.1.2"
+mpitrampoline_version = v"5.4.0"
+version = v"5.4.0"
+mpich_version_str = "4.2.1"
 mpiconstants_version = v"1.5.0"
-mpiwrapper_version = v"2.10.4"
+mpiwrapper_version = v"2.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/MPItrampoline", "25efb0f7a4cd00ed82bafb8b1a6285fc50d297ed"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "1c64b877799954f40b5d88c06a259e1a99a9676d"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "3492e98adab62b597ef0d292fb2459b6123bc80070a8aa0a30be6962075a12f0"),
-    GitSource("https://github.com/eschnett/MPIwrapper", "64f663cfaa36139882c5d92dc974b1a755cd6f5d"),
+                  "23331b2299f287c3419727edc2df8922d7e7abbb9fd0ac74e03b9966f9ad42d7"),
+    GitSource("https://github.com/eschnett/MPIwrapper", "1e991827041406f6d30e134187bcdbabb56f483d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,36 +40,41 @@ else
 fi
 
 cd $WORKSPACE/srcdir/MPItrampoline*
-mkdir build
-cd build
-cmake \
+cmake -B build \
+    -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
-    -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec" \
-    ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+    -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec"
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+# Post-process the compiler wrappers. They remember the original
+# compiler used to build MPItrampoline, but this compiler is too
+# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
+# `$FC` etc.
+sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
+sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
+sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
+cp ${bindir}/mpifc ${bindir}/mpifort
 
 ################################################################################
 # Install MPIconstants
 ################################################################################
 
 cd ${WORKSPACE}/srcdir/MPIconstants*
-mkdir build
-cd build
-cmake \
+cmake -B build \
+    -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     "${INSTALL_RPATH[@]}" \
-    -DBUILD_SHARED_LIBS=ON \
-    ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+    -DBUILD_SHARED_LIBS=ON
+cmake --build build --parallel ${nproc}
+cmake --install build
 
 ################################################################################
 # Install MPICH
@@ -138,13 +143,6 @@ if [[ "${target}" == *-apple-* ]]; then
     EXTRA_FLAGS+=(--enable-two-level-namespace)
 fi
 
-if [[ "${target}" == aarch64-apple-* ]]; then
-    EXTRA_FLAGS+=(
-        FFLAGS=-fallow-argument-mismatch
-        FCFLAGS=-fallow-argument-mismatch
-    )
-fi
-
 # Do not install doc and man files which contain files which clashing names on
 # case-insensitive file systems:
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
@@ -153,12 +151,10 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --disable-dependency-tracking \
-    --docdir=/tmp \
-    --mandir=/tmp \
+    --disable-doc \
     --enable-shared=no \
     --enable-static=yes \
     --enable-threads=multiple \
-    --enable-opencl=no \
     --with-device=ch3 \
     --prefix=${prefix}/lib/mpich \
     "${EXTRA_FLAGS[@]}"
@@ -183,43 +179,27 @@ fi
 ################################################################################
 
 cd $WORKSPACE/srcdir/MPIwrapper*
-mkdir build
-cd build
-# Yes, this is tedious. No, without being this explicit, cmake will
-# not properly auto-detect the MPI libraries on Darwin.
-if [[ "${target}" == *-apple-* ]]; then
-    ext='a'
-    cmake \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        "${INSTALL_RPATH[@]}" \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_C_COMPILER=cc \
-        -DMPI_CXX_COMPILER=c++ \
-        -DMPI_Fortran_COMPILER=gfortran \
-        -DMPI_C_LIB_NAMES='mpi;pmpi' \
-        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi' \
-        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;pmpi' \
-        -DMPI_pmpi_LIBRARY=${prefix}/lib/mpich/lib/libpmpi.${ext} \
-        -DMPI_mpi_LIBRARY=${prefix}/lib/mpich/lib/libmpi.${ext} \
-        -DMPI_mpicxx_LIBRARY=${prefix}/lib/mpich/lib/libmpicxx.${ext} \
-        -DMPI_mpifort_LIBRARY=${prefix}/lib/mpich/lib/libmpifort.${ext} \
-        -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
-        ..
-else
-    cmake \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
-        -DMPIEXEC_EXECUTABLE=${prefix}/lib/mpich/bin/mpiexec \
-        -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        "${INSTALL_RPATH[@]}" \
-        ..
-fi
 
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
+EXTRA_FLAGS=()
+if [[ "${target}" == *-apple-* ]]; then
+    EXTRA_FLAGS+=(
+        -DMPI_C_LINK_FLAGS='-framework Foundation -framework IOKit'
+        -DMPI_CXX_LINK_FLAGS='-framework Foundation -framework IOKit'
+        -DMPI_Fortran_LINK_FLAGS='-framework Foundation -framework IOKit'
+    )
+fi
+cmake -B build \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH="${prefix}/lib/mpich;${prefix}" \
+    -DMPI_HOME=${prefix}/lib/mpich \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    "${INSTALL_RPATH[@]}" \
+    "${EXTRA_FLAGS[@]}"
+
+cmake --build build --parallel ${nproc}
+cmake --install build
 
 ################################################################################
 # Install licenses
@@ -236,7 +216,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
 # not support musl or BSD.
@@ -276,11 +256,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-                      compat="0.1", top_level=true),
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"5")

@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "AzStorage"
-version = v"0.8.1"
+version = v"0.9.0"
 
 # Collection of sources required to build AzStorage
 sources = [
     GitSource(
         "https://github.com/ChevronETC/AzStorage.jl.git",
-        "5189990a7dafbe9d16facb9b0db3e68760696dd8"
+        "bc5a23b7694f8b0feecdb99d7fbd5bb56ca2ca03"
     )
 ]
 
@@ -45,11 +45,7 @@ dependencies = [
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency("LibCURL_jll", v"7.73.0"),
-    # MbedTLS is only an indirect dependency (through LibCURL), but we want to
-    # be sure to have the right version of MbedTLS for the corresponding version
-    # of Julia.
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
+    Dependency("LibCURL_jll"; compat="7.73.0,8"),
 ]
 
 #=

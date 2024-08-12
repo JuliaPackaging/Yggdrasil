@@ -2,11 +2,11 @@ using BinaryBuilder
 
 # Collection of sources required to build Arpack
 name = "Arpack"
-version = v"3.8.0"
+version = v"3.9.1"
 
 sources = [
     GitSource("https://github.com/opencollab/arpack-ng.git",
-              "7b7ce1a46e3f8e6393226c2db85cc457ddcdb16d"),
+              "40329031ae8deb7c1e26baf8353fa384fc37c251"),
 ]
 
 # Bash recipe for building across all platforms
@@ -58,8 +58,13 @@ done
 SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
 FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
-BLAS=blastrampoline
-LAPACK=blastrampoline
+
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
+
 if [[ ${nbits} == 64 ]]; then
     FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
@@ -71,8 +76,8 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
     -DEXAMPLES=OFF \
     -DBUILD_SHARED_LIBS=ON \
-    -DBLAS_LIBRARIES="-l${BLAS}" \
-    -DLAPACK_LIBRARIES="-l${LAPACK}" \
+    -DBLAS_LIBRARIES="-l${LBT}" \
+    -DLAPACK_LIBRARIES="-l${LBT}" \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}"
 
 make -j${nproc} VERBOSE=1
@@ -86,14 +91,14 @@ if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
     for nm in libarpack; do
         # Figure out what version it probably latched on to:
         if [[ ${target} == *-apple-* ]]; then
-            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${BLAS} | awk '{ print $1 }')
-            install_name_tool -change ${LBT_LINK} @rpath/lib${BLAS}.dylib ${libdir}/${nm}.dylib
+            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${LBT} | awk '{ print $1 }')
+            install_name_tool -change ${LBT_LINK} @rpath/lib${LBT}.dylib ${libdir}/${nm}.dylib
         elif [[ ${target} == *freebsd* ]]; then
-            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${LBT_LINK} lib${BLAS}.so ${libdir}/${nm}.so
+            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
         elif [[ ${target} == *linux* ]]; then
-            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${BLAS} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${LBT_LINK} lib${BLAS}.so ${libdir}/${nm}.so
+            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
         fi
     done
 fi
@@ -123,4 +128,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8", clang_use_lld=false)

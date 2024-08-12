@@ -1,0 +1,232 @@
+From 4942d65d1caa4d5beede00474755f8a0219bb1f4 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Wed, 5 Jun 2024 09:54:33 +0000
+Subject: [PATCH 1/2] Added changes to allow cross compilation to Windows using
+ Clang
+
+---
+ dist/mujoco.rc                    |  2 +-
+ dist/simulate.rc                  |  2 +-
+ src/engine/engine_crossplatform.h | 10 ++++++----
+ src/engine/engine_io.c            |  6 +++---
+ src/engine/engine_util_errmem.c   |  5 +++--
+ src/thread/thread_pool.cc         |  6 +++---
+ 6 files changed, 17 insertions(+), 14 deletions(-)
+
+diff --git a/dist/mujoco.rc b/dist/mujoco.rc
+index 6ae69239..633b873d 100644
+--- a/dist/mujoco.rc
++++ b/dist/mujoco.rc
+@@ -20,6 +20,6 @@ FILETYPE 0x1
+   }
+   BLOCK "VarFileInfo"
+   {
+-    VALUE "Translation", 0x0409 0x04B0
++    VALUE "Translation", 0x0409, 0x04B0
+   }
+ }
+diff --git a/dist/simulate.rc b/dist/simulate.rc
+index 68633346..9b9e17a5 100644
+--- a/dist/simulate.rc
++++ b/dist/simulate.rc
+@@ -22,6 +22,6 @@ FILETYPE 0x1
+   }
+   BLOCK "VarFileInfo"
+   {
+-    VALUE "Translation", 0x0409 0x04B0
++    VALUE "Translation", 0x0409, 0x04B0
+   }
+ }
+diff --git a/src/engine/engine_crossplatform.h b/src/engine/engine_crossplatform.h
+index 5d506430..ac93c9e0 100644
+--- a/src/engine/engine_crossplatform.h
++++ b/src/engine/engine_crossplatform.h
+@@ -26,17 +26,19 @@
+ // IWYU pragma: end_keep
+ 
+ // Sorting and case-insensitive comparison functions.
+-#ifdef _WIN32
++#if defined(_WIN32) && !defined(__MINGW32__) && !defined(__MINGW64__)
+   #define strcasecmp _stricmp
+   #define strncasecmp _strnicmp
+-
++#else
++  #include <strings.h>
++#endif
++ 
++#if defined(_WIN32)
+   #define mjQUICKSORT(buf, elnum, elsz, func, context) \
+       qsort_s(buf, elnum, elsz, func, context)
+   #define quicksortfunc(name, context, el1, el2) \
+       static int name(void* context, const void* el1, const void* el2)
+ #else  // assumes POSIX
+-  #include <strings.h>
+-
+   #ifdef __APPLE__
+     #define mjQUICKSORT(buf, elnum, elsz, func, context) \
+         qsort_r(buf, elnum, elsz, context, func)
+diff --git a/src/engine/engine_io.c b/src/engine/engine_io.c
+index ee836546..b801856a 100644
+--- a/src/engine/engine_io.c
++++ b/src/engine/engine_io.c
+@@ -411,7 +411,7 @@ static void mj_setPtrModel(mjModel* m) {
+   // check size
+   ptrdiff_t sz = ptr - (char*)m->buffer;
+   if (m->nbuffer != sz) {
+-    mjERROR("mjModel buffer size mismatch, expected size: %zd,  actual size: %zu", m->nbuffer, sz);
++    mjERROR("mjModel buffer size mismatch, expected size: %llx,  actual size: %llx", m->nbuffer, sz);
+   }
+ }
+ 
+@@ -1079,7 +1079,7 @@ static void mj_setPtrData(const mjModel* m, mjData* d) {
+   // check size
+   ptrdiff_t sz = ptr - (char*)d->buffer;
+   if (d->nbuffer != sz) {
+-    mjERROR("mjData buffer size mismatch, expected size: %zd,  actual size: %zu", d->nbuffer, sz);
++    mjERROR("mjData buffer size mismatch, expected size: %llx,  actual size: %llx", d->nbuffer, sz);
+   }
+ 
+   // zero-initialize arena pointers
+@@ -1363,7 +1363,7 @@ static inline void* stackallocinternal(mjData* d, mjStackInfo* stack_info, size_
+   size_t stack_available_bytes = stack_info->top - stack_info->limit;
+   size_t stack_required_bytes = stack_info->top - new_top_ptr;
+   if (mjUNLIKELY(stack_required_bytes > stack_available_bytes)) {
+-    mju_error("mj_stackAlloc: insufficient memory: max = %zu, available = %zu, requested = %zu "
++    mju_error("mj_stackAlloc: insufficient memory: max = %llx, available = %llx, requested = %llx "
+               "(ne = %d, nf = %d, nefc = %d, ncon = %d)",
+               stack_info->bottom - stack_info->limit, stack_available_bytes, stack_required_bytes,
+               d->ne, d->nf, d->nefc, d->ncon);
+diff --git a/src/engine/engine_util_errmem.c b/src/engine/engine_util_errmem.c
+index 7c63c1ce..ff2c4cca 100644
+--- a/src/engine/engine_util_errmem.c
++++ b/src/engine/engine_util_errmem.c
+@@ -104,10 +104,11 @@ void mju_writeLog(const char* type, const char* msg) {
+ #elif __STDC_LIB_EXT1__
+     localtime_s(&rawtime, &timeinfo);
+ #else
+-    #error "Thread-safe version of `localtime` is not present in the standard C library"
++    fprintf(fp, "%s%s: %s\n\n", asctime(localtime(&rawtime)), type, msg);
++    fclose(fp);
++    return;
+ #endif
+ 
+-    // write to log file
+     fprintf(fp, "%s%s: %s\n\n", asctime(&timeinfo), type, msg);
+     fclose(fp);
+   }
+diff --git a/src/thread/thread_pool.cc b/src/thread/thread_pool.cc
+index 9bb03133..c2b60f07 100644
+--- a/src/thread/thread_pool.cc
++++ b/src/thread/thread_pool.cc
+@@ -198,7 +198,7 @@ mjStackInfo* mju_getStackInfoForThread(mjData* d, size_t thread_id) {
+   }
+ 
+   if (bytes_per_shard * number_of_shards > total_arena_size_bytes) {
+-    mju_error("Arena is not large enough for %zu shards", number_of_shards);
++    mju_error("Arena is not large enough for %llx shards", number_of_shards);
+   }
+ 
+   uintptr_t result = (end_of_arena_ptr - (thread_id + 1) * bytes_per_shard);
+@@ -238,8 +238,8 @@ static void  ConfigureMultiThreadedStack(mjData* d) {
+       // abort if the current stack is already larger than the portion of the stack
+       // that would be reserved for the main thread
+       if ((uintptr_t)end_shard_cursor_ptr > current_limit) {
+-        mju_error("mj_bindThreadPool: sharding stack - existing stack larger than shard size: current_size = %zu, "
+-                  "max_size = %zu", current_limit, (uintptr_t) end_shard_cursor_ptr);
++        mju_error("mj_bindThreadPool: sharding stack - existing stack larger than shard size: current_size = %llx, "
++                  "max_size = %llx", current_limit, (uintptr_t) end_shard_cursor_ptr);
+       }
+       end_shard_cursor_ptr->top = current_limit;
+       end_shard_cursor_ptr->stack_base = d->pbase;
+-- 
+2.44.0
+
+
+From be9f1dfc409f06509e9274e1c4fd81d6c54d0af9 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Wed, 5 Jun 2024 10:04:12 +0000
+Subject: [PATCH 2/2] Changed to using llx instead of zu for formatting
+
+---
+ src/engine/engine_print.c     |  2 +-
+ src/engine/engine_util_misc.c | 18 +++++++++---------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/src/engine/engine_print.c b/src/engine/engine_print.c
+index 8fee7ebf..401f237a 100644
+--- a/src/engine/engine_print.c
++++ b/src/engine/engine_print.c
+@@ -37,7 +37,7 @@
+ #define FLOAT_FORMAT "% -9.2g"
+ #define FLOAT_FORMAT_MAX_LEN 20
+ #define INT_FORMAT " %d"
+-#define SIZE_T_FORMAT " %zu"
++#define SIZE_T_FORMAT " %llx"
+ #define NAME_FORMAT "%-21s"
+ 
+ 
+diff --git a/src/engine/engine_util_misc.c b/src/engine/engine_util_misc.c
+index 3903d68b..97a42c05 100644
+--- a/src/engine/engine_util_misc.c
++++ b/src/engine/engine_util_misc.c
+@@ -1191,9 +1191,9 @@ const char* mju_writeNumBytes(size_t nbytes) {
+     }
+   }
+   if (i < 6) {
+-    mjSNPRINTF(message, "%zu%c", nbytes >> (10*(6-i)), suffix[6-i]);
++    mjSNPRINTF(message, "%llx%c", nbytes >> (10*(6-i)), suffix[6-i]);
+   } else {
+-    mjSNPRINTF(message, "%zu", nbytes >> (10*(6-i)));
++    mjSNPRINTF(message, "%llx", nbytes >> (10*(6-i)));
+   }
+   return message;
+ }
+@@ -1206,14 +1206,14 @@ const char* mju_warningText(int warning, size_t info) {
+ 
+   switch ((mjtWarning) warning) {
+   case mjWARN_INERTIA:
+-    mjSNPRINTF(str, "Inertia matrix is too close to singular at DOF %zu. Check model.", info);
++    mjSNPRINTF(str, "Inertia matrix is too close to singular at DOF %llx. Check model.", info);
+     break;
+ 
+   case mjWARN_CONTACTFULL:
+     mjSNPRINTF(str,
+                "Too many contacts. Either the arena memory is full, or nconmax is specified and is "
+                "exceeded. Increase arena memory allocation, or increase/remove nconmax. "
+-               "(ncon = %zu)", info);
++               "(ncon = %llx)", info);
+     break;
+ 
+   case mjWARN_CNSTRFULL:
+@@ -1223,23 +1223,23 @@ const char* mju_warningText(int warning, size_t info) {
+     break;
+ 
+   case mjWARN_VGEOMFULL:
+-    mjSNPRINTF(str, "Pre-allocated visual geom buffer is full. Increase maxgeom above %zu.", info);
++    mjSNPRINTF(str, "Pre-allocated visual geom buffer is full. Increase maxgeom above %llx.", info);
+     break;
+ 
+   case mjWARN_BADQPOS:
+-    mjSNPRINTF(str, "Nan, Inf or huge value in QPOS at DOF %zu. The simulation is unstable.", info);
++    mjSNPRINTF(str, "Nan, Inf or huge value in QPOS at DOF %llx. The simulation is unstable.", info);
+     break;
+ 
+   case mjWARN_BADQVEL:
+-    mjSNPRINTF(str, "Nan, Inf or huge value in QVEL at DOF %zu. The simulation is unstable.", info);
++    mjSNPRINTF(str, "Nan, Inf or huge value in QVEL at DOF %llx. The simulation is unstable.", info);
+     break;
+ 
+   case mjWARN_BADQACC:
+-    mjSNPRINTF(str, "Nan, Inf or huge value in QACC at DOF %zu. The simulation is unstable.", info);
++    mjSNPRINTF(str, "Nan, Inf or huge value in QACC at DOF %llx. The simulation is unstable.", info);
+     break;
+ 
+   case mjWARN_BADCTRL:
+-    mjSNPRINTF(str, "Nan, Inf or huge value in CTRL at ACTUATOR %zu. The simulation is unstable.",
++    mjSNPRINTF(str, "Nan, Inf or huge value in CTRL at ACTUATOR %llx. The simulation is unstable.",
+                info);
+     break;
+ 
+-- 
+2.44.0
+

@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "brotli"
-version = v"1.0.9"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/google/brotli/archive/refs/tags/v$(version).tar.gz", "f9e8d81d0405ba66d181529af42a3354f838c939095ff99930da6aa9cdf6fe46")
+    GitSource("https://github.com/google/brotli", "ed738e842d2fbdf2d6459e39267a633c4a9b2f5d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/brotli-*
+cd $WORKSPACE/srcdir/brotli
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
 make -j${nprocs}

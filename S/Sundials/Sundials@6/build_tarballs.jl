@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Sundials"
-version = v"6.5.1"
+version = v"6.7.0"
 
 # Collection of sources required to build Sundials
 sources = [
-    GitSource("https://github.com/LLNL/sundials.git",
-              "34d21afdb5780947223b88a46201fbe8191af48c"),
+    ArchiveSource("https://github.com/LLNL/sundials/releases/download/v$(version)/sundials-$(version).tar.gz",
+                  "5f113a1564a9d2d98ff95249f4871a4c815a05dbb9b8866a82b13ab158c37adb"),
     DirectorySource("./bundled"),
 ]
 
@@ -43,11 +43,11 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DEXAMPLES_ENABLE_C=OFF \
-    -DKLU_ENABLE=ON \
-    -DKLU_INCLUDE_DIR="${includedir}" \
+    -DENABLE_KLU=ON \
+    -DKLU_INCLUDE_DIR="${includedir}/suitesparse" \
     -DKLU_LIBRARY_DIR="${libdir}" \
     -DKLU_WORKS=ON \
-    -DLAPACK_ENABLE=ON \
+    -DENABLE_LAPACK=ON \
     -DLAPACK_LIBRARIES:STRING="${LAPACK_NAME}" \
     -DLAPACK_WORKS=ON \
     ..
@@ -61,7 +61,7 @@ fi
 """
 
 # We attempt to build for all defined platforms
-platforms = filter!(p -> arch(p) != "powerpc64le", supported_platforms(; experimental=true))
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 products = [
@@ -97,4 +97,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.11")
