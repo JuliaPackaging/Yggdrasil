@@ -31,7 +31,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DENABLE_EXTENSION_AUTOLOADING=1 \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
       -DBUILD_UNITTESTS=FALSE .. \
-      -DBUILD_SHELL=FALSE .. \
+      -DBUILD_SHELL=TRUE .. \
       -DDUCKDB_EXPLICIT_PLATFORM="${target}"
 make -j${nproc}
 make install
@@ -47,7 +47,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libduckdb", :libduckdb)
+    LibraryProduct("libduckdb", :libduckdb),
+    ExecutableProduct("duckdb", :duckdb),
 ]
 
 # Dependencies that must be installed before this package can be built
