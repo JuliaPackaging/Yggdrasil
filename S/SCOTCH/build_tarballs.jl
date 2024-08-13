@@ -8,12 +8,14 @@ version = v"7.0.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.inria.fr/scotch/scotch", "910f65220666443cb50fd40f7f6209e6fa11b712"),
-    # DirectorySource("./bundled"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/scotch*
+cp ${WORKSPACE}/srcdir/patches/CMakeLists.txt CMakeLists.txt
+cp ${WORKSPACE}/srcdir/patches/CMakeLists-libscotch.txt src/libscotch/CMakeLists.txt
 
 # https://github.com/conda-forge/scotch-feedstock
 # for f in ${WORKSPACE}/srcdir/patches/*.patch; do
