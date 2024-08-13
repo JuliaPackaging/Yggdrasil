@@ -66,7 +66,8 @@ CMAKE_FLAGS+=(-DEnzyme_TABLEGEN=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tb
 CMAKE_FLAGS+=(-DEnzyme_TABLEGEN_EXE=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
 CMAKE_FLAGS+=(-DENZYME_CLANG=OFF)
 # RelWithDebInfo for decent performance, with debugability
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Debug)
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ASSERTIONS=ON)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
