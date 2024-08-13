@@ -68,6 +68,7 @@ CFLAGS=$FLAGS cmake .. \
 
 # make -j${nproc}
 make
+make install
 
 install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
 """
