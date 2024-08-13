@@ -20,8 +20,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-git submodule update --init --recursive --depth 1
 cd $WORKSPACE/srcdir/cimgui-pack
+git submodule update --init --recursive --depth 1
 cp test_engine/overrides.h test_engine/src/overrides.h
 
 mkdir build && cd build
@@ -35,16 +35,13 @@ make install
 install_license ../cimgui/LICENSE ../cimgui/imgui/LICENSE.txt ../cimplot/LICENSE ../cimplot/implot/LICENSE ../cimnodes/imnodes/LICENSE.md
 
 # Copy generator files for cimgui
-mkdir ${prefix}/share/cimgui
-cp ../cimgui_comments_output/*.json ${prefix}/share/cimgui
+install -Dvm 644 ../cimgui_comments_output/*.json -t ${prefix}/share/cimgui
 
 # And cimplot
-mkdir ${prefix}/share/cimplot
-cp ../cimplot/generator/output/*.json ${prefix}/share/cimplot
+install -Dvm 644 ../cimplot/generator/output/*.json -t ${prefix}/share/cimplot
 
 # And cimnodes
-mkdir ${prefix}/share/cimnodes
-cp ../cimnodes/generator/output/*.json ${prefix}/share/cimnodes
+install -Dvm 644 ../cimnodes/generator/output/*.json -t ${prefix}/share/cimnodes
 """
 
 # These are the platforms we will build for by default, unless further
