@@ -11,11 +11,11 @@ repo = "https://github.com/EnzymeAD/Enzyme.git"
 auto_version = "refs/tags/v0.0.143"
 version = VersionNumber(split(auto_version, "/")[end])
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"15.0.7"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "c3ef3c197bcbdea21dafbef786db0bcfde6651ee"),
+    GitSource(repo, "33091e45efcc6639066131b3e5813a8e0806a9ff"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
@@ -66,7 +66,7 @@ CMAKE_FLAGS+=(-DEnzyme_TABLEGEN=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tb
 CMAKE_FLAGS+=(-DEnzyme_TABLEGEN_EXE=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
 CMAKE_FLAGS+=(-DENZYME_CLANG=OFF)
 # RelWithDebInfo for decent performance, with debugability
-CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
+CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Debug)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
@@ -135,10 +135,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
     end
-    if llvm_version >= v"17"
-        # Windows is broken for LLVM16_jll see https://github.com/JuliaPackaging/Yggdrasil/pull/8017#issuecomment-1930838052
-        filter!(p -> !(os(p) == "windows"), platforms)
-    end
+    filter!(p -> (os(p) == "windows"), platforms)
     if llvm_version >= v"17" && llvm_assertions
         # Windows is broken for LLVM16_jll see https://github.com/JuliaPackaging/Yggdrasil/pull/8017#issuecomment-1930838052
         filter!(p -> !Sys.isapple(p), platforms)
