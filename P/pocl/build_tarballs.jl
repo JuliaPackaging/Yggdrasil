@@ -13,7 +13,7 @@ version = v"6.0"
 # POCL supports LLVM 14 to 18
 # XXX: link statically to a single version of LLVM instead, and don't use augmentations?
 #      this causes issue with the compile-time link, so I haven't explored this yet
-llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
 
 # Collection of sources required to complete build
 sources = [
@@ -32,10 +32,10 @@ builds of LLVM we need:
   its binaries aren't executable here (hopefully they will be with BinaryBuilder2.jl).
 - the HostDependency one, in $host_prefix: can't emit code for the target, but provides an
   llvm-config returning the right flags. so we use it as the llvm-config during the build,
-  spoofing the returned paths to the target ones.
-- the native toolchain, at /opt/x86_64-linux-musl: supports the target, but can't link
-  against it, and provides the wrong LLVM flags. so we only use its tools during the build
-  by setting LLVM_BINDIR
+  spoofing the returned paths to the Dependency ones.
+- the native toolchain: supports the target, but can't be linked against, and provides the
+  wrong LLVM flags. so we only use its tools during the build, requiring that the chosen
+  LLVM version is compatible with the one used at run time, to avoid IR incompatibilities.
 
 =#
 
@@ -44,12 +44,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/pocl/
 install_license LICENSE
 
-# pocl#1517: fix compilation on FreeBSD
-patch -p1 -i $WORKSPACE/srcdir/patches/freebsd.patch
-
-# patches to improve portability, adding support for a generic kernel library
-patch -p1 -i $WORKSPACE/srcdir/patches/distro.patch
-patch -p1 -i $WORKSPACE/srcdir/patches/generic-cpu.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/distro-generic.patch
 
 # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
 sysroot=/opt/${target}/${target}/sys-root/usr/include
@@ -67,16 +63,18 @@ sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot\\"|
 CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+# Enable optional debug messages for debuggability
+CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
-# Point to the HostDependency's llvm-config, which has the right config (flags, mode, etc)
-# (but spoof certain things, like replacing paths and library filenames)
+# Point to relevant LLVM tools (see above)
+## HostDependency: llvm-config, but spoofed to return Dependency's paths
 CMAKE_FLAGS+=(-DWITH_LLVM_CONFIG=$WORKSPACE/srcdir/llvm-config)
-# Point to the toolchain's binaries, which support emitting code for the target.
-CMAKE_FLAGS+=(-DLLVM_BINDIR=/opt/x86_64-linux-musl/bin)
+## Native toolchain: for LLVM tools to ensure they can target the right architecture
+CMAKE_FLAGS+=(-DLLVM_BINDIR=/opt/$MACHTYPE/bin)
 # Override the target and triple, which POCL takes from `llvm-config --host-target`
 triple=$(clang -print-target-triple)
 CMAKE_FLAGS+=(-DLLVM_HOST_TARGET=$triple)
@@ -85,10 +83,13 @@ CMAKE_FLAGS+=(-DLLC_TRIPLE=$triple)
 CPU=$(clang --print-supported-cpus 2>&1 | grep -P '\t' | head -n 1 | sed 's/\s//g')
 CMAKE_FLAGS+=(-DLLC_HOST_CPU_AUTO=$CPU)
 # Generate a portable build
-CMAKE_FLAGS+=(-DLLC_HOST_CPU=GENERIC)
 CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
 # Build POCL as an dynamic library loaded by the OpenCL runtime
 CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
+# XXX: work around pocl#1528, disabling FP16 support in i686
+if [[ ${target} == i686-* ]]; then
+    CMAKE_FLAGS+=(-DHOST_CPU_SUPPORTS_FLOAT16:BOOL=OFF)
+fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -118,9 +119,22 @@ augment_platform_block = """
         augment_llvm!(platform)
     end"""
 
+init_block = """
+    # Register this driver with OpenCL_jll
+    if OpenCL_jll.is_available()
+        push!(OpenCL_jll.drivers, libpocl)
+
+        # XXX: Clang_jll does not have a functional clang binary on macOS,
+        #      as it's configured without a default sdkroot (see #9221)
+        if Sys.isapple()
+            ENV["SDKROOT"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+        end
+    end
+"""
+
 # determine exactly which tarballs we should build
 builds = []
-for llvm_version in llvm_versions, llvm_assertions in (false, #=true=#)
+for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [
@@ -130,6 +144,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, #=true=#)
         Dependency("Hwloc_jll"),
         Dependency("SPIRV_LLVM_Translator_unified_jll"),
         Dependency("SPIRV_Tools_jll"),
+        Dependency("Clang_unified_jll"),
     ]
 
     for platform in platforms
@@ -139,7 +154,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, #=true=#)
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;
             dependencies,
-            platforms=[augmented_platform]
+            platforms=[augmented_platform],
+            preferred_llvm_version=Base.thismajor(llvm_version),
         ))
     end
 end
@@ -155,7 +171,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, sources, script,
                    build.platforms, products, build.dependencies;
-                   preferred_gcc_version=v"10", julia_compat="1.6",
-                   augment_platform_block)
+                   preferred_gcc_version=v"10", build.preferred_llvm_version,
+                   julia_compat="1.6", augment_platform_block, init_block)
 end
 
