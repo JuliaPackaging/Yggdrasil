@@ -13,7 +13,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
-version = v"0.12.0"
+version = v"0.12.1"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl
@@ -22,19 +22,13 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "c50da37b9c6597ab40122cc453d5adf5db1cf608"),
+              "f9236b1981da2350bc8a1974bc760dddcb26e533"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # remove default perl which interferes with the hostbuild perl
 rm -f /usr/bin/perl
-
-# needed to avoid errors when linking to openblas32_jll with -flat_namespace
-# ld64.lld: error: No LC_DYLD_INFO_ONLY or LC_DYLD_EXPORTS_TRIE found in /workspace/destdir/lib/libgcc_s.1.1.dylib
-if [[ $target = x86_64-apple* ]]; then
-   export LDFLAGS=-fuse-ld=ld
-fi
 
 cmake libpolymake-j*/ -B build \
    -DJulia_PREFIX="$prefix" \
@@ -86,6 +80,7 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version=v"8",
+    clang_use_lld=false,
     julia_compat = julia_compat)
 
 # rebuild trigger: 1
