@@ -10,18 +10,18 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "CImGuiPack"
-version = v"0.3.0"
+version = v"0.4.0"
 
 # Collection of sources required to build CImGuiPack
 sources = [
-    GitSource("https://github.com/Gnimuc/CImGui.jl.git",
-              "664b68d2f5d33581e6c2912e74956fcdf653ff86")
+    GitSource("https://github.com/JuliaImGui/cimgui-pack.git",
+              "25b735c6cc682caaa3cca240c7061e277f28710b")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/CImGui.jl/cimgui-pack
 git submodule update --init --recursive --depth 1
+cd $WORKSPACE/srcdir/cimgui-pack
 cp test_engine/overrides.h test_engine/src/overrides.h
 
 mkdir build && cd build
@@ -33,6 +33,18 @@ cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
 make -j${nproc}
 make install
 install_license ../cimgui/LICENSE ../cimgui/imgui/LICENSE.txt ../cimplot/LICENSE ../cimplot/implot/LICENSE ../cimnodes/imnodes/LICENSE.md
+
+# Copy generator files for cimgui
+mkdir ${prefix}/share/cimgui
+cp ../cimgui_comments_output/*.json ${prefix}/share/cimgui
+
+# And cimplot
+mkdir ${prefix}/share/cimplot
+cp ../cimplot/generator/output/*.json ${prefix}/share/cimplot
+
+# And cimnodes
+mkdir ${prefix}/share/cimnodes
+cp ../cimnodes/generator/output/*.json ${prefix}/share/cimnodes
 """
 
 # These are the platforms we will build for by default, unless further
@@ -46,7 +58,20 @@ platforms = filter(p -> arch(p) != "armv6l", platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcimgui", :libcimgui),
-    FileProduct("share/compile_commands.json", :compile_commands)
+    FileProduct("share/compile_commands.json", :compile_commands),
+
+    FileProduct("share/cimgui/definitions.json", :cimgui_definitions),
+    FileProduct("share/cimgui/impl_definitions.json", :cimgui_impl_definitions),
+    FileProduct("share/cimgui/structs_and_enums.json", :cimgui_structs_and_enums),
+    FileProduct("share/cimgui/typedefs_dict.json", :cimgui_typedefs_dict),
+
+    FileProduct("share/cimplot/definitions.json", :cimplot_definitions),
+    FileProduct("share/cimplot/structs_and_enums.json", :cimplot_structs_and_enums),
+    FileProduct("share/cimplot/typedefs_dict.json", :cimplot_typedefs_dict),
+
+    FileProduct("share/cimnodes/definitions.json", :cimnodes_definitions),
+    FileProduct("share/cimnodes/structs_and_enums.json", :cimnodes_structs_and_enums),
+    FileProduct("share/cimnodes/typedefs_dict.json", :cimnodes_typedefs_dict),
 ]
 
 # Dependencies that must be installed before this package can be built
