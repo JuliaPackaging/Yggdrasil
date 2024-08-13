@@ -58,16 +58,16 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-llvm_version = v"13.0.1+1"
+llvm_version = v"17.0.6"
 dependencies = [
     Dependency("GSL_jll"; compat = "~2.7.2"),
     # libclang_rt.osx.a is required on aarch64-macos to provide `__divdc3`.
     BuildDependency(PackageSpec(name = "LLVMCompilerRT_jll",
                                 uuid = "4e17d02c-6bf5-513e-be62-445f41c75a11",
                                 version = llvm_version);
-                    platforms = [Platform("aarch64", "macos")])
+                    platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"9.1.0", julia_compat = "1.6")
+               preferred_gcc_version = v"9.1.0", julia_compat = "1.6", preferred_llvm_version = llvm_version)
