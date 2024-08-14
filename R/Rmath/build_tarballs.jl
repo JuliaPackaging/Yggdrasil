@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Rmath"
-version = v"0.4.3"
+version = v"0.5.0"
 
 sources = [
     GitSource("https://github.com/JuliaStats/Rmath-julia.git",
-              "d560159af0a388d8afaf19f7bf2efc51afcf53d9"),
+              "ca7518b9b66320a592c9a2a15663af99ca55e45f"),
 ]
 
 script = raw"""
@@ -22,4 +22,4 @@ products = [
 
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version=v"6")
