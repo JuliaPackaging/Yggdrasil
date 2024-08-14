@@ -7,7 +7,7 @@ include("../common.jl")
 products = Product[
     ExecutableProduct("flang", :flang),
     ExecutableProduct("flang1", :flang1),
-    ExecutableProduct("flang2", :flang2)
+    ExecutableProduct("flang2", :flang2),
 ]
 
 # We only build the compiler for musl. The rtlibs get built for all platforms in the RTLib jll
@@ -17,4 +17,4 @@ platforms = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, flang_script(true), platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"10", lock_microarchitecture=false)
+    julia_compat="1.6", preferred_gcc_version=v"10", preferred_llvm_version=v"13", lock_microarchitecture=false)

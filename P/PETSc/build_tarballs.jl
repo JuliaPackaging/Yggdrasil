@@ -33,26 +33,57 @@ script = raw"""
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-if [[ "${target}" == *-mingw* ]]; then
-    MPI_LIBS="${libdir}/msmpi.${dlext}"
 
+if [[ "${target}" == *-mingw* ]]; then
+    # On windows, it compiles fine but we obtain a following runtime error:
+    # 
+    # Mingw-w64 runtime failure:
+    # 32 bit pseudo relocation at 00000000093934AA out of range, targeting 00007FF8B7756530, yielding the value 00007FF8AE3C3082.
+    #
+    # (see https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444842322/job/20251986258#step:7:236)
+    #
+    # Interestingly, this error does NOT occur if we use the originally compiled PETSc_jll version 3.18.6 from May 2023.
+    # (e.g., https://github.com/boriskaus/test_PETSc_jll/actions/runs/7444942534/job/20252261704#step:6:49). 
+    #
+    # If we recompile it using the same versions of all packages (while fixing llvm to version 13, as was used in May 2023 for compilation), we have the runtime error above
+    #
+    # The same issue occured in HDF5_jll (https://github.com/eschnett/Yggdrasil/pull/6)
+    #
+    # Interestingly, SuperLU_Dist_jll does not have this issue and runs fine in serial & parallel on windows 
+    # (see e.g. https://github.com/boriskaus/test_SuperLU_DIST_jll/actions/runs/7595261750/job/20687625690#step:7:181)
+    #
+    # Despite a significant time-effort from my side, I have been unable to fix the issue, so I deactivate MPI on windows as a workaround.
+    #MPI_LIBS=--with-mpi-lib="${libdir}/msmpi.${dlext}"
+    #MPI_INC=--with-mpi-include=${includedir}
+
+    MPI_FFLAGS=""
+    MPI_LIBS=""
+    MPI_INC=""
+    USE_MPI=0
 else
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
-        MPI_FFLAGS=
-        MPI_LIBS="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
+        USE_MPI=1
+        MPI_FFLAGS=""
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpifort.${dlext},${libdir}/libmpi.${dlext}]"
+        MPI_INC=--with-mpi-include=${includedir}
     elif grep -q MPItrampoline $prefix/include/mpi.h; then
+        USE_MPI=1
         MPI_FFLAGS="-fcray-pointer"
-        MPI_LIBS="[${libdir}/libmpitrampoline.${dlext}]"
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpitrampoline.${dlext}]"
+        MPI_INC=--with-mpi-include=${includedir}
     elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-        MPI_FFLAGS=
-        MPI_LIBS="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
+        USE_MPI=1
+        MPI_FFLAGS=""
+        MPI_LIBS=--with-mpi-lib="[${libdir}/libmpi_usempif08.${dlext},${libdir}/libmpi_usempi_ignore_tkr.${dlext},${libdir}/libmpi_mpifh.${dlext},${libdir}/libmpi.${dlext}]"
+        MPI_INC=--with-mpi-include=${includedir}
     else
-        MPI_FFLAGS=
-        MPI_LIBS=
+        USE_MPI=0
+        MPI_FFLAGS=""
+        MPI_LIBS=""
+        MPI_INC=""
     fi
 
 fi
-
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch         
@@ -173,13 +204,13 @@ build_petsc()
         --CFLAGS='-fno-stack-protector '  \
         --FFLAGS="${MPI_FFLAGS}"  \
         --LDFLAGS="${LIBFLAGS}"  \
-        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
         --with-debugging=${DEBUG_FLAG}  \
         --with-batch \
-        --with-mpi-lib="${MPI_LIBS}" \
+        --with-mpi=${USE_MPI} \
+        ${MPI_LIBS} \
+        ${MPI_INC} \
         --known-mpi-int64_t=0 \
-        --with-mpi-include="${includedir}" \
         --with-sowing=0 \
         --with-precision=${1}  \
         --with-scalar-type=${2} \
@@ -194,6 +225,7 @@ build_petsc()
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
+
     if [[ "${target}" == *-mingw* ]]; then
         export CPPFLAGS="-Dpetsc_EXPORTS"
     elif [[ "${target}" == powerpc64le-* ]]; then
@@ -241,6 +273,17 @@ build_petsc()
         fi
         install -Dvm 755 ${workdir}/ex4${exeext} "${bindir}/ex4${exeext}"
         
+        # this is the example that PETSc uses to test the correct installation        
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        install -Dvm 755 ${workdir}/ex19${exeext} "${bindir}/ex19${exeext}"
+
         # this is the example that PETSc uses to test the correct installation        
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19

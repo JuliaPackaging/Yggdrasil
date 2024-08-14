@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.11.1"
+version = v"4.13.0"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "c5fe1b7cbd403888a814929f2fd0f5d69e27600222a18c786db5b76e8005b365"),
+                  "2a286195e27fe11ee48ce3c98a07c6a4b9961f1e03878e0e3681cf2cfc08db11"),
 ]
 
 # Bash recipe for building across all platforms
@@ -62,14 +62,14 @@ hdf5_platforms = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("Cairo_jll"),
+    Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FLTK_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll", v"2.13.1"; compat="2.10.4"), # TODO: `compat="2.10.4"` is a LIE, in order to be able to rebuild the package without changing the compat bound.  In practice the compat bounds of Cairo_jll shouldn't allow having incompatible versions/.  Next version, change this compat to `"2.13.1"` and remove the build version.
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
     # Updating to a newer HDF5 version requires rebuilding this package
-    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.12.1"),
+    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.14.3"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),

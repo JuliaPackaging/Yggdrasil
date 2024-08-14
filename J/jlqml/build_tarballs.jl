@@ -7,23 +7,19 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+# needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
 
 name = "jlqml"
-version = v"0.5.4"
+version = v"0.6.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaGraphics/jlqml.git", "a04a16a24d71011555d629169a985a3f174408a7"),
+    GitSource("https://github.com/JuliaGraphics/jlqml.git", "4cf890e6a556f546082e442a8f21178b195f39d6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Override compiler ID to silence the horrible "No features found" cmake error
-if [[ $target == *"apple-darwin"* ]]; then
-  macos_extra_flags="-DCMAKE_CXX_COMPILER_ID=AppleClang -DCMAKE_CXX_COMPILER_VERSION=10.0.0 -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
-fi
-
 mkdir build
 cd build
 cmake \
@@ -32,15 +28,19 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
-    $macos_extra_flags \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
     ../jlqml/
+
+if [[ $target == *"apple-darwin"* ]]; then
+  sed -i "s/gnu++20/gnu++17/" CMakeFiles/jlqml.dir/flags.make
+fi
+
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 install_license $WORKSPACE/srcdir/jlqml*/LICENSE.md
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 # Qt6Declarative_jll is not available for these architectures:
@@ -53,10 +53,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
-    Dependency("Qt6Declarative_jll"; compat="~6.5.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
+    Dependency("Qt6Declarative_jll"; compat="~6.7.1"),
     HostBuildDependency("Qt6Declarative_jll"),
-    Dependency("Qt6Svg_jll"; compat="~6.5.2"),
+    Dependency("Qt6Svg_jll"; compat="~6.7.1"),
     BuildDependency("Libglvnd_jll"),
     BuildDependency("libjulia_jll"),
 ]

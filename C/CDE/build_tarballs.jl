@@ -1,8 +1,8 @@
 using BinaryBuilder
 
 name = "CDE"
-version = v"1.0.1"
-sources = [GitSource("https://github.com/HabershonLab/cde", "6ff939817769fc4da20f82baafd2d92f4a47e211")]
+version = v"1.0.2"
+sources = [GitSource("https://github.com/HabershonLab/cde", "ac632896a99b284d96eb6bfb66bf48068acac209")]
 
 script = raw"""
 cd cde

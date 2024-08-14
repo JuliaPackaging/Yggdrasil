@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.50.14"
+version = v"1.52.2"
 
-# Collection of sources required to build Pango
+# Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "1d67f205bfc318c27a29cfdfb6828568df566795df0cb51d2189cde7f2d581e8"),
-    DirectorySource("./bundled"),
+                  "d0076afe01082814b853deec99f9349ece5f2ce83908b8e58ff736b41f78a96b"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
 ]
@@ -33,13 +32,22 @@ if [[ "${target}" == *-mingw* ]]; then
     make install
 fi
 
-cd $WORKSPACE/srcdir/pango-*/
-# fix a windows build issue: see https://gitlab.gnome.org/GNOME/pango/-/merge_requests/702
-atomic_patch -p1 ../patches/dwrite.patch
+cd $WORKSPACE/srcdir/pango*/
+
+if [[ "${target}" == "${MACHTYPE}" ]]; then
+    # When building for the host platform, the system libexpat is picked up
+    rm /usr/lib/libexpat.so*
+fi
+
+# If we want libpangoft2 on Windows we need to explicitly enable fontconfig and freetype
+# See <https://gitlab.gnome.org/GNOME/pango/-/blob/main/README.win32.md>.
+
 pip3 install gi-docgen
 mkdir build && cd build
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
+    -Dfontconfig=enabled \
+    -Dfreetype=enabled \
     ..
 ninja -j${nproc}
 ninja install
@@ -49,7 +57,7 @@ install_license ../COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -60,14 +68,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Cairo_jll"; compat="1.16.1"),
+    Dependency("Cairo_jll"; compat="1.18.0"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.1"),
     Dependency("FriBidi_jll"),
-    Dependency("Glib_jll"; compat="2.68.1"),
+    Dependency("Glib_jll"; compat="2.74.0"),
     Dependency("HarfBuzz_jll"; compat="2.8.1"),
     BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)

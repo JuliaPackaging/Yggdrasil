@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Ccache"
-upstream_version = "4.7.4"
+upstream_version = "4.9.1"
 version = VersionNumber(upstream_version)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/ccache/ccache/releases/download/v$(upstream_version)/ccache-$(upstream_version).tar.xz",
-                  "df0c64d15d3efaf0b4f6837dd6b1467e40eeaaa807db25ce79c3a08a46a84e36"),
+                  "4c03bc840699127d16c3f0e6112e3f40ce6a230d5873daa78c60a59c7ef59d25"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]

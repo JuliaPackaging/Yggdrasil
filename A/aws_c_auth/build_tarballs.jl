@@ -3,15 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_auth"
-version = v"0.7.3"
+version = v"0.7.25"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-auth.git",
-              "df370cabd6bdfee7ce7d550daca19b6d14eb54b4"),
+    GitSource("https://github.com/awslabs/aws-c-auth.git", "52bf591613d1a001c43ec99af7376f871759c5fe"),
 ]
 
-# Bash recipe for building across all platforms
+# Bash recipe for building
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-auth
 mkdir build && cd build
@@ -37,8 +36,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_cal_jll"; compat="0.6.2"),
-    Dependency("aws_c_http_jll"; compat="0.7.12"),
+    Dependency("aws_c_cal_jll"; compat="0.7.1"),
+    Dependency("aws_c_http_jll"; compat="0.8.1"),
     Dependency("aws_c_sdkutils_jll"; compat="0.1.12"),
     BuildDependency("aws_lc_jll"),
 ]

@@ -12,6 +12,7 @@ version = v"2.19.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/NVIDIA/nccl.git", "88d44d777f6970bdbf6610badcbd7e25a05380f0"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,6 +28,9 @@ export CUDARTLIB=cudart # link against dynamic library
 mkdir -p ${TMPDIR}
 
 cd nccl
+
+atomic_patch -p1 ../patches/busid.patch
+
 make -j pkg.txz.build
 tar -xJf build/pkg/txz/*.txz -C ${WORKSPACE}/destdir --strip-components=1
 rm ${WORKSPACE}/destdir/LICENSE.txt

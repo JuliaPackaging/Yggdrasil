@@ -1,70 +1,105 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support"
-version = v"0.2.2"
+version = v"0.5.1"
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 generic_sources = [
-    GitSource("https://github.com/JuliaGPU/oneAPI.jl", "ab65719ed81a1237ef7afc7b3a0afb36bd9f3c36")
+    GitSource("https://github.com/JuliaGPU/oneAPI.jl",
+              "cfc99dde28eb8c41cdc30347a9859b70a6540d3d")
 ]
 
 platform_sources = Dict(
+    # these are the deps installed by Anaconda for dpcpp_linux-64 and mkl-devel-dpcpp
     # https://conda.anaconda.org/intel/linux-64
     Platform("x86_64", "linux"; libc="glibc") => [
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/dpcpp-cpp-rt-2023.0.0-intel_25370.tar.bz2",
-            "8aa30359fd1c0939cdcf0c36fa76e2fb07c8384a1f51acc2ccd563289c845010";
+            "https://conda.anaconda.org/intel/linux-64/dpcpp-cpp-rt-2024.1.0-intel_963.tar.bz2",
+            "ab3ef09509893100233de23d5af8bd3872bfc46c79cc9c9d10e21d5a2003c389"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/dpcpp_impl_linux-64-2023.0.0-intel_25370.tar.bz2",
-            "e4d53ac4000f4a3774d1860561ba1305791b7254173e8b0057845aedc1a3aa99";
+            "https://conda.anaconda.org/intel/linux-64/dpcpp_impl_linux-64-2024.1.0-intel_963.tar.bz2",
+            "84cccd5d33f93a73d2925e438066f3303f1caf5201cc326beabe46a30f01dd77"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/dpcpp_linux-64-2023.0.0-intel_25370.tar.bz2",
-            "b271aff70c99acc24f3ffccef4c246a943541dac98059c824a2f0f8b1c68df49";
+            "https://conda.anaconda.org/intel/linux-64/dpcpp_linux-64-2024.1.0-intel_963.tar.bz2",
+            "a11c55e5ecb711c431335923101b3c93dbe5528644a8f94e08b0b734bcd0c6ea"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/icc_rt-2023.0.0-intel_25370.tar.bz2",
-            "189ec80a95810ca2d2f4d8659792d7cc662872b0aa5dabb1d803e684eca1f072";
+            "https://conda.anaconda.org/intel/linux-64/icc_rt-2024.1.0-intel_963.tar.bz2",
+            "166441df7305a80aa8ef9b951b9d79f5a74d48d56e4a0747770d3343caa405fc"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lib-rt-2023.0.0-intel_25370.tar.bz2",
-            "10ae52d6480ce511b1b345391d2246140ba92e3f34c9fb2fdb72b88a6f2d0f66";
+            "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lib-rt-2024.1.0-intel_963.tar.bz2",
+            "7ceb4091d88d792ebb05940dd9bd6f3cc71e0a59cb893f00c4494ee02a9c1ca6"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lic-rt-2023.0.0-intel_25370.tar.bz2",
-            "f3d4270cd182efd8c795c669d6fb95b046172acacf003921bd7baef70d595540";
+            "https://conda.anaconda.org/intel/linux-64/intel-cmplr-lic-rt-2024.1.0-intel_963.tar.bz2",
+            "3794d69ff625403ee002f4836d68a51fa06f68fb32082596b724d075a4af1e14"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-opencl-rt-2023.0.0-intel_25370.tar.bz2",
-            "6f236af7c3c6e1b6026052b60799089f49548cdcd2abdaf56b2c335df0d7ab20";
-        ),
-        ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/intel-openmp-2023.0.0-intel_25370.tar.bz2",
-            "0eae400bf40e9c5d6cddf1750ce223602fa773864fdb05a794f78b07b97c54e3";
+            "https://conda.anaconda.org/intel/linux-64/intel-openmp-2024.1.0-intel_963.tar.bz2",
+            "6ab48343ca3c15768c33ca50ba2f0266e8d300b6755a685ae1aa5149fbe008e9"
         ),
 
 
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-2023.0.0-intel_25398.tar.bz2",
-            "b7ccc9f8a5d1c6c41a1a13fce3a7af4226f1382920765284d5d64ba6f86db53d";
+            "https://conda.anaconda.org/intel/linux-64/mkl-2024.1.0-intel_691.tar.bz2",
+            "419f0522a7ffa1133deddaa8eec5d8f9a383993b118cfaa2e897c439200549ef"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-devel-2023.0.0-intel_25398.tar.bz2",
-            "d9c314768a67966c9cb6258653557daaa4bc42037a18f39ab7dd04cb3961f857";
+            "https://conda.anaconda.org/intel/linux-64/mkl-devel-2024.1.0-intel_691.tar.bz2",
+            "def8ca30d0560a712e5f010f26da26d723c6bc9148124d8a63f6d2fb64fd3e38"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-devel-dpcpp-2023.0.0-intel_25398.tar.bz2",
-            "4a53862549650dc5950884cf676a02d0a3334205419c0449eba3b375038b44c7";
+            "https://conda.anaconda.org/intel/linux-64/mkl-devel-dpcpp-2024.1.0-intel_691.tar.bz2",
+            "abae8c0903e438bce8acfdf2b790d10863669490a87f19a908942268d5fabc82"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-dpcpp-2023.0.0-intel_25398.tar.bz2",
-            "d8029d7636f10e60bc66e93848561bb986df40c621b659a8e9346fdb24cb6851";
+            "https://conda.anaconda.org/intel/linux-64/mkl-dpcpp-2024.1.0-intel_691.tar.bz2",
+            "810c7ca1818101246d7df572f6e6702ac727b5a2a7eec9b7bb75a531e54f5eb5"
         ),
         ArchiveSource(
-            "https://conda.anaconda.org/intel/linux-64/mkl-include-2023.0.0-intel_25398.tar.bz2",
-            "ac06e55127ab6389d516fb07665862a315ae6dfc1331ee6e8248ce19a26cd7fd";
+            "https://conda.anaconda.org/intel/linux-64/mkl-include-2024.1.0-intel_691.tar.bz2",
+            "e36b2e74f5c28ff91565abe47a09dc246c9cf725e0d05b5fb08813b4073ea68b"
+        ),
+
+        ArchiveSource(
+            "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-blas-2024.1.0-intel_691.tar.bz2",
+            "fb334c846ad568653898a633a1a34ed1e595955a3a706776679931b9d7e10c45"
+        ),
+        ArchiveSource(
+            "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-lapack-2024.1.0-intel_691.tar.bz2",
+            "fb06906f5b4da3fdd907ab9956f6fb74f05ca58f2b8a9204dd4dd4cfbb5f1648"
+        ),
+        ArchiveSource(
+            "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-sparse-2024.1.0-intel_691.tar.bz2",
+            "fae28f1831b1f7ea7b449b814a6a80219ba84ed779250a1826cad4397725fe8e"
+        ),
+        ArchiveSource(
+            "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-datafitting-2024.1.0-intel_691.tar.bz2",
+            "c7ef31e06d11c61cc87e8bb5341172a074c22b31f9db8e0e9a3f190871d9ac81"
+        ),
+        ArchiveSource(
+            "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-dft-2024.1.0-intel_691.tar.bz2",
+            "29ae425989cb77e8fa67b9dcdc4234337cfd947eddf2481cd2cfcb4ce36c2cf0"
+        ),
+        ArchiveSource(
+            "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-rng-2024.1.0-intel_691.tar.bz2",
+            "34fae52fdef4c7c01ca2f64055d8eea6305b5fef9c18ae3a06ce1d79b0f27f25"
+        ),
+        ArchiveSource(
+            "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-stats-2024.1.0-intel_691.tar.bz2",
+            "50c018d56793d5b2e6848e7ea3099485af1e9a752bb3c675b22bf1709579d8e0"
+        ),
+        ArchiveSource(
+            "https://conda.anaconda.org/intel/linux-64/onemkl-sycl-vm-2024.1.0-intel_691.tar.bz2",
+            "3698ecae3d12c074864bc526961b74b471b3cdb42982953ab603a61b6e686608"
+        ),
+        ArchiveSource(
+            "https://anaconda.org/intel/tbb/2021.12.0/download/linux-64/tbb-2021.12.0-intel_495.tar.bz2",
+            "ca912130d808de691ae4a80f7888a41fb883d577bc7e36722a09c792d2cefdf6"
         ),
     ]
 )
@@ -79,8 +114,9 @@ mkdir -p ${libdir} ${includedir}
 mv lib/clang/*/include/CL ${includedir}
 rm -rf lib/clang
 cp -r include/* ${includedir}
-for lib in mkl_sycl mkl_intel_ilp64 mkl_sequential mkl_core sycl \
-           pi_level_zero pi_opencl OpenCL svml irng imf intlc; do
+for lib in sycl svml irng imf intlc pi_level_zero pi_opencl \
+           mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
+           mkl_avx mkl_def; do
     cp -a lib/lib${lib}*.so* ${libdir}
 done
 
@@ -91,8 +127,11 @@ CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+# Search for libraries in the prefix
+# XXX: why is this needed?
+CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}")
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-# XXX: use the Clang version to work around an issue with the SYCL headers
+# XXX: we use the Clang version to work around an issue with the SYCL headers
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
@@ -101,6 +140,14 @@ ninja -C build -j ${nproc} install
 
 # remove build-time dependencies we don't need
 rm -rf ${includedir}
+
+# XXX: MKL loads libOpenCL.so dynamically, and not by SONAME,
+#      which isn't covered by our OpenCL_jll dependency.
+#      to work around that, provide the actual library.
+#      this does result in two copies of libOpenCL.so loaded,
+#      but that seems to work fine...
+# XXX: have upstream fix this by dlopen'ing by SONAME first
+cp -f $(realpath ${libdir}/libOpenCL.so) ${libdir}/libOpenCL.so
 """
 
 # The products that we will ensure are always built
@@ -111,7 +158,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("oneAPI_Level_Zero_Headers_jll"),
-    Dependency("oneAPI_Level_Zero_Loader_jll")
+    Dependency("oneAPI_Level_Zero_Loader_jll"),
+    Dependency("OpenCL_jll"),
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)

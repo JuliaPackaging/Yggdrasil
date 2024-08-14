@@ -1,7 +1,7 @@
 # In addition to coin-or-common.jl, we need to modify this file to trigger a
 # rebuild.
 #
-# Last updated: 2022-10-26
+# Last updated: 2024-07-24
 
 include("../coin-or-common.jl")
 
@@ -35,6 +35,13 @@ if [[ ${target} == *aarch64* ]] || [[ ${target} == *arm* ]]; then
    export CPPFLAGS="${CPPFLAGS} -D__arm__"
 fi
 
+# BLAS and LAPACK
+if [[ "${target}" == *mingw* ]]; then
+  LBT="-lblastrampoline-5"
+else
+  LBT="-lblastrampoline"
+fi
+
 ../configure \
     --prefix=$prefix \
     --build=${MACHTYPE} \
@@ -45,12 +52,14 @@ fi
     --disable-dependency-tracking \
     --enable-shared \
     lt_cv_deplibs_check_method=pass_all \
-    --with-blas="-lopenblas" \
-    --with-lapack="-lopenblas" \
+    --with-blas \
+    --with-blas-lib="-L${libdir} ${LBT}" \
+    --with-lapack \
+    --with-lapack-lib="-L${libdir} ${LBT}" \
     --with-coinutils-lib="-lCoinUtils" \
-    --with-osi-lib="-lOsi -lCoinUtils" \
-    --with-mumps-lib="-L${libdir} -ldmumps -lzmumps -lcmumps -lsmumps -lmumps_common -lmpiseq -lpord -lmetis -lopenblas -lgfortran -lpthread" \
-    --with-mumps-incdir="${includedir}/mumps_seq" \
+    --with-osi-lib="-lCoinUtils -lOsi" \
+    --with-mumps-lib="-L${libdir} -ldmumps -lmpiseq" \
+    --with-mumps-incdir="${includedir}/libseq" \
     --with-metis-lib="-L${libdir} -lmetis" \
     --with-metis-incdir="${includedir}"
 
@@ -68,12 +77,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CoinUtils_jll", compat="$(CoinUtils_version)"),
-    Dependency("Osi_jll", compat="$(Osi_version)"),
-    Dependency("METIS_jll", compat="$(METIS_version)"),
-    Dependency("MUMPS_seq_jll", compat="$(MUMPS_seq_version)"),
-    Dependency("OpenBLAS32_jll", OpenBLAS32_version),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="CoinUtils_jll", uuid="be027038-0da8-5614-b30d-e42594cb92df"), compat="=$(CoinUtils_version)"),
+    Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70"), compat="=$(METIS_version)"),
+    Dependency(PackageSpec(name="Osi_jll", uuid="7da25872-d9ce-5375-a4d3-7a845f58efdd"), compat="=$(Osi_version)"),
+    Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"), compat="=$(MUMPS_seq_version_LBT)"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
@@ -83,9 +92,10 @@ build_tarballs(
     Clp_version,
     sources,
     script,
-    expand_gfortran_versions(platforms),
+    platforms,
     products,
     dependencies;
     preferred_gcc_version = gcc_version,
-    julia_compat = Julia_compat_version,
+    preferred_llvm_version = llvm_version,
+    julia_compat = "1.9",
 )
