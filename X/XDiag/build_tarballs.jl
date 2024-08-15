@@ -52,7 +52,11 @@ cmake -S . \
     -DXDIAG_JULIA_WRAPPER=On \
     -DJlCxx_DIR=$prefix/lib/cmake \
     -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
-    -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext}
+    -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
+    -DOpenMP_libgomp_LIBRARY=${libdir}/libgomp.dylib \
+    -DOpenMP_ROOT=${libdir} \
+    -DOpenMP_CXX_LIB_NAMES="libgomp" \
+    -DOpenMP_CXX_FLAGS="-fopenmp=libgomp -Wno-unused-command-line-argument"
 
 cmake --build build -j${nproc}
 cmake --install build
