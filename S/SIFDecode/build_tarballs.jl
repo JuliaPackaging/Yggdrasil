@@ -2,36 +2,40 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Packmol"
-version = v"20.15.1"
+name = "SIFDecode"
+version = v"2.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/m3g/packmol", "d6cd4b790adb6c9c1377690c8da8af043c33554d"),
+    GitSource("https://github.com/ralna/SIFDecode.git", "33183a4de90963be1f750bdea048d1ac2475876e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/packmol*
-install_license LICENSE
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make -j${nproc}
-make install
+# Update Ninja
+cp ${host_prefix}/bin/ninja /usr/bin/ninja
+
+cd ${WORKSPACE}/srcdir/SIFDecode
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson --prefix=$prefix
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
+platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("packmol", :packmol)
+    LibraryProduct("libsifdecode", :libsifdecode),
+    ExecutableProduct("sifdecoder_standalone", :sifdecoder_standalone),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 

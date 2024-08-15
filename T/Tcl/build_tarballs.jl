@@ -21,8 +21,8 @@ else
     cd $WORKSPACE/srcdir/tcl*/unix/
 fi
 
-FLAGS=()
-if [[ "${target}" == x86_64-* ]]; then
+FLAGS=(--enable-threads --disable-rpath)
+if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
