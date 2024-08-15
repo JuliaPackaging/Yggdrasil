@@ -42,7 +42,9 @@ if [[ "${target}" == x86_64-apple-* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 
-cmake -S . \
+
+if [[ "${target}" == *-apple-* ]]; then
+  cmake -S . \
      -B build \
     -D XDIAG_DISABLE_HDF5=On \
     -DJulia_PREFIX=$Julia_PREFIX \
@@ -57,6 +59,20 @@ cmake -S . \
     -DOpenMP_ROOT=${libdir} \
     -DOpenMP_CXX_LIB_NAMES="libgomp" \
     -DOpenMP_CXX_FLAGS="-fopenmp=libgomp -Wno-unused-command-line-argument"
+
+else
+  cmake -S . \
+     -B build \
+    -D XDIAG_DISABLE_HDF5=On \
+    -DJulia_PREFIX=$Julia_PREFIX \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DXDIAG_JULIA_WRAPPER=On \
+    -DJlCxx_DIR=$prefix/lib/cmake \
+    -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
+    -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} 
+fi
 
 cmake --build build -j${nproc}
 cmake --install build
