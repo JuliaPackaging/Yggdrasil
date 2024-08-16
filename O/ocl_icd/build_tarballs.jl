@@ -7,6 +7,8 @@ sources = [
 ]
 
 script = raw"""
+apk add ruby
+
 cd ${WORKSPACE}/srcdir/ocl-icd
 ./bootstrap
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
