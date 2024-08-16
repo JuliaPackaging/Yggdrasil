@@ -17,6 +17,7 @@ make install
 """
 
 platforms = supported_platforms()
+filter!(p -> libc(p) == "glibc", platforms)
 
 products = [
     LibraryProduct(["libOpenCL", "OpenCL"], :libocl_icd),
