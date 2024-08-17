@@ -56,7 +56,8 @@ cmake -S . \
     -DXDIAG_JULIA_WRAPPER=On \
     -DJlCxx_DIR=$prefix/lib/cmake \
     -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
-    -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} "${OMP_DEFINES[@]}"
+    -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
+    "${OMP_DEFINES[@]}"
 
 cmake --build build -j${nproc}
 cmake --install build
