@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SIFDecode"
-version = v"2.5.1"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/SIFDecode.git", "33183a4de90963be1f750bdea048d1ac2475876e")
+    GitSource("https://github.com/ralna/SIFDecode.git", "a94d9a0b00f3e215da27943f7c19809ca160166b")
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,6 @@ platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libsifdecode", :libsifdecode),
     ExecutableProduct("sifdecoder_standalone", :sifdecoder_standalone),
 ]
 
