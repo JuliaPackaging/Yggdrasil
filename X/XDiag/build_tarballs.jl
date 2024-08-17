@@ -9,13 +9,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 
 name = "XDiag"
-version = v"0.2.0"
+version = v"0.2.1"
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "614f91cbe1beb679cbb687739c6b308e0f49b699")
+    GitSource("https://github.com/awietek/xdiag.git", "f2c77f8575f06a6d2614c22440676afd76f53fbc")
 ]
 
 
@@ -42,8 +42,12 @@ if [[ "${target}" == x86_64-apple-* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 
+if [[ "${target}" == *-apple-* ]]; then
+    OMP_DEFINES=(-DOpenMP_libgomp_LIBRARY=${libdir}/libgomp.dylib -DOpenMP_ROOT=${libdir} -DOpenMP_CXX_LIB_NAMES="libgomp" -DOpenMP_CXX_FLAGS="-fopenmp=libgomp -Wno-unused-command-line-argument")
+fi
+
 cmake -S . \
-     -B build \
+    -B build \
     -D XDIAG_DISABLE_HDF5=On \
     -DJulia_PREFIX=$Julia_PREFIX \
     -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -52,11 +56,11 @@ cmake -S . \
     -DXDIAG_JULIA_WRAPPER=On \
     -DJlCxx_DIR=$prefix/lib/cmake \
     -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
-    -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext}
+    -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
+    "${OMP_DEFINES[@]}"
 
 cmake --build build -j${nproc}
 cmake --install build
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -84,8 +88,9 @@ dependencies = [
     BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.7")),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.13.2"),
     Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)), 
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
+    # Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)), 
+    # Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")), 
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
