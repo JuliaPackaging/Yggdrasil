@@ -6,16 +6,16 @@ include("utils.jl")
 # Collection of pre-build pandoc binaries
 name = "pandoc_crossref"
 
-crossref_ver = "0.3.17.1a"
-panddoc_jll_version = v"3.2.0"
+crossref_ver = "0.3.17.1c"
+panddoc_jll_version = v"3.3.0"
 version = pandoc_crossref_jll_version(crossref_ver)
 
 url_prefix = "https://github.com/lierdakil/pandoc-crossref/releases/download/v$(crossref_ver)/pandoc-crossref"
 sources = [
-    ArchiveSource("$(url_prefix)-Linux.tar.xz", "0eb261d03929921224c26feec96335f814065b84760ca0ecafe8a2f2d5794d4b"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macOS.tar.xz", "f2dc7dd5af6b6270c0fbc0814f2f46f40aa015a761472aa1225d02abb34e4427"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-macOS.tar.xz", "f2dc7dd5af6b6270c0fbc0814f2f46f40aa015a761472aa1225d02abb34e4427"; unpack_target = "aarch64-apple-darwin20"),
-    FileSource("$(url_prefix)-Windows.7z", "4990bcb174165a3e32383f0833f0e32179442fb71e056593c2a8f96ceddd6f93"; filename = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-Linux.tar.xz", "0dc7aca677f4ec50419b53933ebe71ff86df6ac04d6108cd9913758cf8e118aa"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-macOS.tar.xz", "147a02f00a2d96366ea44c35dea996ed225735d293b655533bbc91c6bf4ce6de"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-macOS.tar.xz", "147a02f00a2d96366ea44c35dea996ed225735d293b655533bbc91c6bf4ce6de"; unpack_target = "aarch64-apple-darwin20"),
+    FileSource("$(url_prefix)-Windows.7z", "d9198fd48ebf0d098e72db7e09f0d88c796e281bf2abacfd1eb202c0ac1bbd18"; filename = "x86_64-w64-mingw32"),
     FileSource("https://raw.githubusercontent.com/lierdakil/pandoc-crossref/v$(crossref_ver)/LICENSE", "39db8f9acf036595a2566ea3fe560bc7bd65d8749f088e0f4a4ef2f8a6cb4b34"),
 ]
 
