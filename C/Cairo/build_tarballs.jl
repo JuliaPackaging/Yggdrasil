@@ -32,6 +32,7 @@ mkdir output && cd output/
 
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dfreetype=enabled \
+    -Dfontconfig=enabled \
     -Dtee=enabled \
     -Dpng=enabled \
     -Dzlib=enabled \
@@ -70,7 +71,7 @@ linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
     Dependency("Glib_jll"),
-    Dependency("Pixman_jll"),
+    Dependency("Pixman_jll"; compat="0.43.4"),
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.13.1"),
@@ -88,4 +89,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6", clang_use_lld=false)

@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_sdkutils"
-version = v"0.1.12"
+version = v"0.1.17"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-sdkutils.git",
-              "a6fd80cf7c163062d31abb28f309e47330fbfc17"),
+    GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "ac3ac9d384fb563d0fccff14e5223469b650487c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.3"),
+    Dependency("aws_c_common_jll"; compat="0.9.17"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

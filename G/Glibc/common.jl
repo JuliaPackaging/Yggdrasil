@@ -20,6 +20,10 @@ function glibc_sources(version)
             ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.34.tar.xz",
                           "44d26a1fe20b8853a48f470ead01e4279e869ac149b195dda4e44a195d981ab2"),
         ],
+        v"2.38" => [
+            ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.38.tar.xz",
+                          "fb82998998b2b29965467bc1b69d152e9c307d2cf301c9eafb4555b770ef3fd2"),
+        ],
     )
     return [
         glibc_version_sources[version]...,
@@ -48,7 +52,7 @@ function glibc_script()
     mkdir -p $WORKSPACE/srcdir/glibc_build
 
     if [[ -d ../debian ]]; then
-        echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories
+        echo "https://dl-cdn.alpinelinux.org/alpine/edge/community/" >> /etc/apk/repositories
         apk update
         apk add quilt
         QUILT_PATCHES=$PWD/../debian/patches quilt push

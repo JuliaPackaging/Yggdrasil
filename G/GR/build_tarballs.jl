@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.73.0"
+version = v"0.73.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "a57a9dad9af3df12a5f55bb244920f7c50b0c27b"),
+    GitSource("https://github.com/sciapp/gr.git", "a8f4f0b867ad8e40e9a927d72e4ada571fdca461"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "fc5318e045c032d13135c1aa918cf94713773e28b7c1a0f8fcc8b7a5407d8683", "gr.js"),
+               "89a114eac7e96f0a32441da01e1929068aeaa286ad2ea22f923420cff8d4e2a4", "gr.js"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
@@ -99,13 +99,13 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="~4.5.1"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"; compat="~6.5.2"), # Never allow upgrading more than the minor version without recompilation
+    Dependency("Qt6Base_jll"; compat="~6.7.1"), # Never allow upgrading more than the minor version without recompilation
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC version 10 because of Qt6.5
+# GCC version 10 because of Qt6.7
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version = v"10", julia_compat="1.6")

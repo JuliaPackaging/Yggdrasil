@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "Libgcrypt"
-version = v"1.8.7"
+version = v"1.8.11"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-$(version).tar.bz2",
-                  "03b70f028299561b7034b8966d7dd77ef16ed139c43440925fe8782561974748"),
+                  "c98249fb5bb1f6017f5f9bf484327a940b59075bca7c46fa69ebb54098249860"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgcrypt-*/
+cd $WORKSPACE/srcdir/libgcrypt-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-padlock-support \
     --disable-asm
@@ -24,7 +24,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

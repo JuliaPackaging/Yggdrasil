@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"1.0.14828"#.8
+version = v"1.0.17193"#.4
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,12 +27,12 @@ version = v"1.0.14828"#.8
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "2cfe79aac5ff74a4c278950caa1e7cbc20c57e70"),
-    GitSource("https://github.com/intel/opencl-clang.git", "cf95b338d14685e4f3402ab1828bef31d48f1fd6" #= branch ocl-open-140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "23f398bf369093b1fd67459db8071ffcc6b92658" #= branch llvm_release_140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "63de608daeb7e91fbea6d7477a50debe7cac57ce" #= tag sdk-1.3.239.0 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "d13b52222c39a7e9a401b44646f0ca3a640fbd47" #= tag sdk-1.3.239.0 =#),
-    GitSource("https://github.com/intel/vc-intrinsics.git", "fe92a377338258b725cfbd0a1bd49a9cf5e2864c" #= latest version: v0.13.0 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "ffa6fb4fc18ae047b8a8e91dbab83f8b3da5ce52"),
+    GitSource("https://github.com/intel/opencl-clang.git", "66a54cbef6726c4e791986779a60d7a45b09c9c9" #= branch ocl-open-140 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "62f5b09b11b1da42274371b1f7535f6f2ab11485" #= branch llvm_release_140 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f0cc85efdbbe3a46eae90e0f915dc1509836d0fc" #= tag v2023.6.rc1 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "1c6bb2743599e6eb6f37b2969acc0aef812e32e3"), #= master =#
+    GitSource("https://github.com/intel/vc-intrinsics.git", "f9c34404d0ea9abad83875a10bd48d88cea90ebd" #= latest version: v0.18.0 =#),
     GitSource("https://github.com/llvm/llvm-project.git", "c12386ae247c0d46e1d513942e322e3a0510b126" #= branch llvmorg-14.0.5 =#),
     # patches
     DirectorySource("./bundled"),
@@ -41,6 +41,8 @@ sources = [
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     script = raw"""
+        apk add py3-mako
+
         # the build system uses git
         export HOME=$(pwd)
         git config --global user.name "Binary Builder"

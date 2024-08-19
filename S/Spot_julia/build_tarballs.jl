@@ -3,13 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "Spot_julia"
-version = v"2.9.7"
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+version = v"2.12"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.9.7.tar.gz","1eea67e3446cdbbbb705ee6e26fd869020cdb7d82c563fead9cb4394b9baa04c"),
-    GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128")
+    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.12.tar.gz","26ba076ad57ec73d2fae5482d53e16da95c47822707647e784d8c7cec0d10455"),
+    GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
     ]
     
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
@@ -19,18 +20,27 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/spot-2.9.7/
+if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
+    # LLVM 15 requires macOS SDK 10.14, see
+    # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1309525112> and
+    # references therein.
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
+
+cd $WORKSPACE/srcdir/spot-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-python
 make -j${nproc}
 make install
+install_license COPYING
 
 # build with cmake 
 cd $WORKSPACE/srcdir/spot_julia/spot_julia
 
-# Override compiler ID to silence the horrible "No features found" cmake error
-if [[ $target == *"apple-darwin"* ]]; then
-  macos_extra_flags="-DCMAKE_CXX_COMPILER_ID=AppleClang -DCMAKE_CXX_COMPILER_VERSION=10.0.0 -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
-fi
 Julia_PREFIX=$prefix
 mkdir build
 cd build
@@ -89,9 +99,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
-    BuildDependency("libjulia_jll")
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
+    Dependency("libcxxwrap_julia_jll"; compat="0.12.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10", clang_use_lld=false)

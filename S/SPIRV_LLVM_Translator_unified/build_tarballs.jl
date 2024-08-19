@@ -7,17 +7,17 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "SPIRV_LLVM_Translator_unified"
 repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
-version = v"0.3"
+version = v"0.5"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.6", v"15.0.7"]
+llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"11.0.1" => [GitSource(repo, "474cc8f991e5208fa805720250f0901a4d5265ec")],
-    v"12.0.1" => [GitSource(repo, "a14a95a92e1a358e58b1a544f00c413508308b70")],
-    v"13.0.1" => [GitSource(repo, "828bdebefa56d34d72a3fe7bb59e53f13953ecaf")],
-    v"14.0.6" => [GitSource(repo, "60c0cb0078658e0bc33d93724ffbe70ed4be6c51")],
-    v"15.0.7" => [GitSource(repo, "e82ecc2bd7295604fcf1824e47c95fa6a09c6e63")],
+    v"13.0.1" => [GitSource(repo, "093cf279cad6f12bb22abf0a94eae9aca938aaea")],
+    v"14.0.6" => [GitSource(repo, "62f5b09b11b1da42274371b1f7535f6f2ab11485")],
+    v"15.0.7" => [GitSource(repo, "0f9ad6622b1bf308facf35073c91c738b34081ba")],
+    v"16.0.6" => [GitSource(repo, "0b107dbf421593ed6f201ea2b7976e9456bc6bd3")],
+    v"17.0.6" => [GitSource(repo, "38e0a0dda82ab2807d7064b34bd7e81034ef3837")],
 )
 
 # These are the platforms we will build for by default, unless further
@@ -50,6 +50,9 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 
 # Use our LLVM version
 CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * raw""")
+
+# Suppress certain errors
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion")
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} llvm-spirv install
@@ -105,6 +108,6 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, products, build.dependencies;
-                   preferred_gcc_version=v"7", julia_compat="1.6",
+                   preferred_gcc_version=v"10", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "zfp"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/LLNL/zfp/releases/download/$(version)/zfp-$(version).tar.gz",
-                  "0ea08ae3e50e3c92f8b8cf41ba5b6e2de8892bc4a4ca0c59b8945b6c2ab617c4")
+                  "ca0f7b4ae88044ffdda12faead30723fe83dd8f5bb0db74125df84589e60e52b")
 ]
 
 # Bash recipe for building across all platforms

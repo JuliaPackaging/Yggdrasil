@@ -3,33 +3,25 @@
 using BinaryBuilder, Pkg
 
 name = "GTPSA"
-version = v"1.1.0"
+version = v"1.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mattsignorelli/gtpsa.git", "7916354009343356f5c44b017fded044b4aaaa53")
+    GitSource("https://github.com/mattsignorelli/gtpsa.git", "93998470e52320a012d24fbdf3dded104a2e2413")
 ]
 
 # Bash recipe for building across all platforms
+# GCC >=11 is necessary because the source code uses the two-argument version
+# of the attribute malloc, see https://github.com/mattsignorelli/gtpsa/blob/394a20847b869a842c6a89f2af1a889c3a1c2813/code/mad_mem.h#L73-L75 (also unsupported by clang)
 script = raw"""
 cd $WORKSPACE/srcdir
 cd gtpsa/
-if [[ $target == *"-apple-"* ]]
-then
-CC=gcc
-CXX=g++
-ln /workspace/destdir/lib/liblapack32.dylib /workspace/destdir/lib/liblapack.dylib
-elif [[ $target == *"linux"* ]]
-then
-ln /workspace/destdir/lib/liblapack32.so /workspace/destdir/lib/liblapack.so
-fi
 cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake -DCMAKE_BUILD_TYPE=Release
-make
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 # The code does not compile on FreeBSD due to an error with __builtin_tgmath
 platforms = supported_platforms()
 filter!(!Sys.isfreebsd, platforms)
@@ -42,8 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="ReferenceBLAS_jll", uuid="ee697234-451c-51c9-b102-303d89a9c3a0"))
-    Dependency(PackageSpec(name="LAPACK32_jll", uuid="17f450c3-bd24-55df-bb84-8c51b4b939e3"))
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

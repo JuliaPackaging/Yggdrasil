@@ -1,6 +1,6 @@
 name = "MLIR"
-llvm_full_version = v"16.0.6+3"
-libllvm_version = v"16.0.6+3"
+llvm_full_version = v"16.0.6+4"
+libllvm_version = v"16.0.6+4"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -8,7 +8,7 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
-# Include common tools.
+# Include common tools..
 include("../common.jl")
 
 augment_platform_block = """

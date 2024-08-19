@@ -27,5 +27,3 @@ products = [
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, api_version, sources, script, platforms, products, dependencies)
-
-# bump

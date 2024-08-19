@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1200.200"
-gap_lib_version = v"400.1201.200"
+gap_version = v"400.1300.0"
+gap_lib_version = v"400.1300.0"
 name = "float"
-upstream_version = "1.0.3" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "1.0.4" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build libsingular-julia
 sources = [
     ArchiveSource("https://github.com/gap-packages/float/releases/download/v$(upstream_version)/float-$(upstream_version).tar.gz",
-                  "a0afd65441844ba3a02670f6057d79c3aba77b9a5d0ec6861e215a33bd2b9405"),
+                  "dcdca5c2cb6428cf7d257e2ef71ec98f2b3eb62d3b2907fda416ac9ecf65e63e"),
 ]
 
 # Bash recipe for building across all platforms

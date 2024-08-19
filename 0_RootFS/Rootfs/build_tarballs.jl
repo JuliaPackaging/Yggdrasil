@@ -14,9 +14,14 @@
 #     (https://github.com/JuliaBinaryWrappers/Musl_jll.jl/releases and
 #     https://github.com/JuliaBinaryWrappers/Glibc_jll.jl/releases)
 #   * etc...
-# * to build and deploy the new image, run
+# * to build and deploy the new image:
 #
-#     julia build_tarballs.jl --debug --verbose --deploy
+#     - Ensure you are using the development version of `BinaryBuilderBase`:
+#         `]develop BinaryBuilderBase`
+#       Also ensure you are at the tip of the `master` branch.
+#     - Run: `julia build_tarballs.jl --debug --verbose --deploy`
+#     - This will update the file `Artifacts.toml` in `BinaryBuilderBase`.
+#       Create a pull request for these changes.
 
 using Pkg, BinaryBuilder, SHA, Dates
 if !isdefined(Pkg, :Artifacts)
@@ -123,7 +128,7 @@ sources = [
               "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
     GitSource("https://github.com/mesonbuild/meson.git",
-              "7368795d13081d4928a9ba04d48498ca2442624b"), # v1.3.0
+              "eaefe29463a61a311a6b1de6cd539f39500399ff"), # v1.4.0
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.3%2B0/ldid.v2.1.3.x86_64-linux-musl-cxx11.tar.gz",
@@ -246,7 +251,7 @@ for arch in x86_64 i686; do
 done
 
 # Build/install meson
-cd ${WORKSPACE}/srcdir/meson/
+cd ${WORKSPACE}/srcdir/meson
 python3 setup.py build
 python3 setup.py install --prefix=/usr --root="${prefix}"
 

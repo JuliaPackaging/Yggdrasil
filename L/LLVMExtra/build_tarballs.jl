@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.27"
+version = v"0.0.32"
 
-llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
 
 sources = [
-    GitSource(repo, "510fa0bc1dec20b118e38c0d06c52f9e0ccf6dd5")
+    GitSource(repo, "7f4b740e10ba59ab745599cbc00bb302e4a90b5a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,6 +46,8 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 
 ninja -C build -j ${nproc} install
+
+install_license LICENSE-APACHE LICENSE-MIT
 """
 
 augment_platform_block = """

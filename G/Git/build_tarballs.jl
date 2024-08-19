@@ -3,25 +3,29 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.42.0"
+version = v"2.44.0"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "3278210e9fd2994b8484dd7e3ddd9ea8b940ef52170cdb606daa94d887c93b0d"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.2/Git-$(version).2-32-bit.tar.bz2",
-                  "64cd27bebd457592a83c2aa8bf0555ef6501675769f330b7558041d17cbb52fa"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.2/Git-$(version).2-64-bit.tar.bz2",
-                  "c192e56f8ed3d364acc87ad04d1f5aa6ae03c23b32b67bf65fcc6f9b8f032e65"; unpack_target = "x86_64-w64-mingw32"),
+                  "e358738dcb5b5ea340ce900a0015c03ae86e804e7ff64e47aa4631ddee681de3"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
+                  "14541119fe97b4d34126ee136cbdba8da171b8cbd42543185a259128a3eed6b3"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
+                  "d78c40d768eb7af7e14d5cd47dac89a2e50786c89a67be6249e1a041ae5eb20d"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 install_license ${WORKSPACE}/srcdir/git-*/COPYING
 
-if [[ "${target}" == *-ming* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
+    cd ${WORKSPACE}/srcdir/${target}
+    # Delete symbolic links, which can't be created on Windows
+    echo "Deleting symbolic links..."
+    find . -type l -print -delete
     # Fast path for Windows: just copy the content of the tarball to the prefix
-    cp -r ${WORKSPACE}/srcdir/${target}/mingw${nbits}/* ${prefix}
+    cp -r * ${prefix}
     exit
 fi
 
@@ -121,3 +125,5 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build trigger: 1

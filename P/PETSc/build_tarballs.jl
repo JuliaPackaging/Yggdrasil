@@ -226,7 +226,6 @@ build_petsc()
         --CFLAGS='-fno-stack-protector '  \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
         --LDFLAGS="${LIBFLAGS}"  \
-        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
         --with-debugging=${DEBUG_FLAG}  \
         --with-batch \
