@@ -16,7 +16,7 @@ script = raw"""
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
 cd ${WORKSPACE}/srcdir/SIFDecode
-meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson --prefix=$prefix
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson --prefix=$prefix -Ddefault_library=shared
 meson compile -C builddir
 meson install -C builddir
 """
@@ -29,6 +29,7 @@ platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libsifdecode", :libsifdecode),
     ExecutableProduct("sifdecoder_standalone", :sifdecoder_standalone),
 ]
 
