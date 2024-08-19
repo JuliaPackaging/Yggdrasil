@@ -1,4 +1,4 @@
-# PETSc 3.21.4 with OpenBLAS and statiuc compilations of superlu_dist, suitesparse and mumps on machines that support it
+# PETSc 3.19.6 with OpenBLAS and static compilations of superlu_dist and mumps on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
