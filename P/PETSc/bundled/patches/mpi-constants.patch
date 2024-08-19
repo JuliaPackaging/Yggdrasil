@@ -1,59 +1,46 @@
 diff --git a/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c b/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c
-index dd3ec73de3d..b70bacb2858 100644
+index 7b5e24b..b0edf7d 100644
 --- a/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c
 +++ b/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c
-@@ -130,8 +130,9 @@ typedef struct {
-   gridinfo3d_t grid3d;
+@@ -144,7 +144,8 @@ typedef struct {
  #endif
  } PetscSuperLU_DIST;
+ 
 -static PetscMPIInt Petsc_Superlu_dist_keyval = MPI_KEYVAL_INVALID;
--
 +static PetscMPIInt Petsc_Superlu_dist_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Superlu_dist_keyval() { Petsc_Superlu_dist_keyval = MPI_KEYVAL_INVALID; }
-+ 
- PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
- {
-   PetscSuperLU_DIST *context = (PetscSuperLU_DIST *)attr_val;
-diff --git a/src/mat/impls/scalapack/matscalapack.c b/src/mat/impls/scalapack/matscalapack.c
-index d105cdd0a57..9cb7352c281 100644
---- a/src/mat/impls/scalapack/matscalapack.c
-+++ b/src/mat/impls/scalapack/matscalapack.c
-@@ -17,7 +17,9 @@ static PetscBool ScaLAPACKCite       = PETSC_FALSE;
-     The variable Petsc_ScaLAPACK_keyval is used to indicate an MPI attribute that
-   is attached to a communicator, in this case the attribute is a Mat_ScaLAPACK_Grid
- */
--static PetscMPIInt Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID;
-+PetscMPIInt Petsc_ScaLAPACK_keyval;
-+__attribute__((__constructor__)) static void init_Petsc_ScaLAPACK_keyval() { Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID; }
-+
  
- static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
+ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_DeleteFn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
  {
 diff --git a/src/sys/classes/viewer/impls/ascii/vcreatea.c b/src/sys/classes/viewer/impls/ascii/vcreatea.c
-index bc0dac30c9b..04a3dee9d6d 100644
+index cb3c3d5..c128a74 100644
 --- a/src/sys/classes/viewer/impls/ascii/vcreatea.c
 +++ b/src/sys/classes/viewer/impls/ascii/vcreatea.c
-@@ -5,7 +5,8 @@
+@@ -4,8 +4,9 @@
      The variable Petsc_Viewer_Stdout_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
 -PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
+-
 +PetscMPIInt Petsc_Viewer_Stdout_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Viewer_Stdout_keyval() { Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID; }
- 
- /*@
-    PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
-@@ -81,7 +82,8 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
++ 
+ /*@C
+    PETSC_VIEWER_STDOUT_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
+                     in a communicator.
+@@ -45,8 +46,9 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
      The variable Petsc_Viewer_Stderr_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
 -PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
+-
 +PetscMPIInt Petsc_Viewer_Stderr_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Viewer_Stderr_keyval() { Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID; }
- 
++ 
  /*@
-    PetscViewerASCIIGetStderr - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
-@@ -155,7 +157,8 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
+   PetscViewerASCIIGetStderr - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
+   in a communicator. Error returning version of `PETSC_VIEWER_STDERR_()`
+@@ -128,7 +130,8 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
    PetscFunctionReturn(viewer);
  }
  
@@ -64,10 +51,10 @@ index bc0dac30c9b..04a3dee9d6d 100644
     Called with MPI_Comm_free() is called on a communicator that has a viewer as an attribute. The viewer is not actually destroyed
     because that is managed by PetscObjectDestroyRegisterAll(). PetscViewerASCIIGetStdout() registers the viewer with PetscObjectDestroyRegister() to be destroyed when PetscFinalize() is called.
 diff --git a/src/sys/classes/viewer/impls/binary/binv.c b/src/sys/classes/viewer/impls/binary/binv.c
-index 132fb1a5497..881614e2576 100644
+index 4d975b4..b497054 100644
 --- a/src/sys/classes/viewer/impls/binary/binv.c
 +++ b/src/sys/classes/viewer/impls/binary/binv.c
-@@ -1562,7 +1562,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
+@@ -1577,7 +1577,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
      The variable Petsc_Viewer_Binary_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
@@ -78,10 +65,10 @@ index 132fb1a5497..881614e2576 100644
  /*@C
       PETSC_VIEWER_BINARY_ - Creates a `PETSCVIEWERBINARY` `PetscViewer` shared by all processors
 diff --git a/src/sys/classes/viewer/impls/draw/drawv.c b/src/sys/classes/viewer/impls/draw/drawv.c
-index 60ef77c612a..8afdd112ae7 100644
+index 09f7f94..8c18913 100644
 --- a/src/sys/classes/viewer/impls/draw/drawv.c
 +++ b/src/sys/classes/viewer/impls/draw/drawv.c
-@@ -720,7 +720,8 @@ PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold)
+@@ -721,7 +721,8 @@ PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold)
      The variable Petsc_Viewer_Draw_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
@@ -92,10 +79,10 @@ index 60ef77c612a..8afdd112ae7 100644
  /*@C
      PETSC_VIEWER_DRAW_ - Creates a window `PETSCVIEWERDRAW` `PetscViewer` shared by all processors
 diff --git a/src/sys/classes/viewer/impls/hdf5/hdf5v.c b/src/sys/classes/viewer/impls/hdf5/hdf5v.c
-index 1895a16e340..291244814d8 100644
+index e5b5380..10035dd 100644
 --- a/src/sys/classes/viewer/impls/hdf5/hdf5v.c
 +++ b/src/sys/classes/viewer/impls/hdf5/hdf5v.c
-@@ -1578,7 +1578,8 @@ static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer viewer, c
+@@ -1580,7 +1580,8 @@ static PetscErrorCode PetscViewerHDF5HasAttribute_Internal(PetscViewer viewer, c
    The variable Petsc_Viewer_HDF5_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
@@ -106,10 +93,10 @@ index 1895a16e340..291244814d8 100644
  /*@C
    PETSC_VIEWER_HDF5_ - Creates an `PETSCVIEWERHDF5` `PetscViewer` shared by all processors in a communicator.
 diff --git a/src/sys/classes/viewer/impls/socket/send.c b/src/sys/classes/viewer/impls/socket/send.c
-index 1385b4232ae..9617bd06087 100644
+index 9bcc6fd..38aca30 100644
 --- a/src/sys/classes/viewer/impls/socket/send.c
 +++ b/src/sys/classes/viewer/impls/socket/send.c
-@@ -462,7 +462,8 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
+@@ -463,7 +463,8 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
      The variable Petsc_Viewer_Socket_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
@@ -118,38 +105,20 @@ index 1385b4232ae..9617bd06087 100644
 +__attribute__((__constructor__)) static void init_Petsc_Viewer_Socket_keyval() { Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID; }
  
  /*@C
-      PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
-diff --git a/src/sys/objects/optionsyaml.c b/src/sys/objects/optionsyaml.c
-index 254dbf0d352..18b402469da 100644
---- a/src/sys/objects/optionsyaml.c
-+++ b/src/sys/objects/optionsyaml.c
-@@ -10,7 +10,9 @@
- PETSC_INTERN PetscErrorCode PetscOptionsSetValue_Private(PetscOptions, const char[], const char[], int *, PetscOptionSource);
- PETSC_INTERN PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions, const char[], PetscOptionSource);
- 
--static MPI_Comm petsc_yaml_comm = MPI_COMM_NULL; /* only used for parallel error handling */
-+static MPI_Comm petsc_yaml_comm; /* only used for parallel error handling */
-+__attribute__((__constructor__)) static void init_petsc_yaml_comm() { petsc_yaml_comm = MPI_COMM_NULL; }
-+
- 
- static inline MPI_Comm PetscYAMLGetComm(void)
- {
+    PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 diff --git a/src/sys/objects/pinit.c b/src/sys/objects/pinit.c
-index f0b0b569fa4..02357127622 100644
+index 6867c8a..7d606e1 100644
 --- a/src/sys/objects/pinit.c
 +++ b/src/sys/objects/pinit.c
-@@ -41,24 +41,38 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
- PETSC_INTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm, int);
- PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm, int);
+@@ -42,22 +42,36 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm, int);
  PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **);
--
-+ 
+ 
  /* user may set these BEFORE calling PetscInitialize() */
 -MPI_Comm PETSC_COMM_WORLD = MPI_COMM_NULL;
 -#if PetscDefined(HAVE_MPI_INIT_THREAD)
--PetscMPIInt PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_FUNNELED;
+-PetscMPIInt PETSC_MPI_THREAD_REQUIRED = PETSC_DECIDE;
 -#else
--PetscMPIInt PETSC_MPI_THREAD_REQUIRED = 0;
+-PetscMPIInt PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_SINGLE;
 -#endif
 -
 -PetscMPIInt Petsc_Counter_keyval      = MPI_KEYVAL_INVALID;
@@ -194,45 +163,41 @@ index f0b0b569fa4..02357127622 100644
  
  /*
       Declare and set all the string names of the PETSc enums
-@@ -423,7 +437,10 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void *, MPI_Datatype, PetscMP
+@@ -426,7 +440,8 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void *, MPI_Datatype, PetscMP
  PETSC_EXTERN PetscMPIInt PetscDataRep_write_conv_fn(void *, MPI_Datatype, PetscMPIInt, void *, MPI_Offset, void *);
  #endif
  
 -PetscMPIInt PETSC_MPI_ERROR_CLASS = MPI_ERR_LASTCODE, PETSC_MPI_ERROR_CODE;
 +PetscMPIInt PETSC_MPI_ERROR_CLASS,PETSC_MPI_ERROR_CODE;
 +__attribute__((__constructor__)) static void init_PETSC_MPI_ERROR_CLASS() { PETSC_MPI_ERROR_CLASS=MPI_ERR_LASTCODE; }
-+ 
-+
  
  PETSC_INTERN int    PetscGlobalArgc;
  PETSC_INTERN char **PetscGlobalArgs;
 diff --git a/src/sys/utils/mpiu.c b/src/sys/utils/mpiu.c
-index 5da075d555d..812ff10bc78 100644
+index 93290f4..cace2e4 100644
 --- a/src/sys/utils/mpiu.c
 +++ b/src/sys/utils/mpiu.c
-@@ -42,7 +42,9 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm, int n
+@@ -41,7 +41,8 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm, int n
      The variable Petsc_Seq_keyval is used to indicate an MPI attribute that
    is attached to a communicator that manages the sequential phase code below.
  */
 -PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 +PetscMPIInt Petsc_Seq_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Seq_keyval() { Petsc_Seq_keyval = MPI_KEYVAL_INVALID; }
-+
  
  /*@
-    PetscSequentialPhaseBegin - Begins a sequential section of code.
+   PetscSequentialPhaseBegin - Begins a sequential section of code.
 diff --git a/src/vec/vec/utils/comb.c b/src/vec/vec/utils/comb.c
-index 38ce9beb2b9..7e63236adf0 100644
+index 67335d4..ecc67d9 100644
 --- a/src/vec/vec/utils/comb.c
 +++ b/src/vec/vec/utils/comb.c
-@@ -271,7 +271,9 @@ PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr)
+@@ -272,7 +272,8 @@ static PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr)
    PetscFunctionReturn(PETSC_SUCCESS);
  }
  
 -PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 +PetscMPIInt Petsc_Reduction_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Reduction_keyval() { Petsc_Reduction_keyval = MPI_KEYVAL_INVALID; }
-+
  
  /*
     Private routine to delete internal storage when a communicator is freed.
