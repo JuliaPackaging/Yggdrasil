@@ -1,4 +1,4 @@
-# PETSc 3.19.6 with OpenBLAS and static compilations of superlu_dist and mumps on machines that support it
+# PETSc 3.21.4 with OpenBLAS and statiuc compilations of superlu_dist, suitesparse and mumps on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -140,10 +140,14 @@ build_petsc()
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=0
-    else
+    elseif [ "${1}" == "double" ] && [ "${2}" == "real" ] 
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=1      
+    else
+        MUMPS_LIB=""
+        MUMPS_INCLUDE=""
+        USE_STATIC_MUMPS=0      
     fi
 
 
@@ -183,6 +187,11 @@ build_petsc()
     MPI_CC=mpicc
     MPI_FC=mpif90
     MPI_CXX=mpicxx
+    if [ -f "${libdir}/libmpitrampoline.${dlext}" ]; then
+        # required for mpitrampoline
+        MPI_FC=mpifc
+    fi
+    
     if [[ "${target}" == *-mingw* ]]; then
         # since we don't use MPI on windows
         MPI_CC=${CC}
@@ -226,6 +235,7 @@ build_petsc()
         --CFLAGS='-fno-stack-protector '  \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
         --LDFLAGS="${LIBFLAGS}"  \
+        --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
         --with-64-bit-indices=${USE_INT64}  \
         --with-debugging=${DEBUG_FLAG}  \
         --with-batch \
