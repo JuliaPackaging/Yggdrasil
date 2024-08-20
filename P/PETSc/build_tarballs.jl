@@ -387,11 +387,16 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv6l","linux"; libc="musl"),
                                                                   Platform("armv7l","linux"; libc="musl"),
                                                                   Platform("armv7l","linux"; libc="gnu"),
-                                                                  Platform("aarch64","linux"; libc="musl")]))
+                                                                  Platform("aarch64","linux"; libc="musl"),
+                                                                  Platform("aarch64","linux"; libc="musl"),
+                                                                  ]))
 
+platforms = filter(p -> !(p==Platform("i686","linux";    libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> !(p==Platform("x86_64","linux";  libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> !(p==Platform("aarch64","linux"; libgfortran_version="3.0.0")), platforms)
 
 # need libgfortran > 3.0.0
-platforms = filter(p -> !(p["libgfortran_version"] == "3.0.0"), platforms)
+#platforms = filter(p -> !(p["libgfortran_version"] == "3.0.0"), platforms)
 
 #platforms = expand_cxxstring_abis(platforms)
 
