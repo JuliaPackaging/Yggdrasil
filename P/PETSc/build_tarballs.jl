@@ -140,7 +140,7 @@ build_petsc()
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=0
-    elseif [ "${1}" == "double" ] && [ "${2}" == "real" ] 
+    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=1      
@@ -190,15 +190,25 @@ build_petsc()
     if [ -f "${libdir}/libmpitrampoline.${dlext}" ]; then
         # required for mpitrampoline
         MPI_FC=mpifc
-    fi
-    
-    if [[ "${target}" == *-mingw* ]]; then
+    elif [ -d "${libdir}/openmpi" ]; then
+        # SuperLU_DIST and MUMPS cannot be compiled statically with OpenMPI, it seems. As this appears to be a less common platform,
+        # and we should in principle be able to use ith thorugh MPItrampoline, the external packages are commented out
+        MPI_CC=${CC}
+        MPI_FC=${FC}
+        MPI_CXX=${CXX}
+        USE_SUPERLU_DIST=0
+        USE_STATIC_MUMPS=0
+    elif [[ "${target}" == *-mingw* ]]; then
         # since we don't use MPI on windows
         MPI_CC=${CC}
         MPI_FC=${FC}
         MPI_CXX=${CXX}
         USE_SUPERLU_DIST=0
         USE_SUITESPARSE=0
+    fi
+
+    if [[ "${target}" == arm-linux-* ]]; then
+        USE_STATIC_MUMPS=0
     fi
 
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
@@ -217,6 +227,11 @@ build_petsc()
     echo "COPTFLAGS="${_COPTFLAGS}
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
     echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
+    echo "MPI_CC="$MPI_CC
+    echo "MPI_FC="$MPI_FC
+    echo "MPI_CXX="$MPI_CXX
+    
+    
     
     mkdir $libdir/petsc/${PETSC_CONFIG}
   
@@ -367,13 +382,24 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
 
-platforms = expand_cxxstring_abis(platforms)
+
+# need libgfortran > 3.0.0
+#platforms = filter(p -> !(p["libgfortran_version"] == "3.0.0"), platforms)
+
+#platforms = expand_cxxstring_abis(platforms)
+
+
+#for p in platforms
+#
+#end
+#platforms = filter(p -> !(p["cxxstring_abi"] == "cxx03" && !isnothing(cxxstring_abi(p))), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat=MPItrampoline_compat_version,
                                         MPICH_compat = MPICH_compat_version,
                                         MicrosoftMPI_compat = MicrosoftMPI_compat_version )
 
+                                     
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
