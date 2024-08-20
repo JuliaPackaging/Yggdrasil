@@ -370,13 +370,7 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   ]))
 
 # a few, but not all, platforms with libgfortran 3.0.0 are excluded
-platforms = filter(p -> !(p==Platform("i686","linux";           libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("x86_64","linux";         libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("aarch64","linux";        libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("armv6l","linux";         libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("armv7l","linux";         libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("powerpc64le","linux";    libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("x86_64","macOS";         libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> (libgfortran_version(p) >= v"4" || os(p)=="windows" || libc(p)=="musl"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat = MPItrampoline_compat_version,
