@@ -17,11 +17,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd rclone*
 
-#TODO if ! [[ $target = *-mingw* ]]; then
-#TODO     # Cross-compiling fails at the moment; see <https://github.com/rclone/rclone/issues/7560>
-#TODO     atomic_patch -p0 ../patches/nfs.patch
-#TODO fi
-
 # Don't run any locally built executables when building for Windows (this doesn't work when cross-compiling).
 # We are losing "version information and icon resources" in our `rclone` executable.
 atomic_patch -p0 ../patches/make.patch
