@@ -99,6 +99,9 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 mkdir $libdir/petsc
 build_petsc()
 {
+    # so we can use a newer version of cmake
+    apk del cmake
+
     # Compile a debug version?
     DEBUG_FLAG=0
     PETSC_CONFIG="${1}_${2}_${3}"
@@ -135,6 +138,11 @@ build_petsc()
         MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
         MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
         USE_STATIC_MUMPS=0  
+    #elif [[ "${target}" == aarch64-linux-* ]]; then
+    #    USE_MUMPS=1    
+    #    MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
+    #    MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
+    #    USE_STATIC_MUMPS=0 
     elif [[ "${target}" == *-mingw* ]]; then
         # try static
         MUMPS_LIB=""
@@ -206,8 +214,7 @@ build_petsc()
         USE_SUPERLU_DIST=0
         USE_SUITESPARSE=0
     fi
-
-    if [[ "${target}" == arm-linux-* ]]; then
+    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
         USE_STATIC_MUMPS=0
     fi
 
@@ -384,7 +391,7 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 
 
 # need libgfortran > 3.0.0
-#platforms = filter(p -> !(p["libgfortran_version"] == "3.0.0"), platforms)
+platforms = filter(p -> !(p["libgfortran_version"] == "3.0.0"), platforms)
 
 #platforms = expand_cxxstring_abis(platforms)
 
@@ -438,8 +445,8 @@ dependencies = [
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("CompilerSupportLibraries_jll"),
     
-    # on apple, we use the precompiled libraries; on linux we compile a static version (as the dynamic one doesn't work with PETSc)
-    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION, platforms=filter(Sys.isapple, platforms)),
+    # on apple and some linux pkatforms, we use the precompiled libraries; on other linux we compile a static version (as the dynamic one doesn't work with PETSc)
+    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION, platforms=[filter(Sys.isapple, platforms); Platform("aarch64", "linux")]),
 
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
