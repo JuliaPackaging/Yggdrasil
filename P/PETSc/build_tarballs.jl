@@ -1,4 +1,4 @@
-# PETSc 3.21.4 with OpenBLAS and statiuc compilations of superlu_dist, suitesparse and mumps on machines that support it
+# PETSc 3.21.4 with OpenBLAS and static compilations of superlu_dist and mumps on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -18,7 +18,7 @@ SCOTCH_COMPAT_VERSION="7.0.4"
 PARMETIS_COMPAT_VERSION="4.0.6"
 
 MPItrampoline_compat_version="5.2.1"
-MicrosoftMPI_compat_version="10.1.2" # fix to 10.1.4
+MicrosoftMPI_compat_version="~10.1.4" # fix to 10.1.4
 MPICH_compat_version="~4.1.2"    
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
@@ -138,11 +138,6 @@ build_petsc()
         MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
         MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
         USE_STATIC_MUMPS=0  
-    #elif [[ "${target}" == aarch64-linux-* ]]; then
-    #    USE_MUMPS=1    
-    #    MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
-    #    MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
-    #    USE_STATIC_MUMPS=0 
     elif [[ "${target}" == *-mingw* ]]; then
         # try static
         MUMPS_LIB=""
@@ -158,27 +153,10 @@ build_petsc()
         USE_STATIC_MUMPS=0      
     fi
 
-
     LIBFLAGS="-L${libdir}" 
     if [[ "${target}" == *-mingw* ]]; then
         LIBFLAGS="-L${libdir} -lssp -lmsmpi" 
     fi
-
-    # use LBT - to be activated @ a later stage
-    #if [[ "${target}" == aarch64-apple-* ]]; then    
-    #    LIBFLAGS="-L${libdir}" 
-    #    # Linking requires the function `__divdc3`, which is implemented in
-    #    # `libclang_rt.osx.a` from LLVM compiler-rt.
-    #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
-    #    CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-    #elif [[ "${target}" == *-mingw* ]]; then
-    #    # BLAS_LAPACK_LIB="${libdir}/libblastrampoline-5.${dlext}"
-    #    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # LBT doesn't seem to work on windows
-    #    CLINK_FLAGS=""
-    #else
-    #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
-    #    CLINK_FLAGS=""
-    #fi
 
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
 
@@ -391,31 +369,20 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   ]))
 
-platforms = filter(p -> !(p==Platform("i686","linux";    libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("x86_64","linux";  libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("aarch64","linux"; libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("armv6l","linux"; libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("armv7l","linux"; libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("powerpc64le","linux"; libgfortran_version="3.0.0")), platforms)
-platforms = filter(p -> !(p==Platform("x86_64","apple"; libgfortran_version="3.0.0")), platforms)
-
-# need libgfortran > 3.0.0
-#platforms = filter(p -> !(p["libgfortran_version"] == "3.0.0"), platforms)
-
-#platforms = expand_cxxstring_abis(platforms)
-
-
-#for p in platforms
-#
-#end
-#platforms = filter(p -> !(p["cxxstring_abi"] == "cxx03" && !isnothing(cxxstring_abi(p))), platforms)
+# a few, but not all, platforms with libgfortran 3.0.0 are excluded
+platforms = filter(p -> !(p==Platform("i686","linux";           libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> !(p==Platform("x86_64","linux";         libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> !(p==Platform("aarch64","linux";        libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> !(p==Platform("armv6l","linux";         libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> !(p==Platform("armv7l","linux";         libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> !(p==Platform("powerpc64le","linux";    libgfortran_version="3.0.0")), platforms)
+platforms = filter(p -> !(p==Platform("x86_64","macOS";         libgfortran_version="3.0.0")), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
-                                        MPItrampoline_compat=MPItrampoline_compat_version,
-                                        MPICH_compat = MPICH_compat_version,
-                                        MicrosoftMPI_compat = MicrosoftMPI_compat_version )
-
-                                     
+                                        MPItrampoline_compat = MPItrampoline_compat_version,
+                                        MPICH_compat         = MPICH_compat_version,
+                                        MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
+                           
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
@@ -447,10 +414,8 @@ products = [
 ]
 
 dependencies = [
-    # PETSc installation 
     Dependency("OpenBLAS32_jll"),
     
-    #Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("CompilerSupportLibraries_jll"),
     
