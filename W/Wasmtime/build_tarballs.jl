@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "Wasmtime"
-version = v"22.0.0"
+version = v"24.0.0"
 
 sources = [GitSource("https://github.com/bytecodealliance/wasmtime.git",
-                     "761f044efbb6d7465b88d723619168919b30ce0b")]
+                     "6fc3d274c7994dad20c816ccc0739bf766b39a11")]
 
 # Based on `wasmtime/ci/build-release-artifacts.sh
 script = raw"""
