@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.2.1"
+version = v"2.2.2"
 
-# Collection of sources required to build ThinASLBuilder
+# Collection of sources required to build CUTEst
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "e692555a86bc6ef81977d3e7893566ee28f5b115"),
+    GitSource("https://github.com/ralna/CUTEst.git", "11aa6742d633ba0877cb496a26b15c18574a3009"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,13 +24,13 @@ meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
 meson compile -C builddir
 meson install -C builddir
 
-meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
-                            --prefix=$prefix \
-                            -Dquadruple=true \
-                            -Ddefault_library=shared
+# meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+#                             --prefix=$prefix \
+#                             -Dquadruple=true \
+#                             -Ddefault_library=shared
 
-meson compile -C builddir_shared
-meson install -C builddir_shared
+# meson compile -C builddir_shared
+# meson install -C builddir_shared
 
 install_license lgpl-3.0.txt
 """
@@ -44,9 +44,9 @@ products = [
     FileProduct("lib/libcutest_single.a", :libcutest_single_a),
     FileProduct("lib/libcutest_double.a", :libcutest_double_a),
     FileProduct("lib/libcutest_quadruple.a", :libcutest_quadruple_a),
-    LibraryProduct("libcutest_single", :libcutest_single),
-    LibraryProduct("libcutest_double", :libcutest_double),
-    LibraryProduct("libcutest_quadruple", :libcutest_quadruple),
+    # LibraryProduct("libcutest_single", :libcutest_single),
+    # LibraryProduct("libcutest_double", :libcutest_double),
+    # LibraryProduct("libcutest_quadruple", :libcutest_quadruple),
 ]
 
 dependencies = [
