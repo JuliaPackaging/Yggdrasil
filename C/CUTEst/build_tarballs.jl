@@ -33,14 +33,16 @@ meson install -C builddir
 # meson install -C builddir_shared
 
 # build incomplete shared libraries
-extra=""
-if [[ "${target}" == *-apple-* ]]; then
-  extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
+if [[ "${target}" != *mingw* ]]; then
+    extra=""
+    if [[ "${target}" == *-apple-* ]]; then
+      extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
+    fi
+    cd $libdir
+    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_single.a $(flagon -Wl,--no-whole-archive) -o libcutest_single.${dlext}
+    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_double.a $(flagon -Wl,--no-whole-archive) -o libcutest_double.${dlext}
+    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_quadruple.a $(flagon -Wl,--no-whole-archive) -o libcutest_quadruple.${dlext}
 fi
-cd $libdir
-gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_single.a $(flagon -Wl,--no-whole-archive) -o libcutest_single.${dlext}
-gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_double.a $(flagon -Wl,--no-whole-archive) -o libcutest_double.${dlext}
-gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_quadruple.a $(flagon -Wl,--no-whole-archive) -o libcutest_quadruple.${dlext}
 
 install_license lgpl-3.0.txt
 """
