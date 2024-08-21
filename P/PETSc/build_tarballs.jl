@@ -355,7 +355,7 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   ]))
 
 # a few, but not all, platforms with libgfortran 3.0.0 are excluded
-platforms = filter(p -> (libgfortran_version(p) >= v"4" || os(p)=="windows" || libc(p)=="musl"), platforms)
+#platforms = filter(p -> (libgfortran_version(p) >= v"4" || os(p)=="windows" || libc(p)=="musl"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat = MPItrampoline_compat_version,
