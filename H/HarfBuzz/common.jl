@@ -12,6 +12,7 @@ function build_harfbuzz(ARGS, name::String)
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
                       "f73e1eacd7e2ffae687bc3f056bb0c705b7a05aee86337686e09da8fc1c2030c"),
+        DirectorySource("../bundled"),
     ]
 
     # Bash recipe for building across all platforms
@@ -19,6 +20,12 @@ function build_harfbuzz(ARGS, name::String)
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/778
     script = "ICU=$(icu)\n" * raw"""
 cd $WORKSPACE/srcdir/harfbuzz-*/
+
+# On MacOS, bypass broken check for CoreText
+if [[ "${target}" == *-apple-darwin* ]]; then
+    atomic_patch -p1 ../patches/coretext-check-bypass.patch
+fi
+
 mkdir build && cd build
 meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
