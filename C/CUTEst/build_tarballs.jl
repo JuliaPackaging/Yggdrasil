@@ -32,6 +32,8 @@ meson install -C builddir
 # meson compile -C builddir_shared
 # meson install -C builddir_shared
 
+install_license lgpl-3.0.txt
+
 # build incomplete shared libraries
 if [[ "${target}" != *mingw* ]]; then
     extra=""
@@ -43,8 +45,6 @@ if [[ "${target}" != *mingw* ]]; then
     gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_double.a $(flagon -Wl,--no-whole-archive) -o libcutest_double.${dlext}
     gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_quadruple.a $(flagon -Wl,--no-whole-archive) -o libcutest_quadruple.${dlext}
 fi
-
-install_license lgpl-3.0.txt
 """
 
 # These are the platforms we will build for by default, unless further platforms are passed in on the command line
