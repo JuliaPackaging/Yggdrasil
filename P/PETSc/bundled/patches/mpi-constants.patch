@@ -137,3 +137,87 @@ index 745a0c0..7484a99 100644
  /*
     Private routine to delete internal storage when a communicator is freed.
    This is called by MPI, not by users.
+diff --git a/src/sys/objects/optionsyaml.c b/src/sys/objects/optionsyaml.c
+index 28ba6f0df9..617c20aeaf 100644
+--- a/src/sys/objects/optionsyaml.c
++++ b/src/sys/objects/optionsyaml.c
+@@ -7,7 +7,8 @@
+ #include <../src/sys/yaml/include/yaml.h>
+ #endif
+ 
+-static MPI_Comm petsc_yaml_comm = MPI_COMM_NULL; /* only used for parallel error handling */
++static MPI_Comm petsc_yaml_comm; /* only used for parallel error handling */
++__attribute__((__constructor__)) static void init_petsc_yaml_comm() { petsc_yaml_comm = MPI_COMM_NULL; }
+ 
+ PETSC_STATIC_INLINE MPI_Comm PetscYAMLGetComm(void)
+ {
+diff --git a/src/sys/classes/viewer/impls/binary/binv.c b/src/sys/classes/viewer/impls/binary/binv.c
+index 842cc0750e..a4dee6a96d 100644
+--- a/src/sys/classes/viewer/impls/binary/binv.c
++++ b/src/sys/classes/viewer/impls/binary/binv.c
+@@ -1625,7 +1625,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
+     The variable Petsc_Viewer_Binary_keyval is used to indicate an MPI attribute that
+   is attached to a communicator, in this case the attribute is a PetscViewer.
+ */
+-PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
++PetscMPIInt Petsc_Viewer_Binary_keyval;
++__attribute__((__constructor__)) static void init_Petsc_Viewer_Binary_keyval() { Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID; }
+ 
+ /*@C
+      PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors
+diff --git a/src/sys/classes/viewer/impls/draw/drawv.c b/src/sys/classes/viewer/impls/draw/drawv.c
+index e98ade22ff..8d27934c3e 100644
+--- a/src/sys/classes/viewer/impls/draw/drawv.c
++++ b/src/sys/classes/viewer/impls/draw/drawv.c
+@@ -752,7 +752,8 @@ PetscErrorCode  PetscViewerDrawGetHold(PetscViewer viewer,PetscBool *hold)
+     The variable Petsc_Viewer_Draw_keyval is used to indicate an MPI attribute that
+   is attached to a communicator, in this case the attribute is a PetscViewer.
+ */
+-PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
++PetscMPIInt Petsc_Viewer_Draw_keyval;
++__attribute__((__constructor__)) static void init_Petsc_Viewer_Draw_keyval() { Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID; }
+ 
+ /*@C
+     PETSC_VIEWER_DRAW_ - Creates a window PetscViewer shared by all processors
+diff --git a/src/sys/classes/viewer/impls/socket/send.c b/src/sys/classes/viewer/impls/socket/send.c
+index 3f34bb5e10..5a752fdc24 100644
+--- a/src/sys/classes/viewer/impls/socket/send.c
++++ b/src/sys/classes/viewer/impls/socket/send.c
+@@ -464,7 +464,8 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
+     The variable Petsc_Viewer_Socket_keyval is used to indicate an MPI attribute that
+   is attached to a communicator, in this case the attribute is a PetscViewer.
+ */
+-PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
++PetscMPIInt Petsc_Viewer_Socket_keyval;
++__attribute__((__constructor__)) static void init_Petsc_Viewer_Socket_keyval() { Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID; }
+ 
+ /*@C
+      PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
+diff --git a/src/sys/utils/mpiu.c b/src/sys/utils/mpiu.c
+index a28ea3dc51..15247372d9 100644
+--- a/src/sys/utils/mpiu.c
++++ b/src/sys/utils/mpiu.c
+@@ -52,7 +52,8 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng
+     The variable Petsc_Seq_keyval is used to indicate an MPI attribute that
+   is attached to a communicator that manages the sequential phase code below.
+ */
+-PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
++PetscMPIInt Petsc_Seq_keyval;
++__attribute__((__constructor__)) static void init_Petsc_Seq_keyval() { Petsc_Seq_keyval = MPI_KEYVAL_INVALID; }
+ 
+ /*@
+    PetscSequentialPhaseBegin - Begins a sequential section of code.
+diff --git a/src/mat/impls/scalapack/matscalapack.c b/src/mat/impls/scalapack/matscalapack.c
+index 9422402d2e..e15cea0ba6 100644
+--- a/src/mat/impls/scalapack/matscalapack.c
++++ b/src/mat/impls/scalapack/matscalapack.c
+@@ -17,7 +17,8 @@
+     The variable Petsc_ScaLAPACK_keyval is used to indicate an MPI attribute that
+   is attached to a communicator, in this case the attribute is a Mat_ScaLAPACK_Grid
+ */
+-static PetscMPIInt Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID;
++PetscMPIInt Petsc_ScaLAPACK_keyval;
++__attribute__((__constructor__)) static void init_Petsc_ScaLAPACK_keyval() { Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID; }
+ 
+ static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
+ { 
