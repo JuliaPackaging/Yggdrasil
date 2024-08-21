@@ -1,22 +1,22 @@
 using BinaryBuilder
 
 name = "IntelOpenMP"
-version = v"2024.0.2"
+version = v"2024.2.0"
 
 sources = [
     # Main OpenMP files
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.2/download/win-32/intel-openmp-2024.0.2-intel_49896.tar.bz2",
-                  "437439357a3333104f873efb4e9fd932af12fdcbb6e14c5bc45835ece325b767"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.2/download/win-64/intel-openmp-2024.0.2-intel_49896.tar.bz2",
-                  "85a0795a2598d5a040b620796b83bf32ea86638564d174ddb8776df0ce6bf55e"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.2/download/linux-32/intel-openmp-2024.0.2-intel_49895.tar.bz2",
-                  "20940af6206994f3a6b58404ade710e2b38de659e3998fb51d25271090267de8"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2024.0.2/download/linux-64/intel-openmp-2024.0.2-intel_49895.tar.bz2",
-                  "ed4eec1642bfd613bfe2a4fd0e79ac4cfab2b623f71d7e6b2ea553962972ab63"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("https://conda.anaconda.org/intel/win-32/intel-openmp-2024.2.0-intel_978.tar.bz2",
+                  "0f050fa361f22a3b7291daf7ec5ac208c6e652977643b2e289169d7475d64244"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://conda.anaconda.org/intel/win-64/intel-openmp-2024.2.0-intel_978.tar.bz2",
+                  "44d653f234ae35162ad2211d1281a21c613599e5dd68dd2e1229d27592f784f9"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://conda.anaconda.org/intel/linux-32/intel-openmp-2024.2.0-intel_981.tar.bz2",
+                  "38fac9228334cbaf61f1e7b0a70f4083d58a60dfc2e132a62881b976e1cb2301"; unpack_target="i686-linux-gnu"),
+    ArchiveSource("https://conda.anaconda.org/intel/linux-64/intel-openmp-2024.2.0-intel_981.tar.bz2",
+                  "db46064dbf0dbc096d92d8368ef8172ae335001b81055840c97fcfda3d09d64d"; unpack_target="x86_64-linux-gnu"),
 
     # Archive for Windows linker file, only available for win64 currently
-    ArchiveSource("https://anaconda.org/intel/dpcpp_impl_win-64/2024.0.2/download/win-64/dpcpp_impl_win-64-2024.0.2-intel_49896.tar.bz2",
-                  "4516779ade366aae8a82d01aa1718e73bfa1433c03bf15e845c227c253ab4840"; unpack_target="x86_64-w64-mingw32-dpcpp"),
+    ArchiveSource("https://conda.anaconda.org/intel/win-64/dpcpp_impl_win-64-2024.2.0-intel_978.tar.bz2",
+                  "e899ae8ef10a5d2656a18cc45615889bffaa9c4f18053f90073dc50ac4586585"; unpack_target="x86_64-w64-mingw32-dpcpp"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +27,7 @@ if [[ ${target} == *i686-w64-mingw* ]]; then
     mv ${target}/bin32/* "${libdir}/."
 fi
 if [[ ${target} == *x86_64-w64-mingw* ]]; then
-    mv ${target}/bin/* "${libdir}/."
+    mv ${target}/Library/bin/* "${libdir}/."
 
     # These import libraries go inside the actual lib folder, not the bin folder with the DLLs
     mkdir -p $WORKSPACE/destdir/lib

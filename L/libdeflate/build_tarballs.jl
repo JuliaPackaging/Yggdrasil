@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version = v"1.18"
+version = v"1.20"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/ebiggers/libdeflate",
-        "495fee110ebb48a5eb63b75fd67e42b2955871e2"
+        "275aa5141db6eda3587214e0f1d3a134768f557d"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
@@ -51,4 +51,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")

@@ -1,17 +1,17 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2024.0.0"
+version = v"2024.2.0"
 
 sources = [
-    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/win-32/mkl-2024.0.0-intel_49657.tar.bz2",
-                  "c9418f0c982f6d914f147bf1262a6d4dc631a3a2de61bae92ffc4e8d9e9d4b14"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/win-64/mkl-2024.0.0-intel_49657.tar.bz2",
-                  "5e69fd6314f5ed95da076bdf1a4701aa234dc842d5dfc845d5b2e05e12cd7fcc"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/linux-32/mkl-2024.0.0-intel_49656.tar.bz2",
-                  "0445142acaec7f2371682ddce8016049bff8d2ec015a2431b650f3dc03d14720"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/mkl/2024.0.0/download/linux-64/mkl-2024.0.0-intel_49656.tar.bz2",
-                  "e02ad8cf2b0d1c18c4c0a6a06cb23ec6dc076678ab1e5bbc55876aa56f390458"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("https://conda.anaconda.org/intel/win-32/mkl-2024.2.0-intel_661.tar.bz2",
+                  "fa5f4a74600fcc81b7ecc1c61eac01d365ec0031986f847f435d752b8d059828"; unpack_target="i686-w64-mingw32"),
+    ArchiveSource("https://conda.anaconda.org/intel/win-64/mkl-2024.2.0-intel_661.tar.bz2",
+                  "162194f166a22ae2ac9bd7945a99c21e750b0122393a435189f81645d284cfe7"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("https://conda.anaconda.org/intel/linux-32/mkl-2024.2.0-intel_663.tar.bz2",
+                  "e46e0d056e7954a7c84f157acb93a51567c97844593f7469f504751723bfc396"; unpack_target="i686-linux-gnu"),
+    ArchiveSource("https://conda.anaconda.org/intel/linux-64/mkl-2024.2.0-intel_663.tar.bz2",
+                  "f480deb23179471b5f05de50b06ad984702be25e66d58ef614b804b781a3613e"; unpack_target="x86_64-linux-gnu"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,6 +48,7 @@ dependencies = [
     # using MKL v2023 with IntelOpenMP v2024 would be problematic:
     # <https://github.com/JuliaMath/FFTW.jl/issues/281>.
     Dependency(PackageSpec(name="IntelOpenMP_jll", uuid="1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"); compat=string(version)),
+    Dependency("oneTBB_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -3,19 +3,26 @@
 using BinaryBuilder
 
 name = "Libmount"
-version_string = "2.39.3"
+version_string = "2.40.1"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(version.major).$(version.minor)/util-linux-$(version_string).tar.xz",
-                  "7b6605e48d1a49f43cc4b4cfc59f313d0dd5402fa40b96810bd572e167dfed0f")
+                  "59e676aa53ccb44b6c39f0ffe01a8fa274891c91bef1474752fad92461def24f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/util-linux-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libblkid --enable-libmount
+cd $WORKSPACE/srcdir/util-linux-*
+
+configure_flags=()
+if [[ ${nbits} == 32 ]]; then
+   # We disable the year 2038 check because we don't have an alternative on the affected systems
+   configure_flags+=(--disable-year2038)
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-all-programs --enable-libblkid --enable-libmount ${configure_flags[@]}
 make -j${nproc}
 make install
 """

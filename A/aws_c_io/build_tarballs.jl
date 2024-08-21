@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_io"
-version = v"v0.14.6"
+version = v"0.14.17"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git",
-              "5afc94435cc0c0b3dc33279dd62552ea15bbea0c"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "b561534fd08af5dd19dcffbc84fddc065c3cecb2"),
     DirectorySource("./bundled"),
 ]
 
@@ -52,7 +51,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("s2n_tls_jll"; compat="1.3.51"),
-    Dependency("aws_c_cal_jll"; compat="0.6.2"),
+    Dependency("aws_c_cal_jll"; compat="0.7.1"),
     Dependency("aws_c_common_jll"; compat="0.9.3"),
     BuildDependency("aws_lc_jll"),
 ]

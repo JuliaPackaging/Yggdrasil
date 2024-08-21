@@ -2,9 +2,9 @@ using BinaryBuilder
 
 # Collection of sources required to build SHTOOLS
 name = "SHTOOLS"
-version = v"4.11.10"
+version = v"4.12.2"
 sources = [
-    GitSource("https://github.com/SHTOOLS/SHTOOLS", "aa6767f0560e66c269473904eba978ef6e3713c2"),
+    GitSource("https://github.com/SHTOOLS/SHTOOLS", "77ecaabbe90aee89ecc252317c8c6b4258e59bad"),
 ]
 
 # Bash recipe for building across all platforms

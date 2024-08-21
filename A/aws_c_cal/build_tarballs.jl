@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_cal"
-version = v"0.6.10"
+version = v"0.7.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-cal.git",
-              "56f0a79ceb10f2efcf92f525ace717f84d8c8a11"),
+    GitSource("https://github.com/awslabs/aws-c-cal.git", "bc0d71b66deea9e1a2d3a073c9f1ece9286b9e60"),
 ]
 
 # Bash recipe for building across all platforms
