@@ -11,13 +11,25 @@ apk add ruby
 
 cd ${WORKSPACE}/srcdir/ocl-icd
 ./bootstrap
+
+
+# Fix rpl_malloc error with musl
+if [[ "${target}" == *-musl* ]]; then
+    sed -i '/AC_FUNC_MALLOC/d' ./configure.ac
+    sed -i '/AC_FUNC_REALLOC/d' ./configure.ac
+fi
+if [[ "${target}" == *-apple-* ]]; then
+    sed -i '/AC_FUNC_MALLOC/d' ./configure.ac
+    sed -i '/AC_FUNC_REALLOC/d' ./configure.ac
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j all
 make install
 """
 
 platforms = supported_platforms()
-filter!(p -> libc(p) == "glibc", platforms)
+filter!(!Sys.iswindows, platforms)
 
 products = [
     LibraryProduct(["libOpenCL", "OpenCL"], :libocl_icd),
