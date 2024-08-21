@@ -359,7 +359,10 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms;
                                         MPItrampoline_compat = MPItrampoline_compat_version,
                                         MPICH_compat         = MPICH_compat_version,
                                         MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
-                           
+
+# mpitrampoline and libgfortran 3 don't seem to work
+platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
+
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
