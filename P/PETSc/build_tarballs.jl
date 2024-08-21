@@ -37,7 +37,6 @@ apk del cmake
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-
 if [[ "${target}" == *-mingw* ]]; then
     # On windows, it compiles fine but we obtain a following runtime error:
     # 
@@ -127,24 +126,9 @@ build_petsc()
         SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${includedir}"
     fi
 
-    # install suitesparse if available - note that this shipped with julia and therefore linked to specific julia versions
-    USE_SUITESPARSE=0
-    if [ "${1}" == "double" ]; then
-        USE_SUITESPARSE=1    
-    fi
-
     # See if we can install MUMPS
-    USE_MUMPS=0  
     USE_STATIC_MUMPS=0  
-    if [ -f "${libdir}/libdmumpspar.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" == *-apple-* ]]; then
-        # use dynamic MUMPS library on apple
-        USE_MUMPS=1    
-        #MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
-        #MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
-        USE_STATIC_MUMPS=1  
-    elif [[ "${target}" == *-mingw* ]]; then
+    if [[ "${target}" == *-mingw* ]]; then
         # try static
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
@@ -204,7 +188,6 @@ build_petsc()
 
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_MUMPS="$USE_MUMPS
     echo "USE_STATIC_MUMPS="$USE_STATIC_MUMPS
     echo "1="${1}
     echo "2="${2}
@@ -252,9 +235,6 @@ build_petsc()
         --with-scalar-type=${2} \
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
-        --with-mumps=${USE_MUMPS} \
-        ${MUMPS_LIB} \
-        ${MUMPS_INCLUDE} \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
         --download-mumps=${USE_STATIC_MUMPS} \
