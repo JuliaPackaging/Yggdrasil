@@ -1,4 +1,3 @@
-# PETSc 3.21.4 with OpenBLAS and static compilations of superlu_dist and mumps on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -18,7 +17,7 @@ SCOTCH_COMPAT_VERSION="7.0.4"
 PARMETIS_COMPAT_VERSION="4.0.6"
 
 MPItrampoline_compat_version="5.2.1"
-MicrosoftMPI_compat_version="~10.1.4" # fix to 10.1.4
+MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
@@ -93,7 +92,6 @@ fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch     
-#atomic_patch -p1 $WORKSPACE/srcdir/patches/macos_version.patch  # not needed any longer, fixed in master
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch   
 
 mkdir $libdir/petsc
@@ -120,30 +118,14 @@ build_petsc()
     USE_SUPERLU_DIST=0    
     SUPERLU_DIST_LIB=""
     SUPERLU_DIST_INCLUDE=""
-    #if [ -f "${libdir}/libsuperlu_dist_Int32.${dlext}" ] &&  [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
     if [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
         USE_SUPERLU_DIST=1    
-        #SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
-        
-        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_Int32.${dlext}"
-        SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${includedir}"
     fi
     
     # See if we can install MUMPS
     USE_MUMPS=0  
     USE_STATIC_MUMPS=0  
-    if [ -f "${libdir}/libdmumpspar.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" == *-apple-* ]]; then
-        # use dynamic MUMPS library on apple
-        USE_MUMPS=1    
-        MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
-        MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
-        USE_STATIC_MUMPS=0  
-    elif [[ "${target}" == *-mingw* ]]; then
-        # try static
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
-        USE_STATIC_MUMPS=0
-    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
+    if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=1      
@@ -151,6 +133,13 @@ build_petsc()
         MUMPS_LIB=""
         MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=0      
+    fi
+    
+    if [[ "${target}" == *-mingw* ]]; then
+        # try static
+        MUMPS_LIB=""
+        MUMPS_INCLUDE=""
+        USE_STATIC_MUMPS=0
     fi
 
     LIBFLAGS="-L${libdir}" 
@@ -183,7 +172,7 @@ build_petsc()
         MPI_FC=${FC}
         MPI_CXX=${CXX}
         USE_SUPERLU_DIST=0
-        USE_STATIC_MUMPS=0
+        USE_STATIC_MUMPS=1
     elif [[ "${target}" == *-mingw* ]]; then
         # since we don't use MPI on windows
         MPI_CC=${CC}
@@ -216,11 +205,8 @@ build_petsc()
     echo "MPI_FC="$MPI_FC
     echo "MPI_CXX="$MPI_CXX
     
-    
-    
     mkdir $libdir/petsc/${PETSC_CONFIG}
   
-   
     # Step 1: build static libraries of external packages (happens during configure)    
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages 
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
@@ -247,15 +233,12 @@ build_petsc()
         --with-scalar-type=${2} \
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
-        --with-mumps=${USE_MUMPS} \
-        ${MUMPS_LIB} \
-        ${MUMPS_INCLUDE} \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
-        --download-scalapack=${USE_STATIC_MUMPS} \
-        --download-scalapack-shared=0 \
         --download-mumps=${USE_STATIC_MUMPS} \
         --download-mumps-shared=0 \
+        --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
+        --with-scalapack-include=${includedir} \
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
@@ -342,13 +325,13 @@ build_petsc()
 
 build_petsc double real Int64 opt
 build_petsc double real Int64 deb       # compile at least one debug version
-build_petsc double real Int32 opt
-build_petsc single real Int32 opt
-build_petsc double complex Int32 opt
-build_petsc single complex Int32 opt
-build_petsc single real Int64 opt
-build_petsc double complex Int64 opt
-build_petsc single complex Int64 opt
+#build_petsc double real Int32 opt
+#build_petsc single real Int32 opt
+#build_petsc double complex Int32 opt
+#build_petsc single complex Int32 opt
+#build_petsc single real Int64 opt
+#build_petsc double complex Int64 opt
+#build_petsc single complex Int64 opt
 """
 
 augment_platform_block = """
@@ -368,9 +351,6 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   ]))
-
-# a few, but not all, platforms with libgfortran 3.0.0 are excluded
-platforms = filter(p -> (libgfortran_version(p) >= v"4" || os(p)=="windows" || libc(p)=="musl"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat = MPItrampoline_compat_version,
@@ -398,24 +378,22 @@ products = [
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+    #LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    #LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    #LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    #LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    #LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    #LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    #LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
 
 dependencies = [
     Dependency("OpenBLAS32_jll"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll")),
     
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("CompilerSupportLibraries_jll"),
     
-    # on apple and some linux pkatforms, we use the precompiled libraries; on other linux we compile a static version (as the dynamic one doesn't work with PETSc)
-    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION, platforms=[filter(Sys.isapple, platforms); Platform("aarch64", "linux")]),
-
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
 append!(dependencies, platform_dependencies)
