@@ -1,15 +1,17 @@
 using BinaryBuilder
 
 name = "AWSCLI"
-version = v"2.17.22"
+version = v"2.17.35"
 
 sources = [
     GitSource("https://github.com/aws/aws-cli.git",
-              "18d64caf588186c396dd58ff2346a8ca9657fdcb"),
+              "a55557d53742d03823bba42c42b3259a086ccf7f"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/aws-cli
+
+apk add python3-dev
 
 export CMAKE_INSTALL_PREFIX="${prefix}"
 export CMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
