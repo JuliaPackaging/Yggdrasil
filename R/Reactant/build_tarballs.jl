@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.15"
+version = v"0.0.16"
 
 sources = [
-   GitSource(repo, "3a2b61c72817a59acc2f493f622dd1d7053acddc"),
+   GitSource(repo, "db906206d8e173a6b89446ba7e093da6abf86442"),
 ]
 
 # Bash recipe for building across all platforms
@@ -133,9 +133,9 @@ fi
 
 
 if [[ "${bb_full_target}" == *linux* ]]; then
-    export CUDA_HOME=${WORKSPACE}/destdir;
-    export PATH=$PATH:$CUDA_HOME/bin
-    export CUDACXX=$CUDA_HOME/bin/nvcc
+    #export CUDA_HOME=${WORKSPACE}/destdir;
+    #export PATH=$PATH:$CUDA_HOME/bin
+    #export CUDACXX=$CUDA_HOME/bin/nvcc
     sed -i "s/getopts \\"/getopts \\"p/g" /sbin/ldconfig
     mkdir -p .local/bin
     echo "#!/bin/sh" > .local/bin/ldconfig
@@ -143,11 +143,11 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     chmod +x .local/bin/ldconfig
     export PATH="`pwd`/.local/bin:$PATH"
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_VERSION=$CUDA_VERSION)
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_PATHS="$CUDA_HOME/cuda,$CUDA_HOME")
-    BAZEL_BUILD_FLAGS+=(--repo_env CUDA_TOOLKIT_PATH=$CUDA_HOME/cuda)
-    BAZEL_BUILD_FLAGS+=(--repo_env CUDNN_INSTALL_PATH=$CUDA_HOME)
-    BAZEL_BUILD_FLAGS+=(--repo_env TENSORRT_INSTALL_PATH=$CUDA_HOME)
+    #BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_VERSION=$CUDA_VERSION)
+    #BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_PATHS="$CUDA_HOME/cuda,$CUDA_HOME")
+    #BAZEL_BUILD_FLAGS+=(--repo_env CUDA_TOOLKIT_PATH=$CUDA_HOME/cuda)
+    #BAZEL_BUILD_FLAGS+=(--repo_env CUDNN_INSTALL_PATH=$CUDA_HOME)
+    #BAZEL_BUILD_FLAGS+=(--repo_env TENSORRT_INSTALL_PATH=$CUDA_HOME)
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NCCL_USE_STUB=1)
     BAZEL_BUILD_FLAGS+=(--action_env TF_CUDA_COMPUTE_CAPABILITIES="sm_50,sm_60,sm_70,sm_80,compute_90")
     # BAZEL_BUILD_FLAGS+=(--action_env CLANG_CUDA_COMPILER_PATH="/home/wmoses/llvms/llvm16/build/bin/clang")
@@ -156,6 +156,9 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     BAZEL_BUILD_FLAGS+=(--@xla//xla/python:enable_gpu=true)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/python:jax_cuda_pip_rpaths=true)
     BAZEL_BUILD_FLAGS+=(--define=xla_python_enable_gpu=true)
+    BAZEL_BUILD_FLAGS+=(--define=using_rocm_hipcc=true)
+    #build:rocm --define=tensorflow_mkldnn_contraction_kernel=0
+    BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_ROCM=1)
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
@@ -277,12 +280,12 @@ augment_platform_block="""
         nothing
     end
     
-    module __CUDA
-        $(CUDA.augment::String)
-    end
+    #module __CUDA
+    #    $(CUDA.augment::String)
+    #end
 
     function augment_platform!(platform::Platform)
-        __CUDA.augment_platform!(platform)
+        #__CUDA.augment_platform!(platform)
 
         mode = get(ENV, "REACTANT_MODE", something(mode_preference, "opt"))
         if !haskey(platform, "mode")
@@ -305,23 +308,23 @@ for mode in ("opt", "dbg"), platform in platforms
 
     prefix="export MODE="*mode*"\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    if Sys.isapple(platform)
-        push!(platform_sources,
-              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-		push!(platform_sources,
-              ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
-                            "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
+    # if Sys.isapple(platform)
+    #     push!(platform_sources,
+    #           ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+    #                         "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+	# 	push!(platform_sources,
+    #           ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
+    #                         "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
 
-    end
+    # end
 
-    if CUDA.is_supported(platform)
-        cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
-        push!(cuda_deps, BuildDependency(PackageSpec(name="CUDNN_jll")))
-        push!(cuda_deps, BuildDependency(PackageSpec(name="TensorRT_jll")))
-        push!(cuda_deps, BuildDependency(PackageSpec(name="CUDA_full_jll")))
-        prefix *= "export CUDA_VERSION=\"\"\n"
-    end
+    # if CUDA.is_supported(platform)
+    #     cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
+    #     push!(cuda_deps, BuildDependency(PackageSpec(name="CUDNN_jll")))
+    #     push!(cuda_deps, BuildDependency(PackageSpec(name="TensorRT_jll")))
+    #     push!(cuda_deps, BuildDependency(PackageSpec(name="CUDA_full_jll")))
+    #     prefix *= "export CUDA_VERSION=\"\"\n"
+    # end
 
     should_build_platform(triplet(augmented_platform)) || continue
     push!(builds, (;
