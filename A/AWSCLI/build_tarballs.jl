@@ -11,6 +11,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/aws-cli
 
+apk update
 apk add python3-dev
 
 export CMAKE_INSTALL_PREFIX="${prefix}"
@@ -32,4 +33,4 @@ products = [
 dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               compilers=[:c, :rust], julia_compat="1.6")
+               compilers=[:c, :rust], preferred_gcc_version=v"5", julia_compat="1.6")
