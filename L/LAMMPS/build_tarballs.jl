@@ -102,3 +102,61 @@ append!(dependencies, platform_dependencies)
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+
+
+# Bash recipe for building with CUDA
+# LAMMPS DPD packages do not work on all platforms
+script = raw"""
+cd $WORKSPACE/srcdir/lammps/
+mkdir build && cd build/
+cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DLAMMPS_EXCEPTIONS=ON \
+    -DPKG_MPI=ON \
+    -DPKG_EXTRA-FIX=ON \
+    -DPKG_ML-SNAP=ON \
+    -DPKG_ML-PACE=ON \
+    -DPKG_ML-POD=ON \
+    -DPKG_DPD-BASIC=ON \
+    -DPKG_DPD-MESO=ON \
+    -DPKG_DPD-REACT=ON \
+    -DPKG_DPD-SMOOTH=ON \
+    -DPKG_USER-MESODPD=ON \
+    -DPKG_USER-DPD=ON \
+    -DPKG_USER-SDPD=ON \
+    -DPKG_MANYBODY=ON \
+    -DPKG_MOLECULE=ON \
+    -DPKG_REPLICA=ON \
+    -DPKG_SHOCK=ON \
+    -DLEPTON_ENABLE_JIT=no \
+    -DGPU_API=cuda
+
+make -j${nproc}
+make install
+
+if [[ "${target}" == *mingw* ]]; then
+    cp *.dll ${prefix}/bin/
+fi
+"""
+
+# Build for all supported CUDA > v11
+platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
+# Cmake toolchain breaks on aarch64, so only x86_64 for now
+filter!(p -> arch(p)=="x86_64", platforms)
+
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+
+    # Static SDK is used in CMake toolchain
+    cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
+
+    build_tarballs(ARGS, name, version, sources, script, [platform],
+                   products, [dependencies; cuda_deps];
+                   preferred_gcc_version=v"8",
+                   julia_compat="1.6",
+                   augment_platform_block=CUDA.augment,
+                   lazy_artifacts=true
+                   )
+end
