@@ -177,16 +177,16 @@ fi
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
-#if [[ "${bb_full_target}" == *darwin* ]]; then
-#	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-#	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+if [[ "${bb_full_target}" == *darwin* ]]; then
+	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 #	sed -i.bak0 "/lld/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 #	echo "-fuse-ld=lld" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-#	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-#	$CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-#else
+	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	$CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+else
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
-#fi
+fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
