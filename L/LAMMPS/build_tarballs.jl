@@ -4,6 +4,8 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(@__DIR__, "..", "..", "fancy_toys.jl"))
+include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 
 name = "LAMMPS"
 version = v"2.5.0" # Equivalent to stable_2Aug2023_update3
