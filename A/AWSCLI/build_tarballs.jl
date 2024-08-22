@@ -18,6 +18,8 @@ export CMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
 # See https://discourse.llvm.org/t/clang-16-notice-of-potentially-breaking-changes/65562
 export CFLAGS="${CFLAGS} -Wno-error=incompatible-function-pointer-types"
 
+update_configure_scripts --reconf
+
 PYTHON="${bindir}/python3" ./configure --prefix=${prefix} --with-download-deps --with-install-type=portable-exe
 make -j${nproc}
 make install
