@@ -4,4 +4,4 @@ include("../common.jl")
 
 # Build the tarballs
 build_tarballs(ARGS, configure(version; experimental=true)...;
-               preferred_gcc_version=v"6.1.0", julia_compat="1.12")
+               preferred_gcc_version=v"10", preferred_llvm_version=v"17", julia_compat="1.12")
