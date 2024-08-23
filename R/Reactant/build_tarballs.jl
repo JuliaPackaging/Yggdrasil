@@ -29,7 +29,8 @@ fi
 
 mkdir -p .local/bin
 export PATH="`pwd`/.local/bin:$PATH"
-curl -fLO https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
+# curl -fLO https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
+curl -fLO https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-linux-x86_64
 mv bazel* .local/bin/bazel
 chmod +x .local/bin/bazel
 
