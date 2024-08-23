@@ -49,8 +49,9 @@ curl -fLO https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazel
 mv bazel* .local/bin/bazel
 chmod +x .local/bin/bazel
 
-env
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib"
+env
+ls -all /usr/lib
 
 ln -s `which ar` /usr/bin/ar
 
