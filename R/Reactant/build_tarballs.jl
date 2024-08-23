@@ -182,7 +182,8 @@ fi
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
 env
 echo "LDLIB" $LD_LIBRARY_PATH
-export LD_LIBRARY_PATH="/usr/lib:$LD_LIBRARY_PATH"
+find /usr -type f -iname "libstd*"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib"
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
