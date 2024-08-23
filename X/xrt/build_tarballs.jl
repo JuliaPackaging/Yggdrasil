@@ -93,7 +93,7 @@ dependencies = [
     Dependency("Libuuid_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("LibYAML_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Ncurses_jll", platforms=filter(Sys.islinux, platforms)),
-    Dependency("OpenSSL_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("OpenSSL_jll", platforms=filter(Sys.islinux, platforms); compat="3.0.8"),
     Dependency("protobuf_c_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("systemd_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("systemtap_jll", platforms=filter(Sys.islinux, platforms)),
