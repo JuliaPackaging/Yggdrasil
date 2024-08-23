@@ -142,23 +142,19 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     echo "" >> .local/bin/ldconfig
     chmod +x .local/bin/ldconfig
     export PATH="`pwd`/.local/bin:$PATH"
+
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
-    #BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_VERSION=$CUDA_VERSION)
-    #BAZEL_BUILD_FLAGS+=(--repo_env TF_CUDA_PATHS="$CUDA_HOME/cuda,$CUDA_HOME")
-    #BAZEL_BUILD_FLAGS+=(--repo_env CUDA_TOOLKIT_PATH=$CUDA_HOME/cuda)
-    #BAZEL_BUILD_FLAGS+=(--repo_env CUDNN_INSTALL_PATH=$CUDA_HOME)
-    #BAZEL_BUILD_FLAGS+=(--repo_env TENSORRT_INSTALL_PATH=$CUDA_HOME)
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NCCL_USE_STUB=1)
-    BAZEL_BUILD_FLAGS+=(--action_env TF_CUDA_COMPUTE_CAPABILITIES="sm_50,sm_60,sm_70,sm_80,compute_90")
-    # BAZEL_BUILD_FLAGS+=(--action_env CLANG_CUDA_COMPILER_PATH="/home/wmoses/llvms/llvm16/build/bin/clang")
-    BAZEL_BUILD_FLAGS+=(--crosstool_top=@local_config_cuda//crosstool:toolchain)
+    BAZEL_BUILD_FLAGS+=(--repo_env HERMETIC_CUDA_COMPUTE_CAPABILITIES="sm_50,sm_60,sm_70,sm_80,compute_90")
     BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:enable_cuda)
-    BAZEL_BUILD_FLAGS+=(--@xla//xla/python:enable_gpu=true)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/python:jax_cuda_pip_rpaths=true)
-    BAZEL_BUILD_FLAGS+=(--define=xla_python_enable_gpu=true)
-    BAZEL_BUILD_FLAGS+=(--define=using_rocm_hipcc=true)
-    #build:rocm --define=tensorflow_mkldnn_contraction_kernel=0
+    BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="12.3.2")
+    BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDNN_VERSION="9.1.1")
+    BAZEL_BUILD_FLAGS+=(--@local_config_cuda//cuda:include_hermetic_cuda_libs=true)
+
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_ROCM=1)
+    BAZEL_BUILD_FLAGS+=(--define=using_rocm=true --define=using_rocm_hipcc=true)
+    BAZEL_BUILD_FLAGS+=(--action_env TF_ROCM_AMDGPU_TARGETS="gfx900,gfx906,gfx908,gfx90a,gfx1030")
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
@@ -180,16 +176,19 @@ fi
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
 bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
-#if [[ "${bb_full_target}" == *darwin* ]]; then
-#	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-#	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+if [[ "${bb_full_target}" == *darwin* ]]; then
+	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 #	sed -i.bak0 "/lld/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 #	echo "-fuse-ld=lld" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-#	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-#	$CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-#else
+	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	ls -all .
+	ls -all bazel-out
+	ls -all bazel-out/k8-$MODE/
+	$CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+else
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
-#fi
+fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
