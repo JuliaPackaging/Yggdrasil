@@ -31,7 +31,7 @@ cd ${WORKSPACE}/srcdir/XRT
 install_license LICENSE
 
 # Apply patch with missing define
-atomic_patch -p1 ../patches/huge_shift.patch
+atomic_patch -p1 ../patches/linux/huge_shift.patch
 
 # Statically link to boost
 export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
