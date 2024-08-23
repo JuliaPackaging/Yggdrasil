@@ -54,8 +54,8 @@
        endif()
      elseif(TARGET ROOT::rootcling)
 
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
+--- a/root/CMakeLists.txt
++++ b/root/CMakeLists.txt
 @@ -601,24 +601,26 @@ if(runtime_cxxmodules)
  endif()
  
