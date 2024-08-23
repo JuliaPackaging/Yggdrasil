@@ -3,6 +3,7 @@
 using BinaryBuilder
 
 name = "Pango"
+fakeversion = v"1.54.1" # <-- Fake version to rebuild for new HarfBuzz version
 version = v"1.54.0"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
@@ -78,4 +79,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)
+build_tarballs(ARGS, name, fakeversion, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)
