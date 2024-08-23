@@ -10,7 +10,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.16"
 
 sources = [
-   GitSource(repo, "3283620c18f165f88dd6c54878f43610702ae6f2"),
+   GitSource(repo, "a32bef2e09537dd296c643156ab2c35382d9b1f2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -152,9 +152,9 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDNN_VERSION="9.1.1")
     BAZEL_BUILD_FLAGS+=(--@local_config_cuda//cuda:include_hermetic_cuda_libs=true)
 
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_ROCM=1)
-    BAZEL_BUILD_FLAGS+=(--define=using_rocm=true --define=using_rocm_hipcc=true)
-    BAZEL_BUILD_FLAGS+=(--action_env TF_ROCM_AMDGPU_TARGETS="gfx900,gfx906,gfx908,gfx90a,gfx1030")
+    #BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_ROCM=1)
+    #BAZEL_BUILD_FLAGS+=(--define=using_rocm=true --define=using_rocm_hipcc=true)
+    #BAZEL_BUILD_FLAGS+=(--action_env TF_ROCM_AMDGPU_TARGETS="gfx900,gfx906,gfx908,gfx90a,gfx1030")
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
