@@ -1,13 +1,11 @@
-diff --git a/Makefile.am b/Makefile.am
-index 5dcd759..7b7a9ec 100644
---- a/Makefile.am
-+++ b/Makefile.am
-@@ -48,7 +48,7 @@ libOpenCL_la_CFLAGS= $(NO_DEPRECATED_DECLARATIONS_FLAGS) \
+--- origsrc/ocl-icd-2.3.2/Makefile.am	2023-09-10 19:42:53.360404200 +0900
++++ src/ocl-icd-2.3.2/Makefile.am	2023-09-10 19:54:18.819354400 +0900
+@@ -48,7 +48,7 @@ libOpenCL_la_CFLAGS= $(NO_DEPRECATED_DEC
  
  libOpenCL_la_SOURCES = ocl_icd_loader.c ocl_icd_loader.h ocl_icd_debug.h
  nodist_libOpenCL_la_SOURCES = ocl_icd_loader_gen.c ocl_icd.h
 -libOpenCL_la_LDFLAGS = -version-info 1:0:0 $(PTHREAD_CFLAGS)
-+libOpenCL_la_LDFLAGS = -no-undefined  -version-info 1:0:0 $(PTHREAD_CFLAGS)
++libOpenCL_la_LDFLAGS = -no-undefined -version-info 1:0:0 $(PTHREAD_CFLAGS)
  libOpenCL_la_LIBADD = $(PTHREAD_LIBS)
  if USE_MAP
  libOpenCL_la_LDFLAGS += -Wl,--version-script,ocl_icd_loader_gen.map
