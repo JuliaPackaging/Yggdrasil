@@ -5,14 +5,10 @@ version = v"2.17"
 sources = [
     GitSource("https://github.com/Xilinx/XRT.git", "a75e9843c875bac0f52d34a1763e39e16fb3c9a7"),
     GitSource("https://github.com/Tencent/rapidjson.git", "ab1842a2dae061284c0a62dca1cc6d5e7e37e346"),
-    DirectorySource("$(pwd())/patches")
+    DirectorySource("./bundled")
 ]
 
 script = raw"""
-# Copy license
-mkdir -p ${WORKSPACE}/destdir/share/licenses/xrt
-cp ${WORKSPACE}/srcdir/XRT/LICENSE ${WORKSPACE}/destdir/share/licenses/xrt
-
 # Install rapidjson
 cd ${WORKSPACE}/srcdir/rapidjson
 cmake -S . -B build \
@@ -27,8 +23,10 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 
 cd ${WORKSPACE}/srcdir/XRT
+install_license LICENSE
+
 # Apply patch with missing define
-git apply ../huge_shift.patch
+atomic_patch -p1 ../patches/huge_shift.patch
 
 # Statically link to boost
 export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
