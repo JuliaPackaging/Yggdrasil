@@ -28,9 +28,10 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
 fi
 
 apk add py3-numpy py3-numpy-dev
-apk add	openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
-apk add bazel7 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-# apk add py3-numpy py3-numpy-dev openjdk11 libstdc++
+#apk add	openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
+#apk add bazel7 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+
+apk add bash libgcc libstdc++ musl openjdk11-jdk
 
 mkdir -p .local/bin
 export PATH="`pwd`/.local/bin:$PATH"
@@ -43,11 +44,13 @@ export PATH="`pwd`/.local/bin:$PATH"
 #mv output/bazel ../.local/bin/bazel
 #cd ..
 
-# curl -fLO https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
+curl -fLO https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
 # curl -fLO https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel_nojdk-6.5.0-linux-x86_64
-# mv bazel* .local/bin/bazel
-# chmod +x .local/bin/bazel
+mv bazel* .local/bin/bazel
+chmod +x .local/bin/bazel
 
+env
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib"
 
 ln -s `which ar` /usr/bin/ar
 
