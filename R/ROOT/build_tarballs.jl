@@ -34,7 +34,7 @@ CMAKE_FLAGS+=(-Druntime_cxxmodules=OFF)
 CMAKE_FLAGS+=(-Dfound_urandom_EXITCODE=0)
 CMAKE_FLAGS+=(-Dfound_urandom_EXITCODE__TRYRUN_OUTPUT='')
 
-export SYSTEM_INCLUDE_PATH= /opt/$MACHTYPE/$MACHTYPE/sys-root/usr/include:/opt/$MACHTYPE/$MACHTYPE/sys-root/usr/local/include
+export SYSTEM_INCLUDE_PATH="`$MACHTYPE-g++ --sysroot="/opt/$MACHTYPE/$MACHTYPE/sys-root" -E -x c++ -v /dev/null  2>&1  | awk '{gsub("^ ", "")} /End of search list/{a=0} {if(a==1){s=s d \$0;d=":"}} /#include <...> search starts here/{a=1} END{print s}'`"
 export CPLUS_INCLUDE_PATH=$SYSTEM_INCLUDE_PATH  # Needed for the native build (musl)
 
 #---Build host native rootcling, llvm-tblgen, clang-tblgen for cross-compilation------------------------
@@ -60,8 +60,8 @@ if [ $target != $MACHTYPE ]; then
 
     # Add extra options to use the built native binaries
     CMAKE_EXTRA_OPTS+=(-DNATIVE_BINARY_DIR=$PWD/native)
-    CMAKE_EXTRA_OPTS+=(-DLLVM_TABLEGEN=$PWD/native/interpreter/llvm-project/llvm/bin/llvm-tblgen)
-    CMAKE_EXTRA_OPTS+=(-DCLANG_TABLEGEN=$PWD/native/interpreter/llvm-project/llvm/bin/clang-tblgen)
+    CMAKE_EXTRA_OPTS+=(-DLLVM_TABLEGEN_EXE=$PWD/native/interpreter/llvm-project/llvm/bin/llvm-tblgen)
+    CMAKE_EXTRA_OPTS+=(-DCLANG_TABLEGEN_EXE=$PWD/native/interpreter/llvm-project/llvm/bin/clang-tblgen)
     CMAKE_EXTRA_OPTS+=(-DLLVM_CONFIG_PATH=$PWD/native/interpreter/llvm-project/llvm/bin/llvm-config)
 
     # Define ROOTCLINGNATIVE to use the native rootcling
@@ -98,9 +98,56 @@ platforms =  [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libCore", :libCore),
-    LibraryProduct("libCling", :libCling),
     ExecutableProduct("root", :root),
+    LibraryProduct("libCling", :libCling; dont_dlopen=true),
+    LibraryProduct("libCore", :libCore; dont_dlopen=true),
+    LibraryProduct("libEG", :libEG; dont_dlopen=true),
+    LibraryProduct("libFitPanel", :libFitPanel; dont_dlopen=true),
+    LibraryProduct("libFoam", :libFoam; dont_dlopen=true),
+    LibraryProduct("libFumili", :libFumili; dont_dlopen=true),
+    LibraryProduct("libGed", :libGed; dont_dlopen=true),
+    LibraryProduct("libGenVector", :libGenVector; dont_dlopen=true),
+    LibraryProduct("libGeomBuilder", :libGeomBuilder; dont_dlopen=true),
+    LibraryProduct("libGeomPainter", :libGeomPainter; dont_dlopen=true),
+    LibraryProduct("libGeom", :libGeom; dont_dlopen=true),
+    LibraryProduct("libGpad", :libGpad; dont_dlopen=true),
+    LibraryProduct("libGraf3d", :libGraf3d; dont_dlopen=true),
+    LibraryProduct("libGraf", :libGraf; dont_dlopen=true),
+    LibraryProduct("libGuiBld", :libGuiBld; dont_dlopen=true),
+    LibraryProduct("libGuiHtml", :libGuiHtml; dont_dlopen=true),
+    LibraryProduct("libGui", :libGui; dont_dlopen=true),
+    LibraryProduct("libGX11", :libGX11; dont_dlopen=true),
+    LibraryProduct("libGX11TTF", :libGX11TTF; dont_dlopen=true),
+    LibraryProduct("libHistPainter", :libHistPainter; dont_dlopen=true),
+    LibraryProduct("libHist", :libHist; dont_dlopen=true),
+    LibraryProduct("libHtml", :libHtml; dont_dlopen=true),
+    LibraryProduct("libImt", :libImt; dont_dlopen=true),
+    LibraryProduct("libMathCore", :libMathCore; dont_dlopen=true),
+    LibraryProduct("libMatrix", :libMatrix; dont_dlopen=true),
+    LibraryProduct("libMinuit2", :libMinuit2; dont_dlopen=true),
+    LibraryProduct("libMinuit", :libMinuit; dont_dlopen=true),
+    LibraryProduct("libMLP", :libMLP; dont_dlopen=true),
+    LibraryProduct("libMultiProc", :libMultiProc; dont_dlopen=true),
+    LibraryProduct("libNet", :libNet; dont_dlopen=true),
+    LibraryProduct("libNew", :libNew; dont_dlopen=true),
+    LibraryProduct("libPhysics", :libPhysics; dont_dlopen=true),
+    LibraryProduct("libPostscript", :libPostscript; dont_dlopen=true),
+    LibraryProduct("libQuadp", :libQuadp; dont_dlopen=true),
+    LibraryProduct("libRCsg", :libRCsg; dont_dlopen=true),
+    LibraryProduct("libRecorder", :libRecorder; dont_dlopen=true),
+    LibraryProduct("libRint", :libRint; dont_dlopen=true),
+    LibraryProduct("libRIO", :libRIO; dont_dlopen=true),
+    LibraryProduct("libRootAuth", :libRootAuth; dont_dlopen=true),
+    LibraryProduct("libROOTVecOps", :libROOTVecOps; dont_dlopen=true),
+    LibraryProduct("libSmatrix", :libSmatrix; dont_dlopen=true),
+    LibraryProduct("libSPlot", :libSPlot; dont_dlopen=true),
+    LibraryProduct("libSQLIO", :libSQLIO; dont_dlopen=true),
+    LibraryProduct("libThread", :libThread; dont_dlopen=true),
+    LibraryProduct("libTreePlayer", :libTreePlayer; dont_dlopen=true),
+    LibraryProduct("libTree", :libTree; dont_dlopen=true),
+    LibraryProduct("libTreeViewer", :libTreeViewer; dont_dlopen=true),
+    LibraryProduct("libX3d", :libX3d; dont_dlopen=true),
+    LibraryProduct("libXMLIO", :libXMLIO; dont_dlopen=true)
 ]
 
 # Some dependencies are needed only on Linux and FreeBSD
