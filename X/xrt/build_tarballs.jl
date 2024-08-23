@@ -39,6 +39,7 @@ atomic_patch -p1 ../patches/fix_xclbinutil_cmake.patch
 atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
 atomic_patch -p1 ../patches/windows/disable_trace.patch
 atomic_patch -p1 ../patches/windows/config_reader.patch
+atomic_patch -p1 ../patches/windows/unistd.patch
 
 atomic_patch -p1 ../patches/windows/no_static_boost.patch
 
