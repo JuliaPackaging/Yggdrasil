@@ -40,6 +40,7 @@ atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
 atomic_patch -p1 ../patches/windows/disable_trace.patch
 atomic_patch -p1 ../patches/windows/config_reader.patch
 atomic_patch -p1 ../patches/windows/unistd.patch
+atomic_patch -p1 ../patches/windows/ocl_bindings.patch
 
 atomic_patch -p1 ../patches/windows/no_static_boost.patch
 
@@ -85,18 +86,17 @@ dependencies = [
     BuildDependency("boost_jll"),
     BuildDependency("ELFIO_jll"),
     BuildDependency("OpenCL_Headers_jll"),
+    Dependency("ocl_icd_jll"),
     Dependency("Libffi_jll"),
     Dependency("LibCURL_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("libdrm_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Libuuid_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("LibYAML_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Ncurses_jll", platforms=filter(Sys.islinux, platforms)),
-    Dependency("ocl_icd_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("OpenSSL_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("protobuf_c_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("systemd_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("systemtap_jll", platforms=filter(Sys.islinux, platforms)),
-    Dependency("OpenCL_jll", platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
