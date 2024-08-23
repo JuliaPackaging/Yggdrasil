@@ -54,24 +54,9 @@
        endif()
      elseif(TARGET ROOT::rootcling)
 
---- a/root/CMakeLists.txt
-+++ b/root/CMakeLists.txt
-@@ -547,9 +547,11 @@ else()
-       ${CMAKE_SOURCE_DIR}/build/unix/makepchinput.py
-       ${CMAKE_SOURCE_DIR}/etc/dictpch/makepch.py
-   )
--  add_custom_target(onepcm ALL DEPENDS etc/allDict.cxx.pch)
--  install(FILES ${CMAKE_BINARY_DIR}/etc/allDict.cxx.pch DESTINATION ${CMAKE_INSTALL_SYSCONFDIR})
--  install(DIRECTORY ${CMAKE_BINARY_DIR}/etc/dictpch DESTINATION ${CMAKE_INSTALL_SYSCONFDIR})
-+  if(NOT CMAKE_CROSSCOMPILING)
-+    add_custom_target(onepcm ALL DEPENDS etc/allDict.cxx.pch) 
-+    install(FILES ${CMAKE_BINARY_DIR}/etc/allDict.cxx.pch DESTINATION ${CMAKE_INSTALL_SYSCONFDIR})
-+    install(DIRECTORY ${CMAKE_BINARY_DIR}/etc/dictpch DESTINATION ${CMAKE_INSTALL_SYSCONFDIR})
-+  endif()
- endif()
- 
- # FIXME: move installation of PCMS in ROOT_GENERATE_DICTIONARY().
-@@ -601,24 +603,26 @@ if(runtime_cxxmodules)
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -601,24 +601,26 @@ if(runtime_cxxmodules)
  endif()
  
  #---hsimple.root---------(use the executable for clearer dependencies and proper return code)---
@@ -115,7 +100,7 @@
  
  if(runtime_cxxmodules)
    add_dependencies(hsimple modules_idx)
-@@ -805,4 +809,6 @@ Linker flags:
+@@ -805,4 +807,6 @@ Linker flags:
  ROOT_SHOW_ENABLED_OPTIONS()
  
  #---Packaging-------------------------------------------------------------------------------------
