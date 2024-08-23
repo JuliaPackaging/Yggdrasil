@@ -35,6 +35,18 @@ atomic_patch -p1 ../patches/linux/huge_shift.patch
 # Explicitly add RapidJSON include paths
 atomic_patch -p1 ../patches/fix_xclbinutil_cmake.patch
 
+# mingw patches
+atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
+atomic_patch -p1 ../patches/windows/disable_trace.patch
+atomic_patch -p1 ../patches/windows/config_reader.patch
+
+atomic_patch -p1 ../patches/windows/no_static_boost.patch
+
+
+if [[ "${target}" == *-w64-* ]]; then
+    export ADDITIONAL_CMAKE_CXX_FLAGS=-fpermissive -D_WINDOWS
+fi
+
 # Statically link to boost
 export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
 
@@ -43,6 +55,7 @@ cmake -S . -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${WORKSPACE}/srcdir/rapidjson/install \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_CXX_FLAGS="${ADDITIONAL_CMAKE_CXX_FLAGS}" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -57,7 +70,8 @@ rm -rf xrt
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> arch(p) == "x86_64" && libc(p) == "glibc", platforms)
+filter!(p -> arch(p) == "x86_64", platforms)
+filter!(p -> Sys.iswindows(p) || (Sys.islinux(p) && libc(p) == "glibc"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -67,20 +81,21 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libuuid_jll"),
     BuildDependency("boost_jll"),
-    Dependency("OpenSSL_jll"),
-    Dependency("libdrm_jll"),
-    Dependency("Ncurses_jll"),
-    Dependency("LibYAML_jll"),
-    BuildDependency("OpenCL_Headers_jll"),
-    Dependency("protobuf_c_jll"),
     BuildDependency("ELFIO_jll"),
-    Dependency("ocl_icd_jll"),
-    Dependency("LibCURL_jll"),
-    Dependency("systemtap_jll"),
-    Dependency("systemd_jll"),
-    Dependency("Libffi_jll")
+    BuildDependency("OpenCL_Headers_jll"),
+    Dependency("Libffi_jll"),
+    Dependency("LibCURL_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("libdrm_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("Libuuid_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("LibYAML_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("Ncurses_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("ocl_icd_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("OpenSSL_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("protobuf_c_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("systemd_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("systemtap_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("OpenCL_jll", platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
