@@ -41,6 +41,7 @@ atomic_patch -p1 ../patches/windows/disable_trace.patch
 atomic_patch -p1 ../patches/windows/config_reader.patch
 atomic_patch -p1 ../patches/windows/unistd.patch
 atomic_patch -p1 ../patches/windows/ocl_bindings.patch
+atomic_patch -p1 ../patches/windows/aligned_malloc.patch
 
 atomic_patch -p1 ../patches/windows/no_static_boost.patch
 
