@@ -28,6 +28,7 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
 fi
 
 apk add py3-numpy py3-numpy-dev
+apk add	openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
 apk add bazel7 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 # apk add py3-numpy py3-numpy-dev openjdk11 libstdc++
 
