@@ -32,6 +32,8 @@ install_license LICENSE
 
 # Apply patch with missing define
 atomic_patch -p1 ../patches/linux/huge_shift.patch
+# Explicitly add RapidJSON include paths
+atomic_patch -p1 ../patches/fix_xclbinutil_cmake.patch
 
 # Statically link to boost
 export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
