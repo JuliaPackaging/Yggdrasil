@@ -44,7 +44,7 @@ atomic_patch -p1 ../patches/windows/no_static_boost.patch
 
 
 if [[ "${target}" == *-w64-* ]]; then
-    export ADDITIONAL_CMAKE_CXX_FLAGS=-fpermissive -D_WINDOWS
+    export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS"
 fi
 
 # Statically link to boost
