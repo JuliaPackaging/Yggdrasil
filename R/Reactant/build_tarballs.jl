@@ -34,7 +34,7 @@ curl -fLO https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel_nojd
 mv bazel* .local/bin/bazel
 chmod +x .local/bin/bazel
 
-apk add py3-numpy py3-numpy-dev openjdk11
+apk add py3-numpy py3-numpy-dev openjdk11 libstdc++
 
 ln -s `which ar` /usr/bin/ar
 
