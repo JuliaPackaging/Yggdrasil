@@ -1,5 +1,3 @@
-diff --git a/src/runtime_src/core/pcie/linux/shim.cpp b/src/runtime_src/core/pcie/linux/shim.cpp
-index cba0f69a9..18cb9e03a 100644
 --- a/src/runtime_src/core/pcie/linux/shim.cpp
 +++ b/src/runtime_src/core/pcie/linux/shim.cpp
 @@ -64,6 +64,8 @@
