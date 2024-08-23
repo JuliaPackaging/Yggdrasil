@@ -1,13 +1,18 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message
 using BinaryBuilder, Pkg
 
 name = "xrt"
 version = v"2.17"
+
+# Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Xilinx/XRT.git", "a75e9843c875bac0f52d34a1763e39e16fb3c9a7"),
     GitSource("https://github.com/Tencent/rapidjson.git", "ab1842a2dae061284c0a62dca1cc6d5e7e37e346"),
     DirectorySource("./bundled")
 ]
 
+# Bash recipe for building across all platforms
 script = raw"""
 # Install rapidjson
 cd ${WORKSPACE}/srcdir/rapidjson
@@ -46,16 +51,19 @@ cp -r ./xrt/* ./
 rm -rf xrt
 """
 
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 filter!(p -> arch(p) == "x86_64" && libc(p) == "glibc", platforms)
 
+# The products that we will ensure are always built
 products = [
     LibraryProduct("libxrt_coreutil", :libxrt_coreutil),
     LibraryProduct("libxilinxopencl", :libxilinxopencl),
 ]
 
-
+# Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Libuuid_jll"),
     BuildDependency("boost_jll"),
@@ -73,4 +81,6 @@ dependencies = [
     Dependency("Libffi_jll")
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", preferred_gcc_version=v"9")
