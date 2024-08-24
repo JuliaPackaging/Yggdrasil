@@ -44,7 +44,6 @@ export PATH="`pwd`/.local/bin:$PATH"
 #mv output/bazel ../.local/bin/bazel
 #cd ..
 
-aok add openjdk11-jdk
 curl -fLO https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
 # curl -fLO https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel_nojdk-6.5.0-linux-x86_64
 mv bazel* .local/bin/bazel
