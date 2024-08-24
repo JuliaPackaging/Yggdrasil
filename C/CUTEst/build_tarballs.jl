@@ -15,18 +15,23 @@ script = raw"""
 # Update Ninja
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
+QUADRUPLE="true"
+if [[ "${target}" == *arm* ]]; then
+    QUADRUPLE="false"
+fi
+
 cd ${WORKSPACE}/srcdir/CUTEst
 
 meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                      --prefix=$prefix \
-                     -Dquadruple=true
+                     -Dquadruple=${QUADRUPLE}
 
 meson compile -C builddir
 meson install -C builddir
 
 # meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
 #                             --prefix=$prefix \
-#                             -Dquadruple=true \
+#                             -Dquadruple=${QUADRUPLE} \
 #                             -Ddefault_library=shared
 
 # meson compile -C builddir_shared
@@ -43,7 +48,9 @@ if [[ "${target}" != *mingw* ]]; then
     cd $libdir
     gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_single.a $(flagon -Wl,--no-whole-archive) -o libcutest_single.${dlext}
     gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_double.a $(flagon -Wl,--no-whole-archive) -o libcutest_double.${dlext}
-    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_quadruple.a $(flagon -Wl,--no-whole-archive) -o libcutest_quadruple.${dlext}
+    if [[ "${target}" != *arm* ]]; then
+        gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_quadruple.a $(flagon -Wl,--no-whole-archive) -o libcutest_quadruple.${dlext}
+    fi
 fi
 """
 
@@ -56,7 +63,7 @@ platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 products = [
     FileProduct("lib/libcutest_single.a", :libcutest_single_a),
     FileProduct("lib/libcutest_double.a", :libcutest_double_a),
-    FileProduct("lib/libcutest_quadruple.a", :libcutest_quadruple_a),
+    # FileProduct("lib/libcutest_quadruple.a", :libcutest_quadruple_a),
     # LibraryProduct("libcutest_single", :libcutest_single),
     # LibraryProduct("libcutest_double", :libcutest_double),
     # LibraryProduct("libcutest_quadruple", :libcutest_quadruple),
