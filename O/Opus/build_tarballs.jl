@@ -11,7 +11,7 @@ sources = [
                   "65b58e1e25b2a114157014736a3d9dfeaad8d41be1c8179866f144a2fb44ff9d"),
 ]
 
-version = v"1.3.2" # <--- This version number is a lie to build for experimental platforms
+version = v"1.3.3" # <--- This version number is a lie to build for experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -38,7 +38,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
