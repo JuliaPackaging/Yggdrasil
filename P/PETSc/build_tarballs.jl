@@ -6,22 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "PETSc"
 version = v"3.20.5"
 petsc_version = v"3.20.5"
-SUPERLUDIST_COMPAT_VERSION = "8.2.1"   
-BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
-SUITESPARSE_COMPAT_VERSION = "7.7"       
-
-MUMPS_COMPAT_VERSION = "5.6.2"
-SCALAPACK32_COMPAT_VERSION="2.2.1"
-METIS_COMPAT_VERSION="5.1.2"
-SCOTCH_COMPAT_VERSION="7.0.4"
-PARMETIS_COMPAT_VERSION="4.0.6"
 
 MPItrampoline_compat_version="5.2.1"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 
-# Collection of sources required to build PETSc. Avoid using the git repository, it will
-# require building SOWING which fails in all non-linux platforms.
+# Collection of sources required to build PETSc.
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
     "fb4e637758737af910b05f30a785245633916cd0a929b7b6447ad1028da4ea5a"),
@@ -352,8 +342,8 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   Platform("aarch64","linux"; libc="musl"),
-                                                                  ]))
-
+                                                                  ])
+        
 # a few, but not all, platforms with libgfortran 3.0.0 are excluded
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat = MPItrampoline_compat_version,
