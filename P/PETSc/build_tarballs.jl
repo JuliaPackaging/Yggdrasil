@@ -342,7 +342,7 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   Platform("aarch64","linux"; libc="musl"),
-                                                                  ])
+                                                                  ]))
         
 # a few, but not all, platforms with libgfortran 3.0.0 are excluded
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
