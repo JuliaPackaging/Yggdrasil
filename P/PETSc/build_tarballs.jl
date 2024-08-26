@@ -53,7 +53,6 @@ if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS=""
     MPI_INC=""
     USE_MPI=0
-
 else
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
         USE_MPI=1
@@ -105,31 +104,18 @@ build_petsc()
 
     # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
     USE_SUPERLU_DIST=0    
-    SUPERLU_DIST_LIB=""
-    SUPERLU_DIST_INCLUDE=""
-    #if [ -f "${libdir}/libsuperlu_dist_Int32.${dlext}" ] &&  [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
     if [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
         USE_SUPERLU_DIST=1    
-        #SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
-        
-        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_Int32.${dlext}"
-        SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${includedir}"
     fi
 
     # See if we can install MUMPS
     USE_STATIC_MUMPS=0  
     if [[ "${target}" == *-mingw* ]]; then
         # try static
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=0
     elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=1      
     else
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=0      
     fi
 
@@ -195,8 +181,6 @@ build_petsc()
     echo "MPI_FC="$MPI_FC
     echo "MPI_CXX="$MPI_CXX
     
-    
-    
     mkdir $libdir/petsc/${PETSC_CONFIG}
   
     # Step 1: build static libraries of external packages (happens during configure)    
@@ -250,8 +234,6 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
-    # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
-    # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
 
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
@@ -297,7 +279,7 @@ build_petsc()
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "deb" ]; then
         
         # this is the example that PETSc uses to test the correct installation        
-        # We compile it witn debug flags (helpful to catch issues)
+        # We compile it with debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
         file=${workdir}/ex19
