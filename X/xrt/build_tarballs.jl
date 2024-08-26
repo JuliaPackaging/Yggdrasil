@@ -8,34 +8,20 @@ version = v"2.17"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Xilinx/XRT.git", "a75e9843c875bac0f52d34a1763e39e16fb3c9a7"),
-    GitSource("https://github.com/Tencent/rapidjson.git", "ab1842a2dae061284c0a62dca1cc6d5e7e37e346"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Install rapidjson
-cd ${WORKSPACE}/srcdir/rapidjson
-cmake -S . -B build \
-    -DCMAKE_INSTALL_PREFIX=${WORKSPACE}/srcdir/rapidjson/install \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DRAPIDJSON_BUILD_DOC=No \
-    -DRAPIDJSON_BUILD_EXAMPLES=No \
-    -DRAPIDJSON_BUILD_TESTS=No \
-    -DRAPIDJSON_BUILD_CXX17=Yes
-cmake --build build --parallel ${nproc}
-cmake --install build
 
 cd ${WORKSPACE}/srcdir/XRT
 install_license LICENSE
 
 # Apply patch with missing define
 atomic_patch -p1 ../patches/linux/huge_shift.patch
-# Explicitly add RapidJSON include paths
-atomic_patch -p1 ../patches/fix_xclbinutil_cmake.patch
 
 # mingw patches
+atomic_patch -p1 ../patches/windows/fix_xclbinutil_cmake.patch
 atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
 atomic_patch -p1 ../patches/windows/disable_trace.patch
 atomic_patch -p1 ../patches/windows/config_reader.patch
@@ -88,7 +74,8 @@ dependencies = [
     BuildDependency("ELFIO_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("ocl_icd_jll"),
-    Dependency("Libffi_jll"),
+    Dependency("rapidjson_jll"),
+    # Dependency("Libffi_jll"),
     Dependency("LibCURL_jll", platforms=filter(Sys.islinux, platforms); compat="7.73, 8"),
     Dependency("libdrm_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Libuuid_jll", platforms=filter(Sys.islinux, platforms)),

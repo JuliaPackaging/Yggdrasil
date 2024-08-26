@@ -1,5 +1,3 @@
-diff --git a/src/CMake/nativeWin.cmake b/src/CMake/nativeWin.cmake
-index 571b1cf66..646dd092b 100644
 --- a/src/CMake/nativeWin.cmake
 +++ b/src/CMake/nativeWin.cmake
 @@ -29,7 +29,7 @@ endif(GIT_FOUND)

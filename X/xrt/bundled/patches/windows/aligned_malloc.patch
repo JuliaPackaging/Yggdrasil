@@ -1,5 +1,3 @@
-diff --git a/src/runtime_src/core/common/memalign.h b/src/runtime_src/core/common/memalign.h
-index 98caadc4a..f0710ea0a 100644
 --- a/src/runtime_src/core/common/memalign.h
 +++ b/src/runtime_src/core/common/memalign.h
 @@ -21,6 +21,18 @@
