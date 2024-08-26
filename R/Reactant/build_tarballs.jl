@@ -37,7 +37,7 @@ mkdir -p .local/bin
 export PATH="`pwd`/.local/bin:$PATH"
 
 wget https://github.com/wsmoses/artifacts/releases/download/tmp/bazel6-6.5.0-r0.apk
-apk add *.apk
+apk add --allow-untrusted *.apk
 rm *.apk
 
 #mkdir baz
