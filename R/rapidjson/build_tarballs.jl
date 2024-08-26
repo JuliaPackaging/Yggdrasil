@@ -3,11 +3,15 @@
 using BinaryBuilder
 
 name = "rapidjson"
-version = v"1.1.0"
+# make up patch 1.1.1 with recent changes of master branch
+version = v"1.1.1"
+
+# Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Tencent/rapidjson.git", "ab1842a2dae061284c0a62dca1cc6d5e7e37e346")
 ]
 
+# Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/rapidjson
 cmake -S . -B build \
@@ -22,14 +26,18 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
 platforms = [AnyPlatform()]
 
+# The products that we will ensure are always built
 products = [
     FileProduct("include/rapidjson/rapidjson.h", :rapidjson_h)
 ]
 
+# Dependencies that must be installed before this package can be built
+dependencies = Dependency[]
 
-dependencies = [
-]
-
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6")
