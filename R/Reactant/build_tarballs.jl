@@ -11,6 +11,8 @@ version = v"0.0.15"
 
 sources = [
    GitSource(repo, "3a2b61c72817a59acc2f493f622dd1d7053acddc"),
+   FileSource("https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20240825-py3-none-any.whl",
+                "c02631f3b7ee4121b12a19c99b001c8c896a99ae9d9902d361769fb9bc18e0af"; filename = "libtpu.whl"), # TODO: verify licensing of this
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +25,7 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/." 
+    cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
 
@@ -47,10 +49,10 @@ ln -s `which ar` /usr/bin/ar
 #export PATH=$JULIA_PATH/bin:$PATH
 
 #	wget -O julia.tar.gz "https://julialang-s3.julialang.org/bin/musl/x64/1.8/julia-1.8.5-musl-x86_64.tar.gz"
-	
-#	mkdir -p "$JULIA_PATH"; 
-#	tar -xzf julia.tar.gz -C "$JULIA_PATH" --strip-components 1; 
-#	rm julia.tar.gz; 
+
+#	mkdir -p "$JULIA_PATH";
+#	tar -xzf julia.tar.gz -C "$JULIA_PATH" --strip-components 1;
+#	rm julia.tar.gz;
 
 # cd ..
 
@@ -87,7 +89,7 @@ BAZEL_BUILD_FLAGS+=(--define=grpc_no_ares=true)
 
 BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
-    
+
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
@@ -104,7 +106,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=no_nccl_support=true)
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
-    
+
 	pushd $WORKSPACE/srcdir/llvm*
 	mkdir build
 	cd build
@@ -112,7 +114,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	ninja lld
 	export LLD2=`pwd`/bin/ld64.lld
 	popd
-    
+
 	if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
         BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
@@ -206,13 +208,19 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 fi
 if [[ "${bb_full_target}" == *mingw* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
+
+if [[ $bb_full_target == x86_64-linux-gnu ]]; then
+    cd $WORKSPACE/srcdir
+    unzip -d onnxruntime-$target-cuda libtpu.whl
+    mv $WORKSPACE/srcdir/libtpu.so ${libdir}/libtpu.so
 fi
+
 cp -v bazel-bin/*.jl ${prefix}
 """
 
 # determine exactly which tarballs we should build
 builds = []
-    
+
 # Dependencies that must be installed before this package can be built
 
 dependencies = Dependency[]
@@ -286,7 +294,6 @@ augment_platform_block="""
     else
         nothing
     end
-    
     module __CUDA
         $(CUDA.augment::String)
     end
