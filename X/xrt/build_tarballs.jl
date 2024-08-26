@@ -13,26 +13,24 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 cd ${WORKSPACE}/srcdir/XRT
 install_license LICENSE
 
-# Apply patch with missing define
-atomic_patch -p1 ../patches/linux/huge_shift.patch
-
-# mingw patches
-atomic_patch -p1 ../patches/windows/fix_xclbinutil_cmake.patch
-atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
-atomic_patch -p1 ../patches/windows/disable_trace.patch
-atomic_patch -p1 ../patches/windows/config_reader.patch
-atomic_patch -p1 ../patches/windows/unistd.patch
-atomic_patch -p1 ../patches/windows/ocl_bindings.patch
-atomic_patch -p1 ../patches/windows/aligned_malloc.patch
-
-atomic_patch -p1 ../patches/windows/no_static_boost.patch
-
+if [[ "${target}" == *-linux-* ]]; then
+    # Apply patch with missing define
+    atomic_patch -p1 ../patches/linux/huge_shift.patch
+fi
 
 if [[ "${target}" == *-w64-* ]]; then
+    # mingw patches
+    atomic_patch -p1 ../patches/windows/fix_xclbinutil_cmake.patch
+    atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
+    atomic_patch -p1 ../patches/windows/disable_trace.patch
+    atomic_patch -p1 ../patches/windows/config_reader.patch
+    atomic_patch -p1 ../patches/windows/unistd.patch
+    atomic_patch -p1 ../patches/windows/ocl_bindings.patch
+    atomic_patch -p1 ../patches/windows/aligned_malloc.patch
+    atomic_patch -p1 ../patches/windows/no_static_boost.patch
     export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS"
 fi
 
@@ -42,7 +40,6 @@ export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
 cd src
 cmake -S . -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_PREFIX_PATH=${WORKSPACE}/srcdir/rapidjson/install \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_CXX_FLAGS="${ADDITIONAL_CMAKE_CXX_FLAGS}" \
     -DCMAKE_BUILD_TYPE=Release
