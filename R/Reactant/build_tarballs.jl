@@ -37,7 +37,9 @@ mkdir -p .local/bin
 export PATH="`pwd`/.local/bin:$PATH"
 
 wget https://github.com/wsmoses/artifacts/releases/tag/tmp#:~:text=3-,bazel6%2D6.5.0%2Dr0.apk,-30.3%20MB
-apk add *.apk
+mv *apk* bazel.apk
+apk add bazel.apk
+rm bazel.apk
 
 #mkdir baz
 #cd baz
