@@ -6,12 +6,13 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
-    version = v"2.8.1"
+    version = v"8.3.1"
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "4124f663ec4bf4e294d9cf230668370b4249a48ff34deaf0f06e8fc82d891300"),
+                      "f73e1eacd7e2ffae687bc3f056bb0c705b7a05aee86337686e09da8fc1c2030c"),
+        DirectorySource("../bundled"),
     ]
 
     # Bash recipe for building across all platforms
@@ -19,6 +20,12 @@ function build_harfbuzz(ARGS, name::String)
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/778
     script = "ICU=$(icu)\n" * raw"""
 cd $WORKSPACE/srcdir/harfbuzz-*/
+
+# On MacOS, bypass broken check for CoreText
+if [[ "${target}" == *-apple-darwin* ]]; then
+    atomic_patch -p1 ../patches/coretext-check-bypass.patch
+fi
+
 mkdir build && cd build
 meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
@@ -33,7 +40,9 @@ meson .. \
     -Dtests=disabled \
     -Dicu=auto \
     -Dicu_builtin=false \
-    -Dcoretext=enabled
+    -Dcoretext=enabled \
+    -Dgdi=enabled \
+    -Ddirectwrite=enabled
 ninja -j${nproc}
 if [[ "${ICU}" == true ]]; then
     # Manually install only ICU-related files
@@ -81,5 +90,5 @@ fi
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6", clang_use_lld=false)
 end

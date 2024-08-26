@@ -53,6 +53,7 @@ if [[ "${target}" == *-mingw* ]]; then
     MPI_LIBS=""
     MPI_INC=""
     USE_MPI=0
+
 else
     if grep -q MPICH_NAME $prefix/include/mpi.h; then
         USE_MPI=1
@@ -325,7 +326,6 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   ]))
-        
 # a few, but not all, platforms with libgfortran 3.0.0 are excluded
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat = MPItrampoline_compat_version,
