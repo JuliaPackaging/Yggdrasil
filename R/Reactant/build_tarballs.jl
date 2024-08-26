@@ -40,6 +40,8 @@ wget https://github.com/wsmoses/artifacts/releases/download/tmp/bazel6-6.5.0-r0.
 apk add --allow-untrusted *.apk
 rm *.apk
 
+apk add valgrind
+
 #mkdir baz
 #cd baz
 #curl -fLO https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip
@@ -202,7 +204,7 @@ fi
 
 # $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
-bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
+valgrind bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
