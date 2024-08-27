@@ -96,7 +96,7 @@ BAZEL_BUILD_FLAGS=(-c $MODE)
 
 # don't run out of temporary space
 BAZEL_FLAGS+=(--output_user_root=/workspace/bazel_root)
-BAZEL_FLAGS+=(--extra_toolchains=@local_jdk//:all)
+# BAZEL_FLAGS+=(--extra_toolchains=@local_jdk//:all)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
