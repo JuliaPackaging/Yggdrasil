@@ -38,7 +38,7 @@ apk add openjdk17-jdk
 # apk add openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
 
 mkdir -p .local/bin
-export LOCAL="`pwd`/.local/bin:$PATH"
+export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
 
 # wget https://github.com/wsmoses/artifacts/releases/download/tmp/bazel6-6.5.0-r0.apk
@@ -70,6 +70,9 @@ cp /usr/lib/csl-musl-x86_64/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
 # sed -E -i 's/public final/@Immutable\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
 sed -E -i 's/public final/@SuppressWarnings("Immutable")\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
 CC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM bazel --output_user_root=/workspace/bazel_root build --jobs ${nproc} ${PBAZEL_BUILD_FLAGS[@]} --sandbox_debug //src:bazel-dev
+ls bazel-bin
+ls bazel-bin/src
+ls bazel-bin/src/bazel-dev
 mv bazel-bin/src/bazel-dev $LOCAL/bazel
 rm /usr/lib/libstdc++.so.6
 rm /usr/lib/libgcc_s.so.1
