@@ -1,0 +1,232 @@
+commit 7337b76376b8554224a4b9e9dde3617f1da1b254
+Author: Tim Besard <tim.besard@gmail.com>
+Date:   Tue Aug 27 13:48:19 2024 +0200
+
+    Allow overriding paths to executables using env vars.
+
+diff --git a/lib/CL/clCreateProgramWithIL.c b/lib/CL/clCreateProgramWithIL.c
+index 90e364783..90f8bbdeb 100644
+--- a/lib/CL/clCreateProgramWithIL.c
++++ b/lib/CL/clCreateProgramWithIL.c
+@@ -37,7 +37,8 @@
+ static int
+ get_program_spec_constants (cl_program program, char *program_bc_spirv)
+ {
+-  char *args[] = { LLVM_SPIRV, "--spec-const-info", program_bc_spirv, NULL };
++  char *args[] = {get_llvm_spirv(), "--spec-const-info", program_bc_spirv,
++                  NULL};
+   char captured_output[MAX_OUTPUT_BYTES];
+   size_t captured_bytes = MAX_OUTPUT_BYTES;
+   int errcode = CL_SUCCESS;
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index 892e3c3ef..332a32b7e 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -216,8 +216,7 @@ llvm_codegen (char *output, unsigned device_i, cl_kernel kernel,
+
+   /* Link through Clang driver interface who knows the correct toolchains
+      for all of its targets.  */
+-  const char *cmd_line[64] =
+-    {CLANG, "-o", tmp_module, tmp_objfile};
++  const char *cmd_line[64] = {get_clang(), "-o", tmp_module, tmp_objfile};
+   const char **device_ld_arg = device->final_linkage_flags;
+   const char **pos = &cmd_line[4];
+   while ((*pos++ = *device_ld_arg++)) {}
+diff --git a/lib/CL/devices/common_driver.c b/lib/CL/devices/common_driver.c
+index 2070398a2..6eb5dba5b 100644
+--- a/lib/CL/devices/common_driver.c
++++ b/lib/CL/devices/common_driver.c
+@@ -584,13 +584,14 @@ pocl_regen_spirv_binary (cl_program program, cl_uint device_i)
+    * all PoCL devices support, hence check the device */
+   char* spirv_target_env = (device->generic_as_support != CL_FALSE) ?
+                         "--spirv-target-env=CL2.0" :  "--spirv-target-env=CL1.2";
+-  char *args[8] = { LLVM_SPIRV,
+-                    concated_spec_const_option,
+-                    spirv_target_env,
+-                    "-r", "-o",
+-                    unlinked_program_bc_temp,
+-                    program_bc_spirv,
+-                    NULL };
++  char *args[8] = {get_llvm_spirv(),
++                   concated_spec_const_option,
++                   spirv_target_env,
++                   "-r",
++                   "-o",
++                   unlinked_program_bc_temp,
++                   program_bc_spirv,
++                   NULL};
+   char **final_args = args;
+
+   errcode = pocl_cache_tempname(unlinked_program_bc_temp, ".bc", NULL);
+@@ -626,7 +627,7 @@ pocl_regen_spirv_binary (cl_program program, cl_uint device_i)
+     {
+       /* skip concated_spec_const_option */
+       args[0] = NULL;
+-      args[1] = LLVM_SPIRV;
++      args[1] = get_llvm_spirv();
+       final_args = args + 1;
+     }
+
+diff --git a/lib/CL/devices/hsa/pocl-hsa.c b/lib/CL/devices/hsa/pocl-hsa.c
+index 830fa169d..5aa8412ed 100644
+--- a/lib/CL/devices/hsa/pocl-hsa.c
++++ b/lib/CL/devices/hsa/pocl-hsa.c
+@@ -1111,9 +1111,9 @@ compile_parallel_bc_to_brig (char *brigfile, _cl_command_node *cmd,
+                           " compiling parallel.bc to brig file: \n%s\n",
+                           parallel_bc_path);
+
+-
+-      char* args1[] = { LLVM_LLC, "-O2", "-march=hsail64", "-filetype=asm",
+-                        "-o", hsailfile, parallel_bc_path, NULL };
++      char *args1[] = {get_llvm_llc(),   "-O2", "-march=hsail64",
++                       "-filetype=asm",  "-o",  hsailfile,
++                       parallel_bc_path, NULL};
+       if ((error = pocl_run_command (args1)))
+         {
+           POCL_MSG_PRINT_HSA ("llc exit status %i\n", error);
+diff --git a/lib/CL/devices/level0/pocl-level0.cc b/lib/CL/devices/level0/pocl-level0.cc
+index f6aa14396..4517e7d62 100644
+--- a/lib/CL/devices/level0/pocl-level0.cc
++++ b/lib/CL/devices/level0/pocl-level0.cc
+@@ -325,7 +325,7 @@ static int linkWithSpirvLink(cl_program Program, cl_uint DeviceI,
+   std::vector<std::string> CompilationArgs;
+   std::vector<char *> CompilationArgs2;
+
+-  CompilationArgs.push_back(SPIRV_LINK);
++  CompilationArgs.push_back(get_spirv_link());
+   if (CreateLibrary != 0) {
+     CompilationArgs.push_back("--create-library");
+   }
+@@ -357,7 +357,7 @@ static int linkWithLLVMLink(cl_program Program, cl_uint DeviceI,
+   std::vector<std::string> CompilationArgs;
+   std::vector<char *> CompilationArgs2;
+
+-  CompilationArgs.push_back(LLVM_LINK);
++  CompilationArgs.push_back(get_llvm_link());
+ //  if (CreateLibrary != 0) {
+ //    CompilationArgs.push_back("--create-library");
+ //  }
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index fada2ca10..e68dbb6d4 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -1027,7 +1027,8 @@ int pocl_invoke_clang(cl_device_id Device, const char** Args) {
+
+   DiagnosticsEngine Diags(DiagID, &*DiagOpts, DiagClient);
+
+-  clang::driver::Driver TheDriver(CLANG, Device->llvm_target_triplet, Diags);
++  clang::driver::Driver TheDriver(get_clang(), Device->llvm_target_triplet,
++                                  Diags);
+
+   const char **ArgsEnd = Args;
+   while (*ArgsEnd++ != nullptr) {}
+diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
+index 5eff8ffbd..b57e0c741 100644
+--- a/lib/CL/pocl_llvm_wg.cc
++++ b/lib/CL/pocl_llvm_wg.cc
+@@ -934,7 +934,7 @@ static int convertBCorSPV(char *InputPath,
+ #define ALLOW_EXTS "--spirv-ext=+SPV_KHR_no_integer_wrap_decoration"
+
+   // generate program.spv
+-  CompilationArgs.push_back(LLVM_SPIRV);
++  CompilationArgs.push_back(get_llvm_spirv());
+ #if (LLVM_MAJOR == 15) || (LLVM_MAJOR == 16)
+ #ifdef LLVM_OPAQUE_POINTERS
+   CompilationArgs.push_back("--opaque-pointers");
+@@ -1513,7 +1513,8 @@ int pocl_llvm_codegen(cl_device_id Device, cl_program program, void *Modp,
+                       AsmStr.size(), nullptr);
+   pocl_mk_tempname(ObjFileName, "/tmp/pocl-obj", ".o", nullptr);
+
+-  const char *Args[] = {CLANG, AsmFileName, "-c", "-o", ObjFileName, nullptr};
++  const char *Args[] = {get_clang(), AsmFileName, "-c",
++                        "-o",        ObjFileName, nullptr};
+   int Res = pocl_invoke_clang(Device, Args);
+
+   if (Res == 0) {
+diff --git a/lib/CL/pocl_util.h b/lib/CL/pocl_util.h
+index 42684a844..784263abd 100644
+--- a/lib/CL/pocl_util.h
++++ b/lib/CL/pocl_util.h
+@@ -625,4 +625,42 @@ while (0)
+     return retval;                                                            \
+   }
+
++// helper macro to define a path getter that checks for env overrides
++#define POCL_GET_PATH(path, getter, override)                                  \
++  static inline const char *getter() {                                         \
++    const char *env = getenv(override);                                        \
++    if (env && strlen(env) > 0)                                                \
++      return env;                                                              \
++    else                                                                       \
++      return path;                                                             \
++  }
++
++#ifdef CLANG
++POCL_GET_PATH(CLANG, get_clang, "POCL_CC")
++#endif
++
++#ifdef CLANGXX
++POCL_GET_PATH(CLANGXX, get_clangxx, "POCL_CXX")
++#endif
++
++#ifdef LLVM_LLC
++POCL_GET_PATH(LLVM_LLC, get_llvm_llc, "POCL_LLVM_LLC")
++#endif
++
++#ifdef LLVM_SPIRV
++POCL_GET_PATH(LLVM_SPIRV, get_llvm_spirv, "POCL_LLVM_SPIRV")
++#endif
++
++#ifdef LLVM_OPT
++POCL_GET_PATH(LLVM_OPT, get_llvm_opt, "POCL_LLVM_OPT")
++#endif
++
++#ifdef LLVM_LINK
++POCL_GET_PATH(LLVM_LINK, get_llvm_link, "POCL_LLVM_LINK")
++#endif
++
++#ifdef SPIRV_LINK
++POCL_GET_PATH(SPIRV_LINK, get_spirv_link, "POCL_SPIRV_LINK")
++#endif
++
+ #endif
+diff --git a/pocld/shared_cl_context.cc b/pocld/shared_cl_context.cc
+index 6bc358bbe..0ec491c4a 100644
+--- a/pocld/shared_cl_context.cc
++++ b/pocld/shared_cl_context.cc
+@@ -1225,7 +1225,7 @@ bool createSPIRVWithSVMOffset(const std::vector<unsigned char> *InputSPV,
+     // https://www.khronos.org/blog/offline-compilation-of-opencl-kernels-into-
+     // spir-v-using-open-source-tooling
+     std::stringstream OpenCLCCmd;
+-    OpenCLCCmd << CLANG
++    OpenCLCCmd << get_clang()
+                << " -c -target spir64 -cl-kernel-arg-info -cl-std=CL3.0 "
+                << SrcFileName.c_str() << " " << BuildOptions
+                << " -emit-llvm -o " << OrigBcFileName.c_str();
+@@ -1242,7 +1242,7 @@ bool createSPIRVWithSVMOffset(const std::vector<unsigned char> *InputSPV,
+
+     std::stringstream SpvCmd;
+
+-    SpvCmd << LLVM_SPIRV << " -r " << OrigSpvFileName.c_str() << " -o "
++    SpvCmd << get_llvm_spirv() << " -r " << OrigSpvFileName.c_str() << " -o "
+            << OrigBcFileName.c_str();
+
+     if (system(SpvCmd.str().c_str()) != EXIT_SUCCESS)
+@@ -1266,7 +1266,7 @@ bool createSPIRVWithSVMOffset(const std::vector<unsigned char> *InputSPV,
+   // Without -strip-debug there might be crashes due to llvm-spirv
+   // not detecting its own produced debug output sometimes (to
+   // report).
+-  OptCmd << LLVM_OPT << " -load-pass-plugin=" << LibPoCLPath
++  OptCmd << get_llvm_opt() << " -load-pass-plugin=" << LibPoCLPath
+          << " -strip-debug -passes=svm-offset -svm-offset-value=" << SVMOffset
+          << " " << OrigBcFileName << " -o " << OffsettedBcFileName;
+
+@@ -1277,7 +1277,7 @@ bool createSPIRVWithSVMOffset(const std::vector<unsigned char> *InputSPV,
+
+   std::stringstream SpvCmd;
+
+-  SpvCmd << LLVM_SPIRV << " " << OffsettedBcFileName.c_str() << " -o "
++  SpvCmd << get_llvm_spirv() << " " << OffsettedBcFileName.c_str() << " -o "
+          << OutSpvFileName.c_str();
+
+   if (system(SpvCmd.str().c_str()) != EXIT_SUCCESS)
