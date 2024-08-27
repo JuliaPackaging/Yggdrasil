@@ -10,12 +10,15 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.16"
 
 sources = [
-   GitSource(repo, "a32bef2e09537dd296c643156ab2c35382d9b1f2"),
+   GitSource(repo, "c860171fdd169eaf478994ed610851888c9a3b33"),
+  ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
+                "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
+  #ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/6.5.0.zip",
+  #              "be2b752b5a4c607586987e9d56cbd5125b3d829da30c7590dc6c94167c0de223"; unpack_target="bazel-nodist")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 cd Reactant.jl/deps/ReactantExtra
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
@@ -28,60 +31,52 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
 fi
 
 apk add py3-numpy py3-numpy-dev
-#apk add	openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
-#apk add bazel7 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 
-apk add bash libgcc libstdc++ musl openjdk11-jdk
+# apk add openjdk11-jdk
+apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+apk add openjdk17-jdk
+# apk add openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
 
 mkdir -p .local/bin
-export PATH="`pwd`/.local/bin:$PATH"
+export LOCAL="`pwd`/.local/bin:$PATH"
+export PATH="$LOCAL:$PATH"
 
-wget https://github.com/wsmoses/artifacts/releases/download/tmp/bazel6-6.5.0-r0.apk
-apk add --allow-untrusted *.apk
-rm *.apk
+# wget https://github.com/wsmoses/artifacts/releases/download/tmp/bazel6-6.5.0-r0.apk
+# apk add --allow-untrusted *.apk
+# rm *.apk
 
-apk add valgrind
+# pushd $WORKSPACE/srcdir/bazel-dist
+# mkdir op
+# env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --help --output_user_root=/workspace/bazel_root" bash ./compile.sh
+# mv output/bazel $LOCAL/bazel
+# popd
 
-#mkdir baz
-#cd baz
-#curl -fLO https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip
-#unzip *.zip
-#env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk" bash ./compile.sh
-#mv output/bazel ../.local/bin/bazel
-#cd ..
-
-# curl -fLO https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64
-# curl -fLO https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel_nojdk-6.5.0-linux-x86_64
-# mv bazel* .local/bin/bazel
-# chmod +x .local/bin/bazel
-
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib"
 env
-ls -all /usr/lib
+
+pushd $WORKSPACE/srcdir/bazel-dist
+PBAZEL_FLAGS=()
+PBAZEL_BUILD_FLAGS+=(--host_cpu=k8)
+PBAZEL_BUILD_FLAGS+=(--cpu=k8)
+PBAZEL_BUILD_FLAGS+=(--verbose_failures)
+PBAZEL_BUILD_FLAGS+=(--spawn_strategy=local)
+PBAZEL_BUILD_FLAGS+=(--repo_env=LD_LIBRARY_PATH)
+PBAZEL_BUILD_FLAGS+=(--action_env=LD_LIBRARY_PATH)
+PBAZEL_BUILD_FLAGS+=(--host_action_env=LD_LIBRARY_PATH)
+mv /usr/lib/libstdc++.so.6 /usr/lib/libstdc++.so.6.old
+mv /usr/lib/libgcc_s.so.1  /usr/lib/libgcc_s.so.1.old
+cp /usr/lib/csl-musl-x86_64/libstdc++.so.6 /usr/lib/libstdc++.so.6
+cp /usr/lib/csl-musl-x86_64/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
+sed -E -i 's/public final/@Immutable\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
+CC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM bazel --output_user_root=/workspace/bazel_root build --jobs ${nproc} ${PBAZEL_BUILD_FLAGS[@]} --sandbox_debug //src:bazel-dev
+mv bazel-bin/src/bazel-dev $LOCAL/bazel
+rm /usr/lib/libstdc++.so.6
+rm /usr/lib/libgcc_s.so.1
+mv /usr/lib/libstdc++.so.6.old /usr/lib/libstdc++.so.6
+mv /usr/lib/libgcc_s.so.1.old  /usr/lib/libgcc_s.so.1
+popd
 
 ln -s `which ar` /usr/bin/ar
 
-# wget https://github.com/JuliaLang/julia/releases/download/v1.10.3/julia-1.10.3.tar.gz
-# tar -zxf  julia-1.10.3.tar.gz
-# cd julia-1.10.3
-# CC=$HOSTCC CXX=$HOSTCXX make -j
-# export JULIA=`pwd`/julia
-# $JULIA -c "add CUDA"
-# cd ..
-
-#mkdir -p .julia
-#cd .julia
-
-#export JULIA_PATH=/usr/local/julia
-#export PATH=$JULIA_PATH/bin:$PATH
-
-#	wget -O julia.tar.gz "https://julialang-s3.julialang.org/bin/musl/x64/1.8/julia-1.8.5-musl-x86_64.tar.gz"
-	
-#	mkdir -p "$JULIA_PATH"; 
-#	tar -xzf julia.tar.gz -C "$JULIA_PATH" --strip-components 1; 
-#	rm julia.tar.gz; 
-
-# cd ..
 
 mkdir .bazhome
 export HOME=`pwd`/.bazhome
@@ -204,7 +199,7 @@ fi
 
 # $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
-valgrind bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
+bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
 	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
@@ -284,8 +279,8 @@ platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
-# platforms = filter(p -> (Sys.isapple(p)), platforms)
-# platforms = filter(p -> arch(p) != "x86_64", platforms)
+platforms = filter(p -> (Sys.isapple(p)), platforms)
+platforms = filter(p -> arch(p) != "x86_64", platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 
