@@ -66,7 +66,7 @@ mv /usr/lib/libstdc++.so.6 /usr/lib/libstdc++.so.6.old
 mv /usr/lib/libgcc_s.so.1  /usr/lib/libgcc_s.so.1.old
 cp /usr/lib/csl-musl-x86_64/libstdc++.so.6 /usr/lib/libstdc++.so.6
 cp /usr/lib/csl-musl-x86_64/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
-sed -E -i 's/public final/@Immutable\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
+# sed -E -i 's/public final/@Immutable\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
 CC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM bazel --output_user_root=/workspace/bazel_root build --jobs ${nproc} ${PBAZEL_BUILD_FLAGS[@]} --sandbox_debug //src:bazel-dev
 mv bazel-bin/src/bazel-dev $LOCAL/bazel
 rm /usr/lib/libstdc++.so.6
