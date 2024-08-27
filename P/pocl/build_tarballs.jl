@@ -61,6 +61,9 @@ fi
 sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot\\"|" \
        cmake/bitcode_rules.cmake
 
+# Get rid of -Werrors
+sed -i '/-Werror/d' CMakeLists.txt
+
 CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
