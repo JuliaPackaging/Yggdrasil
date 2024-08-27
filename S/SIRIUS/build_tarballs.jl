@@ -58,13 +58,22 @@ if [[ "${target}" == *-apple-mpitrampoline ]]; then
                -DMPI_hwloc_LIBRARY=${libdir}/libhwloc.dylib"
 fi
 
+#need to pass various results of CMake's try_run() for MPI compilers for succesful build
+CMAKE_ARGS="${CMAKE_ARGS} -DMPI_RUN_RESULT_C_libver_mpi_normal=0 \
+                          -DMPI_RUN_RESULT_C_libver_mpi_normal__TRYRUN_OUTPUT='' \
+                          -DMPI_RUN_RESULT_CXX_libver_mpi_normal=0 \
+                          -DMPI_RUN_RESULT_CXX_libver_mpi_normal__TRYRUN_OUTPUT='' \
+                          -DMPI_RUN_RESULT_Fortran_libver_mpi_F90_MODULE=0 \
+                          -DMPI_RUN_RESULT_Fortran_libver_mpi_F90_MODULE__TRYRUN_OUTPUT='' \
+                          -DMPI_RUN_RESULT_Fortran_libver_mpi_F08_MODULE=0 \
+                          -DMPI_RUN_RESULT_Fortran_libver_mpi_F08_MODULE__TRYRUN_OUTPUT=''"
+
+cmake .. ${CMAKE_ARGS}
+
 #On MacOS, need to explicitly remove the -fallow-argument-mismatch flag, because not recognized by Clang
 if [[ "${target}" == *-apple* ]]; then
-  CMAKE_ARGS="${CMAKE_ARGS} -DMPI_Fortran_COMPILE_OPTIONS:STRING=''"
+   cmake .. "-DMPI_Fortran_COMPILE_OPTIONS=''"
 fi
-
-#somehow need to run cmake twice for MPI Fortran to work
-cmake .. ${CMAKE_ARGS} || cmake .. ${CMAKE_ARGS}
 
 make -j${nproc} install
 """
