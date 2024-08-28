@@ -74,6 +74,7 @@ ls bazel-bin
 ls bazel-bin/src
 ls bazel-bin/src/bazel-dev
 mv bazel-bin/src/bazel-dev $LOCAL/bazel
+export BAZEL=$WORKSPACE/srcdir/bazel-dist/bazel-bin/src/bazel-dev
 rm /usr/lib/libstdc++.so.6
 rm /usr/lib/libgcc_s.so.1
 mv /usr/lib/libstdc++.so.6.old /usr/lib/libstdc++.so.6
@@ -204,10 +205,10 @@ fi
 
 # $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
 BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
-bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
+$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
-	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+	$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
 	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 #	sed -i.bak0 "/lld/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 #	echo "-fuse-ld=lld" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
@@ -217,7 +218,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	ls -all bazel-out/k8-$MODE/
 	$CC @bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 else
-	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+	$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
