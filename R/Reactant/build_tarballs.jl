@@ -284,8 +284,8 @@ platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
-platforms = filter(p -> (Sys.isapple(p)), platforms)
-platforms = filter(p -> arch(p) != "x86_64", platforms)
+# platforms = filter(p -> (Sys.isapple(p)), platforms)
+# platforms = filter(p -> arch(p) != "x86_64", platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 
