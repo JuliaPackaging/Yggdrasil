@@ -24,7 +24,7 @@ fi
 ${CXX} -DNOMATLAB -c -fPIC -I${includedir} *.cpp
 ${CXX} -shared -o libproxtv.${dlext} ${LBT} *.o
 
-cp libproxtv.${dlext} ${libdir}
+install -Dvm 755 libproxtv.${dlext} -t ${libdir}
 
 install_license ../LICENSE.txt
 """
