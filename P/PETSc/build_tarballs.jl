@@ -1,4 +1,4 @@
-# PETSc 3.21.4 with OpenBLAS and statiuc compilations of superlu_dist, suitesparse and mumps on machines that support it
+# PETSc 3.21.4 with OpenBLAS, HDF5 and static compilations of SuperLU_Dist, SuiteSparse and MUMPS, triangle and TETGEN on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -7,18 +7,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "PETSc"
 version = v"3.21.4"
 petsc_version = v"3.21.4"
-SUPERLUDIST_COMPAT_VERSION = "8.2.1"   
-BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
-SUITESPARSE_COMPAT_VERSION = "7.7"       
 
-MUMPS_COMPAT_VERSION = "5.6.2"
-SCALAPACK32_COMPAT_VERSION="2.2.1"
-METIS_COMPAT_VERSION="5.1.2"
-SCOTCH_COMPAT_VERSION="7.0.4"
-PARMETIS_COMPAT_VERSION="4.0.6"
-
-MPItrampoline_compat_version="5.2.1"
-MicrosoftMPI_compat_version="10.1.2" 
+MPItrampoline_compat_version="5.4.0"
+MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
@@ -37,6 +28,7 @@ apk del cmake
 
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
+
 
 if [[ "${target}" == *-mingw* ]]; then
     # On windows, it compiles fine but we obtain a following runtime error:
@@ -91,9 +83,8 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch     
-#atomic_patch -p1 $WORKSPACE/srcdir/patches/macos_version.patch  # not needed any longer, fixed in master
-atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch   
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants_3_21_4.patch     
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix_3_21_4.patch   
 
 mkdir $libdir/petsc
 build_petsc()
@@ -117,43 +108,35 @@ build_petsc()
 
     # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
     USE_SUPERLU_DIST=0    
-    SUPERLU_DIST_LIB=""
-    SUPERLU_DIST_INCLUDE=""
-    #if [ -f "${libdir}/libsuperlu_dist_Int32.${dlext}" ] &&  [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
     if [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
         USE_SUPERLU_DIST=1    
-        #SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_${3}.${dlext}"
-        
-        SUPERLU_DIST_LIB="--with-superlu_dist-lib=${libdir}/libsuperlu_dist_Int32.${dlext}"
-        SUPERLU_DIST_INCLUDE="--with-superlu_dist-include=${includedir}"
     fi
-    
+    if [[ "${target}" == *-mingw* ]]; then
+        USE_SUPERLU_DIST=0
+    fi
+
     # install suitesparse if available - note that this shipped with julia and therefore linked to specific julia versions
     USE_SUITESPARSE=0
     if [ "${1}" == "double" ]; then
         USE_SUITESPARSE=1    
     fi
-
-    # See if we can install MUMPS
-    USE_MUMPS=0  
-    USE_STATIC_MUMPS=0  
-    if [ -f "${libdir}/libdmumpspar.${dlext}" ] && [ "${1}" == "double" ] && [ "${2}" == "real" ] && [[ "${target}" == *-apple-* ]]; then
-        # use dynamic MUMPS library on apple
-        USE_MUMPS=1    
-        MUMPS_LIB="--with-mumps-lib=${libdir}/libdmumpspar.${dlext} --with-scalapack-lib=${libdir}/libscalapack32.${dlext}"
-        MUMPS_INCLUDE="--with-mumps-include=${includedir} --with-scalapack-include=${includedir}"
-        USE_STATIC_MUMPS=0  
-    elif [[ "${target}" == *-mingw* ]]; then
-        # try static
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
-        USE_STATIC_MUMPS=0
-    else
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
-        USE_STATIC_MUMPS=1      
+    if [[ "${target}" == *-mingw* ]]; then
+        USE_SUITESPARSE=0
     fi
 
+    # See if we can install MUMPS
+    USE_STATIC_MUMPS=0  
+    if [[ "${target}" == *-mingw* ]]; then
+        # try static
+        USE_STATIC_MUMPS=0
+    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
+        USE_STATIC_MUMPS=1      
+    else
+        USE_STATIC_MUMPS=0      
+    fi
+    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
+        USE_STATIC_MUMPS=0
+    fi
 
     LIBFLAGS="-L${libdir}" 
     if [[ "${target}" == *-mingw* ]]; then
@@ -191,7 +174,18 @@ build_petsc()
     MPI_CC=mpicc
     MPI_FC=mpif90
     MPI_CXX=mpicxx
-    if [[ "${target}" == *-mingw* ]]; then
+    if [ -f "${libdir}/libmpitrampoline.${dlext}" ]; then
+        # required for mpitrampoline
+        MPI_FC=mpifc
+    elif [ -d "${libdir}/openmpi" ]; then
+        # SuperLU_DIST and MUMPS cannot be compiled statically with OpenMPI, it seems. As this appears to be a less common platform,
+        # and we should in principle be able to use ith thorugh MPItrampoline, the external packages are commented out
+        MPI_CC=${CC}
+        MPI_FC=${FC}
+        MPI_CXX=${CXX}
+        USE_SUPERLU_DIST=0
+        USE_STATIC_MUMPS=1
+    elif [[ "${target}" == *-mingw* ]]; then
         # since we don't use MPI on windows
         MPI_CC=${CC}
         MPI_FC=${FC}
@@ -200,10 +194,23 @@ build_petsc()
         USE_SUITESPARSE=0
     fi
 
+    # triangle & tetgen
+    USE_TRIANGLE=0
+    USE_TETGEN=0
+    if [ "${1}" == "double" ] ; then
+         USE_TRIANGLE=1
+         USE_TETGEN=1
+    fi
+
+    # hdf5
+    USE_HDF5=1
+        
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_MUMPS="$USE_MUMPS
-    echo "USE_STATIC_MUMPS="$USE_STATIC_MUMPS
+    echo "USE_MUMPS="$USE_STATIC_MUMPS
+    echo "USE_TETGEN="$USE_TETGEN
+    echo "USE_TRIANGLE="$USE_TRIANGLE
+    echo "USE_HDF5="$USE_HDF5
     echo "1="${1}
     echo "2="${2}
     echo "3="${3}
@@ -221,7 +228,7 @@ build_petsc()
     echo "MPI_CXX="$MPI_CXX
     
     mkdir $libdir/petsc/${PETSC_CONFIG}
-  
+        
    
     # Step 1: build static libraries of external packages (happens during configure)    
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages 
@@ -249,17 +256,19 @@ build_petsc()
         --with-scalar-type=${2} \
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
-        --with-mumps=${USE_MUMPS} \
-        ${MUMPS_LIB} \
-        ${MUMPS_INCLUDE} \
+        --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
+        --with-scalapack-include=${includedir} \
         --download-suitesparse=${USE_SUITESPARSE} \
         --download-suitesparse-shared=0 \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
-        --download-scalapack=${USE_STATIC_MUMPS} \
-        --download-scalapack-shared=0 \
         --download-mumps=${USE_STATIC_MUMPS} \
         --download-mumps-shared=0 \
+        --download-tetgen=${USE_TETGEN} \
+        --download-triangle=${USE_TRIANGLE} \
+        --with-hdf5=${USE_HDF5} \
+        --with-hdf5-lib=${libdir}/libhdf5.${dlext} \
+        --with-hdf5-include=${includedir} \
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
@@ -279,6 +288,8 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
+    # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
+    # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
 
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
@@ -344,13 +355,13 @@ build_petsc()
 
 build_petsc double real Int64 opt
 build_petsc double real Int64 deb       # compile at least one debug version
-build_petsc double real Int32 opt
-build_petsc single real Int32 opt
-build_petsc double complex Int32 opt
-build_petsc single complex Int32 opt
-build_petsc single real Int64 opt
-build_petsc double complex Int64 opt
-build_petsc single complex Int64 opt
+#build_petsc double real Int32 opt
+#build_petsc single real Int32 opt
+#build_petsc double complex Int32 opt
+#build_petsc single complex Int32 opt
+#build_petsc single real Int64 opt
+#build_petsc double complex Int64 opt
+#build_petsc single complex Int64 opt
 """
 
 augment_platform_block = """
@@ -369,26 +380,21 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
 
-platforms = expand_cxxstring_abis(platforms)
-
+# a few, but not all, platforms with libgfortran 3.0.0 are excluded
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
-                                        MPItrampoline_compat=MPItrampoline_compat_version,
-                                        MPICH_compat = MPICH_compat_version,
-                                        MicrosoftMPI_compat = MicrosoftMPI_compat_version )
+                                        MPItrampoline_compat = MPItrampoline_compat_version,
+                                        MPICH_compat         = MPICH_compat_version,
+                                        MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
+
+# mpitrampoline and libgfortran 3 don't seem to work
+platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-#platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-#platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
-#platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
-#platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
-
-# taken from MUMPS:
-platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.iswindows(p)), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && os(p) == "linux" && libc(p) == "musl" && libgfortran_version(p) == v"5"), platforms)
-
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
@@ -404,25 +410,22 @@ products = [
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+    #LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    #LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    #LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    #LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    #LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    #LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    #LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
 
 dependencies = [
-    # PETSc installation 
     Dependency("OpenBLAS32_jll"),
+    Dependency(PackageSpec(name="SCALAPACK32_jll")),
     
-    #Dependency("libblastrampoline_jll"; compat=BLASTRAMPOLINE_COMPAT_VERSION),
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("CompilerSupportLibraries_jll"),
-    
-    # on apple, we use the precompiled libraries; on linux we compile a static version (as the dynamic one doesn't work with PETSc)
-    Dependency("MUMPS_jll"; compat=MUMPS_COMPAT_VERSION, platforms=filter(Sys.isapple, platforms)),
+    Dependency("HDF5_jll"; compat="1.14"),
 
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
