@@ -18,8 +18,8 @@ MPICH_compat_version="~4.1.2"
 
 # Collection of sources required to build PETSc.
 sources = [
-    ArchiveSource("https://www.mcs.anl.gov/petsc/mirror/release-snapshots/petsc-$(petsc_version).tar.gz",
-    "8ced753e4d2fb6565662b2b1fbba75a426cbf8438203f82717ce270f0591322c"),
+    ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
+    "a9ae076d4617c7d84ce2bed37194022319c19f19b3930edf148b2bc8ecf2248d"),
     DirectorySource("./bundled"),
 ]
 
