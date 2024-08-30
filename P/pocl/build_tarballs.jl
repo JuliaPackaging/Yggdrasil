@@ -61,9 +61,6 @@ fi
 sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot\\"|" \
        cmake/bitcode_rules.cmake
 
-# Get rid of -Werrors
-sed -i '/-Werror/d' CMakeLists.txt
-
 CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
@@ -187,13 +184,13 @@ init_block = raw"""
         end
         return script
     end
-    ENV["POCL_SPIRV_LINK"] =
+    ENV["POCL_PATH_SPIRV_LINK"] =
         generate_wrapper_script("spirv_link", SPIRV_Tools_jll.spirv_link_path,
                                 SPIRV_Tools_jll.LIBPATH[], SPIRV_Tools_jll.PATH[])
-    ENV["POCL_CLANG"] =
+    ENV["POCL_PATH_CLANG"] =
         generate_wrapper_script("clang", Clang_unified_jll.clang_path,
                                 Clang_unified_jll.LIBPATH[], Clang_unified_jll.PATH[])
-    ENV["POCL_LLVM_SPIRV"] =
+    ENV["POCL_PATH_LLVM_SPIRV"] =
         generate_wrapper_script("llvm-spirv",
                                 SPIRV_LLVM_Translator_unified_jll.llvm_spirv_path,
                                 SPIRV_LLVM_Translator_unified_jll.LIBPATH[],
