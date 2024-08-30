@@ -1,4 +1,4 @@
-# PETSc 3.21.4 with OpenBLAS, HDF5 and static compilations of SuperLU_Dist, SuiteSparse and MUMPS, triangle and TETGEN on machines that support it
+# PETSc 3.21.4 with OpenBLAS and static compilations of SuperLU_Dist, SuiteSparse and MUMPS, triangle and TETGEN on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -84,8 +84,8 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch     
-atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch   
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants_3_21_4.patch     
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix_3_21_4.patch   
 
 mkdir $libdir/petsc
 build_petsc()
@@ -202,16 +202,12 @@ build_petsc()
          USE_TRIANGLE=1
          USE_TETGEN=1
     fi
-
-    # hdf5
-    USE_HDF5=1
-        
+ 
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
     echo "USE_MUMPS="$USE_STATIC_MUMPS
     echo "USE_TETGEN="$USE_TETGEN
     echo "USE_TRIANGLE="$USE_TRIANGLE
-    echo "USE_HDF5="$USE_HDF5
     echo "1="${1}
     echo "2="${2}
     echo "3="${3}
@@ -267,9 +263,6 @@ build_petsc()
         --download-mumps-shared=0 \
         --download-tetgen=${USE_TETGEN} \
         --download-triangle=${USE_TRIANGLE} \
-        --with-hdf5=${USE_HDF5} \
-        --with-hdf5-lib=${libdir}/libhdf5.${dlext} \
-        --with-hdf5-include=${includedir} \
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
@@ -426,7 +419,6 @@ dependencies = [
     
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("HDF5_jll"; compat="1.14"),
 
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
