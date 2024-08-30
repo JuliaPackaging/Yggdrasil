@@ -38,23 +38,19 @@ if [[ "${target}" == *-w64-* ]]; then
     export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS"
 fi
 
+atomic_patch -p1 ../patches/fix-install-dir.patch
+
 # Statically link to boost
 export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
 
 cd src
 cmake -S . -B build \
-    -DCMAKE_INSTALL_PREFIX=$PWD/build/xilinx \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_CXX_FLAGS="${ADDITIONAL_CMAKE_CXX_FLAGS}" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
-
-# XRT installs several components in non-stadard paths
-# Copy only relevant libraries and headers to destdir
-cp -r $PWD/build/xilinx/xrt/lib ${prefix}/lib
-cp -r $PWD/build/xilinx/xrt/include ${prefix}/include
-cp -r $PWD/build/xilinx/xrt/share ${prefix}/share
 """
 
 # These are the platforms we will build for by default, unless further
