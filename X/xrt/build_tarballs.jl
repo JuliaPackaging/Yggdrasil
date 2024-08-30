@@ -76,7 +76,6 @@ dependencies = [
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("ocl_icd_jll"),
     Dependency("rapidjson_jll"),
-    # Dependency("Libffi_jll"),
     Dependency("LibCURL_jll", platforms=filter(Sys.islinux, platforms); compat="7.73, 8"),
     Dependency("libdrm_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Libuuid_jll", platforms=filter(Sys.islinux, platforms)),
