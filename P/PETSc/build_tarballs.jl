@@ -4,19 +4,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.19.6"
-petsc_version = v"3.19.6"
+version = v"3.20.5"
+petsc_version = v"3.20.5"
 
-SCALAPACK32_COMPAT_VERSION="2.2.1"
 MPItrampoline_compat_version="5.2.1"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 
-# Collection of sources required to build PETSc. Avoid using the git repository, it will
-# require building SOWING which fails in all non-linux platforms.
+# Collection of sources required to build PETSc.
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
-    "6045e379464e91bb2ef776f22a08a1bc1ff5796ffd6825f15270159cbb2464ae"),
+    "fb4e637758737af910b05f30a785245633916cd0a929b7b6447ad1028da4ea5a"),
     DirectorySource("./bundled"),
 ]
 
@@ -82,7 +80,7 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch     
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch   
 
 mkdir $libdir/petsc
@@ -107,30 +105,19 @@ build_petsc()
 
     # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
     USE_SUPERLU_DIST=0    
-    SUPERLU_DIST_LIB=""
-    SUPERLU_DIST_INCLUDE=""
     if [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
         USE_SUPERLU_DIST=1    
     fi
-    
+
     # See if we can install MUMPS
-    USE_MUMPS=0  
     USE_STATIC_MUMPS=0  
-    if [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
-        USE_STATIC_MUMPS=1      
-    else
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
-        USE_STATIC_MUMPS=0      
-    fi
-    
     if [[ "${target}" == *-mingw* ]]; then
         # try static
-        MUMPS_LIB=""
-        MUMPS_INCLUDE=""
         USE_STATIC_MUMPS=0
+    elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
+        USE_STATIC_MUMPS=1      
+    else
+        USE_STATIC_MUMPS=0      
     fi
 
     LIBFLAGS="-L${libdir}" 
@@ -178,7 +165,6 @@ build_petsc()
 
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_MUMPS="$USE_MUMPS
     echo "USE_STATIC_MUMPS="$USE_STATIC_MUMPS
     echo "1="${1}
     echo "2="${2}
@@ -209,7 +195,7 @@ build_petsc()
         --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix="" \
-        --CFLAGS='-fno-stack-protector '  \
+        --CFLAGS='-fno-stack-protector'  \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
         --LDFLAGS="${LIBFLAGS}"  \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
@@ -249,8 +235,6 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
-    # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
-    # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
 
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
@@ -342,12 +326,12 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   Platform("aarch64","linux"; libc="musl"),
                                                                   ]))
-
+# a few, but not all, platforms with libgfortran 3.0.0 are excluded
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat = MPItrampoline_compat_version,
                                         MPICH_compat         = MPICH_compat_version,
                                         MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
-                           
+
 # mpitrampoline and libgfortran 3 don't seem to work
 platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
 
@@ -387,7 +371,7 @@ dependencies = [
     
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("CompilerSupportLibraries_jll"),
-    
+
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
 append!(dependencies, platform_dependencies)
