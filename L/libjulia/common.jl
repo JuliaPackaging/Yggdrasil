@@ -262,12 +262,25 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LIBUNWIND:=-losxunwind
         JCPPFLAGS+=-DLIBOSXUNWIND
     EOM
+    else
+        # LLVMLIBUNWIND is currently only defined for USE_SYSTEM_UNWIND=0
+        # but we always need that for apple and julia > 1.6
+        cat << EOM >>Make.user
+        JCPPFLAGS+=-DLLVMLIBUNWIND
+    EOM
     fi
 
     # lld is too strict about some libraries that were built a long time ago
     # (libLLVM-11jl.so for julia 1.6 on freebsd)
-    if [[ "${version}" == 1.6.* ]] && [[ "${target}" == *freebsd* ]]; then
-        LDFLAGS="${LDFLAGS} -fuse-ld=bfd"
+    if [[ "${target}" == *freebsd* ]]; then
+        if [[ "${version}" == 1.6.* ]]; then
+            LDFLAGS="${LDFLAGS} -fuse-ld=bfd"
+        else
+            # the julia symbol version script contains undefined entries,
+            # which cause newer lld versions to emit errors
+            # see e.g. https://github.com/JuliaLang/julia/pull/55363
+            LDFLAGS="${LDFLAGS} -Wl,--undefined-version"
+        fi
     fi
 
     # avoid linker errors related to atomic support in 32bit ARM builds
