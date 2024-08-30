@@ -61,6 +61,17 @@
  # ifdef XRT_CORE_PCIE_NOOP_SOURCE
  #  define XRT_CORE_PCIE_NOOP_EXPORT __attribute__ ((visibility("default")))
  # else
+--- a/src/runtime_src/core/pcie/windows/alveo/config.h
++++ b/src/runtime_src/core/pcie/windows/alveo/config.h
+@@ -14,7 +14,7 @@
+ #  define XRT_CORE_PCIE_WINDOWS_EXPORT __declspec(dllimport)
+ # endif
+ #endif
+-#ifdef __GNUC__
++#ifdef __linux__
+ # ifdef XRT_CORE_PCIE_WINDOWS_SOURCE
+ #  define XRT_CORE_PCIE_WINDOWS_EXPORT __attribute__ ((visibility("default")))
+ # else
 --- a/src/runtime_src/xdp/config.h
 +++ b/src/runtime_src/xdp/config.h
 @@ -28,7 +28,7 @@
