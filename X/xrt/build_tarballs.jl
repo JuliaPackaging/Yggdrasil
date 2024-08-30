@@ -43,17 +43,18 @@ export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
 
 cd src
 cmake -S . -B build \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=$PWD/build/xilinx \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_CXX_FLAGS="${ADDITIONAL_CMAKE_CXX_FLAGS}" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
 
-# Copy folder from xrt to folder to root dest folder
-cd ${WORKSPACE}/destdir/
-cp -r ./xrt/* ./
-rm -rf xrt
+# XRT installs several components in non-stadard paths
+# Copy only relevant libraries and headers to destdir
+cp -r $PWD/build/xilinx/xrt/lib ${prefix}/lib
+cp -r $PWD/build/xilinx/xrt/include ${prefix}/include
+cp -r $PWD/build/xilinx/xrt/share ${prefix}/share
 """
 
 # These are the platforms we will build for by default, unless further
@@ -67,6 +68,9 @@ filter!(p -> Sys.iswindows(p) || (Sys.islinux(p) && libc(p) == "glibc"), platfor
 products = [
     LibraryProduct("libxrt_coreutil", :libxrt_coreutil),
     LibraryProduct("libxilinxopencl", :libxilinxopencl),
+    LibraryProduct("libxrt_core", :libxrt_core),
+    LibraryProduct("libxdp_core", :libxdp_coreutil),
+    LibraryProduct("libxrt++", :libxrtxx),
 ]
 
 # Dependencies that must be installed before this package can be built
