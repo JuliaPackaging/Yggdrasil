@@ -32,6 +32,7 @@ if [[ "${target}" == *-w64-* ]]; then
     atomic_patch -p1 ../patches/windows/aligned_malloc.patch
     atomic_patch -p1 ../patches/windows/no_static_boost.patch
     atomic_patch -p1 ../patches/windows/config.patch
+    atomic_patch -p1 ../patches/windows/xbutil.patch
     export ADDITIONAL_CMAKE_CXX_FLAGS="-fpermissive -D_WINDOWS"
 fi
 
