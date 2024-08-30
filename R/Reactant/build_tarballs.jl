@@ -183,10 +183,11 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDNN_VERSION="9.1.1")
     BAZEL_BUILD_FLAGS+=(--@local_config_cuda//cuda:include_hermetic_cuda_libs=true)
     BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:cuda_compiler=nvcc)
+    BAZEL_BUILD_FLAGS+=(--crosstool_top="@local_config_cuda//crosstool:toolchain")
 
     #BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_ROCM=1)
     #BAZEL_BUILD_FLAGS+=(--define=using_rocm=true --define=using_rocm_hipcc=true)
-    #BAZEL_BUILD_FLAGS+=(--action_env TF_ROCM_AMDGPU_TARGETS="gfx900,gfx906,gfx908,gfx90a,gfx1030")
+    #BAZEL_BUILD_FLAGS+=(--aCC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM ction_env TF_ROCM_AMDGPU_TARGETS="gfx900,gfx906,gfx908,gfx90a,gfx1030")
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
@@ -216,7 +217,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
     cc @bazel-bin/libReactantExtra.so-2.params
 else
-    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+   $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
