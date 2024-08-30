@@ -39,6 +39,26 @@
  #endif
  
  #endif
+--- a/src/runtime_src/xdp/config.h
++++ b/src/runtime_src/xdp/config.h
+@@ -28,7 +28,7 @@
+     #define XDP_CORE_EXPORT __declspec(dllimport)
+   #endif  
+ #endif
+-#ifdef __GNUC__
++#ifndef _WIN32
+   #ifdef XDP_CORE_SOURCE
+     #define XDP_CORE_EXPORT __attribute__ ((visibility("default")))
+   #else
+@@ -47,7 +47,7 @@
+     #define XDP_PLUGIN_EXPORT __declspec(dllimport)
+   #endif  
+ #endif
+-#ifdef __GNUC__
++#ifndef _WIN32
+   #ifdef XDP_PLUGIN_SOURCE
+     #define XDP_PLUGIN_EXPORT __attribute__ ((visibility("default")))
+   #else
 --- a/src/runtime_src/xocl/config.h
 +++ b/src/runtime_src/xocl/config.h
 @@ -29,7 +29,7 @@
