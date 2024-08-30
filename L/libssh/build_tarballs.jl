@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libssh"
-version = v"0.11.0"
+version = v"0.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz", "860e814579e7606f3fc3db98c5807bef2ab60f793ec871d81bcd23acdcdd3e91")
+    ArchiveSource("https://www.libssh.org/files/$(version.major).$(version.minor)/libssh-$(version).tar.xz", "14b7dcc72e91e08151c58b981a7b570ab2663f630e7d2837645d5a9c612c1b79")
 ]
 
 # Bash recipe for building across all platforms
@@ -65,4 +65,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

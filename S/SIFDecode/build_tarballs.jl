@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SIFDecode"
-version = v"2.5.0"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/SIFDecode.git", "eaf94c01447a9453ded4909a891bb6e6d2b62e0e")
+    GitSource("https://github.com/ralna/SIFDecode.git", "a94d9a0b00f3e215da27943f7c19809ca160166b")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +16,7 @@ script = raw"""
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
 cd ${WORKSPACE}/srcdir/SIFDecode
-meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson --prefix=$prefix
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson --prefix=$prefix -Ddefault_library=shared
 meson compile -C builddir
 meson install -C builddir
 """

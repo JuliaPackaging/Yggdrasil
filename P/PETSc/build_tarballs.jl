@@ -38,7 +38,6 @@ apk del cmake
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
-
 if [[ "${target}" == *-mingw* ]]; then
     # On windows, it compiles fine but we obtain a following runtime error:
     # 
@@ -99,6 +98,9 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 mkdir $libdir/petsc
 build_petsc()
 {
+    # so we can use a newer version of cmake
+    apk del cmake
+
     # Compile a debug version?
     DEBUG_FLAG=0
     PETSC_CONFIG="${1}_${2}_${3}"
@@ -214,6 +216,9 @@ build_petsc()
     echo "COPTFLAGS="${_COPTFLAGS}
     echo "BLAS_LAPACK_LIB="$BLAS_LAPACK_LIB
     echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
+    echo "MPI_CC="$MPI_CC
+    echo "MPI_FC="$MPI_FC
+    echo "MPI_CXX="$MPI_CXX
     
     mkdir $libdir/petsc/${PETSC_CONFIG}
   
@@ -274,8 +279,6 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
-    # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
-    # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
 
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
