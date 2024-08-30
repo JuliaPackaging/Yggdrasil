@@ -58,7 +58,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         ]
     elseif version == v"1.12.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "ccba6c91e24ebc0940acc2f8c390e6391ce0e292"),
+            GitSource("https://github.com/JuliaLang/julia.git", "fdc109088e7a25c7b412546634f2db70a2d584ad"),
             DirectorySource("./bundled"),
         ]
     else
@@ -162,7 +162,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elif [[ "${version}" == 1.11.* ]]; then
         LLVMVERMAJOR=16
     elif [[ "${version}" == 1.12.* ]]; then
-        LLVMVERMAJOR=16
+        LLVMVERMAJOR=18
     else
         echo "Error, LLVM version not specified"
         exit 1
@@ -415,11 +415,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
     elseif version.major == 1 && version.minor == 12
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.2.1+1")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+15")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.7.2+2"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.0+0")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+16")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+1"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+2")))
     else
         error("Unsupported Julia version")
     end
