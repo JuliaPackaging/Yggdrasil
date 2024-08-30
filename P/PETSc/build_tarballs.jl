@@ -85,7 +85,7 @@ fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch     
-atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch   
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 
 mkdir $libdir/petsc
 build_petsc()
@@ -193,6 +193,9 @@ build_petsc()
         MPI_CXX=${CXX}
         USE_SUPERLU_DIST=0
         USE_SUITESPARSE=0
+    fi
+    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
+        USE_STATIC_MUMPS=0
     fi
 
     # triangle & tetgen
