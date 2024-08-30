@@ -12,7 +12,6 @@ index 1361d41..415825e 100644
 +__attribute__((__constructor__)) static void init_Petsc_Superlu_dist_keyval() { Petsc_Superlu_dist_keyval = MPI_KEYVAL_INVALID; }
 + 
  PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
-
  {
    PetscSuperLU_DIST *context = (PetscSuperLU_DIST *)attr_val;
 diff --git a/src/sys/classes/viewer/impls/ascii/vcreatea.c b/src/sys/classes/viewer/impls/ascii/vcreatea.c
@@ -29,7 +28,6 @@ index 2ce92a6..ebe7461 100644
 +__attribute__((__constructor__)) static void init_Petsc_Viewer_Stdout_keyval() { Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID; }
 + 
  /*@
-
    PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
    in a communicator. Error returning version of `PETSC_VIEWER_STDOUT_()`
 @@ -89,8 +90,9 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
@@ -54,7 +52,6 @@ index 2ce92a6..ebe7461 100644
  /*
     Called with MPI_Comm_free() is called on a communicator that has a viewer as an attribute. The viewer is not actually destroyed
     because that is managed by PetscObjectDestroyRegisterAll(). PetscViewerASCIIGetStdout() registers the viewer with PetscObjectDestroyRegister() to be destroyed when PetscFinalize() is called.
-
 diff --git a/src/sys/objects/pinit.c b/src/sys/objects/pinit.c
 index 6bbeb4d..03037fa 100644
 --- a/src/sys/objects/pinit.c
@@ -154,12 +151,11 @@ index 28ba6f0df9..617c20aeaf 100644
  
  PETSC_STATIC_INLINE MPI_Comm PetscYAMLGetComm(void)
  {
-
 diff --git a/src/sys/classes/viewer/impls/binary/binv.c b/src/sys/classes/viewer/impls/binary/binv.c
-index 132fb1a5497..881614e2576 100644
+index 842cc0750e..a4dee6a96d 100644
 --- a/src/sys/classes/viewer/impls/binary/binv.c
 +++ b/src/sys/classes/viewer/impls/binary/binv.c
-@@ -1562,7 +1562,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
+@@ -1625,7 +1625,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
      The variable Petsc_Viewer_Binary_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
@@ -168,12 +164,12 @@ index 132fb1a5497..881614e2576 100644
 +__attribute__((__constructor__)) static void init_Petsc_Viewer_Binary_keyval() { Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID; }
  
  /*@C
-      PETSC_VIEWER_BINARY_ - Creates a `PETSCVIEWERBINARY` `PetscViewer` shared by all processors
+      PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors
 diff --git a/src/sys/classes/viewer/impls/draw/drawv.c b/src/sys/classes/viewer/impls/draw/drawv.c
-index 60ef77c612a..8afdd112ae7 100644
+index e98ade22ff..8d27934c3e 100644
 --- a/src/sys/classes/viewer/impls/draw/drawv.c
 +++ b/src/sys/classes/viewer/impls/draw/drawv.c
-@@ -720,7 +720,8 @@ PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold)
+@@ -752,7 +752,8 @@ PetscErrorCode  PetscViewerDrawGetHold(PetscViewer viewer,PetscBool *hold)
      The variable Petsc_Viewer_Draw_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
@@ -184,10 +180,10 @@ index 60ef77c612a..8afdd112ae7 100644
  /*@C
      PETSC_VIEWER_DRAW_ - Creates a window PetscViewer shared by all processors
 diff --git a/src/sys/classes/viewer/impls/socket/send.c b/src/sys/classes/viewer/impls/socket/send.c
-index 1385b4232ae..9617bd06087 100644
+index 3f34bb5e10..5a752fdc24 100644
 --- a/src/sys/classes/viewer/impls/socket/send.c
 +++ b/src/sys/classes/viewer/impls/socket/send.c
-@@ -462,7 +462,8 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
+@@ -464,7 +464,8 @@ PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer v,const char machine[
      The variable Petsc_Viewer_Socket_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
@@ -198,17 +194,16 @@ index 1385b4232ae..9617bd06087 100644
  /*@C
       PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 diff --git a/src/sys/utils/mpiu.c b/src/sys/utils/mpiu.c
-index 5da075d555d..812ff10bc78 100644
+index a28ea3dc51..15247372d9 100644
 --- a/src/sys/utils/mpiu.c
 +++ b/src/sys/utils/mpiu.c
-@@ -42,7 +42,9 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm, int n
+@@ -52,7 +52,8 @@ PETSC_INTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng
      The variable Petsc_Seq_keyval is used to indicate an MPI attribute that
    is attached to a communicator that manages the sequential phase code below.
  */
 -PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 +PetscMPIInt Petsc_Seq_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Seq_keyval() { Petsc_Seq_keyval = MPI_KEYVAL_INVALID; }
-+
  
  /*@
     PetscSequentialPhaseBegin - Begins a sequential section of code.
