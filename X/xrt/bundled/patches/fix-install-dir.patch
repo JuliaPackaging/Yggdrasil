@@ -14,6 +14,15 @@
  set (XRT_INSTALL_PYTHON_DIR    "${XRT_INSTALL_DIR}/python")
 --- a/src/CMake/nativeWin.cmake
 +++ b/src/CMake/nativeWin.cmake
+@@ -10,7 +10,7 @@
+ # XRT_VERSION_PATCH
+ 
+ # install under c:/xrt
+-set (CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/xilinx")
++#set (CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/xilinx")
+ 
+ # pdb install dir
+ set (CMAKE_PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/symbols")
 @@ -70,9 +70,9 @@ endif()
  INCLUDE (FindGTest)
  
