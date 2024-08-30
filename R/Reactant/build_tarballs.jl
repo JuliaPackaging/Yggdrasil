@@ -214,9 +214,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 #	sed -i.bak0 "/lld/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 #	echo "-fuse-ld=lld" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
 	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-	ls -all .
-	ls -all bazel-bin
-    @bazel-bin/libReactantExtra.so-2.params
+    cc @bazel-bin/libReactantExtra.so-2.params
 else
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
