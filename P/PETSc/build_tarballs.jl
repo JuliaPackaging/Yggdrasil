@@ -86,7 +86,7 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch     
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch   
 
 mkdir $libdir/petsc

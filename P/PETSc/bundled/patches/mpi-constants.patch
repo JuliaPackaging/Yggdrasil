@@ -1,38 +1,20 @@
 diff --git a/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c b/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c
-index dd3ec73de3d..b70bacb2858 100644
+diff --git a/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c b/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c
+index 7b5e24b..b0edf7d 100644
 --- a/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c
 +++ b/src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c
-@@ -130,8 +130,9 @@ typedef struct {
-   gridinfo3d_t grid3d;
+@@ -144,7 +144,8 @@ typedef struct {
  #endif
  } PetscSuperLU_DIST;
  
 -static PetscMPIInt Petsc_Superlu_dist_keyval = MPI_KEYVAL_INVALID;
--
 +static PetscMPIInt Petsc_Superlu_dist_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Superlu_dist_keyval() { Petsc_Superlu_dist_keyval = MPI_KEYVAL_INVALID; }
-+ 
- PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_Delete_Fn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
- {
-   PetscSuperLU_DIST *context = (PetscSuperLU_DIST *)attr_val;
-diff --git a/src/mat/impls/scalapack/matscalapack.c b/src/mat/impls/scalapack/matscalapack.c
-index d105cdd0a57..9cb7352c281 100644
---- a/src/mat/impls/scalapack/matscalapack.c
-+++ b/src/mat/impls/scalapack/matscalapack.c
-@@ -17,7 +17,9 @@ static PetscBool ScaLAPACKCite       = PETSC_FALSE;
-     The variable Petsc_ScaLAPACK_keyval is used to indicate an MPI attribute that
-   is attached to a communicator, in this case the attribute is a Mat_ScaLAPACK_Grid
- */
--static PetscMPIInt Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID;
-+PetscMPIInt Petsc_ScaLAPACK_keyval;
-+__attribute__((__constructor__)) static void init_Petsc_ScaLAPACK_keyval() { Petsc_ScaLAPACK_keyval = MPI_KEYVAL_INVALID; }
-+
  
- static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
+ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_DeleteFn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
  {
-   PetscSuperLU_DIST *context = (PetscSuperLU_DIST *)attr_val;
 diff --git a/src/sys/classes/viewer/impls/ascii/vcreatea.c b/src/sys/classes/viewer/impls/ascii/vcreatea.c
-index bc0dac30c9b..04a3dee9d6d 100644
+index cb3c3d5..c128a74 100644
 --- a/src/sys/classes/viewer/impls/ascii/vcreatea.c
 +++ b/src/sys/classes/viewer/impls/ascii/vcreatea.c
 @@ -5,7 +5,8 @@
@@ -44,9 +26,10 @@ index bc0dac30c9b..04a3dee9d6d 100644
 +PetscMPIInt Petsc_Viewer_Stdout_keyval;
 +__attribute__((__constructor__)) static void init_Petsc_Viewer_Stdout_keyval() { Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID; }
 + 
- /*@
-    PetscViewerASCIIGetStdout - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
-@@ -81,7 +82,8 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
+ /*@C
+    PETSC_VIEWER_STDOUT_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
+                     in a communicator.
+@@ -45,8 +46,9 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
      The variable Petsc_Viewer_Stderr_keyval is used to indicate an MPI attribute that
    is attached to a communicator, in this case the attribute is a PetscViewer.
  */
@@ -56,8 +39,9 @@ index bc0dac30c9b..04a3dee9d6d 100644
 +__attribute__((__constructor__)) static void init_Petsc_Viewer_Stderr_keyval() { Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID; }
 + 
  /*@
-    PetscViewerASCIIGetStderr - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all processors
-@@ -155,7 +157,8 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
+   PetscViewerASCIIGetStderr - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
+   in a communicator. Error returning version of `PETSC_VIEWER_STDERR_()`
+@@ -128,7 +130,8 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
    PetscFunctionReturn(viewer);
  }
  
@@ -122,22 +106,7 @@ index 1385b4232ae..9617bd06087 100644
 +__attribute__((__constructor__)) static void init_Petsc_Viewer_Socket_keyval() { Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID; }
  
  /*@C
-      PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
-diff --git a/src/sys/objects/optionsyaml.c b/src/sys/objects/optionsyaml.c
-index 254dbf0d352..18b402469da 100644
---- a/src/sys/objects/optionsyaml.c
-+++ b/src/sys/objects/optionsyaml.c
-@@ -10,7 +10,9 @@
- PETSC_INTERN PetscErrorCode PetscOptionsSetValue_Private(PetscOptions, const char[], const char[], int *, PetscOptionSource);
- PETSC_INTERN PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions, const char[], PetscOptionSource);
- 
--static MPI_Comm petsc_yaml_comm = MPI_COMM_NULL; /* only used for parallel error handling */
-+static MPI_Comm petsc_yaml_comm; /* only used for parallel error handling */
-+__attribute__((__constructor__)) static void init_petsc_yaml_comm() { petsc_yaml_comm = MPI_COMM_NULL; }
-+
- 
- static inline MPI_Comm PetscYAMLGetComm(void)
- {
+    PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 diff --git a/src/sys/objects/pinit.c b/src/sys/objects/pinit.c
 index f0b0b569fa4..02357127622 100644
 --- a/src/sys/objects/pinit.c
@@ -224,7 +193,7 @@ index 5da075d555d..812ff10bc78 100644
 +
  
  /*@
-    PetscSequentialPhaseBegin - Begins a sequential section of code.
+   PetscSequentialPhaseBegin - Begins a sequential section of code.
 diff --git a/src/vec/vec/utils/comb.c b/src/vec/vec/utils/comb.c
 index 38ce9beb2b9..7e63236adf0 100644
 --- a/src/vec/vec/utils/comb.c
