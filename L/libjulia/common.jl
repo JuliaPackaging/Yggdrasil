@@ -270,17 +270,21 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     EOM
     fi
 
+    if [[ "${target}" == *freebsd* ]]; then
+        if [[ "${version}" == 1.[7-9].* ]] ||
+           [[ "${version}" == 1.1[0-1].* ]]; then
+        # the julia symbol version script contains undefined entries,
+        # which cause newer lld versions to emit errors
+        # see e.g. https://github.com/JuliaLang/julia/pull/55363
+        cat << EOM >>Make.user
+        OSLIBS+=-Wl,--undefined-version
+    EOM
+    fi
+
     # lld is too strict about some libraries that were built a long time ago
     # (libLLVM-11jl.so for julia 1.6 on freebsd)
-    if [[ "${target}" == *freebsd* ]]; then
-        if [[ "${version}" == 1.6.* ]]; then
-            LDFLAGS="${LDFLAGS} -fuse-ld=bfd"
-        else
-            # the julia symbol version script contains undefined entries,
-            # which cause newer lld versions to emit errors
-            # see e.g. https://github.com/JuliaLang/julia/pull/55363
-            LDFLAGS="${LDFLAGS} -Wl,--undefined-version"
-        fi
+    if [[ "${version}" == 1.6.* ]] && [[ "${target}" == *freebsd* ]]; then
+        LDFLAGS="${LDFLAGS} -fuse-ld=bfd"
     fi
 
     # avoid linker errors related to atomic support in 32bit ARM builds
