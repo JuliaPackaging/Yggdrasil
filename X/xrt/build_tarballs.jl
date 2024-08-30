@@ -69,7 +69,7 @@ products = [
     LibraryProduct("libxrt_coreutil", :libxrt_coreutil),
     LibraryProduct("libxilinxopencl", :libxilinxopencl),
     LibraryProduct("libxrt_core", :libxrt_core),
-    LibraryProduct("libxdp_core", :libxdp_coreutil),
+    LibraryProduct("libxdp_core", :libxdp_core),
     LibraryProduct("libxrt++", :libxrtxx),
 ]
 
