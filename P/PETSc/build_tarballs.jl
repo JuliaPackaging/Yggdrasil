@@ -1,22 +1,19 @@
+# PETSc 3.21.4 with OpenBLAS, HDF5 and static compilations of SuperLU_Dist, SuiteSparse and MUMPS, triangle and TETGEN on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.19.0"
-petsc_version = v"3.19.0"
-MUMPS_COMPAT_VERSION = "5.6.2"
-SUITESPARSE_COMPAT_VERSION = "7.2.1" 
-SUPERLUDIST_COMPAT_VERSION = "8.1.2"   
-MPItrampoline_compat_version="5.2.1"
-BLASTRAMPOLINE_COMPAT_VERSION="5.8.0"    
+version = v"3.21.4"
+petsc_version = v"3.21.4"
 
-MPItrampoline_compat_version="5.2.1"
+MPItrampoline_compat_version="5.4.0"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 
-# Collection of sources required to build PETSc.
+# Collection of sources required to build PETSc. Avoid using the git repository, it will
+# require building SOWING which fails in all non-linux platforms.
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
     "a9ae076d4617c7d84ce2bed37194022319c19f19b3930edf148b2bc8ecf2248d"),
@@ -31,6 +28,7 @@ apk del cmake
 
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
+
 
 if [[ "${target}" == *-mingw* ]]; then
     # On windows, it compiles fine but we obtain a following runtime error:
@@ -114,6 +112,18 @@ build_petsc()
     if [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
         USE_SUPERLU_DIST=1    
     fi
+    if [[ "${target}" == *-mingw* ]]; then
+        USE_SUPERLU_DIST=0
+    fi
+
+    # install suitesparse if available - note that this shipped with julia and therefore linked to specific julia versions
+    USE_SUITESPARSE=0
+    if [ "${1}" == "double" ]; then
+        USE_SUITESPARSE=1    
+    fi
+    if [[ "${target}" == *-mingw* ]]; then
+        USE_SUITESPARSE=0
+    fi
 
     # See if we can install MUMPS
     USE_STATIC_MUMPS=0  
@@ -130,11 +140,30 @@ build_petsc()
     else
         USE_STATIC_MUMPS=0      
     fi
+    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
+        USE_STATIC_MUMPS=0
+    fi
 
     LIBFLAGS="-L${libdir}" 
     if [[ "${target}" == *-mingw* ]]; then
         LIBFLAGS="-L${libdir} -lssp -lmsmpi" 
     fi
+
+    # use LBT - to be activated @ a later stage
+    #if [[ "${target}" == aarch64-apple-* ]]; then    
+    #    LIBFLAGS="-L${libdir}" 
+    #    # Linking requires the function `__divdc3`, which is implemented in
+    #    # `libclang_rt.osx.a` from LLVM compiler-rt.
+    #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+    #    CLINK_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+    #elif [[ "${target}" == *-mingw* ]]; then
+    #    # BLAS_LAPACK_LIB="${libdir}/libblastrampoline-5.${dlext}"
+    #    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # LBT doesn't seem to work on windows
+    #    CLINK_FLAGS=""
+    #else
+    #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
+    #    CLINK_FLAGS=""
+    #fi
 
     BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"
     if [[ "${target}" == aarch64-apple-* ]]; then    
@@ -179,13 +208,24 @@ build_petsc()
         USE_SUPERLU_DIST=0
         USE_SUITESPARSE=0
     fi
-    if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
-        USE_STATIC_MUMPS=0
+
+    # triangle & tetgen
+    USE_TRIANGLE=0
+    USE_TETGEN=0
+    if [ "${1}" == "double" ] ; then
+         USE_TRIANGLE=1
+         USE_TETGEN=1
     fi
 
+    # hdf5
+    USE_HDF5=1
+        
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_STATIC_MUMPS="$USE_STATIC_MUMPS
+    echo "USE_MUMPS="$USE_STATIC_MUMPS
+    echo "USE_TETGEN="$USE_TETGEN
+    echo "USE_TRIANGLE="$USE_TRIANGLE
+    echo "USE_HDF5="$USE_HDF5
     echo "1="${1}
     echo "2="${2}
     echo "3="${3}
@@ -203,7 +243,8 @@ build_petsc()
     echo "MPI_CXX="$MPI_CXX
     
     mkdir $libdir/petsc/${PETSC_CONFIG}
-  
+        
+   
     # Step 1: build static libraries of external packages (happens during configure)    
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages 
     echo "prefix="${libdir}/petsc/${PETSC_CONFIG}
@@ -225,7 +266,7 @@ build_petsc()
         --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix="" \
-        --CFLAGS='-fno-stack-protector'  \
+        --CFLAGS='-fno-stack-protector '  \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
         --LDFLAGS="${LIBFLAGS}"  \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
@@ -245,12 +286,19 @@ build_petsc()
         --with-scalar-type=${2} \
         --with-pthread=0 \
         --PETSC_ARCH=${target}_${PETSC_CONFIG} \
+        --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
+        --with-scalapack-include=${includedir} \
+        --download-suitesparse=${USE_SUITESPARSE} \
+        --download-suitesparse-shared=0 \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
         --download-mumps=${USE_STATIC_MUMPS} \
         --download-mumps-shared=0 \
-        --with-scalapack-lib=${libdir}/libscalapack32.${dlext} \
-        --with-scalapack-include=${includedir} \
+        --download-tetgen=${USE_TETGEN} \
+        --download-triangle=${USE_TRIANGLE} \
+        --with-hdf5=${USE_HDF5} \
+        --with-hdf5-lib=${libdir}/libhdf5.${dlext} \
+        --with-hdf5-include=${includedir} \
         --SOSUFFIX=${PETSC_CONFIG} \
         --with-shared-libraries=1 \
         --with-clean=1
@@ -269,6 +317,8 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
+    # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
+    # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
 
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
@@ -314,7 +364,7 @@ build_petsc()
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "deb" ]; then
         
         # this is the example that PETSc uses to test the correct installation        
-        # We compile it with debug flags (helpful to catch issues)
+        # We compile it witn debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
         file=${workdir}/ex19
@@ -357,9 +407,8 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv6l","linux"; libc="musl"),
                                                                   Platform("armv7l","linux"; libc="musl"),
                                                                   Platform("armv7l","linux"; libc="gnu"),
-                                                                  Platform("aarch64","linux"; libc="musl"),
-                                                                  Platform("aarch64","linux"; libc="musl"),
-                                                                  ]))
+                                                                  Platform("aarch64","linux"; libc="musl")]))
+
 # a few, but not all, platforms with libgfortran 3.0.0 are excluded
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat = MPItrampoline_compat_version,
@@ -412,6 +461,7 @@ dependencies = [
     
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("HDF5_jll"; compat="1.14"),
 
     HostBuildDependency(PackageSpec(; name="CMake_jll"))
     Dependency("SuperLU_DIST_jll"; compat=SUPERLUDIST_COMPAT_VERSION),
