@@ -273,12 +273,13 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     if [[ "${target}" == *freebsd* ]]; then
         if [[ "${version}" == 1.[7-9].* ]] ||
            [[ "${version}" == 1.1[0-1].* ]]; then
-        # the julia symbol version script contains undefined entries,
-        # which cause newer lld versions to emit errors
-        # see e.g. https://github.com/JuliaLang/julia/pull/55363
-        cat << EOM >>Make.user
-        OSLIBS+=-Wl,--undefined-version
+           # the julia symbol version script contains undefined entries,
+           # which cause newer lld versions to emit errors
+           # see e.g. https://github.com/JuliaLang/julia/pull/55363
+           cat << EOM >>Make.user
+           OSLIBS+=-Wl,--undefined-version
     EOM
+       fi
     fi
 
     # lld is too strict about some libraries that were built a long time ago
