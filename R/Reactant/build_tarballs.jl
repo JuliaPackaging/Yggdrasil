@@ -3,7 +3,6 @@ using Base.BinaryPlatforms
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
-include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
@@ -168,9 +167,6 @@ fi
 
 
 if [[ "${bb_full_target}" == *linux* ]]; then
-    #export CUDA_HOME=${WORKSPACE}/destdir;
-    #export PATH=$PATH:$CUDA_HOME/bin
-    #export CUDACXX=$CUDA_HOME/bin/nvcc
     sed -i "s/getopts \\"/getopts \\"p/g" /sbin/ldconfig
     mkdir -p .local/bin
     echo "#!/bin/sh" > .local/bin/ldconfig
@@ -180,7 +176,6 @@ if [[ "${bb_full_target}" == *linux* ]]; then
 
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NVCC_CLANG=1)
-    # BAZEL_BUILD_FLAGS+=(--repo_env CLANG_CUDA_COMPILER_PATH=`which clang`)
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NCCL_USE_STUB=1)
     BAZEL_BUILD_FLAGS+=(--repo_env HERMETIC_CUDA_COMPUTE_CAPABILITIES="sm_50,sm_60,sm_70,sm_80,compute_90")
     BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:enable_cuda)
@@ -224,8 +219,6 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	cat bazel-bin/libReactantExtra.so-2.params
     cc @bazel-bin/libReactantExtra.so-2.params
 else
-    # ln -s `echo /workspace/bazel_root/*/external/cuda_cccl/include` /workspace/missing
-    # sed -i.bak0 "s/builtin_include_directories = \[/builtin_include_directories = \[\\"\/workspace\/missing\\",/g" /workspace/bazel_root/*/external/local_config_cuda/crosstool/BUILD
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
@@ -324,13 +317,8 @@ augment_platform_block="""
     else
         nothing
     end
-    
-    #module __CUDA
-    #    $(CUDA.augment::String)
-    #end
 
     function augment_platform!(platform::Platform)
-        #__CUDA.augment_platform!(platform)
 
         mode = get(ENV, "REACTANT_MODE", something(mode_preference, "opt"))
         if !haskey(platform, "mode")
@@ -344,7 +332,6 @@ augment_platform_block="""
 for mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
-    cuda_deps = []
 
     # Skip debug builds on linux
     if mode == "dbg" && !Sys.isapple(platform)
@@ -361,14 +348,6 @@ for mode in ("opt", "dbg"), platform in platforms
                   ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
                                 "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
     end
-
-    # if CUDA.is_supported(platform)
-    #     cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
-    #     push!(cuda_deps, BuildDependency(PackageSpec(name="CUDNN_jll")))
-    #     push!(cuda_deps, BuildDependency(PackageSpec(name="TensorRT_jll")))
-    #     push!(cuda_deps, BuildDependency(PackageSpec(name="CUDA_full_jll")))
-    #     prefix *= "export CUDA_VERSION=\"\"\n"
-    # end
 
     should_build_platform(triplet(augmented_platform)) || continue
     products2 = copy(products)
@@ -400,7 +379,7 @@ for mode in ("opt", "dbg"), platform in platforms
     end
 
     push!(builds, (;
-                   dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
+                   dependencies, products=products2, sources=platform_sources,
         platforms=[augmented_platform], script=prefix*script
     ))
 end
