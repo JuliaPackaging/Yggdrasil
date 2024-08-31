@@ -32,14 +32,21 @@ sources = [
 # Bash recipe for building across all platforms
 # LAMMPS DPD packages do not work on all platforms
 script = raw"""
+if [[ "${target}" == x86_64-linux-gnu* ]]; then
+    INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
+else
+    INSTALL_RPATH=()
+fi
+
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
 cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
-    -DPKG_MPI=ON \
+    -DBUILD_MPI=ON \
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
@@ -80,7 +87,7 @@ platforms = expand_cxxstring_abis(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
