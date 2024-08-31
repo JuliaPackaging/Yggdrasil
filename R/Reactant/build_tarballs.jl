@@ -70,7 +70,7 @@ cp /usr/lib/csl-musl-x86_64/libstdc++.so.6 /usr/lib/libstdc++.so.6
 cp /usr/lib/csl-musl-x86_64/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
 # sed -E -i 's/public final/@Immutable\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
 sed -E -i 's/public final/@SuppressWarnings("Immutable")\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
-CC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM bazel --output_user_root=/workspace/pbazel_root build --jobs ${nproc} ${PBAZEL_BUILD_FLAGS[@]} --sandbox_debug //src:bazel-dev
+CC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM bazel --output_user_root=$WORKSPACE/pbazel_root build --jobs ${nproc} ${PBAZEL_BUILD_FLAGS[@]} --sandbox_debug //src:bazel-dev
 export BAZEL=$WORKSPACE/srcdir/bazel-dist/bazel-bin/src/bazel-dev
 rm /usr/lib/libstdc++.so.6
 rm /usr/lib/libgcc_s.so.1
@@ -93,7 +93,7 @@ BAZEL_FLAGS=()
 BAZEL_BUILD_FLAGS=(-c $MODE)
 
 # don't run out of temporary space
-BAZEL_FLAGS+=(--output_user_root=/workspace/bazel_root)
+BAZEL_FLAGS+=(--output_user_root=$WORKSPACE/bazel_root)
 BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 # BAZEL_FLAGS+=(--extra_toolchains=@local_jdk//:all)
 
@@ -227,7 +227,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     cc @bazel-bin/libReactantExtra.so-2.params
 else
     ln -s `echo /workspace/bazel_root/*/external/cuda_cccl/include` /workspace/missing
-    sed -i.bak0 "s/builtin_include_directories = \[/builtin_include_directories = \[\"\/workspace\/missing\",/g" /workspace/bazel_root/*/external/local_config_cuda/crosstool/BUILD
+    sed -i.bak0 "s/builtin_include_directories = \[/builtin_include_directories = \[\\"\/workspace\/missing\`\\",/g" /workspace/bazel_root/*/external/local_config_cuda/crosstool/BUILD
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
