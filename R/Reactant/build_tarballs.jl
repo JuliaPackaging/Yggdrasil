@@ -227,7 +227,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     cc @bazel-bin/libReactantExtra.so-2.params
 else
     ln -s `echo /workspace/bazel_root/*/external/cuda_cccl/include` /workspace/missing
-    sed -i.bak0 "s/builtin_include_directories = \[/builtin_include_directories = \[\\"\/workspace\/missing\`\\",/g" /workspace/bazel_root/*/external/local_config_cuda/crosstool/BUILD
+    sed -i.bak0 "s/builtin_include_directories = \[/builtin_include_directories = \[\\"\/workspace\/missing\\",/g" /workspace/bazel_root/*/external/local_config_cuda/crosstool/BUILD
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
