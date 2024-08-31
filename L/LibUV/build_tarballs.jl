@@ -8,7 +8,7 @@ version = v"2"
 # Collection of sources required to build libuv
 sources = [
     GitSource("https://github.com/JuliaLang/libuv.git",
-              "ca3a5a431a1c37859b6508e6b2a288092337029a"),
+              "c57e7f06cbe697ca8ea9215ce054a608c451b193"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,7 +33,7 @@ make install
 """
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
