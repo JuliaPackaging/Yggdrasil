@@ -231,6 +231,11 @@ fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
+
+if [[ "${bb_full_target}" == *linux* ]]; then
+  bazel-bin/_solib_local/*/*so* ${libdir}
+fi
+
 cp -v bazel-bin/libReactantExtra.so ${libdir}
 if [[ "${bb_full_target}" == *darwin* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dylib
@@ -366,8 +371,36 @@ for mode in ("opt", "dbg"), platform in platforms
     # end
 
     should_build_platform(triplet(augmented_platform)) || continue
+    products2 = copy(products)
+    if !Sys.isapple(platform)
+    	for lib in (
+		"libnccl",
+		"libcufft",
+		"libcudnn_engines_precompiled",
+		"libcudart",
+		"libcublasLt",
+		"libcudnn_heuristic",
+		"libcudnn_cnn",
+		"libnvrtc",
+		"libcudnn_adv",
+		"libcudnn",
+		"libnvJitLink",
+		"libcublas",
+		"libcudnn_ops",
+		"libnvrtc-builtins",
+		"libcudnn_graph",
+		"libcusolver",
+		"libcuda",
+		"libcudnn_engines_runtime_compiled",
+		"libcusparse",
+	)
+		push!(products2, LibraryProduct([lib, lib],
+			Symbol(lib))
+	end
+    end
+
     push!(builds, (;
-                   dependencies=[dependencies; cuda_deps], products, sources=platform_sources,
+                   dependencies=[dependencies; cuda_deps], products2, sources=platform_sources,
         platforms=[augmented_platform], script=prefix*script
     ))
 end
