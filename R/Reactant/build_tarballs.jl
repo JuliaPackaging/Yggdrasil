@@ -379,7 +379,7 @@ for mode in ("opt", "dbg"), platform in platforms
     end
 
     push!(builds, (;
-                   dependencies=[dependencies], products=products2, sources=platform_sources,
+                   dependencies, products=products2, sources=platform_sources,
         platforms=[augmented_platform], script=prefix*script
     ))
 end
