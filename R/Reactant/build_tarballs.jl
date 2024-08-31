@@ -10,7 +10,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.16"
 
 sources = [
-   GitSource(repo, "d777a0704d2d5ad4d61f7672138ae291680eed07"),
+  GitSource(repo, "087f93649b893a4bbf1d03a9f60a3f6fb71ae25d"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
   #ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/6.5.0.zip",
@@ -226,8 +226,8 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	cat bazel-bin/libReactantExtra.so-2.params
     cc @bazel-bin/libReactantExtra.so-2.params
 else
-    ln -s `echo /workspace/bazel_root/*/external/cuda_cccl/include` /workspace/missing
-    sed -i.bak0 "s/builtin_include_directories = \[/builtin_include_directories = \[\\"\/workspace\/missing\\",/g" /workspace/bazel_root/*/external/local_config_cuda/crosstool/BUILD
+    # ln -s `echo /workspace/bazel_root/*/external/cuda_cccl/include` /workspace/missing
+    # sed -i.bak0 "s/builtin_include_directories = \[/builtin_include_directories = \[\\"\/workspace\/missing\\",/g" /workspace/bazel_root/*/external/local_config_cuda/crosstool/BUILD
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
