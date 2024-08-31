@@ -233,7 +233,7 @@ rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
 
 if [[ "${bb_full_target}" == *linux* ]]; then
-  bazel-bin/_solib_local/*/*so* ${libdir}
+  cp -v bazel-bin/_solib_local/*/*so* ${libdir}
 fi
 
 cp -v bazel-bin/libReactantExtra.so ${libdir}
