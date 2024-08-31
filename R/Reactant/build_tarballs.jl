@@ -10,7 +10,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.16"
 
 sources = [
-   GitSource(repo, "3160125ba1c0ff91dafc6be731d1f0bfe4dd94b8"),
+   GitSource(repo, "e71d89dcaa3670739229aa6d9a7943da94aeec72"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
   #ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/6.5.0.zip",
@@ -133,7 +133,15 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=no_nccl_support=true)
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
-     
+    
+    pushd $WORKSPACE/srcdir/llvm*
+	mkdir build
+	cd build
+	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
+	ninja lld
+	export LLD2=`pwd`/bin/ld64.lld
+	popd
+
 	if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
         BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
@@ -181,7 +189,7 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     BAZEL_BUILD_FLAGS+=(--@xla//xla/python:jax_cuda_pip_rpaths=true)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="12.3.2")
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDNN_VERSION="9.1.1")
-    BAZEL_BUILD_FLAGS+=(--@local_config_cuda//cuda:include_hermetic_cuda_libs=true)
+    BAZEL_BUILD_FLAGS+=(--@local_config_cuda//cuda:include_cuda_libs=true)
     BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:cuda_compiler=nvcc)
     BAZEL_BUILD_FLAGS+=(--crosstool_top="@local_config_cuda//crosstool:toolchain")
 
@@ -211,13 +219,16 @@ $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.in
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-	sed -i.bak1 "/whole-archive/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-#	sed -i.bak0 "/lld/d" bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-#	echo "-fuse-ld=lld" >> bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
-	cat bazel-out/k8-$MODE/bin/libReactantExtra.so-2.params
+	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
+    sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
+	echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
+	echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
+	cat bazel-bin/libReactantExtra.so-2.params
     cc @bazel-bin/libReactantExtra.so-2.params
 else
-   $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+    ln -s `echo /workspace/bazel_root/*/external/cuda_cccl/include` /workspace/missing
+    sed -i.bak0 "s/builtin_include_directories = \[/builtin_include_directories = \[\"\/workspace\/missing\",/g" /workspace/bazel_root/*/external/local_config_cuda/crosstool/BUILD
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
@@ -341,6 +352,9 @@ for mode in ("opt", "dbg"), platform in platforms
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+        push!(platform_sources,
+                  ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
+                                "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
     end
 
     # if CUDA.is_supported(platform)
