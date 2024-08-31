@@ -182,7 +182,7 @@ if [[ "${bb_full_target}" == *linux* ]]; then
 
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NVCC_CLANG=1)
-    BAZEL_BUILD_FLAGS+=(--repo_env CLANG_CUDA_COMPILER_PATH=`which clang`)
+    # BAZEL_BUILD_FLAGS+=(--repo_env CLANG_CUDA_COMPILER_PATH=`which clang`)
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NCCL_USE_STUB=1)
     BAZEL_BUILD_FLAGS+=(--repo_env HERMETIC_CUDA_COMPUTE_CAPABILITIES="sm_50,sm_60,sm_70,sm_80,compute_90")
     BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:enable_cuda)
