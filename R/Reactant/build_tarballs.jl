@@ -10,11 +10,9 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.16"
 
 sources = [
-  GitSource(repo, "087f93649b893a4bbf1d03a9f60a3f6fb71ae25d"),
+  GitSource(repo, "a7cb5e4337df97e2cb8f19f5141a19fd2ff28f24"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
-  #ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/6.5.0.zip",
-  #              "be2b752b5a4c607586987e9d56cbd5125b3d829da30c7590dc6c94167c0de223"; unpack_target="bazel-nodist")
 ]
 
 # Bash recipe for building across all platforms
