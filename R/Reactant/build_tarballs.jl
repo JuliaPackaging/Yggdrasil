@@ -395,7 +395,7 @@ for mode in ("opt", "dbg"), platform in platforms
 		"libcusparse",
 	)
 		push!(products2, LibraryProduct([lib, lib],
-			Symbol(lib))
+		Symbol(lib)))
 	end
     end
 
