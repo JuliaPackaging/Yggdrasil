@@ -1,4 +1,4 @@
-From 0cee6e9d4da37da245ad9873a7d1c8e606308184 Mon Sep 17 00:00:00 2001
+From 95000aad06583091950328ced8898dbd4899d119 Mon Sep 17 00:00:00 2001
 From: Gnimuc <qiyupei@gmail.com>
 Date: Fri, 21 Jun 2024 21:33:27 +0900
 Subject: [PATCH] Rewrite CMake build scripts
@@ -17,7 +17,7 @@ Subject: [PATCH] Rewrite CMake build scripts
  create mode 100644 include/clang/Interpreter/CMakeLists.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b87a263..faadad8 100644
+index bcd16a9..faadad8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,452 +1,71 @@
@@ -94,11 +94,11 @@ index b87a263..faadad8 100644
 -  ## Define supported version of clang and llvm
 -
 -  set(CLANG_MIN_SUPPORTED 13.0)
--  set(CLANG_MAX_SUPPORTED "18.1.x")
--  set(CLANG_VERSION_UPPER_BOUND 19.0.0)
+-  set(CLANG_MAX_SUPPORTED "19.1.x")
+-  set(CLANG_VERSION_UPPER_BOUND 20.0.0)
 -  set(LLVM_MIN_SUPPORTED 13.0)
--  set(LLVM_MAX_SUPPORTED "18.1.x")
--  set(LLVM_VERSION_UPPER_BOUND 19.0.0)
+-  set(LLVM_MAX_SUPPORTED "19.1.x")
+-  set(LLVM_VERSION_UPPER_BOUND 20.0.0)
 -
 -  ## Set Cmake packages search order
 -
@@ -691,5 +691,5 @@ index 42e878f..4205ada 100644
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Paths.cpp)
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Paths.h)
 -- 
-2.39.3 (Apple Git-146)
+2.39.5 (Apple Git-154)
 
