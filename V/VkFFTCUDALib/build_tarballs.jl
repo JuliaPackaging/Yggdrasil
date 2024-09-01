@@ -8,9 +8,9 @@ version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-		   GitSource("https://github.com/PaulVirally/VkFFTCUDALib.git", "9c8cf2eae261b363e185e5043599ca2726f5aafd"),
-		   FileSource("http://us.download.nvidia.com/XFree86/Linux-x86_64/410.66/NVIDIA-Linux-x86_64-410.66.run", "8fb6ad857fa9a93307adf3f44f5decddd0bf8587a7ad66c6bfb33e07e4feb217"),
-		  ]
+    GitSource("https://github.com/PaulVirally/VkFFTCUDALib.git", "9c8cf2eae261b363e185e5043599ca2726f5aafd"),
+    FileSource("http://us.download.nvidia.com/XFree86/Linux-x86_64/410.66/NVIDIA-Linux-x86_64-410.66.run", "8fb6ad857fa9a93307adf3f44f5decddd0bf8587a7ad66c6bfb33e07e4feb217"),
+]
 
 script = raw"""
 # Setup some necessary CUDA annoyingness
@@ -30,13 +30,13 @@ cd $WORKSPACE/srcdir/VkFFTCUDALib
 git submodule update --init
 mkdir build && cd build
 cmake .. \
--DCMAKE_PREFIX_PATH="${prefix}" \
--DCMAKE_INSTALL_PREFIX="${prefix}" \
--DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
--DCMAKE_BUILD_TYPE=Release \
--DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
--DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
--DCMAKE_CUDA_COMPILER="${prefix}/cuda/bin/nvcc"
+    -DCMAKE_PREFIX_PATH="${prefix}" \
+    -DCMAKE_INSTALL_PREFIX="${prefix}" \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
+    -DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
+    -DCMAKE_CUDA_COMPILER="${prefix}/cuda/bin/nvcc"
 cmake --build . --parallel $nproc
 cmake --install .
 
@@ -58,30 +58,30 @@ products = [LibraryProduct("libVkFFTCUDA", :libVkFFTCUDA)]
 # We need cmake >= 3.18 to build with CUDA
 # CompilerSupportLibraries_jll is needed for gcc dynamic linking
 dependencies = [
-				HostBuildDependency(PackageSpec(; name="CMake_jll", version=v"3.28.1")),
-				Dependency("CompilerSupportLibraries_jll")
-			   ]
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version=v"3.28.1")),
+    Dependency("CompilerSupportLibraries_jll")
+]
 
 for platform in platforms
-	should_build_platform(triplet(platform)) || continue
+    should_build_platform(triplet(platform)) || continue
 
-	# We need the static sdk
-	cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
+    # We need the static sdk
+    cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-	# Build for all major archs supported by SDK
-	# See https://en.wikipedia.org/wiki/CUDA
-	if VersionNumber(platform["cuda"]) < v"11.8"
-		cuda_archs = "50;60;70;80"
-	else
-		cuda_archs = "50;60;70;80;90"
-	end
-	arch_line = "export CUDA_ARCHS=\"$cuda_archs\"\n"
-	platform_script = arch_line * script
+    # Build for all major archs supported by SDK
+    # See https://en.wikipedia.org/wiki/CUDA
+    if VersionNumber(platform["cuda"]) < v"11.8"
+        cuda_archs = "50;60;70;80"
+    else
+        cuda_archs = "50;60;70;80;90"
+    end
+    arch_line = "export CUDA_ARCHS=\"$cuda_archs\"\n"
+    platform_script = arch_line * script
 
-	build_tarballs(ARGS, name, version, sources, platform_script, [platform],
-				   products, [dependencies; cuda_deps];
-				   preferred_gcc_version=v"11",
-				   julia_compat="1.7",
-				   augment_platform_block=CUDA.augment
-				  )
+    build_tarballs(ARGS, name, version, sources, platform_script, [platform],
+                   products, [dependencies; cuda_deps];
+                   preferred_gcc_version=v"11",
+                   julia_compat="1.7",
+                   augment_platform_block=CUDA.augment
+                   )
 end
