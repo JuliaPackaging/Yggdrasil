@@ -141,6 +141,9 @@ fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
 fi
+if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+    ninja -j${nproc} mlir-src-sharder
+fi
 popd
 
 # Let's do the actual build within the `build` subdirectory
@@ -271,6 +274,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
     CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
+fi
+if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+    # CMAKE_FLAGS+=(-DMLIR_SRC_SHARDER_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-src-sharder) # Doesn't seem to work,
+    CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
 fi
 
 # Explicitly use our cmake toolchain file
