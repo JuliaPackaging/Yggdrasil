@@ -276,7 +276,7 @@ if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
 fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
-    CMAKE_FLAGS+=(-DMLIR_SRC_SHARDER_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-src-sharder)
+    CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
 fi
 
 # Explicitly use our cmake toolchain file
@@ -593,7 +593,7 @@ rm -vrf {prefix}/lib/objects-Release
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
     git_path="https://github.com/Zentrik/llvm-project.git",
-    git_ver="f0174dcb7497333d10d6ed7e8f12a4cc6fbfe9fb", custom_name=nothing,
+    git_ver="e19e51fde3e16da907bcc201319349f3d0d8a680", custom_name=nothing,
     custom_version=version, static=false, platform_filter=nothing,
     eh_rtti=false, update_sdk=version >= v"15")
     # Parse out some args
