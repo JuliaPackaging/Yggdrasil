@@ -594,7 +594,7 @@ rm -vrf {prefix}/lib/objects-Release
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
     git_path="https://github.com/Zentrik/llvm-project.git",
-    git_ver="f84efd87ce511008be76ac7fc98bdc87ac32fac6", custom_name=nothing,
+    git_ver="e19e51fde3e16da907bcc201319349f3d0d8a680", custom_name=nothing,
     custom_version=version, static=false, platform_filter=nothing,
     eh_rtti=false, update_sdk=version >= v"15")
     # Parse out some args
