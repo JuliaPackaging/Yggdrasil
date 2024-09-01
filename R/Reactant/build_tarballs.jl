@@ -373,8 +373,9 @@ for mode in ("opt", "dbg"), platform in platforms
 		"libcudnn_engines_runtime_compiled",
 		"libcusparse",
 	)
+		san = replace(lib, "-" => "_")
 		push!(products2, LibraryProduct([lib, lib],
-		Symbol(lib)))
+		Symbol(san)))
 	end
     end
 
