@@ -376,6 +376,7 @@ augment_platform_block="""
 for gpu in ("", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
+    augmented_platform["gpu"] = gpu
     cuda_deps = []
 
     if mode == "dbg" && !Sys.isapple(platform)
