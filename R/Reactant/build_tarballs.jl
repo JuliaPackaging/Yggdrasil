@@ -373,7 +373,8 @@ augment_platform_block="""
     end
     """
 
-for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
+# for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
