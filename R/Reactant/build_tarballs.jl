@@ -351,7 +351,7 @@ for mode in ("opt", "dbg"), platform in platforms
     end
 
     if !Sys.isapple(platform)
-      push!(cuda_deps, BuildDependency(PackageSpec(name="CUDA_Driver_jll")))
+      push!(cuda_deps, RuntimeDependency(PackageSpec(name="CUDA_Driver_jll")))
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
@@ -380,7 +380,7 @@ for mode in ("opt", "dbg"), platform in platforms
 	)
 		san = replace(lib, "-" => "_")
 		push!(products2, LibraryProduct([lib, lib],
-		Symbol(san)))
+		Symbol(san); dont_dlopen=true))
 	end
     end
 
