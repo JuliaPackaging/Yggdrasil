@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.17"
+version = v"0.0.18"
 
 sources = [
-  GitSource(repo, "a7cb5e4337df97e2cb8f19f5141a19fd2ff28f24"),
+  GitSource(repo, "950302f647039e9df65e42158abc7e51b52dac21"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
 ]
@@ -76,7 +76,6 @@ mv /usr/lib/libgcc_s.so.1.old  /usr/lib/libgcc_s.so.1
 popd
 
 ln -s `which ar` /usr/bin/ar
-
 
 mkdir .bazhome
 export HOME=`pwd`/.bazhome
@@ -227,6 +226,7 @@ rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
 
 if [[ "${bb_full_target}" == *linux* ]]; then
+  rm -rf bazel-bin/_solib_local/*stub*/*so*
   cp -v bazel-bin/_solib_local/*/*so* ${libdir}
 fi
 
@@ -333,6 +333,11 @@ augment_platform_block="""
 for mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
+    cuda_deps = []
+
+    if mode == "dbg" && !Sys.isapple(platform)
+        continue
+    end
 
     prefix="export MODE="*mode*"\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
@@ -343,6 +348,10 @@ for mode in ("opt", "dbg"), platform in platforms
         push!(platform_sources,
                   ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
                                 "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
+    end
+
+    if !Sys.isapple(platform)
+      push!(cuda_deps, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
@@ -371,12 +380,12 @@ for mode in ("opt", "dbg"), platform in platforms
 	)
 		san = replace(lib, "-" => "_")
 		push!(products2, LibraryProduct([lib, lib],
-		Symbol(san)))
+		Symbol(san); dont_dlopen=true))
 	end
     end
 
     push!(builds, (;
-                   dependencies, products=products2, sources=platform_sources,
+                   dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
         platforms=[augmented_platform], script=prefix*script
     ))
 end
