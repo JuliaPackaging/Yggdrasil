@@ -330,24 +330,7 @@ augment_platform_block="""
         if !haskey(platform, "mode")
             platform["mode"] = mode
         end
-        
-	        name = if Sys.iswindows()
-            Libdl.find_library("nvcuda")
-        else
-            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
-        end
-
-        # if we've found a system driver, put a dependency on it,
-        # so that we get recompiled if the driver changes.
-        if name != ""
-            handle = Libdl.dlopen(name)
-            path = Libdl.dlpath(handle)
-            Libdl.dlclose(handle)
-
-            @debug "Adding include dependency on $path"
-            Base.include_dependency(path)
-        end
-	
+        	
 	gpu = something(mode_preference, "gpu")
 
 	cuname = if Sys.iswindows()
@@ -359,11 +342,11 @@ augment_platform_block="""
         # if we've found a system driver, put a dependency on it,
         # so that we get recompiled if the driver changes.
         if cuname != "" && gpu == ""
-            handle = Libdl.dlopen(name)
+            handle = Libdl.dlopen(cuname)
             path = Libdl.dlpath(handle)
             Libdl.dlclose(handle)
 
-            @debug "Adding include dependency on $path"
+            @debug "Adding include dependency on \$path"
             Base.include_dependency(path)
 	    gpu = "cuda"
         end
@@ -372,11 +355,11 @@ augment_platform_block="""
         # if we've found a system driver, put a dependency on it,
         # so that we get recompiled if the driver changes.
         if roname != "" && gpu = ""
-            handle = Libdl.dlopen(name)
+            handle = Libdl.dlopen(roname)
             path = Libdl.dlpath(handle)
             Libdl.dlclose(handle)
 
-            @debug "Adding include dependency on $path"
+            @debug "Adding include dependency on \$path"
             Base.include_dependency(path)
 	    gpu = "rocm"
         end
