@@ -172,6 +172,7 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     echo "" >> .local/bin/ldconfig
     chmod +x .local/bin/ldconfig
     export PATH="`pwd`/.local/bin:$PATH"
+    BAZEL_BUILD_FLAGS+=(--copt=-Wno-error=cpp)
 
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NVCC_CLANG=1)
@@ -334,11 +335,6 @@ for mode in ("opt", "dbg"), platform in platforms
     augmented_platform["mode"] = mode
     cuda_deps = []
 
-    if mode == "dbg" && !Sys.isapple(platform)
-        continue
-    end
-
-    # Skip debug builds on linux
     if mode == "dbg" && !Sys.isapple(platform)
         continue
     end
