@@ -298,7 +298,7 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 
-platforms = filter(p -> !(Sys.isapple(p)), platforms)
+# platforms = filter(p -> !(Sys.isapple(p)), platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 augment_platform_block="""
