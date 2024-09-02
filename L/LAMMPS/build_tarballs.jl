@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.5.0" # Equivalent to stable_2Aug2023_update3
+version = v"2.5.1" # Equivalent to stable_2Aug2023_update3
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -17,6 +17,7 @@ version = v"2.5.0" # Equivalent to stable_2Aug2023_update3
 # 2.4.0 -> https://github.com/lammps/lammps/releases/tag/patch_28Mar2023_update1
 # 2.4.1 -- Enables DPD packages
 # 2.5.0 -> https://github.com/lammps/lammps/releases/tag/stable_2Aug2023_update3
+# 2.5.1 -> Enables MPI
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -32,14 +33,24 @@ sources = [
 # Bash recipe for building across all platforms
 # LAMMPS DPD packages do not work on all platforms
 script = raw"""
+# For this specific target during the audit liblammps.so fails to find libgfortran.so
+# This is the same hack as used by MPITrampoline:
+# <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>
+if [[ "${target}" == x86_64-linux-gnu-cxx11-mpi+mpitrampoline ]]; then
+    INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
+else
+    INSTALL_RPATH=()
+fi
+
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
 cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
-    -DPKG_MPI=ON \
+    -DBUILD_MPI=ON \
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
@@ -77,10 +88,10 @@ augment_platform_block = """
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+# platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
