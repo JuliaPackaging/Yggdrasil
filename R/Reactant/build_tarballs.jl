@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.18"
 
 sources = [
-  GitSource(repo, "950302f647039e9df65e42158abc7e51b52dac21"),
+  GitSource(repo, "f8bbcb842cfb7dfc2179314e8166896d1b56b850"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
 ]
@@ -173,22 +173,14 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     chmod +x .local/bin/ldconfig
     export PATH="`pwd`/.local/bin:$PATH"
     BAZEL_BUILD_FLAGS+=(--copt=-Wno-error=cpp)
+fi
 
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_NVCC_CLANG=1)
-    BAZEL_BUILD_FLAGS+=(--repo_env TF_NCCL_USE_STUB=1)
-    BAZEL_BUILD_FLAGS+=(--repo_env HERMETIC_CUDA_COMPUTE_CAPABILITIES="sm_50,sm_60,sm_70,sm_80,compute_90")
-    BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:enable_cuda)
-    BAZEL_BUILD_FLAGS+=(--@xla//xla/python:jax_cuda_pip_rpaths=true)
-    BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="12.3.2")
-    BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDNN_VERSION="9.1.1")
-    BAZEL_BUILD_FLAGS+=(--@local_config_cuda//cuda:include_cuda_libs=true)
-    BAZEL_BUILD_FLAGS+=(--@local_config_cuda//:cuda_compiler=nvcc)
-    BAZEL_BUILD_FLAGS+=(--crosstool_top="@local_config_cuda//crosstool:toolchain")
+if [[ "${bb_full_target}" == *cuda* ]]; then
+    BAZEL_BUILD_FLAGS+=(--config=cuda)
+fi
 
-    #BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_ROCM=1)
-    #BAZEL_BUILD_FLAGS+=(--define=using_rocm=true --define=using_rocm_hipcc=true)
-    #BAZEL_BUILD_FLAGS+=(--aCC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM ction_env TF_ROCM_AMDGPU_TARGETS="gfx900,gfx906,gfx908,gfx90a,gfx1030")
+if [[ "${bb_full_target}" == *rocm* ]]; then
+    BAZEL_BUILD_FLAGS+=(--config=rocm)
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
@@ -225,7 +217,7 @@ rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
 
-if [[ "${bb_full_target}" == *linux* ]]; then
+if [[ "${bb_full_target}" == *cuda* ]]; then
   rm -rf bazel-bin/_solib_local/*stub*/*so*
   cp -v bazel-bin/_solib_local/*/*so* ${libdir}
 fi
@@ -308,11 +300,24 @@ augment_platform_block="""
     const Reactant_UUID = Base.UUID("0192cb87-2b54-54ad-80e0-3be72ad8a3c0")
     const preferences = Base.get_preferences(Reactant_UUID)
     Base.record_compiletime_preference(Reactant_UUID, "mode")
+    Base.record_compiletime_preference(Reactant_UUID, "gpu")
+
     const mode_preference = if haskey(preferences, "mode")
         if isa(preferences["mode"], String) && preferences["mode"] in ["opt", "dbg"]
             preferences["mode"]
         else
             @error "Mode preference is not valid; expected 'opt' or 'dbg', but got '\$(preferences[\"debug\"])'"
+            nothing
+        end
+    else
+        nothing
+    end
+    
+    const gpu_preference = if haskey(preferences, "gpu")
+    if isa(preferences["gpu"], String) && preferences["gpu"] in ["none", "cuda", "rocm"]
+            preferences["gpu"]
+        else
+            @error "GPU preference is not valid; expected 'none', 'cuda' or 'rocm', but got '\$(preferences[\"debug\"])'"
             nothing
         end
     else
@@ -325,17 +330,61 @@ augment_platform_block="""
         if !haskey(platform, "mode")
             platform["mode"] = mode
         end
+        	
+	gpu = something(mode_preference, "gpu")
+
+	cuname = if Sys.iswindows()
+            Libdl.find_library("nvcuda")
+        else
+            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+        end
+
+        # if we've found a system driver, put a dependency on it,
+        # so that we get recompiled if the driver changes.
+        if cuname != "" && gpu == "none"
+            handle = Libdl.dlopen(cuname)
+            path = Libdl.dlpath(handle)
+            Libdl.dlclose(handle)
+
+            @debug "Adding include dependency on \$path"
+            Base.include_dependency(path)
+	    gpu = "cuda"
+        end
+	
+	roname = "none"
+        # if we've found a system driver, put a dependency on it,
+        # so that we get recompiled if the driver changes.
+        if roname != "" && gpu = "none"
+            handle = Libdl.dlopen(roname)
+            path = Libdl.dlpath(handle)
+            Libdl.dlclose(handle)
+
+            @debug "Adding include dependency on \$path"
+            Base.include_dependency(path)
+	    gpu = "rocm"
+        end
+
+	gpu = get(ENV, "REACTANT_GPU", gpu)
+        if !haskey(platform, "gpu")
+	    platform["gpu"] = gpu
+        end
 
         return platform
     end
     """
 
-for mode in ("opt", "dbg"), platform in platforms
+# for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
+    augmented_platform["gpu"] = gpu
     cuda_deps = []
 
     if mode == "dbg" && !Sys.isapple(platform)
+        continue
+    end
+    
+    if gpu != "none" && Sys.isapple(platform)
         continue
     end
 
@@ -356,7 +405,7 @@ for mode in ("opt", "dbg"), platform in platforms
 
     should_build_platform(triplet(augmented_platform)) || continue
     products2 = copy(products)
-    if !Sys.isapple(platform)
+    if gpu == "cuda"
     	for lib in (
 		"libnccl",
 		"libcufft",
@@ -374,7 +423,7 @@ for mode in ("opt", "dbg"), platform in platforms
 		"libnvrtc-builtins",
 		"libcudnn_graph",
 		"libcusolver",
-		"libcuda",
+		# "libcuda",
 		"libcudnn_engines_runtime_compiled",
 		"libcusparse",
 	)
