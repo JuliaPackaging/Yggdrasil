@@ -12,6 +12,7 @@
 
 using ImageType = itk::Image<float, 3>;
 
+
 class ITKImageWrapper {
 private:
     ImageType::Pointer m_Image;
@@ -48,6 +49,17 @@ public:
         return data;
     }
 
+    std::vector<double> getDirection() const {
+        auto direction = m_Image->GetDirection();
+        std::vector<double> direction_flat;
+        for (unsigned int i = 0; i < 3; ++i) {
+            for (unsigned int j = 0; j < 3; ++j) {
+                direction_flat.push_back(direction[i][j]);
+            }
+        }
+        return direction_flat;
+    }
+
     void writeImage(const std::string& filename) const {
         auto writer = itk::ImageFileWriter<ImageType>::New();
         writer->SetFileName(filename);
@@ -56,6 +68,7 @@ public:
     }
 };
 
+// ... existing code ...
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
@@ -65,6 +78,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .method("getSpacing", &ITKImageWrapper::getSpacing)
         .method("getSize", &ITKImageWrapper::getSize)
         .method("getPixelData", &ITKImageWrapper::getPixelData)
+        .method("getDirection", &ITKImageWrapper::getDirection)  // Add this line
         .method("writeImage", &ITKImageWrapper::writeImage);
 
     // Explicitly map methods to the allocated type
@@ -72,5 +86,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.method("getSpacing", [](ITKImageWrapper& w) { return w.getSpacing(); });
     mod.method("getSize", [](ITKImageWrapper& w) { return w.getSize(); });
     mod.method("getPixelData", [](ITKImageWrapper& w) { return w.getPixelData(); });
+    mod.method("getDirection", [](ITKImageWrapper& w) { return w.getDirection(); });  // Add this line
     mod.method("writeImage", [](ITKImageWrapper& w, const std::string& filename) { w.writeImage(filename); });
 }
