@@ -351,7 +351,7 @@ for mode in ("opt", "dbg"), platform in platforms
     end
 
     if !Sys.isapple(platform)
-      push!(cuda_deps, RuntimeDependency(PackageSpec(name="CUDA_Driver_jll")))
+      push!(cuda_deps, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
