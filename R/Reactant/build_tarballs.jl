@@ -374,7 +374,7 @@ for mode in ("opt", "dbg"), platform in platforms
 		"libnvrtc-builtins",
 		"libcudnn_graph",
 		"libcusolver",
-		"libcuda",
+		# "libcuda",
 		"libcudnn_engines_runtime_compiled",
 		"libcusparse",
 	)
