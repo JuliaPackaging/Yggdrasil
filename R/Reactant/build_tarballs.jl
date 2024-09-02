@@ -354,7 +354,7 @@ augment_platform_block="""
 	roname = "none"
         # if we've found a system driver, put a dependency on it,
         # so that we get recompiled if the driver changes.
-        if roname != "" && gpu = "none"
+        if roname != "" && gpu == "none"
             handle = Libdl.dlopen(roname)
             path = Libdl.dlpath(handle)
             Libdl.dlclose(handle)
