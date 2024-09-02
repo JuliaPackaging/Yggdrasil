@@ -180,7 +180,7 @@ if [[ "${bb_full_target}" == *cuda* ]]; then
 fi
 
 if [[ "${bb_full_target}" == *rocm* ]]; then
-    BAZEL_BUILD_FLAGS+=(--config=cuda)
+    BAZEL_BUILD_FLAGS+=(--config=rocm)
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
