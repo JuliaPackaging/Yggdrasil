@@ -4,13 +4,17 @@ name = "oneDNN"
 version = v"3.5.3"
 
 sources = [
-    GitSource("https://github.com/oneapi-src/OneDNN",
-        "66f0cb9eb66affd2da3bf5f8d897376f04aae6af")
+    GitSource("https://github.com/oneapi-src/OneDNN", "66f0cb9eb66affd2da3bf5f8d897376f04aae6af"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/OneDNN
+
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/strnlen_s_windows.patch
+fi
 
 mkdir build && cd build
 
