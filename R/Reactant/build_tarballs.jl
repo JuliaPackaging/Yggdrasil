@@ -217,7 +217,7 @@ rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
 
-if [[ "${bb_full_target}" == *linux* ]]; then
+if [[ "${bb_full_target}" == *cuda* ]]; then
   rm -rf bazel-bin/_solib_local/*stub*/*so*
   cp -v bazel-bin/_solib_local/*/*so* ${libdir}
 fi
@@ -314,10 +314,10 @@ augment_platform_block="""
     end
     
     const gpu_preference = if haskey(preferences, "gpu")
-    if isa(preferences["gpu"], String) && preferences["gpu"] in ["", "cuda", "rocm"]
+    if isa(preferences["gpu"], String) && preferences["gpu"] in ["none", "cuda", "rocm"]
             preferences["gpu"]
         else
-            @error "GPU preference is not valid; expected '', 'cuda' or 'rocm', but got '\$(preferences[\"debug\"])'"
+            @error "GPU preference is not valid; expected 'none', 'cuda' or 'rocm', but got '\$(preferences[\"debug\"])'"
             nothing
         end
     else
@@ -341,7 +341,7 @@ augment_platform_block="""
 
         # if we've found a system driver, put a dependency on it,
         # so that we get recompiled if the driver changes.
-        if cuname != "" && gpu == ""
+        if cuname != "" && gpu == "none"
             handle = Libdl.dlopen(cuname)
             path = Libdl.dlpath(handle)
             Libdl.dlclose(handle)
@@ -351,10 +351,10 @@ augment_platform_block="""
 	    gpu = "cuda"
         end
 	
-	roname = ""
+	roname = "none"
         # if we've found a system driver, put a dependency on it,
         # so that we get recompiled if the driver changes.
-        if roname != "" && gpu = ""
+        if roname != "" && gpu = "none"
             handle = Libdl.dlopen(roname)
             path = Libdl.dlpath(handle)
             Libdl.dlclose(handle)
@@ -373,7 +373,7 @@ augment_platform_block="""
     end
     """
 
-for gpu in ("", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
+for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
@@ -383,7 +383,7 @@ for gpu in ("", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
         continue
     end
     
-    if gpu != "" && Sys.isapple(platform)
+    if gpu != "none" && Sys.isapple(platform)
         continue
     end
 
