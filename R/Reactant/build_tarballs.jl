@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.16"
+version = v"0.0.17"
 
 sources = [
   GitSource(repo, "a7cb5e4337df97e2cb8f19f5141a19fd2ff28f24"),
@@ -173,6 +173,7 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     echo "" >> .local/bin/ldconfig
     chmod +x .local/bin/ldconfig
     export PATH="`pwd`/.local/bin:$PATH"
+    BAZEL_BUILD_FLAGS+=(--copt=-Wno-error=cpp)
 
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NEED_CUDA=1)
     BAZEL_BUILD_FLAGS+=(--repo_env TF_NVCC_CLANG=1)
@@ -332,11 +333,6 @@ augment_platform_block="""
 for mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
-
-    # Skip debug builds on linux
-    if mode == "dbg" && !Sys.isapple(platform)
-        continue
-    end
 
     prefix="export MODE="*mode*"\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
