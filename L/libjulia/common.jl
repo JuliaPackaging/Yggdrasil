@@ -265,7 +265,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     fi
 
     if [[ "${target}" == *apple* ]]; then
-        if [[ "${version}" == 1.[6-9].* ]] ||
+        if [[ "${version}" == 1.[7-9].* ]] ||
            [[ "${version}" == 1.1[0-1].* ]]; then
         # Always define LLVMLIBUNWIND for apple and julia 1.6 to 1.11 to work
         # around issues in old versions of the Julia build system which did
@@ -274,6 +274,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         cat << EOM >>Make.user
         JCPPFLAGS+=-DLLVMLIBUNWIND
     EOM
+        fi
     fi
 
     if [[ "${target}" == *freebsd* ]]; then
