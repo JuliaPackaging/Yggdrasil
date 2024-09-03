@@ -4,8 +4,7 @@ using BinaryBuilder, Pkg
 name = "FastTransforms"
 version = v"0.6.3"
 sources = [
-    ArchiveSource("https://github.com/MikaelSlevinsky/FastTransforms/archive/v$(version).tar.gz",
-                  "3b4c086406cbcfb8e2310176e5f06474c07e4055ae400adce7ba65ff741c5edf"),
+    GitSource("https://github.com/MikaelSlevinsky/FastTransforms.git", "abd33bc1e99f9e75cff7ade1154ecc2f4cec6a62")
 ]
 
 # Bash recipe for building across all platforms
