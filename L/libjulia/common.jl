@@ -54,7 +54,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.12.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "fdc109088e7a25c7b412546634f2db70a2d584ad"),
+            GitSource("https://github.com/JuliaLang/julia.git", "0622123121a33668f4dc771a6183b95fff533a53"),
             DirectorySource("./bundled"),
         ]
     else
