@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.5.1" # Equivalent to stable_2Aug2023_update3
+version = v"2.5.2" # Equivalent to stable_2Aug2023_update3
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -18,6 +18,7 @@ version = v"2.5.1" # Equivalent to stable_2Aug2023_update3
 # 2.4.1 -- Enables DPD packages
 # 2.5.0 -> https://github.com/lammps/lammps/releases/tag/stable_2Aug2023_update3
 # 2.5.1 -> Enables MPI
+# 2.5.2 -> Disables MPI for Windows
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -42,6 +43,13 @@ else
     INSTALL_RPATH=()
 fi
 
+# The MPI enabled LAMMPS_jll doesn't load properly on windows
+if [[ "${target}" == *mingw* ]]; then
+    MPI_OPTION="OFF"
+else
+    MPI_OPTION="ON"
+fi
+
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
 cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -50,7 +58,7 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
-    -DBUILD_MPI=ON \
+    -DBUILD_MPI=${MPI_OPTION} \
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
