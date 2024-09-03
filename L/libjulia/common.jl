@@ -252,7 +252,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LIBBLASNAME=libopenblas
         USE_SYSTEM_LAPACK=1
         LIBLAPACKNAME=libopenblas
-        EOM
+    EOM
     elif [[ "${version}" == 1.[0-6].* ]]; then
         cat << EOM >>Make.user
         USECLANG=1
@@ -261,7 +261,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         # and https://github.com/JuliaPackaging/Yggdrasil/pull/2190
         LIBUNWIND:=-losxunwind
         JCPPFLAGS+=-DLIBOSXUNWIND
-        EOM
+    EOM
     fi
 
     if [[ "${version}" == 1.[7-9].* ]] ||
@@ -273,14 +273,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
             # https://github.com/JuliaLang/julia/pull/55639).
             cat << EOM >>Make.user
             JCPPFLAGS+=-DLLVMLIBUNWIND
-            EOM
+    EOM
         elif [[ "${target}" == *freebsd* ]]; then
             # the julia symbol version script contains undefined entries,
             # which cause newer lld versions to emit errors
             # see e.g. https://github.com/JuliaLang/julia/pull/55363
             cat << EOM >>Make.user
             OSLIBS+=-Wl,--undefined-version
-            EOM
+    EOM
        fi
     fi
 
