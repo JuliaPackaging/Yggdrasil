@@ -2,11 +2,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "proxTV"
-version = v"3.3.0"
+version = v"3.3.1"
 
 # Collection of sources required to build proxTV.
 sources = [
-    GitSource("https://github.com/albarji/proxTV", "0b8973cd7e1a2348c842393f689949eeebc9f654"),
+    GitSource("https://github.com/amontoison/proxTV", "6f7ad7e1048a6d97aa1e92ec35937ae4f155b1a0"),
 ]
 
 # Bash recipe for building across all platforms
@@ -14,6 +14,7 @@ sources = [
 # is Python's setuptools.
 script = raw"""
 cd $WORKSPACE/srcdir/proxTV/src
+cp *.h ${includedir}
 
 if [[ "${target}" == *mingw* ]]; then
   LBT="${libdir}/libblastrampoline-5.dll"
@@ -21,7 +22,7 @@ else
   LBT="-lblastrampoline"
 fi
 
-${CXX} -DNOMATLAB -c -fPIC -I${includedir} *.cpp
+${CXX} -DNOMATLAB -c -fPIC -O3 -I${includedir} *.cpp
 ${CXX} -shared -o libproxtv.${dlext} ${LBT} *.o
 
 install -Dvm 755 libproxtv.${dlext} -t ${libdir}
