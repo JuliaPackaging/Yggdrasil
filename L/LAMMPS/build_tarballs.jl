@@ -54,7 +54,7 @@ fi
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
 cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
