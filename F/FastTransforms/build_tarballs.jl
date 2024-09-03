@@ -9,7 +9,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/FastTransforms-*
+cd $WORKSPACE/srcdir/FastTransforms/
 if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
     export MSSE=-msse
     export MSSE2=-msse2
