@@ -262,9 +262,15 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LIBUNWIND:=-losxunwind
         JCPPFLAGS+=-DLIBOSXUNWIND
     EOM
-    else
-        # LLVMLIBUNWIND is currently only defined for USE_SYSTEM_UNWIND=0
-        # but we always need that for apple and julia > 1.6
+    fi
+
+    if [[ "${target}" == *apple* ]]; then
+        if [[ "${version}" == 1.[6-9].* ]] ||
+           [[ "${version}" == 1.1[0-1].* ]]; then
+        # Always define LLVMLIBUNWIND for apple and julia 1.6 to 1.11 to work
+        # around issues in old versions of the Julia build system which did
+        # not always add this flag when needed (was fixed in Julia 1.12 via
+        # https://github.com/JuliaLang/julia/pull/55639).
         cat << EOM >>Make.user
         JCPPFLAGS+=-DLLVMLIBUNWIND
     EOM
