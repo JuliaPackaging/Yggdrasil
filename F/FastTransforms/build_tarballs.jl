@@ -26,7 +26,7 @@ else
 fi
 if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
-    SYMBOLS=(dgemm dtrmm dtrmv dtrsm sgemm strmm strsm ztrmm)
+    SYMBOLS=(dgemv dgemm dtrmm dtrmv dtrsm sgemv sgemm strmm strsm ztrmm)
     for sym in ${SYMBOLS[@]}; do
         SYMBOL_DEFS+=("-Dcblas_${sym}=cblas_${sym}64_")
     done
