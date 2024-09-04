@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.5.2" # Equivalent to stable_2Aug2023_update3
+version = v"2.6.0" # Equivalent to stable_29Aug2024
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -17,8 +17,9 @@ version = v"2.5.2" # Equivalent to stable_2Aug2023_update3
 # 2.4.0 -> https://github.com/lammps/lammps/releases/tag/patch_28Mar2023_update1
 # 2.4.1 -- Enables DPD packages
 # 2.5.0 -> https://github.com/lammps/lammps/releases/tag/stable_2Aug2023_update3
-# 2.5.1 -> Enables MPI
-# 2.5.2 -> Disables MPI for Windows
+# 2.5.1 -- Enables MPI
+# 2.5.2 -- Disables MPI for Windows
+# 2.6.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Aug2024
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -28,7 +29,7 @@ version = v"2.5.2" # Equivalent to stable_2Aug2023_update3
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "46265e36ce79e4b42c9e5229b72a0ce2485845cd")
+    GitSource("https://github.com/lammps/lammps.git", "570c9d190fee556c62e5bd0a9c6797c4dffcc271")
 ]
 
 # Bash recipe for building across all platforms
@@ -53,7 +54,7 @@ fi
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
 cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
