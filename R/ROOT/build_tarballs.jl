@@ -43,16 +43,16 @@ if [ $target != $MACHTYPE ]; then
     (cd srcdir/root-*/
         atomic_patch -p2 ../patches/rootcling-cross-compile.patch
     )
+    # host $sysroot/local should point to $host_prefix (issue BinaryBuilder)
+    rm /opt/$MACHTYPE/$MACHTYPE/sys-root/usr/local
+    ln -s $host_prefix /opt/$MACHTYPE/$MACHTYPE/sys-root/usr/local
 
     # Build for the host binary native used in second step build process
     mkdir native
     cmake -GNinja -DCMAKE_INSTALL_PREFIX=$prefix \
           -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
           -DLLVM_HOST_TRIPLE=$MACHTYPE \
-          -DLLVM_DEFAULT_TARGET_TRIPLE=$target \
-          -DCMAKE_FIND_USE_CMAKE_SYSTEM_PATH=OFF \
-          -DCMAKE_PREFIX_PATH=$host_prefix \
-          -DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath-link,$host_prefix/lib \
+          -DLLVM_TARGET_TRIPLE=$target \
           -Dminimal=ON \
           ${CMAKE_FLAGS[@]} \
           -B native -S srcdir/root-*/
