@@ -28,12 +28,14 @@ export LDFLAGS="${LDFLAGS} -L${prefix}/lib"
 # but since we disable this instruction anyway (see below) this is not required.
 atomic_patch -p1 ../patches/configure.patch
 
+# We use --enable-generic to ensure maximum hardware compatibility and we
+# use --disable-popcnt to disable the `popcnt` CPU instruction on x86.
 ./configure --prefix=$prefix \
 	    --build=${MACHTYPE} \
 	    --host=${target} \
-	    --enable-generic \          # Don't compile for native hardware to ensure maximum compatibility
+	    --enable-generic \
 	    --enable-shared \
-	    --disable-popcnt \          # Do not assume `popcnt` CPU instruction on x86
+	    --disable-popcnt \
 	    --libdir=${libdir} \
 	    --bindir=${bindir}
 
