@@ -22,18 +22,25 @@ rm -f ${prefix}/lib/*.la
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib"
 
+# This patch removes a section in the configure script that causes the script
+# to fail during cross-compilation. (This seems like a bug in nauty.)
+# The removed section checked whether the `popcnt` CPU instruction is available,
+# but since we disable this instruction anyway (see below) this is not required.
 atomic_patch -p1 ../patches/configure.patch
 
 ./configure --prefix=$prefix \
 	    --build=${MACHTYPE} \
 	    --host=${target} \
-	    --enable-generic \
+	    --enable-generic \          # Don't compile for native hardware to ensure maximum compatibility
 	    --enable-shared \
-	    --disable-popcnt \
+	    --disable-popcnt \          # Do not assume `popcnt` CPU instruction on x86
 	    --libdir=${libdir} \
 	    --bindir=${bindir}
 
 make -j${nproc}
+
+# In addition to the default install, we build thread-local-storage libraries and the programs checks6 and sumlines.
+# These two programs were part of the default install in an older version of nauty and are included for compatibility.
 make install TLSinstall checks6 sumlines
 
 cp checks6 ${bindir}
