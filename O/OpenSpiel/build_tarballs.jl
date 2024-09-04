@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "OpenSpiel"
-version = v"1.5"
+version = v"1.5.1" # bump for compat bounds changes
 
 # Collection of sources required to complete build
 sources = [
