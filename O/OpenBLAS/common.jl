@@ -190,6 +190,10 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         CFLAGS="${CFLAGS} -fno-asynchronous-unwind-tables"
     fi
 
+    if [[ ${target} == *apple* ]]; then
+        CFLAGS="${CFLAGS} -femit-dwarf-unwind=always"
+    fi
+
     # Because we use this OpenBLAS within Julia, and often want to bundle our
     # libgfortran and other friends alongside, we need an RPATH of '$ORIGIN',
     # so set it here.
