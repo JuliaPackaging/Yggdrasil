@@ -1,3 +1,19 @@
+function gen_placehold_path(
+    destdir = "/workspace/destdir";
+    placeholder_template = "_placehold",
+    placeholder_length = 255
+)
+    len = 0
+    iob = IOBuffer()
+    while len < placeholder_length
+        len += write(iob, placeholder_template)
+    end
+    seekstart(iob)
+    placeholder =  String(read(iob, placeholder_length - length(destdir) - 1))
+    return joinpath(destdir, placeholder)
+end
+const openssldir = gen_placehold_path()
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/openssl-*/
@@ -39,7 +55,7 @@ function translate_target()
     fi
 }
 
-./Configure shared --prefix=$prefix --libdir=${libdir} $(translate_target)
+./Configure shared --prefix=$prefix --openssldir=$openssldir --libdir=${libdir} $(translate_target)
 make -j${nproc}
 make install_sw
 
@@ -47,6 +63,7 @@ make install_sw
 # <https://github.com/openssl/openssl/issues/8823>.
 rm -v ${libdir}/lib{crypto,ssl}.a
 """
+script = replace(script, raw"$openssldir" => openssldir)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
