@@ -54,10 +54,10 @@ else
     MPI_OPTION="ON"
 fi
 
-if [[ "${bb_full_target}" != *cuda\+none* ]]; then
-    ADD_CUDA="-DGPU_API=cuda"
+if [[ "${bb_full_target}" == *cuda\+none* ]]; then
+    GPU_OPTION="OFF"
 else
-    ADD_CUDA=""
+    GPU_OPTION="ON"
 fi
 
 cd $WORKSPACE/srcdir/lammps/
@@ -69,6 +69,7 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DBUILD_MPI=${MPI_OPTION} \
+    "${ADD_CUDA}"
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
@@ -85,7 +86,8 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_REPLICA=ON \
     -DPKG_SHOCK=ON \
     -DLEPTON_ENABLE_JIT=no \
-    "${ADD_CUDA}"
+    -DPKG_GPU=${GPU_OPTION} \
+    -DGPU_API=cuda
 
 make -j${nproc}
 make install
