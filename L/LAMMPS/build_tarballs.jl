@@ -48,10 +48,16 @@ else
 fi
 
 # The MPI enabled LAMMPS_jll doesn't load properly on windows
-if [[ "${target}" == *mingw* ]]; then
+if [[ "${target}" == *mingw* ]] || [[ "${target}" == *mpi+none* ]]; then
     MPI_OPTION="OFF"
 else
     MPI_OPTION="ON"
+fi
+
+if [[ "${target}" != *cuda+none* ]]; then
+    ADD_CUDA="-DGPU_API=cuda"
+else
+    ADD_CUDA=""
 fi
 
 cd $WORKSPACE/srcdir/lammps/
@@ -79,7 +85,7 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_REPLICA=ON \
     -DPKG_SHOCK=ON \
     -DLEPTON_ENABLE_JIT=no \
-    -DGPU_AAPI=cuda
+    "${ADD_CUDA}"
 
 make -j${nproc}
 make install
