@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder, Pkg, BinaryBuilderBase
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
@@ -117,7 +117,7 @@ cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; 
 all_platforms = [platforms; cuda_platforms; mpi_platforms; cudampi_platforms]
 for platform in all_platforms
     # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
+    if !haskey(platform, "cuda")
         platform["cuda"] = "none"
     end
 
@@ -141,13 +141,12 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = BinaryBuilderBase.AbstractDependency[
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
 ]
-append!(dependencies, platform_dependencies)
 # Build the tarballs, and possibly a `build.jl` as well.
-for platform in platforms
-    should_build_platform(platform) || continue
+for platform in all_platforms
+    should_build_platform(triplet(platform)) || continue
 
     _dependencies = copy(dependencies)
     if platform["cuda"] != "none" && platform["mpi"] != "none"
@@ -158,7 +157,6 @@ for platform in platforms
     elseif platform["mpi"] != "none"
         append!(_dependencies, mpi_dependencies)
     end
-
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, _dependencies;
                    preferred_gcc_version=v"8",
