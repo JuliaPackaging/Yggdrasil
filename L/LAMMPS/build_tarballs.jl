@@ -61,6 +61,7 @@ else
 fi
 
 export CUDA_PATH="$prefix/cuda"
+ln -s $prefix/cuda/lib $prefix/cuda/lib64
 
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
@@ -96,6 +97,8 @@ make install
 if [[ "${target}" == *mingw* ]]; then
     cp *.dll ${prefix}/bin/
 fi
+
+unlink $prefix/cuda/lib64
 """
 
 augment_platform_block = """
