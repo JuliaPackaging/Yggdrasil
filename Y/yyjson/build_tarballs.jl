@@ -18,8 +18,11 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 cd yyjson/
-sed -i '/#ifndef yyjson_api_inline/i #define yyjson_api_inline yyjson_api' src/yyjson.h
-cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON .
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
@@ -30,7 +33,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libyyjson", :нyyjson)
+    LibraryProduct("libyyjson", :libyyjson)
 ]
 
 # Dependencies that must be installed before this package can be built
