@@ -22,11 +22,12 @@ rm -f ${prefix}/lib/*.la
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib"
 
-# This patch removes a section in the configure script that causes the script
-# to fail during cross-compilation. (This seems like a bug in nauty.)
-# The removed section checked whether the `popcnt` CPU instruction is available,
-# but since we disable this instruction anyway (see below) this is not required.
-atomic_patch -p1 ../patches/configure.patch
+# Nauty's configure script performs a runtime check to find out whether the
+# `popcnt` CPU instruction is available. This check is not possible during cross-compilation,
+# which causes the entire configure script to fail. We patch `configure.ac` to simply disable
+# `popcnt` while cross-compiling, and generate a new, working configure script with `autoreconf`.
+atomic_patch -p1 ../patches/autotools.patch
+autoreconf -v
 
 # We use --enable-generic to ensure maximum hardware compatibility and we
 # use --disable-popcnt to disable the `popcnt` CPU instruction on x86.
