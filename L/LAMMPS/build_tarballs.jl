@@ -58,6 +58,7 @@ if [[ "${bb_full_target}" == *cuda\+none* ]]; then
     GPU_OPTION="OFF"
 else
     GPU_OPTION="ON"
+    ln -s $prefix/cuda/lib $prefix/cuda/lib64
 fi
 
 export CUDA_HOME="$prefix/cuda"
@@ -95,6 +96,10 @@ make install
 
 if [[ "${target}" == *mingw* ]]; then
     cp *.dll ${prefix}/bin/
+fi
+
+if [[ "${bb_full_target}" != *cuda\+none* ]]; then
+    unlink $prefix/cuda/lib64
 fi
 """
 
