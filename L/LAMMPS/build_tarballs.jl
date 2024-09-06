@@ -126,6 +126,7 @@ for platform in all_platforms
         platform["mpi"] = "none"
     end
 end
+
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 # platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)

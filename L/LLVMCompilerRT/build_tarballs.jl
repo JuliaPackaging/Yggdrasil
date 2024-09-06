@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMCompilerRT"
-version = v"16.0.6"
+version = v"17.0.6"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/compiler-rt-$(version).src.tar.xz",
-        "7911a2a9cca10393a17f637c01a6f5555b0a38f64ff47dc9168413a4190bc2db"
+        "11b8d09dcf92a0f91c5c82defb5ad9ff4acf5cf073a80c317204baa922d136b4"
     ),
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-        "39d342a4161095d2f28fb1253e4585978ac50521117da666e2b1f6f28b62f514"
+        "807f069c54dc20cb47b21c1f6acafdd9c649f3ae015609040d6182cab01140f4"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
@@ -22,7 +22,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/compiler-rt*/
+cd $WORKSPACE/srcdir/
+# The build system expects this directory to be called exactly "cmake".
+mv -v cmake*src cmake
+cd compiler-rt*/
 
 # We'll codesign during audit
 atomic_patch -p1 ../patches/do-not-codesign.patch
@@ -69,19 +72,22 @@ EOF
            )
 fi
 
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+# Quick fix for https://github.com/llvm/llvm-project/pull/102980.
+# TODO: remove it after PR is merged.
+export CXXFLAGS="-D__STDC_FORMAT_MACROS=1"
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_MODULE_PATH=$(realpath ../../cmake-*.src/Modules) \
     -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${target} \
     -DCMAKE_LIBTOOL=$(which libtool) \
-    "${FLAGS[@]}" \
-    ..
-make -j${nproc}
-make install
+    "${FLAGS[@]}"
 
-install_license ../LICENSE.TXT
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+install_license LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further

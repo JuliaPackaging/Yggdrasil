@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.12.5"
+version = v"4.14.5"
 
 # Collection of sources required to build GTK
 sources = [
     # https://download.gnome.org/sources/gtk/
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
-                  "28b356d590ee68ef626e2ef9820b2dd21441484a9a042a5a3f0c40e9dfc4f4f8"),
+                  "5547f2b9f006b133993e070b87c17804e051efda3913feaca1108fa2be41e24d"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
 ]
@@ -62,6 +62,7 @@ meson .. \
     -Dbuild-tests=false \
     -Dbuild-testsuite=false \
     -Dgtk_doc=false \
+    -Dvulkan=disabled \
     "${FLAGS[@]}" \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
@@ -95,6 +96,8 @@ dependencies = [
     # Need a host Wayland for wayland-scanner
     HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
+    # Build needs a header from but does not link to libdrm
+    BuildDependency("libdrm_jll"; platforms=x11_platforms),
     Dependency("Glib_jll"; compat="2.76.5"),
     Dependency("Graphene_jll"; compat="1.10.6"),
     Dependency("Cairo_jll"),
