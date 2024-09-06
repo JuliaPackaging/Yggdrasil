@@ -191,7 +191,7 @@ dependencies = [
     Dependency("Blosc_jll"; compat="1.21.1"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("GEOS_jll"; compat="3.11.2"),
-    Dependency("HDF4_jll"; compat="4.3.0")
+    Dependency("HDF4_jll"; compat="4.3.0"),
     Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"),
