@@ -23,7 +23,7 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 # install catalyst-replay to bindir
 mkdir -vp $bindir
-cp -v ./build/bin/catalyst_replay* $bindir
+install -Dvm 755 ./build/bin/catalyst_replay${exeext} -t ${bindir}
 """
 
 # Paraview / Catalyst only supports x86_64 builds for Linux, Windows
