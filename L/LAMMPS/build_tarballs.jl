@@ -60,6 +60,8 @@ else
     GPU_OPTION="ON"
 fi
 
+export CUDA_PATH="$prefix/cuda"
+
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
 cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
