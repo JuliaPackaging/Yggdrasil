@@ -69,7 +69,6 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DBUILD_MPI=${MPI_OPTION} \
-    "${ADD_CUDA}"
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
