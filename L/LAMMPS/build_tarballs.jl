@@ -65,15 +65,7 @@ else
     cuda_version_major=`echo $cuda_version | cut -d . -f 1`
     cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
     cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
-    export PATH=$PATH:$cuda_full_path/bin
-    export CUDACXX=$cuda_full_path/bin/nvcc
-    export CUDAHOSTCXX=$CXX
-
-    cmake_extra_args+="
-        -DCUDA_TOOLKIT_ROOT_DIR=$cuda_full_path \
-        -DCUDA_TOOLKIT_INCLUDE=$includedir;$cuda_full_path/include \
-        -DCMAKE_INCLUDE_PATH=:$cuda_full_path/include \
-    "
+    export CMAKE_PREFIX_PATH="${cuda_full_path}:$CMAKE_PREFIX_PATH"
 fi
 
 cd $WORKSPACE/srcdir/lammps/
@@ -103,7 +95,6 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DLEPTON_ENABLE_JIT=no \
     -DPKG_GPU=${GPU_OPTION} \
     -DGPU_API=cuda \
-    $cmake_extra_args \
 
 make -j${nproc}
 make install
