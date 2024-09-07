@@ -61,7 +61,7 @@ else
     ln -s $prefix/cuda/lib $prefix/cuda/lib64
 fi
 
-export CUDA_HOME="$prefix/cuda"
+PATH="$PATH:$prefix/cuda/bin/"
 
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
