@@ -87,7 +87,8 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DLEPTON_ENABLE_JIT=no \
     -DPKG_GPU=${GPU_OPTION} \
     -DGPU_API=cuda \
-    -DCMAKE_PREFIX_PATH="${prefix}/cuda"
+    -DCMAKE_PREFIX_PATH="${prefix}" \
+    -DCMAKE_INSTALL_PREFIX="${prefix}"
 
 make -j${nproc}
 make install
