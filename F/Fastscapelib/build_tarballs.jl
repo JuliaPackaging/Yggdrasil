@@ -27,7 +27,7 @@ cmake -B build \
     -DBUILD_FASTSCAPELIB_STATIC=OFF
 
 # Compile
-make -j${nproc} 
+cmake --build build --parallel ${nproc}
 
 # Deploy 
 install -Dvm 755 libfastscapelib_fortran.${dlext} "${libdir}/libfastscapelib_fortran.${dlext}"
