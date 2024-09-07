@@ -16,8 +16,7 @@ script = raw"""
 # so we can use a newer version of cmake
 apk del cmake
 
-mkdir build
-cd $WORKSPACE/srcdir/build/
+cd $WORKSPACE/srcdir/fastscapelib-fortran/
 
 # Configure
 cmake   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
