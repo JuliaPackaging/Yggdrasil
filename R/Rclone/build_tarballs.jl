@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Rclone"
-version = v"1.65.2"
+version = v"1.67.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rclone/rclone/releases/download/v$(version)/rclone-v$(version).tar.gz",
-                  "1305c913ac3684d02ce2bade0a23a2115c1ec03c9447d1562bb6cd9fa2573412"),
+                  "f3863ef3fcbcc0aa0ca00c6bf1c099be9470df360751912db5c9021d3e549d10"),
     DirectorySource("bundled"),
 ]
 
@@ -16,11 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd rclone*
-
-if ! [[ $target = *-mingw* ]]; then
-    # Cross-compiling fails at the moment; see <https://github.com/rclone/rclone/issues/7560>
-    atomic_patch -p0 ../patches/nfs.patch
-fi
 
 # Don't run any locally built executables when building for Windows (this doesn't work when cross-compiling).
 # We are losing "version information and icon resources" in our `rclone` executable.

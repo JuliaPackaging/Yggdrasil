@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-upstream_version = v"2.15.0"
+upstream_version = v"2.15.1"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
@@ -15,7 +15,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "7424ecfb6ccabfbf865f34c9019559efeb8a39e0"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "841c6ae7200c88f73b2825da27fed2a83360ad4c"),
     DirectorySource("./bundled"),
 ]
 

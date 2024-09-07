@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.13.1"
-version = v"400.1300.100"
+version = v"400.1300.101"
 
 # Collection of sources required to complete build
 sources = [
@@ -132,7 +132,7 @@ dependencies = [
     Dependency("GMP_jll"),
     Dependency("Readline_jll", v"8.1.1"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.10")),
 ]
 
 # Build the tarballs.
@@ -148,4 +148,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     end
 """)
 
-# rebuild trigger: 2
+# rebuild trigger: 0

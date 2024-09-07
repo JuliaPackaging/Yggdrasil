@@ -1,11 +1,11 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder, Pkg, BinaryBuilderBase
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
-include(joinpath(@__DIR__, "..", "..", "fancy_toys.jl"))
-include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "LAMMPS"
 version = v"2.7.0" # Equivalent to stable_29Aug2024
@@ -48,10 +48,16 @@ else
 fi
 
 # The MPI enabled LAMMPS_jll doesn't load properly on windows
-if [[ "${target}" == *mingw* ]]; then
+if [[ "${target}" == *mingw* ]] || [[ "${bb_full_target}" == *mpi\+none* ]]; then
     MPI_OPTION="OFF"
 else
     MPI_OPTION="ON"
+fi
+
+if [[ "${bb_full_target}" == *cuda\+none* ]]; then
+    GPU_OPTION="OFF"
+else
+    GPU_OPTION="ON"
 fi
 
 cd $WORKSPACE/srcdir/lammps/
@@ -79,7 +85,12 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_REPLICA=ON \
     -DPKG_SHOCK=ON \
     -DLEPTON_ENABLE_JIT=no \
-     -DGPU_AAPI=cuda
+    -DPKG_GPU=${GPU_OPTION} \
+    -DGPU_API=cuda \
+    -DCMAKE_PREFIX_PATH="${prefix}" \
+    -DCMAKE_INSTALL_PREFIX="${prefix}" \
+    -DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
+    -DCMAKE_CUDA_COMPILER="${prefix}/cuda/bin/nvcc"
 
 make -j${nproc}
 make install
@@ -87,29 +98,57 @@ make install
 if [[ "${target}" == *mingw* ]]; then
     cp *.dll ${prefix}/bin/
 fi
+
+if [[ "${bb_full_target}" != *cuda\+none* ]]; then
+    unlink $prefix/cuda/lib64
+fi
 """
 
 augment_platform_block = """
     using Base.BinaryPlatforms
+
+    module __CUDA
+        $(CUDA.augment)
+    end
+
     $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
+
+    function augment_platform!(platform::Platform)
+        augment_mpi!(platform)
+        __CUDA.augment_platform!(platform)
+    end
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # platforms = supported_platforms(; experimental=true)
-platforms = CUDA.supported_platforms(min_version=v"11.0")
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
+mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+
+all_platforms = [platforms; cuda_platforms; mpi_platforms; cudampi_platforms]
+for platform in all_platforms
+    # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
+    if !haskey(platform, "cuda")
+        platform["cuda"] = "none"
+    end
+
+    # Only for the non-MPI platforms, add the mpi=none tag, if necessary.
+    if !haskey(platform, "mpi")
+        platform["mpi"] = "none"
+    end
+end
+
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 # platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
-
-platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
+all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), all_platforms)
+all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), all_platforms)
+all_platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), all_platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -118,23 +157,27 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = BinaryBuilderBase.AbstractDependency[
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
 ]
-append!(dependencies, platform_dependencies)
-
 # Build the tarballs, and possibly a `build.jl` as well.
-for platform in platforms
+for platform in all_platforms
     should_build_platform(triplet(platform)) || continue
 
-    # Static SDK is used in CMake toolchain
-    cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
-
+    _dependencies = copy(dependencies)
+    if platform["cuda"] != "none" && platform["mpi"] != "none"
+        append!(_dependencies, cudampi_dependencies)
+        append!(_dependencies, CUDA.required_dependencies(platform))
+    elseif platform["cuda"] != "none"
+        append!(_dependencies, CUDA.required_dependencies(platform))
+    elseif platform["mpi"] != "none"
+        append!(_dependencies, mpi_dependencies)
+    end
     build_tarballs(ARGS, name, version, sources, script, [platform],
-                   products, [dependencies; cuda_deps];
+                   products, _dependencies;
                    preferred_gcc_version=v"8",
                    julia_compat="1.6",
-                   augment_platform_block=CUDA.augment*augment_platform_block,
+                   augment_platform_block=augment_platform_block,
                    lazy_artifacts=true
                    )
 end
