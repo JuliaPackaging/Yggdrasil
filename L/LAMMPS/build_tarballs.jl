@@ -88,7 +88,9 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_GPU=${GPU_OPTION} \
     -DGPU_API=cuda \
     -DCMAKE_PREFIX_PATH="${prefix}" \
-    -DCMAKE_INSTALL_PREFIX="${prefix}"
+    -DCMAKE_INSTALL_PREFIX="${prefix}" \
+    -DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
+    -DCMAKE_CUDA_COMPILER="${prefix}/cuda/bin/nvcc"
 
 make -j${nproc}
 make install
