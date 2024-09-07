@@ -7,7 +7,7 @@ version = v"2.8.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fastscape-lem/fastscapelib-fortran/", "b4d13f4703c0d682b38c513c6754f0d0813c076f")
+    GitSource("https://github.com/fastscape-lem/fastscapelib-fortran.git", "b4d13f4703c0d682b38c513c6754f0d0813c076f")
 ]
 
 # Bash recipe for building across all platforms
