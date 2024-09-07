@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/DBCtoDBF/SRC
 install_license ../LICENSE
-make
+make -j${nproc} CC=${CC}
 mkdir -p ${prefix}/bin/
 cp dbc2dbf  ${prefix}/bin/
 make test
