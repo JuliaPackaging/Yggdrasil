@@ -30,7 +30,7 @@ cmake -B build \
 cmake --build build --parallel ${nproc}
 
 # Deploy 
-install -Dvm 755 "libfastscapelib_fortran.${dlext}" -t "${libdir}"
+install -Dvm 755 "build/libfastscapelib_fortran.${dlext}" -t "${libdir}"
 
 install_license LICENSE
 """
