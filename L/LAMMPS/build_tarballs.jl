@@ -69,10 +69,11 @@ else
     export CUDACXX=$cuda_full_path/bin/nvcc
     export CUDAHOSTCXX=$CXX
 
-    cmake_extra_args+="\
+    cmake_extra_args+="
         -DCUDA_TOOLKIT_ROOT_DIR=$cuda_full_path \
         -DCUDA_TOOLKIT_INCLUDE=$includedir;$cuda_full_path/include \
-    include_paths+=":$cuda_full_path/include"
+        -DCMAKE_INCLUDE_PATH=:$cuda_full_path/include \
+    "
 fi
 
 cd $WORKSPACE/srcdir/lammps/
@@ -102,7 +103,6 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DLEPTON_ENABLE_JIT=no \
     -DPKG_GPU=${GPU_OPTION} \
     -DGPU_API=cuda \
-    -DCMAKE_INCLUDE_PATH=$include_paths \
     $cmake_extra_args \
 
 make -j${nproc}
