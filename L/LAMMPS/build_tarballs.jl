@@ -47,6 +47,9 @@ else
     INSTALL_RPATH=()
 fi
 
+cmake_extra_args=""
+include_path=""
+
 # The MPI enabled LAMMPS_jll doesn't load properly on windows
 if [[ "${target}" == *mingw* ]] || [[ "${bb_full_target}" == *mpi\+none* ]]; then
     MPI_OPTION="OFF"
@@ -58,6 +61,18 @@ if [[ "${bb_full_target}" == *cuda\+none* ]]; then
     GPU_OPTION="OFF"
 else
     GPU_OPTION="ON"
+    cuda_version=`echo $bb_full_target | sed -E -e 's/.*cuda\+([0-9]+\.[0-9]+).*/\1/'`
+    cuda_version_major=`echo $cuda_version | cut -d . -f 1`
+    cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
+    cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
+    export PATH=$PATH:$cuda_full_path/bin
+    export CUDACXX=$cuda_full_path/bin/nvcc
+    export CUDAHOSTCXX=$CXX
+
+    cmake_extra_args+="\
+        -DCUDA_TOOLKIT_ROOT_DIR=$cuda_full_path \
+        -DCUDA_TOOLKIT_INCLUDE=$includedir;$cuda_full_path/include \
+    include_paths+=":$cuda_full_path/include"
 fi
 
 cd $WORKSPACE/srcdir/lammps/
@@ -87,10 +102,8 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DLEPTON_ENABLE_JIT=no \
     -DPKG_GPU=${GPU_OPTION} \
     -DGPU_API=cuda \
-    -DCMAKE_PREFIX_PATH="${prefix}" \
-    -DCMAKE_INSTALL_PREFIX="${prefix}" \
-    -DCUDA_TOOLKIT_ROOT_DIR="${prefix}/cuda" \
-    -DCMAKE_CUDA_COMPILER="${prefix}/cuda/bin/nvcc"
+    -DCMAKE_INCLUDE_PATH=$include_paths \
+    $cmake_extra_args \
 
 make -j${nproc}
 make install
