@@ -8,7 +8,7 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lego-yaw/DBCtoDBF.git", "ad4a26e2c3da9d1499b7f71d5e4859dc0ad708bd")
+    GitSource("https://github.com/lego-yaw/DBCtoDBF.git", "b5333eb8378b5fae64b5de5f827e4335bade35cf")
 ]
 
 # Bash recipe for building across all platforms
@@ -34,4 +34,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"13.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")
