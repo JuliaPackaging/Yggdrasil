@@ -58,10 +58,7 @@ if [[ "${bb_full_target}" == *cuda\+none* ]]; then
     GPU_OPTION="OFF"
 else
     GPU_OPTION="ON"
-    ln -s $prefix/cuda/lib $prefix/cuda/lib64
 fi
-
-PATH="$PATH:$prefix/cuda/bin/"
 
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
@@ -89,7 +86,8 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DPKG_SHOCK=ON \
     -DLEPTON_ENABLE_JIT=no \
     -DPKG_GPU=${GPU_OPTION} \
-    -DGPU_API=cuda
+    -DGPU_API=cuda \
+    -DCMAKE_PREFIX_PATH="${prefix}/cuda"
 
 make -j${nproc}
 make install
