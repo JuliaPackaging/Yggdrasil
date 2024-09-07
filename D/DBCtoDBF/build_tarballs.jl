@@ -13,12 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd DBCtoDBF/
-mkdir -p ${prefix}/share/licenses/DBCtoDBF
-cp LICENSE ${prefix}/share/licenses/
-cp LICENSE ${prefix}/share/licenses/DBCtoDBF/
-cd SRC/
+cd $WORKSPACE/srcdir/DBCtoDBF/SRC
+install_license ../LICENSE
 make
 mkdir -p ${prefix}/bin/
 cp dbc2dbf  ${prefix}/bin/
