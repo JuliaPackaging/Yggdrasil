@@ -18,7 +18,6 @@ install_license ../LICENSE
 make -j${nproc} CC=${CC}
 install -Dvm 755 "dbc2dbf${exeext}"  -t "${bindir}"
 make test
-exit
 """
 
 # These are the platforms we will build for by default, unless further
