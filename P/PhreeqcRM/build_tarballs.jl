@@ -41,9 +41,9 @@ install -Dvm 755 "Release/libPhreeqcRM.${dlext}" -t "${libdir}"
 
 # Deploy test executables
 install -Dvm 755 "Release/libPhreeqcRM.${dlext}" -t "${libdir}"
-install -Dvm 755 "Release/Tests/TestBMIdtor${exeext}" "${bindir}/TestBMIdtor${exeext}"
-install -Dvm 755 "Release/Tests/TestRM${exeext}" "${bindir}/TestRM${exeext}"
-install -Dvm 755 "Release/Tests/TestRMdtor${exeext}" "${bindir}/TestRMdtor${exeext}"
+install -Dvm 755 "Release/Tests/TestBMIdtor${exeext}" -t "${bindir}"
+install -Dvm 755 "Release/Tests/TestRM${exeext}" -t "${bindir}"
+install -Dvm 755 "Release/Tests/TestRMdtor${exeext}" -t "${bindir}"
 
 # Store header files
 cp irm_dll_export.h.in src/irm_dll_export.h
