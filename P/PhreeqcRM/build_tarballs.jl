@@ -46,6 +46,7 @@ install -Dvm 755 "Release/Tests/TestRM${exeext}" "${bindir}/TestRM${exeext}"
 install -Dvm 755 "Release/Tests/TestRMdtor${exeext}" "${bindir}/TestRMdtor${exeext}"
 
 # Store header files
+cp irm_dll_export.h.in src/irm_dll_export.h
 install -vm 644 src/*.h "${includedir}"
 
 # Store databases
@@ -58,6 +59,7 @@ install -vm 644 Release/Tests/*.pqi "$prefix/test_input"
 install -vm 644 Release/Tests/phreeqc.dat "$prefix/test_input"
 
 install_license LICENSE
+
 """
 
 # These are the platforms we will build for by default, unless further
