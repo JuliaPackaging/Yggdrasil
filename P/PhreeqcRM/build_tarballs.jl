@@ -55,9 +55,8 @@ mkdir $prefix/share/phreeqcrm/database
 install -vm 644 database/*.dat "$prefix/share/phreeqcrm/database"
 
 # Input files for tests:
-mkdir $prefix/share/phreeqcrm/test_input
-install -vm 644 Release/Tests/*.pqi "$prefix/share/phreeqcrm/test_input"
-install -vm 644 Release/Tests/phreeqc.dat "$prefix/share/phreeqcrm/test_input"
+install -Dvm 644 Release/Tests/*.pqi -t "${prefix}/share/phreeqcrm/test_input"
+install -Dvm 644 Release/Tests/phreeqc.dat -t "${prefix}/share/phreeqcrm/test_input"
 
 install_license LICENSE
 
