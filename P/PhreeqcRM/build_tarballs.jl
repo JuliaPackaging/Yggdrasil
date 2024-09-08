@@ -48,6 +48,7 @@ install -Dvm 755 "Release/Tests/TestRMdtor${exeext}" "${bindir}/TestRMdtor${exee
 # Store header files
 cp irm_dll_export.h.in src/irm_dll_export.h
 install -vm 644 src/*.h "${includedir}"
+install -vm 644 src/IPhreeqcPhast/IPhreeqc/*.h "${includedir}"
 
 # Store databases
 mkdir $prefix/database
