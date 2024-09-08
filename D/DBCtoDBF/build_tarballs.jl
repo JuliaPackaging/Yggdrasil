@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/DBCtoDBF/SRC
 install_license ../LICENSE
 make -j${nproc} CC=${CC}
-install -Dvm 755 "dbc2dbf${exeext}"  -t "${bindir}"
+install -Dvm 755 "dbc2dbf" "${bindir}/dbc2dbf${exeext}"
 make test
 """
 
