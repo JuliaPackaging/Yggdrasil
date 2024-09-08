@@ -53,9 +53,7 @@ install -Dvm 644 src/IPhreeqcPhast/IPhreeqc/*.h -t "${includedir}"
 # Store databases
 install -Dvm 644 database/*.dat -t "${prefix}/share/phreeqcrm/database"
 install -Dvm 644 Release/Tests/*.pqi -t "${prefix}/share/phreeqcrm/test_input"
-install -Dvm 644 Release/Tests/phreeqc.dat -t 
-"${prefix}/share/phreeqcrm/test_input"
-
+install -Dvm 644 Release/Tests/phreeqc.dat -t "${prefix}/share/phreeqcrm/test_input"
 install_license LICENSE
 
 """
