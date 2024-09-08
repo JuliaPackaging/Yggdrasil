@@ -65,6 +65,9 @@ install_license LICENSE
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
+# libgfortran 3 don't seem to work
+platforms = filter(p -> !(libgfortran_version(p) == v"3"), platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libPhreeqcRM",      :libPhreeqcRM),
