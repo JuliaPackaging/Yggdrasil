@@ -47,17 +47,17 @@ install -Dvm 755 "Release/Tests/TestRMdtor${exeext}" "${bindir}/TestRMdtor${exee
 
 # Store header files
 cp irm_dll_export.h.in src/irm_dll_export.h
-install -vm 644 src/*.h "${includedir}"
-install -vm 644 src/IPhreeqcPhast/IPhreeqc/*.h "${includedir}"
+install -Dvm 644 src/*.h -t "${includedir}"
+install -Dvm 644 src/IPhreeqcPhast/IPhreeqc/*.h -t "${includedir}"
 
 # Store databases
-mkdir $prefix/database
-install -vm 644 database/*.dat "$prefix/database"
+mkdir $prefix/share/phreeqcrm/database
+install -vm 644 database/*.dat "$prefix/share/phreeqcrm/database"
 
 # Input files for tests:
-mkdir $prefix/test_input
-install -vm 644 Release/Tests/*.pqi "$prefix/test_input"
-install -vm 644 Release/Tests/phreeqc.dat "$prefix/test_input"
+mkdir $prefix/share/phreeqcrm/test_input
+install -vm 644 Release/Tests/*.pqi "$prefix/share/phreeqcrm/test_input"
+install -vm 644 Release/Tests/phreeqc.dat "$prefix/share/phreeqcrm/test_input"
 
 install_license LICENSE
 
@@ -82,9 +82,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
         Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    
-        BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("aarch64", "macos")]),
-        HostBuildDependency(PackageSpec(; name="CMake_jll"))]
+
+        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms)),
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
