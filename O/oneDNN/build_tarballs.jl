@@ -16,7 +16,7 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/strnlen_s_windows.patch
 fi
 
-mkdir build && cd build
+mkdir build
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
@@ -37,15 +37,9 @@ if [[ "${target}" == aarch64* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_SYSTEM_PROCESSOR=AARCH64)
 fi
 
-cmake .. ${CMAKE_FLAGS[@]}
-
-if [[ "${target}" == *-mingw* ]]; then
-    # https://oneapi-src.github.io/oneDNN/dev_guide_build.html#windows
-    cmake --build . --config=Release --target install
-else
-    make -j${nproc}
-    make install
-fi
+cmake -B build ${CMAKE_FLAGS[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 platforms = supported_platforms()
