@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.13.1"
-version = v"400.1300.101"
+version = v"400.1300.102"
 
 # Collection of sources required to complete build
 sources = [
@@ -64,7 +64,7 @@ julia_version=$(./julia_version)
 # configure GAP
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     JULIA_VERSION="$julia_version" \
-    CPPFLAGS="$CPPFLAGS -DUSE_GAP_INSIDE_JULIA=1 -DREQUIRE_PRECISE_MARKING=1" \
+    CPPFLAGS="$CPPFLAGS -DUSE_GAP_INSIDE_JULIA=1" \
     --with-gmp=${prefix} \
     --with-readline=${prefix} \
     --with-zlib=${prefix} \
