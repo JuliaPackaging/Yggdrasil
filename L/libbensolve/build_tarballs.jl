@@ -16,7 +16,7 @@ cd $WORKSPACE/srcdir/bensolve*/
 cc -shared -fPIC -std=c99 -O3 -o libbensolve.$dlext *.c -lglpk -lm
 install -Dvm 755 libbensolve.$dlext -t ${libdir}
 install -Dvm 644 *.h -t ${includedir}
-install_license doc/manual.pdf
+install_license /usr/share/licenses/GPL-3.0+
 """
 
 # These are the platforms we will build for by default, unless further
