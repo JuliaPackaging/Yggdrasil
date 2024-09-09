@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libtakum"
-version = v"0.2.2"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/takum-arithmetic/libtakum.git", "c8e6a3bcff0665f32867dc09fe898e4817ad5a21")
+    GitSource("https://github.com/takum-arithmetic/libtakum.git", "f9e72ceed90579dd7187f3a0248ec30590b8a14b")
 ]
 
 # Bash recipe for building across all platforms
