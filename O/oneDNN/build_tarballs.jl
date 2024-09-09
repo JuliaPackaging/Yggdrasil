@@ -16,8 +16,6 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/strnlen_s_windows.patch
 fi
 
-mkdir build
-
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 # Install things into $prefix
