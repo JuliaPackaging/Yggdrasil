@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/bensolve*/
 gcc -shared -fPIC -std=c99 -O3 -o libbensolve.$dlext *.c -lglpk -lm
 install_license doc/manual.pdf
-cp libbensolve.so ${libdir}
+cp libbensolve.$dlext ${libdir}
 cp *.h ${includedir}
 """
 
