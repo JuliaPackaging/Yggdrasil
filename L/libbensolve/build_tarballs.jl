@@ -12,9 +12,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/bensolve*/
-gcc -shared -fPIC -std=c99 -O3 -o libbensolve.so *.c -lglpk -lm
+gcc -shared -fPIC -std=c99 -O3 -o libbensolve.$dlext *.c -lglpk -lm
 install_license doc/manual.pdf
 cp libbensolve.so ${libdir}
 cp *.h ${includedir}
