@@ -30,10 +30,13 @@ cmake --build . --parallel $nproc
 cmake --install .
 """
 
+platforms = supported_platforms()
 # xsimd library does not work with armv6, armv7, powerpc
-abstract_platforms = filter!(p -> !(contains(arch(p), "armv") || contains(arch(p), "powerpc")), supported_platforms())
+filter!(p -> !(contains(arch(p), "armv") || contains(arch(p), "powerpc")), platforms)
+# FreeBSD aarch64 does not build, remove for now
+filter!(p -> !(p["os"]=="freebsd" && p["arch"]=="aarch64"), platforms)
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-platforms = expand_cxxstring_abis(expand_microarchitectures(abstract_platforms, ["x86_64", "avx", "avx2", "avx512"]); skip=!Sys.iswindows)
+platforms = expand_cxxstring_abis(expand_microarchitectures(platforms, ["x86_64", "avx", "avx2", "avx512"]); skip=!Sys.iswindows)
 
 augment_platform_block = """
     $(MicroArchitectures.augment)
