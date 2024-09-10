@@ -163,9 +163,6 @@ dependencies = BinaryBuilderBase.AbstractDependency[
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
 for platform in all_platforms
-    if platform["cuda"] == "none" || (platform["cuda"] != "none" && platform["arch"] == "aarch64" && platform["cuda_platform"]  == "jetson")
-        continue
-    end
     should_build_platform(triplet(platform)) || continue
 
     _dependencies = copy(dependencies)
@@ -185,5 +182,4 @@ for platform in all_platforms
                    augment_platform_block=augment_platform_block,
                    lazy_artifacts=true
                    )
-    exit()
 end
