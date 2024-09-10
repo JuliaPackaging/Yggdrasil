@@ -32,7 +32,7 @@ version = v"2.7.0" # Equivalent to stable_29Aug2024
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "570c9d190fee556c62e5bd0a9c6797c4dffcc271")
+    GitSource("https://github.com/lammps/lammps.git", "570c9d190fee556c62e5bd0a9c6797c4dffcc271"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,7 +48,6 @@ else
 fi
 
 cmake_extra_args=""
-include_path=""
 
 # The MPI enabled LAMMPS_jll doesn't load properly on windows
 if [[ "${target}" == *mingw* ]] || [[ "${bb_full_target}" == *mpi\+none* ]]; then
@@ -61,11 +60,13 @@ if [[ "${bb_full_target}" == *cuda\+none* ]]; then
     GPU_OPTION="OFF"
 else
     GPU_OPTION="ON"
-    cuda_version=`echo $bb_full_target | sed -E -e 's/.*cuda\+([0-9]+\.[0-9]+).*/\1/'`
-    cuda_version_major=`echo $cuda_version | cut -d . -f 1`
-    cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
-    cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
-    export CMAKE_PREFIX_PATH="${cuda_full_path}:$CMAKE_PREFIX_PATH"
+    export PATH=$PATH:$prefix/cuda/bin/
+    export CUDA_PATH=$prefix/cuda/
+    ln -s $prefix/cuda/lib/stubs/libcuda.so $prefix/cuda/lib/libcuda.so
+    cmake_extra_args="\
+        -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda/ \
+        -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
+    "
 fi
 
 cd $WORKSPACE/srcdir/lammps/
@@ -95,16 +96,13 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DLEPTON_ENABLE_JIT=no \
     -DPKG_GPU=${GPU_OPTION} \
     -DGPU_API=cuda \
+    ${cmake_extra_args} \
 
 make -j${nproc}
 make install
 
 if [[ "${target}" == *mingw* ]]; then
     cp *.dll ${prefix}/bin/
-fi
-
-if [[ "${bb_full_target}" != *cuda\+none* ]]; then
-    unlink $prefix/cuda/lib64
 fi
 """
 
@@ -128,7 +126,6 @@ augment_platform_block = """
 # platforms = supported_platforms(; experimental=true)
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-
 cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
@@ -166,9 +163,13 @@ dependencies = BinaryBuilderBase.AbstractDependency[
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
 for platform in all_platforms
+    if platform["cuda"] == "none" || (platform["cuda"] != "none" && platform["arch"] == "aarch64" && platform["cuda_platform"]  == "jetson")
+        continue
+    end
     should_build_platform(triplet(platform)) || continue
 
     _dependencies = copy(dependencies)
+    _sources = copy(sources)
     if platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_dependencies, cudampi_dependencies)
         append!(_dependencies, CUDA.required_dependencies(platform))
@@ -177,11 +178,12 @@ for platform in all_platforms
     elseif platform["mpi"] != "none"
         append!(_dependencies, mpi_dependencies)
     end
-    build_tarballs(ARGS, name, version, sources, script, [platform],
+    build_tarballs(ARGS, name, version, _sources, script, [platform],
                    products, _dependencies;
                    preferred_gcc_version=v"8",
                    julia_compat="1.6",
                    augment_platform_block=augment_platform_block,
                    lazy_artifacts=true
                    )
+    exit()
 end
