@@ -1,9 +1,9 @@
-version = v"13.0"
-llvm_version = v"13.0.1"
+version = v"18.0"
+llvm_version = v"18.1.7"
 include("../common.jl")
 
 # Collection of sources required to build attr
-sources = [GitSource(repo, "093cf279cad6f12bb22abf0a94eae9aca938aaea")]
+sources = [GitSource(repo, "242df2cb83e2322b456990fb0ca3e30bd9209ed0")]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
