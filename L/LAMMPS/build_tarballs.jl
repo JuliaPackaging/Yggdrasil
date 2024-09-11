@@ -41,7 +41,7 @@ script = raw"""
 # For this specific target during the audit liblammps.so fails to find libgfortran.so
 # This is the same hack as used by MPITrampoline:
 # <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>
-if [[ "${bb_full_target}" == *cxx11* ]] && [[ "${bb_full_target}" != *cuda+none* || "${bb_full_target}" == *mpi+mpitrampoline* ]]; then
+if [[ "${bb_full_target}" == *cxx11* && "${bb_full_target}" == *mpi+mpitrampoline* ]]; then
     INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
 else
     INSTALL_RPATH=()
@@ -103,6 +103,10 @@ make install
 
 if [[ "${bb_full_target}" == *mingw* ]]; then
     cp *.dll ${prefix}/bin/
+fi
+
+if [[ "${bb_full_target}" == *cuda\+none* ]]; then
+    unlink $prefix/cuda/lib/libcuda.so
 fi
 """
 
@@ -172,10 +176,10 @@ for platform in all_platforms
     if platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_dependencies, cudampi_dependencies)
         append!(_dependencies, CUDA.required_dependencies(platform))
-        push!(_dependencies, RuntimeDependency(PackageSpec(name="CUDA_Driver_jll")))
+        push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     elseif platform["cuda"] != "none"
         append!(_dependencies, CUDA.required_dependencies(platform))
-        push!(_dependencies, RuntimeDependency(PackageSpec(name="CUDA_Driver_jll")))
+        push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     elseif platform["mpi"] != "none"
         append!(_dependencies, mpi_dependencies)
     end
