@@ -172,8 +172,10 @@ for platform in all_platforms
     if platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_dependencies, cudampi_dependencies)
         append!(_dependencies, CUDA.required_dependencies(platform))
+        push!(_dependencies, RuntimeDependency(PackageSpec(name="CUDA_Driver_jll")))
     elseif platform["cuda"] != "none"
         append!(_dependencies, CUDA.required_dependencies(platform))
+        push!(_dependencies, RuntimeDependency(PackageSpec(name="CUDA_Driver_jll")))
     elseif platform["mpi"] != "none"
         append!(_dependencies, mpi_dependencies)
     end
