@@ -105,7 +105,7 @@ if [[ "${bb_full_target}" == *mingw* ]]; then
     cp *.dll ${prefix}/bin/
 fi
 
-if [[ "${bb_full_target}" == *cuda\+none* ]]; then
+if [[ "${bb_full_target}" != *cuda\+none* ]]; then
     unlink $prefix/cuda/lib/libcuda.so
 fi
 """
