@@ -180,7 +180,7 @@ for platform in all_platforms
     build_tarballs(ARGS, name, version, _sources, script, [platform],
                    products, _dependencies;
                    preferred_gcc_version=v"8",
-                   julia_compat="1.6",
+                   julia_compat="1.7",
                    augment_platform_block=augment_platform_block,
                    lazy_artifacts=true
                    )
