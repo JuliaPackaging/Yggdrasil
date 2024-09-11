@@ -184,5 +184,4 @@ for platform in all_platforms
                    augment_platform_block=augment_platform_block,
                    lazy_artifacts=true
                    )
-    break
 end
