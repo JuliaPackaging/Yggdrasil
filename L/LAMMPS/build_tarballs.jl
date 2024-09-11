@@ -65,7 +65,7 @@ else
     ln -s $prefix/cuda/lib/stubs/libcuda.so $prefix/cuda/lib/libcuda.so
     cmake_extra_args="\
         -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda/ \
-        -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined \
+        -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined,--allow-undefined-file=libcuda.so.1 \
     "
 fi
 
