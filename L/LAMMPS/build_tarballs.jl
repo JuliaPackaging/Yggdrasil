@@ -165,9 +165,6 @@ dependencies = BinaryBuilderBase.AbstractDependency[
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
 for platform in all_platforms
-if platform["cuda"] == "none"
-continue
-end
     should_build_platform(triplet(platform)) || continue
 
     _dependencies = copy(dependencies)
