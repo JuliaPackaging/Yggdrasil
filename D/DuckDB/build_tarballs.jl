@@ -14,30 +14,22 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb/
 
-mkdir build && cd build
-
-if [[ "${target}" == *86*-linux-gnu ]]; then
-    export LDFLAGS="-lrt";
-elif [[ "${target}" == *-mingw* ]]; then
-    # `ResolveLocaleName` requires Windows 7: https://learn.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-resolvelocalename
-    export CXXFLAGS="-DWINVER=_WIN32_WINNT_WIN7 -D_WIN32_WINNT=_WIN32_WINNT_WIN7"
-fi
-
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+cmake -B build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DENABLE_SANITIZER=FALSE \
       -DBUILD_EXTENSIONS='autocomplete;icu;parquet;json;fts;tpcds;tpch' \
       -DENABLE_EXTENSION_AUTOLOADING=1 \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
-      -DBUILD_UNITTESTS=FALSE .. \
-      -DBUILD_SHELL=TRUE .. \
+      -DBUILD_UNITTESTS=FALSE \
+      -DBUILD_SHELL=TRUE \
       -DDUCKDB_EXPLICIT_PLATFORM="${target}"
-make -j${nproc}
-make install
+cmake --build build --parallel ${nproc}
+cmake --install build
 
 if [[ "${target}" == *-mingw32 ]]; then
-    install -Dvm 755 "src/libduckdb.${dlext}" "${libdir}/libduckdb.${dlext}"
+    install -Dvm 755 "build/src/libduckdb.${dlext}" -t "${libdir}"
 fi
 """
 
