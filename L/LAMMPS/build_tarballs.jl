@@ -50,7 +50,7 @@ fi
 cmake_extra_args=""
 
 # The MPI enabled LAMMPS_jll doesn't load properly on windows
-if [[ "${target}" == *mingw* ]] || [[ "${bb_full_target}" == *mpi\+none* ]]; then
+if [[ "${bb_full_target}" == *mingw* ]] || [[ "${bb_full_target}" == *mpi\+none* ]]; then
     MPI_OPTION="OFF"
 else
     MPI_OPTION="ON"
@@ -65,7 +65,7 @@ else
     ln -s $prefix/cuda/lib/stubs/libcuda.so $prefix/cuda/lib/libcuda.so
     cmake_extra_args="\
         -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda/ \
-        -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined,--allow-undefined-file=libcuda.so.1 \
+        -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined -Wl,--allow-undefined-file=libcuda.so.1 \
     "
 fi
 
@@ -101,7 +101,7 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
 make -j${nproc}
 make install
 
-if [[ "${target}" == *mingw* ]]; then
+if [[ "${bb_full_target}" == *mingw* ]]; then
     cp *.dll ${prefix}/bin/
 fi
 """
@@ -165,6 +165,9 @@ dependencies = BinaryBuilderBase.AbstractDependency[
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
 for platform in all_platforms
+if platform["cuda"] == "none"
+continue
+end
     should_build_platform(triplet(platform)) || continue
 
     _dependencies = copy(dependencies)
