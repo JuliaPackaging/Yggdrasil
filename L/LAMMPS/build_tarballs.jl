@@ -41,7 +41,7 @@ script = raw"""
 # For this specific target during the audit liblammps.so fails to find libgfortran.so
 # This is the same hack as used by MPITrampoline:
 # <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>
-if [[ "${target}" == x86_64-linux-gnu-cxx11-mpi+mpitrampoline ]]; then
+if [[ "${bb_full_target}" == *cxx11* ]] && [[ "${bb_full_target}" != *cuda+none* || "${bb_full_target}" == *mpi+mpitrampoline* ]]; then
     INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
 else
     INSTALL_RPATH=()
@@ -127,6 +127,8 @@ augment_platform_block = """
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
+# Cmake toolchain breaks on aarch64, so only x86_64 for now
+filter!(p -> arch(p)=="x86_64", cuda_platforms)
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 
@@ -182,4 +184,5 @@ for platform in all_platforms
                    augment_platform_block=augment_platform_block,
                    lazy_artifacts=true
                    )
+    break
 end
