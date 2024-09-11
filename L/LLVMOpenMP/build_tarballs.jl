@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"17.0.6"
+version = v"18.1.8"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "74334cbb4dc8b73a768448a7561d5a3540404940b2267b1fb9813a6464b320de"
+        "60ed57245e73894e4a2a89b15889f367bd906abfe6d3f92e1718223d4b496150"
     ),
     # we need a bunch of additional cmake files to build the subproject separately
     # see: https://github.com/llvm/llvm-project/issues/53281#issuecomment-1260187944
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-        "807f069c54dc20cb47b21c1f6acafdd9c649f3ae015609040d6182cab01140f4"
+        "59badef592dd34893cd319d42b323aaa990b452d05c7180ff20f23ab1b41e837"
     ),
     DirectorySource("./bundled"),
 ]
