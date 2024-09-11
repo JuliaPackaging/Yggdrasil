@@ -37,6 +37,7 @@ llvm_tags = Dict(
     v"15.0.7" => "8dfdcc7b7bf66834a761bd8de445840ef68e4d1a",
     v"16.0.6" => "7cbf1a2591520c2491aa35339f227775f4d3adf6",
     v"17.0.6" => "6009708b4367171ccdbf4b5905cb6a803753fe18",
+    v"18.1.7" => "768118d1ad38bf13c545828f67bd6b474d61fc55",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
