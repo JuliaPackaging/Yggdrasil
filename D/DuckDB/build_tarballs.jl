@@ -44,6 +44,11 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+# Building for PowerPC results in errors inside jemalloc:
+#     /tmp/ccmHnfhC.s: Assembler messages:
+#     /tmp/ccmHnfhC.s:7829: Error: unrecognized opcode: `pause'
+#     make[2]: *** [extension/jemalloc/jemalloc/CMakeFiles/jemalloc.dir/build.make:76: extension/jemalloc/jemalloc/CMakeFiles/jemalloc.dir/src/jemalloc.c.o] Error 1
+filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # The products that we will ensure are always built
 products = [
