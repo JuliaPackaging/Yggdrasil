@@ -24,6 +24,6 @@ index 776996f..0419fa3 100644
  
 -  integer,parameter :: maxpart=100000
 +  integer,parameter :: maxpart=2000000
-   integer,parameter :: maxspec=1
+   integer,parameter :: maxspec=10
  
    real,parameter :: minmass=0.0001
