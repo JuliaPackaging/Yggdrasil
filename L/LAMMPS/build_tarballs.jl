@@ -56,7 +56,7 @@ else
     MPI_OPTION="ON"
 fi
 
-if [[ "${bb_full_target}" == *cuda\+none* ]]; then
+if [[ "${bb_full_target}" == *cuda\+none* || "${bb_full_target}" != *cuda* ]]; then
     GPU_OPTION="OFF"
 else
     GPU_OPTION="ON"
@@ -105,7 +105,7 @@ if [[ "${bb_full_target}" == *mingw* ]]; then
     cp *.dll ${prefix}/bin/
 fi
 
-if [[ "${bb_full_target}" != *cuda\+none* ]]; then
+if [[ "${bb_full_target}" != *cuda\+none* || "${bb_full_target}" != *cuda* ]]; then
     unlink $prefix/cuda/lib/libcuda.so
 fi
 """
@@ -139,7 +139,7 @@ cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; 
 all_platforms = [platforms; cuda_platforms; mpi_platforms; cudampi_platforms]
 for platform in all_platforms
     # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-    if !haskey(platform, "cuda")
+    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
         platform["cuda"] = "none"
     end
 
@@ -173,11 +173,11 @@ for platform in all_platforms
 
     _dependencies = copy(dependencies)
     _sources = copy(sources)
-    if platform["cuda"] != "none" && platform["mpi"] != "none"
+    if ihaskey(platform, "cuda") && platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_dependencies, cudampi_dependencies)
         append!(_dependencies, CUDA.required_dependencies(platform))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
-    elseif platform["cuda"] != "none"
+    elseif haskey(platform, "cuda") && platform["cuda"] != "none"
         append!(_dependencies, CUDA.required_dependencies(platform))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     elseif platform["mpi"] != "none"
