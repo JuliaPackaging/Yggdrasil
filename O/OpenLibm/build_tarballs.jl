@@ -51,6 +51,6 @@ dependencies = [
     BuildDependency("LLVMCompilerRT_jll"; platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                lock_microarchitecture=false, julia_compat="1.6")
