@@ -173,7 +173,7 @@ for platform in all_platforms
 
     _dependencies = copy(dependencies)
     _sources = copy(sources)
-    if ihaskey(platform, "cuda") && platform["cuda"] != "none" && platform["mpi"] != "none"
+    if haskey(platform, "cuda") && platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_dependencies, cudampi_dependencies)
         append!(_dependencies, CUDA.required_dependencies(platform))
         push!(_dependencies, Dependency(PackageSpec(name="CUDA_Driver_jll")))
