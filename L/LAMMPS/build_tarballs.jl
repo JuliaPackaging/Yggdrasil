@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.6.0" # Equivalent to stable_29Aug2024
+version = v"2.6.1" # Equivalent to stable_29Aug2024
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -20,6 +20,7 @@ version = v"2.6.0" # Equivalent to stable_29Aug2024
 # 2.5.1 -- Enables MPI
 # 2.5.2 -- Disables MPI for Windows
 # 2.6.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Aug2024
+# 2.6.1 -- BLAS & Openmp
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -60,6 +61,8 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
     -DBUILD_MPI=${MPI_OPTION} \
+    -DBUILD_OMP=ON \
+    -DUSE_INTERNAL_LINALG=OFF \
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
@@ -113,9 +116,26 @@ products = [
     ExecutableProduct("lmp", :lmp),
 ]
 
-# Dependencies that must be installed before this package can be built
+# Dependencies that must be installed before this package can be built.
+# We require CompilerSupportLibraries for the user to have e.g. libgfortran after
+# installing this package.
+# In addition, we use LLVM OpenMP on BSD systems (OpenBSD & MacOS).
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
+    Dependency(
+        PackageSpec(;
+            name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"
+        ),
+    ),
+    Dependency(
+        PackageSpec(; name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+        platforms=filter(Sys.isbsd, platforms),
+    ),
+    Dependency(
+        PackageSpec(;
+            name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"
+        );
+        compat="5.4",
+    ),
 ]
 append!(dependencies, platform_dependencies)
 
