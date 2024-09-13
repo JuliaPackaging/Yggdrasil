@@ -65,6 +65,7 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
+llvm_version = v"13.0.1+1"
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"10", julia_compat="1.6", augment_platform_block)
+               preferred_gcc_version=v"10", preferred_llvm_version=llvm_version, julia_compat="1.6", augment_platform_block)
