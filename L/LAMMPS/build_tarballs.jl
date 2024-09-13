@@ -52,6 +52,12 @@ else
     MPI_OPTION="ON"
 fi
 
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
+
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
 cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -63,6 +69,8 @@ cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -D
     -DBUILD_MPI=${MPI_OPTION} \
     -DBUILD_OMP=ON \
     -DUSE_INTERNAL_LINALG=OFF \
+    -DBLAS_LIBRARIES="-l${LBT}" \
+    -DLAPACK_LIBRARIES="-l${LBT}" \
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
@@ -136,6 +144,7 @@ dependencies = [
         );
         compat="5.4",
     ),
+    Dependency("FFTW_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
