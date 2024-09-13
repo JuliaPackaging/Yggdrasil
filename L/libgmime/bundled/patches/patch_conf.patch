@@ -1,0 +1,13 @@
+diff --git before/gmime/autogen.sh after/gmime/autogen.sh
+index 4d4a8b8..1e40645 100755
+--- before/gmime/autogen.sh
++++ after/gmime/autogen.sh
+@@ -103,7 +103,7 @@ autoconf || exit $?
+ cd ${ORIGDIR} || exit $?
+ 
+ if test -z "${AUTOGEN_SUBDIR_MODE}" && test -z "${NOCONFIGURE}"; then
+-        ${srcdir}/configure --enable-maintainer-mode ${AUTOGEN_CONFIGURE_ARGS} "$@" || exit $?
++        ${srcdir}/configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_have_iconv_detect_h=yes --enable-maintainer-mode ${AUTOGEN_CONFIGURE_ARGS} "$@" || exit $?
+ 
+         echo 
+         echo "Now type 'make' to compile ${PROJECT}."
