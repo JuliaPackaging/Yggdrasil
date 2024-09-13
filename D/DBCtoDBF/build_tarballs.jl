@@ -1,21 +1,23 @@
+#
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libtakum"
-version = v"0.3.0"
+name = "DBCtoDBF"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/takum-arithmetic/libtakum.git", "f9e72ceed90579dd7187f3a0248ec30590b8a14b")
+    GitSource("https://github.com/lego-yaw/DBCtoDBF.git", "b5333eb8378b5fae64b5de5f827e4335bade35cf")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libtakum
-./configure
-make PREFIX=${prefix} LDCONFIG= -j${nproc} install
-rm -f ${prefix}/lib/libtakum.a ${prefix}/lib/libtakum.lib
+cd $WORKSPACE/srcdir/DBCtoDBF/SRC
+install_license ../LICENSE
+make -j${nproc} CC=${CC}
+install -Dvm 755 "dbc2dbf" "${bindir}/dbc2dbf${exeext}"
+make test
 """
 
 # These are the platforms we will build for by default, unless further
@@ -24,7 +26,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libtakum", :libtakum)
+    ExecutableProduct("dbc2dbf", :dbc2dbf)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -32,4 +34,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")

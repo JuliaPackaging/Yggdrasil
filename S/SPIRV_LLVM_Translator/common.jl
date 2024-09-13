@@ -19,6 +19,9 @@ if llvm_version >= v"15"
     filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 end
 
+# missing LLVM_full
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator

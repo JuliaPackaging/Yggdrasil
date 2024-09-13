@@ -6,7 +6,7 @@ using BinaryBuilderBase: sanitize
 name = "nghttp2"
 version = v"1.63.0"
 
-# Collection of sources required to build LibCURL
+# Collection of sources required to build nghttp2
 sources = [
     GitSource("https://github.com/nghttp2/nghttp2.git",
               "8f44147c385fb1ed93a6f39911eeb30279bfd2dd"),
@@ -46,5 +46,5 @@ dependencies = [
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=llvm_version)
