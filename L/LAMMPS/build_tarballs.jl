@@ -178,7 +178,7 @@ products = [
 # We require CompilerSupportLibraries for the user to have e.g. libgfortran after
 # installing this package.
 # In addition, we use LLVM OpenMP on BSD systems (OpenBSD & MacOS).
-dependencies = [
+dependencies = AbstractDependency[
     Dependency(
         PackageSpec(;
             name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"
