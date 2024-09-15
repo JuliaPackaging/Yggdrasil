@@ -75,8 +75,10 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("XZ_jll"),
     Dependency("Zlib_jll"),
+    BuildDependency(PackageSpec(name="XZ_jll",
+                                uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800",
+                                version=v"5.2.5")),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
                                 version=llvm_version);
