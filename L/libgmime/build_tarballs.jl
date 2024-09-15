@@ -21,7 +21,10 @@ echo '#define ICONV_10646 "UCS-4BE"' >> iconv-detect.h
 export LDFLAGS="-liconv"
 export CMAKE_EXE_LINKER_FLAGS="-Wl,--copy-dt-needed-entries"
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_have_iconv_detect_h=yes
+./configure --prefix=${prefix} \
+            --build=${MACHTYPE} \
+            --host=${target} \
+            ac_cv_have_iconv_detect_h=yes
 make -j${nproc}
 make install
 """
