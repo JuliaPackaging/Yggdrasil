@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.18"
+version = v"0.0.19"
 
 sources = [
   GitSource(repo, "f8bbcb842cfb7dfc2179314e8166896d1b56b850"),
@@ -296,7 +296,7 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
 augment_platform_block="""
     using Base.BinaryPlatforms
-
+    using Libdl
     const Reactant_UUID = Base.UUID("0192cb87-2b54-54ad-80e0-3be72ad8a3c0")
     const preferences = Base.get_preferences(Reactant_UUID)
     Base.record_compiletime_preference(Reactant_UUID, "mode")
@@ -331,7 +331,7 @@ augment_platform_block="""
             platform["mode"] = mode
         end
         	
-	gpu = something(mode_preference, "gpu")
+	gpu = something(gpu_preference, "none")
 
 	cuname = if Sys.iswindows()
             Libdl.find_library("nvcuda")
@@ -351,7 +351,7 @@ augment_platform_block="""
 	    gpu = "cuda"
         end
 	
-	roname = "none"
+	roname = ""
         # if we've found a system driver, put a dependency on it,
         # so that we get recompiled if the driver changes.
         if roname != "" && gpu == "none"

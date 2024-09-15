@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LAMMPS"
-version = v"2.5.1" # Equivalent to stable_2Aug2023_update3
+version = v"2.6.1" # Equivalent to stable_29Aug2024
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -17,7 +17,10 @@ version = v"2.5.1" # Equivalent to stable_2Aug2023_update3
 # 2.4.0 -> https://github.com/lammps/lammps/releases/tag/patch_28Mar2023_update1
 # 2.4.1 -- Enables DPD packages
 # 2.5.0 -> https://github.com/lammps/lammps/releases/tag/stable_2Aug2023_update3
-# 2.5.1 -> Enables MPI
+# 2.5.1 -- Enables MPI
+# 2.5.2 -- Disables MPI for Windows
+# 2.6.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Aug2024
+# 2.6.1 -- BLAS & Openmp
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -27,7 +30,7 @@ version = v"2.5.1" # Equivalent to stable_2Aug2023_update3
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "46265e36ce79e4b42c9e5229b72a0ce2485845cd")
+    GitSource("https://github.com/lammps/lammps.git", "570c9d190fee556c62e5bd0a9c6797c4dffcc271")
 ]
 
 # Bash recipe for building across all platforms
@@ -42,15 +45,32 @@ else
     INSTALL_RPATH=()
 fi
 
+# The MPI enabled LAMMPS_jll doesn't load properly on windows
+if [[ "${target}" == *mingw* ]]; then
+    MPI_OPTION="OFF"
+else
+    MPI_OPTION="ON"
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
+
 cd $WORKSPACE/srcdir/lammps/
 mkdir build && cd build/
 cmake -C ../cmake/presets/most.cmake -C ../cmake/presets/nolib.cmake ../cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     "${INSTALL_RPATH[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DLAMMPS_EXCEPTIONS=ON \
-    -DBUILD_MPI=ON \
+    -DBUILD_MPI=${MPI_OPTION} \
+    -DBUILD_OMP=ON \
+    -DUSE_INTERNAL_LINALG=OFF \
+    -DBLAS_LIBRARIES="-l${LBT}" \
+    -DLAPACK_LIBRARIES="-l${LBT}" \
     -DPKG_EXTRA-FIX=ON \
     -DPKG_ML-SNAP=ON \
     -DPKG_ML-PACE=ON \
@@ -104,9 +124,27 @@ products = [
     ExecutableProduct("lmp", :lmp),
 ]
 
-# Dependencies that must be installed before this package can be built
+# Dependencies that must be installed before this package can be built.
+# We require CompilerSupportLibraries for the user to have e.g. libgfortran after
+# installing this package.
+# In addition, we use LLVM OpenMP on BSD systems (OpenBSD & MacOS).
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll")),
+    Dependency(
+        PackageSpec(;
+            name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"
+        ),
+    ),
+    Dependency(
+        PackageSpec(; name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+        platforms=filter(Sys.isbsd, platforms),
+    ),
+    Dependency(
+        PackageSpec(;
+            name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"
+        );
+        compat="5.4",
+    ),
+    Dependency("FFTW_jll"),
 ]
 append!(dependencies, platform_dependencies)
 
