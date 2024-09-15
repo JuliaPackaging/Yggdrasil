@@ -7,25 +7,36 @@ version = v"0.11.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pierrehirel/atomsk.git", "3333858281e0ebd6279825b83ab871cf4d050a8d")
+    GitSource("https://github.com/pierrehirel/atomsk.git", "84f60a20c5b814fec03bffe1bccc3daaed0fc65d"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/atomsk/src/
-mkdir -p ${bindir}
+cd $WORKSPACE/srcdir/atomsk/src
+sed -i '172s/$/ -I $(OBJ) $(LAPACK)/' Makefile
+sed -i '172s/atomsk.so/\$(libdir)\/libatomsk.$(dlext)/' Makefile
+if [[ "${exext}" == "" ]]; then
+    sed -i '161s/\$(BIN)/\$(bindir)\/atomsk/' Makefile
+else
+    sed -i '161s/\$(BIN)/\$(bindir)\/atomsk.$(exeext)/' Makefile
+fi
+
 # The makefile doesn't handle parallel builds
-make atomsk BIN="atomsk${exeext}"
-make install INSTPATH=${prefix} BIN="atomsk${exeext}"
+mkdir ${bindir}
+make atomsk
+make lib
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-platforms = expand_gfortran_versions(platforms)
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libatomsk", :libatomsk),
     ExecutableProduct("atomsk", :atomsk)
 ]
 
@@ -36,4 +47,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
