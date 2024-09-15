@@ -1,0 +1,24 @@
+diff --git a/src/Makefile b/src/Makefile
+index 9eb21e9..4bff18b 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -31,7 +31,9 @@ export
+ VER="master"
+ 
+ # Name of the final binary
+-BIN=atomsk
++ifndef BIN
++  BIN=atomsk
++endif
+ 
+ # Subdirectory where objects will be stored during compilation
+ OBJ=OBJ
+@@ -169,7 +171,7 @@ atomsk: message modes compute general
+ # Compile the program as a library
+ # Note that the preprocessor must be called (-cpp)
+ lib: message compute modes
+-       $(FORTRAN) $(FFLAGS) -cpp -shared -o atomsk.so $(OBJ)$(SEP)*.o
++       $(FORTRAN) $(FFLAGS) -cpp -shared -o $(libdir)/libatomsk.$(dlext) $(OBJ)$(SEP)*.o -I $(OBJ) $(LAPACK)
+        @echo ""
+        @echo "    \o/ Atomsk was compiled as a shared library file, 'atomsk.so'."
+        @echo ""

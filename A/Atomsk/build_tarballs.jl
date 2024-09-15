@@ -3,23 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "Atomsk"
-version = v"0.11.2"
+version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/pierrehirel/atomsk.git", "84f60a20c5b814fec03bffe1bccc3daaed0fc65d"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/atomsk/src
-sed -i '172s/$/ -I $(OBJ) $(LAPACK)/' Makefile
-sed -i '172s/atomsk.so/\$(libdir)\/libatomsk.$(dlext)/' Makefile
 if [[ "${exext}" == "" ]]; then
-    sed -i '161s/\$(BIN)/\$(bindir)\/atomsk/' Makefile
+    BIN="${bindir}/atomsk"
 else
-    sed -i '161s/\$(BIN)/\$(bindir)\/atomsk.$(exeext)/' Makefile
+    BIN="$(bindir)/atomsk.$(exeext)"
 fi
+cd $WORKSPACE/srcdir/atomsk
+atomic_patch -p1 ../patches/atomsk_locations.patch
+cd src
 
 # The makefile doesn't handle parallel builds
 mkdir ${bindir}
