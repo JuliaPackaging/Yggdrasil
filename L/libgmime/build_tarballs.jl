@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "libgmime"
+name = "gmime"
 version = v"3.2.15"
 
 # Collection of sources required to complete build
@@ -12,16 +12,14 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd gmime-3.2.15/
+cd $WORKSPACE/srcdir/gmime*
 echo '#define ICONV_ISO_INT_FORMAT "iso-%u-%u"' > iconv-detect.h
 echo '#define ICONV_ISO_STR_FORMAT "iso-%u-%s"' >> iconv-detect.h
 echo '#define ICONV_SHIFT_JIS "shift-jis"' >> iconv-detect.h
 echo '#define ICONV_10646 "UCS-4BE"' >> iconv-detect.h
 
-export LDFLAGS="$LDFLAGS -liconv"
-CMAKE_EXE_LINKER_FLAGS="-Wl,--copy-dt-needed-entries"
-export CMAKE_EXE_LINKER_FLAGS
+export LDFLAGS="-liconv"
+export CMAKE_EXE_LINKER_FLAGS="-Wl,--copy-dt-needed-entries"
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_have_iconv_detect_h=yes
 make -j${nproc}
@@ -40,8 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"))
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
+    Dependency(PackageSpec(name="Glib_jll", uuid="7746bdde-850d-59dc-9ae8-88ece973131d"); compat="2.68.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
