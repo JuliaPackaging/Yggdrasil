@@ -8,7 +8,6 @@ version = v"0.11.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/pierrehirel/atomsk.git", "84f60a20c5b814fec03bffe1bccc3daaed0fc65d"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
