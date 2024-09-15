@@ -13,11 +13,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${exext}" == "" ]]; then
-    BIN="${bindir}/atomsk"
-else
-    BIN="$(bindir)/atomsk.$(exeext)"
-fi
 cd $WORKSPACE/srcdir/atomsk
 atomic_patch -p1 ../patches/atomsk_locations.patch
 cd src
