@@ -14,9 +14,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-http
 
-# Patch for MinGW toolchain
-find . -type f -exec sed -i 's/WS2tcpip.h/ws2tcpip.h/g' '{}' \;
-
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_PREFIX_PATH=${prefix} \
