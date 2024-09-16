@@ -14,10 +14,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/atomsk
-if [[ "$nbits" == 32 ]]; then
+if [[ "$nbits" == 32 || "$target" == *apple* ]]; then
     atomic_patch -p1 ../patches/atomsk_32.patch
 else
     atomic_patch -p1 ../patches/atomsk_64.patch
+fi
+if [[ "$target" == *mingw* ]]; then
+    ln -s $prefix/bin/libatomsk.dll $prefix/lib/libatomsk.dll
 fi
 cd src
 
