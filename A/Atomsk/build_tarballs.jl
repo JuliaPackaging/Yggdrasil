@@ -14,7 +14,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/atomsk
-atomic_patch -p1 ../patches/atomsk_locations.patch
+if [[ "$nbits" == 32 ]]; then
+    atomic_patch -p1 ../patches/atomsk_32.patch
+else
+    atomic_patch -p1 ../patches/atomsk_64.patch
+fi
 cd src
 
 # The makefile doesn't handle parallel builds
