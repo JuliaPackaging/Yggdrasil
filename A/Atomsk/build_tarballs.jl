@@ -36,8 +36,6 @@ make atomsk
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
-# Build fails for aarch64 macOS
-platforms = filter(p -> !(occursin("mac",p["os"]) && p["arch"] == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
