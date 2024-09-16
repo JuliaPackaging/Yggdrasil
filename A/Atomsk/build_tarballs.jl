@@ -22,7 +22,9 @@ fi
 cd src
 
 # The makefile doesn't handle parallel builds
-mkdir ${bindir}
+if [[ ! -d "$bindir" ]]; then
+    mkdir ${bindir}
+fi
 make atomsk
 """
 
