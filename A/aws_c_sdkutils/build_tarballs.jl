@@ -28,6 +28,7 @@ cmake --build . -j${nproc} --target install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -36,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.20"),
+    Dependency("aws_c_common_jll"; compat="0.9.28"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
