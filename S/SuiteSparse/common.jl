@@ -116,6 +116,13 @@ else
     )
 fi
 
+BLAS_NAME=blastrampoline
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_LIB=${BLAS_NAME}-5
+else
+    BLAS_LIB=${BLAS_NAME}
+fi
+
 # some of these are not used for a particular builder
 # but most are. BLAS handling is the big one which isn't always used.
 # It's likely easier to keep them in common.jl than add them elsewhere.
@@ -126,7 +133,12 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_STATIC_LIBS=OFF \
       -DBUILD_TESTING=OFF \
-      -DBLA_VENDOR=libblastrampoline \
+      -DBLAS_FOUND=1 \
+      -DBLAS_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+      -DBLAS_LINKER_FLAGS="${BLAS_LIB}" \
+      -DBLA_VENDOR="${BLAS_NAME}" \
+      -DLAPACK_LIBRARIES="${libdir}/lib${BLAS_LIB}.${dlext}" \
+      -DLAPACK_LINKER_FLAGS="${BLAS_LIB}" \
       -DSUITESPARSE_ENABLE_PROJECTS=${PROJECTS_TO_BUILD} \
       -DSUITESPARSE_DEMOS=OFF \
       -DSUITESPARSE_USE_STRICT=ON \
