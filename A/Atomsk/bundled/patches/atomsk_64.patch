@@ -31,7 +31,7 @@ index 9eb21e9..658445a 100644
  # Note that the preprocessor must be called (-cpp)
  lib: message compute modes
 -	$(FORTRAN) $(FFLAGS) -cpp -shared -o atomsk.so $(OBJ)$(SEP)*.o
-+	$(FORTRAN) $(EXEFFLAGS) -Wl,--no-undefined -cpp -shared -o $(libdir)/libatomsk.$(dlext) $(OBJ)$(SEP)*.o $(LAPACK)
++	$(FORTRAN) $(EXEFFLAGS) -cpp -shared -o $(libdir)/libatomsk.$(dlext) $(OBJ)$(SEP)*.o $(LAPACK)
  	@echo ""
  	@echo "    \o/ Atomsk was compiled as a shared library file, 'atomsk.so'."
  	@echo ""
