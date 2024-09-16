@@ -20,7 +20,6 @@ cd src
 # The makefile doesn't handle parallel builds
 mkdir ${bindir}
 make atomsk
-make lib
 """
 
 # These are the platforms we will build for by default, unless further
@@ -28,7 +27,6 @@ make lib
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libatomsk", :libatomsk),
@@ -42,4 +40,9 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+for p in platforms
+println(p)
+build_tarballs(ARGS, name, version, sources, script, [p], products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+end
+exit()
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
