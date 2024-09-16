@@ -64,6 +64,19 @@ index c48ac7c..90ca219 100644
      ENDIF
      !
    ELSE
+diff --git a/src/modes/mode_nye.f90 b/src/modes/mode_nye.f90
+index 4e97da1..de9dba9 100644
+--- a/src/modes/mode_nye.f90
++++ b/src/modes/mode_nye.f90
+@@ -708,7 +708,7 @@ DO iat=1,SIZE(P2,1)
+       ALLOCATE (work_array(MAX(1,LWORK)))
+       ALLOCATE (Stemp(3))
+       !
+-      CALL DGELSS(nb_neigh,3,nb_neigh,Q_matrix,nb_neigh,IdMat,MAX(nb_neigh,3),    &
++      CALL DGELSS_64(nb_neigh,3,nb_neigh,Q_matrix,nb_neigh,IdMat,MAX(nb_neigh,3),    &
+                   & Stemp,-1.d0,Q_matrix_rank,work_array,LWORK,INFO)
+       !
+       IF (INFO.NE.0) THEN
 diff --git a/src/options/disloc_aniso.f90 b/src/options/disloc_aniso.f90
 index 98198e1..65c56b6 100644
 --- a/src/options/disloc_aniso.f90
