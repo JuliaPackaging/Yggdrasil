@@ -28,13 +28,13 @@ cd src
 if [[ ! -d "$bindir" ]]; then
     mkdir ${bindir}
 fi
-make atomsk
+make -j${nproc} tomsk
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = supported_platforms(; experimental=true)
+platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
