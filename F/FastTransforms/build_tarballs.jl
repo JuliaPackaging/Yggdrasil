@@ -2,7 +2,8 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build FastTransforms
 name = "FastTransforms"
-version = v"0.6.3"
+real_version = v"0.6.3"
+version = v"0.6.4"
 sources = [
     GitSource("https://github.com/MikaelSlevinsky/FastTransforms.git", "abd33bc1e99f9e75cff7ade1154ecc2f4cec6a62")
 ]
@@ -10,19 +11,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/FastTransforms/
+export CFLAGS="-O3 "            # space at end
 if [[ ${target} == x86_64-* ]] || [[ ${target} == i686-* ]]; then
     export MSSE=-msse
     export MSSE2=-msse2
     export MAVX=-mavx
+    export MAVX512F=-mavx512f
     export MFMA=-mfma
     if [[ ${target} == *-w64-mingw32 ]]; then
-        export CFLAGS="-O3 -mavx -fno-asynchronous-unwind-tables "
-    else
-        export CFLAGS="-O3 -mavx "
-        export MAVX512F=-mavx512f
+        export CFLAGS="-fno-asynchronous-unwind-tables $CFLAGS"
     fi
-else
-    export CFLAGS="-O3 "
 fi
 if [[ ${nbits} == 64 ]]; then
     SYMBOL_DEFS=()
