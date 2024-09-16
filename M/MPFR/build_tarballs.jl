@@ -2,6 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 using BinaryBuilderBase: sanitize
+using Pkg
 
 name = "MPFR"
 version = v"4.2.1"
