@@ -77,7 +77,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"; compat="5.8.0"),
+    Dependency("libblastrampoline_jll"; compat="^5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     # Need the most recent 3.29.3+1 version (or later) to get libblastrampoline support
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.29.3"))
