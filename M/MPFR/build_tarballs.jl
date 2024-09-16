@@ -40,14 +40,17 @@ products = [
     LibraryProduct("libmpfr", :libmpfr),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
-                                version=v"13.0.1");
+                                version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5", julia_compat="1.6")
+               preferred_gcc_version=v"5", preferred_llvm_version=llvm_version,
+               julia_compat="1.6")
