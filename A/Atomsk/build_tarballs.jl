@@ -28,7 +28,7 @@ cd src
 if [[ ! -d "$bindir" ]]; then
     mkdir ${bindir}
 fi
-make -j${nproc} tomsk
+make -j${nproc} atomsk
 """
 
 # These are the platforms we will build for by default, unless further
