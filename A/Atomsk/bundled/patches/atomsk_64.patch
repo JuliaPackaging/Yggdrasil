@@ -22,7 +22,7 @@ index 9eb21e9..658445a 100644
 -atomsk: message modes compute general
 -	$(FORTRAN) $(FFLAGS) -cpp -o $(BIN) $(OBJ)$(SEP)*.o atomsk.f90 -I $(OBJ) $(LAPACK)
 +atomsk: lib
-+	$(FORTRAN) $(EXEFFLAGS) -cpp -o $(bindir)/atomsk$(exeext) atomsk.f90 -latomsk
++	$(FORTRAN) $(EXEFFLAGS) -cpp -o $(bindir)/atomsk$(exeext) atomsk.f90 $(LDFLAGS) -latomsk
  	@echo ""
  	@echo "    \o/ Compilation was successful!"
  	@echo ""

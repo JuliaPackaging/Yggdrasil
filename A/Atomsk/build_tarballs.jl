@@ -20,7 +20,7 @@ else
     atomic_patch -p1 ../patches/atomsk_64.patch
 fi
 if [[ "$target" == *mingw* ]]; then
-    ln -s $prefix/bin/libatomsk.dll $prefix/lib/libatomsk.dll
+    export LDFLAGS="-L$bindir"
 fi
 cd src
 
@@ -36,6 +36,8 @@ make atomsk
 platforms = supported_platforms(; experimental=true)
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
+# Atomsk is not supported for libgfortran versions less than 5
+platforms = filter(p -> p["libgfortran_version"] == "5.0.0", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -49,5 +51,12 @@ dependencies = [
     Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
 ]
 
+for p in platforms
+if p["os"] != "windows"
+continue
+end
+build_tarballs(ARGS, name, version, sources, script, [p], products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+end
+exit()
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
