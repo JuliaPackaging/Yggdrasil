@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/mona*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
-make install
+make install-strip
 install_license COPYING
 """
 
