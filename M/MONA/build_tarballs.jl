@@ -12,21 +12,41 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd mona-1.4/
+cd $WORKSPACE/srcdir/mona*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = [
+    Platform("i686", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
+    Platform("powerpc64le", "linux"; libc = "glibc"),
+    Platform("i686", "linux"; libc = "musl"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
+    Platform("x86_64", "freebsd"; ),
+    Platform("aarch64", "freebsd"; )
+]
 
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("mona", :mona)
+    LibraryProduct("libmonamem", :libmonamem),
+    LibraryProduct("libmonagta", :libmonagta),
+    LibraryProduct("libmonabdd", :libmonabdd),
+    LibraryProduct("libmonadfa", :libmonadfa),
+    ExecutableProduct("gta2dot", :gta2dot),
+    ExecutableProduct("mona", :mona),
+    ExecutableProduct("dfa2dot", :dfa2dot)
 ]
 
 # Dependencies that must be installed before this package can be built
