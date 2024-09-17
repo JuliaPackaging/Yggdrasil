@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/mona*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
-make install-strip
+make install
 install_license COPYING
 """
 
@@ -40,13 +40,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmonamem", :libmonamem),
-    LibraryProduct("libmonagta", :libmonagta),
-    LibraryProduct("libmonabdd", :libmonabdd),
-    LibraryProduct("libmonadfa", :libmonadfa),
-    ExecutableProduct("gta2dot", :gta2dot),
-    ExecutableProduct("mona", :mona),
-    ExecutableProduct("dfa2dot", :dfa2dot)
+    ExecutableProduct("mona", :mona)
 ]
 
 # Dependencies that must be installed before this package can be built
