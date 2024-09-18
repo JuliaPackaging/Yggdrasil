@@ -11,7 +11,7 @@ sources = [
 # by pointing to the right s2 and abseil paths
 # from the JLLs.
 script = raw"""
-cd ${WORKSPACE}/srcdir/s2geography-*
+cd ${WORKSPACE}/srcdir/s2geography
 atomic_patch -p1 ../patches/msvc_to_win32_target.patch
 mkdir build
 cd build
