@@ -41,7 +41,7 @@ cmake --build build -- -j $nproc
 install -Dvm 755 build/libtorch_c_api.$dlext $libdir/libtorch_c_api.$dlext
 """
 
-platforms = CUDA.supported_platforms(min_version=v"10.2")
+platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11.4")
 
 platforms = expand_cxxstring_abis(platforms)
 
