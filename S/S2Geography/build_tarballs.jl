@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "S2Geography"
 version = v"0.1.2"
 sources = [
-    GitSource("https://github.com/paleolimbot/S2Geography.git", "26b65bb0a60361adfcc72b0ac427302cbf10b040"),
+    GitSource("https://github.com/paleolimbot/s2geography.git", "26b65bb0a60361adfcc72b0ac427302cbf10b040"),
     DirectorySource("./bundled"),
 ]
 
@@ -13,14 +13,13 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/S2Geography
 atomic_patch -p1 ../patches/msvc_to_win32_target.patch
-mkdir build
-cd build
-cmake .. 
-    -DS2GEOGRAPHY_S2_SOURCE=SYSTEM 
-    -DS2GEOGRAPHY_BUILD_TESTS=OFF
-    -DS2GEOGRAPHY_BUILD_EXAMPLES=OFF
+cmake -B build \
+    -DS2GEOGRAPHY_S2_SOURCE=SYSTEM \
+    -DS2GEOGRAPHY_BUILD_TESTS=OFF \
+    -DS2GEOGRAPHY_BUILD_EXAMPLES=OFF \
     -DS2GEOGRAPHY_CODE_COVERAGE=OFF
-cmake --build .
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 platforms = supported_platforms()
@@ -29,14 +28,8 @@ platforms = supported_platforms()
 # platforms are passed in on the command line
 platforms = supported_platforms()
 # The following platforms are also excluded by s2geometry, which we depend on.
-
-# Only 64-bit platforms supported
 filter!(p -> nbits(p) == 64, platforms)
-# We are missing some dependencies (Abseil) for aarch64-freebsd, 
-# can be re-enabled in the future when we have them
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-# Compilation fails for powerpc:
-#     /workspace/srcdir/s2geometry/src/s2/s2edge_crossings.cc:120:31: error: ‘(6.15348059642740421245081038903225e-15l / 5.40431955284459475358983848622456e+16l)’ is not a constant expression
 filter!(p -> arch(p) != "powerpc64le", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
