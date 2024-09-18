@@ -42,9 +42,7 @@ products = [
 	LibraryProduct("libigl", :libigl)
 ]
 
-platforms = supported_platforms()
-
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 dependencies = [
     Dependency("GMP_jll"),
@@ -60,5 +58,5 @@ build_tarballs(ARGS, "libigl", version,
     platforms,
     products,
     dependencies;
-    preferred_gcc_version=v"8", julia_compat="1.6"
+    preferred_gcc_version=v"9", julia_compat="1.6"
 )
