@@ -8,6 +8,7 @@ version = v"0.11.1"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/google/s2geometry.git", "5b5eccd54a08ae03b4467e79ffbb076d0b5f221e"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
