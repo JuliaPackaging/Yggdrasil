@@ -32,7 +32,7 @@ platforms = supported_platforms()
 # Only 64-bit platforms supported
 filter!(p -> nbits(p) == 64, platforms)
 # We are missing some dependencies for aarch64-freebsd, can be re-enabled in the future when we have them
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
