@@ -11,7 +11,7 @@ sources = [
 # by pointing to the right s2 and abseil paths
 # from the JLLs.
 script = raw"""
-cd ${WORKSPACE}/srcdir/S2Geography
+cd ${WORKSPACE}/srcdir/s2geography
 atomic_patch -p1 ../patches/msvc_to_win32_target.patch
 cmake -B build \
     -DS2GEOGRAPHY_S2_SOURCE=SYSTEM \
