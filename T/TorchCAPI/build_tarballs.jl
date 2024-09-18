@@ -1,11 +1,13 @@
 using BinaryBuilder, Pkg
 
+include(joinpath(@__DIR__, "..", "..", "fancy_toys.jl"))
+include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
+
 name = "TorchCAPI"
 version = v"1.10.2"
 
 sources = [
     GitSource("https://github.com/FluxML/Torch.jl.git", "d1711d716c4993ca25e975aad5f7a638cfa7d7c2"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.3.1%2B1/CUDA_full.v11.3.1.x86_64-linux-gnu.tar.gz", "9ae00d36d39b04e8e99ace63641254c93a931dcf4ac24c8eddcdfd4625ab57d6"; unpack_target = "CUDA_full.v11.3"),
 ]
 
 script = raw"""
@@ -36,7 +38,8 @@ configure() {
 }
 configure || configure || configure
 cmake --build build -- -j $nproc
-make install
+
+install -Dvm 755 build/libtorch_c_api.$dlext $libdir/libtorch_c_api.$dlext
 """
 
 platforms = supported_platforms()
@@ -49,7 +52,7 @@ filter!(!Sys.isfreebsd, platforms)
 
 cuda_platforms = [
     Platform("x86_64", "Linux"; cuda = "10.2"),
-    Platform("x86_64", "Linux"; cuda = "11.3"),
+    Platform("x86_64", "Linux"; cuda = "11.4"),
 ]
 for p in cuda_platforms
     push!(platforms, p)
@@ -59,7 +62,7 @@ platforms = expand_cxxstring_abis(platforms)
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 products = [
-    LibraryProduct(["libtch", "tch"], :libtch),
+    LibraryProduct(["libtorch_c_api", "torch_c_api"], :libtorch_c_api),
 ]
 
 dependencies = [
@@ -67,6 +70,14 @@ dependencies = [
     Dependency("CUDNN_jll", v"8.2.4"; compat = "8", platforms = cuda_platforms),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+
+    cuda_deps = CUDA.required_dependencies(platform, static_sdk = true)
+
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; cuda_deps];
     preferred_gcc_version = v"8",
-    julia_compat = "1.6")
+    julia_compat = "1.6",
+    augment_platform_block=CUDA.augment,
+    lazy_artifacts=true)
+end
