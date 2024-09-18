@@ -3,8 +3,8 @@ using BinaryBuilder, Pkg
 name = "Powsybl"
 version = v"0.1"
 sources = [
-    GitSource("https://github.com/powsybl/powsybl.jl.git", "554ae1c7804af8a32a8480c779fb1b0505d112a5"),
-    GitSource("https://github.com/powsybl/pypowsybl.git", "eafe449f246343b5d9aedb9eb2e2757cd9dd76e1")
+    GitSource("https://github.com/powsybl/powsybl.jl.git", "b1f9ec74fc703d85f5d34c8a5f7148a316852f1d"),
+    GitSource("https://github.com/powsybl/pypowsybl.git", "4b2c40531890760872ee85c1b37dc600d6bbfeae")
 ]
 
 julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
@@ -26,7 +26,7 @@ unzip powsybl-java.zip -d $prefix
 
 # Build powsybl-cpp API
 cd pypowsybl/cpp && mkdir build && cd build
-cmake ${WORKSPACE}/srcdir/pypowsybl/cpp/powsybl-cpp -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$prefix/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$prefix/include -DCMAKE_INSTALL_PREFIX=$prefix
+cmake ${WORKSPACE}/srcdir/pypowsybl/cpp/powsybl-cpp -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_PYPOWSYBL_JAVA=OFF -DBUILD_PYTHON_BINDINGS=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$prefix/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$prefix/include -DCMAKE_INSTALL_PREFIX=$prefix
 cmake --build . --target install --config Release
 
 # Build julia wrapper
