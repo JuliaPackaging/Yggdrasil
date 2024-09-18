@@ -14,6 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/s2geometry
+# Upstream PR: https://github.com/google/s2geometry/pull/379
 atomic_patch -p1 ../patches/msvc_to_win32_target.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
