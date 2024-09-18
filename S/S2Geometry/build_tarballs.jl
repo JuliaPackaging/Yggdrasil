@@ -26,15 +26,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-]
+platforms = supported_platforms(; exclude=p -> !((Sys.islinux(p) || Sys.isapple(p)) && nbits(p) == 64))
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -48,4 +40,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
