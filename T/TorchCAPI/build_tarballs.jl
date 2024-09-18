@@ -13,9 +13,10 @@ sources = [
 script = raw"""
 cmake_extra_args=""
 if [[ $bb_full_target == *cuda* ]]; then
-    export PATH=$PATH:$prefix/cuda/bin
     cmake_extra_args+="\
-        -DUSE_CUDA=ON"
+        -DUSE_CUDA=ON \
+        -DCUDA_TOOLKIT_ROOT_DIR=$prefix/cuda \
+        -DCUDA_CUDART_LIBRARY=$libdir/libcudart.$dlext"
 else
     cmake_extra_args+="\
         -DUSE_CUDA=OFF"
@@ -46,7 +47,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency("Torch_jll"; compat = "$version")
+    Dependency("Torch_jll"; compat = "$version"),
+    Dependency("CUDNN_jll", v"8.2.4"; compat = "8"),
 ]
 
 for platform in platforms
