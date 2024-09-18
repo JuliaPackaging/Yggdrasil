@@ -19,6 +19,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_TESTS=OFF \
+    -D_USE_MATH_DEFINES \
     ..
 make -j${nproc}
 make install
