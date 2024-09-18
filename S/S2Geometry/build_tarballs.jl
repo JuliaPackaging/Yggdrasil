@@ -31,10 +31,12 @@ make install
 platforms = supported_platforms()
 # Only 64-bit platforms supported
 filter!(p -> nbits(p) == 64, platforms)
-# We are missing some dependencies (Abseil) for aarch64-freebsd and powerpc, 
+# We are missing some dependencies (Abseil) for aarch64-freebsd, 
 # can be re-enabled in the future when we have them
-filter!(p -> !((Sys.isfreebsd(p) && arch(p) == "aarch64") || arch(p) == "powerpc64le"), platforms)
-# 
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# Compilation fails for powerpc:
+#     /workspace/srcdir/s2geometry/src/s2/s2edge_crossings.cc:120:31: error: ‘(6.15348059642740421245081038903225e-15l / 5.40431955284459475358983848622456e+16l)’ is not a constant expression
+filter!(p -> arch(p) != "powerpc64le", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
