@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -147,7 +147,7 @@ elseif(${S2_SOURCE} STREQUAL "SYSTEM")
+   endif()
+ endif()
+ 
+-if (MSVC AND NOT ${S2_SOURCE} STREQUAL "BUNDLED")
++if (WIN32 AND NOT ${S2_SOURCE} STREQUAL "BUNDLED")
+   # used in s2geometry's CMakeLists.txt but not defined in target
+   target_compile_definitions(s2::s2 INTERFACE _USE_MATH_DEFINES)
+   target_compile_definitions(s2::s2 INTERFACE NOMINMAX)

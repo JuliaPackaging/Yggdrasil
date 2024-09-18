@@ -3,7 +3,8 @@ using BinaryBuilder, Pkg
 name = "S2Geography"
 version = v"0.1.2"
 sources = [
-    GitSource("https://github.com/paleolimbot/S2Geography.git", "26b65bb0a60361adfcc72b0ac427302cbf10b040")
+    GitSource("https://github.com/paleolimbot/S2Geography.git", "26b65bb0a60361adfcc72b0ac427302cbf10b040"),
+    DirectorySource("./bundled"),
 ]
 
 # TODO: fix the build
@@ -11,6 +12,7 @@ sources = [
 # from the JLLs.
 script = raw"""
 cd ${WORKSPACE}/srcdir/s2geography-*
+atomic_patch -p1 ../patches/msvc_to_win32_target.patch
 mkdir build
 cd build
 cmake .. 
