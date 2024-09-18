@@ -13,14 +13,9 @@ sources = [
 script = raw"""
 cmake_extra_args=""
 if [[ $bb_full_target == *cuda* ]]; then
-    export PATH=$PATH:/workspace/srcdir/CUDA_full.v11.3/cuda/bin
+    export PATH=$PATH:$prefix/cuda/bin
     cmake_extra_args+="\
-        -DUSE_CUDA=ON \
-        -DCUDA_TOOLKIT_ROOT_DIR=/workspace/srcdir/CUDA_full.v11.3/cuda \
-        -DCUDA_CUDART_LIBRARY=$libdir/libcudart.$dlext \
-        -DCUDA_cublas_LIBRARY=$libdir/libcublas.$dlext \
-        -DCUDA_cufft_LIBRARY=$libdir/libcufft.$dlext \
-        -DCUDA_curand_LIBRARY=$libdir/libcurand.$dlext"
+        -DUSE_CUDA=ON"
 else
     cmake_extra_args+="\
         -DUSE_CUDA=OFF"
@@ -42,32 +37,16 @@ cmake --build build -- -j $nproc
 install -Dvm 755 build/libtorch_c_api.$dlext $libdir/libtorch_c_api.$dlext
 """
 
-platforms = supported_platforms()
-filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
-filter!(!Sys.iswindows, platforms)
-filter!(p -> arch(p) != "armv6l", platforms)
-filter!(p -> arch(p) != "armv7l", platforms)
-filter!(p -> arch(p) != "powerpc64le", platforms)
-filter!(!Sys.isfreebsd, platforms)
-
-cuda_platforms = [
-    Platform("x86_64", "Linux"; cuda = "10.2"),
-    Platform("x86_64", "Linux"; cuda = "11.4"),
-]
-for p in cuda_platforms
-    push!(platforms, p)
-end
+platforms = CUDA.supported_platforms(min_version=v"10.2")
 
 platforms = expand_cxxstring_abis(platforms)
-cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 products = [
     LibraryProduct(["libtorch_c_api", "torch_c_api"], :libtorch_c_api),
 ]
 
 dependencies = [
-    Dependency("Torch_jll"; compat = "$version"),
-    Dependency("CUDNN_jll", v"8.2.4"; compat = "8", platforms = cuda_platforms),
+    Dependency("Torch_jll"; compat = "$version")
 ]
 
 for platform in platforms
