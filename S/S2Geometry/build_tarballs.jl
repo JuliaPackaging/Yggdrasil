@@ -14,12 +14,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/s2geometry
-atomic_patch -p1 ../patches/disable-s2testing.patch
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES=OFF \
+    -DBUILD_TESTS=OFF \ 
     ..
 make -j${nproc}
 make install
@@ -34,6 +34,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="musl"),
     Platform("aarch64", "linux"; libc="musl"),
     Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
