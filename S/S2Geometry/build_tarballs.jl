@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "S2Geometry"
-version = v"0.9.0"
+version = v"0.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/s2geometry.git", "a4dddf40647c68cd0104eafc31e9c8fb247a6308"),
+    GitSource("https://github.com/google/s2geometry.git", "5b5eccd54a08ae03b4467e79ffbb076d0b5f221e"),
     DirectorySource("./bundled"),
 ]
 
@@ -44,7 +44,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10"),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.15"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
