@@ -18,7 +18,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES=OFF \
-    -DBUILD_TESTS=OFF \ 
+    -DBUILD_TESTS=OFF \
     ..
 make -j${nproc}
 make install
