@@ -19,7 +19,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_TESTS=OFF \
-    -DCMAKE_CXX_STANDARD=17 \ 
     ..
 make -j${nproc}
 make install
@@ -42,4 +41,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version=v"7")
