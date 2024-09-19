@@ -19,10 +19,10 @@ echo '#define ICONV_ISO_STR_FORMAT "iso-%u-%s"' >> iconv-detect.h
 echo '#define ICONV_SHIFT_JIS "shift-jis"' >> iconv-detect.h
 echo '#define ICONV_10646 "UCS-4BE"' >> iconv-detect.h
 
-+if [[ "${target}" == *-apple-* ]]; then
-+   # Help the linker prefer our libiconv over system's libiconv.
-+   export LDFLAGS="-L${libdir}"
-+fi
+if [[ "${target}" == *-apple-* ]]; then
+   # Help the linker prefer our libiconv over system's libiconv.
+   export LDFLAGS="-L${libdir}"
+fi
 
 ./configure --prefix=${prefix} \
             --build=${MACHTYPE} \
