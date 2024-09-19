@@ -48,11 +48,11 @@ products = [
 platforms = expand_cxxstring_abis(supported_platforms())
 
 dependencies = [
-    Dependency("GMP_jll"),
-    Dependency("MPFR_jll"),
+    Dependency("GMP_jll"; compat="6.2.0"),
+    Dependency("MPFR_jll"; compat="4.1.0"),
     BuildDependency("Eigen_jll"),
     BuildDependency("CGAL_jll"),
-    Dependency("ICU_jll")
+    Dependency("ICU_jll"; compat="69.1")
 ]
 
 build_tarballs(ARGS, "libigl", version,
