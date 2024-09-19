@@ -50,8 +50,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 dependencies = [
     Dependency("GMP_jll"),
     Dependency("MPFR_jll"),
-    Dependency("Eigen_jll"),
-    Dependency("CGAL_jll"),
+    BuildDependency("Eigen_jll"),
+    BuildDependency("CGAL_jll"),
     Dependency("ICU_jll")
 ]
 
