@@ -17,7 +17,7 @@ index 8bfd3dba0..d36e8f5ad 100644
    ifneq (,$(findstring darwin,$(host_os)))
      GAC_CFLAGS = -fno-common
 -    GAC_LDFLAGS = -bundle -flat_namespace -bundle_loader $(SYSINFO_GAP)
-+    GAC_LDFLAGS = -bundle -L$(libdir) -lgap
++    GAC_LDFLAGS = -bundle -lgap
    else
      GAC_CFLAGS = -fPIC
      GAC_LDFLAGS = -shared -fPIC
