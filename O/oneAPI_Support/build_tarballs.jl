@@ -1,13 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support"
-version = v"0.5.1"
+version = v"0.5.2"
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
 generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
-              "cfc99dde28eb8c41cdc30347a9859b70a6540d3d")
+              "457e020c7cf2ec56a8098008b6f4a062b69111c7")
 ]
 
 platform_sources = Dict(
