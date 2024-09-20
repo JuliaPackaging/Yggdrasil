@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_mqtt"
-version = v"0.10.4"
+version = v"0.10.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "ed7bbd68c03d7022c915a2924740ab7992ad2311"),
+    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "77d6f00e89b10e3263d8a17576ec8e91c45b4606"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,6 +28,7 @@ cmake --build . -j${nproc} --target install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
