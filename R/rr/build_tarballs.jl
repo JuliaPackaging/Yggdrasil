@@ -8,7 +8,7 @@ version = v"5.8"
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/JuliaLang/rr.git",
-              "14ccee90bf59b9eead214a2b4d30d41328cea8f0")
+              "994b70fd32e39c9bb8a14bed84810676c7f477d0")
 ]
 
 # Bash recipe for building across all platforms
