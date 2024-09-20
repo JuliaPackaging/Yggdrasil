@@ -54,6 +54,7 @@ dependencies = [
     # For the capnp static support library
     BuildDependency("capnproto_jll"),
     Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
