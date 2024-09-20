@@ -7,7 +7,7 @@ version = v"4.4.0"
 
 # Collection of sources required to build pprof
 sources = [
-    GitSource("https://github.com/hjson/hjson-go", hash),
+    GitSource("https://github.com/hjson/hjson-go.git", hash),
 ]
 
 # Bash recipe for building across all platforms
