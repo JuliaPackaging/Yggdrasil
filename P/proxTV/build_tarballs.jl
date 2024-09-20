@@ -31,6 +31,7 @@ install_license ../LICENSE.txt
 """
 
 platforms = supported_platforms()
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
