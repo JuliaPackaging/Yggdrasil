@@ -7,7 +7,8 @@ version = v"1.4.18"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.brics.dk/mona/download/mona-1.4-18.tar.gz", "ece10e1e257dcae48dd898ed3da48f550c6b590f8e5c5a6447d0f384ac040e4c")
+    ArchiveSource("http://www.brics.dk/mona/download/mona-1.4-18.tar.gz",
+                  "ece10e1e257dcae48dd898ed3da48f550c6b590f8e5c5a6447d0f384ac040e4c"),
 ]
 
 # Bash recipe for building across all platforms
