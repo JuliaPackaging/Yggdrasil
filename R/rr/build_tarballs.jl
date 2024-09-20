@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "rr"
-version = v"5.7"
+version = v"5.8"
 
 # Collection of sources required to build rr
 sources = [
     GitSource("https://github.com/JuliaLang/rr.git",
-              "39f8a2923be89e2df2997d85f8ea2574ea1bc203")
+              "994b70fd32e39c9bb8a14bed84810676c7f477d0")
 ]
 
 # Bash recipe for building across all platforms
@@ -54,6 +54,7 @@ dependencies = [
     # For the capnp static support library
     BuildDependency("capnproto_jll"),
     Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 
