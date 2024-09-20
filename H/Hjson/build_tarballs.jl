@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/hjson-go/
+cd $WORKSPACE/srcdir/hjson-go/hjson-cli
 mkdir -p ${bindir}
 go build -o ${bindir}
 """
