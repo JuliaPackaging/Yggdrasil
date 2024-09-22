@@ -3,21 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "Tasmanian"
-version = v"8.0.1"
+version = v"8.0.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/ORNL/TASMANIAN.git", "10a762e036c58b2aee4dbf21137aff8401acf0a3")
+    DirectorySource("./bundled") 
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 apk del cmake
 cd $WORKSPACE/srcdir/TASMANIAN
+
+# ILP64 patches
+if [[ "${target}" == *x86_64-* ]] || [[ "${target}" == *aarch64-* ]]; then
+  atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-add-ILP64-interface-for-Julia-libblasstrampoline.patch
+  cp $WORKSPACE/srcdir/files/tsgJuliaStrampolineWrappers.hpp InterfaceTPL/ 
+fi
+
 mkdir build && cd build
 if [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-lpthread"
 fi
+
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
