@@ -39,6 +39,8 @@ cd $WORKSPACE/srcdir/COMPSs/Bindings/c/
 """
 
 platforms = supported_platforms()
+filter!(==(64) ∘ wordsize, platforms)
+filter!(x -> Sys.isapple(x) || Sys.islinux(x), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = Product[]
