@@ -17,7 +17,7 @@ apk del cmake
 cd $WORKSPACE/srcdir/TASMANIAN
 
 # ILP64 patches
-if [[ "${target}" == *x86_64-* ]] || [[ "${target}" == *aarch64-* ]]; then
+if [[ "${target}" == *x86_64-* ]] ; then
   atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-add-ILP64-interface-for-Julia-libblasstrampoline.patch
   cp $WORKSPACE/srcdir/files/tsgJuliaStrampolineWrappers.hpp InterfaceTPL/ 
 fi
