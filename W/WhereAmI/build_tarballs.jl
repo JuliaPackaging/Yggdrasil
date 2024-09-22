@@ -10,6 +10,7 @@ sources = [
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/whereami/
+mkdir -p "${libdir}"
 cc -Isrc -O2 -std=c99 -fPIC -ldl -shared -o "${libdir}/libwai.${dlext}"
 install -Dvm 644 src/whereami.h "${includedir}/whereami.h"
 install_license LICENSE.MIT
