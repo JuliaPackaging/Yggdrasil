@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "echarts"
+name = "ECharts"
 version = v"5.5.1"
 sources = GitSource[]
 
