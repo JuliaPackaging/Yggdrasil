@@ -18,7 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 
 install_license openssh-*/LICENCE
-PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext})
+PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext} sftp${exeext})
 
 if [[ "${target}" == *-mingw* ]]; then
     cd "${target}/OpenSSH-Win${nbits}"
@@ -58,6 +58,7 @@ platforms = supported_platforms()
 products = [
     ExecutableProduct("ssh", :ssh),
     ExecutableProduct("scp", :scp),
+    ExecutableProduct("sftp", :sftp),
     ExecutableProduct("ssh-agent", :ssh_agent),
     ExecutableProduct("ssh-add", :ssh_add),
     ExecutableProduct("ssh-keygen", :ssh_keygen),
