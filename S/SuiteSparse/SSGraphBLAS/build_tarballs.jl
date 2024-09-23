@@ -22,7 +22,7 @@ CMAKE_OPTIONS+=(
 if [[ "$target" == *-mingw* ]]; then
     CMAKE_OPTIONS+="-DGBNCPUFEAT=1"
 fi
-""" * build_script(true)
+""" * build_script(; use_omp=true)
 
 # The products that we will ensure are always built
 products = [

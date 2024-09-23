@@ -19,7 +19,7 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_UMFPACK=ON
         -DSUITESPARSE_USE_SYSTEM_CHOLMOD=ON
     )
-""" * build_script(true)
+""" * build_script(;use_omp=true)
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
