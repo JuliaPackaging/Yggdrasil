@@ -18,7 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 
 install_license openssh-*/LICENCE
-PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext} sftp${exeext})
+PRODUCTS=(ssh ssh-add ssh-keygen ssh-keyscan ssh-agent scp sftp)
 
 if [[ "${target}" == *-mingw* ]]; then
     cd "${target}/OpenSSH-Win${nbits}"
@@ -46,8 +46,14 @@ else
 fi
 
 for binary in "${PRODUCTS[@]}"; do
-    install -Dvm 0755 $binary ${bindir}/$binary
+    install -Dvm 0755 "${binary}${exeext}" -t "${bindir}"
 done
+if [[ "${target}" == *-mingw* ]]; then
+    # Install also a library needed by the Windows executables.  We do provide
+    # it in OpenSSL_jll, but with a different soname (`libcrypto-3-x64.dll`) and
+    # so it can't be found.
+    install -Dvm 0755 libcrypto.dll -t "${libdir}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -67,8 +73,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("Zlib_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(!Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
