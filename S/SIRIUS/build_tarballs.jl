@@ -9,17 +9,15 @@ name = "SIRIUS"
 version = v"7.6.0"
 
 sources = [
-   GitSource("https://github.com/electronic-structure/SIRIUS/", "21c8fd5019d85ca3181d895e3bc209cb8bba55bb")
+   GitSource("https://github.com/electronic-structure/SIRIUS.git",
+             "21c8fd5019d85ca3181d895e3bc209cb8bba55bb")
 ]
 
 
 script = raw"""
 apk del cmake
 
-cd $WORKSPACE/srcdir
-
-mkdir build
-cd build
+cd $WORKSPACE/srcdir/SIRIUS
 
 #For GSL to be correctly linked to cblas
 export LDFLAGS="-lgsl -lgslcblas -lblastrampoline"
@@ -38,26 +36,6 @@ CMAKE_ARGS="-DSIRIUS_CREATE_FORTRAN_BINDINGS=ON \
             -DMPI_C_COMPILER=$bindir/mpicc \
             -DMPI_CXX_COMPILER=$bindir/mpicxx"
 
-if [[ "${target}" == *-apple-mpich ]]; then
-  CMAKE_ARGS="${CMAKE_ARGS} \
-               -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
-               -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
-               -DMPI_mpicxx_LIBRARY=${libdir}/libmpicxx.dylib \
-               -DMPI_mpi_LIBRARY=${libdir}/libmpi.dylib \
-               -DMPI_pmpi_LIBRARY=${libdir}/libpmpi.dylib \
-               -DMPI_hwloc_LIBRARY=${libdir}/libhwloc.dylib"
-fi
-
-if [[ "${target}" == *-apple-mpitrampoline ]]; then
-  CMAKE_ARGS="${CMAKE_ARGS} \
-               -DMPI_C_LIB_NAMES='mpi;pmpi;hwloc' \
-               -DMPI_CXX_LIB_NAMES='mpicxx;mpi;pmpi;hwloc' \
-               -DMPI_mpicxx_LIBRARY=${libdir}/mpich/lib.libmpicxx.a \
-               -DMPI_mpi_LIBRARY=${libdir}/mpich/lib/libmpi.a \
-               -DMPI_pmpi_LIBRARY=${libdir}/mpich/lib/libpmpi.a \
-               -DMPI_hwloc_LIBRARY=${libdir}/libhwloc.dylib"
-fi
-
 #need to pass various results of CMake's try_run() for MPI compilers for succesful build
 CMAKE_ARGS="${CMAKE_ARGS} -DMPI_RUN_RESULT_C_libver_mpi_normal=0 \
                           -DMPI_RUN_RESULT_C_libver_mpi_normal__TRYRUN_OUTPUT='' \
@@ -68,14 +46,15 @@ CMAKE_ARGS="${CMAKE_ARGS} -DMPI_RUN_RESULT_C_libver_mpi_normal=0 \
                           -DMPI_RUN_RESULT_Fortran_libver_mpi_F08_MODULE=0 \
                           -DMPI_RUN_RESULT_Fortran_libver_mpi_F08_MODULE__TRYRUN_OUTPUT=''"
 
-cmake .. ${CMAKE_ARGS}
+cmake -B build ${CMAKE_ARGS}
 
 #On MacOS, need to explicitly remove the -fallow-argument-mismatch flag, because not recognized by Clang
 if [[ "${target}" == *-apple* ]]; then
-   cmake .. "-DMPI_Fortran_COMPILE_OPTIONS=''"
+   cmake -B build "-DMPI_Fortran_COMPILE_OPTIONS=''"
 fi
 
-make -j${nproc} install
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 augment_platform_block = """
@@ -96,17 +75,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GSL_jll"), 
-    Dependency("pugixml_jll"), 
+    Dependency("GSL_jll"; compat="~2.7.2"),
+    Dependency("pugixml_jll"),
     #Using either MKL or OPENBLAS32
-    Dependency("libblastrampoline_jll"),
-    Dependency("Libxc_jll"), 
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
+    Dependency("Libxc_jll"),
     Dependency("HDF5_jll"),
-    Dependency("spglib_jll"), 
-    Dependency("spla_jll"), 
-    Dependency("SpFFT_jll"), 
-    Dependency("COSTA_jll"), 
-    Dependency("CompilerSupportLibraries_jll"), 
+    Dependency("spglib_jll"),
+    Dependency("spla_jll"),
+    Dependency("SpFFT_jll"),
+    Dependency("COSTA_jll"),
+    Dependency("CompilerSupportLibraries_jll"),
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms)),
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
 ]
@@ -123,4 +102,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"10")
+               augment_platform_block, julia_compat="1.9", preferred_gcc_version = v"10")
