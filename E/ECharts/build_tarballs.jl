@@ -8,7 +8,7 @@ script = "version=$(version)\n" * raw"""
 apk add --update npm
 cd ${prefix}
 npm install echarts@${version}
-install_license ${prefix}/node_modules/echarts/licenses/LICENSE-d3
+install_license ${prefix}/node_modules/echarts/LICENSE
 """
 
 platforms = [AnyPlatform()]
