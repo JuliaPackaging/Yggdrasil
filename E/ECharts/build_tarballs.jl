@@ -13,7 +13,7 @@ npm install echarts@${version}
 platforms = [AnyPlatform()]
 
 products = [
-    FileProduct("node_modules/echarts/dist/src/echarts.js", :echarts),
+    FileProduct("node_modules/echarts/dist/echarts.js", :echarts),
 ]
 
 dependencies = Dependency[]
