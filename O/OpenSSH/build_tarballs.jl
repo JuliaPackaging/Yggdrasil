@@ -48,6 +48,9 @@ fi
 for binary in "${PRODUCTS[@]}"; do
     install -Dvm 0755 $binary ${bindir}/$binary
 done
+if [[ "${target}" == *-mingw* ]]; then
+    install -Dvm 0755 libcrypto.dll -t "${libdir}"
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -67,8 +70,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("Zlib_jll"; platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(!Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
