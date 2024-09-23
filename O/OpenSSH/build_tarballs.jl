@@ -18,7 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 
 install_license openssh-*/LICENCE
-PRODUCTS=(ssh${exeext} ssh-add${exeext} ssh-keygen${exeext} ssh-keyscan${exeext} ssh-agent${exeext} scp${exeext} sftp${exeext})
+PRODUCTS=(ssh ssh-add ssh-keygen ssh-keyscan ssh-agent scp sftp)
 
 if [[ "${target}" == *-mingw* ]]; then
     cd "${target}/OpenSSH-Win${nbits}"
@@ -46,9 +46,12 @@ else
 fi
 
 for binary in "${PRODUCTS[@]}"; do
-    install -Dvm 0755 $binary ${bindir}/$binary
+    install -Dvm 0755 "${binary}${exeext}" -t "${bindir}"
 done
 if [[ "${target}" == *-mingw* ]]; then
+    # Install also a library needed by the Windows executables.  We do provide
+    # it in OpenSSL_jll, but with a different soname (`libcrypto-3-x64.dll`) and
+    # so it can't be found.
     install -Dvm 0755 libcrypto.dll -t "${libdir}"
 fi
 """
