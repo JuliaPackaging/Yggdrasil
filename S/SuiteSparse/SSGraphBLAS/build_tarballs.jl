@@ -37,5 +37,7 @@ dependencies = append!(dependencies, [
 ])
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"9", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, 
+               # REMOVE THIS FILTER for 7.8+
+               filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms), 
+               products, dependencies; preferred_gcc_version=v"9", julia_compat="1.6")

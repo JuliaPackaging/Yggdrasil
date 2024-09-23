@@ -30,5 +30,9 @@ dependencies = append!(dependencies, [
 products = [
     LibraryProduct("libparu", :libparu),
 ]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, 
-               dependencies; julia_compat="1.11",preferred_gcc_version=v"9")
+
+
+build_tarballs(ARGS, name, version, sources, script,
+               # REMOVE THIS FILTER for 7.8+
+               filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms), 
+               products, dependencies; julia_compat="1.11",preferred_gcc_version=v"9")
