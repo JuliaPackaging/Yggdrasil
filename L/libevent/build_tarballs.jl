@@ -20,6 +20,9 @@ cd $WORKSPACE/srcdir/libevent-*
 if [[ "${target}" == aarch64-apple-* ]]; then
     # Build without `-Wl,--no-undefined`
     atomic_patch -p1 ../patches/build_with_no_undefined.patch
+elif [[ "${target}" == *-mingw* ]]; then
+     # Required to find OpenSSL
+     export LDFLAGS="${LDFLAGS} -L${bindir}"
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
