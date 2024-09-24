@@ -50,9 +50,10 @@ dependencies = [
     Dependency(PackageSpec(name="alsa_jll", uuid="45378030-f8ea-5b20-a7c7-1a9d95efb90e"); compat="1.2.12"),
     Dependency(PackageSpec(name="libsamplerate_jll", uuid="9427e74d-4e05-59c1-8ff3-7d74b6e52ac8")),
     Dependency(PackageSpec(name="PulseAudio_jll", uuid="02771fc1-bdb7-5db5-8d11-300768e00fbd")),
-    Dependency("OpenSSL_jll")
+    Dependency("OpenSSL_jll"),
+    Dependency("CompilerSupportLibraries_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"9", clang_use_lld=false)
+               julia_compat="1.6")
