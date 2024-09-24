@@ -44,5 +44,5 @@ dependencies = [Dependency("libcxxwrap_julia_jll", compat="0.11.2"),
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
+               julia_compat="1.7",
                preferred_gcc_version=v"7") # We need C++17 for CxxWrap
