@@ -7,10 +7,10 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-name = "XRootD_cxxwrap"
+name = "Pythia8_cxxwrap"
 version = v"0.1.0"
 
-# Collection of sources required to build XRootD_julia
+# Collection of sources required to build Pythia8_cxxwrap  
 sources = [
     GitSource("https://github.com/peremato/Pythia8_cxxwrap.git",
               "4a444abfaa940e2554971ed58961092aa03bbf4e"),
