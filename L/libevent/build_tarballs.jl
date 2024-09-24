@@ -42,7 +42,7 @@ products_unix = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.12"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"), # Required for aarch64-unknown-freebsd
 ]
 
 include("../../fancy_toys.jl")
