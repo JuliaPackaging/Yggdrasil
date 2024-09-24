@@ -14,11 +14,14 @@ tmux_tag = "$(version.major).$(version.minor)" * (version.patch > 0 ? Char('a' -
 sources = [
     ArchiveSource("https://github.com/tmux/tmux/releases/download/$(tmux_tag)/tmux-$(tmux_tag).tar.gz",
                   "551ab8dea0bf505c0ad6b7bb35ef567cdde0ccb84357df142c254f35a23e19aa"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/tmux-*/
+cd $WORKSPACE/srcdir/tmux-*
+# Needed for 3.4, already fixed on master
+atomic_patch -p1 ../patches/byteorder.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-TERM=screen --enable-utf8proc
 make -j${nproc}
 make install
