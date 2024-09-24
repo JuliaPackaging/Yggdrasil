@@ -8,7 +8,6 @@ version = v"3.7.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/shibatch/sleef.git", "c5494730bf601599a55f4e77f357b51ba590585e"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
