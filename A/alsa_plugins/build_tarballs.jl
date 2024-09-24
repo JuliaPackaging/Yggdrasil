@@ -23,8 +23,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(Sys.islinux, supported_platforms())
-filter!(p -> arch(p) != "armv6l", platforms)
-filter!(p -> libc(p) != "musl", platforms)
+#filter!(p -> arch(p) != "armv6l", platforms)
+#filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -54,4 +54,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version = v"6")
