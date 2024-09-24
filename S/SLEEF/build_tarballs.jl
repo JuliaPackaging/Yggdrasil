@@ -28,12 +28,6 @@ cmake \
 ninja all
 
 cd $WORKSPACE/srcdir/sleef
-if [[ $target == *w64-mingw32* ]]; then
-    atomic_patch -p1 ../patches/lowercase-windows-include.patch
-    atomic_patch -p1 ../patches/cross-compile-mingw-on-unix.patch
-elif [[ $target == arm-* ]]; then
-    atomic_patch -p1 ../patches/arm-neon32vfpv4.patch
-fi
 mkdir build-cross
 cd build-cross
 cmake \
@@ -56,7 +50,7 @@ ninja install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms) # i686-windows build fails
+filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms) # i686-windows build fails
 
 # The products that we will ensure are always built
 products = [
