@@ -12,10 +12,10 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/whereami/
 mkdir -p "${libdir}"
 FLAGS=(-Isrc -O2 -std=c99 -fPIC)
-if [[ "${target}" != *-mingw* ]]; then
+if [[ "${target}" == *-gnu* ]]; then
     FLAGS+=(-ldl)
 fi
-cc ${FLAGS[@]} -shared -o "${libdir}/libwai.${dlext}"
+cc src/whereami.c ${FLAGS[@]} -shared -o "${libdir}/libwai.${dlext}"
 install -Dvm 644 src/whereami.h "${includedir}/whereami.h"
 install_license LICENSE.MIT
 """
