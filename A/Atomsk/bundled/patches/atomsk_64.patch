@@ -21,19 +21,19 @@ index 9eb21e9..658445a 100644
  # Note that the preprocessor must be called (-cpp)
 -atomsk: message modes compute general
 -	$(FORTRAN) $(FFLAGS) -cpp -o $(BIN) $(OBJ)$(SEP)*.o atomsk.f90 -I $(OBJ) $(LAPACK)
-+atomsk: lib
++atomsk: clib
 +	$(FORTRAN) $(EXEFFLAGS) -cpp -o $(bindir)/atomsk$(exeext) atomsk.f90 $(LDFLAGS) -latomsk
  	@echo ""
  	@echo "    \o/ Compilation was successful!"
  	@echo ""
-@@ -169,7 +171,7 @@ atomsk: message modes compute general
- # Compile the program as a library
- # Note that the preprocessor must be called (-cpp)
- lib: message compute modes
+@@ -175,7 +177,7 @@ lib: message compute modes
+ 	@echo ""
+ 
+ clib: message compute modes
 -	$(FORTRAN) $(FFLAGS) -cpp -shared -o atomsk.so $(OBJ)$(SEP)*.o
 +	$(FORTRAN) $(EXEFFLAGS) -cpp -shared -o $(libdir)/libatomsk.$(dlext) $(OBJ)$(SEP)*.o $(LAPACK)
  	@echo ""
- 	@echo "    \o/ Atomsk was compiled as a shared library file, 'atomsk.so'."
+ 	@echo "    \o/ Atomsk was compiled as a shared library file with cbindings, 'atomsk.so'."
  	@echo ""
 diff --git a/src/compute/compute_G.f90 b/src/compute/compute_G.f90
 index fe5294e..34bb4f4 100644
