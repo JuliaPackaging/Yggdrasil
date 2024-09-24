@@ -29,7 +29,7 @@ index 9eb21e9..658445a 100644
 @@ -175,7 +177,7 @@ lib: message compute modes
  	@echo ""
  
- clib: message compute modes
+ clib: message compute modes cbindings
 -	$(FORTRAN) $(FFLAGS) -cpp -shared -o atomsk.so $(OBJ)$(SEP)*.o
 +	$(FORTRAN) $(EXEFFLAGS) -cpp -shared -o $(libdir)/libatomsk.$(dlext) $(OBJ)$(SEP)*.o $(LAPACK)
  	@echo ""
