@@ -20,7 +20,7 @@ const llvm_tags = Dict(
     v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
     v"18.1.7" => "ed30d043a240d06bb6e010a41086e75713156f4f", # julia-18.1.7-2
-    v"19.0.0" => "6c8f4c12da7b3ac3d45e9fc9f68e2da7f559cf76", # julia-release/19.x
+    v"19.0.0" => "376f45c53589090676bdbe7d655813c6d144caaf", # julia-19.1.0
 )
 
 const buildscript = raw"""
@@ -592,8 +592,8 @@ rm -vrf {prefix}/lib/objects-Release
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
-    git_path="https://github.com/Zentrik/llvm-project.git",
-    git_ver="e19e51fde3e16da907bcc201319349f3d0d8a680", custom_name=nothing,
+    git_path="https://github.com/JuliaLang/llvm-project.git",
+    git_ver=llvm_tags[version], custom_name=nothing,
     custom_version=version, static=false, platform_filter=nothing,
     eh_rtti=false, update_sdk=version >= v"15")
     # Parse out some args
