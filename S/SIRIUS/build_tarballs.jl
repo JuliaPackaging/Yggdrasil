@@ -80,7 +80,7 @@ dependencies = [
     #Using either MKL or OPENBLAS32
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("Libxc_jll"),
-    Dependency("HDF5_jll"),
+    Dependency("HDF5_jll"; compat="~1.14.3"),
     Dependency("spglib_jll"),
     Dependency("spla_jll"),
     Dependency("SpFFT_jll"),
@@ -90,13 +90,12 @@ dependencies = [
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
 ]
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline"), platforms) #HDF5 incompatibility with v5.3.1
 
 append!(dependencies, platform_dependencies)
 
