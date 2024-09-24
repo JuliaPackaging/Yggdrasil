@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SLEEF"
-version = v"3.5.2" # This is an unreleased version later than v3.5.1 (the currently latest released version).
+version = v"3.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/shibatch/sleef.git", "e0a003ee838b75d11763aa9c3ef17bf71a725bff"),
+    GitSource("https://github.com/shibatch/sleef.git", "c5494730bf601599a55f4e77f357b51ba590585e"),
     DirectorySource("./bundled"),
 ]
 
@@ -19,9 +19,11 @@ cd build-native
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
     -G Ninja \
-    -DBUILD_TESTS=OFF \
-    -DBUILD_DFT=TRUE \
-    -DBUILD_QUAD=TRUE \
+    -DSLEEF_BUILD_DFT=TRUE \
+    -DSLEEF_BUILD_QUAD=TRUE \
+    -DSLEEF_BUILD_SCALAR_LIB=TRUE \
+    -DSLEEF_BUILD_SHARED_LIBS=TRUE \
+    -DSLEEF_BUILD_TESTS=OFF \
     ..
 ninja all
 
@@ -41,9 +43,11 @@ cmake \
     -G Ninja \
     -DNATIVE_BUILD_DIR=$WORKSPACE/srcdir/sleef/build-native \
     -DSLEEF_SHOW_CONFIG=1 \
-    -DBUILD_TESTS=OFF \
-    -DBUILD_DFT=TRUE \
-    -DBUILD_QUAD=TRUE \
+    -DSLEEF_BUILD_DFT=TRUE \
+    -DSLEEF_BUILD_QUAD=TRUE \
+    -DSLEEF_BUILD_SCALAR_LIB=TRUE \
+    -DSLEEF_BUILD_SHARED_LIBS=TRUE \
+    -DSLEEF_BUILD_TESTS=OFF \
     ..
 ninja all
 ninja install
@@ -52,19 +56,21 @@ ninja install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms) # i686-windows build fails
+# filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms) # i686-windows build fails
 
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libsleef", :libsleef),
+    LibraryProduct("libsleefdft", :libsleefdft),
     LibraryProduct("libsleefquad", :libsleefquad),
+    LibraryProduct("libsleefscalar", :libsleefscalar),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("MPFR_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.10"),
+    Dependency("MPFR_jll"; compat="4.2.1"), # we need 4.2.1 for aarch64-unknown-freebsd
+    Dependency("OpenSSL_jll"; compat="3.0.15"), # we need 3.0.15 for aarch64-unknown-freebsd
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
