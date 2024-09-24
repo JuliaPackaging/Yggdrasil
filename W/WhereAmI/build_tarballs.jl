@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "WhereAmI"
-version = v"2024.8.6"  # no proper versions/releases, this is the date of the commit used
+version = v"1.0.0"  # no proper versions/releases, this is made up
 
 sources = [
     GitSource("https://github.com/gpakosz/whereami",
