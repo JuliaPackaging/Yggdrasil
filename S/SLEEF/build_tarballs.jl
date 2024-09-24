@@ -66,7 +66,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("MPFR_jll"; compat="4.2.1"), # we need 4.2.1 for aarch64-unknown-freebsd
+    Dependency("MPFR_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.15"), # we need 3.0.15 for aarch64-unknown-freebsd
 ]
 
