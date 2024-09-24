@@ -7,7 +7,7 @@ version = v"1.2.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("ftp://ftp.alsa-project.org/pub/plugins/alsa-plugins-1.2.7.1.tar.bz2", "8c337814954bb7c167456733a6046142a2931f12eccba3ec2a4ae618a3432511")
+    ArchiveSource("https://www.alsa-project.org/files/pub/plugins/alsa-plugins-1.2.7.1.tar.bz2", "8c337814954bb7c167456733a6046142a2931f12eccba3ec2a4ae618a3432511")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +22,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(Sys.islinux, supported_platforms(exclude=[Platform("armv6l","linux"),Platform("armv6l","linux",  libc="musl")]))
-
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
