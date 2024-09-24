@@ -23,7 +23,8 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(Sys.islinux, supported_platforms())
-
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> libc(p) != "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
