@@ -12,13 +12,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 gap_version = v"400.1300.100"
 gap_lib_version = v"400.1300.100"
 name = "JuliaInterface"
-upstream_version = "0.9.1" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "0.12.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "aafaa2e48bed14a4997c8a930f77ece2eeddbbfe"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "1123f35f9d46c62c22fed279b2876f4ea6ca9a12"),
 ]
 
 # Bash recipe for building across all platforms
