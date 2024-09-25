@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "XRootD"
-version = v"5.7.1
+version = v"5.7.1"
 
 # Collection of sources required to complete build
 sources = [
