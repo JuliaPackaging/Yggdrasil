@@ -5,9 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
 version_str = "4.2.2"
-version = VersionNumber(version_str)
-
-# build trigger: 1
+version = v"4.2.3"              # We updated the Hwloc compat bounds
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
@@ -130,7 +128,7 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Hwloc_jll"; compat="2.10"),
+    Dependency("Hwloc_jll"; compat="2.11.1"), # We need 2.11.1+1 for aarch64-unknown-freebsd
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                compat="0.1", top_level=true),
 ]
