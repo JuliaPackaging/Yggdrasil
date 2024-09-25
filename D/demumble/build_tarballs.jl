@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "demumble"
-version = v"2.1.9"
+version = v"1.3.0"
 
 sources = [
     GitSource("https://github.com/nico/demumble",
