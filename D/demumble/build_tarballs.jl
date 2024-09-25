@@ -6,11 +6,14 @@ version = v"2.1.9"
 sources = [
     GitSource("https://github.com/nico/demumble",
               "e82c4520107ab87460c92a65d2b0e8b090b3f742"),
+    DirectorySource("./bundled")
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/demumble
 install_license LICENSE
+
+atomic_patch -p1 ../patches/0001-build-system-now-supports-more-build-environments.patch
 
 mkdir build && cd build
 cmake .. \
