@@ -387,7 +387,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms;
                                         MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
 
 # mpitrampoline and libgfortran 3 don't seem to work
-#platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
+platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -398,7 +398,7 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 products = [
     ExecutableProduct("ex4", :ex4)
