@@ -15,7 +15,8 @@ MPICH_compat_version="~4.1.2"
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
-    GitSource("https://gitlab.com/petsc/petsc.git", "9cffe78795669c5fbaf7ca6d864d230635faa5ef"),
+    ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
+                  "4eb1ec04c1a8988bd524f71f8d7d980dc1853d5be8791c0f19f3c09eef71fdd2"),
     DirectorySource("./bundled"),
 ]
 
