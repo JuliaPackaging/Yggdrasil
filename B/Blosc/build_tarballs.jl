@@ -49,7 +49,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Lz4_jll"; compat="1.10.0"),
-    Dependency("Zlib_jll"; compat="1.3.1"),
+    Dependency("Zlib_jll"),
     Dependency("Zstd_jll"; compat="1.5.6"),
 ]
 
