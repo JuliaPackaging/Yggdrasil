@@ -5,18 +5,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.21.4"
-petsc_version = v"3.21.4"
+version = v"3.21.5"
+petsc_version = v"3.21.5"
 
-MPItrampoline_compat_version="5.4.0"
+MPItrampoline_compat_version="5.5.0"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 
 # Collection of sources required to build PETSc. Avoid using the git repository, it will
 # require building SOWING which fails in all non-linux platforms.
 sources = [
-    ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
-    "a9ae076d4617c7d84ce2bed37194022319c19f19b3930edf148b2bc8ecf2248d"),
+    GitSource("https://gitlab.com/petsc/petsc.git", "9cffe78795669c5fbaf7ca6d864d230635faa5ef"),
     DirectorySource("./bundled"),
 ]
 
@@ -30,6 +29,10 @@ apk del cmake
 cd $WORKSPACE/srcdir/petsc*
 atomic_patch -p1 $WORKSPACE/srcdir/patches/petsc_name_mangle.patch
 
+# TODO: MPITrampoline embeds the wrong CC. https://github.com/JuliaPackaging/Yggdrasil/issues/7420
+export MPITRAMPOLINE_CC="$(which $CC)"
+export MPITRAMPOLINE_CXX="$(which $CXX)"
+export MPITRAMPOLINE_FC="$(which $FC)"
 
 if [[ "${target}" == *-mingw* ]]; then
     # On windows, it compiles fine but we obtain a following runtime error:
@@ -384,7 +387,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms;
                                         MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
 
 # mpitrampoline and libgfortran 3 don't seem to work
-platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
+#platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
