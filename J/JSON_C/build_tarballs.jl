@@ -7,7 +7,7 @@ version = v"0.17.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://s3.amazonaws.com/json-c_releases/releases/json-c-0.17.tar.gz", "b8d80a1ddb718b3ba7492916237bbf86609e9709fb007e7f7d4322f02341a4c6")
+    ArchiveSource("https://s3.amazonaws.com/json-c_releases/releases/json-c-0.17.tar.gz", "7550914d58fb63b2c3546f3ccfbe11f1c094147bd31a69dcd23714d7956159e6")
 ]
 
 # Bash recipe for building across all platforms
@@ -33,4 +33,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
