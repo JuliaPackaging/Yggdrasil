@@ -19,7 +19,7 @@ index 1c6d87d5..bd950a93 100644
  
  #ifdef Tasmanian_ENABLE_BLAS
 -#include "tsgBlasWrappers.hpp"
-+#include "tsgJuliaStrampolineWrappers.hpp"
++#include "tsgJuliaTrampolineWrappers.hpp"
  #else
  #include "tsgBlasNull.hpp"
  #endif
