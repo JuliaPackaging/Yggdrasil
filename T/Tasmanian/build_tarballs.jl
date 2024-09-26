@@ -17,10 +17,10 @@ apk del cmake
 cd $WORKSPACE/srcdir/TASMANIAN
 
 # ILP64 patches
-#if [[ "${target}" == *x86_64-* ]] ; then
-#  atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-add-ILP64-interface-for-Julia-libblass#trampoline.patch
-#  cp $WORKSPACE/srcdir/files/tsgJuliaStrampolineWrappers.hpp InterfaceTPL/ 
-#fi
+if [[ "${target}" == *x86_64-* ]] ; then
+  atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-add-ILP64-interface-for-Julia-libblastrampoline.patch
+  cp $WORKSPACE/srcdir/files/tsgJuliaTrampolineWrappers.hpp InterfaceTPL/ 
+fi
 
 mkdir build && cd build
 if [[ "${target}" == *-freebsd* ]]; then
@@ -42,8 +42,8 @@ install_license ../LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = supported_platforms()
-#platforms = expand_cxxstring_abis(platforms)
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
