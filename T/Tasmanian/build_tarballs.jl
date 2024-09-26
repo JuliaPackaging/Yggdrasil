@@ -7,7 +7,7 @@ version = v"8.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ORNL/TASMANIAN.git", "10a762e036c58b2aee4dbf21137aff8401acf0a3")
+    GitSource("https://github.com/ORNL/TASMANIAN.git", "513b72c6b4d808d459a7416834bfb10ec48d5c92")
     DirectorySource("./bundled") 
 ]
 
@@ -44,7 +44,6 @@ install_license ../LICENSE
 # platforms are passed in on the command line
 #platforms = supported_platforms()
 #platforms = expand_cxxstring_abis(platforms)
-platforms = [Platform("x86_64", "macOS")]
 
 # The products that we will ensure are always built
 products = [
