@@ -48,7 +48,7 @@ else
 fi
 """
 
-platforms = supported_platforms(; exclude = p -> !Sys.isunix(p) || Sys.isapple(p))
+platforms = supported_platforms(; exclude = p -> !(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     ExecutableProduct("addr2line", :addr2line),
