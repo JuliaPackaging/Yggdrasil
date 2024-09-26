@@ -3,21 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "JSON_C"
-version = v"0.15.0"
+version = v"0.17.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://s3.amazonaws.com/json-c_releases/releases/json-c-0.15.tar.gz", "b8d80a1ddb718b3ba7492916237bbf86609e9709fb007e7f7d4322f02341a4c6")
+    ArchiveSource("https://s3.amazonaws.com/json-c_releases/releases/json-c-0.17.tar.gz", "b8d80a1ddb718b3ba7492916237bbf86609e9709fb007e7f7d4322f02341a4c6")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd json-c-0.15
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make
-make install
-exit
+cd json-c-0.17
+cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
