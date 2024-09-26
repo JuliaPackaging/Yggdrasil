@@ -1,4 +1,4 @@
-# PETSc 3.21.4 with OpenBLAS and static compilations of SuperLU_Dist, SuiteSparse and MUMPS, triangle and TETGEN on machines that support it
+# PETSc 3.21.5 with OpenBLAS and static compilations of SuperLU_Dist, SuiteSparse and MUMPS, triangle and TETGEN on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -396,10 +396,13 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)),  platforms)
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+# MPICH
+platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p)), platforms)
 
 products = [
     ExecutableProduct("ex4", :ex4)
