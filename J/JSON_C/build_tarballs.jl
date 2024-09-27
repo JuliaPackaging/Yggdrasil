@@ -16,7 +16,8 @@ cd $WORKSPACE/srcdir/json-c-*
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
