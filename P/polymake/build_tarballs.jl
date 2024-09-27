@@ -22,8 +22,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.12"
-version_offset = v"0.0.1"
+upstream_version = v"4.13"
+version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
-                  "18df427e5c165a5b52c72e328de371eab3786626a7ecb2e6049a3de59217f3f8"),
+                  "2bce8b3680ef007c9b760a19821c22f1299403cf5b1c67d1a61d3533e23ac7dc"),
     DirectorySource("./bundled")
 ]
 
@@ -131,6 +131,8 @@ install_license COPYING
 platforms = filter!(p -> !Sys.iswindows(p) &&
                          arch(p) != "armv6l",
                     supported_platforms())
+# filter aarch64 freebsd until supported by all dependencies
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
