@@ -1,4 +1,4 @@
-# PETSc 3.21.5 with OpenBLAS and static compilations of SuperLU_Dist, SuiteSparse and MUMPS, triangle and TETGEN on machines that support it
+# PETSc 3.21.5 with OpenBLAS and static compilations of SuperLU_Dist, SuiteSparse, MUMPS, Hypre, triangle and TetGen on machines that support it
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
@@ -113,7 +113,7 @@ build_petsc()
 
     # A SuperLU_DIST build is (now) available on most systems, but only works for double precision
     USE_SUPERLU_DIST=0    
-    if [ "${1}" == "double" ] &&  [ "${3}" == "Int64" ]; then
+    if [ "${1}" == "double" ]; then
         USE_SUPERLU_DIST=1    
     fi
     if [[ "${target}" == *-mingw* ]]; then
