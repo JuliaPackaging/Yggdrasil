@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.13"
-version_offset = v"0.0.0"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
