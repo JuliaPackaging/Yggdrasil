@@ -13,7 +13,7 @@ version = v"6.0"
 # POCL supports LLVM 14 to 18
 # XXX: link statically to a single version of LLVM instead, and don't use augmentations?
 #      this causes issue with the compile-time link, so I haven't explored this yet
-llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
 
 # Collection of sources required to complete build
 sources = [
