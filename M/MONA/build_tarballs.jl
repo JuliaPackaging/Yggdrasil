@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mona*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc} LDFLAGS="-u guide"
+make -j${nproc} LDFLAGS="-U guide"
 make install
 install_license COPYING
 """
