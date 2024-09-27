@@ -16,7 +16,6 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_COLAMD=ON
         -DSUITESPARSE_USE_SYSTEM_CAMD=ON
         -DSUITESPARSE_USE_SYSTEM_CCOLAMD=ON
-        -DSUITESPARSE_USE_SYSTEM_UMFPACK=ON
         -DSUITESPARSE_USE_SYSTEM_CHOLMOD=ON
     )
 """ * build_script(; use_omp=true) * raw"""
@@ -35,7 +34,5 @@ dependencies = append!(dependencies, [
 products = [
     LibraryProduct("libspex", :libspex),
 ]
-build_tarballs(ARGS, name, version, sources, script, 
-               # REMOVE THIS FILTER for 7.8+
-               filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms), 
+build_tarballs(ARGS, name, version, sources, script, platforms, 
                products, dependencies; julia_compat="1.11",preferred_gcc_version=v"9")
