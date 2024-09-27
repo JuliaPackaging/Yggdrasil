@@ -7,7 +7,7 @@ version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pierrehirel/atomsk.git", "c0997b0a65a75f3bdfc562e5a5b25f3d7b37ef7b"),
+    GitSource("https://github.com/byu-cxi/atomsk.git", "adeb5d5c059a16bf649ab6657cc550b5868fac0b"),
     DirectorySource("./bundled"),
 ]
 
