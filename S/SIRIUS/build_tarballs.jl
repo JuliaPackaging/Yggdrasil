@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "SIRIUS"
-version = v"7.6.0"
+version = v"7.6.1"
 
 sources = [
    GitSource("https://github.com/electronic-structure/SIRIUS.git",
-             "21c8fd5019d85ca3181d895e3bc209cb8bba55bb")
+             "63202622b85f0c5ac5d7a6d66ab21adb6dd573cd")
 ]
 
 
