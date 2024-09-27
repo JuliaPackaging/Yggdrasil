@@ -177,6 +177,12 @@ build_petsc()
         _FOPTFLAGS='-O3' 
     fi
 
+    # hypre
+    USE_HYPRE=0
+    if [ "${1}" == "double" ] ; then
+        USE_HYPRE=1
+    fi
+
     MPI_CC=mpicc
     MPI_FC=mpif90
     MPI_CXX=mpicxx
@@ -198,19 +204,18 @@ build_petsc()
         MPI_CXX=${CXX}
         USE_SUPERLU_DIST=0
         USE_SUITESPARSE=0
+        USE_HYPRE=0
     fi
     if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
         USE_MUMPS=0
     fi
 
-    # triangle, tetgen, hypre
+    # triangle, tetgen
     USE_TRIANGLE=0
     USE_TETGEN=0
-    USE_HYPRE=0
     if [ "${1}" == "double" ] ; then
          USE_TRIANGLE=1
          USE_TETGEN=1
-         USE_HYPRE=1
     fi
 
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
