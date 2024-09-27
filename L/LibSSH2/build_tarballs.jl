@@ -4,7 +4,7 @@ using BinaryBuilderBase: sanitize
 
 name = "LibSSH2"
 # This is a lie, we actually build 1.11.0, but we needed to bump the patch version to change our compat below
-version = v"1.11.1"
+version = v"1.11.2"
 
 # Collection of sources required to build LibSSH2
 sources = [
@@ -64,7 +64,7 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.14", platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
