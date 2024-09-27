@@ -14,8 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mona*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} LDFLAGS="--allow-shlib-undefined"
-make -j${nproc}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+make -j${nproc} LDFLAGS="-undefined dynamic_lookup"
 make install
 install_license COPYING
 """
