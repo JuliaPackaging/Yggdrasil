@@ -130,17 +130,17 @@ build_petsc()
     fi
 
     # See if we can install MUMPS
-    USE_STATIC_MUMPS=0  
+    USE_MUMPS=0  
     if [[ "${target}" == *-mingw* ]]; then
         # try static
-        USE_STATIC_MUMPS=0
+        USE_MUMPS=0
     elif [ "${1}" == "double" ] && [ "${2}" == "real" ]; then 
-        USE_STATIC_MUMPS=1      
+        USE_MUMPS=1      
     else
-        USE_STATIC_MUMPS=0      
+        USE_MUMPS=0      
     fi
     if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
-        USE_STATIC_MUMPS=0
+        USE_MUMPS=0
     fi
 
     LIBFLAGS="-L${libdir}" 
@@ -159,6 +159,7 @@ build_petsc()
     #    # BLAS_LAPACK_LIB="${libdir}/libblastrampoline-5.${dlext}"
     #    BLAS_LAPACK_LIB="${libdir}/libopenblas.${dlext}"            # LBT doesn't seem to work on windows
     #    CLINK_FLAGS=""
+    
     #else
     #    BLAS_LAPACK_LIB="${libdir}/libblastrampoline.${dlext}"
     #    CLINK_FLAGS=""
@@ -189,7 +190,7 @@ build_petsc()
         MPI_FC=${FC}
         MPI_CXX=${CXX}
         USE_SUPERLU_DIST=0
-        USE_STATIC_MUMPS=1
+        USE_MUMPS=1
     elif [[ "${target}" == *-mingw* ]]; then
         # since we don't use MPI on windows
         MPI_CC=${CC}
@@ -199,20 +200,23 @@ build_petsc()
         USE_SUITESPARSE=0
     fi
     if [[ "${target}" == powerpc64le-linux-* ]] || [[ "${target}" == aarch64-linux-* ]] || [[ "${target}" == arm-linux-* ]]; then        
-        USE_STATIC_MUMPS=0
+        USE_MUMPS=0
     fi
 
-    # triangle & tetgen
+    # triangle, tetgen, hypre
     USE_TRIANGLE=0
     USE_TETGEN=0
+    USE_HYPRE=0
     if [ "${1}" == "double" ] ; then
          USE_TRIANGLE=1
          USE_TETGEN=1
+         USE_HYPRE=1
     fi
- 
+
     echo "USE_SUPERLU_DIST="$USE_SUPERLU_DIST
     echo "USE_SUITESPARSE="$USE_SUITESPARSE
-    echo "USE_MUMPS="$USE_STATIC_MUMPS
+    echo "USE_MUMPS="$USE_MUMPS
+    echo "USE_HYPRE="$USE_HYPRE
     echo "USE_TETGEN="$USE_TETGEN
     echo "USE_TRIANGLE="$USE_TRIANGLE
     echo "1="${1}
@@ -266,7 +270,10 @@ build_petsc()
         --download-suitesparse-shared=0 \
         --download-superlu_dist=${USE_SUPERLU_DIST} \
         --download-superlu_dist-shared=0 \
-        --download-mumps=${USE_STATIC_MUMPS} \
+        --download-hypre=${USE_HYPRE} \
+        --download-hypre-shared=0 \
+        --download-hypre-configure-arguments='--host --build' \
+        --download-mumps=${USE_MUMPS} \
         --download-mumps-shared=0 \
         --download-tetgen=${USE_TETGEN} \
         --download-triangle=${USE_TRIANGLE} \
