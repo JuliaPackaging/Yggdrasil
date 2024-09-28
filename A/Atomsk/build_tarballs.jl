@@ -7,28 +7,24 @@ version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/byu-cxi/atomsk.git", "adeb5d5c059a16bf649ab6657cc550b5868fac0b"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/byu-cxi/atomsk.git", "8c02a73ac60ffe8cf56c7459480e79a5ff88485c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/atomsk
-if [[ "$nbits" == 32 || "$target" == *apple* ]]; then
-    atomic_patch -p1 ../patches/atomsk_32.patch
-else
-    atomic_patch -p1 ../patches/atomsk_64.patch
-fi
+
+export ATOMSKLIB=$libdir/libatomsk.$dlext
+export LAPACK=-lopenblas
 if [[ "$target" == *mingw* ]]; then
-    export LDFLAGS="-L$bindir"
+    export LDFLAGS="-L${libdir}"
 fi
 cd src
 
 # The makefile doesn't handle parallel builds
-if [[ ! -d "$bindir" ]]; then
-    mkdir ${bindir}
-fi
-make atomsk
+mkdir -p ${bindir}
+make shared=yes clib
+cp atomsk$exe $bindir
 """
 
 # These are the platforms we will build for by default, unless further
@@ -48,7 +44,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
