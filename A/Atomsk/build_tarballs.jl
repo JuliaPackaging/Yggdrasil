@@ -22,18 +22,17 @@ fi
 cd src
 
 # The makefile doesn't handle parallel builds
-mkdir -p ${bindir}
 make shared=yes clib
-cp atomsk$exe $bindir
+cp atomsk$exeext $bindir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
 # Atomsk is not supported for libgfortran versions less than 5
-platforms = filter(p -> p["libgfortran_version"] == "5.0.0", platforms)
+platforms = filter(p -> libgfortran_version(p) >= v"5", platforms)
 
 # The products that we will ensure are always built
 products = [
