@@ -22,6 +22,7 @@ fi
 cd src
 
 # The makefile doesn't handle parallel builds
+mkdir -p $bindir
 make shared=yes clib
 cp atomsk$exeext $bindir
 """
