@@ -103,7 +103,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 ## Windows support is unmaintained
 filter!(!Sys.iswindows, platforms)
-
+## freebsd-aarch64 doesn't have an LLVM_full_jll build yet
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
