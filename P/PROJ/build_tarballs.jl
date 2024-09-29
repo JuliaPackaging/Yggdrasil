@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "PROJ"
-upstream_version = v"9.4.0"
-version_offset = v"1.0.0"
+upstream_version = v"9.5.0"
+version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
-        "3643b19b1622fe6b2e3113bdb623969f5117984b39f173b4e3fb19a8833bd216")
+        "659af0d558f7c5618c322fde2d3392910806faee8684687959339021fa207d99")
 ]
 
 # Bash recipe for building across all platforms
@@ -64,7 +64,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libproj", "libproj_$(upstream_version.major)_$(upstream_version.minor)"], :libproj),
+    LibraryProduct(["libproj", "libproj_$(upstream_version.major)"], :libproj),
 
     ExecutableProduct("proj", :proj),
     ExecutableProduct("gie", :gie),
