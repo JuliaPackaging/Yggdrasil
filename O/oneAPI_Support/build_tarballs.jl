@@ -125,7 +125,7 @@ mkdir -p ${libdir} ${includedir}
 cp -r include/* ${includedir}
 for lib in sycl svml irng imf intlc pi_level_zero pi_opencl \
            mkl_core mkl_intel_ilp64 mkl_sequential mkl_sycl \
-           mkl_avx mkl_def; do
+           mkl_avx mkl_def intlc; do
     cp -a lib/lib${lib}*.so* ${libdir}
 done
 
