@@ -34,7 +34,7 @@ jobs:
         id: commit_message
       - name: Show git status
         run: git status
-      - uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04 # v4.2.3
+      - uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f # v7.0.5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
