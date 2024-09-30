@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support"
-version = v"0.6.1"
+version = v"0.7.0"
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
 
@@ -144,14 +144,6 @@ ninja -C build -j ${nproc} install
 
 # remove build-time dependencies we don't need
 rm -rf ${includedir}
-
-# XXX: MKL loads libOpenCL.so dynamically, and not by SONAME,
-#      which isn't covered by our OpenCL_jll dependency.
-#      to work around that, provide the actual library.
-#      this does result in two copies of libOpenCL.so loaded,
-#      but that seems to work fine...
-# XXX: have upstream fix this by dlopen'ing by SONAME first
-cp -f $(realpath ${libdir}/libOpenCL.so) ${libdir}/libOpenCL.so
 """
 
 # The products that we will ensure are always built
