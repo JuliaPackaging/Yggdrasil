@@ -254,7 +254,7 @@ build_petsc()
         --FOPTFLAGS=${_FOPTFLAGS}  \
         --with-blaslapack-lib=${BLAS_LAPACK_LIB}  \
         --with-blaslapack-suffix="" \
-        --CFLAGS='-fno-stack-protector '  \
+        --CFLAGS='-fno-stack-protector'  \
         --FFLAGS="${MPI_FFLAGS} ${FFLAGS[*]}"  \
         --LDFLAGS="${LIBFLAGS}"  \
         --CC_LINKER_FLAGS="${CLINK_FLAGS}" \
@@ -301,9 +301,7 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
-    # sed -i -e "s/-lpetsc/-lpetsc_${PETSC_CONFIG}/g" "$libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc"
-    # cp $libdir/petsc/${PETSC_CONFIG}/lib/pkgconfig/petsc.pc ${prefix}/lib/pkgconfig/petsc_${PETSC_CONFIG}.pc
-
+    
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
         # Compile examples (to allow testing the installation). 
@@ -348,7 +346,7 @@ build_petsc()
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "deb" ]; then
         
         # this is the example that PETSc uses to test the correct installation        
-        # We compile it witn debug flags (helpful to catch issues)
+        # We compile it with debug flags (helpful to catch issues)
         workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
         make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
         file=${workdir}/ex19
@@ -408,13 +406,15 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p) == "glibc"), platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)),  platforms)
+
+# this excludes only aarch64-unknown-freebsd;  can be removed once OpenMPI has been built for this platforms.
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)),  platforms)   
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 
 # MPICH
-platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p)), platforms)  # can be removed once MPICH has been built for aarch64-unknown-freebsd
 
 products = [
     ExecutableProduct("ex4", :ex4)
