@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - uses: julia-actions/setup-julia@b315a4d9881690c63d53fc0175b150a3776140bd # v1.9.0
+      - uses: julia-actions/setup-julia@a0a0978e28861c11a3490cee468f87d5b568851a # v2.5.0
         with:
           version: '1.7.3' # Use the version of Julia used on the build machine
           arch: x64
