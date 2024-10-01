@@ -73,7 +73,7 @@ function try_driver(driver, deps)
         exit(0)
     """
     # make sure we don't include any system image flags here since this will cause an infinite loop of __init__()
-    success(`$(Cmd(filter(e -> !startswith(r"-J|--sysimage"), Base.julia_cmd().exec))) --compile=min -t1 --startup-file=no -e $script $driver $deps`)
+    success(`$(Cmd(filter(!startswith(r"-J|--sysimage"), Base.julia_cmd().exec))) --compile=min -t1 --startup-file=no -e $script $driver $deps`)
 end
 
 if can_use_compat && !try_driver(libcuda_compat, libcuda_deps)
