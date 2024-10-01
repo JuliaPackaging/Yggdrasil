@@ -8,7 +8,7 @@ function get_products(platform)
         LibraryProduct(["libcusolver", "cusolver64_11"], :libcusolver),
         LibraryProduct(["libcusolverMg", "cusolverMg64_11"], :libcusolverMg),
         LibraryProduct(["libcurand", "curand64_10"], :libcurand),
-        LibraryProduct(["libcupti", "cupti64_2024.3.1"], :libcupti),
+        LibraryProduct(["libcupti", "cupti64_2024.3.2"], :libcupti),
         LibraryProduct(["libnvperf_host", "nvperf_host"], :libnvperf_host),
         LibraryProduct(["libnvperf_target", "nvperf_target"], :libnvperf_target),
         LibraryProduct(["libnvrtc", "nvrtc64_120_0"], :libnvrtc),
