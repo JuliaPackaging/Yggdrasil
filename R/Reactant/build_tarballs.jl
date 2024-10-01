@@ -30,7 +30,7 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-apk add py3-numpy py3-numpy-dev zlib
+apk add py3-numpy py3-numpy-dev
 
 apk add openjdk11-jdk
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
