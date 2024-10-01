@@ -8,7 +8,8 @@ upstream_version = v"2.15.1"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
-version_offset = v"1.0.0"
+# - We updated the compat bounds
+version_offset = v"1.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -62,9 +63,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Lz4_jll"; compat="1.9.3"),
+    Dependency("Lz4_jll"; compat="1.10.0"),
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"; compat="1.5.0"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
