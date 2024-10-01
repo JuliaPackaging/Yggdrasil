@@ -87,6 +87,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
+# Use GCC 10 to avoid compile errors on Windows
 build_tarballs(ARGS, name, version, sources, script, platforms,
-               products, dependencies; preferred_gcc_version=v"9",
+               products, dependencies; preferred_gcc_version=v"10",
                julia_compat="1.6")
