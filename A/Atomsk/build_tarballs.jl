@@ -7,7 +7,7 @@ version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/byu-cxi/atomsk.git", "8c02a73ac60ffe8cf56c7459480e79a5ff88485c"),
+    GitSource("https://github.com/pierrehirel/atomsk.git", "258c75779adc828a947c8366012f75a66d3b8c5e"),
 ]
 
 # Bash recipe for building across all platforms
