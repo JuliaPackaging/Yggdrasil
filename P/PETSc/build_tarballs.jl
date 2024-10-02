@@ -369,8 +369,8 @@ build_petsc()
                 mv $file ${file}${exeext}
             fi
         fi
-        mv ${file}${exeext} ${file}_int64_deb${exeext}
-        install -Dvm 755 ${workdir}/ex19_int64_deb${exeext} "${bindir}/ex19_int32_deb${exeext}"
+        mv ${file}${exeext} ${file}_int32${exeext}
+        install -Dvm 755 ${workdir}/ex19_int32${exeext} "${bindir}/ex19_int32${exeext}"
 
     fi
 
@@ -435,6 +435,7 @@ products = [
     ExecutableProduct("ex42", :ex42)
     ExecutableProduct("ex19", :ex19)
     ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
+    ExecutableProduct("ex19_int32", :ex19_int32)
 
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
