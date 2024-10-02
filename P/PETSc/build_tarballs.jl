@@ -8,18 +8,16 @@ name = "PETSc"
 version = v"3.21.5"
 petsc_version = v"3.21.5"
 
-MPItrampoline_compat_version="~5.5.0"
+MPItrampoline_compat_version="5.5.0"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 
-# Collection of sources required to build PETSc. Avoid using the git repository, it will
-# require building SOWING which fails in all non-linux platforms.
+# Collection of sources required to build PETSc.
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
                   "4eb1ec04c1a8988bd524f71f8d7d980dc1853d5be8791c0f19f3c09eef71fdd2"),
     DirectorySource("./bundled"),
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -88,7 +86,7 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch     
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 
 mkdir $libdir/petsc
@@ -301,7 +299,6 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
-    
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
         # Compile examples (to allow testing the installation). 
@@ -408,13 +405,13 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
 
 # this excludes only aarch64-unknown-freebsd;  can be removed once OpenMPI has been built for this platforms.
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)),  platforms)   
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p) && arch(p) == "aarch64"),  platforms)   
 
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl" ), platforms)
 
 # MPICH
-platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p)), platforms)  # can be removed once MPICH has been built for aarch64-unknown-freebsd
+platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)  # can be removed once MPICH has been built for aarch64-unknown-freebsd
 
 products = [
     ExecutableProduct("ex4", :ex4)
