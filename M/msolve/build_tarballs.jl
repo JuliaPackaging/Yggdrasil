@@ -3,11 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "msolve"
-version = v"0.6.5"
+upstream_version = v"0.7.2"
+
+version_offset = v"0.0.0"
+version = VersionNumber(upstream_version.major*100+version_offset.major,
+                        upstream_version.minor*100+version_offset.minor,
+                        upstream_version.patch*100+version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/algebraic-solving/msolve.git", "5e72b9d99eaea55fe87eb8ac945ec9e914a69327")
+    GitSource("https://github.com/algebraic-solving/msolve.git", "105cca60f61bf2945408ecbebacc49a529cf6101")
 ]
 
 # Bash recipe for building across all platforms
@@ -23,6 +28,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) 
 filter!(!Sys.iswindows, platforms)  # no FLINT_jll available
 # At the moment we cannot add optimized versions for specific architectures
 # since the logic of artifact selection when loading the package is not
@@ -38,7 +44,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
-    Dependency("FLINT_jll", compat = "~200.900.000"),
+    Dependency("FLINT_jll", compat = "~300.100.300"),
     Dependency("MPFR_jll", v"4.1.1"),
 
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
@@ -48,4 +54,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+  julia_compat="1.6", preferred_gcc_version = v"6")

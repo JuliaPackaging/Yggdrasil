@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "OpenJpeg"
-version = v"2.5.0"
+version = v"2.5.2"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/uclouvain/openjpeg.git",
-              "a5891555eb49ed7cc26b2901ea680acda136d811"),
+              "39e8c50a2f9bdcf36810ee3d41bcbf1cc78968ae"),
     DirectorySource("./bundled")
 ]
 
@@ -40,8 +40,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LittleCMS_jll")
-    Dependency("libpng_jll")
+    Dependency("LittleCMS_jll"; compat="2.15.0")
+    Dependency("libpng_jll"; compat="1.6.38")
     Dependency("Libtiff_jll"; compat="4.5.1")
 ]
 

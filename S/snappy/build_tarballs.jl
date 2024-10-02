@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "snappy"
-version = v"1.2.0"
+version = v"1.2.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/google/snappy.git",
-              "23b3286820105438c5dbb9bc22f1bb85c5812c8a"),
+              "2c94e11145f0b7b184b831577c93e5a41c4c0346"),
 ]
 
 # Bash recipe for building across all platforms

@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "OpenCL"
-version = v"2023.12.14"
+version = v"2024.05.08"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KhronosGroup/OpenCL-ICD-Loader.git", "229410f86a8c8c9e0f86f195409e5481a2bae067"),
+    GitSource("https://github.com/KhronosGroup/OpenCL-ICD-Loader.git",
+              "861b68b290e76d08e7241608479c16431f529945"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,20 +26,26 @@ cmake -DCMAKE_PREFIX_PATH=${prefix} \
 cmake --build ./OpenCL-ICD-Loader/build --target install -j${nproc}
 """
 
+# OpenCL drivers need to be registered by setting an envirnoment variable,
+# so we provide an array to store the drivers globally in a central place.
+init_block = raw"""
+global drivers = String[]
+"""
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libOpenCL", :libopencl)
+    LibraryProduct(["libOpenCL", "OpenCL"], :libopencl)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2023.12.14"))
+    BuildDependency(PackageSpec(; name="OpenCL_Headers_jll", version=v"2024.05.08"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"6.1.0")
+               julia_compat="1.6", preferred_gcc_version = v"6.1.0", init_block)

@@ -3,15 +3,14 @@
 using BinaryBuilder
 
 name = "LAME"
-version = v"3.100"
+version_string = "3.100"
+version = v"3.100.2"
 
 # Collection of sources required to build liblame
 sources = [
-    ArchiveSource("https://downloads.sourceforge.net/project/lame/lame/$(version.major).$(version.minor)/lame-$(version.major).$(version.minor).tar.gz",
+    ArchiveSource("https://downloads.sourceforge.net/project/lame/lame/$(version_string)/lame-$(version_string).tar.gz",
                   "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e"),
 ]
-
-version = v"3.100.1" # <--- This version number is a lie to build for experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -28,7 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

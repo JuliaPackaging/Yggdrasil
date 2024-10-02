@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Wayland"
-version = v"6.5.2"
+version = v"6.7.1"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
@@ -13,7 +13,7 @@ const host_build = false
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtwayland-everywhere-src-$version.tar.xz",
-                  "3020be86fb7fd0abb8509906ca6583cadcaee168159abceaeb5b3e9d42563c9a"),
+                  "7ef176a8e701c90edd8e591dad36f83c30d623ef94439ff62cafcffd46a83d20"),
 ]
 
 script = raw"""

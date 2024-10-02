@@ -22,7 +22,7 @@ steps:
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 20
     env:
-      JULIA_PKG_SERVER: pkg.julia.csail.mit.edu
+      JULIA_PKG_SERVER: us-east.pkg.julialang.org
       # Use eager registry to not have to wait for updates of the conservative registry
       JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
       # Forward JOB_ID_SECRET

@@ -71,7 +71,7 @@ linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
     Dependency("Glib_jll"),
-    Dependency("Pixman_jll"),
+    Dependency("Pixman_jll"; compat="0.43.4"),
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.13.1"),

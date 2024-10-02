@@ -22,8 +22,8 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.11"
-version_offset = v"0.0.3"
+upstream_version = v"4.13"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -31,7 +31,7 @@ version = VersionNumber(upstream_version.major*100+version_offset.major,
 # Collection of sources required to build polymake
 sources = [
     ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
-                  "a02c4a737271c2ffb5b2fcfed5a6fde5bc417c9eb1b92c29f25a17f3b037a838"),
+                  "2bce8b3680ef007c9b760a19821c22f1299403cf5b1c67d1a61d3533e23ac7dc"),
     DirectorySource("./bundled")
 ]
 
@@ -131,6 +131,8 @@ install_license COPYING
 platforms = filter!(p -> !Sys.iswindows(p) &&
                          arch(p) != "armv6l",
                     supported_platforms())
+# filter aarch64 freebsd until supported by all dependencies
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -154,13 +156,13 @@ dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("FLINT_jll", compat = "~300.100.300"),
-    Dependency("MongoC_jll", compat = "~1.19.1"),
+    Dependency("MongoC_jll", compat = "~1.25.1"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.1"),
     Dependency("SCIP_jll", compat = "~800.0.301"),
     Dependency("bliss_jll", compat = "~0.77.0"),
     Dependency("boost_jll", compat = "=1.76.0"),
-    Dependency("cddlib_jll", compat = "~0.94.13"),
+    Dependency("cddlib_jll", compat = "~0.94.14"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
     Dependency("normaliz_jll", compat = "~300.1000.200"),
 ]

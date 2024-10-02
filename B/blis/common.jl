@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-version = v"0.9.0"
+version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "14c86f66b20901b60ee276da355c1b62642c18d2"),
+    GitSource("https://github.com/flame/blis.git", "6d0ab74f6975fdf4d19cee06d946b09b6ca89656"),
     DirectorySource("../bundled")
 ]
 
@@ -75,26 +75,22 @@ function blis_script(;blis32::Bool=false)
     # For 64-bit builds, add _64 suffix to exported BLAS routines.
     # This corresponds to ILP64 handling of OpenBLAS thus Julia.
     if [[ ${nbits} == 64 ]] && [[ "${BLIS32}" != "true" ]]; then
-        patch frame/include/bli_macro_defs.h < ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
-        patch frame/compat/cblas/src/cblas_f77.h < ${WORKSPACE}/srcdir/patches/cblas_f77suffix64.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/bli_macro_defs.h.f77suffix64.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cblas_f77suffix64.patch
     fi
 
     # Include A64FX in Arm64 metaconfig.
     if [ ${BLI_CONFIG} = arm64 ]; then
         # Add A64FX to the registry.
-        patch config_registry < ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
+        patch config_registry ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
 
         # Unscreen Arm SVE code for metaconfig.
-        patch kernels/armsve/bli_kernels_armsve.h \
-            < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
-        patch kernels/armsve/1m/old/bli_dpackm_armsve512_int_12xk.c \
-            < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
-        patch kernels/armsve/1m/bli_dpackm_armsve256_int_8xk.c \
-            < ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve512_int_12xk.patch
+        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve256_int_8x10.patch
 
         # Screen out A64FX sector cache.
-        patch config/a64fx/bli_cntx_init_a64fx.c \
-            < ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
+        patch config/a64fx/bli_cntx_init_a64fx.c ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
     fi
 
     # Import libblastrampoline-style nthreads setter.

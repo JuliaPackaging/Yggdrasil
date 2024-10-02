@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "Qt65Compat"
-version = v"6.5.2"
+version = v"6.7.1"
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qt5compat-everywhere-src-$version.tar.xz",
-                  "b9abe42ee2055c27a8e7579c7816069e91aae1f9b10649bf572db8ba96fa91c4"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                  "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
+                  "41c4bbe419158fc170ee3ef3ecffead506e70802109deec036d86e4244086009"),
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
+                  "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
 ]
@@ -62,15 +62,16 @@ case "$bb_full_target" in
     ;;
 
     *apple-darwin*)
-        apple_sdk_root=$WORKSPACE/srcdir/MacOSX11.1.sdk
+        apple_sdk_root=$WORKSPACE/srcdir/MacOSX13.3.sdk
         sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-        cmake -DQT_HOST_PATH=$host_prefix \
+        cmake -G Ninja -DQT_HOST_PATH=$host_prefix \
         -DPython_ROOT_DIR=/usr \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_PREFIX_PATH=$host_prefix \
         -DCMAKE_FIND_ROOT_PATH=$prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
+        -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
+        -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
         -DCMAKE_BUILD_TYPE=Release \
         $qtsrcdir
     ;;

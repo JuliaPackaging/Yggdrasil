@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ColPack"
-version = v"0.3.0"
+version = v"0.4.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/michel2323/ColPack.git", "b22020d3915abc06753fafe7005e539f11d46924")
+    GitSource("https://github.com/amontoison/ColPack.git", "d873bad2a269355ccf30924ad18bd53a6abfe590")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,11 +15,21 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd ColPack/build/automake/
 autoreconf -vif
+
 mkdir build
-cd build/
-../configure --disable-examples --disable-openmp --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
+cd build
+../configure --enable-examples --build=${MACHTYPE} --host=${target}
 make -j${nproc}
-make install
+
+mkdir -p ${bindir}
+cp ColPack${exeext} ${bindir}/ColPack${exeext}
+
+if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
+    LDFLAGS=-lomp
+else
+    LDFLAGS=-lgomp
+fi
+${CXX} -shared $(flagon -Wl,--whole-archive) libcolpack.a $(flagon -Wl,--no-whole-archive) ${LDFLAGS} -o ${libdir}/libcolpack.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -29,13 +39,17 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libColPack", :libcolpack)
+    LibraryProduct("libcolpack", :libcolpack),
+    ExecutableProduct("ColPack", :ColPack)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", clang_use_lld=false)

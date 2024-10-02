@@ -7,8 +7,7 @@ version = v"0.1.21"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-iot.git",
-              "b3fe015865d7ead9fe7c9df8f8c6b38c37a51f00"),
+    GitSource("https://github.com/awslabs/aws-c-iot.git", "b3fe015865d7ead9fe7c9df8f8c6b38c37a51f00"),
 ]
 
 # Bash recipe for building across all platforms

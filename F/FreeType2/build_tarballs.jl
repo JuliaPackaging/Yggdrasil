@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "FreeType2"
-version = v"2.13.1"
+version = v"2.13.2"
 
 # Collection of sources required to build FreeType2
 sources = [
     ArchiveSource("https://download.savannah.gnu.org/releases/freetype/freetype-$(version).tar.xz",
-                  "ea67e3b019b1104d1667aa274f5dc307d8cbd606b399bc32df308a77f1a564bf")
+                  "12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d")
 ]
 
 # Bash recipe for building across all platforms

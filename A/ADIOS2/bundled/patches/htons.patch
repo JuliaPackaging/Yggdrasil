@@ -16,11 +16,13 @@ diff --git a/thirdparty/ffs/ffs/fm/fm_formats.c b/thirdparty/ffs/ffs/fm/fm_forma
 index 83414a45a..3243d9991 100755
 --- a/thirdparty/ffs/ffs/fm/fm_formats.c
 +++ b/thirdparty/ffs/ffs/fm/fm_formats.c
-@@ -12,6 +12,7 @@
+@@ -12,6 +12,9 @@
  #include <string.h>
  #endif
  #include <sys/types.h>
++#ifndef _WIN32
 +#include <arpa/inet.h>
++#endif
  #ifdef HAVE_NETINET_IN_H
  #include <netinet/in.h>
  #endif

@@ -6,10 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.3"
+version = v"0.0.19"
 
 sources = [
-   GitSource(repo, "deee3bf8ee4f627ef9563265d7f4b0530154a745"),
+  GitSource(repo, "f8bbcb842cfb7dfc2179314e8166896d1b56b850"),
+  ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
+                "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,32 +27,71 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+apk add py3-numpy py3-numpy-dev zlib
+
+apk add openjdk11-jdk
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-apk add py3-numpy py3-numpy-dev
+apk add openjdk11-jdk
+# apk add openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
+export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
 
-#mkdir -p .julia
-#cd .julia
+mkdir -p .local/bin
+export LOCAL="`pwd`/.local/bin"
+export PATH="$LOCAL:$PATH"
 
-#export JULIA_PATH=/usr/local/julia
-#export PATH=$JULIA_PATH/bin:$PATH
+# wget https://github.com/wsmoses/artifacts/releases/download/tmp/bazel6-6.5.0-r0.apk
+# apk add --allow-untrusted *.apk
+# rm *.apk
 
-#	wget -O julia.tar.gz "https://julialang-s3.julialang.org/bin/musl/x64/1.8/julia-1.8.5-musl-x86_64.tar.gz"
-	
-#	mkdir -p "$JULIA_PATH"; 
-#	tar -xzf julia.tar.gz -C "$JULIA_PATH" --strip-components 1; 
-#	rm julia.tar.gz; 
+# pushd $WORKSPACE/srcdir/bazel-dist
+# mkdir op
+# env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --help --output_user_root=/workspace/bazel_root" bash ./compile.sh
+# mv output/bazel $LOCAL/bazel
+# popd
 
-# cd ..
+env
+
+pushd $WORKSPACE/srcdir/bazel-dist
+PBAZEL_FLAGS=()
+PBAZEL_BUILD_FLAGS+=(--host_cpu=k8)
+PBAZEL_BUILD_FLAGS+=(--cpu=k8)
+PBAZEL_BUILD_FLAGS+=(--verbose_failures)
+PBAZEL_BUILD_FLAGS+=(--spawn_strategy=local)
+PBAZEL_BUILD_FLAGS+=(--repo_env=LD_LIBRARY_PATH)
+PBAZEL_BUILD_FLAGS+=(--action_env=LD_LIBRARY_PATH)
+PBAZEL_BUILD_FLAGS+=(--host_action_env=LD_LIBRARY_PATH)
+PBAZEL_BUILD_FLAGS+=(--javacopt="-XepDisableAllChecks")
+mv /usr/lib/libstdc++.so.6 /usr/lib/libstdc++.so.6.old
+mv /usr/lib/libgcc_s.so.1  /usr/lib/libgcc_s.so.1.old
+cp /usr/lib/csl-musl-x86_64/libstdc++.so.6 /usr/lib/libstdc++.so.6
+cp /usr/lib/csl-musl-x86_64/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
+# sed -E -i 's/public final/@Immutable\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
+sed -E -i 's/public final/@SuppressWarnings("Immutable")\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
+CC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM bazel --output_user_root=$WORKSPACE/pbazel_root build --jobs ${nproc} ${PBAZEL_BUILD_FLAGS[@]} --sandbox_debug //src:bazel-dev
+export BAZEL=$WORKSPACE/srcdir/bazel-dist/bazel-bin/src/bazel-dev
+rm /usr/lib/libstdc++.so.6
+rm /usr/lib/libgcc_s.so.1
+mv /usr/lib/libstdc++.so.6.old /usr/lib/libstdc++.so.6
+mv /usr/lib/libgcc_s.so.1.old  /usr/lib/libgcc_s.so.1
+popd
+
+ln -s `which ar` /usr/bin/ar
 
 mkdir .bazhome
 export HOME=`pwd`/.bazhome
 
+mkdir .tmp
+export TMPDIR=`pwd`/.tmp
+export TMP=$TMPDIR
+export TEMP=$TMPDIR
 export BAZEL_CXXOPTS="-std=c++17"
 BAZEL_FLAGS=()
-BAZEL_BUILD_FLAGS=()
+BAZEL_BUILD_FLAGS=(-c $MODE)
 
 # don't run out of temporary space
-BAZEL_FLAGS+=(--output_user_root=/workspace/bazel_root)
+BAZEL_FLAGS+=(--output_user_root=$WORKSPACE/bazel_root)
+BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
+# BAZEL_FLAGS+=(--extra_toolchains=@local_jdk//:all)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
@@ -72,6 +113,7 @@ BAZEL_BUILD_FLAGS+=(--define=grpc_no_ares=true)
 BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
     
+BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
@@ -86,16 +128,16 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--apple_platform_type=macos)
     BAZEL_BUILD_FLAGS+=(--define=no_nccl_support=true)
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
-    BAZEL_BUILD_FLAGS+=(--@tsl//tsl/framework/contraction:disable_onednn_contraction_kernel=True)
+    BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
     
-	pushd $WORKSPACE/srcdir/llvm*
+    pushd $WORKSPACE/srcdir/llvm*
 	mkdir build
 	cd build
 	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
 	ninja lld
 	export LLD2=`pwd`/bin/ld64.lld
 	popd
-    
+
 	if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
         BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
@@ -108,6 +150,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
         BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     fi
+    BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
@@ -119,6 +162,25 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--test_env=MACOSX_DEPLOYMENT_TARGET=10.14)
     BAZEL_BUILD_FLAGS+=(--incompatible_remove_legacy_whole_archive)
     BAZEL_BUILD_FLAGS+=(--nolegacy_whole_archive)
+fi
+
+
+if [[ "${bb_full_target}" == *linux* ]]; then
+    sed -i "s/getopts \\"/getopts \\"p/g" /sbin/ldconfig
+    mkdir -p .local/bin
+    echo "#!/bin/sh" > .local/bin/ldconfig
+    echo "" >> .local/bin/ldconfig
+    chmod +x .local/bin/ldconfig
+    export PATH="`pwd`/.local/bin:$PATH"
+    BAZEL_BUILD_FLAGS+=(--copt=-Wno-error=cpp)
+fi
+
+if [[ "${bb_full_target}" == *cuda* ]]; then
+    BAZEL_BUILD_FLAGS+=(--config=cuda)
+fi
+
+if [[ "${bb_full_target}" == *rocm* ]]; then
+    BAZEL_BUILD_FLAGS+=(--config=rocm)
 fi
 
 if [[ "${bb_full_target}" == *freebsd* ]]; then
@@ -136,25 +198,30 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-# julia --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\", rev=\"vc/cxx_parse2\")"
-BAZEL_BUILD_FLAGS+=(--action_env=JULIA=julia)
-bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
+# $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
+BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
+$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
-	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-	sed -i.bak1 "/whole-archive/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	sed -i.bak0 "/lld/d" bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "-fuse-ld=lld" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	cat bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	$CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
-	# $CC @bazel-out/k8-opt/bin/libReactantExtra.so-2.params
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
+    sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
+	echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
+	echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
+	cat bazel-bin/libReactantExtra.so-2.params
+    cc @bazel-bin/libReactantExtra.so-2.params
 else
-	bazel ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
+
+if [[ "${bb_full_target}" == *cuda* ]]; then
+  rm -rf bazel-bin/_solib_local/*stub*/*so*
+  cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+fi
+
 cp -v bazel-bin/libReactantExtra.so ${libdir}
 if [[ "${bb_full_target}" == *darwin* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dylib
@@ -163,9 +230,9 @@ if [[ "${bb_full_target}" == *mingw* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
 fi
 cp -v bazel-bin/*.jl ${prefix}
+cd ../..
+install_license LICENSE
 """
-
-augment_platform_block = ""
 
 # determine exactly which tarballs we should build
 builds = []
@@ -177,7 +244,7 @@ dependencies = Dependency[]
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
-                   :libReactantExtra),
+                   :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
     FileProduct("Affine.inc.jl", :Affine_inc_jl),
     FileProduct("Arith.inc.jl", :Arith_inc_jl),
     FileProduct("Builtin.inc.jl", :Builtin_inc_jl),
@@ -223,26 +290,152 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
+
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
+# platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
+augment_platform_block="""
+    using Base.BinaryPlatforms
+    using Libdl
+    const Reactant_UUID = Base.UUID("0192cb87-2b54-54ad-80e0-3be72ad8a3c0")
+    const preferences = Base.get_preferences(Reactant_UUID)
+    Base.record_compiletime_preference(Reactant_UUID, "mode")
+    Base.record_compiletime_preference(Reactant_UUID, "gpu")
 
-for platform in platforms
+    const mode_preference = if haskey(preferences, "mode")
+        if isa(preferences["mode"], String) && preferences["mode"] in ["opt", "dbg"]
+            preferences["mode"]
+        else
+            @error "Mode preference is not valid; expected 'opt' or 'dbg', but got '\$(preferences[\"debug\"])'"
+            nothing
+        end
+    else
+        nothing
+    end
+    
+    const gpu_preference = if haskey(preferences, "gpu")
+    if isa(preferences["gpu"], String) && preferences["gpu"] in ["none", "cuda", "rocm"]
+            preferences["gpu"]
+        else
+            @error "GPU preference is not valid; expected 'none', 'cuda' or 'rocm', but got '\$(preferences[\"debug\"])'"
+            nothing
+        end
+    else
+        nothing
+    end
+
+    function augment_platform!(platform::Platform)
+
+        mode = get(ENV, "REACTANT_MODE", something(mode_preference, "opt"))
+        if !haskey(platform, "mode")
+            platform["mode"] = mode
+        end
+        	
+	gpu = something(gpu_preference, "none")
+
+	cuname = if Sys.iswindows()
+            Libdl.find_library("nvcuda")
+        else
+            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+        end
+
+        # if we've found a system driver, put a dependency on it,
+        # so that we get recompiled if the driver changes.
+        if cuname != "" && gpu == "none"
+            handle = Libdl.dlopen(cuname)
+            path = Libdl.dlpath(handle)
+            Libdl.dlclose(handle)
+
+            @debug "Adding include dependency on \$path"
+            Base.include_dependency(path)
+	    gpu = "cuda"
+        end
+	
+	roname = ""
+        # if we've found a system driver, put a dependency on it,
+        # so that we get recompiled if the driver changes.
+        if roname != "" && gpu == "none"
+            handle = Libdl.dlopen(roname)
+            path = Libdl.dlpath(handle)
+            Libdl.dlclose(handle)
+
+            @debug "Adding include dependency on \$path"
+            Base.include_dependency(path)
+	    gpu = "rocm"
+        end
+
+	gpu = get(ENV, "REACTANT_GPU", gpu)
+        if !haskey(platform, "gpu")
+	    platform["gpu"] = gpu
+        end
+
+        return platform
+    end
+    """
+
+# for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
+    augmented_platform["mode"] = mode
+    augmented_platform["gpu"] = gpu
+    cuda_deps = []
 
+    if mode == "dbg" && !Sys.isapple(platform)
+        continue
+    end
+    
+    if gpu != "none" && Sys.isapple(platform)
+        continue
+    end
+
+    prefix="export MODE="*mode*"\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-		push!(platform_sources,
-              ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
-                            "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
+        push!(platform_sources,
+                  ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
+                                "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
+    end
+
+    if !Sys.isapple(platform)
+      push!(cuda_deps, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
+    products2 = copy(products)
+    if gpu == "cuda"
+    	for lib in (
+		"libnccl",
+		"libcufft",
+		"libcudnn_engines_precompiled",
+		"libcudart",
+		"libcublasLt",
+		"libcudnn_heuristic",
+		"libcudnn_cnn",
+		"libnvrtc",
+		"libcudnn_adv",
+		"libcudnn",
+		"libnvJitLink",
+		"libcublas",
+		"libcudnn_ops",
+		"libnvrtc-builtins",
+		"libcudnn_graph",
+		"libcusolver",
+		# "libcuda",
+		"libcudnn_engines_runtime_compiled",
+		"libcusparse",
+	)
+		san = replace(lib, "-" => "_")
+		push!(products2, LibraryProduct([lib, lib],
+		Symbol(san); dont_dlopen=true))
+	end
+    end
+
     push!(builds, (;
-        dependencies, products, sources=platform_sources,
-        platforms=[augmented_platform],
+                   dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
+        platforms=[augmented_platform], script=prefix*script
     ))
 end
 
@@ -255,7 +448,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, script,
+                   name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=v"10", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)

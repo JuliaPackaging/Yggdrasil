@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "libgeotiff"
-upstream_version = v"1.7.1"
+upstream_version = v"1.7.3"
 version_offset = v"0.1.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -10,7 +10,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/OSGeo/libgeotiff/releases/download/$upstream_version/libgeotiff-$upstream_version.tar.gz",
-                  "05ab1347aaa471fc97347d8d4269ff0c00f30fa666d956baba37948ec87e55d6"),
+                  "ba23a3a35980ed3de916e125c739251f8e3266be07540200125a307d7cf5a704"),
 ]
 
 # Bash recipe for building across all platforms

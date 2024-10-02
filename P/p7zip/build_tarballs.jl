@@ -53,6 +53,7 @@ else
             aarch64*linux*)      echo makefile.linux_cross_aarch64;;
             arm-*linux*)         echo makefile.linux_cross_arm;;
             x86_64-*freebsd*)    echo makefile.freebsd6+;;
+            aarch64-*freebsd*)   echo makefile.freebsd6+;;
             x86_64-*darwin*)     echo makefile.macosx_llvm_64bits;;
             aarch64-*darwin*)    echo makefile.macosx_llvm_64bits;;
         esac

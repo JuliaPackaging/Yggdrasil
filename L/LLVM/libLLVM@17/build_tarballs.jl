@@ -1,5 +1,5 @@
 name = "libLLVM"
-version = v"17.0.6+3"
+version = v"17.0.6+5"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -41,4 +41,3 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, julia_compat="1.11",
                    augment_platform_block)
 end
-#build!

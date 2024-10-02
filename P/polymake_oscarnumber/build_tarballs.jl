@@ -13,7 +13,7 @@ include("../../L/libjulia/common.jl")
 
 # reminder: change the version when changing the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.2.12"
+version = v"0.3.2"
 
 # julia_versions is now taken from libjulia/common.jl
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
@@ -21,7 +21,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "409e0afd819541aa7494890b7b2ae447eb08eb5a")
+              "ecc1e516503ce7a7689c21bdf76a262290797237")
     DirectorySource("./bundled")
 ]
 
@@ -68,6 +68,7 @@ install_license LICENSE
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -83,11 +84,11 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.11")),
 
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
-    Dependency("libpolymake_julia_jll", compat = "=0.11.5"),
-    Dependency("polymake_jll", compat = "~400.1100.003"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.2"),
+    Dependency("libpolymake_julia_jll", compat = "=0.13.0"),
+    Dependency("polymake_jll", compat = "~400.1300.001"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
