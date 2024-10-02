@@ -357,6 +357,23 @@ build_petsc()
 
     fi
 
+    if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int32" ] &&  [ "${4}" == "opt" ]; then
+        
+        # this is the example that PETSc uses to test the correct installation        
+        # We compile it with debug flags (helpful to catch issues)
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        mv ${file}${exeext} ${file}_int32${exeext}
+        install -Dvm 755 ${workdir}/ex19_int32${exeext} "${bindir}/ex19_int32${exeext}"
+
+    fi
+
     # we don't particularly care about the other examples
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
 }
@@ -418,6 +435,7 @@ products = [
     ExecutableProduct("ex42", :ex42)
     ExecutableProduct("ex19", :ex19)
     ExecutableProduct("ex19_int64_deb", :ex19_int64_deb)
+    ExecutableProduct("ex19_int32", :ex19_int32)
 
     # Current default build, equivalent to Float64_Real_Int32
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
