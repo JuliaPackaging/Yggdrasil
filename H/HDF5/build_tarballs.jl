@@ -6,14 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.4"
-version_dir = "$(version).3"
-version_file ="$(version)-3"
+version = v"1.14.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/hdf5_$(version_dir)/hdf5-$(version_file).tar.gz",
-                  "019ac451d9e1cf89c0482ba2a06f07a46166caf23f60fea5ef3c37724a318e03"),
+    ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/hdf5_$(version)/hdf5-$(version).tar.gz",
+                  "ec2e13c52e60f9a01491bb3158cb3778c985697131fc6a342262d32a26e58e44"),
     DirectorySource("./bundled"),
 ]
 
