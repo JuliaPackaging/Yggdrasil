@@ -116,6 +116,7 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 
+# Give up on Windows
 hdf5_platforms = filter(!Sys.iswindows, platforms)
 
 # Dependencies that must be installed before this package can be built
