@@ -151,6 +151,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
+        BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
         BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
