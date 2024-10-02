@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.19"
 
 sources = [
-  GitSource(repo, "fd7b5e23fe73bb6296e829b7cb868889331c97da"),
+  GitSource(repo, "feb322ba407941f65049711b1425d7380a3f09fb"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
 ]
