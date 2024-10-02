@@ -357,7 +357,7 @@ build_petsc()
 
     fi
 
-     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int32" ] &&  [ "${4}" == "opt" ]; then
+    if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int32" ] &&  [ "${4}" == "opt" ]; then
         
         # this is the example that PETSc uses to test the correct installation        
         # We compile it with debug flags (helpful to catch issues)
