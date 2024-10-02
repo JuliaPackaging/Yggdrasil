@@ -19,7 +19,6 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
-
 # Bash recipe for building across all platforms
 script = raw"""
 
@@ -87,7 +86,7 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch     
+atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 
 mkdir $libdir/petsc
@@ -240,7 +239,8 @@ build_petsc()
     echo "MPI_CXX="$MPI_CXX
     
     mkdir $libdir/petsc/${PETSC_CONFIG}
-
+        
+   
     # Step 1: build static libraries of external packages (happens during configure)    
     # Note that mpicc etc. should be indicated rather than ${CC} to compile external packages 
     ./configure --prefix=${libdir}/petsc/${PETSC_CONFIG} \
@@ -299,7 +299,6 @@ build_petsc()
 
     # Remove PETSc.pc because petsc.pc also exists, causing conflicts on case-insensitive file-systems.
     rm ${libdir}/petsc/${PETSC_CONFIG}/lib/pkgconfig/PETSc.pc
-    
     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int64" ] &&  [ "${4}" == "opt" ]; then
         
         # Compile examples (to allow testing the installation). 
@@ -358,13 +357,30 @@ build_petsc()
 
     fi
 
+     if  [ "${1}" == "double" ] &&  [ "${2}" == "real" ] &&  [ "${3}" == "Int32" ] &&  [ "${4}" == "opt" ]; then
+        
+        # this is the example that PETSc uses to test the correct installation        
+        # We compile it with debug flags (helpful to catch issues)
+        workdir=${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples/src/snes/tutorials/
+        make --directory=$workdir PETSC_DIR=${libdir}/petsc/${PETSC_CONFIG} PETSC_ARCH=${target}_${PETSC_CONFIG} ex19
+        file=${workdir}/ex19
+        if [[ "${target}" == *-mingw* ]]; then
+            if [[ -f "$file" ]]; then
+                mv $file ${file}${exeext}
+            fi
+        fi
+        mv ${file}${exeext} ${file}_int64_deb${exeext}
+        install -Dvm 755 ${workdir}/ex19_int64_deb${exeext} "${bindir}/ex19_int32_deb${exeext}"
+
+    fi
+
     # we don't particularly care about the other examples
     rm -r ${libdir}/petsc/${PETSC_CONFIG}/share/petsc/examples
 }
 
 build_petsc double real Int64 opt
 build_petsc double real Int64 deb       # compile at least one debug version
-#build_petsc double real Int32 opt
+build_petsc double real Int32 opt
 #build_petsc single real Int32 opt
 #build_petsc double complex Int32 opt
 #build_petsc single complex Int32 opt
@@ -406,13 +422,13 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
 
 # this excludes only aarch64-unknown-freebsd;  can be removed once OpenMPI has been built for this platforms.
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)),  platforms)   
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p) && arch(p) == "aarch64"),  platforms)   
 
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl" ), platforms)
 
 # MPICH
-platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p)), platforms)  # can be removed once MPICH has been built for aarch64-unknown-freebsd
+platforms = filter(p -> !(p["mpi"] == "mpich" && Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)  # can be removed once MPICH has been built for aarch64-unknown-freebsd
 
 products = [
     ExecutableProduct("ex4", :ex4)
