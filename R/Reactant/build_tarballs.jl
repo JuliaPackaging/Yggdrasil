@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.19"
 
 sources = [
-   GitSource(repo, "3c95fc51d4ad7f8e380cb495b985aaac991729a4"),
+  GitSource(repo, "ffcfb29e0f5bbf5170973936ecca83502b2c50c1"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
 ]
@@ -141,11 +141,11 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	export LLD2=`pwd`/bin/ld64.lld
 	popd
 
-	if [[ "${bb_full_target}" == *86* ]]; then
+    if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
         BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     else
-        BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_aarch64)
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang++"
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
@@ -295,6 +295,7 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
+# platforms = filter(p -> arch(p) == "x86_64", platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 augment_platform_block="""
