@@ -209,6 +209,7 @@ sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/ex
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
 	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
+	sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
     sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
 	echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
 	echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
