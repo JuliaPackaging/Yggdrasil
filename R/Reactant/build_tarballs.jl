@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.19"
 
 sources = [
-  GitSource(repo, "f8bbcb842cfb7dfc2179314e8166896d1b56b850"),
+  GitSource(repo, "57adaaa3fd6a0bf1881571ff95e433e5acca342b"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
 ]
@@ -17,6 +17,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd Reactant.jl/deps/ReactantExtra
+
+echo Clang version: $(clang --version)
+echo GCC version: $(gcc --version)
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
@@ -27,7 +30,7 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-apk add py3-numpy py3-numpy-dev zlib
+apk add py3-numpy py3-numpy-dev
 
 apk add openjdk11-jdk
 apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
@@ -138,18 +141,20 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	export LLD2=`pwd`/bin/ld64.lld
 	popd
 
-	if [[ "${bb_full_target}" == *86* ]]; then
+    if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
-        BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     else
-        BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_aarch64)
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang++"
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
-        BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
+        BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
+	BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
+    	BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
     fi
+    BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
@@ -204,7 +209,16 @@ $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.in
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    if [[ "${bb_full_target}" == *86* ]]; then
+    	echo "x86"
+    else
+    	sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    	sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    	cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+	$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+    fi
 	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
+	sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
     sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
 	echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
 	echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
@@ -292,6 +306,7 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
+# platforms = filter(p -> arch(p) == "x86_64", platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 augment_platform_block="""
@@ -394,7 +409,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-        push!(platform_sources,
+	push!(platform_sources,
                   ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
                                 "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
     end
@@ -450,7 +465,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"10", julia_compat="1.6",
+                   preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
 
