@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.19"
 
 sources = [
-  GitSource(repo, "df6316384f420f889dcdff5d1489e272a6d0add3"),
+  GitSource(repo, "57adaaa3fd6a0bf1881571ff95e433e5acca342b"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
 ]
@@ -133,13 +133,13 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
     
-    pushd $WORKSPACE/srcdir/llvm*
-	mkdir build
-	cd build
-	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
-	ninja lld
-	export LLD2=`pwd`/bin/ld64.lld
-	popd
+#    pushd $WORKSPACE/srcdir/llvm*
+#	mkdir build
+#	cd build
+#	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
+#	ninja lld
+#	export LLD2=`pwd`/bin/ld64.lld
+#	popd
 
     if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
@@ -152,6 +152,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
         BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
 	BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
+    	BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
@@ -208,11 +209,18 @@ $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.in
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    if [[ "${bb_full_target}" == *86* ]]; then
+    	echo "x86"
+    else
+    	sed -i.bak1 "s/\"k8|/\"darwin_arm64\": \":cc-compiler-k8\", \"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    	sed -i.bak1 "s/cpu = \"k8\"/cpu = \"darwin_arm64\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+	$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+    fi
 	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
 	sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
     sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
 	echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
+	#echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
 	cat bazel-bin/libReactantExtra.so-2.params
     cc @bazel-bin/libReactantExtra.so-2.params
 else
@@ -400,9 +408,6 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-        push!(platform_sources,
-                  ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
-                                "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
     end
 
     if !Sys.isapple(platform)
