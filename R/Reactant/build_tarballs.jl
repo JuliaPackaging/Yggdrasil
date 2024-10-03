@@ -229,13 +229,14 @@ else
 fi
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
-mkdir -p ${libdir}
 
 if [[ "${bb_full_target}" == *cuda* ]]; then
   rm -rf bazel-bin/_solib_local/*stub*/*so*
   cp -v bazel-bin/_solib_local/*/*so* ${libdir}
-  cp -v bazel-bin//libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}
-  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${bindir}
+  mkdir -p ${libdir}/cuda/nvvm/libdevice
+  mkdir -p ${libdir}/cuda/bin
+  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
+  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
 fi
 
 cp -v bazel-bin/libReactantExtra.so ${libdir}
@@ -391,8 +392,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-# for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("cuda",), mode in ("opt",), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
@@ -449,9 +449,8 @@ for gpu in ("cuda",), mode in ("opt",), platform in platforms
 		push!(products2, LibraryProduct([lib, lib],
 		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
-	push!(products2, ExecutableProduct("ptxas", :ptxas))
-	push!(products2, FileProduct("libdevice.10.bc", :libdevice))
-
+	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
     end
 
     push!(builds, (;
