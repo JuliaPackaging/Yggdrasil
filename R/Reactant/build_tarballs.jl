@@ -133,13 +133,13 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
     
-#    pushd $WORKSPACE/srcdir/llvm*
-#	mkdir build
-#	cd build
-#	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
-#	ninja lld
-#	export LLD2=`pwd`/bin/ld64.lld
-#	popd
+    pushd $WORKSPACE/srcdir/llvm*
+	mkdir build
+	cd build
+	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
+	ninja lld
+	export LLD2=`pwd`/bin/ld64.lld
+	popd
 
     if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
@@ -221,7 +221,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
     sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
 	echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
-	#echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
+	echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
 	cat bazel-bin/libReactantExtra.so-2.params
     cc @bazel-bin/libReactantExtra.so-2.params
 else
@@ -409,6 +409,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+	push!(platform_sources,
+                  ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
+                                "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
     end
 
     if !Sys.isapple(platform)
