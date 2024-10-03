@@ -212,8 +212,9 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     if [[ "${bb_full_target}" == *86* ]]; then
     	echo "x86"
     else
-    	sed -i.bak1 "s/\"k8|/\"darwin_arm64\": \":cc-compiler-k8\", \"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-    	sed -i.bak1 "s/cpu = \"k8\"/cpu = \"darwin_arm64\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    	sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    	sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    	cat /workspace/bazel_root/*/external/local_config_cc/BUILD
 	$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
     fi
 	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
