@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.19"
+version = v"0.0.20"
 
 sources = [
-  GitSource(repo, "57adaaa3fd6a0bf1881571ff95e433e5acca342b"),
+  GitSource(repo, "f3c65db3989c208a926f3a095c4ae2f0b1e7a579"),
   ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
                 "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
 ]
@@ -234,6 +234,10 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *cuda* ]]; then
   rm -rf bazel-bin/_solib_local/*stub*/*so*
   cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+  mkdir -p ${libdir}/cuda/nvvm/libdevice
+  mkdir -p ${libdir}/cuda/bin
+  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
+  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
 fi
 
 cp -v bazel-bin/libReactantExtra.so ${libdir}
@@ -444,8 +448,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 	)
 		san = replace(lib, "-" => "_")
 		push!(products2, LibraryProduct([lib, lib],
-		Symbol(san); dont_dlopen=true))
+		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
+	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
     end
 
     push!(builds, (;
