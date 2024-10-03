@@ -143,7 +143,6 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 
     if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
-        BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     else
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
@@ -152,8 +151,9 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
         BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
-        BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
+	BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
     fi
+    BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
