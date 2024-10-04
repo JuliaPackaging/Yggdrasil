@@ -33,9 +33,7 @@ fi
 apk add py3-numpy py3-numpy-dev
 
 apk add openjdk11-jdk
-apk add bazel6 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-apk add openjdk11-jdk
-# apk add openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
+apk add bazel6==6.1.0 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
 
 mkdir -p .local/bin
