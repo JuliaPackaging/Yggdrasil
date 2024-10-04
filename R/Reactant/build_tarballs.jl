@@ -10,8 +10,8 @@ version = v"0.0.21"
 
 sources = [
   GitSource(repo, "deefd1874c8c6050c6cd42e4eb846a889f5cafb0"),
-  ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
-                "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
+  FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
+             "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
 
 # Bash recipe for building across all platforms
@@ -33,51 +33,16 @@ fi
 apk add py3-numpy py3-numpy-dev
 
 apk add openjdk11-jdk
-wget http://dl-cdn.alpinelinux.org/alpine/edge/testing/x86_64/bazel6-6.1.0-r0.apk
-apk add bazel6*apk
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
 
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
 
-# wget https://github.com/wsmoses/artifacts/releases/download/tmp/bazel6-6.5.0-r0.apk
-# apk add --allow-untrusted *.apk
-# rm *.apk
-
-# pushd $WORKSPACE/srcdir/bazel-dist
-# mkdir op
-# env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --help --output_user_root=/workspace/bazel_root" bash ./compile.sh
-# mv output/bazel $LOCAL/bazel
-# popd
+chmod +x bazel-dev
+export BAZEL=`pwd`/bazel-dev
 
 env
-
-pushd $WORKSPACE/srcdir/bazel-dist
-PBAZEL_FLAGS=()
-PBAZEL_BUILD_FLAGS+=(--host_cpu=k8)
-PBAZEL_BUILD_FLAGS+=(--cpu=k8)
-PBAZEL_BUILD_FLAGS+=(--verbose_failures)
-PBAZEL_BUILD_FLAGS+=(--spawn_strategy=local)
-PBAZEL_BUILD_FLAGS+=(--repo_env=LD_LIBRARY_PATH)
-PBAZEL_BUILD_FLAGS+=(--action_env=LD_LIBRARY_PATH)
-PBAZEL_BUILD_FLAGS+=(--host_action_env=LD_LIBRARY_PATH)
-PBAZEL_BUILD_FLAGS+=(--javacopt="-XepDisableAllChecks")
-mv /usr/lib/libstdc++.so.6 /usr/lib/libstdc++.so.6.old
-mv /usr/lib/libgcc_s.so.1  /usr/lib/libgcc_s.so.1.old
-cp /usr/lib/csl-musl-x86_64/libstdc++.so.6 /usr/lib/libstdc++.so.6
-cp /usr/lib/csl-musl-x86_64/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
-# sed -E -i 's/public final/@Immutable\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
-sed -E -i 's/public final/@SuppressWarnings("Immutable")\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
-CC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM bazel --output_user_root=$WORKSPACE/pbazel_root build --jobs ${nproc} ${PBAZEL_BUILD_FLAGS[@]} --sandbox_debug //src:bazel-dev
-export BAZEL=$WORKSPACE/srcdir/bazel-dist/bazel-bin/src/bazel-dev
-rm /usr/lib/libstdc++.so.6
-rm /usr/lib/libgcc_s.so.1
-mv /usr/lib/libstdc++.so.6.old /usr/lib/libstdc++.so.6
-mv /usr/lib/libgcc_s.so.1.old  /usr/lib/libgcc_s.so.1
-popd
-tar -cvf bazel65.tar $WORKSPACE/srcdir
-fdafdsa
 
 ln -s `which ar` /usr/bin/ar
 
