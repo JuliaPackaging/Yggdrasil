@@ -39,8 +39,8 @@ mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
 
-chmod +x bazel-dev
-export BAZEL=`pwd`/bazel-dev
+export BAZEL=$WORKSPACE/srcdir/bazel-dev
+chmod +x $BAZEL
 
 env
 
