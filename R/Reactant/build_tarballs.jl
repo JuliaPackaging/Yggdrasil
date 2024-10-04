@@ -33,7 +33,8 @@ fi
 apk add py3-numpy py3-numpy-dev
 
 apk add openjdk11-jdk
-apk add bazel6==6.1.0 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+wget http://dl-cdn.alpinelinux.org/alpine/edge/testing/x86_64/bazel6-6.1.0-r0.apk
+apk add bazel6*apk
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
 
 mkdir -p .local/bin
@@ -75,6 +76,8 @@ rm /usr/lib/libgcc_s.so.1
 mv /usr/lib/libstdc++.so.6.old /usr/lib/libstdc++.so.6
 mv /usr/lib/libgcc_s.so.1.old  /usr/lib/libgcc_s.so.1
 popd
+tar -cvf bazel65.tar $WORKSPACE/srcdir
+fdafdsa
 
 ln -s `which ar` /usr/bin/ar
 
