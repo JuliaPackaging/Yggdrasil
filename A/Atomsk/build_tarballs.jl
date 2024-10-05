@@ -22,9 +22,8 @@ fi
 cd src
 
 # The makefile doesn't handle parallel builds
-mkdir -p $bindir
 make shared=yes clib
-cp atomsk$exeext $bindir
+install -Dvm 755 "atomsk${exeext}" -t "${bindir}"
 """
 
 # These are the platforms we will build for by default, unless further
