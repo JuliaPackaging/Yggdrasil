@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/mona*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 extra=""
 if [[ "${target}" == *-apple-* ]]; then
-  extra="LDFLAGS=\"-Wl\""
+  extra="LDFLAGS=\"-Wl -undefined dynamic_lookup\""
 fi
 make -j${nproc} ${extra}
 make install
