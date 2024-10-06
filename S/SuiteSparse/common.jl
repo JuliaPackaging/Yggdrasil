@@ -47,6 +47,10 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "58e6558408f6a51c08e35a5557d5e68cae32147e")
         ],
+        v"7.8.2" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "c8c3a9de1c8eef54da5ff19fd0bcf7ca6e8bc9de")
+        ],
     )
     return Any[
         suitesparse_version_sources[version]...,
@@ -77,7 +81,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"; compat="5.8.0"),
+    Dependency(PackageSpec(name="libblastrampoline_jll",
+                           uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
+               v"5.11.0";  # build version
+               compat="5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     # Need the most recent 3.29.3+1 version (or later) to get libblastrampoline support
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.29.3"))

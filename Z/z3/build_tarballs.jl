@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.13.0"
+version = v"4.13.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3-solver-$(version).0.tar.gz",
-                  "52588e92aec7cb338fd6288ce93758ae01770f62ca0c80e8f4f2b2333feaf51b"),
+    ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
+                  "8b02db03e028e8f3b8498fe65e45ce7348c2995e66427353a0a8ce84ed83d934"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -36,7 +36,7 @@ fi
 
 # Bash recipe for building across all platforms
 script = macfix * raw"""
-cd $WORKSPACE/srcdir/z3-*/core
+cd $WORKSPACE/srcdir/z3*/core
 
 # Patches Z3 to work around https://github.com/ahumenberger/Z3.jl/issues/28
 patch -p0 <<EOD
@@ -87,6 +87,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
+# Use GCC 10 to avoid compile errors on Windows
 build_tarballs(ARGS, name, version, sources, script, platforms,
-               products, dependencies; preferred_gcc_version=v"9",
+               products, dependencies; preferred_gcc_version=v"10",
                julia_compat="1.6")

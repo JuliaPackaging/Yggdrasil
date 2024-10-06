@@ -1,0 +1,331 @@
+commit f3bc10b31748a2c00a6ca3456e4691023ee81208
+Author: Benjamin Lorenz <lorenz@math.tu-berlin.de>
+Date:   Wed Sep 25 09:08:50 2024 +0200
+
+    improve compatibility with recent clang and c++ standards
+    
+diff --git a/external/permlib/include/permlib/bsgs.h b/external/permlib/include/permlib/bsgs.h
+index 4e4986b84b..697c51d06c 100644
+--- a/external/permlib/include/permlib/bsgs.h
++++ b/external/permlib/include/permlib/bsgs.h
+@@ -461,7 +461,7 @@ void BSGS<PERM, TRANS>::stripRedundantBasePoints(int minPos) {
+  * stabilizer chain are next to each other.
+  */
+ template <class PERM>
+-class StrongGeneratingSetSorter : public std::binary_function<typename PERM::ptr, typename PERM::ptr, bool> {
++class StrongGeneratingSetSorter {
+ public:
+ 	/**
+ 	 * @param baseBegin begin-iterator(dom_int) to the base relative to which the strong generating set is to be sorted
+diff --git a/external/permlib/include/permlib/predicate/identity_predicate.h b/external/permlib/include/permlib/predicate/identity_predicate.h
+index ee2f985297..ad502cc4fd 100644
+--- a/external/permlib/include/permlib/predicate/identity_predicate.h
++++ b/external/permlib/include/permlib/predicate/identity_predicate.h
+@@ -39,7 +39,7 @@ namespace permlib {
+ 
+ /// predicate matching a permutation if it stabilizes a given list of points pointwise
+ template <class PERM>
+-class IdentityPredicate : public std::unary_function<typename PERM::ptr, bool> {
++class IdentityPredicate {
+ public:
+ 	/// evaluate predicate
+ 	bool operator()(const typename PERM::ptr &p) const {
+diff --git a/external/permlib/include/permlib/predicate/pointwise_stabilizer_predicate.h b/external/permlib/include/permlib/predicate/pointwise_stabilizer_predicate.h
+index d4e0974d79..b6c077dc4b 100644
+--- a/external/permlib/include/permlib/predicate/pointwise_stabilizer_predicate.h
++++ b/external/permlib/include/permlib/predicate/pointwise_stabilizer_predicate.h
+@@ -39,7 +39,7 @@ namespace permlib {
+ 
+ /// predicate matching a permutation if it stabilizes a given list of points pointwise
+ template <class PERM>
+-class PointwiseStabilizerPredicate : public std::unary_function<typename PERM::ptr, bool> {
++class PointwiseStabilizerPredicate {
+ public:
+ 	/// constructor
+ 	/**
+diff --git a/external/permlib/include/permlib/predicate/stabilizes_point_predicate.h b/external/permlib/include/permlib/predicate/stabilizes_point_predicate.h
+index 012e732624..13cf8f8548 100644
+--- a/external/permlib/include/permlib/predicate/stabilizes_point_predicate.h
++++ b/external/permlib/include/permlib/predicate/stabilizes_point_predicate.h
+@@ -39,7 +39,7 @@ namespace permlib {
+ 
+ /// predicate matching points that are stabilized by given permutations
+ template <class PERM>
+-class StabilizesPointPredicate : public std::unary_function<unsigned long, bool> {
++class StabilizesPointPredicate {
+ public:
+ 	/// constructor
+ 	/**
+diff --git a/external/permlib/include/permlib/predicate/subgroup_predicate.h b/external/permlib/include/permlib/predicate/subgroup_predicate.h
+index 592e190f94..c1aaa0258c 100644
+--- a/external/permlib/include/permlib/predicate/subgroup_predicate.h
++++ b/external/permlib/include/permlib/predicate/subgroup_predicate.h
+@@ -42,7 +42,7 @@ class RefinementFamily;
+ 
+ /// abstract base class for subgroup (and coset) predicates
+ template <class PERM>
+-class SubgroupPredicate : public std::unary_function<PERM, bool> {
++class SubgroupPredicate {
+ public:
+ 	/// virtual destructor
+ 	virtual ~SubgroupPredicate() {}
+diff --git a/external/permlib/include/permlib/search/partition/backtrack_refinement.h b/external/permlib/include/permlib/search/partition/backtrack_refinement.h
+index 92c76d1aac..277ef9bf69 100644
+--- a/external/permlib/include/permlib/search/partition/backtrack_refinement.h
++++ b/external/permlib/include/permlib/search/partition/backtrack_refinement.h
+@@ -67,7 +67,7 @@ private:
+ 	
+ 	typedef typename Refinement<PERM>::RefinementPtr RefinementPtr;
+ 	
+-	struct RefinementSorter : public std::binary_function<RefinementPtr, RefinementPtr, bool> {
++	struct RefinementSorter {
+ 		RefinementSorter(const BaseSorterByReference& sorter, const Partition* pi) : m_sorter(sorter), m_pi(pi) {}
+ 		
+ 		bool operator()(RefinementPtr a, RefinementPtr b) const {
+diff --git a/external/permlib/include/permlib/sorter/base_sorter.h b/external/permlib/include/permlib/sorter/base_sorter.h
+index 6976eb6355..dd9c9d096e 100644
+--- a/external/permlib/include/permlib/sorter/base_sorter.h
++++ b/external/permlib/include/permlib/sorter/base_sorter.h
+@@ -39,7 +39,7 @@ namespace permlib {
+ 
+ /// A sorter that sorts a sequence with respect to a given input ordering
+ template<class ORDER>
+-class OrderedSorter : public std::binary_function<unsigned long, unsigned long, bool> {
++class OrderedSorter {
+ public:
+ 	/// true iff a preceeds b in given sequence
+ 	bool operator() (unsigned long a, unsigned long b) const {
+diff --git a/external/permlib/include/permlib/sorter/group_sorter.h b/external/permlib/include/permlib/sorter/group_sorter.h
+index 90d912f82f..1ab9f00233 100644
+--- a/external/permlib/include/permlib/sorter/group_sorter.h
++++ b/external/permlib/include/permlib/sorter/group_sorter.h
+@@ -39,7 +39,7 @@ namespace permlib {
+ 
+ /// A sorter that sorts a sequence of permutations with respect to a ordering induced by a base
+ template <class PERM>
+-class GroupSorter : public std::binary_function<PERM, PERM, bool>{
++class GroupSorter {
+ public:
+ 	/// constructor
+ 	/**
+diff --git a/external/permlib/include/permlib/sorter/trivial_sorter.h b/external/permlib/include/permlib/sorter/trivial_sorter.h
+index 0413578e5c..aab49e7bf2 100644
+--- a/external/permlib/include/permlib/sorter/trivial_sorter.h
++++ b/external/permlib/include/permlib/sorter/trivial_sorter.h
+@@ -36,7 +36,7 @@
+ namespace permlib {
+ 
+ /// A sorter that sorts a sequence in natural numerical order (1 < 2 < 3 < ...)
+-class TrivialSorter : public std::binary_function<unsigned long, unsigned long, bool>{
++class TrivialSorter {
+ public:
+ 	/// true iff a < b
+ 	bool operator() (unsigned long a, unsigned long b) const {
+diff --git a/lib/core/include/ContainerChain.h b/lib/core/include/ContainerChain.h
+index 883e3a57db..09e95e19ed 100644
+--- a/lib/core/include/ContainerChain.h
++++ b/lib/core/include/ContainerChain.h
+@@ -1128,15 +1128,15 @@ public:
+ 
+    Int size() const
+    {
+-      return this->manip_top().template get_container(size_constant<base_t::normal_it_pos>()).size();
++      return this->manip_top().get_container(size_constant<base_t::normal_it_pos>()).size();
+    }
+    Int dim() const
+    {
+-      return get_dim(this->manip_top().template get_container(size_constant<base_t::normal_it_pos>()));
++      return get_dim(this->manip_top().get_container(size_constant<base_t::normal_it_pos>()));
+    }
+    bool empty() const
+    {
+-      return this->manip_top().template get_container(size_constant<base_t::normal_it_pos>()).empty();
++      return this->manip_top().get_container(size_constant<base_t::normal_it_pos>()).empty();
+    }
+ 
+    decltype(auto) front()
+@@ -1153,40 +1153,40 @@ private:
+    iterator make_begin(std::index_sequence<Index...>, mlist<Features...>)
+    {
+       return iterator(this->manip_top().get_operation(),
+-                      ensure(this->manip_top().template get_container(size_constant<Index>()), muntag_t<Features>()).begin()...);
++                      ensure(this->manip_top().get_container(size_constant<Index>()), muntag_t<Features>()).begin()...);
+    }
+ 
+    template <size_t... Index, typename... Features>
+    iterator make_end(std::index_sequence<Index...>, mlist<Features...>)
+    {
+       return iterator(this->manip_top().get_operation(),
+-                      ensure(this->manip_top().template get_container(size_constant<Index>()), muntag_t<Features>()).end()...);
++                      ensure(this->manip_top().get_container(size_constant<Index>()), muntag_t<Features>()).end()...);
+    }
+ 
+    template <size_t... Index, typename... Features>
+    const_iterator make_begin(std::index_sequence<Index...>, mlist<Features...>) const
+    {
+       return const_iterator(this->manip_top().get_operation(),
+-                            ensure(this->manip_top().template get_container(size_constant<Index>()), muntag_t<Features>()).begin()...);
++                            ensure(this->manip_top().get_container(size_constant<Index>()), muntag_t<Features>()).begin()...);
+    }
+ 
+    template <size_t... Index, typename... Features>
+    const_iterator make_end(std::index_sequence<Index...>, mlist<Features...>) const
+    {
+       return const_iterator(this->manip_top().get_operation(),
+-                            ensure(this->manip_top().template get_container(size_constant<Index>()), muntag_t<Features>()).end()...);
++                            ensure(this->manip_top().get_container(size_constant<Index>()), muntag_t<Features>()).end()...);
+    }
+ 
+    template <size_t... Index>
+    decltype(auto) make_front(std::index_sequence<Index...>)
+    {
+-      return this->manip_top().get_operation()( this->manip_top().template get_container(size_constant<Index>()).front()... );
++      return this->manip_top().get_operation()( this->manip_top().get_container(size_constant<Index>()).front()... );
+    }
+ 
+    template <size_t... Index>
+    decltype(auto) make_front(std::index_sequence<Index...>) const
+    {
+-      return this->manip_top().get_operation()( this->manip_top().template get_container(size_constant<Index>()).front()... );
++      return this->manip_top().get_operation()( this->manip_top().get_container(size_constant<Index>()).front()... );
+    }
+ };
+ 
+@@ -1230,40 +1230,40 @@ private:
+    reverse_iterator make_rbegin(std::index_sequence<Index...>, mlist<Features...>)
+    {
+       return reverse_iterator(this->manip_top().get_operation(),
+-                              ensure(this->manip_top().template get_container(size_constant<Index>()), muntag_t<Features>()).rbegin()...);
++                              ensure(this->manip_top().get_container(size_constant<Index>()), muntag_t<Features>()).rbegin()...);
+    }
+ 
+    template <size_t... Index, typename... Features>
+    reverse_iterator make_rend(std::index_sequence<Index...>, mlist<Features...>)
+    {
+       return reverse_iterator(this->manip_top().get_operation(),
+-                              ensure(this->manip_top().template get_container(size_constant<Index>()), muntag_t<Features>()).rend()...);
++                              ensure(this->manip_top().get_container(size_constant<Index>()), muntag_t<Features>()).rend()...);
+    }
+ 
+    template <size_t... Index, typename... Features>
+    const_reverse_iterator make_rbegin(std::index_sequence<Index...>, mlist<Features...>) const
+    {
+       return const_reverse_iterator(this->manip_top().get_operation(),
+-                                    ensure(this->manip_top().template get_container(size_constant<Index>()), muntag_t<Features>()).rbegin()...);
++                                    ensure(this->manip_top().get_container(size_constant<Index>()), muntag_t<Features>()).rbegin()...);
+    }
+ 
+    template <size_t... Index, typename... Features>
+    const_reverse_iterator make_rend(std::index_sequence<Index...>, mlist<Features...>) const
+    {
+       return const_reverse_iterator(this->manip_top().get_operation(),
+-                                    ensure(this->manip_top().template get_container(size_constant<Index>()), muntag_t<Features>()).rend()...);
++                                    ensure(this->manip_top().get_container(size_constant<Index>()), muntag_t<Features>()).rend()...);
+    }
+ 
+    template <size_t... Index>
+    decltype(auto) make_back(std::index_sequence<Index...>)
+    {
+-      return this->manip_top().get_operation()( this->manip_top().template get_container(size_constant<Index>()).back()... );
++      return this->manip_top().get_operation()( this->manip_top().get_container(size_constant<Index>()).back()... );
+    }
+ 
+    template <size_t... Index>
+    decltype(auto) make_back(std::index_sequence<Index...>) const
+    {
+-      return this->manip_top().get_operation()( this->manip_top().template get_container(size_constant<Index>()).back()... );
++      return this->manip_top().get_operation()( this->manip_top().get_container(size_constant<Index>()).back()... );
+    }
+ };
+ 
+@@ -1285,13 +1285,13 @@ private:
+    template <size_t... Index>
+    decltype(auto) make_random(Int i, std::index_sequence<Index...>)
+    {
+-      return this->manip_top().get_operation()( this->manip_top().template get_container(size_constant<Index>())[i]... );
++      return this->manip_top().get_operation()( this->manip_top().get_container(size_constant<Index>())[i]... );
+    }
+ 
+    template <size_t... Index>
+    decltype(auto) make_random(Int i, std::index_sequence<Index...>) const
+    {
+-      return this->manip_top().get_operation()( this->manip_top().template get_container(size_constant<Index>())[i]... );
++      return this->manip_top().get_operation()( this->manip_top().get_container(size_constant<Index>())[i]... );
+    }
+ };
+ 
+diff --git a/lib/core/include/GenericMatrix.h b/lib/core/include/GenericMatrix.h
+index 2ebf23ca6b..a901e74bac 100644
+--- a/lib/core/include/GenericMatrix.h
++++ b/lib/core/include/GenericMatrix.h
+@@ -1525,12 +1525,12 @@ public:
+    template <size_t i>
+    decltype(auto) get_container(size_constant<i>)
+    {
+-      return concat_rows(this->hidden().template get_container(size_constant<i>()));
++      return concat_rows(this->hidden().get_container(size_constant<i>()));
+    }
+    template <size_t i>
+    decltype(auto) get_container(size_constant<i>) const
+    {
+-      return concat_rows(this->hidden().template get_container(size_constant<i>()));
++      return concat_rows(this->hidden().get_container(size_constant<i>()));
+    }
+ 
+    ConcatRows& operator= (const ConcatRows& other) { return ConcatRows::generic_type::operator=(other); }
+diff --git a/lib/core/include/internal/pool_allocator.h b/lib/core/include/internal/pool_allocator.h
+index 1393de8d64..4ac76eb169 100644
+--- a/lib/core/include/internal/pool_allocator.h
++++ b/lib/core/include/internal/pool_allocator.h
+@@ -34,7 +34,11 @@ class allocator : public PM_ALLOCATOR_BASE<char> {
+ public:
+    void* allocate(std::size_t n)
+    {
++#if __cplusplus < 201703L
+       return base_t::allocate(n, nullptr);
++#else
++      return base_t::allocate(n);
++#endif
+    }
+    void deallocate(void* p, std::size_t n)
+    {
+diff --git a/lib/core/include/optional b/lib/core/include/optional
+index 2ac50359ea..9b4a0529b1 100644
+--- a/lib/core/include/optional
++++ b/lib/core/include/optional
+@@ -7,6 +7,8 @@
+ // Moreover, older clangs produce strange errors even in combination with libstdc++.
+ // For this configuration, we include a minimal implementation just covering our needs.
+ 
++#if __cplusplus < 201703L
++
+ #if defined(__clang__) && (defined(_LIBCPP_STD_VER) || __clang_major__ < 4)
+ 
+ #include "polymake/internal/type_union.h"
+@@ -76,8 +78,6 @@ using pm::make_optional;
+ 
+ #else // GCC or clang >= 4
+ 
+-#if __cplusplus < 201703L
+-
+ # include <experimental/optional>
+ 
+ namespace polymake {
+@@ -91,6 +91,8 @@ using std::experimental::nullopt;
+ using std::experimental::make_optional;
+ }
+ 
++#endif
++
+ #else
+ 
+ #include <optional>
+@@ -108,8 +110,6 @@ using std::make_optional;
+ 
+ #endif
+ 
+-#endif
+-
+ #endif // POLYMAKE_OPTIONAL_
+ 
+ // Local Variables:

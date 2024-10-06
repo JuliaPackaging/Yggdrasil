@@ -6,17 +6,20 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.19"
+version = v"0.0.21"
 
 sources = [
-  GitSource(repo, "f8bbcb842cfb7dfc2179314e8166896d1b56b850"),
-  ArchiveSource("https://github.com/bazelbuild/bazel/releases/download/6.5.0/bazel-6.5.0-dist.zip",
-                "fc89da919415289f29e4ff18a5e01270ece9a6fe83cb60967218bac4a3bb3ed2"; unpack_target="bazel-dist"),
+  GitSource(repo, "deefd1874c8c6050c6cd42e4eb846a889f5cafb0"),
+  FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
+             "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd Reactant.jl/deps/ReactantExtra
+
+echo Clang version: $(clang --version)
+echo GCC version: $(gcc --version)
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
@@ -27,53 +30,19 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-apk add py3-numpy py3-numpy-dev zlib
+apk add py3-numpy py3-numpy-dev
 
 apk add openjdk11-jdk
-apk add bazel --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-apk add openjdk11-jdk
-# apk add openjdk21-jdk --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
 
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
 
-# wget https://github.com/wsmoses/artifacts/releases/download/tmp/bazel6-6.5.0-r0.apk
-# apk add --allow-untrusted *.apk
-# rm *.apk
-
-# pushd $WORKSPACE/srcdir/bazel-dist
-# mkdir op
-# env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --help --output_user_root=/workspace/bazel_root" bash ./compile.sh
-# mv output/bazel $LOCAL/bazel
-# popd
+export BAZEL=$WORKSPACE/srcdir/bazel-dev
+chmod +x $BAZEL
 
 env
-
-pushd $WORKSPACE/srcdir/bazel-dist
-PBAZEL_FLAGS=()
-PBAZEL_BUILD_FLAGS+=(--host_cpu=k8)
-PBAZEL_BUILD_FLAGS+=(--cpu=k8)
-PBAZEL_BUILD_FLAGS+=(--verbose_failures)
-PBAZEL_BUILD_FLAGS+=(--spawn_strategy=local)
-PBAZEL_BUILD_FLAGS+=(--repo_env=LD_LIBRARY_PATH)
-PBAZEL_BUILD_FLAGS+=(--action_env=LD_LIBRARY_PATH)
-PBAZEL_BUILD_FLAGS+=(--host_action_env=LD_LIBRARY_PATH)
-PBAZEL_BUILD_FLAGS+=(--javacopt="-XepDisableAllChecks")
-mv /usr/lib/libstdc++.so.6 /usr/lib/libstdc++.so.6.old
-mv /usr/lib/libgcc_s.so.1  /usr/lib/libgcc_s.so.1.old
-cp /usr/lib/csl-musl-x86_64/libstdc++.so.6 /usr/lib/libstdc++.so.6
-cp /usr/lib/csl-musl-x86_64/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
-# sed -E -i 's/public final/@Immutable\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
-sed -E -i 's/public final/@SuppressWarnings("Immutable")\npublic final/g' src/main/java/com/google/devtools/build/lib/vfs/bazel/Blake3HashFunction.java
-CC=$HOSTCC LD=$HOSTLD AR=$HOSTAR CXX=$HOSTCXX STRIP=$HOSTSTRIP OBJDUMP=$HOSTOBJDUMP OBJCOPY=$HOSTOBJCOPY AS=$HOSTAS NM=$HOSTNM bazel --output_user_root=$WORKSPACE/pbazel_root build --jobs ${nproc} ${PBAZEL_BUILD_FLAGS[@]} --sandbox_debug //src:bazel-dev
-export BAZEL=$WORKSPACE/srcdir/bazel-dist/bazel-bin/src/bazel-dev
-rm /usr/lib/libstdc++.so.6
-rm /usr/lib/libgcc_s.so.1
-mv /usr/lib/libstdc++.so.6.old /usr/lib/libstdc++.so.6
-mv /usr/lib/libgcc_s.so.1.old  /usr/lib/libgcc_s.so.1
-popd
 
 ln -s `which ar` /usr/bin/ar
 
@@ -138,18 +107,20 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 	export LLD2=`pwd`/bin/ld64.lld
 	popd
 
-	if [[ "${bb_full_target}" == *86* ]]; then
+    if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
-        BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     else
-        BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_aarch64)
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang++"
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
         BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
-        BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
+        BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
+	BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
+    	BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
     fi
+    BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
@@ -204,7 +175,16 @@ $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.in
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
+    if [[ "${bb_full_target}" == *86* ]]; then
+    	echo "x86"
+    else
+    	sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    	sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    	cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+	$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+    fi
 	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
+	sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
     sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
 	echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
 	echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
@@ -220,6 +200,10 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *cuda* ]]; then
   rm -rf bazel-bin/_solib_local/*stub*/*so*
   cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+  mkdir -p ${libdir}/cuda/nvvm/libdevice
+  mkdir -p ${libdir}/cuda/bin
+  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
+  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
 fi
 
 cp -v bazel-bin/libReactantExtra.so ${libdir}
@@ -292,6 +276,7 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
 
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
+# platforms = filter(p -> arch(p) == "x86_64", platforms)
 # platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 augment_platform_block="""
@@ -394,7 +379,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-        push!(platform_sources,
+	push!(platform_sources,
                   ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
                                 "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
     end
@@ -429,8 +414,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 	)
 		san = replace(lib, "-" => "_")
 		push!(products2, LibraryProduct([lib, lib],
-		Symbol(san); dont_dlopen=true))
+		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
+	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
     end
 
     push!(builds, (;
@@ -450,7 +437,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"10", julia_compat="1.6",
+                   preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
 

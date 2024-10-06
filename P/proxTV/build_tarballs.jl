@@ -2,11 +2,11 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "proxTV"
-version = v"3.3.1"
+version = v"3.3.2"
 
 # Collection of sources required to build proxTV.
 sources = [
-    GitSource("https://github.com/amontoison/proxTV", "6f7ad7e1048a6d97aa1e92ec35937ae4f155b1a0"),
+    GitSource("https://github.com/amontoison/proxTV", "fa1bd9456a8564ac7ca9f7d3544ba27b6b07933a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +31,7 @@ install_license ../LICENSE.txt
 """
 
 platforms = supported_platforms()
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [

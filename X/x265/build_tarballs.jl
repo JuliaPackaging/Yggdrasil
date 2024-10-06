@@ -3,12 +3,16 @@
 using BinaryBuilder
 
 name = "x265"
-version = v"3.6"
+version = v"4.0"
+
+# NOTE: The release notes for version 4.0 do not mention any
+# incompatibility with version 3.6. Packages currently using 3.6 might
+# try building against 4.0.
 
 # Collection of sources required to build x265
 sources = [
     GitSource("https://bitbucket.org/multicoreware/x265_git.git",
-              "aa7f602f7592eddb9d87749be7466da005b556ee"),
+              "4ecee600df03bc5c7679d2caf702be9169f41aec"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,9 +25,6 @@ for CMAKE_FILE in source/CMakeLists.txt source/dynamicHDR10/CMakeLists.txt; do
     sed -i 's/-mcpu=native //g' "${CMAKE_FILE}"
 done
 FLAGS=()
-if [[ "${target}" == i686-* ]] || [[ "${target}" == aarch64-apple-darwin* ]]; then
-    FLAGS+=(-DENABLE_ASSEMBLY=OFF)
-fi
 cmake -S source -B build \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
@@ -53,5 +54,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We need GCC 10 to support the aarch64 assembler intrinsics.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"6")
+               julia_compat="1.6", preferred_gcc_version=v"10")

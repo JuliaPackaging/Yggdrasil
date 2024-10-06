@@ -14,12 +14,12 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - uses: julia-actions/setup-julia@b315a4d9881690c63d53fc0175b150a3776140bd # v1.9.0
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+      - uses: julia-actions/setup-julia@a0a0978e28861c11a3490cee468f87d5b568851a # v2.5.0
         with:
           version: '1.7.3' # Use the version of Julia used on the build machine
           arch: x64
-      - uses: julia-actions/cache@6bbc93575c5ecf24ce645aa411bd09194de38019 # v1.2.0
+      - uses: julia-actions/cache@824243901fb567ccb490b0d0e2483ccecde46834 # v2.0.5
         with:
           cache-registries: "true"
           cache-compiled: "true"
@@ -34,7 +34,7 @@ jobs:
         id: commit_message
       - name: Show git status
         run: git status
-      - uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04 # v4.2.3
+      - uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f # v7.0.5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true

@@ -30,6 +30,11 @@ function libjulia_platforms(julia_version)
         filter!(p -> arch(p) != "armv7l", platforms)
     end
 
+    # FreeBSD on 64bit ARM 64 is missing dependencies for older Julia versions
+    # TODO: re-enable this for new Julia versions as soon as all deps become
+    # available
+    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
     for p in platforms
         p["julia_version"] = string(julia_version)
     end
