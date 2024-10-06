@@ -15,7 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mona*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make -j${nproc} LDFLAGS="-U _guide"
+extra=""
+if [[ "${target}" == *-apple-* ]]; then
+  extra="LDFLAGS=\"-Wl\""
+fi
+make -j${nproc} ${extra}
 make install
 install_license COPYING
 """
