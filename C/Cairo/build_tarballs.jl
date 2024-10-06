@@ -6,7 +6,7 @@ version = v"1.18.2"
 
 sources = [
     GitSource("https://gitlab.freedesktop.org/cairo/cairo.git",
-              "200441e6855854eb4dbf338e44d67b00ababe07f"),
+              "b9eed915f9a67380e7ef9d8746656455c43f67e2"),  # this is a few commits after 1.18.2 but includes an important bugfix
 ]
 
 # Bash recipe for building across all platforms
