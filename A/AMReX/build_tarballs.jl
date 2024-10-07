@@ -54,7 +54,7 @@ fi
 if [[ "${target}" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
     hdf5opts="-DAMReX_HDF5=OFF"
-elseif [[ "${target}" == aarch64-*-freebsd* ]]; then
+elif [[ "${target}" == aarch64-*-freebsd* ]]; then
     # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
     hdf5opts="-DAMReX_HDF5=OFF"
 else
