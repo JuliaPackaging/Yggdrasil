@@ -115,12 +115,13 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms;
                                                          OpenMPI_compat="4.1.6, 5")
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && ((arch(p) == "armv6l" && libc(p) == "glibc") ||
+                                                    (arch(p) == "aarch64" && Sys.isfreebsd(p)))), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 
 # HDF5 has not yet been built for aarch64-unknown-freebsd. Re-enable once it's available.
-hdf5_platforms = filter(p -> !(Sys.iswindows(p) || (Sys.isfreebsd(p) && arch(p) == "aarch64")), platforms)
+hdf5_platforms = filter(p -> !(Sys.iswindows(p) || (arch(p) == "aarch64" && Sys.isfreebsd(p))), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
