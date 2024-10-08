@@ -16,13 +16,18 @@ cd $WORKSPACE/srcdir/wolfssl*
 
 mkdir build && cd build
 
+if [[ "${target}" == *-apple-darwin* ]]; then
+    CFLAGS="-mmacosx-version-min=10.14"
+fi
+
 cmake .. \
 -DCMAKE_INSTALL_PREFIX=${prefix} \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
 -DCMAKE_BUILD_TYPE=Release \
 -DWOLFSSL_EXAMPLES=no \
 -DWOLFSSL_CRYPT_TESTS=no \
--DBUILD_SHARED_LIBS=ON
+-DBUILD_SHARED_LIBS=ON \
+-DCMAKE_C_FLAGS=${CFLAGS}
 
 make -j${nproc}
 make install
@@ -31,7 +36,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude = x -> Sys.iswindows(x) || Sys.isapple(x))
+platforms = supported_platforms(; exclude = x -> Sys.iswindows(x))
 
 
 # The products that we will ensure are always built
