@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.3"
+version = v"1.14.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(version.major).$(version.minor)/hdf5-$(version)/src/hdf5-$(version).tar.bz2",
-                  "9425f224ed75d1280bb46d6f26923dd938f9040e7eaebf57e66ec7357c08f917"),
+    ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/hdf5_$(version)/hdf5-$(version).tar.gz",
+                  "ec2e13c52e60f9a01491bb3158cb3778c985697131fc6a342262d32a26e58e44"),
     DirectorySource("./bundled"),
 ]
 
@@ -90,13 +90,6 @@ env \
 mkdir build
 pushd build
 
-# Required for x86_64-linux-musl:
-# - Some HDF5 C code requires C99, but configure only requests C89.
-# - Some HDF5 C++ code requires C++11, but configure does not request this.
-# This might not be necessary if we switch to newer GCC versions.
-export CFLAGS="${CFLAGS} -std=c99"
-export CXXFLAGS="${CXXFLAGS} -std=c++11"
-
 if [[ ${target} == x86_64-linux-musl ]]; then
     # ${libdir}/libcurl.so needs a libnghttp, and it prefers to load /usr/lib/libnghttp2.so for this.
     # Unfortunately, that library is missing a symbol. Setting LD_LIBRARY_PATH is not enough to avoid this.
@@ -104,12 +97,13 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-FLAGS=()
+MAKEFLAGS=()
 if [[ ${target} == *-mingw* ]]; then
-    FLAGS+=(LDFLAGS='-no-undefined')
-    # For OpenSSL's libcrypto for ROS3-VFD
-    export CFLAGS="${CFLAGS} -L${prefix}/lib64"
-    export FCFLAGS="${FCFLAGS} -L${prefix}/lib64"
+    # We need `-L${prefix}/lib64` for OpenSSL's libcrypto for ROS3-VFD.
+    # Note: Do not add `-L${prefix}/lib`, this activates Windows libraries that don't work.
+    # We need `-no-undefined` when running `make`, but cannot have it when running `configure.
+    #TODO MAKEFLAGS+=(LDFLAGS='-no-undefined -L${prefix}/lib64')
+    export LDFLAGS="${LDFLAGS} -L${prefix}/lib64"
 fi
 
 # Check which VFD are available
@@ -130,9 +124,9 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         # Do not enable MPI; the function MPI_File_close is not defined
         # in the 32-bit version of Microsoft MPI 10.1.12498.18
         :
-    elif false; then
-        # DISABLED
+    else
         # 64-bit system
+        # DISABLED
         # Do not enable MPI
         # Mingw-w64 runtime failure:
         # 32 bit pseudo relocation at 0000000007828E2C out of range, targeting 00007FFDE78BAD90, yielding the value 00007FFDE0091F60.
@@ -140,13 +134,14 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         # gendef msmpi.dll - creates msmpi.def
         # x86_64-w64-mingw32-dlltool -d msmpi.def -l libmsmpi.a -D msmpi.dll - creates libmsmpi.a
 
-        # Hide static libraries
-        rm ${prefix}/lib/msmpi*.lib
-        # Make shared libraries visible
-        ln -s msmpi.dll ${libdir}/libmsmpi.dll
-        ENABLE_PARALLEL=yes
-        export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
-        export LIBS="-L${libdir} -lmsmpi"
+        # # Hide static libraries
+        # rm ${prefix}/lib/msmpi*.lib
+        # # Make shared libraries visible
+        # ln -s msmpi.dll ${libdir}/libmsmpi.dll
+        # ENABLE_PARALLEL=yes
+        # export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
+        # export LIBS="-L${libdir} -lmsmpi"
+        :
     fi
 else
     ENABLE_PARALLEL=yes
@@ -157,12 +152,6 @@ else
     export CXX=mpicxx
     export FC=mpifort
 fi
-
-# This is a bug in HDF5; see
-# <https://github.com/HDFGroup/hdf5/issues/3925>. The file
-# `config/freebsd` includes `config/classic-fflags` which is
-# missing.
-: >../config/classic-fflags
 
 ../configure \
     --prefix=${prefix} \
@@ -218,10 +207,17 @@ fi
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fortran-src-Makefile.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/hl-fortran-src-Makefile.patch
 
+# Remove empty `-l` flags from libtool
+# (Why are they there? They should not be.)
+# Run the command several times to handle multiple (overlapping) occurrences.
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
+
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
 # probably caused by a bug in automake, or in how automake was used.
-make -j${nproc} AM_V_P=: "${FLAGS[@]}"
+make -j${nproc} AM_V_P=: "${MAKEFLAGS[@]}"
 
 make install
 
@@ -242,7 +238,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.3", OpenMPI_compat="4.1.6, 5")
 # TODO: Use MPI only on non-Windows platforms
 # platforms = [filter(!Sys.iswindows, mpi_platforms); filter(Sys.iswindows, platforms)]
 
@@ -253,9 +249,12 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# FOR TESTING ONLY:
+platforms = filter(Sys.iswindows, platforms)
+
 # The products that we will ensure are always built
 products = [
-    # # HDF5 tools
+    # HDF5 tools
     ExecutableProduct("h5clear", :h5clear),
     ExecutableProduct("h5copy", :h5copy),
     ExecutableProduct("h5debug", :h5debug),
@@ -285,13 +284,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # To ensure that the correct version of libgfortran is found at runtime
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
-    Dependency("Zlib_jll"),
-    # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll"),   # This is the successor of szlib
+    # We need at least v1.1.0 of `CompilerSupportLibraries_jll` to define `strtoul` etc. on Windows
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.1.0"),
+    Dependency("LibCURL_jll"; compat="7.73.0, 8"),
+    # We are building with OpenSSL v"3.0.8".
+    # Note that building with OpenSSL v"3.0.13" is broken (configuring ROS3-VFD fails on Windows). That might bite us later.
+    Dependency("OpenSSL_jll", compat="3.0.8"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    # Dependency("dlfcn_win32_jll"; compat="1.3.1", platforms=filter(Sys.iswindows, platforms)),
+    Dependency("libaec_jll"; compat="1.0.6"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 
@@ -303,5 +304,3 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 5 reports an ICE on i686-linux-gnu-libgfortran3-cxx11-mpi+mpich
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Trigger build: 1
