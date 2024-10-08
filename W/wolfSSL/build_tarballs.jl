@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "wolfSSL"
-version = v"4.8.1"
+version = v"5.7.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wolfSSL/wolfssl/archive/refs/tags/v$(version)-stable.tar.gz", "50db45f348f47e00c93dd244c24108220120cb3cc9d01434789229c32937c444")
+    GitSource("https://github.com/wolfSSL/wolfssl.git", "00e42151ca061463ba6a95adb2290f678cbca472"),
 ]
 
 # Bash recipe for building across all platforms
