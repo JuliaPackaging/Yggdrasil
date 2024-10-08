@@ -22,7 +22,7 @@ CMAKE_OPTIONS+=(
 if [[ "$target" == *-mingw* ]]; then
     CMAKE_OPTIONS+="-DGBNCPUFEAT=1"
 fi
-""" * build_script(true)
+""" * build_script(; use_omp=true)
 
 # The products that we will ensure are always built
 products = [
@@ -37,5 +37,5 @@ dependencies = append!(dependencies, [
 ])
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"9", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, 
+               products, dependencies; preferred_gcc_version=v"9", julia_compat="1.6")

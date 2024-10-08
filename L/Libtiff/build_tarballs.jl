@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Libtiff"
-version = v"4.6.0"
+version = v"4.7.0"
 
 # Collection of sources required to build Libtiff
 sources = [
     ArchiveSource("https://download.osgeo.org/libtiff/tiff-$(version).tar.xz",
-                  "e178649607d1e22b51cf361dd20a3753f244f022eefab1f2f218fc62ebaf87d2"),
+                  "273a0a73b1f0bed640afee4a5df0337357ced5b53d3d5d1c405b936501f71017"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,8 +31,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("JpegTurbo_jll"),
-    # Can probably upgrade to LERC_jll@4 in next build
-    Dependency("LERC_jll"; compat="3"),
+    Dependency("LERC_jll"; compat="4"),
     Dependency("XZ_jll"; compat="5.2.5"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"; compat="1.5.6"),
