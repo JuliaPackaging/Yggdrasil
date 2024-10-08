@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Libxc"
-version = v"6.1.0"
+version = v"6.2.2"
 include("../sources.jl")
 
 
@@ -37,4 +37,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"5", julia_compat="1.6")
+               preferred_gcc_version=v"7", julia_compat="1.8")
