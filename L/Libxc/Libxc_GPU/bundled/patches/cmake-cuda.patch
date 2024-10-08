@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a45f2db9e..2ee468621 100644
+index d07d3c4e4..f7f843282 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -11,6 +11,16 @@ cmake_minimum_required(VERSION 3.1)
@@ -19,11 +19,10 @@ index a45f2db9e..2ee468621 100644
  ################################### Options ####################################
  include(psi4OptionsTools)
  option_with_default(CMAKE_BUILD_TYPE "Build type" Release)
-@@ -443,6 +453,11 @@ set(raw_sources_list
+@@ -445,6 +455,10 @@ set(raw_sources_list
  set(src_prefix "src/")
  string(REGEX REPLACE "([^;]+)" "${src_prefix}\\1" sources_list "${raw_sources_list}")
  
-+
 +if(ENABLE_CUDA)
 +  set_source_files_properties(${sources_list} PROPERTIES LANGUAGE CUDA)
 +endif()
@@ -31,15 +30,15 @@ index a45f2db9e..2ee468621 100644
  set(raw_sources_list_f03
    src/libxc_master.F90
    )
-@@ -468,6 +483,7 @@ set(CMAKE_INSTALL_RPATH ${base} ${base}/${relDir})
+@@ -470,6 +484,7 @@ set(CMAKE_INSTALL_RPATH ${base} ${base}/${relDir})
  
  # STATIC/SHARED on below governed by BUILD_SHARED_LIBS
  add_library(xc ${sources_list})
 +set_target_properties(xc PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
- target_link_libraries(xc INTERFACE ${STANDARD_MATH_LIBRARY})
+ target_link_libraries(xc PUBLIC ${STANDARD_MATH_LIBRARY})
  set_target_properties(xc PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC}
    SOVERSION ${${PROJECT_NAME}_SOMAJOR})
-@@ -493,9 +509,15 @@ if(ENABLE_FORTRAN)
+@@ -495,9 +510,15 @@ if(ENABLE_FORTRAN)
  endif()
  
  add_executable(xc-info "${src_prefix}/xc-info.c")
@@ -53,8 +52,8 @@ index a45f2db9e..2ee468621 100644
 +  set_source_files_properties("${src_prefix}/xc-threshold.c" PROPERTIES LANGUAGE CUDA)
 +endif()
  target_link_libraries(xc-threshold xc)
- 
- 
+
+
 diff --git a/config.h.cmake.in b/config.h.cmake.in
 index 7b151e5bf..816fd600e 100644
 --- a/config.h.cmake.in
