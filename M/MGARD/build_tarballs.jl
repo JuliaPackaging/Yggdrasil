@@ -11,11 +11,16 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/MGARD*
+cd MGARD
+# We installed a `protoc` executable both as a build- and a host-build-dependency.
+# Delete the non-host-build `protoc` executable so that cmake won't try to run it.
+rm ${bindir}/protoc
+ls -l ${host_bindir}/protoc
 cmake -B build \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_PROGRAM_PATH=${host_bindir} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DMGARD_ENABLE_OPENMP=ON \
     -DMGARD_ENABLE_SERIAL=ON
@@ -35,7 +40,7 @@ products = [
 # TODO: Support OpenMP
 # TODO: Support CUDA
 dependencies = [
-    BuildDependency("protoc_jll"),
+    HostBuildDependency("protoc_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
@@ -44,6 +49,7 @@ dependencies = [
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
+    Dependency("protoc_jll"),
 ]
 
 # We need at least GCC 8 for C++17
