@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Perple_X"
-version = v"7.1.6"
+version = v"7.1.8"
 
 # Collection of sources required to complete build
 sources = [
