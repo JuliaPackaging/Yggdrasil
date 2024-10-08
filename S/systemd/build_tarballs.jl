@@ -3,12 +3,12 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "systemd"
-version = v"252"
+version = v"255"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/systemd/systemd",
-              "e8dc52766e1fdb4f8c09c3ab654d1270e1090c8d")
+              "db11bab38ccf1ed257f310d29070843d4c58ea01")
 ]
 
 # Bash recipe for building across all platforms
@@ -23,7 +23,6 @@ cd systemd
 install_license LICENSE.GPL2
 
 # build-time dependencies that aren't packaged as JLLs
-apk add coreutils
 pip install jinja2
 
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} build \
@@ -70,6 +69,7 @@ dependencies = [
                     platforms=glibc_platforms),
 
     HostBuildDependency("gperf_jll"),
+    HostBuildDependency("coreutils_jll"),
 
     # libsystemd dependencies
     Dependency("libcap_jll"),
@@ -81,20 +81,6 @@ dependencies = [
 
     # additional dependencies for building executables
     Dependency("Libmount_jll"),
-    #Dependency("Bzip2_jll"),
-    #Dependency("Zlib_jll"),
-    #Dependency("acl_jll"),
-    #Dependency("PCRE2_jll"),
-    #Dependency("Glib_jll"),
-    #Dependency("Dbus_jll"),
-    #Dependency("xkbcommon_jll"),
-    #Dependency("OpenSSL_jll"; compat="1.1.10"),
-    #Dependency("XSLT_jll"),
-    #Dependency("Libbpf_jll"),
-    #Dependency("LibCURL_jll"),
-    #Dependency("libidn2_jll"),
-    #Dependency("libmicrohttpd_jll"),
-    #Dependency("Elfutils_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
