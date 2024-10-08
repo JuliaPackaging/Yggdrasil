@@ -35,6 +35,7 @@ products = [
 # TODO: Support OpenMP
 # TODO: Support CUDA
 dependencies = [
+    BuildDependency("protoc_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
@@ -43,7 +44,6 @@ dependencies = [
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
-    Dependency("protoc_jll"),
 ]
 
 # We need at least GCC 8 for C++17
