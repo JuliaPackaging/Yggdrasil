@@ -14,8 +14,8 @@ script = raw"""
 cd MGARD
 # We installed a `protoc` executable both as a build- and a host-build-dependency.
 # Delete the non-host-build `protoc` executable so that cmake won't try to run it.
-rm ${bindir}/protoc
-ls -l ${host_bindir}/protoc
+rm ${bindir}/protoc${exeext}
+ls -l ${host_bindir}/protoc${exeext}
 cmake -B build \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
@@ -30,6 +30,12 @@ cmake --install build
 
 # We enable all platforms
 platforms = expand_cxxstring_abis(supported_platforms())
+
+# There are C++ build errors with musl: the type `uint` is not
+# declared. This is probably a bug in the vendored ZFP library in
+# MGARD. Issue has been reported at
+# <https://github.com/CODARcode/MGARD/issues/232>.
+filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
