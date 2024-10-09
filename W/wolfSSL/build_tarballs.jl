@@ -10,11 +10,13 @@ sources = [
     GitSource("https://github.com/wolfSSL/wolfssl.git", "00e42151ca061463ba6a95adb2290f678cbca472"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wolfssl*
+atomic_patch -p1 ../patches/mingw32-link-with-ws2_32.patch
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
@@ -42,7 +44,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude = x -> Sys.iswindows(x))
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
