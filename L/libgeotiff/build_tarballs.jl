@@ -2,21 +2,21 @@ using BinaryBuilder, Pkg
 
 name = "libgeotiff"
 upstream_version = v"1.7.3"
-version_offset = v"0.1.0"
+version_offset = v"0.2.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/OSGeo/libgeotiff/releases/download/$upstream_version/libgeotiff-$upstream_version.tar.gz",
-                  "ba23a3a35980ed3de916e125c739251f8e3266be07540200125a307d7cf5a704"),
+    GitSource("https://github.com/OSGeo/libgeotiff.git",
+        "d2c72dba35ac9d1af2201191064ca4cbe7f57f11"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
-cd $WORKSPACE/srcdir/libgeotiff-*/
+cd $WORKSPACE/srcdir/libgeotiff/libgeotiff
 
 mkdir build && cd build
 
@@ -28,6 +28,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
 
 make -j${nproc}
 make install
+install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -45,8 +46,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("PROJ_jll"; compat="901.300.0"),
-    Dependency("Libtiff_jll"; compat="4.5.1"),
+    Dependency("PROJ_jll"; compat="902.500"),
+    Dependency("Libtiff_jll"; compat="4.7"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
 ]
 
