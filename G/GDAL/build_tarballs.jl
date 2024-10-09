@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GDAL"
 upstream_version = v"3.9.2"
-version_offset = v"1.1.0"
+version_offset = v"1.1.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -65,6 +65,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_GEOS=ON
     -DGDAL_USE_GEOTIFF=ON
     -DGDAL_USE_GIF=OFF  # Breaks GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
+    -DGDAL_USE_LERC=ON
     -DGDAL_USE_LIBLZMA=ON
     -DGDAL_USE_LIBXML2=ON
     -DGDAL_USE_LZ4=ON
@@ -190,6 +191,7 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("GEOS_jll"; compat="3.11.2"),
     Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
+    Dependency("LERC_jll"; compat="3"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"),
     Dependency("Libtiff_jll"; compat="4.5.1"),
