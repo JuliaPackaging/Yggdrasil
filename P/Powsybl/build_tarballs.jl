@@ -1,9 +1,9 @@
 using BinaryBuilder, Pkg
 
 name = "Powsybl"
-version = v"0.1"
+version = v"0.1.0"
 sources = [
-    GitSource("https://github.com/powsybl/powsybl.jl.git", "f019cc3fb0ef19c41812780d068d302b7ef879bd"),
+    GitSource("https://github.com/powsybl/powsybl.jl.git", "0a9e3110c366808e7ac23cfd9e19f51793807392"),
     GitSource("https://github.com/powsybl/pypowsybl.git", "cd5fea41bbfb2897fd71a6e63b2d07a465055699")
 ]
 
