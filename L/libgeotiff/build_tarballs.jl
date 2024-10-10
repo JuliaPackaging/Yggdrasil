@@ -24,6 +24,8 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
+      -DWITH_JPEG=ON \
+      -DWITH_ZLIB=ON \
       ..
 
 make -j${nproc}
@@ -34,6 +36,8 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# Disable until the dependencies are available for this platform
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -46,9 +50,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("PROJ_jll"; compat="902.500"),
-    Dependency("Libtiff_jll"; compat="4.7"),
+    Dependency("JpegTurbo_jll"; compat="3.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
+    Dependency("Libtiff_jll"; compat="4.7"),
+    Dependency("PROJ_jll"; compat="902.500"),
+    Dependency("Zlib_jll"; compat="1.3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
