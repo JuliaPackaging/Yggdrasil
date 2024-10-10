@@ -1,0 +1,18 @@
+diff --git a/argp-help.c b/argp-help.c
+index 6f64056..0bbbfa0 100644
+--- a/argp-help.c
++++ b/argp-help.c
+@@ -75,6 +75,13 @@ static char * dgettext_safe(const char *d, const char *m) { return m ? dgettext(
+ #include <argp-fmtstream.h>
+ #include "argp-namefrob.h"
+ 
++#ifndef HAVE_MEMPCPY
++void *mempcpy(void *, const void *, size_t);
++#endif
++#ifndef HAVE_STRCHRNUL
++char *strchrnul(const char *, int);
++#endif
++
+ #ifndef SIZE_MAX
+ # define SIZE_MAX ((size_t) -1)
+ #endif
