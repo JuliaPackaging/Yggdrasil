@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GDAL"
 upstream_version = v"3.9.2"
-version_offset = v"1.1.1"
+version_offset = v"1.2.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -193,22 +193,22 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("GEOS_jll"; compat="3.11.2"),
     Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
-    Dependency("LERC_jll"; compat="3"),
+    Dependency("LERC_jll"; compat="4"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("LibPQ_jll"),
-    Dependency("Libtiff_jll"; compat="4.5.1"),
+    Dependency("LibPQ_jll"; compat="16"),
+    Dependency("Libtiff_jll"; compat="4.7"),
     Dependency("Lz4_jll"; compat="1.9.3"),
     Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
-    Dependency("OpenJpeg_jll"),
+    Dependency("OpenJpeg_jll"; compat="2.5"),
     Dependency("PCRE2_jll"; compat="10.35.0"),
-    Dependency("PROJ_jll"; compat="901.300.0"),
+    Dependency("PROJ_jll"; compat="902.500"),
     Dependency("Qhull_jll"; compat="8.0.999"),
-    Dependency("SQLite_jll"),
+    Dependency("SQLite_jll"; compat="3.45"),
     Dependency("XML2_jll"; compat="2.9.11"),
     Dependency("XZ_jll"; compat="5.2.5"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.6"),
-    Dependency("libgeotiff_jll"; compat="100.701.100"),
+    Dependency("libgeotiff_jll"; compat="100.702.300"),
     Dependency("libpng_jll"; compat="1.6.38"),
     Dependency("libwebp_jll"; compat="1.2.4"),
 ]
@@ -216,3 +216,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")
+
+# Build trigger: 1
