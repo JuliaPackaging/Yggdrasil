@@ -15,7 +15,7 @@ cd MGARD
 # We installed a `protoc` executable both as a build- and a host-build-dependency.
 # Delete the non-host-build `protoc` executable so that cmake won't try to run it.
 rm ${bindir}/protoc${exeext}
-ls -l ${host_bindir}/protoc${exeext}
+ls -l ${host_bindir}/protoc
 cmake -B build \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
