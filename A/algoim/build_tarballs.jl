@@ -3,8 +3,9 @@ using BinaryBuilder
 name = "algoim"
 version = v"0.1.0"
 sources = [
-    GitSource("https://github.com/pantolin/algoim.git", "a4379af4e3d8a9075c34f774fbb0bb88c8ccca08"),
-] # Required to compile with Apple's clang 16. See https://github.com/algoim/algoim/pull/8
+    GitSource("https://github.com/ericneiva/algoim.git", "e80020a5182597a2392194651f62fb6f4c631082"),
+] # Required to compile with Apple's clang 16. 
+# See https://github.com/algoim/algoim/pull/8 and https://github.com/algoim/algoim/pull/6
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/algoim
