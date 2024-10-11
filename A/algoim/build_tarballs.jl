@@ -3,12 +3,15 @@ using BinaryBuilder
 name = "algoim"
 version = v"0.1.0"
 sources = [
-    GitSource("https://github.com/ericneiva/algoim.git", "e80020a5182597a2392194651f62fb6f4c631082"),
-] # Required to compile with Apple's clang 16. 
-# See https://github.com/algoim/algoim/pull/8 and https://github.com/algoim/algoim/pull/6
+    GitSource("https://github.com/algoim/algoim.git", "da1d81499608e1d499695d255f0233140b8c81e8"),
+    DirectorySource("./bundled"),
+]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/algoim
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 install_license LICENSE
 mkdir -p "${includedir}"
 cp -vr algoim "${includedir}/."
