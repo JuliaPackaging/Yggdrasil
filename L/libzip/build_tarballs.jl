@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libzip"
-version = v"1.10.1"
+version = v"1.11.1"
 
 # Collection of sources required to complete build
 sources = [
     # The official download from libzip.org fails with a certificate problem
     ArchiveSource("https://github.com/nih-at/libzip/releases/download/v$(version)/libzip-$(version).tar.gz",
-                  "9669ae5dfe3ac5b3897536dc8466a874c8cf2c0e3b1fdd08d75b273884299363"),
+                  "c0e6fa52a62ba11efd30262290dc6970947aef32e0cc294ee50e9005ceac092a"),
 ]
 
 # Bash recipe for building across all platforms
