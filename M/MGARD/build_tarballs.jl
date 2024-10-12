@@ -6,7 +6,11 @@ version = v"1.5.2"
 
 # Collection of sources required to build MGARD
 sources = [
-    GitSource("https://github.com/CODARcode/MGARD", "208b0c42af6ba552387aec321664d5cbb757b2e2"),
+    # GitSource("https://github.com/CODARcode/MGARD", "208b0c42af6ba552387aec321664d5cbb757b2e2"),
+    # This is PR 233 for MGARD
+    # <https://github.com/CODARcode/MGARD/pull/233>, later than 1.5.2.
+    # It includes corrections to support musl.
+    GitSource("https://github.com/JieyangChen7/MGARD", "8d69aa166c3a3458ed9adb1b4b9c0133a9865803"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +24,7 @@ cmake -B build \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_PREFIX_PATH=${prefix} \
     -DCMAKE_PROGRAM_PATH=${host_bindir} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DMGARD_ENABLE_OPENMP=ON \
@@ -31,11 +36,11 @@ cmake --install build
 # We enable all platforms
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# There are C++ build errors with musl: the type `uint` is not
-# declared. This is probably a bug in the vendored ZFP library in
-# MGARD. Issue has been reported at
-# <https://github.com/CODARcode/MGARD/issues/232>.
-filter!(p -> libc(p) ≠ "musl", platforms)
+# # There are C++ build errors with musl: the type `uint` is not
+# # declared. This is probably a bug in the vendored ZFP library in
+# # MGARD. Issue has been reported at
+# # <https://github.com/CODARcode/MGARD/issues/232>.
+# filter!(p -> libc(p) ≠ "musl", platforms)
 
 # The products that we will ensure are always built
 products = [
