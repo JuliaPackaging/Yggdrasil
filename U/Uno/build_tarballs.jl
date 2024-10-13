@@ -18,12 +18,25 @@ cd $WORKSPACE/srcdir/Uno
 mkdir -p build
 cd build
 
+if [[ "${target}" == *mingw* ]]; then
+    LBT=libblastrampoline-5
+else
+    LBT=libblastrampoline
+fi
+
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
+    -DMETIS_INCLUDE_DIR=${includedir} \
+    -DMUMPS_LIBRARY="${libdir}/libdmumps.${dlext}" \
+    -DMUMPS_COMMON_LIBRARY="${libdir}/libmumps_common.${dlext}" \
+    -DMUMPS_PORD_LIBRARY="${libdir}/libpord.${dlext}" \
+    -DMUMPS_MPISEQ_LIBRARY="${libdir}/libmpiseq.${dlext}" \
+    -DBLAS_LIBRARIES="${libdir}/${LBT}.${dlext}" \
+    -DLAPACK_LIBRARIES="${libdir}/${LBT}.${dlext}" \
     ..
 
 make -j${nproc}
