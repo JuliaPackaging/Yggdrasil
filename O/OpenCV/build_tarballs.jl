@@ -8,15 +8,17 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "OpenCV"
-version = v"4.6.0"
+version = v"4.10.0"
 version_collapsed_str = replace(string(version), "." => "")
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "b0dc474160e389b9c9045da5db49d03ae17c6a6b"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "db16caf6ceee76b43b94c846be276e92a43e9700"),
+    GitSource("https://github.com/opencv/opencv.git",
+              "71d3237a093b60a27601c20e9ee6c3e52154e8b1"),
+    GitSource("https://github.com/opencv/opencv_contrib.git",
+              "1ed3dd2c53888e3289afdb22ec4e9ebbff3dba87"),
     DirectorySource("./bundled"),
 ]
 
