@@ -23,7 +23,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DMUMPS_INCLUDE_DIR=${includedir} \
-    -DMUMPS_LIBRARY=${libdir} \
+    -DMUMPS_LIBRARY=${libdir}/libdmumps.${dlext} \
     ..
 
 make -j${nproc}
