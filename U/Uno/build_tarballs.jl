@@ -9,7 +9,7 @@ version = v"1.1.0"
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "528c2bd9025d6708f094c9bb57cffb40c13a95a7",
+        "bf92ac7e756200c9be5adfb147b9158dd7def219",
     ),
 ]
 
@@ -22,8 +22,8 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
-    -DMUMPS_LIBRARY=${libdir}/libdmumps.${dlext} \
     ..
 
 make -j${nproc}
