@@ -40,7 +40,6 @@ cmake \
     ..
 
 make -j${nproc}
-make install
 """
 
 platforms = supported_platforms()
