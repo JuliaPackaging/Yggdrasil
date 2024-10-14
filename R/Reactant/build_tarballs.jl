@@ -169,7 +169,8 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-# sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
+$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.jl :Arith.jl :Affine.jl :Func.jl :Enzyme.jl :StableHLO.jl :CHLO.jl :VHLO.jl
+sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     if [[ "${bb_full_target}" == *86* ]]; then
@@ -223,9 +224,17 @@ builds = []
 dependencies = Dependency[]
 
 # The products that we will ensure are always built
-products = Any[
+products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
                    :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
+    FileProduct("Affine.jl", :Affine_jl),
+    FileProduct("Arith.jl", :Arith_jl),
+    FileProduct("Builtin.jl", :Builtin_jl),
+    FileProduct("Enzyme.jl", :Enzyme_jl),
+    FileProduct("Func.jl", :Func_jl),
+    FileProduct("StableHLO.jl", :StableHLO_jl),
+    FileProduct("CHLO.jl", :CHLO_jl),
+    FileProduct("VHLO.jl", :VHLO_jl),
     # FileProduct("libMLIR_h.jl", :libMLIR_h_jl),
 ]
 
