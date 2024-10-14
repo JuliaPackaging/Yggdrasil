@@ -40,7 +40,7 @@ cmake \
     ..
 
 make -j${nproc}
-cp libuno.a ${libdir}/libuno.a
+cp libuno.a ${prefix}/lib/libuno.a
 
 # We need -fPIC to create a shared library
 # $CXX -fPIC -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}"
