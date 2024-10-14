@@ -7,9 +7,7 @@ version = v"1.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    # The official download from libzip.org fails with a certificate problem
-    ArchiveSource("https://github.com/nih-at/libzip/releases/download/v$(version)/libzip-$(version).tar.gz",
-                  "c0e6fa52a62ba11efd30262290dc6970947aef32e0cc294ee50e9005ceac092a"),
+    GitSource("https://github.com/nih-at/libzip.git", "956320f8502c59468afd2b43557e1c94bb256eaa")
 ]
 
 # Bash recipe for building across all platforms
