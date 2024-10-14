@@ -9,7 +9,7 @@ version = v"1.1.0"
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "bf92ac7e756200c9be5adfb147b9158dd7def219",
+        "3bd224443a905c3d41b058a108db2b382a537ea4",
     ),
 ]
 
