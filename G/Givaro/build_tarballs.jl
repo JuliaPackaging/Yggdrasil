@@ -7,7 +7,7 @@ version = v"4.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    AchiveSource("https://github.com/linbox-team/givaro/releases/download/v4.2.0/givaro-4.2.0.tar.gz", "73ef15ca34c6f1c9f61013d2bd7d4d547e3ace14"),
+    ArchiveSource("https://github.com/linbox-team/givaro/releases/download/v4.2.0/givaro-4.2.0.tar.gz", "73ef15ca34c6f1c9f61013d2bd7d4d547e3ace14"),
     DirectorySource("./bundled")
 ]
 
