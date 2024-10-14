@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "algoim"
-version = v"0.1.0"
+version = v"0.1.1"
 sources = [
     GitSource("https://github.com/algoim/algoim.git", "da1d81499608e1d499695d255f0233140b8c81e8"),
     DirectorySource("./bundled"),
