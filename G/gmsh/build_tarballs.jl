@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.13.0"
+version = v"4.13.1"
 
 # Collection of sources required to build Gmsh
 sources = [
     ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
-                  "2a286195e27fe11ee48ce3c98a07c6a4b9961f1e03878e0e3681cf2cfc08db11"),
+                  "77972145f431726026d50596a6a44fb3c1c95c21255218d66955806b86edbe8d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -76,7 +76,7 @@ dependencies = [
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
     Dependency("METIS_jll"),
     Dependency("MMG_jll"),
-    Dependency("OCCT_jll"),
+    Dependency("OCCT_jll"; compat="~7.7.2"),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXfixes_jll"; platforms=x11_platforms),

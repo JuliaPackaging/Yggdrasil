@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "24.04"
+version_string = "24.10"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "77a91e75ad0106324a44ca514e1e8abc54f2fc2d453406441c871075726a8167"),
+                  "a2d15e417bd7c41963749338e884d939c80c5f2fcae3279fe3f1b463e3e4208a"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
@@ -53,6 +53,9 @@ fi
 
 if [[ "${target}" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
+    hdf5opts="-DAMReX_HDF5=OFF"
+elif [[ "${target}" == aarch64-*-freebsd* ]]; then
+    # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
     hdf5opts="-DAMReX_HDF5=OFF"
 else
     hdf5opts="-DAMReX_HDF5=ON"
@@ -109,15 +112,19 @@ platforms = filter(p -> libgfortran_version(p).major ≥ 5, platforms)
 # We cannot build with musl since AMReX requires the `fegetexcept` GNU API
 platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.3", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms;
+                                                         MPICH_compat="4.2.3",
+                                                         MPItrampoline_compat="5.5.0",
+                                                         OpenMPI_compat="4.1.6, 5")
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && ((arch(p) == "armv6l" && libc(p) == "glibc") ||
+                                                    (arch(p) == "aarch64" && Sys.isfreebsd(p)))), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
-hdf5_platforms = filter(!Sys.iswindows, platforms)
+# HDF5 has not yet been built for aarch64-unknown-freebsd. Re-enable once it's available.
+hdf5_platforms = filter(p -> !(Sys.iswindows(p) || (arch(p) == "aarch64" && Sys.isfreebsd(p))), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [

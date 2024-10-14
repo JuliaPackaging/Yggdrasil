@@ -14,7 +14,21 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
 
 message(STATUS "Found JlCxx at ${JlCxx_location}")
 
-find_package(ITK REQUIRED)
+# Update the ITK components list
+set(ITK_COMPONENTS
+    ITKCommon
+    ITKIOImageBase
+    ITKIOGDCM
+    ITKIONIFTI
+    ITKIONRRD
+    ITKIOHDF5
+    ITKIOMeta
+    ITKIOPNG
+    ITKIOTIFF
+    ITKImageIO
+)
+
+find_package(ITK REQUIRED COMPONENTS ${ITK_COMPONENTS})
 include(${ITK_USE_FILE})
 
 message(STATUS "Found ITK at ${ITK_USE_FILE}")
