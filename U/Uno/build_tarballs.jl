@@ -52,7 +52,6 @@ products = [
     # ExecutableProduct("Uno", :amplexe),
     FileProduct("lib/libuno.a", :libuno),
 ]
-]
 
 dependencies = [
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), compat="0.1.3"),
