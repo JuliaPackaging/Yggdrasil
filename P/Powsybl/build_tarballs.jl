@@ -3,6 +3,11 @@ using BinaryBuilder, Pkg
 name = "Powsybl"
 version = v"0.1.0"
 
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+
 pypowsybl_version = v"1.7.0"
 
 
