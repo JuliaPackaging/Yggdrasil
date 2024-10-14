@@ -16,13 +16,13 @@ sources = [
     GitSource("https://github.com/powsybl/pypowsybl.git", "cd5fea41bbfb2897fd71a6e63b2d07a465055699"),
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-windows.zip",
                   "82d3cee44992dcceaee7549f17351155e91c9eb2bdce97b1cf6c0107155991e8",
-                  "powsybl-java-windows"),
+                  "powsybl-java-x86_64-w64-mingw32"),
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-linux.zip",
                   "8832e1ff432e97807dc6dfddb4b001dd2c3c05a7411fc3748c8af3854a3b448c",
-                  "powsybl-java-linux"),
+                  "powsybl-java-x86_64-linux-gnu"),
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin.zip",
                   "d541eb07a334d9272b167cb30f7d846ff109db49ac61a9776593c1aface18324",
-                  "powsybl-java-darwin")
+                  "powsybl-java-x86_64-apple-darwin")
 ]
 
 # To get julia_versions
@@ -31,16 +31,8 @@ include("../../L/libjulia/common.jl")
 script = raw"""
 cd $WORKSPACE/srcdir
 
-# Get binary for powsybl-java, generated with GraalVm
-if [[ "${target}" == *-mingw* ]]; then
-    cp -r powsybl-java-windows/* ${prefix}
-fi
-if [[ "${target}" == *-linux-* ]]; then
-    cp -r powsybl-java-linux/* ${prefix}
-fi
-if [[ "${target}" == *-apple-* ]]; then
-    cp -r powsybl-java-darwin/* ${prefix}
-fi
+# Get binary for powsybl-java, generated with GraalVm, install them in ${prefix} path
+cp -rv powsybl-java-${target}/* ${prefix}
 
 cd $WORKSPACE/srcdir/pypowsybl/cpp
 cmake -B build \
