@@ -28,13 +28,13 @@ cd $WORKSPACE/srcdir
 
 # Get binary for powsybl-java, generated with GraalVm
 if [[ "${target}" == *-mingw* ]]; then
-    mv powsybl-java-windows/* ${prefix}
+    cp -r powsybl-java-windows/* ${prefix}
 fi
 if [[ "${target}" == *-linux-* ]]; then
-    mv powsybl-java-linux/* ${prefix}
+    cp -r powsybl-java-linux/* ${prefix}
 fi
 if [[ "${target}" == *-apple-* ]]; then
-    mv powsybl-java-darwin/* ${prefix}
+    cp -r powsybl-java-darwin/* ${prefix}
 fi
 
 cd $WORKSPACE/srcdir/pypowsybl/cpp
