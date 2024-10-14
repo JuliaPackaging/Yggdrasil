@@ -25,14 +25,9 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 unzip powsybl-java.zip -d $prefix
 
-# Build powsybl-cpp API
-cmake ${WORKSPACE}/srcdir/pypowsybl/cpp -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_PYPOWSYBL_JAVA=OFF -DBUILD_PYTHON_BINDINGS=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$prefix/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$prefix/include -DCMAKE_INSTALL_PREFIX=$prefix
-cmake --build . --target install --config Release
-
 cd $WORKSPACE/srcdir/pypowsybl/cpp
 cmake -B build \
-    -DCMAKE_BUILD_TYPE=Release \
-    pypowsybl/cpp \
+    ${WORKSPACE}/srcdir/pypowsybl/cpp \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_PYPOWSYBL_JAVA=OFF \
     -DBUILD_PYTHON_BINDINGS=OFF \
