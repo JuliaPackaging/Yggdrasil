@@ -1,7 +1,7 @@
 diff --git macros/gmp-check.m4.orig macros/gmp-check.m4
 --- macros/gmp-check.m4.orig
 +++ macros/gmp-check.m4
-@@ -105,21 +105,11 @@ AC_DEFUN([GIV_CHECK_GMP], [
+@@ -105,21 +105,6 @@
  		exit 1
  	])
  
@@ -20,11 +20,6 @@ diff --git macros/gmp-check.m4.orig macros/gmp-check.m4
 -		  AC_MSG_ERROR(your GMP is too old. GMP release >= $min_gmp_release needed)
 -		  exit 1]
 -	)
-+	### Major hack! we need to add -lrt sometimes, let's do it here
-+	AC_MSG_CHECKING(if we need -lrt)
-+	AC_CHECK_LIB([rt], [main], [AC_MSG_RESULT(yes)
-+			GMP_LIBS="${GMP_LIBS} -lrt"], [AC_MSG_RESULT(no)])
-+
  	AC_LANG_POP([C++])
  	
  	AC_SUBST(GMP_CFLAGS)
