@@ -40,12 +40,18 @@ cmake \
     ..
 
 make -j${nproc}
+cp libuno.a ${libdir}/libuno.a
+
+# We need -fPIC to create a shared library
+# $CXX -fPIC -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}"
 """
 
 platforms = supported_platforms()
 
 products = [
-    ExecutableProduct("Uno", :amplexe),
+    # ExecutableProduct("Uno", :amplexe),
+    FileProduct("lib/libuno.a", :libuno),
+]
 ]
 
 dependencies = [
