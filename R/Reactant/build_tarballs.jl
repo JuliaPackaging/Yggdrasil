@@ -169,10 +169,7 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-# $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
-BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
-$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
-sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
+# sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     if [[ "${bb_full_target}" == *86* ]]; then
@@ -229,14 +226,6 @@ dependencies = Dependency[]
 products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
                    :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
-    FileProduct("Affine.inc.jl", :Affine_inc_jl),
-    FileProduct("Arith.inc.jl", :Arith_inc_jl),
-    FileProduct("Builtin.inc.jl", :Builtin_inc_jl),
-    FileProduct("Enzyme.inc.jl", :Enzyme_inc_jl),
-    FileProduct("Func.inc.jl", :Func_inc_jl),
-    FileProduct("StableHLO.inc.jl", :StableHLO_inc_jl),
-    FileProduct("CHLO.inc.jl", :CHLO_inc_jl),
-    FileProduct("VHLO.inc.jl", :VHLO_inc_jl),
     # FileProduct("libMLIR_h.jl", :libMLIR_h_jl),
 ]
 
