@@ -11,7 +11,8 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 name = "cufinufft"
 version = v"2.3.0"
-commit_hash = "fffdaeacb10d5d055ce5b313868a7e981cea594b"
+#commit_hash = "fffdaeacb10d5d055ce5b313868a7e981cea594b" # v2.3.0
+commit_hash = "cfe1e330c14229e4bf5ed05ddb6cff6ee1545b1c" # Master as of 2024-10-14
 
 preferred_gcc_version=v"11"
 
