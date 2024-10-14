@@ -3,11 +3,26 @@
 using BinaryBuilder, Pkg
 
 name = "protoc"
-version = v"26.1"
+
+# Protobuf version numbers are weird: The official version number
+# across all languages only includes the minor and patch release. Each
+# language (e.g. C++) has its own major version number on top of that.
+# Thus, e.g. the overall release v"28.2" contains the C++ release
+# v"5.28.2". It's unclear to me (@eschnett) what this means for the
+# `protoc` binary.
+#
+# Because we got this version numbering scheme wrong we add 100 to the
+# C++ version number for our internal version numbers. Thus C++
+# release v"5.28.2" is v"105.28.2" in Julia.
+#
+# When updating to a new release, check the released `CMakeFiles.txt`
+# for the variable `protobuf_VERSION_STRING`. This is the proper C++
+# version number we need. (Then add 100 as explained above.)
+version = v"105.28.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "2434ef2adf0c74149b9d547ac5fb545a1ff8b6b5"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "9fff46d7327c699ef970769d5c9fd0e44df08fc7"),
     DirectorySource("bundled"),
 ]
 
@@ -142,5 +157,3 @@ dependencies = Dependency[
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"9")
-
-# Trigger CI
