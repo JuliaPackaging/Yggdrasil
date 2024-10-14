@@ -20,9 +20,12 @@ sources = [
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-linux.zip",
                   "8832e1ff432e97807dc6dfddb4b001dd2c3c05a7411fc3748c8af3854a3b448c",
                   "powsybl-java-x86_64-linux-gnu"),
+    ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-linux.zip",
+                  "8832e1ff432e97807dc6dfddb4b001dd2c3c05a7411fc3748c8af3854a3b448c",
+                  "powsybl-java-x86_64-linux-musl"), # linux package for gnu and musl
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin.zip",
                   "d541eb07a334d9272b167cb30f7d846ff109db49ac61a9776593c1aface18324",
-                  "powsybl-java-x86_64-apple-darwin")
+                  "powsybl-java-x86_64-apple-darwin14")
 ]
 
 # To get julia_versions
