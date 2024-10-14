@@ -38,7 +38,7 @@ cmake -B build \
     -DBUILD_PYTHON_BINDINGS=OFF \
     -DPYPOWSYBL_JAVA_LIBRARY_DIR=${prefix}/lib \
     -DPYPOWSYBL_JAVA_INCLUDE_DIR=${prefix}/include \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix}
 cmake --build build --parallel ${nproc}
 cmake --install build
 
