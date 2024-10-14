@@ -7,7 +7,8 @@ sources = [
     GitSource("https://github.com/powsybl/pypowsybl.git", "cd5fea41bbfb2897fd71a6e63b2d07a465055699")
 ]
 
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
+# To get julia_versions
+include("../../L/libjulia/common.jl")
 
 script = raw"""
 cd $WORKSPACE/srcdir
@@ -25,14 +26,37 @@ fi
 unzip powsybl-java.zip -d $prefix
 
 # Build powsybl-cpp API
-cd pypowsybl/cpp && mkdir build && cd build
 cmake ${WORKSPACE}/srcdir/pypowsybl/cpp -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DBUILD_PYPOWSYBL_JAVA=OFF -DBUILD_PYTHON_BINDINGS=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$prefix/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$prefix/include -DCMAKE_INSTALL_PREFIX=$prefix
 cmake --build . --target install --config Release
 
+cd $WORKSPACE/srcdir/pypowsybl/cpp
+cmake -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    pypowsybl/cpp \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DBUILD_PYPOWSYBL_JAVA=OFF \
+    -DBUILD_PYTHON_BINDINGS=OFF \
+    -DPYPOWSYBL_JAVA_LIBRARY_DIR=${prefix}/lib \
+    -DPYPOWSYBL_JAVA_INCLUDE_DIR=${prefix}/include \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake --build build --parallel ${nproc}
+cmake --install build
+
 # Build julia wrapper
-cd $WORKSPACE/srcdir/powsybl.jl && mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ../cpp/powsybljl-cpp -DJulia_PREFIX=$prefix -DJlCxx_DIR=$prefix/lib/cmake/JlCxx -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_PREFIX_PATH=$prefix -DCMAKE_INSTALL_PREFIX=$prefix -DPOWSYBL_INSTALL_DIR=$prefix
-cmake --build . --target install --config Release
+cd $WORKSPACE/srcdir/powsybl.jl
+cmake -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    cpp/powsybljl-cpp \
+    -DJulia_PREFIX=${prefix} \
+    -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_PREFIX_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DPOWSYBL_INSTALL_DIR=${prefix}
+cmake --build build --parallel ${nproc}
+cmake --install build
+
 install_license $WORKSPACE/srcdir/powsybl.jl/LICENSE.md
 """
 
@@ -43,10 +67,10 @@ filter!(p -> arch(p) == "x86_64" && os(p) ∈ ("windows", "linux", "macos"), pla
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
-LibraryProduct(["math", "libmath"], :libmath)
-LibraryProduct(["pypowsybl-java", "libpypowsybl-java"], :libpypowsybl_java)
-LibraryProduct(["powsybl-cpp", "libpowsybl-cpp"], :libpowsybl_cpp)
-LibraryProduct(["PowsyblJlWrap", "libPowsyblJlWrap"], :libPowsyblJlWrap)
+    LibraryProduct(["math", "libmath"], :libmath)
+    LibraryProduct(["pypowsybl-java", "libpypowsybl-java"], :libpypowsybl_java)
+    LibraryProduct(["powsybl-cpp", "libpowsybl-cpp"], :libpowsybl_cpp)
+    LibraryProduct(["PowsyblJlWrap", "libPowsyblJlWrap"], :libPowsyblJlWrap)
 ]
 
 dependencies = [
@@ -54,5 +78,5 @@ dependencies = [
     Dependency("libjulia_jll")
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"12", julia_compat="1.6")
+#build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+#    preferred_gcc_version=v"10", julia_compat="1.6")
