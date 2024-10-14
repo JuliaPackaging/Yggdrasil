@@ -35,7 +35,8 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p=supported_platforms() if os(p) != "windows"] # life is too short
+platforms = supported_platforms()                                                       
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = Product[
