@@ -23,7 +23,7 @@ autoreconf -i
 ./configure CCNAM=${CC} CPLUS_INCLUDE_PATH=$includedir --prefix=$prefix --build=${MACHTYPE} --host=${target}
 
 # really ugly! but I see no other solution for now.
-if echo ${target} | grep -q aarch64-apple-darwin; then
+if [[ ${target} != aarch64-apple-darwin* ]]; then
     patch -p0 < ${WORKSPACE}/srcdir/patches/libtool-aarch64-apple-darwin.hack
 fi
 
