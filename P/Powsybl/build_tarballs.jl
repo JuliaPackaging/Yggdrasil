@@ -2,9 +2,19 @@ using BinaryBuilder, Pkg
 
 name = "Powsybl"
 version = v"0.1.0"
+
+pypowsybl_version = v"1.7.0"
+
+
 sources = [
     GitSource("https://github.com/powsybl/powsybl.jl.git", "0a9e3110c366808e7ac23cfd9e19f51793807392"),
-    GitSource("https://github.com/powsybl/pypowsybl.git", "cd5fea41bbfb2897fd71a6e63b2d07a465055699")
+    GitSource("https://github.com/powsybl/pypowsybl.git", "cd5fea41bbfb2897fd71a6e63b2d07a465055699"),
+    ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-windows.zip",
+                  "powsybl-java-windows"),
+    ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-linux.zip",
+                  "powsybl-java-linux"),
+    ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin.zip",
+                  "powsybl-java-darwin")
 ]
 
 # To get julia_versions
@@ -15,15 +25,14 @@ cd $WORKSPACE/srcdir
 
 # Get binary for powsybl-java, generated with GraalVm
 if [[ "${target}" == *-mingw* ]]; then
-    wget https://github.com/powsybl/pypowsybl/releases/download/v1.7.0/binaries-v1.7.0-windows.zip -O powsybl-java.zip
+    mv powsybl-java-windows/* ${prefix}
 fi
 if [[ "${target}" == *-linux-* ]]; then
-    wget https://github.com/powsybl/pypowsybl/releases/download/v1.7.0/binaries-v1.7.0-linux.zip -O powsybl-java.zip
+    mv powsybl-java-linux/* ${prefix}
 fi
 if [[ "${target}" == *-apple-* ]]; then
-    wget https://github.com/powsybl/pypowsybl/releases/download/v1.7.0/binaries-v1.7.0-darwin.zip -O powsybl-java.zip
+    mv powsybl-java-darwin/* ${prefix}
 fi
-unzip powsybl-java.zip -d $prefix
 
 cd $WORKSPACE/srcdir/pypowsybl/cpp
 cmake -B build \
