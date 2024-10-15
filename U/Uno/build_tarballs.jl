@@ -29,7 +29,6 @@ if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
 else
     OMP=gomp
 fi
-bob
 
 cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
