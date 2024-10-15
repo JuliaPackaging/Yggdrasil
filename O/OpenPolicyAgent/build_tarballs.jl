@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenPolicyAgent"
-version = v"0.61.0"
+version = v"0.65.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/open-policy-agent/opa.git", "ea7a3e13c8fdceadeb199904facb4990fcb010f8")
+    GitSource("https://github.com/open-policy-agent/opa.git", "f05497530d337dfd30dbd31851209d3a25c1cf95")
 ]
 
 # Bash recipe for building across all platforms
