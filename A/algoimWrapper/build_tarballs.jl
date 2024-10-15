@@ -10,7 +10,6 @@ include("../../L/libjulia/common.jl")
 
 name = "algoimWrapper"
 version = v"0.3.0"
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 sources = [
     GitSource("https://github.com/ericneiva/algoimWrapper.git", "f40073b27ce7f65f01730991d4321a71c7b29b28"),
