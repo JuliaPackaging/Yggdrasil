@@ -54,6 +54,7 @@ cp uno_ampl${exeext} ${bindir}/uno_ampl${exeext}
 """
 
 platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("uno_ampl", :amplexe),
