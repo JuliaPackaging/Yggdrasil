@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.21"
+version = v"0.0.22"
 
 sources = [
-  GitSource(repo, "deefd1874c8c6050c6cd42e4eb846a889f5cafb0"),
+  GitSource(repo, "7f55680aeb97da9262de404ad81df040b57ad9c1"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -169,9 +169,7 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-# $JULIA --project=. -e "using Pkg; Pkg.instantiate(); Pkg.add(url=\"https://github.com/JuliaInterop/Clang.jl\")"
-BAZEL_BUILD_FLAGS+=(--action_env=JULIA=$JULIA)
-$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.inc.jl :Arith.inc.jl :Affine.inc.jl :Func.inc.jl :Enzyme.inc.jl :StableHLO.inc.jl :CHLO.inc.jl :VHLO.inc.jl
+$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.jl :Arith.jl :Affine.jl :Func.jl :Enzyme.jl :StableHLO.jl :CHLO.jl :VHLO.jl
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
@@ -229,14 +227,14 @@ dependencies = Dependency[]
 products = [
     LibraryProduct(["libReactantExtra", "libReactantExtra"],
                    :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
-    FileProduct("Affine.inc.jl", :Affine_inc_jl),
-    FileProduct("Arith.inc.jl", :Arith_inc_jl),
-    FileProduct("Builtin.inc.jl", :Builtin_inc_jl),
-    FileProduct("Enzyme.inc.jl", :Enzyme_inc_jl),
-    FileProduct("Func.inc.jl", :Func_inc_jl),
-    FileProduct("StableHLO.inc.jl", :StableHLO_inc_jl),
-    FileProduct("CHLO.inc.jl", :CHLO_inc_jl),
-    FileProduct("VHLO.inc.jl", :VHLO_inc_jl),
+    FileProduct("Affine.jl", :Affine_jl),
+    FileProduct("Arith.jl", :Arith_jl),
+    FileProduct("Builtin.jl", :Builtin_jl),
+    FileProduct("Enzyme.jl", :Enzyme_jl),
+    FileProduct("Func.jl", :Func_jl),
+    FileProduct("StableHLO.jl", :StableHLO_jl),
+    FileProduct("CHLO.jl", :CHLO_jl),
+    FileProduct("VHLO.jl", :VHLO_jl),
     # FileProduct("libMLIR_h.jl", :libMLIR_h_jl),
 ]
 
