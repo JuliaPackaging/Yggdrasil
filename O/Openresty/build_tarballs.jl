@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "Openresty"
-version = v"1.21.4"
+version = v"1.25.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://openresty.org/download/openresty-$(version).1.tar.gz", "0c5093b64f7821e85065c99e5d4e6cc31820cfd7f37b9a0dec84209d87a2af99"),
+    ArchiveSource("https://openresty.org/download/openresty-$(version).1.tar.gz", "32ec1a253a5a13250355a075fe65b7d63ec45c560bbe213350f0992a57cd79df"),
     ArchiveSource("https://sourceforge.net/projects/pcre/files/pcre/8.45/pcre-8.45.tar.bz2", "4dae6fdcd2bb0bb6c37b5f97c33c2be954da743985369cddac3546e3218bffb8"),
-    ArchiveSource("https://www.openssl.org/source/openssl-1.1.1p.tar.gz", "bf61b62aaa66c7c7639942a94de4c9ae8280c08f17d4eac2e44644d9fc8ace6f"),
-    ArchiveSource("https://www.zlib.net/zlib-1.2.12.tar.gz", "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9")
+    ArchiveSource("https://www.openssl.org/source/openssl-3.3.0.tar.gz", "53e66b043322a606abf0087e7699a0e033a37fa13feb9742df35c3a33b18fb02"),
+    ArchiveSource("https://www.zlib.net/zlib-1.3.1.tar.gz", "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23")
 ]
 
 # Bash recipe for building across all platforms
@@ -19,11 +19,11 @@ cd $WORKSPACE/srcdir/openresty-*/
 export SUPER_VERBOSE=1
 ./configure --prefix=${prefix} \
     --with-cc=$CC \
-    --with-zlib=$WORKSPACE/srcdir/zlib-1.2.12 \
-    --with-openssl=$WORKSPACE/srcdir/openssl-1.1.1p \
+    --with-zlib=$WORKSPACE/srcdir/zlib-1.3.1 \
+    --with-openssl=$WORKSPACE/srcdir/openssl-3.3.0 \
     --with-pcre=$WORKSPACE/srcdir/pcre-8.45 \
     --with-pcre-jit
-make
+make -j${nprocs}
 make install
 rm ${bindir}/openresty
 ln -s ../nginx/sbin/nginx ${bindir}/openresty
