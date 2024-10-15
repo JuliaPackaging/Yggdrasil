@@ -9,7 +9,7 @@ version = v"1.1.0"
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "3bd224443a905c3d41b058a108db2b382a537ea4",
+        "0513043436e4e6dddc7aac71695aea56f5a32285",
     ),
 ]
 
@@ -28,6 +28,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -Damplsolver=${includedir} \
     -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
     -DMETIS_INCLUDE_DIR=${includedir} \
@@ -40,7 +41,7 @@ cmake \
     ..
 
 make -j${nproc}
-cp libuno.a ${prefix}/lib/libuno.a
+install -Dvm 644 libuno.a -t ${prefix}/lib
 
 # We need -fPIC to create a shared library
 # $CXX -fPIC -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}"
