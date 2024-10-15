@@ -19,7 +19,7 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_UMFPACK=ON
         -DSUITESPARSE_USE_SYSTEM_CHOLMOD=ON
     )
-""" * build_script(true)
+""" * build_script(;use_omp=true)
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
@@ -30,5 +30,7 @@ dependencies = append!(dependencies, [
 products = [
     LibraryProduct("libparu", :libparu),
 ]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, 
-               dependencies; julia_compat="1.11",preferred_gcc_version=v"9")
+
+
+build_tarballs(ARGS, name, version, sources, script, platforms, 
+               products, dependencies; julia_compat="1.11",preferred_gcc_version=v"9")

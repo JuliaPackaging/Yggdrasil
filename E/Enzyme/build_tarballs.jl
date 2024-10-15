@@ -8,21 +8,23 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.141"
+auto_version = "refs/tags/v0.0.153"
 version = VersionNumber(split(auto_version, "/")[end])
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "7b1c34cdea31d287f41aec8b12fc8f0bab0627a3"),
+    GitSource(repo, "1b63f1c781ec9ea665de5a9f94bc52329efb961c"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
+# Exclude aarch64 FreeBSD for the time being
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -167,6 +169,6 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, sources, script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=build.gcc_version, julia_compat="1.6",
+                   preferred_gcc_version=build.gcc_version, julia_compat="1.10",
                    augment_platform_block, lazy_artifacts=true) # drop when julia_compat >= 1.7
 end

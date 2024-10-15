@@ -3,22 +3,17 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.29.3"
+version = v"3.30.2"
 
 # Collection of sources required to build CMake
 sources = [
-    GitSource("https://github.com/Kitware/CMake", "b39fb31bf411c3925bd937f8cffbc471c2588c34"),
-    DirectorySource("bundled/"),
+    GitSource("https://github.com/Kitware/CMake", "d88682dff6bf053e5bbdc10accf5d6825303e656"),
+    #DirectorySource("bundled/"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/CMake
-
-# Add support for libblastrampoline to the FindBLAS/FindLAPACK modules
-# Upstream PR https://gitlab.kitware.com/cmake/cmake/-/merge_requests/9557
-# It will be included in 3.30
-atomic_patch -p1 $WORKSPACE/srcdir/patches/01_libblastrampoline.patch
 
 mkdir build
 cd build/
@@ -45,7 +40,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.12")
+    Dependency("OpenSSL_jll"; compat="3.0.14")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
