@@ -58,7 +58,6 @@ platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("uno_ampl", :amplexe),
-    FileProduct("lib/libuno.a", :libuno),
 ]
 
 dependencies = [
