@@ -10,7 +10,7 @@ sources = [
     # This is PR 233 for MGARD
     # <https://github.com/CODARcode/MGARD/pull/233>, later than 1.5.2.
     # It includes corrections to support musl.
-    GitSource("https://github.com/JieyangChen7/MGARD", "8d69aa166c3a3458ed9adb1b4b9c0133a9865803"),
+    GitSource("https://github.com/JieyangChen7/MGARD", "70281b1f3a150ba07f5054c100adf1c2f324f6fd"),
 ]
 
 # Bash recipe for building across all platforms
