@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 include("../common.jl")
 
-name = "Clang_unified"
+name = "LLD_unified"
 version = v"0.1"
 llvm_full_versions = [
     v"15.0.7+10",
@@ -31,13 +31,13 @@ for llvm_assertions in (false, true), llvm_full_version in llvm_full_versions
     llvm_full_version >= v"15" || continue
     libllvm_version = llvm_full_version
     _, _, sources, script, platforms, products, dependencies =
-        configure_extraction(ARGS, llvm_full_version, "Clang", libllvm_version;
+        configure_extraction(ARGS, llvm_full_version, "LLD", libllvm_version;
                              assert=llvm_assertions, augmentation=true,
                              dont_dlopen=false)
     # ignore the output version, as we want a unified JLL
     dependencies = map(dependencies) do dep
         # ignore the version of any LLVM dependency, as we'll automatically load
-        # an appropriate version of Clang via platform augmentations
+        # an appropriate version of LLD via platform augmentations
         # TODO: make this an argument to `configure_extraction`?
         if isa(dep, Dependency) && contains(dep.pkg.name, "LLVM")
             Dependency(dep.pkg.name; dep.platforms)
@@ -62,4 +62,4 @@ for (i, build) in enumerate(builds)
                    augment_platform_block)
 end
 
-# bump
+# build

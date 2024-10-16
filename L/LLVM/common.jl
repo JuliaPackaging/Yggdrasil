@@ -728,6 +728,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         script = lldscript
         products = [
             ExecutableProduct("lld", :lld, "tools"),
+            ExecutableProduct("ld.lld", :ld_lld, "tools"),      # Unix
+            ExecutableProduct("ld64.lld", :ld64_lld, "tools"),  # macOS
+            ExecutableProduct("lld-link", :lld_link, "tools"),  # Windows
+            ExecutableProduct("wasm-ld", :wasm_ld, "tools"),    # WebAssembly
+
             ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
 
@@ -755,6 +760,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    if version < v"18"
+        # We only have LLVM builds for AArch64 BSD starting from LLVM 18
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
     platforms = expand_cxxstring_abis(platforms)
 
