@@ -56,6 +56,7 @@ ${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-ar
 """
 
 platforms = supported_platforms()
+filter!(p -> triplet(p) != "aarch64-unknown-freebsd", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
