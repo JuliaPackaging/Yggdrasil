@@ -3,19 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "libzip"
-version = v"1.10.1"
+version = v"1.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    # The official download from libzip.org fails with a certificate problem
-    ArchiveSource("https://github.com/nih-at/libzip/releases/download/v$(version)/libzip-$(version).tar.gz",
-                  "9669ae5dfe3ac5b3897536dc8466a874c8cf2c0e3b1fdd08d75b273884299363"),
+    GitSource("https://github.com/nih-at/libzip.git", "956320f8502c59468afd2b43557e1c94bb256eaa")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd libzip-*
+cd libzip/
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nprocs}
 cmake --install build
