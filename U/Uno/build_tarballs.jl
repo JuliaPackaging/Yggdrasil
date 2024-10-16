@@ -53,7 +53,7 @@ cmake \
 make -j${nproc}
 
 # Uno does not support `make install`. Manually copy for now.
-install -Dvm 755 "uno_ampl${exeext}" - t "${bindir}"
+install -v -m 755 "uno_ampl${exeext}" -t "${bindir}"
 
 # Currently, Uno does not provide a shared library. THis may bbe useful in future once it has a C API.
 # ${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}" -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis
