@@ -9,7 +9,7 @@ version = v"1.1.0"
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "7f112e1d7e6cbb6c741cc25a9df76e221c2e894d",
+        "f166e60e428c8dafed6c3ded7df49fe2e41a2c03",
     ),
 ]
 
@@ -51,15 +51,15 @@ cmake \
     ..
 
 make -j${nproc}
-cp libuno.a ${libdir}/libuno.a
 cp uno_ampl${exeext} ${bindir}/uno_ampl${exeext}
-# ${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}" -L${OMP} -l${LBT} -ldmumps -lmetis
+${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}" -L${OMP} -l${LBT} -ldmumps -lmetis
 """
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
+    LibraryProduct("libuno", :libuno),
     ExecutableProduct("uno_ampl", :amplexe),
 ]
 
