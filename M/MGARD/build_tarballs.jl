@@ -36,11 +36,9 @@ cmake --install build
 # We enable all platforms
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# # There are C++ build errors with musl: the type `uint` is not
-# # declared. This is probably a bug in the vendored ZFP library in
-# # MGARD. Issue has been reported at
-# # <https://github.com/CODARcode/MGARD/issues/232>.
-# filter!(p -> libc(p) ≠ "musl", platforms)
+# Windows build fail because `CLOCK_REALTIME` is not declared.
+# See `N/Notcurses/bundled/headers/pthread_time.h` for a possible fix.
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
