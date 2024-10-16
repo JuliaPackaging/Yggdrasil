@@ -47,6 +47,7 @@ install_license LICENSE
 atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/distro-generic.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/env-override.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/env-override-ld.patch
 
 # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
 sysroot=/opt/${target}/${target}/sys-root/usr/include
@@ -196,6 +197,18 @@ init_block = raw"""
                                 SPIRV_LLVM_Translator_unified_jll.llvm_spirv_path,
                                 SPIRV_LLVM_Translator_unified_jll.LIBPATH[],
                                 SPIRV_LLVM_Translator_unified_jll.PATH[])
+    ld_path = if Sys.islinux()
+            LLD_unified_jll.ld_lld_path
+        elseif Sys.isapple()
+            LLD_unified_jll.ld64_lld_path
+        elseif Sys.iswindows()
+            LLD_unified_jll.lld_link_path
+        else
+            error("Unsupported platform")
+        end
+    ENV["POCL_PATH_LD"] =
+        generate_wrapper_script("lld", ld_path,
+                                LLD_unified_jll.LIBPATH[], LLD_unified_jll.PATH[])
 """
 
 # determine exactly which tarballs we should build
@@ -211,6 +224,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         Dependency("SPIRV_LLVM_Translator_unified_jll"),
         Dependency("SPIRV_Tools_jll"),
         Dependency("Clang_unified_jll"),
+        Dependency("LLD_unified_jll"),
     ]
 
     for platform in platforms
