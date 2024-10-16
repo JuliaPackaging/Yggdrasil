@@ -1,6 +1,6 @@
 name = "LLD"
-llvm_full_version = v"17.0.6+5"
-libllvm_version = v"17.0.6+5"
+llvm_full_version = v"19.1.1+0"
+libllvm_version = v"19.1.1+0"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -34,7 +34,7 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 for (i, build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    build...;
-                   skip_audit=true, julia_compat="1.11",
+                   skip_audit=true, julia_compat="1.12",
                    augment_platform_block)
 end
 
