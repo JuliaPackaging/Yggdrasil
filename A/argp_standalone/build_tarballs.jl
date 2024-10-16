@@ -22,10 +22,17 @@ done
 autoreconf -i
 CFLAGS="-fPIC" ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
+
+cat >LICENSE <<EOF
+The contents of this repository https://github.com/ericonr/argp-standalone is based on GNU C Library source code
+and changes from Niels Möller (https://www.lysator.liu.se/~nisse/) and collaborators.
+It is licensed primarily under the GNU Lesser General Public License, version 2.1 or later (SPDX: LGPL-2.1-or-later).
+EOF
+
 install -Dvm 644 argp.h -t $prefix/include
 install -Dvm 644 libargp.a -t $prefix/lib
 
-install_license ${WORKSPACE}/srcdir/argp-standalone/README.md
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,4 +51,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+   julia_compat="1.6",preferred_gcc_version=v"6")
