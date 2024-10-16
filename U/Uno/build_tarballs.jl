@@ -60,7 +60,7 @@ cp uno_ampl${exeext} ${bindir}/uno_ampl${exeext}
 """
 
 platforms = supported_platforms()
-filter!(p -> triplet(p) != "aarch64-unknown-freebsd", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
