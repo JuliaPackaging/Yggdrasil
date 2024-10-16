@@ -5,7 +5,7 @@
  	    tk_aqua=no
  	fi
 -	if test ! -d /System/Library/Frameworks/Cocoa.framework; then
-+	if test ! -d /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Cocoa.framework; then
++	if test ! -d /opt/${host}/${host}/sys-root/System/Library/Frameworks/Cocoa.framework; then
  	    { echo "$as_me:$LINENO: WARNING: Aqua can only be used when Cocoa is available" >&5
  echo "$as_me: WARNING: Aqua can only be used when Cocoa is available" >&2;}
  	    tk_aqua=no

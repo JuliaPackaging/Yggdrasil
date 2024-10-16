@@ -20,7 +20,7 @@ if [[ "${target}" == aarch64-apple-* ]]; then
         -DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
     )
 fi
-""" * build_script(true)
+""" * build_script(; use_omp=true)
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
@@ -33,5 +33,5 @@ dependencies = append!(dependencies, [
 products = [
     LibraryProduct("libcxsparse", :libcxsparse)
 ]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, 
-               dependencies; julia_compat="1.11", preferred_llvm_version=LLVM_version)
+build_tarballs(ARGS, name, version, sources, script, platforms,  
+               products, dependencies; julia_compat="1.11", preferred_llvm_version=LLVM_version)

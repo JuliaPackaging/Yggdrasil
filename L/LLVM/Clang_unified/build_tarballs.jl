@@ -11,7 +11,9 @@ version = v"0.1"
 llvm_full_versions = [
     v"15.0.7+10",
     v"16.0.6+4",
-    v"17.0.6+5"
+    v"17.0.6+5",
+    v"18.1.7+3",
+    v"19.1.1+0",
 ]
 
 augment_platform_block = """

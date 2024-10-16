@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"1.0.16695"#.4
+version = v"1.0.17193"#.4
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,9 +27,9 @@ version = v"1.0.16695"#.4
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "437127d6e99a9e546ca665c1b0fdd54e27dab5e1"),
-    GitSource("https://github.com/intel/opencl-clang.git", "cf95b338d14685e4f3402ab1828bef31d48f1fd6" #= branch ocl-open-140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "f6fb55cd7b539ee6a70e3909c963f968cc40c1cd" #= branch llvm_release_140 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "ffa6fb4fc18ae047b8a8e91dbab83f8b3da5ce52"),
+    GitSource("https://github.com/intel/opencl-clang.git", "66a54cbef6726c4e791986779a60d7a45b09c9c9" #= branch ocl-open-140 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "62f5b09b11b1da42274371b1f7535f6f2ab11485" #= branch llvm_release_140 =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f0cc85efdbbe3a46eae90e0f915dc1509836d0fc" #= tag v2023.6.rc1 =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "1c6bb2743599e6eb6f37b2969acc0aef812e32e3"), #= master =#
     GitSource("https://github.com/intel/vc-intrinsics.git", "f9c34404d0ea9abad83875a10bd48d88cea90ebd" #= latest version: v0.18.0 =#),
