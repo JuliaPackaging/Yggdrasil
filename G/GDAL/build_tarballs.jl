@@ -3,8 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.9.2"
-version_offset = v"1.1.0"
+upstream_version = v"3.9.3"
+version_offset = v"1.2.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -13,7 +13,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "3aae5b4cf30c958ab339157b4f8115922e2f2562"),
+        "501754d048e07b07932ec268b6ed3c43ea0819e3"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
@@ -65,6 +65,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_GEOS=ON
     -DGDAL_USE_GEOTIFF=ON
     -DGDAL_USE_GIF=OFF  # Breaks GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
+    -DGDAL_USE_LERC=ON
     -DGDAL_USE_LIBLZMA=ON
     -DGDAL_USE_LIBXML2=ON
     -DGDAL_USE_LZ4=ON
@@ -111,6 +112,8 @@ install_license ../LICENSE.TXT
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+# Disable until the dependencies are available for this platform
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -190,21 +193,22 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("GEOS_jll"; compat="3.11.2"),
     Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
+    Dependency("LERC_jll"; compat="4"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("LibPQ_jll"),
-    Dependency("Libtiff_jll"; compat="4.5.1"),
+    Dependency("LibPQ_jll"; compat="16"),
+    Dependency("Libtiff_jll"; compat="4.7"),
     Dependency("Lz4_jll"; compat="1.9.3"),
     Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
-    Dependency("OpenJpeg_jll"),
+    Dependency("OpenJpeg_jll"; compat="2.5"),
     Dependency("PCRE2_jll"; compat="10.35.0"),
-    Dependency("PROJ_jll"; compat="901.300.0"),
+    Dependency("PROJ_jll"; compat="902.500"),
     Dependency("Qhull_jll"; compat="8.0.999"),
-    Dependency("SQLite_jll"),
+    Dependency("SQLite_jll"; compat="3.45"),
     Dependency("XML2_jll"; compat="2.9.11"),
     Dependency("XZ_jll"; compat="5.2.5"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.6"),
-    Dependency("libgeotiff_jll"; compat="100.701.100"),
+    Dependency("libgeotiff_jll"; compat="100.702.300"),
     Dependency("libpng_jll"; compat="1.6.38"),
     Dependency("libwebp_jll"; compat="1.2.4"),
 ]
