@@ -52,7 +52,7 @@ cmake \
 
 make -j${nproc}
 cp uno_ampl${exeext} ${bindir}/uno_ampl${exeext}
-${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}" -L${OMP} -l${LBT} -ldmumps -lmetis
+${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}" -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis
 """
 
 platforms = supported_platforms()
