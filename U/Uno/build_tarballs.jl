@@ -30,7 +30,7 @@ else
     OMP=gomp
 fi
 
-# FortranCInterface_VERIFY fails on macOS, but let's see if it actually fails the full build
+# FortranCInterface_VERIFY fails on macOS, but it's not actually needed for the current build
 sed -i 's/FortranCInterface_VERIFY(CXX)/# FortranCInterface_VERIFY(CXX)/g' ../CMakeLists.txt
 
 cmake \
@@ -51,8 +51,12 @@ cmake \
     ..
 
 make -j${nproc}
+
+# Uno does not support `make install`. Manually copy for now.
 cp uno_ampl${exeext} ${bindir}/uno_ampl${exeext}
-${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}" -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis
+
+# Currently, Uno does not provide a shared library. THis may bbe useful in future once it has a C API.
+# ${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}" -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis
 """
 
 platforms = supported_platforms()
@@ -60,7 +64,9 @@ filter!(p -> triplet(p) != "aarch64-unknown-freebsd", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
-    LibraryProduct("libuno", :libuno),
+    # This LibraryProduct may be useful once Uno provides a C API. We omit it for nnow.
+    # LibraryProduct("libuno", :libuno),
+    # We call this amplexe to match the convention of other JLL packages (like Ipopt_jll) that provide AMPL wrappers
     ExecutableProduct("uno_ampl", :amplexe),
 ]
 
