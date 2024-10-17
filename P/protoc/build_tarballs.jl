@@ -148,6 +148,10 @@ products = [
     LibraryProduct("libabsl_time", :libabsl_time),
     LibraryProduct("libabsl_time_zone", :libabsl_time_zone),
     LibraryProduct("libabsl_vlog_config_internal", :libabsl_vlog_config_internal),
+
+    # `protoc` builds and installs some UTF8 libraries
+    LibraryProduct("libutf8_range", :libutf8_range),
+    LibraryProduct("libutf8_validity", :libutf8_validity),
 ]
 
 # Dependencies that must be installed before this package can be built
