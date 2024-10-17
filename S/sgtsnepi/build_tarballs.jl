@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sgtsnepi/
-meson --cross-file=${MESON_TARGET_TOOLCHAIN%.*} build
+meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release build
 cd build/
 ninja -j${nproc}
 ninja install
