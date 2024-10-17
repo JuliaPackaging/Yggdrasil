@@ -43,12 +43,14 @@ if [[ "${target}" == *-mingw* ]]; then
   FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
   # Configure does not find the correct Fortran compiler
   export F77="f77"
-  # Link against ws2_32 to use the htonl function from winsock2.h
-  export LIBS="-lmsmpi -lws2_32"
+  # Inform the linker msmpi.dll is in libdir
+  export LDFLAGS="-L${libdir}"
+  # Link against ws2_32 to use the htonl function from winsock2.h.  Also link to
+  # msmpi and inform the linker the name is exactly "msmpi.dll", without the
+  # leading "lib".
+  export LIBS="-l:msmpi.dll -lws2_32"
   # Disable MPI I/O on Windows since it causes p4est to crash
   mpiopts="--enable-mpi --disable-mpiio"
-  # Linker looks for libmsmpi instead of msmpi, copy existing symlink
-  cp -d ${libdir}/msmpi.dll ${libdir}/libmsmpi.dll
 else
   # Use MPI including MPI I/O on all other platforms
   export CC="mpicc"
