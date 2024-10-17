@@ -39,7 +39,7 @@ products = [
 dependencies = [
     BuildDependency("algoim_jll"),
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll",v"0.13.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
     Dependency("OpenBLAS32_jll"), # links to LAPACKE
 ]
 
