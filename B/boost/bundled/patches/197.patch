@@ -1,0 +1,31 @@
+From 768f3cc280302d324dc75b1886d27e7e4b42d4ad Mon Sep 17 00:00:00 2001
+From: Matt Borland <matt@mattborland.com>
+Date: Fri, 10 May 2024 07:52:34 +0200
+Subject: [PATCH] Add mingw extern c for intrinsics
+
+---
+ boost/charconv/detail/config.hpp | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/boost/charconv/detail/config.hpp b/boost/charconv/detail/config.hpp
+index e0e25002..5cbd2120 100644
+--- a/boost/charconv/detail/config.hpp
++++ b/boost/charconv/detail/config.hpp
+@@ -74,7 +74,17 @@
+ #    define BOOST_CHARCONV_HAS_MSVC_32BIT_INTRINSICS
+ #  endif
+ #elif (defined(__x86_64__) || defined(__i386__))
++// See: https://github.com/boostorg/charconv/issues/196
++#  ifdef __MINGW32__
++extern "C" {
++#  endif
++
+ #  include <x86intrin.h>
++
++#  ifdef __MINGW32__
++}
++#  endif
++
+ #  define BOOST_CHARCONV_HAS_X86_INTRINSICS
+ #elif defined(__ARM_NEON__)
+ #  include <arm_neon.h>
