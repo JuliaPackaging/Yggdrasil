@@ -60,8 +60,7 @@ products = [
     LibraryProduct("libprotobuf-lite", :libprotobuf_lite),
     ExecutableProduct("protoc", :protoc),
 
-    # `protoc` builds and installs a copy of `abseil_cpp`.
-    # We declare this prominently so that others are aware.
+    # `protoc` builds and installs a copy of `abseil_cpp`
     LibraryProduct("libabsl_bad_any_cast_impl", :libabsl_bad_any_cast_impl),
     LibraryProduct("libabsl_bad_optional_access", :libabsl_bad_optional_access),
     LibraryProduct("libabsl_bad_variant_access", :libabsl_bad_variant_access),
