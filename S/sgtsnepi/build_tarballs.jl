@@ -13,8 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/sgtsnepi/
-apk add meson --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
-meson --cross-file=${MESON_TARGET_TOOLCHAIN%.*} --buildtype=release build
+meson --cross-file=${MESON_TARGET_TOOLCHAIN%.*} build
 cd build/
 ninja -j${nproc}
 ninja install
