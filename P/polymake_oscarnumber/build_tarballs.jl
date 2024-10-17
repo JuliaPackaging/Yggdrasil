@@ -21,7 +21,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "f7357a9a5d88261cb41e4cf4a588052ffa17c5a2")
+              "d8d24cb62eb08eeedcfc811aea0c79e101fe613f")
     DirectorySource("./bundled")
 ]
 
