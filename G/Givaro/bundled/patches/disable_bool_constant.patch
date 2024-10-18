@@ -1,0 +1,15 @@
+--- src/kernel/integer/random-integer.h.orig
++++ src/kernel/integer/random-integer.h
+@@ -11,10 +11,12 @@
+ 
+ #include "gmp++/gmp++.h"
+ 
++#if __cplusplus < 201700L
+ namespace std {
+     template <bool B>
+     using bool_constant = integral_constant<bool, B>;
+ }
++#endif
+ 
+ namespace Givaro
+ {
