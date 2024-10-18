@@ -134,3 +134,5 @@ for (i,build) in enumerate(builds)
                    build.preferred_gcc_version, julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
+
+# bump

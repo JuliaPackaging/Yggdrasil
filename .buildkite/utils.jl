@@ -125,7 +125,8 @@ function register_step(NAME, PROJECT, SKIP_BUILD)
     # parallelism during upload of the artifacts we exceed GitHub's API secondary rate
     # limits.  Should that happen with more packages, we'll probably need to do this for
     # more/all packages.  Ref: https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334.
-    if NAME in ("Enzyme", "mlir_jl_tblgen", "LLVMExtra", "Clang_unified", "LLD_unified")
+    if NAME in ("Enzyme", "mlir_jl_tblgen", "LLVMExtra", "Clang_unified", "LLD_unified",
+                "LLVMDowngrader")
         register_env["BINARYBUILDER_GHR_CONCURRENCY"] = "4"
     end
 
