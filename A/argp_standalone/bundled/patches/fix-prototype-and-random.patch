@@ -1,0 +1,53 @@
+diff --git a/argp-parse.c b/argp-parse.c
+index 3a95512..ad56887 100644
+--- a/argp-parse.c
++++ b/argp-parse.c
+@@ -869,8 +869,8 @@ parser_parse_next (struct parser *parser, int *arg_ebadkey)
+    unknown option is present, EINVAL is returned; if some parser routine
+    returned a non-zero value, it is returned; otherwise 0 is returned.  */
+ error_t
+-__argp_parse (const struct argp *argp, int argc, char **argv, unsigned flags,
+-	      int *end_index, void *input)
++__argp_parse (const struct argp *__restrict argp, int argc, char **__restrict argv, unsigned flags,
++	      int *__restrict end_index, void *__restrict input)
+ {
+   error_t err;
+   struct parser parser;
+diff --git a/argp-test.c b/argp-test.c
+index d9c108d..d32d509 100644
+--- a/argp-test.c
++++ b/argp-test.c
+@@ -205,7 +205,7 @@ main (int argc, char **argv)
+ {
+   struct params params;
+   params.foonly = 0;
+-  params.foonly_default = random ();
++  params.foonly_default = 0xdeadbeef;
+   argp_parse (&argp, argc, argv, 0, 0, &params);
+   printf ("After parsing: foonly = %x\n", params.foonly);
+   return 0;
+diff --git a/argp.h b/argp.h
+index 923c9ce..e7ccec9 100644
+--- a/argp.h
++++ b/argp.h
+@@ -397,14 +397,12 @@ struct argp_state
+    routine returned a non-zero value, it is returned; otherwise 0 is
+    returned.  This function may also call exit unless the ARGP_NO_HELP flag
+    is set.  INPUT is a pointer to a value to be passed in to the parser.  */
+-extern error_t argp_parse (const struct argp *__restrict __argp,
+-			   int __argc, char **__restrict __argv,
+-			   unsigned __flags, int *__restrict __arg_index,
+-			   void *__restrict __input);
+-extern error_t __argp_parse (const struct argp *__restrict __argp,
+-			     int __argc, char **__restrict __argv,
+-			     unsigned __flags, int *__restrict __arg_index,
+-			     void *__restrict __input);
++error_t
++__argp_parse (const struct argp *__restrict argp, int argc, char **__restrict argv, unsigned flags,
++              int *__restrict end_index, void *__restrict input);
++error_t
++argp_parse (const struct argp *__restrict argp, int argc, char **__restrict argv, unsigned flags,
++              int *__restrict end_index, void *__restrict input);
+ 
+ /* Global variables.  */
+ 
