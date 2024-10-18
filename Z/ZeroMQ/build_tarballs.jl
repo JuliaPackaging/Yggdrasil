@@ -45,7 +45,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("libsodium_jll")
 ]
 
