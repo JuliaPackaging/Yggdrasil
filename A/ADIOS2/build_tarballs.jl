@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
 adios2_version = v"2.10.1"
-version = v"2.10.2"
+version = v"2.10.3"
 
 # Collection of sources required to complete build
 sources = [
@@ -60,6 +60,13 @@ else
     archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
 fi
 
+# Use MGARD if it is available
+if [ -e ${prefix}/libmgard.${dlext} ]; then
+    archopts+=(-DADIOS2_USE_MGARD=ON)
+else
+    archopts+=(-DADIOS2_USE_MGARD=OFF)
+fi
+
 export MPITRAMPOLINE_CC=${CC}
 export MPITRAMPOLINE_CXX=${CXX}
 export MPITRAMPOLINE_FC=${FC}
@@ -79,6 +86,7 @@ cmake -B build -G Ninja \
     -DADIOS2_Blosc2_PREFER_SHARED=ON \
     -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_Fortran=OFF \
+    -DADIOS2_USE_MGARD=ON \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_ZeroMQ=ON \
@@ -105,14 +113,13 @@ platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # We need to use the same compat bounds as HDF5
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.3", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # We don't need HDF5 on Windows (see above)
 hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
@@ -150,6 +157,7 @@ dependencies = [
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="pugixml_jll")),
