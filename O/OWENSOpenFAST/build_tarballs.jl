@@ -7,8 +7,8 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/andrew-platt/openfast.git", "24c05a744f9d93877a7f7ac32adef469b3cd8269"),
-    DirectorySource(joinpath(@__DIR__, "bundled"))
+    # GitSource("https://github.com/andrew-platt/openfast.git", "853ba8ca9f82d8bf1552638f9fa82af750750952"), # main
+    GitSource("https://github.com/andrew-platt/openfast.git", "24c05a744f9d93877a7f7ac32adef469b3cd8269"), # PR
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ mkdir build && cd build
 cmake .. \
 -DCMAKE_INSTALL_PREFIX=${prefix} \
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
--DCMAKE_BUILD_TYPE=Debug \
+-DCMAKE_BUILD_TYPE=Release \
 -DBUILD_SHARED_LIBS=ON \
 -DBUILD_FASTFARM=OFF \
 -DORCA_DLL_LOAD=OFF \
@@ -33,13 +33,14 @@ cmake .. \
 -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}"
 
 #WARNING: compiling this locally can go crazy and lock up your machine, using only 2 jobs and Debug version to make it behave
-make -j2
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
+# platforms = expand_cxxstring_abis(expand_gfortran_versions(supported_platforms(; experimental=true)))
 platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
 
 #remove aarch64-linux-musl from platforms, this platform does not currently have IEEE_ARITHMETIC enabled for gfortran under the current configure set up
@@ -56,17 +57,16 @@ platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
 # filter!(p -> !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
-products = [    
-    LibraryProduct("ifw_c_binding", :ifw_c_binding),
-    LibraryProduct("moordyn_c_binding", :libmoordynlib),
-    LibraryProduct("hydrodyn_c_binding", :aerodyn_inflow_c_binding),
-    LibraryProduct("aerodyn_inflow_c_binding", :aerodyn_inflow_c_binding),
-    ExecutableProduct("turbsim", :turbsim),  
-    ExecutableProduct("inflowwind_driver", :inflowwind_driver),  
-    ExecutableProduct("aerodyn_driver", :hydrodyn_driver),
-    ExecutableProduct("moordyn_driver", :hydrodyn_driver),
+products = [
+    LibraryProduct("libifw_c_binding", :libifw_c_binding),
+    LibraryProduct("libmoordyn_c_binding", :libmoordyn_c_binding),
+    LibraryProduct("libhydrodyn_c_binding", :libhydrodyn_c_binding),
+    LibraryProduct("libaerodyn_inflow_c_binding", :libaerodyn_inflow_c_binding),
+    ExecutableProduct("turbsim", :turbsim),
+    ExecutableProduct("inflowwind_driver", :inflowwind_driver),
+    ExecutableProduct("aerodyn_driver", :aerodyn_driver),
+    ExecutableProduct("moordyn_driver", :moordyn_driver),
     ExecutableProduct("hydrodyn_driver", :hydrodyn_driver),
-    ExecutableProduct("aerodyn_driver", :hydrodyn_driver),
 ]
 
 # Dependencies that must be installed before this package can be built
