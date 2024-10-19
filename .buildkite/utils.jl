@@ -124,7 +124,7 @@ function register_step(NAME, PROJECT, SKIP_BUILD, NUM_PLATFORMS)
     # For packages with a large number of platforms, trying to upload several release
     # artifacts at once with `ghr` results in exceeding GitHub's API secondary rate limits.
     # Ref: <https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334>.
-    if NUM_PLATFORMS > 100
+    if NUM_PLATFORMS > 80
         concurrency = 4
         @info "Reducing ghr concurrency" NAME NUM_PLATFORMS concurrency
         register_env["BINARYBUILDER_GHR_CONCURRENCY"] = string(concurrency)
