@@ -121,6 +121,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 
+# HDF5 isn't available yet on aarch64-unknown-freebsd. Disable this architecture.
+platforms = filter(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
+
 # We don't need HDF5 on Windows (see above)
 hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
 
