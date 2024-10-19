@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/bsdiff-64ad986cb7bfa8b9145a2d48cd95986660b35d53
+cd $WORKSPACE/srcdir/bsdiff
 ./autogen.sh 
 export CPPFLAGS="-I${prefix}/include"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
