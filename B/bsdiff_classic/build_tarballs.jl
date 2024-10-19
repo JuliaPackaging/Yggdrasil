@@ -31,7 +31,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll", v"1.0.8"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
