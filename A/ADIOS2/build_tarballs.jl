@@ -176,3 +176,5 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+
+# Build trigger: 1
