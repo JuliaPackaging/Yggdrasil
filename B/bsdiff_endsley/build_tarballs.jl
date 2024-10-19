@@ -7,7 +7,7 @@ version = v"4.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mendsley/bsdiff/archive/64ad986cb7bfa8b9145a2d48cd95986660b35d53.tar.gz", "1181466689aa224f4a2dd2376820588c67d20f4f0d50055339fcb171fb877a29"),
+    GitSource("https://github.com/mendsley/bsdiff.git", "64ad986cb7bfa8b9145a2d48cd95986660b35d53"),
 ]
 
 # Bash recipe for building across all platforms
