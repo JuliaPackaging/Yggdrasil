@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "bsdiff_endsley"
-version = v"4.3.0"
+version = v"4.3.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -32,10 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
