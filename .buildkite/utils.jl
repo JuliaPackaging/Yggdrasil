@@ -104,7 +104,7 @@ function build_step(NAME, PLATFORM, PROJECT)
     )
 end
 
-function register_step(NAME, PROJECT, SKIP_BUILD)
+function register_step(NAME, PROJECT, SKIP_BUILD, NUM_PLATFORMS)
     script = raw"""
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" .buildkite/register.sh
     """
@@ -121,13 +121,13 @@ function register_step(NAME, PROJECT, SKIP_BUILD)
     if SKIP_BUILD
         register_env["SKIP_BUILD"] = "true"
     end
-    # For the time being, only for some packages we're aware of the fact that using too high
-    # parallelism during upload of the artifacts we exceed GitHub's API secondary rate
-    # limits.  Should that happen with more packages, we'll probably need to do this for
-    # more/all packages.  Ref: https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334.
-    if NAME in ("Enzyme", "mlir_jl_tblgen", "LLVMExtra", "Clang_unified", "LLD_unified",
-                "LLVMDowngrader")
-        register_env["BINARYBUILDER_GHR_CONCURRENCY"] = "4"
+    # For packages with a large number of platforms, trying to upload several release
+    # artifacts at once with `ghr` results in exceeding GitHub's API secondary rate limits.
+    # Ref: <https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334>.
+    if NUM_PLATFORMS > 80
+        concurrency = 4
+        @info "Reducing ghr concurrency" NAME NUM_PLATFORMS concurrency
+        register_env["BINARYBUILDER_GHR_CONCURRENCY"] = string(concurrency)
     end
 
     Dict(
