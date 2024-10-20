@@ -1,8 +1,5 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-using BinaryBuilderBase: sanitize
-
 version = v"5.4.0"
 
 include("../common.jl")
