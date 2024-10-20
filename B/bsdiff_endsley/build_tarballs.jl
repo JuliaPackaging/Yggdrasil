@@ -13,8 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/bsdiff
-./autogen.sh 
-export CPPFLAGS="-I${prefix}/include"
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
