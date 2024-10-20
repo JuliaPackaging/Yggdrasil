@@ -28,7 +28,7 @@ cmake .. \
 -DBUILD_SHARED_LIBS=ON \
 -DBUILD_FASTFARM=OFF \
 -DORCA_DLL_LOAD=OFF \
--DOPENMP=ON \
+-DOPENMP=OFF \
 -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
 -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}"
 
@@ -40,20 +40,20 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-# platforms = expand_cxxstring_abis(expand_gfortran_versions(supported_platforms(; experimental=true)))
-platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(expand_gfortran_versions(supported_platforms(; experimental = true)))
+# platforms = expand_gfortran_versions(supported_platforms(; experimental=true))
 
-#remove aarch64-linux-musl from platforms, this platform does not currently have IEEE_ARITHMETIC enabled for gfortran under the current configure set up
-#see also: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100662
-# filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl"), platforms)
+# remove aarch64-linux-musl from platforms, this platform does not currently have IEEE_ARITHMETIC enabled for gfortran under the current configure set up
+# see also: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100662
+filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl"), platforms)
 
-#remove aarch-apple-darwin platforms, same issue as aarch64-linux-musl
+# remove aarch-apple-darwin platforms, same issue as aarch64-linux-musl
 # filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
-#filter arm platforms
-# filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
+# filter arm platforms
+filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
-#filter windows platforms - MinGW is not well supported relative to MSVC
+# filter windows platforms - MinGW is not well supported relative to MSVC
 # filter!(p -> !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
