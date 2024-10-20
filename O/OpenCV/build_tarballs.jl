@@ -8,15 +8,15 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "OpenCV"
-version = v"4.6.0"
+version = v"4.10.0"
 version_collapsed_str = replace(string(version), "." => "")
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "b0dc474160e389b9c9045da5db49d03ae17c6a6b"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "db16caf6ceee76b43b94c846be276e92a43e9700"),
+    GitSource("https://github.com/opencv/opencv.git", "71d3237a093b60a27601c20e9ee6c3e52154e8b1"),
+    GitSource("https://github.com/opencv/opencv_contrib.git", "1ed3dd2c53888e3289afdb22ec4e9ebbff3dba87"),
     DirectorySource("./bundled"),
 ]
 
@@ -26,7 +26,8 @@ cd $WORKSPACE/srcdir
 
 # Apply patch for BB specific CMake changes
 cd opencv_contrib
-git apply ../patches/opencv-julia.patch
+git apply ../patches/opencv-julia-cmake.patch
+git apply ../patches/opencv-julia-code.patch
 cd ..
 
 mkdir build && cd build
@@ -123,8 +124,8 @@ dependencies = [
     Dependency(PackageSpec(name="Qt5Base_jll", uuid="ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"))
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
     BuildDependency(PackageSpec(name="libjulia_jll"))
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.11")
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.13")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10")
