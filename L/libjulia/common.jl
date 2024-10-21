@@ -450,6 +450,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
-                   preferred_gcc_version=gcc_ver, lock_microarchitecture=false, julia_compat="1.6")
+                   preferred_gcc_version=gcc_ver, preferred_llvm_version=v"17",
+                   lock_microarchitecture=false, julia_compat="1.6")
     end
 end
