@@ -61,7 +61,7 @@ else
 fi
 
 # Use MGARD if it is available
-if [ -e ${prefix}/libmgard.${dlext} ]; then
+if [ -e ${libdir}/libmgard.${dlext} ]; then
     archopts+=(-DADIOS2_USE_MGARD=ON)
 else
     archopts+=(-DADIOS2_USE_MGARD=OFF)
