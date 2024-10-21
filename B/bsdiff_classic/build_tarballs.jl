@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "bsdiff_classic"
-version = v"4.3.0"
+version = v"4.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.daemonology.net/bsdiff/bsdiff-4.3.tar.gz", "18821588b2dc5bf159aa37d3bcb7b885d85ffd1e19f23a0c57a58723fea85f48"),
+    ArchiveSource("https://deb.debian.org/debian/pool/main/b/bsdiff/bsdiff_4.3.orig.tar.gz", "18821588b2dc5bf159aa37d3bcb7b885d85ffd1e19f23a0c57a58723fea85f48"),
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +17,7 @@ perl -i -ple '$_ = "#include <sys/types.h>\n" . $_ if $. == 31' bspatch.c
 cc -O3 -lbz2 -I"${prefix}/include" bsdiff.c -o bsdiff
 cc -O3 -lbz2 -I"${prefix}/include" bspatch.c -o bspatch
 install bsdiff bspatch "${bindir}"
+install_license bsdiff.c bspatch.c
 """
 
 # Disable Windows for now, as there are many BSD-isms in the source code
@@ -31,10 +32,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
