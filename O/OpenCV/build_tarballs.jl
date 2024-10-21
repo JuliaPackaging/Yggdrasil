@@ -76,9 +76,6 @@ cmake -DCMAKE_FIND_ROOT_PATH=${prefix} \
       -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules \
       -DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio,dnn,features2d,objdetect,calib3d,video,gapi,stitching,julia \
       ../opencv/
-if [[ "${target}" == *-freebsd* ]]; then
-    atomic_patch -p1 ../patches/freebsd-malloc-h.patch
-fi
 
 make -j${nproc}
 make install
