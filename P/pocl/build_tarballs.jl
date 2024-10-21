@@ -24,7 +24,7 @@ sources = [
 
 #=
 
-POCL wants to be linked against LLVM for run-time code generation, but also generates code
+PoCL wants to be linked against LLVM for run-time code generation, but also generates code
 at compile time using LLVM tools, so we need to carefully select which of the different
 builds of LLVM we need:
 
@@ -48,18 +48,19 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/distro-generic.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/env-override.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/env-override-ld.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/env-override-args.patch
 
 # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
-sysroot=/opt/${target}/${target}/sys-root/usr/include
+sysroot=/opt/${target}/${target}/sys-root
 if [[ "${target}" == *apple* ]]; then
     # XXX: including the sysroot like this doesn't work on Apple, missing definitions like
     #      TARGET_OS_IPHONE. it seems like these headers should be included using -isysroot,
     #      but (a) that doesn't seem to work, and (b) isn't that already done by the cmake
     #      toolchain file? work around the issue by inserting an include for the missing
     #      definitions at the top of the headers included from POCL's kernel library.
-    sed -i '1s/^/#include <TargetConditionals.h>\n/' $sysroot/stdio.h
+    sed -i '1s/^/#include <TargetConditionals.h>\n/' $sysroot/usr/include/stdio.h
 fi
-sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot\\"|" \
+sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot/usr/include\\"|" \
        cmake/bitcode_rules.cmake
 
 CMAKE_FLAGS=()
@@ -95,6 +96,29 @@ fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
+
+# PoCL uses Clang, which relies on certain system libraries Clang_jll.jl doesn't provide
+mkdir -p $prefix/share/lib
+if [[ ${target} == *-linux-gnu-* ]]; then
+    if [[ "${nbits}" == 64 ]]; then
+        cp -a $sysroot/lib64/libc{.,-}* $prefix/share/lib
+        cp -a $sysroot/usr/lib64/libm.* $prefix/share/lib
+        ln -sf libm.so.6 $prefix/share/lib/libm.so
+        cp -a $sysroot/lib64/libm{.,-}* $prefix/share/lib
+        cp -a /opt/${target}/${target}/lib64/libgcc_s.* $prefix/share/lib
+        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+    else
+        cp -a $sysroot/lib/libc{.,-}* $prefix/share/lib
+        cp -a $sysroot/usr/lib/libm.* $prefix/share/lib
+        ln -sf libm.so.6 $prefix/share/lib/libm.so
+        cp -a $sysroot/lib/libm{.,-}* $prefix/share/lib
+        cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
+        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+    fi
+elif [[ ${target} == *-linux-musl-* ]]; then
+    cp -a $sysroot/usr/lib/*.{o,a} $prefix/share/lib
+    cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -206,9 +230,13 @@ init_block = raw"""
         else
             error("Unsupported platform")
         end
-    ENV["POCL_PATH_LD"] =
-        generate_wrapper_script("lld", ld_path,
-                                LLD_unified_jll.LIBPATH[], LLD_unified_jll.PATH[])
+    ld_wrapper = generate_wrapper_script("lld", ld_path,
+                                         LLD_unified_jll.LIBPATH[],
+                                         LLD_unified_jll.PATH[])
+    ENV["POCL_ARGS_CLANG"] = join([
+            "-fuse-ld=lld", "--ld-path=$ld_wrapper",
+            "-L" * joinpath(artifact_dir, "share", "lib")
+        ], ";")
 """
 
 # determine exactly which tarballs we should build
