@@ -9,6 +9,7 @@ version = v"1.0.0"
 sources = [
     # GitSource("https://github.com/andrew-platt/openfast.git", "853ba8ca9f82d8bf1552638f9fa82af750750952"), # main
     GitSource("https://github.com/andrew-platt/openfast.git", "24c05a744f9d93877a7f7ac32adef469b3cd8269"), # PR
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
