@@ -56,6 +56,10 @@ filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 # filter windows platforms - MinGW is not well supported relative to MSVC
 # filter!(p -> !Sys.iswindows(p), platforms)
 
+# TODO: These platforms work, just filtering out while iterating on broken ones
+filter!(!Sys.islinux, platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "x86_64"), platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libifw_c_binding", :libifw_c_binding),
