@@ -18,12 +18,12 @@ mkdir ${libdir}
 if [[ ${target} == aarch64-linux-* ]]; then opath="kdb/l64arm/c.o"; extraflags=""; fi
 if [[ ${target} == x86_64-linux-* ]]; then opath="kdb/l64/c.o"; extraflags=""; fi
 if [[ ${target} == i686-linux-* ]]; then opath="kdb/l32/c.o"; extraflags=""; fi
-if [[ ${target} == aarch64-apple-* ]]; then opath="kdb/m64arm/c.o"; CC="clang"; extraflags=" -bundle -undefined dynamic_lookup"; fi
-if [[ ${target} == x86_64-apple-* ]]; then opath="kdb/m64/c.o"; CC="clang"; extraflags=" -bundle -undefined dynamic_lookup"; fi
+if [[ ${target} == aarch64-apple-* ]]; then opath="kdb/m64arm/c.o"; CC="clang"; extraflags="-undefined dynamic_lookup"; fi
+if [[ ${target} == x86_64-apple-* ]]; then opath="kdb/m64/c.o"; CC="clang"; extraflags="-undefined dynamic_lookup"; fi
 if [[ ${target} == i686-apple-* ]]; then opath="kdb/m32/c.o"; extraflags=""; fi
 if [[ ${target} == x86_64-w64-* ]]; then opath="kdb/w64/c.dll"; extraflags=""; fi
 if [[ ${target} == i686-w64-* ]]; then opath="kdb/w32/c.dll"; extraflags=""; fi
-${CC} -shared -fPIC ${extraflags} ${opath} -o ${libdir}/c.${dlext}
+${CC} ${extraflags} -shared -fPIC ${opath} -o ${libdir}/c.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
