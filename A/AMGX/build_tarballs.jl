@@ -7,10 +7,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 # TODO: Ship nvToolsExt.h with NVTX_jll and use here instead of patching it out
 
 name = "AMGX"
-version = v"2.3.0"
+version = v"2.4.0"
 sources = [
     GitSource("https://github.com/NVIDIA/AMGX.git",
-              "32e1f44fa93af7859490a800f137e75b6513420c"),
+              "2b4762f02af2ed136134c7f0570646219753ab3e"),
     DirectorySource("./bundled")
 ]
 
@@ -81,7 +81,7 @@ products = [
 versions_to_build = [
     v"11.0",
     v"11.1", # CUSOLVER ABI break
-    # v"12.0", not supported by AMGX yet
+    v"12.0",
 ]
 
 cuda_archs = Dict(
