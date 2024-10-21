@@ -1,10 +1,19 @@
 diff -ur fflas-ffpack-2.5.0.orig/macros/common.m4 fflas-ffpack-2.5.0/macros/common.m4
 --- fflas-ffpack-2.5.0.orig/macros/common.m4	2021-09-21 13:23:36.000000000 +0000
-+++ fflas-ffpack-2.5.0/macros/common.m4	2024-10-21 18:12:32.283126751 +0000
-@@ -137,18 +137,8 @@
-     CXXFLAGS="${OPTIM_FLAGS} ${CXXFLAGS}"
-     AS_CASE([$target],
-             [*i386*|*i686*],
++++ fflas-ffpack-2.5.0/macros/common.m4	2024-10-21 19:14:01.611094624 +0000
+@@ -128,27 +128,3 @@
+         ], [], [], [])
+     ], [], [])
+ ])
+-
+-dnl Append -mfpmath=sse to OPTIM_FLAGS on i386 and i686 architecture with SSE
+-AC_DEFUN([FPMATH_FLAGS],[
+-    AC_REQUIRE([ARCH_FLAGS])
+-
+-    BACKUP_CXXFLAGS="${CXXFLAGS}"
+-    CXXFLAGS="${OPTIM_FLAGS} ${CXXFLAGS}"
+-    AS_CASE([$target],
+-            [*i386*|*i686*],
 -                [AC_RUN_IFELSE([AC_LANG_PROGRAM([[]], [[#ifdef __SSE__
 -                                                          return 0;
 -                                                        #else
@@ -17,9 +26,9 @@ diff -ur fflas-ffpack-2.5.0.orig/macros/common.m4 fflas-ffpack-2.5.0/macros/comm
 -                        # SSE is not avail => do nothing
 -                    [AC_MSG_NOTICE("If available you may want to add
 -                     '-mfpmath=sse' to flags")])] # cross-compilation case
-                 []) # not on i386 nor i686 => do nothing
-     CXXFLAGS="${BACKUP_CXXFLAGS}"
-     ])
+-                []) # not on i386 nor i686 => do nothing
+-    CXXFLAGS="${BACKUP_CXXFLAGS}"
+-    ])
 diff -ur fflas-ffpack-2.5.0.orig/macros/debug.m4 fflas-ffpack-2.5.0/macros/debug.m4
 --- fflas-ffpack-2.5.0.orig/macros/debug.m4	2021-09-21 13:23:36.000000000 +0000
 +++ fflas-ffpack-2.5.0/macros/debug.m4	2024-10-21 18:15:38.707125128 +0000
