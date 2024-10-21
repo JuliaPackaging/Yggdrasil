@@ -99,7 +99,7 @@ ninja -C build -j ${nproc} install
 
 # PoCL uses Clang, which relies on certain system libraries Clang_jll.jl doesn't provide
 mkdir -p $prefix/share/lib
-if [[ ${target} == *-linux-gnu-* ]]; then
+if [[ ${target} == *-linux-gnu ]]; then
     if [[ "${nbits}" == 64 ]]; then
         cp -a $sysroot/lib64/libc{.,-}* $prefix/share/lib
         cp -a $sysroot/usr/lib64/libm.* $prefix/share/lib
@@ -115,7 +115,7 @@ if [[ ${target} == *-linux-gnu-* ]]; then
         cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
         cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     fi
-elif [[ ${target} == *-linux-musl-* ]]; then
+elif [[ ${target} == *-linux-musl ]]; then
     cp -a $sysroot/usr/lib/*.{o,a} $prefix/share/lib
     cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
 fi
