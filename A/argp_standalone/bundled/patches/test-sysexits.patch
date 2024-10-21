@@ -1,0 +1,30 @@
+diff --git a/argp-eexst.c b/argp-eexst.c
+index 795e312..300a008 100644
+--- a/argp-eexst.c
++++ b/argp-eexst.c
+@@ -21,7 +21,11 @@
+ # include <config.h>
+ #endif
+ 
+-#include <sysexits.h>
++#ifdef HAVE_SYSEXITS_H
++#  include <sysexits.h>
++#else
++#  define EX_USAGE 64
++#endif
+ 
+ #include "argp.h"
+ 
+diff --git a/configure.ac b/configure.ac
+index 386215d..b9dd657 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -26,7 +26,7 @@ fi
+ 
+ # Checks for header files.
+ AC_HEADER_STDC
+-AC_CHECK_HEADERS(limits.h malloc.h unistd.h libintl.h)
++AC_CHECK_HEADERS(limits.h malloc.h unistd.h libintl.h sysexits.h)
+ 
+ # Checks for typedefs, structures, and compiler characteristics.
+ AC_C_CONST
