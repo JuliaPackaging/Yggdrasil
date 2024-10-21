@@ -11,8 +11,8 @@ diff -ur fflas-ffpack-2.5.0.orig/macros/common.m4 fflas-ffpack-2.5.0/macros/comm
 -                                                          return 1;
 -                                                        #endif
 -                                                        ]])],
-                     [AC_MSG_NOTICE("Adding '-mfpmath=sse' to OPTIM_FLAGS")
-                      OPTIM_FLAGS+=" -mfpmath=sse"],
+-                    [AC_MSG_NOTICE("Adding '-mfpmath=sse' to OPTIM_FLAGS")
+-                     OPTIM_FLAGS+=" -mfpmath=sse"],
 -                    [], # either the flag is not recognized by the compiler or
 -                        # SSE is not avail => do nothing
 -                    [AC_MSG_NOTICE("If available you may want to add
