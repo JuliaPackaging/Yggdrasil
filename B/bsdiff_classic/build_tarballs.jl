@@ -13,11 +13,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/bsdiff-4.3
+head -n 26 bsdiff.c > LICENSE
 perl -i -ple '$_ = "#include <sys/types.h>\n" . $_ if $. == 31' bspatch.c
 cc -O3 -lbz2 -I"${prefix}/include" bsdiff.c -o bsdiff
 cc -O3 -lbz2 -I"${prefix}/include" bspatch.c -o bspatch
 install bsdiff bspatch "${bindir}"
-install_license bsdiff.c bspatch.c
 """
 
 # Disable Windows for now, as there are many BSD-isms in the source code
