@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Valhalla"
-version = v"3.3.0"
+version = v"3.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/valhalla/valhalla.git", "ea7d44af37c47fcf0cb186e7ba0f9f77e96f202a"),
+    GitSource("https://github.com/valhalla/valhalla.git", "572c334cd21015fe75ac489cd001f79649d41d44"),
     DirectorySource("./bundled"),
 ]
 
@@ -79,4 +79,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
