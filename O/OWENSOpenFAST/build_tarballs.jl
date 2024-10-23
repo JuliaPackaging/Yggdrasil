@@ -7,9 +7,11 @@ version = v"1.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    # GitSource("https://github.com/andrew-platt/openfast.git", "853ba8ca9f82d8bf1552638f9fa82af750750952"), # main
-    GitSource("https://github.com/andrew-platt/openfast.git", "24c05a744f9d93877a7f7ac32adef469b3cd8269"), # PR
-    DirectorySource("./bundled"),
+    # These sources are for the initial build
+    # GitSource("https://github.com/andrew-platt/openfast.git", "24c05a744f9d93877a7f7ac32adef469b3cd8269"),
+    # DirectorySource("./bundled"),
+    # Try building upstream dev branch (23 Oct)
+    GitSource("https://github.com/OpenFAST/openfast.git", "c5cdcdd97e1b5db9ee5bbc146c57f69b51e089bd"),
 ]
 
 # Bash recipe for building across all platforms
