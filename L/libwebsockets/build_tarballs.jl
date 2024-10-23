@@ -30,7 +30,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude= x -> (Sys.iswindows(x)))
+platforms = supported_platforms(exclude = x -> (Sys.iswindows(x)))
 
 # The products that we will ensure are always built
 products = [
@@ -39,7 +39,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="1.1.23"), # OpenSSL_jll 1.1.23 = OpenSSL 1.1.1w
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
     Dependency("Zlib_jll")
 ]
 
