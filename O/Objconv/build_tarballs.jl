@@ -15,15 +15,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/objconv*/
 
-mkdir -p ${prefix}/bin
-${CXX} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -O2 -o ${prefix}/bin/objconv${exeext} src/*.cpp
+mkdir -p "${bindir}"
+${CXX} ${CPPFLAGS} ${CXXFLAGS} ${LDFLAGS} -O2 -o "${bindir}/objconv${exeext}" src/*.cpp
 
 install_license /usr/share/licenses/GPL-3.0+
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -31,9 +31,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
