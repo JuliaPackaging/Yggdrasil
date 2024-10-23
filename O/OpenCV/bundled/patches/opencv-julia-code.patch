@@ -1,5 +1,5 @@
 diff --git a/modules/julia/gen/binding_templates_cpp/cv_core.cpp b/modules/julia/gen/binding_templates_cpp/cv_core.cpp
-index 9966ea17..d714bab5 100644
+index 9966ea17..d7a14c74 100644
 --- a/modules/julia/gen/binding_templates_cpp/cv_core.cpp
 +++ b/modules/julia/gen/binding_templates_cpp/cv_core.cpp
 @@ -22,17 +22,68 @@ template <typename T>
@@ -75,6 +75,14 @@ index 9966ea17..d714bab5 100644
 +
  ${include_code}
  
+ 
+@@ -60,7 +111,6 @@ ${include_code}
+ } // namespace jlcxx
+ JLCXX_MODULE cv_wrap(jlcxx::Module &mod)
+ {
+-    mod.map_type<RotatedRect>("RotatedRect");
+     mod.map_type<TermCriteria>("TermCriteria");
+     mod.map_type<Range>("Range");
  
 diff --git a/modules/julia/gen/cpp_files/jlcxx/array.hpp b/modules/julia/gen/cpp_files/jlcxx/array.hpp
 index 0fac6bc9..a05476fd 100644
