@@ -30,10 +30,10 @@ function libjulia_platforms(julia_version)
         filter!(p -> arch(p) != "armv7l", platforms)
     end
 
-    # FreeBSD on 64bit ARM 64 is missing dependencies for older Julia versions
-    # TODO: re-enable this for new Julia versions as soon as all deps become
-    # available
-    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    # FreeBSD on 64bit ARM 64 is not supported for older Julia versions
+    if julia_version < v"1.12"
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
 
     for p in platforms
         p["julia_version"] = string(julia_version)
@@ -59,7 +59,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.12.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "e4101b71dbcd766b2e4f162320d1d64c0f03c6f3"),
+            GitSource("https://github.com/JuliaLang/julia.git", "5cdf3789d8058d137b62259d2ab12f6eb456911e"),
             DirectorySource("./bundled"),
         ]
     else
@@ -438,7 +438,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     elseif version.major == 1 && version.minor == 12
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.0+1")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+19")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+1"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"14.0.6+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
     else
