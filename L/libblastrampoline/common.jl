@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "libblastrampoline"
-version = v"5.11.1"
 
 # Collection of sources required to build libblastrampoline
 function lbt_sources(version::VersionNumber; kwargs...)
