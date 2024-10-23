@@ -43,22 +43,19 @@ make install
 
 platforms = expand_cxxstring_abis(expand_gfortran_versions(supported_platforms(; experimental = true)))
 
-# Remove aarch64-linux-musl and aarch64-unknown-freebsd from platforms, this platform does
-# not currently have IEEE_ARITHMETIC enabled for gfortran under the current configure set up
-# see also: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100662
+# Filter out aarch64-linux-musl and aarch64-unknown-freebsd from platforms, this platform
+# does not currently have IEEE_ARITHMETIC enabled for gfortran under the current configure
+# set up see also: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100662
 filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 
-# remove aarch-apple-darwin platforms, same issue as aarch64-linux-musl
-# filter!(p -> !(Sys.isapple(p) && arch(p) == "aarch64"), platforms)
-
-# Filter out arm platforms
+# Filter out armv6l and armv7l
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
-# TODO: These platforms work, just filtering out while iterating on broken ones
-filter!(!Sys.islinux, platforms)
-filter!(!Sys.iswindows, platforms) # TODO: x86_64 builds uses avx2 instructions
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "x86_64"), platforms)
+# # TODO: These platforms work, just filtering out while iterating on broken ones
+# filter!(!Sys.islinux, platforms)
+# filter!(!Sys.iswindows, platforms) # TODO: x86_64 builds uses avx2 instructions
+# filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "x86_64"), platforms)
 
 # The products that we will ensure are always built
 products = [
