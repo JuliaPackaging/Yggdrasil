@@ -40,9 +40,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("Givaro_jll"; compat="4.2.0")
+    Dependency("Givaro_jll"; compat="4.2.0"),
+    Dependency("libblastrampoline_jll"; compat="5.4.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
+    clang_use_lld=false, julia_compat="1.9", preferred_gcc_version=v"6")
