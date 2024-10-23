@@ -30,7 +30,10 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(!Sys.iswindows, supported_platforms()) |> expand_cxxstring_abis
+platforms = supported_platforms(exclude=Sys.iswindows) |> expand_cxxstring_abis
+
+# Strangely, libblastrampoline does not seem to be there on aarch64-unknown-freebsd
+filter!(p->!(os(p)=="freebsd" && arch(p)=="aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
