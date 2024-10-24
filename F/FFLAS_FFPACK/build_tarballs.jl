@@ -32,9 +32,6 @@ install_license COPYING
 # platforms are passed in on the command line
 platforms = supported_platforms(exclude=Sys.iswindows) |> expand_cxxstring_abis
 
-# Strangely, libblastrampoline does not seem to be there on aarch64-unknown-freebsd
-filter!(p->!(os(p)=="freebsd" && arch(p)=="aarch64"), platforms)
-
 # The products that we will ensure are always built
 products = [
     FileProduct("include/fflas-ffpack/fflas-ffpack-config.h", :fflas_ffpack_config_h)
