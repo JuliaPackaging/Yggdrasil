@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"1.1.0"
+version = v"1.1.1"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "d8571b6f8d68808707e71a361109b8713f300b4c",
+        "df18261f32991cd74a2d6f49b975145591ce38d3",
     ),
 ]
 
@@ -39,6 +39,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -Damplsolver=${libdir}/libasl.${dlext} \
+    -Dma57=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
     -DMETIS_INCLUDE_DIR=${includedir} \
@@ -55,8 +56,10 @@ make -j${nproc}
 # Uno does not support `make install`. Manually copy for now.
 install -v -m 755 "uno_ampl${exeext}" -t "${bindir}"
 
-# Currently, Uno does not provide a shared library. THis may bbe useful in future once it has a C API.
-# ${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o "${libdir}/libuno.${dlext}" -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis
+# Currently, Uno does not provide a shared library. This may be useful in the future once it has a C API.
+# We just check that we can generate it, but we don't include it in the tarballs.
+${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o libuno.${dlext} -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis -lhsl
+# cp libuno.${dlext} "${libdir}/libuno.${dlext}
 """
 
 platforms = supported_platforms()
@@ -64,13 +67,14 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
-    # This LibraryProduct may be useful once Uno provides a C API. We omit it for nnow.
+    # This LibraryProduct may be useful once Uno provides a C API. We omit it for now.
     # LibraryProduct("libuno", :libuno),
     # We call this amplexe to match the convention of other JLL packages (like Ipopt_jll) that provide AMPL wrappers
     ExecutableProduct("uno_ampl", :amplexe),
 ]
 
 dependencies = [
+    Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), compat="0.1.3"),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d")),
