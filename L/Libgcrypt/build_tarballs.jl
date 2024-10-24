@@ -14,10 +14,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libgcrypt-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-padlock-support \
-    --enable-random=linux \ # no getentropy with our old glibc
-    --disable-asm
+
+BUILD_FLAGS=(--disable-padlock-support --disable-asm)
+
+# on our old glibc, we don't have getentropy
+BUILD_FLAGS+=(--enable-random=linux)
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${BUILD_FLAGS[@]}"
+
 make -j${nproc}
 make install
 """
