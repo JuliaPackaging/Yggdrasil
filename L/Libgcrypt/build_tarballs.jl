@@ -17,8 +17,10 @@ cd $WORKSPACE/srcdir/libgcrypt-*
 
 BUILD_FLAGS=(--disable-padlock-support --disable-asm)
 
-# on our old glibc, we don't have getentropy
-BUILD_FLAGS+=(--enable-random=linux)
+if [[ "${target}" == *linux* ]]; then
+    # on our old glibc, we don't have getentropy
+    BUILD_FLAGS+=(--enable-random=linux)
+fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${BUILD_FLAGS[@]}"
 
