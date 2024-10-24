@@ -1,6 +1,5 @@
 # Sources required for all builds
 sources = [
     ArchiveSource("https://gitlab.com/libxc/libxc/-/archive/$(version)/libxc-$(version).tar.gz",
-                  "d1b65ef74615a1e539d87a0e6662f04baf3a2316706b4e2e686da3193b26b20f"),
-    #GitSource("https://gitlab.com/libxc/libxc", "b4b126153afb94cbb48f33ff707976c0d018fb4e")
+                  "8d4e343041c9cd869833822f57744872076ae709a613c118d70605539fb13a77"),
 ]

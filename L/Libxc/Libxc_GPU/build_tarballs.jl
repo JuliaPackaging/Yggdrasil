@@ -5,15 +5,14 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Libxc_GPU"
-version = v"6.2.2"
+version = v"7.0.0"
 include("../sources.jl")
 
 sources = [
     sources;
-    DirectorySource("./bundled");
     # aarch64 binaries precompiled and hosted on GitHub
     GitSource("https://github.com/abussy/libxc_aarch64_gpu_binaries.git",
-              "9ec834896f04f8e8de6427352b0b1a6e61d4ba7b")
+              "a075923825d39c5fd41b1550bcb8ba417d293e73")
 ]
 
 # Bash recipe for building GPU version
@@ -33,10 +32,6 @@ if [[ "${target}" == *aarch64* ]]; then
 
 else
    cd $WORKSPACE/srcdir/libxc-*/
-
-   # Needed for Libxc 6.2.2 as these backport some fixes on libxc master
-   atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-cuda.patch
-   atomic_patch -p1 ${WORKSPACE}/srcdir/patches/source-fixes.patch
 
    mkdir libxc_build
    cd libxc_build
@@ -76,6 +71,6 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
-                   julia_compat="1.8", augment_platform_block=CUDA.augment, preferred_gcc_version=v"7",
+                   julia_compat="1.8", augment_platform_block=CUDA.augment, preferred_gcc_version=v"8",
                    skip_audit=true, dont_dlopen=true)
 end
