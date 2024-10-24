@@ -7,30 +7,27 @@ version = v"4.3.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/warmcat/libwebsockets.git", "5102a5c8d6110b25a01492fcf96fb668b13dd6e7"),
+    GitSource("https://github.com/warmcat/libwebsockets.git", "4415e84c095857629863804e941b9e1c2e9347ef"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libwebsockets
-
-mkdir build && cd build
-
-cmake .. -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DLWS_WITH_HTTP2=1 \
     -DLWS_WITHOUT_TESTAPPS=1
-
-make -j${nproc}
-make install
+cmake --build build --parallel ${nproc}
+cmake --install build
 """ 
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude = x -> (Sys.iswindows(x)))
+platforms = supported_platforms(exclude = Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
