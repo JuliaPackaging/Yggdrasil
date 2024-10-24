@@ -1,0 +1,22 @@
+diff --git before/likwid-5.2.2/config.mk after/likwid-5.2.2/config.mk
+index f8d7e4b..73f3dc8 100644
+--- before/likwid-5.2.2/config.mk
++++ after/likwid-5.2.2/config.mk
+@@ -8,7 +8,7 @@
+ # configuration options setup steps.
+ # Supported: GCC, CLANG, ICC, MIC (ICC), GCCX86 (for 32bit systems)
+ # GCCARMv8, GCCARMv7 and GCCPOWER
+-COMPILER = GCC#NO SPACE
++COMPILER ?= GCC#NO SPACE
+ 
+ # Path were to install likwid
+ PREFIX ?= /usr/local#NO SPACE
+@@ -16,7 +16,7 @@ PREFIX ?= /usr/local#NO SPACE
+ # Set the default mode for MSR access.
+ # This can usually be overriden on the commandline.
+ # Valid values are: direct, accessdaemon and perf_event
+-ACCESSMODE = accessdaemon#NO SPACE
++ACCESSMODE = perf_event#NO SPACE
+ 
+ # Build Fortran90 module interface for Marker API. Adopt Fortran compiler
+ # in ./make/include_<COMPILER>.mk if necessary. Default: ifort (even for
