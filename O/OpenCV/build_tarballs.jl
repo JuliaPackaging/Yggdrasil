@@ -134,6 +134,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Qt6Base_jll"; compat="~6.7.1"),
+    HostBuildDependency("Qt6Base_jll"),
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29")),
     BuildDependency(PackageSpec(name="libjulia_jll")),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat="0.13"),
