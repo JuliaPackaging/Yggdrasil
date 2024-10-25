@@ -31,7 +31,6 @@ cmake .. \
 -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
 -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}"
 
-#WARNING: compiling this locally can go crazy and lock up your machine, using only 2 jobs and Debug version to make it behave
 make -j${nproc}
 make install
 """
@@ -49,6 +48,9 @@ filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
 
 # Filter out armv6l and armv7l
 filter!(p -> arch(p) ∉ ("armv6l", "armv7l"), platforms)
+
+# GCC 14 is required so filter out gfortran versions < 5
+platforms = filter(p -> libgfortran_version(p) >= v"5", platforms)
 
 # # TODO: These platforms work, just filtering out while iterating on broken ones
 # filter!(!Sys.islinux, platforms)
