@@ -18,10 +18,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/openfast/
 
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-windows-include.patch
-fi
-
 mkdir build && cd build
 
 cmake .. \
@@ -81,4 +77,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8", clang_use_lld = false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"14", clang_use_lld = false)
