@@ -34,6 +34,7 @@ platforms = supported_platforms(exclude=Sys.iswindows) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = [
+    ExecutableProduct("fflas-ffpack-config", :fflas_ffpack_config)
     FileProduct("include/fflas-ffpack/fflas-ffpack-config.h", :fflas_ffpack_config_h)
 ]
 
