@@ -38,8 +38,8 @@ cmake \
     -DCMAKE_PREFIX_PATH=${libdir} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -Damplsolver=${libdir}/libasl.${dlext} \
-    -Dma57=${libdir}/libhsl.${dlext} \
+    -DAMPLSOLVER=${libdir}/libasl.${dlext} \
+    -DHSL=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
     -DMETIS_INCLUDE_DIR=${includedir} \
