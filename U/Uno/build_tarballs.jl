@@ -9,7 +9,7 @@ version = v"1.1.1"
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "df18261f32991cd74a2d6f49b975145591ce38d3",
+        "fd9ad8f1d5451991ae8a8e7eff90d11ba9bfe036",
     ),
 ]
 
@@ -38,8 +38,8 @@ cmake \
     -DCMAKE_PREFIX_PATH=${libdir} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -Damplsolver=${libdir}/libasl.${dlext} \
-    -Dma57=${libdir}/libhsl.${dlext} \
+    -DAMPLSOLVER=${libdir}/libasl.${dlext} \
+    -DHSL=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
     -DMETIS_INCLUDE_DIR=${includedir} \
