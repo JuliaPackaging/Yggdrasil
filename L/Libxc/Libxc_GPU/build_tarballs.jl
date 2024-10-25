@@ -10,7 +10,8 @@ include("../sources.jl")
 
 sources = [
     sources;
-    # aarch64 binaries precompiled and hosted on GitHub
+    # aarch64 binaries precompiled and hosted on GitHub, because BinaryBuilder
+    # works on x86_64 architecture, and nvcc is not a cross-compiler
     GitSource("https://github.com/abussy/libxc_aarch64_gpu_binaries.git",
               "a075923825d39c5fd41b1550bcb8ba417d293e73")
 ]
