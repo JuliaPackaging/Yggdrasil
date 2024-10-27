@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "ldid"
-version = v"2.1.3" # <-- Fake version to build for new platforms
+version = v"2.1.4" # <-- Fake version to build with new OpenSSL compat bounds
 
 # Collection of sources required to build ldid
 sources = [
@@ -30,7 +30,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libplist_jll"),
-    Dependency("OpenSSL_jll"; compat="1.1.13"),
+    Dependency("OpenSSL_jll"; compat="3"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
