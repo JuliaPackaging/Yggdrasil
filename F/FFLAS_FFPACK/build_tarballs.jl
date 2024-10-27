@@ -30,10 +30,11 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(exclude=Sys.iswindows)
+platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 products = [
+    FileProduct("bin/fflas-ffpack-config", :fflas_ffpack_config)
     FileProduct("include/fflas-ffpack/fflas-ffpack-config.h", :fflas_ffpack_config_h)
 ]
 
