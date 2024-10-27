@@ -29,8 +29,8 @@ install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [AnyPlatform()]
+# platforms are passed in on the command line. Windows is excluded because it doesn't build for the Givaro dependency.
+platforms = supported_platforms(exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
