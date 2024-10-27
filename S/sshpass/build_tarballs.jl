@@ -20,6 +20,7 @@ cd sshpass-*
 # ARM/OSX/musl: https://github.com/maxmind/libmaxminddb/pull/152
 # Submitted upstream: https://sourceforge.net/p/sshpass/patches/16/
 atomic_patch -p1 ../patches/configure-ac.patch
+autoreconf -i
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
@@ -27,7 +28,7 @@ make install
 """
 
 # sshpass support on Windows requires Cygwin so we don't support it
-platforms = filter(p -> !Sys.iswindows(p), supported_platforms())
+platforms = filter(!Sys.iswindows, supported_platforms())
 
 # The products that we will ensure are always built
 products = [
