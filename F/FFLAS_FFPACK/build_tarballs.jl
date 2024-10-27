@@ -34,7 +34,7 @@ platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
 products = [
-    FileProduct("bin/fflas-ffpack-config", :fflas_ffpack_config)
+    FileProduct("bin/fflas-ffpack-config", :fflas_ffpack_config),
     FileProduct("include/fflas-ffpack/fflas-ffpack-config.h", :fflas_ffpack_config_h)
 ]
 
