@@ -3,35 +3,45 @@
 using BinaryBuilder, Pkg
 
 name = "CvxCompress"
-version = v"1.1.0"
+version = v"1.2.0"
 
 # Collection of sources required to build CvxCompress
 sources = [
     GitSource(
         "https://github.com/ChevronETC/CvxCompress.git",
-        "04dc59a4fab76ac612580ac69a9266e15db4fe17"
+        "132984d055be77cb166fe2e75dc77f4fd082e544"
     ),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across platforms
 script = raw"""
+install_license ${WORKSPACE}/srcdir/CvxCompress/LICENSE.md
+
 cd ${WORKSPACE}/srcdir/CvxCompress
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cross-compile-cvxcompress-gencode.patch
+# Pull simde
+git submodule update --init
+
 ${CXX_FOR_BUILD} -O2 -o CvxCompress_GenCode Wavelet_Transform_Slow.cpp CvxCompress_GenCode.cpp
 ./CvxCompress_GenCode
-FLAGS=()
-if [[ "${target}" == *-apple-* ]]; then
-    FLAGS=(LDFLAGS="-fopenmp -lm")
+
+if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+    CC=gcc
+    CXX=g++
 fi
-make -j${nproc} "${FLAGS[@]}"
-install -Dvm 755 libcvxcompress.so "${libdir}/libcvxcompress.${dlext}"
+
+# Build
+make -j${nproc} lib
+
+# Install
+install -Dvm 755 libcvxcompress.${dlext} "${libdir}/libcvxcompress.${dlext}"
 install -Dvm 644 CvxCompress.hxx "${includedir}/CvxCompress.hxx"
+
 """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# TODO update make to adjust the intrinsic code generation to support more platforms
-platforms = [p for p in supported_platforms() if arch(p) === "x86_64" && !Sys.iswindows(p)]
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
@@ -46,4 +56,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"10")
