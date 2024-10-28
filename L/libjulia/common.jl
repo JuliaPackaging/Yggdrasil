@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.0-rc3", v"1.12.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -30,10 +30,10 @@ function libjulia_platforms(julia_version)
         filter!(p -> arch(p) != "armv7l", platforms)
     end
 
-    # FreeBSD on 64bit ARM 64 is missing dependencies for older Julia versions
-    # TODO: re-enable this for new Julia versions as soon as all deps become
-    # available
-    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    # FreeBSD on 64bit ARM 64 is not supported for older Julia versions
+    if julia_version < v"1.12"
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
 
     for p in platforms
         p["julia_version"] = string(julia_version)
@@ -54,12 +54,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.8.2" => "3e2cea35bf5df963ed7b75a83e8febfc000acf1e664ecd657a0772508eb1fb5d",
         v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
         v"1.10.0" => "a4136608265c5d9186ae4767e94ddc948b19b43f760aba3501a161290852054d",
-        v"1.11.0-rc3" => "8f82f0dbbf5877f6af1c8de7d9d4ec0ea79ecc188c23fc281264a5fa963db5f0",
+        v"1.11.1" => "895549f40b21dee66b6380e30811f40d2d938c2baba0750de69c9a183cccd756",
     )
 
     if version == v"1.12.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "0622123121a33668f4dc771a6183b95fff533a53"),
+            GitSource("https://github.com/JuliaLang/julia.git", "5cdf3789d8058d137b62259d2ab12f6eb456911e"),
             DirectorySource("./bundled"),
         ]
     else
@@ -436,11 +436,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
     elseif version.major == 1 && version.minor == 12
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.0+0")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+16")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+1"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+2")))
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.0+1")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+19")))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"14.0.6+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
     else
         error("Unsupported Julia version")
     end
@@ -450,6 +450,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if any(should_build_platform.(triplet.(platforms)))
         build_tarballs(ARGS, name, jllversion, sources, script, platforms, products, dependencies;
-                   preferred_gcc_version=gcc_ver, lock_microarchitecture=false, julia_compat="1.6")
+                   preferred_gcc_version=gcc_ver, preferred_llvm_version=v"17",
+                   lock_microarchitecture=false, julia_compat="1.6")
     end
 end

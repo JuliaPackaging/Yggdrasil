@@ -1,38 +1,38 @@
-From feb5b50dee8995c3d3e1e20fbf45913ddf9131ec Mon Sep 17 00:00:00 2001
-From: Valentin Churavy <v.churavy@gmail.com>
-Date: Tue, 7 Feb 2023 15:16:23 -0500
-Subject: [PATCH] Disable NVTX on Linux for now
-
----
- CMakeLists.txt | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
-
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 2503fb9..37a938d 100644
+index 7bc0f1b..1c03456 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -160,10 +160,6 @@ FIND_PACKAGE(MPI)
+@@ -147,11 +147,6 @@ endif (CMAKE_NO_MPI)
  
  message ("This is a MPI build:" ${MPI_FOUND})
  
 -# Enable NVTX ranges on Linux
 -if(NOT WIN32)
--  set(NVTXRANGE_FLAG "-DNVTX_RANGES;")
+-  set(NVTXRANGE_FLAG -DNVTX_RANGES)
 -endif()
- 
+-
  # Configuration specific nvcc flags
  GET_FILENAME_COMPONENT(CMAKE_CXX_COMPILER_NAME "${CMAKE_CXX_COMPILER}" NAME)
-@@ -362,8 +358,8 @@ IF (WIN32)
-   target_link_libraries( amgx CUDA::cublas CUDA::cusparse CUDA::cusolver)
-   target_link_libraries( amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver)
+ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_NAME MATCHES "clang")
+@@ -176,8 +171,8 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS_${UPP_BUILD_NAME}})
+ # Enable device lambdas
+ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --extended-lambda)
+ 
+-# Add errors for execution space warnings and enable NVTX ranges
+-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --Werror cross-execution-space-call ${NVTXRANGE_FLAG})
++# Add errors for execution space warnings
++set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --Werror cross-execution-space-call)
+ 
+ # Keep intermediate files
+ if (AMGX_keep_intermediate)
+@@ -289,8 +284,8 @@ IF (WIN32)
+   target_link_libraries(amgx CUDA::cublas CUDA::cusparse CUDA::cusolver)
+   target_link_libraries(amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver)
  ELSE (WIN32)
--  target_link_libraries( amgx CUDA::cublas CUDA::cusparse CUDA::cusolver CUDA::nvToolsExt m pthread)
--  target_link_libraries( amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver CUDA::nvToolsExt m pthread)
-+  target_link_libraries( amgx CUDA::cublas CUDA::cusparse CUDA::cusolver m pthread)
-+  target_link_libraries( amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver  m pthread)
+-  target_link_libraries(amgx CUDA::cublas CUDA::cusparse CUDA::cusolver CUDA::nvToolsExt m pthread)
+-  target_link_libraries(amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver CUDA::nvToolsExt m pthread)
++  target_link_libraries(amgx CUDA::cublas CUDA::cusparse CUDA::cusolver m pthread)
++  target_link_libraries(amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver m pthread)
  ENDIF(WIN32)
  
  if(MPI_FOUND)
--- 
-2.37.2
-

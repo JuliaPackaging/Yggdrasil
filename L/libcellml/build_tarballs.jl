@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "libcellml"
-version = v"0.5.0"
+version = v"0.6.0"
 
 sources = [
     GitSource(
-        "https://github.com/cellml/libcellml",
-        "79c79e851a8ad9b10bc0cc7978121ae6ad98ef9c"),
+        "https://github.com/hsorby/libcellml",
+        "438f64d536db5f15791b35ffa2e5dfa849f55322"),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
@@ -47,7 +47,9 @@ products = [
 ]
 
 dependencies = [
-    Dependency("XML2_jll"),
+    # XML2 apparently had a breaking change, so it's important to specify the compat bound:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/9673#issuecomment-2434514026
+    Dependency("XML2_jll"; compat="2.13.4"),
     Dependency("Zlib_jll"),
 ]
 

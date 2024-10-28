@@ -1,0 +1,27 @@
+diff --git a/src/spawn-posix.c b/src/spawn-posix.c
+index 96f1536..8a14724 100644
+--- a/src/spawn-posix.c
++++ b/src/spawn-posix.c
+@@ -341,9 +341,6 @@
+   /* Close all other files.  */
+   _gpgrt_close_all_fds (3, act->except_fds);
+
+-  if (act->environ)
+-    environ = act->environ;
+-
+   if (act->atfork)
+     act->atfork (act->atfork_arg);
+
+@@ -351,7 +348,11 @@
+   if (pgmname == NULL)
+     return 0;
+
+-  execv (pgmname, (char *const *)argv);
++  if (act->environ)
++    execve (pgmname, (char *const *)argv, act->environ);
++  else
++    execv (pgmname, (char *const *)argv);
++
+   /* No way to print anything, as we have may have closed all streams. */
+   _exit (127);
+   return -1;
