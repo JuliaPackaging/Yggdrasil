@@ -147,7 +147,7 @@ include("../../L/libjulia/common.jl")
 platforms = reduce(vcat, libjulia_platforms.(julia_versions))
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
-filter!(p -> libgfortran_version(p) >= v"4", platforms)
+filter!(p -> libgfortran_version(p) >= v"5", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -161,6 +161,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version = v"9",
+    preferred_gcc_version = v"8",
     clang_use_lld = false,
     julia_compat = "1.6")
