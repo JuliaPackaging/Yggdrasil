@@ -145,6 +145,7 @@ products = [
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = reduce(vcat, libjulia_platforms.(julia_versions))
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) >= v"5", platforms)
