@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "libplist"
-version = v"2.2.2" # <--- fake version
+version = v"2.2.1" # <--- fake version
 
 # Collection of sources required to build libplist
 sources = [
@@ -39,4 +39,4 @@ products = [
 dependencies = Dependency[
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", clang_use_lld=false)
