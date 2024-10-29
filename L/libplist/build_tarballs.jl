@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "libplist"
-version = v"2.6.0"
+version = v"2.4.0"
 
 # Collection of sources required to build libplist
 sources = [
     GitSource("https://github.com/libimobiledevice/libplist.git",
-              "2117b8fdb6b4096455bd2041a63e59a028120136"),
+              "51623f619c06dd704bcaafb4afeceb307ebf3193"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,12 +28,6 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-
-# aarch64 FreeBSD `ld64` doesn't know how to deal with some of the options used here.
-# fails with:
-#   ld64.lld: warning: Option `-keep_private_externs' is not yet implemented. Stay tuned...
-#   ld64.lld: warning: Option `-r' is not yet implemented. Stay tuned...
-platforms = filter(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
