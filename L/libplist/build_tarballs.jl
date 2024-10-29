@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "libplist"
-version = v"2.4.0"
+version = v"2.3.0"
 
 # Collection of sources required to build libplist
 sources = [
     GitSource("https://github.com/libimobiledevice/libplist.git",
-              "51623f619c06dd704bcaafb4afeceb307ebf3193"),
+              "72480212cd8ec0ab8d0b5064df52c146cac603b4"),
 ]
 
 # Bash recipe for building across all platforms
