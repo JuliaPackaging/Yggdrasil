@@ -1,8 +1,0 @@
---- fflas-ffpack.orig/fflas-ffpack.pc.in	2024-08-04 15:41:34
-+++ fflas-ffpack/fflas-ffpack.pc.in	2024-08-04 17:00:54
-@@ -9,4 +9,4 @@
- Version: @VERSION@
- Requires: givaro >= 4.2.0
- Libs: @PARLIBS@ @PRECOMPILE_LIBS@ @BLAS_LIBS@
--Cflags: -I@includedir@  @BLAS_CFLAGS@  @PARFLAGS@ @PRECOMPILE_FLAGS@ @REQUIRED_FLAGS@
-+Cppflags: -I@includedir@  @BLAS_CFLAGS@  @PARFLAGS@ @PRECOMPILE_FLAGS@ @REQUIRED_FLAGS@
