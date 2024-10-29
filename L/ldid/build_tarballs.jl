@@ -22,6 +22,10 @@ make INSTALLPREFIX=${prefix} install
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(filter(!Sys.iswindows, supported_platforms()))
 
+# Disable aarch64-freebsd until libplist can be built for it.
+# X-ref: https://github.com/JuliaPackaging/Yggdrasil/pull/9702
+platforms = filter(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("ldid", :ldid),
