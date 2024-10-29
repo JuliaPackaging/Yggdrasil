@@ -29,6 +29,12 @@ make install
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
+# aarch64 FreeBSD `ld64` doesn't know how to deal with some of the options used here.
+# fails with:
+#   ld64.lld: warning: Option `-keep_private_externs' is not yet implemented. Stay tuned...
+#   ld64.lld: warning: Option `-r' is not yet implemented. Stay tuned...
+platforms = filter(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("plistutil", :plistutil),
