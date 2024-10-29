@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "libplist"
-version = v"2.2.3" # <--- fake version
+version = v"2.2.2" # <--- fake version
 
 # Collection of sources required to build libplist
 sources = [
