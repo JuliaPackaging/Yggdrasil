@@ -1,20 +1,17 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 252b8bb..1437a6f 100644
+index 252b8bb..c45c47f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -33,8 +33,10 @@ find_package(PkgConfig REQUIRED)
+@@ -33,9 +33,6 @@ find_package(PkgConfig REQUIRED)
  pkg_check_modules(GIVARO REQUIRED IMPORTED_TARGET givaro)
  pkg_check_modules(FFLAS_FFPACK REQUIRED IMPORTED_TARGET fflas-ffpack)
  
 -# set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/config;${CMAKE_MODULE_PATH}")
 -# find_package(PAPI)
-+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/config;${CMAKE_MODULE_PATH}")
-+find_package(argp)
-+include_directories(${ARGP_INCLUDE_PATH})
-+target_link_libraries(${ARGP_LIBRARIES})
- 
+-
  if (build_type STREQUAL cov)
      add_compile_options(-Wall -O0 --coverage -Wno-pragmas -fopenmp)
+     add_link_options(--coverage)
 diff --git a/config/Findargp.cmake b/config/Findargp.cmake
 new file mode 100644
 index 0000000..2992977
@@ -107,3 +104,41 @@ index 0000000..2992977
 +	DEFAULT_MSG
 +	ARGP_LIBRARIES ARGP_INCLUDE_PATH)
 +mark_as_advanced(ARGP_LIBRARIES ARGP_INCLUDE_PATH)
+diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
+index 4668064..82aacae 100644
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -1,9 +1,8 @@
+ include_directories (../src)
+ 
+-if(APPLE)
+-    include_directories (/opt/homebrew/include)
+-    set(ARGP argp)
+-endif()
++set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/config;${CMAKE_MODULE_PATH}")
++find_package(argp)
++include_directories(${ARGP_INCLUDE_PATH})
+ 
+ add_library(spasmtools common.c)
+ 
+@@ -27,16 +26,16 @@ add_executable(dm dm.c)
+ target_link_libraries(dm PUBLIC spasm)
+ 
+ add_executable(rank rank.c)
+-target_link_libraries(rank PUBLIC spasm spasmtools ${ARGP})
++target_link_libraries(rank PUBLIC spasm spasmtools ${ARGP_LIBRARIES})
+ 
+ add_executable(echelonize echelonize.c)
+ target_link_libraries(echelonize PUBLIC spasm spasmtools)
+ 
+ add_executable(kernel kernel.c)
+-target_link_libraries(kernel PUBLIC spasm spasmtools ${ARGP})
++target_link_libraries(kernel PUBLIC spasm spasmtools ${ARGP_LIBRARIES})
+ 
+ add_executable(solve solve.c)
+-target_link_libraries(solve PUBLIC spasm spasmtools ${ARGP})
++target_link_libraries(solve PUBLIC spasm spasmtools ${ARGP_LIBRARIES})
+ 
+ add_executable(check_cert check_cert.c)
+-target_link_libraries(check_cert PUBLIC spasm spasmtools ${ARGP})
++target_link_libraries(check_cert PUBLIC spasm spasmtools ${ARGP_LIBRARIES})
