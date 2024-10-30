@@ -29,7 +29,7 @@ install -D -m755 libargp.a ${libdir}/libargp.a
 """
 
 # Select Unix platforms
-platforms = supported_platforms()
+platforms = supported_platforms(exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
