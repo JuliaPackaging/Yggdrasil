@@ -36,7 +36,7 @@ install_license ${WORKSPACE}/srcdir/spasm/COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(exclude=Sys.iswindows) |> expand_cxxstring_abis
-platforms = supported_platforms(exclude=!Sys.isapple) |> expand_cxxstring_abis
+#platforms = supported_platforms(exclude=!Sys.isapple) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = Product[
