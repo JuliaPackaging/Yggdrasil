@@ -62,6 +62,7 @@ dependencies = [
 # strange warning: Dependency argp_standalone_jll does not have a mapping for artifact argp_standalone for platform x86_64-linux-gnu-libgfortran3-cxx11
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("LLVMOpenMP_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
