@@ -43,7 +43,7 @@ cmake . \
       -DT8CODE_ENABLE_MPI=ON \
       -DP4EST_ENABLE_MPIIO=OFF
 
-make -C build -j ${nproc} # "${FLAGS[@]}" 
+make -C build -j ${nproc}
 make -C build -j ${nproc} install
 """
 
