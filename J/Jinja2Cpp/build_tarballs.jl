@@ -42,6 +42,8 @@ cmake -B build \
 
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+install_license ${WORKSPACE}/srcdir/Jinja2Cpp/LICENSE
 """
 
 # Build for all supported platforms.
