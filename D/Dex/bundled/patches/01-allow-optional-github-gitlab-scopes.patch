@@ -1,68 +1,70 @@
 diff --git a/connector/github/github.go b/connector/github/github.go
-index 02f2cae8..e3e9b9c3 100644
+index 18a56628..9bbe1e2c 100644
 --- a/connector/github/github.go
 +++ b/connector/github/github.go
-@@ -42,16 +42,17 @@ var (
+@@ -39,17 +39,18 @@ var (
  
  // Config holds configuration options for github logins.
  type Config struct {
--	ClientID      string `json:"clientID"`
--	ClientSecret  string `json:"clientSecret"`
--	RedirectURI   string `json:"redirectURI"`
--	Org           string `json:"org"`
--	Orgs          []Org  `json:"orgs"`
--	HostName      string `json:"hostName"`
--	RootCA        string `json:"rootCA"`
--	TeamNameField string `json:"teamNameField"`
--	LoadAllGroups bool   `json:"loadAllGroups"`
--	UseLoginAsID  bool   `json:"useLoginAsID"`
-+	ClientID         string   `json:"clientID"`
-+	ClientSecret     string   `json:"clientSecret"`
-+	RedirectURI      string   `json:"redirectURI"`
-+	Org              string   `json:"org"`
-+	Orgs             []Org    `json:"orgs"`
-+	HostName         string   `json:"hostName"`
-+	RootCA           string   `json:"rootCA"`
-+	TeamNameField    string   `json:"teamNameField"`
-+	LoadAllGroups    bool     `json:"loadAllGroups"`
-+	UseLoginAsID     bool     `json:"useLoginAsID"`
-+	AdditionalScopes []string `json:"additionalScopes,omitempty"`
+-	ClientID             string `json:"clientID"`
+-	ClientSecret         string `json:"clientSecret"`
+-	RedirectURI          string `json:"redirectURI"`
+-	Org                  string `json:"org"`
+-	Orgs                 []Org  `json:"orgs"`
+-	HostName             string `json:"hostName"`
+-	RootCA               string `json:"rootCA"`
+-	TeamNameField        string `json:"teamNameField"`
+-	LoadAllGroups        bool   `json:"loadAllGroups"`
+-	UseLoginAsID         bool   `json:"useLoginAsID"`
+-	PreferredEmailDomain string `json:"preferredEmailDomain"`
++	ClientID             string   `json:"clientID"`
++	ClientSecret         string   `json:"clientSecret"`
++	RedirectURI          string   `json:"redirectURI"`
++	Org                  string   `json:"org"`
++	Orgs                 []Org    `json:"orgs"`
++	HostName             string   `json:"hostName"`
++	RootCA               string   `json:"rootCA"`
++	TeamNameField        string   `json:"teamNameField"`
++	LoadAllGroups        bool     `json:"loadAllGroups"`
++	UseLoginAsID         bool     `json:"useLoginAsID"`
++	PreferredEmailDomain string   `json:"preferredEmailDomain"`
++	AdditionalScopes     []string `json:"additionalScopes"`
  }
  
  // Org holds org-team filters, in which teams are optional.
-@@ -86,6 +87,7 @@ func (c *Config) Open(id string, logger log.Logger) (connector.Connector, error)
- 		apiURL:       apiURL,
- 		logger:       logger,
- 		useLoginAsID: c.UseLoginAsID,
-+		additionalScopes: c.AdditionalScopes,
+@@ -85,6 +86,7 @@ func (c *Config) Open(id string, logger *slog.Logger) (connector.Connector, erro
+ 		logger:               logger.With(slog.Group("connector", "type", "github", "id", id)),
+ 		useLoginAsID:         c.UseLoginAsID,
+ 		preferredEmailDomain: c.PreferredEmailDomain,
++		additionalScopes:     c.AdditionalScopes,
  	}
  
  	if c.HostName != "" {
-@@ -152,6 +154,8 @@ type githubConnector struct {
- 	loadAllGroups bool
- 	// if set to true will use the user's handle rather than their numeric id as the ID
+@@ -159,6 +161,8 @@ type githubConnector struct {
  	useLoginAsID bool
+ 	// the domain to be preferred among the user's emails. e.g. "github.com"
+ 	preferredEmailDomain string
 +	// optional scopes to be requested apart from what the connector itself needs
 +	additionalScopes []string
  }
  
  // groupsRequired returns whether dex requires GitHub's 'read:org' scope. Dex
-@@ -168,6 +172,10 @@ func (c *githubConnector) oauth2Config(scopes connector.Scopes) *oauth2.Config {
+@@ -175,6 +179,10 @@ func (c *githubConnector) oauth2Config(scopes connector.Scopes) *oauth2.Config {
  	if c.groupsRequired(scopes.Groups) {
  		githubScopes = append(githubScopes, scopeOrgs)
  	}
 +	if len(c.additionalScopes) > 0 {
-+		c.logger.Warnf("github: requesting additional scopes %v", c.additionalScopes)
++		c.logger.Warn(fmt.Sprintf("github: requesting additional scopes %v", c.additionalScopes))
 +		githubScopes = append(githubScopes, c.additionalScopes...)
 +	}
  
  	endpoint := github.Endpoint
  	// case when it is a GitHub Enterprise account.
 diff --git a/connector/gitlab/gitlab.go b/connector/gitlab/gitlab.go
-index e4060140..501f8b05 100644
+index fdb2c482..fb37b1c6 100644
 --- a/connector/gitlab/gitlab.go
 +++ b/connector/gitlab/gitlab.go
-@@ -27,12 +27,13 @@ const (
+@@ -28,12 +28,13 @@ const (
  
  // Config holds configuration options for gitlab logins.
  type Config struct {
@@ -82,15 +84,29 @@ index e4060140..501f8b05 100644
  }
  
  type gitlabUser struct {
-@@ -57,6 +58,7 @@ func (c *Config) Open(id string, logger log.Logger) (connector.Connector, error)
- 		logger:       logger,
- 		groups:       c.Groups,
- 		useLoginAsID: c.UseLoginAsID,
+@@ -51,13 +52,14 @@ func (c *Config) Open(id string, logger *slog.Logger) (connector.Connector, erro
+ 		c.BaseURL = "https://gitlab.com"
+ 	}
+ 	return &gitlabConnector{
+-		baseURL:      c.BaseURL,
+-		redirectURI:  c.RedirectURI,
+-		clientID:     c.ClientID,
+-		clientSecret: c.ClientSecret,
+-		logger:       logger.With(slog.Group("connector", "type", "gitlab", "id", id)),
+-		groups:       c.Groups,
+-		useLoginAsID: c.UseLoginAsID,
++		baseURL:          c.BaseURL,
++		redirectURI:      c.RedirectURI,
++		clientID:         c.ClientID,
++		clientSecret:     c.ClientSecret,
++		logger:           logger.With(slog.Group("connector", "type", "gitlab", "id", id)),
++		groups:           c.Groups,
++		useLoginAsID:     c.UseLoginAsID,
 +		additionalScopes: c.AdditionalScopes,
  	}, nil
  }
  
-@@ -80,6 +82,8 @@ type gitlabConnector struct {
+@@ -82,6 +84,8 @@ type gitlabConnector struct {
  	httpClient   *http.Client
  	// if set to true will use the user's handle rather than their numeric id as the ID
  	useLoginAsID bool
@@ -99,14 +115,15 @@ index e4060140..501f8b05 100644
  }
  
  func (c *gitlabConnector) oauth2Config(scopes connector.Scopes) *oauth2.Config {
-@@ -87,6 +91,10 @@ func (c *gitlabConnector) oauth2Config(scopes connector.Scopes) *oauth2.Config {
+@@ -89,7 +93,10 @@ func (c *gitlabConnector) oauth2Config(scopes connector.Scopes) *oauth2.Config {
  	if c.groupsRequired(scopes.Groups) {
  		gitlabScopes = []string{scopeUser, scopeOpenID}
  	}
+-
 +	if len(c.additionalScopes) > 0 {
-+		c.logger.Warnf("gitlab: requesting additional scopes %v", c.additionalScopes)
++		c.logger.Warn(fmt.Sprintf("gitlab: requesting additional scopes %v", c.additionalScopes))
 +		gitlabScopes = append(gitlabScopes, c.additionalScopes...)
 +	}
- 
  	gitlabEndpoint := oauth2.Endpoint{AuthURL: c.baseURL + "/oauth/authorize", TokenURL: c.baseURL + "/oauth/token"}
  	return &oauth2.Config{
+ 		ClientID:     c.clientID,

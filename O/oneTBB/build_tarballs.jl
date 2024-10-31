@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneTBB"
-version = v"2021.9.0"
+version = v"2021.12.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/oneapi-src/oneTBB.git",
-              "a00cc3b8b5fb4d8115e9de56bf713157073ed68c"),
+              "9afd759b72c0c233cd5ea3c3c06b0894c9da9c54"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,17 +24,21 @@ if [[ ${target} == *mingw* ]]; then
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
-mkdir build && cd build/
+if [[ ${target} == i686-linux-musl* ]]; then
+    # Disable strong stack protection. Our musl version doesn't
+    # provide the symbol `__stack_chk_fail_local` in the way GCC expects.
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/i686-musl.patch"
+fi
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -B build -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DTBB_STRICT=OFF \
     -DTBB_TEST=OFF \
-    -DTBB_EXAMPLES=OFF \
-    ..
-make -j${nproc}
-make install
+    -DTBB_EXAMPLES=OFF
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())

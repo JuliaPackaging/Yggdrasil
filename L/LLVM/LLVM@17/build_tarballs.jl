@@ -1,6 +1,6 @@
 name = "LLVM"
-llvm_full_version = v"17.0.6+1"
-libllvm_version = v"17.0.6+1"
+llvm_full_version = v"17.0.6+5"
+libllvm_version = v"17.0.6+5"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms

@@ -8,7 +8,7 @@ version = v"2"
 # Collection of sources required to build libuv
 sources = [
     GitSource("https://github.com/JuliaLang/libuv.git",
-              "ca3a5a431a1c37859b6508e6b2a288092337029a"),
+              "af4172ec713ee986ba1a989b9e33993a07c60c9e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,7 +33,7 @@ make install
 """
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
@@ -52,5 +52,5 @@ dependencies = [
 # versioning APIs worked out in BB yet.
 version = v"2.0.1"
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    # We need GCC 4.9+ for stdatomic.h
-    julia_compat="1.6", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
+               # We need GCC 4.9+ for stdatomic.h
+               julia_compat="1.6", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)

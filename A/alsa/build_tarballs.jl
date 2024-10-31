@@ -3,26 +3,26 @@
 using BinaryBuilder
 
 name = "alsa"
-# It's actually v1.2.5.1
-version = v"1.2.5"
+version = v"1.2.12"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.5.1.tar.bz2",
-                  "628421d950cecaf234de3f899d520c0a6923313c964ad751ffac081df331438e"),
+    GitSource("https://github.com/alsa-project/alsa-lib.git",
+              "34422861f5549aee3e9df9fd8240d10b530d9abd")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/alsa-lib*/
+autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(Sys.islinux, supported_platforms(;experimental=true))
+platforms = filter(Sys.islinux, supported_platforms())
 
 # The products that we will ensure are always built
 products = [

@@ -14,7 +14,7 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "MUMPS_seq"
-upstream_version = v"5.6.2"
+upstream_version = v"5.7.3"
 version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -22,7 +22,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 sources = [
   ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz",
-                "13a2c1aff2bd1aa92fe84b7b35d88f43434019963ca09ef7e8c90821a8f1d59a")
+                "84a47f7c4231b9efdf4d4f631a2cae2bdd9adeaabc088261d15af040143ed112")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,8 +35,9 @@ cp Make.inc/${makefile} Makefile.inc
 
 # Add `-fallow-argument-mismatch` if supported
 : >empty.f
+FFLAGS=()
 if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
-    FFLAGS=("-fallow-argument-mismatch")
+    FFLAGS+=("-fallow-argument-mismatch")
 fi
 rm -f empty.*
 
@@ -61,6 +62,7 @@ make_args+=(OPTF="-O3"
             LMETIS="-L${libdir} -lmetis"
             ORDERINGSF="-Dpord -Dmetis"
             LIBEXT_SHARED=".${dlext}"
+            SHARED_OPT="-shared"
             SONAME="${SONAME}"
             CC="$CC ${CFLAGS[@]}"
             FC="gfortran ${FFLAGS[@]}"
@@ -75,6 +77,40 @@ mkdir ${includedir}/libseq
 cp include/*.h ${includedir}
 cp libseq/*.h ${includedir}/libseq
 cp lib/*.${dlext} ${libdir}
+
+# 64-bit integer version of MUMPS
+make clean
+for sym in isamax idamax ilaenv slamch dlamch \
+           saxpy scopy sgemm sgemv sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
+           daxpy dcopy dgemm dgemv dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
+           caxpy ccopy cgemm cgemv cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
+           zaxpy zcopy zgemm zgemv zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
+do
+    FFLAGS+=("-D${sym}=${sym}_64")
+done
+FFLAG="${FFLAGS[@]}"
+make_args_64+=(PLAT="64"
+               OPTF="-O3 -fdefault-integer-8 -ffixed-line-length-none"
+               OPTL="-O3"
+               OPTC="-O3 -DINTSIZE64"
+               CDEFS=-DAdd_
+               LMETISDIR="${libdir}/metis/metis_Int64_Real32/lib"
+               IMETIS="-I${libdir}/metis_Int64_Real32/include"
+               LMETIS="-L${libdir}/metis/metis_Int64_Real32/lib -lmetis_Int64_Real32"
+               ORDERINGSF="-Dpord -Dmetis"
+               LIBEXT_SHARED=".${dlext}"
+               SHARED_OPT="-shared"
+               SONAME="${SONAME}"
+               CC="$CC ${CFLAGS[@]}"
+               FC="gfortran $FFLAG"
+               FL="gfortran"
+               RANLIB="echo"
+               LPORD="-L./PORD/lib -lpord64"
+               LIBBLAS="${BLAS_LAPACK}"
+               LAPACK="${BLAS_LAPACK}")
+
+make -j${nproc} allshared "${make_args_64[@]}"
+cp lib/*.${dlext} ${libdir}
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
@@ -85,6 +121,10 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
+    LibraryProduct("libsmumps64", :libsmumps64),
+    LibraryProduct("libdmumps64", :libdmumps64),
+    LibraryProduct("libcmumps64", :libcmumps64),
+    LibraryProduct("libzmumps64", :libzmumps64),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -95,4 +135,4 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.9", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.9", preferred_gcc_version=v"6", clang_use_lld=false)

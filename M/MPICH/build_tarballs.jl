@@ -4,14 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version_str = "4.2.0"
-version = VersionNumber(version_str)
-
-# build trigger: 1
+version = v"4.2.3"
 
 sources = [
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "a64a66781b9e5312ad052d32689e23252f745b27ee8818ac2ac0c8209bc0b90e"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
+                  "7a019180c51d1738ad9c5d8d452314de65e828ee240bcb2d1f80de9a65be88a8"),
     DirectorySource("bundled"),
 ]
 
@@ -78,10 +75,9 @@ fi
 # * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --disable-dependency-tracking \
-    --docdir=/tmp \
+    --disable-doc \
     --enable-fast=all,O3 \
     --enable-static=no \
-    --mandir=/tmp \
     --with-device=ch3 \
     --with-hwloc=${prefix} \
     "${EXTRA_FLAGS[@]}"
@@ -131,11 +127,12 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Hwloc_jll"),
+    Dependency("Hwloc_jll"; compat="2.11.1"), # We need 2.11.1+1 for aarch64-unknown-freebsd
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                compat="0.1", top_level=true),
 ]
 
 # Build the tarballs.
+# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", clang_use_lld=false)
+               augment_platform_block, julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"5")

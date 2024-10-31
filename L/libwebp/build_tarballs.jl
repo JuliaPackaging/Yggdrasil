@@ -3,18 +3,17 @@
 using BinaryBuilder
 
 name = "libwebp"
-version = v"1.3.2"
+version = v"1.4.0"
 
 # Collection of sources required to build libwebp
 sources = [
     GitSource("https://chromium.googlesource.com/webm/libwebp",
-                  "ca332209cb5567c9b249c86788cb2dbf8847e760"),
+              "a443170fc0ebdfc3abbf89ac81f35e7eb656a3da"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libwebp
-export CFLAGS="-std=c99"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 ./autogen.sh
@@ -55,4 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")

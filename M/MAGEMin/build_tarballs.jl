@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MAGEMin"
-version = v"1.4.3"
+version = v"1.5.6"
 
 MPItrampoline_compat_version="5.2.1"  
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "1c81de14d06a1487bce6ab10ae090042fbba9672")                 ]
+                    "41b7861a26efda070ea1b7b453781d100f34e5f6")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -62,7 +62,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=p->Sys.isfreebsd(p) && arch(p) == "aarch64")
 platforms = expand_gfortran_versions(platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")

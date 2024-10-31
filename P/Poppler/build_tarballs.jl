@@ -3,12 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "Poppler"
-version = v"23.12.0"
+version_str = "24.06.0"
+version = VersionNumber(version_str)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://poppler.freedesktop.org/poppler-$(version).tar.xz",
-                  "beba398c9d37a9b6d02486496635e08f1df3d437cfe61dab2593f47c4d14cdbb")
+    ArchiveSource("https://poppler.freedesktop.org/poppler-$(version_str).tar.xz",
+                  "0cdabd495cada11f6ee9e75c793f80daf46367b66c25a63ee8c26d0f9ec40c76"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,10 +23,21 @@ if [[ "${target}" == "${MACHTYPE}" ]]; then
     rm /usr/lib/libexpat.so*
 fi
 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
+
+export PATH=${host_bindir}:${PATH}
+
 # cmake doesn't find FreeType2 without help
 export FREETYPE_DIR=${prefix}
 
-cmake -B build \
+cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
@@ -49,13 +63,6 @@ cmake --install build
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# `armv6l` is not supported, `libpoppler_glib` is not built
-filter!(p -> arch(p) != "armv6l", platforms)
-
-# C++03 is not supported because
-# `error: function ‘GfxFontLoc& GfxFontLoc::operator=(GfxFontLoc&&)’ defaulted on its redeclaration with an exception-specification that differs from the implicit exception-specification`
-filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libpoppler-cpp", :libpoppler_cpp),
@@ -77,21 +84,20 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency(PackageSpec("CMake_jll", v"3.22.2")), # we need 3.22.0
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Cairo_jll"; compat="1.16.1"), # we need 1.16.0
-    Dependency("Fontconfig_jll"),             # we need 2.12
-    Dependency("FreeType2_jll"),              # we need 2.10
-    Dependency("Glib_jll"; compat="2.68.1"),  # we need 2.64
-    Dependency("JpegTurbo_jll"),
-    Dependency("LibCURL_jll"; compat="7.73,8"),# we need 7.68
-    Dependency("Libtiff_jll"; compat="4.5.1"), # we need 4.1
-    Dependency("OpenJpeg_jll"),
-    Dependency("libpng_jll"),
+    Dependency("Cairo_jll"; compat="1.18.0"),       # we need 1.16.0
+    Dependency("Fontconfig_jll"; compat="2.13.93"), # we need 2.13
+    Dependency("FreeType2_jll"; compat="2.13.1"),   # we need 2.11
+    Dependency("Glib_jll"; compat="2.74.0"),        # we need 2.72
+    Dependency("JpegTurbo_jll"; compat="3.0.1"),
+    Dependency("LibCURL_jll"; compat="7.73,8"), # we need 7.68
+    Dependency("Libtiff_jll"; compat="4.6.0"),  # we need 4.3
+    Dependency("OpenJpeg_jll";compat="2.5.0"),
+    Dependency("libpng_jll"; compat="1.6.38"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We use GCC 8 since we need C++17 (`std::string_view` and `<charconv>`)
+# We use GCC 10 since we need modern C++17 (`std::string_view`, `<charconv>`, and `<span>`)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
-
-# Build trigger: 1
+               julia_compat="1.6", preferred_gcc_version=v"10")

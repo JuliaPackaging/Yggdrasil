@@ -5,11 +5,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.2"
+version = v"5.0.5"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "095ab1cddb0fa0f9e7fc211a1d33185c6727c5237d0ee55f80a7e4311e5d279c"),
-    DirectorySource("./bundled"),
+                  "5cbefa0780b84f4126743c40cdd6a334b2f0574cd7fd95050fb1ac0ddbb7f0b8"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
@@ -19,6 +19,18 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    # Build internal `libevent` without `-Wl,--no-undefined`
+    # (taken from `L/libevent/build_tarballs.jl`)
+
+    # Expand libevent tarball so that we can patch it
+    pushd 3rd-party
+    tar xzf libevent-2.1.12-stable-ompi.tar.gz
+    cd libevent-2.1.12-stable-ompi
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/build_with_no_undefined.patch
+    popd
+fi
 
 # Autotools doesn't add `${includedir}` as an include directory on some platforms
 export CPPFLAGS="-I${includedir}"
@@ -40,7 +52,11 @@ export LIBS='-ldl'
     --enable-static=no \
     --host=${target} \
     --prefix=${prefix} \
+    --docdir=/tmp \
+    --infodir=/tmp \
+    --mandir=/tmp \
     --with-cross=${WORKSPACE}/srcdir/${target} \
+    --with-libevent=internal \
     --without-cs-fs
 
 # Build the library
@@ -77,13 +93,15 @@ products = [
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
+# Use an internal `libevent` to prevent hangs in MPI_Init.
+# Also use internal `PMix` and `prrte` packages since they might otherwise use an external `libevent`.
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("Hwloc_jll"),    # compat="2.0.0"
-    Dependency("PMIx_jll"),     # compat="4.2.0"
-    Dependency("Zlib_jll"),
-    Dependency("libevent_jll"), # compat="2.0.21"
-    Dependency("prrte_jll"),    # compat="3.0.0"
+    Dependency("Hwloc_jll"; compat="2.5.0"),
+    # Dependency("PMIx_jll"),     # compat="4.2.0"
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    # Dependency("libevent_jll"), # compat="2.0.21"
+    # Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 

@@ -1,0 +1,67 @@
+From 84de84fea155b62c3875048ca53cec355bf4583b Mon Sep 17 00:00:00 2001
+From: MichelJuillard <michel.juillard@mjui.fr>
+Date: Sun, 22 Sep 2024 11:35:33 +0200
+Subject: [PATCH] add ILP64 interface for Julia libblasstrampoline
+
+---
+ InterfaceTPL/tsgTPLWrappers.hpp   | 2 +-
+ SparseGrids/gridtestUnitTests.cpp | 2 +-
+ SparseGrids/tsgLinearSolvers.cpp  | 2 +-
+ SparseGrids/tsgLinearSolvers.hpp  | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/InterfaceTPL/tsgTPLWrappers.hpp b/InterfaceTPL/tsgTPLWrappers.hpp
+index 1c6d87d5..bd950a93 100644
+--- a/InterfaceTPL/tsgTPLWrappers.hpp
++++ b/InterfaceTPL/tsgTPLWrappers.hpp
+@@ -60,7 +60,7 @@
+ #include "TasmanianConfig.hpp"
+ 
+ #ifdef Tasmanian_ENABLE_BLAS
+-#include "tsgBlasWrappers.hpp"
++#include "tsgJuliaTrampolineWrappers.hpp"
+ #else
+ #include "tsgBlasNull.hpp"
+ #endif
+diff --git a/SparseGrids/gridtestUnitTests.cpp b/SparseGrids/gridtestUnitTests.cpp
+index 0a3c1869..d1901476 100644
+--- a/SparseGrids/gridtestUnitTests.cpp
++++ b/SparseGrids/gridtestUnitTests.cpp
+@@ -808,7 +808,7 @@ bool GridUnitTester::testLAPACKInterface() {
+ 
+     std::vector<double> D(N, a), E(N-1, b);
+     std::vector<double> W(N), Z(N*N), WORK1(2*N-2), WORK2(4*N);
+-    std::vector<int> IBLOCK1(N), ISPLIT1(N), IWORK1(3*N);
++    std::vector<int64_t> IBLOCK1(N), ISPLIT1(N), IWORK1(3*N);
+     ISPLIT1[0] = N;
+     IBLOCK1[0] = N;
+ 
+diff --git a/SparseGrids/tsgLinearSolvers.cpp b/SparseGrids/tsgLinearSolvers.cpp
+index c0b699c3..7a51a2c3 100644
+--- a/SparseGrids/tsgLinearSolvers.cpp
++++ b/SparseGrids/tsgLinearSolvers.cpp
+@@ -541,7 +541,7 @@ void WaveletBasisMatrix::factorize(AccelerationContext const *acceleration){
+         gpu_ipiv = GpuVector<int_gpu_lapack>(acceleration, num_rows);
+         TasGpu::factorizePLU(acceleration, num_rows, gpu_dense.data(), gpu_ipiv.data());
+     }else if (not dense.empty()){
+-        ipiv = std::vector<int>(num_rows);
++        ipiv = std::vector<int64_t>(num_rows);
+         TasBLAS::getrf(num_rows, num_rows, dense.data(), num_rows, ipiv.data());
+     }else{
+         computeILU();
+diff --git a/SparseGrids/tsgLinearSolvers.hpp b/SparseGrids/tsgLinearSolvers.hpp
+index 2011a1da..d92a2fce 100644
+--- a/SparseGrids/tsgLinearSolvers.hpp
++++ b/SparseGrids/tsgLinearSolvers.hpp
+@@ -225,7 +225,7 @@ private:
+     std::vector<int> pntr, indx, indxD;
+     std::vector<double> vals, ilu;
+     std::vector<double> dense; // if using the dense format
+-    std::vector<int> ipiv; // pivots for the dense factorize
++    std::vector<int64_t> ipiv; // pivots for the dense factorize
+ 
+     GpuVector<double> gpu_dense; // GPU factors
+     GpuVector<int_gpu_lapack> gpu_ipiv;
+-- 
+2.43.0
+

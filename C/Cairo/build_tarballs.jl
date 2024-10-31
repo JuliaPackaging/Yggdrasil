@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "Cairo"
-version = v"1.18.0"
+version = v"1.18.2"
 
 sources = [
     GitSource("https://gitlab.freedesktop.org/cairo/cairo.git",
-              "3909090108bb2db55330e3eb148aebe664735363"),
+              "b9eed915f9a67380e7ef9d8746656455c43f67e2"),  # this is a few commits after 1.18.2 but includes an important bugfix
 ]
 
 # Bash recipe for building across all platforms
@@ -71,7 +71,7 @@ linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
     Dependency("Glib_jll"),
-    Dependency("Pixman_jll"),
+    Dependency("Pixman_jll"; compat="0.43.4"),
     Dependency("libpng_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.13.1"),

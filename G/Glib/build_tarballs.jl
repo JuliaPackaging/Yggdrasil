@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.80.0"
+version = v"2.80.5"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "8228a92f92a412160b139ae68b6345bd28f24434a7b5af150ebe21ff587a561d"),
+                  "9f23a9de803c695bbfde7e37d6626b18b9a83869689dd79019bf3ae66c3e6771"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
@@ -78,7 +78,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

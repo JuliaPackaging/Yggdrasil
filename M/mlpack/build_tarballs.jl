@@ -6,15 +6,28 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.3.0"
+source_version = v"4.5.0"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "08cd54f711fde66fc3b6c9db89dc26776f9abf1a6256c77cfa3556e2a56f1a3d"),
+                  "aab70aee10c134ef3fe568843fe4b3bb5e8901af30ea666f57462ad950682317"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlpack-*/
+
+# On macOS, we need to compile with 10.14 as a target to work around
+# std::optional availability issues.
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
 
 mkdir build && cd build
 
@@ -99,6 +112,8 @@ install_license ../LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = expand_cxxstring_abis(supported_platforms())
+# We're missing some dependencies for this platform, exclude it for the time being
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built.
 products = [
@@ -187,4 +202,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.7")
