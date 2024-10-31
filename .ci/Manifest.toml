@@ -58,9 +58,9 @@ version = "0.1.9"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "8873e196c2eb87962a2048b3b8e08946535864a1"
+git-tree-sha1 = "9e2a6b69137e6969bab0152632dcb3bc108c8bdd"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
-version = "1.0.8+2"
+version = "1.0.8+1"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -185,9 +185,9 @@ version = "0.4.53"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
-git-tree-sha1 = "be3dc50a92e5a386872a493a10050136d4703f9b"
+git-tree-sha1 = "f389674c99bfcde17dc57454011aa44d5a260a40"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
-version = "1.6.1"
+version = "1.6.0"
 
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
@@ -236,9 +236,9 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[deps.Libiconv_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "61dfdba58e585066d8bce214c5a51eaa0539f269"
+git-tree-sha1 = "f9557a255370125b405568f9767d6d195822a175"
 uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531"
-version = "1.17.0+1"
+version = "1.17.0+0"
 
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "libblastrampoline_jll"]
@@ -534,9 +534,9 @@ version = "1.3.0"
 
 [[deps.ZeroMQ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "libsodium_jll"]
-git-tree-sha1 = "f02ce8f0fda1ed40f4d0d59a2ad05e35e8ac9b0e"
+git-tree-sha1 = "42f97fb27394378591666ab0e9cee369e6d0e1f9"
 uuid = "8f1865be-045e-5c20-9c9f-bfbfb0764568"
-version = "4.3.5+1"
+version = "4.3.5+0"
 
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
@@ -560,9 +560,9 @@ uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 
 [[deps.libsodium_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "f76d682d87eefadd3f165d8d9fda436464213142"
+git-tree-sha1 = "848ab3d00fe39d6fbc2a8641048f8f272af1c51e"
 uuid = "a9144af2-ca23-56d9-984f-0d03f7b5ccf8"
-version = "1.0.20+1"
+version = "1.0.20+0"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
