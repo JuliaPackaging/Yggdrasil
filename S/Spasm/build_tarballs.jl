@@ -24,7 +24,7 @@ cmake --build build
 cmake --install build
 
 for t in bitmap check_cert dm echelonize kernel rank solve stack transpose vertical_swap; do
-    cp build/tools/$t $prefix/bin/
+    install -Dvm 755 "build/tools/$t" ${bindir}/$t"
 done
 
 cp build/src/libspasm* $prefix/lib/
