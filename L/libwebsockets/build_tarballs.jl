@@ -19,7 +19,8 @@ cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
     -DZLIB_INCLUDE_DIR=${includedir} \
-    -DLWS_WITH_HTTP2=1 \
+    -DLWS_WITH_ACCESS_LOG=1 \
+    -DLWS_WITHOUT_EXTENSIONS=0 \
     -DLWS_WITHOUT_TESTAPPS=1
 cmake --build build --parallel ${nproc}
 cmake --install build
