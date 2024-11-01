@@ -28,7 +28,7 @@ for t in bitmap check_cert dm echelonize kernel rank solve stack transpose verti
 done
 
 cp build/src/libspasm* $prefix/lib/
-cp src/spasm.h $prefix/include/
+install -Dvm 644 "src/spasm.h" "${includedir}/spasm.h"
 
 install_license ${WORKSPACE}/srcdir/spasm/COPYING
 """
