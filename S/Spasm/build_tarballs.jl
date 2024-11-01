@@ -30,7 +30,7 @@ for t in bitmap check_cert dm echelonize kernel rank solve stack transpose verti
     install -Dvm 755 "build/tools/$t" ${bindir}/$t"
 done
 
-cp build/src/libspasm* $prefix/lib/
+install -Dvm 755 "build/src/libspasm.${dlext}" "${libdir}/libspasm.${dlext}"
 install -Dvm 644 "src/spasm.h" "${includedir}/spasm.h"
 
 install_license ${WORKSPACE}/srcdir/spasm/COPYING
@@ -39,7 +39,6 @@ install_license ${WORKSPACE}/srcdir/spasm/COPYING
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(exclude=Sys.iswindows) |> expand_cxxstring_abis
-#platforms = supported_platforms(exclude=!Sys.isapple) |> expand_cxxstring_abis
 
 # The products that we will ensure are always built
 products = Product[
@@ -62,7 +61,6 @@ dependencies = [
     Dependency("Givaro_jll"; compat="4.2.0"),
     Dependency("FFLAS_FFPACK_jll"; compat="2.5.0"),
     Dependency("argp_standalone_jll"),
-# strange warning: Dependency argp_standalone_jll does not have a mapping for artifact argp_standalone for platform x86_64-linux-gnu-libgfortran3-cxx11
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("GMP_jll"; compat="6.2.1"),
     Dependency("LLVMOpenMP_jll"),
