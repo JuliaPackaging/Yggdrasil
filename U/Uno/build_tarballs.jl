@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"1.1.1"
+version = v"1.2.0"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "9a8d4ed3990f7d31f44c0e2436e53f1e734ab521",
+        "37e22cb21a147cb36429f889ea617cd38b3922a7",
     ),
 ]
 
