@@ -38,18 +38,12 @@ make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-#platforms = supported_platforms(; experimental=true) # build on all supported platforms
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "windows"),
-]
-
+# build on all supported platforms
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liboctave", :liboctave),
     ExecutableProduct("octave", :octave),
 ]
 
@@ -63,4 +57,4 @@ dependencies = Dependency[
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"9")
