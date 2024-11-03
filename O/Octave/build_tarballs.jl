@@ -5,7 +5,7 @@ version = v"9.2.0"
 
 # Collection of sources required to build Octave
 sources = [
-   ArchiveSource("https://ftpmirror.gnu.org/octave/octave-9.2.0.tar.gz",	
+   ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
                   "0636554b05996997e431caad4422c00386d2d7c68900472700fecf5ffeb7c991"),
 ]
 
@@ -29,8 +29,8 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
-    --with-blas="-L${prefix}/lib -l${LBT}"
-    --with-lapack="-L${prefix}/lib -l${LBT}"
+    --with-blas="-L${libdir} -l${LBT}"
+    --with-lapack="-L${libdir} -l${LBT}"
 )
 
 ./configure "${FLAGS[@]}"
@@ -48,7 +48,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     Dependency("PCRE2_jll"),
