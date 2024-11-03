@@ -13,9 +13,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/octave*
 
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
-
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
 else
