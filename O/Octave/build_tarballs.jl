@@ -13,6 +13,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/octave*
 
+export CPPFLAGS="-I${includedir}"
+export LDFLAGS="-L${libdir}"
+
 # Base configure flags
 FLAGS=(
     --prefix="$prefix"
@@ -20,6 +23,8 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
+    --with-blas=openblas64_
+    --with-lapack=openblas64_
 )
 
 ./configure "${FLAGS[@]}"
