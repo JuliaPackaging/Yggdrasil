@@ -16,6 +16,12 @@ cd $WORKSPACE/srcdir/octave*
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
+
 # Base configure flags
 FLAGS=(
     --prefix="$prefix"
@@ -23,8 +29,8 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
-    --with-blas=openblas64_
-    --with-lapack=openblas64_
+    --with-blas="-L${prefix}/lib -l${LBT}"
+    --with-lapack="-L${prefix}/lib -l${LBT}"
 )
 
 ./configure "${FLAGS[@]}"
@@ -49,7 +55,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency("PCRE2_jll"),
+    Dependency("Readline_jll"),
 ]
 
 # Build the tarballs.
