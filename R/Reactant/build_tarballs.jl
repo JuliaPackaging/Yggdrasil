@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.22"
+version = v"0.0.23"
 
 sources = [
-  GitSource(repo, "7f55680aeb97da9262de404ad81df040b57ad9c1"),
+  GitSource(repo, "b08b9a2b2dea3a4f644c03ddc7fcb31fbc5ed2a8"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
