@@ -37,6 +37,7 @@ make install
 
 # build on all supported platforms
 platforms = supported_platforms()
+filter!(!Sys.isfreebsd, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -46,12 +47,18 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("flex_jll"),
+    HostBuildDependency("Bison_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
+    Dependency("libblastrampoline_jll"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("Arpack_jll"),
+    Dependency("FFTW_jll"),
 ]
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"9")
+               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"9")
