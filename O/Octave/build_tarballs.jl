@@ -14,6 +14,8 @@ script = raw"""
 cd $WORKSPACE/srcdir/octave*
 
 export CPPFLAGS="-I${includedir}"
+export TMPDIR=${WORKSPACE}/tmpdir
+mkdir -p ${TMPDIR}
 
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
