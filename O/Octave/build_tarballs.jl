@@ -34,6 +34,11 @@ FLAGS=(
     --with-lapack="-L${libdir} -l${LBT}"
 )
 
+
+if [[ ${nbits} == 64 ]]; then
+   FLAGS+=( --enable-64 )
+fi
+
 ./configure "${FLAGS[@]}"
 make -j${nproc} 
 make install
