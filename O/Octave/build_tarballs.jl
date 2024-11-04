@@ -53,6 +53,8 @@ dependencies = [
     Dependency("libblastrampoline_jll"),
     Dependency("SuiteSparse_jll"),
     Dependency("PCRE2_jll"),
+    Dependency("GMP_jll"),
+    Dependency("MPFR_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Zlib_jll"),
