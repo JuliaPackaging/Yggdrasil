@@ -13,6 +13,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/octave*
 
+export CPPFLAGS="-I${includedir}"
+
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
 else
@@ -53,8 +55,6 @@ dependencies = [
     Dependency("libblastrampoline_jll"),
     Dependency("SuiteSparse_jll"),
     Dependency("PCRE2_jll"),
-    Dependency("GMP_jll"),
-    Dependency("MPFR_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Zlib_jll"),
@@ -62,10 +62,10 @@ dependencies = [
     Dependency("FFTW_jll"),
     Dependency("LibCURL_jll"),
     Dependency("Qhull_jll"),
-    Dependency("GLPK_jll"),
     Dependency("Sundials_jll"),
+    Dependency("HDF5_jll"),
 ]
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"9")
+               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"12")
