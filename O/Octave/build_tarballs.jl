@@ -68,6 +68,8 @@ dependencies = [
     Dependency("Sundials_jll"),
     Dependency("HDF5_jll"),
     Dependency("rapidjson_jll"),
+    Dependency("libsndfile_jll"),
+    Dependency("ImageMagick_jll"),
 ]
 
 # Build the tarballs.
