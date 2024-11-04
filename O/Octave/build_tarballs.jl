@@ -51,6 +51,7 @@ dependencies = [
     HostBuildDependency("Bison_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"),
+    Dependency("SuiteSparse_jll"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
@@ -60,6 +61,7 @@ dependencies = [
     Dependency("LibCURL_jll"),
     Dependency("Qhull_jll"),
     Dependency("GLPK_jll"),
+    Dependency("Sundials_jll"),
 ]
 
 # Build the tarballs.
