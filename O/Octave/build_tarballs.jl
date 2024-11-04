@@ -64,7 +64,7 @@ dependencies = [
     Dependency("Arpack_jll"),
     Dependency("FFTW_jll"),
     Dependency("GLPK_jll"),
-    Dependency("GMP_jll", v"6.2.0")
+    Dependency("GMP_jll", v"6.2.0"),
     Dependency("LibCURL_jll"),
     Dependency("Qhull_jll"),
     Dependency("Sundials_jll"),
