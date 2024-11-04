@@ -62,9 +62,10 @@ platforms = vcat(libjulia_platforms.(julia_versions)...)
 # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
 platforms = filter(p -> libc(p) != "musl", platforms)
 
-# PowerPC and 32-bit x86 platforms are not supported by OpenFHE
+# PowerPC and 32-bit x86 and 64-bit FreeBSD on ARM 64 platforms are not supported by OpenFHE
 platforms = filter(p -> arch(p) != "i686", platforms)
 platforms = filter(p -> arch(p) != "powerpc64le", platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # Expand C++ string ABIs since we use std::string
 platforms = expand_cxxstring_abis(platforms)
