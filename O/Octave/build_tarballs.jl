@@ -57,6 +57,9 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Arpack_jll"),
     Dependency("FFTW_jll"),
+    Dependency("LibCURL_jll"),
+    Dependency("Qhull_jll"),
+    Dependency("GLPK_jll"),
 ]
 
 # Build the tarballs.
