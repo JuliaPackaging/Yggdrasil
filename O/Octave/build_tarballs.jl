@@ -63,13 +63,14 @@ dependencies = [
     Dependency("Bzip2_jll"),
     Dependency("Arpack_jll"),
     Dependency("FFTW_jll"),
+    Dependency("GLPK_jll"),
+    Dependency("GMP_jll", v"6.2.0")
     Dependency("LibCURL_jll"),
     Dependency("Qhull_jll"),
     Dependency("Sundials_jll"),
     Dependency("HDF5_jll"),
     Dependency("rapidjson_jll"),
     Dependency("libsndfile_jll"),
-    Dependency("ImageMagick_jll"),
 ]
 
 # Build the tarballs.
