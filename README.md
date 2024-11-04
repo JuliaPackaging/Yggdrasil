@@ -8,12 +8,13 @@ This repository contains recipes for building binaries for Julia packages using 
 
 ## Contributing
 
-To contribute a new recipe, you can either
+For detailed information and step-by-step instructions about contributing, go to ["CONTRIBUTING.md"](https://github.com/JuliaPackaging/Yggdrasil/blob/master/CONTRIBUTING.md). For a quick overview, continue reading.
 
+To contribute a new recipe, you can either
 * use `BinaryBuilder.run_wizard()`, which will automatically open a pull request to this repository after a successfull build for all requested platforms
 * Copy another build recipe using it as a template, and then open a manual pull request to this repository
 
-Yggdrasil builds the tarballs using `master` version of BinaryBuilder.jl, which requires Julia 1.3.0 or later versions.  Note that this BinaryBuilder.jl version has some differences compared to v0.1.4 and the builders generated are slightly different.  You are welcome to contribute builders written for  BinaryBuilder.jl v0.1.4, but they will likely need minor adjustements.
+Yggdrasil builds the tarballs using `master` version of BinaryBuilder.jl, which requires Julia 1.3.0 or later versions. Note that this BinaryBuilder.jl version has some differences compared to v0.1.4 and the builders generated are slightly different. You are welcome to contribute builders written for  BinaryBuilder.jl v0.1.4, but they will likely need minor adjustements.
 
 [Buildkite CI](https://buildkite.com/julialang/yggdrasil) is used to test that the builders can successfully produce the tarballs.
 
