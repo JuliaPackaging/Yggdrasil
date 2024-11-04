@@ -63,8 +63,10 @@ dependencies = [
     Dependency("argp_standalone_jll"),
     Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("LLVMOpenMP_jll"),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+            # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+            # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+            Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+            Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
