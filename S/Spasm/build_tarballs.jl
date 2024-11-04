@@ -23,7 +23,7 @@ cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+cmake --build build --parallel ${nproc}
 cmake --install build
 
 for t in bitmap check_cert dm echelonize kernel rank solve stack transpose vertical_swap; do
