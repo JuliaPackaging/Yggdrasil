@@ -66,7 +66,7 @@ dependencies = [
     Dependency("Qhull_jll"),
     Dependency("Sundials_jll"),
     Dependency("HDF5_jll"),
-    Dependency("rapidson_jll"),
+    Dependency("rapidjson_jll"),
 ]
 
 # Build the tarballs.
