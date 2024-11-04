@@ -56,6 +56,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"),
     Dependency("SuiteSparse_jll"),
+    Dependency("CXSparse_jll"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
