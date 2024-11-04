@@ -60,6 +60,7 @@ dependencies = [
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Zlib_jll"),
+    Dependency("BZip2_jl"),
     Dependency("Arpack_jll"),
     Dependency("FFTW_jll"),
     Dependency("LibCURL_jll"),
