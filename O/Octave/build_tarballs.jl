@@ -30,8 +30,8 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
-    --with-blas="-L${libdir} -l${LBT}"
-    --with-lapack="-L${libdir} -l${LBT}"
+    --with-blas="-L${libdir} -lopenblas"
+    --with-lapack="-L${libdir} -lopenblas"
 )
 
 
@@ -59,7 +59,7 @@ dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"),
+    Dependency("OpenBLAS_jll"),
     Dependency("SuiteSparse_jll"),
     Dependency("CXSparse_jll"),
     Dependency("PCRE2_jll"),
