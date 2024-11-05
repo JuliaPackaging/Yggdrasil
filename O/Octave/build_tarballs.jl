@@ -82,4 +82,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"12")
+               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")
