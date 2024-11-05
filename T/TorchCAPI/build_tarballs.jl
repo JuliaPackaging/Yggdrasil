@@ -47,16 +47,34 @@ configure() {
 }
 configure || configure || configure
 
+if [[ $bb_full_target == aarch64-linux-gnu-*-cxx03 ]]; then # Somehow CMake ends up adding '-D_GLIBCXX_USE_CXX11_ABI=' to CXX_FLAGS
+    sed -i 's/ -D_GLIBCXX_USE_CXX11_ABI= / -D_GLIBCXX_USE_CXX11_ABI=0 /' build/CMakeFiles/torch_c_api.dir/flags.make
+fi
+
 cmake --build build -- -j $nproc
 
 install -Dvm 755 build/libtorch_c_api.$dlext $libdir/libtorch_c_api.$dlext
 """
 
-platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
-filter!(p -> arch(p) != "aarch64", platforms) # Cmake toolchain breaks on aarch64
-push!(platforms, Platform("x86_64", "Linux"; cuda = "11.3"))
+platforms = supported_platforms()
+# Exclude platforms not available for Torch_jll
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms)
+filter!(!Sys.iswindows, platforms)
+filter!(p -> arch(p) != "armv6l", platforms)
+filter!(p -> arch(p) != "armv7l", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
+filter!(!Sys.isfreebsd, platforms)
+
+cuda_platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
+filter!(p -> arch(p) != "aarch64", cuda_platforms) # Cmake toolchain breaks on aarch64
+push!(cuda_platforms, Platform("x86_64", "Linux"; cuda = "11.3"))
+
+filter!(p -> !(arch(p) == "x86_64" && Sys.islinux(p)), platforms) # Exclude non-CUDA x86_64 Linux platforms as CMake tries to find CUDA on these platforms (as well)
+
+append!(platforms, cuda_platforms)
 
 platforms = expand_cxxstring_abis(platforms)
+cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
 products = [
     LibraryProduct(["libtorch_c_api", "torch_c_api"], :libtorch_c_api),
@@ -64,24 +82,29 @@ products = [
 
 dependencies = [
     Dependency("Torch_jll"; compat = "$torch_version"),
-    Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = "8"), # Using v"8.2.4+0" to get support for cuda = "11.3"
 ]
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    if platform["cuda"] == "11.3"
-        cuda_deps = BinaryBuilder.AbstractDependency[
-            BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
-            Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using v"0.7.0" to get support for cuda = "11.3" - using Dependency rather RuntimeDependency to be sure to pass audit
-        ]
-    else
-        cuda_deps = CUDA.required_dependencies(platform, static_sdk = true)
+    additional_deps = BinaryBuilder.AbstractDependency[]
+    if haskey(platform, "cuda")
+        if platform["cuda"] == "11.3"
+            additional_deps = BinaryBuilder.AbstractDependency[
+                BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
+                Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using v"0.7.0" to get support for cuda = "11.3" - using Dependency rather RuntimeDependency to be sure to pass audit
+            ]
+        else
+            additional_deps = CUDA.required_dependencies(platform, static_sdk = true)
+        end
+        push!(additional_deps,
+            Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = "8"), # Using v"8.2.4+0" to get support for cuda = "11.3"
+        )
     end
 
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; cuda_deps];
-    preferred_gcc_version = v"8",
-    julia_compat = "1.6",
-    augment_platform_block=CUDA.augment,
-    lazy_artifacts=true)
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; additional_deps];
+        preferred_gcc_version = v"8",
+        julia_compat = "1.6",
+        augment_platform_block=CUDA.augment,
+        lazy_artifacts=true)
 end
