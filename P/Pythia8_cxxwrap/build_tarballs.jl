@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Pythia8_cxxwrap"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to build Pythia8_cxxwrap  
 sources = [
     GitSource("https://github.com/peremato/Pythia8_cxxwrap.git",
-              "4a444abfaa940e2554971ed58961092aa03bbf4e"),
+              "cba81d9dcbe1f8fa43b51590aa049277bd84fed1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -50,7 +50,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.11.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
     Dependency("PYTHIA_jll"; compat = "8.312.0"),
 ]
 
