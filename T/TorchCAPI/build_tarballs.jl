@@ -54,6 +54,10 @@ fi
 cmake --build build -- -j $nproc
 
 install -Dvm 755 build/libtorch_c_api.$dlext $libdir/libtorch_c_api.$dlext
+
+for header_path in $(ls -1 *.h | grep -v cpp); do
+    install -Dvm 644 $header_path $includedir/torch_c_api/$header_path
+done
 """
 
 platforms = supported_platforms()
