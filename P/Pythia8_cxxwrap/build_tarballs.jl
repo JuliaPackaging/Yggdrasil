@@ -13,7 +13,7 @@ version = v"0.2.0"
 # Collection of sources required to build Pythia8_cxxwrap  
 sources = [
     GitSource("https://github.com/peremato/Pythia8_cxxwrap.git",
-              "cba81d9dcbe1f8fa43b51590aa049277bd84fed1"),
+              "983d2e471276ffb793bed19b923e0769f6b43e06"),
 ]
 
 # Bash recipe for building across all platforms
