@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "CvxCompress"
-version = v"1.2.0"
+version = v"1.2.1"
 
 # Collection of sources required to build CvxCompress
 sources = [
     GitSource(
         "https://github.com/ChevronETC/CvxCompress.git",
-        "132984d055be77cb166fe2e75dc77f4fd082e544"
+        "3d686fef6a2a08edaaece541ba852f43cf59abf1"
     ),
     DirectorySource("./bundled"),
 ]
