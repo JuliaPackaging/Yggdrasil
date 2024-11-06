@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"900.000.000"
+version = v"900.200.000"
 
 # Collection of sources required to complete build
 sources = [
