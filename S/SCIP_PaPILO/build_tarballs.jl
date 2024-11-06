@@ -4,13 +4,13 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"900.000.000"
+version = v"900.200.000"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://scipopt.org/download/release/scipoptsuite-9.0.0.tgz",
-        "c49a0575003322fcbfe2d3765de7e3e60ff7c08d1e8b17d35409be40476cb98a"
+        "https://scipopt.org/download/release/scipoptsuite-9.2.0.tgz",
+        "a174cc58592d245c74c9c95c1d4819750d7ba2d467b4baae616a5aa336aac8d0"
     ),
     DirectorySource("./bundled/")
 ]
