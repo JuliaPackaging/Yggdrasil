@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "unixODBC"
-version = v"2.3.9"
+version = v"2.3.12"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://www.unixodbc.org/unixODBC-$(version).tar.gz",
-                  "52833eac3d681c8b0c9a5a65f2ebd745b3a964f208fc748f977e44015a31b207"),
+                  "f210501445ce21bf607ba51ef8c125e10e22dffdffec377646462df5f01915ec"),
 ]
 
 # Bash recipe for building across all platforms
