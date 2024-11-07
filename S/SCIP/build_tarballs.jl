@@ -45,12 +45,10 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DUG=0\
   -DAMPL=0\
   -DBOOST=ON\
-  -DSYM=bliss\
+  -DSYM=snauty\
   -DTPI=tny\
   -DIPOPT_DIR=${prefix} \
   -DIPOPT_LIBRARIES=${libdir} \
-  -DBLISS_INCLUDE_DIR=${includedir} \
-  -DBLISS_LIBRARY=bliss \
   ..
 make -j${nproc}
 make install
@@ -75,7 +73,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), v"0.77.0"),
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
