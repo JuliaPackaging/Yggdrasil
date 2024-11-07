@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "SCIP"
-version = v"900.200.000"
+upstream_version = v"9.2.0"
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
