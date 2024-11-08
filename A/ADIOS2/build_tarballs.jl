@@ -158,14 +158,16 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+# - We currently need to disable MGARD. It seems that MGARD uses Zstd,
+#   and the ADIOS2 build system cannot handle this.
 dependencies = [
     Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.101"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
-    Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
+    # Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
-    Dependency(PackageSpec(name="Zstd_jll")),
+    # Dependency(PackageSpec(name="Zstd_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
     Dependency(PackageSpec(name="protoc_jll")),
     Dependency(PackageSpec(name="pugixml_jll")),
