@@ -9,10 +9,10 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "algoimWrapper"
-version = v"0.3.0"
+version = v"0.3.1"
 
 sources = [
-    GitSource("https://github.com/ericneiva/algoimWrapper.git", "f40073b27ce7f65f01730991d4321a71c7b29b28"),
+    GitSource("https://github.com/ericneiva/algoimWrapper.git", "b7ce0d93f25f5f2261c6ca36b1b71a041ecb72ed"),
     DirectorySource("./bundled"),
 ]
 
