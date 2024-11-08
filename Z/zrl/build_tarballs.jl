@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "zrl"
-version = v"1.1.1"
+version_actual = v"1.1.1"
+version = v"1.1.2" # Fake version number for Julia 1.6 compat bound
 
 # Collection of sources required to complete build
 sources = [
@@ -36,4 +37,4 @@ products = [
 dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

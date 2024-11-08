@@ -1,0 +1,11 @@
+diff --git spasm.orig/src/spasm_ffpack.cpp spasm/src/spasm_ffpack.cpp
+--- spasm.orig/src/spasm_ffpack.cpp
++++ spasm/src/spasm_ffpack.cpp
+@@ -3,6 +3,7 @@
+  * and exports simple C functions.
+  */
+ #include <stdio.h>
++#include <cinttypes>
+
+ #include <givaro/modular-balanced.h>
+ #include <fflas-ffpack/fflas/fflas.h>
