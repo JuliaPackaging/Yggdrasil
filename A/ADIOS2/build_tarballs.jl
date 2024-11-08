@@ -55,9 +55,16 @@ fi
 if [[ "${target}" == *-mingw* ]]; then
     # Windows: Some options do not build
     # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF -DEVPATH_TRANSPORT_MODULES=OFF)
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_SST=OFF -DEVPATH_TRANSPORT_MODULES=OFF)
 else
-    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
+    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_SST=ON)
+fi
+
+# Use HDF5 if it is available
+if [ -e ${libdir}/libhdf5.${dlext} ]; then
+    archopts+=(-DADIOS2_USE_HDF5=ON)
+else
+    archopts+=(-DADIOS2_USE_HDF5=OFF)
 fi
 
 # Use MGARD if it is available
@@ -86,7 +93,6 @@ cmake -B build -G Ninja \
     -DADIOS2_Blosc2_PREFER_SHARED=ON \
     -DADIOS2_USE_CUDA=OFF \
     -DADIOS2_USE_Fortran=OFF \
-    -DADIOS2_USE_MGARD=ON \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_ZeroMQ=ON \
@@ -121,11 +127,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 
-# HDF5 isn't available yet on aarch64-unknown-freebsd. Disable this architecture.
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
-# HDF5 isn't available yet on x86_64-unknown-freebsd. Disable this architecture.
-platforms = filter(p -> !(arch(p) == "x86_64" && Sys.isfreebsd(p)), platforms)
-
 # We don't need HDF5 on Windows (see above)
 hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
 
@@ -158,7 +159,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.0"),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.101"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
@@ -169,7 +170,7 @@ dependencies = [
     Dependency(PackageSpec(name="protoc_jll")),
     Dependency(PackageSpec(name="pugixml_jll")),
     Dependency(PackageSpec(name="yaml_cpp_jll")),
-    Dependency(PackageSpec(name="zfp_jll"); compat="1"),
+    Dependency(PackageSpec(name="zfp_jll"); compat="1.0.1"),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -183,5 +184,3 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Build trigger: 1
