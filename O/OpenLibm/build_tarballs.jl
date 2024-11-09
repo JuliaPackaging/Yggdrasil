@@ -3,10 +3,10 @@ using Pkg
 using BinaryBuilderBase: sanitize
 
 name = "OpenLibm"
-version = v"0.8.1"
+version = v"0.8.4"
 sources = [
     GitSource("https://github.com/JuliaMath/openlibm.git",
-              "ae2d91698508701c83cab83714d42a1146dccf85"),
+              "c4667caea25ae3487adf6760b4a1dcf32477a4b8"),
 ]
 
 script = raw"""
