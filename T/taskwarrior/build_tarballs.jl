@@ -4,7 +4,7 @@ name = "taskwarrior"
 version = v"3.1.0"
 
 sources = [
-    GitSource("https://github.com/GothenburgBitFactory/taskwarrior", "5c6cc3e5229676655e93264e24a146a26b980e45")
+    GitSource("https://github.com/GothenburgBitFactory/taskwarrior", "5c6cc3e5229676655e93264e24a14")
 ]
 
 # Bash recipe for building across all platforms
