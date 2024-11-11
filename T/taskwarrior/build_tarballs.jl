@@ -1,4 +1,5 @@
 using BinaryBuilder
+using Pkg
 
 name = "taskwarrior"
 version = v"3.1.0"
