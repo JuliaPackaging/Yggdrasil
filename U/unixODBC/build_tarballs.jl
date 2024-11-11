@@ -23,7 +23,7 @@ cd ..
 autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-libiconv-prefix=${prefix} \
-    --enable-readline --enable-stats
+    --enable-readline
 make -j${nproc}
 make install
 """
