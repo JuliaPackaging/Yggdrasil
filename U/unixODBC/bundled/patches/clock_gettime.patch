@@ -1,11 +1,11 @@
---- __handles.c	2024-11-11 09:58:08
-+++ __handles_new.c	2024-11-11 09:59:11
+--- __handles.c	2024-11-11 11:18:08
++++ __handles_new.c	2024-11-11 11:21:34
 @@ -1907,7 +1907,7 @@
-     int ret = 0;
+     int ret;
      struct timespec waituntil;
  
 -#ifdef HAVE_CLOCK_GETTIME
-+#ifdef HAVE_CLOCK_GETTIME && defined(HAVE_CLOCK_REALTIME)
++#if HAVE_CLOCK_GETTIME && defined(HAVE_CLOCK_REALTIME)
      clock_gettime( CLOCK_REALTIME, &waituntil );
      waituntil.tv_sec ++;
  #else
