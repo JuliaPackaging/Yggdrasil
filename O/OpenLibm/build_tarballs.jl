@@ -56,4 +56,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               lock_microarchitecture=false, julia_compat="1.6", preferred_llvm_version=llvm_version)
+               lock_microarchitecture=false, julia_compat="1.6", 
+               preferred_llvm_version=llvm_version, preferred_gcc_version=v"6")
