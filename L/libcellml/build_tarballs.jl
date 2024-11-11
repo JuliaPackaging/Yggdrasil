@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "libcellml"
-version = v"0.6.0"
+version = v"0.6.3"
 
 sources = [
     GitSource(
-        "https://github.com/hsorby/libcellml",
-        "438f64d536db5f15791b35ffa2e5dfa849f55322"),
+        "https://github.com/cellml/libcellml",
+        "7269e4a234b133e930722acd11acd04e4cad31b4"),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
