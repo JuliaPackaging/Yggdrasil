@@ -11,8 +11,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/taskwarrior/
-cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
-cmake --build build
+
+mkdir build
+cd build
+
+cmake .. -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$prefix
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 platforms = supported_platforms()
