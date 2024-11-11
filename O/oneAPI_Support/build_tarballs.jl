@@ -148,6 +148,9 @@ done
 cd oneAPI.jl/deps
 
 CMAKE_FLAGS=()
+# Tell CMake we're cross-compiling
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=RelWithDebInfo)
 # Install things into $prefix
@@ -157,10 +160,6 @@ CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}")
 # BUG: intel/llvm#5932
 CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-I${includedir}/sycl")
-# Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-# XXX: we use the Clang version to work around an issue with the SYCL headers
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
-CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 
 ninja -C build -j ${nproc} install
