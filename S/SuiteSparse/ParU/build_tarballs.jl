@@ -1,8 +1,8 @@
 include("../common.jl")
 
 name = "ParU"
-version = v"0.1.3"
-SS_version_str = "7.7.0"
+version = v"1.0.0"
+SS_version_str = "7.8.3"
 SS_version = VersionNumber(SS_version_str)
 
 sources = suitesparse_sources(SS_version)
