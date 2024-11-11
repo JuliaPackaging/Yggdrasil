@@ -9,6 +9,7 @@ version = v"2.3.12"
 sources = [
     GitSource("https://github.com/lurcher/unixODBC.git",
               "c335dbf3fa25b524e935e98cf26b96a2e13f5c81"),
+    DirectorySource("./bundled"),	      
 ]
 
 # Bash recipe for building across all platforms
@@ -16,11 +17,13 @@ script = raw"""
 cd $WORKSPACE/srcdir/unixODBC*
 
 # Don't use `clock_realtime` if it isn't available
-atomic_patch -p0 ../patches/clock_gettime.patch
-
+cd DriverManager
+atomic_patch -p0 ../../patches/clock_gettime.patch
+cd ..
+autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-libiconv-prefix=${prefix} \
-    --enable-readline
+    --enable-readline --enable-stats
 make -j${nproc}
 make install
 """
