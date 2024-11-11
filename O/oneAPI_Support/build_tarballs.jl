@@ -178,6 +178,7 @@ dependencies = [
     BuildDependency("oneAPI_Level_Zero_Headers_jll"),
     Dependency("oneAPI_Level_Zero_Loader_jll"),
     Dependency("OpenCL_jll"),
+    Dependency("Hwloc_jll"),
 ]
 
 non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
