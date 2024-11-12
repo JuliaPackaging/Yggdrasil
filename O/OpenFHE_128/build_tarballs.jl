@@ -48,6 +48,10 @@ platforms = filter(p -> libc(p) != "musl", platforms)
 platforms = filter(p -> arch(p) != "i686", platforms)
 platforms = filter(p -> arch(p) != "powerpc64le", platforms)
 
+# armv6l and armv7l do not support 128 bit int size
+platforms = filter(p -> arch(p) != "armv6l", platforms)
+platforms = filter(p -> arch(p) != "armv7l", platforms)
+
 # Expand C++ string ABIs since we use std::string
 platforms = expand_cxxstring_abis(platforms)
 
