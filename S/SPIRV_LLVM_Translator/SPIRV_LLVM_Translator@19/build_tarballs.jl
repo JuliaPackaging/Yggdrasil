@@ -1,9 +1,9 @@
-version = v"15.0"
-llvm_version = v"15.0.7"
+version = v"19.0"
+llvm_version = v"19.1.1"
 include("../common.jl")
 
 # Collection of sources required to build the package
-sources = [GitSource(repo, "4b96335944e70032f4dfa4807d9c5683eaabdae5")]
+sources = [GitSource(repo, "90a976491d3847657396456e0e94d7dc48d35996")]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [

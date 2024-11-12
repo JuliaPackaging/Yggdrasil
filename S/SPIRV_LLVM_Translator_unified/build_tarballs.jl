@@ -7,16 +7,17 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "SPIRV_LLVM_Translator_unified"
 repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
-version = v"0.6"
+version = v"0.7"
 
-llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"15.0.7" => [GitSource(repo, "1e170e22f65d6bf01e6c592f8ed845dcceb69bea")],
-    v"16.0.6" => [GitSource(repo, "1f9e0e36d8917cece7593771304d8db0bcd9f614")],
-    v"17.0.6" => [GitSource(repo, "3aa5bcd0c60a2c05b3a045339b2ef001465961ec")],
-    v"18.1.7" => [GitSource(repo, "242df2cb83e2322b456990fb0ca3e30bd9209ed0")],
+    v"15.0.7" => [GitSource(repo, "4b96335944e70032f4dfa4807d9c5683eaabdae5")],
+    v"16.0.6" => [GitSource(repo, "b786f8c31eead5788ac8ca33ccedf29a4a7faedf")],
+    v"17.0.6" => [GitSource(repo, "27bbf0fa898b6945dbd097dfd1e87b4f4becb19a")],
+    v"18.1.7" => [GitSource(repo, "7515735e387c65cbb7821a78f122cfd89115a779")],
+    v"19.1.1" => [GitSource(repo, "90a976491d3847657396456e0e94d7dc48d35996")],
 )
 
 # These are the platforms we will build for by default, unless further
