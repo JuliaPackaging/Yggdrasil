@@ -1,20 +1,20 @@
 using BinaryBuilder, Pkg
 
 name = "OpenModelica"
-version = v"1.23.0"
+version = v"1.24.0"
 
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
-             "af881831d7c702a9afe1870d3b6e58cc57cdc926"),
+             "904c4c783a5fa6eb9e99e4a98bdb0cca1d619303"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mv OpenModelica OM
+mv OpenModelica OM-ignore
 git clone https://github.com/OpenModelica/OpenModelica.git
 cd OpenModelica
-git checkout af881831d7c702a9afe1870d3b6e58cc57cdc926
+git checkout 904c4c783a5fa6eb9e99e4a98bdb0cca1d619303
 git submodule update --force --init --recursive
 
 apk add openjdk17
@@ -40,6 +40,7 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("omc", :omc),
+    ExecutableProduct("OMShell-terminal", :OMShel_terminal),
 ]
 
 # Dependencies that must be installed before this package can be built
