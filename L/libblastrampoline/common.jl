@@ -9,7 +9,7 @@ name = "libblastrampoline"
 function lbt_sources(version::VersionNumber; kwargs...)
     lbt_version_commit = Dict(
         v"5.4.0"  => "d00e6ca235bb747faae4c9f3a297016cae6959ed",
-        v"5.11.1" => "b09277feafd342520b8476ce443d35327b5e55b4",
+        v"5.11.2" => "c48da8a1225c2537ff311c28ef395152fb879eae",
     )
 
     return [
