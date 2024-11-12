@@ -30,6 +30,8 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 """
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+# FreeBSD on 64bit ARM 64 is not supported by algoimWrapper
+platforms = filter(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
