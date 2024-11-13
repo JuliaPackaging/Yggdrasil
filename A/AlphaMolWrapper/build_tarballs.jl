@@ -4,7 +4,7 @@ name = "AlphaMolWrapper"
 version = v"0.4.0"
 
 sources = [
-    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "2bb18716fd159c9d2a56cd3d344e23f8878ce815"),    
+    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "9b37921dd2af32574151f42bb05e1dc9425300ec"),    
 ]
 
 script = raw"""
