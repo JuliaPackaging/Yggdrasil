@@ -17,7 +17,7 @@ cd OpenModelica
 git checkout 904c4c783a5fa6eb9e99e4a98bdb0cca1d619303
 git submodule update --force --init --recursive
 
-apk add openjdk17-jdk
+apk --update --no-chown add openjdk17-jdk
 
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
