@@ -17,7 +17,7 @@ cd OpenModelica
 git checkout 904c4c783a5fa6eb9e99e4a98bdb0cca1d619303
 git submodule update --force --init --recursive
 
-apk add alpine-sdk openjdk17
+apk add openjdk17-jdk
 
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -26,7 +26,7 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMC_ENABLE_IPOPT=OFF
 
-cmake --build build_cmake --parallel 20 --target install
+cmake --build build_cmake --parallel ${nprocs} --target install
 
 install_license OSMC-license.txt
 """
@@ -45,6 +45,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("LibCURL_jll"),
@@ -54,7 +55,8 @@ dependencies = [
     Dependency("LLVMOpenMP_jll"),
     Dependency("OpenCL_jll"),
     Dependency("Expat_jll"),
-    BuildDependency("OpenCL_Headers_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("Ipopt_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
