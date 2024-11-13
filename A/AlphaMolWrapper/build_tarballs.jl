@@ -7,7 +7,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 
 
 sources = [
-    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "9b37921dd2af32574151f42bb05e1dc9425300ec"),    
+    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "e906eadeab98b8af7870da60598b087cbd2cdd22"),    
 ]
 
 script = raw"""
