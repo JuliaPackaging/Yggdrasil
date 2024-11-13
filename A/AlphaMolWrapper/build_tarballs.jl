@@ -2,6 +2,9 @@ using BinaryBuilder, Pkg
 
 name = "AlphaMolWrapper"
 version = v"0.4.0"
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+
 
 sources = [
     GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "9b37921dd2af32574151f42bb05e1dc9425300ec"),    
@@ -30,4 +33,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"9", julia_compat="1.7")
+    preferred_gcc_version=v"9", julia_compat=julia_compat)
