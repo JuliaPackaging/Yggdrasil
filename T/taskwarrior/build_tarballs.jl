@@ -2,20 +2,25 @@ using BinaryBuilder
 using Pkg
 
 name = "taskwarrior"
-version = v"3.1.0"
+version = v"3.2.0"
 
 sources = [
-    GitSource("https://github.com/GothenburgBitFactory/taskwarrior", "5c6cc3e5229676655e93264e24a146a26b980e45")
+    GitSource("https://github.com/GothenburgBitFactory/taskwarrior", "7a092bea037517be4dc839ee8141b8d6b00738eb")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/taskwarrior/
 
+apk del cmake
+
 mkdir build
 cd build
 
-cmake .. -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=$prefix
+cmake .. -B build \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
@@ -29,6 +34,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    # Needs at least CMake 3.22, BB image has 3.21 currently
+    HostBuildDependency("CMake_jll")
 ]
 
 # Build the tarballs
