@@ -3,26 +3,28 @@
 using BinaryBuilder, Pkg
 
 name = "P11Kit"
-version = v"0.24.1"
+version = v"0.25.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz", "d8be783efd5cd4ae534cee4132338e3f40f182c3205d23b200094ec85faaaef8")
+    ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz",
+                  "04d0a86450cdb1be018f26af6699857171a188ac6d5b8c90786a60854e1198e5")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release p11-kit-*
+cd $WORKSPACE/srcdir/p11-kit-*
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
 
-# Meson beautifully forces thin archives, without checking whether the dynamic linker
-# actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
-# the (deprecated...) `T` option to `ar`
-sed -i.bak 's/csrDT/csrD/' build.ninja
+#TODO # Meson beautifully forces thin archives, without checking whether the dynamic linker
+#TODO # actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
+#TODO # the (deprecated...) `T` option to `ar`
+#TODO sed -i.bak 's/csrDT/csrD/' build.ninja
 
-ninja -j${nproc}
-ninja install
-install_license p11-kit-*/COPYING
+meson compile -C builddir
+meson install -C builddir
+
+#TODO install_license p11-kit-*/COPYING
 """
 
 # These are the platforms we will build for by default, unless further
