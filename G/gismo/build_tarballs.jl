@@ -33,7 +33,7 @@ install_license ${WORKSPACE}/srcdir/gismo/LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # platforms = [AnyPlatform()]
-platforms = platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct("libgismo", :libgismo),
@@ -45,4 +45,4 @@ dependencies = [
 ]
 
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
