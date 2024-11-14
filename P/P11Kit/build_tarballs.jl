@@ -14,17 +14,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/p11-kit-*
-meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
 
-#TODO # Meson beautifully forces thin archives, without checking whether the dynamic linker
-#TODO # actually supports them: <https://github.com/mesonbuild/meson/issues/10823>.  Let's remove
-#TODO # the (deprecated...) `T` option to `ar`
-#TODO sed -i.bak 's/csrDT/csrD/' build.ninja
-
-meson compile -C builddir
-meson install -C builddir
-
-#TODO install_license p11-kit-*/COPYING
+# Meson is too clever to build for Apple. It produces command line
+# errors when configuring and then misinterprets the result. We're
+# using `configure` instead. The reported error message is
+# `#error "unsupported size of CK_ULONG"`.
+mkdir builddir
+cd builddir
+../configure --build=${MACHTYPE} --host=${target} --prefix=${prefix}
+make -j${nproc}
+make install
 """
 
 # These are the platforms we will build for by default, unless further
@@ -42,6 +41,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("Libffi_jll"),
+    Dependency("libtasn1_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
