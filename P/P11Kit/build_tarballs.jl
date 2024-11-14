@@ -13,17 +13,30 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/p11-kit-*
+cd ${WORKSPACE}/srcdir/p11-kit-*
 
-# Meson is too clever to build for Apple. It produces command line
-# errors when configuring and then misinterprets the result. We're
-# using `configure` instead. The reported error message is
-# `#error "unsupported size of CK_ULONG"`.
-mkdir builddir
-cd builddir
-../configure --build=${MACHTYPE} --host=${target} --prefix=${prefix}
-make -j${nproc}
-make install
+if [[ ${target} = *-mingw32 ]]; then
+
+    # `configure` does not work on Windows
+
+    meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release builddir
+    meson compile -C builddir
+    meson install -C builddir
+
+else
+
+    # Meson is too clever to build for Apple. It produces command line
+    # errors when configuring and then misinterprets the result. We're
+    # using `configure` instead. The reported error message is
+    # `#error "unsupported size of CK_ULONG"`.
+
+    mkdir builddir
+    cd builddir
+    ../configure --build=${MACHTYPE} --host=${target} --prefix=${prefix}
+    make -j${nproc}
+    make install
+
+fi
 """
 
 # These are the platforms we will build for by default, unless further
