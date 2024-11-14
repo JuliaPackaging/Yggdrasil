@@ -33,7 +33,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     # Needs at least CMake 3.22, BB image has 3.21 currently
     HostBuildDependency("CMake_jll")
 ]
