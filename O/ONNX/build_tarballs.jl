@@ -31,6 +31,7 @@ cmake --build . --config Release --target install -- -j${nproc}
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
+filter!(p -> !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms) # protoc_jll does not provide an artifact for freebsd on aarch64
 
 products = [
     FileProduct("lib/libonnx.a", :libonnx),
