@@ -3,13 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "ONNX"
-version = v"1.10.2"
+version = v"1.11.0"
 
 sources = [
-    ArchiveSource(
-        "https://github.com/onnx/onnx/archive/refs/tags/v$(version).tar.gz",
-        "520b3aa34272cc215e2eb41385f58adf01750d88858d4722563edca8410c5dc9",
-    ),
+    GitSource("https://github.com/onnx/onnx.git", "96046b8ccfb8e6fa82f6b2b34b3d56add2e8849c"),
 ]
 
 script = raw"""
@@ -23,16 +20,13 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DONNX_USE_LITE_PROTO=ON \
     -DONNX_USE_PROTOBUF_SHARED_LIBS=ON \
-    -DProtobuf_PROTOC_EXECUTABLE=${host_bindir}/protoc \
+    -DProtobuf_PROTOC_EXECUTABLE=$host_bindir/protoc \
+    -DPYTHON_EXECUTABLE=$(which python3) \
     ..
 cmake --build . --config Release --target install -- -j${nproc}
 """
 
-#=
-Sadly, no windows support yet. It looks to me like the upstream treats
-`defined(_WIN32)` as synonymous with `build with MSVC`.
-=#
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true, exclude=Sys.iswindows))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     FileProduct("lib/libonnx.a", :libonnx),
@@ -40,7 +34,10 @@ products = [
     LibraryProduct("libonnxifi_dummy", :libonnxifi_dummy),
 ]
 
-dependencies = [HostBuildDependency("protoc_jll"), Dependency("protoc_jll")]
+dependencies = [
+    HostBuildDependency(PackageSpec(name="protoc_jll", version=v"3.16.1")), # TODO should v3.16.0
+    Dependency("protoc_jll", v"3.16.1"), # TODO should v3.16.0
+]
 
 build_tarballs(
     ARGS,
