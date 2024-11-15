@@ -7,10 +7,14 @@ version = v"1.11.0"
 
 sources = [
     GitSource("https://github.com/onnx/onnx.git", "96046b8ccfb8e6fa82f6b2b34b3d56add2e8849c"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd onnx*
+
+atomic_patch -p1 ../patches/onnx-mingw32.patch
+
 mkdir build
 cd build
 cmake \
