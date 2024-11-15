@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Ghostscript"
-version = v"9.55.0"
+version = v"9.56.1"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource(
         "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$(version.major)$(version.minor)$(version.patch)/ghostscript-$(version).tar.gz", # URL
-        "31e2064be67e15b478a8da007d96d6cd4d2bee253e5be220703a225f7f79a70b" # SHA256 hash
+        "1598b9a38659cce8448d42a73054b2f9cbfcc40a9b97eeec5f22d4d6cd1de8e6" # SHA256 hash
     ),
     DirectorySource("./bundled"),
 ]
