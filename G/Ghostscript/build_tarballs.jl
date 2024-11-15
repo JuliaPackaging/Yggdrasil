@@ -32,13 +32,25 @@ export CCAUX=${CC_BUILD}
 # configure the Makefiles.  Note we disable Tesseract because we don't need it
 # at the moment, it requires a C++17 compiler, and configure for Windows fails
 # because it doesn't find "threading".
-./configure --prefix=${prefix} \
+./configure \
+    --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --without-x \
     --disable-contrib \
     --disable-cups \
-    --without-tesseract
+    --without-tesseract \
+    --without-x
+
+# [15:33:29]   ZLIB support:                       yes
+# [15:33:29]   libdeflate support:                 no
+# [15:33:29]   Pixar log-format algorithm:         yes
+# [15:33:29]   JPEG support:                       no
+# [15:33:29]   Old JPEG support:                   no
+# [15:33:29]   JPEG 8/12 bit dual mode:            no
+# [15:33:29]   ISO JBIG support:                   no
+# [15:33:29]   LZMA2 support:                      no
+# [15:33:29]   ZSTD support:                       no
+# [15:33:29]   WEBP support:                       no
 
 # create the binaries
 make -j${nproc} so
