@@ -188,7 +188,6 @@ git submodule update --init --depth 1 \
     third_party/foxi \
     third_party/gloo \
     third_party/kineto \
-    third_party/onnx \
     third_party/pocketfft \
     third_party/psimd \
     third_party/tensorpipe
@@ -219,6 +218,7 @@ configure() {
         -DUSE_NUMPY=OFF \
         -DUSE_QNNPACK=OFF \
         -DUSE_SYSTEM_CPUINFO=ON \
+        -DUSE_SYSTEM_ONNX=ON \
         -DUSE_SYSTEM_PTHREADPOOL=ON \
         -DUSE_SYSTEM_SLEEF=ON \
         -DPROTOBUF_PROTOC_EXECUTABLE=$host_bindir/protoc \
@@ -280,6 +280,7 @@ dependencies = [
     # maleadt: `libnvToolsExt is not shipped by CUDA anymore, so the best solution is definitely static linking. CUDA 10.2 shipped it, later it became a header-only library which we do compile into a dynamic one for use with NVTX.jl, but there's no guarantees that the library we build has the same symbols as the "old" libnvToolsExt shipped by CUDA 10.2
     RuntimeDependency("NVTX_jll"), # TODO: Replace RuntimeDependency with static linking.
 
+    Dependency("ONNX_jll"),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     Dependency("PThreadPool_jll"; compat = "0.0.20210414"),
     Dependency("SLEEF_jll", v"3.5.2"; compat = "3"),
