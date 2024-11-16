@@ -1,15 +1,16 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
 include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 
 name = "Torch"
-version = v"1.10.2"
+version = v"1.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pytorch/pytorch.git", "71f889c7d265b9636b93ede9d651c0a9c4bee191"),
+    GitSource("https://github.com/pytorch/pytorch.git", "bc2c6edaf163b1a1330e37a6e34caf8c553e4755"),
     FileSource("https://micromamba.snakepit.net/api/micromamba/linux-64/0.21.1", "c907423887b43bec4e8b24f17471262c8087b7095683f41dcef4a4e24e9a3bbd"; filename = "micromamba.tar.bz2"),
     ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v10.2.89%2B5/CUDA_full.v10.2.89.x86_64-linux-gnu.tar.gz", "60e6f614db3b66d955b7e6aa02406765e874ff475c69e2b4a04eb95ba65e4f3b"; unpack_target = "CUDA_full.v10.2"),
     ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.3.1%2B1/CUDA_full.v11.3.1.x86_64-linux-gnu.tar.gz", "9ae00d36d39b04e8e99ace63641254c93a931dcf4ac24c8eddcdfd4625ab57d6"; unpack_target = "CUDA_full.v11.3"),
@@ -139,11 +140,13 @@ git submodule update --init \
     third_party/FXdiv \
     third_party/eigen \
     third_party/fbgemm \
+    third_party/flatbuffers \
     third_party/fmt \
     third_party/foxi \
     third_party/gloo \
     third_party/kineto \
     third_party/onnx \
+    third_party/pocketfft \
     third_party/psimd \
     third_party/tensorpipe
 git submodule update --init --recursive \
@@ -242,7 +245,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("CPUInfo_jll"; compat = "0.0.20201217"),
-    Dependency("CUDNN_jll", v"8.2.4"; compat = "8", platforms = cuda_platforms),
+    Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = "8", platforms = cuda_platforms), # Using v"8.2.4+0" to get support for cuda = "11.3"
     Dependency("Gloo_jll";  compat = "0.0.20210521", platforms = filter(p -> nbits(p) == 64, platforms)),
     Dependency("LAPACK_jll"; platforms = openblas_platforms),
     # Dependency("MKL_jll"; platforms = mkl_platforms), # MKL is avoided for all platforms
@@ -260,5 +263,7 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
+    preferred_llvm_version = v"13",
     julia_compat = "1.6",
-    augment_platform_block = CUDA.augment)
+    augment_platform_block = CUDA.augment,
+    lazy_artifacts = true)
