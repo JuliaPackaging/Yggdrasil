@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 # Collection of sources required to build Arpack
-function arpack_sources(version::VersonNumber; kwargs...)
+function arpack_sources(version::VersionNumber; kwargs...)
     arpack_version_sources = Dict(
         v"3.9.1" => [
 	    GitSource("https://github.com/opencollab/arpack-ng.git",
