@@ -47,8 +47,6 @@ products = [
 dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
-    HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("SuiteSparse32_jll"),
