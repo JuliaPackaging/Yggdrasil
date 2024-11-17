@@ -1,3 +1,5 @@
+using Pkg
+
 # Collection of sources required to build Arpack
 function arpack_sources(version::VersionNumber; kwargs...)
     arpack_version_sources = Dict(
@@ -63,9 +65,9 @@ SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
 
 if [[ "${target}" == *-mingw* ]]; then
-    BLAS=blastrampoline-5
+    LBT=blastrampoline-5
 else
-    BLAS=blastrampoline
+    LBT=blastrampoline
 fi
 
 if [[ ${ARPACK32} == false ]] && [[ ${nbits} == 64 ]]; then
@@ -79,8 +81,8 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
     -DEXAMPLES=OFF \
     -DBUILD_SHARED_LIBS=ON \
-    -DBLAS_LIBRARIES="-l${BLAS}" \
-    -DLAPACK_LIBRARIES="-l${BLAS}" \
+    -DBLAS_LIBRARIES="-l${LBT}" \
+    -DLAPACK_LIBRARIES="-l${LBT}" \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}"
 
 make -j${nproc} VERBOSE=1
