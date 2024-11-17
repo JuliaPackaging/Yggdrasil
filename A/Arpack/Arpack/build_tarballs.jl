@@ -9,11 +9,11 @@ include("../common.jl")
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libarpack", :libarpack32),
+    LibraryProduct("libarpack", :libarpack),
 ]
 
 # Dependencies that must be installed before this package can be built
-append!(dependencies, Dependency("libblastrampoline_jll"))
+append!(dependencies, [Dependency("libblastrampoline_jll")])
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, arpack_sources(version), build_script(build_32bit=false),

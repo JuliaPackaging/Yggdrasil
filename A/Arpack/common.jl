@@ -1,5 +1,3 @@
-using BinaryBuilder
-
 # Collection of sources required to build Arpack
 function arpack_sources(version::VersionNumber; kwargs...)
     arpack_version_sources = Dict(
@@ -16,14 +14,19 @@ end
 
 # Bash recipe for building across all platforms
 function build_script(;build_32bit::Bool=false)
-return raw"""
+
+script = """ 
+ARPACK32=$(build_32bit)
+"""
+
+script *= raw"""
 cd ${WORKSPACE}/srcdir/arpack-ng*
 
 SYMBOL_DEFS=()
-if $(build_32bit)
+if [[ ${ARPACK32} == true ]]; then
    # Symbols that have float32, float64, complexf32, and complexf64 support
    SDCZ_SYMBOLS=(
-       axpy copy gemv geqr2 lacpy lahqr lanhs larnv lartg
+        axpy copy gemv geqr2 lacpy lahqr lanhs larnv lartg
         lascl laset scal trevc trmm trsen gbmv gbtrf gbtrs
         gttrf gttrs pttrf pttrs
    )
@@ -52,28 +55,28 @@ if $(build_32bit)
    for sym in scnrm2 dznrm2 csscal zdscal dgetrf dgetrs; do
        SYMBOL_DEFS+=("-D${sym}=${sym}_64")
    done
-endif
+fi
 
 # Set up not only lowercase symbol remappings, but uppercase as well:
 SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
 FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
 
-if [[ $(build_32bit == true ]]; then
-    BLAS=libopenblas
+if [[ ${ARPACK32} == true ]]; then
+    BLAS=openblas
 elif [[ "${target}" == *-mingw* ]]; then
     BLAS=blastrampoline-5
 else
     BLAS=blastrampoline
 fi
 
-if [[ $(build_32bit) == true ]] && [[ ${nbits} == 64 ]]; then
+if [[ ${ARPACK32} == false ]] && [[ ${nbits} == 64 ]]; then
     FFLAGS="${FFLAGS} -fdefault-integer-8 ${SYMBOL_DEFS[@]}"
 fi
 
 mkdir build
 cd build
-export LDFLAGS="${EXE_LINK_FLAGS[@]} -L${libdir} -lpthread"
+export LDFLAGS="-L${libdir} -lpthread"
 cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
     -DEXAMPLES=OFF \
@@ -84,26 +87,6 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
 
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
-
-# For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
-# Eventually, this should be fixed upstream
-if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
-    echo "-- Modifying library name for Lbt"
-
-    for nm in libarpack; do
-        # Figure out what version it probably latched on to:
-        if [[ ${target} == *-apple-* ]]; then
-            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${LBT} | awk '{ print $1 }')
-            install_name_tool -change ${LBT_LINK} @rpath/lib${LBT}.dylib ${libdir}/${nm}.dylib
-        elif [[ ${target} == *freebsd* ]]; then
-            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
-        elif [[ ${target} == *linux* ]]; then
-            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
-            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
-        fi
-    done
-fi
 
 # Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
 if [[ "${target}" == *-mingw* ]]; then
