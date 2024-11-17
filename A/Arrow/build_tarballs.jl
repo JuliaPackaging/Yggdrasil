@@ -3,13 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Arrow"
-version = v"10.0.0"
+version = v"18.0.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/apache/arrow.git",
-              "89f9a0948961f6e94f1ef5e4f310b707d22a3c11")
-    DirectorySource("./bundled")
+        "9105a4109a80a1c01eabb24ee4b9f7c94ee942cb")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,17 +16,7 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/arrow
 
-# Set toolchain for building external deps
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-
 cd cpp && mkdir build_dir && cd build_dir
-
-# Ignore check for availibility on older macOS versions
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
-fi
 
 CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
@@ -44,7 +33,7 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
 -DARROW_WITH_BZ2=ON
 -DARROW_IPC=OFF
 -DARROW_WITH_LZ4=ON
--DARROW_WITH_ZSTD=OFF
+-DARROW_WITH_ZSTD=ON
 -DARROW_WITH_ZLIB=ON
 -DARROW_WITH_SNAPPY=ON
 -DARROW_THRIFT_USE_SHARED=ON
@@ -80,10 +69,11 @@ dependencies = [
     Dependency("Bzip2_jll", compat="1.0.8")
     Dependency("Lz4_jll")
     Dependency("Thrift_jll"; compat="0.16")
-    Dependency("snappy_jll")
+    Dependency("snappy_jll"; compat="1.2")
+    Dependency("Zstd_jll"; compat="1.5.6")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+    julia_compat="1.6", preferred_gcc_version=v"8")
