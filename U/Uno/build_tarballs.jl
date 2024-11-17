@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"1.2.0"
+version = v"1.3.0"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "37e22cb21a147cb36429f889ea617cd38b3922a7",
+        "79611a3c5d6196f59b3accc8e21a774b5670164c",
     ),
 ]
 
@@ -20,8 +20,10 @@ cd build
 
 if [[ "${target}" == *mingw* ]]; then
     LBT=blastrampoline-5
+    LIBHIGHS=${prefix}/lib/libhighs.dll.a
 else
     LBT=blastrampoline
+    LIBHIGHS=${libdir}/libhighs.${dlext}
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
@@ -39,6 +41,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DAMPLSOLVER=${libdir}/libasl.${dlext} \
+    -DHIGHS=${LIBHIGHS} \
     -DHSL=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
@@ -58,8 +61,8 @@ install -v -m 755 "uno_ampl${exeext}" -t "${bindir}"
 
 # Currently, Uno does not provide a shared library. This may be useful in the future once it has a C API.
 # We just check that we can generate it, but we don't include it in the tarballs.
-${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o libuno.${dlext} -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis -lhsl
-# cp libuno.${dlext} "${libdir}/libuno.${dlext}
+${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o libuno.${dlext} -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis -lhsl -lhighs
+# cp libuno.${dlext} ${libdir}/libuno.${dlext}
 """
 
 platforms = supported_platforms()
@@ -74,6 +77,7 @@ products = [
 ]
 
 dependencies = [
+    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1"),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), compat="0.1.3"),
