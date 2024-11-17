@@ -23,8 +23,8 @@ function lapack_script(;lapack32::Bool=false)
 
     atomic_patch -p1 $WORKSPACE/srcdir/patches/cmake.patch
 
-    if [[ ${LAPACK32} ]]; then
-        BLAS=openblas
+    if [[ ${LAPACK32} == true ]]; then
+        BLAS="openblas"
     elif [[ "${target}" == *-mingw* ]]; then
         BLAS="blastrampoline-5"
     else
