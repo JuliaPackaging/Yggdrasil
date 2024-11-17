@@ -34,11 +34,6 @@ FLAGS=(
     --with-lapack="-L${libdir} -l${LBT}"
 )
 
-
-if [[ ${nbits} == 64 ]]; then
-   FLAGS+=( --enable-64 )
-fi
-
 ./configure "${FLAGS[@]}"
 make -j${nproc} 
 make install
@@ -59,15 +54,15 @@ dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"),
-    Dependency("SuiteSparse_jll"),
+    Dependency("OpenBLAS32_jll"),
+    Dependency("SuiteSparse32_jll"),
     Dependency("CXSparse_jll"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Zlib_jll"),
     Dependency("Bzip2_jll"),
-    Dependency("Arpack_jll"),
+#    Dependency("Arpack32_jll"),
     Dependency("FFTW_jll"),
     Dependency("GLPK_jll"),
     Dependency("GMP_jll", v"6.2.0"),
