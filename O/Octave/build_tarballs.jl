@@ -17,12 +17,6 @@ export CPPFLAGS="-I${includedir}"
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir -p ${TMPDIR}
 
-if [[ "${target}" == *-mingw* ]]; then
-    LBT=blastrampoline-5
-else
-    LBT=blastrampoline
-fi
-
 # Base configure flags
 FLAGS=(
     --prefix="$prefix"
@@ -30,8 +24,8 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
-    --with-blas="-L${libdir} -l${LBT}"
-    --with-lapack="-L${libdir} -l${LBT}"
+    --with-blas="-L${libdir} -lopenblas"
+    --with-lapack="-L${libdir} -lopenblas"
 )
 
 ./configure "${FLAGS[@]}"
@@ -53,22 +47,24 @@ products = [
 dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
+    HostBuildDependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency("SuiteSparse32_jll"),
+    Dependency("Arpack32_jll"),
+    Dependency("Sundials32_jll"),
     Dependency("CXSparse_jll"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Zlib_jll"),
     Dependency("Bzip2_jll"),
-#    Dependency("Arpack32_jll"),
     Dependency("FFTW_jll"),
     Dependency("GLPK_jll"),
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("LibCURL_jll"),
     Dependency("Qhull_jll"),
-    Dependency("Sundials_jll"),
     Dependency("HDF5_jll"),
     Dependency("rapidjson_jll"),
     Dependency("libsndfile_jll"),
@@ -77,4 +73,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")
+               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"10")
