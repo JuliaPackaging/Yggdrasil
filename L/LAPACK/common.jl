@@ -23,8 +23,14 @@ function lapack_script(;lapack32::Bool=false)
 
     atomic_patch -p1 $WORKSPACE/srcdir/patches/cmake.patch
 
-    BLAS=openblas
-    
+    if [[ ${LAPACK32} ]]; then
+        BLAS=openblas
+    elif [[ "${target}" == *-mingw* ]]; then
+        BLAS="blastrampoline-5"
+    else
+        BLAS="blastrampoline"
+    fi
+
     FFLAGS=-ffixed-line-length-none
     if [[ ${nbits} == 64 ]] && [[ "${LAPACK32}" != "true" ]]; then
       FFLAGS="${FFLAGS} -cpp -DUSE_ISNAN -fdefault-integer-8"
