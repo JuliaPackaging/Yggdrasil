@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Pythia8_cxxwrap"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to build Pythia8_cxxwrap  
 sources = [
     GitSource("https://github.com/peremato/Pythia8_cxxwrap.git",
-              "4a444abfaa940e2554971ed58961092aa03bbf4e"),
+              "30b9f1e116ee6f73804c7304c1be665aade10f4f"),
 ]
 
 # Bash recipe for building across all platforms
