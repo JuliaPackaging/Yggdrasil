@@ -7,7 +7,7 @@ name = "gismo"
 version = v"24.08.0"
 sources = [
     GitSource("https://github.com/gismo/gismo.git",       # The URL of the git repository
-              "8c9b0cfd8c6b3b5c5f173b10812ae8b84a57731a") # The commit hash to checkout
+              "20886849ffb7aa6784236405ee70506a593a5cc5") # The commit hash to checkout
 ]
 
 # NOTE: to control nproc, use the environment variable BINARYBUILDER_NPROC=<number of processors>
@@ -33,7 +33,7 @@ install_license ${WORKSPACE}/srcdir/gismo/LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 # platforms = [AnyPlatform()]
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms(; exclude=Sys.isfreebsd)
 
 products = [
     LibraryProduct("libgismo", :libgismo),
