@@ -7,7 +7,7 @@ name = "gismo"
 version = v"24.08.0"
 sources = [
     GitSource("https://github.com/gismo/gismo.git",       # The URL of the git repository
-              "18ac54d1d072a87ec626fb76dd76b1f08b29d5de") # The commit hash to checkout
+              "8c9b0cfd8c6b3b5c5f173b10812ae8b84a57731a") # The commit hash to checkout
 ]
 
 # NOTE: to control nproc, use the environment variable BINARYBUILDER_NPROC=<number of processors>
