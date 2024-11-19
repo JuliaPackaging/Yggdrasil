@@ -40,7 +40,7 @@ fi
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
-    export MACOSX_DEPLOYMENT_TARGET=10.15
+    export MACOSX_DEPLOYMENT_TARGET=13.3
 elif [[ "$target" == *-freebsd* ||
         "$target" == *-w64-mingw32* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
