@@ -35,7 +35,7 @@ if [[ $bb_full_target == *cuda* ]]; then
     configure_args+="--enable-cuda --enable-shared"
     export CUDA_PATH="$prefix/cuda"
     export PATH=$CUDA_PATH/bin:$PATH
-    export LDFLAGS="$LDFLAGS -L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
+    ln -s $prefix/cuda/lib $prefix/cuda/lib64
 
     ./configure $configure_args
     make -j${nproc} 
@@ -46,7 +46,7 @@ else
     make -j${nproc} 
     rm *.a
     mkdir -p ${libdir}
-    cc -fopenmp -shared $link_flags -o "${libdir}/libshtns.${dlext}" *.o 
+    cc -fopenmp -shared -o "${libdir}/libshtns.${dlext}" *.o $link_flags
 fi
 
 install_license LICENSE
@@ -90,15 +90,15 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-                julia_compat = "1.6",
-                preferred_gcc_version = v"10",
-                augment_platform_block)
-
+# Build the tarballs
 for platform in cuda_platforms
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
                 augment_platform_block = CUDA.augment*augment_platform_block)
 end
+
+build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
+                julia_compat = "1.6",
+                preferred_gcc_version = v"10",
+                augment_platform_block)
