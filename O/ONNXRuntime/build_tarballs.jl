@@ -13,7 +13,7 @@ version = v"1.10.0"
 # Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
 cuda_versions = [
     v"10.2",
-    v"11.4",
+    v"11.3",
 ]
 cudnn_version = v"8.2.4"
 tensorrt_version = v"8.0.1"
@@ -142,9 +142,16 @@ for cuda_version in [nothing, cuda_versions...], platform in platforms
     platform_dependencies = BinaryBuilder.AbstractDependency[]
     append!(platform_dependencies, dependencies)
     if !isnothing(cuda_version)
-        append!(platform_dependencies, CUDA.required_dependencies(augmented_platform))
+        if Base.thisminor(cuda_version) != v"11.3"
+            append!(platform_dependencies, CUDA.required_dependencies(augmented_platform))
+        else
+            append!(platform_dependencies, [
+                BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
+                Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using Dependency with build version v"0.7.0" to get support for cuda = "11.3"
+            ])
+        end
         append!(platform_dependencies, [
-            Dependency("CUDNN_jll", cudnn_version; compat = cudnn_compat),
+            Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = cudnn_compat), # Using v"8.2.4+0" to get support for cuda = "11.3"
             Dependency("TensorRT_jll", tensorrt_version; compat = tensorrt_compat),
             Dependency("Zlib_jll"),
         ])
