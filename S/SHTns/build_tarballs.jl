@@ -97,7 +97,7 @@ for platform in cuda_platforms
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = CUDA.augment*augment_platform_block, skip_audit=true, dont_dlopen=true)
+                augment_platform_block = CUDA.augment*augment_platform_block, dont_dlopen=true)
 end
 
 build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
