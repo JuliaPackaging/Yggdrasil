@@ -15,11 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/mona*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-extra=""
 if [[ "${target}" == *-apple-* ]]; then
-  extra="LDFLAGS=-shared -undefined dynamic_lookup -Wl"
+  make -j$(nproc) LDFLAGS="-shared -undefined dynamic_lookup -Wl"
+else
+  make -j${nproc}
 fi
-make -j${nproc} "${extra}"
 make install
 install_license COPYING
 """
