@@ -30,25 +30,22 @@ sed -i -e 's/lfftw3_omp/lfftw3/' configure
 
 #remove cuda arch specification and test
 sed -i -e '/any compatible gpu/d' configure 
-sed -i -e 's/nvcc -std=c++11 \$nvcc_gencode_flags/nvcc -std=c++11/' configure
+sed -i -e 's/nvcc -std=c++11 \$nvcc_gencode_flags/nvcc -fPIC -std=c++11/' configure
 
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
-link_flags="-lfftw3 "
+link_flags="-lfftw3 -lm"
 
 if [[ $bb_full_target == *cuda* ]]; then
-    configure_args+="--enable-cuda --enable-shared"
-    
-    ./configure $configure_args
-    make -j${nproc} 
-
-    mv *.so ${libdir}/libshtns.${dlext}
-else
-   ./configure $configure_args
-    make -j${nproc} 
-    rm *.a
-    mkdir -p ${libdir}
-    cc -fopenmp -shared -o "${libdir}/libshtns.${dlext}" *.o $link_flags
+    configure_args+="--enable-cuda"
+    link_flags+="-lcuda -lnvrtc -lcudart"
 fi
+
+./configure $configure_args
+make -j${nproc} 
+rm *.a
+mkdir -p ${libdir}
+cc -fopenmp -shared -o "${libdir}/libshtns.${dlext}" *.o $link_flags
+
 
 install_license LICENSE
 """
