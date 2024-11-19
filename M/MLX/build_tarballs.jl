@@ -26,6 +26,7 @@ fi
 cd $WORKSPACE/srcdir/mlx
 
 atomic_patch -p1 ../patches/cmake_system_processor-arm64-aarch64.patch
+atomic_patch -p1 ../patches/cmake-x86_64-apple-darwin.patch
 
 if [[ "$target" == *-w64-mingw32* ]]; then
     atomic_patch -p1 ../patches/cmake-w64-mingw32.patch
@@ -90,13 +91,13 @@ platforms = supported_platforms()
 filter!(!Sys.isfreebsd, platforms) # FreeBSD build fails, likely due to a few missing header includes, e.g.: mlx/io.h:16:10: error: no member named 'unordered_map' in namespace 'std'
 platforms = expand_cxxstring_abis(platforms)
 
+accelerate_platforms = filter(Sys.isapple, platforms)
 openblas_platforms = filter(p ->
-    Sys.isapple(p) ||
     arch(p) == "armv6l" ||
     p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11"),
-    platforms
+    filter(p -> p ∉ accelerate_platforms, platforms)
 )
-libblastrampoline_platforms = filter(p -> p ∉ openblas_platforms, platforms)
+libblastrampoline_platforms = filter(p -> p ∉ union(accelerate_platforms, openblas_platforms), platforms)
 
 products = Product[
     FileProduct("include/mlx/mlx.h", :mlx_mlx_h),
