@@ -21,7 +21,7 @@ else
     export WAYLAND_ENABLED=OFF
 fi
 
-# On FreeBSD we need to set __BSD_VISIBLE to enable ppoll() in the system headers
+# On FreeBSD we need to set __BSD_VISIBLE to enable `ppoll()` in the system headers
 if [[ ${target} == *freebsd* ]]; then
    export BSD_VISIBLE=1
 else
