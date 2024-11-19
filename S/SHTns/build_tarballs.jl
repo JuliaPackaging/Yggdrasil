@@ -29,16 +29,17 @@ sed -i -e 's/lfftw3_omp/lfftw3/g' configure
 # sed -i -e '/any compatible gpu/d' configure 
 # sed -i -e 's/nvcc -std=c++11 \$nvcc_gencode_flags/nvcc -Xcompiler -fPIC -std=c++11/' configure
 
+sed -i -e 's/lib64/lib/g' configure
 sed -i -e 's/nvcc -std=c++11/nvcc -Xcompiler -fPIC -std=c++11/' configure
 
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
-link_flags="-lfftw3 -lm -lstdc++ "
+link_flags="-lfftw3 -lm "
 
 if [[ $bb_full_target == *cuda* ]]; then
     export CUDA_PATH="$prefix/cuda"
     export PATH=$CUDA_PATH/bin:$PATH
     ln -s $prefix/cuda/lib $prefix/cuda/lib64
-    CFLAGS="$CFLAGS -I$CUDA_PATH/include -L$CUDA_PATH/lib64 -L$CUDA_PATH/lib64/stubs"
+    CFLAGS="$CFLAGS -L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
     configure_args+="--enable-cuda"
     link_flags+="-lcuda -lnvrtc -lcudart"
 fi
@@ -49,7 +50,6 @@ rm *.a
 mkdir -p ${libdir}
 cc -fopenmp -shared $CFLAGS -o "${libdir}/libshtns.${dlext}" *.o $link_flags
 
-unlink $prefix/cuda/lib64
 install_license LICENSE
 """
 
@@ -142,7 +142,7 @@ augment_platform_block_cuda = """
         end
     end"""
 
-cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+cuda_platforms = CUDA.supported_platforms() #expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
@@ -167,7 +167,7 @@ for platform in cuda_platforms
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true)
+                augment_platform_block = augment_platform_block_cuda)
 end
 
 build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
