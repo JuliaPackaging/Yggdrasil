@@ -50,6 +50,7 @@ rm *.a
 mkdir -p ${libdir}
 cc -fopenmp -shared $CFLAGS -o "${libdir}/libshtns.${dlext}" *.o $link_flags
 
+unlink $prefix/cuda/lib64
 install_license LICENSE
 """
 
@@ -71,7 +72,7 @@ augment_platform_block = """
     end
     """
 
-cuda_platforms = expand_cxxstring_abis(expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"]))
+cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
