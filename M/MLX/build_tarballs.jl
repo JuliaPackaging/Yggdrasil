@@ -48,6 +48,16 @@ elif [[ "$target" == *-freebsd* ||
     )
 fi
 
+libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
+if [[ "$target" != *-apple-darwin* &&
+      "$libblastrampoline_target" != armv6l-linux-* &&
+      "$bb_full_target" != i686-linux-gnu-cxx11 ]]; then
+    CMAKE_EXTRA_OPTIONS+=(
+        "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
+        "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
+    )
+fi
+
 install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
@@ -80,6 +90,14 @@ platforms = supported_platforms()
 filter!(!Sys.isfreebsd, platforms) # FreeBSD build fails, likely due to a few missing header includes, e.g.: mlx/io.h:16:10: error: no member named 'unordered_map' in namespace 'std'
 platforms = expand_cxxstring_abis(platforms)
 
+openblas_platforms = filter(p ->
+    Sys.isapple(p) ||
+    arch(p) == "armv6l" ||
+    p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11"),
+    platforms
+)
+libblastrampoline_platforms = filter(p -> p ∉ openblas_platforms, platforms)
+
 products = Product[
     FileProduct("include/mlx/mlx.h", :mlx_mlx_h),
     LibraryProduct(["libmlx", "mlx"], :libmlx),
@@ -87,7 +105,8 @@ products = Product[
 
 dependencies = [
     Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
-    Dependency("OpenBLAS32_jll"; platforms = filter(p -> p != Platform("aarch64", "macos"), platforms)),
+    Dependency("libblastrampoline_jll"; platforms = libblastrampoline_platforms),
+    Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
 ]
 
