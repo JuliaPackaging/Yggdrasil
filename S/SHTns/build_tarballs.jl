@@ -21,22 +21,23 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/shtns*/
 export CFLAGS="-fPIC -O3" #only -fPIC produces slow code on linux x86 and MacOS x86 (maybe others)
+export CUDA_PATH="$prefix/cuda"
+export PATH=$CUDA_PATH/bin:$PATH
+ln -s $prefix/cuda/lib $prefix/cuda/lib64
 
 #remove lfftw3_omp library references, as FFTW_jll does not provide it
 sed -i -e 's/lfftw3_omp/lfftw3/' configure
 
 #remove cuda arch specification and test
 sed -i -e '/any compatible gpu/d' configure 
+sed -i -e 's/nvcc -std=c++11 \$nvcc_gencode_flags/nvcc -std=c++11/' configure
 
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
 link_flags="-lfftw3 "
 
 if [[ $bb_full_target == *cuda* ]]; then
     configure_args+="--enable-cuda --enable-shared"
-    export CUDA_PATH="$prefix/cuda"
-    export PATH=$CUDA_PATH/bin:$PATH
-    ln -s $prefix/cuda/lib $prefix/cuda/lib64
-
+    
     ./configure $configure_args
     make -j${nproc} 
 
