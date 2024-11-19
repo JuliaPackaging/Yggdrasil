@@ -3,25 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "wget"
-version = v"1.24.5"
+version = v"1.25.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/wget/wget-$(version).tar.gz",
-                  "fa2dc35bab5184ecbc46a9ef83def2aaaa3f4c9f3c97d4bd19dcb07d4da637de")
+                  "766e48423e79359ea31e41db9e5c289675947a7fcf2efdcedb726ac9d0da3784")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/wget-*/
-
-FLAGS=()
-if [[ "${target}" == *-darwin* ]]; then
-    # https://lists.gnu.org/archive/html/bug-wget/2021-01/msg00076.html
-    FLAGS+=(--without-included-regex)
-fi
-
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
+cd $WORKSPACE/srcdir/wget-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-ssl=openssl --with-openssl
 make -j${nproc}
 make install
 """
@@ -41,8 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GnuTLS_jll"),
-    Dependency("Nettle_jll", v"3.7.2"; compat="~3.7.2"),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.15"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
