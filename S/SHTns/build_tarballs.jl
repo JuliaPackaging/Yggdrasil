@@ -72,6 +72,77 @@ augment_platform_block = """
     end
     """
 
+augment_platform_block_cuda = """
+    using Base.BinaryPlatforms
+
+    try
+        using CUDA_Runtime_jll
+    catch
+        # during initial package installation, CUDA_Runtime_jll may not be available.
+        # in that case, we just won't select an artifact.
+    end
+
+    # can't use Preferences for the same reason
+    const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
+    const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
+    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
+    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
+    const local_toolkit = something(tryparse(Bool, get(preferences, "local", "false")), false)
+
+    function cuda_comparison_strategy(_a::String, _b::String, a_requested::Bool, b_requested::Bool)
+        # if we're using a local toolkit, we can't use artifacts
+        if local_toolkit
+            return false
+        end
+
+        # if either isn't a version number (e.g. "none"), perform a simple equality check
+        a = tryparse(VersionNumber, _a)
+        b = tryparse(VersionNumber, _b)
+        if a === nothing || b === nothing
+            return _a == _b
+        end
+
+        # if both b and a requested, then we fall back to equality
+        if a_requested && b_requested
+            return Base.thisminor(a) == Base.thisminor(b)
+        end
+
+        # otherwise, do the comparison between the the single version cap and the single version:
+        function is_compatible(artifact::VersionNumber, host::VersionNumber)
+            if host >= v"11.0"
+                # enhanced compatibility, semver-style
+                artifact.major == host.major &&
+                Base.thisminor(artifact) <= Base.thisminor(host)
+            else
+                Base.thisminor(artifact) == Base.thisminor(host)
+            end
+        end
+        if a_requested
+            is_compatible(b, a)
+        else
+            is_compatible(a, b)
+        end
+    end
+
+    function augment_platform!(platform::Platform)
+
+        if !@isdefined(CUDA_Runtime_jll)
+            # don't set to nothing or Pkg will download any artifact
+            platform["cuda"] = "none"
+        end
+
+        if !haskey(platform, "cuda")
+            CUDA_Runtime_jll.augment_platform!(platform)
+        end
+        BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
+
+        @static if Sys.ARCH === :x86_64
+            return augment_microarchitecture!(platform)
+        else
+            return platform
+        end
+    end"""
+
 cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
@@ -88,21 +159,16 @@ dependencies = [
     Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, cpu_platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, cpu_platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs
 for platform in cuda_platforms
-    deps = [Dependency(PackageSpec(name="FFTW_jll"));
-            Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=[platform]);
-            Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=[platform]); 
-            CUDA.required_dependencies(platform)
-            ]
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, deps;
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = CUDA.augment*augment_platform_block, dont_dlopen=true)
+                augment_platform_block = augment_platform_block_cuda)
 end
 
 build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
