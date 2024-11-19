@@ -25,10 +25,10 @@ export CUDA_PATH="$prefix/cuda"
 export PATH=$CUDA_PATH/bin:$PATH
 
 # replace CUDA_PATH/lib64 with CUDA_PATH/lib
-sed -i -e 's/lib64/lib/' configure
+sed -i -e 's/lib64/lib/g' configure
 
 #remove lfftw3_omp library references, as FFTW_jll does not provide it
-sed -i -e 's/lfftw3_omp/lfftw3/' configure
+sed -i -e 's/lfftw3_omp/lfftw3/g' configure
 
 #remove cuda arch specification and test
 sed -i -e '/any compatible gpu/d' configure 
@@ -38,6 +38,7 @@ configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-ker
 link_flags="-lfftw3 -lm -lstdc++ "
 
 if [[ $bb_full_target == *cuda* ]]; then
+    CFLAGS="$CFLAGS -I$CUDA_PATH/include -L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
     configure_args+="--enable-cuda"
     link_flags+="-lcuda -lnvrtc -lcudart"
 fi
@@ -46,7 +47,7 @@ fi
 make -j${nproc} 
 rm *.a
 mkdir -p ${libdir}
-cc -fopenmp -shared -o "${libdir}/libshtns.${dlext}" *.o $link_flags
+cc -fopenmp -shared $CFLAGS -o "${libdir}/libshtns.${dlext}" *.o $link_flags
 
 
 install_license LICENSE
