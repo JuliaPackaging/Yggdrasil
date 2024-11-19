@@ -88,13 +88,18 @@ dependencies = [
     Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, cpu_platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, cpu_platforms)),
 ]
 
 # Build the tarballs
 for platform in cuda_platforms
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
+    deps = [Dependency(PackageSpec(name="FFTW_jll"));
+            Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=[platform]);
+            Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=[platform]); 
+            CUDA.required_dependencies(platform)
+            ]
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, deps;
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
                 augment_platform_block = CUDA.augment*augment_platform_block, dont_dlopen=true)
