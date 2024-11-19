@@ -3,7 +3,6 @@
 using BinaryBuilder, Pkg
 
 YGGDRASILPATH = joinpath(@__DIR__, "..", "..")
-YGGDRASILPATH = joinpath(@__DIR__, "..", "Yggdrasil")
 
 include(joinpath(YGGDRASILPATH, "platforms", "microarchitectures.jl"))
 include(joinpath(YGGDRASILPATH, "platforms", "cuda.jl"))
