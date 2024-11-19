@@ -27,10 +27,25 @@ cd $WORKSPACE/srcdir/mlx
 
 atomic_patch -p1 ../patches/cmake_system_processor-arm64-aarch64.patch
 
+if [[ "$target" == *-w64-mingw32* ]]; then
+    atomic_patch -p1 ../patches/cmake-w64-mingw32.patch
+fi
+
+if [[ "$target" == *-linux-musl* ||
+      "$target" == *-w64-mingw32* ]]; then
+    atomic_patch -p1 ../patches/musl.patch
+fi
+
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
     export MACOSX_DEPLOYMENT_TARGET=10.15
+elif [[ "$target" == *-freebsd* ||
+        "$target" == *-w64-mingw32* ]]; then
+    CMAKE_EXTRA_OPTIONS+=(
+        "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
+        "-DMLX_BUILD_SAFETENSORS=OFF" # Disabled safetensors, due to `mlx/io/safetensors.cpp.obj:safetensors.cpp:(.rdata$.refptr._ZTVN3mlx4core2io18ParallelFileReaderE[.refptr._ZTVN3mlx4core2io18ParallelFileReaderE]+0x0): undefined reference to `vtable for mlx::core::io::ParallelFileReader'`
+    )
 fi
 
 install_license LICENSE
@@ -62,9 +77,7 @@ fi
 """
 
 platforms = supported_platforms()
-filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms) # linux-musl builds fail, e.g. due to mlx/utils.cpp:154:21: error: ‘uint’ does not name a type; did you mean ‘uint8’?
-filter!(!Sys.isfreebsd, platforms) # FreeBSD builds fail, e.g. due to mlx/backend/metal/metal.h:84:6: error: no template named 'unordered_map' in namespace 'std'
-filter!(!Sys.iswindows, platforms) # Windows builds fail, e.g. due to mlx/backend/common/compiled_cpu.cpp:3:10: fatal error: dlfcn.h: No such file or directory
+filter!(!Sys.isfreebsd, platforms) # FreeBSD build fails, likely due to a few missing header includes, e.g.: mlx/io.h:16:10: error: no member named 'unordered_map' in namespace 'std'
 platforms = expand_cxxstring_abis(platforms)
 
 products = Product[
@@ -73,6 +86,7 @@ products = Product[
 ]
 
 dependencies = [
+    Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
     Dependency("OpenBLAS32_jll"; platforms = filter(p -> p != Platform("aarch64", "macos"), platforms)),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
 ]

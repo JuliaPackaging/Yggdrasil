@@ -1,0 +1,25 @@
+diff --git a/mlx/backend/common/compiled_cpu.cpp b/mlx/backend/common/compiled_cpu.cpp
+index 0923398c..9199b28c 100644
+--- a/mlx/backend/common/compiled_cpu.cpp
++++ b/mlx/backend/common/compiled_cpu.cpp
+@@ -47,7 +47,7 @@ bool compile_available_for_device(const Device& device) {
+ } // namespace detail
+ 
+ std::string get_temp_file(const std::string& name) {
+-  return std::filesystem::temp_directory_path().append(name);
++  return std::filesystem::temp_directory_path().append(name).string();
+ }
+ 
+ // Return a pointer to a compiled function
+diff --git a/mlx/utils.cpp b/mlx/utils.cpp
+index e3c2c72b..c21759cb 100644
+--- a/mlx/utils.cpp
++++ b/mlx/utils.cpp
+@@ -151,7 +151,7 @@ std::ostream& operator<<(std::ostream& os, int8_t x) {
+ }
+ 
+ std::ostream& operator<<(std::ostream& os, uint8_t x) {
+-  os << static_cast<uint>(x);
++  os << static_cast<unsigned int>(x);
+   return os;
+ }
