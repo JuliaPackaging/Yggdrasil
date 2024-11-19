@@ -2,8 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-#YGGDRASILPATH = joinpath(@__DIR__, "..", "..")
-YGGDRASILPATH = joinpath(@__DIR__, "..", "Yggdrasil")
+YGGDRASILPATH = joinpath(@__DIR__, "..", "..")
 
 include(joinpath(YGGDRASILPATH, "platforms", "microarchitectures.jl"))
 include(joinpath(YGGDRASILPATH, "platforms", "cuda.jl"))
@@ -26,11 +25,29 @@ export CFLAGS="-fPIC -O3" #only -fPIC produces slow code on linux x86 and MacOS 
 #remove lfftw3_omp library references, as FFTW_jll does not provide it
 sed -i -e 's/lfftw3_omp/lfftw3/' configure
 
-./configure --prefix=${prefix} --host=${target} --enable-openmp --enable-cuda --enable-shared --enable-kernel-compiler=cc
-make -j${nproc}
+#remove cuda arch specification and test
+sed -i -e '/any compatible gpu/d' configure 
 
-mkdir -p ${libdir}
-mv libshtns_cuda_omp.so ${libdir}/libshtns.${dltext}
+configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
+link_flags="-lfftw3 "
+
+if [[ $bb_full_target == *cuda* ]]; then
+    configure_args+="--enable-cuda --enable-shared"
+    export CUDA_PATH="$prefix/cuda"
+    export PATH=$CUDA_PATH/bin:$PATH
+    export LDFLAGS="$LDFLAGS -L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
+
+    ./configure $configure_args
+    make -j${nproc} 
+
+    mv *.so ${libdir}/libshtns.${dlext}
+else
+   ./configure $configure_args
+    make -j${nproc} 
+    rm *.a
+    mkdir -p ${libdir}
+    cc -fopenmp -shared $link_flags -o "${libdir}/libshtns.${dlext}" *.o 
+fi
 
 install_license LICENSE
 """
@@ -54,6 +71,9 @@ augment_platform_block = """
     """
 
 cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+
+filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
+
 platforms = [cpu_platforms; cuda_platforms]
 
 # The products that we will ensure are always built
@@ -63,17 +83,22 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a")),
+    Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
-for platform in platforms
-    # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
-                julia_compat="1.6",
-                preferred_gcc_version=v"10",
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
+                julia_compat = "1.6",
+                preferred_gcc_version = v"10",
                 augment_platform_block)
+
+for platform in cuda_platforms
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
+                julia_compat = "1.6",
+                preferred_gcc_version = v"10",
+                augment_platform_block = CUDA.augment*augment_platform_block)
 end
