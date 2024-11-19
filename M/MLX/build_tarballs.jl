@@ -68,7 +68,7 @@ filter!(!Sys.iswindows, platforms) # Windows builds fail, e.g. due to mlx/backen
 platforms = expand_cxxstring_abis(platforms)
 
 products = Product[
-    FileProduct("include/mlx/mlx.h", :mlx_h),
+    FileProduct("include/mlx/mlx.h", :mlx_mlx_h),
     LibraryProduct(["libmlx", "mlx"], :libmlx),
 ]
 
