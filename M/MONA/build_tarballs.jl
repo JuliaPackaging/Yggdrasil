@@ -19,7 +19,7 @@ extra=""
 if [[ "${target}" == *-apple-* ]]; then
   extra="LDFLAGS=-shared -undefined dynamic_lookup -Wl"
 fi
-make -j${nproc} ${extra}
+make -j${nproc} "${extra}"
 make install
 install_license COPYING
 """
