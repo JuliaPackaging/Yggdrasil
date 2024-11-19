@@ -30,7 +30,7 @@ sed -i -e 's/lfftw3_omp/lfftw3/' configure
 
 #remove cuda arch specification and test
 sed -i -e '/any compatible gpu/d' configure 
-sed -i -e 's/nvcc -std=c++11 \$nvcc_gencode_flags/nvcc -fPIC -std=c++11/' configure
+sed -i -e 's/nvcc -std=c++11 \$nvcc_gencode_flags/nvcc -Xcompiler -fPIC -std=c++11/' configure
 
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
 link_flags="-lfftw3 -lm"
