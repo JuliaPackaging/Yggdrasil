@@ -141,7 +141,8 @@ const augment_platform_block_cuda = """
             return platform
         end
         
-    end"""
+    end
+    """
 
 cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 
@@ -164,14 +165,14 @@ dependencies = [
 ]
 
 # Build the tarballs
-for platform in [cuda_platforms[1]]
+for platform in cuda_platforms
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, autofix=true)
+                augment_platform_block = augment_platform_block_cuda, lazy_artifacts=true, dont_dlopen=true, skip_audit=true)
 end
 
-# build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-#                 julia_compat = "1.6",
-#                 preferred_gcc_version = v"10",
-#                 augment_platform_block)
+build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
+                julia_compat = "1.6",
+                preferred_gcc_version = v"10",
+                augment_platform_block)
