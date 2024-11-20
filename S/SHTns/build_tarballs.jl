@@ -57,9 +57,9 @@ install_license LICENSE
 # platforms are passed in on the command line
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-cpu_platforms = expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+cpu_platforms = supported_platforms() 
 
-const augment_platform_block = """
+const augment_platform_block_cpu = """
     $(MicroArchitectures.augment)
     function augment_platform!(platform::Platform)
         # We augment only x86_64
@@ -164,15 +164,11 @@ dependencies = [
 ]
 
 # Build the tarballs
-for platform in [cuda_platforms[1]]
+for platform in platforms
     _platforms = expand_microarchitectures(platform, ["x86_64", "avx", "avx2", "avx512"])
+    augment_platform_block = haskey(platform, "cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, _platforms, products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, autofix=true)
+                augment_platform_block, dont_dlopen=true, autofix=true)
 end
-
-build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-                julia_compat = "1.6",
-                preferred_gcc_version = v"10",
-                augment_platform_block)
