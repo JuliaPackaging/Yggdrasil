@@ -57,7 +57,7 @@ install_license LICENSE
 # platforms are passed in on the command line
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-cpu_platforms = supported_platforms() 
+cpu_platforms =  expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 
 const augment_platform_block_cpu = """
     $(MicroArchitectures.augment)
@@ -143,7 +143,7 @@ const augment_platform_block_cuda = """
         
     end"""
 
-cuda_platforms = CUDA.supported_platforms()
+cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(),["x86_64", "avx", "avx2", "avx512"])
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
@@ -165,10 +165,9 @@ dependencies = [
 
 # Build the tarballs
 for platform in platforms
-    _platforms = expand_microarchitectures(platform, ["x86_64", "avx", "avx2", "avx512"])
     augment_platform_block = haskey(platform, "cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
-    build_tarballs(ARGS, name, version, sources, script, _platforms, products, [dependencies; CUDA.required_dependencies(platform)];
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block, dont_dlopen=true, autofix=true)
+                augment_platform_block)
 end
