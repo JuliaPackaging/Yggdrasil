@@ -12,7 +12,7 @@ version = v"0.6.0"
 
 # Collection of sources required to build DACE
 sources = [
-    GitSource("https://github.com/afossa/dace.git", "dcfc9283c146c58577327e6adcdf4e77b2bfba48"),
+    GitSource("https://github.com/a-ev/dace.git", "fc0539b4c5bb2c379c822d7d0ad9e1a1686ae746"),
     DirectorySource("./bundled"),
 ]
 
