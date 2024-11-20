@@ -59,7 +59,7 @@ install_license LICENSE
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
 cpu_platforms = expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 
-augment_platform_block = """
+const augment_platform_block = """
     $(MicroArchitectures.augment)
     function augment_platform!(platform::Platform)
         # We augment only x86_64
@@ -71,7 +71,7 @@ augment_platform_block = """
     end
     """
 
-augment_platform_block_cuda = """
+const augment_platform_block_cuda = """
     using Base.BinaryPlatforms
 
     try
@@ -142,7 +142,7 @@ augment_platform_block_cuda = """
         end
     end"""
 
-cuda_platforms = CUDA.supported_platforms() #expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
@@ -167,7 +167,7 @@ for platform in [cuda_platforms[1]]
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = CUDA.augment, dont_dlopen=true, autofix=true)
+                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, autofix=true)
 end
 
 # build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
