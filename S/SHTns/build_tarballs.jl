@@ -163,14 +163,14 @@ dependencies = [
 ]
 
 # Build the tarballs
-for platform in cuda_platforms
+for platform in [cuda_platforms[1]]
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cuda)
+                augment_platform_block = CUDA.augment, dont_dlopen=true, autofix=true)
 end
 
-build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-                julia_compat = "1.6",
-                preferred_gcc_version = v"10",
-                augment_platform_block)
+# build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
+#                 julia_compat = "1.6",
+#                 preferred_gcc_version = v"10",
+#                 augment_platform_block)
