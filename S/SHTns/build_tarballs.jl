@@ -142,7 +142,7 @@ const augment_platform_block_cuda = """
         end
     end"""
 
-cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+cuda_platforms = CUDA.supported_platforms()
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
@@ -164,7 +164,8 @@ dependencies = [
 
 # Build the tarballs
 for platform in cuda_platforms
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
+    _platforms = expand_microarchitectures(platform, ["x86_64", "avx", "avx2", "avx512"])
+    build_tarballs(ARGS, name, version, sources, script, _platforms, products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
                 augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, autofix=true)
