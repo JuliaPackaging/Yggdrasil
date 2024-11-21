@@ -7,7 +7,7 @@ version = v"0.44.0"
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
                   "89a4c1e1e45e0b23dffe708202cb2eaffde0fe3727d7692b2e1739fec78a7dac"),
-    DirectorySource("./bundled"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
