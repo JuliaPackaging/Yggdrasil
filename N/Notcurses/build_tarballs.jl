@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "Notcurses"
-version = v"3.0.9"
+version = v"3.0.11"
 sources = [
     GitSource("https://github.com/dankamongmen/notcurses",
-              "040ff99fb7ed6dee113ce303223f75cd8a38976c"),
+              "bfb65c252e0764796e379595ad6e089dcb573ffe"),
     DirectorySource("bundled"),
 ]
 
@@ -12,8 +12,6 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/notcurses*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/repent.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
-# Reported as <https://github.com/dankamongmen/notcurses/issues/2739>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mbstate.patch
 
 if [[ $target == *mingw* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
