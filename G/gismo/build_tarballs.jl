@@ -1,8 +1,6 @@
 using BinaryBuilder
 using Pkg
 
-# See https://github.com/JuliaPackaging/Yggdrasil/blob/master/C/CGAL/build_tarballs.jl
-
 name = "gismo"
 version = v"24.08.0"
 sources = [
@@ -30,16 +28,12 @@ cmake --build build --target install -- -j$nproc gismo
 install_license ${WORKSPACE}/srcdir/gismo/LICENSE.txt
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-# platforms = [AnyPlatform()]
 platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct("libgismo", :libgismo),
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(Pkg.PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
