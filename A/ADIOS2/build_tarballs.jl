@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-adios2_version = v"2.10.1"
-version = v"2.10.2"
+adios2_version = v"2.10.2"
+version = v"2.10.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ornladios/ADIOS2.git", "f626281e3dad99ca871396944a9091a60954fbb2"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "a19dad6cecb00319825f20fd9f455ebbab903d34"),
     DirectorySource("bundled"),
 ]
 
@@ -55,9 +55,23 @@ fi
 if [[ "${target}" == *-mingw* ]]; then
     # Windows: Some options do not build
     # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
-    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_HDF5=OFF -DADIOS2_USE_SST=OFF -DEVPATH_TRANSPORT_MODULES=OFF)
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_SST=OFF -DEVPATH_TRANSPORT_MODULES=OFF)
 else
-    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_HDF5=ON -DADIOS2_USE_SST=ON)
+    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_SST=ON)
+fi
+
+# Use HDF5 if it is available
+if [ -e ${libdir}/libhdf5.${dlext} ]; then
+    archopts+=(-DADIOS2_USE_HDF5=ON)
+else
+    archopts+=(-DADIOS2_USE_HDF5=OFF)
+fi
+
+# Use MGARD if it is available
+if [ -e ${libdir}/libmgard.${dlext} ]; then
+    archopts+=(-DADIOS2_USE_MGARD=ON)
+else
+    archopts+=(-DADIOS2_USE_MGARD=OFF)
 fi
 
 export MPITRAMPOLINE_CC=${CC}
@@ -105,14 +119,13 @@ platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # We need to use the same compat bounds as HDF5
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.3", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # We don't need HDF5 on Windows (see above)
 hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
@@ -145,16 +158,21 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+# - We currently need to disable MGARD. It seems that MGARD uses Zstd,
+#   and the ADIOS2 build system cannot handle this.
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.0"),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.101"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
+    # Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
+    # Dependency(PackageSpec(name="Zstd_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
+    Dependency(PackageSpec(name="protoc_jll")),
     Dependency(PackageSpec(name="pugixml_jll")),
     Dependency(PackageSpec(name="yaml_cpp_jll")),
-    Dependency(PackageSpec(name="zfp_jll"); compat="1"),
+    Dependency(PackageSpec(name="zfp_jll"); compat="1.0.1"),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -168,3 +186,5 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+
+# Build trigger: 3

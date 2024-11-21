@@ -1,22 +1,21 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
-name = "Expat"
-version = v"2.6.4"
+name = "libposit"
+version = v"1.0.0"
 
-# Collection of sources required to build Expat
+# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/libexpat/libexpat/releases/download/R_$(version.major)_$(version.minor)_$(version.patch)/expat-$(version).tar.xz",
-                  "a695629dae047055b37d50a0ff4776d1d45d0a4c842cf4ccee158441f55ff7ee"),
+    GitSource("https://github.com/takum-arithmetic/libposit.git", "ad4e2daf29edd2b4fdfdd5d5188ef9b3c42fe19c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/expat-*/
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
-make -j${nproc}
-make install
+cd $WORKSPACE/srcdir/libposit
+./configure
+make PREFIX=${prefix} LDCONFIG= -j${nproc} install
+rm -f ${prefix}/lib/libposit.a ${prefix}/lib/libposit.lib ${prefix}/share/man/man3/posit*.3 ${prefix}/share/man/man7/libposit.7
 """
 
 # These are the platforms we will build for by default, unless further
@@ -25,8 +24,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libexpat", :libexpat),
-    ExecutableProduct("xmlwf", :xmlwf)
+    LibraryProduct("libposit", :libposit)
 ]
 
 # Dependencies that must be installed before this package can be built
