@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/mona*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 if [[ "${target}" == *-apple-* ]]; then
-  make -j$(nproc) LDFLAGS="-Xlinker -undefined -Xlinker dynamic_lookup"
+  make -j$(nproc) LDFLAGS="${LDFLAGS} -Xlinker -undefined -Xlinker dynamic_lookup"
 else
   make -j${nproc}
 fi
