@@ -50,6 +50,9 @@ if [[ ${target} == aarch64-apple-* ]]; then
             )
 fi
 
+# Force cmake to avoid the host library
+rm /usr/lib/libexpat.*
+
 cmake -B build "${FLAGS[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -72,6 +75,7 @@ products = [
 # Dependencies that must be installed before this package can be built.
 llvm_version = v"13.0.1+1"
 dependencies = [
+    Dependency("Expat_jll"),
     Dependency("FFMPEG_jll"),
     Dependency("Ncurses_jll"),
     Dependency("libdeflate_jll"),
