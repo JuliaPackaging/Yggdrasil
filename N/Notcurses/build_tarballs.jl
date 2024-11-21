@@ -42,6 +42,12 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DUSE_STATIC=OFF
        )
 
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # Remove some host files that confuse the build system
+    rm /usr/lib/libncurses*
+    rm /usr/lib/libexpat.*
+fi
+
 if [[ ${target} == aarch64-apple-* ]]; then
     # Linking FFMPEG requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
@@ -49,9 +55,6 @@ if [[ ${target} == aarch64-apple-* ]]; then
             -DCMAKE_EXE_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
             )
 fi
-
-# Force cmake to avoid the host library
-rm /usr/lib/libexpat.*
 
 cmake -B build "${FLAGS[@]}"
 cmake --build build --parallel ${nproc}
@@ -62,6 +65,9 @@ install_license COPYRIGHT
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = supported_platforms()
+
+# Too many dependencies are not available for aarch64-*-freebsd
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built.
 products = [
@@ -75,7 +81,6 @@ products = [
 # Dependencies that must be installed before this package can be built.
 llvm_version = v"13.0.1+1"
 dependencies = [
-    Dependency("Expat_jll"),
     Dependency("FFMPEG_jll"),
     Dependency("Ncurses_jll"),
     Dependency("libdeflate_jll"),
