@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Geant4_julia"
-version = v"0.1.17"
+version = v"0.2.0"
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "7a77c8489de9fa2f00a1dfe7e24bb1c73087e36b"),
+              "6b211f16b4d0dbcc062648589f4c4db4bfd3a371"),
 ]
 
 # Bash recipe for building across all platforms
@@ -51,7 +51,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.11.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
     Dependency("Geant4_jll"; compat = "~11.2.1"),
     Dependency("Expat_jll"),
     Dependency("Xerces_jll"),
