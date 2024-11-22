@@ -41,6 +41,10 @@ install_license ../../LICENSE.md
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
+
+# Disable aarch64-*-freebsd because too many dependencies have not yet been built
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -58,7 +62,7 @@ dependencies = [
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
     # setup there.
-    Dependency("Singular_jll", v"404.000.606"),
+    Dependency("Singular_jll", v"404.000.709"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
