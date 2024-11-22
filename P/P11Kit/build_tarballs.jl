@@ -8,41 +8,36 @@ version = v"0.25.5"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/p11-glue/p11-kit/releases/download/$(version)/p11-kit-$(version).tar.xz",
-                  "04d0a86450cdb1be018f26af6699857171a188ac6d5b8c90786a60854e1198e5")
+                  "04d0a86450cdb1be018f26af6699857171a188ac6d5b8c90786a60854e1198e5"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/p11-kit-*
 
-if [[ ${target} = *-mingw32 ]]; then
-
-    # `configure` does not work on Windows
-
-    meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release builddir
-    meson compile -C builddir
-    meson install -C builddir
-
-else
-
-    # Meson is too clever to build for Apple. It produces command line
-    # errors when configuring and then misinterprets the result. We're
-    # using `configure` instead. The reported error message is
-    # `#error "unsupported size of CK_ULONG"`.
-
-    mkdir builddir
-    cd builddir
-    ../configure --build=${MACHTYPE} --host=${target} --prefix=${prefix}
-    make -j${nproc}
-    make install
-
+# Update our compiler wrappers.
+# (This prevents compiler warnings that are later treated as errors.)
+# - Only pass linker arguments when linking.
+if [[ ${target} = aarch64-apple-darwin* ]]; then
+    pushd /
+    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/aarch4-apple-clang.patch
+    popd
 fi
+if [[ ${target} = x86_64-apple-darwin* ]]; then
+    pushd /
+    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/x86_64-apple-clang.patch
+    popd
+fi
+
+meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release builddir
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
 
 # The products that we will ensure are always built
 products = [
@@ -53,9 +48,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("Libffi_jll"),
-    Dependency("libtasn1_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
