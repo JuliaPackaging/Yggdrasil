@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
 name = "Notcurses"
-version = v"3.0.9"
+version = v"3.0.11"
 sources = [
     GitSource("https://github.com/dankamongmen/notcurses",
-              "040ff99fb7ed6dee113ce303223f75cd8a38976c"),
+              "bfb65c252e0764796e379595ad6e089dcb573ffe"),
     DirectorySource("bundled"),
 ]
 
@@ -12,8 +12,6 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/notcurses*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/repent.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
-# Reported as <https://github.com/dankamongmen/notcurses/issues/2739>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mbstate.patch
 
 if [[ $target == *mingw* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
@@ -44,6 +42,12 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DUSE_STATIC=OFF
        )
 
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # Remove some host files that confuse the build system
+    rm /usr/lib/libncurses*
+    rm /usr/lib/libexpat.*
+fi
+
 if [[ ${target} == aarch64-apple-* ]]; then
     # Linking FFMPEG requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
@@ -61,6 +65,9 @@ install_license COPYRIGHT
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = supported_platforms()
+
+# Too many dependencies are not available for aarch64-*-freebsd
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built.
 products = [
