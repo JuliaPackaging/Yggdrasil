@@ -34,6 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="libidn2_jll", uuid="e3d30ef0-22f3-5ccc-b703-2e063d8d1f30"); compat="2.3.7"),
     Dependency(PackageSpec(name="Libpsl_jll", uuid="c4fadf96-db99-5883-8c55-41cf0165eeb0"); compat="0.21.5"),
     Dependency(PackageSpec(name="Libuuid_jll", uuid="38a345b3-de98-5d2b-a5d3-14cd9215e700"); compat="2.40.2"),
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.15"),
