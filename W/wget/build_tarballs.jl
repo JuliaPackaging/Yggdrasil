@@ -24,8 +24,8 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-#TODO # Disable windows because GnuTLS_jll is not available there
-#TODO filter!(!Sys.iswindows, platforms)
+# Disable windows because OpenSSL_jll is not available there
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
