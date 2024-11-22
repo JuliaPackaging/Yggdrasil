@@ -41,17 +41,6 @@ export CCAUX=${CC_BUILD}
     --without-tesseract \
     --without-x
 
-# [15:33:29]   ZLIB support:                       yes
-# [15:33:29]   libdeflate support:                 no
-# [15:33:29]   Pixar log-format algorithm:         yes
-# [15:33:29]   JPEG support:                       no
-# [15:33:29]   Old JPEG support:                   no
-# [15:33:29]   JPEG 8/12 bit dual mode:            no
-# [15:33:29]   ISO JBIG support:                   no
-# [15:33:29]   LZMA2 support:                      no
-# [15:33:29]   ZSTD support:                       no
-# [15:33:29]   WEBP support:                       no
-
 # create the binaries
 make -j${nproc} so
 make -j${nproc}
@@ -114,7 +103,13 @@ products = [
     FileProduct("include/ghostscript/gserrors.h", :gserrors_h),
 ]
 
-dependencies = Dependency[
+dependencies = [
+    Dependency("JpegTurbo_jll"; compat="3.0.4"),
+    Dependency("XZ_jll"; compat="5.6.3"),
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
+    Dependency("libdeflate_jll"; compat="1.20.0"),
+    Dependency("libwebp_jll"; compat="1.4.0"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
