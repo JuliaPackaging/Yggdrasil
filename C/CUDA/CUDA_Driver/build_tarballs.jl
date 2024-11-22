@@ -18,11 +18,11 @@ build = 1
 
 sources_linux_x86 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).el8.x86_64.rpm",
-               "76895477da17dbf6efbbee327e0aa38ff230c69814127d59fed540fa9be1a162", "compat.rpm")
+               "0c5f6de2b07ca6f0526dab89200aac8bc2fbe218572175be278f40f6a6a0693c", "compat.rpm")
 ]
 sources_linux_aarch64 = [
     FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).el8.aarch64.rpm",
-               "479530ff4f0c8759ccb140d7369f30056b7bba9520eb1b3822a138f882f87a38", "compat.rpm")
+               "eaa58bf35d500ea447ef6dfc3ee450e495f3508fb8cec118f39ca274c059205e", "compat.rpm")
 ]
 
 dependencies = []
