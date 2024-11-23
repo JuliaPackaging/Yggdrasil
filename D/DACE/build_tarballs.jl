@@ -53,8 +53,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll")),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.0"),
-    Dependency("Eigen_jll"; compat = "~3.4.0")
+    BuildDependency(PackageSpec(name="Eigen_jll", version="3.4")),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
@@ -67,8 +67,8 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    julia_compat = "1.6",
-    preferred_gcc_version = v"12",
+    julia_compat="1.6",
+    preferred_gcc_version=v"12",
 )
 
 # rebuild trigger: 0
