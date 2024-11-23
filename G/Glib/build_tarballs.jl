@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.80.5"
+version = v"2.82.2"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "9f23a9de803c695bbfde7e37d6626b18b9a83869689dd79019bf3ae66c3e6771"),
+                  "ab45f5a323048b1659ee0fbda5cecd94b099ab3e4b9abf26ae06aeb3e781fd63"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
@@ -87,6 +87,7 @@ products = [
     LibraryProduct(["libgmodule-2", "libgmodule-2.0"], :libgmodule),
     LibraryProduct(["libgobject-2", "libgobject-2.0"], :libgobject),
     LibraryProduct(["libgthread-2", "libgthread-2.0"], :libgthread),
+    LibraryProduct(["libgirepository-2", "libgirepository-2.0"], :libgirepository),
 ]
 
 # Dependencies that must be installed before this package can be built
