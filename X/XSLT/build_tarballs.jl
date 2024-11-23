@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "XSLT"
-version = v"1.1.41"
+version = v"1.1.42"
 
 # Collection of sources required to build XSLT
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxslt/$(version.major).$(version.minor)/libxslt-$(version).tar.xz",
-                  "3ad392af91115b7740f7b50d228cc1c5fc13afc1da7f16cb0213917a37f71bda"),
+                  "85ca62cac0d41fc77d3f6033da9df6fd73d20ea2fc18b0a3609ffb4110e1baeb"),
 ]
 
 # Bash recipe for building across all platforms
