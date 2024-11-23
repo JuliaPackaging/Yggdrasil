@@ -34,7 +34,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll", v"1.42.0"; compat="1.42.0"),
+    Dependency("Libgpg_error_jll"; compat="1.50"),
     Dependency("Libgcrypt_jll"),
     Dependency("Libiconv_jll"),
     Dependency("XML2_jll"),
