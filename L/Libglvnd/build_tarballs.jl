@@ -14,6 +14,13 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libglvnd-*/
+
+if [[ "${target}" == *freebsd* ]]; then
+    sysprefix=/usr/local
+else
+    sysprefix=/usr
+fi
+
 mkdir build && cd build
 FLAGS=()
 if [[ "${target}" == *musl* ]]; then
@@ -22,7 +29,9 @@ fi
 meson setup . .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
-    --pkgconfig.relocatable \
+    --prefix=$sysprefix \
+    --libdir=$prefix/lib \
+    --includedir=$prefix/include \
     "${FLAGS[@]}"
 ninja -j${nproc}
 ninja install
@@ -54,14 +63,6 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 
-init_block = raw"""
-    if Sys.islinux()
-        get!(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
-    elseif Sys.isfreebsd()
-        get!(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/local/share/glvnd/egl_vendor.d")
-    end
-"""
-
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", init_block)
+               julia_compat="1.6")
