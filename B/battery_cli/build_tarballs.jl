@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "battery_cli"
-version = v"0.10.0"
+version = v"0.11.0"
 
 # Collection of sources required to build ghr
 sources = [
-    GitSource("https://github.com/distatus/battery.git", "aa540e5be8de3bd83449b7a099341109e9ac1153"),
+    GitSource("https://github.com/distatus/battery.git", "24c526632a1ddc76871394d63705ebe668dab97c"),
 ]
 
 # Bash recipe for building across all platforms
