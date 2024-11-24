@@ -22,7 +22,8 @@ apk --update --no-chown add openjdk17-jdk
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" \
+      -DBLA_VENDOR=libblastrampoline \
+      -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline" \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMC_ENABLE_IPOPT=ON \
       -DHAVE_MMAP_DEV_ZERO=0 \
