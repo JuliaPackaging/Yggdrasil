@@ -1,8 +1,8 @@
 include("../common.jl")
 
 name = "CXSparse"
-version = v"4.4.1"
-SS_version_str = "7.8.0"
+version = v"4.4.0"
+SS_version_str = "7.7.0"
 SS_version = VersionNumber(SS_version_str)
 LLVM_version = v"16.0.6"
 sources = suitesparse_sources(SS_version)
