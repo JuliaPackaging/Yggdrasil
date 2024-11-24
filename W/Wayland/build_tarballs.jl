@@ -16,17 +16,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/wayland-*/
 
 # Build a native version of wayland-scanner
-
-cat - >host_pkgconfig.meson <<EOF
-[binaries]
-pkgconfig = ['/usr/bin/pkg-config', '--define-variable=prefix=\${pcfiledir}/../..']
-EOF
-
 PKG_CONFIG_SYSROOT_DIR='' \
 PKG_CONFIG_PATH="${host_libdir}/pkgconfig" \
 meson setup host_build . \
     --native-file="${MESON_HOST_TOOLCHAIN}" \
-    --native-file=host_pkgconfig.meson \
     --buildtype=plain \
     -Ddtd_validation=false \
     -Dlibraries=false \
@@ -45,7 +38,6 @@ fi
 meson setup build . \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
-    --pkgconfig.relocatable \
     -Dlibraries=true \
     -Dscanner=true \
     -Ddocumentation=false \
@@ -69,7 +61,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("Expat_jll"),
+    HostBuildDependency("Expat_jll"#=; compat="2.6.4"=#),  # fixed pkg-config prefix
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
