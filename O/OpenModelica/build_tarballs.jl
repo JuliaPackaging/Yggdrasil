@@ -24,10 +24,11 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DBLA_VENDOR=libblastrampoline \
       -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline" \
+      -DLAPACK_LIBRARIES="-L${libdir} -lblastrampoline" \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMC_ENABLE_IPOPT=ON \
       -DHAVE_MMAP_DEV_ZERO=0 \
-      -DHAVE_MMAP_DEV_ZERO_EXITCODE__TRYRUN_OUTPUT="" 
+      -DHAVE_MMAP_DEV_ZERO_EXITCODE__TRYRUN_OUTPUT=""
 
 cmake --build build_cmake --parallel ${nprocs} --target install
 
@@ -63,5 +64,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")
