@@ -44,4 +44,4 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # XML2_jll builds with GCC 8 and we need to do the same to avoid linker errors
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8", )
+               julia_compat="1.6", preferred_gcc_version=v"11")
