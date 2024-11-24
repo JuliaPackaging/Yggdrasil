@@ -14,14 +14,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qrupdate-ng*
-
-apk add wine
-
 mkdir build
 cd build/
 
 if [[ "${target}" == *-mingw* ]]; then
     LBT=blastrampoline-5
+    apk add wine
 else
     LBT=blastrampoline
 fi
