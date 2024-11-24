@@ -46,7 +46,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("omc", :omc),
-    ExecutableProduct("OMShell-terminal", :OMShel_terminal),
+#    ExecutableProduct("OMShell-terminal", :OMShell_terminal),
 ]
 
 # Dependencies that must be installed before this package can be built
