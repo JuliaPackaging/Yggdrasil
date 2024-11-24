@@ -32,12 +32,14 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
 
 cmake --build build_cmake --parallel ${nprocs} --target install
 
-install_license OSMC-license.txt
+install_license OSMC-License.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
+platforms = expand_cxxstring_abis(supported_platforms())
+
+[
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
 ]
 
