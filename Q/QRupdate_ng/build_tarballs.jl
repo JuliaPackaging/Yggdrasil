@@ -9,7 +9,6 @@ version = v"1.1.5"
 sources = [
     GitSource("https://github.com/mpimd-csc/qrupdate-ng.git",
               "45e9ccac49c4c7d3211b7fc90671e5ab1fdb2c86"),
-    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
