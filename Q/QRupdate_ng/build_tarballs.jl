@@ -14,6 +14,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/qrupdate-ng*
+
+apk add wine
+
 mkdir build
 cd build/
 
