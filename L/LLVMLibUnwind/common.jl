@@ -12,6 +12,7 @@ function configure(version; experimental::Bool=false)
         v"12.0.1" => "0bea6089518395ca65cf58b0a450716c5c99ce1f041079d3aa42d280ace15ca4",
         # llvm-project-*.src.tar.xz
         v"14.0.6" => "8b3cfd7bc695bd6cea0f37f53f0981f34f87496e79e2529874fd03a2f9dd3a8a",
+        v"18.1.7" => "74446ab6943f686391954cbda0d77ae92e8a60c432eff437b8666e121d748ec4",
     )
 
     # LLVM deprecated standalone builds for several projects, including libunwind, so
@@ -25,7 +26,47 @@ function configure(version; experimental::Bool=false)
         DirectorySource("./bundled"; follow_symlinks=true),
     ]
 
-    script = if version >= v"14"
+    script = if version > v"14"
+        raw"""
+        cd ${WORKSPACE}/srcdir/llvm-project*/
+
+        CMAKE_FLAGS=()
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_INCLUDEDIR=${includedir})
+        CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR=${libdir})
+        CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
+        CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+        CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=MinSizeRel)  # Note: Disables debug messages
+        CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_DOCS=OFF)
+        CMAKE_FLAGS+=(-DLIBUNWIND_INCLUDE_TESTS=OFF)
+        CMAKE_FLAGS+=(-DLIBUNWIND_INSTALL_HEADERS=ON)
+        CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_PEDANTIC=OFF)
+        CMAKE_FLAGS+=(-DLIBUNWIND_ENABLE_ASSERTIONS=OFF)
+        CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES="libunwind")
+
+        if [[ ${target} == x86_64-w64-mingw32 ]]; then
+            # Support for threading requires Windows Vista.
+            export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+        fi
+
+        pushd libunwind
+        # Apply all our patches
+        if [ -d $WORKSPACE/srcdir/patches ]; then
+            for f in $WORKSPACE/srcdir/patches/*.patch; do
+                echo "Applying patch ${f}"
+                atomic_patch -p2 ${f}
+            done
+        fi
+        popd
+
+        mkdir build
+        cmake -GNinja -S runtimes -B build "${CMAKE_FLAGS[@]}" ..
+        ninja -C build -j${nproc} -vv unwind
+        ninja -C build install-unwind
+
+        install_license LICENSE.TXT
+        """
+    elseif version == v"14"
         raw"""
         cd ${WORKSPACE}/srcdir/llvm-project*/libunwind/
 
