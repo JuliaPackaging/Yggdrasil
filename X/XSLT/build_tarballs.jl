@@ -33,15 +33,11 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-# - Build against XML2_jll v2.12.7 as it bundles the string-handling trio library,
-#   and the i686-w64-mingw32 build implicitly needs it.
-#   Removed in v2.13.0:
-#   https://gitlab.gnome.org/GNOME/libxml2/-/blob/fe1ee0f25f43e33a9981fd6fe7b0483a8c8b5e8d/NEWS#L173
 dependencies = [
     Dependency("Libgpg_error_jll"; compat="1.50"),
     Dependency("Libgcrypt_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("XML2_jll", v"2.12.7"),
+    Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
 ]
 
