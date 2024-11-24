@@ -49,10 +49,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"; compat="5.4"),
+    Dependency("flex_jll"),
     Dependency("LibCURL_jll"),
     Dependency("util_linux_jll"),
     Dependency("boost_jll"),
