@@ -26,7 +26,7 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline" \
       -DLAPACK_LIBRARIES="-L${libdir} -lblastrampoline" \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
-      -DOM_OMC_ENABLE_IPOPT=ON \
+      -DOM_OMC_ENABLE_IPOPT=OFF \
       -DHAVE_MMAP_DEV_ZERO=0 \
       -DHAVE_MMAP_DEV_ZERO_EXITCODE__TRYRUN_OUTPUT=""
 
@@ -49,18 +49,18 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"; compat="5.4"),
     Dependency("LibCURL_jll"),
     Dependency("util_linux_jll"),
     Dependency("boost_jll"),
-    Dependency("flex_jll"),
     Dependency("LLVMOpenMP_jll"),
     Dependency("OpenCL_jll"),
     Dependency("Expat_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("Ipopt_jll"),
+    Dependency("Gettext_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
