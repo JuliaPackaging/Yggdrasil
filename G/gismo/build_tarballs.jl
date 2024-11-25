@@ -11,7 +11,6 @@ sources = [
 # NOTE: to control nproc, use the environment variable BINARYBUILDER_NPROC=<number of processors>
 script = raw"""
 cmake -B build                                      \
-  `# cmake specific`                                \
   -DCMAKE_INSTALL_PREFIX=${prefix}                  \
   -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}  \
   -DCMAKE_BUILD_TYPE=Release                        \
@@ -19,7 +18,6 @@ cmake -B build                                      \
   -DGISMO_gsCInterface_HEAD=""                      \
   -DGISMO_WITH_OPENMP=ON                            \
   -DTARGET_ARCHITECTURE=none                        \
-  -DCMAKE_CXX_STANDARD=11                           \
   -DNOFORTRAN=ON                                    \
   gismo/
 
