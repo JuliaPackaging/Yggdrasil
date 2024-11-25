@@ -29,7 +29,7 @@ import Pkg.Types: VersionSpec
 name = "Singular"
 
 upstream_version = v"4.4.0-6" # 4.4.0p6
-version_offset = v"0.0.6"
+version_offset = v"0.0.11"
 
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
                         upstream_version.patch * 100 + version_offset.minor,
