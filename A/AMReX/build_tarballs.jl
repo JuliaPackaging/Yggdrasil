@@ -57,6 +57,9 @@ if [[ "${target}" == *-mingw32* ]]; then
 elif [[ "${target}" == aarch64-*-freebsd* ]]; then
     # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
     hdf5opts="-DAMReX_HDF5=OFF"
+elif [[ "${bb_full_target}" == x86_64-*-freebsd*mpi+mpitrampoline ]]; then
+    # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
+    hdf5opts="-DAMReX_HDF5=OFF"
 else
     hdf5opts="-DAMReX_HDF5=ON"
 fi
@@ -123,8 +126,14 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && ((arch(p) == "armv6l" && libc
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 
+# Windows does not supported parallel HDF5
+hdf5_platforms = filter(!Sys.iswindows, platforms)
+
 # HDF5 has not yet been built for aarch64-unknown-freebsd. Re-enable once it's available.
-hdf5_platforms = filter(p -> !(Sys.iswindows(p) || (arch(p) == "aarch64" && Sys.isfreebsd(p))), platforms)
+hdf5_platforms = filter(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), hdf5_platforms)
+
+# HDF5 has not yet been built for x86_64-unknown-freebsd with MPItrampoline. Re-enable once it's available.
+hdf5_platforms = filter(p -> !(arch(p) == "x86_64" && Sys.isfreebsd(p) && p["mpi"] == "mpitrampoline"), hdf5_platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
