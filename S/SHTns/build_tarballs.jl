@@ -149,7 +149,7 @@ cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64"
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
-platforms = [cpu_platforms; cuda_platforms]
+platforms = [cuda_platforms; cpu_platforms]
 
 # The products that we will ensure are always built
 products = [
