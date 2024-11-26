@@ -80,7 +80,8 @@ else
     cd $WORKSPACE/srcdir
     unzip -d mlx-$target mlx-$target.whl
     cd mlx-$target/mlx
-    find lib -type f \( -name "*.$dlext" -or -name "*.metallib" \) -exec install -D -m 755 -v {} $prefix/{} \;
+    find lib -type f -name "*.$dlext" -exec install -D -m 755 -v {} $prefix/{} \;
+    find lib -type f -name "*.metallib" -exec install -D -m 644 -v {} $prefix/{} \;
 
     # MLX includes metal-cpp (in `include/metal-cpp`), which could also be distributed separately, but it is assumed to be present by cmake in MLX_C.
     find {include,share} -type f -exec install -D -m 644 -v {} $prefix/{} \;
