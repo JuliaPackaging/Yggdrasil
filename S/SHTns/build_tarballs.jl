@@ -33,7 +33,7 @@ sed -i -e 's/lib64/lib/g' configure
 sed -i -e 's/nvcc -std=c++11/nvcc -Xcompiler -fPIC -std=c++11/' configure
 
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
-link_flags="-lfftw3 -lm "
+link_flags="-lfftw3 "
 
 if [[ $bb_full_target == *cuda* ]]; then
     export CUDA_PATH="$prefix/cuda"
@@ -144,7 +144,9 @@ const augment_platform_block_cuda = """
     end
     """
 
-cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+
+# cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+cuda_platforms = CUDA.supported_platforms()
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
@@ -169,7 +171,7 @@ for platform in cuda_platforms
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cuda)
+                augment_platform_block = CUDA.augment, dont_dlopen=true, skip_audit=true)
 end
 
 build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
