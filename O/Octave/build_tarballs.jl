@@ -17,6 +17,12 @@ export CPPFLAGS="-I${includedir}"
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir -p ${TMPDIR}
 
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
+
 # Base configure flags
 FLAGS=(
     --prefix="$prefix"
@@ -24,9 +30,8 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
-    --with-blas="-L${libdir} -lblastrampoline"
-    --with-lapack="-L${libdir} -lblastrampoline"
-)
+    --with-blas="-L${libdir} -l${LBT}"
+    --with-lapack="-L${libdir} -l${LBT}"
 
 ./configure "${FLAGS[@]}"
 make -j${nproc}
