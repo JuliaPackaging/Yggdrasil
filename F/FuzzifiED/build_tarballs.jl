@@ -13,6 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
+cd FuzzifiED_Fortran/src/
 if [[ ${nbits} == 32 ]]; then
     FFLAGS="-O3 -fPIC -fopenmp"
 else
