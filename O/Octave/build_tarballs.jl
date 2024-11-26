@@ -24,12 +24,12 @@ FLAGS=(
     --host="${target}"
     --enable-shared
     --disable-static
-    --with-blas="-L${libdir} -lopenblas"
-    --with-lapack="-L${libdir} -lopenblas"
+    --with-blas="-L${libdir} -lblastrampoline"
+    --with-lapack="-L${libdir} -lblastrampoline"
 )
 
 ./configure "${FLAGS[@]}"
-make -j${nproc} 
+make -j${nproc}
 make install
 """
 
@@ -48,11 +48,11 @@ dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenBLAS32_jll"),
+    Dependency("libblastrampoline_jll"; compat="5.4"),
     Dependency("SuiteSparse32_jll"),
     Dependency("Arpack32_jll"),
     Dependency("Sundials32_jll"),
-    Dependency("CXSparse_jll"),
+    Dependency("CXSparse_jll"; compat="4.4"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
@@ -60,7 +60,7 @@ dependencies = [
     Dependency("Bzip2_jll"),
     Dependency("FFTW_jll"),
     Dependency("GLPK_jll"),
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", compat="6.2"),
     Dependency("LibCURL_jll"),
     Dependency("Qhull_jll"),
     Dependency("HDF5_jll"),
@@ -71,4 +71,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"10")
+               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")
