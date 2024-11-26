@@ -38,7 +38,6 @@ link_flags="-lfftw3 "
 if [[ $bb_full_target == *cuda* ]]; then
     export CUDA_PATH="$prefix/cuda"
     export PATH=$CUDA_PATH/bin:$PATH
-    ln -s $prefix/cuda/lib $prefix/cuda/lib64
     CFLAGS="$CFLAGS -L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
     configure_args+="--enable-cuda"
     link_flags+="-lcuda -lnvrtc -lcudart"
@@ -169,12 +168,12 @@ dependencies = [
 # Build the tarballs
 for platform in cuda_platforms
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
-                julia_compat = "1.6",
-                preferred_gcc_version = v"10",
+                julia_compat = "1.10",
+                # preferred_gcc_version = v"10",
                 augment_platform_block = CUDA.augment, dont_dlopen=true, skip_audit=true)
 end
 
 build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-                julia_compat = "1.6",
+                julia_compat = "1.10",
                 preferred_gcc_version = v"10",
                 augment_platform_block)
