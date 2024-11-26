@@ -33,12 +33,13 @@ sed -i -e 's/lib64/lib/g' configure
 sed -i -e 's/nvcc -std=c++11/nvcc -Xcompiler -fPIC -std=c++11/' configure
 
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
-link_flags="-lfftw3 "
+link_flags="-lfftw3 -lm "
 
 if [[ $bb_full_target == *cuda* ]]; then
     export CUDA_PATH="$prefix/cuda"
     export PATH=$CUDA_PATH/bin:$PATH
-    CFLAGS="$CFLAGS -L$prefix/cuda/lib -L$prefix/cuda/lib/stubs"
+    ln -s $prefix/cuda/lib $prefix/cuda/lib64
+    CFLAGS="$CFLAGS -L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
     configure_args+="--enable-cuda"
     link_flags+="-lcuda -lnvrtc -lcudart"
 fi
@@ -143,9 +144,7 @@ const augment_platform_block_cuda = """
     end
     """
 
-
-# cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
-cuda_platforms = CUDA.supported_platforms()
+cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
@@ -161,19 +160,19 @@ dependencies = [
     Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, cpu_platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, cpu_platforms)),
 ]
 
 # Build the tarballs
-for platform in cuda_platforms
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
-                julia_compat = "1.10",
-                # preferred_gcc_version = v"10",
-                augment_platform_block = CUDA.augment, dont_dlopen=true, skip_audit=true)
-end
+# for platform in cuda_platforms
+#     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
+#                 julia_compat = "1.6",
+#                 preferred_gcc_version = v"10",
+#                 augment_platform_block = augment_platform_block_cuda)
+# end
 
 build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-                julia_compat = "1.10",
+                julia_compat = "1.6",
                 preferred_gcc_version = v"10",
                 augment_platform_block)
