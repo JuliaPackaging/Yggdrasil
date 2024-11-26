@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 YGGDRASILPATH = joinpath(@__DIR__, "..", "..")
 
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASILPATH, "platforms", "microarchitectures.jl"))
 include(joinpath(YGGDRASILPATH, "platforms", "cuda.jl"))
 
@@ -160,19 +161,19 @@ dependencies = [
     Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, cpu_platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, cpu_platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs
 
 
-build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-                julia_compat = "1.6",
-                preferred_gcc_version = v"10",
-                augment_platform_block)
+# build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
+#                 julia_compat = "1.6",
+#                 preferred_gcc_version = v"10",
+#                 augment_platform_block)
 
-for platform in cuda_platforms
+for platform in platforms
     should_build_platform(triplet(platform)) || continue
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
