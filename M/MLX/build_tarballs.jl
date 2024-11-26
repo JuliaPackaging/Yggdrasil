@@ -106,12 +106,12 @@ products = Product[
 
 dependencies = [
     Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
-    Dependency("libblastrampoline_jll"; compat="4, 5", platforms = libblastrampoline_platforms),
+    Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6",
+    julia_compat="1.9",
     preferred_gcc_version = v"10", # C++-17, with std::reduce, required
 )
