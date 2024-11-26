@@ -173,7 +173,7 @@ dependencies = [
 #                 preferred_gcc_version = v"10",
 #                 augment_platform_block)
 
-for platform in cuda_platforms
+for platform in platforms
     should_build_platform(triplet(platform)) || continue
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
