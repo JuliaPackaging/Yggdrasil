@@ -22,6 +22,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/shtns*/
 export CFLAGS="-fPIC -O3" #only -fPIC produces slow code on linux x86 and MacOS x86 (maybe others)
+export LDFLAGS=""
 
 #remove lfftw3_omp library references, as FFTW_jll does not provide it
 sed -i -e 's/lfftw3_omp/lfftw3/g' configure
@@ -39,7 +40,7 @@ link_flags="-lfftw3 -lm "
 if [[ $bb_full_target == *cuda* ]]; then
     export CUDA_PATH="$prefix/cuda"
     export PATH=$CUDA_PATH/bin:$PATH
-    CFLAGS="$CFLAGS -L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
+    LDFLAGS+="-L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
     configure_args+="--enable-cuda"
     link_flags+="-lcuda -lnvrtc -lcudart"
 fi
@@ -48,7 +49,7 @@ fi
 make -j${nproc} 
 rm *.a
 mkdir -p ${libdir}
-cc -fopenmp -shared $CFLAGS -o "${libdir}/libshtns.${dlext}" *.o $link_flags
+cc -fopenmp -shared $CFLAGS $LDFLAGS -o "${libdir}/libshtns.${dlext}" *.o $link_flags
 
 install_license LICENSE
 """
@@ -172,7 +173,7 @@ dependencies = [
 #                 preferred_gcc_version = v"10",
 #                 augment_platform_block)
 
-for platform in platforms
+for platform in cuda_platforms
     should_build_platform(triplet(platform)) || continue
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
