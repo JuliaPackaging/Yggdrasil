@@ -52,7 +52,8 @@ dependencies = [
     Dependency("SuiteSparse32_jll"),
     Dependency("Arpack32_jll"),
     Dependency("Sundials32_jll"),
-    Dependency("CXSparse_jll"; compat="4.4"),
+    Dependency("QRupdate_ng_jll"),
+#    Dependency("CXSparse_jll"; compat="4.4"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
@@ -67,8 +68,9 @@ dependencies = [
     Dependency("rapidjson_jll"),
     Dependency("libsndfile_jll"),
     Dependency("GraphicsMagick_jll"),
+
 ]
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")
+               julia_compat="1.11", clang_use_lld=false, preferred_gcc_version=v"10")
