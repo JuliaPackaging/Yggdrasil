@@ -173,6 +173,7 @@ build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, de
                 augment_platform_block)
 
 for platform in cuda_platforms
+    should_build_platform(triplet(platform)) || continue
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
