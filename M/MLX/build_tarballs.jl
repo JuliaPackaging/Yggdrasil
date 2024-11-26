@@ -106,7 +106,7 @@ products = Product[
 
 dependencies = [
     Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
-    Dependency("libblastrampoline_jll"; platforms = libblastrampoline_platforms),
+    Dependency("libblastrampoline_jll"; compat="4, 5", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
 ]
