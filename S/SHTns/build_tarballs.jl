@@ -38,7 +38,7 @@ link_flags="-lfftw3 "
 if [[ $bb_full_target == *cuda* ]]; then
     export CUDA_PATH="$prefix/cuda"
     export PATH=$CUDA_PATH/bin:$PATH
-    CFLAGS="$CFLAGS -L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
+    CFLAGS="$CFLAGS -L$prefix/cuda/lib -L$prefix/cuda/lib/stubs"
     configure_args+="--enable-cuda"
     link_flags+="-lcuda -lnvrtc -lcudart"
 fi
