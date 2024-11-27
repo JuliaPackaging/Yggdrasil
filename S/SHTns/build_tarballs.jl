@@ -153,7 +153,7 @@ filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 platforms = [cpu_platforms; cuda_platforms]
 for platform in platforms
     # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
+    if !haskey(platform, "cuda")
         platform["cuda"] = "none"
     end
 end
