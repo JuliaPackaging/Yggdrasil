@@ -18,9 +18,9 @@ export TMPDIR=${WORKSPACE}/tmpdir
 mkdir -p ${TMPDIR}
 
 if [[ "${target}" == *-mingw* ]]; then
-    LBT=blastrampoline-5
+    LBT="blastrampoline-5"
 else
-    LBT=blastrampoline
+    LBT="blastrampoline"
 fi
 
 # Base configure flags
