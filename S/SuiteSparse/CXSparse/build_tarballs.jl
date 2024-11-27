@@ -1,8 +1,8 @@
 include("../common.jl")
 
 name = "CXSparse"
-version = v"4.4.0"
-SS_version_str = "7.7.0"
+version = v"4.4.1"
+SS_version_str = "7.8.0"
 SS_version = VersionNumber(SS_version_str)
 LLVM_version = v"16.0.6"
 sources = suitesparse_sources(SS_version)
@@ -10,9 +10,6 @@ sources = suitesparse_sources(SS_version)
 # Bash recipe for building across all platforms
 script = raw"""
 PROJECTS_TO_BUILD="cxsparse"
-CMAKE_OPTIONS+=(
-        -DSUITESPARSE_USE_SYSTEM_SUITESPARSE_CONFIG=ON
-    )
 if [[ "${target}" == aarch64-apple-* ]]; then
     # Linking libomp requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
@@ -28,13 +25,13 @@ dependencies = append!(dependencies, [
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
                                 version=LLVM_version);
                     platforms=[Platform("aarch64", "macos")]),
-    Dependency("SuiteSparse_jll"; compat = "=$SS_version_str"),
     Dependency("CompilerSupportLibraries_jll")
 ])
 
 products = [
-    LibraryProduct("libcxsparse", :libcxsparse)
+    LibraryProduct("libcxsparse", :libcxsparse),
+    LibraryProduct("libsuitesparseconfig", :libsuitesparseconfig_cxsparse),
 ]
 build_tarballs(ARGS, name, version, sources, script, platforms,
-               products, dependencies; julia_compat="1.11",
+               products, dependencies; julia_compat="1.6",
                preferred_llvm_version=LLVM_version)
