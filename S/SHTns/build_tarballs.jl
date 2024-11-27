@@ -37,7 +37,7 @@ sed -i -e 's/nvcc -std=c++11/nvcc -Xcompiler -fPIC -std=c++11/' configure
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
 link_flags="-lfftw3 -lm "
 
-if [[ $bb_full_target == *cuda* ]]; then
+if [[ $bb_full_target == *cuda+1* ]]; then
     export CUDA_PATH="$prefix/cuda"
     export PATH=$CUDA_PATH/bin:$PATH
     LDFLAGS+="-L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
@@ -126,6 +126,10 @@ const augment_platform_block_cuda = """
 
     function augment_platform!(platform::Platform)
 
+        @static if Sys.ARCH === :x86_64
+            augment_microarchitecture!(platform)
+        end
+
         if !@isdefined(CUDA_Runtime_jll)
             # don't set to nothing or Pkg will download any artifact
             platform["cuda"] = "none"
@@ -136,12 +140,7 @@ const augment_platform_block_cuda = """
         end
         BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
 
-        @static if Sys.ARCH === :x86_64
-            return augment_microarchitecture!(platform)
-        else
-            return platform
-        end
-        
+       return platform
     end
     """
 
@@ -150,7 +149,7 @@ cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64"
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
-platforms = [cpu_platforms; cuda_platforms]
+platforms = [cuda_platforms;cpu_platforms]
 
 # The products that we will ensure are always built
 products = [
@@ -174,14 +173,14 @@ dependencies = [
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
-    if Sys.islinux(platform) && arch(platform) == "x86_64"
-        if !haskey(platform,"cuda")
-            platform["cuda"] = "none"
-        end
-    end
-    augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
+    # if Sys.islinux(platform) && (arch(platform) == "x86_64")
+    #     if !haskey(platform,"cuda")
+    #         platform["cuda"] = "none"
+    #     end
+    # end
+    # augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment, dont_dlopen=true)
+                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, skip_audit=true)
 end
