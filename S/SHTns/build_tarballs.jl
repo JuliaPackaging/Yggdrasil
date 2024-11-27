@@ -175,11 +175,11 @@ dependencies = [
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
-    # if Sys.islinux(platform) && (arch(platform) == "x86_64")
-    #     if !haskey(platform,"cuda")
-    #         platform["cuda"] = "none"
-    #     end
-    # end
+    if Sys.islinux(platform) && (arch(platform) == "x86_64")
+        if !haskey(platform,"cuda")
+            platform["cuda"] = "none"
+        end
+    end
     # augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
