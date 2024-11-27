@@ -59,7 +59,7 @@ dependencies = [
     Dependency("Arpack32_jll"),
     Dependency("Sundials32_jll"),
     Dependency("QRupdate_ng_jll"),
-#    Dependency("CXSparse_jll"; compat="4.4"),
+    Dependency("CXSparse_jll"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
