@@ -151,13 +151,6 @@ cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64"
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
 platforms = [cpu_platforms; cuda_platforms]
-for platform in platforms
-    # Only for the non-CUDA platforms, add the cuda=none tag, if necessary.
-    if !haskey(platform, "cuda")
-        platform["cuda"] = "none"
-    end
-end
-
 
 # The products that we will ensure are always built
 products = [
@@ -169,21 +162,20 @@ dependencies = [
     Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, cpu_platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, cpu_platforms)),
 ]
 
 # Build the tarballs
-# build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-#                 julia_compat = "1.6",
-#                 preferred_gcc_version = v"10",
-#                 augment_platform_block)
+build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
+                julia_compat = "1.6",
+                preferred_gcc_version = v"10",
+                augment_platform_block = augment_platform_block_cpu)
 
-for platform in platforms
+for platform in cuda_platforms
     should_build_platform(triplet(platform)) || continue
-    augment = platform["cuda"] == "none" ? augment_platform_block_cpu : augment_platform_block_cuda
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment, dont_dlopen=true, skip_audit=true)
+                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, skip_audit=true)
 end
