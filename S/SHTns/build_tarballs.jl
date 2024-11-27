@@ -195,9 +195,7 @@ for platform in cpu_platforms
     end
     platformc = deepcopy(platform)
     for version in cuda_versions
-        if version != "none"
-            platformc["cuda"] = "$(version.major).$(version.minor)"
-        end
+        platformc["cuda"] = version == "none" ? version : "$(version.major).$(version.minor)"
         should_build_platform(triplet(platformc)) || continue
         build_tarballs(ARGS, name, version, sources, script, [platformc], products, [dependencies; CUDA.required_dependencies(platformc)];
                     julia_compat = "1.10",
