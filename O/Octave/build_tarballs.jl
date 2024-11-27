@@ -53,6 +53,7 @@ products = [
 dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
+    BuildDependency("SuiteSparse_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"),
     Dependency("SuiteSparse32_jll"),
