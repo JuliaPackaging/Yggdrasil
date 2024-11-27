@@ -37,7 +37,7 @@ sed -i -e 's/nvcc -std=c++11/nvcc -Xcompiler -fPIC -std=c++11/' configure
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
 link_flags="-lfftw3 -lm "
 
-if [[ $bb_full_target == *cuda+1* ]]; then
+if [[ -d "${prefix}/cuda" ]]; then
     export CUDA_PATH="$prefix/cuda"
     export PATH=$CUDA_PATH/bin:$PATH
     LDFLAGS+="-L$CUDA_PATH/lib -L$CUDA_PATH/lib/stubs"
@@ -174,15 +174,16 @@ dependencies = [
 #                 augment_platform_block = augment_platform_block_cpu)
 
 for platform in platforms
-    should_build_platform(triplet(platform)) || continue
-    if Sys.islinux(platform) && (arch(platform) == "x86_64")
+    if Sys.islinux(platform) && (arch(platform) == "x86_64") && (libc(platform) == "glibc")
         if !haskey(platform,"cuda")
             platform["cuda"] = "none"
         end
     end
+    should_build_platform(triplet(platform)) || continue
     # augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
+                lazy_artifacts=true,
                 preferred_gcc_version = v"10",
                 augment_platform_block = CUDA.augment, dont_dlopen=true, skip_audit=true)
 end
