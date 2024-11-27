@@ -15,13 +15,21 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wget2*
 
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # Avoid finding the host Brotli libraries
+    rm /usr/lib/libbrotli*
+fi
+
+if [[ ${target} == *-w64-mingw32 ]]; then
+    # There is no pkgconfig info for OpenSSL on Windows
+    export OPENSSL_CFLAGS="-I${includedir}"
+    export OPENSSL_LIBS="-L${libdir} -lssl"
+fi
+
 ./configure \
-    --prefix=${prefix} \
-    --build=${MACHTYPE} \
     --host=${target} \
+    --build=${MACHTYPE} \
     --prefix=${prefix} \
-    --includedir=${includedir} \
-    --libdir=${libdir} \
     --disable-doc \
     --disable-manylibs \
     --enable-shared=yes \
@@ -32,7 +40,9 @@ cd $WORKSPACE/srcdir/wget2*
     --with-libpcre2 \
     --with-libpsl \
     --with-lzma \
-    --with-zstd \
+    --with-ssl=openssl \
+    --with-zlib \
+    $(if [[ ${target} == *-w64-mingw32 ]]; then echo ' --without-zstd'; else echo ' --with-zstd'; fi) \
     --without-gpgme  \
     --without-libhsts \
     --without-libidn \
@@ -60,14 +70,17 @@ products = [
 # Dependencies that must be installed before this package can be built
 #TODO # Nettle and OpenSSL needed for mingw builds
 dependencies = [
-    # Dependency("Nettle_jll"; compat="~3.7.2"),
-    # Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d")),
+    # Dependency("Nettle_jll"; compat="~3.7.2", platforms=filter(Sys.iswindows, platforms)),
+    # Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d"),
+    #            platforms=filter(Sys.iswindows, platforms)),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Gettext_jll"; compat="=0.21.0"),
     Dependency("OpenSSL_jll"; compat="3.0.15"),
     Dependency("PCRE2_jll"),
     Dependency("XZ_jll"; compat="5.6.3"),
-    Dependency("Zstd_jll"; compat="1.5.6"),
+    Dependency("Zlib_jll"),
+    # Zstd seems to define the function `mbrtowc` on Windows (it shouldn't)
+    Dependency("Zstd_jll"; compat="1.5.6", platforms=filter(!Sys.iswindows, platforms)),
     Dependency("brotli_jll"; compat="1.1.0"),
     Dependency("libidn2_jll"; compat="2.3.7"),
     Dependency("libpsl_jll"; compat="0.21.5"),
