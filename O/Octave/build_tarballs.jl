@@ -54,12 +54,12 @@ dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"; compat="5.4"),
+    Dependency("libblastrampoline_jll"),
     Dependency("SuiteSparse32_jll"),
     Dependency("Arpack32_jll"),
     Dependency("Sundials32_jll"),
     Dependency("QRupdate_ng_jll"),
-    Dependency("CXSparse_jll"; compat="400"),
+    Dependency("CXSparse_jll"; compat="400.400.100"),
     Dependency("PCRE2_jll"),
     Dependency("Readline_jll"),
     Dependency("Libiconv_jll"),
@@ -79,4 +79,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.11", clang_use_lld=false, preferred_gcc_version=v"10")
+               julia_compat="1.8", clang_use_lld=false, preferred_gcc_version=v"10")
