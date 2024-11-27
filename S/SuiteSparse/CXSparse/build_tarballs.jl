@@ -17,7 +17,7 @@ if [[ "${target}" == aarch64-apple-* ]]; then
         -DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
     )
 fi
-""" * build_script(; use_omp=true)
+""" * build_script(; use_omp=false)
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
@@ -25,7 +25,7 @@ dependencies = append!(dependencies, [
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
                                 version=LLVM_version);
                     platforms=[Platform("aarch64", "macos")]),
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency("CompilerSupportLibraries_jll"),
 ])
 
 products = [
