@@ -178,9 +178,9 @@ for platform in platforms
             platform["cuda"] = "none"
         end
     end
-    # augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
+    augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, skip_audit=true)
+                augment_platform_block = augment, dont_dlopen=true, skip_audit=true)
 end
