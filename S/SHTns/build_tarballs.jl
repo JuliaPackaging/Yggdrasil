@@ -162,20 +162,26 @@ dependencies = [
     Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, cpu_platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, cpu_platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-                julia_compat = "1.6",
-                preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cpu)
+# build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
+#                 julia_compat = "1.6",
+#                 preferred_gcc_version = v"10",
+#                 augment_platform_block = augment_platform_block_cpu)
 
-for platform in cuda_platforms
+for platform in platforms
     should_build_platform(triplet(platform)) || continue
+    if Sys.islinux(platform) && arch(platform) == "x86_64"
+        if !haskey(platform,"cuda")
+            platform["cuda"] = "none"
+        end
+    end
+    augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, skip_audit=true)
+                augment_platform_block = augment, dont_dlopen=true)
 end
