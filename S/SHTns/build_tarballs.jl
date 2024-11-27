@@ -57,7 +57,7 @@ install_license LICENSE
 # platforms are passed in on the command line
 
 cpu_platforms = supported_platforms()
-cuda_platforms = CUDA.supported_platforms()
+cuda_platforms = CUDA.supported_platforms(; min_version=v"11.5") #v11.4 does not have -arch=all available
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
