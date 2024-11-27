@@ -145,12 +145,12 @@ const augment_platform_block_cuda = """
     end
     """
 
-cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+# cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
 # cuda_platforms = CUDA.supported_platforms()
 
-filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
+# filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
-platforms = [cuda_platforms; cpu_platforms]
+# platforms = [cuda_platforms; cpu_platforms]
 
 # The products that we will ensure are always built
 products = [
@@ -162,8 +162,8 @@ dependencies = [
     Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, cpu_platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, cpu_platforms)),
 ]
 
 # Build the tarballs
@@ -179,23 +179,28 @@ cuda_min_version = v"11"
 cuda_max_version=nothing
 
 for platform in cpu_platforms
-    should_build_platform(triplet(platform)) || continue
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
-                        julia_compat = "1.10",
-                        preferred_gcc_version = v"10",
-                        augment_platform_block)
+   
+    # build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
+    #                     julia_compat = "1.10",
+    #                     preferred_gcc_version = v"10",
+    #                     augment_platform_block)
+    
     if Sys.islinux(platform) && (arch(platform) == "x86_64")
         cuda_versions = filter(v -> (isnothing(cuda_min_version) || v >= cuda_min_version) &&
                 (isnothing(cuda_max_version) || v <= cuda_max_version),
         CUDA.cuda_full_versions)
-        platformc = deepcopy(platform)
-        for version in cuda_versions
-            platformc["cuda"] = "$(version.major).$(version.minor)"
-            build_tarballs(ARGS, name, version, sources, script, [platformc], products, [dependencies; CUDA.required_dependencies(platformc)];
-                        julia_compat = "1.10",
-                        preferred_gcc_version = v"10",
-                        augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, skip_audit=true)
-        end
+        cuda_version =  ["none"; cuda_versions]
+    else
+        cuda_versions = ["none"]
+    end
+    platformc = deepcopy(platform)
+    for version in cuda_versions
+        platformc["cuda"] = version == "none" ? version : "$(version.major).$(version.minor)"
+        should_build_platform(triplet(platform)) || continue
+        build_tarballs(ARGS, name, version, sources, script, [platformc], products, [dependencies; CUDA.required_dependencies(platformc)];
+                    julia_compat = "1.10",
+                    preferred_gcc_version = v"10",
+                    augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, skip_audit=true)
     end
 end
 
