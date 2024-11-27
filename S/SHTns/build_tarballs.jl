@@ -27,12 +27,11 @@ export LDFLAGS=""
 #remove lfftw3_omp library references, as FFTW_jll does not provide it
 sed -i -e 's/lfftw3_omp/lfftw3/g' configure
 
-#remove cuda arch specification and test
-# sed -i -e '/any compatible gpu/d' configure 
-# sed -i -e 's/nvcc -std=c++11 \$nvcc_gencode_flags/nvcc -Xcompiler -fPIC -std=c++11/' configure
+#remove mtune and gencode flags, replace by nvcc -arch=all (good?)
+sed -i -e '/-mtune=skylake/d' configure
+sed -i -e 's/nvcc -std=c++11 \$nvcc_gencode_flags/nvcc -Xcompiler -fPIC -std=c++11 -arch=all/' configure
 
 sed -i -e 's/lib64/lib/g' configure
-sed -i -e 's/nvcc -std=c++11/nvcc -Xcompiler -fPIC -std=c++11/' configure
 
 configure_args="--prefix=${prefix} --host=${target} --enable-openmp --enable-kernel-compiler=cc "
 link_flags="-lfftw3 -lm "
@@ -57,96 +56,8 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 
-# Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-cpu_platforms = expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
-# cpu_platforms = supported_platforms()
-
-const augment_platform_block_cpu = """
-    $(MicroArchitectures.augment)
-    function augment_platform!(platform::Platform)
-        # We augment only x86_64
-        @static if Sys.ARCH === :x86_64
-            augment_microarchitecture!(platform)
-        else
-            platform
-        end
-    end
-    """
-
-const augment_platform_block_cuda = """
-    using Base.BinaryPlatforms
-
-    try
-        using CUDA_Runtime_jll
-    catch
-        # during initial package installation, CUDA_Runtime_jll may not be available.
-        # in that case, we just won't select an artifact.
-    end
-
-    # can't use Preferences for the same reason
-    const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
-    const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
-    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
-    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
-    const local_toolkit = something(tryparse(Bool, get(preferences, "local", "false")), false)
-
-    function cuda_comparison_strategy(_a::String, _b::String, a_requested::Bool, b_requested::Bool)
-        # if we're using a local toolkit, we can't use artifacts
-        if local_toolkit
-            return false
-        end
-
-        # if either isn't a version number (e.g. "none"), perform a simple equality check
-        a = tryparse(VersionNumber, _a)
-        b = tryparse(VersionNumber, _b)
-        if a === nothing || b === nothing
-            return _a == _b
-        end
-
-        # if both b and a requested, then we fall back to equality
-        if a_requested && b_requested
-            return Base.thisminor(a) == Base.thisminor(b)
-        end
-
-        # otherwise, do the comparison between the the single version cap and the single version:
-        function is_compatible(artifact::VersionNumber, host::VersionNumber)
-            if host >= v"11.0"
-                # enhanced compatibility, semver-style
-                artifact.major == host.major &&
-                Base.thisminor(artifact) <= Base.thisminor(host)
-            else
-                Base.thisminor(artifact) == Base.thisminor(host)
-            end
-        end
-        if a_requested
-            is_compatible(b, a)
-        else
-            is_compatible(a, b)
-        end
-    end
-
-    function augment_platform!(platform::Platform)
-
-        @static if Sys.ARCH === :x86_64
-            augment_microarchitecture!(platform)
-        end
-
-        if !@isdefined(CUDA_Runtime_jll)
-            # don't set to nothing or Pkg will download any artifact
-            platform["cuda"] = "none"
-        end
-
-        if !haskey(platform, "cuda")
-            CUDA_Runtime_jll.augment_platform!(platform)
-        end
-        BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
-
-       return platform
-    end
-    """
-
-cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
-# cuda_platforms = CUDA.supported_platforms()
+cpu_platforms = supported_platforms()
+cuda_platforms = CUDA.supported_platforms()
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
 
@@ -167,11 +78,6 @@ dependencies = [
 ]
 
 # Build the tarballs
-# build_tarballs(ARGS, name, version, sources, script, cpu_platforms, products, dependencies;
-#                 julia_compat = "1.6",
-#                 preferred_gcc_version = v"10",
-#                 augment_platform_block = augment_platform_block_cpu)
-
 for platform in platforms
     if Sys.islinux(platform) && (arch(platform) == "x86_64") && (libc(platform) == "glibc")
         if !haskey(platform,"cuda")
@@ -179,10 +85,9 @@ for platform in platforms
         end
     end
     should_build_platform(triplet(platform)) || continue
-    # augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 lazy_artifacts=true,
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment_platform_block_cuda, dont_dlopen=true, skip_audit=true)
+                augment_platform_block = CUDA.augment, dont_dlopen=true, skip_audit=true)
 end
