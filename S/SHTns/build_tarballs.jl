@@ -174,11 +174,11 @@ dependencies = [
 #                 augment_platform_block = augment_platform_block_cpu)
 
 for platform in platforms
-    if Sys.islinux(platform) && (arch(platform) == "x86_64") && (libc(platform) == "glibc")
-        if !haskey(platform,"cuda")
-            platform["cuda"] = "none"
-        end
-    end
+    # if Sys.islinux(platform) && (arch(platform) == "x86_64") && (libc(platform) == "glibc")
+    #     if !haskey(platform,"cuda")
+    #         platform["cuda"] = "none"
+    #     end
+    # end
     should_build_platform(triplet(platform)) || continue
     # augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
