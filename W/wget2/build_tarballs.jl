@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "wget2"
-version = v"2.1.0"
+version = v"2.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/wget/wget2-$(version).tar.gz", "a05dc5191c6bad9313fd6db2777a78f5527ba4774f665d5d69f5a7461b49e2e7")
+    ArchiveSource("https://ftp.gnu.org/gnu/wget/wget2-$(version).tar.gz",
+                  "2b3b9c85b7fb26d33ca5f41f1f8daca71838d869a19b406063aa5c655294d357")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,34 +16,34 @@ script = raw"""
 cd $WORKSPACE/srcdir/wget2*
 
 ./configure \
---prefix=${prefix} \
---build=${MACHTYPE} \
---host=${target} \
---prefix=${prefix} \
---libdir=${libdir} \
---includedir=${includedir} \
---enable-shared=yes \
---enable-static=no \
---without-libpsl \
---without-libhsts \
---without-libnghttp2 \
---without-bzip2 \
---without-gpgme  \
---without-lzma \
---without-brotlidec \
---without-lzip \
---without-libidn2 \
---without-libidn \
---without-libpcre2 \
---without-libpcre \
---without-libmicrohttpd \
---without-plugin-support \
---disable-doc \
---disable-manylibs
+    --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --prefix=${prefix} \
+    --includedir=${includedir} \
+    --libdir=${libdir} \
+    --disable-doc \
+    --disable-manylibs \
+    --enable-shared=yes \
+    --enable-static=no \
+    --with-brotlidec \
+    --with-bzip2 \
+    --with-libidn2 \
+    --with-libpcre2 \
+    --with-libpsl \
+    --with-lzma \
+    --with-zstd \
+    --without-gpgme  \
+    --without-libhsts \
+    --without-libidn \
+    --without-libmicrohttpd \
+    --without-libnghttp2 \
+    --without-libpcre \
+    --without-lzip \
+    --without-plugin-support
 
 make -j${nproc}
 make install
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -57,12 +58,19 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-#Nettle and OpenSSL needed for mingw builds
+#TODO # Nettle and OpenSSL needed for mingw builds
 dependencies = [
-    Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d"))
-    Dependency("Gettext_jll"; compat="=0.21.0")
-    Dependency("Nettle_jll"; compat="~3.7.2")
-    Dependency("OpenSSL_jll"; compat="3.0.11")
+    # Dependency("Nettle_jll"; compat="~3.7.2"),
+    # Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d")),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Gettext_jll"; compat="=0.21.0"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("PCRE2_jll"),
+    Dependency("XZ_jll"; compat="5.6.3"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
+    Dependency("brotli_jll"; compat="1.1.0"),
+    Dependency("libidn2_jll"; compat="2.3.7"),
+    Dependency("libpsl_jll"; compat="0.21.5"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
