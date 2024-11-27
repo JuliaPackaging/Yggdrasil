@@ -12,8 +12,7 @@ ${CC} -c -fPIC complex.c -o complex.o
 ${CC} -c -fPIC model_IHC.c -o model_IHC.o
 ${CC} -c -fPIC model_Synapse.c -o model_Synapse.o
 ${CC} -shared -o "libzbc2014.${dlext}" model_IHC.o model_Synapse.o complex.o
-mkdir ${libdir}
-cp "libzbc2014.${dlext}" ${libdir}
+install -Dvm 755 "libzbc2014.${dlext}" -t "${libdir}"
 """
 
 platforms = supported_platforms()
