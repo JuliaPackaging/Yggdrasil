@@ -32,6 +32,7 @@ FLAGS=(
     --disable-static
     --with-blas="-L${libdir} -l${LBT}"
     --with-lapack="-L${libdir} -l${LBT}"
+)
 
 ./configure "${FLAGS[@]}"
 make -j${nproc}
