@@ -68,11 +68,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-#TODO # Nettle and OpenSSL needed for mingw builds
 dependencies = [
-    # Dependency("Nettle_jll"; compat="~3.7.2", platforms=filter(Sys.iswindows, platforms)),
-    # Dependency(PackageSpec(name="GnuTLS_jll", uuid="0951126a-58fd-58f1-b5b3-b08c7c4a876d"),
-    #            platforms=filter(Sys.iswindows, platforms)),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Gettext_jll"; compat="=0.21.0"),
     Dependency("OpenSSL_jll"; compat="3.0.15"),
