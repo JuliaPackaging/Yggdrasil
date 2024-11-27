@@ -58,7 +58,8 @@ install_license LICENSE
 # platforms are passed in on the command line
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-cpu_platforms = expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+# cpu_platforms = expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+cpu_platforms = supported_platforms()
 
 const augment_platform_block_cpu = """
     $(MicroArchitectures.augment)
@@ -144,7 +145,8 @@ const augment_platform_block_cuda = """
     end
     """
 
-cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+# cuda_platforms = expand_microarchitectures(CUDA.supported_platforms(), ["x86_64", "avx", "avx2", "avx512"])
+cuda_platforms = CUDA.supported_platforms()
 # cuda_platforms = CUDA.supported_platforms()
 
 filter!(p -> arch(p) != "aarch64", cuda_platforms) #doesn't work
@@ -173,14 +175,14 @@ dependencies = [
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
-    if Sys.islinux(platform) && (arch(platform) == "x86_64")
-        if !haskey(platform,"cuda")
-            platform["cuda"] = "none"
-        end
-    end
-    augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
+    # if Sys.islinux(platform) && (arch(platform) == "x86_64")
+    #     if !haskey(platform,"cuda")
+    #         platform["cuda"] = "none"
+    #     end
+    # end
+    # augment = haskey(platform,"cuda") ? augment_platform_block_cuda : augment_platform_block_cpu
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; CUDA.required_dependencies(platform)];
                 julia_compat = "1.6",
                 preferred_gcc_version = v"10",
-                augment_platform_block = augment, dont_dlopen=true, skip_audit=true)
+                augment_platform_block = CUDA.augment, dont_dlopen=true, skip_audit=true)
 end
