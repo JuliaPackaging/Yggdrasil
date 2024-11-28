@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-include("../OpenFHE/commom.jl")
+include("../OpenFHE/common.jl")
 
 name = "OpenFHE_128"
 version = v"1.2.3"
