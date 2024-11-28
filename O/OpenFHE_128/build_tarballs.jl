@@ -5,10 +5,9 @@ include(joinpath(pwd(), "..", "OpenFHE", "common.jl"))
 name = "OpenFHE_128"
 version = v"1.2.3"
 
-# copy patch file from OpenFHE
-mkpath(joinpath(pwd(), "bundled", "patches"))
-cp(joinpath(pwd(), "..", "OpenFHE", "bundled", "patches", "windows-fix-cmake-libdir.patch"),
-   joinpath(pwd(), "bundled", "patches", "windows-fix-cmake-libdir.patch"))
+# symlink patch file from OpenFHE
+symlink(joinpath(pwd(), "..", "OpenFHE", "bundled", "patches", "windows-fix-cmake-libdir.patch"),
+        joinpath(pwd(), "bundled", "patches", "windows-fix-cmake-libdir.patch"))
 
 sources, script, platforms, products, dependencies = prepare_openfhe_build(name)
 
