@@ -63,3 +63,5 @@ for platform in platforms
                    julia_compat="1.7", augment_platform_block,
                    skip_audit=true, dont_dlopen=true)
 end
+
+# bump
