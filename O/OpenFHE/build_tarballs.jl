@@ -1,5 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
+
+# If you make changes to this file, be sure to update ../OpenFHE_128/build_tarballs.jl as well.
 include("common.jl")
 
 name = "OpenFHE"
