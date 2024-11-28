@@ -6,7 +6,7 @@ name = "OpenFHE_128"
 version = v"1.2.3"
 
 # copy patch file from OpenFHE
-mkdir(joinpath(pwd(), "bundled", "patches"))
+mkpath(joinpath(pwd(), "bundled", "patches"))
 cd(joinpath(pwd(), "..", "OpenFHE", "bundled", "patches", "windows-fix-cmake-libdir.patch"),
    joinpath(pwd(), "bundled", "patches", "windows-fix-cmake-libdir.patch"))
 
