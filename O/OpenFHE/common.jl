@@ -31,6 +31,7 @@ function prepare_openfhe_build(name::String)
     """ * 
     (name == "OpenFHE" ? "64" : "128") *
     raw"""
+    
     make -j${nproc}
     make install
     """
