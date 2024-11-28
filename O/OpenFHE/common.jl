@@ -28,8 +28,7 @@ function prepare_openfhe_build(name::String)
       -DBUILD_UNITTESTS=OFF \
       -DBUILD_BENCHMARKS=OFF \
       -DNATIVE_SIZE=
-    """ * 
-    (name == "OpenFHE" ? "64" : "128") *
+    """ * (name == "OpenFHE" ? "64" : "128") *
     raw"""
     
     make -j${nproc}
