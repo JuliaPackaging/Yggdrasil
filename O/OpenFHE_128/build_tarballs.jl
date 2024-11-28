@@ -1,14 +1,14 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-include(joinpath("..", "OpenFHE", "common.jl"))
+include(joinpath(pwd(), "..", "OpenFHE", "common.jl"))
 
 name = "OpenFHE_128"
 version = v"1.2.3"
 
 # copy patch file from OpenFHE
-mkdir(joinpath("bundled", "patches"))
-cd(joinpath("..", "OpenFHE", "bundled", "patches", "windows-fix-cmake-libdir.patch"),
-   joinpath("bundled", "patches", "windows-fix-cmake-libdir.patch"))
+mkdir(joinpath(pwd(), "bundled", "patches"))
+cd(joinpath(pwd(), "..", "OpenFHE", "bundled", "patches", "windows-fix-cmake-libdir.patch"),
+   joinpath(pwd(), "bundled", "patches", "windows-fix-cmake-libdir.patch"))
 
 sources, script, platforms, products, dependencies = prepare_openfhe_build(name)
 
