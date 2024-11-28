@@ -14,20 +14,23 @@ function prepare_openfhe_build(name::String)
 
     # Set proper install directories for libraries on Windows
     if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
+      atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
     fi
 
     mkdir build && cd build
 
     cmake .. \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DWITH_BE2=ON \
-    -DWITH_BE4=ON \
-    -DBUILD_UNITTESTS=OFF \
-    -DBUILD_BENCHMARKS=OFF
-
+      -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DWITH_BE2=ON \
+      -DWITH_BE4=ON \
+      -DBUILD_UNITTESTS=OFF \
+      -DBUILD_BENCHMARKS=OFF \
+      -DNATIVE_SIZE=
+    """ * 
+    (name == "OpenFHE" ? "64" : "128") *
+    raw"""
     make -j${nproc}
     make install
     """
