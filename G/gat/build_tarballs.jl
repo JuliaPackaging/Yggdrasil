@@ -11,7 +11,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gat
-go build -o ${prefix}/bin/gat${exeext}
+go build -o "${bindir}/gat${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
