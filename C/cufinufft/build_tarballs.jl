@@ -10,9 +10,8 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 # Builds for all compatible CUDA platforms, but without microarchitecture expansion (not
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 name = "cufinufft"
-version = v"2.3.0"
-#commit_hash = "fffdaeacb10d5d055ce5b313868a7e981cea594b" # v2.3.0
-commit_hash = "cfe1e330c14229e4bf5ed05ddb6cff6ee1545b1c" # Master as of 2024-10-14
+version = v"2.3.1"
+commit_hash = "1fea25405c174e34d2ddb793666060c3d79a43d1" # v2.3.1
 
 preferred_gcc_version=v"11"
 
@@ -51,6 +50,10 @@ unlink $prefix/cuda/lib64
 platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
+
+# Latest version of cuFINUFFT does not compile with CUDA 12.5, so exclude
+# NOTE: Works in v2.3.1 but will break in v2.4
+#filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
 
 # The products that we will ensure are always built
 products = [
