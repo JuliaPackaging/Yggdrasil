@@ -5,7 +5,8 @@ version = v"5.1.2" # <-- This is a lie, we're bumping to 5.1.1 to create a Julia
 
 # Collection of sources required to build METIS
 sources = [
-    ArchiveSource("http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz",
+    # The official link to METIS 5.1.0 (http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz) is currently down.
+    ArchiveSource("https://github.com/xijunke/METIS-1/raw/refs/heads/master/metis-5.1.0.tar.gz",
                   "76faebe03f6c963127dbb73c13eab58c9a3faeae48779f049066a21c087c5db2"),
     DirectorySource("./bundled"),
 ]
@@ -49,7 +50,7 @@ build_metis metis_Int64_Real64 64 64
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -67,3 +68,5 @@ dependencies = Dependency[]
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build trigger: 1

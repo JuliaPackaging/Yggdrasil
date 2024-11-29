@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "oneAPI_Support_Headers"
-version = v"2024.2.1"
+version = v"2025.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://software.repos.intel.com/python/conda/linux-64/mkl-devel-dpcpp-2024.2.1-intel_103.tar.bz2",
-                  "abb784cc37c2bb9d05daa4271ad9ee917eecb9a907c8706230fed162f820d11e")
+    ArchiveSource("https://software.repos.intel.com/python/conda/linux-64/mkl-devel-dpcpp-2025.0.0-intel_939.tar.bz2",
+                  "149c3d52dcc7db2d30329e686f721dc3addc017ba19034b7517c9d287f29f7d6")
 ]
 
 # Bash recipe for building across all platforms

@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version = v"1.20"
+version = v"1.22"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/ebiggers/libdeflate",
-        "275aa5141db6eda3587214e0f1d3a134768f557d"
+        "2335c047e91cac6fd04cb0fd2769380395149f15"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
@@ -31,7 +31,7 @@ fi
 
 cd $WORKSPACE/srcdir/libdeflate
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make
+make -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/libdeflate/COPYING
 """

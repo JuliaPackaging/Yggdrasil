@@ -60,8 +60,7 @@ products = [
     LibraryProduct("libprotobuf-lite", :libprotobuf_lite),
     ExecutableProduct("protoc", :protoc),
 
-    # `protoc` builds and installs a copy of `abseil_cpp`.
-    # We declare this prominently so that others are aware.
+    # `protoc` builds and installs a copy of `abseil_cpp`
     LibraryProduct("libabsl_bad_any_cast_impl", :libabsl_bad_any_cast_impl),
     LibraryProduct("libabsl_bad_optional_access", :libabsl_bad_optional_access),
     LibraryProduct("libabsl_bad_variant_access", :libabsl_bad_variant_access),
@@ -148,6 +147,10 @@ products = [
     LibraryProduct("libabsl_time", :libabsl_time),
     LibraryProduct("libabsl_time_zone", :libabsl_time_zone),
     LibraryProduct("libabsl_vlog_config_internal", :libabsl_vlog_config_internal),
+
+    # `protoc` builds and installs some UTF8 libraries
+    LibraryProduct("libutf8_range", :libutf8_range),
+    LibraryProduct("libutf8_validity", :libutf8_validity),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -157,3 +160,5 @@ dependencies = Dependency[
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"9")
+
+# Build trigger: 1

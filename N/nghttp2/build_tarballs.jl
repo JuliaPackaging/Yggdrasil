@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "nghttp2"
-version = v"1.63.0"
+version = v"1.64.0"
 
 # Collection of sources required to build nghttp2
 sources = [
     GitSource("https://github.com/nghttp2/nghttp2.git",
-              "8f44147c385fb1ed93a6f39911eeb30279bfd2dd"),
+              "526ff38e0249acbcc4d0e8958c12cdeae9960cfe"),
 ]
 
 # Bash recipe for building across all platforms
