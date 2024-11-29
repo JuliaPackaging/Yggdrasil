@@ -13,6 +13,12 @@ function prepare_openfhe_build(name::String, git_hash::String)
 
     # Bash recipe for building across all platforms
     script = raw"""
+    cd $WORKSPACE
+    ls
+    cd $WORKSPACE/..
+    ls
+    cd $WORKSPACE/srcdir
+    ls
     cd $WORKSPACE/srcdir/openfhe-development/
 
     # Set proper install directories for libraries on Windows
