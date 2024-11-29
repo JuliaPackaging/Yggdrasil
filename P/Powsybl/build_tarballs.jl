@@ -25,7 +25,7 @@ sources = [
                   "powsybl-java-x86_64-linux-musl"), # linux package for gnu and musl
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin.zip",
                   "e27ec64eb1962ff9d6d04aa11da1071687eef00a546312e969deea3f52b23267",
-                  "powsybl-java-x86_64-apple-darwin14")
+                  "powsybl-java-x86_64-apple-darwin14"),
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin-arm64.zip",
                   "dbd4ffbffee5a00b9e0b71f510189a4043ae648973415f60f8631418ac9991d2",
                   "powsybl-java-aarch64-apple-darwin14")
