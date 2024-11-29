@@ -1,12 +1,15 @@
 using BinaryBuilder, Pkg
 
-function prepare_openfhe_build(name::String)
+function prepare_openfhe_build(name::String, git_hash::String)
     # Collection of sources required to complete build
     sources = [
         GitSource("https://github.com/openfheorg/openfhe-development.git",
-                  "7b8346f4eac27121543e36c17237b919e03ec058"),
+                  git_hash),
         DirectorySource("./bundled")
     ]
+
+    # Set native size for bash recipe
+    native_size = (name == "OpenFHE_128" ? 128 : 64)
 
     # Bash recipe for building across all platforms
     script = raw"""
@@ -27,7 +30,7 @@ function prepare_openfhe_build(name::String)
       -DWITH_BE4=ON \
       -DBUILD_UNITTESTS=OFF \
       -DBUILD_BENCHMARKS=OFF \
-    """ * (name == "OpenFHE_128" ? "-DNATIVE_SIZE=128" : "") *
+      -DNATIVE_SIZE=""" * "$native_size" *
     raw"""
     
     make -j${nproc}
@@ -71,5 +74,5 @@ function prepare_openfhe_build(name::String)
                    platforms=filter(Sys.isbsd, platforms)),
     ]
 
-    sources, script, platforms, products, dependencies
+    return sources, script, platforms, products, dependencies
 end
