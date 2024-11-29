@@ -251,7 +251,7 @@ end
 platforms = filter(p -> arch(p) != "i686", platforms)
 
 # linux aarch has onednn issues
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p)), platforms)
+# platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(arch(p) == "armv6l" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
 
