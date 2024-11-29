@@ -1,31 +1,34 @@
 using BinaryBuilder, Pkg
 
 name = "Powsybl"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-pypowsybl_version = v"1.7.0"
+pypowsybl_version = "BinariesDeployment"
 
 
 sources = [
     GitSource("https://github.com/powsybl/powsybl.jl.git", "0a9e3110c366808e7ac23cfd9e19f51793807392"),
     GitSource("https://github.com/powsybl/pypowsybl.git", "cd5fea41bbfb2897fd71a6e63b2d07a465055699"),
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-windows.zip",
-                  "82d3cee44992dcceaee7549f17351155e91c9eb2bdce97b1cf6c0107155991e8",
+                  "a4ddf94e91f785a456165f7732504526ac5b3761e5013771583e1cfbe44f26f1",
                   "powsybl-java-x86_64-w64-mingw32"),
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-linux.zip",
-                  "8832e1ff432e97807dc6dfddb4b001dd2c3c05a7411fc3748c8af3854a3b448c",
+                  "070831654779a53d504c8c9396bbabc1ab209fb2ffb4e9bea12dc9e39c36ddf1",
                   "powsybl-java-x86_64-linux-gnu"),
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-linux.zip",
-                  "8832e1ff432e97807dc6dfddb4b001dd2c3c05a7411fc3748c8af3854a3b448c",
+                  "070831654779a53d504c8c9396bbabc1ab209fb2ffb4e9bea12dc9e39c36ddf1",
                   "powsybl-java-x86_64-linux-musl"), # linux package for gnu and musl
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin.zip",
-                  "d541eb07a334d9272b167cb30f7d846ff109db49ac61a9776593c1aface18324",
+                  "e27ec64eb1962ff9d6d04aa11da1071687eef00a546312e969deea3f52b23267",
                   "powsybl-java-x86_64-apple-darwin14")
+    ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-darwin-arm64.zip",
+                  "dbd4ffbffee5a00b9e0b71f510189a4043ae648973415f60f8631418ac9991d2",
+                  "powsybl-java-aarch64-apple-darwin14")
 ]
 
 # To get julia_versions
@@ -70,7 +73,7 @@ install_license $WORKSPACE/srcdir/powsybl.jl/LICENSE.md
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
-filter!(p -> arch(p) == "x86_64" && os(p) ∈ ("windows", "linux", "macos"), platforms)
+filter!(p -> arch(p) == "x86_64" && os(p) ∈ ("windows", "linux", "macos") || arch(p) == "aarch64" && os(p) ∈ ("macos"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
