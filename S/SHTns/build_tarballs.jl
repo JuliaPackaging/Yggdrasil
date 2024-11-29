@@ -9,8 +9,8 @@ include(joinpath(YGGDRASILPATH, "platforms", "microarchitectures.jl"))
 include(joinpath(YGGDRASILPATH, "platforms", "cuda.jl"))
 
 name = "SHTns"
-version = v"3.7"
-version_string = version.patch == 0 ? string(version.major)*"."*string(version.minor) : string(version)
+version_string = "3.7"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build (note to self: use `sha256sum` to generate the checksum from tarball) 
 sources = [
