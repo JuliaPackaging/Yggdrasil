@@ -72,7 +72,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="FFTW_jll")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else. 
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll"); platforms=filter(Sys.isbsd, platforms)),
 ]
