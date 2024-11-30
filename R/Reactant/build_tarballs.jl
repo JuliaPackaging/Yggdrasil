@@ -144,6 +144,12 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     chmod +x .local/bin/ldconfig
     export PATH="`pwd`/.local/bin:$PATH"
     BAZEL_BUILD_FLAGS+=(--copt=-Wno-error=cpp)
+
+    if [[ "${bb_full_target}" == *86* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
+    else
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
+    fi
 fi
 
 if [[ "${bb_full_target}" == *cuda* ]]; then
