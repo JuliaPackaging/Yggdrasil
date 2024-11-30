@@ -21,6 +21,8 @@ if [[ "${target}" == aarch64-apple-darwin* ]]; then
     # happy.
     export MACOSX_DEPLOYMENT_TARGET="10.16"
 fi
+
+atomic_patch -p1 ../patches/0001-remove-unknown-ld-option.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
