@@ -9,11 +9,6 @@ version = v"1.2.3"
 
 git_hash = "7b8346f4eac27121543e36c17237b919e03ec058"
 
-# symlink patch file from OpenFHE
-mkpath(joinpath(pwd(), "bundled", "patches"))
-symlink(joinpath(pwd(), "..", "OpenFHE", "bundled", "patches", "windows-fix-cmake-libdir.patch"),
-        joinpath(pwd(), "bundled", "patches", "windows-fix-cmake-libdir.patch"))
-
 sources, script, platforms, products, dependencies = prepare_openfhe_build(name, git_hash)
 
 # Build the tarballs, and possibly a `build.jl` as well.
