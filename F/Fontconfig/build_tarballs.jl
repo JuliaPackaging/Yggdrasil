@@ -74,7 +74,7 @@ dependencies = [
 init_block = """
 get!(ENV, "FONTCONFIG_FILE", fonts_conf)
 get!(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
-""")
+"""
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
