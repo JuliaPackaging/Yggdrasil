@@ -6,12 +6,12 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
-    version = v"8.3.1"
+    version = v"8.5.0"
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "f73e1eacd7e2ffae687bc3f056bb0c705b7a05aee86337686e09da8fc1c2030c"),
+                      "77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca41ddc27"),
         DirectorySource("../bundled"),
     ]
 
@@ -90,5 +90,6 @@ fi
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6", clang_use_lld=false)
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+                   clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
 end
