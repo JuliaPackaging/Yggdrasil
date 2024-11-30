@@ -10,6 +10,7 @@ version = VersionNumber(version_string)
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/gsl/gsl-$(version_string).tar.gz",
                   "6a99eeed15632c6354895b1dd542ed5a855c0f15d9ad1326c6fe2b2c9e423190"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +23,7 @@ if [[ "${target}" == aarch64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET="10.16"
 fi
 
-atomic_patch -p1 ../patches/0001-remove-unknown-ld-option.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-remove-unknown-ld-option.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
 make install
