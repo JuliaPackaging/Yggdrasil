@@ -231,17 +231,7 @@ dependencies = Dependency[]
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libReactantExtra", "libReactantExtra"],
-                   :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
-    FileProduct("Affine.jl", :Affine_jl),
-    FileProduct("Arith.jl", :Arith_jl),
-    FileProduct("Builtin.jl", :Builtin_jl),
-    FileProduct("Enzyme.jl", :Enzyme_jl),
-    FileProduct("Func.jl", :Func_jl),
-    FileProduct("StableHLO.jl", :StableHLO_jl),
-    FileProduct("CHLO.jl", :CHLO_jl),
-    FileProduct("VHLO.jl", :VHLO_jl),
-    # FileProduct("libMLIR_h.jl", :libMLIR_h_jl),
+    LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
 ]
 
 # These are the platforms we will build for by default, unless further
