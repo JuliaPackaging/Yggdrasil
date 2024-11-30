@@ -15,7 +15,8 @@ script = raw"""
 cd gperf-*
 install_license COPYING
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+# The code is too old for C++17
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CXXFLAGS=-std=c++11
 make -j${nproc}
 make install
 """
