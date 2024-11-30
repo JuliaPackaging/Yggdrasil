@@ -16,9 +16,7 @@ cd gperf-*
 install_license COPYING
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-
 make -j${nproc}
-
 make install
 """
 
