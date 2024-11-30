@@ -234,7 +234,7 @@ builds = []
 dependencies = Dependency[]
 
 # The products that we will ensure are always built
-products = [
+products = Product[
     LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
 ]
 
