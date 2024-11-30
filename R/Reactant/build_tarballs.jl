@@ -144,7 +144,7 @@ if [[ "${bb_full_target}" == *linux* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
     else
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
-    	BAZEL_BUILD_FLAGS+=(--cpu=linux_arm64)
+    	# BAZEL_BUILD_FLAGS+=(--cpu=linux_arm64)
     fi
 fi
 
