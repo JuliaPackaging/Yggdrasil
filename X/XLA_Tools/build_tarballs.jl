@@ -75,8 +75,11 @@ cp bazel-bin/tensorflow/compiler/xla/tools/show_signature \
 cp bazel-bin/tensorflow/libtensorflow_framework.so $libdir
 
 # libtensorflow* has super-crazy RPATHs; fix that
-for f in $libdir/*.so $bindir/*; do
-    patchelf --set-rpath '$ORIGIN:$ORIGIN/../lib:$ORIGIN/../lib64' "${f}"
+for f in $bindir/*; do
+    patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../lib64' "$f"
+done
+for f in $libdir/*.so; do
+    patchelf --set-rpath '$ORIGIN' "$f"
 done
 """
 
