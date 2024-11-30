@@ -113,11 +113,6 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang++"
-        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
-        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
-        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
-        BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
-	BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
     	BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
@@ -150,6 +145,14 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     else
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
     fi
+fi
+
+if [[ "${bb_full_target}" == *aarch64* ]]; then
+    BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
+    BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
+    BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
+    BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
+    BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
 fi
 
 if [[ "${bb_full_target}" == *cuda* ]]; then
