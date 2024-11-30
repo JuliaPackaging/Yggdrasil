@@ -11,6 +11,7 @@ sources = [
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
     FileSource("https://files.pythonhosted.org/packages/e3/55/cfcde5014d0e8c747c431a3384f3814857af3efbecd9f543eecf7b273fb4/mlx-0.21.0-cp313-cp313-macosx_13_0_arm64.whl", "18609008b0d51b22b400df967a702163c7501fecc8cc4b861d95ca147177cd1f"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -23,6 +24,8 @@ if [[ "$target" == *-apple-darwin* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/mlx
+
+atomic_patch -p1 ../patches/missing-unordered_map-include.patch
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
@@ -40,6 +43,9 @@ libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
 if [[ "$target" != *-apple-darwin* &&
       "$libblastrampoline_target" != armv6l-linux-* &&
       "$bb_full_target" != i686-linux-gnu-cxx11 ]]; then
+    if [[ "$target" == *-freebsd* ]]; then
+        libblastrampoline_target=$rust_target
+    fi
     CMAKE_EXTRA_OPTIONS+=(
         "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
         "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
@@ -76,7 +82,6 @@ fi
 """
 
 platforms = supported_platforms()
-filter!(!Sys.isfreebsd, platforms) # FreeBSD build fails, likely due to a few missing header includes, e.g.: mlx/io.h:16:10: error: no member named 'unordered_map' in namespace 'std'
 platforms = expand_cxxstring_abis(platforms)
 
 accelerate_platforms = filter(Sys.isapple, platforms)
