@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "MPC"
-version = v"1.2.1"
+version = v"1.3.1"
 
 # Collection of sources required to build MPC
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/mpc/mpc-$(version).tar.gz",
-                  "17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459"),
+                  "ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8"),
 ]
 
 # Bash recipe for building across all platforms
