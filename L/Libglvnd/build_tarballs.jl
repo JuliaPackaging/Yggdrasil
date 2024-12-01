@@ -43,7 +43,7 @@ install_license ../README.md
 # platforms are passed in on the command line
 platforms = filter!(p ->Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 # Remove when X11 stack will support armv6l and aarch64-freebsd
-filter!(p -> (arch(p) != "armv6l") || (Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> (arch(p) != "armv6l") && !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = Product[
