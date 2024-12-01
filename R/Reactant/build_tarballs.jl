@@ -179,7 +179,7 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.jl :Arith.jl :Affine.jl :Func.jl :Enzyme.jl :StableHLO.jl :CHLO.jl :VHLO.jl
+$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]}
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
