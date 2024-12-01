@@ -12,23 +12,20 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd FuzzifiED_Fortran/src/
-if [[ ${nbits} == 32 ]]; then
-    FFLAGS="-O3 -fPIC -fopenmp"
-else
-    FFLAGS="-O3 -fdefault-integer-8 -fPIC -fopenmp"
+cd $WORKSPACE/srcdir/FuzzifiED_Fortran/src/
+FFLAGS=(-O3 -fPIC -fopenmp)
+if [[ ${nbits} == 64 ]]; then
+    FFLAGS+=(-fdefault-integer-8)
 fi
 for src in cfs.f90 bs.f90 op.f90 diag.f90 diag_re.f90 ent.f90; do
-    gfortran ${FFLAGS} -c ./${src}
+    gfortran "${FFLAGS[@]}" -c ./${src}
 done
-gfortran ${FFLAGS} -shared -o ${libdir}/libfuzzified.$dlext ./*.o -L ${libdir} -larpack
+gfortran "${FFLAGS[@]}" -shared -o "${libdir}/libfuzzified.${dlext}" ./*.o -L "${libdir}" -larpack
 cd super
 for src in scfs.f90 sbs.f90 sop.f90; do
-    gfortran ${FFLAGS} -c ./${src}
+    gfortran "${FFLAGS[@]}" -c ./${src}
 done
 gfortran ${FFLAGS} -shared -o ${libdir}/libfuzzifino.$dlext ./*.o
-cd ..
 """
 
 # These are the platforms we will build for by default, unless further
@@ -39,7 +36,7 @@ platforms = expand_gfortran_versions(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libfuzzified", :LibpathFuzzifiED),
-    LibraryProduct("libfuzzifino", :LibpathFuzzifino)
+    LibraryProduct("libfuzzifino", :LibpathFuzzifino),
 ]
 
 # Dependencies that must be installed before this package can be built
