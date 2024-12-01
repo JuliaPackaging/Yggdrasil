@@ -25,7 +25,7 @@ cd super
 for src in scfs.f90 sbs.f90 sop.f90; do
     gfortran "${FFLAGS[@]}" -c ./${src}
 done
-gfortran ${FFLAGS} -shared -o ${libdir}/libfuzzifino.$dlext ./*.o
+gfortran "${FFLAGS[@]}" -shared -o "${libdir}/libfuzzifino.${dlext}" ./*.o
 """
 
 # These are the platforms we will build for by default, unless further
