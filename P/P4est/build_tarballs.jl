@@ -6,14 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "P4est"
-version = v"2.8.1"
-p4est_version = v"2.8"
+version = v"2.8.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://p4est.github.io/release/p4est-2.8.tar.gz",
-                  "6a0586e3abac06c20e31b1018f3a82a564a6a0d9ff6b7f6c772a9e6b0f0cc5e4"),
-    DirectorySource("./bundled")
+    ArchiveSource("https://p4est.github.io/release/p4est-$(version).tar.gz",
+                  "46ee0c6e5a24f45be97fba743f5ef3d9618c075b023e9421ded9fc8cf7811300"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -51,8 +50,10 @@ if [[ "${target}" == *-mingw* ]]; then
   cp -d ${libdir}/msmpi.dll ${libdir}/libmsmpi.dll
 else
   # Use MPI including MPI I/O on all other platforms
-  export CC="mpicc"
-  export CXX="mpic++"
+  export MPITRAMPOLINE_CC=${CC}
+  export MPITRAMPOLINE_CXX=${CXX}
+  export CC=mpicc
+  export CXX=mpicxx
   mpiopts="--enable-mpi"
 fi
 
@@ -71,22 +72,22 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-# p4est with MPI enabled does not compile for 32 bit Windows
+platforms = supported_platforms()
+# p4est with MPI enabled does not compile for 32 bit Windows:
+#     p4est-2.8.6/sc/src/sc_shmem.c:206: undefined reference to `MPIR_Dup_fn@24'
 platforms = filter(p -> !(Sys.iswindows(p) && nbits(p) == 32), platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.2.1")
-
-# Disable OpenMPI since the build is broken. This could probably be fixed
-# via more explicit MPI configuration options.
-platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms;
+                                                         MPICH_compat="4.2.3",
+                                                         MPItrampoline_compat="5.5.0",
+                                                         OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && ((arch(p) == "armv6l" && libc(p) == "glibc") ||
+                                                    (arch(p) == "aarch64" && Sys.isfreebsd(p)))), platforms)
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -96,6 +97,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency(PackageSpec(name="Jansson_jll", uuid="83cbd138-b029-500a-bd82-26ec0fbaa0df"); compat="2.14.0"),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
 append!(dependencies, platform_dependencies)
