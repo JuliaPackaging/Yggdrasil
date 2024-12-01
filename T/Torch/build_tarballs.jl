@@ -243,6 +243,11 @@ dependencies = [
     Dependency("LAPACK_jll"; platforms = openblas_platforms),
     # Dependency("MKL_jll"; platforms = mkl_platforms), # MKL is avoided for all platforms
     # BuildDependency("MKL_Headers_jll"; platforms = mkl_platforms), # MKL is avoided for all platforms
+
+    # libtorch, libtorch_cuda, and libtorch_global_deps all link with `libnvToolsExt`
+    # maleadt: `libnvToolsExt is not shipped by CUDA anymore, so the best solution is definitely static linking. CUDA 10.2 shipped it, later it became a header-only library which we do compile into a dynamic one for use with NVTX.jl, but there's no guarantees that the library we build has the same symbols as the "old" libnvToolsExt shipped by CUDA 10.2
+    RuntimeDependency("NVTX_jll"), # TODO: Replace RuntimeDependency with static linking.
+
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     Dependency("PThreadPool_jll"; compat = "0.0.20210414"),
     Dependency("SLEEF_jll", v"3.5.2"; compat = "3"),
