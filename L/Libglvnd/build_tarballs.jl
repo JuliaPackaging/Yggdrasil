@@ -30,8 +30,8 @@ meson setup . .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
     --prefix=$sysprefix \
-    --libdir=$prefix/lib \
-    --includedir=$prefix/include \
+    --libdir=${libdir} \
+    --includedir=${includedir} \
     "${FLAGS[@]}"
 ninja -j${nproc}
 ninja install
