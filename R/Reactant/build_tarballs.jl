@@ -143,8 +143,11 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
     else
+        # TODO we should change these flags to use the cross compile toolchain from Yggdrasil when we merge the Bazel config files
+        # BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_aarch64_toolchain)
+        # BAZEL_BUILD_FLAGS+=(--cpu=linux_arm64)
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
-    	# BAZEL_BUILD_FLAGS+=(--cpu=linux_arm64)
+        BAZEL_BUILD_FLAGS+=(--cpu=k8)
     fi
 fi
 
