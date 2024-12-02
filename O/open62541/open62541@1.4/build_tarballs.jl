@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.4.7"
+version = v"1.4.8"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "d4c5aaa2a755d846d8517f96995d318a66742d42")
+              "f42c264d8df6a1a4cfff33c879f9229721e858b4")
 ]
 
 # Bash recipe for building across all platforms
