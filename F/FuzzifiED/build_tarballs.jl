@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "FuzzifiED"
-version = v"0.10.4"
+version = v"0.10.5"
 
 # Collection of sources required to complete build
 sources = [
@@ -43,7 +43,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="Arpack_jll", uuid="68821587-b530-5797-8361-c406ea357684"))
+    Dependency(PackageSpec(name="Arpack_jll", uuid="68821587-b530-5797-8361-c406ea357684"); compat="< 3.9")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
