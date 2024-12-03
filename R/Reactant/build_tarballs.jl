@@ -223,7 +223,6 @@ fi
 if [[ "${bb_full_target}" == *mingw* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
 fi
-cp -v bazel-bin/*.jl ${prefix}
 cd ../..
 install_license LICENSE
 """
