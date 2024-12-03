@@ -12,13 +12,12 @@ include("../sources.jl")
 # Notes:
 #   - 3rd and 4th derivatives (KXC, LXC) not built since gives a binary size of ~200MB
 script = raw"""
-
 cd $WORKSPACE/srcdir/libxc-*/
+
+ln -s $prefix/cuda/lib $prefix/cuda/lib64
 
 mkdir libxc_build
 cd libxc_build
-
-mv ${WORKSPACE}/destdir/cuda/lib ${WORKSPACE}/destdir/cuda/lib64
 
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}\
     -DCMAKE_BUILD_TYPE=Release -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
@@ -26,8 +25,10 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLC
     -DBUILD_TESTING=OFF -DENABLE_FORTRAN=OFF \
     -DDISABLE_KXC=ON ..
 
-make -j${nproc}
-make install
+cmake --build . --parallel $nproc
+cmake --install .
+
+unlink $prefix/cuda/lib64
 """
 
 # Override the default platforms
@@ -52,6 +53,5 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
-                   julia_compat="1.8", augment_platform_block=CUDA.augment, preferred_gcc_version=v"8",
-                   skip_audit=true, dont_dlopen=true)
+                   julia_compat="1.8", augment_platform_block=CUDA.augment, preferred_gcc_version=v"8")
 end
