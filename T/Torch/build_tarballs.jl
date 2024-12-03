@@ -202,8 +202,8 @@ let cuda_platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v
     push!(cuda_platforms, Platform("x86_64", "Linux"; cuda = "11.3"))
 
      # Tag non-CUDA platforms matching CUDA platforms with cuda="none"
-    for platform in platforms, cuda_platform in cuda_platforms
-        if platforms_match(platform, cuda_platform)
+    for platform in platforms
+        if CUDA.is_supported(platform) && arch(platform) != "aarch64"
             platform["cuda"] = "none"
         end
     end
