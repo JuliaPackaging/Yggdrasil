@@ -21,7 +21,7 @@ cd ${WORKSPACE}/srcdir/p11-kit-*
 # - Only pass linker arguments when linking.
 if [[ ${target} = aarch64-apple-darwin* ]]; then
     pushd /
-    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/aarch4-apple-clang.patch
+    atomic_patch -p0 ${WORKSPACE}/srcdir/patches/aarch64-apple-clang.patch
     popd
 fi
 if [[ ${target} = x86_64-apple-darwin* ]]; then
