@@ -76,7 +76,7 @@ fi
         Dependency("Cairo_jll"),
         Dependency("Fontconfig_jll"),
         Dependency("FreeType2_jll"; compat="2.13.3"),
-        Dependency("Glib_jll"; compat="2.68.1"),
+        Dependency("Glib_jll"; compat="2.82.2"),
         Dependency("Graphite2_jll"),
         Dependency("Libffi_jll"; compat="~3.2.2"),
         BuildDependency("Xorg_xorgproto_jll"),
