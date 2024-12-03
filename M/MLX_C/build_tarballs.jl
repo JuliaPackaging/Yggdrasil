@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MLX_C"
-version = v"0.0.11"
+version = v"0.0.11" # This is an unofficial version number - used for git commit sha (126253...) matching MLX v0.20.0
 
 sources = [
     GitSource("https://github.com/ml-explore/mlx-c.git", "126253627b95a0803273f44655fdaf5e7be4fbe1"),
