@@ -46,8 +46,8 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("octave", :octave),
-    ExecutableProduct("octave-cli", :octave_cli),
+    ExecutableProduct("octave-$version", :octave),
+    ExecutableProduct("octave-cli-$version", :octave_cli),
 ]
 
 # Dependencies that must be installed before this package can be built
