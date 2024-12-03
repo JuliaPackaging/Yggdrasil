@@ -47,6 +47,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("octave", :octave),
+    ExecutableProduct("octave-cli", :octave_cli),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -74,7 +75,7 @@ dependencies = [
     Dependency("HDF5_jll"),
     Dependency("rapidjson_jll"),
     Dependency("libsndfile_jll"),
-    Dependency("GraphicsMagick_jll"),
+#    Dependency("GraphicsMagick_jll"),
 
 ]
 
