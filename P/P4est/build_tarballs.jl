@@ -6,11 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "P4est"
-version = v"2.8.6"
+p4est_version = v"2.8.6"
+version = v"2.8.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://p4est.github.io/release/p4est-$(version).tar.gz",
+    ArchiveSource("https://p4est.github.io/release/p4est-$(p4est_version).tar.gz",
                   "46ee0c6e5a24f45be97fba743f5ef3d9618c075b023e9421ded9fc8cf7811300"),
     DirectorySource("bundled"),
 ]
@@ -81,6 +82,18 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms;
                                                          MPICH_compat="4.2.3",
                                                          MPItrampoline_compat="5.5.0",
                                                          OpenMPI_compat="4.1.6, 5")
+
+# Disable OpenMPI:
+# It is important that P4est.jl can be used with custom-built libp4est
+# and libsc that are built against a sytem MPI library. It seems that
+# P4est_jll (which shouldn't be used in this case) currently doesn't
+# allow this, leading to run-time errors. See
+# <https://github.com/trixi-framework/P4est.jl/pull/88>. I don't
+# understand the cause of the error, but in the interest of the
+# P4est.jl developers (see
+# <https://github.com/JuliaPackaging/Yggdrasil/pull/9878>) we disable
+# OpenMPI here.
+platforms = filter(p -> p["mpi"] ≠ "openmpi", platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
