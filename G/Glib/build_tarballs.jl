@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.82.2"
+version = v"2.83.0"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "ab45f5a323048b1659ee0fbda5cecd94b099ab3e4b9abf26ae06aeb3e781fd63"),
+                  "a07d9e1a57a4279c5ece71c26dc44eea12bd518ea9ff695d53e722997032b614"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
@@ -95,14 +95,14 @@ dependencies = [
     # Host gettext needed for "msgfmt"
     HostBuildDependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"),
+    Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"), # would need 3.4.6 for aarch64-*-freebsd
     # Gettext is only needed on macOS, as far as I could see
     Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
-    Dependency("PCRE2_jll"; compat="10.35"),
+    Dependency("PCRE2_jll"; compat="10.43"),
     Dependency("Zlib_jll"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version = v"6")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
