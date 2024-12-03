@@ -114,7 +114,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang++"
-    	BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
+        BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
@@ -186,12 +186,12 @@ sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/ex
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     if [[ "${bb_full_target}" == *86* ]]; then
-    	echo "x86"
+        echo "x86"
     else
-    	sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-    	sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-    	cat /workspace/bazel_root/*/external/local_config_cc/BUILD
-	$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+        sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
     fi
 	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
 	sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
@@ -208,12 +208,12 @@ rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
 
 if [[ "${bb_full_target}" == *cuda* ]]; then
-  rm -rf bazel-bin/_solib_local/*stub*/*so*
-  cp -v bazel-bin/_solib_local/*/*so* ${libdir}
-  mkdir -p ${libdir}/cuda/nvvm/libdevice
-  mkdir -p ${libdir}/cuda/bin
-  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
-  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
+    rm -rf bazel-bin/_solib_local/*stub*/*so*
+    cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    mkdir -p ${libdir}/cuda/nvvm/libdevice
+    mkdir -p ${libdir}/cuda/bin
+    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
+    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
 fi
 
 cp -v bazel-bin/libReactantExtra.so ${libdir}
