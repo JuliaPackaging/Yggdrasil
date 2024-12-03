@@ -100,7 +100,8 @@ platforms = expand_cxxstring_abis(platforms)
 accelerate_platforms = filter(Sys.isapple, platforms)
 openblas_platforms = filter(p ->
     arch(p) == "armv6l" ||
-    p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11"),
+    p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11") ||
+    Sys.isfreebsd(p) && arch(p) == "aarch64",
     filter(p -> p ∉ accelerate_platforms, platforms)
 )
 libblastrampoline_platforms = filter(p -> p ∉ union(accelerate_platforms, openblas_platforms), platforms)
