@@ -27,6 +27,10 @@ cd $WORKSPACE/srcdir/mlx
 
 atomic_patch -p1 ../patches/missing-unordered_map-include.patch
 
+if [[ "$target" == *-w64-mingw32* ]]; then
+    atomic_patch -p1 ../patches/cmake-win32-io.patch
+fi
+
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
