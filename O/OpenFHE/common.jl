@@ -9,7 +9,7 @@ function prepare_openfhe_build(name::String, git_hash::String)
     ]
 
     # Set native size for bash recipe
-    native_size = (name == "OpenFHE_128" ? 128 : 64)
+    native_size = (name == "OpenFHE_int128" ? 128 : 64)
 
     # Bash recipe for building across all platforms
     script = raw"""
@@ -52,7 +52,7 @@ function prepare_openfhe_build(name::String, git_hash::String)
     platforms = expand_cxxstring_abis(platforms)
 
     # armv6l and armv7l do not support 128 bit int size
-    if name == "OpenFHE_128"
+    if name == "OpenFHE_int128"
         platforms = filter(p -> arch(p) != "armv6l", platforms)
         platforms = filter(p -> arch(p) != "armv7l", platforms)
     end

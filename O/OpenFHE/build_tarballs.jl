@@ -3,7 +3,7 @@
 include("common.jl")
 
 # If you make changes in this file, e.g., to release a new version,
-# be sure to also release a new version of `OpenFHE_128` as well (see `../OpenFHE_128/build_tarballs.jl`)
+# be sure to also release a new version of `OpenFHE_int128` as well (see `../OpenFHE_int128/build_tarballs.jl`)
 name = "OpenFHE"
 version = v"1.2.3"
 
