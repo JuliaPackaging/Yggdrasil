@@ -375,6 +375,11 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
         continue
     end
 
+    # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
+    if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
+        continue
+    end
+
     prefix="export MODE="*mode*"\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
