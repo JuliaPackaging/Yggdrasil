@@ -181,6 +181,9 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
+sed -i "s/BB_TARGET/${bb_target}/g" BUILD
+sed -i "s/BB_FULL_TARGET/${bb_full_target}/g" BUILD
+
 $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]}
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-raw/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
