@@ -103,6 +103,7 @@ end
 platforms = supported_platforms(; exclude=platform_exclude_filter)
 
 let cuda_platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
+    filter!(p -> !(arch(p) == "x86_64" && Sys.islinux(p) && p["cuda"] == "10.2"), cuda_platforms) # Fails with: nvcc error   : 'ptxas' died due to signal 11 (Invalid memory reference)
     push!(cuda_platforms, Platform("x86_64", "Linux"; cuda = "11.3"))
     push!(cuda_platforms, Platform("x86_64", "Windows"; cuda = "11.3"))
 
