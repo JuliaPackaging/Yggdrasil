@@ -68,7 +68,7 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
     Dependency("Libuuid_jll"),
-    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Expat_jll"; compat="2.6.4"),
 ]
 
 init_block = """
