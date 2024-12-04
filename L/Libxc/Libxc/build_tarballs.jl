@@ -13,9 +13,13 @@ cd $WORKSPACE/srcdir/libxc-*/
 
 mkdir libxc_build
 cd libxc_build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
-    -DENABLE_FORTRAN=OFF -DDISABLE_KXC=ON ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DENABLE_XHOST=OFF \
+      -DENABLE_FORTRAN=OFF \
+      -DDISABLE_KXC=ON ..
 
 make -j${nproc}
 make install
@@ -37,4 +41,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8", julia_compat="1.8")
+               preferred_gcc_version=v"8",
+               julia_compat="1.8")

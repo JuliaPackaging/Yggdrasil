@@ -19,11 +19,16 @@ ln -s $prefix/cuda/lib $prefix/cuda/lib64
 mkdir libxc_build
 cd libxc_build
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}\
-    -DCMAKE_BUILD_TYPE=Release -DENABLE_XHOST=OFF -DBUILD_SHARED_LIBS=ON \
-    -DENABLE_CUDA=ON -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
-    -DBUILD_TESTING=OFF -DENABLE_FORTRAN=OFF \
-    -DDISABLE_KXC=ON ..
+cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CUDA_COMPILER=$prefix/cuda/bin/nvcc \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_TESTING=OFF \
+      -DENABLE_CUDA=ON \
+      -DENABLE_XHOST=OFF\
+      -DENABLE_FORTRAN=OFF \
+      -DDISABLE_KXC=ON ..
 
 cmake --build . --parallel $nproc
 cmake --install .
@@ -52,6 +57,9 @@ for platform in platforms
     cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
-                   products, [dependencies; cuda_deps]; lazy_artifacts=true,
-                   julia_compat="1.8", augment_platform_block=CUDA.augment, preferred_gcc_version=v"8")
+                   products, [dependencies; cuda_deps];
+                   lazy_artifacts=true,
+                   julia_compat="1.8",
+                   augment_platform_block=CUDA.augment,
+                   preferred_gcc_version=v"8")
 end
