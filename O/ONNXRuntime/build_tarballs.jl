@@ -13,7 +13,7 @@ version = v"1.10.0"
 # Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
 cuda_versions = [
     v"10.2",
-    v"11.3",
+    v"11.3", # Using 11.3, and not 11.4, to be compatible with CUDNN v8.2.4, and with TensorRT (JLL) v8.0.1 (where the latter includes aarch64 support).
 ]
 cudnn_version = v"8.2.4"
 tensorrt_version = v"8.0.1"
@@ -35,21 +35,18 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 
+cuda_version=${bb_full_target##*-cuda+}
 if [[ $target != *-w64-mingw32* ]]; then
-    if [[ $bb_full_target == x86_64-linux-gnu-*-cuda* && $bb_full_target != *-cuda+none* ]]; then
-        cuda_version=`echo $bb_full_target | sed -E -e 's/.*cuda\+([0-9]+\.[0-9]+).*/\1/'`
-        cuda_version_major=`echo $cuda_version | cut -d . -f 1`
-        cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
-        cuda_sdk_path=$prefix/cuda
-        export PATH=$PATH:$cuda_sdk_path/bin
+    if [[ $bb_full_target == x86_64-linux-gnu-*-cuda* && $cuda_version != none ]]; then
+        export CUDA_PATH="$prefix/cuda"
         mkdir $WORKSPACE/tmpdir
         export TMPDIR=$WORKSPACE/tmpdir
         cmake_extra_args=(
-            "-DCMAKE_CUDA_FLAGS=-cudart shared"
-            "-Donnxruntime_CUDA_HOME=$cuda_sdk_path"
-            "-Donnxruntime_CUDNN_HOME=$prefix"
-            "-Donnxruntime_USE_CUDA=ON"
-            "-Donnxruntime_USE_TENSORRT=ON"
+            -DCUDAToolkit_ROOT=$CUDA_PATH
+            -Donnxruntime_CUDA_HOME=$CUDA_PATH
+            -Donnxruntime_CUDNN_HOME=$prefix
+            -Donnxruntime_USE_CUDA=ON
+            -Donnxruntime_USE_TENSORRT=ON
         )
     fi
 
@@ -76,10 +73,10 @@ if [[ $target != *-w64-mingw32* ]]; then
     make install
     install_license $WORKSPACE/srcdir/onnxruntime/LICENSE
 else
-    if [[ $bb_full_target == *-cuda+none* ]]; then
-        srcdir=onnxruntime-$target
-    else
+    if [[ $bb_full_target == *-cuda* && $cuda_version != none ]]; then
         srcdir=onnxruntime-$target-cuda
+    else
+        srcdir=onnxruntime-$target
     fi
     chmod 755 $srcdir/onnxruntime-*/lib/*
     mkdir -p $includedir $libdir
@@ -88,7 +85,7 @@ else
     install_license $srcdir/onnxruntime-*/LICENSE
 fi
 
-if [[ $bb_full_target == aarch64-linux-gnu*cuda* ]]; then
+if [[ $bb_full_target == aarch64-linux-gnu*-cuda* && $cuda_version != none ]]; then
     cd $WORKSPACE/srcdir
     unzip -d onnxruntime-$target-cuda onnxruntime-$target-cuda.whl
     mkdir -p $libdir
@@ -104,6 +101,20 @@ function platform_exclude_filter(p::Platform)
     Sys.isfreebsd(p)
 end
 platforms = supported_platforms(; exclude=platform_exclude_filter)
+
+let cuda_platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
+    push!(cuda_platforms, Platform("x86_64", "Linux"; cuda = "11.3"))
+    push!(cuda_platforms, Platform("x86_64", "Windows"; cuda = "11.3"))
+
+     # Tag non-CUDA platforms matching CUDA platforms with cuda="none"
+    for platform in platforms
+        if CUDA.is_supported(platform) && arch(platform) != "powerpc64le" || platform == Platform("x86_64", "Windows")
+            platform["cuda"] = "none"
+        end
+    end
+    append!(platforms, cuda_platforms)
+end
+
 platforms = expand_cxxstring_abis(platforms; skip=!Sys.islinux)
 
 # The products that we will ensure are always built
@@ -116,50 +127,26 @@ dependencies = [
     HostBuildDependency(PackageSpec("protoc_jll", v"3.16.1"))
 ]
 
-augment_platform_block = CUDA.augment
-
 builds = []
-for cuda_version in [nothing, cuda_versions...], platform in platforms
-    augmented_platform = deepcopy(platform)
-    if isnothing(cuda_version)
-        augmented_platform["cuda"] = "none"
-    else
-        if (
-                CUDA.is_supported(platform)
-                && (
-                    (arch(platform) == "aarch64" && Sys.islinux(platform) && Base.thismajor(cuda_version) == v"10")
-                    || (arch(platform) == "x86_64" && Sys.islinux(platform) && Base.thismajor(cuda_version) == v"11")
-                )
-            ) || (
-                arch(platform) == "x86_64" && Sys.iswindows(platform) && Base.thismajor(cuda_version) == v"11"
-            )
-            augmented_platform["cuda"] = CUDA.platform(cuda_version)
-        else
-            continue
-        end
-    end
-    should_build_platform(triplet(augmented_platform)) || continue
-    platform_dependencies = BinaryBuilder.AbstractDependency[]
-    append!(platform_dependencies, dependencies)
-    if !isnothing(cuda_version)
-        if Base.thisminor(cuda_version) != v"11.3"
-            append!(platform_dependencies, CUDA.required_dependencies(augmented_platform))
-        else
-            append!(platform_dependencies, [
+for platform in platforms
+    should_build_platform(platform) || continue
+    additional_deps = BinaryBuilder.AbstractDependency[]
+    if haskey(platform, "cuda") && platform["cuda"] != "none"
+        if platform["cuda"] == "11.3"
+            additional_deps = BinaryBuilder.AbstractDependency[
                 BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
-                Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using Dependency with build version v"0.7.0" to get support for cuda = "11.3"
-            ])
+                Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using v"0.7.0" to get support for cuda = "11.3" - using Dependency rather than RuntimeDependency to be sure to pass audit
+            ]
+        else
+            additional_deps = CUDA.required_dependencies(platform, static_sdk = true)
         end
-        append!(platform_dependencies, [
+        push!(additional_deps,
             Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = cudnn_compat), # Using v"8.2.4+0" to get support for cuda = "11.3"
             Dependency("TensorRT_jll", tensorrt_version; compat = tensorrt_compat),
             Dependency("Zlib_jll"),
-        ])
+        )
     end
-    push!(builds, (;
-        platforms=[augmented_platform],
-        dependencies=platform_dependencies,
-    ))
+    push!(builds, (; platforms=[platform], dependencies=[dependencies; additional_deps]))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
@@ -169,11 +156,12 @@ non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 # `--register` should only be passed to the latest `build_tarballs` invocation
 non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
-for (i,build) in enumerate(builds)
+for (i, build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, sources, script,
                    build.platforms, products, build.dependencies;
-                   julia_compat="1.6",
-                   augment_platform_block,
+                   augment_platform_block = CUDA.augment,
+                   julia_compat = "1.6",
+                   lazy_artifacts = true,
                    preferred_gcc_version = v"8")
 end
