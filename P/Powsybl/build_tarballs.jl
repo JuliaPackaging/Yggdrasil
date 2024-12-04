@@ -73,7 +73,7 @@ install_license $WORKSPACE/srcdir/powsybl.jl/LICENSE.md
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
-filter!(p -> arch(p) == "x86_64" && os(p) ∈ ("windows", "linux", "macos") || arch(p) == "aarch64" && occursin(os(p), "macos"), platforms)
+filter!(p -> arch(p) == "x86_64" && os(p) ∈ ("windows", "linux", "macos") || arch(p) == "aarch64" && Sys.isapple(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
