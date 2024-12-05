@@ -6,11 +6,11 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.5.0"
+source_version = v"4.5.1"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "aab70aee10c134ef3fe568843fe4b3bb5e8901af30ea666f57462ad950682317"),
+                  "58059b911a78b8bda91eef4cfc6278383b24e71865263c2e0569cf5faa59dda3"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
