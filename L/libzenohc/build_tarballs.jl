@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libzenohc"
-version = v"1.0.0"
+version = v"1.0.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eclipse-zenoh/zenoh-c.git", "bca57bb6e5a55421cc6ef20ddae5fd3cbb58c30c")
+    GitSource("https://github.com/eclipse-zenoh/zenoh-c.git", "d70de64e007d471d54ead930dbe0df333372e679")
 ]
 
 # Bash recipe for building across all platforms
