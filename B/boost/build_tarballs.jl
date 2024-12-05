@@ -10,11 +10,12 @@ sources = [
     ArchiveSource(
         "https://boostorg.jfrog.io/artifactory/main/release/$(version)/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
         "475d589d51a7f8b3ba2ba4eda022b170e562ca3b760ee922c146b6c65856ef39"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/boost*/
+cd $WORKSPACE/srcdir/boost*
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
@@ -46,10 +47,10 @@ if [[ $target == *apple* ]]; then
     fi
 elif [[ $target == x86_64*mingw* ]]; then
     targetos=windows
-    extraargs="address-model=64 binary-format=pe abi=ms link=shared"
+    extraargs="address-model=64 define=_WIN32_WINNT=0x0602 binary-format=pe abi=ms link=shared"
 elif [[ $target == i686*mingw* ]]; then
     targetos=windows
-    extraargs="address-model=32 binary-format=pe abi=ms link=shared"
+    extraargs="address-model=32 define=_WIN32_WINNT=0x0602 binary-format=pe abi=ms link=shared"
 elif [[ $target == *freebsd* ]]; then
     targetos=freebsd
     toolset=clang-6.0
