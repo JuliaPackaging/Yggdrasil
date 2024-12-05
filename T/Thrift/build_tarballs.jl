@@ -35,9 +35,16 @@ CMAKE_FLAGS=(
     -DTHRIFT_COMPILER_DELPHI=OFF
 )
 
-cmake -B build "${CMAKE_FLAGS[@]}"
-cmake --build build --parallel ${nproc}
-cmake --install build
+if [[ ${target} == *darwin* || ${target} == *freebsd* ]]; then
+    CMAKE_FLAGS+=(
+        # Avoid a problem in Boost by disabling a Clang compiler "warning" that is actually treated as error
+        -DCMAKE_CXX_FLAGS='-Wno-enum-constexpr-conversion'
+    )
+fi
+
+cmake -B cmake-build "${CMAKE_FLAGS[@]}"
+cmake --build cmake-build --parallel ${nproc}
+cmake --install cmake-build
 """
 
 # These are the platforms we will build for by default, unless further
