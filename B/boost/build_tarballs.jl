@@ -28,11 +28,15 @@ extraargs=
 # add another "harmless" option; we choose `-Wall` which is already passed anyway
 sed -i "s/-march=i686/-Wall/g" tools/build/src/tools/gcc.*
 
+# We need `-Wno-enum-constexpr-conversion` to disable a Clang
+# "warning" that is actually an error. (This is a problem in Boost which
+# violates the C++17 standard.)
+
 if [[ $target == *apple* ]]; then
     targetos=darwin
     toolset=darwin-6.0
     extraargs="binary-format=mach-o link=shared"
-    echo "using darwin : 6.0 : $CXX : <cxxflags>-stdlib=libc++ <linkflags>-stdlib=libc++ ;" > project-config.jam
+    echo "using darwin : 6.0 : $CXX : <cxxflags>\\"-stdlib=libc++ -Wno-enum-constexpr-conversion\\" <linkflags>-stdlib=libc++ ;" > project-config.jam
     if [[ "${target}" == aarch64-* ]]; then
         # Fix error
         #     Undefined symbols for architecture arm64:
@@ -50,7 +54,10 @@ elif [[ $target == *freebsd* ]]; then
     targetos=freebsd
     toolset=clang-6.0
     extraargs="address-model=64 link=shared"
-    echo "using clang : 6.0 : $CXX : <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
+    if [[ "${target}" == aarch64-* ]]; then
+        extraargs="abi=aapcs ${extraargs}"
+    fi
+    echo "using clang : 6.0 : $CXX : <cxxflags>\\"-Wno-enum-constexpr-conversion\\" <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
 fi
 ./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
 
