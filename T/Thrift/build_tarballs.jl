@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Thrift"
-version = v"0.19.0"
+version = v"0.21.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/thrift.git", "5656208a202ca0be4d4dc44125b5ca0485f91bf0"),
+    GitSource("https://github.com/apache/thrift.git", "1a31d9051d35b732a5fce258955ef95f576694ba"),
     DirectorySource("bundled"),
 ]
 
@@ -20,25 +20,24 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-mkdir build_dir && cd build_dir
+CMAKE_FLAGS=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_COMPILER=ON
+    -DBUILD_CPP=ON
+    -DBUILD_PYTHON=OFF
+    -DBUILD_TESTING=OFF
+    -DBUILD_JAVASCRIPT=OFF
+    -DBUILD_NODEJS=OFF
+    -DBUILD_SHARED_LIBS=ON
+    -DBUILD_TUTORIALS=OFF
+    -DTHRIFT_COMPILER_DELPHI=OFF
+)
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
--DCMAKE_BUILD_TYPE=Release
--DBUILD_COMPILER=ON
--DBUILD_CPP=ON
--DBUILD_PYTHON=OFF
--DBUILD_TESTING=OFF
--DBUILD_JAVASCRIPT=OFF
--DBUILD_NODEJS=OFF
--DBUILD_SHARED_LIBS=ON
--DBUILD_TUTORIALS=OFF
--DTHRIFT_COMPILER_DELPHI=OFF)
-
-cmake .. "${CMAKE_FLAGS[@]}"
-
-make -j${nproc}
-make install
+cmake -B build "${CMAKE_FLAGS[@]}"
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,7 +52,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll", compat="=1.76.0"),
+    Dependency("boost_jll", compat="=1.79.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
