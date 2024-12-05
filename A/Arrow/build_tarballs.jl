@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "Arrow"
-version = v"10.0.0"
+version = v"10.0.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/apache/arrow.git",
-              "89f9a0948961f6e94f1ef5e4f310b707d22a3c11")
-    DirectorySource("./bundled")
+              "a6eabc2b890030578131aecc5e85900597d694a4")
+    DirectorySource("bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,44 +22,44 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-cd cpp && mkdir build_dir && cd build_dir
+cd cpp
 
 # Ignore check for availibility on older macOS versions
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     CXXFLAGS="${CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
 fi
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=$prefix
--DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
--DARROW_CXXFLAGS="${CXXFLAGS}"
--DCMAKE_BUILD_TYPE=Release
--DARROW_BUILD_UTILITIES=OFF
--DARROW_WITH_UTF8PROC=OFF
--DARROW_DEPENDENCY_SOURCE=SYSTEM
--DARROW_VERBOSE_THIRDPARTY_BUILD=ON
--DARROW_BUILD_STATIC=OFF
--DARROW_DATASET=ON
--DARROW_COMPUTE=OFF
--DARROW_WITH_RE2=OFF
--DARROW_WITH_BZ2=ON
--DARROW_IPC=OFF
--DARROW_WITH_LZ4=ON
--DARROW_WITH_ZSTD=OFF
--DARROW_WITH_ZLIB=ON
--DARROW_WITH_SNAPPY=ON
--DARROW_THRIFT_USE_SHARED=ON
--DARROW_PARQUET=ON
--DPARQUET_BUILD_EXECUTABLES=OFF
--DARROW_SIMD_LEVEL=NONE
--DARROW_USE_XSIMD=OFF
--DARROW_JEMALLOC=OFF
--Dxsimd_SOURCE=AUTO)
+CMAKE_FLAGS=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DARROW_CXXFLAGS="${CXXFLAGS}"
+    -DCMAKE_BUILD_TYPE=Release
+    -DARROW_BUILD_UTILITIES=OFF
+    -DARROW_WITH_UTF8PROC=OFF
+    -DARROW_DEPENDENCY_SOURCE=SYSTEM
+    -DARROW_VERBOSE_THIRDPARTY_BUILD=ON
+    -DARROW_BUILD_STATIC=OFF
+    -DARROW_DATASET=ON
+    -DARROW_COMPUTE=OFF
+    -DARROW_WITH_RE2=OFF
+    -DARROW_WITH_BZ2=ON
+    -DARROW_IPC=OFF
+    -DARROW_WITH_LZ4=ON
+    -DARROW_WITH_ZSTD=OFF
+    -DARROW_WITH_ZLIB=ON
+    -DARROW_WITH_SNAPPY=ON
+    -DARROW_THRIFT_USE_SHARED=ON
+    -DARROW_PARQUET=ON
+    -DPARQUET_BUILD_EXECUTABLES=OFF
+    -DARROW_SIMD_LEVEL=NONE
+    -DARROW_USE_XSIMD=OFF
+    -DARROW_JEMALLOC=OFF
+    -Dxsimd_SOURCE=AUTO
+)
 
-cmake .. "${CMAKE_FLAGS[@]}"
-
-make -j${nproc}
-
-make install
+cmake -B build "${CMAKE_FLAGS[@]}"
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
