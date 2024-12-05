@@ -96,6 +96,6 @@ build_tarballs(
     products,
     dependencies;
     preferred_gcc_version = gcc_version,
-    preferred_llvm_version = llvm_version,
+    clang_use_lld = false,
     julia_compat = "1.9",
 )
