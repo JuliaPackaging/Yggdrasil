@@ -71,9 +71,10 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.6.4"),
 ]
 
+# @giordano: "I know this looks funky, but it makes code in the JLL indented correctly"
 init_block = """
 get!(ENV, "FONTCONFIG_FILE", fonts_conf)
-get!(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
+    get!(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
 """
 
 # Build the tarballs, and possibly a `build.jl` as well.
