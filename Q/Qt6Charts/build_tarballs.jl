@@ -66,7 +66,7 @@ products = [
 ]
 
 products_macos = [
-    FrameworkProduct("QtCharts", :libqt6svg),
+    FrameworkProduct("QtCharts", :libqt6charts),
     FrameworkProduct("QtChartsQml", :libqt6chartsqml),
 ]
 
