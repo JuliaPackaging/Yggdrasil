@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "FuzzifiED"
-version = v"0.10.5"
+version = v"0.10.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mankai-chow/FuzzifiED_Fortran.git", "32970bd69f9cc2a17e840399fb973a01535078c0")
+    GitSource("https://github.com/FuzzifiED/FuzzifiED_Fortran.git", "262616b86d71a4d5dcf10c0608c789d4cf45f6d8")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +22,7 @@ for src in cfs.f90 bs.f90 op.f90 diag.f90 diag_re.f90 ent.f90; do
 done
 gfortran "${FFLAGS[@]}" -shared -o "${libdir}/libfuzzified.${dlext}" ./*.o -L "${libdir}" -larpack
 cd super
-for src in scfs.f90 sbs.f90 sop.f90; do
+for src in scfs.f90 sbs.f90 sop.f90 sent.f90; do
     gfortran "${FFLAGS[@]}" -c ./${src}
 done
 gfortran "${FFLAGS[@]}" -shared -o "${libdir}/libfuzzifino.${dlext}" ./*.o
