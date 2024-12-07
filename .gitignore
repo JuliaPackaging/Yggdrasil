@@ -8,3 +8,5 @@ build/
 
 # Ignore meta.json files
 meta.json
+
+platforms.md

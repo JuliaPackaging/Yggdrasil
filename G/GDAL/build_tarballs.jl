@@ -188,7 +188,7 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
-    Dependency("Arrow_jll"; compat="10"),
+    Dependency("Arrow_jll"; compat="18"),
     Dependency("Blosc_jll"; compat="1.21.1"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("GEOS_jll"; compat="3.11.2"),
