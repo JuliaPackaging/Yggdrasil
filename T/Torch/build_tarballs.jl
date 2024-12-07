@@ -1,23 +1,31 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
+include(joinpath(@__DIR__, "..", "..", "fancy_toys.jl"))
 include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 
 name = "Torch"
-version = v"1.10.2"
+version = v"1.11.0"
 
-# Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pytorch/pytorch.git", "71f889c7d265b9636b93ede9d651c0a9c4bee191"),
+    GitSource("https://github.com/pytorch/pytorch.git", "bc2c6edaf163b1a1330e37a6e34caf8c553e4755"),
     FileSource("https://micromamba.snakepit.net/api/micromamba/linux-64/0.21.1", "c907423887b43bec4e8b24f17471262c8087b7095683f41dcef4a4e24e9a3bbd"; filename = "micromamba.tar.bz2"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v10.2.89%2B5/CUDA_full.v10.2.89.x86_64-linux-gnu.tar.gz", "60e6f614db3b66d955b7e6aa02406765e874ff475c69e2b4a04eb95ba65e4f3b"; unpack_target = "CUDA_full.v10.2"),
-    ArchiveSource("https://github.com/JuliaBinaryWrappers/CUDA_full_jll.jl/releases/download/CUDA_full-v11.3.1%2B1/CUDA_full.v11.3.1.x86_64-linux-gnu.tar.gz", "9ae00d36d39b04e8e99ace63641254c93a931dcf4ac24c8eddcdfd4625ab57d6"; unpack_target = "CUDA_full.v11.3"),
     DirectorySource("./bundled"),
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
+cat > /opt/bin/$bb_full_target/xcrun << EOF
+#!/bin/bash
+if [[ "\${@}" == *"--show-sdk-path"* ]]; then
+   echo /opt/$target/$target/sys-root
+elif [[ "\${@}" == *"--show-sdk-version"* ]]; then
+   echo 14.0
+else
+   exec "\${@}"
+fi
+EOF
+chmod +x /opt/bin/$bb_full_target/xcrun
+
 cd $WORKSPACE/srcdir
 
 mkdir micromamba
@@ -105,27 +113,15 @@ if [[ $bb_full_target == *cuda* ]]; then
     cuda_version=`echo $bb_full_target | sed -E -e 's/.*cuda\+([0-9]+\.[0-9]+).*/\1/'`
     cuda_version_major=`echo $cuda_version | cut -d . -f 1`
     cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
-    cuda_full_path="$WORKSPACE/srcdir/CUDA_full.v$cuda_version/cuda"
-    export PATH=$PATH:$cuda_full_path/bin
-    export CUDACXX=$cuda_full_path/bin/nvcc
-    export CUDAHOSTCXX=$CXX
+    export CUDA_PATH="$prefix/cuda"
     mkdir $WORKSPACE/tmpdir
     export TMPDIR=$WORKSPACE/tmpdir
     cmake_extra_args+="\
         -DUSE_CUDA=ON \
         -DUSE_CUDNN=ON \
         -DUSE_MAGMA=ON \
-        -DCUDA_TOOLKIT_ROOT_DIR=$cuda_full_path \
-        -DCUDA_CUDART_LIBRARY=$cuda_full_path/lib64/libcudart.$dlext \
-        -DCMAKE_CUDA_FLAGS='-cudart shared' \
-        -DCUDA_cublas_LIBRARY=$cuda_full_path/lib64/libcublas.$dlext \
-        -DCUDA_cufft_LIBRARY=$cuda_full_path/lib64/libcufft.$dlext \
-        -DCUDA_curand_LIBRARY=$cuda_full_path/lib64/libcurand.$dlext \
-        -DCUDA_cusolver_LIBRARY=$cuda_full_path/lib64/libcusolver.$dlext \
-        -DCUDA_cusparse_LIBRARY=$cuda_full_path/lib64/libcusparse.$dlext \
-        -DCUDA_TOOLKIT_INCLUDE=$includedir;$cuda_full_path/include \
+        -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_PATH \
         -DCUB_INCLUDE_DIR=$WORKSPACE/srcdir/pytorch/third_party/cub "
-    include_paths+=":$cuda_full_path/include"
     micromamba install -y magma-cuda${cuda_version_major}${cuda_version_minor} -c pytorch
     git submodule update --init \
         third_party/cub \
@@ -139,11 +135,13 @@ git submodule update --init \
     third_party/FXdiv \
     third_party/eigen \
     third_party/fbgemm \
+    third_party/flatbuffers \
     third_party/fmt \
     third_party/foxi \
     third_party/gloo \
     third_party/kineto \
     third_party/onnx \
+    third_party/pocketfft \
     third_party/psimd \
     third_party/tensorpipe
 git submodule update --init --recursive \
@@ -192,8 +190,6 @@ make install
 install_license ../LICENSE
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.islinux(p) && libc(p) == "musl"), platforms) # musl fails due to conflicting declaration of C function ‘void __assert_fail(const char*, const char*, int, const char*) - between /opt/x86_64-linux-musl/x86_64-linux-musl/include/c++/8.1.0/cassert:44 and /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/include/assert.h
 filter!(!Sys.iswindows, platforms) # ONNX does not support cross-compiling for w64-mingw32 on linux
@@ -231,18 +227,15 @@ mkl_platforms = expand_cxxstring_abis(mkl_platforms)
 openblas_platforms = expand_cxxstring_abis(openblas_platforms)
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
-# The products that we will ensure are always built
 products = [
     FileProduct("share/ATen/Declarations.yaml", :declarations_yaml),
     LibraryProduct(["libtorch", "torch"], :libtorch),
     LibraryProduct(["libtorch_cpu", "torch_cpu"], :libtorch_cpu),
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("CPUInfo_jll"; compat = "0.0.20201217"),
-    Dependency("CUDNN_jll", v"8.2.4"; compat = "8", platforms = cuda_platforms),
     Dependency("Gloo_jll";  compat = "0.0.20210521", platforms = filter(p -> nbits(p) == 64, platforms)),
     Dependency("LAPACK_jll"; platforms = openblas_platforms),
     # Dependency("MKL_jll"; platforms = mkl_platforms), # MKL is avoided for all platforms
@@ -254,11 +247,30 @@ dependencies = [
     Dependency("XNNPACK_jll"; compat = "0.0.20210622"),
     Dependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110")); compat="~3.13.0"),
     HostBuildDependency(PackageSpec("protoc_jll", Base.UUID("c7845625-083e-5bbe-8504-b32d602b7110"), v"3.13.0")),
-    RuntimeDependency("CUDA_Runtime_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version = v"8",
-    julia_compat = "1.6",
-    augment_platform_block = CUDA.augment)
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+
+    additional_deps = BinaryBuilder.AbstractDependency[]
+    if haskey(platform, "cuda")
+        if platform["cuda"] == "11.3"
+            additional_deps = BinaryBuilder.AbstractDependency[
+                BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
+                Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using v"0.7.0" to get support for cuda = "11.3" - using Dependency rather than RuntimeDependency to be sure to pass audit
+            ]
+        else
+            additional_deps = CUDA.required_dependencies(platform, static_sdk = true)
+        end
+        push!(additional_deps,
+            Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = "8"), # Using v"8.2.4+0" to get support for cuda = "11.3"
+        )
+    end
+
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; additional_deps];
+        preferred_gcc_version = v"8",
+        preferred_llvm_version = v"14",
+        julia_compat = "1.6",
+        augment_platform_block=CUDA.augment,
+        lazy_artifacts=true)
+end
