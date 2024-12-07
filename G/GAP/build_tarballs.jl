@@ -120,6 +120,9 @@ filter!(p -> nbits(p) == 64, platforms)
 # Windows is not supported
 filter!(!Sys.iswindows, platforms)
 
+# Exclude aarch64 FreeBSD for the time being
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gap", :gap),
