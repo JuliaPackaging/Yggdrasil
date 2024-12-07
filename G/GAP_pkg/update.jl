@@ -62,7 +62,7 @@ function update_gap_pkg_recipe(dir)
 
     # new metadata from the GAP package registry
     if pkgname == "juliainterface"
-        upstream_version = "0.12.0"
+        upstream_version = "0.13.0"
         sha256 = "DUMMY"
     else
         meta = pkginfo[pkgname]
