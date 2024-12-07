@@ -9,10 +9,10 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1300.100"
-gap_lib_version = v"400.1300.100"
+gap_version = v"400.1400.0"
+gap_lib_version = v"400.1400.0"
 name = "JuliaInterface"
-upstream_version = "0.12.0" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "0.13.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
@@ -69,7 +69,7 @@ end
 dependencies = [
     Dependency("GAP_jll", gap_version),
     Dependency("GAP_lib_jll", gap_lib_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.11")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.13")),
 ]
 
 # The products that we will ensure are always built
