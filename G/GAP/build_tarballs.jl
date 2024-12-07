@@ -133,7 +133,7 @@ dependencies = [
     HostBuildDependency("Zlib_jll"),
 
     Dependency("GMP_jll"),
-    Dependency("Readline_jll", v"8.1.1"),
+    Dependency("Readline_jll"; compat="8.2.1"),
     Dependency("Zlib_jll"),
     BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.13")),
 ]
