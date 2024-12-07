@@ -1,3 +1,5 @@
+We don't have Boost 1.81 built yet, and using 1.76 seems to work fine.
+
 --- a/cpp/cmake_modules/ThirdpartyToolchain.cmake
 +++ b/cpp/cmake_modules/ThirdpartyToolchain.cmake
 @@ -146,7 +146,7 @@ if(Thrift_FOUND)
