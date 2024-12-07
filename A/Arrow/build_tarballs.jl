@@ -48,7 +48,7 @@ CMAKE_FLAGS=(
     -DARROW_WITH_SNAPPY=ON
     -DARROW_WITH_UTF8PROC=OFF
     -DARROW_WITH_ZLIB=ON
-    -DARROW_WITH_ZSTD=ON
+    -DARROW_WITH_ZSTD=OFF
     -DPARQUET_BUILD_EXECUTABLES=OFF
     -Dxsimd_SOURCE=AUTO
 )
@@ -76,7 +76,6 @@ dependencies = [
     Dependency("Lz4_jll"),
     Dependency("Thrift_jll"; compat="0.21"),
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"; compat="1.5.6"),
     Dependency("boost_jll"; compat="=1.79.0"),
     Dependency("brotli_jll"; compat="1.1.0"),
     Dependency("snappy_jll"; compat="1.2.1"),
