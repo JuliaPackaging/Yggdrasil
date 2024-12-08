@@ -21,6 +21,9 @@ cd src/dummysizes/build-host
 cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt ../CMakeLists.txt
 
 CC=${CC_BUILD} cmake .. \
+    -DSCOTCH_VERSION=7 \
+    -DSCOTCH_RELEASE=0 \
+    -DSCOTCH_PATCHLEVEL=6 \
     -DBUILD_PTSCOTCH=OFF \
     -DCMAKE_BUILD_TYPE=Release
 
@@ -57,7 +60,8 @@ CFLAGS=$FLAGS cmake .. \
     -DLIBSCOTCHERR=scotcherr \
     -DENABLE_TESTS=OFF
 
-make -j${nproc}
+# make -j${nproc}
+make
 make install
 
 install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
