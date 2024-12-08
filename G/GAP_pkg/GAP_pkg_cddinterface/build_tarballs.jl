@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1300.0"
-gap_lib_version = v"400.1300.0"
+gap_version = v"400.1400.0"
+gap_lib_version = v"400.1400.0"
 name = "cddinterface"
-upstream_version = "2022.11.01" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "2024.09.02" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build libsingular-julia
 sources = [
     ArchiveSource("https://github.com/homalg-project/CddInterface/releases/download/v$(upstream_version)/CddInterface-$(upstream_version).tar.gz",
-                  "7c2d18f178b1e3d3f682bac970b61e9b68a5120d8b64f0e3e928d818eb1b9de9"),
+                  "5a59b6306c2b4e75d499cf1465c0b38a22cc275aa76defcfe62aaa365e1b69d1"),
 ]
 
 # Bash recipe for building across all platforms
