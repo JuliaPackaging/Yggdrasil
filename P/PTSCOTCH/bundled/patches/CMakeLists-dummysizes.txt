@@ -1,6 +1,20 @@
 cmake_minimum_required(VERSION 3.10)
 project(dummysizes LANGUAGES C)
 
+if (NOT DEFINED SCOTCH_VERSION)
+  message(FATAL_ERROR "must define SCOTCH_VERSION")
+endif()
+if (NOT DEFINED SCOTCH_RELEASE)
+  message(FATAL_ERROR "must define SCOTCH_RELEASE")
+endif()
+if (NOT DEFINED SCOTCH_PATCHLEVEL)
+  message(FATAL_ERROR "must define SCOTCH_PATCHLEVEL")
+endif()
+
+add_definitions(-DSCOTCH_VERSION_NUM=${SCOTCH_VERSION}
+  -DSCOTCH_RELEASE_NUM=${SCOTCH_RELEASE}
+  -DSCOTCH_PATCHLEVEL_NUM=${SCOTCH_PATCHLEVEL})
+
 set(GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
 file(MAKE_DIRECTORY ${GENERATED_INCLUDE_DIR})
 
@@ -9,10 +23,10 @@ option(BUILD_PTSCOTCH "Build PT-Scotch" ON)
 add_executable(dummysizes ../libscotch/dummysizes.c)
 set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 if(BUILD_PTSCOTCH)
-  # find_package(MPI COMPONENTS C)
-  # if(NOT MPI_C_FOUND)
-  #   message(FATAL_ERROR "MPI required to compile PT-Scotch")
-  # endif()
+  find_package(MPI COMPONENTS C)
+  if(NOT MPI_C_FOUND)
+    message(FATAL_ERROR "MPI required to compile PT-Scotch")
+  endif()
   add_executable(ptdummysizes ../libscotch/dummysizes.c)
   set_target_properties(ptdummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   # target_link_libraries(ptdummysizes PRIVATE MPI::MPI_C)
