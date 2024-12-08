@@ -60,7 +60,8 @@ CFLAGS=$FLAGS cmake .. \
     -DLIBSCOTCHERR=scotcherr \
     -DENABLE_TESTS=OFF
 
-make -j${nproc}
+# make -j${nproc}
+make
 make install
 
 install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
