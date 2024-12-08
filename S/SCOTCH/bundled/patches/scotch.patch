@@ -10,17 +10,26 @@
  # Build PT-Scotch
  option(BUILD_PTSCOTCH "Build PT-Scotch" ON)
  
-diff -ur scotch-v7.0.6/src/libscotch/CMakeLists.txt scotch-v7.0.6-patch/scotch/src/libscotch/CMakeLists.txt
 --- a/src/libscotch/CMakeLists.txt
 +++ b/src/libscotch/CMakeLists.txt
-@@ -49,8 +49,30 @@
+@@ -49,20 +49,27 @@
  #  dummysizes  #
  ################
  
 -add_executable(dummysizes dummysizes.c)
 -set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-+# add_executable(dummysizes dummysizes.c)
-+# set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+-if(BUILD_PTSCOTCH)
+-  find_package(MPI COMPONENTS C)
+-  if(NOT MPI_C_FOUND)
+-    message(FATAL_ERROR "MPI required to compile PT-Scotch")
+-  endif()
+-  add_executable(ptdummysizes dummysizes.c)
+-  set_target_properties(ptdummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+-  target_link_libraries(ptdummysizes PRIVATE MPI::MPI_C)
+-  add_dependencies(ptdummysizes scotch_h)
+-  set_target_properties(ptdummysizes PROPERTIES
+-    COMPILE_FLAGS -DSCOTCH_PTSCOTCH)
+-endif()
 +if(BUILD_DUMMYSIZES)
 +  add_executable(dummysizes dummysizes.c)
 +  set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -42,7 +51,6 @@ diff -ur scotch-v7.0.6/src/libscotch/CMakeLists.txt scotch-v7.0.6-patch/scotch/s
 +  add_executable(ptdummysizes IMPORTED GLOBAL)
 +  set_property(TARGET ptdummysizes PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/src/dummysizes/build-host/ptdummysizes")
 +endif(BUILD_DUMMYSIZES)
-+
- if(BUILD_PTSCOTCH)
-   find_package(MPI COMPONENTS C)
-   if(NOT MPI_C_FOUND)
+ 
+ ##############
+ #  scotch.h  #
