@@ -25,16 +25,11 @@ fi
 
 cd $WORKSPACE/srcdir/mlx
 
-# Apply patches merged upstream after v0.21.0 was tagged
-git config user.name "John Doe"
-git config user.email john@doe.com
-git remote add upstream https://github.com/ml-explore/mlx.git
-git fetch upstream
-git checkout -B patches
-git cherry-pick 698e63a608bbee43bd70a76602dbf2bd6636877f # CMake: Build with dlfcn-win32 to have dlopen etc. on win32 (#1628)
-git cherry-pick af2af818a6226ad55ac4e18cdb1e0c2b6963c679 # Enables build for *-linux-musl (#1627)
-git cherry-pick 974bb54ab2f8e8450f856ac215df160374080b33 # CMake: Enabled using Accelerate on x86_64 / x64 (#1625)
-git cherry-pick e4eeb4e91091d8c8392260d573ef5e506d0fa7a7 # Added missing unordered_map includes (#1635)
+atomic_patch -p1 ../patches/cmake_system_processor-arm64-aarch64.patch
+atomic_patch -p1 ../patches/cmake-w64-mingw32.patch
+atomic_patch -p1 ../patches/cmake-x86_64-apple-darwin.patch
+atomic_patch -p1 ../patches/missing-unordered_map-include.patch
+atomic_patch -p1 ../patches/musl.patch
 
 if [[ "$target" == *-w64-mingw32* ]]; then
     atomic_patch -p1 ../patches/cmake-win32-io.patch
