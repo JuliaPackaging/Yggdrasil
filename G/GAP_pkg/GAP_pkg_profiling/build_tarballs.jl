@@ -25,7 +25,7 @@ make -j${nproc}
 mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
 
-install_license LICENSE
+install_license COPYRIGHT
 """
 
 name = gap_pkg_name(name)
