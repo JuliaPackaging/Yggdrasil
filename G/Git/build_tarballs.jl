@@ -3,16 +3,16 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.46.2"
+version = v"2.47.1"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "5ee8a1c68536094a4f7f9515edc154b12a275b8a57dda4c21ecfbf1afbae2ca3"),
+                  "f3d8f9bb23ae392374e91cd9d395970dabc5b9c5ee72f39884613cd84a6ed310"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "6fe9c7faf1e088b4be37945fa81bbc5252a8a7cb38c617925d5cc6c269cbc3dd"; unpack_target = "i686-w64-mingw32"),
+                  "99a91af7a6a7a8791ebede7c0fd5339084853ec1a3c4f9dffdb91145ce934c1e"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "f05cf325a8bfaad6da2411e03065b5a4f2a1a69b9d1f9a258db1404524613610"; unpack_target = "x86_64-w64-mingw32"),
+                  "45d2bdc96712b0ab785c307461429cf5bd744227108805edaaec7517432db54c"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,7 @@ if [[ "${target}" == *-mingw* ]]; then
     exit
 fi
 
-cd $WORKSPACE/srcdir/git-*/
+cd $WORKSPACE/srcdir/git-*
 
 # We need a native "tclsh" to cross-compile
 apk update
@@ -117,13 +117,11 @@ dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("Expat_jll"; compat="2.6.4"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll"; compat="10.35.0"),
+    Dependency("PCRE2_jll"),
     Dependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build trigger: 1

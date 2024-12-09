@@ -1,3 +1,5 @@
+using Pkg
+
 # Collection of sources required to build Arpack
 function arpack_sources(version::VersionNumber; kwargs...)
     arpack_version_sources = Dict(
@@ -15,7 +17,7 @@ end
 # Bash recipe for building across all platforms
 function build_script(;build_32bit::Bool=false)
 
-script = """ 
+script = """
 ARPACK32=$(build_32bit)
 """
 
@@ -62,12 +64,10 @@ SYMBOL_DEFS+=(${SYMBOL_DEFS[@]^^})
 
 FFLAGS="${FFLAGS} -O3 -fPIE -ffixed-line-length-none -fno-optimize-sibling-calls -cpp"
 
-if [[ ${ARPACK32} == true ]]; then
-    BLAS=openblas
-elif [[ "${target}" == *-mingw* ]]; then
-    BLAS=blastrampoline-5
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
 else
-    BLAS=blastrampoline
+    LBT=blastrampoline
 fi
 
 if [[ ${ARPACK32} == false ]] && [[ ${nbits} == 64 ]]; then
@@ -81,12 +81,32 @@ cmake .. -DCMAKE_INSTALL_PREFIX="$prefix" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_BUILD_TYPE=Release \
     -DEXAMPLES=OFF \
     -DBUILD_SHARED_LIBS=ON \
-    -DBLAS_LIBRARIES="-l${BLAS}" \
-    -DLAPACK_LIBRARIES="-l${BLAS}" \
+    -DBLAS_LIBRARIES="-l${LBT}" \
+    -DLAPACK_LIBRARIES="-l${LBT}" \
     -DCMAKE_Fortran_FLAGS="${FFLAGS}"
 
 make -j${nproc} VERBOSE=1
 make install VERBOSE=1
+
+# For now, we'll have to adjust the name of the Lbt library on macOS and FreeBSD.
+# Eventually, this should be fixed upstream
+if [[ ${target} == *-apple-* ]] || [[ ${target} == *freebsd* ]]; then
+    echo "-- Modifying library name for Lbt"
+
+    for nm in libarpack; do
+        # Figure out what version it probably latched on to:
+        if [[ ${target} == *-apple-* ]]; then
+            LBT_LINK=$(otool -L ${libdir}/${nm}.dylib | grep lib${LBT} | awk '{ print $1 }')
+            install_name_tool -change ${LBT_LINK} @rpath/lib${LBT}.dylib ${libdir}/${nm}.dylib
+        elif [[ ${target} == *freebsd* ]]; then
+            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
+        elif [[ ${target} == *linux* ]]; then
+            LBT_LINK=$(readelf -d ${libdir}/${nm}.so | grep lib${LBT} | sed -e 's/.*\[\(.*\)\].*/\1/')
+            patchelf --replace-needed ${LBT_LINK} lib${LBT}.so ${libdir}/${nm}.so
+        fi
+    done
+fi
 
 # Delete the extra soversion libraries built. https://github.com/JuliaPackaging/Yggdrasil/issues/7
 if [[ "${target}" == *-mingw* ]]; then
@@ -105,4 +125,5 @@ platforms = expand_gfortran_versions(supported_platforms())
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]

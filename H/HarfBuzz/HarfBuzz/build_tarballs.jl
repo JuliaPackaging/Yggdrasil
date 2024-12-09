@@ -2,4 +2,4 @@ include("../common.jl")
 
 build_harfbuzz(ARGS, "HarfBuzz")
 
-# Rebuild: 2
+# Rebuild: 3

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Fontconfig"
-version = v"2.13.96"
+version = v"2.15.0"
 
 # Collection of sources required to build FriBidi
 sources = [
     ArchiveSource("https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.xz",
-                  "d816a920384aa91bc0ebf20c3b51c59c2153fdf65de0b5564bf9e8473443d637"),
+                  "63a0658d0e06e0fa886106452b58ef04f21f58202ea02a94c39de0d3335d7c0e"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,7 +29,6 @@ elif [[ "${target}" == *-apple-* ]]; then
 fi
 
 # Apply MinGW patches: https://github.com/msys2/MINGW-packages/tree/33f847297fe429d145cd9d72cb1fbbc574431cc5/mingw-w64-fontconfig
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0001-fix-config-linking.all.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0002-fix-mkdir.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0004-fix-mkdtemp.mingw.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/0005-fix-setenv.mingw.patch"
@@ -65,18 +64,19 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("gperf_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.3"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
     Dependency("Libuuid_jll"),
-    Dependency("Expat_jll"; compat="2.2.10"),
+    Dependency("Expat_jll"; compat="2.6.4"),
 ]
+
+# @giordano: "I know this looks funky, but it makes code in the JLL indented correctly"
+init_block = """
+get!(ENV, "FONTCONFIG_FILE", fonts_conf)
+    get!(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
+"""
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
-               preferred_gcc_version=v"6",
-               init_block = """
-get!(ENV, "FONTCONFIG_FILE", fonts_conf)
-    get!(ENV, "FONTCONFIG_PATH", dirname(ENV["FONTCONFIG_FILE"]))
-""")
+               init_block=init_block, julia_compat="1.6", preferred_gcc_version=v"6")

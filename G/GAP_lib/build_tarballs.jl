@@ -21,57 +21,30 @@ using BinaryBuilder, Pkg
 # to all components.
 
 name = "GAP_lib"
-upstream_version = v"4.13.1"
-version = v"400.1300.100"
+upstream_version = v"4.14.0"
+version = v"400.1400.000"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "3bd0b5e52ea6984c22d6f6003b2a5805a843659ddbfd8da6ee50609338703451"),
-    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/packages-required-v$(upstream_version).tar.gz",
-                  "0d412462cfc75c7f2894004439af4863901f1d18c9e98ad326419418fddc3139";
-                  unpack_target="pkg"),
-    #DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version).tar.gz",
+                  "845f5272c26feb1b8eb9ef294bf0545f264c1fe5a19b0601bbc65d79d9506487"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/gap*
 
-if [ -d ${WORKSPACE}/srcdir/patches ] ; then
-  for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-  done
-fi
-
-# remove patch leftovers
-find . -name '*.orig' -exec rm {} \;
-
 # compress group database
 gzip -n grp/*.grp
 
-mv ../pkg .
-
-# must run autogen.sh if compiling from git snapshot and/or if configure was patched;
-# it doesn't hurt otherwise, too, so just always do it
-./autogen.sh
-
-# compile a native version of GAP so we can use it to generate the manual
-# (the manual is only in FULL gap release tarballs, not in the -core tarball
-# nor in git snapshots), and also so that we can invoke the
-# `install-gaproot` target (which is arch independent, so no need to use a
-# GAP built for the host arch.)
+# compile a native version of GAP so we can invoke the `install-gaproot` target
+# (which is arch independent, so no need to use a GAP built for the host arch.)
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} \
     --with-gmp=${prefix} \
     --without-readline \
     --with-zlib=${prefix} \
     CC=${CC_BUILD} CXX=${CXX_BUILD}
 make -j${nproc}
-
-# build the manual if necessary (only HTML and txt; for PDF we'd need LaTeX)
-if [[ ! -f doc/ref/chap0.html ]] ; then
-  make html
-fi
 
 # the license
 install_license LICENSE

@@ -1,0 +1,31 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 949c891e..8db15c90 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -160,6 +160,13 @@ if(MLX_BUILD_CPU)
+     message(STATUS "Blas include " ${BLAS_INCLUDE_DIRS})
+     target_include_directories(mlx PRIVATE ${BLAS_INCLUDE_DIRS})
+     target_link_libraries(mlx PUBLIC ${BLAS_LIBRARIES})
++
++    if(WIN32)
++      find_package(dlfcn-win32 REQUIRED)
++      message(STATUS "dlfcn-win32 lib " ${dlfcn-win32_LIBRARIES})
++      message(STATUS "dlfcn-win32 include " ${dlfcn-win32_INCLUDE_DIRS})
++      target_link_libraries(mlx PUBLIC ${dlfcn-win32_LIBRARIES})
++    endif()
+   endif()
+ else()
+   set(MLX_BUILD_ACCELERATE OFF)
+diff --git a/mlx/io/CMakeLists.txt b/mlx/io/CMakeLists.txt
+index 2402ff58..5daf93dc 100644
+--- a/mlx/io/CMakeLists.txt
++++ b/mlx/io/CMakeLists.txt
+@@ -1,4 +1,7 @@
+-target_sources(mlx PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/load.cpp)
++# load.cpp depends on pread, which is not available on mingw32
++if(NOT WIN32)
++  target_sources(mlx PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/load.cpp)
++endif()
+ 
+ if(MLX_BUILD_SAFETENSORS)
+   message(STATUS "Downloading json")
