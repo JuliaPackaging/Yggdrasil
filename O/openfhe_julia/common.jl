@@ -1,5 +1,7 @@
 using BinaryBuilder, Pkg
 
+include("../../L/libjulia/common.jl")
+
 function prepare_openfhe_julia_build(name::String, git_hash::String)
     # See https://github.com/JuliaLang/Pkg.jl/issues/2942
     # Once this Pkg issue is resolved, this must be removed
@@ -52,7 +54,6 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    include("../../L/libjulia/common.jl")
     platforms = vcat(libjulia_platforms.(julia_versions)...)
 
     # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
