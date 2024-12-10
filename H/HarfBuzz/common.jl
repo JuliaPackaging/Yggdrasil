@@ -45,6 +45,8 @@ meson .. \
     -Ddirectwrite=enabled
 ninja -j${nproc}
 if [[ "${ICU}" == true ]]; then
+    # Remove directories with symbol files (they confuse the `cp` command below)
+    rm -rf src/libharfbuzz-icu*${dlext}*.p
     # Manually install only ICU-related files
     cp src/libharfbuzz-icu*${dlext}* ${libdir}/.
     cp meson-private/harfbuzz-icu.pc ${prefix}/lib/pkgconfig/.
