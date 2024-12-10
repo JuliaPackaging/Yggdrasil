@@ -26,8 +26,6 @@ if [[ "${target}" == *-mingw* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
 fi
 
-atomic_patch -p0 $WORKSPACE/srcdir/patches/papilo_cmake.patch
-
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
