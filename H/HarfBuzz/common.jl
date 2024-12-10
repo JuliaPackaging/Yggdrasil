@@ -45,6 +45,8 @@ meson .. \
     -Ddirectwrite=enabled
 ninja -j${nproc}
 if [[ "${ICU}" == true ]]; then
+    # Remove directories with symbol files (they confuse the `cp` command below)
+    rm -rf src/libharfbuzz-icu*${dlext}*.p
     # Manually install only ICU-related files
     cp src/libharfbuzz-icu*${dlext}* ${libdir}/.
     cp meson-private/harfbuzz-icu.pc ${prefix}/lib/pkgconfig/.
@@ -57,6 +59,11 @@ fi
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = supported_platforms()
+
+    if icu
+        # Temporarily disable aarch64-*-freebsd until ICU has been built for this platform
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
 
     # The products that we will ensure are always built
     products = if icu
