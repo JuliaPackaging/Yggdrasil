@@ -40,6 +40,12 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         fi
     fi
 
+    # Set gcc and g++ compilers for apple and freebsd 
+    if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
+        CC=gcc
+        CXX=g++
+    fi
+
     mkdir build && cd build
 
     cmake .. \
