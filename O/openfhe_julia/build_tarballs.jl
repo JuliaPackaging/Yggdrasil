@@ -7,7 +7,7 @@ include("common.jl")
 name = "openfhe_julia"
 version = v"0.3.6"
 
-git_hash = "8eafc05cf7bd2f3efbc8684ee4cdeefa5dcdcddf"
+git_hash = "4939f1dd11ae2640b5bb397f731df8ef94307e74"
 
 sources, script, platforms, products, dependencies = prepare_openfhe_julia_build(name, git_hash)
 
