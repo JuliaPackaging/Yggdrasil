@@ -7,7 +7,7 @@ include(joinpath(@__DIR__, "..", "openfhe_julia", "common.jl"))
 name = "openfhe_julia_int128"
 version = v"0.3.6"
 
-git_hash = "4939f1dd11ae2640b5bb397f731df8ef94307e74"
+git_hash = "8eafc05cf7bd2f3efbc8684ee4cdeefa5dcdcddf"
 
 sources, script, platforms, products, dependencies = prepare_openfhe_julia_build(name, git_hash)
 
