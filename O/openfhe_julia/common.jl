@@ -46,9 +46,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DJulia_PREFIX=$prefix \
-    -D__GLIBCXX_TYPE_INT_N_0=__int128 \
-    -D__GLIBCXX_BITSIZE_INT_N_0=128
+    -DJulia_PREFIX=$prefix 
 
     make -j${nproc}
     make install
@@ -66,10 +64,13 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     platforms = filter(p -> arch(p) != "powerpc64le", platforms)
     platforms = filter(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
-    # armv6l and armv7l do not support 128 bit int size
     if name == "openfhe_julia_int128"
+        # armv6l and armv7l do not support 128 bit int size
         platforms = filter(p -> arch(p) != "armv6l", platforms)
         platforms = filter(p -> arch(p) != "armv7l", platforms)
+        # apple does not support typeid(__int128)
+        platforms = filter(p -> !(Sys.isapple(p)), platforms)
+        
     end
 
     # Expand C++ string ABIs since we use std::string
