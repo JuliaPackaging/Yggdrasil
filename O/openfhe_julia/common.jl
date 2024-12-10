@@ -40,20 +40,13 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         fi
     fi
 
-    # Set gcc and g++ compilers for apple and freebsd 
-    if [[ "${target}" == *-freebsd* ]] || [[ "${target}" == *-apple-* ]]; then
-        CC=gcc
-        CXX=g++
-    fi
-
     mkdir build && cd build
 
     cmake .. \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DJulia_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
+    -DJulia_PREFIX=$prefix 
 
     make -j${nproc}
     make install
@@ -72,6 +65,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     platforms = filter(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
     if name == "openfhe_julia_int128"
+        # 32 bit systems does not support __int128
+        platforms = filter(p -> nbits(p) != 32, platforms)
         # armv6l and armv7l do not support 128 bit int size
         platforms = filter(p -> arch(p) != "armv6l", platforms)
         platforms = filter(p -> arch(p) != "armv7l", platforms)
