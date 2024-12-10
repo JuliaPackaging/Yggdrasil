@@ -70,6 +70,9 @@ ninja install
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
+# Some dependencies (e.g. PROJ_jll) are missing for aarch64-*-freebsd
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libpdal_base", "libpdalcpp"], :libpdal_base),
