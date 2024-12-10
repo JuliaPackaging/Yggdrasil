@@ -4,12 +4,13 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"900.200.000"
+upstream_version = v"9.2.0"
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://scipopt.org/download/release/scipoptsuite-9.2.0.tgz",
+        "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
         "a174cc58592d245c74c9c95c1d4819750d7ba2d467b4baae616a5aa336aac8d0"
     ),
 ]
@@ -36,7 +37,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DGCG=0\
   -DBOOST=ON\
-  -DSYM=bliss\
+  -DSYM=snauty\
   -DTPI=tny\
   -DIPOPT_DIR=${prefix} \
   -DIPOPT_LIBRARIES=${libdir} \
