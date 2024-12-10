@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GoogleTest"
-version = v"1.11.1"
+version = v"1.11.0"
 
 # Collection of sources required to complete build
 sources = [
