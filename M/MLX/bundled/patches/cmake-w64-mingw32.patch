@@ -16,16 +16,3 @@ index 949c891e..8db15c90 100644
    endif()
  else()
    set(MLX_BUILD_ACCELERATE OFF)
-diff --git a/mlx/io/CMakeLists.txt b/mlx/io/CMakeLists.txt
-index 2402ff58..5daf93dc 100644
---- a/mlx/io/CMakeLists.txt
-+++ b/mlx/io/CMakeLists.txt
-@@ -1,4 +1,7 @@
--target_sources(mlx PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/load.cpp)
-+# load.cpp depends on pread, which is not available on mingw32
-+if(NOT WIN32)
-+  target_sources(mlx PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/load.cpp)
-+endif()
- 
- if(MLX_BUILD_SAFETENSORS)
-   message(STATUS "Downloading json")
