@@ -60,6 +60,11 @@ fi
     # platforms are passed in on the command line
     platforms = supported_platforms()
 
+    if icu
+        # Temporarily disable aarch64-*-freebsd until ICU has been built for this platform
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
+
     # The products that we will ensure are always built
     products = if icu
         [
