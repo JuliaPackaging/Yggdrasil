@@ -69,7 +69,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         platforms = filter(p -> arch(p) != "armv6l", platforms)
         platforms = filter(p -> arch(p) != "armv7l", platforms)
         # apple does not support typeid(__int128)
-        platforms = filter(p -> !(Sys.isapple(p)), platforms)
+        # platforms = filter(p -> !(Sys.isapple(p)), platforms)
         
     end
 
