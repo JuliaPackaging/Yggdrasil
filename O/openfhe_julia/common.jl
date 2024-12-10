@@ -47,7 +47,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DJulia_PREFIX=$prefix \
-    -D_GNU_SOURCE
+    -DCMAKE_CXX_FLAGS="-D_GNU_SOURCE"
 
     make -j${nproc}
     make install
