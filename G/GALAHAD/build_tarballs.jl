@@ -45,8 +45,8 @@ meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dlibhwloc=$HWLOC \
                            -Dlibblas=$LBT \
                            -Dliblapack=$LBT \
-                           -Dlibsmumps=smumps64 \
-                           -Dlibdmumps=dmumps64 \
+                           -Dlibsmumps= \
+                           -Dlibdmumps= \
                            -Dlibhsl=hsl_subset_64 \
                            -Dlibhsl_modules=$prefix/modules
 
