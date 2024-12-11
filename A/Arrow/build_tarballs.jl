@@ -8,7 +8,7 @@ version = v"18.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/apache/arrow.git",
-              "6a0414bd9a91e890ec6a45369bf61f405180628c"),
+        "6a0414bd9a91e890ec6a45369bf61f405180628c"),
     DirectorySource("bundled"),
 ]
 
@@ -48,7 +48,7 @@ CMAKE_FLAGS=(
     -DARROW_WITH_SNAPPY=ON
     -DARROW_WITH_UTF8PROC=OFF
     -DARROW_WITH_ZLIB=ON
-    -DARROW_WITH_ZSTD=OFF
+    -DARROW_WITH_ZSTD=ON
     -DPARQUET_BUILD_EXECUTABLES=OFF
     -Dxsimd_SOURCE=AUTO
 )
@@ -76,6 +76,7 @@ dependencies = [
     Dependency("Lz4_jll"),
     Dependency("Thrift_jll"; compat="0.21"),
     Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
     Dependency("boost_jll"; compat="=1.79.0"),
     Dependency("brotli_jll"; compat="1.1.0"),
     Dependency("snappy_jll"; compat="1.2.1"),
@@ -83,4 +84,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
+    clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
