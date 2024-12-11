@@ -27,6 +27,7 @@ fi
 
 meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
+                           -Dint64=false \
                            -Dlibhwloc=$HWLOC \
                            -Dlibblas=$LBT \
                            -Dliblapack=$LBT \
@@ -40,6 +41,7 @@ meson install -C builddir_int32
 
 meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
+                           -Dint64=true \
                            -Dlibhwloc=$HWLOC \
                            -Dlibblas=$LBT \
                            -Dliblapack=$LBT \
