@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "catch22"
-version = v"0.5.0"
+version = v"0.4.1"
 
 # Collection of sources required to complete build
 sources = [
