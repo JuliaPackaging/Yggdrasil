@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "HSL"
-version = v"4.0.1"
+version = v"4.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/libHSL.git", "403f7538232aa3f52e8e8a0ced4708e2bd7ca48b")
+    GitSource("https://github.com/ralna/libHSL.git", "70984034449cf5278006d848d3f6fc13485e9c09")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,13 +15,18 @@ script = raw"""
 # Update Ninja
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
+QUADRUPLE="true"
+if [[ "${target}" == *arm* ]]; then
+    QUADRUPLE="false"
+fi
+
 cd $WORKSPACE/srcdir/libHSL/libhsl
 meson setup builddir_libhsl --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
 meson compile -C builddir_libhsl
 meson install -C builddir_libhsl
 
 cd $WORKSPACE/srcdir/libHSL/hsl_subset
-meson setup builddir_hsl_subset --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
+meson setup builddir_hsl_subset -Dquadruple=${QUADRUPLE} --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
 meson compile -C builddir_hsl_subset
 meson install -C builddir_hsl_subset
 """
