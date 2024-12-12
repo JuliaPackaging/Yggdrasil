@@ -40,11 +40,13 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
             find $prefix/lib
         fi
     fi
-
+    
+    EXE_LINKER_FLAGS=""
     if [[ "$target" == *-apple-darwin* ]]; then
         # For clang on macOS additional flag is required to link typeinfo(unsigned __int128), 
         # apply patch.
         atomic_patch -p1 "${WORKSPACE}/srcdir/patches/apple-fix-cmake-typeinfo-int128.patch"
+        EXE_LINKER_FLAGS="-lc++abi"
     fi
 
     mkdir build && cd build
@@ -53,7 +55,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DJulia_PREFIX=$prefix 
+    -DJulia_PREFIX=$prefix \
+    -DCMAKE_EXE_LINKER_FLAGS=${EXE_LINKER_FLAGS}
 
     make -j${nproc}
     make install
