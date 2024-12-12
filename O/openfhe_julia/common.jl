@@ -73,7 +73,6 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         # apple does not support typeid(__int128), remove when
         # https://github.com/llvm/llvm-project/issues/119608 resolved
         platforms = filter(p -> !(Sys.isapple(p)), platforms)
-        
     end
 
     # Expand C++ string ABIs since we use std::string
