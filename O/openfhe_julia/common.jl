@@ -40,6 +40,12 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         fi
     fi
 
+    CMAKE_CXX_FLAGS=""
+    # For clang on macOS additional flag is required to link typeinfo(unsigned __int128)
+    if [[ "$target" == *-apple-darwin* ]]; then
+        CMAKE_CXX_FLAGS="-lc++abi"
+    fi
+
     mkdir build && cd build
 
     cmake .. \
@@ -47,7 +53,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DJulia_PREFIX=$prefix \
-    -DCMAKE_CXX_FLAGS="-lc++abi"
+    -DCMAKE_CXX_FLAGS=$CMAKE_CXX_FLAGS
 
     make -j${nproc}
     make install
@@ -71,9 +77,6 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         # armv6l and armv7l do not support 128 bit int size
         platforms = filter(p -> arch(p) != "armv6l", platforms)
         platforms = filter(p -> arch(p) != "armv7l", platforms)
-        # apple does not support typeid(__int128), remove when
-        # https://github.com/llvm/llvm-project/issues/119608 resolved
-        # platforms = filter(p -> !(Sys.isapple(p)), platforms)
     end
 
     # Expand C++ string ABIs since we use std::string
