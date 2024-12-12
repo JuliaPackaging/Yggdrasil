@@ -46,7 +46,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DJulia_PREFIX=$prefix 
+    -DJulia_PREFIX=$prefix \
+    -DCMAKE_CXX_FLAGS="-lc++abi"
 
     make -j${nproc}
     make install
@@ -72,7 +73,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         platforms = filter(p -> arch(p) != "armv7l", platforms)
         # apple does not support typeid(__int128), remove when
         # https://github.com/llvm/llvm-project/issues/119608 resolved
-        platforms = filter(p -> !(Sys.isapple(p)), platforms)
+        # platforms = filter(p -> !(Sys.isapple(p)), platforms)
     end
 
     # Expand C++ string ABIs since we use std::string
