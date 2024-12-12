@@ -12,6 +12,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     sources = [
         GitSource("https://github.com/hpsc-lab/openfhe-julia.git",
                   git_hash),
+        DirectorySource("../openfhe_julia/bundled")
     ]
 
     # Bash recipe for building across all platforms
@@ -40,10 +41,10 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         fi
     fi
 
-    CMAKE_CXX_FLAGS=""
-    # For clang on macOS additional flag is required to link typeinfo(unsigned __int128)
     if [[ "$target" == *-apple-darwin* ]]; then
-        CMAKE_CXX_FLAGS="-lc++abi"
+        # For clang on macOS additional flag is required to link typeinfo(unsigned __int128), 
+        # apply patch.
+        atomic_patch -p1 "${WORKSPACE}/srcdir/patches/apple-fix-cmake-typeinfo-int128.patch"
     fi
 
     mkdir build && cd build
@@ -52,8 +53,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DJulia_PREFIX=$prefix \
-    -DCMAKE_CXX_FLAGS=$CMAKE_CXX_FLAGS
+    -DJulia_PREFIX=$prefix 
 
     make -j${nproc}
     make install
