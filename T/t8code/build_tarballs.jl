@@ -18,7 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/libsc.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/p4est.patch"
 
 # Show CMake where to find `mpiexec`.
