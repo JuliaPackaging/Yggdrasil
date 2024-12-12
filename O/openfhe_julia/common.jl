@@ -12,8 +12,6 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     sources = [
         GitSource("https://github.com/hpsc-lab/openfhe-julia.git",
                   git_hash),
-        ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
-                      "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
     ]
 
     # Bash recipe for building across all platforms
@@ -40,12 +38,6 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
             echo "Could not find any libraries to remove :-/"
             find $prefix/lib
         fi
-    fi
-
-    if [[ "$target" == *-apple-darwin* ]]; then
-        apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
-        sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-        sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
     fi
 
     mkdir build && cd build
@@ -78,8 +70,9 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         # armv6l and armv7l do not support 128 bit int size
         platforms = filter(p -> arch(p) != "armv6l", platforms)
         platforms = filter(p -> arch(p) != "armv7l", platforms)
-        # apple does not support typeid(__int128)
-        # platforms = filter(p -> !(Sys.isapple(p)), platforms)
+        # apple does not support typeid(__int128), remove when
+        # https://github.com/llvm/llvm-project/issues/119608 resolved
+        platforms = filter(p -> !(Sys.isapple(p)), platforms)
         
     end
 
