@@ -25,12 +25,16 @@ script = raw"""
 mkdir build
 cd build
 
+if [[ $target == *freebsd* ]]; then
+    fbsdflag="-DCMAKE_CXX_FLAGS=-pthread"
+fi
+
 cmake \
     -DJulia_PREFIX=$prefix \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=Release $fbsdflag \
     ../libcxxwrap-julia/
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 install_license $WORKSPACE/srcdir/libcxxwrap-julia*/LICENSE.md
