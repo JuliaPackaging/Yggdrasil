@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-include(joinpath(pwd(), "..", "OpenFHE", "common.jl"))
+include(joinpath(@__DIR__, "..", "OpenFHE", "common.jl"))
 
 # If you make changes in this file, e.g., to release a new version,
 # be sure to also release a new version of `OpenFHE` as well (see `../OpenFHE/build_tarballs.jl`)
