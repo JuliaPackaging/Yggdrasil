@@ -44,6 +44,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     if [[ "$target" == *-apple-darwin* ]]; then
         export LDFLAGS="-lc++abi"
     fi
+    export LDFLAGS="-lc++abi"
 
     mkdir build && cd build
 
