@@ -41,11 +41,9 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     fi
     
     # For MacOS additional linker flag is required to link typeid(__int128)
-    export LDFLAGS=""
     if [[ "${target}" == *apple* ]]; then
-        export LDFLAGS="-lc++abi"
+        export CXXFLAGS="-lc++abi"
     fi
-    echo LDFLAGS
 
     mkdir build && cd build
 
