@@ -18,7 +18,11 @@ if [[ "$target" == *-apple-darwin* ]]; then
     sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
     sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
 
-    export MACOSX_DEPLOYMENT_TARGET=13.3
+    if [[ "$target" == aarch64-apple-darwin* ]]; then
+        export MACOSX_DEPLOYMENT_TARGET=13.5 # Targeting macOS 13.5 due to MLX targeting 13.5 in PyPI wheel
+    else
+        export MACOSX_DEPLOYMENT_TARGET=13.3 # Targeting same version as MLX recipe
+    fi
 fi
 
 cd $WORKSPACE/srcdir/mlx-c
