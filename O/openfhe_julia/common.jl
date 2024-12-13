@@ -12,7 +12,6 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     sources = [
         GitSource("https://github.com/hpsc-lab/openfhe-julia.git",
                   git_hash),
-        DirectorySource("../openfhe_julia/bundled")
     ]
 
     # Bash recipe for building across all platforms
