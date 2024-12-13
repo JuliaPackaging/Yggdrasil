@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXinerama"
-version = v"1.1.4"
+version = v"1.1.5"
 
 # Collection of sources required to build libXinerama
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.bz2",
-                  "0008dbd7ecf717e1e507eed1856ab0d9cf946d03201b85d5dcf61489bb02d720"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXinerama-$(version).tar.gz",
+                  "2efa855cb42dc620eff3b77700d8655695e09aaa318f791f201fa60afa72b95c"),
 ]
 
 # Bash recipe for building across all platforms
