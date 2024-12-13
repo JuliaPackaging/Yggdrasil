@@ -20,6 +20,12 @@ function prepare_openfhe_build(name::String, git_hash::String)
       atomic_patch -p1 "${WORKSPACE}/srcdir/patches/windows-fix-cmake-libdir.patch"
     fi
 
+    # Set additional linker flag to link with typeid(__int128) in macOS
+    CMAKE_CXX_FLAGS=""
+    if [[ "$target" == *-apple-darwin* ]]; then
+        CMAKE_CXX_FLAGS="-lc++abi"
+    fi
+
     mkdir build && cd build
 
     cmake .. \
@@ -30,6 +36,7 @@ function prepare_openfhe_build(name::String, git_hash::String)
       -DWITH_BE4=ON \
       -DBUILD_UNITTESTS=OFF \
       -DBUILD_BENCHMARKS=OFF \
+      -DCMAKE_CXX_FLAGS=$(CMAKE_CXX_FLAGS) \
       -DNATIVE_SIZE=""" * "$native_size" *
     raw"""
     
