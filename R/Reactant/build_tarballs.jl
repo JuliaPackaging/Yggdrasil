@@ -87,9 +87,9 @@ BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 
 if [[ "${bb_full_target}" == *86* ]]; then
-    export bb_cpu = "k8"
+    export bb_cpu="k8"
 elif [[ "${bb_full_target}" == *aarch64* ]]; then
-    export bb_cpu = "aarch64"
+    export bb_cpu="aarch64"
 else
     exit 1
 fi
