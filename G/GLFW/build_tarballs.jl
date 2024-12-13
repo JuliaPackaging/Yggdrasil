@@ -28,8 +28,6 @@ else
    export BSD_VISIBLE=0
 fi
 
-trap 'cat CMakeFiles/CMakeError.log' EXIT
-
 # We need _POSIX_C_SOURCE >= 199309L for `CLOCK_MONOTONIC`, and >= 200809L for `O_CLOEXEC`.
 # See:
 # - https://github.com/glfw/glfw/issues/1988
