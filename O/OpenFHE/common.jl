@@ -36,7 +36,7 @@ function prepare_openfhe_build(name::String, git_hash::String)
       -DWITH_BE4=ON \
       -DBUILD_UNITTESTS=OFF \
       -DBUILD_BENCHMARKS=OFF \
-      -DCMAKE_CXX_FLAGS=$(CMAKE_CXX_FLAGS) \
+      -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} \
       -DNATIVE_SIZE=""" * "$native_size" *
     raw"""
     
