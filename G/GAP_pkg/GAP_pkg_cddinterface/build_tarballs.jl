@@ -26,7 +26,7 @@ make -j${nproc}
 mkdir -p ${prefix}/lib/gap
 cp bin/*/*.so ${prefix}/lib/gap/
 
-#install_license LICENSE  # FIXME
+install_license LICENSE
 """
 
 name = gap_pkg_name(name)
