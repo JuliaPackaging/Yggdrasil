@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXfixes"
-version = v"6.0.1"
+version = v"6.0.0"
 
 # Collection of sources required to build libXfixes
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.gz",
-                  "e69eaa321173c748ba6e2f15c7cf8da87f911d3ea1b6af4b547974aef6366bec"),
+                  "82045da5625350838390c9440598b90d69c882c324ca92f73af9f0e992cb57c7"),
 ]
 
 # Bash recipe for building across all platforms
