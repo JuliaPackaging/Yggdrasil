@@ -16,7 +16,16 @@ version = v"3.2.2" # <-- this is a lie, we need to bump the version to require j
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libffi-*/
-atomic_patch -p1 ../patches/*
+atomic_patch -p1 ../patches/0001-libdir-no-touchy.patch
+
+# Required on aarch64-apple-darwin to build with newer versions of LLVM. See:
+# - https://github.com/llvm/llvm-project/issues/72802
+# - Similar issue: https://github.com/libffi/libffi/issues/807
+# - In Julia: https://github.com/JuliaLang/julia/pull/54634
+if [[ ${target} == aarch64-apple-* ]]; then
+    atomic_patch -p1 ../patches/0002-aarch64-llvm18.patch
+fi
+
 update_configure_scripts
 autoreconf -f -i
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
