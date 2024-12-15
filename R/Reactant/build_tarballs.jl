@@ -87,16 +87,6 @@ BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 
-if [[ "${bb_full_target}" == *86* ]]; then
-    export bb_cpu="k8"
-elif [[ "${bb_full_target}" == *aarch64* ]]; then
-    export bb_cpu="aarch64"
-else
-    exit 1
-fi
-
-BAZEL_BUILD_FLAGS+=(--repo_env=bb_target=${bb_target} --repo_env=bb_full_target=${bb_full_target} --repo_env=bb_cpu=${bb_cpu})
-
 if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
