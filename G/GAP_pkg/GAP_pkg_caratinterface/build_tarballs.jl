@@ -90,7 +90,7 @@ products = [
     ExecutableProduct("Normalizer_in_N", :Normalizer_in_N),
     ExecutableProduct("Normlin", :Normlin),
     ExecutableProduct("Orbit", :Orbit),
-    ExecutableProduct("Order", :Order),
+    ExecutableProduct("Order", :Order_),  # HACK: BinaryBuilderBase doesn't allow using names already in use by Base
     ExecutableProduct("P_lse_solve", :P_lse_solve),
     ExecutableProduct("Pair_red", :Pair_red),
     ExecutableProduct("Pdet", :Pdet),
@@ -114,7 +114,7 @@ products = [
     ExecutableProduct("Simplify_mat", :Simplify_mat),
     ExecutableProduct("Standard_affine_form", :Standard_affine_form),
     ExecutableProduct("Sublattices", :Sublattices),
-    ExecutableProduct("Symbol", :Symbol),
+    ExecutableProduct("Symbol", :Symbol_),  # HACK: BinaryBuilderBase doesn't allow using names already in use by Base
     ExecutableProduct("TSubgroups", :TSubgroups),
     ExecutableProduct("TSupergroups", :TSupergroups),
     ExecutableProduct("Torsionfree", :Torsionfree),
