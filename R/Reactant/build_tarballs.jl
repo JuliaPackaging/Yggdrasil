@@ -21,6 +21,9 @@ cd Reactant.jl/deps/ReactantExtra
 echo Clang version: $(clang --version)
 echo GCC version: $(gcc --version)
 
+cp $BAZEL_HOST_TOOLCHAIN toolchain/yggdrasil/ygg_host.bzl
+cp $BAZEL_TARGET_TOOLCHAIN toolchain/yggdrasil/ygg_target.bzl
+
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
