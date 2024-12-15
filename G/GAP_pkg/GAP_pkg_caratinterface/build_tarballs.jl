@@ -32,7 +32,7 @@ make -j${nproc}
 mkdir -p ${prefix}/bin/
 cp bin/*/* ${prefix}/bin/
 
-install_license LICENSE
+install_license GPL
 
 rm $prefix/lib/gap/sysinfo.gap
 """
