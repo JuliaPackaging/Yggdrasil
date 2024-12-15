@@ -19,6 +19,7 @@ sources = [
 script = raw"""
 cd curlInterface*
 
+export CPPFLAGS="-I$includedir"  # workaround issue with clang on Linux with musl libc, see https://github.com/JuliaPackaging/Yggdrasil/pull/10000
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gaproot=${prefix}/lib/gap --with-libcurl=${prefix}
 make -j${nproc}
 
