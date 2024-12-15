@@ -19,10 +19,13 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/arrow
 
-# Set toolchain for building external deps
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
+if [[ $target == *mingw32* ]]; then
+    # This hard-codes the name and location of the zstd library and
+    # must not be applied on other architectures
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows-zstd.patch
+fi
 
 cd cpp
 
@@ -52,7 +55,6 @@ CMAKE_FLAGS=(
     -DARROW_WITH_ZLIB=ON
     -DARROW_WITH_ZSTD=ON
     -DPARQUET_BUILD_EXECUTABLES=OFF
-    -DZSTD_ROOT=${prefix}
     -Dxsimd_SOURCE=AUTO
 )
 
