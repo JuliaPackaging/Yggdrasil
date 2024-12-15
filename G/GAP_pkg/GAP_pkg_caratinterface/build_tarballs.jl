@@ -20,17 +20,15 @@ sources = [
 script = raw"""
 cd CaratInterface*
 
-# HACK to workaround need to pass --with-gaproot
-mkdir -p $prefix/lib/gap/ # HACK
-echo "GAParch=dummy" > $prefix/lib/gap/sysinfo.gap # HACK
-echo "GAP_CPPFLAGS=dummy" >> $prefix/lib/gap/sysinfo.gap # HACK
-
-./configure ${prefix}/lib/gap
+tar pzxf carat.tgz
+cd carat
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gmp=${prefix}
 make -j${nproc}
+cd ..
 
 # copy just the executable
 mkdir -p ${prefix}/bin/
-cp bin/*/* ${prefix}/bin/
+cp -R carat/bin/ ${prefix}/bin/
 
 install_license GPL
 
