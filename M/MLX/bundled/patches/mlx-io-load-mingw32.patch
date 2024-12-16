@@ -1,0 +1,22 @@
+diff --git a/mlx/io/load.cpp b/mlx/io/load.cpp
+index 22bffd01..feeafafb 100644
+--- a/mlx/io/load.cpp
++++ b/mlx/io/load.cpp
+@@ -6,7 +6,7 @@
+ #include <sstream>
+ 
+ // Used by pread implementation.
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #define NOMINMAX
+ #include <windows.h>
+ #endif
+@@ -106,7 +106,7 @@ Dtype dtype_from_array_protocol(std::string_view t) {
+       "[from_str] Invalid array protocol type-string: " + std::string(t));
+ }
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ // There is no pread on Windows, emulate it with ReadFile.
+ int64_t pread(int fd, void* buf, uint64_t size, uint64_t offset) {
+   HANDLE file = reinterpret_cast<HANDLE>(_get_osfhandle(fd));
