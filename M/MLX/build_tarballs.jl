@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.21.1"
+version = v"0.21.2" # unofficial
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "50fa7051259d31da0778133bc7456dc029471bff"),
+    GitSource("https://github.com/ml-explore/mlx.git", "af5a614aad314233a3a236ae08789680a533615e"), # master
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
