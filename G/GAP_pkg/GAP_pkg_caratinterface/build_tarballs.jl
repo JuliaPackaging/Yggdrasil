@@ -31,8 +31,6 @@ mkdir -p ${prefix}/bin/
 cp -R carat/bin/ ${prefix}/bin/
 
 install_license GPL
-
-rm $prefix/lib/gap/sysinfo.gap
 """
 
 name = gap_pkg_name(name)
