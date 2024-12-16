@@ -28,7 +28,7 @@ cd ..
 
 # copy just the executable
 mkdir -p ${prefix}/bin/
-cp -R carat/bin/ ${prefix}/bin/
+cp -R carat/bin/* ${prefix}/bin/
 
 install_license GPL
 """
