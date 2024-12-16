@@ -20,6 +20,10 @@ sources = [
 script = raw"""
 cd CaratInterface*
 
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+
 tar pzxf carat.tgz
 cd carat
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gmp=${prefix}
