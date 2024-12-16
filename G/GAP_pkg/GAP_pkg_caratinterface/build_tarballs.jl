@@ -14,6 +14,7 @@ version = offset_version(upstream_version, offset)
 sources = [
     ArchiveSource("https://www.math.uni-bielefeld.de/~gaehler/gap/CaratInterface/CaratInterface-$(upstream_version).tar.gz",
                   "fdbc0f86befd8bf575c93475b33f58329ce99fe2ef97ba69af1478bc8664059c"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
