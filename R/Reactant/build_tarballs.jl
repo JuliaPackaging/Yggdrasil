@@ -184,6 +184,8 @@ fi
 sed -i "s/BB_TARGET/${bb_target}/g" BUILD
 sed -i "s/BB_FULL_TARGET/${bb_full_target}/g" BUILD
 
+export HERMETIC_PYTHON_VERSION=3.12
+
 $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]}
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-raw/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
