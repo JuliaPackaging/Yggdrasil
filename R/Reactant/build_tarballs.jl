@@ -30,9 +30,8 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-apk add py3-numpy py3-numpy-dev
-apk add -U python2
-
+apk del python2 python3 py3*
+apk info
 echo python `which python`
 echo python2 `which python2`
 echo python3 `which python3`
