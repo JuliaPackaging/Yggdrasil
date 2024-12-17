@@ -30,7 +30,7 @@ if [[ "${target}" == *-mingw* ]]; then
     make install
 fi
 
-cd $WORKSPACE/srcdir/glib-*/
+cd $WORKSPACE/srcdir/glib-*
 install_license COPYING
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
@@ -44,6 +44,9 @@ if [[ "${target}" == *-freebsd* ]]; then
     #     for this case with some small configure changes.
     atomic_patch -p1 ../patches/freebsd-have_xattr.patch
 fi
+
+# Disable check for macOS 10.13
+atomic_patch -p1 ../patches/macos.patch
 
 mkdir build_glib && cd build_glib
 
@@ -98,7 +101,7 @@ dependencies = [
     Dependency("Libffi_jll"; compat="~3.2.2"),
     # Gettext is only needed on macOS, as far as I could see
     Dependency("Gettext_jll"; compat="=0.21.0"),
-    Dependency("PCRE2_jll"; compat="10.43"),
+    Dependency("PCRE2_jll"),
     Dependency("Zlib_jll"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
