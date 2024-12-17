@@ -12,6 +12,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     sources = [
         GitSource("https://github.com/hpsc-lab/openfhe-julia.git",
                   git_hash),
+        ArchiveSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
+                  "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
     ]
 
     # Bash recipe for building across all platforms
@@ -40,9 +42,12 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         fi
     fi
     
-    # For MacOS additional linker flag is required to link typeid(__int128)
-    if [[ "${target}" == *apple* ]]; then
+    # For MacOS additional linker flag is required to link typeid(__int128) and newer sdk
+    if [[ "$target" == *-apple-darwin* ]]; then
         export LDFLAGS="-lc++abi"
+        apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.5.sdk
+        sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+        sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
     fi
 
     mkdir build && cd build
