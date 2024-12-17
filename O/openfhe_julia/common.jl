@@ -13,7 +13,7 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         GitSource("https://github.com/hpsc-lab/openfhe-julia.git",
                   git_hash),
         ArchiveSource("https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz",
-                  "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
+                      "f6acc6209db9d56b67fcaf91ec1defe48722e9eb13dc21fb91cfeceb1489e57e"),
     ]
 
     # Bash recipe for building across all platforms
