@@ -21,12 +21,9 @@ sources = [
 script = raw"""
 cd CaratInterface*
 
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-
 tar pzxf carat.tgz
 cd carat
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/macos.patch
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-gmp=${prefix}
 make -j${nproc}
 cd ..
