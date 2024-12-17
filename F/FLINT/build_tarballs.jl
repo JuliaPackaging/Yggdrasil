@@ -25,15 +25,15 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"3.1.3"
-version_offset = v"0.0.0"
+upstream_version = v"3.1.3"     # actually 3.1.3-p1
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/flintlib/flint.git", "a300f5a741b8f12cf9b6d4236631f62260f805a4"), # v3.1.3
+    GitSource("https://github.com/flintlib/flint.git", "416e0654f29401c8829319ee81b37583956306dd"), # v3.1.3-p1
 ]
 
 # Bash recipe for building across all platforms
@@ -54,7 +54,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental = true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -65,7 +65,7 @@ products = [
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("OpenBLAS32_jll", v"0.3.10"),
+    Dependency("OpenBLAS32_jll", v"0.3.28"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
