@@ -30,7 +30,12 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-# apk add py3-numpy py3-numpy-dev
+apk add py3-numpy py3-numpy-dev
+apk add -U python2
+
+echo python `which python`
+echo python2 `which python2`
+echo python3 `which python3`
 
 apk add openjdk11-jdk
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
