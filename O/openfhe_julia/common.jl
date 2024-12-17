@@ -42,8 +42,10 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
         fi
     fi
     
-    # For MacOS higher version of SDK is required according to https://github.com/llvm/llvm-project/issues/119608
+    # For MacOS higher version of SDK and additional linker flag are required 
+    # according to https://github.com/llvm/llvm-project/issues/119608 to link typeid(__int128)
     if [[ "$target" == *-apple-darwin* ]]; then
+        export LDFLAGS="-lc++abi"
         apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.5.sdk
         sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
         sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
