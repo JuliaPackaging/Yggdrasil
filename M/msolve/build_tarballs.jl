@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "msolve"
 upstream_version = v"0.7.3"
 
-version_offset = v"0.0.0"
+version_offset = v"0.0.1"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         upstream_version.patch*100+version_offset.patch)
@@ -27,9 +27,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) 
-filter!(!Sys.iswindows, platforms)  # no FLINT_jll available
+platforms = supported_platforms()
 # At the moment we cannot add optimized versions for specific architectures
 # since the logic of artifact selection when loading the package is not
 # working well.
@@ -44,7 +42,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.0"),
-    Dependency("FLINT_jll", compat = "~300.100.300"),
+    Dependency("FLINT_jll", compat = "~300.100.301"),
     Dependency("MPFR_jll", v"4.1.1"),
 
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
