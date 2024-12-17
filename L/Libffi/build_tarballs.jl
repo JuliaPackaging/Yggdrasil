@@ -1,41 +1,32 @@
 using BinaryBuilder
 
 name = "Libffi"
-version = v"3.2.1"
-
+upstream_version = "3.4.6"
+version = VersionNumber(upstream_version)
 
 # Collection of sources required to build libffi
 sources = [
-    ArchiveSource("https://sourceware.org/pub/libffi/libffi-$(version).tar.gz",
-                  "d06ebb8e1d9a22d19e38d63fdb83954253f39bedc5d46232a05645685722ca37"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/libffi/libffi/releases/download/v$(upstream_version)/libffi-$(upstream_version).tar.gz",
+                  "b0dea9df23c863a7a50e825440f3ebffabd65df1497108e5d437747843895a4e"),
 ]
-
-version = v"3.2.2" # <-- this is a lie, we need to bump the version to require julia v1.6
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libffi-*/
-atomic_patch -p1 ../patches/0001-libdir-no-touchy.patch
-
-# Required on aarch64-apple-darwin to build with newer versions of LLVM. See:
-# - https://github.com/llvm/llvm-project/issues/72802
-# - Similar issue: https://github.com/libffi/libffi/issues/807
-# - In Julia: https://github.com/JuliaLang/julia/pull/54634
-if [[ ${target} == aarch64-apple-* ]]; then
-    atomic_patch -p1 ../patches/0002-aarch64-llvm18.patch
-fi
-
 update_configure_scripts
-autoreconf -f -i
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static --enable-shared
+./configure --prefix=${prefix} \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --disable-static \
+    --enable-shared \
+    --disable-multi-os-directory
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -47,4 +38,6 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+
+# Build trigger: 2
