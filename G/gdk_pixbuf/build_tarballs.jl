@@ -1,14 +1,14 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "gdk_pixbuf"
-version = v"2.42.10"
+version = v"2.42.12"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
-                  "efb6110873a94bddc2ab09a0e1c81acadaac014d2e622869529e0042c0e81d9b"),
+                  "c608eb59eb3a697de108961c7d64303e5bcd645c2a95da9a9fe60419dfaa56f6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -56,8 +56,8 @@ dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     # Need a host glib for glib-compile-resources
-    HostBuildDependency("Glib_jll"),
-    Dependency("Glib_jll"; compat="2.76.5"),
+    HostBuildDependency(PackageSpec(; name="Glib_jll", version=v"2.80.5")),
+    Dependency("Glib_jll"; compat="2.80.5"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.5.1"),
