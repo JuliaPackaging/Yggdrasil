@@ -19,7 +19,7 @@ sources = [
 script = raw"""
 cd curlInterface*
 
-apk del curl # 
+apk del curl  # make sure we don't link against system's libcurl by accident
 
 #export CPPFLAGS="-I$includedir"  # workaround issue with clang on Linux with musl libc, see https://github.com/JuliaPackaging/Yggdrasil/pull/10000
 #export LDFLAGS="-L$libdir"
