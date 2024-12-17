@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gdk-pixbuf-*/
+cd $WORKSPACE/srcdir/gdk-pixbuf-*
 mkdir build && cd build
 
 FLAGS=()
