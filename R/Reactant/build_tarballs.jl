@@ -376,10 +376,6 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
         continue
     end
     
-    if gpu != "cuda"
-	continue
-    end
-
     # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
     if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
         continue
