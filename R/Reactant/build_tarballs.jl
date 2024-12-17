@@ -424,6 +424,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
 	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
     end
 
