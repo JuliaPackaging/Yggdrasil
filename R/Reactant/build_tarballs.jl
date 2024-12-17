@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.27"
 
 sources = [
-  GitSource(repo, "8b5d1316b48bce9245640094478488a622b4aa67"),
+  GitSource(repo, "c096f1a59ba4f9665d143bc9bce6835e097203a9"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -29,12 +29,6 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/." 
     popd
 fi
-
-apk del python2 python3 py3*
-apk info
-echo python `which python`
-echo python2 `which python2`
-echo python3 `which python3`
 
 apk add openjdk11-jdk
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
@@ -223,6 +217,7 @@ if [[ "${bb_full_target}" == *cuda* ]]; then
     mkdir -p ${libdir}/cuda/bin
     cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
     cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
+    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/fatbinary ${libdir}/cuda/bin
 fi
 
 cp -v bazel-bin/libReactantExtra.so ${libdir}
@@ -380,6 +375,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     if gpu != "none" && Sys.isapple(platform)
         continue
     end
+    
+    if gpu != "cuda"
+	continue
+    end
 
     # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
     if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
@@ -430,6 +429,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
 	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
     end
 
