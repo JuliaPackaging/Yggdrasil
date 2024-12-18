@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.26"
 
 sources = [
-  GitSource(repo, "899668ab6a4121a63fc8a725d988bc736ae1474f"),
+  GitSource(repo, "4761cce5187023e52f2a3b81cedfffd63683cecb"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -20,6 +20,9 @@ cd Reactant.jl/deps/ReactantExtra
 
 echo Clang version: $(clang --version)
 echo GCC version: $(gcc --version)
+
+cp $BAZEL_HOST_TOOLCHAIN toolchain/yggdrasil/ygg_host.bzl
+cp $BAZEL_TARGET_TOOLCHAIN toolchain/yggdrasil/ygg_target.bzl
 
 if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
@@ -81,11 +84,11 @@ BAZEL_BUILD_FLAGS+=(--define=grpc_no_ares=true)
 
 BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
-    
+
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
-# BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
+BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 
 if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
@@ -117,7 +120,6 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
-    # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=10.14)
@@ -143,7 +145,6 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
     else
-        BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
         BAZEL_BUILD_FLAGS+=(--cpu=aarch64)
         BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
