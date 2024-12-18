@@ -28,6 +28,7 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+filter!(!Sys.iswindows, platforms)   # not POSIX
 # At the moment we cannot add optimized versions for specific architectures
 # since the logic of artifact selection when loading the package is not
 # working well.
