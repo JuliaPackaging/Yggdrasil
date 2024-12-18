@@ -24,6 +24,9 @@ fi
 
 cd $WORKSPACE/srcdir/mlx
 
+sed -i -e 's/doctest_discover_tests(tests)//' tests/CMakeLists.txt
+sed -i -e 's/add_test(NAME tests COMMAND tests)//' tests/CMakeLists.txt
+
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
@@ -66,6 +69,13 @@ if [[ "$target" != aarch64-apple-darwin* ]]; then
     cmake --build build --parallel $nproc
     cmake --install build
     cmake --install build --component headers
+
+    cd build/examples/cpp
+    find . -type f -perm 755 -exec install -D -m 755 -v {} $bindir/mlx/examples/{} \;
+    cd -
+    cd build/tests
+    find . -type f -perm 755 -exec install -D -m 755 -v {} $bindir/mlx/{} \;
+    cd -
 else
     cd $WORKSPACE/srcdir
     unzip -d mlx-$target mlx-$target.whl
