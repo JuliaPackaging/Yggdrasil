@@ -57,8 +57,8 @@ if [[ "$target" != aarch64-apple-darwin* ]]; then
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$prefix \
         -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
-        -DMLX_BUILD_TESTS=OFF \
-        -DMLX_BUILD_EXAMPLES=OFF \
+        -DMLX_BUILD_TESTS=ON \
+        -DMLX_BUILD_EXAMPLES=ON \
         -DMLX_BUILD_METAL=OFF \
         -DBUILD_SHARED_LIBS=ON \
         -G Ninja \
