@@ -6,13 +6,14 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.26"
+version = v"0.0.27"
 
 sources = [
-  GitSource(repo, "899668ab6a4121a63fc8a725d988bc736ae1474f"),
+  GitSource(repo, "5eaa114d88dc92d83ea9844fdd7b04267d225cae"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
+
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -29,8 +30,6 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/." 
     popd
 fi
-
-apk add py3-numpy py3-numpy-dev
 
 apk add openjdk11-jdk
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
@@ -184,6 +183,8 @@ fi
 sed -i "s/BB_TARGET/${bb_target}/g" BUILD
 sed -i "s/BB_FULL_TARGET/${bb_full_target}/g" BUILD
 
+export HERMETIC_PYTHON_VERSION=3.12
+
 $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]}
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-raw/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
@@ -217,6 +218,7 @@ if [[ "${bb_full_target}" == *cuda* ]]; then
     mkdir -p ${libdir}/cuda/bin
     cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
     cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
+    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/fatbinary ${libdir}/cuda/bin
 fi
 
 cp -v bazel-bin/libReactantExtra.so ${libdir}
@@ -374,7 +376,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     if gpu != "none" && Sys.isapple(platform)
         continue
     end
-
+    
     # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
     if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
         continue
@@ -424,6 +426,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
 	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
     end
 
