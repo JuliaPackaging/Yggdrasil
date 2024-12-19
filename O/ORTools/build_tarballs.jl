@@ -93,9 +93,9 @@ install -Dvm 644 ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/o
 platforms = [
     Platform("x86_64", "linux"),
     # Platform("aarch64", "linux"),   # Abseil uses -march for some files.
-    # Platform("x86_64", "macos"),    # Requires Clang 16+.
+    Platform("x86_64", "macos"),    # Requires Clang 16+.
     # Platform("aarch64", "macos"),   # Abseil uses -march for some files.
-    # Platform("x86_64", "freebsd"),  # Requires Clang 16+.
+    Platform("x86_64", "freebsd"),  # Requires Clang 16+.
     # Platform("x86_64", "windows"),  # Requires dlfcn.h.
 ]
 platforms = expand_cxxstring_abis(platforms)
