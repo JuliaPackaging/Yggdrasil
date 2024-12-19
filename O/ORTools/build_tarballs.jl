@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ORTools"
-version = v"9.7"
+version = v"9.11"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "6fa02e157a5c91067b7d7b88629472b9ed461193")
+              "8edc858e5cbe8902801d846899dc0de9be748b2c")
 ]
 
 # Bash recipe for building across all platforms
@@ -164,4 +164,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.10")
