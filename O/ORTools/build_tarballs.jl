@@ -95,7 +95,7 @@ platforms = [
     # Platform("aarch64", "linux"),   # Abseil uses -march for some files.
     # Platform("x86_64", "macos"),    # Abseil uses -march for some files.
     # Platform("aarch64", "macos"),   # Abseil uses -march for some files.
-    Platform("x86_64", "freebsd"),  # Requires Clang 16+.
+    Platform("x86_64", "freebsd"),
     # Platform("x86_64", "windows"),  # Requires dlfcn.h.
 ]
 platforms = expand_cxxstring_abis(platforms)
@@ -164,4 +164,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.9")
