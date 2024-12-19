@@ -49,8 +49,9 @@ install -Dvm 644 ../cimnodes/generator/output/*.json -t ${prefix}/share/cimnodes
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-# We don't build for armv6l because GLFW_jll doesn't support it
-platforms = filter(p -> arch(p) != "armv6l", platforms)
+# We don't build for armv6l because GLFW_jll doesn't support it, and we don't
+# build for aarch64-freebsd because it's GLFW-related pain.
+platforms = filter(p -> arch(p) != "armv6l" && !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -73,9 +74,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.10")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.13")),
     Dependency("GLFW_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.13")
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
