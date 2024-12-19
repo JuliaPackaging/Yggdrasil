@@ -49,7 +49,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libffi_jll"),
+    Dependency("Libffi_jll"; compat="~3.2.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
