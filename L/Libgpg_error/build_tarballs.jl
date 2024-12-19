@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Libgpg_error"
-version_string = "1.50"
+version_string = "1.51"
 version = VersionNumber(version_string)
 
 # Collection of sources required to build Libgpg-Error
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$(version_string).tar.bz2",
-                  "69405349e0a633e444a28c5b35ce8f14484684518a508dc48a089992fe93e20a"),
+                  "be0f1b2db6b93eed55369cdf79f19f72750c8c7c39fc20b577e724545427e6b2"),
     DirectorySource("./bundled"),
 ]
 
