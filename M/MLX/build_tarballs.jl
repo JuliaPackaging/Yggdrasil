@@ -6,7 +6,7 @@ name = "MLX"
 version = v"0.21.2" # unofficial
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "070bd433ab027a2143364c467d95983f2317d3a3"), # master
+    GitSource("https://github.com/ml-explore/mlx.git", "f17536af9c484ebb26a056292ed10acc32de3910"), # master
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
@@ -106,7 +106,6 @@ products = Product[
 ]
 
 dependencies = [
-    Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
