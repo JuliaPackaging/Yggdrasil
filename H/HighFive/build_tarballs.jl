@@ -45,7 +45,7 @@ dependencies = [
     BuildDependency("xtensor_jll"),
     Dependency("HDF5_jll"; compat="~1.14.0"),
     # Dependency("OpenCV_jll"),
-    Dependency("boost_jll"; compat="1.79.0"),
+    Dependency("boost_jll"; compat="=1.79.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
