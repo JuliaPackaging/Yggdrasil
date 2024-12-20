@@ -15,9 +15,9 @@ llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
 sources = Dict(
     v"13.0.1" => [GitSource(repo, "3aa49e5dc64ef043f45e7eb2e3f1f405cd37e2d5")],
     v"14.0.6" => [GitSource(repo, "71e518473631b2ed7915d7b2b71976611b0bf975")],
-    v"15.0.7" => [GitSource(repo, "9af5f3e6ee66f617ba2f3339dba88a0dfab66c65")],
-    v"16.0.6" => [GitSource(repo, "a5acfa5983ef6ca771549fea93950dda1a87c2c7")],
-    v"17.0.6" => [GitSource(repo, "b73c85b3dd799b9c904c7565359cf3741496836e")],
+    v"15.0.7" => [GitSource(repo, "aba82137dde7a0e5e5f2d8a44d7daf750e51fd30")],
+    v"16.0.6" => [GitSource(repo, "079c50a3cb88053b54db312710347db298407806")],
+    v"17.0.6" => [GitSource(repo, "64be3444763c752bfc3cde36f2b2a4e4ace6b92f")],
 )
 
 # These are the platforms we will build for by default, unless further
