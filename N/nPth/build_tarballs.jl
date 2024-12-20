@@ -3,29 +3,20 @@
 using BinaryBuilder
 
 name = "nPth"
-version = v"1.6"
+version = v"1.8"
 
 # Collection of sources required to build libgcrypt
 sources = [
-    ArchiveSource("https://gnupg.org/ftp/gcrypt/npth/npth-1.6.tar.bz2",
-                  "1393abd9adcf0762d34798dc34fdcf4d0d22a8410721e76f1e3afcd1daa4e2d1"),
+    ArchiveSource("https://gnupg.org/ftp/gcrypt/npth/npth-1.8.tar.bz2",
+                  "8bd24b4f23a3065d6e5b26e98aba9ce783ea4fd781069c1b35d149694e90ca3e"),
 ]
 
 # Bash recipe for building across all platforms
-
-# Tried -no-undefined but still couldn't build for windows
 script = raw"""
-cd $WORKSPACE/srcdir/npth-*/
-if [[ "${target}" == powerpc64le-* ]]; then
-    autoreconf -vi
-fi
-update_configure_scripts
-
+cd $WORKSPACE/srcdir/npth-*
 ./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} --disable-static
 make -j${nproc}
 make install
-
-
 install_license ${WORKSPACE}/srcdir/npth-*/COPYING.LIB
 """
 
@@ -44,4 +35,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
