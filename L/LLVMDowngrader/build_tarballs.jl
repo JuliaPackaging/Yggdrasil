@@ -7,17 +7,17 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMDowngrader"
 repo = "https://github.com/JuliaGPU/llvm-downgrade"
-version = v"0.5"
+version = v"0.6"
 
 llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
 
 # Collection of sources required to build LLVMDowngrader
 sources = Dict(
-    v"13.0.1" => [GitSource(repo, "47798a59ce4678e39464b047f0fe1279e31c4ae9")],
-    v"14.0.6" => [GitSource(repo, "2b2dc13c55fab4f7eed8e6bc98f5274ad6ea818a")],
-    v"15.0.7" => [GitSource(repo, "1fcc7fdb6ad6be9fe9223b178dd0689219cbaad3")],
-    v"16.0.6" => [GitSource(repo, "766123f179f2cdbff2a322ef4767edae353d1ba1")],
-    v"17.0.6" => [GitSource(repo, "1f3e43c2e431d7f11a58b5076026950b2588a7f0")],
+    v"13.0.1" => [GitSource(repo, "3aa49e5dc64ef043f45e7eb2e3f1f405cd37e2d5")],
+    v"14.0.6" => [GitSource(repo, "71e518473631b2ed7915d7b2b71976611b0bf975")],
+    v"15.0.7" => [GitSource(repo, "9af5f3e6ee66f617ba2f3339dba88a0dfab66c65")],
+    v"16.0.6" => [GitSource(repo, "a5acfa5983ef6ca771549fea93950dda1a87c2c7")],
+    v"17.0.6" => [GitSource(repo, "b73c85b3dd799b9c904c7565359cf3741496836e")],
 )
 
 # These are the platforms we will build for by default, unless further
