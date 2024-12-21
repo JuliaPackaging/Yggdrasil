@@ -62,7 +62,7 @@ if [[ $target == *mingw32* ]]; then
     # Cmake doesn't find the zstd library on Windows. It does find
     # zstd, but it somehow can't determine the path to the actual
     # library.
-    CMAKE_FLAGS+=(-DZSTD_LIB=/workspace/destdir/lib/libzstd.dll.a)
+    CMAKE_FLAGS+=(-DZSTD_LIB="${prefix}/lib/libzstd.dll.a")
 fi
 
 cmake -B cmake-build "${CMAKE_FLAGS[@]}"
