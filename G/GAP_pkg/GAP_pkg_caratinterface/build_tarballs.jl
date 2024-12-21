@@ -4,7 +4,7 @@ include("../common.jl")
 
 name = "caratinterface"
 upstream_version = "2.3.7" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
+offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
 # This package only produces an executable and does not need GAP for this at all,
@@ -28,9 +28,19 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/macos.patch
 make -j${nproc}
 cd ..
 
-# copy just the executable
+cd carat/tables
+tar pzxf qcatalog.tar.gz
+rm -f qcatalog.tar.gz
+cd ../..
+
+
+# copy the executable
 mkdir -p ${prefix}/bin/
 cp -R carat/bin/* ${prefix}/bin/
+
+# copy the tables
+mkdir -p ${prefix}/share/carat/
+mv carat/tables ${prefix}/share/carat/
 
 install_license GPL
 """
