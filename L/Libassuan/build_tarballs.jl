@@ -16,13 +16,8 @@ sources = [
 
 # Tried -no-undefined but still couldn't build for windows
 script = raw"""
-cd $WORKSPACE/srcdir/libassuan-*/
+cd $WORKSPACE/srcdir/libassuan-*
 
-if [[ "${target}" == x86_64-*-mingw* ]]; then
-    # `gpgrt-config` for this platform returns garbage results.  We replace it with
-    # a simple wrapper around `pkg-config`, so that we can easily build the shared library.
-    FLAGS=(GPG_ERROR_CONFIG="../gpgrt-config.sh" ac_cv_path_GPGRT_CONFIG="../gpgrt-config.sh")
-fi
 export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} "${FLAGS[@]}"
 make -j${nproc}
