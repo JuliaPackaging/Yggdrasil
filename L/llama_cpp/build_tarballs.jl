@@ -56,11 +56,21 @@ version = v"0.0.16"  # fake version number
 # 0.0.17          2024-12-20       b4371             https://github.com/ggerganov/llama.cpp/releases/tag/b4371
 
 sources = [
-    GitSource("https://github.com/ggerganov/llama.cpp.git",
-              "eb5c3dc64bd967f2e23c87d9dec195f45468de60"),
+    GitSource("https://github.com/ggerganov/llama.cpp.git", "eb5c3dc64bd967f2e23c87d9dec195f45468de60"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK which supports `std::filesystem`
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+    cp -a System "/opt/${target}/${target}/sys-root/"
+    popd
+fi
+
 cd $WORKSPACE/srcdir/llama.cpp*
 
 # remove compiler flags forbidden in BinaryBuilder
@@ -97,6 +107,7 @@ cmake -Bbuild -GNinja \
     ${EXTRA_CMAKE_ARGS[@]}
 cmake --build build
 cmake --install build
+install_license LICENSE
 """
 
 platforms = supported_platforms()
@@ -104,18 +115,6 @@ platforms = supported_platforms()
 # aarch64-linux-musl:
 # /workspace/srcdir/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c:2398:53: error: ‘HWCAP_ASIMDDP’ undeclared (first use in this function); did you mean ‘HWCAP_ASIMDHP’?
 filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libc(p) == "musl"), platforms)
-
-#TODO # x86_64-linux-gnu-cx11:
-#TODO # libgomp.so.1: cannot open shared object file: No such file or directory
-
-#TODO # x86_64-apple-darwin:
-#TODO # [01:42:07] /workspace/srcdir/llama.cpp/ggml/src/ggml-metal/ggml-metal.m:63:73: error: use of undeclared identifier 'MTLGPUFamilyApple7'
-
-#TODO # *--w64-mingw32:
-#TODO # [ Info: ["llama-gbnf-validator"] does not exist, reporting unsatisfied
-
-
-#TODO platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)) || (arch(p) in ["armv6l", "armv7l"]))
 
 platforms = expand_cxxstring_abis(platforms)
 
@@ -129,7 +128,7 @@ products = [
     ExecutableProduct("llama-embedding", :llama_embedding),
     ExecutableProduct("llama-eval-callback", :llama_eval_callback),
     ExecutableProduct("llama-export-lora", :llama_export_lora),
-    # ExecutableProduct("llama-gbnf-validator", :llama_gbnf_validator),   # is not built on Windows
+    # ExecutableProduct("llama-gbnf-validator", :llama_gbnf_validator),   # not built on Windows
     ExecutableProduct("llama-gen-docs", :llama_gen_docs),
     ExecutableProduct("llama-gguf", :llama_gguf),
     ExecutableProduct("llama-gguf-hash", :llama_gguf_hash),
@@ -148,7 +147,7 @@ products = [
     ExecutableProduct("llama-passkey", :llama_passkey),
     ExecutableProduct("llama-perplexity", :llama_perplexity),
     ExecutableProduct("llama-quantize", :llama_quantize),
-    ExecutableProduct("llama-quantize-stats", :llama_quantize_stats),
+    # ExecutableProduct("llama-quantize-stats", :llama_quantize_stats),   # not built on Windows
     ExecutableProduct("llama-qwen2vl-cli", :llama_qwen2vl_cli),
     ExecutableProduct("llama-retrieval", :llama_retrieval),
     ExecutableProduct("llama-run", :llama_run),
@@ -161,9 +160,9 @@ products = [
     ExecutableProduct("llama-tokenize", :llama_tokenize),
     ExecutableProduct("llama-tts", :llama_tts),
 
-    LibraryProduct("libggml-base", :libggml_base),
-    LibraryProduct("libggml-cpu", :libggml_cpu),
-    LibraryProduct("libggml", :libggml),
+    LibraryProduct(["libggml-base", "ggml-base"], :libggml_base),
+    LibraryProduct(["libggml-cpu", "ggml-cpu"], :libggml_cpu),
+    LibraryProduct(["libggml", "ggml"], :libggml),
     LibraryProduct("libllama", :libllama),
     LibraryProduct("libllava_shared", :libllava_shared),
 ]
