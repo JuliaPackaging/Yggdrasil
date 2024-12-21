@@ -4,11 +4,11 @@
 using BinaryBuilder, Pkg
 
 name = "casacore"
-version = v"3.5.1"
+version = v"3.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/casacore/casacore.git", "ff766c49fdfddd34715fd017a08aaedcc01736e0"),
+    GitSource("https://github.com/casacore/casacore.git", "976b6456a4c1e80284492bc9e4d83dccb8faac97"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,8 +44,11 @@ if [[ ${target} == *-linux-* ]]; then
     CMAKE_FLAGS+=(-DCASACORE_ARCH_LIBS="-lrt")
 fi
 
-# Congire
-cmake ${CMAKE_FLAGS[@]} ..
+# Explicitly link BLAS to LBT
+CMAKE_FLAGS+=(-DBLA_VENDOR="libblastrampoline")
+
+# Configure
+${host_bindir}/cmake ${CMAKE_FLAGS[@]} ..
 
 # Make and install
 make -j${nproc}
@@ -55,7 +58,7 @@ exit
 
 # Exclude windows, casacore needs pread and pwrite, which are POSIX-only
 # Also exclude FreeBSD, lots of upstream bugs that seem not worth fixing ourself
-platforms = supported_platforms(exclude=(platform)-> Sys.iswindows(platform) || Sys.isfreebsd(platform))
+platforms = supported_platforms(exclude=(platform) -> Sys.iswindows(platform) || Sys.isfreebsd(platform))
 # Deal with the fact that we have std::string values, which causes issues across the gcc 4/5 boundary
 platforms = expand_cxxstring_abis(platforms)
 # expand gfortran versions as well
@@ -104,14 +107,15 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat = "3.3.10")
-    Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"); compat = "4.3.1")
-    Dependency(PackageSpec(name="WCS_jll", uuid="550c8279-ae0e-5d1b-948f-937f2608a23e"); compat = "7.7.0")
-    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"); compat = "8.1.1")
-    Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat = "2.7.2")
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"); compat="3.3.10");
+    Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"); compat="4.4.0");
+    Dependency(PackageSpec(name="WCS_jll", uuid="550c8279-ae0e-5d1b-948f-937f2608a23e"); compat="7.7.0");
+    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a"); compat="8.1.1");
+    Dependency(PackageSpec(name="GSL_jll", uuid="1b77fbbe-d8ee-58f0-85f9-836ddc23a7a4"); compat="~2.7.2");
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4");
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"));
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version=v"3.30.2")) # For a version of CMake where Find_BLAS can find LBT
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7", preferred_gcc_version = v"5.2")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_gcc_version=v"5.2")
