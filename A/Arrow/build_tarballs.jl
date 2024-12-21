@@ -3,7 +3,9 @@
 using BinaryBuilder, Pkg
 
 name = "Arrow"
-version = v"18.1.0"
+# This installs Arrow 18.1.0.
+# We declare this as 18.1.1 because we enabled the Zstd library, changing the package dependencies.
+version = v"18.1.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -17,10 +19,13 @@ script = raw"""
 
 cd $WORKSPACE/srcdir/arrow
 
-# Set toolchain for building external deps
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
+if [[ $target == *mingw32* ]]; then
+    # This hard-codes the name and location of the zstd library and
+    # must not be applied on other architectures
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows-zstd.patch
+fi
 
 cd cpp
 
@@ -48,10 +53,17 @@ CMAKE_FLAGS=(
     -DARROW_WITH_SNAPPY=ON
     -DARROW_WITH_UTF8PROC=OFF
     -DARROW_WITH_ZLIB=ON
-    -DARROW_WITH_ZSTD=OFF
+    -DARROW_WITH_ZSTD=ON
     -DPARQUET_BUILD_EXECUTABLES=OFF
     -Dxsimd_SOURCE=AUTO
 )
+
+if [[ $target == *mingw32* ]]; then
+    # Cmake doesn't find the zstd library on Windows. It does find
+    # zstd, but it somehow can't determine the path to the actual
+    # library.
+    CMAKE_FLAGS+=(-DZSTD_LIB="${prefix}/lib/libzstd.dll.a")
+fi
 
 cmake -B cmake-build "${CMAKE_FLAGS[@]}"
 cmake --build cmake-build --parallel ${nproc}
@@ -76,6 +88,7 @@ dependencies = [
     Dependency("Lz4_jll"),
     Dependency("Thrift_jll"; compat="0.21"),
     Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
     Dependency("boost_jll"; compat="=1.79.0"),
     Dependency("brotli_jll"; compat="1.1.0"),
     Dependency("snappy_jll"; compat="1.2.1"),
