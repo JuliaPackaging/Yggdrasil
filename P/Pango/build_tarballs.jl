@@ -3,14 +3,15 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.52.1"
+version = v"1.55.5"
 
-# Collection of sources required to build Pango
+# Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "58728a0a2d86f60761208df9493033d18ecb2497abac80ee1a274ad0c6e55f0f"),
+                  "e396126ea08203cbd8ef12638e6222e2e1fd8aa9cac6743072fedc5f2d820dd8"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +33,9 @@ if [[ "${target}" == *-mingw* ]]; then
     make install
 fi
 
-cd $WORKSPACE/srcdir/pango-*/
+cd $WORKSPACE/srcdir/pango*/
+
+atomic_patch -p1 ../patches/sentinel.patch
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
@@ -57,7 +60,7 @@ install_license ../COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -68,14 +71,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Cairo_jll"; compat="1.16.1"),
-    Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
-    Dependency("FriBidi_jll"),
-    Dependency("Glib_jll"; compat="2.68.1"),
-    Dependency("HarfBuzz_jll"; compat="2.8.1"),
-    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)),
+    HostBuildDependency("gperf_jll"),
+    Dependency("Cairo_jll"; compat="1.18.2"),
+    Dependency("Fontconfig_jll"; compat="2.15.0"),
+    Dependency("FreeType2_jll"; compat="2.13.3"),
+    Dependency("FriBidi_jll"; compat="1.0.16"),
+    Dependency("Glib_jll"; compat="2.82.2"),
+    Dependency("HarfBuzz_jll"; compat="8.5.0"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

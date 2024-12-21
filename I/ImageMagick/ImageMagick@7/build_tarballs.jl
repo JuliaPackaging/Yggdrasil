@@ -2,13 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"7.1.1-11"
+upstream_version = v"7.1.1-38"
 version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
 
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://github.com/ImageMagick/ImageMagick",
-              "11ffa6eb4548644a718158daa286295ed3174054"),
+              "b0ab92265bab638e6ecd2f18b45977c38771c671"),
     DirectorySource("./bundled"),
 ]
 
@@ -48,13 +48,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Ghostscript_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("OpenJpeg_jll"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
-    Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
-    Dependency("Ghostscript_jll"),
-    Dependency("OpenJpeg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Using GCC 6 to get a newer libc, required by OpenJpeg that is pulled in by Libtiff
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

@@ -1,44 +1,39 @@
-diff --git a/src/makefile b/src/makefile
-index 43d335d..3668d11 100644
---- a/src/makefile
-+++ b/src/makefile
-@@ -62,14 +62,13 @@ ifeq ($(gcc), 4.9)
- 	LIBPATH1 = ${ROOT_DIR}/lib
- else 
- # Compiled libraries under user ~flexpart, gfortran v5.4
--	ROOT_DIR = /homevip/flexpart/
-+	ROOT_DIR = ${prefix}
+diff --color -ur flexpart-orig/src/makefile flexpart/src/makefile
+--- flexpart-orig/src/makefile	2024-06-28 12:00:25.488456542 +0200
++++ flexpart/src/makefile	2024-06-28 12:08:25.775123497 +0200
+@@ -91,13 +91,9 @@
+ 	F90	  = gfortran
+ 	MPIF90    = mpifort
  
--	F90	  = /usr/bin/gfortran
-+	F90	  = gfortran
- 	MPIF90    = /usr/bin/mpifort
- 
--	INCPATH1  = ${ROOT_DIR}/gcc-5.4.0/include	
--	INCPATH2  = /usr/include
--	LIBPATH1 = ${ROOT_DIR}/gcc-5.4.0/lib
+-	INCPATH1  = /usr/include/
 +	INCPATH1  = ${includedir}
-+	LIBPATH1 = ${libdir}
- endif
+ 	INCPATH2  = ./
+-	LIBPATH1  = /usr/lib/
+-
+-	INCPATH2  = /opt/eccodes/include/
+-#	INCPATH2  = ./
+-	LIBPATH2  = /opt/eccodes/lib/
++	LIBPATH1  = ${libdir}
  
+ # the following works on a Debian buster (and probably newer) machine
+ #	F90	  = gfortran
+@@ -128,9 +124,7 @@
+ #LIBS = -lgrib_api_f90 -lgrib_api -lm -ljasper $(NCOPT)
+ LIBS = -leccodes_f90 -leccodes -lm -ljasper $(NCOPT)
  
-@@ -87,16 +86,16 @@ VPATH = gributils/
+-FFLAGS   = -I$(INCPATH1) -I$(INCPATH2) -O$(O_LEV) -g -cpp -m64 -mcmodel=medium \
+-           -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 \
+-           -flto=jobserver -O$(O_LEV) $(NCOPT) $(FUSER)  #-Warray-bounds -fcheck=all # -march=native
++FFLAGS   = -I$(INCPATH1) -O$(O_LEV) -cpp -mcmodel=large -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -O$(O_LEV) $(NCOPT) $(FUSER)
  
+ DBGFLAGS = -I$(INCPATH1) -I$(INCPATH2) -O$(O_LEV_DBG) -g3 -ggdb3 -cpp \
+            -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4  \
+@@ -138,7 +134,7 @@
+            -fbacktrace   -Wall  -fdump-core $(FUSER) -fcheck=all #\
+             #  -ffpe-trap=invalid,overflow,denormal,underflow,zero 
  
- ## OPTIMIZATION LEVEL
--O_LEV = 0 # [0,1,2,3,g,s,fast]
-+O_LEV = 3 # [0,1,2,3,g,s,fast]
- O_LEV_DBG = g # [0,g]
+-LDFLAGS  = $(FFLAGS) -L$(LIBPATH1) -L$(LIBPATH2) -Wl,-rpath,$(LIBPATH1) $(LIBS)
++LDFLAGS  = $(FFLAGS) -L$(LIBPATH1) -Wl,-rpath,$(LIBPATH1) $(LIBS)
+ LDDEBUG  = $(DBGFLAGS) -L$(LIBPATH1) $(LIBS)
  
- ## LIBRARIES
- #LIBS = -lgrib_api_f90 -lgrib_api -lm -ljasper -lnetcdff
--LIBS = -lgrib_api_f90 -lgrib_api -lm -ljasper $(NCOPT)
-+LIBS = -leccodes_f90 -leccodes -lm $(NCOPT)
- 
--FFLAGS   = -I$(INCPATH1) -I$(INCPATH2) -O$(O_LEV) -g -cpp -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -flto=jobserver -O$(O_LEV) $(NCOPT) $(FUSER)  #-Warray-bounds -fcheck=all # -march=native
-+FFLAGS   = -I$(INCPATH1) -O$(O_LEV) -cpp -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -O$(O_LEV) $(NCOPT) $(FUSER)  #-Warray-bounds -fcheck=all # -march=native
- 
--DBGFLAGS = -I$(INCPATH1) -I$(INCPATH2) -O$(O_LEV_DBG) -g3 -ggdb3 -cpp -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -flto=jobserver -O$(O_LEV_DBG) $(NCOPT) -fbacktrace   -Wall  -fdump-core $(FUSER)  #  -ffpe-trap=invalid,overflow,denormal,underflow,zero  -Warray-bounds -fcheck=all
-+DBGFLAGS = -I$(INCPATH1) -O$(O_LEV_DBG) -g3 -ggdb3 -cpp -m64 -mcmodel=medium -fconvert=little-endian -frecord-marker=4 -fmessage-length=0 -O$(O_LEV_DBG) $(NCOPT) -fbacktrace   -Wall  -fdump-core $(FUSER)  #  -ffpe-trap=invalid,overflow,denormal,underflow,zero  -Warray-bounds -fcheck=all
- 
- LDFLAGS  = $(FFLAGS) -L$(LIBPATH1) -Wl,-rpath,$(LIBPATH1) $(LIBS) #-L$(LIBPATH2)
- LDDEBUG  = $(DBGFLAGS) -L$(LIBPATH1) $(LIBS) #-L$(LIBPATH2)
+ MODOBJS = \

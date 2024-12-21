@@ -4,7 +4,7 @@ steps:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
           version: "1.7"
-          depot_hard_size_limit: "268435456000" # 250GB
+          artifacts_size_limit: "268435456000" # 250GB
       - JuliaCI/merge-commit: ~
       - staticfloat/forerunner#v1:
           watch:
@@ -22,7 +22,7 @@ steps:
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 20
     env:
-      JULIA_PKG_SERVER: pkg.julia.csail.mit.edu
+      JULIA_PKG_SERVER: us-east.pkg.julialang.org
       # Use eager registry to not have to wait for updates of the conservative registry
       JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
       # Forward JOB_ID_SECRET

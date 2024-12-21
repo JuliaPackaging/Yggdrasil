@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "OpenCL_Headers"
-version = v"2022.09.23"
+version = v"2024.10.24"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/KhronosGroup/OpenCL-Headers.git", "4c50fabe3774bad4bdda9c1ca92c82574109a74a"),
+    GitSource("https://github.com/KhronosGroup/OpenCL-Headers.git",
+              "4ea6df132107e3b4b9407f903204b5522fdffcd6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +17,10 @@ cd $WORKSPACE/srcdir
 
 install_license ./OpenCL-Headers/LICENSE
 
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -S ./OpenCL-Headers -B ./OpenCL-Headers/build
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -S ./OpenCL-Headers -B ./OpenCL-Headers/build
 cmake --build ./OpenCL-Headers/build --target install -j${nproc}
 """
 
@@ -33,4 +37,5 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version = v"6.1.0")

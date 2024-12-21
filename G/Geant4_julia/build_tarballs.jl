@@ -2,17 +2,18 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Geant4_julia"
-version = v"0.1.15"
+# See https://github.com/JuliaLang/Pkg.jl/issues/2942
+# Once this Pkg issue is resolved, this must be removed
+uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-# reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
+name = "Geant4_julia"
+version = v"0.2.0"
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "c50f41ae8837149aa1cb968cb37e4d1de7c360a8"),
+              "c80b68aa13774a97f105a96326d95d4a25b8a63f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,10 +34,12 @@ install_license Geant4_cxxwrap/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
+
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+
 # platforms supported by Geant4
-platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "armv7l", platforms)
+platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "armv7l" && arch(p) != "i686", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -48,12 +51,14 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.11.2"),
-    Dependency("Geant4_jll"; compat = "~11.2.0"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
+    Dependency("Geant4_jll"; compat = "~11.2.1"),
     Dependency("Expat_jll"),
     Dependency("Xerces_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat=julia_compat)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+               preferred_gcc_version=v"9", 
+               julia_compat="1.6")
           

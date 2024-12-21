@@ -1,12 +1,13 @@
 using BinaryBuilder, Pkg
 
 name = "AlphaMolWrapper"
-version = v"0.2.1"
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
+version = v"0.4.0"
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
+
 sources = [
-    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "4bd6559a12b4f561e6d880d03d1e3a799768827a"),    
+    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "e906eadeab98b8af7870da60598b087cbd2cdd22"),    
 ]
 
 script = raw"""

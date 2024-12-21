@@ -3,17 +3,18 @@ using Pkg
 using BinaryBuilderBase: sanitize
 
 name = "LibSSH2"
-version = v"1.11.0"
+# This is a lie, we actually build 1.11.1, but we needed to bump the patch version to change our compat below
+version = v"1.11.3"
 
 # Collection of sources required to build LibSSH2
 sources = [
-    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-$(version)/libssh2-$(version).tar.gz",
-                  "3736161e41e2693324deb38c26cfdc3efe6209d634ba4258db1cecff6a5ad461"),
+    ArchiveSource("https://github.com/libssh2/libssh2/releases/download/libssh2-1.11.1/libssh2-1.11.1.tar.gz",
+                  "d9ec76cbe34db98eec3539fe2c899d26b0c837cb3eb466a56b0f109cabf658f7"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libssh2*/
+cd $WORKSPACE/srcdir/libssh2*
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
@@ -59,7 +60,7 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.8", platforms=filter(!Sys.iswindows, platforms)),
+    Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(!Sys.iswindows, platforms)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]

@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDSS"
-version = v"0.2.0"
-full_version = "0.2.0.12"
+version = v"0.4.0"
+full_version = "0.4.0.2"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -44,7 +44,8 @@ products = [
 dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
 platforms = [Platform("x86_64", "linux"),
-             Platform("aarch64", "linux"),
+             Platform("aarch64", "linux"; cuda_platform="jetson"),
+             Platform("aarch64", "linux"; cuda_platform="sbsa"),
              Platform("x86_64", "windows")]
 
 builds = []

@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Xorg_libxcb"
-version = v"1.15"
+version_string = "1.17.0"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build libxcb
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/xcb/libxcb-$(version.major).$(version.minor).tar.xz",
-                  "cc38744f817cf6814c847e2df37fcb8997357d72fa4bcbc228ae0fe47219a059"),
+    ArchiveSource("https://www.x.org/archive/individual/xcb/libxcb-$(version_string).tar.xz",
+                  "599ebf9996710fea71622e6e184f3a8ad5b43d0e5fa8c4e407123c88a59a6d55"),
 ]
 
 # Bash recipe for building across all platforms
@@ -58,7 +59,6 @@ dependencies = [
     BuildDependency("Xorg_util_macros_jll"),
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_xcb_proto_jll"),
-    Dependency("XSLT_jll"),
     Dependency("Xorg_libXau_jll"),
     Dependency("Xorg_libXdmcp_jll"),
     Dependency("Xorg_libpthread_stubs_jll"),

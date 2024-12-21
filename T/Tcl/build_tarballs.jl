@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Tcl"
-version = v"8.6.11"
+version = v"8.6.14"
 
 # Collection of sources required to build Tcl
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/sourceforge/tcl/tcl$(version)-src.tar.gz",
-                  "8C0486668586672C5693D7D95817CB05A18C5ECCA2F40E2836B9578064088258"),
+                  "5880225babf7954c58d4fb0f5cf6279104ce1cd6aa9b71e9a6322540e1c4de66"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,8 +21,8 @@ else
     cd $WORKSPACE/srcdir/tcl*/unix/
 fi
 
-FLAGS=()
-if [[ "${target}" == x86_64-* ]]; then
+FLAGS=(--enable-threads --disable-rpath)
+if [[ "${target}" == x86_64-* ]] || [[ "${target}" == aarch64-* ]]; then
     FLAGS+=(--enable-64bit)
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${FLAGS[@]}"
@@ -50,5 +50,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
-
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies,
+               julia_compat="1.6")

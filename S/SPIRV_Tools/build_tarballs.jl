@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_Tools"
-version = v"2023.2"
+version = v"2024.3"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "44d72a9b36702f093dd20815561a56778b2d181e"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "0cfe9e7219148716dfd30b37f4d21753f098707a"),
     # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "66edefd2bb641de8a2f46b476de21f227fc03a28"),
-    GitSource("https://github.com/google/googletest", "a3580180d16923d6d5f488e20b3814608a892f17"),
-    GitSource("https://github.com/google/re2.git", "c9cba76063cf4235c1a15dd14a24a4ef8d623761"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "268a061764ee69f09a477a695bf6a11ffe311b8d"),
+    GitSource("https://github.com/google/effcee.git", "d74d33d93043952a99ae7cd7458baf6bc8df1da0"),
+    GitSource("https://github.com/google/googletest", "1d17ea141d2c11b8917d2c7d029f1c4e2b9769b2"),
+    GitSource("https://github.com/google/re2.git", "4a8cee3dd3c3d81b6fe8b867811e193d5819df07"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "2acb319af38d43be3ea76bfabf3998e5281d8d12"),
 ]
 
 # Bash recipe for building across all platforms
@@ -43,6 +43,9 @@ CMAKE_FLAGS+=(-DSPIRV_SKIP_TESTS=ON)
 # Don't use -Werror
 CMAKE_FLAGS+=(-DSPIRV_WERROR=OFF)
 
+# Skip spirv-objdump, which fails to build on some platforms
+sed -i '/add_spvtools_tool(TARGET spirv-objdump/,+8d' tools/CMakeLists.txt
+
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
 """
@@ -55,12 +58,13 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("spirv-as", :spirv_as),
-    ExecutableProduct("spirv-cfg", :spirv_cfg),
     ExecutableProduct("spirv-dis", :spirv_dis),
-    ExecutableProduct("spirv-link", :spirv_link),
-    ExecutableProduct("spirv-opt", :spirv_opt),
-    ExecutableProduct("spirv-reduce", :spirv_reduce),
     ExecutableProduct("spirv-val", :spirv_val),
+    ExecutableProduct("spirv-opt", :spirv_opt),
+    ExecutableProduct("spirv-cfg", :spirv_cfg),
+    ExecutableProduct("spirv-link", :spirv_link),
+    ExecutableProduct("spirv-lint", :spirv_lint),
+    ExecutableProduct("spirv-reduce", :spirv_reduce),
     LibraryProduct("libSPIRV-Tools-shared", :libSPIRV_Tools),
 ]
 
@@ -68,4 +72,4 @@ products = [
 dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7") # requires C++17
+               julia_compat="1.6", preferred_gcc_version=v"8") # requires C++17 + filesystem

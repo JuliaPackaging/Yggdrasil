@@ -1,0 +1,145 @@
+diff --color -ur qtbase-everywhere-src-6.7.1-orig/cmake/QtCompilerOptimization.cmake qtbase-everywhere-src-6.7.1/cmake/QtCompilerOptimization.cmake
+--- qtbase-everywhere-src-6.7.1-orig/cmake/QtCompilerOptimization.cmake	2024-05-08 11:42:08.000000000 +0200
++++ qtbase-everywhere-src-6.7.1/cmake/QtCompilerOptimization.cmake	2024-05-25 09:55:10.389859161 +0200
+@@ -49,7 +49,7 @@
+     set(QT_CFLAGS_RDSEED     "${__prefix}-mrdseed")
+     set(QT_CFLAGS_AVX        "${__prefix}-mavx")
+     set(QT_CFLAGS_AVX2       "${__prefix}-mavx2")
+-    set(QT_CFLAGS_ARCH_HASWELL "${__prefix}-march=haswell")
++    set(QT_CFLAGS_ARCH_HASWELL "-mavx2" "-mf16c" "-mfma" "-mbmi" "-mbmi2" "-mlzcnt")
+     set(QT_CFLAGS_AVX512F    "${__prefix}-mavx512f")
+     set(QT_CFLAGS_AVX512ER   "${__prefix}-mavx512er")
+     set(QT_CFLAGS_AVX512CD   "${__prefix}-mavx512cd")
+diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/corelib/thread/qfutex_mac_p.h qtbase-everywhere-src-6.7.1/src/corelib/thread/qfutex_mac_p.h
+--- qtbase-everywhere-src-6.7.1-orig/src/corelib/thread/qfutex_mac_p.h	2024-05-08 11:42:08.000000000 +0200
++++ qtbase-everywhere-src-6.7.1/src/corelib/thread/qfutex_mac_p.h	2024-05-25 09:56:05.524088960 +0200
+@@ -15,6 +15,7 @@
+ // We mean it.
+ //
+ 
++#include <errno.h>
+ #include <qdeadlinetimer.h>
+ #include <qtsan_impl.h>
+ #include <private/qglobal_p.h>
+diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/gui/opengl/qopengl.cpp qtbase-everywhere-src-6.7.1/src/gui/opengl/qopengl.cpp
+--- qtbase-everywhere-src-6.7.1-orig/src/gui/opengl/qopengl.cpp	2024-05-08 11:42:08.000000000 +0200
++++ qtbase-everywhere-src-6.7.1/src/gui/opengl/qopengl.cpp	2024-05-25 09:58:05.419293137 +0200
+@@ -187,6 +187,14 @@
+     return result;
+ }
+ 
++namespace QOSWorkaround {
++    // Due to a mingw bug being confused by static constexpr variables in an exported class,
++    // we cannot use QOperatingSystemVersion::Windows11 in libraries outside of QtCore.
++    // ### TODO Remove this when that problem is fixed.
++    static constexpr QOperatingSystemVersionBase Windows11 { QOperatingSystemVersionBase::Windows,
++                                                             10, 0, 22000 };
++}
++
+ // OS term consisting of name and optional version found in
+ // under "os" in main array and in "exceptions" lists.
+ struct OsTypeTerm
+@@ -196,7 +204,7 @@
+     static QVersionNumber hostKernelVersion() { return QVersionNumber::fromString(QSysInfo::kernelVersion()); }
+     static QString hostOsRelease() {
+ #ifdef Q_OS_WIN
+-        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11)
++        if (QOperatingSystemVersion::current() >= QOSWorkaround::Windows11)
+             return u"11"_s;
+         return u"10"_s;
+ #else
+diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowsiconengine.cpp qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowsiconengine.cpp
+--- qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowsiconengine.cpp	2024-05-08 11:42:08.000000000 +0200
++++ qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowsiconengine.cpp	2024-05-25 09:59:20.937091197 +0200
+@@ -285,10 +285,18 @@
+                                     : (m_iconName.length() == 1 ? m_iconName : QString());
+ }
+ 
++namespace QOSWorkaround {
++    // Due to a mingw bug being confused by static constexpr variables in an exported class,
++    // we cannot use QOperatingSystemVersion::Windows11 in libraries outside of QtCore.
++    // ### TODO Remove this when that problem is fixed.
++    static constexpr QOperatingSystemVersionBase Windows11 { QOperatingSystemVersionBase::Windows,
++                                                             10, 0, 22000 };
++}
++
+ namespace {
+ auto iconFontFamily()
+ {
+-    static const bool isWindows11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
++    static const bool isWindows11 = QOperatingSystemVersion::current() >= QOSWorkaround::Windows11;
+     return isWindows11 ? u"Segoe Fluent Icons"_s
+                        : u"Segoe MDL2 Assets"_s;
+ }
+diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowsintegration.cpp qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowsintegration.cpp
+--- qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowsintegration.cpp	2024-05-08 11:42:08.000000000 +0200
++++ qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowsintegration.cpp	2024-05-25 10:00:12.627847826 +0200
+@@ -611,6 +611,14 @@
+     MessageBeep(MB_OK);  // For QApplication
+ }
+ 
++namespace QOSWorkaround {
++    // Due to a mingw bug being confused by static constexpr variables in an exported class,
++    // we cannot use QOperatingSystemVersion::Windows11 in libraries outside of QtCore.
++    // ### TODO Remove this when that problem is fixed.
++    static constexpr QOperatingSystemVersionBase Windows11 { QOperatingSystemVersionBase::Windows,
++                                                             10, 0, 22000 };
++}
++
+ void QWindowsIntegration::setApplicationBadge(qint64 number)
+ {
+     // Clamp to positive numbers, as the Windows API doesn't support negative numbers
+@@ -619,7 +627,7 @@
+     // Persist, so we can re-apply it on setting changes and Explorer restart
+     m_applicationBadgeNumber = number;
+ 
+-    static const bool isWindows11 = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
++    static const bool isWindows11 = QOperatingSystemVersion::current() >= QOSWorkaround::Windows11;
+ 
+ #if QT_CONFIG(cpp_winrt)
+     // We prefer the native BadgeUpdater API, that allows us to set a number directly,
+diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowstheme.cpp qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowstheme.cpp
+--- qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowstheme.cpp	2024-05-08 11:42:08.000000000 +0200
++++ qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowstheme.cpp	2024-05-25 10:01:40.062432370 +0200
+@@ -476,10 +476,18 @@
+     return appDir.isDir() ? QStringList(appDir.absoluteFilePath()) : QStringList();
+ }
+ 
++namespace QOSWorkaround {
++    // Due to a mingw bug being confused by static constexpr variables in an exported class,
++    // we cannot use QOperatingSystemVersion::Windows11 in libraries outside of QtCore.
++    // ### TODO Remove this when that problem is fixed.
++    static constexpr QOperatingSystemVersionBase Windows11 { QOperatingSystemVersionBase::Windows,
++                                                             10, 0, 22000 };
++}
++
+ static inline QStringList styleNames()
+ {
+     QStringList styles = { QStringLiteral("WindowsVista"), QStringLiteral("Windows") };
+-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11)
++    if (QOperatingSystemVersion::current() >= QOSWorkaround::Windows11)
+         styles.prepend(QStringLiteral("Windows11"));
+     return styles;
+ }
+diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/styles/modernwindows/main.cpp qtbase-everywhere-src-6.7.1/src/plugins/styles/modernwindows/main.cpp
+--- qtbase-everywhere-src-6.7.1-orig/src/plugins/styles/modernwindows/main.cpp	2024-05-08 11:42:08.000000000 +0200
++++ qtbase-everywhere-src-6.7.1/src/plugins/styles/modernwindows/main.cpp	2024-05-25 10:02:42.603307987 +0200
+@@ -17,9 +17,17 @@
+     QStyle *create(const QString &key) override;
+ };
+ 
++namespace QOSWorkaround {
++    // Due to a mingw bug being confused by static constexpr variables in an exported class,
++    // we cannot use QOperatingSystemVersion::Windows11 in libraries outside of QtCore.
++    // ### TODO Remove this when that problem is fixed.
++    static constexpr QOperatingSystemVersionBase Windows11 { QOperatingSystemVersionBase::Windows,
++                                                             10, 0, 22000 };
++}
++
+ QStyle *QModernWindowsStylePlugin::create(const QString &key)
+ {
+-    bool isWin11OrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
++    bool isWin11OrAbove = QOperatingSystemVersion::current() >= QOSWorkaround::Windows11;
+     if (isWin11OrAbove && key.compare(QLatin1String("windows11"), Qt::CaseInsensitive) == 0) {
+         return new QWindows11Style();
+     } else if (!isWin11OrAbove && key.compare(QLatin1String("windows11"), Qt::CaseInsensitive) == 0) {

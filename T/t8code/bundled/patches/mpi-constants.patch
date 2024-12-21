@@ -40,17 +40,3 @@
  #endif
  
  const char         *sc_shmem_type_to_string[SC_SHMEM_NUM_TYPES] = {
---- a/src/t8_cmesh/t8_cmesh_testcases.c
-+++ b/src/t8_cmesh/t8_cmesh_testcases.c
-@@ -43,7 +43,10 @@
- #define T8_CMESH_MAX_NUM_XYZ_TREES 5
- #endif
- 
--sc_MPI_Comm t8_comm_list[T8_CMESH_TEST_NUM_COMMS] = { sc_MPI_COMM_WORLD };
-+sc_MPI_Comm         t8_comm_list[T8_CMESH_TEST_NUM_COMMS];
-+__attribute__((__constructor__)) static void t8_comm_list_init() {
-+  t8_comm_list[0] = sc_MPI_COMM_WORLD;
-+}
- char t8_comm_string_list[T8_CMESH_TEST_NUM_COMMS][18] = { "sc_MPI_COMM_WORLD" };
- 
- /* TODO: - when disjoint bricks issues are done remove comment from t8_get_number_ of_all_testcases

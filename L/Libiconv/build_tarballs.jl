@@ -20,7 +20,7 @@ make install
 # Add pkg-config file
 mkdir -p "${prefix}/lib/pkgconfig"
 cat << EOF > "${prefix}/lib/pkgconfig/iconv.pc"
-prefix=${prefix}
+prefix=\${pcfiledir}/../..
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/$(basename ${libdir})
 sharedlibdir=\${libdir}
@@ -39,7 +39,7 @@ EOF
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

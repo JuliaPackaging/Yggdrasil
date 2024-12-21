@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Fmt"
-version = v"9.1.0"
+version = v"11.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/fmtlib/fmt.git", "a33701196adfad74917046096bf5a2aa0ab0bb50")
+    GitSource("https://github.com/fmtlib/fmt.git", "0c9fce2ffefecfdce794e1859584e25877b7b592")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,25 +21,17 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=True \
+    -DFMT_DOC=OFF \
     -DFMT_TEST=OFF \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     ..
 make
 make install
 
-install_license ../LICENSE.rst
+install_license ../LICENSE
 """
 
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macOs"),
-    Platform("aarch64", "macOs"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows")
-]
-
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

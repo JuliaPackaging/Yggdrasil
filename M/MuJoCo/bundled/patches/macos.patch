@@ -1,20 +1,14 @@
-From 65770038726e25c3ee49d968b757853c5604f510 Mon Sep 17 00:00:00 2001
+From 83452dae259c4e6652b96bed1106dad03d3a8fac Mon Sep 17 00:00:00 2001
 From: Jamie Mair <JamieMair@users.noreply.github.com>
-Date: Mon, 21 Aug 2023 11:08:09 +0100
-Subject: [PATCH 1/1] macos patch
+Date: Mon, 3 Jun 2024 14:28:31 +0100
+Subject: [PATCH 1/4] Removed gc-sections to allow cross compile
 
 ---
- cmake/MujocoLinkOptions.cmake          | 12 --------
- cmake/MujocoOptions.cmake              |  1 -
- sample/cmake/MujocoLinkOptions.cmake   | 12 --------
- sample/cmake/SampleOptions.cmake       |  1 -
- simulate/cmake/MujocoLinkOptions.cmake | 12 --------
- simulate/cmake/SimulateOptions.cmake   |  1 -
- src/engine/engine_plugin.cc            | 40 ++++++++++++--------------
- 7 files changed, 18 insertions(+), 61 deletions(-)
+ cmake/MujocoLinkOptions.cmake | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
 diff --git a/cmake/MujocoLinkOptions.cmake b/cmake/MujocoLinkOptions.cmake
-index 242767f..f8bb131 100644
+index 242767f9..0a5bf246 100644
 --- a/cmake/MujocoLinkOptions.cmake
 +++ b/cmake/MujocoLinkOptions.cmake
 @@ -45,18 +45,6 @@ function(get_mujoco_extra_link_options OUTPUT_VAR)
@@ -36,190 +30,127 @@ index 242767f..f8bb131 100644
      endif()
    endif()
  
-diff --git a/cmake/MujocoOptions.cmake b/cmake/MujocoOptions.cmake
-index 998b966..213f422 100644
---- a/cmake/MujocoOptions.cmake
-+++ b/cmake/MujocoOptions.cmake
-@@ -86,7 +86,6 @@ get_mujoco_extra_link_options(EXTRA_LINK_OPTIONS)
+@@ -64,4 +52,4 @@ function(get_mujoco_extra_link_options OUTPUT_VAR)
+       ${EXTRA_LINK_OPTIONS}
+       PARENT_SCOPE
+   )
+-endfunction()
++endfunction()
+\ No newline at end of file
+-- 
+2.34.1
+
+
+From 0f283fc37bbb0203116cd96169e354c8b29d5ee4 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Tue, 4 Jun 2024 11:20:34 +0100
+Subject: [PATCH 2/4] Continued macos fixes
+
+---
+ CMakeLists.txt                  | 1 +
+ src/engine/engine_util_errmem.c | 6 +++++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c1ac72a7..a6ee9fc6 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -50,6 +50,7 @@ endif()
  
- if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC))
-   set(EXTRA_COMPILE_OPTIONS
--      -Werror
-       -Wall
-       -Wimplicit-fallthrough
-       -Wunused
-diff --git a/sample/cmake/MujocoLinkOptions.cmake b/sample/cmake/MujocoLinkOptions.cmake
-index 242767f..f8bb131 100644
---- a/sample/cmake/MujocoLinkOptions.cmake
-+++ b/sample/cmake/MujocoLinkOptions.cmake
-@@ -45,18 +45,6 @@ function(get_mujoco_extra_link_options OUTPUT_VAR)
-           set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -fuse-ld=gold)
-         endif()
-       endif()
--
--      set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,--gc-sections")
--      check_c_source_compiles("int main() {}" SUPPORTS_GC_SECTIONS)
--      if(SUPPORTS_GC_SECTIONS)
--        set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,--gc-sections)
--      else()
--        set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,-dead_strip")
--        check_c_source_compiles("int main() {}" SUPPORTS_DEAD_STRIP)
--        if(SUPPORTS_DEAD_STRIP)
--          set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,-dead_strip)
--        endif()
--      endif()
-     endif()
-   endif()
+ include(MujocoOptions)
+ include(MujocoMacOS)
++enforce_mujoco_macosx_min_version()
+ include(MujocoDependencies)
  
-diff --git a/sample/cmake/SampleOptions.cmake b/sample/cmake/SampleOptions.cmake
-index 998b966..213f422 100644
---- a/sample/cmake/SampleOptions.cmake
-+++ b/sample/cmake/SampleOptions.cmake
-@@ -86,7 +86,6 @@ get_mujoco_extra_link_options(EXTRA_LINK_OPTIONS)
- 
- if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC))
-   set(EXTRA_COMPILE_OPTIONS
--      -Werror
-       -Wall
-       -Wimplicit-fallthrough
-       -Wunused
-diff --git a/simulate/cmake/MujocoLinkOptions.cmake b/simulate/cmake/MujocoLinkOptions.cmake
-index 242767f..f8bb131 100644
---- a/simulate/cmake/MujocoLinkOptions.cmake
-+++ b/simulate/cmake/MujocoLinkOptions.cmake
-@@ -45,18 +45,6 @@ function(get_mujoco_extra_link_options OUTPUT_VAR)
-           set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -fuse-ld=gold)
-         endif()
-       endif()
--
--      set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,--gc-sections")
--      check_c_source_compiles("int main() {}" SUPPORTS_GC_SECTIONS)
--      if(SUPPORTS_GC_SECTIONS)
--        set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,--gc-sections)
--      else()
--        set(CMAKE_REQUIRED_FLAGS ${EXTRA_LINK_OPTIONS} "-Wl,-dead_strip")
--        check_c_source_compiles("int main() {}" SUPPORTS_DEAD_STRIP)
--        if(SUPPORTS_DEAD_STRIP)
--          set(EXTRA_LINK_OPTIONS ${EXTRA_LINK_OPTIONS} -Wl,-dead_strip)
--        endif()
--      endif()
-     endif()
-   endif()
- 
-diff --git a/simulate/cmake/SimulateOptions.cmake b/simulate/cmake/SimulateOptions.cmake
-index 998b966..213f422 100644
---- a/simulate/cmake/SimulateOptions.cmake
-+++ b/simulate/cmake/SimulateOptions.cmake
-@@ -86,7 +86,6 @@ get_mujoco_extra_link_options(EXTRA_LINK_OPTIONS)
- 
- if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT MSVC))
-   set(EXTRA_COMPILE_OPTIONS
--      -Werror
-       -Wall
-       -Wimplicit-fallthrough
-       -Wunused
-diff --git a/src/engine/engine_plugin.cc b/src/engine/engine_plugin.cc
-index 075aacc..ce0eafd 100644
---- a/src/engine/engine_plugin.cc
-+++ b/src/engine/engine_plugin.cc
-@@ -55,8 +55,6 @@ namespace {
- constexpr int kMaxNameLength = 1024;
- constexpr int kMaxAttributes = 255;
- 
--constexpr int kCacheLine = 64;
--
- // vfs prefix
- constexpr const char* kVfsPrefix = mjVFS_PREFIX;
- 
-@@ -67,7 +65,7 @@ constexpr const char* kVfsPrefix = mjVFS_PREFIX;
- // table will behave like an array. Since pointers are never invalidated, we do not need to apply a
- // read lock on the global table when resolving a plugin.
- template<typename T>
--struct alignas(kCacheLine) PluginTable {
-+struct PluginTable {
-   static constexpr int kBlockSize = 15;
- 
-   PluginTable() {
-@@ -80,12 +78,6 @@ struct alignas(kCacheLine) PluginTable {
-   PluginTable<T>* next = nullptr;
- };
- 
--static_assert(
--    sizeof(PluginTable<mjpPlugin>) / kCacheLine ==
--    sizeof(PluginTable<mjpPlugin>::plugins) / kCacheLine
--    + (sizeof(PluginTable<mjpPlugin>::plugins) % kCacheLine > 0),
--    "PluginTable::next doesn't fit in the same cache line as the end of PluginTable::plugins");
--
- using Mutex = std::shared_mutex;
- 
- class ReentrantWriteLock {
-@@ -141,7 +133,7 @@ class Global {
-   // executed by whichever thread started that termination but there is no guarantee that other
-   // threads have terminated. In other words, a static object may be accessed by another thread
-   // after it is deleted. We avoid destruction issues by never running the destructor.
--  alignas(Mutex) unsigned char mutex_[sizeof(Mutex)];
-+  unsigned char mutex_[sizeof(Mutex)];
- };
- 
- template<typename T>
-@@ -156,7 +148,7 @@ template<typename T>
- PluginTable<T>* AddNewTableBlock(PluginTable<T>* table) {
-   char err[512];
-   err[0] = '\0';
--  table->next = new(std::nothrow) PluginTable<T>;
-+  table->next = new PluginTable<T>;
-   if (!table->next) {
-     std::snprintf(err, sizeof(err), "failed to allocate memory for the global plugin table");
-     return nullptr;
-@@ -204,15 +196,14 @@ std::unique_ptr<char[]> CopyName(const char* s) {
-   if (len == -1) {
-     return nullptr;
-   }
--  std::unique_ptr<char[]> out(new(std::nothrow) char[len + 1]);
--  if (!out) {
--    return nullptr;
--  }
-+  std::unique_ptr<char[]> out(new char[len + 1]);
-   std::strncpy(out.get(), s, len);
-   out.get()[len] = '\0';
-   return out;
+ set(MUJOCO_HEADERS
+diff --git a/src/engine/engine_util_errmem.c b/src/engine/engine_util_errmem.c
+index 7c63c1ce..eee75139 100644
+--- a/src/engine/engine_util_errmem.c
++++ b/src/engine/engine_util_errmem.c
+@@ -33,7 +33,11 @@ static inline void* mju_alignedMalloc(size_t size, size_t align) {
+ #ifdef _WIN32
+   return _aligned_malloc(size, align);
+ #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+-  return aligned_alloc(align, size);
++  void* ptr = NULL;
++  if (posix_memalign(&ptr, align, size) != 0) {
++      return NULL;
++  }
++  return ptr;
+ #endif
  }
  
-+
-+
- // check if two plugins are identical
- bool PluginsAreIdentical(const mjpPlugin& plugin1, const mjpPlugin& plugin2) {
-   if (plugin1.name && !plugin2.name) {
-@@ -388,17 +379,22 @@ int mjp_registerPlugin(const mjpPlugin* plugin) {
- 
-     // release the attribute names from unique_ptr into a plain array
-     const char** attributes = nullptr;
--    if (plugin->nattribute) {
--      attributes = new(std::nothrow) const char*[plugin->nattribute];
--      if (!attributes) {
--        std::snprintf(err, sizeof(err), "failed to allocate memory for plugin attribute array");
--        return -1;
-+    try {
-+      if (plugin->nattribute) {
-+        attributes = new const char*[plugin->nattribute];
-+        for (int i = 0; i < plugin->nattribute; ++i) {
-+          attributes[i] = attributes_vec[i].release();
-+        }
-       }
--      for (int i = 0; i < plugin->nattribute; ++i) {
--        attributes[i] = attributes_vec[i].release();
-+    } catch (const std::bad_alloc&) {
-+      std::snprintf(err, sizeof(err), "failed to allocate memory for plugin attribute array");
-+      if (attributes) {
-+        delete[] attributes;
-       }
-+      return -1;
-     }
- 
-+
-     // all checked passed, actually register the plugin into the global table
-     mjpPlugin& registered_plugin = table->plugins[local_idx];
-     registered_plugin = *plugin;
 -- 
-2.41.0
+2.34.1
 
+
+From d128d96281b1df99b0066bcea77392a17cdb937f Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Tue, 4 Jun 2024 11:39:20 +0100
+Subject: [PATCH 3/4] Ensured that C++17 is being used directly for macos
+
+---
+ CMakeLists.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a6ee9fc6..5b6e222b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -53,6 +53,16 @@ include(MujocoMacOS)
+ enforce_mujoco_macosx_min_version()
+ include(MujocoDependencies)
+ 
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++set(CMAKE_CXX_EXTENSIONS OFF)
++
++# Ensure you're linking against the correct standard library
++if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
++  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
++  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
++endif()
++
+ set(MUJOCO_HEADERS
+     include/mujoco/mjdata.h
+     include/mujoco/mjexport.h
+-- 
+2.34.1
+
+
+From ea8ddc7687bdb5abea972c14d93be36bae07eaa9 Mon Sep 17 00:00:00 2001
+From: Jamie Mair <JamieMair@users.noreply.github.com>
+Date: Tue, 4 Jun 2024 12:20:25 +0100
+Subject: [PATCH 4/4] Edited the standards used
+
+---
+ CMakeLists.txt | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5b6e222b..d701ee7c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -54,14 +54,16 @@ enforce_mujoco_macosx_min_version()
+ include(MujocoDependencies)
+ 
+ set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_C_STANDARD 17)
++set(CMAKE_C_STANDARD_REQUIRED ON)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_CXX_EXTENSIONS OFF)
+ 
+ # Ensure you're linking against the correct standard library
+-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+-endif()
++# if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
++#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
++#   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
++# endif()
+ 
+ set(MUJOCO_HEADERS
+     include/mujoco/mjdata.h
+-- 
+2.34.1

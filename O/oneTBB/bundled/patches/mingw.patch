@@ -1,5 +1,13 @@
 --- a/cmake/compilers/GNU.cmake
 +++ b/cmake/compilers/GNU.cmake
+@@ -50,7 +50,6 @@
+ if (NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL Intel)
+     # gcc 6.0 and later have -flifetime-dse option that controls elimination of stores done outside the object lifetime
+     set(TBB_DSE_FLAG $<$<NOT:$<VERSION_LESS:${CMAKE_CXX_COMPILER_VERSION},6.0>>:-flifetime-dse=1>)
+-    set(TBB_COMMON_COMPILE_FLAGS ${TBB_COMMON_COMPILE_FLAGS} $<$<NOT:$<VERSION_LESS:${CMAKE_CXX_COMPILER_VERSION},8.0>>:-fstack-clash-protection>)
+ endif()
+ 
+ # Workaround for heavy tests and too many symbols in debug (rellocation truncated to fit: R_MIPS_CALL16)
 @@ -63,6 +63,9 @@ endif()
  set(TBB_IPO_COMPILE_FLAGS $<$<NOT:$<CONFIG:Debug>>:-flto>)
  set(TBB_IPO_LINK_FLAGS $<$<NOT:$<CONFIG:Debug>>:-flto>)

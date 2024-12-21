@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version_string = "6.1.1"   # when patch number is zero, they use X.Y format
+version_string = "6.1.2"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "8684f4b00f94b85461884c3719382f1261f0d9eb3d59640a1f4ac0873616f968",
+        "3b624649725ecdc565c903ca6643d41f33bd49239922e45c9b1442c63dca4e38",
     ),
     ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
     ArchiveSource(

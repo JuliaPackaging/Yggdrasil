@@ -6,16 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"2.1.3"
+version = v"2.1.4"
 
-
-PETSc_COMPAT_VERSION = "~3.18.8" # Note: this is the version of the PETSc_jll package, which is sometimes larger than the PETSc version  
-MPItrampoline_compat_version="5.2.1"  
+PETSc_COMPAT_VERSION = "~3.19.6"    
+MPItrampoline_compat_version="5.2.1"
+MicrosoftMPI_compat_version="~10.1.4" 
+MPICH_compat_version="~4.1.2"    
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/UniMainzGeo/LaMEM", 
-    "34ff97e62086a384be4b9a63a9b326b67f976027")
+    "12f9849d2af894476cccccd4e9c4f13c5d8639b3")
 ]
 
 # Bash recipe for building across all platforms
@@ -71,7 +72,14 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
                                                                   Platform("armv7l","linux"; libc="musl"),
                                                                   Platform("armv7l","linux"; libc="gnu"),
                                                                   Platform("aarch64","linux"; libc="musl")]))
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat=MPItrampoline_compat_version)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms; 
+                                        MPItrampoline_compat = MPItrampoline_compat_version,
+                                        MPICH_compat         = MPICH_compat_version,
+                                        MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
+
+# mpitrampoline and libgfortran 3 don't seem to work
+platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
