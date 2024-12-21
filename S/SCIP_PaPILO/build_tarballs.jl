@@ -4,15 +4,15 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"900.000.000"
+upstream_version = v"9.2.0"
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://scipopt.org/download/release/scipoptsuite-9.0.0.tgz",
-        "c49a0575003322fcbfe2d3765de7e3e60ff7c08d1e8b17d35409be40476cb98a"
+        "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
+        "a174cc58592d245c74c9c95c1d4819750d7ba2d467b4baae616a5aa336aac8d0"
     ),
-    DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,8 +27,6 @@ if [[ "${target}" == *-mingw* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
 fi
 
-atomic_patch -p0 $WORKSPACE/srcdir/patches/papilo_cmake.patch
-
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
@@ -39,7 +37,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DGCG=0\
   -DBOOST=ON\
-  -DSYM=bliss\
+  -DSYM=snauty\
   -DTPI=tny\
   -DIPOPT_DIR=${prefix} \
   -DIPOPT_LIBRARIES=${libdir} \
