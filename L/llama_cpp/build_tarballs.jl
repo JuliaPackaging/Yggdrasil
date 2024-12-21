@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.17"  # fake version number
+version = v"0.0.16"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -58,7 +58,7 @@ version = v"0.0.17"  # fake version number
 sources = [
     GitSource("https://github.com/ggerganov/llama.cpp.git", "eb5c3dc64bd967f2e23c87d9dec195f45468de60"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-        "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
@@ -158,7 +158,9 @@ products = [
     ExecutableProduct("llama-speculative", :llama_speculative),
     ExecutableProduct("llama-speculative-simple", :llama_speculative_simple),
     ExecutableProduct("llama-tokenize", :llama_tokenize),
-    ExecutableProduct("llama-tts", :llama_tts), LibraryProduct(["libggml-base", "ggml-base"], :libggml_base),
+    ExecutableProduct("llama-tts", :llama_tts),
+
+    LibraryProduct(["libggml-base", "ggml-base"], :libggml_base),
     LibraryProduct(["libggml-cpu", "ggml-cpu"], :libggml_cpu),
     LibraryProduct(["libggml", "ggml"], :libggml),
     LibraryProduct("libllama", :libllama),
@@ -170,4 +172,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", preferred_gcc_version=v"10")
