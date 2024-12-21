@@ -104,7 +104,7 @@ cmake -Bbuild -GNinja \
     -DLLAMA_BLAS=OFF \
     -DLLAMA_CUBLAS=OFF \
     -DLLAMA_CLBLAST=OFF \
-    ${EXTRA_CMAKE_ARGS[@]}
+    "${EXTRA_CMAKE_ARGS[@]}"
 cmake --build build
 cmake --install build
 install_license LICENSE
