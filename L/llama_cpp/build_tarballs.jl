@@ -66,18 +66,16 @@ cd $WORKSPACE/srcdir/llama.cpp*
 # remove compiler flags forbidden in BinaryBuilder
 sed -i -e 's/-funsafe-math-optimizations//g' CMakeLists.txt
 
-EXTRA_CMAKE_ARGS=
+EXTRA_CMAKE_ARGS=()
 if [[ "${target}" == *-linux-* ]]; then
     # otherwise we have undefined reference to `clock_gettime' when
     # linking the `main' example program
-    EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
+    EXTRA_CMAKE_ARGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lrt")
 fi
 
-# Use Metal on Apple Silicon, disable otherwise (eg, disable for Intel-based MacOS)
-if [[ "${target}" == aarch64-apple-darwin* ]]; then
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=ON"
-else
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=OFF"
+# Disable Metal on Intel Apple platforms
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    EXTRA_CMAKE_ARGS+=(-DGGML_METAL=OFF)
 fi
 
 cmake -Bbuild -GNinja \
@@ -96,13 +94,29 @@ cmake -Bbuild -GNinja \
     -DLLAMA_BLAS=OFF \
     -DLLAMA_CUBLAS=OFF \
     -DLLAMA_CLBLAST=OFF \
-    $EXTRA_CMAKE_ARGS
+    ${EXTRA_CMAKE_ARGS[@]}
 cmake --build build
 cmake --install build
 """
 
 platforms = supported_platforms()
+
+# aarch64-linux-musl:
+# /workspace/srcdir/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c:2398:53: error: ‘HWCAP_ASIMDDP’ undeclared (first use in this function); did you mean ‘HWCAP_ASIMDHP’?
+filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libc(p) == "musl"), platforms)
+
+#TODO # x86_64-linux-gnu-cx11:
+#TODO # libgomp.so.1: cannot open shared object file: No such file or directory
+
+#TODO # x86_64-apple-darwin:
+#TODO # [01:42:07] /workspace/srcdir/llama.cpp/ggml/src/ggml-metal/ggml-metal.m:63:73: error: use of undeclared identifier 'MTLGPUFamilyApple7'
+
+#TODO # *--w64-mingw32:
+#TODO # [ Info: ["llama-gbnf-validator"] does not exist, reporting unsatisfied
+
+
 #TODO platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)) || (arch(p) in ["armv6l", "armv7l"]))
+
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -115,7 +129,7 @@ products = [
     ExecutableProduct("llama-embedding", :llama_embedding),
     ExecutableProduct("llama-eval-callback", :llama_eval_callback),
     ExecutableProduct("llama-export-lora", :llama_export_lora),
-    ExecutableProduct("llama-gbnf-validator", :llama_gbnf_validator),
+    # ExecutableProduct("llama-gbnf-validator", :llama_gbnf_validator),   # is not built on Windows
     ExecutableProduct("llama-gen-docs", :llama_gen_docs),
     ExecutableProduct("llama-gguf", :llama_gguf),
     ExecutableProduct("llama-gguf-hash", :llama_gguf_hash),
@@ -154,7 +168,8 @@ products = [
     LibraryProduct("libllava_shared", :libllava_shared),
 ]
 
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
