@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "HelloWorldFortran"
 version = v"1.1.1"
