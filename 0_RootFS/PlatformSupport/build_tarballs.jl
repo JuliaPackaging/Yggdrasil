@@ -183,7 +183,8 @@ ln -s "${prefix}" "${sysroot}/usr/local"
 
 # Build the artifacts
 ndARGS, deploy_target = find_deploy_arg(ARGS)
-build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
+build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], [];
+                            skip_audit=true, validate_name=false)
 if deploy_target !== nothing
     upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)
 end
