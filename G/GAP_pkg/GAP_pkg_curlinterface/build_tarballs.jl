@@ -37,7 +37,7 @@ name = gap_pkg_name(name)
 platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
 
 append!(dependencies, [
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
 ])
 
 # The products that we will ensure are always built
