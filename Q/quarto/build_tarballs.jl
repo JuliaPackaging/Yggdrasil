@@ -12,8 +12,8 @@ sources = [
     ArchiveSource("$(url_prefix)-macos.tar.gz", "5b422f396756ee0ee268970ae851775fed7e1005aea98500d59b7f12cd9a4e16"; unpack_target="x86_64-apple-darwin14"),
     ArchiveSource("$(url_prefix)-macos.tar.gz", "5b422f396756ee0ee268970ae851775fed7e1005aea98500d59b7f12cd9a4e16"; unpack_target="aarch64-apple-darwin20"),
     ArchiveSource("$(url_prefix)-win.zip", "0fc0678222326ca5b2affc97df832dc23b71cb404dd9b17895db7a607e8e5a75"; unpack_target="x86_64-w64-mingw32"),
-    FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/v$(quarto_ver)/COPYRIGHT", "490f3bfa035e325018ce9b0c8c2aec1f291c67ff55358a653d079488385af517"),
-    FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/v$(quarto_ver)/COPYING.md", "54a55511991726b38e3867966ab14fd62919114670f2178654cced9394af78fd"),
+    FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/v$(quarto_ver)/COPYRIGHT", "b99ec68b0ae2766380ecd177de507b799d1e3f6b7334d940a57021d3e4299721"),
+    FileSource("https://raw.githubusercontent.com/quarto-dev/quarto-cli/v$(quarto_ver)/COPYING.md", "6b985ce085f33a39f96d12321cfbcee03aa2ad4249755f534537f38019dfa123"),
 ]
 
 # Bash recipe for building across all platforms
