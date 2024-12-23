@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 # Collection of pre-build quarto binaries
 name = "quarto"
-quarto_ver = "1.5.57"
+quarto_ver = "1.6.39"
 version = VersionNumber(quarto_ver)
 
 url_prefix = "https://github.com/quarto-dev/quarto-cli/releases/download/v$(quarto_ver)/quarto-$(quarto_ver)"
