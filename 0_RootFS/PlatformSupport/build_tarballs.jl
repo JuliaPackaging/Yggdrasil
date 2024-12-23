@@ -5,7 +5,7 @@
 # ```
 # using BinaryBuilder
 # using BinaryBuilder: aatriplet
-# for platform in supported_platforms()
+# for platform in supported_platforms(; experimental=true)
 #     # Append version numbers for BSD systems
 #     if Sys.isapple(platform)
 #         suffix = arch(platform) == "aarch64" ? "20" : "14"
@@ -89,6 +89,9 @@ target_to_linux_arch()
             ;;
         powerpc*)
             echo "powerpc"
+            ;;
+        riscv64*)
+            echo "riscv"
             ;;
         i686*)
             echo "x86"
@@ -180,7 +183,8 @@ ln -s "${prefix}" "${sysroot}/usr/local"
 
 # Build the artifacts
 ndARGS, deploy_target = find_deploy_arg(ARGS)
-build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
+build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], [];
+                            skip_audit=true, validate_name=false)
 if deploy_target !== nothing
     upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)
 end
