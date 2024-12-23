@@ -52,6 +52,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("flex_jll"),
+    BuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"; compat="5.4"),
