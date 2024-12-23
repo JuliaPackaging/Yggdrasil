@@ -204,7 +204,7 @@ dependencies = [
     # Dependency("HDF4_jll"; compat="4.3.0"),
     Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
     Dependency("LERC_jll"; compat="4"),
-    Dependency("LibCURL_jll"),  # compat="7.73,8"
+    Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16"),
     Dependency("Libtiff_jll"; compat="4.7"),
     Dependency("Lz4_jll"; compat="1.9.3"),
