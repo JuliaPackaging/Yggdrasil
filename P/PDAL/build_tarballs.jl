@@ -42,9 +42,8 @@ mkdir -p build/dimbuilder && cd build/dimbuilder
 
 #make sure we're back in source dir
 cd $WORKSPACE/srcdir/PDAL*
-cd build
 
-cmake .. -G Ninja \
+cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_LIBRARY_PATH:FILEPATH="${libdir}" \
@@ -64,8 +63,10 @@ cmake .. -G Ninja \
     -DWITH_ZLIB=ON \
     -DWITH_TESTS=OFF
 
-ninja -j${nproc}
-ninja install
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+install_license LICENSE.txt
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
