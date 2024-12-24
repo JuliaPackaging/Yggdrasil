@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-version = v"5.4.0"
+version = v"5.12.0"
 
 include("../common.jl")
 
@@ -11,4 +11,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                julia_compat="1.10",  preferred_llvm_version=llvm_version
 )
 
-# Build trigger: 2
+# Build trigger: 1
