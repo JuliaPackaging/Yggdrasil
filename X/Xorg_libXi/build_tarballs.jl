@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXi"
-version = v"1.7.10"
+version = v"1.8.2"
 
 # Collection of sources required to build libXi
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXi-$(version).tar.bz2",
-                  "36a30d8f6383a72e7ce060298b4b181fd298bc3a135c8e201b7ca847f5f81061"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXi-$(version).tar.gz",
+                  "5542daec66febfeb6f51d57abfa915826efe2e3af57534f4105b82240ea3188d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

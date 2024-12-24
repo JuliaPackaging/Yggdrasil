@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "OpenLDAPClient"
-version = v"2.5.14"
+version = v"2.5.19"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-$(version).tgz",
-                  "577d0ef7b7b2334b5d537318e4369c8dc6b066ebec0cee5cc3ecd8931e1ea76d"),
+                  "56e2936c7169aa7547cfc93d5c87db46aa05e98dee6321590c3ada92e1fbb66c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -83,7 +83,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="1.1.10"),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.15"),
     Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"); platforms=filter(Sys.iswindows, platforms)),
 ]
 

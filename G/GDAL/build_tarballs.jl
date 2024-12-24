@@ -4,11 +4,17 @@ using BinaryBuilder, Pkg
 
 name = "GDAL"
 upstream_version = v"3.10.0"
-version_offset = v"1.0.0"
+# The version offset is used for two purposes:
+# - If we need to release multiple jll packages for the same GDAL
+#   library (usually for weird packaging reasons) then we increase the
+#   offset because we usually cannot release the same version twice.
+# - Minor versions of GDAL are usually binary incompatible because
+#   they increase the shared library soname. To encode this, we
+#   increase the major version number of the version offset.
+version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
-
 
 # Collection of sources required to build GDAL
 sources = [
@@ -48,9 +54,13 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-mkdir build && cd build
+# We cannot enable HDF4. Our HDF4_jll package provides a file `netcdf.h` that conflicts with NetCDF_jll.
+# -DGDAL_ENABLE_DRIVER_HDF4=ON
+# -DGDAL_USE_HDF4=ON
 
-CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
+CMAKE_FLAGS=(
+    -B build
+    -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_FIND_ROOT_PATH=${prefix}
     -DCMAKE_PREFIX_PATH=${prefix}
@@ -64,7 +74,8 @@ CMAKE_FLAGS=(-DCMAKE_INSTALL_PREFIX=${prefix}
     -DGDAL_USE_EXPAT=ON
     -DGDAL_USE_GEOS=ON
     -DGDAL_USE_GEOTIFF=ON
-    -DGDAL_USE_GIF=OFF  # Breaks GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
+    # TODO: Disable gif only on Windows
+    -DGDAL_USE_GIF=OFF   # Would break GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
     -DGDAL_USE_LERC=ON
     -DGDAL_USE_LIBLZMA=ON
     -DGDAL_USE_LIBXML2=ON
@@ -102,11 +113,9 @@ else
     CMAKE_FLAGS+=(-DGDAL_USE_HDF5=OFF)
 fi
 
-cmake .. ${CMAKE_FLAGS[@]}
-cmake --build . -j${nproc}
-cmake --build . -j${nproc} --target install
-
-install_license ../LICENSE.TXT
+cmake ${CMAKE_FLAGS[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -188,10 +197,11 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
-    Dependency("Arrow_jll"; compat="10"),
+    Dependency("Arrow_jll"; compat="18.1.0"),
     Dependency("Blosc_jll"; compat="1.21.1"),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("GEOS_jll"; compat="3.11.2"),
+    # Dependency("HDF4_jll"; compat="4.3.0"),
     Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
     Dependency("LERC_jll"; compat="4"),
     Dependency("LibCURL_jll"; compat="7.73,8"),

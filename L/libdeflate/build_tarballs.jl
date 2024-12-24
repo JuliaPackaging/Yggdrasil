@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version = v"1.22"
+version = v"1.23"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/ebiggers/libdeflate",
-        "2335c047e91cac6fd04cb0fd2769380395149f15"
+        "78051988f96dc8d8916310d8b24021f01bd9e102"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",

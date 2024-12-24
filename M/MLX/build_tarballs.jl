@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.21.0"
+version = v"0.21.1"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "bb303c45a55d7147bc261e9aa8be218d49500d09"),
+    GitSource("https://github.com/ml-explore/mlx.git", "50fa7051259d31da0778133bc7456dc029471bff"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/e3/55/cfcde5014d0e8c747c431a3384f3814857af3efbecd9f543eecf7b273fb4/mlx-0.21.0-cp313-cp313-macosx_13_0_arm64.whl", "18609008b0d51b22b400df967a702163c7501fecc8cc4b861d95ca147177cd1f"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    FileSource("https://files.pythonhosted.org/packages/72/1f/267d7fb06eb257feb7c281f73472bcae9735c9a7c09fe86d9362069c85a7/mlx-0.21.1-cp313-cp313-macosx_13_0_arm64.whl", "88328c058f4765b0376ac908b49e6711d25f93e02b972b8e68b73a9e1c358eab"; filename = "mlx-aarch64-apple-darwin20.whl"),
     DirectorySource("./bundled"),
 ]
 
@@ -24,12 +24,6 @@ if [[ "$target" == *-apple-darwin* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/mlx
-
-atomic_patch -p1 ../patches/cmake_system_processor-arm64-aarch64.patch
-atomic_patch -p1 ../patches/cmake-w64-mingw32.patch
-atomic_patch -p1 ../patches/cmake-x86_64-apple-darwin.patch
-atomic_patch -p1 ../patches/missing-unordered_map-include.patch
-atomic_patch -p1 ../patches/musl.patch
 
 if [[ "$target" == *-w64-mingw32* ]]; then
     atomic_patch -p1 ../patches/cmake-win32-io.patch

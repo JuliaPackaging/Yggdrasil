@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "FriBidi"
-version = v"1.0.14"
+version = v"1.0.16"
 
 # Collection of sources required to build FriBidi
 sources = [
     GitSource("https://github.com/fribidi/fribidi.git",
-              "bca04dc3cd3af85a9d9220c430737333634d622a"),
+              "68162babff4f39c4e2dc164a5e825af93bda9983"),
 ]
 
 # Bash recipe for building across all platforms
