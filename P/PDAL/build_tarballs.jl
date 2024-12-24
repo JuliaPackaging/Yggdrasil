@@ -71,8 +71,9 @@ install_license LICENSE.txt
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# Some dependencies (e.g. PROJ_jll) are missing for aarch64-*-freebsd
+# Some dependencies (e.g. PROJ_jll) are missing for aarch64-*-freebsd and riscv64-linux-*
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms)
 
 # The products that we will ensure are always built
 products = [
