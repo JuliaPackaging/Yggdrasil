@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "GnuPG"
-version = v"2.2.27"
+version = v"2.4.7"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/gnupg/gnupg-$(version).tar.bz2",
-                  "34e60009014ea16402069136e0a5f63d9b65f90096244975db5cea74b3d02399"),
-    DirectorySource("./bundled"),
+                  "7b24706e4da7e0e3b06ca068231027401f238102c41c909631349dcc3b85eb46"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gnupg-*/
+cd $WORKSPACE/srcdir/gnupg-*
 if [[ "${target}" != ${MACHTYPE} ]]; then
     # Delete `gpg-error-config` of the host to prevent it from being picked up
     # when configuring the package
@@ -41,6 +41,8 @@ make install
 # platforms are passed in on the command line.  We are manually disabling
 # many platforms that do not seem to work.
 platforms = supported_platforms()
+# Missing dependencies
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -66,23 +68,20 @@ dependencies = [
     HostBuildDependency("Libgpg_error_jll"),
     # We need this to run a host msgfmt executable
     HostBuildDependency("Gettext_jll"),
-    Dependency("GnuTLS_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
     Dependency("Libksba_jll"),
     Dependency("Libgcrypt_jll"),
-    # Future versions of `Libgpg_error_jll` maybe can have a more lax compat,
-    # but the move 1.36 -> 1.42 changed the soname for FreeBSD and Windows.
-    Dependency("Libgpg_error_jll", v"1.36.0"; compat="=1.36.0"),
+    Dependency("Libgpg_error_jll"; compat="1.50.0"),
     Dependency("nPth_jll"),
     Dependency("Zlib_jll"),
     Dependency("Libassuan_jll"),
     Dependency("OpenLDAPClient_jll"),
-    # Future versions of bzip2 should allow a more relaxed compat because the
-    # soname of the macOS library shouldn't change at every patch release.
-    Dependency("Bzip2_jll", v"1.0.6"; compat="=1.0.6"),
+    Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("SQLite_jll"),
     Dependency("libusb_jll"),
-    Dependency("Nettle_jll", v"3.4.1", compat="~3.4.1"),
+    Dependency("Nettle_jll"; compat="~3.10.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
