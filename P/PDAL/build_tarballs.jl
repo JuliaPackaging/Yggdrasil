@@ -85,6 +85,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="302.1000.0"),
+    Dependency(PackageSpec(name="LibCURL_jll"); compat="7.73,8"),
     Dependency(PackageSpec(name="libgeotiff_jll", uuid="06c338fa-64ff-565b-ac2f-249532af990e"); compat="100.702.300"),
     # From GDAL recipe, for 32-bit platforms, when we need to link to OpenMP we need version 4,
     # because version 5 dropped support for these architectures
