@@ -15,16 +15,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnupg-*
-if [[ "${target}" != ${MACHTYPE} ]]; then
-    # Delete `gpg-error-config` of the host to prevent it from being picked up
-    # when configuring the package
-    rm "${host_bindir}/gpg-error-config"
-    # Use Windows LDAP
-    FLAGS=(LDAPLIBS="-lwldap32")
-fi
+# Use Windows LDAP
+FLAGS=(LDAPLIBS="-lwldap32")
 if [[ "${target}" == *86*-linux-gnu ]]; then
     # We have an old glibc which doesn't have `IN_EXCL_UNLINK`
-    FLAGS=(ac_cv_func_inotify_init=no)
+    FLAGS=+(ac_cv_func_inotify_init=no)
     # Add -lrt dependency to fix the error
     #     undefined reference to `clock_gettime'
     atomic_patch -p1 ../patches/intel-linux-gnu-add-rt-lib.patch
@@ -46,8 +41,8 @@ filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("dirmngr", :dirmngr),
-    ExecutableProduct("dirmngr-client", :dirmngr_client),
+    # ExecutableProduct("dirmngr", :dirmngr),
+    # ExecutableProduct("dirmngr-client", :dirmngr_client),
     ExecutableProduct("gpg", :gpg),
     ExecutableProduct("gpg-agent", :gpg_agent),
     ExecutableProduct("gpgconf", :gpgconf),
@@ -71,7 +66,7 @@ dependencies = [
     Dependency("OpenSSL_jll"; compat="3.0.15"),
     Dependency("Libksba_jll"),
     Dependency("Libgcrypt_jll"),
-    Dependency("Libgpg_error_jll"; compat="1.50.0"),
+    Dependency("Libgpg_error_jll"; compat="1.51.0"),
     Dependency("nPth_jll"),
     Dependency("Zlib_jll"),
     Dependency("Libassuan_jll"),
