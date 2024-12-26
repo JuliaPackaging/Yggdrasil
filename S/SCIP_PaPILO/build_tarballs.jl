@@ -27,6 +27,10 @@ if [[ "${target}" == *-mingw* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
 fi
 
+# Patch to fix linking with gfortran's library on mingw
+# https://github.com/JuliaPackaging/Yggdrasil/pull/8224#issuecomment-2034941690
+atomic_patch -p0 $WORKSPACE/srcdir/patches/papilo_cmake.patch
+
 mkdir build
 cd build/
 cmake -DCMAKE_INSTALL_PREFIX=$prefix\
