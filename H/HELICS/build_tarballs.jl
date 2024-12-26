@@ -36,6 +36,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
+# Need newer CMake than provided by the default image (currently requires at least 3.22)
+apk del cmake
+
 cd $WORKSPACE/srcdir
 
 cmake -B build \
@@ -64,6 +67,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 dependencies = [
     Dependency("ZeroMQ_jll"),
     BuildDependency("boost_jll"),
+    HostBuildDependency("CMake_jll"),
 ]
 
 # Build 'em!
