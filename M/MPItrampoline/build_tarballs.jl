@@ -220,7 +220,7 @@ cp ${bindir}/mpifc ${bindir}/mpifort
 
 cd ${WORKSPACE}/srcdir/MPIconstants*
 cmake -B build \
-    -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
