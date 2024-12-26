@@ -19,7 +19,7 @@ cd $WORKSPACE/srcdir/gnupg-*
 FLAGS=(LDAPLIBS="-lwldap32")
 if [[ "${target}" == *86*-linux-gnu ]]; then
     # We have an old glibc which doesn't have `IN_EXCL_UNLINK`
-    FLAGS=+(ac_cv_func_inotify_init=no)
+    FLAGS+=(ac_cv_func_inotify_init=no)
     # Add -lrt dependency to fix the error
     #     undefined reference to `clock_gettime'
     atomic_patch -p1 ../patches/intel-linux-gnu-add-rt-lib.patch
