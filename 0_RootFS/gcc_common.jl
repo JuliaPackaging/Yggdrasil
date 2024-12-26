@@ -71,7 +71,6 @@ function gcc_script(compiler_target::Platform)
             LIB64=lib64
             ;;
         risc64*)
-            # TODO: Is this correct?
             LIB64=lib64
             ;;
         *)
@@ -330,6 +329,7 @@ function gcc_script(compiler_target::Platform)
         # patch for avoiding linking in musl libs for a glibc-linked binary
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection.patch || true
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection_old.patch || true
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection_new.patch || true
 
         # Patch for building glibc 2.25-2.30 on aarch64
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_aarch64_relocation.patch || true
@@ -357,11 +357,18 @@ function gcc_script(compiler_target::Platform)
             GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
         fi
 
-        if [[ ${COMPILER_TARGET} == riscv64-* ]]; then
-            # Explicitly disable C++
-            # (Disable for all architectures?)
-            GLIBC_CONFIGURE_OVERRIDES+=( CXX=false )
-        fi
+        # Explicitly disable C++.
+        # If we don't do this, glibc will pick up the host C++
+        # compiler (/usr/bin/g++) to build some C++ files. With this
+        # setting, glibc will build C versions of these files instead.
+        GLIBC_CONFIGURE_OVERRIDES+=( CXX=false )
+
+        # These flags are necessary for GCC 14. GCC 14 defaults to a
+        # modern version of C, too modern for the old glibc libraries we are
+        # trying to build. Various configure tests would fail otherwise. (Why
+        # declare variables or functions if they default to int anyway?)
+        GLIBC_CFLAGS="${CFLAGS} -g -O2 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-array-parameter"
+
 
         # Configure glibc
         mkdir ${WORKSPACE}/srcdir/glibc_build
@@ -373,6 +380,7 @@ function gcc_script(compiler_target::Platform)
             --with-headers="${sysroot}/usr/include" \
             --disable-multilib \
             --disable-werror \
+            CFLAGS="${GLIBC_CFLAGS}" \
             ${GLIBC_CONFIGURE_OVERRIDES[@]}
 
 
