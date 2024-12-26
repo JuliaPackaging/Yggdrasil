@@ -13,6 +13,7 @@ sources = [
         "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
         "a174cc58592d245c74c9c95c1d4819750d7ba2d467b4baae616a5aa336aac8d0"
     ),
+    DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
