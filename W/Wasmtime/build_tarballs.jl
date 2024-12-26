@@ -1,4 +1,5 @@
 using BinaryBuilder
+# Build counter: 1
 
 name = "Wasmtime"
 version = v"24.0.0"
