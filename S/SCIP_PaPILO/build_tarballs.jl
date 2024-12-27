@@ -74,6 +74,7 @@ filter!(platforms) do p
     libgfortran_version(p) >= v"4"
 end
 
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("papilo", :papilo),
