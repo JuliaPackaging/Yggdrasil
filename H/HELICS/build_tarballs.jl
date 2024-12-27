@@ -20,6 +20,7 @@ HELICS_VERSION = v"3.6.0"
 HELICS_SHA = "e111ac5d92e808f27e330afd1f8b8ca4d86adf6ccd74e3280f2d40fb3e0e2ce9"
 
 sources = [
+    DirectorySource("./bundled"),
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
                   "$HELICS_SHA"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
@@ -41,6 +42,8 @@ fi
 apk del cmake
 
 cd $WORKSPACE/srcdir
+
+atomic_patch -p1 $WORKSPACE/srcdir/patches/link-atomic.patch
 
 cmake -B build \
    -DCMAKE_FIND_ROOT_PATH="${prefix}" \
