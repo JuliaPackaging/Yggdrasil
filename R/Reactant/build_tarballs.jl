@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.33"
 
 sources = [
-  GitSource(repo, "0f10360c9d784d6cc0642435cbfb69502ccb8c75"),
+  GitSource(repo, "0c69f0324f0c9d37c3ea33b681a71531b126a82b"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -451,6 +451,6 @@ for (i,build) in enumerate(builds)
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6",
-                   augment_platform_block, lazy_artifacts=true)
+                   augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false)
 end
 
