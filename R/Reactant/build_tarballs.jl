@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.33"
 
 sources = [
-  GitSource(repo, "eba679212c949166b306b43b1558c5ed198c692e"),
+  GitSource(repo, "8b28594cfb9a5dfdee70d0bc88498042d0cd69c6"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
