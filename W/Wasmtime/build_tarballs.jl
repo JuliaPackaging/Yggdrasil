@@ -1,5 +1,4 @@
 using BinaryBuilder
-# Build counter: 1
 
 name = "Wasmtime"
 version = v"24.0.0"
@@ -48,6 +47,9 @@ fi
 """
 
 platforms = supported_platforms(; exclude=(p -> !(arch(p) in ("x86_64", "aarch64"))))
+
+# Filter aarch64 FreeBSD because no Rust toolchain is available there yet
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # NOTE: Headers get installed too but we aren't explicitly listing them as `FileProduct`s
 products = [LibraryProduct("libwasmtime", :libwasmtime),
