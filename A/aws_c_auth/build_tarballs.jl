@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_auth"
-version = v"0.7.25"
+version = v"0.7.31"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-auth.git", "52bf591613d1a001c43ec99af7376f871759c5fe"),
+    GitSource("https://github.com/awslabs/aws-c-auth.git", "48d647bf43f8872e4dc5ec6343b0c5974195fbdd"),
 ]
 
 # Bash recipe for building
@@ -28,6 +28,7 @@ cmake --build . -j${nproc} --target install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [

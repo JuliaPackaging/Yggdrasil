@@ -59,7 +59,6 @@ dependencies = [
     BuildDependency("Xorg_util_macros_jll"),
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_xcb_proto_jll"),
-    Dependency("XSLT_jll"),
     Dependency("Xorg_libXau_jll"),
     Dependency("Xorg_libXdmcp_jll"),
     Dependency("Xorg_libpthread_stubs_jll"),

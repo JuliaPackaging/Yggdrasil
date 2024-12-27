@@ -10,9 +10,9 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 # Builds for all compatible CUDA platforms, but without microarchitecture expansion (not
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 name = "cufinufft"
-version = v"2.2.0"
+version = v"2.3.1"
+commit_hash = "1fea25405c174e34d2ddb793666060c3d79a43d1" # v2.3.1
 
-commit_hash = "51892059a4b457a99a2569ac11e9e91cd2e289e7";
 preferred_gcc_version=v"11"
 
 # Collection of sources required to complete build
@@ -34,11 +34,12 @@ cmake .. \
     -DCMAKE_PREFIX_PATH="${prefix}" \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
-    -DFINUFFT_FFTW_SUFFIX="" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DFINUFFT_FFTW_SUFFIX="" \
     -DFINUFFT_USE_CPU=OFF \
     -DFINUFFT_USE_CUDA=ON \
-    -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}"
+    -DFINUFFT_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
+    -DFINUFFT_STATIC_LINKING="OFF"
 cmake --build . --parallel $nproc
 cmake --install .
 
@@ -49,6 +50,10 @@ unlink $prefix/cuda/lib64
 platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", platforms)
+
+# Latest version of cuFINUFFT does not compile with CUDA 12.5, so exclude
+# NOTE: Works in v2.3.1 but will break in v2.4
+#filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -67,10 +72,14 @@ for platform in platforms
 
     # Build for all major archs supported by SDK
     # See https://en.wikipedia.org/wiki/CUDA
-    if VersionNumber(platform["cuda"]) < v"11.8"
+    # sm_90 works for CUDA v12.1 and up, due to use of atomic operaitons
+    # sm_52 required for alloca from CUDA v12.0 and up
+    if VersionNumber(platform["cuda"]) < v"12.0"
         cuda_archs = "50;60;70;80"
+    elseif VersionNumber(platform["cuda"]) < v"12.1"
+        cuda_archs = "60;70;80"
     else
-        cuda_archs = "50;60;70;80;90"
+        cuda_archs = "60;70;80;90"
     end
     arch_line = "export CUDA_ARCHS=\"$cuda_archs\"\n"
     platform_script = arch_line * script

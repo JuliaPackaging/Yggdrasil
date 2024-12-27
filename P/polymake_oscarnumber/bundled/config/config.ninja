@@ -1,7 +1,7 @@
 configure.command= --with-julia=/workspace/destdir/
 root=/workspace/destdir/share/polymake
 extroot=/workspace/srcdir/oscarnumber
-RequireExtensions=
+RequireExtensions=atint
 super.app.includes=${app.includes}
 app.includes=-I${extroot}/include/app-wrappers -I${extroot}/include/apps ${super.app.includes}
 

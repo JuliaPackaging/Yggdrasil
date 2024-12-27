@@ -1,5 +1,3 @@
-# global variables we will set
-global libcuda = nothing
 
 # manual use of preferences, as we can't depend on additional packages in JLLs.
 CUDA_Driver_jll_uuid = Base.UUID("4ee394cb-3365-5eb0-8335-949819d2adfc")
@@ -28,31 +26,23 @@ else
     missing
 end
 
-# find and select the system driver
-libcuda_system = if Sys.iswindows()
-    Libdl.find_library("nvcuda")
-else
-    Libdl.find_library(["libcuda.so.1", "libcuda.so"])
-end
-if libcuda_system == ""
-    @debug "No system driver found"
-    return
-end
-@debug "System driver found at $libcuda_system"
-libcuda = libcuda_system
+libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler]
+libcuda_system = Sys.iswindows() ? "nvcuda" : "libcuda.so.1"
+can_use_compat = true
 
 # check if we even have an artifact
-if !@isdefined(libcuda_compat)
+if @isdefined(libcuda_compat)
+    @debug "Forward-compatible driver found at $libcuda_compat"
+else
     @debug "No forward-compatible driver available for your platform."
-    return
+    can_use_compat = false
 end
-@debug "Forward-compatible driver found at $libcuda_compat"
 
 # check the user preference
 if compat_preference !== missing
     if !compat_preference
         @debug "User disallows using forward-compatible driver."
-        return
+        can_use_compat = false
     end
 end
 
@@ -60,10 +50,10 @@ end
 # the code that loaded it in the first place might have made assumptions based on it.
 if Libdl.dlopen(libcuda_system, Libdl.RTLD_NOLOAD; throw_error=false) !== nothing
     @debug "System CUDA driver already loaded, continuing using it."
-    return
+    can_use_compat = false
 end
 
-# try to load the forward-compatible driver in a separate process
+# check if we can load the forward-compatible driver in a separate process
 function try_driver(driver, deps)
     script = raw"""
         using Libdl
@@ -82,19 +72,30 @@ function try_driver(driver, deps)
 
         exit(0)
     """
-    success(`$(Base.julia_cmd()) --compile=min -t1 --startup-file=no -e $script $driver $deps`)
+    # make sure we don't include any system image flags here since this will cause an infinite loop of __init__()
+    success(`$(Cmd(filter(!startswith(r"-J|--sysimage"), Base.julia_cmd().exec))) --compile=min -t1 --startup-file=no -e $script $driver $deps`)
 end
-libcuda_deps = [libcuda_debugger, libnvidia_nvvm, libnvidia_ptxjitcompiler]
-if !try_driver(libcuda_compat, libcuda_deps)
+
+if can_use_compat && !try_driver(libcuda_compat, libcuda_deps)
     @debug "Failed to load forwards-compatible driver."
-    return
+    can_use_compat = false
 end
 
-@debug "Successfully loaded forwards-compatible CUDA driver."
-libcuda = libcuda_compat
+# finally, load the appropriate driver
+if can_use_compat
+    @debug "Using forwards-compatible CUDA driver."
+    global libcuda = libcuda_compat
 
-# load driver dependencies
-for dep in libcuda_deps
-    Libdl.dlopen(dep; throw_error=true)
+    # load the driver and its dependencies; this should now always succeed
+    # as we've already verified that we can load it in a separate process.
+    for dep in libcuda_deps
+        Libdl.dlopen(dep; throw_error=true)
+    end
+    Libdl.dlopen(libcuda_compat; throw_error=true)
+elseif Libdl.dlopen(libcuda_system; throw_error=false) !== nothing
+    @debug "Using system CUDA driver."
+    global libcuda = libcuda_system
+else
+    @debug "Could not load system CUDA driver."
+    global libcuda = nothing
 end
-# XXX: should we also load the driver here?

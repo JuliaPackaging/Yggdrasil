@@ -16,10 +16,9 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_COLAMD=ON
         -DSUITESPARSE_USE_SYSTEM_CAMD=ON
         -DSUITESPARSE_USE_SYSTEM_CCOLAMD=ON
-        -DSUITESPARSE_USE_SYSTEM_UMFPACK=ON
         -DSUITESPARSE_USE_SYSTEM_CHOLMOD=ON
     )
-""" * build_script(true) * raw"""
+""" * build_script(; use_omp=true) * raw"""
 rm -f ${libdir}/libspexpython.*
 rm -f ${includedir}/suitesparse/spex_python_connect.h
 """ # remove python libs until a CMake variable is added.
@@ -35,5 +34,5 @@ dependencies = append!(dependencies, [
 products = [
     LibraryProduct("libspex", :libspex),
 ]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, 
-               dependencies; julia_compat="1.11",preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, 
+               products, dependencies; julia_compat="1.11",preferred_gcc_version=v"9")

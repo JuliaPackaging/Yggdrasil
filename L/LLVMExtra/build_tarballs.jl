@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.32"
+version = v"0.0.34"
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
 
 sources = [
-    GitSource(repo, "7f4b740e10ba59ab745599cbc00bb302e4a90b5a"),
+    GitSource(repo, "a427570a864a8341fcfdaf553b763f9308177f75"),
 ]
 
 # Bash recipe for building across all platforms
@@ -77,11 +77,10 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-
-    if llvm_version >= v"15"
-        # We don't build LLVM 15 for i686-linux-musl.
-        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-    end
+    ## we don't build LLVM 15 for i686-linux-musl.
+    filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    ## freebsd-aarch64 doesn't have any LLVM build right now
+    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
     for platform in platforms
         augmented_platform = deepcopy(platform)

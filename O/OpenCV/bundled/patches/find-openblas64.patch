@@ -1,10 +1,12 @@
+diff --git a/cmake/OpenCVFindOpenBLAS.cmake b/cmake/OpenCVFindOpenBLAS.cmake
+index 4e3f0cc210..bb65b6130e 100644
 --- a/cmake/OpenCVFindOpenBLAS.cmake
 +++ b/cmake/OpenCVFindOpenBLAS.cmake
-@@ -73,7 +73,7 @@
+@@ -73,7 +73,7 @@ SET(Open_BLAS_LIB_SEARCH_PATHS
   )
  
  FIND_PATH(OpenBLAS_INCLUDE_DIR NAMES cblas.h PATHS ${Open_BLAS_INCLUDE_SEARCH_PATHS} NO_DEFAULT_PATH)
--FIND_LIBRARY(OpenBLAS_LIB NAMES openblas PATHS ${Open_BLAS_LIB_SEARCH_PATHS}  NO_DEFAULT_PATH)
+-FIND_LIBRARY(OpenBLAS_LIB NAMES openblas libopenblas PATHS ${Open_BLAS_LIB_SEARCH_PATHS}  NO_DEFAULT_PATH)
 +FIND_LIBRARY(OpenBLAS_LIB NAMES openblas openblas64_ PATHS ${Open_BLAS_LIB_SEARCH_PATHS}  NO_DEFAULT_PATH)
  
  SET(OpenBLAS_FOUND ON)

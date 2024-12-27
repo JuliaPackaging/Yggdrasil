@@ -15,7 +15,7 @@ using BinaryBuilder, Pkg
 
 name = "MUMPS_seq"
 upstream_version = v"5.7.3"
-version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
+version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -78,39 +78,39 @@ cp include/*.h ${includedir}
 cp libseq/*.h ${includedir}/libseq
 cp lib/*.${dlext} ${libdir}
 
-# Uncomment these lines if one day we need the 64-bit integer version of MUMPS
-# make clean
-# for sym in isamax idamax ilaenv slamch dlamch \
-#            saxpy scopy sgemm sgemv sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
-#            daxpy dcopy dgemm dgemv dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
-#            caxpy ccopy cgemm cgemv cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
-#            zaxpy zcopy zgemm zgemv zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
-# do
-#     FFLAGS+=("-D${sym}=${sym}_64")
-# done
-# FFLAG="${FFLAGS[@]}"
-# make_args_64+=(PLAT="64"
-#                OPTF="-O3 -fdefault-integer-8 -ffixed-line-length-none"
-#                OPTL="-O3"
-#                OPTC="-O3 -DINTSIZE64"
-#                CDEFS=-DAdd_
-#                LMETISDIR="${libdir}/metis/metis_Int64_Real32/lib"
-#                IMETIS="-I${libdir}/metis_Int64_Real32/include"
-#                LMETIS="-L${libdir}/metis/metis_Int64_Real32/lib -lmetis_Int64_Real32"
-#                ORDERINGSF="-Dpord -Dmetis"
-#                LIBEXT_SHARED=".${dlext}"
-#                SHARED_OPT="-shared"
-#                SONAME="${SONAME}"
-#                CC="$CC ${CFLAGS[@]}"
-#                FC="gfortran $FFLAG"
-#                FL="gfortran"
-#                RANLIB="echo"
-#                LPORD="-L./PORD/lib -lpord64"
-#                LIBBLAS="${BLAS_LAPACK}"
-#                LAPACK="${BLAS_LAPACK}")
+# 64-bit integer version of MUMPS
+make clean
+for sym in isamax idamax ilaenv slamch dlamch \
+           saxpy scopy sgemm sgemv sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
+           daxpy dcopy dgemm dgemv dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
+           caxpy ccopy cgemm cgemv cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
+           zaxpy zcopy zgemm zgemv zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
+do
+    FFLAGS+=("-D${sym}=${sym}_64")
+done
+FFLAG="${FFLAGS[@]}"
+make_args_64+=(PLAT="64"
+               OPTF="-O3 -fdefault-integer-8 -ffixed-line-length-none"
+               OPTL="-O3"
+               OPTC="-O3 -DINTSIZE64"
+               CDEFS=-DAdd_
+               LMETISDIR="${libdir}/metis/metis_Int64_Real32/lib"
+               IMETIS="-I${libdir}/metis_Int64_Real32/include"
+               LMETIS="-L${libdir}/metis/metis_Int64_Real32/lib -lmetis_Int64_Real32"
+               ORDERINGSF="-Dpord -Dmetis"
+               LIBEXT_SHARED=".${dlext}"
+               SHARED_OPT="-shared"
+               SONAME="${SONAME}"
+               CC="$CC ${CFLAGS[@]}"
+               FC="gfortran $FFLAG"
+               FL="gfortran"
+               RANLIB="echo"
+               LPORD="-L./PORD/lib -lpord64"
+               LIBBLAS="${BLAS_LAPACK}"
+               LAPACK="${BLAS_LAPACK}")
 
-# make -j${nproc} allshared "${make_args_64[@]}"
-# cp lib/*.${dlext} ${libdir}
+make -j${nproc} allshared "${make_args_64[@]}"
+cp lib/*.${dlext} ${libdir}
 """
 
 platforms = expand_gfortran_versions(supported_platforms())
@@ -121,10 +121,10 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
-    # LibraryProduct("libsmumps64", :libsmumps64),
-    # LibraryProduct("libdmumps64", :libdmumps64),
-    # LibraryProduct("libcmumps64", :libcmumps64),
-    # LibraryProduct("libzmumps64", :libzmumps64),
+    LibraryProduct("libsmumps64", :libsmumps64),
+    LibraryProduct("libdmumps64", :libdmumps64),
+    LibraryProduct("libcmumps64", :libcmumps64),
+    LibraryProduct("libzmumps64", :libzmumps64),
 ]
 
 # Dependencies that must be installed before this package can be built

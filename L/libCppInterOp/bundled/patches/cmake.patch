@@ -1,21 +1,23 @@
-From 3e374944919e83f433aa0908ad0c235f9c8b45e7 Mon Sep 17 00:00:00 2001
+From 95000aad06583091950328ced8898dbd4899d119 Mon Sep 17 00:00:00 2001
 From: Gnimuc <qiyupei@gmail.com>
-Date: Sat, 1 Jun 2024 18:03:33 +0900
+Date: Fri, 21 Jun 2024 21:33:27 +0900
 Subject: [PATCH] Rewrite CMake build scripts
 
 ---
  CMakeLists.txt                           | 505 +++--------------------
  include/CMakeLists.txt                   |   1 +
+ include/clang-c/CMakeLists.txt           |   1 +
  include/clang/CMakeLists.txt             |   1 +
  include/clang/Interpreter/CMakeLists.txt |   1 +
- lib/Interpreter/CMakeLists.txt           | 116 +-----
- 5 files changed, 73 insertions(+), 551 deletions(-)
+ lib/Interpreter/CMakeLists.txt           | 118 +-----
+ 6 files changed, 75 insertions(+), 552 deletions(-)
  create mode 100644 include/CMakeLists.txt
+ create mode 100644 include/clang-c/CMakeLists.txt
  create mode 100644 include/clang/CMakeLists.txt
  create mode 100644 include/clang/Interpreter/CMakeLists.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b87a263..1dfd11c 100644
+index bcd16a9..faadad8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -1,452 +1,71 @@
@@ -92,11 +94,11 @@ index b87a263..1dfd11c 100644
 -  ## Define supported version of clang and llvm
 -
 -  set(CLANG_MIN_SUPPORTED 13.0)
--  set(CLANG_MAX_SUPPORTED "18.1.x")
--  set(CLANG_VERSION_UPPER_BOUND 19.0.0)
+-  set(CLANG_MAX_SUPPORTED "19.1.x")
+-  set(CLANG_VERSION_UPPER_BOUND 20.0.0)
 -  set(LLVM_MIN_SUPPORTED 13.0)
--  set(LLVM_MAX_SUPPORTED "18.1.x")
--  set(LLVM_VERSION_UPPER_BOUND 19.0.0)
+-  set(LLVM_MAX_SUPPORTED "19.1.x")
+-  set(LLVM_VERSION_UPPER_BOUND 20.0.0)
 -
 -  ## Set Cmake packages search order
 -
@@ -525,7 +527,7 @@ index b87a263..1dfd11c 100644
 +        ARCHIVE DESTINATION lib/static
 +        INCLUDES DESTINATION include/clang)
 +
-+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/clang/ DESTINATION include/clang
++install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include
 +        FILES_MATCHING PATTERN "*.h")
 +
 +# Install CMake targets
@@ -540,6 +542,14 @@ index 0000000..aaabf20
 +++ b/include/CMakeLists.txt
 @@ -0,0 +1 @@
 +add_subdirectory(clang)
+\ No newline at end of file
+diff --git a/include/clang-c/CMakeLists.txt b/include/clang-c/CMakeLists.txt
+new file mode 100644
+index 0000000..1306a8e
+--- /dev/null
++++ b/include/clang-c/CMakeLists.txt
+@@ -0,0 +1 @@
++target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/CXCppInterOp.h)
 \ No newline at end of file
 diff --git a/include/clang/CMakeLists.txt b/include/clang/CMakeLists.txt
 new file mode 100644
@@ -558,10 +568,10 @@ index 0000000..c6c9939
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/CppInterOp.h)
 \ No newline at end of file
 diff --git a/lib/Interpreter/CMakeLists.txt b/lib/Interpreter/CMakeLists.txt
-index 7f4ca53..342c8f6 100644
+index 42e878f..4205ada 100644
 --- a/lib/Interpreter/CMakeLists.txt
 +++ b/lib/Interpreter/CMakeLists.txt
-@@ -1,108 +1,8 @@
+@@ -1,109 +1,9 @@
 -set(LLVM_LINK_COMPONENTS
 -  ${LLVM_TARGETS_TO_BUILD}
 -  BinaryFormat
@@ -661,6 +671,7 @@ index 7f4ca53..342c8f6 100644
 -add_llvm_library(clangCppInterOp
 -  DISABLE_LLVM_LINK_LLVM_DYLIB
 -  CppInterOp.cpp
+-  CXCppInterOp.cpp
 -  ${DLM}
 -  LINK_LIBS
 -  ${link_libs}
@@ -671,6 +682,7 @@ index 7f4ca53..342c8f6 100644
 -  "LLVM_BINARY_DIR=\"${LLVM_BINARY_DIR}\";CPPINTEROP_VERSION=\"${_VAR}\""
 -)
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/CppInterOp.cpp)
++target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/CXCppInterOp.cpp)
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Compatibility.h)
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/CppInterOpInterpreter.h)
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/DynamicLibraryManager.cpp)
@@ -678,7 +690,6 @@ index 7f4ca53..342c8f6 100644
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/DynamicLibraryManagerSymbol.cpp)
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Paths.cpp)
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Paths.h)
-\ No newline at end of file
 -- 
-2.39.3 (Apple Git-146)
+2.39.5 (Apple Git-154)
 

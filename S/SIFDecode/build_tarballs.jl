@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SIFDecode"
-version = v"2.6.0"
+version = v"2.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/SIFDecode.git", "a94d9a0b00f3e215da27943f7c19809ca160166b")
+    GitSource("https://github.com/ralna/SIFDecode.git", "109022d949019b50c16703ec97289b6d28ed77b4")
 ]
 
 # Bash recipe for building across all platforms

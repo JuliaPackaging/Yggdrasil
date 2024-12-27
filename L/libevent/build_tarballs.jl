@@ -4,8 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "libevent"
 libevent_version =v"2.1.12"
-# We update to 2.1.13 because we updated our dependencies
-version = v"2.1.13"
+# We update to 2.1.14 because we updated our dependencies
+version = v"2.1.14"
 
 # Collection of sources required to complete build
 sources = [
@@ -20,6 +20,9 @@ cd $WORKSPACE/srcdir/libevent-*
 if [[ "${target}" == aarch64-apple-* ]]; then
     # Build without `-Wl,--no-undefined`
     atomic_patch -p1 ../patches/build_with_no_undefined.patch
+elif [[ "${target}" == *-mingw* ]]; then
+     # Required to find OpenSSL
+     export LDFLAGS="${LDFLAGS} -L${bindir}"
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
@@ -42,7 +45,7 @@ products_unix = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.12"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"), # Required for aarch64-unknown-freebsd
 ]
 
 include("../../fancy_toys.jl")

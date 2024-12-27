@@ -24,7 +24,7 @@ cmake -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_GMOCK=OFF \
+    -DBUILD_GMOCK=ON \
     -DCMAKE_CXX_STANDARD=11 \
     -Wno-dev \
     ..
@@ -39,7 +39,9 @@ platforms = expand_cxxstring_abis(supported_platforms())
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgtest_main", :libgtest_main),
-    LibraryProduct("libgtest", :libgtest)
+    LibraryProduct("libgtest", :libgtest),
+    LibraryProduct("libgmock_main", :libgmock_main),
+    LibraryProduct("libgmock", :libgmock),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -47,4 +49,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6", preferred_gcc_version = v"5")
