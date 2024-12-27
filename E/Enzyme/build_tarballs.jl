@@ -173,3 +173,5 @@ for (i,build) in enumerate(builds)
                    preferred_gcc_version=build.gcc_version, julia_compat="1.10",
                    augment_platform_block, lazy_artifacts=true) # drop when julia_compat >= 1.7
 end
+
+# Build trigger: 1
