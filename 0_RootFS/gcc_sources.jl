@@ -186,7 +186,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"11.1.0" => v"2.36",
             v"12.1.0" => v"2.38",
             v"13.2.0" => v"2.41",
-            v"14.2.0" => v"2.41",
+            v"14.2.0" => v"2.43.1",
         )
 
         # Everyone else uses GNU Binutils, but we have to version carefully.
@@ -234,6 +234,10 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             v"2.41" => [
                 ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.41.tar.xz",
                               "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450"),
+            ],
+            v"2.43.1" => [
+                ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.xz",
+                              "13f74202a3c4c51118b797a39ea4200d3f6cfbe224da6d1d95bb938480132dfd"),
             ],
         )
         binutils_version = binutils_gcc_version_mapping[gcc_version]
