@@ -1,0 +1,15 @@
+--- opt/bin/aarch64-apple-darwin20-libgfortran5-cxx11/aarch64-apple-darwin20-clang
++++ opt/bin/aarch64-apple-darwin20-libgfortran5-cxx11/aarch64-apple-darwin20-clang
+@@ -23,11 +23,11 @@
+     PRE_FLAGS+=( /opt/aarch64-apple-darwin20/aarch64-apple-darwin20/sys-root/usr/include/c++/v1 )
+     PRE_FLAGS+=( -Wno-unused-command-line-argument )
+     PRE_FLAGS+=( -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} )
+-    PRE_FLAGS+=( -Wl,-sdk_version,${MACOSX_DEPLOYMENT_TARGET} )
+ fi
+ 
+ 
+ if [[ " ${ARGS[@]} " != *' -c '* ]] && [[ " ${ARGS[@]} " != *' -E '* ]] && [[ " ${ARGS[@]} " != *' -M '* ]] && [[ " ${ARGS[@]} " != *' -fsyntax-only '* ]]; then
++    PRE_FLAGS+=( -Wl,-sdk_version,${MACOSX_DEPLOYMENT_TARGET} )
+     POST_FLAGS+=( -L/opt/aarch64-apple-darwin20/aarch64-apple-darwin20/lib )
+     POST_FLAGS+=( -fuse-ld=aarch64-apple-darwin20 )
+     POST_FLAGS+=( -headerpad_max_install_names )

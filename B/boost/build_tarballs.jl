@@ -14,7 +14,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/boost*/
+cd $WORKSPACE/srcdir/boost*
 
 ./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
@@ -28,11 +28,15 @@ extraargs=
 # add another "harmless" option; we choose `-Wall` which is already passed anyway
 sed -i "s/-march=i686/-Wall/g" tools/build/src/tools/gcc.*
 
+# We need `-Wno-enum-constexpr-conversion` to disable a Clang
+# "warning" that is actually an error. (This is a problem in Boost which
+# violates the C++17 standard.)
+
 if [[ $target == *apple* ]]; then
     targetos=darwin
     toolset=darwin-6.0
     extraargs="binary-format=mach-o link=shared"
-    echo "using darwin : 6.0 : $CXX : <cxxflags>-stdlib=libc++ <linkflags>-stdlib=libc++ ;" > project-config.jam
+    echo "using darwin : 6.0 : $CXX : <cxxflags>\\"-stdlib=libc++ -Wno-enum-constexpr-conversion\\" <linkflags>-stdlib=libc++ ;" > project-config.jam
     if [[ "${target}" == aarch64-* ]]; then
         # Fix error
         #     Undefined symbols for architecture arm64:
@@ -42,15 +46,18 @@ if [[ $target == *apple* ]]; then
     fi
 elif [[ $target == x86_64*mingw* ]]; then
     targetos=windows
-    extraargs="address-model=64 binary-format=pe abi=ms link=shared"
+    extraargs="address-model=64 define=_WIN32_WINNT=0x0602 binary-format=pe abi=ms link=shared"
 elif [[ $target == i686*mingw* ]]; then
     targetos=windows
-    extraargs="address-model=32 binary-format=pe abi=ms link=shared"
+    extraargs="address-model=32 define=_WIN32_WINNT=0x0602 binary-format=pe abi=ms link=shared"
 elif [[ $target == *freebsd* ]]; then
     targetos=freebsd
     toolset=clang-6.0
     extraargs="address-model=64 link=shared"
-    echo "using clang : 6.0 : $CXX : <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
+    if [[ "${target}" == aarch64-* ]]; then
+        extraargs="abi=aapcs ${extraargs}"
+    fi
+    echo "using clang : 6.0 : $CXX : <cxxflags>\\"-Wno-enum-constexpr-conversion\\" <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
 fi
 ./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
 
@@ -100,3 +107,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
+
+# Build trigger: 1

@@ -7,10 +7,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"3.0.0"
+version = v"3.0.1"
 
 tarball = "https://github.com/DLR-AMR/t8code/releases/download/v$(version)/T8CODE-$(version)-Source.tar.gz"
-sha256sum = "b60a30de342c4e0a00f84d1e910506babef4bd938d96d567714a9c1c26293cfb"
+sha256sum = "71732ac0f898feed1af8a81c2deac2e5031e37e94384d3e5b10d1b5861be24d0"
 
 sources = [ArchiveSource(tarball, sha256sum), DirectorySource("./bundled")]
 
@@ -18,7 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/T8CODE*
 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi-constants.patch"
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/libsc.patch"
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/p4est.patch"
 
 # Show CMake where to find `mpiexec`.

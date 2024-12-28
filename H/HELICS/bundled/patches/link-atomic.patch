@@ -1,0 +1,30 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -387,6 +387,27 @@ if(HELICS_ENABLE_MPI_CORE)
+     list(APPEND VCPKG_MANIFEST_FEATURES "mpi")
+ endif()
+ 
++# -------------------------------------------------------------
++# check if atomic needs linking
++# -------------------------------------------------------------
++
++check_cxx_source_compiles("
++#include <atomic>
++#include <cstdint>
++std::atomic<uint8_t> n8 (0);
++std::atomic<uint64_t> n64 (0);
++int main() {
++uint8_t i = n8.load(std::memory_order_relaxed);
++uint64_t j = n64.load(std::memory_order_relaxed);
++return std::atomic_is_lock_free(&n8)
++     & std::atomic_is_lock_free(&n64);
++}"
++LIBATOMIC_NOT_NEEDED)
++
++IF (NOT LIBATOMIC_NOT_NEEDED)
++    target_link_libraries(helics_base INTERFACE atomic)
++endif()
++
+ # -------------------------------------------------------------
+ # finding MPI
+ # -------------------------------------------------------------

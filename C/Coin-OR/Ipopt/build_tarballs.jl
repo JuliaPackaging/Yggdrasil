@@ -1,7 +1,7 @@
 include("../coin-or-common.jl")
 
 name = "Ipopt"
-version = Ipopt_version  # v3.14.16
+version = Ipopt_version  # v3.14.17
 
 sources = [
     GitSource("https://github.com/coin-or/Ipopt.git", Ipopt_gitsha)
@@ -58,6 +58,9 @@ make install
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
+
+# Disable aarch64-freebsd until we recompile the dependencies.
+platforms = filter(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [

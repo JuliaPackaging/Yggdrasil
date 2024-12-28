@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDSS"
-version = v"0.3.0"
-full_version = "0.3.0.9"
+version = v"0.4.0"
+full_version = "0.4.0.2"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include

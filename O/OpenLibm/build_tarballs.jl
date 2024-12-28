@@ -60,3 +60,5 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                julia_compat="1.6", 
                preferred_llvm_version=llvm_version, 
                preferred_gcc_version=v"8")
+
+# Build trigger: 1

@@ -10,6 +10,7 @@ function lbt_sources(version::VersionNumber; kwargs...)
     lbt_version_commit = Dict(
         v"5.4.0"  => "d00e6ca235bb747faae4c9f3a297016cae6959ed",
         v"5.11.2" => "c48da8a1225c2537ff311c28ef395152fb879eae",
+        v"5.12.0" => "b127bc8dd4758ffc064340fff2aef4ead552f386",
     )
 
     return [

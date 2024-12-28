@@ -3,11 +3,11 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "HighFive"
-version = v"2.9.0"
+version = v"2.10.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/BlueBrain/HighFive", "0d0259e823a0e8aee2f036ba738c703ac4a0721c"),
+    GitSource("https://github.com/BlueBrain/HighFive", "ede97c8d51905c1640038561d12d41da173012ac"),
 ]
 
 # Bash recipe for building across all platforms
@@ -45,7 +45,7 @@ dependencies = [
     BuildDependency("xtensor_jll"),
     Dependency("HDF5_jll"; compat="~1.14.0"),
     # Dependency("OpenCV_jll"),
-    Dependency("boost_jll"; compat="1.76.0"),
+    Dependency("boost_jll"; compat="=1.79.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

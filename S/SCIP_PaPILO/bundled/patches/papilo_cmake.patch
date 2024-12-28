@@ -1,6 +1,6 @@
---- papilo/binaries/CMakeLists.txt	2024-04-03 13:39:12.041041231 +0100
-+++ papilo/binaries/CMakeLists.txt	2024-04-03 15:50:40.070943339 +0100
-@@ -69,6 +69,17 @@
+--- papilo/binaries/CMakeLists.txt	2024-12-26 02:45:23.608452403 +0000
++++ papilo/binaries/CMakeLists.txt	2024-12-26 02:45:29.320347256 +0000
+@@ -76,6 +76,17 @@
     set(PAPILO_HAVE_ROUNDINGSAT 0)
  endif()
 
@@ -15,6 +15,5 @@
 +   enable_language(Fortran)
 +endif()
 +
- include_directories(${SCIP_INCLUDE_DIRS} ${SOPLEX_INCLUDE_DIRS} ${HIGHS_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
- find_package(Boost REQUIRED OPTIONAL_COMPONENTS iostreams serialization program_options)
-
+ # Search again since we cannot rely on papilo/CMakeLists.txt having searched for Boost already.
+ find_package(Boost ${BOOST_MIN_VERSION} OPTIONAL_COMPONENTS iostreams program_options serialization)

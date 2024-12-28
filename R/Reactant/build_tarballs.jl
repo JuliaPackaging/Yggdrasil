@@ -6,13 +6,14 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.25"
+version = v"0.0.33"
 
 sources = [
-  GitSource(repo, "6cd6c701bffbd9a5439b3a20b1f284fc621547c6"),
+  GitSource(repo, "8b28594cfb9a5dfdee70d0bc88498042d0cd69c6"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
+
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -29,8 +30,6 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/." 
     popd
 fi
-
-apk add py3-numpy py3-numpy-dev
 
 apk add openjdk11-jdk
 export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
@@ -109,16 +108,12 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 
     if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
+        BAZEL_BUILD_FLAGS+=(--cpu=darwin)
     else
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang++"
-        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
-        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
-        BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
-        BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
-	BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
-    	BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
+        BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
@@ -144,6 +139,23 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     chmod +x .local/bin/ldconfig
     export PATH="`pwd`/.local/bin:$PATH"
     BAZEL_BUILD_FLAGS+=(--copt=-Wno-error=cpp)
+
+    if [[ "${bb_full_target}" == *86* ]]; then
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
+    else
+        BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
+        BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
+        BAZEL_BUILD_FLAGS+=(--cpu=aarch64)
+        BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
+    fi
+fi
+
+if [[ "${bb_full_target}" == *aarch64* ]]; then
+    BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
+    BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
+    BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
+    BAZEL_BUILD_FLAGS+=(--copt=-DDNNL_ARCH_GENERIC=1)
+    BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
 fi
 
 if [[ "${bb_full_target}" == *cuda* ]]; then
@@ -169,17 +181,28 @@ if [[ "${bb_full_target}" == *i686* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :Builtin.jl :Arith.jl :Affine.jl :Func.jl :Enzyme.jl :StableHLO.jl :CHLO.jl :VHLO.jl
-sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-project/mlir/BUILD.bazel
+sed -i "s/BB_TARGET/${bb_target}/g" BUILD
+sed -i "s/BB_FULL_TARGET/${bb_full_target}/g" BUILD
+
+export HERMETIC_PYTHON_VERSION=3.12
+
+$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]}
+sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-raw/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
 if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     if [[ "${bb_full_target}" == *86* ]]; then
-    	echo "x86"
+        echo "x86"
+
+        sed -i.bak1 "s/\\"k8|/\\"darwin\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+
     else
-    	sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-    	sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-    	cat /workspace/bazel_root/*/external/local_config_cc/BUILD
-	$BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+        sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
     fi
 	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
 	sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
@@ -196,12 +219,13 @@ rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
 
 if [[ "${bb_full_target}" == *cuda* ]]; then
-  rm -rf bazel-bin/_solib_local/*stub*/*so*
-  cp -v bazel-bin/_solib_local/*/*so* ${libdir}
-  mkdir -p ${libdir}/cuda/nvvm/libdevice
-  mkdir -p ${libdir}/cuda/bin
-  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
-  cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
+    rm -rf bazel-bin/_solib_local/*stub*/*so*
+    cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    mkdir -p ${libdir}/cuda/nvvm/libdevice
+    mkdir -p ${libdir}/cuda/bin
+    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
+    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
+    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/fatbinary ${libdir}/cuda/bin
 fi
 
 cp -v bazel-bin/libReactantExtra.so ${libdir}
@@ -211,7 +235,6 @@ fi
 if [[ "${bb_full_target}" == *mingw* ]]; then
     mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
 fi
-cp -v bazel-bin/*.jl ${prefix}
 cd ../..
 install_license LICENSE
 """
@@ -224,18 +247,8 @@ builds = []
 dependencies = Dependency[]
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct(["libReactantExtra", "libReactantExtra"],
-                   :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
-    FileProduct("Affine.jl", :Affine_jl),
-    FileProduct("Arith.jl", :Arith_jl),
-    FileProduct("Builtin.jl", :Builtin_jl),
-    FileProduct("Enzyme.jl", :Enzyme_jl),
-    FileProduct("Func.jl", :Func_jl),
-    FileProduct("StableHLO.jl", :StableHLO_jl),
-    FileProduct("CHLO.jl", :CHLO_jl),
-    FileProduct("VHLO.jl", :VHLO_jl),
-    # FileProduct("libMLIR_h.jl", :libMLIR_h_jl),
+products = Product[
+    LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -250,8 +263,11 @@ end
 # 64-bit or bust (for xla runtime executable)
 platforms = filter(p -> arch(p) != "i686", platforms)
 
+# No riscv for now
+platforms = filter(p -> arch(p) != "riscv64", platforms)
+
 # linux aarch has onednn issues
-platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p)), platforms)
+# platforms = filter(p -> !(arch(p) == "aarch64" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(arch(p) == "armv6l" && Sys.islinux(p)), platforms)
 platforms = filter(p -> !(arch(p) == "armv7l" && Sys.islinux(p)), platforms)
 
@@ -370,6 +386,11 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     if gpu != "none" && Sys.isapple(platform)
         continue
     end
+    
+    # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
+    if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
+        continue
+    end
 
     prefix="export MODE="*mode*"\n\n"
     platform_sources = BinaryBuilder.AbstractSource[sources...]
@@ -415,12 +436,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
 	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
     end
 
     push!(builds, (;
                    dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
-        platforms=[augmented_platform], script=prefix*script
+        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version=v"13"
     ))
 end
 
@@ -435,7 +457,8 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6",
-                   augment_platform_block, lazy_artifacts=true)
+                   preferred_gcc_version=build.preferred_gcc_version, preferred_llvm_version=v"18", julia_compat="1.10",
+                   # We use GCC 13, so we can't dlopen the library during audit
+                   augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true)
 end
 

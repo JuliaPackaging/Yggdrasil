@@ -26,6 +26,13 @@ if [[ "${target}" == *-darwin* ]]; then
     #    error: linker command failed with exit code 1 (use -v to see invocation)
     FLAGS+=(-DPNG_FRAMEWORK=OFF)
 fi
+if [[ "${target}" == riscv64* ]]; then
+    # Need to explicitly add `-lm`
+    FLAGS+=(
+        -DCMAKE_EXE_LINKER_FLAGS=-lm
+        -DCMAKE_SHARED_LINKER_FLAGS=-lm
+    )
+fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_BUILD_TYPE=Release \

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.3.0"
+version = v"2.4.0"
 
 # Collection of sources required to build CUTEst
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "c7cd6f935f7a3963ea5dbbe48ccf3675a759f96b"),
+    GitSource("https://github.com/ralna/CUTEst.git", "c58fb3452ad4ea37795afbea77b33a3d4ce74219"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +20,7 @@ if [[ "${target}" == *arm* ]]; then
     QUADRUPLE="false"
 fi
 
+mkdir ${includedir}
 cd ${WORKSPACE}/srcdir/CUTEst
 
 meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \

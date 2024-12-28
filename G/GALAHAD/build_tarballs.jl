@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.0.0"
+version = v"5.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "de372716543357bb25e77ffae3234cf43feb7f0d")
+    GitSource("https://github.com/ralna/GALAHAD.git", "b4df018e0d0fc9fb0ae47a3c7a3c1b28426192bb")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,15 +25,33 @@ else
   HWLOC="hwloc"
 fi
 
-meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
-                     --prefix=$prefix \
-                     -Dlibhwloc=$HWLOC \
-                     -Dlibblas=$LBT \
-                     -Dliblapack=$LBT \
-                     -Dlibhsl_modules=$prefix/modules
+meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                           --prefix=$prefix \
+                           -Dint64=false \
+                           -Dlibhwloc=$HWLOC \
+                           -Dlibblas=$LBT \
+                           -Dliblapack=$LBT \
+                           -Dlibsmumps=smumps \
+                           -Dlibdmumps=dmumps \
+                           -Dlibhsl=hsl_subset \
+                           -Dlibhsl_modules=$prefix/modules
 
-meson compile -C builddir
-meson install -C builddir
+meson compile -C builddir_int32
+meson install -C builddir_int32
+
+meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                           --prefix=$prefix \
+                           -Dint64=true \
+                           -Dlibhwloc=$HWLOC \
+                           -Dlibblas=$LBT \
+                           -Dliblapack=$LBT \
+                           -Dlibsmumps= \
+                           -Dlibdmumps= \
+                           -Dlibhsl=hsl_subset_64 \
+                           -Dlibhsl_modules=$prefix/modules
+
+meson compile -C builddir_int64
+meson install -C builddir_int64
 """
 
 # These are the platforms we will build for by default, unless further
@@ -45,7 +63,9 @@ platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libgalahad_single", :libgalahad_single),
-    LibraryProduct("libgalahad_double", :libgalahad_double)
+    LibraryProduct("libgalahad_double", :libgalahad_double),
+    LibraryProduct("libgalahad_single_64", :libgalahad_single_64),
+    LibraryProduct("libgalahad_double_64", :libgalahad_double_64),
 ]
 
 # Dependencies that must be installed before this package can be built

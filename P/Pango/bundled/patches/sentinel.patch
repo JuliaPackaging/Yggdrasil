@@ -1,0 +1,16 @@
+Building Pango 1.55.5 with FriBidi 1.0.16 fails with the error message
+```
+[00:16:53] ../pango/pango-bidi-type.c:83:10: error: use of undeclared identifier '_FRIBIDI_TYPE_SENTINEL'
+```
+Reported as <https://gitlab.gnome.org/GNOME/pango/-/issues/834>.
+
+--- a/pango/pango-bidi-type.c
++++ b/pango/pango-bidi-type.c
+@@ -80,7 +80,6 @@
+     case FRIBIDI_TYPE_RLI:  return PANGO_BIDI_TYPE_RLI;
+     case FRIBIDI_TYPE_FSI:  return PANGO_BIDI_TYPE_FSI;
+     case FRIBIDI_TYPE_PDI:  return PANGO_BIDI_TYPE_PDI;
+-    case _FRIBIDI_TYPE_SENTINEL:
+     default:
+       return PANGO_BIDI_TYPE_ON;
+     }
