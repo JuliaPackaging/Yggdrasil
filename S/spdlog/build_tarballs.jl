@@ -1,12 +1,20 @@
 using BinaryBuilder
 
 name = "spdlog"
-version = v"1.14.1"
+version = v"1.15.0"
 
-sources = [GitSource("https://github.com/gabime/spdlog.git", "27cb4c76708608465c413f6d0e6b8d99a4d84302")]
+sources = [
+    GitSource("https://github.com/gabime/spdlog.git",
+              "27cb4c76708608465c413f6d0e6b8d99a4d84302"),
+    DirectorySource("./bundled"),
+]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/spdlog*
+
+# Patch to fix compilation with fmt 11.1.1
+atomic_patch -p1 ../patches/fmt_11.1.1.patch
+
 mkdir build
 cd build
 cmake -S .. -B . \
@@ -18,14 +26,19 @@ cmake -S .. -B . \
     -DSPDLOG_BUILD_SHARED=ON \
     -DSPDLOG_BUILD_PIC=ON \
     -DSPDLOG_BUILD_EXAMPLE=OFF
+
 make -j${nproc} install
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
-products = [LibraryProduct("libspdlog", :libspdlog)]
+products = [
+    LibraryProduct("libspdlog", :libspdlog)
+]
 
-dependencies = [Dependency("Fmt_jll"; compat="11.0.1")]
+dependencies = [
+    Dependency("Fmt_jll"; compat="11.1.1")
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")
