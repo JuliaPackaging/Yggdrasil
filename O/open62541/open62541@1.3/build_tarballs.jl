@@ -3,14 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "open62541"
-version = v"1.3.10"
+version = v"1.3.15"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/open62541/open62541.git",
-              "2405c6588f8d8093e3e0e49e920db64daf479799")
+              "3eed1a6d5c5b207c531b2d35ed88aa0a4a4541e5")
 ]
 # Bash recipe for building across all platforms
 script = raw"""
+# Deactivates stack protector under i686-linux-musl; necessary to avoid 
+# "undefined reference to `__stack_chk_fail_local`
+if [[ ${target} == i686-linux-musl ]]; then 
+    extraflags="-DUA_ENABLE_HARDENING=OFF" 
+else
+    extraflags=""
+fi 
+
 cd $WORKSPACE/srcdir/open62541/
 mkdir build && cd build/
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -25,6 +33,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUA_ENABLE_HISTORIZING=ON \
     -DBUILD_SHARED_LIBS=ON \
     -DUA_FORCE_WERROR=OFF \
+    ${extraflags} \
     ..
 make -j${nproc}
 make install
@@ -41,4 +50,4 @@ products = [
 dependencies = Dependency[
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"7")

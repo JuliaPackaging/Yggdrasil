@@ -3,16 +3,29 @@
 using BinaryBuilder, Pkg
 
 name = "wolfSSL"
-version = v"4.8.1"
+version = v"5.7.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wolfSSL/wolfssl/archive/refs/tags/v$(version)-stable.tar.gz", "50db45f348f47e00c93dd244c24108220120cb3cc9d01434789229c32937c444")
+    GitSource("https://github.com/wolfSSL/wolfssl.git", "00e42151ca061463ba6a95adb2290f678cbca472"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wolfssl*
+atomic_patch -p1 ../patches/mingw32-link-with-ws2_32.patch
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
 
 mkdir build && cd build
 
@@ -31,7 +44,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental = true)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built

@@ -1,48 +1,169 @@
-From 95b2b3d644d5f6db0b8dd90744a9633f5b56a692 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Mos=C3=A8=20Giordano?= <mose@gnu.org>
-Date: Tue, 7 May 2024 17:20:14 +0200
-Subject: [PATCH 2/2] Add missing `-lxml2`
-
----
- src/tracer/Makefile.am | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
 diff --git a/src/tracer/Makefile.am b/src/tracer/Makefile.am
-index fe4ad2a9..75c8157e 100644
+index 3f9c030f..4fc21f6c 100644
 --- a/src/tracer/Makefile.am
 +++ b/src/tracer/Makefile.am
-@@ -834,7 +834,7 @@ liboclgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
- libnanosmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
- libnanosgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+@@ -821,103 +821,103 @@ COMMON_LINKER_FLAGS = \
+  $(LIBZ_LINKER_FLAGS) \
+  $(MRNET_LINKER_FLAGS)
+ 
+-libmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libompigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libompgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libptmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS)
+-libptgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS)
+-libcudampigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libcudagaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-liboclmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-liboclgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libnanosmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libnanosgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
++libmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libompigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libompgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libptmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS) -lxml2
++libptgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS) -lxml2
++libcudampigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libcudagaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++liboclmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++liboclgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libnanosmpigaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libnanosgaspitrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
  
 -libseqtrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
 +libseqtrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
  
- libmpitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(COMMON_LINKER_FLAGS)
- libmpitracef_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) # -static 
-@@ -862,11 +862,11 @@ if SINGLE_MPI_LIBRARY
-   liboacccudampitracecf_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-libmpitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(COMMON_LINKER_FLAGS)
+-libmpitracef_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) # -static 
++libmpitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(COMMON_LINKER_FLAGS) -lxml2
++libmpitracef_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) -lxml2 # -static
+ 
+ if SINGLE_MPI_LIBRARY
+-  libmpitracecf_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) # -static 
++  libmpitracecf_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) -lxml2 # -static 
+ endif
+ 
+-libptmpitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS)
+-libptmpitracef_la_LDFLAGS = $(libptmpitrace_la_LDFLAGS) # -static 
++libptmpitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS) -lxml2
++libptmpitracef_la_LDFLAGS = $(libptmpitrace_la_LDFLAGS) -lxml2 # -static 
+ 
+ if SINGLE_MPI_LIBRARY
+-  libptmpitracecf_la_LDFLAGS = $(libptmpitrace_la_LDFLAGS) # -static 
++  libptmpitracecf_la_LDFLAGS = $(libptmpitrace_la_LDFLAGS) -lxml2 # -static 
+ endif
+ 
+-liboacctrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-liboaccmpitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS)
+-liboaccmpitracef_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS)
+-liboacccudatrace_la_LDFLAGS = $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-liboacccudampitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-liboacccudampitracef_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
++liboacctrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++liboaccmpitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) -lxml2
++liboaccmpitracef_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) -lxml2
++liboacccudatrace_la_LDFLAGS = $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
++liboacccudampitrace_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
++liboacccudampitracef_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
+ 
+ if SINGLE_MPI_LIBRARY
+-  liboaccmpitracecf_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS)
+-  liboacccudampitracecf_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
++  liboaccmpitracecf_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) -lxml2
++  liboacccudampitracecf_la_LDFLAGS = $(NEW_MPI_LIBS) $(liboacctrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
  endif
  
 -libcudatrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
-+libcudatrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
- libcudampitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
- libcudampitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
- libcudaomptrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-libcudampitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-libcudampitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-libcudaomptrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
 -libptcudatrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-libptcudampitrace_la_LDFLAGS = $(libptmpitrace_la_LDFLAGS) $(PTHREAD_LIBS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-libptcudampitracef_la_LDFLAGS = $(libptmpitracef_la_LDFLAGS) $(PTHREAD_LIBS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
++libcudatrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
++libcudampitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
++libcudampitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
++libcudaomptrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
 +libptcudatrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
- libptcudampitrace_la_LDFLAGS = $(libptmpitrace_la_LDFLAGS) $(PTHREAD_LIBS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
- libptcudampitracef_la_LDFLAGS = $(libptmpitracef_la_LDFLAGS) $(PTHREAD_LIBS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
++libptcudampitrace_la_LDFLAGS = $(libptmpitrace_la_LDFLAGS) $(PTHREAD_LIBS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
++libptcudampitracef_la_LDFLAGS = $(libptmpitracef_la_LDFLAGS) $(PTHREAD_LIBS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
  
-@@ -915,7 +915,7 @@ if SINGLE_MPI_LIBRARY
-   libnanosmpitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS)
+ if SINGLE_MPI_LIBRARY
+-  libcudampitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
++  libcudampitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
+ endif
+ 
+-libcudaompitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
+-libcudaompitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
++libcudaompitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
++libcudaompitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
+ 
+ if SINGLE_MPI_LIBRARY
+-  libcudaompitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@
++  libcudaompitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) @CUDA_LDFLAGS_RPATH@ @CUPTI_LDFLAGS_RPATH@ @CUDA_LIBS@ @CUPTI_LIBS@ -lxml2
+ endif
+ 
+-libocltrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @OPENCL_LDFLAGS_RPATH@ @OPENCL_LIBS@
+-liboclmpitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) @OPENCL_LDFLAGS_RPATH@ @OPENCL_LIBS@
+-liboclmpitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) @OPENCL_LDFLAGS_RPATH@ @OPENCL_LIBS@
++libocltrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) @OPENCL_LDFLAGS_RPATH@ @OPENCL_LIBS@ -lxml2
++liboclmpitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) @OPENCL_LDFLAGS_RPATH@ @OPENCL_LIBS@ -lxml2
++liboclmpitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) @OPENCL_LDFLAGS_RPATH@ @OPENCL_LIBS@ -lxml2
+ 
+ if SINGLE_MPI_LIBRARY
+-  liboclmpitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) @OPENCL_LDFLAGS_RPATH@ @OPENCL_LIBS@
++  liboclmpitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) @OPENCL_LDFLAGS_RPATH@ @OPENCL_LIBS@ -lxml2
+ endif
+ 
+-libomptrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libnewomptrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -dynamic
+-libompitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS)
+-libompitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS)
+-libnewompitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) -dynamic
++libomptrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libnewomptrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -dynamic -lxml2
++libompitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) -lxml2
++libompitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) -lxml2
++libnewompitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) -dynamic -lxml2
+ 
+ if SINGLE_MPI_LIBRARY
+-  libompitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS)
++  libompitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) -lxml2
+ endif
+ 
+-libsmpsstrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libsmpssmpitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS)
+-libsmpssmpitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS)
++libsmpsstrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libsmpssmpitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) -lxml2
++libsmpssmpitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) -lxml2
+ 
+ if SINGLE_MPI_LIBRARY
+-  libsmpssmpitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS)
++  libsmpssmpitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) -lxml2
+ endif
+ 
+-libnanostrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS)
+-libnanosmpitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS)
+-libnanosmpitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS)
++libnanostrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) -lxml2
++libnanosmpitrace_la_LDFLAGS = $(libmpitrace_la_LDFLAGS) -lxml2
++libnanosmpitracef_la_LDFLAGS = $(libmpitracef_la_LDFLAGS) -lxml2
+ 
+ if SINGLE_MPI_LIBRARY
+-  libnanosmpitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS)
++  libnanosmpitracecf_la_LDFLAGS = $(libmpitracecf_la_LDFLAGS) -lxml2
  endif
  
 -libpttrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS)
 +libpttrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(PTHREAD_LIBS) -lxml2
  
- libopenshmemtrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(OPENSHMEM_LDFLAGS)
+-libopenshmemtrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(OPENSHMEM_LDFLAGS)
++libopenshmemtrace_la_LDFLAGS = $(COMMON_LINKER_FLAGS) $(OPENSHMEM_LDFLAGS) -lxml2
  
+ lib_dyn_mpitracec_la_LDFLAGS = $(libmpitrace_la_LDFLAGS)
+ lib_dyn_mpitracef_la_LDFLAGS = $(libmpitrace_la_LDFLAGS)
 -- 
-2.44.0
+2.45.2
 

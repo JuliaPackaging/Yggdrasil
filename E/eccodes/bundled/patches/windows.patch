@@ -1,133 +1,135 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b81a803..0238298 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -23,6 +23,8 @@ find_package( ecbuild 3.4 REQUIRED HINTS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CUR
- # Initialise project
- project( eccodes VERSION 2.19.1 LANGUAGES C )
+@@ -326,6 +326,7 @@
+     set( CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE )
+     set( ECCODES_ON_WINDOWS 1 )
  
-+add_compile_definitions(ECCODES_ON_WINDOWS)
-+
- ###############################################################################
- # system checks needed for eccodes_config.h and some options like MEMFS
- 
-@@ -312,11 +314,8 @@ if( EC_OS_NAME MATCHES "windows" )
++    if ( MSVC )
      # Suppress compliler warnings - see ECC-850
      # Suppress warnings about using 'insecure' functions. Fixing this would require changes all over
      # the codebase which would damage portability.
--    ecbuild_add_c_flags("/D_CRT_SECURE_NO_WARNINGS")
-     # Suppress warnings about using well-known C functions.
--    ecbuild_add_c_flags("/D_CRT_NONSTDC_NO_DEPRECATE")
+@@ -334,6 +335,7 @@
+     ecbuild_add_c_flags("/D_CRT_NONSTDC_NO_DEPRECATE")
      # Suppress C4267: warns about possible loss of data when converting 'size_t' to 'int'.
--    ecbuild_add_c_flags("/wd4267")
+     ecbuild_add_c_flags("/wd4267")
++    endif()
  endif()
  
  ###############################################################################
-@@ -350,9 +349,6 @@ configure_file( eccodes_config.h.in eccodes_config.h )
+@@ -367,7 +369,7 @@
  
  add_definitions( -DHAVE_ECCODES_CONFIG_H )
  
 -if( CMAKE_COMPILER_IS_GNUCC )
--    ecbuild_add_c_flags("-pedantic")
--endif()
++if( CMAKE_COMPILER_IS_GNUCC AND NOT MINGW )
+     ecbuild_add_c_flags("-pedantic")
+ endif()
  
- # gfortran 10 has become stricter with argument matching
- if( HAVE_FORTRAN AND CMAKE_Fortran_COMPILER_ID MATCHES "GNU" AND NOT CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 10 )
-diff --git a/cmake/eccodes_test_endiness.cmake b/cmake/eccodes_test_endiness.cmake
-index 0f1870d..182ffe7 100644
---- a/cmake/eccodes_test_endiness.cmake
-+++ b/cmake/eccodes_test_endiness.cmake
-@@ -18,76 +18,5 @@ endif()
+--- a/definitions/CMakeLists.txt
++++ b/definitions/CMakeLists.txt
+@@ -45,7 +45,7 @@
+ # link to the definitions. See GRIB-786
+ file( MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${INSTALL_DATA_DIR} )
+ if( NOT EXISTS "${CMAKE_BINARY_DIR}/${ECCODES_DEFINITION_SUFF}" )
+-  execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
++  execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "copy"
+     "${CMAKE_CURRENT_SOURCE_DIR}"
+     "${CMAKE_BINARY_DIR}/${ECCODES_DEFINITION_SUFF}" )
+ endif()
+--- a/fortran/eccodes_f90_int.f90
+--- b/fortran/eccodes_f90_int.f90
+@@ -100,7 +100,6 @@
+       codes_get_string, &
+       codes_get_byte_array, &
+       codes_get_int_array, &
+-      codes_get_long_array, &
+       codes_get_real4_array, &
+       codes_get_real8_array
+   end interface codes_get
+--- a/ifs_samples/CMakeLists.txt
++++ b/ifs_samples/CMakeLists.txt
+@@ -14,7 +14,7 @@
+   execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${destination_build} )
+   foreach( _file ${_samples} )
+     get_filename_component(_filename ${_file} NAME)
+-    execute_process( COMMAND ${CMAKE_COMMAND} -E create_symlink
++    execute_process( COMMAND ${CMAKE_COMMAND} -E copy
+        ${_file} ${destination_build}/${_filename} )
+   endforeach()
+ endfunction()
+--- a/samples/CMakeLists.txt
++++ b/samples/CMakeLists.txt
+@@ -16,7 +16,7 @@
+ # link to the samples in the build directory. See GRIB-786
+ file( MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${INSTALL_DATA_DIR} )
+ if( NOT EXISTS "${CMAKE_BINARY_DIR}/${ECCODES_SAMPLES_SUFF}" )
+-  execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink"
++  execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "copy"
+     "${CMAKE_CURRENT_SOURCE_DIR}"
+     "${CMAKE_BINARY_DIR}/${ECCODES_SAMPLES_SUFF}" )
+ endif()
+--- a/src/eccodes_windef.h
++++ b/src/eccodes_windef.h
+@@ -12,7 +12,7 @@
+ #define eccodes_windef_H
  
- set( ECCODES_BIG_ENDIAN    ${ECCODES_BIG_ENDIAN}    )
- set( ECCODES_LITTLE_ENDIAN ${ECCODES_LITTLE_ENDIAN} )
--
--if( NOT DEFINED IEEE_BE )
--    check_c_source_runs(
--       "int compare(unsigned char* a,unsigned char* b) {
--         while(*a != 0) if (*(b++)!=*(a++)) return 1;
--         return 0;
--       }
--       int main(int argc,char** argv) {
--         unsigned char dc[]={0x30,0x61,0xDE,0x80,0x93,0x67,0xCC,0xD9,0};
--         double da=1.23456789e-75;
--         unsigned char* ca;
--
--         unsigned char fc[]={0x05,0x83,0x48,0x22,0};
--         float fa=1.23456789e-35;
--
--         if (sizeof(double)!=8) return 1;
--
--         ca=(unsigned char*)&da;
--         if (compare(dc,ca)) return 1;
--
--         if (sizeof(float)!=4) return 1;
--
--         ca=(unsigned char*)&fa;
--         if (compare(fc,ca)) return 1;
--
--         return 0;
--       }" IEEE_BE )
--
--    if( "${IEEE_BE}" STREQUAL "" )
--      set( IEEE_BE 0 CACHE INTERNAL "Test IEEE_BE")
--    endif()
--
--endif()
--
--if( ECCODES_BIG_ENDIAN AND NOT IEEE_BE )
--    ecbuild_critical("Failed to sanity check on endiness: OS should be Big-Endian but compiled code runs differently -- to ignore this pass -DIEEE_BE=1 to CMake/ecBuild")
--endif()
--
--if( NOT DEFINED IEEE_LE )
--    check_c_source_runs(
--       "int compare(unsigned char* a,unsigned char* b) {
--         while(*a != 0) if (*(b++)!=*(a++)) return 1;
--         return 0;
--       }
--       int main(int argc,char** argv) {
--         unsigned char dc[]={0xD9,0xCC,0x67,0x93,0x80,0xDE,0x61,0x30,0};
--         double da=1.23456789e-75;
--         unsigned char* ca;
--
--         unsigned char fc[]={0x22,0x48,0x83,0x05,0};
--         float fa=1.23456789e-35;
--
--         if (sizeof(double)!=8) return 1;
--
--         ca=(unsigned char*)&da;
--         if (compare(dc,ca)) return 1;
--
--         if (sizeof(float)!=4) return 1;
--
--         ca=(unsigned char*)&fa;
--         if (compare(fc,ca)) return 1;
--
--         return 0;
--       }" IEEE_LE )
--
--    if( "${IEEE_LE}" STREQUAL "" )
--      set( IEEE_LE 0 CACHE INTERNAL "Test IEEE_LE")
--    endif()
--endif()
--
--if( ECCODES_LITTLE_ENDIAN AND NOT IEEE_LE )
--    ecbuild_critical("Failed to sanity check on endiness: OS should be Little-Endian but compiled code runs differently -- to ignore this pass -DIEEE_LE=1 to CMake/ecBuild")
--endif()
-+set( IEEE_BE ${ECCODES_BIG_ENDIAN} )
-+set( IEEE_LE ${ECCODES_LITTLE_ENDIAN} )
-diff --git a/src/grib_context.c b/src/grib_context.c
-index 327fdf1..69ff1cc 100644
---- a/src/grib_context.c
-+++ b/src/grib_context.c
-@@ -421,10 +421,6 @@ grib_context* grib_context_get_default()
+ /* Microsoft Windows Visual Studio support */
+-#if defined(_WIN32) && defined(_MSC_VER)
++#if defined(_WIN32)
+ #define ECCODES_ON_WINDOWS
+ #ifndef YY_NO_UNISTD_H
+ #define YY_NO_UNISTD_H
+--- a/fortran/grib_fortran.cc	2024-06-24 21:27:16.215196952 +0200
++++ b/fortran/grib_fortran.cc	2024-06-24 21:42:05.165196892 +0200
+@@ -953,7 +953,7 @@
+                 grib_context_log(context,GRIB_LOG_FATAL,"grib_f_open_file_: posix_memalign unable to allocate io_buffer\n");
+             }
+ #else
+-            iobuf = (void*)malloc(context->io_buffer_size);
++            iobuf = (char*)malloc(context->io_buffer_size);
+             if (!iobuf) {
+                 grib_context_log(context,GRIB_LOG_FATAL,"grib_f_open_file_: Unable to allocate io_buffer\n");
+             }
+--- a/src/accessor/grib_accessor_class_data_g1second_order_general_extended_packing.cc
++++ b/src/accessor/grib_accessor_class_data_g1second_order_general_extended_packing.cc
+@@ -184,7 +184,7 @@
+ #define MAX_NUMBER_OF_GROUPS 65534
+ #define EFDEBUG 0
+ 
+-static const unsigned long nbits[64] = {
++static const size_t nbits[64] = {
+     0x1, 0x2, 0x4, 0x8,
+     0x10, 0x20, 0x40, 0x80,
+     0x100, 0x200, 0x400, 0x800,
+@@ -205,7 +205,7 @@
+ 
+ static long number_of_bits(grib_handle* h, unsigned long x)
+ {
+-    const unsigned long* n = nbits;
++    const size_t* n = nbits;
+     const int count        = sizeof(nbits) / sizeof(nbits[0]);
+     long i                 = 0;
+     while (x >= *n) {
+--- a/src/grib_api_internal.h
++++ b/src/grib_api_internal.h
+@@ -91,7 +91,9 @@
+   #define M_PI 3.14159265358979323846
+  #endif
+ 
++ #ifdef _MSC_VER
+  #define R_OK 04 /* Needed for Windows */
++ #endif
+ 
+  #ifndef F_OK
+   #define F_OK 0
+--- a/src/grib_context.cc
++++ b/src/grib_context.cc
+@@ -420,7 +420,7 @@
          /* On UNIX, when we read from a file we get exactly what is in the file on disk.
           * But on Windows a file can be opened in binary or text mode. In binary mode the system behaves exactly as in UNIX.
           */
 -#ifdef ECCODES_ON_WINDOWS
--        _set_fmode(_O_BINARY);
--#endif
--
-         default_grib_context.inited = 1;
-         default_grib_context.io_buffer_size = io_buffer_size ? atoi(io_buffer_size) : 0;
-         default_grib_context.no_big_group_split = no_big_group_split ? atoi(no_big_group_split) : 0;
++#ifdef _MSC_VER
+         _set_fmode(_O_BINARY);
+ #endif
+ 

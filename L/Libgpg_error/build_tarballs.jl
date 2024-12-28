@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Libgpg_error"
-version_string = "1.49"
+version_string = "1.51"
 version = VersionNumber(version_string)
 
 # Collection of sources required to build Libgpg-Error
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-$(version_string).tar.bz2",
-                  "8b79d54639dbf4abc08b5406fb2f37e669a2dec091dd024fb87dd367131c63a9"),
+                  "be0f1b2db6b93eed55369cdf79f19f72750c8c7c39fc20b577e724545427e6b2"),
     DirectorySource("./bundled"),
 ]
 
@@ -59,4 +59,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
+
+# Build trigger: 1

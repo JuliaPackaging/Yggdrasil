@@ -11,13 +11,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libcxxwrap_julia"
-version = v"0.13.2"
+version = v"0.13.3"
 
 git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "20eaeb785dcd18bd19ae3b029e0349f12f88a05a"),
+    GitSource(git_repo, "f7bb672a0e72437d7ab044e1950a62ae7dd3399b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,12 +25,16 @@ script = raw"""
 mkdir build
 cd build
 
+if [[ $target == *freebsd* ]]; then
+    fbsdflag="-DCMAKE_CXX_FLAGS=-pthread"
+fi
+
 cmake \
     -DJulia_PREFIX=$prefix \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=Release $fbsdflag \
     ../libcxxwrap-julia/
 VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 install_license $WORKSPACE/srcdir/libcxxwrap-julia*/LICENSE.md
@@ -49,7 +53,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.10")),
+    BuildDependency("libjulia_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

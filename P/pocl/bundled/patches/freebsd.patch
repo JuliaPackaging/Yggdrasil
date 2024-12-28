@@ -1,0 +1,36 @@
+commit e9e39f03af5e71e4e65e9f92de71db78e595a7a4
+Author: Tim Besard <tim.besard@gmail.com>
+Date:   Tue Jul 23 13:14:46 2024 +0200
+
+    Fix compilation on FreeBSD.
+
+diff --git a/lib/CL/clReleaseCommandBufferKHR.c b/lib/CL/clReleaseCommandBufferKHR.c
+index 4ea5bc58e..8f4fa8f3c 100644
+--- a/lib/CL/clReleaseCommandBufferKHR.c
++++ b/lib/CL/clReleaseCommandBufferKHR.c
+@@ -25,7 +25,11 @@
+ #include "pocl_mem_management.h"
+ #include "pocl_util.h"
+
++#if defined(__FreeBSD__)
++#include <stdlib.h>
++#else
+ #include <alloca.h>
++#endif
+
+ CL_API_ENTRY cl_int CL_API_CALL
+ POname (clReleaseCommandBufferKHR) (cl_command_buffer_khr command_buffer)
+diff --git a/lib/CL/devices/proxy/pocl_proxy.c b/lib/CL/devices/proxy/pocl_proxy.c
+index 30dcd5778..1c4bb5fda 100644
+--- a/lib/CL/devices/proxy/pocl_proxy.c
++++ b/lib/CL/devices/proxy/pocl_proxy.c
+@@ -31,7 +31,9 @@
+ #include "devices.h"
+
+ #include <assert.h>
++#if !defined(__FreeBSD__)
+ #include <alloca.h>
++#endif
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>

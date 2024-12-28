@@ -10,6 +10,11 @@ const curl_hashes = Dict(
     v"8.5.0"  => "05fc17ff25b793a437a0906e0484b82172a9f4de02be5ed447e0cab8c3475add",
     v"8.6.0"  => "9c6db808160015f30f3c656c0dec125feb9dc00753596bf858a272b5dd8dc398",
     v"8.7.1"  => "f91249c87f68ea00cf27c44fdfa5a78423e41e71b7d408e5901a9896d905c495",
+    v"8.8.0"  => "77c0e1cd35ab5b45b659645a93b46d660224d0024f1185e8a95cdb27ae3d787d",
+    v"8.9.0"  => "14d931fa98a329310dca7b190d047c3d4987674b1f466481f5490e4e12067ba4",
+    v"8.9.1"  => "291124a007ee5111997825940b3876b3048f7d31e73e9caa681b80fe48b2dcd5",
+    v"8.11.0" => "264537d90e58d2b09dddc50944baf3c38e7089151c8986715e2aaeaaf2b8118f",
+    v"8.11.1" => "a889ac9dbba3644271bd9d1302b5c22a088893719b72be3487bc3d401e5c4e80",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber)
@@ -128,7 +133,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         Dependency("LibSSH2_jll"),
         Dependency("Zlib_jll"),
         Dependency("nghttp2_jll"),
-        Dependency("OpenSSL_jll"; compat="3.0.8", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),

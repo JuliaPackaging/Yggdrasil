@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_Tools"
-version = v"2024.2"
+version = v"2024.3"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "dd4b663e13c07fea4fbb3f70c1c91c86731099f7"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "0cfe9e7219148716dfd30b37f4d21753f098707a"),
     # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "19b4aa87af25cb4ee779a071409732f34bfc305c"),
-    GitSource("https://github.com/google/googletest", "5a37b517ad4ab6738556f0284c256cae1466c5b4"),
-    GitSource("https://github.com/google/re2.git", "917047f3606d3ba9e2de0d383c3cd80c94ed732c"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "4f7b471f1a66b6d06462cd4ba57628cc0cd087d7"),
+    GitSource("https://github.com/google/effcee.git", "d74d33d93043952a99ae7cd7458baf6bc8df1da0"),
+    GitSource("https://github.com/google/googletest", "1d17ea141d2c11b8917d2c7d029f1c4e2b9769b2"),
+    GitSource("https://github.com/google/re2.git", "4a8cee3dd3c3d81b6fe8b867811e193d5819df07"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "2acb319af38d43be3ea76bfabf3998e5281d8d12"),
 ]
 
 # Bash recipe for building across all platforms
@@ -63,7 +63,7 @@ products = [
     ExecutableProduct("spirv-opt", :spirv_opt),
     ExecutableProduct("spirv-cfg", :spirv_cfg),
     ExecutableProduct("spirv-link", :spirv_link),
-    ExecutableProduct("spirv-lint", :spirv_link),
+    ExecutableProduct("spirv-lint", :spirv_lint),
     ExecutableProduct("spirv-reduce", :spirv_reduce),
     LibraryProduct("libSPIRV-Tools-shared", :libSPIRV_Tools),
 ]

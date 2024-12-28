@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_sdkutils"
-version = v"0.1.16"
+version = v"0.1.18"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "8c7af71f91ed5b9d2a043d51f120495f43723f80"),
+    GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "04e777c2c570f89cab362d74a091eaa9bb959c0f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,6 +28,7 @@ cmake --build . -j${nproc} --target install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -36,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.17"),
+    Dependency("aws_c_common_jll"; compat="0.9.28"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

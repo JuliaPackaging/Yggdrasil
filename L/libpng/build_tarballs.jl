@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "libpng"
-version = v"1.6.43"
+version = v"1.6.44"
 
 # Collection of sources required to build libpng
 sources = [
     ArchiveSource("https://sourceforge.net/projects/libpng/files/libpng16/$(version)/libpng-$(version).tar.gz",
-                  "e804e465d4b109b5ad285a8fb71f0dd3f74f0068f91ce3cdfde618180c174925"),
+                  "8c25a7792099a0089fa1cc76c94260d0bb3f1ec52b93671b572f8bb61577b732"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +25,13 @@ if [[ "${target}" == *-darwin* ]]; then
     #    error: cannot open /workspace/destdir/lib/png.framework: Is a directory
     #    error: linker command failed with exit code 1 (use -v to see invocation)
     FLAGS+=(-DPNG_FRAMEWORK=OFF)
+fi
+if [[ "${target}" == riscv64* ]]; then
+    # Need to explicitly add `-lm`
+    FLAGS+=(
+        -DCMAKE_EXE_LINKER_FLAGS=-lm
+        -DCMAKE_SHARED_LINKER_FLAGS=-lm
+    )
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \

@@ -8,21 +8,24 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.122"
+auto_version = "refs/tags/v0.0.171"
 version = VersionNumber(split(auto_version, "/")[end])
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2", v"15.0.7", v"16.0.6"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "d83701e79d42700949698dc5ba8cb1f188ceb2f4"),
+    GitSource(repo, "59540625e212697ea4ab1d7beeecaa0eeec14426"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
+# Exclude aarch64 FreeBSD and RISC-V for the time being
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -49,6 +52,10 @@ NATIVE_CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${host_prefix})
 # Tell CMake where LLVM is
 NATIVE_CMAKE_FLAGS+=(-DLLVM_DIR="${host_prefix}/lib/cmake/llvm")
 NATIVE_CMAKE_FLAGS+=(-DBC_LOAD_FLAGS="-target ${target} --sysroot=/opt/${target}/${target}/sys-root --gcc-toolchain=/opt/${target}")
+if [[ "${target}" == *mingw* ]]; then
+    NATIVE_CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
+    NATIVE_CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
+fi
 
 cmake -B build-native -S enzyme -GNinja "${NATIVE_CMAKE_FLAGS[@]}"
 
@@ -88,6 +95,12 @@ if [[ "${target}" == x86_64-apple* ]]; then
   CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.12)
 fi
 fi
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_CPP_FLAGS=-pthread)
+    CMAKE_FLAGS+=(-DCMAKE_C_FLAGS=-pthread)
+    CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-pthread)
+    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS=-pthread)
+fi
 
 echo ${CMAKE_FLAGS[@]}
 cmake -B build -S enzyme -GNinja ${CMAKE_FLAGS[@]}
@@ -125,10 +138,14 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
     end
-    if llvm_version >= v"16"
+    if llvm_version >= v"17"
         # Windows is broken for LLVM16_jll see https://github.com/JuliaPackaging/Yggdrasil/pull/8017#issuecomment-1930838052
         filter!(p -> !(os(p) == "windows"), platforms)
     end
+    if llvm_version >= v"17" && llvm_assertions
+        # Windows is broken for LLVM16_jll see https://github.com/JuliaPackaging/Yggdrasil/pull/8017#issuecomment-1930838052
+        filter!(p -> !Sys.isapple(p), platforms)
+    end 
     for platform in platforms
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
@@ -153,6 +170,8 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, sources, script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=build.gcc_version, julia_compat="1.6",
+                   preferred_gcc_version=build.gcc_version, julia_compat="1.10",
                    augment_platform_block, lazy_artifacts=true) # drop when julia_compat >= 1.7
 end
+
+# Build trigger: 1

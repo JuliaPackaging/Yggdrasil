@@ -14,10 +14,13 @@ const llvm_tags = Dict(
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
+    v"14.0.5" => "73db33ead13c3596f53408ad6d1de4d0f2270adb", # julia-14.0.5-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
     v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
+    v"18.1.7" => "ed30d043a240d06bb6e010a41086e75713156f4f", # julia-18.1.7-2
+    v"19.1.1" => "49c6812e2c4624a7f0cee34859a0511209f44b67", # julia-19.1.1-1
 )
 
 const buildscript = raw"""
@@ -137,6 +140,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
+fi
+if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+    ninja -j${nproc} mlir-src-sharder
 fi
 popd
 
@@ -269,6 +275,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
 fi
+if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
+fi
 
 # Explicitly use our cmake toolchain file
 # Windows runs out of symbols so use clang which can do some fancy things
@@ -335,7 +344,7 @@ if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
+    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -Dmlir_arm_sme_abi_stubs_EXPORTS)
     CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     # Windows is case-insensitive and some dependencies take full advantage of that
@@ -583,10 +592,10 @@ rm -vrf {prefix}/lib/objects-Release
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
-                         git_path="https://github.com/JuliaLang/llvm-project.git",
-                         git_ver=llvm_tags[version], custom_name=nothing,
-                         custom_version=version, static=false, platform_filter=nothing,
-                         eh_rtti=false, update_sdk=version >= v"15")
+    git_path="https://github.com/JuliaLang/llvm-project.git",
+    git_ver=llvm_tags[version], custom_name=nothing,
+    custom_version=version, static=false, platform_filter=nothing,
+    eh_rtti=false, update_sdk=version >= v"15")
     # Parse out some args
     if "--assert" in ARGS
         assert = true
@@ -597,7 +606,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         DirectorySource("./bundled"),
     ]
 
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=experimental_platforms))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl, see
         # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1430063957>:
@@ -660,19 +669,21 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     # TODO: LibXML2
     dependencies = [
         Dependency("Zlib_jll"), # for LLD&LTO
-        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
     ]
     if update_sdk
         config *= "LLVM_UPDATE_MAC_SDK=1\n"
         push!(sources,
-              ArchiveSource(
-                  "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+            ArchiveSource(
+                "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
     end
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false, augmentation=false)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing;
+                              experimental_platforms=false, assert=false,
+                              augmentation=false, dont_dlopen=true)
     if isempty(LLVM_full_version.build)
         error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
     end
@@ -684,14 +695,14 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if name == "libLLVM"
         script = libllvmscript
         products = [
-            LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true),
+            LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm; dont_dlopen),
             ExecutableProduct("llvm-config", :llvm_config, "tools"),
         ]
     elseif name == "Clang"
         script = clangscript
         products = [
-            LibraryProduct("libclang", :libclang, dont_dlopen=true),
-            LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
+            LibraryProduct("libclang", :libclang; dont_dlopen),
+            LibraryProduct("libclang-cpp", :libclang_cpp; dont_dlopen),
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
@@ -705,25 +716,30 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             mlirscript_v16
         end
         products = [
-            LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
+            LibraryProduct("libMLIR", :libMLIR; dont_dlopen),
         ]
         if v"12" <= version < v"13"
-            push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
+            push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI; dont_dlopen))
         end
         if version >= v"14"
-            push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c, dont_dlopen=true))
+            push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c; dont_dlopen))
         end
     elseif name == "LLD"
         script = lldscript
         products = [
             ExecutableProduct("lld", :lld, "tools"),
+            ExecutableProduct("ld.lld", :ld_lld, "tools"),      # Unix
+            ExecutableProduct("ld64.lld", :ld64_lld, "tools"),  # macOS
+            ExecutableProduct("lld-link", :lld_link, "tools"),  # Windows
+            ExecutableProduct("wasm-ld", :wasm_ld, "tools"),    # WebAssembly
+
             ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
 
     elseif name == "LLVM"
         script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
-            LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
+            LibraryProduct(["LTO", "libLTO"], :liblto; dont_dlopen),
             ExecutableProduct("opt", :opt, "tools"),
             ExecutableProduct("llc", :llc, "tools"),
         ]
@@ -739,11 +755,15 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         end
     end
 
-    platforms = supported_platforms(;experimental=experimental_platforms)
+    platforms = supported_platforms(; experimental=experimental_platforms)
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    if version < v"18"
+        # We only have LLVM builds for AArch64 BSD starting from LLVM 18
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
     platforms = expand_cxxstring_abis(platforms)
 

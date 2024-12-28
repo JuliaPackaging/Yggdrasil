@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.3"
+version = v"5.0.6"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "3e12160dd1d6f5cd8897bbab63a05fb9223a1e20a1726db23607aac25dc1aa19"),
+                  "1d6dd41f6b53c00db23b40e56733d16a996fa743957ef8add8e117feffd92689"),
     DirectorySource("bundled"),
 ]
 
@@ -24,10 +24,10 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     # Build internal `libevent` without `-Wl,--no-undefined`
     # (taken from `L/libevent/build_tarballs.jl`)
 
-    # Expand libeven tarball so that we can patch it
+    # Expand libevent tarball so that we can patch it
     pushd 3rd-party
-    tar xzf libevent-2.1.12-stable.tar.gz
-    cd libevent-2.1.12-stable
+    tar xzf libevent-2.1.12-stable-ompi.tar.gz
+    cd libevent-2.1.12-stable-ompi
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/build_with_no_undefined.patch
     popd
 fi
@@ -97,9 +97,9 @@ products = [
 # Also use internal `PMix` and `prrte` packages since they might otherwise use an external `libevent`.
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("Hwloc_jll"),    # compat="2.0.0"
+    Dependency("Hwloc_jll"; compat="2.5.0"),
     # Dependency("PMIx_jll"),     # compat="4.2.0"
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     # Dependency("libevent_jll"), # compat="2.0.21"
     # Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),

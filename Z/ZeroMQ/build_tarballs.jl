@@ -37,7 +37,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -45,9 +45,11 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("libsodium_jll")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6")
+
+# Build trigger: 1

@@ -11,6 +11,12 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
+    CONFIG=msys2-64
+    OS=Windows
+
+fi
+export LDFLAGS="-L${libdir}"
 cd $WORKSPACE/srcdir/ITK*
 mkdir build/
 cmake -B build -S . \
@@ -35,6 +41,10 @@ cmake -B build -S . \
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
+if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
+    cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
+    cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
+fi
 """
 
 
@@ -103,7 +113,51 @@ products = [
     LibraryProduct(["libITKMetaIO", "libITKMetaIO-5.3"], :libITKMetaIO),
     LibraryProduct(["libITKIONIFTI", "libITKIONIFTI-5.3"], :libITKIONIFTI),
     LibraryProduct(["libITKNrrdIO", "libITKNrrdIO-5.3"], :libITKNrrdIO),
-    LibraryProduct(["libITKConvolution", "libITKConvolution-5.3"], :libITKConvolution)
+    LibraryProduct(["libITKConvolution", "libITKConvolution-5.3"], :libITKConvolution),
+    LibraryProduct(["libITKTestKernel", "libITKTestKernel-5.3"], :libITKTestKernel),
+    LibraryProduct(["libITKBiasCorrection", "libITKBiasCorrection-5.3"], :libITKBiasCorrection),
+    LibraryProduct(["libITKFastMarching", "libITKFastMarching-5.3"], :libITKFastMarching),
+    LibraryProduct(["libITKPolynomials", "libITKPolynomials-5.3"], :libITKPolynomials),
+    LibraryProduct(["libITKColormap", "libITKColormap-5.3"], :libITKColormap),
+    LibraryProduct(["libITKPDEDeformableRegistration", "libITKPDEDeformableRegistration-5.3"], :libITKPDEDeformableRegistration),
+    LibraryProduct(["libITKIOSiemens", "libITKIOSiemens-5.3"], :libITKIOSiemens),
+    LibraryProduct(["libITKIOTransformInsightLegacy", "libITKIOTransformInsightLegacy-5.3"], :libITKIOTransformInsightLegacy),
+    LibraryProduct(["libITKIOTransformMatlab", "libITKIOTransformMatlab-5.3"], :libITKIOTransformMatlab),
+    LibraryProduct(["libITKKLMRegionGrowing", "libITKKLMRegionGrowing-5.3"], :libITKKLMRegionGrowing),
+    LibraryProduct(["libITKMarkovRandomFieldsClassifiers", "libITKMarkovRandomFieldsClassifiers-5.3"], :libITKMarkovRandomFieldsClassifiers),
+    LibraryProduct(["libITKQuadEdgeMeshFiltering", "libITKQuadEdgeMeshFiltering-5.3"], :libITKQuadEdgeMeshFiltering),
+    LibraryProduct(["libITKRegionGrowing", "libITKRegionGrowing-5.3"], :libITKRegionGrowing),
+    LibraryProduct(["libITKVTK", "libITKVTK-5.3"], :libITKVTK),
+    LibraryProduct(["libITKWatersheds", "libITKWatersheds-5.3"], :libITKWatersheds),
+    LibraryProduct(["libITKVideoIO", "libITKVideoIO-5.3"], :libITKVideoIO),
+    LibraryProduct(["libitkgdcmMSFF", "libitkgdcmMSFF-5.3"], :libitkgdcmMSFF),
+    LibraryProduct(["libITKgiftiio", "libITKgiftiio-5.3"], :libITKgiftiio),
+    LibraryProduct(["libITKQuadEdgeMesh", "libITKQuadEdgeMesh-5.3"], :libITKQuadEdgeMesh),
+    LibraryProduct(["libITKznz", "libITKznz-5.3"], :libITKznz),
+    LibraryProduct(["libITKIOVTK", "libITKIOVTK-5.3"], :libITKIOVTK),
+    LibraryProduct(["libITKFFT", "libITKFFT-5.3"], :libITKFFT),
+    LibraryProduct(["libitkopenjpeg", "libitkopenjpeg-5.3"], :libitkopenjpeg),
+    LibraryProduct(["libITKIOTIFF", "libITKIOTIFF-5.3"], :libITKIOTIFF),
+    LibraryProduct(["libitkminc2", "libitkminc2-5.3"], :libitkminc2),
+    LibraryProduct(["libITKIOXML", "libITKIOXML-5.3"], :libITKIOXML),
+    LibraryProduct(["libITKTransformFactory", "libITKTransformFactory-5.3"], :libITKTransformFactory),
+    LibraryProduct(["libITKMathematicalMorphology", "libITKMathematicalMorphology-5.3"], :libITKMathematicalMorphology),
+    LibraryProduct(["libITKPath", "libITKPath-5.3"], :libITKPath),
+    LibraryProduct(["libITKMesh", "libITKMesh-5.3"], :libITKMesh),
+    LibraryProduct(["libITKSmoothing", "libITKSmoothing-5.3"], :libITKSmoothing),
+    LibraryProduct(["libITKOptimizersv4", "libITKOptimizersv4-5.3"], :libITKOptimizersv4),
+    LibraryProduct(["libITKOptimizers", "libITKOptimizers-5.3"], :libITKOptimizers),
+    LibraryProduct(["libITKStatistics", "libITKStatistics-5.3"], :libITKStatistics),
+    LibraryProduct(["libitkNetlibSlatec", "libitkNetlibSlatec-5.3"], :libitkNetlibSlatec),
+    LibraryProduct(["libitklbfgs", "libitklbfgs-5.3"], :libitklbfgs),
+    LibraryProduct(["libITKVideoCore", "libITKVideoCore-5.3"], :libITKVideoCore),
+    LibraryProduct(["libitkdouble-conversion", "libitkdouble-conversion-5.3"], :libitkdoubleConversion),
+    LibraryProduct(["libitksys", "libitksys-5.3"], :libitksys),
+    LibraryProduct(["libITKVNLInstantiation", "libITKVNLInstantiation-5.3"], :libITKVNLInstantiation),
+    LibraryProduct(["libitkvnl_algo", "libitkvnl_algo-5.3"], :libitkvnl_algo),
+    LibraryProduct(["libitkvnl", "libitkvnl-5.3"], :libitkvnl),
+    LibraryProduct(["libitkv3p_netlib", "libitkv3p_netlib-5.3"], :libitkv3p_netlib),
+    LibraryProduct(["libitkvcl", "libitkvcl-5.3"], :libitkvcl)
 ]
 
 

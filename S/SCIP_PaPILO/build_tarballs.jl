@@ -4,19 +4,34 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"900.000.000"
+upstream_version = v"9.2.0"
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://scipopt.org/download/release/scipoptsuite-9.0.0.tgz",
-        "c49a0575003322fcbfe2d3765de7e3e60ff7c08d1e8b17d35409be40476cb98a"
+        "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
+        "a174cc58592d245c74c9c95c1d4819750d7ba2d467b4baae616a5aa336aac8d0"
+    ),
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
     ),
     DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# This requires macOS 10.13
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    popd
+fi
+
 cd scipoptsuite*
 
 # for soplex threadlocal
@@ -27,6 +42,8 @@ if [[ "${target}" == *-mingw* ]]; then
     export CXXFLAGS="-Wa,-mbig-obj"
 fi
 
+# Patch to fix linking with gfortran's library on mingw
+# https://github.com/JuliaPackaging/Yggdrasil/pull/8224#issuecomment-2034941690
 atomic_patch -p0 $WORKSPACE/srcdir/patches/papilo_cmake.patch
 
 mkdir build
@@ -39,7 +56,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DGCG=0\
   -DBOOST=ON\
-  -DSYM=bliss\
+  -DSYM=snauty\
   -DTPI=tny\
   -DIPOPT_DIR=${prefix} \
   -DIPOPT_LIBRARIES=${libdir} \
@@ -63,9 +80,14 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; experimental=true)))
 
+# Filter out the aarch64 FreeBSD and RISC-V architectures because oneTBB isn't available there yet.
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms)
+
 filter!(platforms) do p
     libgfortran_version(p) >= v"4"
 end
+
 
 # The products that we will ensure are always built
 products = [

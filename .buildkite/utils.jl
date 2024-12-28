@@ -33,7 +33,7 @@ plugins() = Pair{String, Union{Nothing, Dict}}[
     "JuliaCI/julia#v1" => Dict(
         "persist_depot_dirs" => "packages,artifacts,compiled",
         "version" => "1.7",
-        "depot_hard_size_limit" => string(150 << 30), # 150 GiB
+        "artifacts_size_limit" => string(150 << 30), # 150 GiB
     ),
     "JuliaCI/merge-commit" => nothing
 ]
@@ -104,7 +104,7 @@ function build_step(NAME, PLATFORM, PROJECT)
     )
 end
 
-function register_step(NAME, PROJECT, SKIP_BUILD)
+function register_step(NAME, PROJECT, SKIP_BUILD, NUM_PLATFORMS)
     script = raw"""
     BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET="" .buildkite/register.sh
     """
@@ -120,6 +120,14 @@ function register_step(NAME, PROJECT, SKIP_BUILD)
     register_env = env(NAME, PROJECT)
     if SKIP_BUILD
         register_env["SKIP_BUILD"] = "true"
+    end
+    # For packages with a large number of platforms, trying to upload several release
+    # artifacts at once with `ghr` results in exceeding GitHub's API secondary rate limits.
+    # Ref: <https://github.com/JuliaPackaging/BinaryBuilder.jl/pull/1334>.
+    if NUM_PLATFORMS > 80
+        concurrency = 4
+        @info "Reducing ghr concurrency" NAME NUM_PLATFORMS concurrency
+        register_env["BINARYBUILDER_GHR_CONCURRENCY"] = string(concurrency)
     end
 
     Dict(

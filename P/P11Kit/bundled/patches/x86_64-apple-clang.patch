@@ -1,0 +1,15 @@
+--- opt/bin/x86_64-apple-darwin14-libgfortran3-cxx11/x86_64-apple-darwin14-clang
++++ opt/bin/x86_64-apple-darwin14-libgfortran3-cxx11/x86_64-apple-darwin14-clang
+@@ -23,11 +23,11 @@
+     PRE_FLAGS+=( /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/c++/v1 )
+     PRE_FLAGS+=( -Wno-unused-command-line-argument )
+     PRE_FLAGS+=( -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET} )
+-    PRE_FLAGS+=( -Wl,-sdk_version,${MACOSX_DEPLOYMENT_TARGET} )
+ fi
+ 
+ 
+ if [[ " ${ARGS[@]} " != *' -c '* ]] && [[ " ${ARGS[@]} " != *' -E '* ]] && [[ " ${ARGS[@]} " != *' -M '* ]] && [[ " ${ARGS[@]} " != *' -fsyntax-only '* ]]; then
++    PRE_FLAGS+=( -Wl,-sdk_version,${MACOSX_DEPLOYMENT_TARGET} )
+     POST_FLAGS+=( -L/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/lib )
+     POST_FLAGS+=( -fuse-ld=x86_64-apple-darwin14 )
+     POST_FLAGS+=( -headerpad_max_install_names )
