@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Zenith"
-version = v"0.13.1"
+version = v"0.14.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/bvaisvil/zenith/archive/refs/tags/$(version).tar.gz",
-                  "1f2914a1ddd7dd76cca0e0c07ca77bd048addfd80fc6329ea7b83647ea66020a"),
+    GitSource("https://github.com/bvaisvil/zenith.git",
+              "3c8d41a963925a9ef84ecfb18cec98f9da1cc690"),
 ]
 
 # Bash recipe for building across all platforms
