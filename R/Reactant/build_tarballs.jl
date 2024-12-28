@@ -108,6 +108,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 
     if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
+        BAZEL_BUILD_FLAGS+=(--cpu=darwin)
     else
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
@@ -192,8 +193,8 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     if [[ "${bb_full_target}" == *86* ]]; then
         echo "x86"
 
-        sed -i.bak1 "s/\\"k8|/\\"darwin_x86_64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-        sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_x86_64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        sed -i.bak1 "s/\\"k8|/\\"darwin\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         cat /workspace/bazel_root/*/external/local_config_cc/BUILD
         $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
 
