@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.32"
+version = v"0.0.33"
 
 sources = [
-  GitSource(repo, "a02fd5bb762aa0b0ab50d1ae09bec8f87b94a70b"),
+  GitSource(repo, "8b28594cfb9a5dfdee70d0bc88498042d0cd69c6"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -108,6 +108,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 
     if [[ "${bb_full_target}" == *86* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
+        BAZEL_BUILD_FLAGS+=(--cpu=darwin)
     else
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
@@ -191,6 +192,12 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     if [[ "${bb_full_target}" == *86* ]]; then
         echo "x86"
+
+        sed -i.bak1 "s/\\"k8|/\\"darwin\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+        cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+
     else
         sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
@@ -435,7 +442,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 
     push!(builds, (;
                    dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
-        platforms=[augmented_platform], script=prefix*script
+        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version=v"13"
     ))
 end
 
@@ -450,7 +457,8 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.6",
-                   augment_platform_block, lazy_artifacts=true)
+                   preferred_gcc_version=build.preferred_gcc_version, preferred_llvm_version=v"18", julia_compat="1.10",
+                   # We use GCC 13, so we can't dlopen the library during audit
+                   augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true)
 end
 
