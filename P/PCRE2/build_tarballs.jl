@@ -1,25 +1,27 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
-version_string = "10.42"
+version_string = "10.44"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version_string)/pcre2-$(version_string).tar.gz",
-                  "c33b418e3b936ee3153de2c61cc638e7e4fe3156022a5c77d0711bcbb9d64f1f"),
+    GitSource("https://github.com/PCRE2Project/pcre2", "6ae58beca071f13ccfed31d03b3f479ab520639b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/pcre2-*/
+cd $WORKSPACE/srcdir/pcre2*
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
+
+./autogen.sh
 
 # Update configure scripts
 update_configure_scripts
@@ -55,9 +57,18 @@ products = [
     LibraryProduct("libpcre2-32", :libpcre2_32)
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
+                                uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
+                                version=llvm_version);
+                    platforms=filter(p -> sanitize(p)=="memory", platforms)),
+
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.9", preferred_llvm_version=llvm_version)
+
+# Build trigger: 1

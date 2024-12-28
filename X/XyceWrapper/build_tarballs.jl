@@ -2,10 +2,10 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
+julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
 
 name = "XyceWrapper"
-version = v"0.3.0"
+version = v"0.5.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -35,8 +35,13 @@ install_license /usr/share/licenses/MIT
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
-filter!(p -> arch(p) != "armv6l", platforms)
-filter!(p -> !(arch(p) == "aarch64" && Sys.isapple(p)), platforms)
+
+# Exclude the same platforms that are excluded by Xyce_jll:
+# https://github.com/JuliaPackaging/Yggdrasil/blob/7a244de1483ceccbfc0ef9575d80b9b89c3f5a94/X/Xyce/build_tarballs.jl#L42-L45
+platforms = filter(platforms) do p
+    return !(arch(p) == "aarch64" && os(p) == "linux")
+end
+push!(platforms, Platform("aarch64", "linux"; libgfortran_version=v"5"))
 
 # The products that we will ensure are always built
 products = [
@@ -45,8 +50,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Xyce_jll"; compat="^7.4.0"),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("Xyce_jll"; compat="^7.6.0"),
+    Dependency("libcxxwrap_julia_jll", compat="^0.9.7"),
     BuildDependency("libjulia_jll"),
 ]
 

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "CFITSIO"
-version = v"4.0.0"
+version = v"4.4.0"
 
 # Collection of sources required to build CFITSIO
 sources = [
     ArchiveSource("http://heasarc.gsfc.nasa.gov/FTP/software/fitsio/c/cfitsio-$(version).tar.gz",
-                  "b2a8efba0b9f86d3e1bd619f662a476ec18112b4f27cc441cc680a4e3777425e"),
+                  "95900cf95ae760839e7cb9678a7b2fad0858d6ac12234f934bd1cb6bfc246ba9"),
     DirectorySource("./bundled"),
 ]
 
@@ -17,6 +17,10 @@ script = raw"""
 cd $WORKSPACE/srcdir/cfitsio*
 atomic_patch -p1 ../patches/configure_in.patch
 atomic_patch -p1 ../patches/Makefile_in.patch
+if [[ $target == *-freebsd* ]]; then
+   # `gethostbyname` is considered outdated and not available any more; declare it manually
+   atomic_patch -p1 ../patches/gethostbyname.patch
+fi
 autoreconf
 if [[ "${target}" == *-mingw* ]]; then
     # This is ridiculous: when CURL is enabled, CFITSIO defines a macro,
@@ -24,6 +28,7 @@ if [[ "${target}" == *-mingw* ]]; then
     # `TBYTE` to `_TBYTE`.
     sed -i 's/\<TBYTE\>/_TBYTE/g' $(grep -lr '\<TBYTE\>')
 fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-reentrant
 make -j${nproc} shared
 make install
@@ -47,9 +52,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # When using lld for AArch64 macOS, linking fails with
+               #     ld64.lld: error: -dylib_current_version 10.4.3.1: malformed version
+               julia_compat="1.6", clang_use_lld=false)
+
+# Build trigger: 1

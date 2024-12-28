@@ -1,0 +1,25 @@
+From 32954bc902611067266fa9c99bcadf3df07db5f2 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Wed, 8 May 2024 01:00:07 +0200
+Subject: [PATCH] force cxx for cuda
+
+---
+ src/components/cuda/tests/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/components/cuda/tests/Makefile b/src/components/cuda/tests/Makefile
+index 1f7c431de..92db49b63 100644
+--- a/src/components/cuda/tests/Makefile
++++ b/src/components/cuda/tests/Makefile
+@@ -21,7 +21,7 @@ else
+ endif
+ 
+ PAPI_FLAG = -DPAPI    # Comment this line for tests to run without PAPI profiling
+-NVCFLAGS += -g -ccbin='$(CC)' $(PAPI_FLAG)
++NVCFLAGS += -g -ccbin='$(CXX)' $(PAPI_FLAG)
+ INCLUDE += -I$(PAPI_CUDA_ROOT)/include
+ CUDALIBS = -L$(PAPI_CUDA_ROOT)/lib64 -lcudart -lcuda
+ PAPILIB += -L../../../libpfm4/lib -lpfm
+-- 
+2.44.0
+

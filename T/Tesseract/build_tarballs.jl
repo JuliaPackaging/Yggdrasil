@@ -7,25 +7,28 @@ version = v"5.1.0"
 
 # Collection of sources required to build Tesseract
 sources = [
-    ArchiveSource("https://github.com/tesseract-ocr/tesseract/archive/$(version).tar.gz",
-                  "fdec8528d5a0ecc28ab5fff985e0b8ced60726f6ef33f54126f2868e323d4bd2"),
+    GitSource("https://github.com/tesseract-ocr/tesseract.git",
+                  "c2a3efe2824e1c8a0810e82a43406ba8e01527c4"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/tesseract-*/
+cd $WORKSPACE/srcdir/tesseract
+
 atomic_patch -p1 "$WORKSPACE/srcdir/patches/disable_fast_math.patch"
+
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+
 install_license ./LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -38,9 +41,9 @@ dependencies = [
     Dependency("Giflib_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="~4.3, ~4.4"),
     Dependency("Zlib_jll"),
-    Dependency("Leptonica_jll"),
+    Dependency("Leptonica_jll"; compat="~1.82"),
     Dependency("CompilerSupportLibraries_jll"),
     # Optional dependencies
     # Dependency("ICU_jll"),

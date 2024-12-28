@@ -1,0 +1,11 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7bc0f1b..d72738c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -313,6 +313,3 @@ install(TARGETS amgxsh DESTINATION "lib")
+ 
+ #export(TARGETS amgxsh FILE ${CMAKE_CURRENT_SOURCE_DIR}/amgxsh.cmake)
+ 
+-# build examples
+-add_subdirectory(examples)
+-

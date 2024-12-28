@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "zfp"
-version = v"0.5.5"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/LLNL/zfp/releases/download/0.5.5/zfp-0.5.5.tar.gz", "fdf7b948bab1f4e5dccfe2c2048fd98c24e417ad8fb8a51ed3463d04147393c5")
+    ArchiveSource("https://github.com/LLNL/zfp/releases/download/$(version)/zfp-$(version).tar.gz",
+                  "ca0f7b4ae88044ffdda12faead30723fe83dd8f5bb0db74125df84589e60e52b")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,7 +28,6 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libzfp", :libzfp)
@@ -39,4 +39,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

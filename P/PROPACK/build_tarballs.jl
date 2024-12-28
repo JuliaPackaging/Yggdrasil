@@ -1,24 +1,21 @@
 using BinaryBuilder, Pkg
 
 name = "PROPACK"
-version = v"0.2.1"
+version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/optimizers/PROPACK/archive/v1.0.tar.gz",
-                  "0d029a4c2cdcdb9b18a4fae77593a562f79406c3f79839ee948782b37974a10e")
+    GitSource("https://github.com/optimizers/PROPACK", "08ac329ff8dafc7335d83c209fbd607bc3fe9a5a")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/PROPACK-*/
+cd $WORKSPACE/srcdir/PROPACK/
 
-if [[ "${target}" == *mingw* && ${nbits} == 32 ]]; then
-  BLAS="-L${libdir} -lopenblas"
-elif [[ "${target}" == *mingw* && ${nbits} == 64 ]]; then
-  BLAS="-L${libdir} -lopenblas64_"
+if [[ "${target}" == *mingw* ]]; then
+  LBT="-L${libdir} -lblastrampoline-5"
 else
-  BLAS="-L${libdir} -lblastrampoline"
+  LBT="-L${libdir} -lblastrampoline"
 fi
 
 FFLAGS=(-xf77-cpp-input)
@@ -32,7 +29,7 @@ if [[ ${nbits} == 64 ]]; then
 fi
 
 FFLAG="${FFLAGS[@]}" 
-make SLIB=${dlext} FC="${FC}" FFLAG="${FFLAG}" BLAS="${BLAS}"  # LAPACK="${BLAS}"
+make SLIB=${dlext} FC="${FC}" FFLAG="${FFLAG}" BLAS="${LBT}"
 cp complex8/libcpropack.${dlext} complex16/libzpropack.${dlext} single/libspropack.${dlext} double/libdpropack.${dlext} ${libdir}/
 """
 
@@ -50,9 +47,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenBLAS_jll", uuid="4536629a-c528-5b80-bd46-f80d51c5b363"), platforms=filter(Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), platforms=filter(!Sys.iswindows, platforms))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")

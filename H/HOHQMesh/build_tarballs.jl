@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "HOHQMesh"
-version = v"1.3.0"
+version = v"1.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/trixi-framework/HOHQMesh/releases/download/v$(version)/HOHQMesh-v$(version).tar.gz", "da5c1420c7ba312769d0abffbec6b1b7271dcf9a8f7a3f94465b2c1b1d17c418"),
+    ArchiveSource("https://github.com/trixi-framework/HOHQMesh/releases/download/v$(version)/HOHQMesh-v$(version).tar.gz", "c90930b63178d6a519b6e9680bc4e4ffe1f909bcf6e97d65a956dfa4e2da3eca"),
 ]
 
 # Bash recipe for building across all platforms

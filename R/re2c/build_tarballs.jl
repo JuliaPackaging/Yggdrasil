@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "re2c"
-version_string = "3.0"
+version_string = "3.1"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/skvadrik/re2c/releases/download/$(version_string)/re2c-$(version_string).tar.xz", "b3babbbb1461e13fe22c630a40c43885efcfbbbb585830c6f4c0d791cf82ba0b")
+    ArchiveSource("https://github.com/skvadrik/re2c/releases/download/$(version_string)/re2c-$(version_string).tar.xz",
+                  "0ac299ad359e3f512b06a99397d025cfff81d3be34464ded0656f8a96676c029")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,4 +36,5 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"6")

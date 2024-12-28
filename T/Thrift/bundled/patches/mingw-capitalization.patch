@@ -1,0 +1,80 @@
+diff --git a/lib/cpp/src/thrift/transport/THttpServer.cpp b/lib/cpp/src/thrift/transport/THttpServer.cpp
+index 91a1c39af..6fc281674 100644
+--- a/lib/cpp/src/thrift/transport/THttpServer.cpp
++++ b/lib/cpp/src/thrift/transport/THttpServer.cpp
+@@ -25,7 +25,7 @@
+ #include <thrift/transport/THttpServer.h>
+ #include <thrift/transport/TSocket.h>
+ #if defined(_MSC_VER) || defined(__MINGW32__)
+-  #include <Shlwapi.h>
++  #include <shlwapi.h>
+ #endif
+ 
+ using std::string;
+diff --git a/lib/cpp/src/thrift/transport/TPipeServer.cpp b/lib/cpp/src/thrift/transport/TPipeServer.cpp
+index e4234b180..fd1aeee95 100644
+--- a/lib/cpp/src/thrift/transport/TPipeServer.cpp
++++ b/lib/cpp/src/thrift/transport/TPipeServer.cpp
+@@ -27,8 +27,8 @@
+ #ifdef _WIN32
+ #include <thrift/windows/OverlappedSubmissionThread.h>
+ #include <thrift/windows/Sync.h>
+-#include <AccCtrl.h>
+-#include <Aclapi.h>
++#include <accctrl.h>
++#include <aclapi.h>
+ #include <sddl.h>
+ #endif //_WIN32
+ 
+diff --git a/lib/cpp/src/thrift/transport/TServerSocket.cpp b/lib/cpp/src/thrift/transport/TServerSocket.cpp
+index 7cab0eefa..ffe9ed3a5 100644
+--- a/lib/cpp/src/thrift/transport/TServerSocket.cpp
++++ b/lib/cpp/src/thrift/transport/TServerSocket.cpp
+@@ -73,7 +73,7 @@
+ // adds problematic macros like min() and max(). Try to work around:
+ #define NOMINMAX
+ #define WIN32_LEAN_AND_MEAN
+-#include <Windows.h>
++#include <windows.h>
+ #undef NOMINMAX
+ #undef WIN32_LEAN_AND_MEAN
+ #endif
+diff --git a/lib/cpp/src/thrift/transport/TWebSocketServer.h b/lib/cpp/src/thrift/transport/TWebSocketServer.h
+index 7f39f36b9..2a3e076cf 100644
+--- a/lib/cpp/src/thrift/transport/TWebSocketServer.h
++++ b/lib/cpp/src/thrift/transport/TWebSocketServer.h
+@@ -31,7 +31,7 @@
+ #include <thrift/transport/TSocket.h>
+ #include <thrift/transport/THttpServer.h>
+ #if defined(_MSC_VER) || defined(__MINGW32__)
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #define THRIFT_strncasecmp(str1, str2, len) _strnicmp(str1, str2, len)
+ #define THRIFT_strcasestr(haystack, needle) StrStrIA(haystack, needle)
+ #else
+diff --git a/lib/cpp/src/thrift/windows/SocketPair.cpp b/lib/cpp/src/thrift/windows/SocketPair.cpp
+index 2650b37d4..9271b0294 100644
+--- a/lib/cpp/src/thrift/windows/SocketPair.cpp
++++ b/lib/cpp/src/thrift/windows/SocketPair.cpp
+@@ -34,7 +34,7 @@
+ #include <string.h>
+ 
+ // Win32
+-#include <WS2tcpip.h>
++#include <ws2tcpip.h>
+ 
+ int thrift_socketpair(int d, int type, int protocol, THRIFT_SOCKET sv[2]) {
+   THRIFT_UNUSED_VARIABLE(protocol);
+diff --git a/lib/cpp/src/thrift/windows/Sync.h b/lib/cpp/src/thrift/windows/Sync.h
+index a5b2ac50f..26c69c60f 100644
+--- a/lib/cpp/src/thrift/windows/Sync.h
++++ b/lib/cpp/src/thrift/windows/Sync.h
+@@ -37,7 +37,7 @@
+ #define WIN32_LEAN_AND_MEAN
+ #define _THRIFT_UNDEF_WIN32_LEAN_AND_MEAN
+ #endif
+-#include <Windows.h>
++#include <windows.h>
+ #ifdef _THRIFT_UNDEF_NOMINMAX
+ #undef NOMINMAX
+ #undef _THRIFT_UNDEF_NOMINMAX

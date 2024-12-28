@@ -1,0 +1,38 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7bc0f1b..1c03456 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -147,11 +147,6 @@ endif (CMAKE_NO_MPI)
+ 
+ message ("This is a MPI build:" ${MPI_FOUND})
+ 
+-# Enable NVTX ranges on Linux
+-if(NOT WIN32)
+-  set(NVTXRANGE_FLAG -DNVTX_RANGES)
+-endif()
+-
+ # Configuration specific nvcc flags
+ GET_FILENAME_COMPONENT(CMAKE_CXX_COMPILER_NAME "${CMAKE_CXX_COMPILER}" NAME)
+ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_NAME MATCHES "clang")
+@@ -176,8 +171,8 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS_${UPP_BUILD_NAME}})
+ # Enable device lambdas
+ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --extended-lambda)
+ 
+-# Add errors for execution space warnings and enable NVTX ranges
+-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --Werror cross-execution-space-call ${NVTXRANGE_FLAG})
++# Add errors for execution space warnings
++set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} --Werror cross-execution-space-call)
+ 
+ # Keep intermediate files
+ if (AMGX_keep_intermediate)
+@@ -289,8 +284,8 @@ IF (WIN32)
+   target_link_libraries(amgx CUDA::cublas CUDA::cusparse CUDA::cusolver)
+   target_link_libraries(amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver)
+ ELSE (WIN32)
+-  target_link_libraries(amgx CUDA::cublas CUDA::cusparse CUDA::cusolver CUDA::nvToolsExt m pthread)
+-  target_link_libraries(amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver CUDA::nvToolsExt m pthread)
++  target_link_libraries(amgx CUDA::cublas CUDA::cusparse CUDA::cusolver m pthread)
++  target_link_libraries(amgxsh CUDA::cublas CUDA::cusparse CUDA::cusolver m pthread)
+ ENDIF(WIN32)
+ 
+ if(MPI_FOUND)

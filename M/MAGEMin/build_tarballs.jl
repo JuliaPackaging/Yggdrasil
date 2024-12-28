@@ -6,12 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MAGEMin"
-version = v"1.2.7"
+version = v"1.6.2"
+
+MPItrampoline_compat_version="5.2.1"  
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "604ff09eb08ee2b1ac4eaa177b9c30639afb042b")
-        ]
+                    "8e16a98a96edd71fbe6c9c3a8842149050a89a53")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -29,8 +30,14 @@ fi
 
 CCFLAGS="-O3 -g -fPIC -std=c99"
 
-LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}"
-INC="-I${includedir}"
+if [[ "${target}" == *-apple* ]]; then 
+    # Use Accelerate for Lapack dependencies
+    LIBS="-L${libdir} -lm -framework Accelerate -lnlopt ${MPI_LIBS}"
+    INC="-I${includedir}"
+else
+    LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}"
+    INC="-I${includedir}"
+fi
 
 # Compile library:
 make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
@@ -55,14 +62,15 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=p->Sys.isfreebsd(p) && arch(p) == "aarch64")
 platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
@@ -76,7 +84,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778"))
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"))
+    Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 append!(dependencies, platform_dependencies)

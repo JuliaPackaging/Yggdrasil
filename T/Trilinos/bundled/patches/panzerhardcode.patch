@@ -1,0 +1,24 @@
+commit 84e54b62d08c080d5740335e928c30dfec045ad5
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 15:10:12 2023 +0000
+
+    Pazner: Don't hardcode `long int`
+    
+    `locallyReplicatedDefaultSpmdVectorSpace` expects an
+    `MpiComm<Teuchos::Ordinal>`, which may match `MpiComm<long int>`,
+    but it may not (on Windows it's `long long int`). Use the correct
+    type to fix this.
+
+diff --git a/packages/panzer/disc-fe/src/Panzer_ModelEvaluator_impl.hpp b/packages/panzer/disc-fe/src/Panzer_ModelEvaluator_impl.hpp
+index a7ea43fe945..86953e0be09 100644
+--- a/packages/panzer/disc-fe/src/Panzer_ModelEvaluator_impl.hpp
++++ b/packages/panzer/disc-fe/src/Panzer_ModelEvaluator_impl.hpp
+@@ -2472,7 +2472,7 @@ createScalarParameter(const Teuchos::Array<std::string> & in_names,
+   // build initial condition vector
+   paramObj->space =
+     Thyra::locallyReplicatedDefaultSpmdVectorSpace<Scalar>(
+-      rcp(new Teuchos::MpiComm<long int>(lof_->getComm().getRawMpiComm())),paramObj->names->size());
++      rcp(new Teuchos::MpiComm<Teuchos::Ordinal>(lof_->getComm().getRawMpiComm())),paramObj->names->size());
+ 
+   // fill vector with parameter values
+   Teuchos::ArrayRCP<Scalar> data;

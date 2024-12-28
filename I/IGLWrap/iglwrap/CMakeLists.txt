@@ -3,19 +3,10 @@ project(iglwrap)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# Boost
-set(Boost_USE_STATIC_LIBS OFF)
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CROSSCOMPILING TRUE)
-set(CGAL_requires_Boost_Thread TRUE)
-set(CGAL_requires_Boost_Thread_IS_SET TRUE)
-find_package(Boost 1.71 COMPONENTS thread REQUIRED)
-#  include(FindBoost)
-
 # Libigl
 option(LIBIGL_WITH_OPENGL            "Use OpenGL"         OFF)
 option(LIBIGL_WITH_OPENGL_GLFW       "Use GLFW"           OFF)
-option(LIBIGL_WITH_CGAL "Use CGAL" ON)
+option(LIBIGL_COPYLEFT_CGAL          "Use CGAL"           ON)
 #  option(BUILD_SHARED_LIBRARIES "Build shared libs" ON)
 include(libigl)
 #  set(CMAKE_BUILD_TYPE Debug)
@@ -29,6 +20,5 @@ include(libigl)
 #  file(GLOB SRC_FILES *.cpp)
 add_library(${PROJECT_NAME} SHARED iglwrap.cpp)
 #  set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER iglwrap.h)
-target_link_libraries(${PROJECT_NAME} PUBLIC
-	 igl::core igl::cgal ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC igl::core igl_copyleft::cgal)
 install(TARGETS ${PROJECT_NAME} LIBRARY)

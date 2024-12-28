@@ -7,14 +7,13 @@ version = v"1.2.2"
 
 # Collection of sources required to build scrnsaverproto
 sources = [
-    "https://www.x.org/archive/individual/proto/scrnsaverproto-$(version).tar.bz2" =>
-    "8bb70a8da164930cceaeb4c74180291660533ad3cc45377b30a795d1b85bcd65",
+    ArchiveSource("https://www.x.org/archive/individual/proto/scrnsaverproto-$(version).tar.bz2",
+                  "8bb70a8da164930cceaeb4c74180291660533ad3cc45377b30a795d1b85bcd65"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/scrnsaverproto-*/
-CPPFLAGS="-I${prefix}/include"
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
@@ -24,13 +23,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = [AnyPlatform()]
 
 products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

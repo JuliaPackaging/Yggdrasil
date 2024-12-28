@@ -3,16 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "Deno"
-version = v"1.28.1"
+version = v"2.0.0"
 
 release_url = "https://github.com/denoland/deno/releases/download/v$version"
+
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("$release_url/deno-x86_64-unknown-linux-gnu.zip", "cf54d2edd8bb2619dd10fa3b93d4f8e483ca8821ab3854c491770e555a6668cf"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$release_url/deno-x86_64-apple-darwin.zip", "53431f110aa28e83c46278802cc81661035a640c3e69084c7593fb397277b535"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$release_url/deno-aarch64-apple-darwin.zip", "a7655ca86abf854bc2230798ae57cf1b13492aa144601f9fb127ccce876dea03"; unpack_target="aarch64-apple-darwin20"),
-    ArchiveSource("$release_url/deno-x86_64-pc-windows-msvc.zip", "779a5a417fa2e5d9cb0e8258b6eeadf9eb04909d8e311e86ff621bcd3deb72c9"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$release_url/deno_src.tar.gz", "1f5c0ee6c805508316f065f1540ca95f887d040d531c4bba688c656bd3bd6abd"),
+    ArchiveSource("$release_url/deno-x86_64-unknown-linux-gnu.zip", "d201b812bbc6cc2565012e52c2a9cb9965d768afd28bbc2ba29ae667bf7250a6"; unpack_target="x86_64-linux-gnu"),
+    ArchiveSource("$release_url/deno-aarch64-unknown-linux-gnu.zip", "a76ada742b4e7670b1c50783cd01be200a38ae2439be583dd07c8069d387f99e"; unpack_target="aarch64-linux-gnu"),
+    ArchiveSource("$release_url/deno-x86_64-apple-darwin.zip", "b74d019d948e50e3eebde16d9c67d5633f46636af04adbb7fca1b5a37232dd80"; unpack_target="x86_64-apple-darwin14"),
+    ArchiveSource("$release_url/deno-aarch64-apple-darwin.zip", "ad122b1c8c823378469fb4972c0cc6dafc01353dfa5c7303d199bdc1dee9d5e9"; unpack_target="aarch64-apple-darwin20"),
+    ArchiveSource("$release_url/deno-x86_64-pc-windows-msvc.zip", "34ea525eeaae3ef2eb72e5f7c237fbf844fa900e6b8e666c5db2553f56f9d382"; unpack_target="x86_64-w64-mingw32"),
+    ArchiveSource("$release_url/deno_src.tar.gz", "7456e2340d363a50a90cb30695a0c0c930969db0bbd0996eb62fd1dcb9637546"),
 ]
 
 # Bash recipe for building across all platforms
@@ -27,10 +29,11 @@ install -m 755 "${target}/deno${exeext}" "${bindir}"
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
+    Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
     Platform("x86_64", "windows"),
-] 
+]
 
 # The products that we will ensure are always built
 products = [

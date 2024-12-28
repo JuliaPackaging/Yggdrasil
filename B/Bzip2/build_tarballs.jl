@@ -20,8 +20,8 @@ sed -i 's/sys\\stat\.h/sys\/stat\.h/g' bzip2.c
 # Override stubborn makevars
 CFLAGS="-Wall -Winline -O2 -g -D_FILE_OFFSET_BITS=64 -fPIC"
 OBJS="blocksort.o huffman.o crctable.o randtable.o compress.o decompress.o bzlib.o"
-make CFLAGS="${CFLAGS}" -j${nproc} ${OBJS}
-make CFLAGS="${CFLAGS}" PREFIX=${prefix} install
+make CC=${CC} CFLAGS="${CFLAGS}" -j${nproc} ${OBJS}
+make CC=${CC} CFLAGS="${CFLAGS}" PREFIX=${prefix} install
 
 # Build dynamic library
 if [[ "${target}" == *-darwin* ]]; then
@@ -40,7 +40,7 @@ else
     ln -s "libbz2.so.${VERSION}" libbz2.so
 fi
 mkdir -p ${libdir}
-mv libbz2*.${dlext}* ${libdir}/.
+mv -v libbz2*.${dlext}* ${libdir}/.
 
 # Add pkg-config file
 mkdir -p ${prefix}/lib/pkgconfig
@@ -63,7 +63,7 @@ EOF
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -75,3 +75,5 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build trigger: 2

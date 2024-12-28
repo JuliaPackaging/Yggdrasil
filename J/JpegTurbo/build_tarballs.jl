@@ -1,22 +1,23 @@
 using BinaryBuilder
 
 name = "JpegTurbo"
-version = v"2.1.2"
+version = v"3.1.0"
 
 # Collection of sources required to build Ogg
 sources = [
-    ArchiveSource("https://github.com/libjpeg-turbo/libjpeg-turbo/archive/$(version).tar.gz",
-                  "e7fdc8a255c45bc8fbd9aa11c1a49c23092fcd7379296aeaeb14d3343a3d1bed"),
+    # The release notes say that this is the official source tarball for this release
+    ArchiveSource("https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$(version)/libjpeg-turbo-$(version).tar.gz",
+                  "9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libjpeg-turbo-*/
+cd $WORKSPACE/srcdir/libjpeg-turbo*
 
 mkdir build
 cd build
 
-cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"
+cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 make -j${nproc}
 make install
 """
@@ -42,3 +43,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build trigger: 1

@@ -2,17 +2,17 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1200.200"
-gap_lib_version = v"400.1201.200"
+gap_version = v"400.1400.0"
+gap_lib_version = v"400.1400.0"
 name = "orb"
-upstream_version = "4.9.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "4.9.1" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/orb/releases/download/v$(upstream_version)/orb-$(upstream_version).tar.gz",
-                  "a1f81707743cbbf5eddecf0b195293b308987f17c7795690c65b5e4a92dfbc1f"),
+                  "747b963f1125b51244b279ed090f2a15d480d88beb4782b1ae0307fbc3daed8a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -40,3 +40,5 @@ products = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
 
+
+# rebuild trigger: 1

@@ -3,20 +3,20 @@
 using BinaryBuilder
 
 name = "libwebp"
-version = v"1.2.0"
+version = v"1.4.0"
 
 # Collection of sources required to build libwebp
 sources = [
-    ArchiveSource("https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$(version).tar.gz",
-                  "2fc8bbde9f97f2ab403c0224fb9ca62b2e6852cbc519e91ceaa7c153ffd88a0c"),
+    GitSource("https://chromium.googlesource.com/webm/libwebp",
+              "a443170fc0ebdfc3abbf89ac81f35e7eb656a3da"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libwebp-*/
-export CFLAGS="-std=c99"
+cd $WORKSPACE/srcdir/libwebp
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-swap-16bit-csp \
     --enable-experimental \
@@ -28,7 +28,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -54,4 +54,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")

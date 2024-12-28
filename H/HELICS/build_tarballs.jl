@@ -13,12 +13,14 @@
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Build count: 1
 using BinaryBuilder
 
-HELICS_VERSION = v"3.4.0"
-HELICS_SHA = "88877a3767de9aed9f1cddea7b6455a2be060a00b959bb7e94994d1fd20878f8"
+HELICS_VERSION = v"3.6.0"
+HELICS_SHA = "e111ac5d92e808f27e330afd1f8b8ca4d86adf6ccd74e3280f2d40fb3e0e2ce9"
 
 sources = [
+    DirectorySource("./bundled"),
     ArchiveSource("https://github.com/GMLC-TDC/HELICS/releases/download/v$HELICS_VERSION/Helics-v$HELICS_VERSION-source.tar.gz",
                   "$HELICS_SHA"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
@@ -36,7 +38,12 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
+# Need newer CMake than provided by the default image (currently requires at least 3.22)
+apk del cmake
+
 cd $WORKSPACE/srcdir
+
+atomic_patch -p1 $WORKSPACE/srcdir/patches/link-atomic.patch
 
 cmake -B build \
    -DCMAKE_FIND_ROOT_PATH="${prefix}" \
@@ -64,6 +71,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 dependencies = [
     Dependency("ZeroMQ_jll"),
     BuildDependency("boost_jll"),
+    HostBuildDependency("CMake_jll"),
 ]
 
 # Build 'em!

@@ -1,0 +1,67 @@
+commit 223c95d96348f60ad3f245de613db7efc8a0cb22
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sat Sep 23 17:36:54 2023 +0000
+
+    Try to fix stratimikos build without tpetra
+
+diff --git a/packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolveFactory_def.hpp b/packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolveFactory_def.hpp
+index bd6f5689cad..5b503b32b69 100644
+--- a/packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolveFactory_def.hpp
++++ b/packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolveFactory_def.hpp
+@@ -63,7 +63,9 @@
+ #include "BelosFixedPointSolMgr.hpp"
+ #include "BelosThyraAdapter.hpp"
+ 
++#ifdef HAVE_STRATIMIKOS_TPETRA
+ #include "Thyra_BelosTpetrasSolverAdapter.hpp"
++#endif
+ 
+ #include "Teuchos_VerboseObjectParameterListHelpers.hpp"
+ #include "Teuchos_StandardParameterEntryValidators.hpp"
+@@ -572,6 +574,7 @@ Teuchos::ValidatorXMLConverterDB::addConverter(
+         *mgr.getValidParameters()
+         );
+     }
++#ifdef HAVE_STRATIMIKOS_TPETRA
+     {
+       Thyra::BelosTpetraGmres<Scalar,MV_t,LO_t> mgr;
+       solverTypesSL.sublist(TpetraGmres_name).setParameters(
+@@ -596,6 +599,7 @@ Teuchos::ValidatorXMLConverterDB::addConverter(
+         *mgr.getValidParameters()
+         );
+     }
++#endif
+   }
+   return validParamList;
+ }
+@@ -994,6 +998,7 @@ void BelosLinearOpWithSolveFactory<Scalar>::initializeOpImpl(
+       }
+       break;
+     }
++#ifdef HAVE_STRATIMIKOS_TPETRA
+     case SOLVER_TYPE_TPETRA_GMRES:
+     {
+       // Get the PL
+@@ -1054,6 +1059,7 @@ void BelosLinearOpWithSolveFactory<Scalar>::initializeOpImpl(
+       iterativeSolver->setParameters( solverPL );
+       break;
+     }
++#endif
+ 
+     default:
+     {
+diff --git a/packages/stratimikos/adapters/belos/src/Thyra_BelosTpetrasSolverAdapter.hpp b/packages/stratimikos/adapters/belos/src/tpetra/Thyra_BelosTpetrasSolverAdapter.hpp
+similarity index 100%
+rename from packages/stratimikos/adapters/belos/src/Thyra_BelosTpetrasSolverAdapter.hpp
+rename to packages/stratimikos/adapters/belos/src/tpetra/Thyra_BelosTpetrasSolverAdapter.hpp
+diff --git a/packages/stratimikos/cmake/Stratimikos_InternalConfig.h.in b/packages/stratimikos/cmake/Stratimikos_InternalConfig.h.in
+index fadba36ca21..2f58268140c 100644
+--- a/packages/stratimikos/cmake/Stratimikos_InternalConfig.h.in
++++ b/packages/stratimikos/cmake/Stratimikos_InternalConfig.h.in
+@@ -17,4 +17,6 @@
+ 
+ #cmakedefine HAVE_STRATIMIKOS_ML
+ 
++#cmakedefine HAVE_STRATIMIKOS_TPETRA
++
+ @STRATIMIKOS_TEUCHOS_TIME_MONITOR_DECLARATIONS@

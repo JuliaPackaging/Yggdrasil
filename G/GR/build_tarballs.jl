@@ -3,22 +3,20 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.71.5"
+version = v"0.73.10"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "8a02b5bc66301c1d31726f1bf946063435934911"),
+    GitSource("https://github.com/sciapp/gr.git", "9e61244b6ee7f64ea724de0b7d10685feecf5109"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "98995772c2b25b3157e13c142ac43f8eb86e3ab53e073f0f1f7ada69eba4751a", "gr.js")
+               "41ee77c5872b5273487b02a1ec2d2012a48808ff1f5b9ddcf4aa5958660fb257", "gr.js"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gr
-
-if test -f "$prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake"; then
-    sed -i 's/_qt5gui_find_extra_libs.*AGL.framework.*//' $prefix/lib/cmake/Qt5Gui/Qt5GuiConfigExtras.cmake
-fi
 
 update_configure_scripts
 
@@ -26,9 +24,15 @@ make -C 3rdparty/qhull -j${nproc}
 
 if [[ $target == *"mingw"* ]]; then
     winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
-    tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-5.dll
+    tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-6.dll
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
+fi
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 
 if [[ "${target}" == *apple* ]]; then
@@ -51,6 +55,7 @@ install_license $WORKSPACE/srcdir/gr/LICENSE.md
 if [[ $target == *"apple-darwin"* ]]; then
     cd ${bindir}
     ln -s ../Applications/gksqt.app/Contents/MacOS/gksqt ./
+    ln -s ../Applications/grplot.app/Contents/MacOS/grplot ./
     ln -s ../Applications/GKSTerm.app/Contents/MacOS/GKSTerm ./
 fi
 """
@@ -78,6 +83,7 @@ products = [
     LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
     LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
+    ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -86,19 +92,20 @@ dependencies = [
     Dependency("Cairo_jll"; compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    Dependency("Libtiff_jll"; compat="4.7.0"),
     Dependency("Pixman_jll"),
-#    Dependency("Qhull_jll"),
-    Dependency("Qt5Base_jll"),
+    HostBuildDependency("Qt6Base_jll"),
+    Dependency("Qt6Base_jll"; compat="~6.7.1"), # Never allow upgrading more than the minor version without recompilation
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC version 7 because of ffmpeg, but building against Qt requires v8 on Windows.
+# GCC version 10 because of Qt6.7
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"8", julia_compat="1.6")
+               preferred_gcc_version = v"10", julia_compat="1.6")

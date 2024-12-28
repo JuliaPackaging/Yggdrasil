@@ -1,6 +1,6 @@
 # To ensure a build, it isn't sufficient to modify highs_common.jl.
 # You also need to update a line in this file:
-#     Last updated: 2022-12-07
+#     Last updated: 2024-11-14
 
 include("../highs_common.jl")
 
@@ -15,6 +15,8 @@ platforms = expand_cxxstring_abis(platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("Zlib_jll"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
 build_tarballs(

@@ -4,11 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
-version = v"4.1.3"
+# Note that OpenMPI 5 is ABI compatible with OpenMPI 4
+version = v"5.0.6"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "9c0fd1f78fc90ca9b69ae4ab704687d5544220005ccd7678bf58cc13135e67e0"),
-    DirectorySource("./bundled"),
+                  "1d6dd41f6b53c00db23b40e56733d16a996fa743957ef8add8e117feffd92689"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
@@ -19,12 +20,23 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/openmpi-*
 
-atomic_patch -p1 ../patches/0001-ompi-mca-sharedfp-sm-Include-missing-sys-stat.h-in-s.patch
+if [[ "${target}" == aarch64-apple-* ]]; then
+    # Build internal `libevent` without `-Wl,--no-undefined`
+    # (taken from `L/libevent/build_tarballs.jl`)
 
-if [[ "${target}" == *-freebsd* ]]; then
-    # Help compiler find `complib/cl_types.h`.
-    export CPPFLAGS="-I/opt/${target}/${target}/sys-root/include/infiniband"
+    # Expand libevent tarball so that we can patch it
+    pushd 3rd-party
+    tar xzf libevent-2.1.12-stable-ompi.tar.gz
+    cd libevent-2.1.12-stable-ompi
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/build_with_no_undefined.patch
+    popd
 fi
+
+# Autotools doesn't add `${includedir}` as an include directory on some platforms
+export CPPFLAGS="-I${includedir}"
+
+# The configure scripts doesn't link against `libdl` by itself on many platforms
+export LIBS='-ldl'
 
 # We use `--enable-script-wrapper-compilers` to turn the compiler
 # wrappers (`mpicc` etc.) into scripts instead of binaries. As scripts,
@@ -32,15 +44,20 @@ fi
 # infer the MPI options. Otherwise, the MPI options need to be
 # specified manually for OpenMPI to work.
 
-./configure --prefix=${prefix} \
+./configure \
     --build=${MACHTYPE} \
-    --host=${target} \
-    --enable-shared=yes \
-    --enable-static=no \
-    --without-cs-fs \
     --enable-mpi-fortran=usempif08 \
     --enable-script-wrapper-compilers \
-    --with-cross=${WORKSPACE}/srcdir/${target}
+    --enable-shared=yes \
+    --enable-static=no \
+    --host=${target} \
+    --prefix=${prefix} \
+    --docdir=/tmp \
+    --infodir=/tmp \
+    --mandir=/tmp \
+    --with-cross=${WORKSPACE}/srcdir/${target} \
+    --with-libevent=internal \
+    --without-cs-fs
 
 # Build the library
 make -j${nproc}
@@ -55,15 +72,16 @@ make install
 install_license $WORKSPACE/srcdir/openmpi*/LICENSE
 """
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
-"""
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-platforms = filter(p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc"), supported_platforms())
+platforms = supported_platforms()
+# OpenMPI 5 supports only 64-bit systems
+filter!(p -> nbits(p) == 64, platforms)
+# Disable FreeBSD, it is not supported by PMIx (which we need)
+filter!(!Sys.isfreebsd, platforms)
+# Disable Windows, we do not know how to cross-compile
+filter!(!Sys.iswindows, platforms)
+
 platforms = expand_gfortran_versions(platforms)
 
 # Add `mpi+openmpi` platform tag
@@ -75,10 +93,23 @@ products = [
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
+# Use an internal `libevent` to prevent hangs in MPI_Init.
+# Also use internal `PMix` and `prrte` packages since they might otherwise use an external `libevent`.
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    Dependency("Hwloc_jll"; compat="2.5.0"),
+    # Dependency("PMIx_jll"),     # compat="4.2.0"
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    # Dependency("libevent_jll"), # compat="2.0.21"
+    # Dependency("prrte_jll"),    # compat="3.0.0"
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+"""
 
 init_block = raw"""
 ENV["OPAL_PREFIX"] = artifact_dir
@@ -86,4 +117,4 @@ ENV["OPAL_PREFIX"] = artifact_dir
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, init_block, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, init_block, julia_compat="1.6", preferred_gcc_version=v"5", clang_use_lld=false)

@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "MiniZinc"
 
-version = v"2.6.2"
+version = v"2.8.5"
 
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "a56602765b4294b796c063664733b28f5a663af7",
+        "2fdef7b40921981f3f9ea82017e9d84937ddab77",
     ),
     DirectorySource("./bundled"),
 ]
@@ -22,24 +22,16 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
 # Patch for MinGW toolchain
 find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
-mkdir -p build
-cd build
-
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+# FAST_BUILD is needed when linking HiGHS, because that's what
+# we used when compiling HiGHS_jll.
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    ..
-
-if [[ "${target}" == *-linux-* ]]; then
-        make -j ${nproc}
-else
-    if [[ "${target}" == *-mingw* ]]; then
-        cmake --build . --config Release
-    else
-        cmake --build . --config Release --parallel
-    fi
-fi
-make install
+    -DCMAKE_CXX_FLAGS="-I${includedir}/highs" \
+    -DFAST_BUILD=ON
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 products = [
@@ -48,13 +40,15 @@ products = [
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-
-# TODO(odow): fix build issues on Windows
-platforms = filter(!Sys.iswindows, platforms)
+platforms = expand_cxxstring_abis(
+    supported_platforms(; exclude = p -> arch(p) == "i686" && Sys.iswindows(p)),
+)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    # Use an exact version for HiGHS. @odow has observed segfaults with
+    # HiGHS_jll v1.5.3 when libminizinc compiled with v1.5.1.
+    Dependency("HiGHS_jll"; compat="=1.7.1"),
 ]
 
 build_tarballs(

@@ -1,0 +1,19 @@
+commit 7893f3bbf48f0e5e66fd8e31032c87a9714a386f
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 15:13:07 2023 +0000
+
+    stk: Correct type name
+
+diff --git a/packages/stk/stk_mesh/stk_mesh/baseImpl/MeshImplUtils.cpp b/packages/stk/stk_mesh/stk_mesh/baseImpl/MeshImplUtils.cpp
+index f4e2c55a94f..094d3941bac 100644
+--- a/packages/stk/stk_mesh/stk_mesh/baseImpl/MeshImplUtils.cpp
++++ b/packages/stk/stk_mesh/stk_mesh/baseImpl/MeshImplUtils.cpp
+@@ -265,7 +265,7 @@ void delete_entities_and_upward_relations(stk::mesh::BulkData &bulkData, const s
+ void connectUpwardEntityToEntity(stk::mesh::BulkData& mesh, stk::mesh::Entity upward_entity,
+         stk::mesh::Entity entity, const stk::mesh::Entity* nodes)
+ {
+-    uint num_nodes = mesh.num_nodes(entity);
++    unsigned num_nodes = mesh.num_nodes(entity);
+     EntityRank entity_rank = mesh.entity_rank(entity);
+     stk::topology baseEntityTopology = mesh.bucket(entity).topology();
+ 

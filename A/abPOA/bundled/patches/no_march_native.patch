@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b570fae..51673ab 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -10,8 +10,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+ 
+ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+ 
+-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native") # SIMD
+-
+ # build abPOA as a static library by default
+ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build all libraries as shared")
+ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")

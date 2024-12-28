@@ -3,14 +3,14 @@
 using BinaryBuilder
 
 name = "Readline"
-version = v"8.1.1"
+version = v"8.2.1"
 
 # Collection of sources required to build Readline
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/readline/readline-$(version.major).$(version.minor).tar.gz",
-                  "f8ceb4ee131e3232226a17f51b164afc46cd0b9e6cef344be87c65962cb82b02"),
-    FileSource("https://ftp.gnu.org/gnu/readline/readline-$(version.major).$(version.minor)-patches/readline81-001",
-               "682a465a68633650565c43d59f0b8cdf149c13a874682d3c20cb4af6709b9144"),
+                  "3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35"),
+    FileSource("https://ftp.gnu.org/gnu/readline/readline-$(version.major).$(version.minor)-patches/readline82-001",
+               "bbf97f1ec40a929edab5aa81998c1e2ef435436c597754916e6a5868f273aff7"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,9 +18,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/readline-*/
 
-atomic_patch -p0 ${WORKSPACE}/srcdir/readline81-001
-# Patch from https://aur.archlinux.org/cgit/aur.git/tree/fix_signal.diff?h=mingw-w64-readline
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-fix_signal.patch
+atomic_patch -p0 ${WORKSPACE}/srcdir/readline82-001
+# Patch from https://aur.archlinux.org/cgit/aur.git/tree/readline-1-fixes.patch?h=mingw-w64-readline
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/readline-1-fixes.patch
 
 export CPPFLAGS="-I${includedir}"
 if [[ "${target}" == *-mingw* ]]; then
@@ -39,7 +39,7 @@ install_license COPYING
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[

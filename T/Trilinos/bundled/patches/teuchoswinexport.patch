@@ -1,0 +1,28 @@
+commit 2fba7f7ad20043e37d1c5eac622001e0f03cd822
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Thu Sep 21 20:04:29 2023 +0000
+
+    teuchos: Add missing export annotation for windows
+    
+    The `error_out` function can be referenced from other shared objects
+    (likely via instantiations of the class defined in the same header).
+    As such, it must be exported to avoid link errors on Windows. For
+    example, I see the following in a windows build of tpetra:
+    ```
+    /opt/x86_64-w64-mingw32/bin/../lib/gcc/x86_64-w64-mingw32/9.1.0/../../../../x86_64-w64-mingw32/bin/ld: CMakeFiles/tpetra.dir/objects.a(Tpetra_Details_DeepCopyTeuchosTimerInjection.cpp.obj):Tpetra_Details_DeepCopyTeuchosTimerInjection.cpp:(.text+0x279): undefined reference to `Teuchos::error_out(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool)'
+    ```
+    This PR fixes this by adding the appropriate export annotation.
+
+diff --git a/packages/teuchos/comm/src/Teuchos_StackedTimer.hpp b/packages/teuchos/comm/src/Teuchos_StackedTimer.hpp
+index d228f2b5545..981b01af9b7 100644
+--- a/packages/teuchos/comm/src/Teuchos_StackedTimer.hpp
++++ b/packages/teuchos/comm/src/Teuchos_StackedTimer.hpp
+@@ -69,7 +69,7 @@ extern void popRegion ();
+ namespace Teuchos {
+ 
+ //! Error reporting function for stacked timer.
+-void error_out(const std::string& msg, const bool fail_all = false);
++TEUCHOSCOMM_LIB_DLL_EXPORT void error_out(const std::string& msg, const bool fail_all = false);
+ 
+ /**
+  * \brief the basic timer used elsewhere, uses MPI_Wtime for time

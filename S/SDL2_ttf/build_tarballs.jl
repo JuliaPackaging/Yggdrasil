@@ -54,7 +54,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Glib_jll"; compat="2.68.1"),
     Dependency("Graphite2_jll"),
     # The following libraries aren't needed for the build, but libSDL2_ttf is

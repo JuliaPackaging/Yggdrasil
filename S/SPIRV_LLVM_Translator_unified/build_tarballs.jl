@@ -6,25 +6,28 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "SPIRV_LLVM_Translator_unified"
-repo = "https://github.com/maleadt/SPIRV-LLVM-Translator.git"
-version = v"0.2"
+repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
+version = v"0.7"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"11.0.1" => [GitSource(repo, "4c46e06d7b8833af95233ab9c1ad43220bf63684")],
-    v"12.0.1" => [GitSource(repo, "3227a34ccc21f8e456d5991b42e161eb7d15578d")],
-    v"13.0.1" => [GitSource(repo, "5d69690864d8e7d5bf221284a37c57f016ce7d98")],
-    v"14.0.2" => [GitSource(repo, "a16f3db323862cc49d31135697309a3188a024a8")],
+    v"15.0.7" => [GitSource(repo, "4b96335944e70032f4dfa4807d9c5683eaabdae5")],
+    v"16.0.6" => [GitSource(repo, "b786f8c31eead5788ac8ca33ccedf29a4a7faedf")],
+    v"17.0.6" => [GitSource(repo, "27bbf0fa898b6945dbd097dfd1e87b4f4becb19a")],
+    v"18.1.7" => [GitSource(repo, "7515735e387c65cbb7821a78f122cfd89115a779")],
+    v"19.1.1" => [GitSource(repo, "90a976491d3847657396456e0e94d7dc48d35996")],
 )
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+filter!(p -> libc(p) != "musl", platforms) # missing LLVM_full+asserts
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # missing LLVM_full
 
 # Bash recipe for building across all platforms
-script = raw"""
+get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator
 install_license LICENSE.TXT
 
@@ -45,6 +48,12 @@ CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
 
 # Build the library
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+
+# Use our LLVM version
+CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * raw""")
+
+# Suppress certain errors
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion")
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} llvm-spirv install
@@ -84,6 +93,7 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
             dependencies,
             sources=sources[llvm_version],
             platforms=[augmented_platform],
+            script=get_script(llvm_version)
         ))
     end
 end
@@ -97,8 +107,8 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, script,
+                   name, version, build.sources, build.script,
                    build.platforms, products, build.dependencies;
-                   preferred_gcc_version=v"7", julia_compat="1.6",
+                   preferred_gcc_version=v"10", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end

@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Hwloc"
-version = v"2.8.0"
+version = v"2.11.2"
 
 # Collection of sources required to build hwloc
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/hwloc/v$(version.major).$(version.minor)/hwloc-$(version).tar.bz2",
-                  "348a72fcd48c32a823ee1da149ae992203e7ad033549e64aed6ea6eeb01f42c1")
+                  "f7f88fecae067100f1a1a915b658add0f4f71561259482910a69baea22fe8409")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,3 +35,5 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# bump bump

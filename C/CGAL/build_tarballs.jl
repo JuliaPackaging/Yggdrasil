@@ -3,32 +3,27 @@
 using BinaryBuilder
 
 name     = "CGAL"
-rversion = "5.5"
-version  = VersionNumber(rversion)
+version  = v"5.5.2"
 
 # Collection of sources required to build CGAL
 sources = [
-    ArchiveSource("https://github.com/CGAL/cgal/releases/download/v$rversion/CGAL-$rversion.tar.xz",
-                  "98ac395ca08aacf38b7a8170a822b650aedf10355df41dd0e4bfb238408e08a6"),
+    GitSource("https://github.com/CGAL/cgal.git",
+                  "8a3184a1a82c3e7d737656bfa4950471c369a4b9"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-## pre-build setup
-# exit on error
-set -eu
-
 cmake -B build \
   `# cmake specific` \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_FIND_ROOT_PATH=$prefix \
   -DCMAKE_INSTALL_PREFIX=$prefix \
   -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
-  CGAL-*/
+  cgal/
 
 ## and away we go..
 cmake --build build --config Release --target install -- -j$nproc
-install_license CGAL-*/LICENSE*
+install_license cgal/LICENSE*
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,8 +39,8 @@ products = Product[]
 dependencies = [
     # Essential dependencies
     Dependency("boost_jll"; compat="=1.76.0"),
-    Dependency("GMP_jll"; compat="6.2.0"),
-    Dependency("MPFR_jll"; compat="4.1.1"),
+    Dependency("GMP_jll"; compat="6.2.1"),
+    Dependency("MPFR_jll"; compat="4.1.0"),
 ]
 
 # Build the tarballs.

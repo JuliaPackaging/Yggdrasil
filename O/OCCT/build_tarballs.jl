@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "OCCT"
-version = v"7.6.2"
+version = v"7.7.2"
 
 # Collection of sources required to build Open CASCADE Technology (OCCT)
 sources = [
     GitSource("https://github.com/Open-Cascade-SAS/OCCT.git",
-              "bb368e271e24f63078129283148ce83db6b9670a"), # V7_6_2 @ April 29, 2022
+              "cec1ecd0c9f3b3d2572c47035d11949e8dfa85e2"), # V7_7_2 @ Aug 11, 2023
     DirectorySource("./bundled")
 ]
 
@@ -97,7 +97,7 @@ x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXext_jll"; platforms=x11_platforms),

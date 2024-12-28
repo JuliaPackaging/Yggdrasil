@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "bitshuffle"
-version = v"0.4.2"
+version = v"0.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/kiyo-masui/bitshuffle.git", "a60471d37a8cbbd8265dc8cfa83a9320abdcb590"),
+    GitSource("https://github.com/kiyo-masui/bitshuffle.git", "b9a1546133959298c56eee686932dbb18ff80f7a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Lz4_jll"),
-    Dependency("Zstd_jll")
+    Dependency("Zstd_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

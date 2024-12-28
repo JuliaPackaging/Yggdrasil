@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Elfutils"
-version = v"0.182"
+version = v"0.189"
 
 # Collection of sources required to build Elfutils
 sources = [
     ArchiveSource("https://sourceware.org/elfutils/ftp/$(version.major).$(version.minor)/elfutils-$(version.major).$(version.minor).tar.bz2",
-                  "ecc406914edf335f0b7fc084ebe6c460c4d6d5175bfdd6688c1c78d9146b8858"),
+                  "39bd8f1a338e2b7cd4abc3ff11a0eddc6e690f69578a57478d8179b4148708c8"),
     DirectorySource("./bundled"),
 ]
 
@@ -22,7 +22,8 @@ if [[ ${target} = *-musl* ]] ; then
     cp $WORKSPACE/srcdir/error.h src/
     cp $WORKSPACE/srcdir/error.h lib/
 
-    apk add bsd-compat-headers
+    # install missing headers and `autopoint` 
+    apk add bsd-compat-headers gettext-dev 
     # /usr/include isn't in search path of cross-cc, so copy cdefs.h
     mkdir -p $prefix/include/sys
     # Skip warning macro at top of file
@@ -46,7 +47,6 @@ install_license COPYING*
 # Only build for Linux
 platforms = supported_platforms()
 filter!(Sys.islinux, platforms)
-filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -81,7 +81,7 @@ dependencies = [
     Dependency("XZ_jll"),
     Dependency("argp_standalone_jll"),
     Dependency("fts_jll"),
-    Dependency("obstack_jll"; compat="~1.2.2"),
+    Dependency("obstack_jll"; compat="~1.2.3"),
 ]
 
 

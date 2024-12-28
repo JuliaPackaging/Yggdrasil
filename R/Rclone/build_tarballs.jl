@@ -3,18 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "Rclone"
-version = v"1.60.1"
+version = v"1.68.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rclone/rclone/releases/download/v$(version)/rclone-v$(version).tar.gz",
-                  "51b8d39b8fd419868d91ed5d0d0a22fb80d943f3fd3bab645c5498a3ad8b3dd9")
+                  "2a16f040e824d4ba4ec9c1c395d891af7aa7bf08fd5251b8e28d017157cee925"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd rclone*
+
+# Don't run any locally built executables when building for Windows (this doesn't work when cross-compiling).
+# We are losing "version information and icon resources" in our `rclone` executable.
+atomic_patch -p0 ../patches/make.patch
 
 make
 
@@ -25,7 +30,7 @@ install -t ${bindir} ${GOPATH}/bin/rclone${exeext}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

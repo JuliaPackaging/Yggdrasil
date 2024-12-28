@@ -1,0 +1,20 @@
+builddir=/workspace/srcdir/oscarnumber/build
+buildroot=/workspace/srcdir/oscarnumber/build
+buildmode=Opt
+buildtop=${buildroot}/${buildmode}
+build.file=build.ninja
+config.file=${buildroot}/config.ninja
+root.config.file=/workspace/destdir/lib/polymake/config.ninja
+include /workspace/destdir/lib/polymake/config.ninja
+include ${config.file}
+PERL=/usr/bin/perl
+include ${root}/support/rules.ninja
+CmodeFLAGS=${COptFLAGS}
+CexternModeFLAGS=${CexternOptFLAGS}
+CmodeCACHE=${COptCACHE}
+LDmodeFLAGS=${LDOptFLAGS}
+
+include ${buildroot}/targets.ninja
+
+# should rerun the target generation if any of the included files changes
+build ${build.file}: phony | /workspace/destdir/lib/polymake/config.ninja ${buildroot}/targets.ninja

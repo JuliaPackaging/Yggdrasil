@@ -2,11 +2,12 @@ using BinaryBuilder
 
 # Collection of sources required to build Libiconv
 name = "Libiconv"
-version = v"1.16.1" # <-- this is a lie, we're building v1.16, but we need to bump version to build for julia v1.6
+version_string = "1.17"
+version = VersionNumber(version_string)
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version.major).$(version.minor).tar.gz",
-               "e6a1b1b589654277ee790cce3734f07876ac4ccfaecbee8afa0b649cf529cc04"),
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$(version_string).tar.gz",
+               "8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +20,7 @@ make install
 # Add pkg-config file
 mkdir -p "${prefix}/lib/pkgconfig"
 cat << EOF > "${prefix}/lib/pkgconfig/iconv.pc"
-prefix=${prefix}
+prefix=\${pcfiledir}/../..
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/$(basename ${libdir})
 sharedlibdir=\${libdir}
@@ -38,7 +39,7 @@ EOF
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

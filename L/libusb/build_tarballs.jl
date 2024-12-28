@@ -3,18 +3,17 @@
 using BinaryBuilder
 
 name = "libusb"
-version = v"1.0.26"
+version = v"1.0.27"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/libusb/libusb.git",
-              "4239bc3a50014b8e6a5a2a59df1fff3b7469543b"),
+              "d52e355daa09f17ce64819122cb067b8a2ee0d4b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libusb/
+cd $WORKSPACE/srcdir/libusb/
 ./bootstrap.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-udev
 make -j${nproc}
@@ -37,4 +36,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

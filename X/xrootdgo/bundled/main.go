@@ -5,9 +5,9 @@ import "C"
 import (
     "github.com/google/uuid"
     "unsafe"
-    // "fmt"
+    "fmt"
     "context"
-    "log"
+    // "log"
     "go-hep.org/x/hep/xrootd"
     "go-hep.org/x/hep/xrootd/xrdfs"
 )
@@ -22,10 +22,12 @@ func Open(_baseurl *C.char, _filepath *C.char, _username *C.char) *C.char {
     ctx := context.Background()
     client, _ := xrootd.NewClient(ctx, baseurl, username)
     file, err := client.FS().Open(ctx, filepath, xrdfs.OpenModeOwnerRead, xrdfs.OpenOptionsOpenRead)
-    if err != nil {
-        log.Fatal(err)
-    }
     _id := C.CString(uuid.NewString())
+    if err != nil {
+        fmt.Println(err)
+        _id = C.CString("error")
+        return _id
+    }
     _FILES[_id] = file
     return _id
 }
@@ -36,10 +38,10 @@ func Close(_id *C.char){
     file, found := _FILES[_id]
 
     if !found {
-        log.Fatal("can't find id to close")
+        fmt.Println("can't find id to close")
     }
     if err := file.Close(ctx); err != nil {
-        log.Fatal(err)
+        fmt.Println(err)
     }
 }
 
@@ -50,7 +52,7 @@ func Size(_id *C.char) C.long {
     info, err := file.Stat(ctx)
 
     if err != nil {
-        log.Fatal(err)
+        fmt.Println(err)
     }
     return C.long(info.EntrySize)
 }
@@ -62,7 +64,7 @@ func ReadAt(res unsafe.Pointer, _id *C.char, NBytes C.long, offset C.long) {
     // data := (*(*[2147483647]byte)(res))[:NBytes]
     _, err := file.ReadAt(data, int64(offset))
     if err != nil {
-        log.Fatal(err)
+        fmt.Println(err)
     }
 }
 

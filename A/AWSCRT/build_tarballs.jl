@@ -3,206 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "AWSCRT"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [
-	GitSource("https://github.com/awslabs/aws-c-mqtt.git", "dd09527354ea435812bf4be4bf9b32ba6a41c6a0"),
-	GitSource("https://github.com/awslabs/aws-lc.git", "11b50d39cf2378703a4ca6b6fee9d76a2e9852d1"),
-	GitSource("https://github.com/aws/s2n-tls.git", "0d41122bd2ca62a5de384b79c524dd48852b2071"),
-	GitSource("https://github.com/awslabs/aws-c-common.git", "68f28f8df258390744f3c5b460250f8809161041"),
-	GitSource("https://github.com/awslabs/aws-c-cal.git", "001007e36dddc5da47b8c56d41bb63e5fa9328d7"),
-	GitSource("https://github.com/awslabs/aws-c-io.git", "59b4225bb87021d44d7fd2509b54d7038f11b7e7"),
-	GitSource("https://github.com/awslabs/aws-c-compression.git", "5fab8bc5ab5321d86f6d153b06062419080820ec"),
-	GitSource("https://github.com/awslabs/aws-c-http.git", "3f8ffda541eab815646f739cef2b350d6e7d5406"),
-	GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "e3c23f4aca31d9e66df25827645f72cbcbfb657a"),
-	GitSource("https://github.com/awslabs/aws-c-auth.git", "e1b95cca6f2248c28b66ddb40bcccd35a59cb8b5"),
-	GitSource("https://github.com/awslabs/aws-c-s3.git", "92067b1f44523e70337e0c5eb00b80c9cf10b941"),
-	GitSource("https://github.com/awslabs/aws-checksums.git", "41df3031b92120b6d8127b7b7122391d5ac6f33f"),
-	GitSource("https://github.com/awslabs/aws-c-event-stream.git", "e87537be561d753ec82e783bc0929b1979c585f8"),
-	GitSource("https://github.com/awslabs/aws-c-iot.git", "e3ea832b032cd9db252822e3f2f9aeeeb8ad9a1d"),
-	DirectorySource("./bundled"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# Only need aws-lc and s2n-tls on linux and freebsd. macos and windows don't need it.
-if [[ "${target}" =~ "linux" || "${target}" =~ "freebsd" ]]; then
-	cd $WORKSPACE/srcdir/aws-lc
-
-	# Patch for finding definition of AT_HWCAP2 for PowerPC
-	atomic_patch -p1 "${WORKSPACE}/srcdir/patches/auxvec.patch"
-
-	mkdir build && cd build
-	cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-		-DBUILD_TESTING=OFF \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DBUILD_SHARED_LIBS=OFF \
-		-GNinja \
-		..
-	ninja -j${nproc}
-	ninja install
-
-	cd $WORKSPACE/srcdir/s2n-tls
-	mkdir build && cd build
-	cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-		-DCMAKE_PREFIX_PATH=${prefix} \
-		-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-		-DBUILD_TESTING=OFF \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DBUILD_SHARED_LIBS=OFF \
-		-GNinja \
-		..
-	ninja -j${nproc}
-	ninja install
-fi
-
-cd $WORKSPACE/srcdir/aws-c-common
-
-# Patch for MinGW toolchain
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/aws-c-common.patch"
-find . -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
-find . -type f -exec sed -i 's/Shlwapi.h/shlwapi.h/g' {} +
-
-mkdir build && cd build
-if [[ "${target}" =~ "mingw" ]]; then
-	winflags="-D_WIN32_WINNT=0x0601"
-fi
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	${winflags} \
-	..
-cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-cal
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-io
-
-# Patch for MinGW toolchain
-find . -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
-
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-compression
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-http
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-mqtt
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-sdkutils
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-	cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-auth
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-	cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-checksums
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-	cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-event-stream
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-s3
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-cmake --build . -j${nproc} --target install
-
-cd $WORKSPACE/srcdir/aws-c-iot
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-	-DCMAKE_PREFIX_PATH=${prefix} \
-	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-	-DBUILD_TESTING=OFF \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=OFF \
-	..
-cmake --build . -j${nproc} --target install
-
 cd $WORKSPACE/srcdir/awscrt
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -212,26 +21,32 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 	..
 cmake --build . -j${nproc} --target install
 
-install_license ${WORKSPACE}/srcdir/license/LICENSE
+install_license /usr/share/licenses/APL2
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> !Sys.iswindows(p) && !Sys.isfreebsd(p), supported_platforms())
+platforms = supported_platforms()
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
 products = [
-	LibraryProduct("libawscrt", :libawscrt),
+    LibraryProduct("libawscrt", :libawscrt),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-	# TODO: this is needed only for Windows, but it looks like filtering
-	# platforms for `HostBuildDependency` is broken
-	HostBuildDependency("NASM_jll")
+    Dependency("aws_c_auth_jll"; compat="0.7.3"),
+    Dependency("aws_c_cal_jll"; compat="0.6.2"),
+    Dependency("aws_c_event_stream_jll"; compat="0.3.2"),
+    Dependency("aws_c_http_jll"; compat="0.7.12"),
+    Dependency("aws_c_iot_jll"; compat="0.1.17"),
+    Dependency("aws_c_mqtt_jll"; compat="0.8.12"),
+    Dependency("aws_c_s3_jll"; compat="0.3.17"),
+    Dependency("aws_checksums_jll"; compat="0.1.17"),
+    BuildDependency("aws_lc_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# Set lock_microarchitectures=false because aws-checksums uses the arch flag to specify the arch (-march=armv8-a+crc).
-# gcc 4 is not supported because it doesn't export __ARM_ARCH
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5", lock_microarchitecture=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

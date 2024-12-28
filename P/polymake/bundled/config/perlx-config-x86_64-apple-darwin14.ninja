@@ -1,5 +1,0 @@
-PERL=/workspace/x86_64-linux-musl-cxx11/destdir/bin/perl
-CXXglueFLAGS=-I/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.0/darwin-2level/CORE -fno-common -DPERL_DARWIN -mmacosx-version-min=10.8 -fno-strict-aliasing -pipe -fstack-protector-strong -DPERL_USE_SAFE_PUTENV -I/workspace/destdir/deps/Perl_jll/include -DPerlVersion=5340 -Wno-nonnull
-LIBperlFLAGS=-L/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.0/darwin-2level/CORE -lperl
-ExtUtils_xsubpp=/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.0/ExtUtils/xsubpp
-ExtUtils_typemap=/workspace/destdir/deps/Perl_jll/lib/perl5/5.34.0/ExtUtils/typemap

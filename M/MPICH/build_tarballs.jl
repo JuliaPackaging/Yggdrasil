@@ -4,14 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version_str = "4.0.2"
-version = VersionNumber(version_str)
-
-# build trigger
+version = v"4.2.3"
 
 sources = [
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version_str)/mpich-$(version_str).tar.gz",
-                  "5a42f1a889d4a2d996c26e48cbf9c595cbf4316c6814f7c181e3320d21dedd42"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
+                  "7a019180c51d1738ad9c5d8d452314de65e828ee240bcb2d1f80de9a65be88a8"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
@@ -22,6 +20,11 @@ script = raw"""
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
 
+# MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>.
+# (The MPICH developers say that this is a bug in MPICH and that
+# `<pthread_np.h>` should not actually be used on FreeBSD.)
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
+
 EXTRA_FLAGS=()
 # Define some obscure undocumented variables needed for cross compilation of
 # the Fortran bindings.  See for example
@@ -30,6 +33,7 @@ EXTRA_FLAGS=()
 export CROSS_F77_SIZEOF_INTEGER=4
 export CROSS_F77_SIZEOF_REAL=4
 export CROSS_F77_SIZEOF_DOUBLE_PRECISION=8
+export CROSS_F77_SIZEOF_LOGICAL=4
 export CROSS_F77_TRUE_VALUE=1
 export CROSS_F77_FALSE_VALUE=0
 
@@ -65,12 +69,17 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
+# Do not install doc and man files which contain files which clashing names on
+# case-insensitive file systems:
+# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
+# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --enable-shared=yes --enable-static=no \
-    --with-device=ch3 --disable-dependency-tracking \
+    --disable-dependency-tracking \
+    --disable-doc \
     --enable-fast=all,O3 \
-    --docdir=/tmp \
-    --disable-opencl \
+    --enable-static=no \
+    --with-device=ch3 \
+    --with-hwloc=${prefix} \
     "${EXTRA_FLAGS[@]}"
 
 # Remove empty `-l` flags from libtool
@@ -99,10 +108,14 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-platforms = expand_gfortran_versions(filter!(!Sys.iswindows, supported_platforms(; experimental=true)))
+platforms = supported_platforms()
+platforms = expand_gfortran_versions(platforms)
+filter!(!Sys.iswindows, platforms)
 
 # Add `mpi+mpich` platform tag
-foreach(p -> (p["mpi"] = "MPICH"), platforms)
+for p in platforms
+    p["mpi"] = "MPICH"
+end
 
 products = [
     # MPICH
@@ -113,10 +126,13 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("Hwloc_jll"; compat="2.11.1"), # We need 2.11.1+1 for aarch64-unknown-freebsd
+    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+               compat="0.1", top_level=true),
 ]
 
 # Build the tarballs.
+# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"5")

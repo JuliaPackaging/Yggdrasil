@@ -1,0 +1,20 @@
+commit 3fdc799e76af88db27efaaa22010d0c5639124e0
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 15:13:51 2023 +0000
+
+    Ioss: Declare explicit template instantiation for dllexport
+
+diff --git a/packages/seacas/libraries/ioss/src/Ioss_ParallelUtils.h b/packages/seacas/libraries/ioss/src/Ioss_ParallelUtils.h
+index d370f87638e..391291e6634 100644
+--- a/packages/seacas/libraries/ioss/src/Ioss_ParallelUtils.h
++++ b/packages/seacas/libraries/ioss/src/Ioss_ParallelUtils.h
+@@ -341,4 +341,9 @@ namespace Ioss {
+ #endif
+   }
+ 
++  // Windows has issues with explicit template instantiations across dll boundaries,
++  // they need to be explicitly declared so do that here.
++  template <>
++  IOSS_EXPORT void ParallelUtils::broadcast(std::string &my_str, int          root) const;
++
+ } // namespace Ioss

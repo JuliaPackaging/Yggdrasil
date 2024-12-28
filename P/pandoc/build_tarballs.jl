@@ -2,16 +2,17 @@ using BinaryBuilder
 
 # Collection of pre-build pandoc binaries
 name = "pandoc"
-pandoc_ver = "2.19.2"
+pandoc_ver = "3.4"
 version = VersionNumber(pandoc_ver)
 
 url_prefix = "https://github.com/jgm/pandoc/releases/download/$(pandoc_ver)/pandoc-$(pandoc_ver)"
 sources = [
-    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "9d55c7afb6a244e8a615451ed9cb02e6a6f187ad4d169c6d5a123fa74adb4830"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)-macOS.zip", "af0cda69e31e42f01ba6adc0aa779d3e5853e6c092beeb420a4fc22712d2110b"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "e7a0c92b4af6cad31d9899a8b92a3992e18634320349bbf56b729bbbcf71bb99"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "43f364915b9da64905fc3f6009f5542f224e54fb24f71043ef5154540f1a3983"; unpack_target = "aarch64-linux-gnu"),
-    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "adcfa50add0dd23fda4937830ee6401a45638cffa15b9b33b1932f833f4fab75"),
+    ArchiveSource("$(url_prefix)-linux-amd64.tar.gz", "f6f46cc61abf3bacb0bf612f4d80b586625c10cf64a4b456853fd358cb4c7319"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)-x86_64-macOS.zip", "fb342213ce16af4a81565f1f106a808574f993900ac914a5737649ba8cedb2b3"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)-arm64-macOS.zip", "2bc48ef152d5404cc7d5b98ee01f11af8bd91e503a6e888d2537bd261a578d02"; unpack_target = "aarch64-apple-darwin20"),
+    ArchiveSource("$(url_prefix)-windows-x86_64.zip", "26858cf59c057b3d3ca32e9cd2fbd1f50990adc1bfb20a9c8dfb936aacc3610e"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)-linux-arm64.tar.gz", "a66ec01f12487def28eed22acc5a8fe4c7c869325291aa4037b33e1915f2568d"; unpack_target = "aarch64-linux-gnu"),
+    FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYRIGHT", "e9dd2c20808f570f0fe3c06b36246711e253543ba4eda22c8cc934addd007b48"),
     FileSource("https://raw.githubusercontent.com/jgm/pandoc/$(pandoc_ver)/COPYING.md", "e7ea3adeab955103a837b692ca0017cb3abbed0d3dccbfa499d6b2b825d698c3"),
 ]
 
@@ -34,7 +35,8 @@ platforms = [
     Platform("x86_64", "linux"),
     Platform("x86_64", "macos"),
     Platform("x86_64", "windows"),
-    Platform("aarch64", "linux")
+    Platform("aarch64", "linux"),
+    Platform("aarch64", "macos"),
 ]
 
 # The products that we will ensure are always built
@@ -47,4 +49,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")

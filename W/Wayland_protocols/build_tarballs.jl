@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Wayland_protocols"
-version = v"1.25"
+version = v"1.36"
 
 # Collection of sources required to build Wayland-protocols
 sources = [
-    ArchiveSource("https://wayland.freedesktop.org/releases/wayland-protocols-$(version.major).$(version.minor).tar.xz",
-                  "f1ff0f7199d0a0da337217dd8c99979967808dc37731a1e759e822b75b571460"),
+    ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/$(version.major).$(version.minor)/downloads/wayland-protocols-$(version.major).$(version.minor).tar.xz",
+                  "71fd4de05e79f9a1ca559fac30c1f8365fa10346422f9fe795f74d77b9ef7e92"),
 ]
 
 # Bash recipe for building across all platforms

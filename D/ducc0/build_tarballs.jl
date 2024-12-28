@@ -6,11 +6,11 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "ducc0"
-version = v"0.28.0"
+version = v"0.29.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "d015eee4949dab6a39f41c62de97410db76affd3"),
+    GitSource("https://gitlab.mpcdf.mpg.de/mtr/ducc.git", "d29050f2dff2a87dd430ddf2c82d590cc3aa42a4"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -37,9 +37,9 @@ install -Dvm 0755 "libducc_julia.${dlext}" "${libdir}/libducc_julia.${dlext}"
 """
 
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
-platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]); skip=!Sys.iswindows)
-platforms = expand_cxxstring_abis(platforms)
+# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that.
+# Also, on Windows we want to avoid AVX/AVX2.
+platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2"]; filter=!Sys.iswindows))
 
 augment_platform_block = """
     $(MicroArchitectures.augment)

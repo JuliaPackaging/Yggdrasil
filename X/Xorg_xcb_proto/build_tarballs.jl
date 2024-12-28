@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_proto"
-version = v"1.13"
+version_string = "1.17.0"
+version = VersionNumber(version_string)
 
 # Collection of sources required to build xcb-proto
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/xcb/xcb-proto-$(version.major).$(version.minor).tar.bz2",
-               "7b98721e669be80284e9bbfeab02d2d0d54cd11172b72271e47a2fe875e2bde1"),
+    ArchiveSource("https://www.x.org/archive/individual/xcb/xcb-proto-$(version_string).tar.xz",
+                  "2c1bacd2110f4799f74de6ebb714b94cf6f80fb112316b1219480fd22562148c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,14 +25,15 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Build trigger: 1

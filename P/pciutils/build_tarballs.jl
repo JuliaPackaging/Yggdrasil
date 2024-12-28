@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "pciutils"
-version = v"3.7.0"
+version = v"3.12.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/pciutils/pciutils.git",
-              "864aecdea9c7db626856d8d452f6c784316a878c")
+              "cb00a99b8d32d04b4647c32811ba9c86446d36ae")
 ]
 
 dependencies = Dependency[
@@ -21,15 +21,16 @@ FLAGS=(
     PREFIX=${prefix}
     SHARED=yes
     SBINDIR=${bindir}
+    CFLAGS='-std=gnu99 -fPIC -O2 -Wall'
     -j${nproc}
 )
-make ${FLAGS[@]} install
-make ${FLAGS[@]} install-lib
+make "${FLAGS[@]}" install
+make "${FLAGS[@]}" install-lib
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> !Sys.iswindows(p) && !Sys.isapple(p), supported_platforms(;experimental=true))
+platforms = filter!(p -> !Sys.iswindows(p) && !Sys.isapple(p), supported_platforms())
 
 # The products that we will ensure are always built
 products = Product[
@@ -39,5 +40,4 @@ products = Product[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# gcc7 constraint from boost
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

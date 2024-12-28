@@ -1,9 +1,8 @@
 --- a/libmariadb/secure/schannel_certs.c
 +++ b/libmariadb/secure/schannel_certs.c
-@@ -33,6 +33,25 @@
+@@ -33,5 +33,24 @@
  #define _WIN32_WINNT 0x0601
  #endif
- 
 +#ifndef SEC_E_INVALID_PARAMETER
 +#define SEC_E_INVALID_PARAMETER _HRESULT_TYPEDEF_(0x8009035D)
 +#endif

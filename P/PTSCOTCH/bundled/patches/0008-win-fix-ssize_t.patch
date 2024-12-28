@@ -1,0 +1,30 @@
+diff --git a/src/libscotch/common_file_compress.c b/src/libscotch/common_file_compress.c
+index e1ccff5..e8e36ad 100644
+--- a/src/libscotch/common_file_compress.c
++++ b/src/libscotch/common_file_compress.c
+@@ -69,6 +69,10 @@
+ #include "lzma.h"
+ #endif /* COMMON_FILE_COMPRESS_LZMA */
+ 
++#if defined COMMON_OS_WINDOWS
++#define ssize_t SSIZE_T
++#endif
++
+ /*
+ **  The static definitions.
+ */
+diff --git a/src/libscotch/common_file_decompress.c b/src/libscotch/common_file_decompress.c
+index 648b6f0..9188eb0 100644
+--- a/src/libscotch/common_file_decompress.c
++++ b/src/libscotch/common_file_decompress.c
+@@ -69,6 +69,10 @@
+ #include "lzma.h"
+ #endif /* COMMON_FILE_COMPRESS_LZMA */
+ 
++#if defined COMMON_OS_WINDOWS
++#define ssize_t SSIZE_T
++#endif
++
+ /*
+ **  The static definitions.
+ */

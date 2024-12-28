@@ -3,19 +3,18 @@
 using BinaryBuilder
 
 name = "htslib"
-version = v"1.14"
+version_string = "1.19.1"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/samtools/htslib/releases/download/$(version.major).$(version.minor)/htslib-$(version.major).$(version.minor).tar.bz2",
-                  "ed221b8f52f4812f810eebe0cc56cd8355a5c9d21c62d142ac05ad0da147935f")
+    ArchiveSource("https://github.com/samtools/htslib/releases/download/$(version_string)/htslib-$(version_string).tar.bz2",
+                  "222d74d3574fb67b158c6988c980eeaaba8a0656f5e4ffb76b5fa57f035933ec")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/htslib-*
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS=-L${libdir}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
@@ -36,7 +35,7 @@ fi
 # platforms are passed in on the command line
 # NOTE: Configuring i686-w64-mingw32 fails due to 'unable to find the recv()
 # function' error. So we skip it for now.
-platforms = supported_platforms(; experimental=true, exclude=Sys.iswindows)
+platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # The products that we will ensure are always built
 products = [
@@ -50,10 +49,11 @@ products = [
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("XZ_jll"),
-    Dependency("LibCURL_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("XZ_jll"; compat="5.2.5"),
+    Dependency("LibCURL_jll"; compat="7.73,8"),
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"6")

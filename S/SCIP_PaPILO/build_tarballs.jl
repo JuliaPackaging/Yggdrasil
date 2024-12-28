@@ -4,18 +4,47 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-version = v"800.0.301"
+upstream_version = v"9.2.0"
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
+# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz", "5ad50eb42254c825d96f5747d8f3568dcbff0284dfbd1a727910c5a7c2899091"),
-    DirectorySource("./bundled"),
+    ArchiveSource(
+        "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
+        "a174cc58592d245c74c9c95c1d4819750d7ba2d467b4baae616a5aa336aac8d0"
+    ),
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
+    ),
+    DirectorySource("./bundled/")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# This requires macOS 10.13
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    popd
+fi
+
 cd scipoptsuite*
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findbliss.patch
+# for soplex threadlocal
+export CXXFLAGS="-DTHREADLOCAL=''"
+
+# Enable large file support on mingw
+if [[ "${target}" == *-mingw* ]]; then
+    export CXXFLAGS="-Wa,-mbig-obj"
+fi
+
+# Patch to fix linking with gfortran's library on mingw
+# https://github.com/JuliaPackaging/Yggdrasil/pull/8224#issuecomment-2034941690
+atomic_patch -p0 $WORKSPACE/srcdir/patches/papilo_cmake.patch
 
 mkdir build
 cd build/
@@ -27,7 +56,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DAMPL=0\
   -DGCG=0\
   -DBOOST=ON\
-  -DSYM=bliss\
+  -DSYM=snauty\
   -DTPI=tny\
   -DIPOPT_DIR=${prefix} \
   -DIPOPT_LIBRARIES=${libdir} \
@@ -38,7 +67,7 @@ make -j${nproc} scip
 make papilo-executable
 
 make install
-cp bin/papilo "${bindir}/papilo${exeext}"
+cp bin/papilo${exeext} "${bindir}/papilo${exeext}"
 
 mkdir -p ${prefix}/share/licenses/SCIP_PaPILO
 for dir in scip soplex gcg; do
@@ -51,9 +80,14 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; experimental=true)))
 
+# Filter out the aarch64 FreeBSD and RISC-V architectures because oneTBB isn't available there yet.
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms)
+
 filter!(platforms) do p
-    arch(p) ∉ ("armv6l", "armv7l") && !Sys.iswindows(p) && libgfortran_version(p) >= v"4" && libc(p) != "musl"
+    libgfortran_version(p) >= v"4"
 end
+
 
 # The products that we will ensure are always built
 products = [
@@ -64,13 +98,13 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), compat="=0.77.0"),
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0"),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.0"),
-    Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"); compat="=300.1400.400"),
+    Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.1"),
+    Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"); compat="=300.1400.1400"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.10"),
-    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"); compat="2021.4.1"),
+    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"); compat="2021.9.0"),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
@@ -87,4 +121,5 @@ build_tarballs(
     dependencies;
     preferred_gcc_version=v"7",
     julia_compat="1.6",
+    clang_use_lld=false,
 )

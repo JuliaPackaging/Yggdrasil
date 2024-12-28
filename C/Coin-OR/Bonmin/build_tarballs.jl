@@ -1,3 +1,4 @@
+#Changes made to build tarballs for v1. 8.9
 include("../coin-or-common.jl")
 
 sources = [
@@ -79,4 +80,4 @@ build_tarballs(
     products,
     dependencies,
     julia_compat = "1.6",
-)
+    preferred_gcc_version = v"6")

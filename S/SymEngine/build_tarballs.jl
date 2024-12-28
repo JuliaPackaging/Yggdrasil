@@ -4,23 +4,20 @@ using BinaryBuilder
 
 # Collection of sources required to build SymEngine
 name = "SymEngine"
-version = v"0.9.0"
+version = v"0.12.0"
 
 sources = [
-    ArchiveSource("https://github.com/symengine/symengine/releases/download/v$(version)/symengine-$(version).tar.gz",
-                  "dcf174ac708ed2acea46691f6e78b9eb946d8a2ba62f75e87cf3bf4f0d651724"),
-                  DirectorySource("./bundled"),
+    GitSource("https://github.com/symengine/symengine.git",
+              "088aa01bf4ba020e22b7492086abdc08b37a5f7f"),
 ]
 
 # Bash recipe for building across all platforms
 
 script = raw"""
-cd $WORKSPACE/srcdir/symengine-*
+cd $WORKSPACE/srcdir/symengine
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gmp-fix.patch
+mkdir build && cd build
 
-mkdir build
-cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DBUILD_TESTS=no \
@@ -42,9 +39,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
-    Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("MPC_jll", v"1.2.1"),
+    Dependency("GMP_jll"; compat="6.2.0"),
+    Dependency("MPFR_jll"; compat="4.1.1"),
+    Dependency("MPC_jll"; compat="1.2.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

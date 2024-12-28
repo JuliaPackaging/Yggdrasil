@@ -6,76 +6,102 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
-version = v"2.8.4"
-adios_version = v"2.8.3"
+adios2_version = v"2.10.2"
+version = v"2.10.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/ornladios/ADIOS2/archive/refs/tags/v$(adios_version).tar.gz",
-                  "4906ab1899721c41dd918dddb039ba2848a1fb0cf84f3a563a1179b9d6ee0d9f"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/ornladios/ADIOS2.git", "a19dad6cecb00319825f20fd9f455ebbab903d34"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd ADIOS2-*
+cd ${WORKSPACE}/srcdir/ADIOS2
+
 # Don't define clock_gettime on macOS
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/clock_gettime.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/shlwapi.patch
+# Declare `arm8_rt_call_link`. See <https://github.com/ornladios/ADIOS2/issues/3925>.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/arm8_rt_call_link.patch
+# Declare `htons`. See <https://github.com/ornladios/ADIOS2/issues/3926>.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/htons.patch
+# Apply mingw32 fixes; see <https://github.com/ornladios/ADIOS2/issues/4192>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw32.patch
 
-mkdir build
-cd build
-archopts=
-if [[ "$target" == *-apple-* ]]; then
-    if grep -q MPICH_NAME $prefix/include/mpi.h; then
-        # MPICH's pkgconfig file "mpich.pc" lists these options:
-        #     Libs:     -framework OpenCL -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm    -lpthread
-        #     Cflags:   -I${includedir}
-        # cmake doesn't know how to handle the "-framework OpenCL" option
-        # and wants to use "-framework" as a stand-alone option. This fails
-        # gloriously, and cmake concludes that MPI is not available.
-        archopts="-DMPI_C_ADDITIONAL_INCLUDE_DIRS='' -DMPI_C_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi' -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS='' -DMPI_CXX_LIBRARIES='-Wl,-flat_namespace;-Wl,-commons,use_dylibs;-lmpi;-lpmpi'"
-    fi
-elif [[ "$target" == x86_64-w64-mingw32 ]]; then
-    # - The MSMPI Fortran bindings are missing a function; see
-    #   <https://github.com/microsoft/Microsoft-MPI/issues/7>
-    echo 'void __guard_check_icall_fptr(unsigned long ptr) {}' >cfg_stub.c
-    gcc -c cfg_stub.c
-    ar -crs libcfg_stub.a cfg_stub.o
-    cp libcfg_stub.a $prefix/lib
-    # - cmake's auto-detection for MPI doesn't work on Windows.
-    # - The SST and Table ADIOS2 components don't build on Windows
-    #   (reported in <https://github.com/ornladios/ADIOS2/issues/2705>)
-    export FFLAGS="-I$prefix/src -I$prefix/include -fno-range-check"
-    archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DMPI_C_LIBRARIES=msmpi64 -DMPI_CXX_LIBRARIES=msmpi64 -DMPI_Fortran_LIBRARIES='msmpifec64;msmpi64;cfg_stub' -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
-elif [[ "$target" == *-mingw* ]]; then
-    archopts="-DMPI_GUESS_LIBRARY_NAME=MSMPI -DADIOS2_USE_SST=OFF -DADIOS2_USE_Table=OFF"
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
+    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libevent*
+    rm /usr/lib/libnghttp2.*
 fi
 
+archopts=()
+
+if grep -q MPICH_NAME ${prefix}/include/mpi.h && ls /usr/include/*/sys/queue.hh >/dev/null 2>&1; then
+    # This feature only works with MPICH
+    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=0 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
+else
+    archopts+=(-DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE=1 -DADIOS2_HAVE_MPI_CLIENT_SERVER_EXITCODE__TRYRUN_OUTPUT=)
+fi
+
+if grep -q MSMPI_VER ${includedir}/mpi.h; then
+    # Microsoft MPI
+    archopts+=(-DMPI_C_ADDITIONAL_INCLUDE_DIRS= -DMPI_C_LIBRARIES=$l{ibdir}/msmpi.dll
+               -DMPI_CXX_ADDITIONAL_INCLUDE_DIRS= -DMPI_CXX_LIBRARIES=${libdir}/msmpi.dll
+               -DMPI_Fortran_ADDITIONAL_INCLUDE_DIRS= -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.dll)
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    # Windows: Some options do not build
+    # Enabling HDF5 leads to the error: `H5VolReadWrite.c:(.text+0x5eb): undefined reference to `H5Pget_fapl_mpio'`
+    archopts+=(-DADIOS2_USE_DataMan=OFF -DADIOS2_USE_SST=OFF -DEVPATH_TRANSPORT_MODULES=OFF)
+else
+    archopts+=(-DADIOS2_USE_DataMan=ON -DADIOS2_USE_SST=ON)
+fi
+
+# Use HDF5 if it is available
+if [ -e ${libdir}/libhdf5.${dlext} ]; then
+    archopts+=(-DADIOS2_USE_HDF5=ON)
+else
+    archopts+=(-DADIOS2_USE_HDF5=OFF)
+fi
+
+# Use MGARD if it is available
+if [ -e ${libdir}/libmgard.${dlext} ]; then
+    archopts+=(-DADIOS2_USE_MGARD=ON)
+else
+    archopts+=(-DADIOS2_USE_MGARD=OFF)
+fi
+
+export MPITRAMPOLINE_CC=${CC}
+export MPITRAMPOLINE_CXX=${CXX}
+export MPITRAMPOLINE_FC=${FC}
+
 # Fortran is not supported with Clang
-# DataMan has linker error on Windows
-cmake \
+# We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
+cmake -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DADIOS2_BUILD_EXAMPLES=OFF \
     -DADIOS2_HAVE_ZFP_CUDA=OFF \
-    -DADIOS2_USE_Blosc=ON \
+    -DADIOS2_USE_Blosc2=ON \
+    -DADIOS2_Blosc2_PREFER_SHARED=ON \
     -DADIOS2_USE_CUDA=OFF \
-    -DADIOS2_USE_DataMan=OFF \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
     -DADIOS2_USE_ZeroMQ=ON \
-    -DMPI_HOME=$prefix \
-    ${archopts} \
     -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    ..
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
-install_license ../Copyright.txt ../LICENSE
+    -DMPI_HOME=${prefix} \
+    ${archopts[@]}
+cmake --build build --parallel ${nproc}
+cmake --install build
+install_license Copyright.txt LICENSE
 """
 
 augment_platform_block = """
@@ -91,17 +117,18 @@ platforms = supported_platforms()
 # <https://github.com/ornladios/ADIOS2/issues/2704>
 platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
-# Windows doesn't build with libcxx="cxx03"
-platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+# We need to use the same compat bounds as HDF5
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
+# We don't need HDF5 on Windows (see above)
+hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -131,20 +158,33 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+# - We currently need to disable MGARD. It seems that MGARD uses Zstd,
+#   and the ADIOS2 build system cannot handle this.
 dependencies = [
-    Dependency(PackageSpec(name="Blosc_jll")),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.101"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    # We cannot use HDF5 because we need an HDF5 configuration with MPI support
-    # Dependency(PackageSpec(name="HDF5_jll")),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
+    # Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
+    # Dependency(PackageSpec(name="Zstd_jll")),
     Dependency(PackageSpec(name="libpng_jll")),
-    Dependency(PackageSpec(name="zfp_jll")),
+    Dependency(PackageSpec(name="protoc_jll")),
+    Dependency(PackageSpec(name="pugixml_jll")),
+    Dependency(PackageSpec(name="yaml_cpp_jll")),
+    Dependency(PackageSpec(name="zfp_jll"); compat="1.0.1"),
 ]
 append!(dependencies, platform_dependencies)
+
+# Don't look for `mpiwrapper.so` when BinaryBuilder examines and
+# `dlopen`s the shared libraries. (MPItrampoline will skip its
+# automatic initialization.)
+ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 4 is too old for Windows; it doesn't have <regex.h>
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+
+# Build trigger: 3

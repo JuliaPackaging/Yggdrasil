@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "Libffi"
-upstream_version = "3.4.4"
+upstream_version = "3.4.6"
 version = VersionNumber(upstream_version)
 
 # Collection of sources required to build libffi
 sources = [
     ArchiveSource("https://github.com/libffi/libffi/releases/download/v$(upstream_version)/libffi-$(upstream_version).tar.gz",
-                  "d66c56ad259a82cf2a9dfc408b32bf5da52371500b84745f7fb8b645712df676"),
+                  "b0dea9df23c863a7a50e825440f3ebffabd65df1497108e5d437747843895a4e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,3 +39,5 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+
+# Build trigger: 3

@@ -7,20 +7,27 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.16"
+version = v"0.0.34"
 
-llvm_versions = [v"11.0.1", v"12.0.1", v"13.0.1", v"14.0.2"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
 
-# Collection of sources required to build LLVMExtra
-sources = [GitSource(repo, "1a7742bd9eee070b221d83991759a353dcd43314")]
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+sources = [
+    GitSource(repo, "a427570a864a8341fcfdaf553b763f9308177f75"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd LLVM.jl/deps/LLVMExtra
+
+if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+    # LLVM 15+ requires macOS SDK 10.14.
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
 
 CMAKE_FLAGS=()
 # Release build for best performance
@@ -39,6 +46,8 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 
 ninja -C build -j ${nproc} install
+
+install_license LICENSE-APACHE LICENSE-MIT
 """
 
 augment_platform_block = """
@@ -65,13 +74,28 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
                        :libLLVMExtra, dont_dlopen=true),
     ]
 
+    # These are the platforms we will build for by default, unless further
+    # platforms are passed in on the command line
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+    ## we don't build LLVM 15 for i686-linux-musl.
+    filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    ## freebsd-aarch64 doesn't have any LLVM build right now
+    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
     for platform in platforms
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
 
+        platform_sources = BinaryBuilder.AbstractSource[sources...]
+        if Sys.isapple(platform)
+            push!(platform_sources,
+                  ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+        end
+
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;
-            dependencies, products,
+            dependencies, products, sources=platform_sources,
             platforms=[augmented_platform],
         ))
     end
@@ -86,10 +110,9 @@ non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, sources, script,
+                   name, version, build.sources, script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=v"8", julia_compat="1.6",
                    augment_platform_block, lazy_artifacts=true)
 end
 
-# bump

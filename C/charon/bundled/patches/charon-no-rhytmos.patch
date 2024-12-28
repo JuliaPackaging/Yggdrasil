@@ -1,0 +1,965 @@
+commit 8bb3cb098be5141d723ff562ef956f8f7854bfb2
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Tue Sep 26 14:12:57 2023 +0000
+
+    Remove Rhytmos
+
+diff --git a/src/Charon_Main.cpp b/src/Charon_Main.cpp
+index f6d58d9..c57db59 100644
+--- a/src/Charon_Main.cpp
++++ b/src/Charon_Main.cpp
+@@ -10,7 +10,7 @@
+ #if       defined (__GNUG__) && defined (CHARON_DEBUG_FP)
+ #include <fenv.h>
+ #define FEENABLEEXCEPT
+-#endif // defined (__GNUG__) && defined (CHARON_DEBUG_FP) 
++#endif // defined (__GNUG__) && defined (CHARON_DEBUG_FP)
+ #include <iostream>
+ #include <sstream>
+ #include <string>
+@@ -33,7 +33,6 @@
+ #include "Charon_ResponseEvaluatorFactory_Current.hpp"
+ #include "Charon_ResponseEvaluatorFactory_HOCurrent.hpp"
+ #include "Charon_ResponseEvaluatorFactory_DispCurrent.hpp"
+-#include "Charon_RythmosObserverFactory.hpp"
+ #include "Charon_TempusObserverFactory.hpp"
+ #include "Charon_Scaling_Parameters.hpp"
+ #include "Charon_Schur2x2PreconditionerFactory.hpp"
+@@ -255,20 +255,6 @@ int
+ getPowerOfTen(
+   double number);
+ 
+-/**
+- *  \brief Scale Times in Rythmos.
+- *
+- *  \todo This could use a detailed description.  Anyone care to fill it out?
+- *
+- *  \param[in,out] inputPList  The `ParameterList` corresponding to the input
+- *                             file.
+- *  \param[in] scaleParams The scaling parameters.
+- */
+-void
+-scaleRythmosTimes(
+-  Teuchos::ParameterList&                  inputPList,
+-  Teuchos::RCP<charon::Scaling_Parameters> scaleParams);
+-
+ /**
+  *  \brief Scale Times in Tempus.
+  *
+@@ -325,7 +311,7 @@ isContactBC(
+  *                                    constraint.
+  *  \param[out]    contactSides       A `vector` of pairs of element block and
+  *                                    sideset IDs indicating the contact sides.
+- *  \param[out]    contactStrategy    A vector of contact strategy strings                                  
++ *  \param[out]    contactStrategy    A vector of contact strategy strings
+  */
+ void
+ determineContactSides(
+@@ -361,7 +347,7 @@ checkEqnSetType(
+  *  \param[in]     contactSides       A list of unique (sideset, element block)
+  *                                    ID pairs where supported contact boundary
+  *                                    conditions exist.
+- *  \param[in]     contactStrategy    A list of contact strategies for supported contacts                                  
++ *  \param[in]     contactStrategy    A list of contact strategies for supported contacts
+  *  \param[in]     currentHighOrder   A flag indicating whether or not we
+  *                                    should use the high-order current
+  *                                    calculation.
+@@ -372,15 +358,13 @@ checkEqnSetType(
+  *  \param[in]     writeCurrentGraph  A flag indicating whether or not to write
+  *                                    a current Graphviz file.
+  *  \param[in]     isSingleFreq       A flag indicating whether or not a single
+- *                                    freq is used in the frequency domain analysis   
+- *  \param[in]     frequency          A double value storing the frequency value 
+- *                                    in [Hz] for a single-freq FD simulation                             
+- *  \param[in]     isTransient        A flag indicating whether or not it is 
++ *                                    freq is used in the frequency domain analysis
++ *  \param[in]     frequency          A double value storing the frequency value
++ *                                    in [Hz] for a single-freq FD simulation
++ *  \param[in]     isTransient        A flag indicating whether or not it is
+  *                                    a transient time domain simulation
+  *  \param[in,out] meFactory          The `ModelEvaluatorFactory` to which
+  *                                    we'll add the current responses.
+- *  \param[in,out] rof                The `RythmosObserverFactory`, to which
+- *                                    we'll add the response names.
+  *  \param[in,out] nof                The `NOXObserverFactory`, to which we'll
+  *                                    add the response names.
+  *  \param[in,out] cmFactory          The closure model factory used to build
+@@ -400,7 +384,6 @@ addCurrentResponses(
+   const charon::CurrentConstraintList&                    currentConstraints,
+   const bool&                                             writeCurrentGraph,
+   panzer_stk::ModelEvaluatorFactory<double>&              meFactory,
+-  Teuchos::RCP<charon::RythmosObserverFactory>&           rof,
+   Teuchos::RCP<charon::TempusObserverFactory>&            tof,
+   Teuchos::RCP<charon::NOXObserverFactory>&               nof,
+   panzer::ClosureModelFactory_TemplateManager<panzer::Traits>&
+@@ -464,10 +447,10 @@ int main(int argc, char *argv[])
+   using   std::runtime_error;
+   using   std::string;
+   using   std::vector;
+-  
++
+   using   Teko::AutoClone;
+   using   Teko::PreconditionerFactory;
+-  
++
+   using   Teuchos::Comm;
+   using   Teuchos::CommandLineProcessor;
+   using   Teuchos::DefaultComm;
+@@ -612,17 +595,17 @@ int main(int argc, char *argv[])
+     }
+ 
+     // Check if "Mixed Mode" is specified as a boundary condition strategy.
+-    // If so, set the appropriate underlying BC Strategy. Mixed Mode options: 
++    // If so, set the appropriate underlying BC Strategy. Mixed Mode options:
+     //    Current -> Charon provides a voltage to the coupled problem, and receives a current to be imposed as a BC
+     //               Correspondingly, use "Constant Current" with "Xyce Coupled Current" parameter
+     //    Voltage -> Charon proviides a current to the coupled problem, and receives a voltage to be impose as a BC
+     //               Correspondingly, use "Ohmic Contact" with "Xyce Varying Voltage" parameter
+-    // This needs to be done before determining the CurrentConstraintList because a current mixed mode 
++    // This needs to be done before determining the CurrentConstraintList because a current mixed mode
+     // requires contact current calculation, whereas a vltage mixed mode strategy does not.
+     Teuchos::ParameterList& bcParams = inputParams->sublist("Boundary Conditions");
+     Teuchos::RCP<Teuchos::ParameterList> xyceCouplingPL = Teuchos::rcp(new Teuchos::ParameterList);
+     xyceCouplingPL->set<Teuchos::RCP<Teuchos::ParameterList> >("Contact Coupling Map", Teuchos::rcp(new Teuchos::ParameterList));
+-    Teuchos::RCP<Teuchos::ParameterList> contact_coupling_map = 
++    Teuchos::RCP<Teuchos::ParameterList> contact_coupling_map =
+       xyceCouplingPL->get<Teuchos::RCP<Teuchos::ParameterList> >("Contact Coupling Map");
+     bool mixedModeCouplingME = false;
+     for(auto itr = bcParams.begin(); itr != bcParams.end(); ++itr)
+@@ -645,7 +628,7 @@ int main(int argc, char *argv[])
+ 	  std::cout << "Missing 'Node Name' in 'Data' sublist of 'Mixed Mode via Current' BC Strategy" << std::endl;
+           TEUCHOS_ASSERT(false);
+ 	}
+-        xyceCouplingPL->set<int>("Initial Xyce Coupling on Step Number", 
++        xyceCouplingPL->set<int>("Initial Xyce Coupling on Step Number",
+                                  bc.sublist("Data").get<int>("Initial Xyce Coupling on Step Number",0));
+         xyceCouplingPL->set<std::string>("Netlist", bc.sublist("Data").get<string>("Netlist"));
+         contact_coupling_map->set<string>(bc.get<string>("Sideset ID"),bc.sublist("Data").get<string>("Node Name"));
+@@ -720,14 +703,9 @@ int main(int argc, char *argv[])
+     bool isLOCA(false);
+     bool isTransient(false);
+ 
+-    if (piroSolver == "Rythmos")
+-    {
+-      isTransient = true;  // determine transient displacement current calculation 
+-      scaleRythmosTimes(*inputParams, scaleParams);
+-    }
+-    else if (piroSolver == "Tempus")
++    if (piroSolver == "Tempus")
+     {
+-      isTransient = true;  // determine transient displacement current calculation 
++      isTransient = true;  // determine transient displacement current calculation
+       scaleTempusTimes(*inputParams, scaleParams);
+     }
+     else if ( (piroSolver == "LOCA") || (piroSolver == "LOCA-Constrained") )
+@@ -735,7 +713,7 @@ int main(int argc, char *argv[])
+ 
+     // frequency domain logic to check if a freq domain analysis is specified;
+     // if so, read in parameters to build a FreqDomParameters object,
+-    // then pass a RCP, pointing to it, to the input parameter list                      
++    // then pass a RCP, pointing to it, to the input parameter list
+     // HB mod: add a FreqDomParameters object to the input parameters list, if "Frequency Domain" is specified
+     ParameterList::ConstIterator pb_name_iterator = inputParams->sublist("Physics Blocks").begin(); // we need an iterator to access the physics block names
+     std::string pb_name = pb_name_iterator->first;  // Semiconductor, Semiconductor1, Semiconductor2, InGaP, GaAs
+@@ -746,16 +724,16 @@ int main(int argc, char *argv[])
+     //std::cout << "Charon_Main detected a frequency domain simulation: " << isFreqDom << std::endl;
+ 
+     // if(isFreqDom): create a RCP<ParameterList> for the "Frequency Domain Options" pl from the input deck
+-    Teuchos::RCP<Teuchos::ParameterList> freqDomPL = ( isFreqDom ? 
++    Teuchos::RCP<Teuchos::ParameterList> freqDomPL = ( isFreqDom ?
+         Teuchos::rcpFromRef(inputParams->sublist("Physics Blocks").sublist(pb_name).sublist("child0").sublist("Frequency Domain Options"))
+       : Teuchos::rcp(new Teuchos::ParameterList()) );
+ 
+     // create the frequency domain parameters object using the freqDomPL
+-    Teuchos::RCP<FreqDomParameters> freqDomParamsRCP = ( isFreqDom ? 
++    Teuchos::RCP<FreqDomParameters> freqDomParamsRCP = ( isFreqDom ?
+         Teuchos::rcp(new FreqDomParameters(freqDomPL)) : Teuchos::rcp(new FreqDomParameters()));
+ 
+-    // if(isFreqDom): add a RCP<FreqDomParameters> to the parameter list, 
+-    // to be used by the equation set and closure models 
++    // if(isFreqDom): add a RCP<FreqDomParameters> to the parameter list,
++    // to be used by the equation set and closure models
+     // we add it to the "Options" pl because that gets passed to the closure models!
+     if(isFreqDom)
+       while(pb_name_iterator != inputParams->sublist("Physics Blocks").end())
+@@ -766,7 +744,7 @@ int main(int argc, char *argv[])
+         ++pb_name_iterator;
+       }
+     //std::cout << "Charon_Main added a RCP<FreqDomParameters> to the parameter list" << std::endl;
+-    
++
+     // Add in the application-specific equation set factory.
+     auto eqSetFactory = rcp(new EquationSet_Factory);
+ 
+@@ -819,7 +797,7 @@ int main(int argc, char *argv[])
+     checkHeterointerfacesCharge(inputParams->sublist("Boundary Conditions"));
+ 
+     checkGateTunneling(inputParams->sublist("Boundary Conditions"));
+-    
++
+     // Add in the application-specific BC factory.
+     BCFactory bcFactory;
+ 
+@@ -828,7 +806,6 @@ int main(int argc, char *argv[])
+ 
+     // Add in the application-specific observer factories.
+     Teuchos::RCP<charon::NOXObserverFactory> nof;
+-    Teuchos::RCP<charon::RythmosObserverFactory> rof;
+     Teuchos::RCP<charon::TempusObserverFactory> tof;
+     {
+       if (piroSolver == "Tempus")
+@@ -846,24 +823,6 @@ int main(int argc, char *argv[])
+ 
+         tof->setParameterList(observersToBuild);
+       }
+-      // Create the Rythmos observer factory.
+-      else if (piroSolver == "Rythmos")
+-      {
+-        rof = rcp(new charon::RythmosObserverFactory(stkIOResponseLibrary, globalData->pl,
+-          scaleParams));
+-        RCP<ParameterList> observersToBuild =
+-          parameterList(inputParams->sublist("Solver Factories").
+-          sublist("Time Integration Observers"));
+-        // Set whether the observer should output responses.  Right now
+-        // this only applies to the scalar electric current at the contacts.
+-        if (computeCurrent)
+-          observersToBuild->set<std::string>("Output Responses", "ON");
+-        else
+-          observersToBuild->set<std::string>("Output Responses", "OFF");
+-
+-        rof->setParameterList(observersToBuild);
+-      } // end of creating the Rythmos observer factory
+-
+       // Create the NOX observer factory.
+       {
+ 
+@@ -905,11 +864,9 @@ int main(int argc, char *argv[])
+ 
+     // set transient observers depending on which time integrator is
+     // being used
+-    if (piroSolver == "Rythmos")
+-      meFactory.setRythmosObserverFactory(rof);
+-    else if (piroSolver == "Tempus")
++    if (piroSolver == "Tempus")
+       meFactory.setTempusObserverFactory(tof);
+-      
++
+     meFactory.setUserWorksetFactory(wf);
+     meFactory.buildObjects(comm, globalData, eqSetFactory, bcFactory,
+       cmFactory);
+@@ -927,10 +884,10 @@ int main(int argc, char *argv[])
+     // Get the appropriate suffixes for frequency domain simulation
+     std::vector<std::string> fd_response_suffixes = {};
+     //bool isSmallSignal = freqDomParamsRCP->queryIsSmallSignal();
+-    
++
+     std::vector<double> inputFreqs = {};  // in [Hz]
+     bool isSingleFreq = false;  // determine single-frequ contact displacement current calculation
+-    double frequency = 0.0;     
++    double frequency = 0.0;
+ 
+     if(isFreqDom)
+     {
+@@ -945,18 +902,18 @@ int main(int argc, char *argv[])
+           if(h > 0.5)
+             fd_response_suffixes.push_back("_SinH" + std::to_string(h) + "_");
+         }
+-        
+-        // get unremapped frequency in [Hz]   
++
++        // get unremapped frequency in [Hz]
+         for (auto h : *(freqDomParamsRCP->getUnRemappedHarmonics()))
+           inputFreqs.push_back(h);
+ 
+         // get the frequency for a single-frequency FD analysis
+         if (inputFreqs.size() == 2)
+         {
+-          isSingleFreq = true; 
++          isSingleFreq = true;
+           frequency = inputFreqs[1];  // [0] corresponds to DC
+-        } 
+-      }  
++        }
++      }
+     }
+     else if(!isFreqDom)
+       fd_response_suffixes = {""};  // include no suffix if not frequency domain
+@@ -964,7 +920,7 @@ int main(int argc, char *argv[])
+     if (computeCurrent)
+     {
+       addCurrentResponses(contactSides, contactStrategy, currentHighOrder, scaleParams,
+-                          currentConstraints, writeCurrentGraph, meFactory, rof, tof,
++                          currentConstraints, writeCurrentGraph, meFactory, tof,
+                           nof, cmFactory, responseNames, fd_response_suffixes, isFreqDom,
+                           isSingleFreq, isTransient, frequency);
+     }
+@@ -1010,9 +967,6 @@ int main(int argc, char *argv[])
+     // observers for outputting responses.
+     nof->setModelEvaluator(physics);
+ 
+-    if (not rof.is_null())
+-      rof->setModelEvaluator(physics);
+-
+     if (not tof.is_null())
+       tof->setModelEvaluator(physics);
+ 
+@@ -1755,7 +1709,7 @@ scaleTempusTimes(Teuchos::ParameterList& i_param_list,
+     *out << "Final Time = " << timeInSecs << " [s], scaled value = "
+          << scaledTime << std::endl;
+   }
+-  else 
++  else
+     TEUCHOS_TEST_FOR_EXCEPTION(true, std::runtime_error,
+                                "Tempus->Final Time is NOT specified!");
+ 
+@@ -1768,7 +1722,7 @@ scaleTempusTimes(Teuchos::ParameterList& i_param_list,
+     *out << "Initial Time Step = " << timeInSecs << " [s], scaled value = "
+          << scaledTime << std::endl;
+   }
+-  else 
++  else
+     TEUCHOS_TEST_FOR_EXCEPTION(true, std::runtime_error,
+                                "Tempus->Initial Time Step is NOT specified!");
+ 
+@@ -1808,302 +1762,6 @@ scaleTempusTimes(Teuchos::ParameterList& i_param_list,
+ 
+ }
+ 
+-///////////////////////////////////////////////////////////////////////////////
+-//
+-//  scaleRythmosTimes()
+-//
+-///////////////////////////////////////////////////////////////////////////////
+-void
+-scaleRythmosTimes(
+-  Teuchos::ParameterList&                  inputPList,
+-  Teuchos::RCP<charon::Scaling_Parameters> scaleParams)
+-{
+-  using   std::cout;
+-  using   std::endl;
+-  using   std::runtime_error;
+-  using   std::setprecision;
+-  using   std::size_t;
+-  using   std::string;
+-  using   std::stringstream;
+-  using   std::vector;
+-  using   Teuchos::ParameterList;
+-  using   Teuchos::ParameterEntry;
+-  using   Teuchos::FancyOStream;
+-  using   Teuchos::RCP;
+-  using   Teuchos::rcp;
+-
+-  auto out  = rcp(new FancyOStream(rcp(&cout, false)));
+-  int nprocs;
+-  MPI_Comm_size(MPI_COMM_WORLD,&nprocs);
+-  if (nprocs > 1)
+-  {
+-    out->setShowProcRank(true);
+-    out->setOutputToRootOnly(0);
+-  } // end if (mpiSession.getNProc() > 1)
+-
+-  // Retrieve the time scaling [s].
+-  double t0 = scaleParams->scale_params.t0;
+-  *out << "Time scaling t0 = " << t0 << " in [seconds]" << endl;
+-
+-  // Return directly when the Rythmos section is not specified.
+-  if (not inputPList.sublist("Solution Control").isSublist("Rythmos"))
+-  {
+-    *out << "Rythmos section is NOT specified; not a transient simulation; return!" << endl;
+-    return;
+-  } // end if the Rythmos section is not specified
+-
+-  // Otherwise, get the Rythmos ParameterList.
+-  ParameterList& rythmosPList =
+-    inputPList.sublist("Solution Control").sublist("Rythmos");
+-
+-
+-  // Scale and re-set Final Time.
+-  if (rythmosPList.isParameter("Final Time"))
+-  {
+-    double timeInSecs(rythmosPList.get<double>("Final Time"));
+-    double scaledTime(timeInSecs / t0);
+-    inputPList.sublist("Solution Control").sublist("Rythmos").
+-      set<double>("Final Time", scaledTime);
+-    *out << "Final Time = " << timeInSecs << " [s], scaled value = "
+-         << scaledTime << endl;
+-  }
+-  else // if (not rythmosPList.isParameter("Final Time"))
+-    TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error,
+-      "Rythmos->Final Time is NOT specified!")
+-
+-  // Retrieve the Stepper Type.
+-  const string stepType(rythmosPList.get<string>("Stepper Type"));
+-
+-  // Scale the times.
+-  if (stepType == "Backward Euler")
+-  {
+-    if (not rythmosPList.isSublist("Rythmos Integration Control"))
+-      TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error, "Rythmos Integration "  \
+-        "Control parameterlist must be specified for Backward Euler!")
+-
+-    // Scale and re-set Fixed dt.
+-    if (rythmosPList.sublist("Rythmos Integration Control").
+-      isParameter("Fixed dt"))
+-    {
+-      double timeInSecs = rythmosPList.sublist("Rythmos Integration Control").
+-        get<double>("Fixed dt");
+-      double scaledTime(timeInSecs / t0);
+-      inputPList.sublist("Solution Control").sublist("Rythmos").
+-        sublist("Rythmos Integration Control").
+-        set<double>("Fixed dt", scaledTime);
+-      *out << "Fixed dt = " << timeInSecs << " [s], scaled value = "
+-           << scaledTime << endl;
+-    }
+-    else
+-      TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error,
+-        "Fixed dt must be specified for Backward Euler!")
+-
+-    // Scale and re-set Max dt.
+-    if (rythmosPList.sublist("Rythmos Integration Control").
+-      isParameter("Max dt"))
+-    {
+-      double timeInSecs = rythmosPList.sublist("Rythmos Integration Control").
+-        get<double>("Max dt");
+-      double scaledTime(timeInSecs / t0);
+-      inputPList.sublist("Solution Control").sublist("Rythmos").
+-        sublist("Rythmos Integration Control").
+-        set<double>("Max dt", scaledTime);
+-      *out << "Max dt = " << timeInSecs << " [s], scaled value = "
+-           << scaledTime << endl;
+-    }
+-  }
+-  else if (stepType == "BDF")
+-  {
+-    if (not rythmosPList.isParameter("Step Control Strategy Type"))
+-      TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error,
+-        "Step Control Strategy Type parameter must be specified for BDF!")
+-    if (not rythmosPList.isSublist("Rythmos Step Control Strategy"))
+-      TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error, "Rythmos Step Control " \
+-        "Strategy parameterlist must be specified for BDF!")
+-    if (rythmosPList.get<string>("Step Control Strategy Type") ==
+-      "ImplicitBDFRamping")
+-    {
+-      ParameterList& rythStepCtrl =
+-        rythmosPList.sublist("Rythmos Step Control Strategy");
+-
+-      // Scale and re-set Initial Step Size.
+-      if (rythStepCtrl.isParameter("Initial Step Size"))
+-      {
+-        double timeInSecs(rythStepCtrl.get<double>("Initial Step Size")),
+-          scaledTime(timeInSecs / t0);
+-        inputPList.sublist("Solution Control").sublist("Rythmos").
+-          sublist("Rythmos Step Control Strategy").
+-          set<double>("Initial Step Size", scaledTime);
+-        *out << "Initial Step Size = " << timeInSecs
+-             << " [s], scaled value = " << scaledTime << endl;
+-      }
+-      else
+-        TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error,
+-          "Initial Step Size must be specified for ImplicitBDFRamping.")
+-
+-      // Scale and re-set Min Step Size.
+-      if (rythStepCtrl.isParameter("Min Step Size"))
+-      {
+-        double timeInSecs(rythStepCtrl.get<double>("Min Step Size")),
+-          scaledTime(timeInSecs / t0);
+-        inputPList.sublist("Solution Control").sublist("Rythmos").
+-          sublist("Rythmos Step Control Strategy").
+-          set<double>("Min Step Size", scaledTime);
+-        *out << "Min Step Size = " << timeInSecs << " [s], scaled value = "
+-             << scaledTime << endl;
+-      }
+-      else
+-        TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error,
+-          "Min Step Size must be specified for ImplicitBDFRamping.")
+-
+-      // Scale and re-set Max Step Size.
+-      if (rythStepCtrl.isParameter("Max Step Size"))
+-      {
+-        double timeInSecs(rythStepCtrl.get<double>("Max Step Size")),
+-          scaledTime(timeInSecs / t0);
+-        inputPList.sublist("Solution Control").sublist("Rythmos").
+-          sublist("Rythmos Step Control Strategy").
+-          set<double>("Max Step Size", scaledTime);
+-        *out << "Max Step Size = " << timeInSecs << " [s], scaled value = "
+-             << scaledTime << endl;
+-      }
+-      else
+-        TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error,
+-          "Max Step Size must be specified for ImplicitBDFRamping.")
+-
+-      // Rythmos Integration Control could be specified for BDF.
+-      if (rythmosPList.isSublist("Rythmos Integration Control"))
+-      {
+-        // Scale and re-set Max dt.  The smaller value of Max dt and Max Step
+-        // Size is used when both are given.
+-        if (rythmosPList.sublist("Rythmos Integration Control").
+-          isParameter("Max dt"))
+-        {
+-          double timeInSecs =
+-            rythmosPList.sublist("Rythmos Integration Control").
+-            get<double>("Max dt");
+-          double scaledTime(timeInSecs / t0);
+-          inputPList.sublist("Solution Control").sublist("Rythmos").
+-            sublist("Rythmos Integration Control").
+-            set<double>("Max dt", scaledTime);
+-          *out << "Max dt = " << timeInSecs << " [s], scaled value = "
+-               << scaledTime << endl;
+-        }
+-
+-        // Scale and re-set Fixed dt.
+-        if (rythmosPList.sublist("Rythmos Integration Control").
+-          isParameter("Fixed dt"))
+-        {
+-          double timeInSecs =
+-            rythmosPList.sublist("Rythmos Integration Control").
+-            get<double>("Fixed dt");
+-          double scaledTime(timeInSecs / t0);
+-          inputPList.sublist("Solution Control").sublist("Rythmos").
+-            sublist("Rythmos Integration Control").
+-            set<double>("Fixed dt", scaledTime);
+-          *out << "Fixed dt = " << timeInSecs << " [s], scaled value = "
+-               << scaledTime << endl;
+-        }
+-      } // end of Rythmos Integration Control block
+-    } // end of ImplicitBDFRamping
+-    else
+-      TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error, "Only "                 \
+-        "ImplicitBDFRamping step control strategy is currently supported!")
+-  }
+-  else
+-    TEUCHOS_TEST_FOR_EXCEPTION(true, runtime_error, "Invalid Stepper Type, "  \
+-      "must be either Backward Euler or BDF!");
+-
+-  // Get the model IDs.
+-  std::unordered_set<string> modelId;
+-
+-  ParameterList bIDpID_list = inputPList.sublist("Block ID to Physics ID Mapping");
+-  for (auto liter=bIDpID_list.begin(); liter != bIDpID_list.end(); ++liter)
+-  {
+-    ParameterEntry const& entry = bIDpID_list.entry(liter);
+-    auto physicsID = Teuchos::getValue<std::string>(entry);
+-
+-    // Iterate over the sublists inserting unique materials.
+-    ParameterList scPL =
+-      inputPList.sublist("Physics Blocks").sublist(physicsID);
+-    for (auto scPLIt = scPL.begin(); scPLIt != scPL.end(); ++scPLIt)
+-    {
+-      const string key(scPLIt->first);
+-      if (scPL.isSublist(key))
+-      {
+-        const ParameterList& submodels = scPL.sublist(key);
+-        string mid(submodels.get<string>("Model ID"));
+-        modelId.insert(mid);
+-      }
+-    }
+-  }
+-
+-
+-  bool foundOpt=false;
+-  for (auto modelIter=modelId.begin(); modelIter != modelId.end(); ++modelIter)
+-  {
+-    if (inputPList.sublist("Closure Models").isSublist(*modelIter))
+-    {
+-      if (inputPList.sublist("Closure Models").sublist(*modelIter).isSublist("Optical Generation"))
+-      {
+-	ParameterList& OptGenPList = inputPList.sublist("Closure Models").
+-          sublist(*modelIter).sublist("Optical Generation").sublist("Function1");
+-	if (OptGenPList.isParameter("Function Type"))
+-	  {
+-	    if (OptGenPList.get<string>("Function Type") == "Gauss")
+-	      {
+-		double peakTime(OptGenPList.get<double>("Time Peak Location"));
+-		double sigmaSpan;
+-		double FWHM=0.0;
+-		if (OptGenPList.isParameter ("Time Width"))
+-		  {
+-		    sigmaSpan = OptGenPList.get<double>("Time Width");
+-		    FWHM = sigmaSpan/4.71;
+-		  }
+-		if (OptGenPList.isParameter ("Time FWHM"))
+-		  FWHM = OptGenPList.get<double>("Time FWHM");
+-		double trueSigma = FWHM/2.355;
+-		std::vector<double> pulseTimes;
+-		//double startTime = peakTime - FWHM;
+-		//double endTime = peakTime + FWHM;
+-		double startTime = peakTime - 5*trueSigma;
+-		double endTime = peakTime + 5*trueSigma;
+-		int discretization = 25;  //Default Value
+-		if (OptGenPList.isParameter("Pulse Time Steps"))  //user defined number of steps in pulse
+-		  discretization = OptGenPList.get<int>("Pulse Time Steps");
+-		if (OptGenPList.isParameter("Pulse Maximum Time Step"))  //user defined number of steps in pulse
+-		  {
+-		    double pMTS = OptGenPList.get<double>("Pulse Maximum Time Step");
+-		    if (pMTS <= 0.0)
+-		      TEUCHOS_TEST_FOR_EXCEPTION((pMTS <= 0), runtime_error, "Pulse maximum time stepsize MUST be greater than 0.0");
+-		    discretization = int((endTime-startTime)/pMTS);
+-		  }
+-		pulseTimes.push_back(startTime);
+-		double times = startTime;
+-		if (times < 0) times = 0.0;
+-		double timeIncrement = (endTime-startTime)/double(discretization);
+-		while (times <= endTime)
+-		  {
+-		    times+=timeIncrement;
+-		    pulseTimes.push_back(times);
+-		  }
+-		foundOpt = true;
+-		stringstream timeStringStream;
+-		timeStringStream<<pulseTimes[0]/t0;
+-		for (size_t bt=1 ; bt<pulseTimes.size() ; bt++)
+-		  timeStringStream<<","<<pulseTimes[bt]/t0;
+-		string timeString = timeStringStream.str();
+-		rythmosPList.sublist("Rythmos Step Control Strategy").
+-		  set("Break Points", timeString);
+-	      }
+-	  }
+-      }
+-    }
+-    if (foundOpt) break;
+-  }
+-
+-}
+-
+ ///////////////////////////////////////////////////////////////////////////////
+ //
+ //  isContactBC()
+@@ -2140,7 +1798,7 @@ isContactBC(
+        (strategy == "BJT1D Base Contact"   )   or
+        (strategy == "Thermal Contact"      )   or
+        (strategy == "Constant Current"     )   or
+-       (strategy == "Resistor Contact"     )   or 
++       (strategy == "Resistor Contact"     )   or
+        (strategy == "Contact On Insulator" )))
+     return true;
+   else
+@@ -2156,7 +1814,7 @@ void
+ determineContactSides(
+   const Teuchos::ParameterList&                     bcPL,
+   charon::CurrentConstraintList&                    currentConstraints,
+-  std::vector<std::pair<std::string, std::string>>& contactSides, 
++  std::vector<std::pair<std::string, std::string>>& contactSides,
+   std::vector<std::string>&                         contactStrategy)
+ {
+   using std::make_pair;
+@@ -2227,10 +1885,10 @@ determineContactSides(
+       key.elementBlockId_ = bc.get<string>("Element Block ID");
+ 
+       // Determine the time domain strategy
+-      string strategy = bc.get<string>("Strategy"); 
++      string strategy = bc.get<string>("Strategy");
+       if (strategy == "Frequency Domain")
+         strategy = bc.sublist("Data").get<std::string>("Time Domain Strategy");
+-      key.strategy_ = strategy; 
++      key.strategy_ = strategy;
+ 
+       // If we've already seen this (sideset ID, element block ID) pair, check
+       // to see if there's a constraint we haven't seen yet, and then move on
+@@ -2260,13 +1918,13 @@ determineContactSides(
+   // Transfer the unique side IDs from the set into a vector.
+   i = 0;
+   contactSides.clear();
+-  contactStrategy.clear(); 
++  contactStrategy.clear();
+   for (const auto& side : uniqueSides2)
+   {
+     contactSides.push_back(make_pair(side.second.sidesetId_,
+       side.second.elementBlockId_));
+-    contactStrategy.push_back(side.second.strategy_); 
+-    
++    contactStrategy.push_back(side.second.strategy_);
++
+     if (side.first.isConstraint_)
+       currentConstraints[i++]->responseIndex(side.first.responseIndex_);
+   } // end loop over uniqueSides2
+@@ -2323,15 +1981,15 @@ checkEqnSetType(
+ 
+     // Check if the discretization is FEM-SUPG, FEM-EFFPG, or FEM-symEFFPG.
+     // This is used for the DDLattice and DDIonLattice equation sets
+-    // since they support multiple discretizations. 
++    // since they support multiple discretizations.
+     if (eqSetPList.isSublist("Options"))
+     {
+       const ParameterList& optList = eqSetPList.sublist("Options");
+       if (optList.isParameter("Discretization Method"))
+-      { 
++      {
+         const string& discMethod = optList.get<string>("Discretization Method");
+         if (discMethod.find("EFFPG") != string::npos)
+-          isEFFPG = true; 
++          isEFFPG = true;
+       }
+     } // end if (eqSetPList.isSublist("Options"))
+ 
+@@ -2362,7 +2020,6 @@ addCurrentResponses(
+   const charon::CurrentConstraintList&                    currentConstraints,
+   const bool&                                             writeCurrentGraph,
+   panzer_stk::ModelEvaluatorFactory<double>&              meFactory,
+-  Teuchos::RCP<charon::RythmosObserverFactory>&           rof,
+   Teuchos::RCP<charon::TempusObserverFactory>&            tof,
+   Teuchos::RCP<charon::NOXObserverFactory>&               nof,
+   panzer::ClosureModelFactory_TemplateManager<panzer::Traits>&
+@@ -2403,9 +2060,9 @@ addCurrentResponses(
+  {
+   for (size_t i(0); i < contactSides.size(); ++i)
+   {
+-    string strategy = contactStrategy[i]; 
++    string strategy = contactStrategy[i];
+     bool isContOnIns(false);
+-    if (strategy == "Contact On Insulator") isContOnIns = true; 
++    if (strategy == "Contact On Insulator") isContOnIns = true;
+ 
+     if (!isContOnIns) // exclude conduction current for contact on insulator
+     {
+@@ -2419,14 +2076,14 @@ addCurrentResponses(
+         builder.linearObjFactory = linearObjFactory;
+         builder.globalIndexer    = rcp_dynamic_cast<GlobalIndexer>(globalIndexer);
+         builder.isFreqDom = isFreqDom;
+-      
++
+         vector<WorksetDescriptor> sidesets;
+         sidesets.push_back(sidesetVolumeDescriptor(contactSides[i].second,
+           contactSides[i].first));
+         string respName(contactSides[i].first + "_" + contactSides[i].second +
+                       + "" + responseNames_fd_suffices[h] + "_Current");
+         size_t index(meFactory.addResponse(respName, sidesets, builder));
+-      
++
+         TEUCHOS_TEST_FOR_EXCEPTION(responseNames.size() != index,
+           logic_error, "Error:  Added a response to the ModelEvaluatorFactory " \
+           "in addCurrentResponses(), but the index returned (" << index << ") " \
+@@ -2444,14 +2101,14 @@ addCurrentResponses(
+         builder.linearObjFactory = linearObjFactory;
+         builder.globalIndexer    = rcp_dynamic_cast<GlobalIndexer>(globalIndexer);
+         builder.isFreqDom = isFreqDom;
+-      
++
+         vector<WorksetDescriptor> sidesets;
+         sidesets.push_back(sidesetDescriptor(contactSides[i].second,
+           contactSides[i].first));
+         string respName(contactSides[i].first + "_" + contactSides[i].second +
+           + "" + responseNames_fd_suffices[h] + "_Current");
+         size_t index(meFactory.addResponse(respName, sidesets, builder));
+-      
++
+         TEUCHOS_TEST_FOR_EXCEPTION(responseNames.size() != index,
+           logic_error, "Error:  Added a response to the ModelEvaluatorFactory " \
+           "in addCurrentResponses(), but the index returned (" << index << ") " \
+@@ -2460,9 +2117,9 @@ addCurrentResponses(
+       } // end if (currentHighOrder) or not
+     }  // end if (!isContOnIns)
+ 
+-    // compute the radian frequency 
++    // compute the radian frequency
+     double pi = 4.0*std::atan(1.0);
+-    double ssOmega = 2.0*pi*frequency; 
++    double ssOmega = 2.0*pi*frequency;
+ 
+     // compute contact displacement current for time and frequency domain simulation
+     if (currentHighOrder)
+@@ -2471,37 +2128,34 @@ addCurrentResponses(
+       {
+         DispCurrentResponse_Builder<int, int> builder;
+         builder.comm             = MPI_COMM_WORLD;
+-        builder.isTransient      = isTransient;   
+-        builder.isSingleFreq     = isSingleFreq;  
++        builder.isTransient      = isTransient;
++        builder.isSingleFreq     = isSingleFreq;
+         builder.isFreqDom        = isFreqDom;
+-        builder.omega            = ssOmega;       
++        builder.omega            = ssOmega;
+         builder.fd_suffix        = responseNames_fd_suffices[h];
+         builder.cubatureDegree   = 2;
+         builder.scaleParams      = scaleParams;
+         builder.linearObjFactory = linearObjFactory;
+         builder.globalIndexer    = rcp_dynamic_cast<GlobalIndexer>(globalIndexer);
+-      
++
+         vector<WorksetDescriptor> sidesets;
+         sidesets.push_back(sidesetDescriptor(contactSides[i].second,
+           contactSides[i].first));
+         string respName(contactSides[i].first + "_" + contactSides[i].second +
+                       + "" + responseNames_fd_suffices[h] + "_DispCurrent");
+         size_t index(meFactory.addResponse(respName, sidesets, builder));
+-      
++
+         TEUCHOS_TEST_FOR_EXCEPTION(responseNames.size() != index,
+           logic_error, "Error:  Added a response to the ModelEvaluatorFactory " \
+           "in addCurrentResponses(), but the index returned (" << index << ") " \
+           "is not what we'd expect.");
+         responseNames.push_back(respName);
+       }
+-    }  // end displacement current 
++    }  // end displacement current
+ 
+   } // end loop over contactSides
+ 
+   // Add the responses to the Rythmos and NOX Observer Factories.
+-  if (not rof.is_null())
+-    rof->setResponseNames(responseNames);
+-
+   if (not tof.is_null())
+     tof->setResponseNames(responseNames);
+ 
+@@ -2515,8 +2169,6 @@ addCurrentResponses(
+       "Voltage");
+   if (not paramNames.empty())
+   {
+-    if (not rof.is_null())
+-      rof->setParameterNames(paramNames);
+     if (not tof.is_null())
+       tof->setParameterNames(paramNames);
+   }
+@@ -2548,9 +2200,9 @@ void checkHeterointerfacesCharge(Teuchos::ParameterList& bcPL) {
+     const ParameterList& bc = Teuchos::getValue<ParameterList>(entry);
+     if(bc.get<string>("Strategy") == "Interface Heterojunction" &&
+                                 bc.get<string>("Type") == "Interface") {
+-      std::size_t foundpot1 = 
++      std::size_t foundpot1 =
+ 	bc.get<string>("Equation Set Name").find("ELECTRIC_POTENTIAL");
+-      std::size_t foundpot2 = 
++      std::size_t foundpot2 =
+ 	bc.get<string>("Equation Set Name2").find("ELECTRIC_POTENTIAL");
+       if(foundpot1 == string::npos || foundpot2 == string::npos) break;
+ 
+@@ -2563,10 +2215,10 @@ void checkHeterointerfacesCharge(Teuchos::ParameterList& bcPL) {
+       const string discMethod = data.get<string>("Discretization Method");
+       const double fixedCharge = data.get<double>("Fixed Charge");
+       // check if interface already exists
+-      vector<string>::iterator it = 
++      vector<string>::iterator it =
+ 	std::find(hj_sidesetID.begin(),hj_sidesetID.end(),sidesetID);
+       if (it != hj_sidesetID.end()) {
+-        // interface with sidesideID already exists, check the 
++        // interface with sidesideID already exists, check the
+ 	// consistenty of the associated BCs
+ 	int index = std::distance(hj_sidesetID.begin(),it);
+         // check for Element Block ID
+@@ -2613,7 +2265,7 @@ void checkGateTunneling(Teuchos::ParameterList& bcPL) {
+   using Teuchos::ParameterList;
+   using Teuchos::ParameterEntry;
+   using std::string;
+-  
++
+   for (auto itr = bcPL.begin(); itr != bcPL.end(); ++itr) {
+     const ParameterEntry& entry = bcPL.entry(itr);
+     TEUCHOS_ASSERT(entry.isList());
+@@ -2636,7 +2288,7 @@ void checkGateTunneling(Teuchos::ParameterList& bcPL) {
+ 	}
+       }
+       TEUCHOS_TEST_FOR_EXCEPTION(!isValidGate, std::invalid_argument,
+-	 "Error: Gate Sideset ID '" <<  gate_sidesetID << "' not valid!"); 
++	 "Error: Gate Sideset ID '" <<  gate_sidesetID << "' not valid!");
+     }
+   }
+ }
+@@ -2680,7 +2332,7 @@ void adjustSchottkyContacts_params(Teuchos::ParameterList& bcPL,
+ 	    if (data.isParameter("Varying Voltage"))
+ 	      withVaryingVoltage = true;
+ 	    break;
+-	    } 
++	    }
+ 	}
+       }
+       TEUCHOS_TEST_FOR_EXCEPTION(!found_pair, std::invalid_argument,
+@@ -2708,13 +2360,13 @@ void adjustSchottkyContacts_params(Teuchos::ParameterList& bcPL,
+        const ParameterList& data = bc.sublist("Data");
+        double WF = data.get<double>("Work Function");
+        double Vapp = 0.0;
+-       if( data.isParameter("Voltage")) 
++       if( data.isParameter("Voltage"))
+ 	 Vapp = data.get<double>("Voltage");
+-       
++
+        in1->push_back(sidesetID); in2->push_back(elBlockID);
+        in3->push_back(WF); in4->push_back(Vapp);
+     }
+-  }  
++  }
+   user_data.set("SchottkyContacts",in1);
+   user_data.set("SchottkyBlocks",in2);
+   user_data.set("SchottkyWF",in3);
+@@ -2747,9 +2399,9 @@ void gateContacts_params(Teuchos::ParameterList& bcPL,
+       if (data.isParameter("Voltage")) {
+ 	Vapp = data.get<double>("Voltage");
+       }
+-      
++
+       in1->push_back(sidesetID); in2->push_back(elBlockID);
+-      in3->push_back(WF); 
++      in3->push_back(WF);
+       in4->push_back(Vapp);
+     }
+   }
+@@ -2766,14 +2418,14 @@ void checkTID_params(const Teuchos::ParameterList& bcPL,
+   using Teuchos::ParameterList;
+   using Teuchos::ParameterEntry;
+   using std::string;
+-   
++
+   auto& matProperty = charon::Material_Properties::getInstance();
+ 
+   for (auto cm = cmPL.begin(); cm != cmPL.end(); ++cm) {
+     if (cm->second.isList()) {
+       const ParameterEntry& entry = cm->second;
+       const ParameterList& pList = Teuchos::getValue<ParameterList>(entry);
+- 
++
+       if (pList.isSublist("TID")) {
+ 	string mat = pList.get<string>("Material Name");
+ 	const string matType = matProperty.getMaterialType(mat);
+@@ -2795,21 +2447,21 @@ void checkTID_params(const Teuchos::ParameterList& bcPL,
+ 		  if (sidesetID == gate_name) {
+ 		    const ParameterList& data = bc.sublist("Data");
+ 		    if(data.isParameter("Varying Voltage")) {
+-		      if (data.get<string>("Varying Voltage") == "Parameter") 
++		      if (data.get<string>("Varying Voltage") == "Parameter")
+ 			{ valid = true; break; }
+-		    }  
+-		  } 
++		    }
++		  }
+ 		}
+-	      } 
++	      }
+ 	      TEUCHOS_TEST_FOR_EXCEPTION(!valid, std::invalid_argument,
+-		     "Error: TID Gate Contact '" <<  gate_name << "' not valid!"); 
++		     "Error: TID Gate Contact '" <<  gate_name << "' not valid!");
+ 	    } // gate contact check
+ 	  } // Kimpton Model
+ 	} // insulator
+       } // TID model
+     }
+ 
+-  } // loop over the closure models 
++  } // loop over the closure models
+ }
+ 
+ 
+@@ -2823,7 +2475,7 @@ void blockMaterial_params(const Teuchos::ParameterList& blphPL,
+   using std::string;
+ 
+   // blockId to material map
+-  Teuchos::RCP<std::map<string,string>> block_mat = 
++  Teuchos::RCP<std::map<string,string>> block_mat =
+     Teuchos::rcp(new std::map<string,string>);
+ 
+   for (auto blph = blphPL.begin(); blph != blphPL.end(); ++blph) {
+@@ -2836,7 +2488,7 @@ void blockMaterial_params(const Teuchos::ParameterList& blphPL,
+       if(ph->first == physicsId) {
+ 	const ParameterEntry& entry1 = ph->second;
+ 	const ParameterList& pList = Teuchos::getValue<ParameterList>(entry1);
+-	const ParameterList& eqSetPList = pList.sublist("child0"); 
++	const ParameterList& eqSetPList = pList.sublist("child0");
+ 	modelId = eqSetPList.get<string>("Model ID");
+ 	break;
+       }
+@@ -2855,7 +2507,7 @@ void blockMaterial_params(const Teuchos::ParameterList& blphPL,
+       }
+     }
+   }
+-  
++
+   user_data.set("block2mat",block_mat);
+ }
+ 

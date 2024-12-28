@@ -3,19 +3,18 @@
 using BinaryBuilder
 
 name = "Libtiff"
-version = v"4.4.0"
+version = v"4.7.0"
 
 # Collection of sources required to build Libtiff
 sources = [
-    ArchiveSource("https://download.osgeo.org/libtiff/tiff-$(version).tar.gz",
-                  "917223b37538959aca3b790d2d73aa6e626b688e02dcda272aec24c2f498abed")
+    ArchiveSource("https://download.osgeo.org/libtiff/tiff-$(version).tar.xz",
+                  "273a0a73b1f0bed640afee4a5df0337357ced5b53d3d5d1c405b936501f71017"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/tiff-*/
-export CPPFLAGS="-I${includedir}"
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+cd $WORKSPACE/srcdir/tiff-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --docdir=/tmp
 make -j${nproc}
 make install
 """
@@ -32,10 +31,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("JpegTurbo_jll"),
-    Dependency("LERC_jll"),
+    Dependency("LERC_jll"; compat="4"),
+    Dependency("XZ_jll"; compat="5.2.5"),
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", clang_use_lld=false)

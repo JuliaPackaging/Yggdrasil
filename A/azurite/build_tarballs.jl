@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "azurite"
-version = v"3.18.0"
+version = v"3.29.0"
 sources = GitSource[]
 
 script = "version=$(version)\n" * raw"""

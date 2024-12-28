@@ -1,0 +1,34 @@
+commit 2931aec04cc922ebe2185ac9c48141ad8f0bcadd
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 13:33:37 2023 +0000
+
+    Intrepid2: Fix ::rank detection on Windows
+    
+    I do not entirely know what the semantic difference is, but in
+    my Windows builds (gcc, mingw-w64), the existing SFINAE trap,
+    catches the Kokkos::DynRankView::rank member function in its
+    check, not just static constants. Fix that by adding an explicit
+    check against member function pointers.
+
+diff --git a/packages/intrepid2/src/Shared/Intrepid2_Utils.hpp b/packages/intrepid2/src/Shared/Intrepid2_Utils.hpp
+index 1334f9aa252..b56c1a4d0c4 100644
+--- a/packages/intrepid2/src/Shared/Intrepid2_Utils.hpp
++++ b/packages/intrepid2/src/Shared/Intrepid2_Utils.hpp
+@@ -385,6 +385,8 @@ namespace Intrepid2 {
+   }
+ 
+   using std::enable_if_t;
++  template <typename T> using static_not = std::integral_constant<bool, !T::value>;
++
+ 
+   /**
+     \brief Tests whether a class has a member rank.  Used in getFixedRank() method below, which in turn is used in the supports_rank_n helpers.
+@@ -396,7 +398,7 @@ namespace Intrepid2 {
+     \brief Tests whether a class has a member rank.  Used in getFixedRank() method below, which in turn is used in the supports_rank_n helpers.
+   */
+   template <typename T>
+-  struct has_rank_member<T, decltype((void)T::rank, void())> : std::true_type {};
++  struct has_rank_member<T, decltype((void)T::rank, void())> : static_not<std::is_member_function_pointer<decltype(&T::rank)> > {};
+ 
+   static_assert(! has_rank_member<Kokkos::DynRankView<double> >::value, "DynRankView does not have a member rank, so this assert should pass -- if not, something may be wrong with has_rank_member.");
+ #if KOKKOS_VERSION < 40099

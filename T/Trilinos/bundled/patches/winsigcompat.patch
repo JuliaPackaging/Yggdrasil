@@ -1,0 +1,150 @@
+commit 755c9e7cde07689431f29a110346a58e82fb95e1
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 10:32:17 2023 +0000
+
+    stk: Minimal signal compat for windows
+
+diff --git a/packages/stk/stk_util/stk_util/util/Signal.cpp b/packages/stk/stk_util/stk_util/util/Signal.cpp
+index 18d8828ed81..28e49c2c760 100644
+--- a/packages/stk/stk_util/stk_util/util/Signal.cpp
++++ b/packages/stk/stk_util/stk_util/util/Signal.cpp
+@@ -153,7 +153,9 @@ EnvSignal::activateSignals()
+ #ifndef STK_ASAN_IS_ON
+   SignalHandler::instance().add_handler(SIGSEGV, EnvSignal::segvCallback);
+   SignalHandler::instance().add_handler(SIGILL, EnvSignal::illCallback);
++#ifdef SIGBUS
+   SignalHandler::instance().add_handler(SIGBUS, EnvSignal::busCallback);
++#endif
+ //   SignalHandler::instance().add_handler(SIGINT, EnvSignal::intCallback);
+ 
+ #if defined(SIERRA_USER_SHUTDOWN_SIGNAL)
+@@ -175,7 +177,9 @@ EnvSignal::deactivateSignals()
+ #ifndef STK_ASAN_IS_ON
+   SignalHandler::instance().remove_handler(SIGSEGV, EnvSignal::segvCallback);
+   SignalHandler::instance().remove_handler(SIGILL, EnvSignal::illCallback);
++#ifdef SIGBUS
+   SignalHandler::instance().remove_handler(SIGBUS, EnvSignal::busCallback);
++#endif
+ //   SignalHandler::instance().add_handler(SIGINT, EnvSignal::intCallback);
+ 
+ #if defined(SIERRA_USER_SHUTDOWN_SIGNAL)
+@@ -229,11 +233,15 @@ EnvSignal::segvHandler()
+ void
+ EnvSignal::busHandler()
+ {
++#ifdef SIGBUS
+   SignalHandler::instance().remove_handler(SIGBUS, EnvSignal::busCallback);
+   doSignal("Bus error", SIGBUS);
++#else
++  // Unreachable, since we didn't register a SIGBUS handler
++  abort();
++#endif
+ }
+ 
+-
+ void
+ EnvSignal::illHandler()
+ {
+diff --git a/packages/stk/stk_util/stk_util/util/Signal.hpp b/packages/stk/stk_util/stk_util/util/Signal.hpp
+index f32bbc07cf2..0d8d6abd0b3 100644
+--- a/packages/stk/stk_util/stk_util/util/Signal.hpp
++++ b/packages/stk/stk_util/stk_util/util/Signal.hpp
+@@ -38,6 +38,12 @@
+ #include <setjmp.h>  // for sigjmp_buf
+ #include <string>    // for string
+ 
++#ifdef _WIN32
++#define sigjmp_buf jmp_buf
++#define siglongjmp longjmp
++#define sigsetjmp setjmp
++#endif
++
+ 
+ /**
+  * Signal handling is enabled via the <b>activate_signals()</b> function.  The
+diff --git a/packages/stk/stk_util/stk_util/util/SignalHandler.cpp b/packages/stk/stk_util/stk_util/util/SignalHandler.cpp
+index f6c8a517507..1d5e19f86c0 100644
+--- a/packages/stk/stk_util/stk_util/util/SignalHandler.cpp
++++ b/packages/stk/stk_util/stk_util/util/SignalHandler.cpp
+@@ -44,12 +44,21 @@
+ #include <vector>                      // for vector, vector<>::const_iterator
+ 
+ extern "C" {
++#ifdef _WIN32
++  static void signal_handler(int signal)
++  {
++    // This routine is called for all signals...
++    // Just a C-callable wrapper around a call to the true signal handler...
++    sierra::SignalHandler::instance().handle_signal(signal);
++  }
++#else
+   static void signal_handler(int signal, siginfo_t *sip, void *ucp)
+   {
+     // This routine is called for all signals...
+     // Just a C-callable wrapper around a call to the true signal handler...
+     sierra::SignalHandler::instance().handle_signal(signal);
+   }
++#endif
+ }
+ 
+ namespace sierra {
+@@ -170,6 +179,9 @@ SignalHandler::add_handler(
+   // See if already handling this signal...
+   if (m_handlerMap.find(signal) == m_handlerMap.end()) {
+     // Tell OS that we want to handle this signal...
++#ifdef _WIN32
++    void *old_action = (void*)::signal(signal, signal_handler);
++#else
+     struct sigaction action;
+     struct sigaction *old_action = new struct sigaction;
+ 
+@@ -177,6 +189,7 @@ SignalHandler::add_handler(
+     sigemptyset(&action.sa_mask);
+     action.sa_flags = SA_SIGINFO;
+     ::sigaction(signal, &action, old_action);
++#endif
+     m_oldActionMap.insert(OldActionMap::value_type(signal, old_action));
+   }
+   m_handlerMap.insert(HandlerMap::value_type(signal, &callback));
+@@ -202,8 +215,12 @@ SignalHandler::remove_handler(
+   if (m_handlerMap.find(signal) == m_handlerMap.end()) {
+     OldActionMap::iterator it = m_oldActionMap.find(signal);
+     if (it != m_oldActionMap.end()) {
++#ifdef _WIN32
++      ::signal(signal, (void (*)(int))(*it).second);
++#else
+       ::sigaction(signal, (*it).second, NULL);
+       delete (*it).second;
++#endif
+       m_oldActionMap.erase(it);
+     }
+   }
+@@ -234,8 +251,12 @@ SignalHandler::remove_all_handlers()
+   m_handlerMap.clear();
+ 
+   for (OldActionMap::iterator it = m_oldActionMap.begin(); it != m_oldActionMap.end(); ++it) {
++#ifdef _WIN32
++    ::signal((*it).first, (void (*)(int))(*it).second);
++#else
+     ::sigaction((*it).first, (*it).second, NULL);
+     delete (*it).second;
++#endif
+   }
+   m_oldActionMap.clear();
+ }
+diff --git a/packages/stk/stk_util/stk_util/util/SignalHandler.hpp b/packages/stk/stk_util/stk_util/util/SignalHandler.hpp
+index 8febec9f3bc..56661c09f2b 100644
+--- a/packages/stk/stk_util/stk_util/util/SignalHandler.hpp
++++ b/packages/stk/stk_util/stk_util/util/SignalHandler.hpp
+@@ -112,7 +112,11 @@ public:
+ 
+ private:
+   typedef std::multimap<int, CallbackBase *> HandlerMap;
++#ifdef _WIN32
++  typedef std::multimap<int, void *> OldActionMap;
++#else
+   typedef std::multimap<int, struct sigaction *> OldActionMap;
++#endif
+ 
+   HandlerMap		m_handlerMap;
+   OldActionMap		m_oldActionMap;

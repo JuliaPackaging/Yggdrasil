@@ -1,0 +1,123 @@
+--- configure_org	2024-01-24 12:57:55
++++ configure	2024-01-24 14:31:27
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++#!/bin/bash
+ #-----------------------------------------------------------------------
+ # Configure site-specific make files.
+ #
+@@ -111,1 +111,1 @@
+-USE_TECLA="1"
++USE_TECLA="0"
+@@ -326,7 +326,7 @@
+ ;;
+ 
+   ppc-osx-gcc|apple-osx-gcc)   # PowerPC Mac with OSX and the Gnu C compiler.
+-    CC=gcc
++    CC=$CCOMPL
+     FC=gfortran
+     CFLAGS="$CFLAGS -Dppc_osx"
+ #
+@@ -341,13 +341,28 @@
+       echo ' ';echo ' CCLIB="/usr/local/lib/libgcc.a"';echo ' '
+       exit 1
+     fi
+-    CCLIB="$CCLIB \
+-     /System/Library/Frameworks/Foundation.framework/Versions/Current/Foundation \
+-     /System/Library/Frameworks/AppKit.framework/Versions/Current/AppKit"
++
++    FLIBLOC="/System/Library/Frameworks/Foundation.framework/Versions/Current/Foundation"
++    if ! [ -f $FLIBLOC ]; then
++      FLIBLOC="/System/Library/Frameworks/Foundation.framework/Versions/Current/Resources/BridgeSupport/Foundation.dylib"
++      if ! [ -f $FLIBLOC ]; then
++        FLIBLOC=
++      fi
++    fi
++
++    ALIBLOC="/System/Library/Frameworks/AppKit.framework/Versions/Current/AppKit"
++    if ! [ -f $ALIBLOC ]; then
++      ALIBLOC="/System/Library/Frameworks/AppKit.framework/Versions/Current/Resources/BridgeSupport/AppKit.dylib"
++      if ! [ -f $ALIBLOC ]; then
++        ALIBLOC=
++      fi
++    fi
++
++    CCLIB="$CCLIB $FLIBLOC $ALIBLOC"
+ ;;
+ 
+   intel-osx-gcc)   # Intel Mac with OSX and the Gnu C compiler.
+-    CC=gcc
++    CC=$CCOMPL
+     FC=gfortran
+     CFLAGS="$CFLAGS -Dintel_osx"
+ #
+@@ -362,13 +377,28 @@
+       echo ' ';echo ' CCLIB="/usr/local/lib/libgcc.a"';echo ' '
+       exit 1
+     fi
+-    CCLIB="$CCLIB \
+-     /System/Library/Frameworks/Foundation.framework/Versions/Current/Foundation \
+-     /System/Library/Frameworks/AppKit.framework/Versions/Current/AppKit"
++
++    FLIBLOC="/System/Library/Frameworks/Foundation.framework/Versions/Current/Foundation"
++    if ! [ -f $FLIBLOC ]; then
++      FLIBLOC="/System/Library/Frameworks/Foundation.framework/Versions/Current/Resources/BridgeSupport/Foundation.dylib"
++      if ! [ -f $FLIBLOC ]; then
++        FLIBLOC=
++      fi
++    fi
++
++    ALIBLOC="/System/Library/Frameworks/AppKit.framework/Versions/Current/AppKit"
++    if ! [ -f $ALIBLOC ]; then
++      ALIBLOC="/System/Library/Frameworks/AppKit.framework/Versions/Current/Resources/BridgeSupport/AppKit.dylib"
++      if ! [ -f $ALIBLOC ]; then
++        ALIBLOC=
++      fi
++    fi
++
++    CCLIB="$CCLIB $FLIBLOC $ALIBLOC"
+ ;;
+ 
+   arm-osx-gcc)   # Arm Mac with OSX and the Gnu C compiler.
+-    CC=gcc
++    CC=$CCOMPL
+     FC=gfortran
+     CFLAGS="$CFLAGS -Darm_osx"
+ #
+@@ -383,9 +413,24 @@
+       echo ' ';echo ' CCLIB="/usr/local/lib/libgcc.a"';echo ' '
+       exit 1
+     fi
+-    CCLIB="$CCLIB \
+-     /System/Library/Frameworks/Foundation.framework/Versions/Current/Foundation \
+-     /System/Library/Frameworks/AppKit.framework/Versions/Current/AppKit"
++
++    FLIBLOC="/System/Library/Frameworks/Foundation.framework/Versions/Current/Foundation"
++    if ! [ -f $FLIBLOC ]; then
++      FLIBLOC="/System/Library/Frameworks/Foundation.framework/Versions/Current/Resources/BridgeSupport/Foundation.dylib"
++      if ! [ -f $FLIBLOC ]; then
++        FLIBLOC=
++      fi
++    fi
++
++    ALIBLOC="/System/Library/Frameworks/AppKit.framework/Versions/Current/AppKit"
++    if ! [ -f $ALIBLOC ]; then
++      ALIBLOC="/System/Library/Frameworks/AppKit.framework/Versions/Current/Resources/BridgeSupport/AppKit.dylib"
++      if ! [ -f $ALIBLOC ]; then
++        ALIBLOC=
++      fi
++    fi
++
++    CCLIB="$CCLIB $FLIBLOC $ALIBLOC"
+ ;;
+ 
+   *)
+@@ -399,7 +399,7 @@
+ 
+ case "$FC" in
+     gfortran|*/gfortran)
+-        $FC -o gfortran_version cpg_src/gfortran_version.fpp
++        $HOSTFC -o gfortran_version cpg_src/gfortran_version.fpp
+         if [ `./gfortran_version` -ge 8 ]; then
+             PGBIND_FLAGS="$PGBIND_FLAGS -lentype size_t"
+         fi

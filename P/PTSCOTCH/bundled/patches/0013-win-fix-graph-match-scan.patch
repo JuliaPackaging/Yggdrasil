@@ -1,0 +1,32 @@
+diff --git a/src/libscotch/graph_match_scan.c b/src/libscotch/graph_match_scan.c
+index ec13821..23d20af 100644
+--- a/src/libscotch/graph_match_scan.c
++++ b/src/libscotch/graph_match_scan.c
+@@ -173,6 +173,7 @@ GraphCoarsenThread * restrict const thrdptr)
+     }
+ 
+ #ifndef GRAPHMATCHSCANSEQ
++#ifndef _WIN32
+     if (__sync_lock_test_and_set (&locktax[finevertnum], 1)) /* If could not acquire local vertex (always succeeds for isolated) */
+       continue;                                   /* Do not remember it as some other vertex has already acquired both           */
+ 
+@@ -184,6 +185,19 @@ GraphCoarsenThread * restrict const thrdptr)
+       }
+       finematetax[finevertbst] = finevertnum;     /* Match other vertex with us */
+     }
++#else /*_WIN32*/
++    if (_InterlockedExchange(&locktax[finevertnum], 1) != 0) /* If could not acquire local vertex (always succeeds for isolated) */
++      continue;                                   /* Do not remember it as some other vertex has already acquired both           */
++
++    if (finevertbst != finevertnum) {             /* If we matched with another vertex                 */
++      if (_InterlockedExchange(&locktax[finevertbst], 1) != 0) { /* If we could not acquire vertex */
++        _InterlockedExchange(&locktax[finevertnum], 0); /* Release lock on local vertex                 */
++        finequeutab[finequeunew++] = finevertnum; /* Postpone processing to next pass               */
++        continue;
++      }
++      finematetax[finevertbst] = finevertnum;     /* Match other vertex with us */
++    }
++#endif /*_WIN32*/
+ #else /* GRAPHMATCHSCANSEQ */
+     finematetax[finevertbst] = finevertnum;       /* Match other vertex with us */
+ #endif /* GRAPHMATCHSCANSEQ */

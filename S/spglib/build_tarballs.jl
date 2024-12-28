@@ -1,30 +1,28 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "spglib"
-version = v"1.16.5"
+version = v"2.4.0"
 
-# Collection of sources required to build spglib
+# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/atztogo/spglib/archive/v$(version).tar.gz",
-                  "1bbde03b6b78da756c07f458bd90d84f3c253841b9b0632db5b72c5961e87aef"),
+    GitSource("https://github.com/spglib/spglib.git", "e6bdd0bafcb60ff26c7ce9ff95d13c43e56d995f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/spglib-*/
-if [[ ${target} == *-mingw32 ]]; then
-    sed -i -e 's/LIBRARY/RUNTIME/' CMakeLists.txt
+cd $WORKSPACE/srcdir/spglib
+args=""
+if [[ ! -z "${CMAKE_TARGET_TOOLCHAIN}" ]]; then
+  args="${args} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 fi
-mkdir _build
-cd _build/
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DCMAKE_BUILD_TYPE=Release \
-      ..
-make -j${nproc}
-make install VERBOSE=1
+cmake -B ./build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DSPGLIB_WITH_TESTS=OFF \
+      ${args}
+cmake --build ./build -j${nproc}
+cmake --install ./build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -37,12 +35,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-    Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
-    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"12.1.0")

@@ -10,13 +10,13 @@
  # define warn() fprintf(stderr, "%s: %d\n", __func__, __LINE__)
 @@ -353,7 +352,7 @@ _asn1_get_time_der (unsigned type, const unsigned char *der, int der_len, int *r
        p = &der[len_len];
-       for (i=0;i<(unsigned)(str_len-1);i++)
-          {
--           if (c_isdigit(p[i]) == 0)
-+           if (isdigit(p[i]) == 0)
-              {
-                if (type == ASN1_ETYPE_GENERALIZED_TIME)
-                  {
+       for (i = 0; i < (unsigned) (str_len - 1); i++)
+ 	{
+-	  if (c_isdigit (p[i]) == 0)
++	  if (isdigit (p[i]) == 0)
+ 	    {
+ 	      if (type == ASN1_ETYPE_GENERALIZED_TIME)
+ 		{
 --- a/lib/minitasn1/element.c
 +++ b/lib/minitasn1/element.c
 @@ -30,7 +30,6 @@
@@ -104,11 +104,11 @@
 --- a/lib/minitasn1/int.h
 +++ b/lib/minitasn1/int.h
 @@ -29,6 +29,7 @@
- #include <string.h>
- #include <stdlib.h>
- #include <stdio.h>
-+#include <ctype.h>
- #include <stdint.h>
+ # include <string.h>
+ # include <stdlib.h>
+ # include <stdio.h>
++# include <ctype.h>
+ # include <stdint.h>
  
  #ifdef HAVE_SYS_TYPES_H
 --- a/lib/minitasn1/parser_aux.c

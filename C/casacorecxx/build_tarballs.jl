@@ -3,10 +3,10 @@
 using BinaryBuilder, Pkg
 
 name = "casacorecxx"
-version = v"0.2.1"
+version = v"0.3.0"
 
 # Collection of sources required to complete build
-sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "bf73cbd1cf6c681102b8314172970dc1ca1618da")]
+sources = [GitSource("https://github.com/torrance/Casacore.jl.git", "0595c37a84d58fd200c926db74db21d637357123")]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -23,12 +23,9 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 exit
 """
 
-# Julia version compatibility
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
-
 # Get a full list of platforms supported by Libjulia
 include("../../L/libjulia/common.jl")
+filter!(x -> x >= v"1.7", julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -41,11 +38,11 @@ end
 products = Product[LibraryProduct("libcasacorecxx", :libcasacorecxx),]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [Dependency("libcxxwrap_julia_jll"),
-                Dependency("casacore_jll"),
+dependencies = [Dependency("libcxxwrap_julia_jll", compat="0.11.2"),
+                Dependency("casacore_jll", compat="3.5.1"),
                 BuildDependency("libjulia_jll")]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat,
+               julia_compat="1.7",
                preferred_gcc_version=v"7") # We need C++17 for CxxWrap

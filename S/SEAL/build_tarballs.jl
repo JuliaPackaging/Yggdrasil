@@ -3,17 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "SEAL"
-version = v"3.6.2"
+version = v"4.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/microsoft/SEAL/archive/v$(version).tar.gz",
-                  "1e2a97deb1f5b543640fc37d7b4737cab2a9849f616c13ff40ad3be4cf29fb9c")
+    GitSource("https://github.com/microsoft/SEAL.git", "206648d0e4634e5c61dcf9370676630268290b59")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SEAL-*
+cd $WORKSPACE/srcdir/SEAL
 
 # Collect target-specific flags
 # Note: The '-DSEAL_USE__*' and `-DSEAL*_EXITCODE*` flags are required to circumvent
@@ -80,4 +79,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"7.1.0")
+               preferred_gcc_version = v"10.2.0")

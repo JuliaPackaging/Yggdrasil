@@ -1,24 +1,17 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "LibGit2"
-version = v"1.5.0"
+version = v"1.8.4"
 
 # Collection of sources required to build libgit2
 sources = [
-    GitSource("https://github.com/libgit2/libgit2.git",
-              "fbea439d4b6fc91c6b619d01b85ab3b7746e4c19"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/libgit2/libgit2.git", "3f4182d15eab74a302718f2de454ffadb1995626")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgit2*/
-
-# https://github.com/libgit2/libgit2/issues/3866
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-agent-nonfatal.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-hostkey.patch
-# https://github.com/libgit2/libgit2/pull/6377
-atomic_patch -p1 $WORKSPACE/srcdir/patches/libgit2-lowercase-windows-h.patch
+cd $WORKSPACE/srcdir/libgit2*
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
@@ -35,25 +28,23 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-# Special windows flags
 if [[ ${target} == *-mingw* ]]; then
-    BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON -DBUILD_CLAR=OFF)
+    # Special Windows flags
+    BUILD_FLAGS+=(-DWIN32=ON -DMINGW=ON -DBUILD_TESTS=OFF)
     if [[ ${target} == i686-* ]]; then
         BUILD_FLAGS+=(-DCMAKE_C_FLAGS="-mincoming-stack-boundary=2")
     fi
 
     # For some reason, CMake fails to find libssh2 using pkg-config.
     BUILD_FLAGS+=(-Dssh2_RESOLVED=${bindir}/libssh2.dll)
-elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]]; then
-    # If we're on Linux or FreeBSD, explicitly ask for mbedTLS instead of OpenSSL
-    BUILD_FLAGS+=(-DUSE_HTTPS=mbedTLS -DUSE_SHA1=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
+elif [[ ${target} == *linux* ]] || [[ ${target} == *freebsd* ]] || [[ ${target} == *openbsd* ]]; then
+    # If we're on Linux or FreeBSD, explicitly ask for OpenSSL
+    BUILD_FLAGS+=(-DUSE_HTTPS=OpenSSL -DUSE_SHA1=CollisionDetection -DCMAKE_INSTALL_RPATH="\$ORIGIN")
 fi
 
-mkdir build && cd build
-
-cmake .. "${BUILD_FLAGS[@]}"
-make -j${nproc}
-make install
+cmake -B build "${BUILD_FLAGS[@]}"
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -66,12 +57,18 @@ products = [
     LibraryProduct("libgit2", :libgit2),
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("MbedTLS_jll"; compat="~2.28.0"),
-    Dependency("LibSSH2_jll"; compat="1.10.1"),
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    Dependency("LibSSH2_jll"; compat="1.11.3"),
+    Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.9", preferred_llvm_version=llvm_version)
+
+# Build trigger: 1

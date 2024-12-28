@@ -2,11 +2,11 @@ using BinaryBuilder
 
 name = "yq"
 
-version = v"4.19.1"
+version = v"4.44.3"
 
 # Collection of sources required to build yq
 sources = [
-    GitSource("https://github.com/mikefarah/yq", "926a68181ba83ca29fb6bac566fd443e212228ed"),
+    GitSource("https://github.com/mikefarah/yq", "bbdd97482f2d439126582a59689eb1c855944955"),
 ]
 
 # Bash recipe for building across all platforms

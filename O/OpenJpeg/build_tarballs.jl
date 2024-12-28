@@ -3,29 +3,32 @@
 using BinaryBuilder, Pkg
 
 name = "OpenJpeg"
-version = v"2.4.0"
+version = v"2.5.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/uclouvain/openjpeg/archive/v$(version)/openjpeg-$(version).tar.gz",
-                  "8702ba68b442657f11aaeb2b338443ca8d5fb95b0d845757968a7be31ef7f16d"),
+    GitSource("https://github.com/uclouvain/openjpeg.git",
+              "210a8a5690d0da66f02d49420d7176a21ef409dc"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/openjpeg-*/
+cd $WORKSPACE/srcdir/openjpeg/
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC_LIBS=OFF
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_STATIC_LIBS=OFF
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -37,10 +40,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="LittleCMS_jll", uuid="d3a379c0-f9a3-5b72-a4c0-6bf4d2e8af0f"))
-    Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f"))
-    Dependency("Libtiff_jll"; compat="4.3.0")
+    Dependency("LittleCMS_jll"; compat="2.15.0")
+    Dependency("libpng_jll"; compat="1.6.38")
+    Dependency("Libtiff_jll"; compat="4.5.1")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

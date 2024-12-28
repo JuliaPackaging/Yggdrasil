@@ -1,6 +1,6 @@
 --- a/include/Makefile.in
 +++ b/include/Makefile.in
-@@ -809,8 +809,7 @@
+@@ -805,8 +805,7 @@
  makemd5$(BUILD_EXEEXT): LDFLAGS=$(LDFLAGS_FOR_BUILD)
  
  md5global.h: makemd5$(BUILD_EXEEXT) Makefile

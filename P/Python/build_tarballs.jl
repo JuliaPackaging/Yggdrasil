@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.10.8"
+version = v"3.10.14"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "6a30ecde59c47048013eb5a658c9b5dec277203d2793667f578df7671f7f03f3"),
+                  "9c50481faa8c2832329ba0fc8868d0a606a680fc4f60ec48d26ce8e076751fda"),
     DirectorySource("./bundled"),
 ]
 
@@ -21,6 +21,7 @@ apk add autoconf-archive
 rm -f $(which python3)
 
 # We need these for the host python build
+apk update
 apk add zlib-dev libffi-dev
 
 # Create fake `arch` command:
@@ -86,7 +87,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # Disable windows for now, until we can sort through all of these patches
 # and choose the ones that we need:
@@ -104,10 +105,11 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Libffi_jll"; compat="~3.2.2"),
+    Dependency("SQLite_jll"),
     Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.12"),
 ]
 
 init_block = raw"""

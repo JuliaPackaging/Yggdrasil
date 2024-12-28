@@ -3,11 +3,11 @@
 using BinaryBuilderBase, BinaryBuilder, Pkg
 
 name = "HepMC3"
-version = v"3.2.2"
+version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://hepmc.web.cern.ch/hepmc/releases/HepMC3-3.2.2.tar.gz", "0e8cb4f78f804e38f7d29875db66f65e4c77896749d723548cc70fb7965e2d41")
+    ArchiveSource("http://hepmc.web.cern.ch/hepmc/releases/HepMC3-$(version).tar.gz", "6f876091edcf7ee6d0c0db04e080056e89efc1a61abe62355d97ce8e735769d6")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,7 +31,8 @@ platforms = [
     Platform("aarch64", "linux"; libc="musl"),
     Platform("armv7l", "linux"; libc="musl"),
     Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "macos";)
+    Platform("x86_64", "macos";),
+    Platform("aarch64", "macos";)
 ]
 platforms = expand_cxxstring_abis(platforms)
 
@@ -46,4 +47,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7.1.0")

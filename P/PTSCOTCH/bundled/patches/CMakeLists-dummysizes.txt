@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.10)
+project(dummysizes LANGUAGES C)
+
+set(GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
+file(MAKE_DIRECTORY ${GENERATED_INCLUDE_DIR})
+
+option(BUILD_PTSCOTCH "Build PT-Scotch" ON)
+
+add_executable(dummysizes ../libscotch/dummysizes.c)
+set_target_properties(dummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+if(BUILD_PTSCOTCH)
+  # find_package(MPI COMPONENTS C)
+  # if(NOT MPI_C_FOUND)
+  #   message(FATAL_ERROR "MPI required to compile PT-Scotch")
+  # endif()
+  add_executable(ptdummysizes ../libscotch/dummysizes.c)
+  set_target_properties(ptdummysizes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  # target_link_libraries(ptdummysizes PRIVATE MPI::MPI_C)
+  add_dependencies(ptdummysizes scotch_h)
+  set_target_properties(ptdummysizes PROPERTIES
+    COMPILE_FLAGS -DSCOTCH_PTSCOTCH)
+endif(BUILD_PTSCOTCH)
+
+##############
+#  scotch.h  #
+##############
+
+# Generate scotch.h
+add_custom_command(OUTPUT ${GENERATED_INCLUDE_DIR}/scotch.h
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../libscotch/library.h ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND $<TARGET_FILE:dummysizes> ${CMAKE_CURRENT_BINARY_DIR}/library.h ${GENERATED_INCLUDE_DIR}/scotch.h DEPENDS dummysizes
+  COMMENT "Generate scotch.h")
+add_custom_target(scotch_h
+  DEPENDS "${GENERATED_INCLUDE_DIR}/scotch.h")

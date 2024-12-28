@@ -193,7 +193,7 @@ dependencies = [
     Dependency("Glib_jll"; compat="2.68.1"),
     Dependency("Zlib_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms_macos)),
 ]

@@ -3,22 +3,30 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.2.9"
+version = v"5.6.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://tukaani.org/xz/xz-$(version).tar.xz",
-                  "287ef163e7e57561e9de590b2a9037457af24f03a46bbd12bf84f3263679e8d2"),
+    GitSource("https://github.com/tukaani-project/xz",
+              "9331ce4009ddc839f5191d234cc41b2d4797376d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/xz-*
+cd $WORKSPACE/srcdir/xz*
+install_license COPYING
+
+if [[ "${target}" != "*mingw32*" ]]; then
+    # install `autopoint`
+    apk update && apk add gettext-dev po4a
+fi
+./autogen.sh
+
 BUILD_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic)
 
 # i686 error "configure works but build fails at crc32_x86.S"
-# See 4.3 from https://git.tukaani.org/?p=xz.git;a=blob_plain;f=INSTALL;hb=HEAD
-if [[ "${target}" == i686-linux-* ]]; then
+# See 5.3 from https://git.tukaani.org/?p=xz.git;a=blob_plain;f=INSTALL;hb=HEAD
+if [[ "${target}" == i686-linux-gnu ]]; then
     BUILD_FLAGS+=(--disable-assembler)
 fi
 
@@ -29,7 +37,7 @@ if [[ "${target}" != *-gnu* ]]; then
 else
     STATIC_SHARED_TOGGLE=(--disable-shared --disable-static)
     # Handle error on GNU/Linux:
-    #  configure: error: 
+    #  configure: error:
     #      On GNU/Linux, building both shared and static library at the same time
     #      is not supported if --with-pic or --without-pic is used.
     #      Use either --disable-shared or --disable-static to build one type
@@ -62,5 +70,8 @@ products = [
 dependencies = Dependency[
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Build the tarballs, and possibly a `build.jl` as well!
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
+
+# Build trigger: 1

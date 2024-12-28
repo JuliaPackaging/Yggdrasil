@@ -3,22 +3,17 @@
 using BinaryBuilder
 
 name = "FLAC"
-version = v"1.3.4"
+version = v"1.4.3"
 
 # Collection of sources required to build FLAC
 sources = [
     ArchiveSource("https://ftp.osuosl.org/pub/xiph/releases/flac/flac-$(version).tar.xz",
-                  "8ff0607e75a322dd7cd6ec48f4f225471404ae2730d0ea945127b1355155e737"),
-    DirectorySource("./bundled"),
+                  "6c58e69cd22348f441b861092b825e591d0b822e106de6eb0ee4d05d27205b70"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/flac-*/
-
-# Include patch for finding definition of `AT_HWCAP2` for PowerPC within the Linux
-# kernel headers, rather than the glibc headers, sicne our glibc is too old
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/flac_linux_headers.patch"
 
 if [[ "${target}" == *-mingw* ]]; then
     # Fix error
@@ -56,4 +51,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")

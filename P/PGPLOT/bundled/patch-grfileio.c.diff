@@ -1,0 +1,11 @@
+--- sys/grfileio.c.orig	1995-06-19 16:41:42.000000000 -0400
++++ sys/grfileio.c	2022-12-01 11:15:20.000000000 -0500
+@@ -19,6 +19,8 @@
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <sys/types.h>
++#include <string.h>
++#include <unistd.h>
+ #include <fcntl.h>
+ 
+ #ifdef PG_PPU

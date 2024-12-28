@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "coordgenlibs"
-version = v"3.0.1"
+version = v"3.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mojaie/coordgenlibs.git", "fe91162e7b01b432735a1536475d37b67a5ad177"),
+    GitSource("https://github.com/mojaie/coordgenlibs.git", "bcef648e86257513b07a00f802d370aa443152c2"),
 ]
 
 # Bash recipe for building across all platforms

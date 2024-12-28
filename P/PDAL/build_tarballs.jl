@@ -3,73 +3,53 @@
 using BinaryBuilder, Pkg
 
 name = "PDAL"
-version = v"2.3.0"
+version = v"2.8.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/PDAL/PDAL/releases/download/$version/PDAL-$version-src.tar.gz", "5b0b92258874ef722b5027054d64c8b318b524e7a9b2b250d0330d76e19b8618"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/PDAL/PDAL.git", "736fa0a66af4bed7105dff5fa152edf26bbb8a3a"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 
-cd $WORKSPACE/srcdir/PDAL-*/
+cd $WORKSPACE/srcdir/PDAL*
 
-if [[ "${target}" == x86_64-linux-musl ]]; then
-    # Delete libexpat to prevent it from being picked up by mistake
-    rm /usr/lib/libexpat.so*
-    # Convince to link `pdal` to libcurl.  Honestly I don't understand why this
-    # doesn't work out-of-the-box, like it does for other platforms, this is a
-    # quick patch to make it work.
-    atomic_patch -p1 ../patches/x86_64-linux-musl-pdal-curl.patch
-fi
-
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/relative_path_dimbuilder.patch
-# We'll build `dimbuilder` separately.
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake-disable-dimbuilder.patch
-if [[ "${target}" == *-mingw* ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-arbiter.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-charbuf.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-cmake-macros.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-cmake-patches.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-delete-japanese-unicode-test.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-dynamiclibrary.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-fileutils.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-greedyprojection.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-optech.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-pointlayout.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-portableendian.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-sbetwriter.patch
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-sparsematrix.patch
-    if [[ "${nbits}" -eq 32 ]]; then
-        atomic_patch -p1 ../patches/mingw-trapoline-stdcall.patch
-    fi
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK which supports `std::filesystem`, taken from HELICS build_tarballs.jl
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    popd
+    export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
 mkdir -p build/dimbuilder && cd build/dimbuilder
 
-# Build dimbuilder with the host compiler.
+# Build dimbuilder with the host compiler before main library.
+#see also https://github.com/conda-forge/pdal-feedstock/blob/main/recipe/build.sh
 (
-    # For some reason, CMake seems to ignore the toolchain file, let's force the
-    # compiler with the CXX environment variable
-    export CXX=${HOST_CXX}
     cmake ../../dimbuilder -G Ninja \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
         -DNLOHMANN_INCLUDE_DIR="$(realpath ../../vendor/nlohmann)" \
+        -DUTFCPP_INCLUDE_DIR="$(realpath ../../vendor/utfcpp/source)" \
         -DCMAKE_BUILD_TYPE=Release
     ninja -j${nproc}
-    mkdir -p ../bin
-    mv dimbuilder ../bin/.
 )
 
-cd ..
-cmake .. -G Ninja \
+#make sure we're back in source dir
+cd $WORKSPACE/srcdir/PDAL*
+
+cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_LIBRARY_PATH:FILEPATH="${libdir}" \
     -DCMAKE_INCLUDE_PATH:FILEPATH="${includedir}" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DDIMBUILDER_EXECUTABLE="$WORKSPACE/srcdir/PDAL/build/dimbuilder/dimbuilder" \
     -DBUILD_PLUGIN_I3S=OFF \
     -DBUILD_PLUGIN_NITF=OFF \
     -DBUILD_PLUGIN_TILEDB=OFF \
@@ -78,29 +58,25 @@ cmake .. -G Ninja \
     -DBUILD_PLUGIN_PGPOINTCLOUD=OFF \
     -DBUILD_PLUGIN_E57=OFF \
     -DBUILD_PGPOINTCLOUD_TESTS=OFF \
-    -DWITH_LAZPERF=OFF \
     -DBUILD_PGPOINTCLOUD_TESTS=OFF \
-    -DWITH_LASZIP=ON \
     -DWITH_ZSTD=ON \
     -DWITH_ZLIB=ON \
     -DWITH_TESTS=OFF
 
-ninja -j${nproc}
-ninja install
-"""
+cmake --build build --parallel ${nproc}
+cmake --install build
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-#platforms = [
-#    Platform("x86_64", "linux"; libc = "glibc")
-#]
+install_license LICENSE.txt
+"""
 
 platforms = expand_cxxstring_abis(supported_platforms())
 
+# Some dependencies (e.g. PROJ_jll) are missing for aarch64-*-freebsd and riscv64-linux-*
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpdal_util", :libpdal_util),
     LibraryProduct(["libpdal_base", "libpdalcpp"], :libpdal_base),
     LibraryProduct("libpdal_plugin_kernel_fauxplugin", :libpdal_plugin_kernel_fauxplugin),
     ExecutableProduct("pdal", :pdal),
@@ -108,11 +84,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"))
-    Dependency(PackageSpec(name="libgeotiff_jll", uuid="06c338fa-64ff-565b-ac2f-249532af990e"))
-    Dependency(PackageSpec(name="LASzip_jll", uuid="8372b9c3-1e34-5cc3-bfab-1a98e101de11"))
+    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="302.1000.0"),
+    Dependency(PackageSpec(name="LibCURL_jll"); compat="7.73,8"),
+    Dependency(PackageSpec(name="libgeotiff_jll", uuid="06c338fa-64ff-565b-ac2f-249532af990e"); compat="100.702.300"),
+    # From GDAL recipe, for 32-bit platforms, when we need to link to OpenMP we need version 4,
+    # because version 5 dropped support for these architectures
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# PDAL GitHub CI scripts currently run on GCC 7.5, so we'll match them in major version at least
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7.1.0", julia_compat="1.6")
+# we require a compiler that supports C++ 17 and <filesystem>
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"9")

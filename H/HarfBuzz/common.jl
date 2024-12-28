@@ -6,12 +6,13 @@ function build_harfbuzz(ARGS, name::String)
 
     icu = name == "HarfBuzz_ICU"
 
-    version = v"2.8.1"
+    version = v"8.5.0"
 
     # Collection of sources required to build Harfbuzz
     sources = [
         ArchiveSource("https://github.com/harfbuzz/harfbuzz/releases/download/$(version)/harfbuzz-$(version).tar.xz",
-                      "4124f663ec4bf4e294d9cf230668370b4249a48ff34deaf0f06e8fc82d891300"),
+                      "77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca41ddc27"),
+        DirectorySource("../bundled"),
     ]
 
     # Bash recipe for building across all platforms
@@ -19,6 +20,12 @@ function build_harfbuzz(ARGS, name::String)
     # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/778
     script = "ICU=$(icu)\n" * raw"""
 cd $WORKSPACE/srcdir/harfbuzz-*/
+
+# On MacOS, bypass broken check for CoreText
+if [[ "${target}" == *-apple-darwin* ]]; then
+    atomic_patch -p1 ../patches/coretext-check-bypass.patch
+fi
+
 mkdir build && cd build
 meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
@@ -33,9 +40,13 @@ meson .. \
     -Dtests=disabled \
     -Dicu=auto \
     -Dicu_builtin=false \
-    -Dcoretext=enabled
+    -Dcoretext=enabled \
+    -Dgdi=enabled \
+    -Ddirectwrite=enabled
 ninja -j${nproc}
 if [[ "${ICU}" == true ]]; then
+    # Remove directories with symbol files (they confuse the `cp` command below)
+    rm -rf src/libharfbuzz-icu*${dlext}*.p
     # Manually install only ICU-related files
     cp src/libharfbuzz-icu*${dlext}* ${libdir}/.
     cp meson-private/harfbuzz-icu.pc ${prefix}/lib/pkgconfig/.
@@ -47,7 +58,12 @@ fi
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
-    platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+    platforms = supported_platforms()
+
+    if icu
+        # Temporarily disable aarch64-*-freebsd until ICU has been built for this platform
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
 
     # The products that we will ensure are always built
     products = if icu
@@ -66,8 +82,8 @@ fi
     dependencies = [
         Dependency("Cairo_jll"),
         Dependency("Fontconfig_jll"),
-        Dependency("FreeType2_jll"),
-        Dependency("Glib_jll"; compat="2.68.1"),
+        Dependency("FreeType2_jll"; compat="2.13.3"),
+        Dependency("Glib_jll"; compat="2.82.2"),
         Dependency("Graphite2_jll"),
         Dependency("Libffi_jll"; compat="~3.2.2"),
         BuildDependency("Xorg_xorgproto_jll"),
@@ -81,5 +97,6 @@ fi
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+                   clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
 end

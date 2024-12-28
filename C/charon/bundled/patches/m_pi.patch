@@ -1,0 +1,34 @@
+commit d6da81493b465a47436c4f6bf6b4abf3c8502dac
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sun Oct 15 01:37:16 2023 +0000
+
+    Add defines for M_PI
+
+diff --git a/src/Charon_FreqDom_Parameters.hpp b/src/Charon_FreqDom_Parameters.hpp
+index 4711883..3833b99 100644
+--- a/src/Charon_FreqDom_Parameters.hpp
++++ b/src/Charon_FreqDom_Parameters.hpp
+@@ -17,6 +17,9 @@
+ #include "Teuchos_ParameterList.hpp"
+ #include "Teuchos_RCP.hpp"
+ #include "Teuchos_ArrayRCP.hpp"
++#ifndef M_PI
++#define M_PI 3.14159265358979323846
++#endif
+ 
+ #include <cmath> // used to calculate sin(), cos(), and powers
+ 
+diff --git a/src/Charon_Util.hpp b/src/Charon_Util.hpp
+index 4935ac8..d2606aa 100644
+--- a/src/Charon_Util.hpp
++++ b/src/Charon_Util.hpp
+@@ -4,6 +4,9 @@
+ #include <vector>
+ #include <map>
+ #include "Teuchos_ParameterList.hpp"
++#ifndef M_PI
++#define M_PI 3.14159265358979323846
++#endif
+ 
+ namespace charon {
+ 

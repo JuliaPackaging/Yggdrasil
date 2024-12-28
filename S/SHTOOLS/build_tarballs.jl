@@ -2,22 +2,14 @@ using BinaryBuilder
 
 # Collection of sources required to build SHTOOLS
 name = "SHTOOLS"
-version = v"4.9.1"
+version = v"4.13.1"
 sources = [
-    ArchiveSource("https://github.com/SHTOOLS/SHTOOLS/releases/download/v4.9.1/SHTOOLS-4.9.1.tar.gz",
-                  "5c22064f9daf6e9aa08cace182146993aa6b25a6ea593d92572c59f4013d53c2"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/SHTOOLS/SHTOOLS", "4c7fd73fd61f863351fdc067294c8538acc70d89"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/SHTOOLS-*
-
-# Patch source code
-# Don't use libtool
-atomic_patch -p0 $WORKSPACE/srcdir/patches/no-libtool.patch
-# Correct C interface for MakeGradientDH (see <https://github.com/SHTOOLS/SHTOOLS/issues/328>)
-atomic_patch -p1 $WORKSPACE/srcdir/patches/correct-cMakeGradientDH.patch
+cd $WORKSPACE/srcdir/SHTOOLS
 
 # Build and install static libraries
 make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
@@ -56,3 +48,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")
+
+# Build Trigger: 1

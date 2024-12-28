@@ -1,0 +1,14 @@
+diff --git a/thirdparty/dill/dill/arm8.c b/thirdparty/dill/dill/arm8.c
+index d18946358..746d22462 100644
+--- a/thirdparty/dill/dill/arm8.c
++++ b/thirdparty/dill/dill/arm8.c
+@@ -1517,6 +1517,9 @@ arm8_PLT_emit(dill_stream s, int package)
+     }
+ }
+ 
++void
++arm8_rt_call_link(char *code, call_t *t);
++
+ static void
+ arm8_call_link(dill_stream s)
+ {

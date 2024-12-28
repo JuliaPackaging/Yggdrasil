@@ -1,0 +1,65 @@
+From f9d0ce5726b6050dc7486a91dbfa16a9a3df90e4 Mon Sep 17 00:00:00 2001
+From: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date: Sat, 3 Oct 2020 15:27:40 -0500
+Subject: [PATCH] Build correctly on musl
+
+---
+ CMakeLists.txt  | 2 +-
+ src/libhsakmt.h | 8 ++++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ccf7747..8871f45 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -159,7 +159,7 @@ get_os_info()
+ 
+ find_package(PkgConfig)
+ # Check for libraries required for building
+-find_library(LIBC NAMES libc.so.6 REQUIRED)
++find_library(LIBC NAMES libc.so REQUIRED)
+ find_library(NUMA NAMES numa REQUIRED)
+ message(STATUS "LIBC:" ${LIBC})
+ message(STATUS "NUMA:" ${NUMA})
+diff --git a/src/libhsakmt.h b/src/libhsakmt.h
+index d531e87..1240bcd 100644
+--- a/src/libhsakmt.h
++++ b/src/libhsakmt.h
+@@ -31,6 +31,7 @@
+ #include <pthread.h>
+ #include <stdint.h>
+ #include <limits.h>
++#include <sys/param.h>
+ 
+ extern int kfd_fd;
+ extern unsigned long kfd_open_count;
+@@ -56,6 +57,9 @@ extern HsaVersionInfo kfd_version_info;
+ 	do { if ((minor) > kfd_version_info.KernelInterfaceMinorVersion)\
+ 		return HSAKMT_STATUS_NOT_SUPPORTED; } while (0)
+ 
++#ifdef PAGE_SIZE
++#undef PAGE_SIZE
++#endif
+ extern int PAGE_SIZE;
+ extern int PAGE_SHIFT;
+ 
+@@ -202,13 +206,17 @@ extern int kmtIoctl(int fd, unsigned long request, void *arg);
+ #define VOID_PTR_SUB(ptr,n) (void*)((uint8_t*)(ptr) - n)/*ptr - offset*/
+ #define VOID_PTRS_SUB(ptr1,ptr2) (uint64_t)((uint8_t*)(ptr1) - (uint8_t*)(ptr2)) /*ptr1 - ptr2*/
+ 
++#ifndef MIN
+ #define MIN(a, b) ({				\
+ 	typeof(a) tmp1 = (a), tmp2 = (b);	\
+ 	tmp1 < tmp2 ? tmp1 : tmp2; })
++#endif
+ 
++#ifndef MIN
+ #define MAX(a, b) ({				\
+ 	typeof(a) tmp1 = (a), tmp2 = (b);	\
+ 	tmp1 > tmp2 ? tmp1 : tmp2; })
++#endif
+ 
+ void clear_events_page(void);
+ void fmm_clear_all_mem(void);
+-- 
+2.35.0

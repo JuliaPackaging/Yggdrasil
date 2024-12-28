@@ -1,0 +1,43 @@
+From d54971fe20a355d225e304cdf8606818675050ce Mon Sep 17 00:00:00 2001
+From: Isuru Fernando <isuruf@gmail.com>
+Date: Mon, 8 Aug 2022 11:20:38 -0500
+Subject: [PATCH 1/1] Fix building tests when NOFORTRAN is not given at all
+
+---
+ ctest/Makefile | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/ctest/Makefile b/ctest/Makefile
+index 236913c3..0fb2450d 100644
+--- a/ctest/Makefile
++++ b/ctest/Makefile
+@@ -237,7 +237,7 @@ endif
+ 
+ ifeq ($(BUILD_DOUBLE),1)
+ # Double real
+-ifeq ($(NOFORTRAN),0)
++ifeq ($(NOFORTRAN), $(filter 0 2,$(NOFORTRAN)))
+ xdcblat1: $(dtestl1o) c_dblat1.o $(TOPDIR)/$(LIBNAME)
+ 	$(FC) $(FLDFLAGS) -o xdcblat1 c_dblat1.o $(dtestl1o) $(LIB) $(EXTRALIB) $(CEXTRALIB)
+ xdcblat2: $(dtestl2o) c_dblat2.o $(TOPDIR)/$(LIBNAME)
+@@ -256,7 +256,7 @@ endif
+ 
+ ifeq ($(BUILD_COMPLEX),1)
+ # Single complex
+-ifeq ($(NOFORTRAN),0)
++ifeq ($(NOFORTRAN), $(filter 0 2,$(NOFORTRAN)))
+ xccblat1: $(ctestl1o) c_cblat1.o $(TOPDIR)/$(LIBNAME)
+ 	$(FC) $(FLDFLAGS) -o xccblat1 c_cblat1.o $(ctestl1o) $(LIB) $(EXTRALIB) $(CEXTRALIB)
+ xccblat2: $(ctestl2o) c_cblat2.o $(TOPDIR)/$(LIBNAME)
+@@ -278,7 +278,7 @@ endif
+ 
+ ifeq ($(BUILD_COMPLEX16),1)
+ # Double complex
+-ifeq ($(NOFORTRAN),0)
++ifeq ($(NOFORTRAN), $(filter 0 2,$(NOFORTRAN)))
+ xzcblat1: $(ztestl1o) c_zblat1.o $(TOPDIR)/$(LIBNAME)
+ 	$(FC) $(FLDFLAGS) -o xzcblat1 c_zblat1.o $(ztestl1o) $(LIB) $(EXTRALIB) $(CEXTRALIB)
+ xzcblat2: $(ztestl2o) c_zblat2.o $(TOPDIR)/$(LIBNAME)
+-- 
+2.37.2
+

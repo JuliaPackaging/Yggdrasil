@@ -3,29 +3,22 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "crun"
-version = v"1.7.2"
+version = v"1.18.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/containers/crun",
-              "eaa116bc5b43bd3a4f13e12497bbcb5a918051e1")
+              "8656b2548509fcc69ea7e8823a870564360a57a1")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-# check if we need to use a more recent glibc
-if [[ -f "$prefix/usr/include/sched.h" ]]; then
-    GLIBC_ARTIFACT_DIR=$(dirname $(dirname $(dirname $(realpath $prefix/usr/include/sched.h))))
-    rsync --archive ${GLIBC_ARTIFACT_DIR}/ /opt/${target}/${target}/sys-root/
-fi
-
 cd crun
 install_license COPYING
 
-# replace certain glibc includes by direct linux kernel includes.
-# this is to support newer features, like CLONE_NEWCGROUP, without bumping glibc further.
-# we could do this for O_PATH too, but systemd_jll uses glibc 2.19 already, so don't bother.
-find . -name '*.c' -exec sed -i 's/#include <sched.h>/#include <linux\/sched.h>/g' {} \;
+# next to our (outdated) glibc's sched.h, also include the one from the kernel
+# in order to pick up more recent definitions (e.g. CLONE_NEWCGROUP)
+find src -name '*.c' -exec sed -i '/#include <sched.h>/a #include <linux/sched.h>' {} \;
 
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
@@ -40,11 +33,6 @@ platforms = supported_platforms()
 filter!(Sys.islinux, platforms)
 filter!(p -> libc(p) == "glibc", platforms)
 
-# some platforms need a newer glibc, because the default one is too old
-glibc_platforms = filter(platforms) do p
-    libc(p) == "glibc" && proc_family(p) in ["intel", "power"]
-end
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("crun", :crun)
@@ -56,12 +44,8 @@ dependencies = [
     Dependency("libcap_jll"),
     Dependency("systemd_jll"),
     Dependency("libseccomp_jll"),
-
-    # crun needs glibc >2.14
-    BuildDependency(PackageSpec(name = "Glibc_jll", version = v"2.17");
-                    platforms=glibc_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.6", preferred_gcc_version=v"5")

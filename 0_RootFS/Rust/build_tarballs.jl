@@ -15,10 +15,12 @@ include("../common.jl")
 
 # We first download Rustup, and use that to install rust
 rustup_name = "RustStage1"
+# NOTE: we can't update to newer versions because of
+# <https://github.com/rust-lang/rustup/issues/3116>.
 rustup_version = v"1.24.3"
 
 # This is the version of the Rust toolchain we install
-version = v"1.65.0"
+version = v"1.83.0"
 
 sources = [
     # We'll use rustup to install rust
@@ -42,21 +44,23 @@ chmod +x rustup-init
 # Collection of all rust targets we will download toolchains for:
 RUST_TARGETS=(
     aarch64-apple-darwin
+    # aarch64-unknown-freebsd   # toolchain is not available
     aarch64-unknown-linux-gnu
     aarch64-unknown-linux-musl
     arm-unknown-linux-gnueabihf
     arm-unknown-linux-musleabihf
     armv7-unknown-linux-gnueabihf
     armv7-unknown-linux-musleabihf
+    i686-pc-windows-gnu
     i686-unknown-linux-gnu
     i686-unknown-linux-musl
+    powerpc64le-unknown-linux-gnu
+    # riscv64-unknown-linux-gnu   # toolchain is not available
+    x86_64-apple-darwin
+    x86_64-pc-windows-gnu
+    x86_64-unknown-freebsd
     x86_64-unknown-linux-gnu
     x86_64-unknown-linux-musl
-    powerpc64le-unknown-linux-gnu
-    i686-pc-windows-gnu
-    x86_64-pc-windows-gnu
-    x86_64-apple-darwin
-    x86_64-unknown-freebsd
 )
 
 for rust_target in "${RUST_TARGETS[@]}"; do
@@ -75,7 +79,7 @@ products = [
     ExecutableProduct("cargo", :cargo),
 ]
 dependencies = [
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
 ]
 ndARGS = filter(a -> !occursin("--deploy", a), ARGS)
 build_info = build_tarballs(ndARGS, rustup_name, rustup_version, sources, script, platforms, products, dependencies; skip_audit=true)
@@ -88,7 +92,12 @@ mega_rust_path = artifact_path(first(values(build_info))[3])
 rust_host = Platform("x86_64", "linux"; libc="musl")
 rust_host_triplet = map_rust_target(rust_host)
 
-for target_platform in supported_platforms()
+rust_platforms = supported_platforms()
+# Skip unsupported platforms (see `RUST_TARGETS` above)
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), rust_platforms)
+filter!(p -> !(arch(p) == "riscv64"), rust_platforms)
+
+for target_platform in rust_platforms
     rust_target_triplet = map_rust_target(target_platform)
     @info("Generating artifacts for $(rust_target_triplet)...")
     unpacked_hash = create_artifact() do dir
@@ -126,7 +135,7 @@ unpacked_hash = create_artifact() do dir
     cp(joinpath(mega_rust_path, "toolchains"), joinpath(dir, "toolchains"))
     rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "share"); recursive=true)
     rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "etc"); recursive=true)
-    for rust_target_triplet in map_rust_target.(supported_platforms())
+    for rust_target_triplet in map_rust_target.(rust_platforms)
         rm(joinpath(dir, "toolchains", "$(version)-$(rust_host_triplet)", "lib", "rustlib", rust_target_triplet); recursive=true)
     end
 end

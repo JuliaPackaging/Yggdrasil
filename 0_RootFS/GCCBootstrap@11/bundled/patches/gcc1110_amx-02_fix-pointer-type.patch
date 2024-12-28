@@ -1,0 +1,49 @@
+From aeb9b58225916bc84a0cd02c6fc77bbb92167e53 Mon Sep 17 00:00:00 2001
+From: "H.J. Lu" <hjl.tools@gmail.com>
+Date: Thu, 18 Aug 2022 14:17:33 -0700
+Subject: [PATCH] x86: Cast stride to __PTRDIFF_TYPE__ in AMX intrinsics
+
+On 64-bit Windows, long is 32 bits and can't be used as stride in memory
+operand when base is a pointer which is 64 bits.  Cast stride to
+__PTRDIFF_TYPE__, instead of long.
+
+	PR target/106714
+	* config/i386/amxtileintrin.h (_tile_loadd_internal): Cast to
+	__PTRDIFF_TYPE__.
+	(_tile_stream_loadd_internal): Likewise.
+	(_tile_stored_internal): Likewise.
+---
+ gcc/config/i386/amxtileintrin.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/gcc/config/i386/amxtileintrin.h b/gcc/config/i386/amxtileintrin.h
+index 7b5a39eba72ac..06f18aa9bfb9f 100644
+--- a/gcc/config/i386/amxtileintrin.h
++++ b/gcc/config/i386/amxtileintrin.h
+@@ -62,7 +62,7 @@ _tile_release (void)
+ #define _tile_loadd_internal(dst,base,stride)				\
+   __asm__ volatile							\
+   ("{tileloadd\t(%0,%1,1), %%tmm"#dst"|tileloadd\t%%tmm"#dst", [%0+%1*1]}" \
+-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
++   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
+ 
+ #define _tile_stream_loadd(dst,base,stride)		\
+   _tile_stream_loadd_internal (dst, base, stride)
+@@ -70,7 +70,7 @@ _tile_release (void)
+ #define _tile_stream_loadd_internal(dst,base,stride)			\
+   __asm__ volatile							\
+   ("{tileloaddt1\t(%0,%1,1), %%tmm"#dst"|tileloaddt1\t%%tmm"#dst", [%0+%1*1]}" \
+-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
++   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
+ 
+ #define _tile_stored(dst,base,stride)		\
+   _tile_stored_internal (dst, base, stride)
+@@ -78,7 +78,7 @@ _tile_release (void)
+ #define _tile_stored_internal(src,base,stride)				\
+   __asm__ volatile							\
+   ("{tilestored\t%%tmm"#src", (%0,%1,1)|tilestored\t[%0+%1*1], %%tmm"#src"}" \
+-   :: "r" ((void*) (base)), "r" ((long) (stride)) \
++   :: "r" ((void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)) \
+    : "memory")
+ 
+ #define _tile_zero(dst)				\

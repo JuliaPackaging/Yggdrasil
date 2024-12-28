@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.10.3"
+version = v"2.13.5"
 
 # Collection of sources required to build XML2
 sources = [
-    ArchiveSource("https://github.com/GNOME/libxml2/archive/v$(version).tar.gz",
-                  "3f9fb74bb02049f3454892c88d3e57a23e30a88a7d444a80064625af2f543898"),
+    ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
+                  "74fc163217a3964257d3be39af943e08861263c4231f9ef5b496b6f6d4c7b2b6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ make -j${nproc}
 make install
 
 # Remove heavy doc directories
-rm -rf ${prefix}/share/{doc/libxml2-*,gtk-doc}
+rm -r ${prefix}/share/{doc/libxml2,man}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -44,5 +44,7 @@ dependencies = [
     Dependency("Libiconv_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# XML2 requires full C11 support (so GCC >= 5), but GCC v5-7 crases with an ICE
+# on Windows, so we need GCC 8 for that platform.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"8", julia_compat="1.6")

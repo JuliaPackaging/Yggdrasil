@@ -3,17 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "Ninja"
-version = v"1.11.1"
+version = v"1.12.1"
 
 # Collection of sources required to build ninja
 sources = [
-    ArchiveSource("https://github.com/ninja-build/ninja/archive/v$(version).tar.gz",
-    "31747ae633213f1eda3842686f83c2aa1412e0f5691d1c14dbbcc67fe7400cea")
+    GitSource("https://github.com/ninja-build/ninja", "2daa09ba270b0a43e1929d29b073348aa985dfaa"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ninja-*
+cd $WORKSPACE/srcdir/ninja
 shorttarget=$(echo $target | grep -o 'linux\|darwin\|mingw\|freebsd')
 env CXXFLAGS=-std=c++11 ./configure.py --host=linux --platform=$shorttarget
 ninja -j${nproc}

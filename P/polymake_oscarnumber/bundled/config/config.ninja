@@ -1,0 +1,13 @@
+configure.command= --with-julia=/workspace/destdir/
+root=/workspace/destdir/share/polymake
+extroot=/workspace/srcdir/oscarnumber
+RequireExtensions=atint
+super.app.includes=${app.includes}
+app.includes=-I${extroot}/include/app-wrappers -I${extroot}/include/apps ${super.app.includes}
+
+super.CXXFLAGS = ${CXXFLAGS}
+CXXFLAGS = ${super.CXXFLAGS} -I/workspace/destdir/include -I/workspace/destdir/include/julia -fno-openmp
+super.LDFLAGS = ${LDFLAGS}
+LDFLAGS = ${super.LDFLAGS} -L/workspace/destdir/lib
+super.LIBS = ${LIBS}
+LIBS = -ljulia ${super.LIBS}

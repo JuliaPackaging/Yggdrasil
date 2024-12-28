@@ -1,0 +1,11 @@
+--- cpg_src/makefile.distrib_org     2024-01-28 08:11:48.685556061 +0300
++++ cpg_src/makefile.distrib    2024-01-28 08:12:53.641654567 +0300
+@@ -29,7 +29,7 @@
+ default: pgbind $(LIBCPGPLOT) $(INCDIR)/cpgplot.h
+ 
+ pgbind: pgbind.c
+-	$(CC) $(CFLAGS) -I$(INCDIR) -o pgbind pgbind.c
++	$(HOSTCC) $(CFLAGS) -I$(INCDIR) -o pgbind pgbind.c
+ 
+ $(LIBCPGPLOT): $(CPGPLOT_OBS)
+ 	ar ru $(LIBCPGPLOT) $(CPGPLOT_OBS)

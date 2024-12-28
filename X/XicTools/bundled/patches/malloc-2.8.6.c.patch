@@ -1,0 +1,11 @@
+--- ../xictools-master/xt_base/malloc/malloc-2.8.6.c	2024-02-18 20:19:53.000000000 -0500
++++ xt_base/malloc/malloc-2.8.6.c	2024-02-23 08:57:12.595927930 -0500
+@@ -763,7 +763,7 @@
+ /* #define HAVE_USR_INCLUDE_MALLOC_H */
+ 
+ #ifdef HAVE_USR_INCLUDE_MALLOC_H
+-#include "/usr/include/malloc.h"
++#include <malloc.h>
+ #else /* HAVE_USR_INCLUDE_MALLOC_H */
+ #ifndef STRUCT_MALLINFO_DECLARED
+ /* HP-UX (and others?) redefines mallinfo unless _STRUCT_MALLINFO is defined */

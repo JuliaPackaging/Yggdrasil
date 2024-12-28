@@ -1,25 +1,40 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.74.0"
+version = v"2.82.4"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "3652c7f072d7b031a6b5edd623f77ebc5dcd2ae698598abcc89ff39ca75add30"),
+                  "37dd0877fe964cd15e9a2710b044a1830fb1bd93652a6d0cb6b8b2dff187c709"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
+                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == *-mingw* ]]; then
+    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
+    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
+    make install
+
+    cd ../mingw-w64-crt/
+    if [ ${target} == "i686-w64-mingw32" ]; then
+        _crt_configure_args="--disable-lib64 --enable-lib32"
+    elif [ ${target} == "x86_64-w64-mingw32" ]; then
+        _crt_configure_args="--disable-lib32 --enable-lib64"
+    fi
+    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
+    make -j${nproc}
+    make install
+fi
+
 cd $WORKSPACE/srcdir/glib-*/
 install_license COPYING
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
 sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
-
-# Backport https://gitlab.gnome.org/GNOME/glib/-/merge_requests/2914
-atomic_patch -p1 ../patches/utimensat-macos.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Adapt patch relative to `xattr` from
@@ -35,6 +50,7 @@ mkdir build_glib && cd build_glib
 MESON_FLAGS=(--cross-file="${MESON_TARGET_TOOLCHAIN}")
 MESON_FLAGS+=(--buildtype=release)
 MESON_FLAGS+=(-Dman=false)
+MESON_FLAGS+=(-Dtests=false)
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
@@ -62,7 +78,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -71,6 +87,7 @@ products = [
     LibraryProduct(["libgmodule-2", "libgmodule-2.0"], :libgmodule),
     LibraryProduct(["libgobject-2", "libgobject-2.0"], :libgobject),
     LibraryProduct(["libgthread-2", "libgthread-2.0"], :libgthread),
+    LibraryProduct(["libgirepository-2", "libgirepository-2.0"], :libgirepository),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -87,4 +104,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

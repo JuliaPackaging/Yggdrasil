@@ -1,10 +1,12 @@
 using BinaryBuilder
+using Pkg
+using BinaryBuilderBase: sanitize
 
 name = "OpenLibm"
-version = v"0.8.1"
+version = v"0.8.4"
 sources = [
     GitSource("https://github.com/JuliaMath/openlibm.git",
-              "ae2d91698508701c83cab83714d42a1146dccf85"),
+              "c4667caea25ae3487adf6760b4a1dcf32477a4b8"),
 ]
 
 script = raw"""
@@ -40,17 +42,23 @@ install_license ./LICENSE.md
 """
 
 # We enable experimental platforms as this is a core Julia dependency
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 products = [
     LibraryProduct("libopenlibm", :libopenlibm),
 ]
 
+llvm_version = v"13.0.1"
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(; name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
+# Build the tarballs, and possibly a `build.jl` as well
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               lock_microarchitecture=false, julia_compat="1.6")
+               lock_microarchitecture=false,
+               julia_compat="1.6", 
+               preferred_llvm_version=llvm_version, 
+               preferred_gcc_version=v"8")
+
+# Build trigger: 1

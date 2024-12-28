@@ -33,6 +33,11 @@ llvm_tags = Dict(
     v"11.0.1" => "43ff75f2c3feef64f9d73328230d34dac8832a91",
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"13.0.1" => "75e33f71c2dae584b13a7d1186ae0a038ba98838",
+    v"14.0.6" => "f28c006a5895fc0e329fe15fead81e37457cb1d1",
+    v"15.0.7" => "8dfdcc7b7bf66834a761bd8de445840ef68e4d1a",
+    v"16.0.6" => "7cbf1a2591520c2491aa35339f227775f4d3adf6",
+    v"17.0.6" => "6009708b4367171ccdbf4b5905cb6a803753fe18",
+    v"18.1.7" => "768118d1ad38bf13c545828f67bd6b474d61fc55",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)
@@ -77,7 +82,36 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
 
     cd ${WORKSPACE}/srcdir/llvm-project
     # Apply all our patches
+    if [ -d $WORKSPACE/srcdir/llvm_patches ]; then
+    for f in $WORKSPACE/srcdir/llvm_patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
+    if [ -d $WORKSPACE/srcdir/clang_patches ]; then
+    cd ${WORKSPACE}/srcdir/llvm-project/clang
+    for f in $WORKSPACE/srcdir/clang_patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
+    if [ -d $WORKSPACE/srcdir/crt_patches ]; then
+    cd ${WORKSPACE}/srcdir/llvm-project/compiler-rt
+    for f in $WORKSPACE/srcdir/crt_patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
+    if [ -d $WORKSPACE/srcdir/libcxx_patches ]; then
+    cd ${WORKSPACE}/srcdir/llvm-project/libcxx
+    for f in $WORKSPACE/srcdir/libcxx_patches/*.patch; do
+        echo "Applying patch ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
+    # Patches from the monorepo
     if [ -d $WORKSPACE/srcdir/patches ]; then
+    cd ${WORKSPACE}/srcdir/llvm-project
     for f in $WORKSPACE/srcdir/patches/*.patch; do
         echo "Applying patch ${f}"
         atomic_patch -p1 ${f}
@@ -97,7 +131,10 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE})
 
     # We want a lot of projects
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;compiler-rt;libcxx;libcxxabi;libunwind;polly')
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;polly;lld')
+
+    # Build runtimes
+    CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt;libcxx;libcxxabi;libunwind')
 
     # We want a build with no bindings
     CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST=)
@@ -110,8 +147,9 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=("-DCMAKE_INSTALL_PREFIX=${prefix}")
 
     # Manually set the host triplet, as otherwise on some platforms it tries to guess using
-    # `ld -v`, which is hilariously wrong. We set a bunch of musl-related options here
-    CMAKE_FLAGS+=("-DLLVM_HOST_TRIPLE=${target}")
+    # `ld -v`, which is hilariously wrong. See llvm-project/llvm#49139, and note that setting
+    # the triple to $target does not suffice. We also set a bunch of musl-related options here
+    CMAKE_FLAGS+=("-DLLVM_HOST_TRIPLE=x86_64-alpine-linux-musl")
     CMAKE_FLAGS+=(-DLIBCXX_HAS_MUSL_LIBC=ON -DLIBCXX_HAS_GCC_S_LIB=OFF)
     CMAKE_FLAGS+=(-DCLANG_DEFAULT_CXX_STDLIB=libc++ -DCLANG_DEFAULT_LINKER=lld -DCLANG_DEFAULT_RTLIB=compiler-rt)
     CMAKE_FLAGS+=(-DLLVM_ENABLE_CXX1Y=ON -DLLVM_ENABLE_PIC=ON)

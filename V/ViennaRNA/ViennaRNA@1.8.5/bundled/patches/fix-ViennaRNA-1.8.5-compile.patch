@@ -1,0 +1,79 @@
+diff --git a/Cluster/AS_main.c b/Cluster/AS_main.c
+index c516f32..74a6ba3 100644
+--- a/Cluster/AS_main.c
++++ b/Cluster/AS_main.c
+@@ -1,3 +1,5 @@
++#include <stdlib.h>
++#include <unistd.h>
+ #include <stdio.h>
+ #include <string.h>
+ #include "distance_matrix.h"
+@@ -225,7 +227,8 @@ main(int argc, char *argv[])
+ 	    for(j=0;j<nn[i];j++) free(ss[i][j]);
+ 	    free(ss[i]);
+          }
+-	 free(ss);
++         // ss is on the stack, can't free
++	 //free(ss);
+       }
+       else {
+          printf_taxa_list();
+diff --git a/Cluster/statgeom.c b/Cluster/statgeom.c
+index 4bd03a5..d3ad0b2 100644
+--- a/Cluster/statgeom.c
++++ b/Cluster/statgeom.c
+@@ -6,6 +6,8 @@
+ 
+ #include <stdio.h>
+ #include <strings.h>
++#include <string.h>
++#include <stdlib.h>
+ #include <ctype.h>
+ #include "utils.h"
+ #include "PS3D.h"
+diff --git a/Cluster/treeplot.c b/Cluster/treeplot.c
+index 7a53260..2e9646c 100644
+--- a/Cluster/treeplot.c
++++ b/Cluster/treeplot.c
+@@ -1,3 +1,4 @@
++#include <stdlib.h>
+ #include <stdio.h>
+ #include <string.h>
+ #include <math.h>
+diff --git a/lib/fold.c b/lib/fold.c
+index ff609d6..d26ce9d 100644
+--- a/lib/fold.c
++++ b/lib/fold.c
+@@ -24,11 +24,7 @@
+ 
+ /*@unused@*/
+ static char rcsid[] UNUSED = "$Id: fold.c,v 1.38 2007/12/19 10:27:42 ivo Exp $";
+-#ifdef __GNUC__
+-#define INLINE inline
+-#else
+ #define INLINE
+-#endif
+ 
+ #define PAREN
+ 
+diff --git a/lib/subopt.c b/lib/subopt.c
+index f2a04f9..ecf0a21 100644
+--- a/lib/subopt.c
++++ b/lib/subopt.c
+@@ -80,6 +80,7 @@
+ #include <string.h>
+ #include <math.h>
+ #include "fold.h"
++#include "cofold.h"
+ #include "utils.h"
+ #include "energy_par.h"
+ #include "fold_vars.h"
+@@ -191,7 +192,7 @@ PUBLIC  double print_energy = 9999; /* printing threshold for use with logML */
+ extern	int circ;
+ PUBLIC	SOLUTION *subopt_circ(char *seq, char *sequence, int delta, FILE *fp);
+ PRIVATE int *fM2;	 /* energies of M2 */
+-PUBLIC	int	Fc, FcH, FcI, FcM;		/* parts of the exterior loop energies */
++PRIVATE	int	Fc, FcH, FcI, FcM;		/* parts of the exterior loop energies */
+ 
+ PRIVATE void encode_seq(char *sequence) {
+   unsigned int i,l;

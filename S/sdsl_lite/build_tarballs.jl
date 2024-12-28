@@ -3,36 +3,42 @@
 using BinaryBuilder, Pkg
 
 name = "sdsl_lite"
-version = v"2.1.1"
+version = v"3.0.3"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/simongog/sdsl-lite.git" =>
-    "0546faf0552142f06ff4b201b671a5769dd007ad",
+    GitSource(
+        "https://github.com/xxsds/sdsl-lite.git",
+        "d54d38908a14745eb93fd5304fc9b2b9c2542ee9",
+    ),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/sdsl-lite/
-sed -ri \
-	-e "s/^cmake /cmake -DCMAKE_TOOLCHAIN_FILE=\\$\\{CMAKE_TARGET_TOOLCHAIN\\} -DBUILD_SHARED_LIBS=ON /" \
-	-e "s/^make sdsl/make -j\\$nprocs sdsl/" \
-	install.sh 
-./install.sh $prefix
+cd ${WORKSPACE}/srcdir/sdsl-lite/
+mkdir -p ${includedir}/sdsl
+cp include/sdsl/* ${includedir}/sdsl
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(filter!(!Sys.iswindows, supported_platforms()))
+platforms = [AnyPlatform()]
 
 # The products that we will ensure are always built
-products = [
-    LibraryProduct("libsdsl", :libsdsl)
-]
+products = Product[]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(
+    ARGS,
+    name,
+    version,
+    sources,
+    script,
+    platforms,
+    products,
+    dependencies;
+    julia_compat = "1.6",
+)

@@ -3,7 +3,7 @@
 include("../common.jl")
 
 name = "nq"
-upstream_version = "2.5.9" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "2.5.11" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
@@ -13,7 +13,7 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/nq/releases/download/v$(upstream_version)/nq-$(upstream_version).tar.gz",
-                  "0db49d81173dccd36fb80525fd61fac6213a3843837ae0eac9867161e26ebad8"),
+                  "6a8ad97023d90564d789be55b12bbc68d26a3714126f46bc75b415eec8f0f406"),
 ]
 
 # Bash recipe for building across all platforms

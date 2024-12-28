@@ -1,0 +1,24 @@
+From b5861b57e6ae870e7d089b6f298a6bd9b27c239d Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Wed, 15 Feb 2023 14:19:54 -0500
+Subject: [PATCH] Disable Fortran test for sysdetect
+
+---
+ src/components/sysdetect/tests/Makefile | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/components/sysdetect/tests/Makefile b/src/components/sysdetect/tests/Makefile
+index daff240f3..34d1307a4 100644
+--- a/src/components/sysdetect/tests/Makefile
++++ b/src/components/sysdetect/tests/Makefile
+@@ -22,7 +22,6 @@ else
+ endif
+ 
+ TESTS = query_device_simple \
+-        $(FTESTS)           \
+         $(MPITESTS)
+ 
+ sysdetect_tests: $(TESTS)
+-- 
+2.37.2
+

@@ -1,0 +1,38 @@
+commit 4d1f9215c3c94afc6445cc7c7f999c2b6907ef6e
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Sat Sep 23 19:03:12 2023 +0000
+
+    Don't use unofficial sys/unistd.h (fix musl build)
+    
+    The standard header is <unistd.h>. The header <sys/unistd.h> is
+    an implementation detail of some libcs, but is not provided
+    universally. musl libc for example does not provide it. Change
+    instances of <sys/unistd.h> inclusion to <unistd.h> (or just
+    delete the former when both were already included).
+
+diff --git a/packages/percept/src/adapt/main/MeshAdapt.hpp b/packages/percept/src/adapt/main/MeshAdapt.hpp
+index 6bbc625d24f..089e08b6b51 100644
+--- a/packages/percept/src/adapt/main/MeshAdapt.hpp
++++ b/packages/percept/src/adapt/main/MeshAdapt.hpp
+@@ -11,7 +11,7 @@
+ #define IN_MESH_ADAPT 1
+ #define MESH_ADAPT_CPP11_MVI 0
+ 
+-#include <sys/unistd.h>
++#include <unistd.h>
+ #include <algorithm>
+ #include <cstdlib>
+ #include <cstring>
+diff --git a/packages/seacas/libraries/suplib_cpp/FileInfo.C b/packages/seacas/libraries/suplib_cpp/FileInfo.C
+index 47c9929ad80..d7ae0897cd3 100644
+--- a/packages/seacas/libraries/suplib_cpp/FileInfo.C
++++ b/packages/seacas/libraries/suplib_cpp/FileInfo.C
+@@ -26,8 +26,6 @@
+ #define S_ISREG(m) (((m)&_S_IFMT) == _S_IFREG)
+ #define S_ISDIR(m) (((m)&_S_IFMT) == _S_IFDIR)
+ #endif
+-#else
+-#include <sys/unistd.h>
+ #endif
+ 
+ #include <cstdio>

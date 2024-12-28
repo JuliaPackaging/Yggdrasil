@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "Ncurses"
-version = v"6.2"
+version = v"6.5.0"
 
 # Collection of sources required to build Ncurses
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
-                  "30306e0c76e0f9f1f0de987cf1c82a5c21e1ce6568b9227f7da5b71cbea86c9d"),
+                  "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ncurses-*/
+cd $WORKSPACE/srcdir/ncurses-*
 
 CONFIG_FLAGS=""
 if [[ ${target} == *-darwin* ]]; then
@@ -72,7 +72,7 @@ ln -s ncursesw ${includedir}/ncurses
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
@@ -88,5 +88,17 @@ dependencies = [
     HostBuildDependency("Ncurses_jll"),
 ]
 
+init_block = raw"""
+if Sys.isunix()
+    path = joinpath(artifact_dir, "share", "terminfo")
+    old = get(ENV, "TERMINFO_DIRS", nothing)
+    if old === nothing
+        ENV["TERMINFO_DIRS"] = path
+    else
+        ENV["TERMINFO_DIRS"] = old * ":" * path
+    end
+end
+"""
+
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)

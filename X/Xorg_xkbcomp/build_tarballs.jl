@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_xkbcomp"
-version = v"1.4.2"
+version = v"1.4.6"
 
 # Collection of sources required to build xkbcomp
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/app/xkbcomp-$(version).tar.bz2",
-                  "6dd8bcb9be7e85bd7294abe261b8c7b0539d2fc93e41b80fb8bd013767ce8424"),
+    ArchiveSource("https://www.x.org/archive/individual/app/xkbcomp-$(version).tar.xz",
+                  "fa50d611ef41e034487af7bd8d8c718df53dd18002f591cca16b0384afc58e98"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,4 +35,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Build trigger: 2

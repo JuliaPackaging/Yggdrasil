@@ -1,0 +1,48 @@
+commit d08406b01c17c6b6868ae6222bf1ec973750b8e4
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Thu Sep 21 13:10:59 2023 +0000
+
+    teko: Guard ProbingPreconditionerFactory by TEKO_HAVE_EPETRA
+    
+    The TEKO_HAVE_EPETRA switch controls whether ProbingPreconditionerFactory
+    gets compiled, but not all includes of this header were appropriately guarded
+    by the preprocessor macro. Correct this to fix the compilation of teko with
+    TEKO_HAVE_EPETRA disabled.
+
+diff --git a/packages/teko/src/Teko_PreconditionerFactory.cpp b/packages/teko/src/Teko_PreconditionerFactory.cpp
+index b7140e2f6c7..5f2a2521219 100644
+--- a/packages/teko/src/Teko_PreconditionerFactory.cpp
++++ b/packages/teko/src/Teko_PreconditionerFactory.cpp
+@@ -61,8 +61,8 @@
+ #include "Teko_DiagonallyScaledPreconditionerFactory.hpp"
+ #ifdef TEKO_HAVE_EPETRA
+ #include "Teko_DiagonalPreconditionerFactory.hpp"
+-#endif
+ #include "Teko_ProbingPreconditionerFactory.hpp"
++#endif
+ #include "Teko_IdentityPreconditionerFactory.hpp"
+ #include "NS/Teko_LSCPreconditionerFactory.hpp"
+ #include "NS/Teko_SIMPLEPreconditionerFactory.hpp"
+@@ -328,7 +328,7 @@ void PreconditionerFactory::initializePrecFactoryBuilder()
+    clone = rcp(new AutoClone<IdentityPreconditionerFactory>());
+    precFactoryBuilder_.addClone("Identity",clone);
+ 
+-#ifdef Teko_ENABLE_Isorropia
++#if defined(Teko_ENABLE_Isorropia) && defined(TEKO_HAVE_EPETRA)
+    clone = rcp(new AutoClone<ProbingPreconditionerFactory>());
+    precFactoryBuilder_.addClone("Probing Preconditioner",clone);
+ #endif
+diff --git a/packages/teko/tests/unit_tests/tProbingFactory.cpp b/packages/teko/tests/unit_tests/tProbingFactory.cpp
+index b4aa9fb168f..a0977fdd01f 100644
+--- a/packages/teko/tests/unit_tests/tProbingFactory.cpp
++++ b/packages/teko/tests/unit_tests/tProbingFactory.cpp
+@@ -68,7 +68,9 @@
+ #include "Teko_DiagonallyScaledPreconditionerFactory.hpp"
+ #include "Teko_PreconditionerInverseFactory.hpp"
+ #include "Teko_PreconditionerLinearOp.hpp"
++#ifdef TEKO_HAVE_EPETRA
+ #include "Teko_ProbingPreconditionerFactory.hpp"
++#endif
+ #include "Teko_InverseLibrary.hpp"
+ 
+ #include "Thyra_EpetraLinearOp.hpp"

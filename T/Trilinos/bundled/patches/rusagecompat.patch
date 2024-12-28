@@ -1,0 +1,260 @@
+commit f977994fadb71f977957706f1b49a6663d6c2754
+Author: Keno Fischer <keno@juliacomputing.com>
+Date:   Mon Sep 25 11:01:43 2023 +0000
+
+    rusage compat
+
+diff --git a/packages/stk/stk_util/stk_util/diag/Platform.cpp b/packages/stk/stk_util/stk_util/diag/Platform.cpp
+index 8cb61dea462..c73d9848300 100644
+--- a/packages/stk/stk_util/stk_util/diag/Platform.cpp
++++ b/packages/stk/stk_util/stk_util/diag/Platform.cpp
+@@ -40,13 +40,20 @@
+ #include "stk_util/util/FeatureTest.hpp"     // for SIERRA_HEAP_INFO, SIERRA_MEMORY_INFO
+ #include "stk_util/util/Writer.hpp"          // for operator<<, Writer, dendl
+ #include "stk_util/util/Writer_fwd.hpp"      // for LOG_MEMORY
+-#include <pwd.h>                             // for getpwuid, passwd
+ #include <unistd.h>                          // for access, getdomainname, geteuid, gethostname
+ #include <cstdlib>                           // for getenv
+ #include <cstring>                           // for strlen
+ #include <fstream>                           // for ifstream, basic_istream, operator|, ios_base
+ 
+-#if defined(__GNUC__)
++#ifndef _WIN32
++#include <pwd.h>                             // for getpwuid, passwd
++#else
++#include <windows.h>                         // for GetUserName
++#include <lmcons.h>                          // for UNLEN
++#include <sysinfoapi.h>                      // for GetComputerNameEx
++#endif
++
++#if defined(__GNUC__) && !defined(_WIN32)
+   #include <sys/time.h>
+   #include <sys/resource.h>
+ 
+@@ -65,7 +72,8 @@
+   #include <sys/resource.h>
+ #endif
+ 
+-#if defined(__IBMC__) || defined(__IBMCPP__)
++#if defined(_WIN32)
++#elif defined(__IBMC__) || defined(__IBMCPP__)
+   #include <sys/utsname.h>
+   #include <sys/time.h>
+   #include <sys/resource.h>
+@@ -174,7 +182,14 @@ std::string
+ hostname()
+ {
+   char buf[255];
++#ifdef _WIN32
++  // Win32 has gethostname, but it's in winsock, which we don't link.
++  // Just use GetComputerNameEx, which we need anyway for the domain.
++  DWORD buf_size = sizeof(buf);
++  int errCode = !GetComputerNameEx( ComputerNameDnsHostname, buf, &buf_size );
++#else
+   ::gethostname(buf, sizeof(buf));
++#endif
+   return std::string(buf);
+ }
+ 
+@@ -184,7 +199,12 @@ domainname()
+   std::string domain(".");
+   char buf[255];
+ 
++#ifdef _WIN32
++  DWORD buf_size = sizeof(buf);
++  int errCode = !GetComputerNameEx( ComputerNameDnsDomain, buf, &buf_size );
++#else
+   int errCode = ::getdomainname(buf, sizeof(buf));
++#endif
+   if (!errCode && ::strlen(buf)) {
+     domain += buf;
+   }
+@@ -211,7 +231,12 @@ std::string
+ username()
+ {
+   std::string env_user_name = get_env_user();
+-#if defined(__CRAYXT_COMPUTE_LINUX_TARGET)
++#if defined(_WIN32)
++  char user_name_buf[UNLEN + 1];
++  DWORD user_name_length = sizeof(user_name_buf);
++  GetUserNameA(user_name_buf, &user_name_length);
++  std::string user_name(user_name_buf);
++#elif defined(__CRAYXT_COMPUTE_LINUX_TARGET)
+   std::string user_name(get_param("username"));
+ 
+   if (user_name.empty()) {
+@@ -234,31 +259,43 @@ username()
+ std::string
+ hardware()
+ {
++#ifdef _WIN32
++  return "unknown";
++#else
+   struct utsname	uts_name;
+ 
+   uname(&uts_name);
+ 
+   return uts_name.machine;
++#endif
+ }
+ 
+ std::string
+ osname()
+ {
++#ifdef _WIN32
++  return "Windows";
++#else
+   struct utsname	uts_name;
+ 
+   uname(&uts_name);
+ 
+   return uts_name.sysname;
++#endif
+ }
+ 
+ std::string
+ osversion()
+ {
++#ifdef _WIN32
++  return "unknown";
++#else
+   struct utsname	uts_name;
+ 
+   uname(&uts_name);
+ 
+   return uts_name.release;
++#endif
+ }
+ 
+ int
+@@ -270,7 +307,11 @@ pid()
+ int
+ pgrp()
+ {
++#ifdef _WIN32
++  return 0;
++#else
+   return ::getpgrp();
++#endif
+ }
+ 
+ bool
+diff --git a/packages/stk/stk_util/stk_util/environment/CPUTime.cpp b/packages/stk/stk_util/stk_util/environment/CPUTime.cpp
+index c5c13d7cdc7..23cf56dd13d 100644
+--- a/packages/stk/stk_util/stk_util/environment/CPUTime.cpp
++++ b/packages/stk/stk_util/stk_util/environment/CPUTime.cpp
+@@ -33,8 +33,12 @@
+ // 
+ 
+ #include "stk_util/environment/CPUTime.hpp"
++#ifdef _WIN32
++#include <processthreadsapi.h>
++#else
+ #include <sys/resource.h>  // for rusage, getrusage, RUSAGE_SELF
+ #include <sys/time.h>      // for timeval
++#endif
+ 
+ #ifdef __INTEL_LLVM_COMPILER
+ #include <time.h>
+@@ -42,7 +46,14 @@
+ 
+ namespace stk {
+ 
+-#ifdef __INTEL_LLVM_COMPILER
++#if defined(_WIN32)
++double cpu_time()
++{
++    FILETIME c, e, k, u;
++    GetProcessTimes(GetCurrentProcess(), &c, &e, &k, &u);
++    return ((unsigned long long)u.dwHighDateTime << 32 | u.dwLowDateTime) * 1.0e-7;
++}
++#elif defined(__INTEL_LLVM_COMPILER)
+ double cpu_time()
+ {
+   clock_t ticks = clock();
+diff --git a/packages/stk/stk_util/stk_util/environment/Env.cpp b/packages/stk/stk_util/stk_util/environment/Env.cpp
+index 4b3298d9dbe..d0ae0f26aca 100644
+--- a/packages/stk/stk_util/stk_util/environment/Env.cpp
++++ b/packages/stk/stk_util/stk_util/environment/Env.cpp
+@@ -52,7 +52,9 @@
+ #include <iostream>                                       // for operator<<, basic_ostream, endl
+ #include <string>                                         // for string, operator<<, char_traits
+ 
+-#if defined(__GNUC__)
++#ifdef _WIN32
++#include <sysinfoapi.h>
++#elif defined(__GNUC__)
+ #include <sys/resource.h>                                 // for rusage, getrusage, RUSAGE_SELF
+ #include <sys/time.h>                                     // for timeval, gettimeofday, timezone
+ #endif
+@@ -80,6 +82,16 @@ format_time(
+ 
+ namespace Env {
+ 
++#ifdef _WIN32
++double
++wall_now()
++{
++  FILETIME t;
++  GetSystemTimeAsFileTime(&t);
++  unsigned long long time_since_win_epoch = ((unsigned long long)t.dwHighDateTime << 32 | t.dwLowDateTime);
++  return (time_since_win_epoch - 116444736000000000LL) * 1.0e-7;
++}
++#else
+ double
+ wall_now()
+ {
+@@ -88,22 +100,7 @@ wall_now()
+   gettimeofday(&tp, &tz);
+   return (tp.tv_sec + ((static_cast<double>(tp.tv_usec))/1000000.0));
+ }
+-
+-
+-double
+-cpu_now()
+-{
+-#if ! defined(__PGI)
+-  struct rusage my_rusage;
+-
+-  getrusage(RUSAGE_SELF, &my_rusage);
+-
+-  return static_cast<double>(my_rusage.ru_utime.tv_sec + my_rusage.ru_stime.tv_sec) +
+-    static_cast<double>(my_rusage.ru_utime.tv_usec + my_rusage.ru_stime.tv_usec)*1.0e-6;
+-#else
+-  return 0;
+ #endif
+-}
+ 
+ const std::string &
+ product_name()
+diff --git a/packages/stk/stk_util/stk_util/environment/Trace.cpp b/packages/stk/stk_util/stk_util/environment/Trace.cpp
+index da9c1f2e7ce..916cc9fa8ee 100644
+--- a/packages/stk/stk_util/stk_util/environment/Trace.cpp
++++ b/packages/stk/stk_util/stk_util/environment/Trace.cpp
+@@ -35,7 +35,7 @@
+  */
+ 
+ #include "stk_util/environment/Trace.hpp"
+-#include "stk_util/environment/Env.hpp"         // for cpu_now
++#include "stk_util/environment/CPUTime.hpp"     // for cpu_time
+ #include "stk_util/environment/FormatTime.hpp"  // for formatTime
+ #include "stk_util/util/Writer.hpp"             // for operator<<, Writer, dendl, pop, push
+ #include "stk_util/util/Writer_fwd.hpp"         // for LOG_TRACE_STATS
+@@ -246,7 +246,7 @@ Trace::Trace(
+                                << push << dendl;
+ 
+     if (dout.shouldPrint(LOG_TRACE_STATS)) {
+-      m_startCpuTime = sierra::Env::cpu_now();
++      m_startCpuTime = stk::cpu_time();
+     }
+   }
+ }
+@@ -256,7 +256,7 @@ Trace::~Trace()
+ {
+   if (m_do_trace && (m_flags & IN_TRACE_LIST)) {
+     if (m_diagWriter.shouldPrint(LOG_TRACE_STATS)) {
+-      m_startCpuTime = sierra::Env::cpu_now() - m_startCpuTime;
++      m_startCpuTime = stk::cpu_time() - m_startCpuTime;
+     }
+ 
+     if (m_diagWriter.shouldPrint(LOG_TRACE_STATS)) {

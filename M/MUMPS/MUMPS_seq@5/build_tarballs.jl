@@ -14,31 +14,30 @@ using BinaryBuilder, Pkg
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "MUMPS_seq"
-upstream_version = v"5.5.1"
+upstream_version = v"5.7.3"
 version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
-upstream_version
+
 sources = [
-  ArchiveSource("http://mumps.enseeiht.fr/MUMPS_$(upstream_version).tar.gz","1abff294fa47ee4cfd50dfd5c595942b72ebfcedce08142a75a99ab35014fa15"),
-  DirectorySource("./bundled")
+  ArchiveSource("https://mumps-solver.org/MUMPS_$(upstream_version).tar.gz",
+                "84a47f7c4231b9efdf4d4f631a2cae2bdd9adeaabc088261d15af040143ed112")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 mkdir -p ${libdir}
 cd $WORKSPACE/srcdir/MUMPS*
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pord.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/Makefile.patch
 
 makefile="Makefile.G95.SEQ"
 cp Make.inc/${makefile} Makefile.inc
 
 # Add `-fallow-argument-mismatch` if supported
 : >empty.f
+FFLAGS=()
 if gfortran -c -fallow-argument-mismatch empty.f >/dev/null 2>&1; then
-    FFLAGS=("-fallow-argument-mismatch")
+    FFLAGS+=("-fallow-argument-mismatch")
 fi
 rm -f empty.*
 
@@ -49,32 +48,68 @@ else
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-  BLAS_LAPACK="-L${libdir} -lopenblas"
+  BLAS_LAPACK="-L${libdir} -lblastrampoline-5"
 else
   BLAS_LAPACK="-L${libdir} -lblastrampoline"
 fi
 
-make_args+=(OPTF=-O3
-            OPTL=-O3
-            OPTC=-O3
+make_args+=(OPTF="-O3"
+            OPTL="-O3"
+            OPTC="-O3"
             CDEFS=-DAdd_
             LMETISDIR=${libdir}
             IMETIS=-I${includedir}
             LMETIS="-L${libdir} -lmetis"
             ORDERINGSF="-Dpord -Dmetis"
             LIBEXT_SHARED=".${dlext}"
+            SHARED_OPT="-shared"
             SONAME="${SONAME}"
-            CC="$CC -fPIC ${CFLAGS[@]}"
-            FC="gfortran -fPIC ${FFLAGS[@]}"
-            FL="gfortran -fPIC"
+            CC="$CC ${CFLAGS[@]}"
+            FC="gfortran ${FFLAGS[@]}"
+            FL="gfortran"
             RANLIB="echo"
             LIBBLAS="${BLAS_LAPACK}"
             LAPACK="${BLAS_LAPACK}")
 
 make -j${nproc} allshared "${make_args[@]}"
 
+mkdir ${includedir}/libseq
 cp include/*.h ${includedir}
-cp libseq/*.h ${includedir}
+cp libseq/*.h ${includedir}/libseq
+cp lib/*.${dlext} ${libdir}
+
+# 64-bit integer version of MUMPS
+make clean
+for sym in isamax idamax ilaenv slamch dlamch \
+           saxpy scopy sgemm sgemv sgesvd slarfg sorgqr sormqr sscal sswap strsv strsm strtrs snrm2 \
+           daxpy dcopy dgemm dgemv dgesvd dlarfg dorgqr dormqr dscal dswap dtrsv dtrsm dtrtrs dnrm2 \
+           caxpy ccopy cgemm cgemv cgesvd clarfg cungqr cunmqr cscal cswap ctrsv ctrsm ctrtrs scnrm2 \
+           zaxpy zcopy zgemm zgemv zgesvd zlarfg zungqr zunmqr zscal zswap ztrsv ztrsm ztrtrs dznrm2
+do
+    FFLAGS+=("-D${sym}=${sym}_64")
+done
+FFLAG="${FFLAGS[@]}"
+make_args_64+=(PLAT="64"
+               OPTF="-O3 -fdefault-integer-8 -ffixed-line-length-none"
+               OPTL="-O3"
+               OPTC="-O3 -DINTSIZE64"
+               CDEFS=-DAdd_
+               LMETISDIR="${libdir}/metis/metis_Int64_Real32/lib"
+               IMETIS="-I${libdir}/metis_Int64_Real32/include"
+               LMETIS="-L${libdir}/metis/metis_Int64_Real32/lib -lmetis_Int64_Real32"
+               ORDERINGSF="-Dpord -Dmetis"
+               LIBEXT_SHARED=".${dlext}"
+               SHARED_OPT="-shared"
+               SONAME="${SONAME}"
+               CC="$CC ${CFLAGS[@]}"
+               FC="gfortran $FFLAG"
+               FL="gfortran"
+               RANLIB="echo"
+               LPORD="-L./PORD/lib -lpord64"
+               LIBBLAS="${BLAS_LAPACK}"
+               LAPACK="${BLAS_LAPACK}")
+
+make -j${nproc} allshared "${make_args_64[@]}"
 cp lib/*.${dlext} ${libdir}
 """
 
@@ -86,18 +121,18 @@ products = [
     LibraryProduct("libdmumps", :libdmumps),
     LibraryProduct("libcmumps", :libcmumps),
     LibraryProduct("libzmumps", :libzmumps),
-    LibraryProduct("libpord", :libpord),
-    LibraryProduct("libmpiseq", :libmpiseq),
-    LibraryProduct("libmumps_common", :libmumps_common),
+    LibraryProduct("libsmumps64", :libsmumps64),
+    LibraryProduct("libdmumps64", :libdmumps64),
+    LibraryProduct("libcmumps64", :libcmumps64),
+    LibraryProduct("libzmumps64", :libzmumps64),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"), platforms=filter(Sys.iswindows, platforms)),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), platforms=filter(!Sys.iswindows, platforms))
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.8", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat = "1.9", preferred_gcc_version=v"6", clang_use_lld=false)

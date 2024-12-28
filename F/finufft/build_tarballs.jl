@@ -6,40 +6,37 @@ using BinaryBuilderBase
 include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
-version = v"2.1.0"
-
+version = v"2.3.1"
+commit_hash = "1fea25405c174e34d2ddb793666060c3d79a43d1" # v2.3.1
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/flatironinstitute/finufft/archive/v$(version).zip", "042a96cab8a3c17a544125b7890616b1dd5eacd1b50ce0464617903b01bddd54")
+    GitSource("https://github.com/flatironinstitute/finufft.git", commit_hash)
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/finufft*/
 
-CFLAGS="-fopenmp -fPIC -O3 -funroll-loops -Iinclude"
-if [[ "${target}" != *-freebsd* ]] && [[ "${target}" != *-apple-* ]]; then
-    CFLAGS="${CFLAGS} -fcx-limited-range"
-fi
-if [[ "${proc_family}" == *intel* ]]; then
-    CFLAGS="${CFLAGS} -mno-avx512f"
-fi
-
-# Overwrite LIBSFFT such that we do not require fftw3_threads or fftw3_omp for OMP support. Since the libraries in FFTW_jll already provide for threading, we do not loose anything.
-# Make use of the -DFFTW_PLAN_SAFE flag to allow for multiple threads using finufft at the same time.
-make lib \
-    CC=${CC} \
-    CXX=${CXX} \
-    CFLAGS="${CFLAGS}" \
-    CXXFLAGS="${CFLAGS} -std=c++14 -DFFTW_PLAN_SAFE" \
-    LIBSFFT="-lfftw3 -lfftw3f -lm" \
-    DYNLIB="lib/libfinufft.${dlext}"
-install -Dvm 0755 "lib/libfinufft.${dlext}" "${libdir}/libfinufft.${dlext}"
+mkdir build && cd build
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PREFIX_PATH="${prefix}" \
+    -DCMAKE_INSTALL_PREFIX="${prefix}" \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DFINUFFT_FFTW_SUFFIX="" \
+    -DFINUFFT_ARCH_FLAGS="" \
+    -DFINUFFT_STATIC_LINKING="OFF"
+cmake --build . --parallel $nproc
+cmake --install .
 """
 
+platforms = supported_platforms()
+# xsimd library does not work with armv6, armv7, powerpc
+filter!(p -> !(contains(arch(p), "armv") || contains(arch(p), "powerpc")), platforms)
+# FreeBSD aarch64 does not build, remove for now
+filter!(p -> !(p["os"]=="freebsd" && p["arch"]=="aarch64"), platforms)
 # Expand for microarchitectures on x86_64 (library doesn't have CPU dispatching)
-# Tests on Linux/x86_64 yielded a slow binary with avx512 for some reason, so disable that
-platforms = expand_cxxstring_abis(expand_microarchitectures(supported_platforms(), ["x86_64", "avx", "avx2", "avx512"]); skip=!Sys.iswindows)
+platforms = expand_cxxstring_abis(expand_microarchitectures(platforms, ["x86_64", "avx", "avx2", "avx512"]); skip=!Sys.iswindows)
 
 augment_platform_block = """
     $(MicroArchitectures.augment)
@@ -68,6 +65,7 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
+llvm_version = v"13.0.1+1"
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8", julia_compat="1.6", augment_platform_block)
+               preferred_gcc_version=v"10", preferred_llvm_version=llvm_version, julia_compat="1.6", augment_platform_block)

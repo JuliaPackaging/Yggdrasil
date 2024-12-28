@@ -1,8 +1,12 @@
 #include "blis.h"
 
+// Declarations to match 'bli_thread.h' and export names:
+BLIS_EXPORT_BLIS void    bli_thread_set_num_threads64_ ( dim_t value );
+BLIS_EXPORT_BLIS dim_t   bli_thread_get_num_threads64_ ( void );
+
 void bli_thread_set_num_threads64_
      (
-       const int nt
+       dim_t  nt
      )
 {
         // Initialize BLIS.
@@ -15,7 +19,7 @@ void bli_thread_set_num_threads64_
         bli_finalize_auto();
 }
 
-int bli_thread_get_num_threads64_ ()
+dim_t bli_thread_get_num_threads64_ ()
 {
         // Initialize BLIS.
         bli_init_auto();

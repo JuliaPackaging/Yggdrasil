@@ -1,0 +1,13 @@
+diff --git a/cmake/compilers/FortranFlags.cmake b/cmake/compilers/FortranFlags.cmake
+index 28f2218bd..6ea999786 100644
+--- a/cmake/compilers/FortranFlags.cmake
++++ b/cmake/compilers/FortranFlags.cmake
+@@ -15,7 +15,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
+             )
+     endif()
+     set(CMAKE_Fortran_FLAGS_DEBUG   "-Og -g -fbacktrace -fcray-pointer -Wuninitialized")
+-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-loops -ftree-vectorize -w")
++    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ftree-vectorize -w")
+     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
+     if(ENABLE_STATIC_LINKING)
+         set(CMAKE_Fortran_FLAGS

@@ -1,6 +1,6 @@
 # Yggdrasil
 
-Build Status: [![Build Status](https://dev.azure.com/JuliaPackaging/Yggdrasil/_apis/build/status/JuliaPackaging.Yggdrasil?branchName=master)](https://dev.azure.com/JuliaPackaging/Yggdrasil/_build/latest?definitionId=1&branchName=master)
+Build Status: [![Build status](https://badge.buildkite.com/20f068d74db24be50d79ac4710defa74e19d5d912e31f9bda2.svg)](https://buildkite.com/julialang/yggdrasil)
 
 ![Yggdrasil](https://user-images.githubusercontent.com/1282691/177174254-aa90664e-5c20-4ea3-9938-34de961dc198.png)
 
@@ -15,7 +15,7 @@ To contribute a new recipe, you can either
 
 Yggdrasil builds the tarballs using `master` version of BinaryBuilder.jl, which requires Julia 1.3.0 or later versions.  Note that this BinaryBuilder.jl version has some differences compared to v0.1.4 and the builders generated are slightly different.  You are welcome to contribute builders written for  BinaryBuilder.jl v0.1.4, but they will likely need minor adjustements.
 
-[Azure pipelines](https://dev.azure.com/JuliaPackaging/Yggdrasil/_build?view=runs) are used to test that the builders can successfully produce the tarballs.
+[Buildkite CI](https://buildkite.com/julialang/yggdrasil) is used to test that the builders can successfully produce the tarballs.
 
 If you prefer to test your manual buildscript before opening the pull request, we suggest installing `BinaryBuilder.jl` on Julia 1.3 or any following release and running `julia --color=yes build_tarballs.jl --verbose --debug` locally.  On MacOS, you will need to have `docker` installed for this to work.
 

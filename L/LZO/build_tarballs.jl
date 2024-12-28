@@ -3,15 +3,14 @@
 using BinaryBuilder
 
 name = "LZO"
-version = v"2.10"
+version_string = "2.10"
+version = v"2.10.2"
 
 # Collection of sources required to build LZO
 sources = [
-    ArchiveSource("https://www.oberhumer.com/opensource/lzo/download/lzo-$(version.major).$(version.minor).tar.gz",
+    ArchiveSource("https://www.oberhumer.com/opensource/lzo/download/lzo-$(version_string).tar.gz",
                   "c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072")
 ]
-
-version = v"2.10.1" # <--- This version number is a lie, we need to bump it to build for experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -23,10 +22,10 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = Product[
+products = [
     LibraryProduct("liblzo2", :liblzo2)
 ]
 
@@ -35,4 +34,7 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
+
+# Build Trigger: 2

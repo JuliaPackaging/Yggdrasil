@@ -3,20 +3,19 @@
 using BinaryBuilder
 
 name = "libwinit"
-version = v"0.17.0"
+version = v"0.32.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/feenkcom/libwinit/archive/refs/tags/v$(version).tar.gz",
-                  "dab68ccefaf496d5c3de751a15a0be54a3eb1ee2d4260105ec3343875c54f0e3"),
+    GitSource("https://github.com/feenkcom/libwinit.git", "43b2401d62cf61a2031e3c2cccdb6edef22a06ef"),
     FileSource("https://github.com/feenkcom/libwinit/releases/download/v$(version)/winit.h", 
-               "d35910a1c54cf093f70e0cafddb72442f453635cc8147f1c61cb9d9b794da313"),
+               "d16e3fef287637bb2f29d8f1b6f715052cdf43bea4177afc412c6571f9638821"),
 ]
 
 # Adapted from the justfile of the repo
 script = raw"""
-install -Dvm 0755 "winit.h" "${includedir}/winit.h"
-cd $WORKSPACE/srcdir/libwinit-*
+install -Dvm 0644 "winit.h" "${includedir}/winit.h"
+cd $WORKSPACE/srcdir/libwinit
 cargo build --release
 install_license LICENSE
 if [[ "${target}" == *-mingw* ]]; then
@@ -28,7 +27,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> (Sys.iswindows(p) && arch(p) == "i686") || (Sys.islinux(p) && (libc(p) == "musl" || arch(p) == "armv6l" || arch(p) == "armv7l" || arch(p) == "i686")) || Sys.isbsd(p))
+platforms = supported_platforms(; exclude=p -> nbits(p) == 32 || libc(p) == "musl" || Sys.isbsd(p))
 
 # The products that we will ensure are always built
 products = [
@@ -37,7 +36,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("libboxer_jll")
 ]
 

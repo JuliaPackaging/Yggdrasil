@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "dSFMT"
-version = v"2.2.4"
+version = v"2.2.5"
 
 # Collection of sources required to build dSFMT
 sources = [
     GitSource("https://github.com/MersenneTwister-Lab/dSFMT.git",
-              "5a02974a257ae74dbab12bde3ef6a5ffc0cfbbc2"),
+              "6929b76f2ab07e6302f8daece28045d5bec6ff5c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,7 @@ ${CC} ${FLAGS[@]} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o "${libdir}/libdSFMT.${dlex
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;experimental=true)
+platforms = supported_platforms()
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 
 # The products that we will ensure are always built
@@ -42,4 +42,7 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
+
+# Build trigger: 1

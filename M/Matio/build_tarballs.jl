@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "Matio"
-version = v"1.5.23"
+# This is still 1.5.23 upstream, but we needed a bump for HDF5 compat
+version = v"1.5.24"
 
 # Collection of sources required to complete build
 sources = [
@@ -31,15 +32,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macOs"),
-    Platform("aarch64", "macOs"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows")
-]
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -49,7 +42,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
-    Dependency("HDF5_jll"),
+    Dependency("HDF5_jll"; compat="1.14.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

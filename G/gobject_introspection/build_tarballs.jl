@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "gobject_introspection"
-version = v"1.74.0"
+version = v"1.76.1"
 
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/gobject-introspection/$(version.major).$(version.minor)/gobject-introspection-$(version).tar.xz",
-              "347b3a719e68ba4c69ff2d57ee2689233ea8c07fc492205e573386779e42d653"),
+              "196178bf64345501dcdc4d8469b36aa6fe80489354efe71cb7cb8ab82a3738bf"),
 ]
 
 # Bash recipe for building across all platforms

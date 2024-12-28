@@ -3,18 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"15.0.4"
+version = v"18.1.7"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "1b6f92013e7555759127d84264c3e98eab116a3a5138570058d8507e1513f76e"
+        "6523c898d754d466b77b64ddca8fd0185c5aeb7f24260ddb0fae5779eb31cee3"
     ),
     # we need a bunch of additional cmake files to build the subproject separately
     # see: https://github.com/llvm/llvm-project/issues/53281#issuecomment-1260187944
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-        "9df45bf3a0a46264d5007485592381bbaf50f034b4155290cb0d917539d8facf"
+        "f0b67599f51cddcdbe604c35b6de97f2d0a447e18b9c30df300c82bf1ee25bd7"
     ),
     DirectorySource("./bundled"),
 ]
@@ -62,14 +62,15 @@ products = [
     LibraryProduct("libomp", :libomp),
 ]
 
-llvm_version = v"13.0.1"
+llvm_version = v"13.0.1+1"
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We use UASM only for Windows
     HostBuildDependency(PackageSpec(name="UASM_jll", uuid="bbf38c07-751d-5a2b-a7fc-5c0acd9bd57e")),
     # We need libclang_rt.osx.a for linking libomp, because this library provides the
     # implementation of `__divdc3`.
-    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version); platforms=[Platform("aarch64", "macos")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
+                    platforms=[Platform("aarch64", "macos")]),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

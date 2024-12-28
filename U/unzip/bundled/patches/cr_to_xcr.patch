@@ -1,0 +1,182 @@
+diff --git a/fileio.c b/fileio.c
+index bc00d74..030f8e1 100644
+--- a/fileio.c
++++ b/fileio.c
+@@ -1013,7 +1013,7 @@ static int partflush(__G__ rawbuf, size, unshrink)
+                 ++p;
+             G.didCRlast = FALSE;
+             for (q = transbuf;  (extent)(p-rawbuf) < (extent)size;  ++p) {
+-                if (*p == CR) {           /* lone CR or CR/LF: treat as EOL  */
++                if (*p == XCR) {           /* lone CR or CR/LF: treat as EOL  */
+                     PutNativeEOL
+                     if ((extent)(p-rawbuf) == (extent)size-1)
+                         /* last char in buffer */
+@@ -2117,7 +2117,7 @@ int do_string(__G__ length, option)   /* return PK-type error code */
+              * (since used before A_TO_N(), check for CR instead of '\r')
+              */
+             while (*p) {
+-                while (*p == CR)
++                while (*p == XCR)
+                     ++p;
+                 *q++ = *p++;
+             }
+@@ -2166,7 +2166,7 @@ int do_string(__G__ length, option)   /* return PK-type error code */
+                     pause = TRUE;
+                     if (p[1] == LF)        /* ASCII LF */
+                         *q++ = *++p;
+-                    else if (p[1] == CR && p[2] == LF) {  /* ASCII CR LF */
++                    else if (p[1] == XCR && p[2] == LF) {  /* ASCII CR LF */
+                         *q++ = *++p;
+                         *q++ = *++p;
+                     }
+diff --git a/macos/source/maccfg.h b/macos/source/maccfg.h
+index 201dbf9..6cbaf6a 100644
+--- a/macos/source/maccfg.h
++++ b/macos/source/maccfg.h
+@@ -86,7 +86,7 @@
+ #  define DATE_FORMAT DF_MDY
+ #endif
+ #define lenEOL        1
+-#define PutNativeEOL  *q++ = native(CR);
++#define PutNativeEOL  *q++ = native(XCR);
+ #define NOANSIFILT  /* MWRKS C creates broken code for the ANSI-ESC filter */
+ #define MALLOC_WORK
+ #define INT_SPRINTF
+diff --git a/netware/nlm_EOL.pat b/netware/nlm_EOL.pat
+index 2ae7f95..a2eea73 100644
+--- a/netware/nlm_EOL.pat
++++ b/netware/nlm_EOL.pat
+@@ -25,7 +25,7 @@ diff -rc2 ./netware/nlmcfg.h e:netware/nlmcfg.h
+ ***************
+ *** 21,25 ****
+   #  define lenEOL          2
+-  #  define PutNativeEOL  {*q++ = native(CR); *q++ = native(LF);}
++  #  define PutNativeEOL  {*q++ = native(XCR); *q++ = native(LF);}
+ - #  define USE_FWRITE    /* write() fails to support textmode output */
+   #  if (!defined(NOTIMESTAMP) && !defined(TIMESTAMP))
+   #    define TIMESTAMP
+diff --git a/netware/nlmcfg.h b/netware/nlmcfg.h
+index c6271e4..59a3b58 100644
+--- a/netware/nlmcfg.h
++++ b/netware/nlmcfg.h
+@@ -19,7 +19,7 @@
+ #    define DATE_FORMAT DF_MDY
+ #  endif
+ #  define lenEOL          2
+-#  define PutNativeEOL  {*q++ = native(CR); *q++ = native(LF);}
++#  define PutNativeEOL  {*q++ = native(XCR); *q++ = native(LF);}
+ #  define USE_FWRITE    /* write() fails to support textmode output */
+ #  if (!defined(NOTIMESTAMP) && !defined(TIMESTAMP))
+ #    define TIMESTAMP
+diff --git a/theos/thscfg.h b/theos/thscfg.h
+index b61cc7b..d0bc588 100644
+--- a/theos/thscfg.h
++++ b/theos/thscfg.h
+@@ -24,7 +24,7 @@
+ #define DIR_END '/'
+ #define INT_SPRINTF
+ #define lenEOL        1
+-#define PutNativeEOL  *q++ = native(CR);
++#define PutNativeEOL  *q++ = native(XCR);
+ #define PIPE_ERROR (errno = 9999)
+ #define isatty(a) _isatty(a)
+ #undef match
+diff --git a/unzpriv.h b/unzpriv.h
+index 75b3359..f91a69c 100644
+--- a/unzpriv.h
++++ b/unzpriv.h
+@@ -282,7 +282,7 @@
+ #  define INT_SPRINTF
+ #  define timezone      _timezone
+ #  define lenEOL        2
+-#  define PutNativeEOL  {*q++ = native(CR); *q++ = native(LF);}
++#  define PutNativeEOL  {*q++ = native(XCR); *q++ = native(LF);}
+ #  undef SHORT_NAMES
+ #  if (!defined(NOTIMESTAMP) && !defined(TIMESTAMP))
+ #    define TIMESTAMP
+@@ -417,7 +417,7 @@
+ #  endif
+ #  define DATE_FORMAT     dateformat()
+ #  define lenEOL          2
+-#  define PutNativeEOL    {*q++ = native(CR); *q++ = native(LF);}
++#  define PutNativeEOL    {*q++ = native(XCR); *q++ = native(LF);}
+ #  if (!defined(NO_EF_UT_TIME) && !defined(USE_EF_UT_TIME))
+ #    define USE_EF_UT_TIME
+ #  endif
+@@ -1844,7 +1844,7 @@
+ #define HSIZE       (1 << MAX_BITS)    /* size of global work area */
+ 
+ #define LF     10        /* '\n' on ASCII machines; must be 10 due to EBCDIC */
+-#define CR     13        /* '\r' on ASCII machines; must be 13 due to EBCDIC */
++#define XCR    13        /* '\r' on ASCII machines; must be 13 due to EBCDIC */
+ #define CTRLZ  26        /* DOS & OS/2 EOF marker (used in fileio.c, vms.c) */
+ 
+ #ifdef EBCDIC
+diff --git a/vms/vms.c b/vms/vms.c
+index d826174..73417fa 100644
+--- a/vms/vms.c
++++ b/vms/vms.c
+@@ -2300,7 +2300,7 @@ static int _flush_varlen(__G__ rawbuf, size, final_flag)
+   || ( f == FAB$C_STM && (c==CR || c==LF || c==FF || c==VT) )           \
+ )
+ #else
+-#   define  RECORD_END(c, f)   ((c) == LF || (c) == (CR))
++#   define  RECORD_END(c, f)   ((c) == LF || (c) == (XCR))
+ #endif
+ 
+ static unsigned find_eol(p, n, l)
+@@ -2330,7 +2330,7 @@ static unsigned find_eol(p, n, l)
+     if ( n > 1 )
+     {
+         *l = 1;
+-        if ( ( q[0] == CR && q[1] == LF ) || ( q[0] == LF && q[1] == CR ) )
++        if ( ( q[0] == XCR && q[1] == LF ) || ( q[0] == LF && q[1] == XCR ) )
+             *l = 2;
+     }
+ 
+@@ -2386,8 +2386,8 @@ static int _flush_stream(__G__ rawbuf, size, final_flag)
+             recsize = loccnt - 1;
+             complete = 1;
+ 
+-            if ( (got_eol == CR && rawbuf[0] == LF) ||
+-                 (got_eol == LF && rawbuf[0] == CR) )
++            if ( (got_eol == XCR && rawbuf[0] == LF) ||
++                 (got_eol == LF && rawbuf[0] == XCR) )
+                 end = 1;
+ 
+             got_eol = 0;
+@@ -2456,7 +2456,7 @@ static int _flush_stream(__G__ rawbuf, size, final_flag)
+ #ifdef undef
+         if (uO.cflag)
+             /* skip CR's at the beginning of record */
+-            while (start < size && rawbuf[start] == CR)
++            while (start < size && rawbuf[start] == XCR)
+                 ++start;
+ #endif
+ 
+diff --git a/win32/w32cfg.h b/win32/w32cfg.h
+index bb140ce..5ec3beb 100644
+--- a/win32/w32cfg.h
++++ b/win32/w32cfg.h
+@@ -184,7 +184,7 @@
+ #endif
+ #define DATE_SEPCHAR  dateseparator()
+ #define lenEOL        2
+-#define PutNativeEOL  {*q++ = native(CR); *q++ = native(LF);}
++#define PutNativeEOL  {*q++ = native(XCR); *q++ = native(LF);}
+ 
+ #if (defined(__RSXNT__) && !defined(HAVE_MKTIME))
+ #  define HAVE_MKTIME           /* use mktime() in time conversion routines */
+diff --git a/wince/wcecfg.h b/wince/wcecfg.h
+index 26bcaa0..7edc131 100644
+--- a/wince/wcecfg.h
++++ b/wince/wcecfg.h
+@@ -196,7 +196,7 @@
+ # endif
+ #endif
+ #define lenEOL        2
+-#define PutNativeEOL  {*q++ = native(CR); *q++ = native(LF);}
++#define PutNativeEOL  {*q++ = native(XCR); *q++ = native(LF);}
+ 
+ #define countof(a) (sizeof(a)/sizeof(*(a)))
+ 

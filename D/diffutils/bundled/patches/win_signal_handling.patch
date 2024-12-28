@@ -1,8 +1,6 @@
-diff --git a/src/util.c b/src/util.c
-index 4f4d9bb..a2268ef 100644
 --- a/src/util.c
 +++ b/src/util.c
-@@ -43,6 +43,16 @@
+@@ -45,6 +45,16 @@
  # define SA_RESTART 0
  #endif
  
@@ -19,49 +17,20 @@ index 4f4d9bb..a2268ef 100644
  char const pr_program[] = PR_PROGRAM;
  
  /* Queue up one-line messages to be printed at the end,
-@@ -244,10 +254,32 @@ install_signal_handlers (void)
-   static int const sig[] =
-     {
-       /* This one is handled specially.  */
-+#ifdef SIGTSTP
-       SIGTSTP,
-+#endif
- 
-+#ifdef SIGALRM
-       /* The usual suspects.  */
--      SIGALRM, SIGHUP, SIGINT, SIGPIPE, SIGQUIT, SIGTERM,
-+      SIGALRM,
-+#endif
-+
+@@ -297,7 +307,15 @@
+ #ifdef SIGALRM
+     SIGALRM,
+ #endif
+-    SIGHUP, SIGINT, SIGPIPE,
 +#ifdef SIGHUP
 +      SIGHUP, 
 +#endif
-+
 +#ifdef SIGINT 
 +      SIGINT, 
 +#endif
 +#ifdef SIGPIPE 
 +      SIGPIPE, 
 +#endif
-+#ifdef SIGQUIT 
-+      SIGQUIT, 
-+#endif
-+#ifdef SIGTERM 
-+      SIGTERM,
-+#endif
-+
- #ifdef SIGPOLL
-       SIGPOLL,
+ #ifdef SIGQUIT
+     SIGQUIT,
  #endif
-@@ -297,7 +329,11 @@ install_signal_handlers (void)
-         caught_sig[j] = (signal (sig[j], SIG_IGN) != SIG_IGN);
-         if (caught_sig[j])
-           {
-+#ifdef SIGTSTP
-             signal (sig[j], sig[j] == SIGTSTP ? stophandler : sighandler);
-+#else
-+            signal (sig[j], sighandler);
-+#endif
-             siginterrupt (sig[j], 0);
-           }
-       }

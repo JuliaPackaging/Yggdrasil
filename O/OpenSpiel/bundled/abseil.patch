@@ -1,0 +1,15 @@
+--- a/absl/copts/GENERATED_AbseilCopts.cmake
++++ b/absl/copts/GENERATED_AbseilCopts.cmake
+@@ -216,9 +216,9 @@ list(APPEND ABSL_RANDOM_HWAES_ARM32_FLAGS
+     "-mfpu=neon"
+ )
+
+-list(APPEND ABSL_RANDOM_HWAES_ARM64_FLAGS
+-    "-march=armv8-a+crypto"
+-)
++#list(APPEND ABSL_RANDOM_HWAES_ARM64_FLAGS
++#    "-march=armv8-a+crypto"
++#)
+
+ list(APPEND ABSL_RANDOM_HWAES_MSVC_X64_FLAGS
+ )

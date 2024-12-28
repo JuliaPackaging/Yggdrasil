@@ -1,0 +1,11 @@
+--- a/compose.f90
++++ b/compose.f90
+@@ -1724,7 +1724,7 @@
+ 
+             read(iunit,*)
+             read(iunit,*) n_err
+-            if ((n_err < 0).or.(n_err > 6)) then
++            if ((n_err < 0).or.(n_err > 8)) then
+                ierr = ierr+1
+                if (ierr < dim_err) error_msg(ierr) = 68
+             end if

@@ -1,0 +1,25 @@
+diff --git a/src/utilities.cpp b/src/utilities.cpp
+index 5238a5b..3aecc32 100644
+--- a/src/utilities.cpp
++++ b/src/utilities.cpp
+@@ -43,7 +43,7 @@
+ #include <sstream>
+ #include <thread>
+ 
+-#if not defined(_MSC_VER)
++#if not defined(_WIN32)
+ #include <sys/ioctl.h>
+ #include <termios.h>
+ #endif
+@@ -68,9 +68,9 @@ std::string get_version_nr()
+ 
+ // --------------------------------------------------------------------
+ 
+-#ifdef _MSC_VER
++#if defined(_WIN32)
+ }
+-#include <Windows.h>
++#include <windows.h>
+ #include <libloaderapi.h>
+ #include <wincon.h>
+ 

@@ -1,0 +1,140 @@
+diff --git before/tcad-charon/PackagesList.cmake after/tcad-charon/PackagesList.cmake
+index 4a36e27..ffa9276 100644
+--- before/tcad-charon/PackagesList.cmake
++++ after/tcad-charon/PackagesList.cmake
+@@ -1 +1,3 @@
+-TRIBITS_REPOSITORY_DEFINE_PACKAGES()
++TRIBITS_REPOSITORY_DEFINE_PACKAGES(
++  Charon src SS
++)
+diff --git before/tcad-charon/TPLsList.cmake after/tcad-charon/TPLsList.cmake
+index 402fb98..43088ab 100644
+--- before/tcad-charon/TPLsList.cmake
++++ after/tcad-charon/TPLsList.cmake
+@@ -1 +1,25 @@
+-TRIBITS_REPOSITORY_DEFINE_TPLS()
++TRIBITS_REPOSITORY_DEFINE_TPLS(
++  Teuchos TRIBITS_PKG PT
++  Kokkos TRIBITS_PKG PT
++  Panzer TRIBITS_PKG PT
++  PanzerDiscFE TRIBITS_PKG PT
++  PanzerAdaptersSTK TRIBITS_PKG PT
++  STKMesh TRIBITS_PKG PT
++  STKUtil TRIBITS_PKG PT
++  STKTopology TRIBITS_PKG PT
++  SEACASNemesis TRIBITS_PKG PT
++  SEACASExodus TRIBITS_PKG PT
++  SEACASAprepro TRIBITS_PKG PT
++  Stratimikos TRIBITS_PKG PT
++  Piro TRIBITS_PKG PT
++  NOX TRIBITS_PKG PT
++  Teko TRIBITS_PKG PT
++  Belos TRIBITS_PKG PT
++  AztecOO TRIBITS_PKG PT
++  SEACAS TRIBITS_PKG PT
++  SEACASEpu TRIBITS_PKG PT
++  SEACASExodiff TRIBITS_PKG PT
++  SEACASNemslice TRIBITS_PKG PT
++  SEACASNemspread TRIBITS_PKG PT
++  MPI "${${PROJECT_NAME}_TRIBITS_DIR}/core/std_tpls/" PT
++)
+diff --git before/tcad-charon/cmake/ProjectCompilerPostConfig.cmake after/tcad-charon/cmake/ProjectCompilerPostConfig.cmake
+index 35a1c23..7088f2c 100644
+--- before/tcad-charon/cmake/ProjectCompilerPostConfig.cmake
++++ after/tcad-charon/cmake/ProjectCompilerPostConfig.cmake
+@@ -1,2 +1 @@
+ SET(Trilinos_ENABLE_Kokkos ${${PROJECT_NAME}_ENABLE_Kokkos} CACHE BOOL "Setting Trilinos_ENABLE_Kokkos to ${PROJECT_NAME}_ENABLE_Kokkos in ProjectCompilerPostConfig.cmake.")
+-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/../Trilinos/cmake/ProjectCompilerPostConfig.cmake)
+diff --git before/tcad-charon/src/CMakeLists.txt after/tcad-charon/src/CMakeLists.txt
+index 0ef0026..4d00bc9 100644
+--- before/tcad-charon/src/CMakeLists.txt
++++ after/tcad-charon/src/CMakeLists.txt
+@@ -88,7 +88,7 @@ TRIBITS_ADD_OPTION_AND_DEFINE(
+   ${PACKAGE_NAME}_ENABLE_EXPLICIT_INSTANTIATION
+   HAVE_${PACKAGE_NAME_UC}_EXPLICIT_INSTANTIATION
+   "Enable the use of explicit template instantiation (defaults to Panzer value)."
+-  ${Panzer_ENABLE_EXPLICIT_INSTANTIATION}
++  OFF
+   )
+ SET(${PARENT_PACKAGE_NAME}_TEMPLATE_DECL_EXT "_decl.hpp")
+ SET(${PARENT_PACKAGE_NAME}_TEMPLATE_DEF_EXT "_impl.hpp")
+@@ -110,7 +110,7 @@ TRIBITS_CONFIGURE_FILE(${PACKAGE_NAME}_config.hpp)
+ SET(HEADERS "")
+ SET(SOURCES "")
+ 
+-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
++TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+ 
+ SET(HEADERS ${HEADERS}
+   ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}_config.hpp
+@@ -125,8 +125,8 @@ SET(HEADERS ${HEADERS}
+ IF (ENABLE_XYCE_CLUSTER)
+ 
+   MESSAGE(STATUS "Attempting to link to Xyce for cluster calculations.")
+-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/xyceCluster)
+-  TRILINOS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/xyceCluster)
++  TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/xyceCluster)
++  TRIBITS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/xyceCluster)
+   APPEND_GLOB(HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/xyceCluster/*.hpp)
+   APPEND_GLOB(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/xyceCluster/*.cpp)
+ 
+@@ -136,22 +136,22 @@ ENDIF()
+ #################################################################
+ 
+ 
+-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/bc_strategies)
+-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/equation_sets)
+-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/evaluators)
+-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/responses)
+-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/solver)
++TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
++TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/bc_strategies)
++TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/equation_sets)
++TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/evaluators)
++TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/responses)
++TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/solver)
+ 
+ # auto generate headers, add to dependencies and include directories
+-TRILINOS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR})
+-TRILINOS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/bc_strategies)
+-TRILINOS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/equation_sets)
+-TRILINOS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/evaluators)
+-TRILINOS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/responses)
+-TRILINOS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/solver)
++TRIBITS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR})
++TRIBITS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/bc_strategies)
++TRIBITS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/equation_sets)
++TRIBITS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/evaluators)
++TRIBITS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/responses)
++TRIBITS_CREATE_CLIENT_TEMPLATE_HEADERS(${CMAKE_CURRENT_SOURCE_DIR}/solver)
+ APPEND_GLOB(HEADERS ${CMAKE_CURRENT_BINARY_DIR}/*.hpp)
+-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
++TRIBITS_INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+ 
+ APPEND_GLOB(HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
+ APPEND_GLOB(HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/bc_strategies/*.hpp)
+@@ -218,9 +218,6 @@ IF (${PACKAGE_NAME}_ENABLE_TESTS)
+   ENDIF()
+ ENDIF()
+ 
+-# Exclude files for source package.
+-TRIBITS_EXCLUDE_AUTOTOOLS_FILES()
+-
+ ####################################
+ # E) Do standard postprocessing
+ TRIBITS_PACKAGE_POSTPROCESS()
+diff --git before/tcad-charon/src/cmake/Dependencies.cmake after/tcad-charon/src/cmake/Dependencies.cmake
+index 6de8b53..0362269 100644
+--- before/tcad-charon/src/cmake/Dependencies.cmake
++++ after/tcad-charon/src/cmake/Dependencies.cmake
+@@ -1,6 +1,6 @@
+-SET(LIB_REQUIRED_DEP_PACKAGES Teuchos Kokkos Panzer PanzerDiscFE PanzerAdaptersSTK STKMesh STKUtil STKTopology SEACASNemesis SEACASExodus SEACASAprepro Stratimikos Piro NOX Rythmos Teko Belos AztecOO)
+-
+-SET(TEST_REQUIRED_DEP_PACKAGES SEACAS SEACASEpu SEACASExodiff SEACASNemslice SEACASNemspread)
++tribits_package_define_dependencies(
++  LIB_REQUIRED_PACKAGES Teuchos Kokkos Panzer PanzerDiscFE PanzerAdaptersSTK STKMesh STKUtil STKTopology SEACASNemesis SEACASExodus SEACASAprepro Stratimikos Piro NOX Teko Belos AztecOO
++  TEST_REQUIRED_PACKAGES SEACAS SEACASEpu SEACASExodiff SEACASNemslice SEACASNemspread)
+ 
+ IF (ENABLE_XYCE_CLUSTER OR ENABLE_MIXED_MODE)
+ 

@@ -1,15 +1,12 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
+
 using BinaryBuilder, Pkg
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
-# reminder: change the above version if restricting the supported julia versions
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # The version of this JLL is decoupled from the upstream version.
 # Whenever we package a new upstream release, we initially map its
@@ -25,8 +22,8 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # map a prerelease of 2.7.0 to 200.690.000.
 
 name = "SDPA"
-upstream_version = v"7.3.8"
-version_offset = v"0.0.1" # reset to 0.0.0 once the upstream version changes
+upstream_version = v"7.3.18"
+version_offset = v"0.0.0" # reset to 0.0.0 once the upstream version changes
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -34,7 +31,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build SDPABuilder
 sources = [
     ArchiveSource("https://sourceforge.net/projects/sdpa/files/sdpa/sdpa_$(upstream_version).tar.gz",
-                  "c7541333da2f0bb2d18e90dbf758ac7cc099f3f7da3f256b284b0725f96d4117")
+                  "6fe0cb81ce731345180787c90e3ffdda19184ec67bc7b9d0f80d87c420cb5647")
     DirectorySource("./bundled")
 ]
 
@@ -52,20 +49,42 @@ METIS_packagespec = PackageSpec(; name = "METIS4_jll",
 script = raw"""
 cd $WORKSPACE/srcdir/sdpa-*
 
+if [[ "${target}" == *-mingw* ]]; then
+    # This is needed because otherwise we get unusable binaries (error "The specified
+    # executable is not a valid application for this OS platform"). These come from
+    # CompilerSupportLibraries_jll.
+    # xref: https://github.com/JuliaPackaging/Yggdrasil/issues/7904
+    #
+    # The remove path pattern matches `lib/gcc/<triple>/<major>/`, where `<triple>` is the
+    # platform triplet and `<major>` is the GCC major version with which CSL was built
+    # xref: https://github.com/JuliaPackaging/Yggdrasil/pull/7535
+    #
+    # However, before CSL v1.1, these files were located in just `lib/`, thus we clean this
+    # directory as well.
+    if test -n "$(find $prefix/lib/gcc/*mingw*/*/libgcc*)"; then
+        rm $prefix/lib/gcc/*mingw*/*/libgcc* $prefix/lib/gcc/*mingw*/*/libmsvcrt*
+    elif test -n "$(find $prefix/lib/libgcc*)"; then
+        rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
+    else
+        echo "Could not find any libraries to remove :-/"
+        find $prefix/lib
+    fi
+fi
+
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
 update_configure_scripts
 
 # Apply patches
 atomic_patch -p1 $WORKSPACE/srcdir/patches/shared.diff
-mv configure.in configure.ac
 atomic_patch -p1 $WORKSPACE/srcdir/patches/lt_init.diff
 autoreconf -vi
 
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -I$prefix/include/coin"
 export CXXFLAGS="${CXXFLAGS} -std=c++11"
 if [[ ${target} == *mingw* ]]; then
-    export LDFLAGS="-L$prefix/bin"
+    # Needed for https://github.com/JuliaLang/julia/issues/48081
+    export LDFLAGS="-L/opt/$target/$target/sys-root/lib"
 elif [[ ${target} == *linux* ]]; then
     export LDFLAGS="-ldl -lrt"
 fi
@@ -126,13 +145,14 @@ products = [
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 platforms = reduce(vcat, libjulia_platforms.(julia_versions))
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
-filter!(p -> libgfortran_version(p) >= v"4", platforms)
+filter!(p -> libgfortran_version(p) >= v"5", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.13.2"),
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency("libjulia_jll"),
@@ -143,4 +163,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     preferred_gcc_version = v"8",
-    julia_compat)
+    clang_use_lld = false,
+    julia_compat = "1.6")

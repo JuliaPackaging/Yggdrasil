@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Lua"
-version = v"5.4.4"
+version = v"5.4.7"
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
-                  "164c7849653b80ae67bec4b7473b884bf5cc8d2dca05653475ec2ed27b9ebf61"),
+                  "9fbf5e28ef86c69858f6d3d34eccc32e911c1a28b4120ff3e84aaa70cfbf1e30"),
     DirectorySource("./bundled"),
 ]
 

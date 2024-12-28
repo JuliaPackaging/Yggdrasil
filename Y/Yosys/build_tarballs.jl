@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Yosys"
-version = v"0.18.0"
+version = v"0.34.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/YosysHQ/yosys.git", "19ce3b45d6a877e96af3883e3f8df3acfd224ea6")
+    GitSource("https://github.com/YosysHQ/yosys.git", "4a1b5599258881f579a2d95274754bcd8fc171bd")
 ]
 
 # These are the platforms we will build for by default, unless further

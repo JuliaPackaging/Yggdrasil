@@ -1,0 +1,10 @@
+Julia applies a patch to GMP that handles "overflow" (out of memory)
+via a callback function. GMP 6.3.0 introduced its own mechanism to
+handle overflows via an error code.
+
+Since Julia Base calls `__gmp_set_alloc_overflow_function` I
+(@eschnett) chose to overwrite the changes to GMP that now handle
+overflow in favour of the old mechanism introduced via Julia's
+patches. The main reasons are: (a) this works for Julia right away (no
+changes to Base necessary), and (b) Julia's patches handle more cases,
+i.e. more places where an overflow can occur.

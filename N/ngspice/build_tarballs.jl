@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ngspice"
-version = v"37"
+version = v"41"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/imr/ngspice.git", "c4efe2e3ac264b6889e844f935410f9a795f1a68"), #ngspice git mirror
+    GitSource("https://github.com/imr/ngspice.git", "2275fb85da31a8c802ebf9730935c8c00d6cdea0"), #ngspice git mirror
     DirectorySource("./bundled")
 ]
 
@@ -19,11 +19,11 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
 done
 LIBTOOLIZE=libtoolize ./autogen.sh
 # Build shared library version
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes --enable-cider --with-ngshared ac_cv_func_realloc_0_nonnull=yes
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes --enable-cider --enable-osdi --with-ngshared ac_cv_func_realloc_0_nonnull=yes
 make -j${nproc}
 make install
 # Build executable version
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes --enable-cider ac_cv_func_realloc_0_nonnull=yes
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes --enable-cider --enable-osdi ac_cv_func_realloc_0_nonnull=yes
 make -j${nproc}
 make install
 """
@@ -39,8 +39,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")

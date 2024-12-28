@@ -1,55 +1,39 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "CeresSolver"
-version = v"1.14.0"
+version = v"2.2.0"
 
 sources = [
-    ArchiveSource("http://ceres-solver.org/ceres-solver-$(version).tar.gz",
-                  "4744005fc3b902fed886ea418df70690caa8e2ff6b5a90f3dd88a3d291ef8e8e")
+    GitSource("https://github.com/ceres-solver/ceres-solver.git",
+              "125c06882960d87f25f2e0ccb217a949528b017c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ceres-solver-1.14.0
-
-mkdir cmake_build
-cd cmake_build/
-
-if [[ "$target" == *-freebsd* || "$target" == *-apple-* ]]; then
-  # Clang doesn't play nicely with OpenMP and
-  # compilation fails with glog due to a c++11 error
-  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
-               -DMINIGLOG=ON)
+if [[ "${target}" == *-mingw* ]]; then
+    BLAS_NAME=libblastrampoline-5
 else
-  CMAKE_FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-               -DGLOG_INCLUDE_DIR_HINTS=${prefix}/include)
+    BLAS_NAME=libblastrampoline
 fi
 
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix}
+              -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+              -DCMAKE_BUILD_TYPE=Release
               -DBUILD_SHARED_LIBS=ON
               -DBUILD_EXAMPLES=OFF
               -DBUILD_TESTING=OFF
-              -DOPENMP=ON
-              -DTBB=OFF
-              -DBLAS_LIBRARIES=${libdir}/libopenblas.${dlext}
-              -DLAPACK_LIBRARIES=${libdir}/libopenblas.${dlext}
               -DMETIS_LIBRARY=${libdir}/libmetis.${dlext}
-              -DSUITESPARSE_INCLUDE_DIR_HINTS=${prefix}/include
-              -DAMD_LIBRARY="${libdir}/libamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-              -DCAMD_LIBRARY="${libdir}/libcamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-              -DCCOLAMD_LIBRARY="${libdir}/libccolamd.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-              -DCHOLMOD_LIBRARY="${libdir}/libcholmod.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-              -DCOLAMD_LIBRARY="${libdir}/libcolamd.${dlext} ${libdir}/libsuitepsarseconfig.${dlext}"
-              -DSUITESPARSEQR_LIBRARY="${libdir}/libspqr.${dlext} ${libdir}/libsuitesparseconfig.${dlext}"
-              -DSUITESPARSE_CONFIG_LIBRARY="${libdir}/libsuitesparseconfig.${dlext}"
+              -DBLAS_LIBRARIES=${libdir}/${BLAS_NAME}.${dlext} 
+              -DLAPACK_LIBRARIES=${libdir}/${BLAS_NAME}.${dlext} 
               )
 
-cmake ${CMAKE_FLAGS[@]} ..
+apk del cmake
 
+cd $WORKSPACE/srcdir/ceres-solver/
+mkdir build && cd build
+cmake -S .. -B . "${CMAKE_FLAGS[@]}"
 make -j${nproc}
 make install
-
-cd ..
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -61,13 +45,13 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Eigen_jll"),
+    BuildDependency("Eigen_jll"),
     Dependency("glog_jll"),
     Dependency("METIS_jll"),
-    Dependency("OpenBLAS32_jll"),
-    Dependency("SuiteSparse_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("libblastrampoline_jll"; compat="5.8.0"),
+    Dependency("SuiteSparse_jll"; compat="~7.2.1"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.10")

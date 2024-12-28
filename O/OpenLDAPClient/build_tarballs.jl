@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "OpenLDAPClient"
-version = v"2.4.50"
+version = v"2.5.19"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-2.4.50.tgz", "5cb57d958bf5c55a678c6a0f06821e0e5504d5a92e6a33240841fbca1db586b8")
+    ArchiveSource("https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-$(version).tgz",
+                  "56e2936c7169aa7547cfc93d5c87db46aa05e98dee6321590c3ada92e1fbb66c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,8 +25,8 @@ fi
 
 #need a posix regex
 if [[ "${target}" == *-mingw* ]]; then
-	cp ${prefix}/include/pcreposix.h ${prefix}/include/regex.h
-	export LDFLAGS="-lpcreposix-0 -L${prefix}/bin"
+	cp ${includedir}/pcreposix.h ${includedir}/regex.h
+	export LDFLAGS="-lpcreposix-0 -L${libdir}"
 fi
 
 if [[ "${target}" != *-freebsd* ]]; then
@@ -59,7 +60,7 @@ make install
 
 if [[ "${target}" == *-mingw* ]]; then
     # Cover up the traces of the hack
-    rm ${prefix}/include/regex.h
+    rm ${includedir}/regex.h
 fi
 """
 
@@ -67,25 +68,26 @@ fi
 # platforms are passed in on the command line
 platforms = supported_platforms()
 products = [
-    ExecutableProduct("ldapdelete", :ldapdelete),
     LibraryProduct("libldap", :libldap),
+    LibraryProduct("liblber", :liblber),
+    ExecutableProduct("ldapdelete", :ldapdelete),
     ExecutableProduct("ldapsearch", :ldapsearch),
     ExecutableProduct("ldapwhoami", :ldapwhoami),
-    LibraryProduct("liblber", :liblber),
     ExecutableProduct("ldapurl", :ldapurl),
     ExecutableProduct("ldappasswd", :ldappasswd),
     ExecutableProduct("ldapmodify", :ldapmodify),
     ExecutableProduct("ldapexop", :ldapexop),
     ExecutableProduct("ldapmodrdn", :ldapmodrdn),
-    LibraryProduct("libldap_r", :libldap_r),
     ExecutableProduct("ldapcompare", :ldapcompare)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
-    Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.15"),
+    Dependency(PackageSpec(name="PCRE_jll",  uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"); platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build trigger: 1

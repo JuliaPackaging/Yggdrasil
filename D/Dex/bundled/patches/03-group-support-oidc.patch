@@ -1,0 +1,13 @@
+diff --git a/server/handlers.go b/server/handlers.go
+index 0d14eb2a..db1edbbf 100644
+--- a/server/handlers.go
++++ b/server/handlers.go
+@@ -473,7 +473,7 @@ func (s *Server) handleConnectorCallback(w http.ResponseWriter, r *http.Request)
+ 
+ 	if err != nil {
+ 		s.logger.ErrorContext(r.Context(), "failed to authenticate", "err", err)
+-		s.renderError(r, w, http.StatusInternalServerError, fmt.Sprintf("Failed to authenticate: %v", err))
++		s.renderError(r, w, http.StatusUnauthorized, fmt.Sprintf("Failed to authenticate: %v", err))
+ 		return
+ 	}
+ 

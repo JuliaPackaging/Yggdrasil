@@ -4,7 +4,7 @@ steps:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
           version: "1.7"
-          depot_hard_size_limit: "68719476736" # 64GB
+          artifacts_size_limit: "268435456000" # 250GB
       - JuliaCI/merge-commit: ~
       - staticfloat/forerunner#v1:
           watch:
@@ -27,3 +27,4 @@ steps:
       JULIA_PKG_SERVER_REGISTRY_PREFERENCE: eager
       # Forward JOB_ID_SECRET
       BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET: ${BUILDKITE_PLUGIN_CRYPTIC_BASE64_SIGNED_JOB_ID_SECRET?}
+    timeout_in_minutes: 60

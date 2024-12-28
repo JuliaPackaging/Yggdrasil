@@ -4,6 +4,12 @@ if VERSION < v"1.8.0"
 else
     Base.set_active_project(@__DIR__)
 end
+
+# Force ourselves to use the shared depot as well, if it exists
+if isdir("/sharedcache/depot")
+    push!(Base.DEPOT_PATH, "/sharedcache/depot")
+end
+
 import Pkg
 Pkg.instantiate()
 
@@ -63,9 +69,6 @@ julia(args) = `$(Base.julia_cmd()) --project=$(YGGDRASIL_BASE)/.ci $args`
 # Next, we're going to ensure that our BB is up to date and precompiled
 julia(`-e "import Pkg; Pkg.instantiate(); Pkg.precompile()"`) |> exec
 
-# Next, for each project, download its sources. We do this by generating meta.json
-# files, then parsing them with `download_sources.jl`
-
 TEMP = mktempdir()
 
 # determine the name, removing any trailing version number
@@ -73,13 +76,14 @@ TEMP = mktempdir()
 const NAME = first(split(basename(PROJECT), "@"))
 
 # We always invoke a `build_tarballs.jl` file from its own directory
+# generate platform list
 cd(PROJECT) do
     println("Generating meta.json...")
     JSON_PATH = "$(TEMP)/$(NAME).meta.json"
     julia(`--compile=min ./build_tarballs.jl --meta-json="$(JSON_PATH)"`) |> exec
 
-    println("Downloading sources...")
-    julia(`$(YGGDRASIL_BASE)/.ci/download_sources.jl "$(JSON_PATH)" $(TEMP)/$(NAME).platforms.list`) |> exec
+    # Generate platforms
+    julia(`$(YGGDRASIL_BASE)/.ci/generate_platforms.jl "$(JSON_PATH)" $(TEMP)/$(NAME).platforms.list`) |> exec
 end
 
 println("Determining builds to queue...")
@@ -109,28 +113,22 @@ end
 const SKIP_BUILD = contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
 
 STEPS = Any[]
-if !IS_PR
-    push!(STEPS, jll_init_step(NAME, PROJECT))
-    push!(STEPS, wait_step())
-end
 # Create the BUILD_STEPS
 if SKIP_BUILD
     println("The commit messages contains $(SKIP_BUILD_COOKIE), skipping build")
 else
-    BUILD_STEPS = Any[]
     for PLATFORM in PLATFORMS
         println("    $(PLATFORM): building")
-
-        push!(BUILD_STEPS, build_step(NAME, PLATFORM, PROJECT))
+        push!(STEPS, build_step(NAME, PLATFORM, PROJECT))
     end
-    push!(STEPS, group_step(NAME, BUILD_STEPS))
 end
 if !IS_PR
     push!(STEPS, wait_step())
-    push!(STEPS, register_step(NAME, PROJECT, SKIP_BUILD))
+    push!(STEPS, register_step(NAME, PROJECT, SKIP_BUILD, length(PLATFORMS)))
 end
-
-definition = Dict(
-    :steps => STEPS
-)
-upload_pipeline(definition)
+if !isempty(STEPS)
+    definition = Dict(
+        :steps => Any[group_step(NAME, STEPS)]
+    )
+    upload_pipeline(definition)
+end

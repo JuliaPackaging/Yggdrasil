@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "TempestModel"
-version = v"0.1.1"
+version = v"0.1.2"
 tempestmodel_version = v"0.1"
 sources = [
     GitSource("https://github.com/paullric/tempestmodel",
@@ -83,7 +83,7 @@ platforms = [
 ] 
 platforms = expand_cxxstring_abis(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
@@ -124,15 +124,17 @@ products = [
 ]
 
 dependencies = [
-    Dependency("MKL_jll"),
-    Dependency("NetCDF_jll"; compat="400.701.400 - 400.799"),
-    Dependency("HDF5_jll"),
-    # `MbedTLS_jll` is an indirect dependency through NetCDF, we need to specify
-    # a compatible build version for this to work.
-    BuildDependency(PackageSpec(; name="MbedTLS_jll", version=v"2.24.0")),
+    # MKL 2023 is the last version which supports x86_64 macOS, so we use that version for
+    # building. We don't set compat bounds for the time being because apart from that MKL is
+    # moderately stable and their versioning scheme is calendar-based, rather than something
+    # semver-like.
+    Dependency("MKL_jll", v"2023.2.0"),
+    Dependency("NetCDF_jll"; compat="400.902.208 - 400.999"),
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="~1.14.3"),
 ]
 append!(dependencies, platform_dependencies)
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    augment_platform_block, julia_compat="1.6",
+    augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5",
 )

@@ -22,16 +22,16 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "polymake"
-upstream_version = v"4.7"
-version_offset = v"0.0.1"
+upstream_version = v"4.13"
+version_offset = v"0.0.2"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
 
 # Collection of sources required to build polymake
 sources = [
-    ArchiveSource("https://github.com/polymake/polymake/archive/V$(upstream_version.major).$(upstream_version.minor).tar.gz",
-                  "08465f61bc03a13fc18704ede488b09eea2911812cd88efb392b3bc2f299058b")
+    ArchiveSource("https://polymake.org/lib/exe/fetch.php/download/polymake-$(upstream_version.major).$(upstream_version.minor).tar.bz2",
+                  "2bce8b3680ef007c9b760a19821c22f1299403cf5b1c67d1a61d3533e23ac7dc"),
     DirectorySource("./bundled")
 ]
 
@@ -45,36 +45,32 @@ cd $WORKSPACE/srcdir/polymake
 # to be able to generate a similiar dependency tree at runtime
 # we prepare a symlink tree for all dependencies
 mkdir -p ${prefix}/deps
-for dir in FLINT GMP MPFR PPL Perl bliss boost cddlib lrslib normaliz; do
+for dir in FLINT GMP MPFR MongoC PPL Perl SCIP bliss boost cddlib lrslib normaliz; do
    ln -s .. ${prefix}/deps/${dir}_jll
 done
 
-# adjust for hardcoded /workspace dirs
-atomic_patch -p1 ../patches/relocatable.patch
+for file in ../patches/*; do
+   [[ "$file" == *"polymake-cross"* ]] && continue;
+   atomic_patch -p1 $file
+done
 
-# to unbreak ctrl+c in julia
-atomic_patch -p1 ../patches/sigint.patch
+# deal with symlinks in path to scip libraries
+sed -i -e 's/find/find -L/g' bundled/scip/support/configure.pl bundled/soplex/support/configure.pl
+sed -i -e 's/-lsoplex-pic/-lsoplexshared/g' bundled/soplex/support/configure.pl
 
-# work around sigchld-handler conflicts with other libraries
-atomic_patch -p1 ../patches/sigchld.patch
-
-# patch for bliss compatibility
-atomic_patch -p1 ../patches/bliss.patch
-
-# patch for grass plucker on 32bit
-atomic_patch -p1 ../patches/plucker32bit.patch
+targetnover=$(echo "${target}" | sed -E 's/[0-9.]+$//g')
 
 if [[ $target != x86_64-linux* ]] && [[ $target != i686-linux* ]]; then
-  perl_arch=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 3)
-  perl_version=$(grep "perlxpath=" ../config/build-Opt-$target.ninja | cut -d / -f 2)
+  perl_arch=$(grep "perlxpath=" ../config/build-Opt-$targetnover.ninja | cut -d / -f 3)
+  perl_version=$(grep "perlxpath=" ../config/build-Opt-$targetnover.ninja | cut -d / -f 2)
   # we cannot run configure and instead provide config files
   mkdir -p build/Opt
   mkdir -p build/perlx/$perl_version/$perl_arch
-  cp ../config/config-$target.ninja build/config.ninja
-  cp ../config/build-Opt-$target.ninja build/Opt/build.ninja
+  cp ../config/config-$targetnover.ninja build/config.ninja
+  cp ../config/build-Opt-$targetnover.ninja build/Opt/build.ninja
   cp ../config/targets.ninja build/targets.ninja
   ln -s ../config.ninja build/Opt/config.ninja
-  cp ../config/perlx-config-$target.ninja build/perlx/$perl_version/$perl_arch/config.ninja
+  cp ../config/perlx-config-$targetnover.ninja build/perlx/$perl_version/$perl_arch/config.ninja
 
   atomic_patch -p1 ../patches/polymake-cross.patch
 else
@@ -88,18 +84,20 @@ else
               --with-gmp=${prefix}/deps/GMP_jll \
               --with-mpfr=${prefix}/deps/MPFR_jll \
               --with-ppl=${prefix}/deps/PPL_jll \
+              --with-scip=${prefix}/deps/SCIP_jll \
               --with-bliss=${prefix}/deps/bliss_jll \
               --with-boost=${prefix}/deps/boost_jll \
               --with-cdd=${prefix}/deps/cddlib_jll \
               --with-lrs=${prefix}/deps/lrslib_jll \
               --with-libnormaliz=${prefix}/deps/normaliz_jll \
+              --with-mongoc=${prefix}/deps/MongoC_jll \
               --without-singular \
               --without-native \
               --without-prereq
 fi
 
 # C++ templates to need quite a lot of memory during compilation...
-(( nproc=1+nproc/3 ))
+#(( nproc=1+nproc/3 ))
 
 ninja -v -C build/Opt -j${nproc}
 
@@ -125,9 +123,6 @@ fi
 # cleanup symlink tree
 rm -rf ${prefix}/deps
 
-# copy julia script to generate dependency-tree at load time
-cp ../patches/generate_deps_tree.jl $prefix/share/polymake
-
 install_license COPYING
 """
 
@@ -136,6 +131,8 @@ install_license COPYING
 platforms = filter!(p -> !Sys.iswindows(p) &&
                          arch(p) != "armv6l",
                     supported_platforms())
+# filter aarch64 freebsd until supported by all dependencies
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -144,14 +141,13 @@ products = [
     LibraryProduct("libpolymake-apps-rt", :libpolymake_apps_rt)
     ExecutableProduct("polymake", :polymake)
     ExecutableProduct("polymake-config", Symbol("polymake_config"))
-    FileProduct("share/polymake/generate_deps_tree.jl", :generate_deps_tree)
 ]
 
 
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.0")),
+    HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
@@ -159,14 +155,16 @@ dependencies = [
 
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~200.900.000"),
+    Dependency("FLINT_jll", compat = "~300.100.300"),
+    Dependency("MongoC_jll", compat = "~1.28.1"),
     Dependency("PPL_jll", compat = "~1.2.1"),
-    Dependency("Perl_jll", compat = "=5.34.0"),
+    Dependency("Perl_jll", compat = "=5.34.1"),
+    Dependency("SCIP_jll", compat = "~800.0.301"),
     Dependency("bliss_jll", compat = "~0.77.0"),
     Dependency("boost_jll", compat = "=1.76.0"),
-    Dependency("cddlib_jll", compat = "~0.94.13"),
+    Dependency("cddlib_jll", compat = "~0.94.14"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.900.300"),
+    Dependency("normaliz_jll", compat = "~300.1000.200"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

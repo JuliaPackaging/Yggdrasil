@@ -1,15 +1,16 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.39"
+version = v"2.43"
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz", "645c25f563b8adc0a81dbd6a41cffbf4d37083a382e02d5d3df4f65c09516d00"),
-    DirectorySource("$(@__DIR__)/bundled"),
+    ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
+                  "b53606f443ac8f01d1d5fc9c39497f2af322d99e14cea5c0b4b124d630379365"),
+    DirectorySource("bundled"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/binutils-*/
+cd ${WORKSPACE}/srcdir/binutils-*
 
 ./configure --prefix=${prefix} \
     --target=${target} \
@@ -35,9 +36,19 @@ cd ${WORKSPACE}/srcdir/binutils-*/
 
 make -j${nproc}
 make install
+
+# Install the `-fPIC` version of `libiberty.a` (which we built) but which isn't installed by default,
+# overwriting the non-pic version which was installed
+if test -f ${prefix}/lib64/libiberty.a; then
+    install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib64/libiberty.a
+elif test -f ${prefix}/lib/libiberty.a; then
+    install -Dvm 755 libiberty/pic/libiberty.a ${prefix}/lib/libiberty.a
+else
+    exit 1
+fi
 """
 
-platforms = supported_platforms(; exclude=!Sys.islinux)
+platforms = supported_platforms(; exclude = p -> !(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     ExecutableProduct("addr2line", :addr2line),
@@ -66,4 +77,5 @@ products = [
 
 dependencies = Dependency[]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

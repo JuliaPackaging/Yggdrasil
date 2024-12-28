@@ -80,7 +80,7 @@ dependencies = [
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"; compat="1.47.0"),
     Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("gdk_pixbuf_jll"),
     Dependency("Libepoxy_jll"),
     # Gtk 3.24.29 requires ATK 2.35.1

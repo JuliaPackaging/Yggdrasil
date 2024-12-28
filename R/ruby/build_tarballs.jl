@@ -8,7 +8,7 @@ version = v"2.7.1"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
-        "https://cache.ruby-lang.org/pub/ruby/2.7/ruby-2.7.1.tar.gz",
+        "https://cache.ruby-lang.org/pub/ruby/$(version.major).$(version.minor)/ruby-$(version).tar.gz",
         "d418483bdd0000576c1370571121a6eb24582116db0b7bb2005e90e250eae418",
     ),
 ]
@@ -43,6 +43,8 @@ done
 platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
 # TODO: fix armv7l musl. Probably an upstream issue though
 filter!(!=(Platform("armv7l", "linux"; libc="musl")), platforms)
+# Remove "experimental" architecture
+filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -67,7 +69,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
     Dependency("Libiconv_jll"),
-    Dependency("OpenSSL_jll"),
+    Dependency("OpenSSL_jll"; compat="1.1.10"),
     Dependency("Readline_jll"),
     Dependency("Zlib_jll"),
     Dependency("Gdbm_jll"),
