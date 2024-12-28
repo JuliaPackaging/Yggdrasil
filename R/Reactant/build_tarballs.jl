@@ -440,9 +440,15 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
     end
 
+    julia_compat = "1.6"
+    
+    if Sys.islinux(platform) && arch(platform) == "x86_64" && cxxstring_abi(platform) == "cxx11"
+        julia_compat = "1.8"
+    end
+
     push!(builds, (;
                    dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
-        platforms=[augmented_platform], script=prefix*script
+        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version=v"13", julia_compat
     ))
 end
 
@@ -457,7 +463,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"13", preferred_llvm_version=v"18", julia_compat="1.6",
+                   preferred_gcc_version=build.preferred_gcc_version, preferred_llvm_version=v"18", julia_compat=build.julia_compat,
                    augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false)
 end
 
