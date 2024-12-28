@@ -194,12 +194,10 @@ function gcc_script(compiler_target::Platform)
             done
         fi
 
+        # Install libtapi
         mkdir -p ${WORKSPACE}/srcdir/apple-libtapi/build
         cd ${WORKSPACE}/srcdir/apple-libtapi/build
-
         export TAPIDIR=${WORKSPACE}/srcdir/apple-libtapi
-
-        # Install libtapi
         cmake ../src/llvm \
             -DCMAKE_CXX_FLAGS="-I${TAPIDIR}/src/llvm/projects/clang/include -I${TAPIDIR}/build/projects/clang/include" \
             -DLLVM_INCLUDE_TESTS=OFF \
@@ -210,14 +208,55 @@ function gcc_script(compiler_target::Platform)
         make install
 
         # Install cctools
+        cd ${WORKSPACE}/srcdir/cctools-port/cctools
+        ./autogen.sh
         mkdir -p ${WORKSPACE}/srcdir/cctools_build
         cd ${WORKSPACE}/srcdir/cctools_build
-        CC=/usr/bin/clang CXX=/usr/bin/clang++ LDFLAGS=-L/usr/lib ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
+        # CC=/usr/bin/clang CXX=/usr/bin/clang++ LDFLAGS=-L/usr/lib ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
+        #     --prefix=${prefix} \
+        #     --target=${COMPILER_TARGET} \
+        #     --host=${MACHTYPE} \
+        #     --with-libtapi=${prefix}
+
+        # Does not work:
+        #     CFLAGS="-isysroot ${sysroot}"
+        #     CXXFLAGS="-isysroot ${sysroot}"
+        #     CPPFLAGS="-isystem ${sysroot}/usr/include"
+        #     CPPFLAGS="-isystem /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include"
+        #     CPPFLAGS="-isystem /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers"
+
+        # $sysroot:
+        #     /workspace/destdir/x86_64-apple-darwin14/sys-root
+        # find:
+        #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/sys/cdefs.h
+        #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
+        #     /workspace/srcdir/cctools-port/cctools/include/sys/cdefs.h
+        #     /workspace/srcdir/gcc-14.2.0/fixincludes/tests/base/sys/cdefs.h
+        #     /workspace/srcdir/MacOSX10.12.sdk/usr/include/sys/cdefs.h
+        #     /workspace/srcdir/MacOSX10.12.sdk/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
+        #     /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/usr/include/sys/cdefs.h
+        #     /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
+
+        # find / -name cdefs.h >CDEFS-LOCS
+        # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/sys/cdefs.h
+        # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
+        # /workspace/srcdir/cctools-port/cctools/include/sys/cdefs.h
+        # /workspace/srcdir/gcc-14.2.0/fixincludes/tests/base/sys/cdefs.h
+        # /workspace/srcdir/MacOSX10.12.sdk/usr/include/sys/cdefs.h
+        # /workspace/srcdir/MacOSX10.12.sdk/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
+        # /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/usr/include/sys/cdefs.h
+        # /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
+
+        ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
             --prefix=${prefix} \
             --target=${COMPILER_TARGET} \
             --host=${MACHTYPE} \
-            --with-libtapi=${prefix}
-        make -j${nproc}
+            CC=/usr/bin/clang \
+            CXX=/usr/bin/clang++ \
+            CPPFLAGS="-I/workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers" \
+            LDFLAGS=-L/usr/lib
+        #TODO make -j${nproc}
+        make
         make install
 
     # Otherwise, we need to install binutils first
@@ -367,7 +406,10 @@ function gcc_script(compiler_target::Platform)
         # modern version of C, too modern for the old glibc libraries we are
         # trying to build. Various configure tests would fail otherwise. (Why
         # declare variables or functions if they default to int anyway?)
-        GLIBC_CFLAGS="${CFLAGS} -g -O2 -Wno-implicit-int -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-array-parameter"
+        GLIBC_CFLAGS="${CFLAGS} -g -O2"
+        if test -d ${WORKSPACE}/srcdir/gcc-14*; then
+            GLIBC_CFLAGS="${GLIBC_CFLAGS} -Wno-implicit-int -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-array-parameter -Wno-int-conversion"
+        fi
 
 
         # Configure glibc
