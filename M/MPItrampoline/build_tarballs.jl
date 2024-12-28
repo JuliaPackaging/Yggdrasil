@@ -1,3 +1,19 @@
+# TODO: Investigate this:
+
+# Tim Besard
+# Do we have a reliable way to set env vars during the dlopen of a library? __init__ is too late, but IIRC Julia also dlopens libraries as part of deserialization, so it may be tricky.
+# Elliot Saba
+#   BB2 (come to the talk) will provide lazy loading of libraries (upon first ccall). We then can set environment variables upon init that will be there before dlopen
+# :tada:
+# Elliot Saba
+#   Also, for JLLs, I believe the dlopen occurs during init time, so I think we should be able to make it work now?
+# Tim Besard
+#   looks like init_library_product from __init__ is the relevant call indeed
+# Erik Schnetter
+#   nice! thanks for the pointer. using that will make providing MPItrampoline_jll much easier.
+
+
+
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
@@ -7,74 +23,23 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPItrampoline"
 
-mpitrampoline_version = v"5.4.0"
-version = v"5.4.0"
-mpich_version_str = "4.2.1"
+mpitrampoline_version = v"5.5.0"
+version = v"5.5.1"
+mpich_version_str = "4.2.3"
 mpiconstants_version = v"1.5.0"
-mpiwrapper_version = v"2.11.0"
+mpiwrapper_version = v"2.11.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eschnett/MPItrampoline", "1c64b877799954f40b5d88c06a259e1a99a9676d"),
+    GitSource("https://github.com/eschnett/MPItrampoline", "67292e8b1ac40aa5bd6d0a5dab669da32405a2d7"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
     ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "23331b2299f287c3419727edc2df8922d7e7abbb9fd0ac74e03b9966f9ad42d7"),
-    GitSource("https://github.com/eschnett/MPIwrapper", "1e991827041406f6d30e134187bcdbabb56f483d"),
+                  "7a019180c51d1738ad9c5d8d452314de65e828ee240bcb2d1f80de9a65be88a8"),
+    GitSource("https://github.com/eschnett/MPIwrapper", "070c4e1b8a98fbe63ea8f84d046effb813c9febb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-################################################################################
-# MPItrampoline
-################################################################################
-
-# When we build libraries linking to MPITrampoline, this library needs to find the
-# libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
-# need to give a little help to MPITrampoline to find it:
-# <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
-# apply this *hack* only when strictly needed, to avoid screwing something else up.
-if [[ "${target}" == x86_64-linux-gnu* ]]; then
-    INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
-else
-    INSTALL_RPATH=()
-fi
-
-cd $WORKSPACE/srcdir/MPItrampoline*
-cmake -B build \
-    -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=$prefix \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    "${INSTALL_RPATH[@]}" \
-    -DBUILD_SHARED_LIBS=ON \
-    -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
-    -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec"
-cmake --build build --parallel ${nproc}
-cmake --install build
-
-# Post-process the compiler wrappers. They remember the original
-# compiler used to build MPItrampoline, but this compiler is too
-# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
-# `$FC` etc.
-sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
-sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
-sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
-cp ${bindir}/mpifc ${bindir}/mpifort
-
-################################################################################
-# Install MPIconstants
-################################################################################
-
-cd ${WORKSPACE}/srcdir/MPIconstants*
-cmake -B build \
-    -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    "${INSTALL_RPATH[@]}" \
-    -DBUILD_SHARED_LIBS=ON
-cmake --build build --parallel ${nproc}
-cmake --install build
 
 ################################################################################
 # Install MPICH
@@ -178,6 +143,9 @@ fi
 # Install MPIwrapper
 ################################################################################
 
+# We install MPIwrapper before MPItrampoline so that it cannot
+# accidentally pick up the wrong MPI headers or libraries.
+
 cd $WORKSPACE/srcdir/MPIwrapper*
 
 EXTRA_FLAGS=()
@@ -186,6 +154,14 @@ if [[ "${target}" == *-apple-* ]]; then
         -DMPI_C_LINK_FLAGS='-framework Foundation -framework IOKit'
         -DMPI_CXX_LINK_FLAGS='-framework Foundation -framework IOKit'
         -DMPI_Fortran_LINK_FLAGS='-framework Foundation -framework IOKit'
+    )
+elif [[ "${target}" == *-freebsd* ]]; then
+    EXTRA_FLAGS+=(
+        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;gcc;pthread'
+        -DMPI_gcc_LIBRARY="/opt/${target}/${target}/sys-root/usr/lib/libgcc.a"
+        -DMPI_mpi_LIBRARY="${prefix}/lib/mpich/lib/libmpi.a"
+        -DMPI_mpifort_LIBRARY="${prefix}/lib/mpich/lib/libmpifort.a"
+        -DMPI_pthread_LIBRARY="/opt/${target}/${target}/sys-root/usr/lib/libpthread.so"
     )
 fi
 cmake -B build \
@@ -198,6 +174,58 @@ cmake -B build \
     "${INSTALL_RPATH[@]}" \
     "${EXTRA_FLAGS[@]}"
 
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+################################################################################
+# MPItrampoline
+################################################################################
+
+# When we build libraries linking to MPITrampoline, this library needs to find the
+# libgfortran it links to.  At runtime this isn't a problem, but during the audit in BB we
+# need to give a little help to MPITrampoline to find it:
+# <https://github.com/JuliaPackaging/Yggdrasil/pull/5028#issuecomment-1166388492>.  Note, we
+# apply this *hack* only when strictly needed, to avoid screwing something else up.
+if [[ "${target}" == x86_64-linux-gnu* ]]; then
+    INSTALL_RPATH=(-DCMAKE_INSTALL_RPATH='$ORIGIN')
+else
+    INSTALL_RPATH=()
+fi
+
+cd $WORKSPACE/srcdir/MPItrampoline*
+cmake -B build \
+    -DCMAKE_BUILD_TYPE_TYPE=RelWithDebInfo \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH=$prefix \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    "${INSTALL_RPATH[@]}" \
+    -DBUILD_SHARED_LIBS=ON \
+    -DMPITRAMPOLINE_DEFAULT_LIB="@MPITRAMPOLINE_DIR@/lib/libmpiwrapper.so" \
+    -DMPITRAMPOLINE_DEFAULT_MPIEXEC="@MPITRAMPOLINE_DIR@/bin/mpiwrapperexec"
+cmake --build build --parallel ${nproc}
+cmake --install build
+
+# Post-process the compiler wrappers. They remember the original
+# compiler used to build MPItrampoline, but this compiler is too
+# specific for BinaryBuilder. The compilers should just be `$CC`, `$CXX`,
+# `$FC` etc.
+sed -i -e 's/^MPITRAMPOLINE_CC=.*$/MPITRAMPOLINE_CC=${MPITRAMPOLINE_CC:-${CC}}/' ${bindir}/mpicc
+sed -i -e 's/^MPITRAMPOLINE_CXX=.*$/MPITRAMPOLINE_CXX=${MPITRAMPOLINE_CXX:-${CXX}}/' ${bindir}/mpicxx
+sed -i -e 's/^MPITRAMPOLINE_FC=.*$/MPITRAMPOLINE_FC=${MPITRAMPOLINE_FC:-${FC}}/' ${bindir}/mpifc
+cp ${bindir}/mpifc ${bindir}/mpifort
+
+################################################################################
+# Install MPIconstants
+################################################################################
+
+cd ${WORKSPACE}/srcdir/MPIconstants*
+cmake -B build \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    "${INSTALL_RPATH[@]}" \
+    -DBUILD_SHARED_LIBS=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 
@@ -219,9 +247,8 @@ augment_platform_block = """
 platforms = supported_platforms()
 
 # MPItrampoline requires `RTLD_DEEPBIND` for `dlopen`, and thus does
-# not support musl or BSD.
-# FreeBSD: https://reviews.freebsd.org/D24841
-platforms = filter(p -> !(Sys.isfreebsd(p) || Sys.iswindows(p) || libc(p) == "musl"), platforms)
+# not support musl.
+platforms = filter(p -> !(Sys.iswindows(p) || libc(p) == "musl"), platforms)
 
 platforms = expand_gfortran_versions(platforms)
 
@@ -265,3 +292,5 @@ dependencies = [
 # We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"5")
+
+# Build trigger: 1

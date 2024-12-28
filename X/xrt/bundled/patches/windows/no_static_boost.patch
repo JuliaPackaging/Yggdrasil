@@ -1,0 +1,11 @@
+--- a/src/CMake/nativeWin.cmake
++++ b/src/CMake/nativeWin.cmake
+@@ -29,7 +29,7 @@ endif(GIT_FOUND)
+ 
+ INCLUDE (FindBoost)
+ set(Boost_USE_MULTITHREADED ON)
+-set(Boost_USE_STATIC_LIBS ON)
++set(Boost_USE_STATIC_LIBS OFF)
+ find_package(Boost
+   REQUIRED COMPONENTS system filesystem program_options)
+ 

@@ -3,44 +3,51 @@
 using BinaryBuilder
 
 name = "nauty"
-version = v"2.6.13" # <-- This is a lie, we're bumping from 2.6.12 to 2.6.13 to create a Julia v1.6+ release with experimental platforms
+version = v"2.8.9" 
 
 # Collection of sources required to build nauty
 sources = [
-    ArchiveSource("http://pallini.di.uniroma1.it/nauty$(version.major)$(version.minor)r12.tar.gz",
-                  "862ae0dc3656db34ede6fafdb0999f7b875b14c7ab4fedbb3da4f28291eb95dc"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://pallini.di.uniroma1.it/nauty$(version.major)_$(version.minor)_$(version.patch).tar.gz",
+		  "c97ab42bf48796a86a598bce3e9269047ca2b32c14fc23e07208a244fe52c4ee"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/nauty*
 
-# Remove misleading libtool files 
+# Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
-
-# Patch based on one from Debian: add autotools build system which creates a
-# shared library; compared to the Debian version, a bunch of things we don't
-# need have been removed (perhaps even more should be removed?)
-sed -e "s/@INJECTVER@/2.6.12/" < ../patches/autotoolization.patch > ../patches/autotoolization2.patch
-atomic_patch -p1 ../patches/autotoolization2.patch
-
-rm -f makefile*
-mkdir -p m4
-autoreconf -vi
 
 export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib"
 
-./configure \
-    --prefix=$prefix \
-    --build=${MACHTYPE} \
-    --host=$target \
-    --enable-shared \
-    --disable-static
+# Nauty's configure script performs a runtime check to find out whether the
+# `popcnt` CPU instruction is available. This check is not possible during cross-compilation,
+# which causes the entire configure script to fail. We patch `configure.ac` to simply disable
+# `popcnt` while cross-compiling, and generate a new, working configure script with `autoreconf`.
+atomic_patch -p1 ../patches/autotools.patch
+autoreconf -v
+
+# We use --enable-generic to ensure maximum hardware compatibility and we
+# use --disable-popcnt to disable the `popcnt` CPU instruction on x86.
+./configure --prefix=$prefix \
+	    --build=${MACHTYPE} \
+	    --host=${target} \
+	    --enable-generic \
+	    --enable-shared \
+	    --disable-popcnt \
+	    --libdir=${libdir} \
+	    --bindir=${bindir}
 
 make -j${nproc}
-make install
+
+# In addition to the default install, we build thread-local-storage libraries and the programs checks6 and sumlines.
+# These two programs were part of the default install in an older version of nauty and are included for compatibility.
+make install TLSinstall checks6 sumlines
+
+cp checks6 ${bindir}
+cp sumlines ${bindir}
 
 install_license COPYRIGHT
 """
@@ -53,19 +60,27 @@ filter!(!Sys.iswindows, platforms)
 # The products that we will ensure are always built
 products = [
    LibraryProduct("libnauty", :libnauty),
-   LibraryProduct("libnautyA1", :libnautyA1),
-   LibraryProduct("libnautyL0", :libnautyL0),
+   LibraryProduct("libnauty1", :libnauty1),
+   LibraryProduct("libnautyL", :libnautyL),
    LibraryProduct("libnautyL1", :libnautyL1),
-   LibraryProduct("libnautyS0", :libnautyS0),
+   LibraryProduct("libnautyS", :libnautyS),
    LibraryProduct("libnautyS1", :libnautyS1),
-   LibraryProduct("libnautyW0", :libnautyW0),
+   LibraryProduct("libnautyW", :libnautyW),
    LibraryProduct("libnautyW1", :libnautyW1),
+   LibraryProduct("libnautyT", :libnautyT),
+   LibraryProduct("libnautyT1", :libnautyT1),
+   LibraryProduct("libnautyTL", :libnautyTL),
+   LibraryProduct("libnautyTL1", :libnautyTL1),
+   LibraryProduct("libnautyTS", :libnautyTS),
+   LibraryProduct("libnautyTS1", :libnautyTS1),
+   LibraryProduct("libnautyTW", :libnautyTW),
+   LibraryProduct("libnautyTW1", :libnautyTW1),
 
    ExecutableProduct("NRswitchg", :NRswitchg),
    ExecutableProduct("addedgeg", :addedgeg),
    ExecutableProduct("amtog", :amtog),
    ExecutableProduct("biplabg", :biplabg),
-   ExecutableProduct("blisstog", :blisstog),
+   # ExecutableProduct("blisstog", :blisstog), # The required source file (blisstog.c) is missing since at least nauty v2.8.8
    ExecutableProduct("catg", :catg),
    ExecutableProduct("checks6", :checks6),
    ExecutableProduct("complg", :complg),
@@ -103,6 +118,7 @@ products = [
    ExecutableProduct("twohamg", :twohamg),
    ExecutableProduct("vcolg", :vcolg),
    ExecutableProduct("watercluster2", :watercluster2),
+   ExecutableProduct("uniqg", :uniqg),
 ]
 
 # Dependencies that must be installed before this package can be built

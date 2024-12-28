@@ -3,18 +3,23 @@
 using BinaryBuilder
 
 name = "Lz4"
-version = v"1.9.4"
+version = v"1.10.0"
 
 # Collection of sources required to build Lz4
 sources = [
-    GitSource("https://github.com/lz4/lz4.git",
-                  "5ff839680134437dbf4678f3d0c7b371d84f4964")
+    GitSource("https://github.com/lz4/lz4.git", "ebb370ca83af193212df4dcbadcc5d87bc0de2f0")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/lz4/
-make -j${nproc} CFLAGS="-O3 -fPIC"
+cd $WORKSPACE/srcdir/lz4
+# See <https://github.com/lz4/lz4/issues/1474>
+if [[ "${target}" == *86*linux-gnu ]]; then
+    ldlibs=-lrt
+else
+    ldlibs=
+fi
+make -j${nproc} CFLAGS="-O3 -fPIC" LDLIBS="${ldlibs}"
 make install
 if [[ "${target}" == *-mingw* ]]; then
     mkdir -p "${prefix}/lib"
@@ -42,3 +47,5 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build Trigger: 2

@@ -25,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     LibraryProduct("libXdmcp", :libXdmcp),
@@ -39,3 +39,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Build trigger: 1

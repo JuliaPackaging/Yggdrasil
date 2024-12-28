@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "LLVMExtra"
 repo = "https://github.com/maleadt/LLVM.jl.git"
-version = v"0.0.30"
+version = v"0.0.34"
 
-llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
 
 sources = [
-    GitSource(repo, "6c7bca448f5900009fec4e9b18bf72c52478c664")
+    GitSource(repo, "a427570a864a8341fcfdaf553b763f9308177f75"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,6 +46,8 @@ CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 
 ninja -C build -j ${nproc} install
+
+install_license LICENSE-APACHE LICENSE-MIT
 """
 
 augment_platform_block = """
@@ -75,11 +77,10 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-
-    if llvm_version >= v"15"
-        # We don't build LLVM 15 for i686-linux-musl.
-        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-    end
+    ## we don't build LLVM 15 for i686-linux-musl.
+    filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    ## freebsd-aarch64 doesn't have any LLVM build right now
+    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
     for platform in platforms
         augmented_platform = deepcopy(platform)

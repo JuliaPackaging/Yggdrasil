@@ -7,7 +7,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libigc"
-version = v"1.0.16695"#.4
+version = v"1.0.17537"#.20
 
 # IGC depends on LLVM, a custom Clang, and a Khronos tool. Instead of building these pieces
 # separately, taking care to match versions and apply Intel-specific patches where needed
@@ -27,12 +27,12 @@ version = v"1.0.16695"#.4
 #       see https://github.com/intel/intel-graphics-compiler/blob/master/.github/workflows/build-IGC.yml
 #
 sources = [
-    GitSource("https://github.com/intel/intel-graphics-compiler.git", "437127d6e99a9e546ca665c1b0fdd54e27dab5e1"),
-    GitSource("https://github.com/intel/opencl-clang.git", "cf95b338d14685e4f3402ab1828bef31d48f1fd6" #= branch ocl-open-140 =#),
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "f6fb55cd7b539ee6a70e3909c963f968cc40c1cd" #= branch llvm_release_140 =#),
+    GitSource("https://github.com/intel/intel-graphics-compiler.git", "b6be9c780da71d4a6533eb02b54c6121527471c6"),
+    GitSource("https://github.com/intel/opencl-clang.git", "470cf0018e1ef6fc92eda1356f5f31f7da452abc" #= branch ocl-open-140 =#),
+    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git", "065a94408d01bacf2ee86443f56cfaa64fda1534" #= branch llvm_release_140 =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f0cc85efdbbe3a46eae90e0f915dc1509836d0fc" #= tag v2023.6.rc1 =#),
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "1c6bb2743599e6eb6f37b2969acc0aef812e32e3"), #= master =#
-    GitSource("https://github.com/intel/vc-intrinsics.git", "f9c34404d0ea9abad83875a10bd48d88cea90ebd" #= latest version: v0.18.0 =#),
+    GitSource("https://github.com/intel/vc-intrinsics.git", "8d2e809368443305155370573f3c6db8279ed87d" #= latest version: v0.19.0 =#),
     GitSource("https://github.com/llvm/llvm-project.git", "c12386ae247c0d46e1d513942e322e3a0510b126" #= branch llvmorg-14.0.5 =#),
     # patches
     DirectorySource("./bundled"),
@@ -41,7 +41,7 @@ sources = [
 # Bash recipe for building across all platforms
 function get_script(; debug::Bool)
     script = raw"""
-        apk add py3-mako
+        apk add py3-mako py3-yaml binutils
 
         # the build system uses git
         export HOME=$(pwd)

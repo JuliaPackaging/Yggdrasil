@@ -31,6 +31,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-revert_prelink_unwind.pat
 # https://github.com/libunwind/libunwind/pull/748
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-aarch64-inline-asm.patch
 
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-disable-initial-exec-tls.patch
+
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
@@ -45,7 +47,8 @@ export CFLAGS="-DPI -fPIC"
     --enable-minidebuginfo \
     --enable-zlibdebuginfo \
     --disable-tests \
-    --disable-conservative-checks
+    --disable-conservative-checks \
+    --enable-per-thread-cache
 make -j${nproc}
 make install
 
@@ -72,8 +75,10 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("XZ_jll"),
     Dependency("Zlib_jll"),
+    BuildDependency(PackageSpec(name="XZ_jll",
+                                uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800",
+                                version=v"5.2.5")),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
                                 uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
                                 version=llvm_version);

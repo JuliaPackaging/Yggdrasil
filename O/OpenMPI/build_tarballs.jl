@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.4"
+version = v"5.0.6"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "182763628c6cfbd732f83125cc1acf001eb445af45e5a406e65923f90a69f697"),
+                  "1d6dd41f6b53c00db23b40e56733d16a996fa743957ef8add8e117feffd92689"),
     DirectorySource("bundled"),
 ]
 
@@ -31,9 +31,6 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/build_with_no_undefined.patch
     popd
 fi
-
-# See <https://github.com/open-mpi/ompi/issues/12693>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aarch64.patch
 
 # Autotools doesn't add `${includedir}` as an include directory on some platforms
 export CPPFLAGS="-I${includedir}"

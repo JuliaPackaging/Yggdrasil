@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "object_store_ffi"
-version = v"0.7.0"
+version = v"0.11.0"
 
 sources = [
-    # https://github.com/RelationalAI/object_store_ffi/commit/58623860cfec49fa44f87b7d624e4dbd178f997a
-    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "58623860cfec49fa44f87b7d624e4dbd178f997a")
+    # https://github.com/RelationalAI/object_store_ffi/commit/76c00880684ff600ab439c02225aa1fbdae70fdf
+    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "76c00880684ff600ab439c02225aa1fbdae70fdf")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +31,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency("OpenSSL_jll"; compat="3.0.14")
 ]
 
 # Build the tarballs

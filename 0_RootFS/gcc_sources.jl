@@ -163,7 +163,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                       "634a084377ee2e2932c66459b0396edf76da2e9f"),
         ]
     else
-        # Different versions of GCC should be pared with different versions of Binutils
+        # Different versions of GCC should be paired with different versions of Binutils
         binutils_gcc_version_mapping = Dict(
             v"4.8.5" => v"2.24",
             v"5.2.0" => v"2.25.1",
@@ -241,14 +241,26 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
                 ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.17.tar.xz",
                               "6914e337401e0e0ade23694e1b2c52a5f09e4eda3270c67e7c3ba93a89b5b23e"),
             ]
+        elseif arch(compiler_target) in ["riscv64"]
+            libc_sources = [
+                ArchiveSource("https://mirrors.kernel.org/gnu/glibc/glibc-2.35.tar.xz",
+                              "5123732f6b67ccd319305efd399971d58592122bcc2a6518a1bd2510dd0cf52e"),
+            ]
         else
             error("Unknown arch for glibc for compiler target $(compiler_target)")
         end
     elseif Sys.islinux(compiler_target) && libc(compiler_target) == "musl"
-        libc_sources = [
-            ArchiveSource("https://www.musl-libc.org/releases/musl-1.1.19.tar.gz",
-                          "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9"),
-        ]
+        if arch(compiler_target) in ["riscv64"]
+            libc_sources = [
+                ArchiveSource("https://www.musl-libc.org/releases/musl-1.2.0.tar.gz",
+                              "c6de7b191139142d3f9a7b5b702c9cae1b5ee6e7f57e582da9328629408fd4e8"),
+            ]
+        else
+            libc_sources = [
+                ArchiveSource("https://www.musl-libc.org/releases/musl-1.1.19.tar.gz",
+                              "db59a8578226b98373f5b27e61f0dd29ad2456f4aa9cec587ba8c24508e4c1d9"),
+            ]
+        end
     elseif Sys.isapple(compiler_target)
         if arch(compiler_target) == "aarch64"
             libc_sources = [
@@ -262,10 +274,17 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ]
         end
     elseif Sys.isfreebsd(compiler_target)
-        libc_sources = [
-            ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.2-RELEASE/base.txz",
-                          "3a9250f7afd730bbe274691859756948b3c57a99bcda30d65d46ae30025906f0"),
-        ]
+        if arch(compiler_target) == "aarch64"
+            libc_sources = [
+                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/13.2-RELEASE/base.txz",
+                              "7d1b032a480647a73d6d7331139268a45e628c9f5ae52d22b110db65fdcb30ff"),
+            ]
+        else
+            libc_sources = [
+                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.2-RELEASE/base.txz",
+                              "3a9250f7afd730bbe274691859756948b3c57a99bcda30d65d46ae30025906f0"),
+            ]
+        end
     elseif Sys.iswindows(compiler_target)
         libc_sources = [
             ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",

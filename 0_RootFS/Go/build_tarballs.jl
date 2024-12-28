@@ -15,13 +15,13 @@ using BinaryBuilder
 include("../common.jl")
 
 name = "Go"
-version_str = "1.22.0"
+version_str = "1.23.0"
 version = VersionNumber(version_str)
 
 sources = [
     ArchiveSource(
         "https://go.dev/dl/go$(version_str).linux-amd64.tar.gz",
-        "f6c8a87aa03b92c4b0bf3d558e28ea03006eb29db78917daec5cfb6ec1046265",
+        "905a297f19ead44780548933e0ff1a1b86e8327bb459e92f9c0012569f76f5e3",
     )
 ]
 

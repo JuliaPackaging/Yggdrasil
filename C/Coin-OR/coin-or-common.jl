@@ -67,7 +67,7 @@ Cbc_gitsha = "3c1d759619f38bbd5916380df292cfc1dafba7f5"
 Cgl_version = offset_version(v"0.60.6", v"0.0.0")
 Cgl_gitsha = "8952b9e737e434b730fab5967cd28180b43d7234"
 
-Clp_version = offset_version(v"1.17.9", v"0.0.0")
+Clp_version = offset_version(v"1.17.9", v"0.0.1")
 Clp_gitsha = "7b9daa62d4c2710a368a17385913ce59d8c67b68"
 
 Osi_version = offset_version(v"0.108.10", v"0.0.0")
@@ -78,8 +78,8 @@ CoinUtils_version = offset_version(CoinUtils_upstream_version, v"0.0.0")
 CoinUtils_gitsha = "15a819b7e8763b2557e4bf440f8cb62ee6734f36"
 CoinUtils_hash = "27da344479f38c82112d738501643dcb229e4ee96a5f87d4f406456bdc1b2cb4"
 
-Ipopt_upstream_version = v"3.14.14"
-Ipopt_gitsha = "5fd746337021543e78dc2d167cb1c15db81f68e1"
+Ipopt_upstream_version = v"3.14.17"
+Ipopt_gitsha = "66245ceea9e613cf6ce113d430903b931cc7ff7a"
 Ipopt_verson_offset = v"0.0.0"
 Ipopt_version = offset_version(Ipopt_upstream_version, Ipopt_verson_offset)
 
@@ -110,8 +110,8 @@ Julia_compat_version = "1.6"
 ASL_version = v"0.1.3"
 METIS_version = v"5.1.2"
 MUMPS_seq_version = v"5.4.1"
-MUMPS_seq_version_LBT = v"500.700.200"
-SPRAL_version_LBT = v"2024.1.18"
+MUMPS_seq_version_LBT = v"500.700.301"
+SPRAL_version_LBT = v"2024.5.8"
 OpenBLAS32_version = v"0.3.26"
 
 # These are the platforms we will build for by default, unless further
