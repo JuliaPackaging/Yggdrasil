@@ -12,7 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/clay
 echo '#define CLAY_IMPLEMENTATION' > clay.c
 echo '#include "./clay.h"' >> clay.c
@@ -23,26 +22,25 @@ clang -shared $WORKSPACE/srcdir/clay/clay.c -fPIC -o clay.so
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("aarch64", "freebsd"; ),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("i686", "windows"; ),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("aarch64", "macos"; ),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("riscv64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"; ),
-    Platform("x86_64", "freebsd"; ),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("x86_64", "windows"; )
+    Platform("x86_64", "macos";),
+    Platform("aarch64", "macos";),
+    Platform("aarch64", "linux"),
+    Platform("riscv64", "linux"),
+    Platform("armv6l", "linux"),
+    Platform("armv7l", "linux"),
+    Platform("powerpc64le", "linux"),
+    # Platform("i686", "linux"),
+    # Platform("x86_64", "linux"),
+    Platform("i686", "Windows"),
+    Platform("x86_64", "Windows"),
+    Platform("x86_64", "FreeBSD"),
+    Platform("aarch64", "FreeBSD"),
 ]
 
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("clay", :claylib)
+  FileProduct("clay.so", :claylib)
 ]
 
 # Dependencies that must be installed before this package can be built
