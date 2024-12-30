@@ -15,17 +15,8 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/clay
 echo '#define CLAY_IMPLEMENTATION' > clay.c
 echo '#include "./clay.h"' >> clay.c
-PLATFORM_NAME=$(uname -s)
-if [ "$PLATFORM_NAME" = "Darwin" ]; then
-    mkdir -p ${prefix}/lib
-    clang -shared ${WORKSPACE}/srcdir/clay/clay.c -fPIC -o ${prefix}/lib/libclay.dylib
-elif [ "$PLATFORM_NAME" = "Linux" ] || [ "$PLATFORM_NAME" = "FreeBSD" ]; then
-    mkdir -p ${prefix}/lib
-    clang -shared ${WORKSPACE}/srcdir/clay/clay.c -fPIC -o ${prefix}/lib/libclay.so
-else
-    mkdir -p ${prefix}/bin
-    clang -shared ${WORKSPACE}/srcdir/clay/clay.c -fPIC -o ${prefix}/bin/libclay.dll
-fi
+mkdir -p "${libdir}"
+cc -shared -fPIC -o "${libdir}/libclay.${dlext}" clay.c
 """
 
 # These are the platforms we will build for by default, unless further
