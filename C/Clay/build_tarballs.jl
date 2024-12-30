@@ -21,22 +21,7 @@ cc -shared -fPIC -o "${libdir}/libclay.${dlext}" clay.c
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("aarch64", "linux"),
-    Platform("riscv64", "linux"),
-    Platform("armv6l", "linux"),
-    Platform("armv7l", "linux"),
-    Platform("powerpc64le", "linux"),
-    # Platform("i686", "linux"),
-    # Platform("x86_64", "linux"),
-    Platform("i686", "Windows"),
-    Platform("x86_64", "Windows"),
-    Platform("x86_64", "FreeBSD"),
-    Platform("aarch64", "FreeBSD"),
-    Platform("aarch64", "macos";),
-    Platform("x86_64", "macos";),
-]
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
