@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "libpng"
-version = v"1.6.44"
+upstream_version = v"1.6.44"
+version = v"1.6.45" # Needed to change version number to bump compat bounds, next time can go back to follow upstream
 
 # Collection of sources required to build libpng
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/libpng/files/libpng16/$(version)/libpng-$(version).tar.gz",
+    ArchiveSource("https://sourceforge.net/projects/libpng/files/libpng16/$(upstream_version)/libpng-$(upstream_version).tar.gz",
                   "8c25a7792099a0089fa1cc76c94260d0bb3f1ec52b93671b572f8bb61577b732"),
 ]
 
