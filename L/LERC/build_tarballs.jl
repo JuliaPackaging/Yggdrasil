@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LERC"
-version = v"4.0.0"
+version = v"4.0.1" # Corresponds to upstream v4.0.0
 
 # Collection of sources required to complete build
 sources = [
