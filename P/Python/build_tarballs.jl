@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.10.14"
+version = v"3.10.15"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "9c50481faa8c2832329ba0fc8868d0a606a680fc4f60ec48d26ce8e076751fda"),
+                  "aab0950817735172601879872d937c1e4928a57c409ae02369ec3d91dccebe79"),
     DirectorySource("./bundled"),
 ]
 
@@ -109,7 +109,7 @@ dependencies = [
     Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.12"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
 ]
 
 init_block = raw"""

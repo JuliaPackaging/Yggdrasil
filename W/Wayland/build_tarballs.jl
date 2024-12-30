@@ -3,29 +3,26 @@
 using BinaryBuilder
 
 name = "Wayland"
-version = v"1.21.0"
+version = v"1.23.0"
 
 # Collection of sources required to build Wayland
 sources = [
     ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
-                  "6dc64d7fc16837a693a51cfdb2e568db538bfdc9f457d4656285bb9594ef11ac"),
+                  "05b3e1574d3e67626b5974f862f36b5b427c7ceeb965cb36a4e6c2d342e45ab2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/wayland-*/
+cd $WORKSPACE/srcdir/wayland-*
 
 ln -s `which wayland-scanner` $bindir
 cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
 
-mkdir build-wayland
-
-cd build-wayland
-meson .. \
+meson setup builddir \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Ddocumentation=false
-ninja -j${nproc}
-ninja install
+meson compile -C builddir
+meson install -C builddir
 rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
@@ -52,5 +49,5 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
-# Build trigger: 1
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")

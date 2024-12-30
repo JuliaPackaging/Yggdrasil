@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "GnuTLS"
-version = v"3.8.4"
+version = v"3.8.8"
 
 # Collection of sources required to build GnuTLS
 sources = [
@@ -60,7 +60,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("Nettle_jll"; compat="~3.7.2"),
-    Dependency("P11Kit_jll"; compat="0.24.1"),
+    Dependency("P11Kit_jll"; compat="0.25.5"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

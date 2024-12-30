@@ -67,6 +67,8 @@ function build_sdk(name::String, version::VersionNumber, platforms::Vector{Platf
     script = "static=\"$(static)\"\n" * raw"""
 install_license cuda_cudart*/LICENSE
 
+# Jesper Stemann Andersen (@stemann) suggests adding `ln -s $prefix/cuda/lib $prefix/cuda/lib64`
+
 mkdir ${prefix}/cuda
 if [[ ${target} == *-linux-gnu ]]; then
     for project in *-archive; do

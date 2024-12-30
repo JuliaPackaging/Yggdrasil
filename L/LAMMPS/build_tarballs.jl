@@ -144,8 +144,8 @@ platforms = expand_cxxstring_abis(platforms)
 cuda_platforms = expand_cxxstring_abis(CUDA.supported_platforms(min_version=v"11.0"))
 # Cmake toolchain breaks on aarch64, so only x86_64 for now
 filter!(p -> arch(p)=="x86_64", cuda_platforms)
-mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
-cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
+cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
 
 all_platforms = [platforms; cuda_platforms; mpi_platforms; cudampi_platforms]
 for platform in all_platforms
@@ -165,7 +165,6 @@ end
 # platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
 # MPItrampoline
 all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), all_platforms)
-all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), all_platforms)
 all_platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), all_platforms)
 
 # The products that we will ensure are always built

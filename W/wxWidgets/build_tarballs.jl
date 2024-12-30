@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "wxWidgets"
-version = v"3.2.4"
+version = v"3.2.6"
 
 version_mm = "$(version.major).$(version.minor)"
 version_no_sep = "$(version.major)$(version.minor)"
@@ -15,8 +15,9 @@ gen_libnames(lib) = ["libwx_gtk3u_$(lib)-$(version_mm)",
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$version/wxWidgets-$version.tar.bz2", "0640e1ab716db5af2ecb7389dbef6138d7679261fbff730d23845ba838ca133e"),
-    DirectorySource("./bundled")
+    ArchiveSource("https://github.com/wxWidgets/wxWidgets/releases/download/v$version/wxWidgets-$version.tar.bz2",
+                  "939e5b77ddc5b6092d1d7d29491fe67010a2433cf9b9c0d841ee4d04acb9dce7"),
+    DirectorySource("bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -85,8 +86,8 @@ install_license docs/preamble.txt docs/licence.txt docs/licendoc.txt docs/gpl.tx
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental = true))
-filter!(p -> arch(p) != "armv6l", platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
+#TODO filter!(p -> arch(p) != "armv6l", platforms)
 
 # The products that we will ensure are always built
 #[linux_naming_scheme, mingw_naming_scheme, macos_naming_scheme]
@@ -115,7 +116,7 @@ dependencies = [
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f"))
     Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828"))
-    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"); compat="7.73,8")
+    Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"))
     Dependency(PackageSpec(name="GTK3_jll", uuid="77ec8976-b24b-556a-a1bf-49a033a670a6"))
     Dependency(PackageSpec(name="Zlib_jll", uuid = "83775a58-1f1d-513f-b197-d71354ab007a"))
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
@@ -124,4 +125,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # wxMSW fails on gcc4 and 5, wxGTK works on everything
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

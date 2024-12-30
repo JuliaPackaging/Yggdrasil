@@ -77,7 +77,7 @@ dependencies = [
     Dependency("Graphviz_jll"),
     Dependency("JasPer_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("Libtiff_jll"; compat="4.5.1"),
     Dependency("XML2_jll"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),

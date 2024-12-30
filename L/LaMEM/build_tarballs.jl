@@ -9,7 +9,7 @@ name = "LaMEM"
 version = v"2.1.4"
 
 PETSc_COMPAT_VERSION = "~3.19.6"    
-MPItrampoline_compat_version="5.2.1"
+MPItrampoline_compat_version="5.5.0"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 
@@ -90,7 +90,6 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms
 
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
