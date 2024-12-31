@@ -30,9 +30,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 # We are missing a dependency for aarch64-*-freebsd (gif library)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 # We are missing some dependencies for riscv64-*-linux (png, jpeg, tiff, and gif libraries)
-filter!(p -> arch(p) != "riscv64", platforms)
+# filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -53,7 +53,7 @@ dependencies = [
     Dependency("Giflib_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.7.0"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Libglvnd_jll"),
 ]
 
