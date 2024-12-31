@@ -19,13 +19,6 @@ make -C src install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = [
-#    Platform("x86_64", "linux"; libc = "glibc"),
-#    Platform("aarch64", "linux"; libc = "glibc")
-#]
-#TODO platforms = supported_platforms(;exclude=x->
-#TODO     startswith(arch(x), r"arm|power") ||
-#TODO     !Sys.islinux(x))
 platforms = supported_platforms(; exclude = !Sys.islinux)
 
 # The products that we will ensure are always built
