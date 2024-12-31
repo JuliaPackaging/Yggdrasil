@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "XZ"
-version = v"5.6.3"
+version = v"5.6.4" # corresponds to upstream 5.6.3, we  needed to change version to change compat bounds, but in the future we can go back to follow upstream
 
 # Collection of sources required to complete build
 sources = [
