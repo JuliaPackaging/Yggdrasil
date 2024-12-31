@@ -54,7 +54,7 @@ dependencies = [
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
-    Dependency("Libglvnd_jll"; platforms=p ->Sys.islinux(p) || Sys.isfreebsd(p)),
+    Dependency("Libglvnd_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
