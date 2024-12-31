@@ -3,7 +3,10 @@
 using BinaryBuilder
 
 name = "Qhull"
-version = v"8.0.1004" # alpha.4 release of 8.1, but Julia Pkg doesn't support prerelease versions
+
+# Add a fixed constant 10000 to the major version so that we follow semver
+# As discussed in https://github.com/JuliaPackaging/Yggdrasil/issues/9889
+version = v"10008.0.1004" # alpha.4 release of 8.1, but Julia Pkg doesn't support prerelease versions
 
 # Collection of sources required to build
 sources = [
