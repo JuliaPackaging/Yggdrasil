@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ZlibNG"
-version = v"2.2.2"
+version = v"2.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zlib-ng/zlib-ng.git", "c939498c7f2a1d645833a98251365e2c814fd736"),
+    GitSource("https://github.com/zlib-ng/zlib-ng.git", "cbb6ec1d74e8061efdf7251f8c2dae778bed14fd"),
     DirectorySource("bundled"),
 ]
 
