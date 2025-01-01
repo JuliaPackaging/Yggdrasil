@@ -87,7 +87,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll",
                            uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
-               v"5.11.0";  # build version
+               v"5.12.0";  # build version
                compat="5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     # Need the most recent 3.29.3+1 version (or later) to get libblastrampoline support
