@@ -87,7 +87,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="libblastrampoline_jll",
                            uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
-               v"5.11.0";  # build version
+               v"5.12.0";  # build version
                compat="5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     # Need the most recent 3.29.3+1 version (or later) to get libblastrampoline support
@@ -102,7 +102,7 @@ dependencies = [
 # for instance -DSUITESPARSE_USE_SYSTEM_*=ON to use pre-existing JLLs for
 # certain packages.
 # Use PROJECTS_TO_BUILD to specify which projects to build.
-function build_script(; use_omp::Bool = false, use_cuda::Bool = false)
+function build_script(; use_omp::Bool = false, use_cuda::Bool = false, build_32bit_blas::Bool = false)
     return "USEOMP=$(use_omp)\nUSECUDA=$(use_cuda)\n" * raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
@@ -116,7 +116,7 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-if [[ ${nbits} == 64 ]]; then
+if [[ ${nbits} == 64 ]] && [[ ${build_32bit_blas} == false ]]; then
     CMAKE_OPTIONS+=(
         -DBLAS64_SUFFIX="_64"
         -DSUITESPARSE_USE_64BIT_BLAS=YES
