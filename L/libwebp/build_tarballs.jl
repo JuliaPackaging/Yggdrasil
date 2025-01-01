@@ -29,10 +29,6 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# We are missing a dependency for aarch64-*-freebsd (gif library)
-# filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-# We are missing some dependencies for riscv64-*-linux (png, jpeg, tiff, and gif libraries)
-# filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
