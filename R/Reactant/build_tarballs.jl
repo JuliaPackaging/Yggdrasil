@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.34"
+version = v"0.0.35"
 
 sources = [
-  GitSource(repo, "25abfe4030eaad85b1a76716afae8a0b82de789a"),
+  GitSource(repo, "db7ee18af64bc4c0ad2285064426138c1a3746ca"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -27,7 +27,7 @@ if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/." 
+    cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
 
@@ -80,7 +80,7 @@ BAZEL_BUILD_FLAGS+=(--define=grpc_no_ares=true)
 
 BAZEL_BUILD_FLAGS+=(--define=llvm_enable_zlib=false)
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
-    
+
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
@@ -97,7 +97,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=no_nccl_support=true)
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
-    
+
     pushd $WORKSPACE/srcdir/llvm*
 	mkdir build
 	cd build
@@ -241,7 +241,7 @@ install_license LICENSE
 
 # determine exactly which tarballs we should build
 builds = []
-    
+
 # Dependencies that must be installed before this package can be built
 
 dependencies = Dependency[]
@@ -311,7 +311,7 @@ augment_platform_block="""
     else
         nothing
     end
-    
+
     const gpu_preference = if haskey(preferences, "gpu")
     if isa(preferences["gpu"], String) && preferences["gpu"] in ["none", "cuda", "rocm"]
             preferences["gpu"]
@@ -329,43 +329,57 @@ augment_platform_block="""
         if !haskey(platform, "mode")
             platform["mode"] = mode
         end
-        	
-	gpu = something(gpu_preference, "none")
 
-	cuname = if Sys.iswindows()
-            Libdl.find_library("nvcuda")
-        else
-            Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+        # "none" is for no gpu, but use "nothing" here to distinguish the case where the
+        # user explicitly asked for no GPU in the preferences.
+        gpu = something(gpu_preference, "undecided")
+
+        # Don't do GPU discovery on platforms for which we don't have GPU builds.
+        # Keep this in sync with list of platforms for which we actually build with GPU support.
+        if !(Sys.isapple(platform) || (Sys.islinux(platform) && arch(platform) == "aarch64"))
+
+            cuname = if Sys.iswindows()
+                Libdl.find_library("nvcuda")
+            else
+                Libdl.find_library(["libcuda.so.1", "libcuda.so"])
+            end
+
+            # if we've found a system driver, put a dependency on it,
+            # so that we get recompiled if the driver changes.
+            if cuname != "" && gpu == "undecided"
+                handle = Libdl.dlopen(cuname)
+                path = Libdl.dlpath(handle)
+                Libdl.dlclose(handle)
+
+                @debug "Adding include dependency on \$path"
+                Base.include_dependency(path)
+                gpu = "cuda"
+            end
+
+            roname = ""
+            # if we've found a system driver, put a dependency on it,
+            # so that we get recompiled if the driver changes.
+            if roname != "" && gpu == "undecided"
+                handle = Libdl.dlopen(roname)
+                path = Libdl.dlpath(handle)
+                Libdl.dlclose(handle)
+
+                @debug "Adding include dependency on \$path"
+                Base.include_dependency(path)
+                gpu = "rocm"
+            end
+
         end
 
-        # if we've found a system driver, put a dependency on it,
-        # so that we get recompiled if the driver changes.
-        if cuname != "" && gpu == "none"
-            handle = Libdl.dlopen(cuname)
-            path = Libdl.dlpath(handle)
-            Libdl.dlclose(handle)
-
-            @debug "Adding include dependency on \$path"
-            Base.include_dependency(path)
-	    gpu = "cuda"
-        end
-	
-	roname = ""
-        # if we've found a system driver, put a dependency on it,
-        # so that we get recompiled if the driver changes.
-        if roname != "" && gpu == "none"
-            handle = Libdl.dlopen(roname)
-            path = Libdl.dlpath(handle)
-            Libdl.dlclose(handle)
-
-            @debug "Adding include dependency on \$path"
-            Base.include_dependency(path)
-	    gpu = "rocm"
+        # If gpu option is still "undecided" (no preference expressed) at this point, then
+        # make it "none" (no GPU support).
+        if gpu == "undecided"
+            gpu = "none"
         end
 
-	gpu = get(ENV, "REACTANT_GPU", gpu)
+        gpu = get(ENV, "REACTANT_GPU", gpu)
         if !haskey(platform, "gpu")
-	    platform["gpu"] = gpu
+            platform["gpu"] = gpu
         end
 
         return platform
@@ -382,11 +396,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     if mode == "dbg" && !Sys.isapple(platform)
         continue
     end
-    
+
+    # If you skip GPU builds here, remember to update also platform augmentation above.
     if gpu != "none" && Sys.isapple(platform)
         continue
     end
-    
+
     # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
     if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
         continue
@@ -461,4 +476,3 @@ for (i,build) in enumerate(builds)
                    # We use GCC 13, so we can't dlopen the library during audit
                    augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true)
 end
-
