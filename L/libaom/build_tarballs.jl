@@ -3,31 +3,24 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "libaom"
-version = v"3.9.0"
+version = v"3.11.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://storage.googleapis.com/aom-releases/libaom-$(version).tar.gz",
-                  "a662e22299752547488c8e1412c0b41981efa8dbb1a25c696ded7ba9c472e919")
+                  "cf7d103d2798e512aca9c6e7353d7ebf8967ee96fffe9946e015bb9947903e3e")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libaom-*
 
-CMAKE_FLAGS=()
-if [[ ${target} = arm-* ]]; then
-   # Not even GCC 13 can compile for 32-bit ARM
-   CMAKE_FLAGS+=(-DAOM_TARGET_CPU=generic)
-fi
-
 cmake -B build-dir -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DENABLE_TESTS=OFF \
-    ${CMAKE_FLAGS[@]}
+    -DENABLE_TESTS=OFF
 cmake --build build-dir --parallel ${nproc}
 cmake --install build-dir
 """
