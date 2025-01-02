@@ -17,6 +17,9 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# Disable riscv for now
+platforms = filter!(p -> arch(p) != "riscv64", platforms)
+
 function build_script(; shared_libs::String)
     build_static = shared_libs == "OFF" ? "ON" : "OFF"
     return "BUILD_SHARED=$(shared_libs)\nBUILD_STATIC=$(build_static)\n" * raw"""
