@@ -11,13 +11,13 @@ version = v"4.1"
 
 # Collection of sources required to build x265
 sources = [
-    GitSource("https://bitbucket.org/multicoreware/x265_git.git",
-              "32e25ffcf810c5fe284901859b369270824c4596"),
+    GitSource("https://bitbucket.org/multicoreware/x265_git.git", "32e25ffcf810c5fe284901859b369270824c4596"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/*x265*
+cd ${WORKSPACE}/srcdir/x265_git
 
 # x265 builds for multiple architectures, using `-march` and `-mcpu`
 # options, and then dispatches at run time. To support that, we need to
@@ -32,6 +32,8 @@ sed -i 's/-m\(arch\|cpu\)=[-+.0-9A-Za-z_]*//g' $(dirname $(which gcc))/*
 
 # Remove `-march=native` and `-mcpu=native` flags in x265
 sed -i 's/-m\(arch\|cpu\)=native//g' source/CMakeLists.txt source/dynamicHDR10/CMakeLists.txt
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/neon.patch
 
 cmake -S source -B build \
     -DCMAKE_INSTALL_PREFIX="${prefix}" \
