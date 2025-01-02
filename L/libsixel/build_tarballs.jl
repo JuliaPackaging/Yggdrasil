@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libsixel"
-version = v"1.10.3"
+version = v"1.10.4" # Corresponds to upstream version 1.10.3, we had to change version to change compat bounds, from next version (if there'll ever be one) we can go back to use same version as upstream
 
 # Collection of sources required to complete build
 sources = [
