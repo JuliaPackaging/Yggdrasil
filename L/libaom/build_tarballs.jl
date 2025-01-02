@@ -17,8 +17,11 @@ cd $WORKSPACE/srcdir/libaom-*
 
 CMAKE_FLAGS=()
 if [[ ${target} = arm-* ]]; then
-   # Not even GCC 13 can compile for 32-bit ARM
-   CMAKE_FLAGS+=(-DAOM_TARGET_CPU=generic)
+    # Not even GCC 13 can compile for 32-bit ARM
+    CMAKE_FLAGS+=(-DAOM_TARGET_CPU=generic)
+elif [[ ${target} = aarch64-*-freebsd* ]]; then
+    # Runtime CPU detection doesn't work
+    CMAKE_FLAGS+=(-DCONFIG_RUNTIME_CPU_DETECT=0)
 fi
 
 cmake -B build-dir -G Ninja \
