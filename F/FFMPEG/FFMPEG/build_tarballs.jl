@@ -23,22 +23,22 @@ products = [
 dependencies = [
     HostBuildDependency("YASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
-    Dependency("libass_jll"; compat="0.15.1"),
+    Dependency("libass_jll"; compat="0.15.2"),
     Dependency("libfdk_aac_jll"; compat="2.0.3"),
     Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.3"),
     Dependency("LAME_jll"),
     Dependency("libvorbis_jll"),
     Dependency("libaom_jll"),
     Dependency("Ogg_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency("x264_jll"; compat="10164.0.0"),
-    Dependency("x265_jll"; compat="~3.6"),
+    Dependency("x265_jll"; compat="4.1"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.9"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
     Dependency("Opus_jll"),
-    Dependency("PCRE2_jll"; compat="10.35"),
+    Dependency("PCRE2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
