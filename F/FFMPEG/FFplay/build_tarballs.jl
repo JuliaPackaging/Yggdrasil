@@ -18,7 +18,7 @@ dependencies = [
     BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency("FFMPEG_jll"; compat=string(version)),
     Dependency("SDL2_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("OpenSSL_jll"; compat="3.0.9"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
