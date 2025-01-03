@@ -196,7 +196,7 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         # Apply libtapi patches, if any
         if [[ -d "${WORKSPACE}/srcdir/patches/libtapi" ]]; then
             for p in ${WORKSPACE}/srcdir/patches/libtapi/*.patch; do
-                atomic_patch -p1 -d src/ "${p}"
+                atomic_patch -p1 "${p}"
             done
         fi
 
@@ -204,14 +204,26 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         mkdir -p ${WORKSPACE}/srcdir/apple-libtapi/build
         cd ${WORKSPACE}/srcdir/apple-libtapi/build
         export TAPIDIR=${WORKSPACE}/srcdir/apple-libtapi
+
+        TAPI_CMAKE_FLAGS=()
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            TAPI_CMAKE_FLAGS+=(
+                -DLLVM_ENABLE_PROJECTS="tapi;clang"
+                -DLLVM_TARGETS_TO_BUILD:STRING="host"
+            )
+        fi
+
         cmake ../src/llvm \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_FLAGS="-I${TAPIDIR}/src/llvm/projects/clang/include -I${TAPIDIR}/build/projects/clang/include" \
             -DLLVM_INCLUDE_TESTS=OFF \
             -DCMAKE_BUILD_TYPE=RELEASE \
-            -DCMAKE_INSTALL_PREFIX=${prefix}
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            "${TAPI_CMAKE_FLAGS[@]}"
         make -j${nproc} VERBOSE=1 clangBasic
-        make -j${nproc} VERBOSE=1
-        make install
+        make -j${nproc} VERBOSE=1 libtapi
+        make -j${nproc} VERBOSE=1 install
 
         # Install cctools
         cd ${WORKSPACE}/srcdir/cctools-port/cctools

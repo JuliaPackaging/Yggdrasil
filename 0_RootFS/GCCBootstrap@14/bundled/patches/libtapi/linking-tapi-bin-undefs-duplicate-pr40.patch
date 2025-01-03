@@ -1,0 +1,133 @@
+From 2a171548436296653279d809cebf2a655be85716 Mon Sep 17 00:00:00 2001
+From: Lightmann <lightmanns11@gmail.com>
+Date: Thu, 26 Dec 2024 08:54:57 -0800
+Subject: [PATCH] Fixing linking of tapi bin (dup and undef symbols)
+
+---
+ src/tapi/lib/Core/CMakeLists.txt     |  2 ++
+ src/tapi/lib/Core/TextStubCommon.cpp | 26 +++++++++++++-------------
+ 2 files changed, 15 insertions(+), 13 deletions(-)
+ mode change 100644 => 100755 src/tapi/lib/Core/CMakeLists.txt
+ mode change 100644 => 100755 src/tapi/lib/Core/TextStubCommon.cpp
+
+diff --git a/src/tapi/lib/Core/CMakeLists.txt b/src/tapi/lib/Core/CMakeLists.txt
+old mode 100644
+new mode 100755
+index 787e0a08fa..ecba545377
+--- a/src/tapi/lib/Core/CMakeLists.txt
++++ b/src/tapi/lib/Core/CMakeLists.txt
+@@ -35,4 +35,6 @@ add_tapi_library(tapiCore
+ 
+   LINK_LIBS
+   clangBasic
++  PRIVATE
++    tapiObjCMetadata
+   )
+diff --git a/src/tapi/lib/Core/TextStubCommon.cpp b/src/tapi/lib/Core/TextStubCommon.cpp
+old mode 100644
+new mode 100755
+index c83e54b6da..ad0de73744
+--- a/src/tapi/lib/Core/TextStubCommon.cpp
++++ b/src/tapi/lib/Core/TextStubCommon.cpp
+@@ -20,15 +20,15 @@ namespace llvm {
+ namespace yaml {
+ 
+ using Impl = ScalarTraits<StringRef>;
+-void ScalarTraits<FlowStringRef>::output(const FlowStringRef &value, void *ctx,
++inline void ScalarTraits<FlowStringRef>::output(const FlowStringRef &value, void *ctx,
+                                          raw_ostream &os) {
+   Impl::output(value, ctx, os);
+ }
+-StringRef ScalarTraits<FlowStringRef>::input(StringRef value, void *ctx,
++inline StringRef ScalarTraits<FlowStringRef>::input(StringRef value, void *ctx,
+                                              FlowStringRef &out) {
+   return Impl::input(value, ctx, out.value);
+ }
+-QuotingType ScalarTraits<FlowStringRef>::mustQuote(StringRef name) {
++inline QuotingType ScalarTraits<FlowStringRef>::mustQuote(StringRef name) {
+   return Impl::mustQuote(name);
+ }
+ 
+@@ -57,7 +57,7 @@ void ScalarEnumerationTraits<PlatformKind>::enumeration(
+   io.enumCase(platform, "bridgeos", PlatformKind::bridgeOS);
+ }
+ 
+-void ScalarBitSetTraits<ArchitectureSet>::bitset(IO &io,
++inline void ScalarBitSetTraits<ArchitectureSet>::bitset(IO &io,
+                                                  ArchitectureSet &archs) {
+ #define ARCHINFO(arch, type, subtype, numbits)                                 \
+   io.bitSetCase(archs, #arch, 1U << static_cast<int>(AK_##arch));
+@@ -65,16 +65,16 @@ void ScalarBitSetTraits<ArchitectureSet>::bitset(IO &io,
+ #undef ARCHINFO
+ }
+ 
+-void ScalarTraits<Architecture>::output(const Architecture &value, void *,
++inline void ScalarTraits<Architecture>::output(const Architecture &value, void *,
+                                         raw_ostream &os) {
+   os << value;
+ }
+-StringRef ScalarTraits<Architecture>::input(StringRef scalar, void *,
++inline StringRef ScalarTraits<Architecture>::input(StringRef scalar, void *,
+                                             Architecture &value) {
+   value = getArchitectureFromName(scalar);
+   return {};
+ }
+-QuotingType ScalarTraits<Architecture>::mustQuote(StringRef) {
++inline QuotingType ScalarTraits<Architecture>::mustQuote(StringRef) {
+   return QuotingType::None;
+ }
+ 
+@@ -93,7 +93,7 @@ QuotingType ScalarTraits<PackedVersion>::mustQuote(StringRef) {
+   return QuotingType::None;
+ }
+ 
+-void ScalarTraits<SwiftVersion>::output(const SwiftVersion &value, void *,
++inline void ScalarTraits<SwiftVersion>::output(const SwiftVersion &value, void *,
+                                         raw_ostream &os) {
+   switch (value) {
+   case 1:
+@@ -113,7 +113,7 @@ void ScalarTraits<SwiftVersion>::output(const SwiftVersion &value, void *,
+     break;
+   }
+ }
+-StringRef ScalarTraits<SwiftVersion>::input(StringRef scalar, void *,
++inline StringRef ScalarTraits<SwiftVersion>::input(StringRef scalar, void *,
+                                             SwiftVersion &value) {
+   value = StringSwitch<SwiftVersion>(scalar)
+               .Case("1.0", 1)
+@@ -129,7 +129,7 @@ StringRef ScalarTraits<SwiftVersion>::input(StringRef scalar, void *,
+ 
+   return StringRef();
+ }
+-QuotingType ScalarTraits<SwiftVersion>::mustQuote(StringRef) {
++inline QuotingType ScalarTraits<SwiftVersion>::mustQuote(StringRef) {
+   return QuotingType::None;
+ }
+ 
+@@ -171,7 +171,7 @@ QuotingType ScalarTraits<AvailabilityInfo>::mustQuote(StringRef) {
+   return QuotingType::None;
+ }
+ 
+-void ScalarTraits<UUID>::output(const UUID &value, void *c, raw_ostream &os) {
++inline void ScalarTraits<UUID>::output(const UUID &value, void *c, raw_ostream &os) {
+   auto *ctx = reinterpret_cast<YAMLContext *>(c);
+   assert(ctx);
+ 
+@@ -180,7 +180,7 @@ void ScalarTraits<UUID>::output(const UUID &value, void *c, raw_ostream &os) {
+   else
+     os << value.first << ": " << value.second;
+ }
+-StringRef ScalarTraits<UUID>::input(StringRef scalar, void *c, UUID &value) {
++inline StringRef ScalarTraits<UUID>::input(StringRef scalar, void *c, UUID &value) {
+   auto split = scalar.split(':');
+   auto arch = split.first.trim();
+   auto uuid = split.second.trim();
+@@ -191,7 +191,7 @@ StringRef ScalarTraits<UUID>::input(StringRef scalar, void *c, UUID &value) {
+   value.second = uuid.str();
+   return {};
+ }
+-QuotingType ScalarTraits<UUID>::mustQuote(StringRef) {
++inline QuotingType ScalarTraits<UUID>::mustQuote(StringRef) {
+   return QuotingType::Single;
+ }
+ 
