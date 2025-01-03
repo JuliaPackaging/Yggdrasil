@@ -33,6 +33,10 @@ if [[ "${target}" == x86_64* ]] || [[ "${target}" == i686* ]]; then
 else
     export AS="${CC}"
 fi
+if [[ "${target}" == riscv64-* ]]; then
+    # Update configure scripts to make riscv64 architecture work: https://code.videolan.org/videolan/x264/-/issues/52
+    update_configure_scripts
+fi
 # Remove `-march` flag from `configure` script
 sed -i 's/ -march=i686//g' configure
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --enable-pic --disable-static
