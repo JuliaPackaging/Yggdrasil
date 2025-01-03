@@ -135,6 +135,11 @@ end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+# `libass_jll` is missing
 platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
+# `libass_jll` is missing
+platforms = filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), supported_platforms())
+# `OpenSSL_jll` is missing
+platforms = filter!(p -> arch(p) == "riscv64", supported_platforms())
 
 preferred_gcc_version = v"8"

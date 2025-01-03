@@ -32,8 +32,8 @@ dependencies = [
     Dependency("libaom_jll"),
     Dependency("Ogg_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
-    Dependency("x264_jll"; compat="10164.0.0"),
-    Dependency("x265_jll"; compat="4.1"),
+    Dependency("x264_jll"; compat="10164.0.1"),
+    Dependency("x265_jll"; compat="~4.1"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.15"),
