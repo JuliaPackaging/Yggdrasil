@@ -32,8 +32,14 @@ using BinaryBuilder: BinaryBuilderBase
 @eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs, :platform_support)
 
 
-function gcc_script(compiler_target::Platform)
-    script = raw"""
+function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
+    script = """
+    GCC_VERSION_MAJOR=$(gcc_version.major)
+    GCC_VERSION_MINOR=$(gcc_version.minor)
+    GCC_VERSION_PATCH=$(gcc_version.patch)
+    """
+
+    script *= raw"""
     cd ${WORKSPACE}/srcdir
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
@@ -213,8 +219,10 @@ function gcc_script(compiler_target::Platform)
         mkdir -p ${WORKSPACE}/srcdir/cctools_build
         cd ${WORKSPACE}/srcdir/cctools_build
 
-        # TODO: Update RootFS to v3.17 or later, and preinstall libdispatch (and libdispatch-dev only when building GCC 14+ for macOS).
-        apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+        # TODO: Update RootFS to v3.17 or later, and preinstall libdispatch (and libdispatch-dev here only when building for macOS).
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+        fi
 
         ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
             --prefix=${prefix} \
@@ -375,10 +383,9 @@ function gcc_script(compiler_target::Platform)
         # trying to build. Various configure tests would fail otherwise. (Why
         # declare variables or functions if they default to int anyway?)
         GLIBC_CFLAGS="${CFLAGS} -g -O2"
-        if test -d ${WORKSPACE}/srcdir/gcc-14*; then
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
             GLIBC_CFLAGS="${GLIBC_CFLAGS} -Wno-implicit-int -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-array-parameter -Wno-int-conversion"
         fi
-
 
         # Configure glibc
         mkdir ${WORKSPACE}/srcdir/glibc_build
@@ -642,7 +649,7 @@ function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
     deleteat!(ARGS, length(ARGS))
 
     sources = gcc_sources(version, compiler_target)
-    script = gcc_script(compiler_target)
+    script = gcc_script(version, compiler_target)
     products = gcc_products()
 
     # Build the tarballs, and possibly a `build.jl` as well.

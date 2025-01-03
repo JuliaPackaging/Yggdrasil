@@ -170,15 +170,18 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         binutils_sources = [
             GitSource("https://github.com/tpoechtrager/apple-libtapi.git",
                       "a66284251b46d591ee4a0cb4cf561b92a0c138d8"),
-            # GitSource("https://github.com/tpoechtrager/cctools-port.git",
-            #           "634a084377ee2e2932c66459b0396edf76da2e9f"),
-            # # 1300.6.5; API: 1.6.0
-            # GitSource("https://github.com/tpoechtrager/apple-libtapi.git",
-            #           "aa37c11ad1a817248c9d1578ac99e133875b4eb5"),
-            # cctools-877.8-ld64-253.9-1
-            GitSource("https://github.com/tpoechtrager/cctools-port.git",
-                      "81f205e8ca6bbf2fdbcb6948132454fd1f97839e"),
         ]
+        if gcc_version ≥ v"14"
+            push!(binutils_sources,
+                  GitSource("https://github.com/tpoechtrager/cctools-port.git",
+                            "81f205e8ca6bbf2fdbcb6948132454fd1f97839e"),
+                  )
+        else
+            push!(binutils_sources,
+                  GitSource("https://github.com/tpoechtrager/cctools-port.git",
+                            "634a084377ee2e2932c66459b0396edf76da2e9f"),
+                  )
+        end
     else
         # Different versions of GCC should be paired with different versions of Binutils
         binutils_gcc_version_mapping = Dict(
