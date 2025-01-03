@@ -3,15 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.21.1"
+version = v"0.21.2" # unofficial
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "50fa7051259d31da0778133bc7456dc029471bff"),
+    GitSource("https://github.com/ml-explore/mlx.git", "f17536af9c484ebb26a056292ed10acc32de3910"), # master
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
     FileSource("https://files.pythonhosted.org/packages/72/1f/267d7fb06eb257feb7c281f73472bcae9735c9a7c09fe86d9362069c85a7/mlx-0.21.1-cp313-cp313-macosx_13_0_arm64.whl", "88328c058f4765b0376ac908b49e6711d25f93e02b972b8e68b73a9e1c358eab"; filename = "mlx-aarch64-apple-darwin20.whl"),
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -25,9 +24,8 @@ fi
 
 cd $WORKSPACE/srcdir/mlx
 
-if [[ "$target" == *-w64-mingw32* ]]; then
-    atomic_patch -p1 ../patches/cmake-win32-io.patch
-fi
+sed -i -e 's/doctest_discover_tests(tests)//' tests/CMakeLists.txt
+sed -i -e 's/add_test(NAME tests COMMAND tests)//' tests/CMakeLists.txt
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
@@ -62,8 +60,8 @@ if [[ "$target" != aarch64-apple-darwin* ]]; then
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$prefix \
         -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
-        -DMLX_BUILD_TESTS=OFF \
-        -DMLX_BUILD_EXAMPLES=OFF \
+        -DMLX_BUILD_TESTS=ON \
+        -DMLX_BUILD_EXAMPLES=ON \
         -DMLX_BUILD_METAL=OFF \
         -DBUILD_SHARED_LIBS=ON \
         -G Ninja \
@@ -71,6 +69,13 @@ if [[ "$target" != aarch64-apple-darwin* ]]; then
     cmake --build build --parallel $nproc
     cmake --install build
     cmake --install build --component headers
+
+    cd build/examples/cpp
+    find . -type f -perm 755 -exec install -D -m 755 -v {} $bindir/mlx/examples/{} \;
+    cd -
+    cd build/tests
+    find . -type f -perm 755 -exec install -D -m 755 -v {} $bindir/mlx/{} \;
+    cd -
 else
     cd $WORKSPACE/srcdir
     unzip -d mlx-$target mlx-$target.whl
@@ -101,7 +106,6 @@ products = Product[
 ]
 
 dependencies = [
-    Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
