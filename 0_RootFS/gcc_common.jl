@@ -212,40 +212,9 @@ function gcc_script(compiler_target::Platform)
         ./autogen.sh
         mkdir -p ${WORKSPACE}/srcdir/cctools_build
         cd ${WORKSPACE}/srcdir/cctools_build
-        # CC=/usr/bin/clang CXX=/usr/bin/clang++ LDFLAGS=-L/usr/lib ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
-        #     --prefix=${prefix} \
-        #     --target=${COMPILER_TARGET} \
-        #     --host=${MACHTYPE} \
-        #     --with-libtapi=${prefix}
 
-        # Does not work:
-        #     CFLAGS="-isysroot ${sysroot}"
-        #     CXXFLAGS="-isysroot ${sysroot}"
-        #     CPPFLAGS="-isystem ${sysroot}/usr/include"
-        #     CPPFLAGS="-isystem /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include"
-        #     CPPFLAGS="-isystem /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers"
-
-        # $sysroot:
-        #     /workspace/destdir/x86_64-apple-darwin14/sys-root
-        # find:
-        #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/sys/cdefs.h
-        #     /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
-        #     /workspace/srcdir/cctools-port/cctools/include/sys/cdefs.h
-        #     /workspace/srcdir/gcc-14.2.0/fixincludes/tests/base/sys/cdefs.h
-        #     /workspace/srcdir/MacOSX10.12.sdk/usr/include/sys/cdefs.h
-        #     /workspace/srcdir/MacOSX10.12.sdk/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
-        #     /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/usr/include/sys/cdefs.h
-        #     /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
-
-        # find / -name cdefs.h >CDEFS-LOCS
-        # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/usr/include/sys/cdefs.h
-        # /opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
-        # /workspace/srcdir/cctools-port/cctools/include/sys/cdefs.h
-        # /workspace/srcdir/gcc-14.2.0/fixincludes/tests/base/sys/cdefs.h
-        # /workspace/srcdir/MacOSX10.12.sdk/usr/include/sys/cdefs.h
-        # /workspace/srcdir/MacOSX10.12.sdk/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
-        # /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/usr/include/sys/cdefs.h
-        # /workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/sys/cdefs.h
+        # TODO: Update RootFS to v3.17 or later, and preinstall libdispatch (and libdispatch-dev only when building GCC 14+ for macOS).
+        apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
 
         ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
             --prefix=${prefix} \
@@ -253,10 +222,9 @@ function gcc_script(compiler_target::Platform)
             --host=${MACHTYPE} \
             CC=/usr/bin/clang \
             CXX=/usr/bin/clang++ \
-            CPPFLAGS="-I/workspace/x86_64-apple-darwin14/destdir/x86_64-apple-darwin14/sys-root/System/Library/Frameworks/Kernel.framework/Versions/A/Headers" \
-            LDFLAGS=-L/usr/lib
-        #TODO make -j${nproc}
-        make
+            LDFLAGS=-L/usr/lib \
+            --with-libtapi=${prefix}
+        make -j${nproc}
         make install
 
     # Otherwise, we need to install binutils first

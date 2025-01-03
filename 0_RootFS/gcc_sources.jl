@@ -177,7 +177,7 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             #           "aa37c11ad1a817248c9d1578ac99e133875b4eb5"),
             # cctools-877.8-ld64-253.9-1
             GitSource("https://github.com/tpoechtrager/cctools-port.git",
-                      "2f128d5d369b688f7a3e872254c2079b87733c0a"),
+                      "81f205e8ca6bbf2fdbcb6948132454fd1f97839e"),
         ]
     else
         # Different versions of GCC should be paired with different versions of Binutils
