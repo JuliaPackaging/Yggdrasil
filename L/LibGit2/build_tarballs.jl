@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: sanitize
+using BinaryBuilderBase: sanitize, get_addable_spec
 
 name = "LibGit2"
-version = v"1.8.4"
+version = v"1.9.0"
 
 # Collection of sources required to build libgit2
 sources = [
-    GitSource("https://github.com/libgit2/libgit2.git", "3f4182d15eab74a302718f2de454ffadb1995626")
+    GitSource("https://github.com/libgit2/libgit2.git", "338e6fb681369ff0537719095e22ce9dc602dbf0")
 ]
 
 # Bash recipe for building across all platforms
@@ -62,7 +62,9 @@ llvm_version = v"13.0.1"
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("LibSSH2_jll"; compat="1.11.3"),
-    Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
+    # Until we have a new version of OpenSSL built for riscv64 we need to use the
+    # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
+    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
     BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                     platforms=filter(p -> sanitize(p)=="memory", platforms)),
 ]
