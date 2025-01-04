@@ -76,7 +76,7 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         ppc64*)
             LIB64=lib64
             ;;
-        risc64*)
+        riscv64*)
             LIB64=lib64
             ;;
         *)
