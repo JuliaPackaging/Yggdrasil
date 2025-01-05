@@ -1,4 +1,4 @@
-version = v"19.2.1" # We had to bump the minor version number to change compat bounds for riscv64 support, but from next version we can go back to follow upstream version number
+version = v"19.1.1"
 
 include("../common.jl")
 
