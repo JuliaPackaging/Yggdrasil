@@ -32,7 +32,7 @@ install_license /usr/share/licenses/MIT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-
+#platforms = [Platform("x86_64","linux";lib=:glibc, julia_version="1.7")]
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 #Filtering all the platforms, that ITK filters https://github.com/JuliaPackaging/Yggdrasil/blob/master/I/ITK/build_tarballs.jl#L42-L53
