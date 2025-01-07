@@ -52,8 +52,16 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [Platform("x86_64", "macos")]
+platforms = supported_platforms()
 
+#sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
+filter!(p -> !(arch(p) == "i686"), platforms)
+
+#CMAKE errors for _libcxx_run_result in cross compilation for macOS, freebsd and x86_64 linux musl
+filter!(!Sys.isfreebsd, platforms)
+filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
+platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct(["libITKRegistrationMethodsv4", "libITKRegistrationMethodsv4-5.3", "libITKRegistrationMethodsv4-5"], :libITKRegistrationMethodsv4),
