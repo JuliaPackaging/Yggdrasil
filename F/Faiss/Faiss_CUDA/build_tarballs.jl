@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
-name = "Faiss_GPU"
+name = "Faiss_CUDA"
 version = v"1.9.0"
 
 # Conda GPU packages build on 11.4 and 12.1: https://github.com/facebookresearch/faiss/blob/v1.9.0/.github/workflows/build.yml#L182-L260
