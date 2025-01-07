@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"11.2.1"
+version = v"11.3.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v$(version)/geant4-v$(version).tar.gz",
-                  "76c9093b01128ee2b45a6f4020a1bcb64d2a8141386dea4674b5ae28bcd23293"),
+                  "d9d71daff8890a7b5e0e33ea9a65fe6308ad6713000b43ba6705af77078e7ead"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
