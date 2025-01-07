@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd mmtk-julia-0.30.2/
 make release 
-mv mmtk/target/x86_64-unknown-linux-gnu/release/libmmtk_julia.so ${libdir}
+install  -Dvm 755 "mmtk/target/${rust_target}/release/libmmtk_julia.${dlext}" -t "${libdir}"
 """
 
 # These are the platforms we will build for by default, unless further
