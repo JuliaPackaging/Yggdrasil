@@ -49,7 +49,6 @@ if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
 fi
 """
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -57,12 +56,12 @@ platforms = supported_platforms()
 #sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
 filter!(p -> !(arch(p) == "i686"), platforms)
 
-#CMAKE errors for _libcxx_run_result in cross compilation for macOS, freebsd and x86_64 linux musl
+#CMAKE errors for _libcxx_run_result in cross compilation for freebsd and x86_64 linux musl
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
-# The products that we will ensure are always built
+## The products that we will ensure are always built
 products = [
     LibraryProduct(["libITKRegistrationMethodsv4", "libITKRegistrationMethodsv4-5.3", "libITKRegistrationMethodsv4-5"], :libITKRegistrationMethodsv4),
     LibraryProduct(["libITKIOCSV", "libITKIOCSV-5.3", "libITKIOCSV-5"], :libITKIOCSV),
@@ -171,4 +170,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"10.1.0")
