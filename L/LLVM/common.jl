@@ -248,7 +248,8 @@ if [[ ${target} == *linux* ]]; then
 #     CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
 fi
 # if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
-if [[ ${target} == *linux* ]]; then # TODO only LLVM12
+if [[ "${LLVM_MAJ_VER}" -ge "12" && ${target} == x86_64-linux* ]]; then
+    # Intel VTune is available only on x86_64 architectures
     CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
