@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "ITK"
-version = v"5.3.0"
+version = v"5.3.1"
 
 # Collection of sources required to complete build
 sources = [
