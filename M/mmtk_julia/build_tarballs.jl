@@ -7,13 +7,13 @@ version = v"0.30.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mmtk/mmtk-julia/archive/refs/tags/v$(version).tar.gz", "d0db08487adadb24c3ac4a8a6243ce895617bfc429edb008bc69db7ee7df45b4")
+    GitSource("https://github.com/mmtk/mmtk-julia.git", "b69acf5af7a7dd97c1cc6fd99f7c2d51b477f214")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd mmtk-julia-0.30.2/
+cd mmtk-julia/
 make release 
 install  -Dvm 755 "mmtk/target/${rust_target}/release/libmmtk_julia.${dlext}" -t "${libdir}"
 """
@@ -27,7 +27,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("lib", :libmmtk_julia)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia)
 ]
 
 # Dependencies that must be installed before this package can be built
