@@ -149,7 +149,7 @@ products = [
     LibraryProduct(["libitkNetlibSlatec", "libitkNetlibSlatec-5.3", "libitkNetlibSlatec-5"], :libitkNetlibSlatec),
     LibraryProduct(["libitklbfgs", "libitklbfgs-5.3", "libitklbfgs-5"], :libitklbfgs),
     LibraryProduct(["libITKVideoCore", "libITKVideoCore-5.3", "libITKVideoCore-5"], :libITKVideoCore),
-    LibraryProduct(["libitkdoubleConversion", "libitkdoubleConversion-5.3", "libitkdoubleConversion-5", "libitkdouble-conversion-5"], :libitkdoubleConversion),
+    LibraryProduct(["libitkdouble-conversion","libitkdouble-conversion-5.3", "libitkdouble-conversion-5"], :libitkdoubleConversion),
     LibraryProduct(["libitksys", "libitksys-5.3", "libitksys-5"], :libitksys),
     LibraryProduct(["libITKVNLInstantiation", "libITKVNLInstantiation-5.3", "libITKVNLInstantiation-5"], :libITKVNLInstantiation),
     LibraryProduct(["libitkvnl_algo", "libitkvnl_algo-5.3", "libitkvnl_algo-5"], :libitkvnl_algo),
