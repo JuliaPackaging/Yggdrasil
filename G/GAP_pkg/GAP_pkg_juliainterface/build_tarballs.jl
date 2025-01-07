@@ -13,12 +13,12 @@ gap_version = v"400.1400.0"
 gap_lib_version = v"400.1400.0"
 name = "JuliaInterface"
 upstream_version = "0.13.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "19922966dbe38652696798a1986d0b7fc6520cd6"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "99ddda8e451b7d9c201d5d126a37b4ba138593e7"),
 ]
 
 # Bash recipe for building across all platforms

@@ -35,6 +35,8 @@ function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionN
     filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
     filter!(!Sys.iswindows, platforms)      # Windows is not supported
 
+    filter!(p -> arch(p) != "riscv64", platforms) # riscv64 is not supported atm
+
     # TODO: re-enable FreeBSD aarch64 support once GAP_jll supports it
     filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
