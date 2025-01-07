@@ -61,6 +61,12 @@ filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
+
+
+
+# Filter out the failing platform: armv7l-linux-gnueabihf-cxx03
+filter!(p -> !(arch(p) == "armv7l" && libc(p) == "gnueabihf" && cxxstring_abi(p) == "cxx03"), platforms)
+
 ## The products that we will ensure are always built
 products = [
     LibraryProduct(["libITKRegistrationMethodsv4", "libITKRegistrationMethodsv4-5.3", "libITKRegistrationMethodsv4-5"], :libITKRegistrationMethodsv4),
