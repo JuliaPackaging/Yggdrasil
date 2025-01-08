@@ -62,5 +62,5 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               # GCC 8 is needed for `std::from_chars`
-               preferred_gcc_version=v"8", julia_compat="1.6")
+               # GCC 8 is needed for `std::from_chars`, GCC 9 is needed for std::reduce
+               preferred_gcc_version=v"9", julia_compat="1.6")
