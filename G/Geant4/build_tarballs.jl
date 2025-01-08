@@ -76,7 +76,6 @@ products = [
     LibraryProduct("libG4GMocren", :libG4Mocren),
     LibraryProduct("libG4particles", :libG4Particles),
     LibraryProduct("libG4graphics_reps", :libG4Graphics),
-    LibraryProduct("libG4zlib", :libG4Zlib),
     LibraryProduct("libG4geometry", :libG4Geometry),
     LibraryProduct("libG4modeling", :libG4Modeling),
     LibraryProduct("libG4interfaces", :libG4Interfaces),
@@ -104,7 +103,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"; compat="2.4.8"),
+    Dependency("Expat_jll"; compat="2.6.4"),
     Dependency("Xorg_libXmu_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Xerces_jll"),
