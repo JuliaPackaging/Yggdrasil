@@ -35,7 +35,10 @@ fi
 mkdir build && cd build
 FLAGS=()
 if [[ "${target}" != *-w64-* && "${target}" != *-apple-* ]]; then
-    FLAGS=(-DGEANT4_USE_OPENGL_X11=ON)
+    FLAGS+=(-DGEANT4_USE_OPENGL_X11=ON)
+fi
+if [[ "${target}" == *-apple-* ]]; then
+    FLAGS+=(-DGEANT4_USE_SYSTEM_ZLIB=ON)
 fi
 if [[ "${target}" == *-w64-* ]]; then
     FLAGS+=(-DGEANT4_BUILD_MULTITHREADED=OFF)
