@@ -36,7 +36,9 @@ cd build
 #     "${FLAGS[@]}" \
 
 cmake \
-    -G "MSYS Makefiles" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DRDK_INSTALL_INTREE=OFF \
     -DRDK_INSTALL_STATIC_LIBS=OFF \
     -DRDK_BUILD_CPP_TESTS=ON \
