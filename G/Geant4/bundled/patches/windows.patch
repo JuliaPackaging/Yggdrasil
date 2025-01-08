@@ -1,140 +1,44 @@
-diff --git a/source/externals/ptl/src/Threading.cc b/source/externals/ptl/src/Threading.cc
-index 324d6c12d7..a7553d8db2 100644
---- a/source/externals/ptl/src/Threading.cc
-+++ b/source/externals/ptl/src/Threading.cc
-@@ -27,7 +27,7 @@
- #include "PTL/Utility.hh"
+diff --git a/source/global/management/include/G4Timer.hh b/source/global/management/include/G4Timer.hh
+index 022e3557df8..390bc44d855 100644
+--- a/source/global/management/include/G4Timer.hh
++++ b/source/global/management/include/G4Timer.hh
+@@ -72,7 +72,7 @@
+ #ifndef G4TIMER_HH
+ #define G4TIMER_HH 1
  
- #if defined(PTL_WINDOWS)
--#    include <Windows.h>
-+#    include <windows.h>
- #endif
- 
- #if defined(PTL_MACOS)
-diff --git a/source/global/management/src/G4FindDataDir.cc b/source/global/management/src/G4FindDataDir.cc
-index 8c80180f71..7c5a6e0158 100644
---- a/source/global/management/src/G4FindDataDir.cc
-+++ b/source/global/management/src/G4FindDataDir.cc
-@@ -34,7 +34,7 @@
- #include <cstdlib>
- #include <cstring>
- 
--#if defined(_MSC_VER)
-+#if defined(_WIN32)
- #define setenv(name, value, overwrite) _putenv_s(name, value)
- #endif
- 
-diff --git a/source/global/management/src/G4Threading.cc b/source/global/management/src/G4Threading.cc
-index 3c6bd77b14..d793a7abff 100644
---- a/source/global/management/src/G4Threading.cc
-+++ b/source/global/management/src/G4Threading.cc
-@@ -34,8 +34,8 @@
- #include "G4AutoLock.hh"
- #include "globals.hh"
- 
--#if defined(WIN32) || defined(__MINGW32__)
--#  include <Windows.h>
-+#if defined(_WIN32)
-+#  include <windows.h>
+-#if !(defined(WIN32) || defined(__MINGW32__))
++#if !(defined(_WIN32)
+ #  include <sys/times.h>
+ #  include <unistd.h>
  #else
- #  include <sys/syscall.h>
- #  include <sys/types.h>
-diff --git a/source/processes/electromagnetic/dna/utils/include/G4MoleculeGun.hh b/source/processes/electromagnetic/dna/utils/include/G4MoleculeGun.hh
-index ef764260ac..54f9a8a17f 100644
---- a/source/processes/electromagnetic/dna/utils/include/G4MoleculeGun.hh
-+++ b/source/processes/electromagnetic/dna/utils/include/G4MoleculeGun.hh
-@@ -110,6 +110,8 @@ protected:
-   void ShootAtFixedPosition(G4MoleculeGun*){}
- };
- 
-+template<> void TG4MoleculeShoot<G4Track>::Shoot(G4MoleculeGun* gun);
-+
- template<typename TYPE>
- G4shared_ptr<G4MoleculeShoot> G4MoleculeShoot::ChangeType()
+@@ -82,7 +82,7 @@
+ extern "C"
  {
-diff --git a/source/processes/hadronic/models/lend/include/MCGIDI.h b/source/processes/hadronic/models/lend/include/MCGIDI.h
-index e11303d2f4..3e4fa17887 100644
---- a/source/processes/hadronic/models/lend/include/MCGIDI.h
-+++ b/source/processes/hadronic/models/lend/include/MCGIDI.h
-@@ -9,7 +9,7 @@
- #define MCGIDI_VERSION_MINOR 0
- #define MCGIDI_VERSION_PATCHLEVEL 0
+   int sysconf(int);
+-};
++}
+ 
+ // Structure returned by times()
+ 
+@@ -97,7 +97,7 @@ struct tms
+ extern "C"
+ {
+   extern clock_t times(struct tms*);
+-};
++}
+ #endif /* WIN32 */
+ 
+ #include "G4Types.hh"
+diff --git a/source/global/management/src/G4Timer.cc b/source/global/management/src/G4Timer.cc
+index 461d0141a0a..d45631602e6 100644
+--- a/source/global/management/src/G4Timer.cc
++++ b/source/global/management/src/G4Timer.cc
+@@ -41,7 +41,7 @@
+ #  endif
+ #endif
  
 -#ifdef WIN32
 +#ifdef _WIN32
- #define M_PI 3.141592653589793238463
- #endif
+ #  include <sys/types.h>
+ #  include <windows.h>
  
-diff --git a/source/processes/hadronic/models/lend/include/nf_specialFunctions.h b/source/processes/hadronic/models/lend/include/nf_specialFunctions.h
-index 4321f47a59..4868a156da 100644
---- a/source/processes/hadronic/models/lend/include/nf_specialFunctions.h
-+++ b/source/processes/hadronic/models/lend/include/nf_specialFunctions.h
-@@ -6,15 +6,12 @@
- #ifndef specialFunctions_h_included
- #define specialFunctions_h_included
- 
-+#define _USE_MATH_DEFINES
- #include <math.h>
- #include <float.h>
- 
- #include "nf_utilities.h"
- 
--#ifdef WIN32
--#define M_PI 3.141592653589793238463
--#endif
--
- #if defined __cplusplus
-     extern "C" {
-     namespace GIDI {
-diff --git a/source/processes/hadronic/models/lend/src/MCGIDI_energy.cc b/source/processes/hadronic/models/lend/src/MCGIDI_energy.cc
-index 65644c9727..d94d42eb78 100644
---- a/source/processes/hadronic/models/lend/src/MCGIDI_energy.cc
-+++ b/source/processes/hadronic/models/lend/src/MCGIDI_energy.cc
-@@ -5,7 +5,7 @@
- #include <string.h>
- #include <cmath>
- 
--#ifdef WIN32
-+#ifdef _WIN32
- #define M_PI 3.141592653589793238463
- #endif
- 
-diff --git a/source/processes/hadronic/models/lend/src/MCGIDI_outputChannel.cc b/source/processes/hadronic/models/lend/src/MCGIDI_outputChannel.cc
-index d22caeb84d..86a3fbccef 100644
---- a/source/processes/hadronic/models/lend/src/MCGIDI_outputChannel.cc
-+++ b/source/processes/hadronic/models/lend/src/MCGIDI_outputChannel.cc
-@@ -2,6 +2,7 @@
- # <<BEGIN-copyright>>
- # <<END-copyright>>
- */
-+#define _USE_MATH_DEFINES
- #include <string.h>
- #include <cmath>
- 
-diff --git a/source/processes/hadronic/models/lend/src/nf_angularMomentumCoupling.cc b/source/processes/hadronic/models/lend/src/nf_angularMomentumCoupling.cc
-index ce8946de18..bc59181626 100644
---- a/source/processes/hadronic/models/lend/src/nf_angularMomentumCoupling.cc
-+++ b/source/processes/hadronic/models/lend/src/nf_angularMomentumCoupling.cc
-@@ -54,6 +54,7 @@
- */
- 
- #include <stdlib.h>
-+#define _USE_MATH_DEFINES
- #include <cmath>
- 
- #include "nf_specialFunctions.h"
-diff --git a/source/processes/hadronic/models/lend/src/xDataTOM_importXML.cc b/source/processes/hadronic/models/lend/src/xDataTOM_importXML.cc
-index afa8a06987..07245f1a2c 100644
---- a/source/processes/hadronic/models/lend/src/xDataTOM_importXML.cc
-+++ b/source/processes/hadronic/models/lend/src/xDataTOM_importXML.cc
-@@ -11,8 +11,8 @@
- #include <fcntl.h>
- #include <errno.h>
- 
--#if defined(WIN32) || defined(__MINGW32__)
--#include <BaseTsd.h>
-+#if defined(_WIN32)
-+#include <basetsd.h>
- #include <io.h>
- #include <windows.h>
- #define realpath( a, b ) GetFullPathName( a, PATH_MAX, b, NULL )
