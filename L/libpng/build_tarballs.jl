@@ -3,18 +3,17 @@
 using BinaryBuilder
 
 name = "libpng"
-upstream_version = v"1.6.44"
-version = v"1.6.45" # Needed to change version number to bump compat bounds, next time can go back to follow upstream
+version = v"1.6.45"
 
 # Collection of sources required to build libpng
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/libpng/files/libpng16/$(upstream_version)/libpng-$(upstream_version).tar.gz",
-                  "8c25a7792099a0089fa1cc76c94260d0bb3f1ec52b93671b572f8bb61577b732"),
+    ArchiveSource("https://sourceforge.net/projects/libpng/files/libpng16/$(version)/libpng-$(version).tar.gz",
+                  "7dee9e1ca8152bf52f919456f4190330aee48209887f2ec0b3d9f0ad571df11b"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libpng-*/
+cd $WORKSPACE/srcdir/libpng-*
 FLAGS=()
 if [[ "${target}" == aarch64-apple-darwin* ]]; then
     # Let CMake know this platform supports NEON extension
