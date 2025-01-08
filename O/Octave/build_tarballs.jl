@@ -42,6 +42,7 @@ make install
 # build on all supported platforms
 platforms = supported_platforms()
 filter!(!Sys.isfreebsd, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
