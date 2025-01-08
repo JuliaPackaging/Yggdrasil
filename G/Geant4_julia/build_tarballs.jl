@@ -39,7 +39,12 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # platforms supported by Geant4
-platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "armv7l" && arch(p) != "i686", platforms)
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        arch(p) != "armv6l" && 
+                        arch(p) != "armv7l" && 
+                        arch(p) != "i686" &&
+                        arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -52,7 +57,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
-    Dependency("Geant4_jll"; compat = "~11.2"),
+    Dependency("Geant4_jll"; compat = "~11.2.1"),
     Dependency("Expat_jll"),
     Dependency("Xerces_jll"),
 ]
