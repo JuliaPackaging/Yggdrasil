@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "FlowCutterPACE17"
-version = v"0.0.1"
+version = v"0.0.2"
 
 # Collection of sources required to complete build
 sources = [
