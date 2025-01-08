@@ -11,6 +11,7 @@ sources = [
                   "d9d71daff8890a7b5e0e33ea9a65fe6308ad6713000b43ba6705af77078e7ead"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +26,10 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/."
     export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/windows.patch
 fi
 
 mkdir build && cd build
