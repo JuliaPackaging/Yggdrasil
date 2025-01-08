@@ -1,23 +1,23 @@
 using BinaryBuilder, Pkg
 
 name = "RDKit"
-version = v"2022.09.5"
+version = v"2024.09.4"
 
 sources = [
-    GitSource("https://github.com/rdkit/rdkit.git", "723e05d46f4c91988622a4035433d016729e2ed2"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/rdkit/rdkit.git", "558465015189358b22b564929cdf1087e3baddc2"),
+    #DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/rdkit
 
 # Windows build fails to link a test, despite the fact we don't want tests.
-atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
+# atomic_patch -p1 ../patches/do-not-build-cffi-test.patch
 
 FLAGS=()
-if [[ "${target}" == *-mingw* ]]; then
-    FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
-fi
+# if [[ "${target}" == *-mingw* ]]; then
+#     FLAGS+=(-DRDK_BUILD_THREADSAFE_SSS=OFF)
+# fi
 
 mkdir build
 cd build
