@@ -1,5 +1,36 @@
+diff --git a/source/global/management/include/G4SliceTimer.hh b/source/global/management/include/G4SliceTimer.hh
+index fca9b3eb369..04c2d739267 100644
+--- a/source/global/management/include/G4SliceTimer.hh
++++ b/source/global/management/include/G4SliceTimer.hh
+@@ -39,7 +39,7 @@
+ #ifndef G4SLICE_TIMER_HH
+ #define G4SLICE_TIMER_HH 1
+ 
+-#if !(defined(WIN32) || defined(__MINGW32__))
++#if !defined(_WIN32)
+ #  include <sys/times.h>
+ #  include <unistd.h>
+ #else
+@@ -49,7 +49,7 @@
+ extern "C"
+ {
+   int sysconf(int);
+-};
++}
+ 
+ // Structure returned by times()
+ //
+@@ -64,7 +64,7 @@ struct tms
+ extern "C"
+ {
+   extern clock_t times(struct tms*);
+-};
++}
+ #endif /* WIN32 */
+ 
+ #include "G4Types.hh"
 diff --git a/source/global/management/include/G4Timer.hh b/source/global/management/include/G4Timer.hh
-index 022e3557df8..390bc44d855 100644
+index 022e3557df8..b0d8a358956 100644
 --- a/source/global/management/include/G4Timer.hh
 +++ b/source/global/management/include/G4Timer.hh
 @@ -72,7 +72,7 @@
@@ -7,7 +38,7 @@ index 022e3557df8..390bc44d855 100644
  #define G4TIMER_HH 1
  
 -#if !(defined(WIN32) || defined(__MINGW32__))
-+#if !(defined(_WIN32)
++#if !defined(_WIN32)
  #  include <sys/times.h>
  #  include <unistd.h>
  #else
