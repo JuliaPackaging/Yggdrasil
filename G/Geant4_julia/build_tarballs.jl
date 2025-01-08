@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Geant4_julia"
-version = v"0.2.0"
+version = v"0.2.1"
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "c80b68aa13774a97f105a96326d95d4a25b8a63f"),
+              "9105e15ead1749d4b111f10f8ae1110036b8bdb9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,7 +39,12 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 # platforms supported by Geant4
-platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "armv7l" && arch(p) != "i686", platforms)
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        arch(p) != "armv6l" && 
+                        arch(p) != "armv7l" && 
+                        arch(p) != "i686" &&
+                        arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
