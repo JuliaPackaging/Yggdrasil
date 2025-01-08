@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Octave"
-version = v"9.2.0"
+version = v"9.3.0"
 
 # Collection of sources required to build Octave
 sources = [
    ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
-                  "0636554b05996997e431caad4422c00386d2d7c68900472700fecf5ffeb7c991"),
+                  "809fa39a7acc84815bf4dc4d2d7e6b228ce75a07f3b2413f3313aa8e0aaa3287"),
 ]
 
 # Bash recipe for building across all platforms
@@ -42,6 +42,7 @@ make install
 # build on all supported platforms
 platforms = supported_platforms()
 filter!(!Sys.isfreebsd, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -54,9 +55,11 @@ products = [
 dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
-    BuildDependency("SuiteSparse_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
+               v"5.12.0";  # build version
+               compat="5.8.0"),
+    Dependency("OpenBLAS32_jll"),
     Dependency("SuiteSparse32_jll"),
     Dependency("Arpack32_jll"),
     Dependency("Sundials32_jll"),
