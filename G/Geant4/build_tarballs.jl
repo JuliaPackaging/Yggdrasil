@@ -61,8 +61,11 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "i686", platforms)
-
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        arch(p) != "armv6l" && 
+                        arch(p) != "i686" &&
+                        arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
