@@ -47,6 +47,7 @@ gpu_products = [
 
 # Override the default platforms
 platforms = CUDA.supported_platforms()
+filter!(p -> arch(p) == "x86_64", platforms)
 
 # Add dependency on SuiteSparse_jll
 push!(dependencies, Dependency("SuiteSparse_jll"; compat = "=$version_str" ))
