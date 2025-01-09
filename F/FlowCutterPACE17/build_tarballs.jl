@@ -11,8 +11,10 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# The second line fixes a missing `include` needed for newer GCC versions.
 script = raw"""
 cd $WORKSPACE/srcdir/flow-cutter-pace17/
+sed -i '/#include <tuple>/a #include <string>' src/list_graph.h
 mkdir -p "${bindir}"
 c++ -o "${bindir}/flow_cutter_pace17${exeext}" -Wall -std=c++11 -O3 -DNDEBUG src/*.cpp
 """
