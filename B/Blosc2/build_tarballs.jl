@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-upstream_version = v"2.15.1"
+upstream_version = v"2.15.2"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
@@ -16,8 +16,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "841c6ae7200c88f73b2825da27fed2a83360ad4c"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "f1278b90056a99c35592e964f549f1f2ba13f05c"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -72,3 +72,5 @@ dependencies = [
 # We need at least GCC 8 for powerpc.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")
+
+# Build trigger: 1

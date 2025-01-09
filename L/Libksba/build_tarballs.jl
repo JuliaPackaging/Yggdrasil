@@ -3,25 +3,20 @@
 using BinaryBuilder
 
 name = "Libksba"
-version = v"1.5.1"
+version = v"1.6.7"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libksba/libksba-$(version).tar.bz2",
-                  "b0f4c65e4e447d9a2349f6b8c0e77a28be9531e4548ba02c545d1f46dc7bf921"),
-    DirectorySource("./bundled"),
+                  "cf72510b8ebb4eb6693eef765749d83677a03c79291a311040a5bfd79baab763"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 
 # Tried -no-undefined but still couldn't build for windows
 script = raw"""
-cd $WORKSPACE/srcdir/libksba-*/
-if [[ "${target}" == x86_64-*-mingw* ]]; then
-    # `gpgrt-config` for this platform returns garbage results.  We replace it with
-    # a simple wrapper around `pkg-config`, so that we can easily build the shared library.
-    FLAGS=(GPG_ERROR_CONFIG="../gpgrt-config.sh" ac_cv_path_GPGRT_CONFIG="../gpgrt-config.sh")
-fi
+cd $WORKSPACE/srcdir/libksba-*
 export CPPFLAGS="-I${includedir}"
 ./configure --prefix=${prefix} --host=${target} --build=${MACHTYPE} "${FLAGS[@]}"
 make -j${nproc}
@@ -41,10 +36,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Future versions of `Libgpg_error_jll` maybe can have a more lax compat,
-    # but the move 1.36 -> 1.42 changed the soname for FreeBSD and Windows.
-    Dependency("Libgpg_error_jll", v"1.36.0"; compat="=1.36.0"),
+    Dependency("Libgpg_error_jll"; compat="1.50.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

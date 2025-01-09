@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "lexbor"
-version = v"2.3.0"
+version = v"2.4.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lexbor/lexbor.git", "26a8819b60801301df92d771f12a01dbe8705a7a")
+    GitSource("https://github.com/lexbor/lexbor.git", "e01ece21c216a1ef0147cefcd77782d2d25d7d4a")
 ]
 
 # Bash recipe for building across all platforms

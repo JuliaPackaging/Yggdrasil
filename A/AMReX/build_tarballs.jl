@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "24.10"
+version_string = "24.11"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "a2d15e417bd7c41963749338e884d939c80c5f2fcae3279fe3f1b463e3e4208a"),
+                  "31cc37b39f15e02252875815f6066046fc56a479bf459362b9889b0d6a202df6"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
@@ -55,6 +55,9 @@ if [[ "${target}" == *-mingw32* ]]; then
     # AMReX requires a parallel HDF5 library
     hdf5opts="-DAMReX_HDF5=OFF"
 elif [[ "${target}" == aarch64-*-freebsd* ]]; then
+    # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
+    hdf5opts="-DAMReX_HDF5=OFF"
+elif [[ "${bb_full_target}" == x86_64-*-freebsd*mpi+mpitrampoline ]]; then
     # HDF5 has not yet been built for these platforms -- update this once HDF5 has been updated
     hdf5opts="-DAMReX_HDF5=OFF"
 else
@@ -123,8 +126,14 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && ((arch(p) == "armv6l" && libc
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 
+# Windows does not supported parallel HDF5
+hdf5_platforms = filter(!Sys.iswindows, platforms)
+
 # HDF5 has not yet been built for aarch64-unknown-freebsd. Re-enable once it's available.
-hdf5_platforms = filter(p -> !(Sys.iswindows(p) || (arch(p) == "aarch64" && Sys.isfreebsd(p))), platforms)
+hdf5_platforms = filter(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), hdf5_platforms)
+
+# HDF5 has not yet been built for x86_64-unknown-freebsd with MPItrampoline. Re-enable once it's available.
+hdf5_platforms = filter(p -> !(arch(p) == "x86_64" && Sys.isfreebsd(p) && p["mpi"] == "mpitrampoline"), hdf5_platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [

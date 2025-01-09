@@ -39,7 +39,8 @@ for depth in 32 16 8; do
         --without-gs \
         --without-frozenpaths \
         --without-perl \
-        --without-x
+        --without-x \
+        --disable-prof --disable-gprof --disable-gcov
     make -j${nproc}
     make install
     popd

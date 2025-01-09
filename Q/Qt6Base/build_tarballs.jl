@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.7.1"
+version = v"6.8.1"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "b7338da1bdccb4d861e714efffaa83f174dfe37e194916bfd7ec82279a6ace19"),
+                  "40b14562ef3bd779bc0e0418ea2ae08fa28235f8ea6e8c0cb3bce1d6ad58dcaf"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
                   "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
@@ -133,6 +133,7 @@ products = [
     LibraryProduct(["Qt6Gui", "libQt6Gui", "QtGui"], :libqt6gui),
     LibraryProduct(["Qt6Network", "libQt6Network", "QtNetwork"], :libqt6network),
     LibraryProduct(["Qt6OpenGL", "libQt6OpenGL", "QtOpenGL"], :libqt6opengl),
+    LibraryProduct(["Qt6OpenGLWidgets", "libQt6OpenGLWidgets", "QtOpenGLWidgets"], :libqt6openglwidgets),
     LibraryProduct(["Qt6PrintSupport", "libQt6PrintSupport", "QtPrintSupport"], :libqt6printsupport),
     LibraryProduct(["Qt6Sql", "libQt6Sql", "QtSql"], :libqt6sql),
     LibraryProduct(["Qt6Test", "libQt6Test", "QtTest"], :libqt6test),
@@ -147,6 +148,7 @@ products_macos = [
     FrameworkProduct("QtGui", :libqt6gui),
     FrameworkProduct("QtNetwork", :libqt6network),
     FrameworkProduct("QtOpenGL", :libqt6opengl),
+    FrameworkProduct("QtOpenGLWidgets", :libqt6openglwidgets),
     FrameworkProduct("QtPrintSupport", :libqt6printsupport),
     FrameworkProduct("QtSql", :libqt6sql),
     FrameworkProduct("QtTest", :libqt6test),

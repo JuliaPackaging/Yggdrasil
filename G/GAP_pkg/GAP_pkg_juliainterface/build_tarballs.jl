@@ -9,16 +9,16 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1300.100"
-gap_lib_version = v"400.1300.100"
+gap_version = v"400.1400.0"
+gap_lib_version = v"400.1400.0"
 name = "JuliaInterface"
-upstream_version = "0.12.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "0.13.0" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
-    GitSource("https://github.com/oscar-system/GAP.jl", "1123f35f9d46c62c22fed279b2876f4ea6ca9a12"),
+    GitSource("https://github.com/oscar-system/GAP.jl", "99ddda8e451b7d9c201d5d126a37b4ba138593e7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -69,7 +69,7 @@ end
 dependencies = [
     Dependency("GAP_jll", gap_version),
     Dependency("GAP_lib_jll", gap_lib_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.11")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.13")),
 ]
 
 # The products that we will ensure are always built

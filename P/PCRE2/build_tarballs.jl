@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
-version_string = "10.43"
+version_string = "10.44"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PCRE2Project/pcre2", "3864abdb713f78831dd12d898ab31bbb0fa630b6"),
+    GitSource("https://github.com/PCRE2Project/pcre2", "6ae58beca071f13ccfed31d03b3f479ab520639b"),
 ]
 
 # Bash recipe for building across all platforms
@@ -70,3 +70,5 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.9", preferred_llvm_version=llvm_version)
+
+# Build trigger: 1
