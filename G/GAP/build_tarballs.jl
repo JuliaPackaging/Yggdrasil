@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.14.0"
-version = v"400.1400.000"
+version = v"400.1400.001"
 
 # Collection of sources required to complete build
 sources = [
