@@ -26,6 +26,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DRDK_INSTALL_INTREE=OFF \
+    -DRDK_INSTALL_STATIC_LIBS=OFF
     -DRDK_BUILD_INCHI_SUPPORT=ON \
     -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
     -DRDK_BUILD_CFFI_LIB=ON \
@@ -62,5 +63,5 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               # GCC 8 is needed for `std::from_chars`
+               # GCC 8 is needed for `std::from_chars`, need GCC 9 for `std::reduce`, but build only works with GCC 10?
                preferred_gcc_version=v"10", julia_compat="1.6")
