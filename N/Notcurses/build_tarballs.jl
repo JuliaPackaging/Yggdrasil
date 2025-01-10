@@ -1,16 +1,18 @@
 using BinaryBuilder, Pkg
 
 name = "Notcurses"
-version = v"3.0.11"
+version = v"3.0.12"
 sources = [
     GitSource("https://github.com/dankamongmen/notcurses",
-              "bfb65c252e0764796e379595ad6e089dcb573ffe"),
+              "0b53931c792cc5d093cd51fdc7472a3296246137"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/notcurses*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/repent.patch
+# Reported as <https://github.com/dankamongmen/notcurses/issues/2835>
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/no-c++.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
 
 if [[ $target == *mingw* ]]; then
@@ -66,8 +68,8 @@ install_license COPYRIGHT
 # platforms are passed in on the command line.
 platforms = supported_platforms()
 
-# Too many dependencies are not available for aarch64-*-freebsd
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# Too many dependencies are not available for riscv64
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built.
 products = [
