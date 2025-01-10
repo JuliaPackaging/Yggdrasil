@@ -68,6 +68,8 @@ install_license COPYRIGHT
 # platforms are passed in on the command line.
 platforms = supported_platforms()
 
+# Too many dependencies are not available for aarch64-*-freebsd
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 # Too many dependencies are not available for riscv64
 filter!(p -> arch(p) != "riscv64", platforms)
 
