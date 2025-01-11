@@ -126,6 +126,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && ((arch(p) == "armv6l" && libc
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
 
+# No MPI for riscv64 yet
+platforms = filter(p -> arch(p) != "riscv64", platforms)
+
 # Windows does not supported parallel HDF5
 hdf5_platforms = filter(!Sys.iswindows, platforms)
 
