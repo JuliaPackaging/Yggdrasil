@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXdmcp"
-version = v"1.1.4"
-
+version = v"1.1.5"
 
 # Collection of sources required to build libXdmcp
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXdmcp-$(version).tar.xz",
-                  "2dce5cc317f8f0b484ec347d87d81d552cdbebb178bd13c5d8193b6b7cd6ad00"),
+                  "d8a5222828c3adab70adf69a5583f1d32eb5ece04304f7f8392b6a353aa2228c"),
 ]
 
 # Bash recipe for building across all platforms
