@@ -64,6 +64,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms())
+    # disable riscv64
+    filter!(p -> arch(p) != "riscv64", platforms)
 
     if llvm_version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
