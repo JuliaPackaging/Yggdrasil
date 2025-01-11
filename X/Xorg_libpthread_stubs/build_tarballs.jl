@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Xorg_libpthread_stubs"
+version_string = "0.1"
 # Upstream version is still 0.1, incremented here for JLL compat reasons. 
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to build libpthread-stubs
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libpthread-stubs-$(version.major).$(version.minor).tar.bz2",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libpthread-stubs-$(version_string).tar.bz2",
                   "004dae11e11598584939d66d26a5ab9b48d08a00ca2d00ae8d38ee3ac7a15d65"),
 ]
 
