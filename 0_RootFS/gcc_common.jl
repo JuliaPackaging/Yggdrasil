@@ -65,18 +65,11 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
     sysroot="${prefix}/${COMPILER_TARGET}/sys-root"
     cp -ra "/opt/${COMPILER_TARGET}/${COMPILER_TARGET}" "${prefix}/${COMPILER_TARGET}"
 
-    # Some things need /lib64, others just need /lib
-    case ${COMPILER_TARGET} in
-        x86_64*)
-            LIB64=lib64
-            ;;
-        aarch64*)
-            LIB64=lib64
-            ;;
-        ppc64*)
-            LIB64=lib64
-            ;;
-        riscv64*)
+    # Some things need /lib64, others just need /lib.  Be consistent with where
+    # our compiler wrappers expect the libraries to be:
+    # <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/4d0883a222bcb60871f8e24e56ef6e322502ec80/src/Runner.jl#L553-L559>.
+    case ${nbits} in
+        64)
             LIB64=lib64
             ;;
         *)
