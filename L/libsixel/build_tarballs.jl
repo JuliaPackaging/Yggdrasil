@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libsixel"
-version = v"1.10.4" # Corresponds to upstream version 1.10.3, we had to change version to change compat bounds, from next version (if there'll ever be one) we can go back to use same version as upstream
+version = v"1.10.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libsixel/libsixel.git", "e2c493768ee0d48b38f7f9a6dde114215f1c3b8a"),
+    GitSource("https://github.com/libsixel/libsixel.git", "cd9322ff7834b0ec301780b76f05a44fd285cb5b"),
     DirectorySource("./bundled")
 ]
 
