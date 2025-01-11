@@ -1,0 +1,49 @@
+From 21805e1bdbdda55f36f8e7d76a99032e86b0c750 Mon Sep 17 00:00:00 2001
+From: Gnimuc <qiyupei@gmail.com>
+Date: Sat, 11 Jan 2025 20:56:57 +0900
+Subject: [PATCH] Restrict the use of `_s` (Annex K) functions to MSVC
+
+These `_s` secure functions are introduced in C11 as optional bounds-checking interfaces, there is no guarantee that they are implemented/enabled by other compilers.
+---
+ lib/Interpreter/Compatibility.h | 4 ++--
+ lib/Interpreter/CppInterOp.cpp  | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/lib/Interpreter/Compatibility.h b/lib/Interpreter/Compatibility.h
+index d6efc73..865d3d1 100644
+--- a/lib/Interpreter/Compatibility.h
++++ b/lib/Interpreter/Compatibility.h
+@@ -10,7 +10,7 @@
+ #include "clang/Basic/Version.h"
+ #include "clang/Config/config.h"
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #define dup _dup
+ #define dup2 _dup2
+ #define close _close
+@@ -18,7 +18,7 @@
+ #endif
+ 
+ static inline char* GetEnv(const char* Var_Name) {
+-#ifdef _WIN32
++#ifdef _MSC_VER
+   char* Env = nullptr;
+   size_t sz = 0;
+   getenv_s(&sz, Env, sz, Var_Name);
+diff --git a/lib/Interpreter/CppInterOp.cpp b/lib/Interpreter/CppInterOp.cpp
+index e25ee9a..6064952 100644
+--- a/lib/Interpreter/CppInterOp.cpp
++++ b/lib/Interpreter/CppInterOp.cpp
+@@ -3388,7 +3388,7 @@ namespace Cpp {
+     int m_DupFD = -1;
+ 
+   public:
+-#ifdef _WIN32
++#ifdef _MSC_VER
+     StreamCaptureInfo(int FD)
+         : m_TempFile(
+               []() {
+-- 
+2.39.5 (Apple Git-154)
+
