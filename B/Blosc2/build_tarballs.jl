@@ -9,7 +9,7 @@ upstream_version = v"2.15.2"
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
 # - We updated the compat bounds
-version_offset = v"1.0.1"
+version_offset = v"1.0.2"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
