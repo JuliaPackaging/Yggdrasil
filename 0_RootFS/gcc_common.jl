@@ -16,6 +16,11 @@
 #
 #      ORIGDIR=../../../GCCBootstrap@XYZ/bundled/patches; for p in ${ORIGDIR}/{,*/}*.patch; do DESTDIR=$(dirname ${p#"${ORIGDIR}/"}); mkdir -p "${DESTDIR}"; if [[ -L "${p}" ]]; then cp -a "${p}" "${DESTDIR}"; else ln -s $(realpath --relative-to="${DESTDIR}" "${p}") "${DESTDIR}"; fi; done
 #
+# * adapt the recipe as necessary, but try to make changes in a backward
+#   compatible way.  If you introduce steps that are necessary only with
+#   specific versions of GCC, guard them with appropriate conditionals.  We may
+#   need to use the same recipe to rebuild older versions of GCC at a later
+#   point and being able to rerun it as-is is extremely important
 # * you can build only one platform at the time.  To deploy the compiler shards
 #   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can either build &
