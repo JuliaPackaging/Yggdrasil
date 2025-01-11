@@ -1,1 +1,184 @@
-../../../GCCBootstrap@4/bundled/patches/glibc_musl_rejection.patch
+From 6edeea11b1f8fb5df9e421834da6f2d5c2bec21c Mon Sep 17 00:00:00 2001
+From: Keno Fischer <keno@alumni.harvard.edu>
+Date: Sat, 11 Jan 2025 19:06:34 +0000
+Subject: [PATCH] dl-load: Reject musl-linked libraries
+
+This prevents the glibc dynamic linker from considering shared
+libraries linked against musl (similar to how it would reject
+libraries for other architectures).
+
+See https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/297
+---
+ elf/dl-load.c                             | 80 ++++++++++++++++++++++-
+ elf/ldconfig.c                            | 10 +++
+ sysdeps/generic/ldconfig.h                |  1 +
+ sysdeps/unix/sysv/linux/x86_64/ldconfig.h |  3 +-
+ 4 files changed, 92 insertions(+), 2 deletions(-)
+
+diff --git a/elf/dl-load.c b/elf/dl-load.c
+index 70fe78f3e7..aadc810a45 100644
+--- a/elf/dl-load.c
++++ b/elf/dl-load.c
+@@ -72,6 +72,7 @@
+ # define MAP_BASE_ADDR(l)	0
+ #endif
+ 
++#include <ldconfig.h>
+ 
+ #include <endian.h>
+ #if BYTE_ORDER == BIG_ENDIAN
+@@ -1649,6 +1650,60 @@ print_search_path (struct r_search_path_elem **list,
+   else
+     _dl_debug_printf_c ("\t\t(%s)\n", what);
+ }
++
++struct known_names
++{
++  const char *soname;
++  int flag;
++};
++
++static struct known_names known_libs[] =
++{
++#ifdef SYSDEP_KNOWN_LIBRARY_NAMES
++  SYSDEP_KNOWN_LIBRARY_NAMES
++#endif
++};
++
++static int validate_lib(int fd, unsigned int dynamic_addr, unsigned int dynamic_size)
++{
++    ElfW(Dyn) *dyn_entry;
++    ElfW(Dyn) *dynamic_segment = alloca(dynamic_size);
++    char fname[255];
++    __lseek (fd, dynamic_addr, SEEK_SET);
++    if ((size_t) __libc_read (fd, (void *) dynamic_segment, dynamic_size) != dynamic_size)
++    {
++        return -2;
++    }
++    // Find the string table
++    unsigned int string_offset = 0;
++    for (dyn_entry = dynamic_segment; dyn_entry->d_tag != DT_NULL; ++dyn_entry)
++    {
++        if (dyn_entry->d_tag == DT_STRTAB) {
++            string_offset = dyn_entry->d_un.d_val;
++        }
++        if (string_offset != 0) {
++            for (dyn_entry = dynamic_segment; dyn_entry->d_tag != DT_NULL; ++dyn_entry)
++            {
++                if (dyn_entry->d_tag == DT_NEEDED) {
++                    __lseek (fd, string_offset + dyn_entry->d_un.d_val, SEEK_SET);
++                    ssize_t nchars = __libc_read (fd, (void *)fname, 254);
++                    if (nchars == -1)
++                        return -2;
++                    fname[nchars] = 0;
++                    for (int j = 0; j < sizeof (known_libs) / sizeof (known_libs [0]); ++j) {
++                        if (strcmp (fname, known_libs [j].soname) == 0)
++                        {
++                            if (known_libs [j].flag == FLAG_ELF_MUSL)
++                                return 1;
++                        }
++                    }
++                }
++            }
++        }
++    }
++    return 0;
++}
++
+ 
+ /* Open a file and verify it is an ELF file for this architecture.  We
+    ignore only ELF files for other architectures.  Non-ELF files and
+@@ -1690,6 +1745,8 @@ open_verify (const char *name, struct filebuf *fbp, struct link_map *loader,
+   } expected_note = { 4, 16, 1, "GNU" };
+   /* Initialize it to make the compiler happy.  */
+   const char *errstring = NULL;
++  unsigned int dynamic_addr = 0;
++  unsigned int dynamic_size = 0;
+   int errval = 0;
+ 
+ #ifdef SHARED
+@@ -1856,8 +1913,15 @@ open_verify (const char *name, struct filebuf *fbp, struct link_map *loader,
+ 	    }
+ 	}
+ 
++      dynamic_addr = 0;
++      dynamic_size = 0;
+       /* Check .note.ABI-tag if present.  */
+-      for (ph = phdr; ph < &phdr[ehdr->e_phnum]; ++ph)
++      for (ph = phdr; ph < &phdr[ehdr->e_phnum]; ++ph) {
++       if (ph->p_type == PT_DYNAMIC)
++         {
++              dynamic_addr = ph->p_offset;
++              dynamic_size = ph->p_filesz;
++         }
+ 	if (ph->p_type == PT_NOTE && ph->p_filesz >= 32 && ph->p_align >= 4)
+ 	  {
+ 	    ElfW(Addr) size = ph->p_filesz;
+@@ -1905,6 +1969,20 @@ open_verify (const char *name, struct filebuf *fbp, struct link_map *loader,
+ 
+ 	    break;
+ 	  }
++      }
++      /* Check the dynamic section */
++      if (dynamic_addr != 0) {
++        int err = validate_lib(fd, dynamic_addr, dynamic_size);
++        if (err == -2) {
++           errstring = N_("failed to read file");
++           goto call_lose;
++        }
++        else if (err != 0) {
++          __close (fd);
++          __set_errno (ENOENT);
++          fd = -1;
++        }
++      }
+     }
+ 
+   return fd;
+diff --git a/elf/ldconfig.c b/elf/ldconfig.c
+index 453cd6278d..03bd57da92 100644
+--- a/elf/ldconfig.c
++++ b/elf/ldconfig.c
+@@ -882,6 +882,16 @@ search_dir (const struct dir_entry *entry)
+ 	    add_to_aux_cache (&lstat_buf, flag, osversion, soname);
+ 	}
+ 
++      /* Don't try to load MUSL-dependent libraries */
++      if ((flag & FLAG_TYPE_MASK) == FLAG_ELF_MUSL)
++        {
++	  if (real_name != real_file_name)
++	    free (real_name);
++	  if (opt_verbose)
++	    error (0, 0, _("Skipping musl-linked library %s"), file_name);
++	  continue;
++        }
++
+       if (soname == NULL)
+ 	soname = implicit_soname (direntry->d_name, flag);
+ 
+diff --git a/sysdeps/generic/ldconfig.h b/sysdeps/generic/ldconfig.h
+index 43cb9bdb0c..83d3572c34 100644
+--- a/sysdeps/generic/ldconfig.h
++++ b/sysdeps/generic/ldconfig.h
+@@ -25,6 +25,7 @@
+ #define FLAG_ELF		0x0001
+ #define FLAG_ELF_LIBC5		0x0002
+ #define FLAG_ELF_LIBC6		0x0003
++#define FLAG_ELF_MUSL		0x0004
+ #define FLAG_REQUIRED_MASK	0xff00
+ #define FLAG_SPARC_LIB64	0x0100
+ #define FLAG_IA64_LIB64		0x0200
+diff --git a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h b/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
+index 6f5b828f44..3bac734e22 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
++++ b/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
+@@ -23,4 +23,5 @@
+   { "/lib64/ld-linux-x86-64.so.2", FLAG_ELF_LIBC6 },
+ #define SYSDEP_KNOWN_LIBRARY_NAMES \
+   { "libc.so.6", FLAG_ELF_LIBC6 },	\
+-  { "libm.so.6", FLAG_ELF_LIBC6 },
++  { "libm.so.6", FLAG_ELF_LIBC6 },  \
++  { "libc.musl-x86_64.so.1", FLAG_ELF_MUSL }
+-- 
+2.31.0
+

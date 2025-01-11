@@ -349,7 +349,6 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         # patch for avoiding linking in musl libs for a glibc-linked binary
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection.patch || true
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection_old.patch || true
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_musl_rejection_new.patch || true
 
         # Patch for building glibc 2.25-2.30 on aarch64
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_aarch64_relocation.patch || true
