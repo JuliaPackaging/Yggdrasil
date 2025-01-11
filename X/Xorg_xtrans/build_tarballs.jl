@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_xtrans"
-version = v"1.5.0"
+version = v"1.5.1"
 
 # Collection of sources required to build xtrans
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/xtrans-$(version).tar.xz",
-               "1ba4b703696bfddbf40bacf25bce4e3efb2a0088878f017a50e9884b0c8fb1bd"),
+                  "dea80fbd8c3c941495b4b1d2785cb652815d016849a0d2ef90d1140de916993e"),
 ]
 
 # Bash recipe for building across all platforms
