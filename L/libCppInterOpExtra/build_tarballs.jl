@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOpExtra"
 repo = "https://github.com/Gnimuc/CppInterOp.jl.git"
-version = v"0.0.1"
+version = v"0.0.2"
 
-llvm_versions = [v"17.0.6"]
+llvm_versions = [v"18.1.7"]
 
 sources = [
-    GitSource(repo, "229b23ab50ee18da39cab0267af0d3dadc6858b5")
+    GitSource(repo, "bfa766c0feec093db95a3edaf26a0744853397c1")
 ]
 
 # Bash recipe for building across all platforms
@@ -74,6 +74,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms())
+    # disable riscv64
+    filter!(p -> arch(p) != "riscv64", platforms)
 
     if llvm_version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
