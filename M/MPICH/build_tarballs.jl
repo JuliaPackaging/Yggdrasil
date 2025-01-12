@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version = v"4.2.3"
+version = v"4.3.0"
 
 sources = [
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "7a019180c51d1738ad9c5d8d452314de65e828ee240bcb2d1f80de9a65be88a8"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version)rc2/mpich-$(version)rc2.tar.gz",
+                  "4a55bfd84a84ffa8623c22513bc7480ca14075003111abbe32869a9fec1f856a"),
     DirectorySource("bundled"),
 ]
 
@@ -127,7 +127,7 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Hwloc_jll"; compat="2.11.1"), # We need 2.11.1+1 for aarch64-unknown-freebsd
+    Dependency("Hwloc_jll"; compat="2.11.2"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                compat="0.1", top_level=true),
 ]
