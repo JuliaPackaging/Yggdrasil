@@ -183,10 +183,7 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
     elif [[ ${target} == powerpc64le-* ]]; then
         flags+=(TARGET=POWER8 DYNAMIC_ARCH=1)
     elif [[ ${target} == riscv64-* ]]; then
-        # We would like to enable DYNAMIC_ARCH=1, but we cannot:
-        # GCC 12 doesn't support RISC-V vector instructions
-        # GCC 13 does not know the type `vfloat32m4x2_t`
-        flags+=(TARGET=RISCV64_GENERIC)
+        flags+=(TARGET=RISCV64_GENERIC DYNAMIC_ARCH=1)
     fi
 
     # If we're building for x86_64 Windows gcc7+, we need to disable usage of
