@@ -50,19 +50,20 @@ if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     cp $prefix/lib/libitkminc2-5.4.dll $prefix/bin
     cp $prefix/lib/libitkminc2-5.4.dll.a $prefix/bin
 fi
-""" 
+"""
+
+# These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-#sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
-filter!(p -> !(arch(p) == "i686"), platforms)
-
-#CMAKE errors for _libcxx_run_result in cross compilation for freebsd and x86_64 linux musl
-filter!(!Sys.isfreebsd, platforms)
-filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
-filter!(p -> !(arch(p) == "riscv64"), platforms)
+# Disable problematic platforms
+filter!(p -> !(arch(p) == "i686"), platforms)  # SSE2 issues
+filter!(!Sys.isfreebsd, platforms)             # FreeBSD issues
+filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)  # musl issues
+filter!(p -> !(arch(p) == "riscv64"), platforms)  # RISC-V not supported
 platforms = expand_cxxstring_abis(platforms)
-## The products that we will ensure are always built
+
+# The products that we will ensure are always built
 products = [
     LibraryProduct(["libITKRegistrationMethodsv4", "libITKRegistrationMethodsv4-5.4", "libITKRegistrationMethodsv4-5"], :libITKRegistrationMethodsv4),
     LibraryProduct(["libITKIOCSV", "libITKIOCSV-5.4", "libITKIOCSV-5"], :libITKIOCSV),
@@ -167,7 +168,8 @@ dependencies = [
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828")),
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
     Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
+    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))  # Add Libiconv_jll for Windows
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
