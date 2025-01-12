@@ -8,7 +8,7 @@ version = v"0.3.29"
 
 sources = openblas_sources(version)
 script = openblas_script(;aarch64_ilp64=true, num_64bit_threads=512, bfloat16=true)
-platforms = openblas_platforms(;experimental=true)
+platforms = openblas_platforms(; version)
 push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 products = openblas_products()
 preferred_llvm_version = v"13.0.1"

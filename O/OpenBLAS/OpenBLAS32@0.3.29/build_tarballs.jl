@@ -8,7 +8,7 @@ version = v"0.3.29"
 
 sources = openblas_sources(version)
 script = openblas_script(openblas32=true, bfloat16=true)
-platforms = openblas_platforms()
+platforms = openblas_platforms(; version)
 products = openblas_products()
 preferred_llvm_version = v"13.0.1"
 dependencies = openblas_dependencies(platforms; llvm_compilerrt_version=preferred_llvm_version)

@@ -261,8 +261,16 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 
 end
 
-# Nothing complicated here; we build for everywhere
-openblas_platforms(;experimental::Bool=true, kwargs...) = expand_gfortran_versions(supported_platforms(;experimental))
+function openblas_platforms(;experimental::Bool=true, version::Union{Nothing,VersionNumber}=nothing, kwargs...)
+    platforms = expand_gfortran_versions(supported_platforms(;experimental))
+    # OpenBLAS 0.3.29 doesn't support GCC < v11 on powerpc64le:
+    # <https://github.com/OpenMathLib/OpenBLAS/issues/5068#issuecomment-2585836284>.
+    # This means we can't build it at all for libgfortran 3 and 4.
+    if version isa VersionNumber && version >= v"0.3.29"
+        filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
+    end
+    return platforms
+end
 
 # The products that we will ensure are always built
 function openblas_products(;kwargs...)
