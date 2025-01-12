@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "ITK"
-version = v"5.3.1"
+version = v"5.3.0+1"
 
 # Collection of sources required to complete build
 sources = [
@@ -61,12 +61,6 @@ filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
-
-
-
-# Filter out the failing platform: armv7l-linux-gnueabihf-cxx03
-filter!(p -> !(arch(p) == "armv7l" && libc(p) == "gnueabihf" && cxxstring_abi(p) == "cxx03"), platforms)
-
 ## The products that we will ensure are always built
 products = [
     LibraryProduct(["libITKRegistrationMethodsv4", "libITKRegistrationMethodsv4-5.3", "libITKRegistrationMethodsv4-5"], :libITKRegistrationMethodsv4),
