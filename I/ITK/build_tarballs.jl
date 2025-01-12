@@ -38,18 +38,19 @@ cmake -B build -S . \
     -DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
     -DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
     -D_libcxx_run_result:STRING=0 \
-    -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0
+    -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
+    -Dhave_sse2_extensions_var_EXITCODE:STRING=0 \
+    -Dhave_sse2_extensions_var_EXITCODE__TRYRUN_OUTPUT:STRING=0
 
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
-    cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
+    cp $prefix/lib/libitkminc2-5.4.dll $prefix/bin
+    cp $prefix/lib/libitkminc2-5.4.dll.a $prefix/bin
 fi
-"""
-# These are the platforms we will build for by default, unless further
+""" 
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
