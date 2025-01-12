@@ -420,7 +420,7 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         # Install CSU
         make csu/subdir_lib -j${nproc}
         mkdir -p ${sysroot}/usr/${LIB64}
-        install csu/crt1.o csu/crti.o csu/crtn.o ${sysroot}/usr/${LIB64}
+        install -v csu/crt1.o csu/crti.o csu/crtn.o ${sysroot}/usr/${LIB64}
         ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/${LIB64}/libc.so
 
     elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
@@ -444,7 +444,7 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
         # Make CRT
         make lib/{crt1,crti,crtn}.o
         mkdir -p ${sysroot}/usr/lib
-        install lib/crt1.o lib/crti.o lib/crtn.o ${sysroot}/usr/lib
+        install -v lib/crt1.o lib/crti.o lib/crtn.o ${sysroot}/usr/lib
         ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/lib/libc.so
 
     elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
@@ -631,6 +631,12 @@ function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
 
     # Remove heavy doc directories
     rm -rf ${sysroot}/usr/share/man
+
+    # Remove leftover dummy `libc.so` file:
+    # <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/403#issuecomment-2585717031>.
+    if [[ "${target}" == riscv64-linux-gnu ]]; then
+        rm -v ${sysroot}/usr/${LIB64}/libc.so
+    fi
     """
 
     return script
