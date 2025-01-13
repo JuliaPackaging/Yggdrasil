@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "snappy"
-version = v"1.2.1"
+upstream_version = v"1.2.1"
+version = v"1.2.2" # need to change version to remove dependencies, but in the future we can go back to follow upstream
 
 # Collection of sources required to complete build
 sources = [
@@ -41,5 +42,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
-
-# Build trigger: 1
