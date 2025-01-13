@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 # Patches from https://github.com/msys2/MINGW-packages/tree/master/mingw-w64-metis
 script = raw"""
-cd $WORKSPACE/srcdir/metis-*
+cd $WORKSPACE/srcdir/METIS
 if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-mingw-w64-does-not-have-sys-resource-h.patch
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0002-mingw-w64-do-not-use-reserved-double-underscored-names.patch
