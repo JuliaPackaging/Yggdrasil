@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.0.2"
+version = v"5.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "b4df018e0d0fc9fb0ae47a3c7a3c1b28426192bb")
+    GitSource("https://github.com/ralna/GALAHAD.git", "f58979d7adda78e6e2d34b3996ed7c1745b92248")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,6 +25,11 @@ else
   HWLOC="hwloc"
 fi
 
+QUADRUPLE="true"
+if [[ "${target}" == *arm* ]] || [[ "${target}" == *aarch64-linux* ]] || [[ "${target}" == *aarch64-unknown-freebsd* ]] || [[ "${target}" == *powerpc64le-linux-gnu* ]]; then
+    QUADRUPLE="false"
+fi
+
 meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
                            -Dint64=false \
@@ -33,6 +38,9 @@ meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dliblapack=$LBT \
                            -Dlibsmumps=smumps \
                            -Dlibdmumps=dmumps \
+                           -Dsingle=true \
+                           -Ddouble=true \
+                           -Dquadruple=false \
                            -Dlibhsl=hsl_subset \
                            -Dlibhsl_modules=$prefix/modules
 
@@ -47,11 +55,50 @@ meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dliblapack=$LBT \
                            -Dlibsmumps= \
                            -Dlibdmumps= \
+                           -Dsingle=true \
+                           -Ddouble=true \
+                           -Dquadruple=false \
                            -Dlibhsl=hsl_subset_64 \
                            -Dlibhsl_modules=$prefix/modules
 
 meson compile -C builddir_int64
 meson install -C builddir_int64
+
+if [[ "$QUADRUPLE" == "true" ]]; then
+    meson setup builddir_quad_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                                    --prefix=$prefix \
+                                    -Dint64=false \
+                                    -Dlibhwloc=$HWLOC \
+                                    -Dlibblas= \
+                                    -Dliblapack= \
+                                    -Dlibsmumps= \
+                                    -Dlibdmumps= \
+                                    -Dsingle=false \
+                                    -Ddouble=false \
+                                    -Dquadruple=true \
+                                    -Dlibhsl= \
+                                    -Dlibhsl_modules=$prefix/modules
+
+    meson compile -C builddir_quad_int32
+    meson install -C builddir_quad_int32
+
+    meson setup builddir_quad_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                                    --prefix=$prefix \
+                                    -Dint64=true \
+                                    -Dlibhwloc=$HWLOC \
+                                    -Dlibblas= \
+                                    -Dliblapack= \
+                                    -Dlibsmumps= \
+                                    -Dlibdmumps= \
+                                    -Dsingle=false \
+                                    -Ddouble=false \
+                                    -Dquadruple=true \
+                                    -Dlibhsl= \
+                                    -Dlibhsl_modules=$prefix/modules
+
+    meson compile -C builddir_quad_int64
+    meson install -C builddir_quad_int64
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -64,8 +111,10 @@ platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 products = [
     LibraryProduct("libgalahad_single", :libgalahad_single),
     LibraryProduct("libgalahad_double", :libgalahad_double),
+    # LibraryProduct("libgalahad_quadruple", :libgalahad_quadruple), <-- not available on all platforms
     LibraryProduct("libgalahad_single_64", :libgalahad_single_64),
     LibraryProduct("libgalahad_double_64", :libgalahad_double_64),
+    # LibraryProduct("libgalahad_quadruple_64", :libgalahad_quadruple_64), <-- not available on all platforms
 ]
 
 # Dependencies that must be installed before this package can be built
