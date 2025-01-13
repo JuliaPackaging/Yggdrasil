@@ -323,6 +323,26 @@ augment_platform_block="""
         nothing
     end
 
+    # copied from CUDA_Runtime_jll
+    function cudaRuntimeGetVersion(library_handle)
+        function_handle = Libdl.dlsym(library_handle, "cudaRuntimeGetVersion"; throw_error=false)
+        if function_handle === nothing
+            @debug "Runtime library seems invalid (does not contain 'cudaRuntimeGetVersion')"
+            return nothing
+        end
+        version_ref = Ref{Cint}()
+        status = ccall(function_handle, Cint, (Ptr{Cint},), version_ref)
+        if status != 0
+            @debug "Call to 'cudaRuntimeGetVersion' failed with status \$(status)"
+            return nothing
+        end
+        major, ver = divrem(version_ref[], 1000)
+        minor, patch = divrem(ver, 10)
+        version = VersionNumber(major, minor, patch)
+        @debug "Detected CUDA Runtime version \$(version)"
+        return version
+    end
+
     function augment_platform!(platform::Platform)
 
         mode = get(ENV, "REACTANT_MODE", something(mode_preference, "opt"))
@@ -348,12 +368,19 @@ augment_platform_block="""
             # so that we get recompiled if the driver changes.
             if cuname != "" && gpu == "undecided"
                 handle = Libdl.dlopen(cuname)
+                cuda_version = cuDriverGetVersion(handle)
                 path = Libdl.dlpath(handle)
                 Libdl.dlclose(handle)
 
-                @debug "Adding include dependency on \$path"
-                Base.include_dependency(path)
-                gpu = "cuda"
+                if cuda_version isa VersionNumber
+                    if cuda_version == v"12.6"
+                        @debug "Adding include dependency on \$path"
+                        Base.include_dependency(path)
+                        gpu = "cuda"
+                    else
+                        @debug "CUDA version \$(cuda_version) not supported with this version of Reactant"
+                    end
+                end
             end
 
             roname = ""
