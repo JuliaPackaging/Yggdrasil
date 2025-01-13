@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "METIS"
-version = v"5.1.2" # <-- This is a lie, we're bumping to 5.1.1 to create a Julia v1.6+ release with experimental platforms
+version = v"5.1.3" # <-- This is a lie, we're bumping to 5.1.1 to create a Julia v1.6+ release with experimental platforms
 
 # Collection of sources required to build METIS
 sources = [
