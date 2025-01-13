@@ -30,11 +30,11 @@ build_metis()
 {
     METIS_PREFIX=${4:-${libdir}/metis/${1}}
     mkdir -p ${METIS_PREFIX}
-    cmake $WORKSPACE/srcdir/metis-5.1.0/ \
+    cmake $WORKSPACE/srcdir/METIS/ \
         -DCMAKE_INSTALL_PREFIX=${METIS_PREFIX} \
         -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
         -DCMAKE_VERBOSE_MAKEFILE=1 \
-        -DGKLIB_PATH=$WORKSPACE/srcdir/metis-5.1.0/GKlib \
+        -DGKLIB_PATH=$WORKSPACE/srcdir/METIS/GKlib \
         -DSHARED=1 \
         -DCMAKE_C_FLAGS="-DIDXTYPEWIDTH=${2} -DREALTYPEWIDTH=${3}" \
         -DBINARY_NAME="${1}"
