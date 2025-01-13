@@ -16,7 +16,7 @@ script = raw"""
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
 QUADRUPLE="true"
-if [[ "${target}" == *arm* ]]; then
+if [[ "${target}" == *arm* ]] || [[ "${target}" == *aarch64-linux* ]] || [[ "${target}" == *aarch64-unknown-freebsd* ]] || [[ "${target}" == *powerpc64le-linux-gnu* ]]; then
     QUADRUPLE="false"
 fi
 
