@@ -373,7 +373,7 @@ augment_platform_block="""
                 Libdl.dlclose(handle)
 
                 if cuda_version isa VersionNumber
-                    if cuda_version == v"12.6"
+                    if cuda_version >= v"12.6"
                         @debug "Adding include dependency on \$path"
                         Base.include_dependency(path)
                         gpu = "cuda"
