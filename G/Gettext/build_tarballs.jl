@@ -44,7 +44,7 @@ make install
 
 if [[ "${target}" == *-mingw* ]]; then
     # Rename Windows library
-    mv ${bindir}/libgettextlib-${VERSION_MAJOR}-${VERSION_MINOR}-${VERSION_PATCH}.${dlext} ${bindir}/libgettextlib-${VERSION_MAJOR}.${dlext}
+    mv -v "${libdir}/libgettextlib-${VERSION_MAJOR}-${VERSION_MINOR}-${VERSION_PATCH}.${dlext}" "${libdir}/libgettextlib-${VERSION_MAJOR}.${dlext}"
 fi
 """
 
