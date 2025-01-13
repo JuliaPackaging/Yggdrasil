@@ -1,4 +1,5 @@
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
@@ -127,7 +128,10 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Hwloc_jll"; compat="2.11.2"),
+    # Dependency("Hwloc_jll"; compat="2.11.2"),
+    # Until we have a new version of hwloc built for riscv64 we need to use the
+    # `get_addable_spec` hack.  From v2.11.3 on we should be able to remove it here.
+    Dependency(get_addable_spec("Hwloc_jll", v"2.11.2+2"); compat="2.11.2"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
                compat="0.1", top_level=true),
 ]
