@@ -6,8 +6,7 @@ version = v"5.1.3" # <-- This is a lie, we're bumping to 5.1.1 to create a Julia
 # Collection of sources required to build METIS
 sources = [
     # The official link to METIS 5.1.0 (http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz) is currently down.
-    ArchiveSource("https://github.com/xijunke/METIS-1/raw/refs/heads/master/metis-5.1.0.tar.gz",
-                  "76faebe03f6c963127dbb73c13eab58c9a3faeae48779f049066a21c087c5db2"),
+    GitSource("https://github.com/amontoison/METIS.git", "e827ffed17d56a4ac1add9cc33342c453a06c209"),
     DirectorySource("./bundled"),
 ]
 
