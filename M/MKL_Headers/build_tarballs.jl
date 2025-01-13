@@ -29,7 +29,7 @@ if [[ $target == *-mingw* ]]; then
 else
     rsync -av mkl_include-${target}/mkl_include-*.data/data/include/ ${includedir}
 fi
-install_license info/licenses/*.txt
+install_license mkl_include-${target}/mkl_include-*.dist-info/LICENSE.txt
 
 cd $WORKSPACE/srcdir/mkl_devel-$target
 mkdir -p ${libdir}
