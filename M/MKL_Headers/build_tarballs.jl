@@ -25,19 +25,19 @@ unzip -d mkl_devel-$target mkl_devel-$target.whl
 
 cd $WORKSPACE/srcdir/mkl_include-$target
 if [[ $target == *-mingw* ]]; then
-    rsync -av mkl_include-${target}/mkl_include-*.data/data/Library/include/ ${includedir}
+    rsync -av mkl_include-${target}/mkl_include-2025.0.1.data/data/Library/include/ ${includedir}
 else
-    rsync -av mkl_include-${target}/mkl_include-*.data/data/include/ ${includedir}
+    rsync -av mkl_include-${target}/mkl_include-2025.0.1.data/data/include/ ${includedir}
 fi
-install_license mkl_include-${target}/mkl_include-*.dist-info/LICENSE.txt
+install_license mkl_include-${target}/mkl_include-2025.0.1.dist-info/LICENSE.txt
 
 cd $WORKSPACE/srcdir/mkl_devel-$target
 mkdir -p ${libdir}
 if [[ $target == *-mingw* ]]; then
     # These toolchain files must still go inside the lib folder, not the ${libdir} folder
-    rsync -av mkl_devel-${target}/mkl_devel-*.data/data/Library/lib/ $WORKSPACE/destdir/lib
+    rsync -av mkl_devel-${target}/mkl_devel-2025.0.1.data/data/Library/lib/ $WORKSPACE/destdir/lib
 else
-    rsync -av mkl_devel-${target}/mkl_devel-*.data/data/lib/ ${libdir}
+    rsync -av mkl_devel-${target}/mkl_devel-2025.0.1.data/data/lib/ ${libdir}
 fi
 """
 
