@@ -41,8 +41,9 @@ make install
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# xxHash is not available for riscv64
+# xxHash is not yet available for riscv64 or aarch64-*-freebsd
 filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 # We don't know how to link against OpenSSL (this should be fixable)
 filter!(!Sys.iswindows, platforms)
 
