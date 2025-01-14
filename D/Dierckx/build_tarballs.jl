@@ -5,13 +5,13 @@ using BinaryBuilder, Pkg
 # This is the builder for the library Dierckx in Netlib
 # (http://www.netlib.org/dierckx/), which doesn't really have a versin number.
 name = "Dierckx"
-upstream_version = "1.15.1"
-version = v"0.1.1"
+upstream_version = "1.7.2"
+version = v"0.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/scipy/scipy/releases/download/v$(upstream_version)/scipy-$(upstream_version).tar.gz",
-                  "033a75ddad1463970c96a88063a1df87ccfddd526437136b6ee81ff0312ebdf6"),
+    ArchiveSource("https://github.com/scipy/scipy/releases/download/v$(upstream_version)/scipy-$(upstream_version).tar.xz",
+                  "ee5d018ecad0364289efe3301f6445d7ef548637e0e14d0205bbf363f0dfe66a"),
 ]
 
 # Bash recipe for building across all platforms
