@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Minuit2"
-version = v"6.22.6"
+version = v"6.34.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/root-project/root/archive/v6-22-06.tar.gz", "81fe6403a3cf51bb1c411f240d9c233473a833e5738b3abf68ed55d0d27ce1cd")
+    ArchiveSource("https://root.cern/download/root_v6.34.02.source.tar.gz", "166bec562e420e177aaf3133fa3fb09f82ecddabe8a2e1906345bad442513f94")
 ]
 
 # Bash recipe for building across all platforms
@@ -37,6 +37,11 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        arch(p) != "armv6l" && 
+                        arch(p) != "i686", platforms)
+
 
 # The products that we will ensure are always built
 products = [
@@ -49,4 +54,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", julia_compat="1.6")
