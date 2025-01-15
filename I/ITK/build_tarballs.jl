@@ -15,8 +15,17 @@ if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     OS=Windows
 fi
 
+if [[ "${target}" == *-apple-* ]]; then
+
+    export LDFLAGS="${LDFLAGS} -liconv"
+
+    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+
+fi
+
 export LDFLAGS="-L${libdir}"
 cd $WORKSPACE/srcdir/ITK*
+
 mkdir build/
 cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -40,7 +49,9 @@ cmake -B build -S . \
     -D_libcxx_run_result:STRING=0 \
     -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
     -Dhave_sse2_extensions_var_EXITCODE:STRING=0 \
-    -Dhave_sse2_extensions_var_EXITCODE__TRYRUN_OUTPUT:STRING=0
+    -Dhave_sse2_extensions_var_EXITCODE__TRYRUN_OUTPUT:STRING=0 \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DITK_USE_SYSTEM_ICONV=ON
 
 cmake --build build --parallel ${nproc}
 cmake --install build
