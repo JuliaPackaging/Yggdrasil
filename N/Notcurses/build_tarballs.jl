@@ -1,18 +1,16 @@
 using BinaryBuilder, Pkg
 
 name = "Notcurses"
-version = v"3.0.12"
+version = v"3.0.13"
 sources = [
     GitSource("https://github.com/dankamongmen/notcurses",
-              "0b53931c792cc5d093cd51fdc7472a3296246137"),
+              "fb02ba185f42dd9eaae717c9bba2da6194982294"),
     DirectorySource("bundled"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/notcurses*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/repent.patch
-# Reported as <https://github.com/dankamongmen/notcurses/issues/2835>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/no-c++.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
 
 if [[ $target == *mingw* ]]; then
