@@ -8,8 +8,8 @@ name = "MPICH"
 version = v"4.3.0"
 
 sources = [
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version)rc2/mpich-$(version)rc2.tar.gz",
-                  "4a55bfd84a84ffa8623c22513bc7480ca14075003111abbe32869a9fec1f856a"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version)rc3/mpich-$(version)rc3.tar.gz",
+                  "f2e28c33b5049f5b1440fca82b4cbccb1196be68ead68fc527661e0d67767cda"),
     DirectorySource("bundled"),
 ]
 
