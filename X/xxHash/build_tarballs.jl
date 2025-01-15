@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "xxHash"
-version = v"0.8.2"
+version = v"0.8.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Cyan4973/xxHash.git", "bbb27a5efb85b92a0486cf361a8635715a53f6ba"),
+    GitSource("https://github.com/Cyan4973/xxHash.git", "e626a72bc2321cd320e953a0ccf1584cad60f363"),
 ]
 
 # Bash recipe for building across all platforms

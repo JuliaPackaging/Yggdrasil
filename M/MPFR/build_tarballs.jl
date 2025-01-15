@@ -27,7 +27,7 @@ make install
 
 # On Windows, make sure non-versioned filename exists...
 if [[ ${target} == *mingw* ]]; then
-    cp -v ${prefix}/bin/libmpfr-*.dll ${prefix}/bin/libmpfr.dll
+    cp -v ${libdir}/libmpfr-*.dll ${libdir}/libmpfr.dll
 fi
 """
 
@@ -54,3 +54,5 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"5", preferred_llvm_version=llvm_version,
                julia_compat="1.6")
+
+# Build trigger: 1

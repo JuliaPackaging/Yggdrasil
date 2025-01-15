@@ -6,7 +6,7 @@ using BinaryBuilder, Pkg
 # (http://www.netlib.org/dierckx/), which doesn't really have a versin number.
 name = "Dierckx"
 upstream_version = "1.15.1"
-version = v"0.1.1"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [

@@ -1,26 +1,26 @@
-From c78c1f75e135e714874159bf383b99c5ca7d72de Mon Sep 17 00:00:00 2001
+From 743c35943a73e461d5946683c1b095020f610c0c Mon Sep 17 00:00:00 2001
 From: Gnimuc <qiyupei@gmail.com>
-Date: Sat, 11 Jan 2025 20:11:20 +0900
+Date: Sat, 11 Jan 2025 20:47:32 +0900
 Subject: [PATCH] Rewrite CMake build scripts
 
 ---
- CMakeLists.txt                           | 567 +++--------------------
+ CMakeLists.txt                           | 574 +++--------------------
  include/CMakeLists.txt                   |   1 +
  include/clang-c/CMakeLists.txt           |   1 +
  include/clang/CMakeLists.txt             |   1 +
  include/clang/Interpreter/CMakeLists.txt |   1 +
  lib/Interpreter/CMakeLists.txt           | 139 +-----
- 6 files changed, 74 insertions(+), 636 deletions(-)
+ 6 files changed, 76 insertions(+), 641 deletions(-)
  create mode 100644 include/CMakeLists.txt
  create mode 100644 include/clang-c/CMakeLists.txt
  create mode 100644 include/clang/CMakeLists.txt
  create mode 100644 include/clang/Interpreter/CMakeLists.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 883885d..de19512 100644
+index 883885d..61e01b0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,520 +1,75 @@
+@@ -1,520 +1,72 @@
 -cmake_minimum_required(VERSION 3.13)
 +cmake_minimum_required(VERSION 3.21)
  
@@ -43,7 +43,7 @@ index 883885d..de19512 100644
 -# project, using LLVM as an external library:
 -if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 -  project(CppInterOp)
-+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
++# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
  
 -  # LLVM/Clang/Cling default paths
 -  if (DEFINED LLVM_DIR)
@@ -529,10 +529,7 @@ index 883885d..de19512 100644
 -  if(MSVC_VERSION LESS 1914)
 -    set(MSVC_EXPORTLIST ${MSVC_EXPORTLIST} ??3@YAXPAX0@Z ??_V@YAXPAX0@Z)
 -  endif()
-+add_library(CppInterOp SHARED)
-+add_subdirectory(lib)
-+add_subdirectory(include)
- 
+-
 -  if(MSVC_VERSION GREATER_EQUAL 1936)
 -    set(MSVC_EXPORTLIST ${MSVC_EXPORTLIST}
 -        __std_find_trivial_1
@@ -541,6 +538,19 @@ index 883885d..de19512 100644
 -        __std_find_trivial_8
 -    )
 -  endif()
+-
+-foreach(sym ${MSVC_EXPORTLIST})
+-  set(MSVC_EXPORTS "${MSVC_EXPORTS} /EXPORT:${sym}")
+-endforeach(sym ${MSVC_EXPORTLIST})
+-
+-endif()
+-
+-if (CPPINTEROP_INCLUDE_DOCS)
+-  add_subdirectory(docs)
++add_library(CppInterOp SHARED)
++add_subdirectory(lib)
++add_subdirectory(include)
++
 +target_include_directories(CppInterOp PUBLIC
 +    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 +    $<BUILD_INTERFACE:${LLVM_INCLUDE_DIRS}>
@@ -548,19 +558,11 @@ index 883885d..de19512 100644
 +    $<INSTALL_INTERFACE:include>)
 +    
 +target_compile_features(CppInterOp PRIVATE cxx_std_17)
- 
--foreach(sym ${MSVC_EXPORTLIST})
--  set(MSVC_EXPORTS "${MSVC_EXPORTS} /EXPORT:${sym}")
--endforeach(sym ${MSVC_EXPORTLIST})
++
 +target_compile_definitions(CppInterOp PUBLIC "USE_REPL")
 +target_compile_definitions(CppInterOp PUBLIC "__STDC_FORMAT_MACROS") # see https://github.com/tensorflow/tensorflow/issues/12998
- 
-+if(WIN32)
-+    target_compile_definitions(CppInterOp PRIVATE "__STDC_WANT_LIB_EXT1__=1") # for `_s` secure functions
- endif()
- 
--if (CPPINTEROP_INCLUDE_DOCS)
--  add_subdirectory(docs)
++target_compile_definitions(CppInterOp PRIVATE "_CINDEX_LIB_")
++
 +file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" CPPINTEROP_VERSION)
 +string(REGEX MATCH "([0-9]*)\.([0-9]*)\.([0-9]*)" CPPINTEROP_VERSION_ONLY "${CPPINTEROP_VERSION}")
 +set(CPPINTEROP_VERSION_MAJOR "${CMAKE_MATCH_1}")

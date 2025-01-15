@@ -16,6 +16,11 @@
 #
 #      ORIGDIR=../../../GCCBootstrap@XYZ/bundled/patches; for p in ${ORIGDIR}/{,*/}*.patch; do DESTDIR=$(dirname ${p#"${ORIGDIR}/"}); mkdir -p "${DESTDIR}"; if [[ -L "${p}" ]]; then cp -a "${p}" "${DESTDIR}"; else ln -s $(realpath --relative-to="${DESTDIR}" "${p}") "${DESTDIR}"; fi; done
 #
+# * adapt the recipe as necessary, but try to make changes in a backward
+#   compatible way.  If you introduce steps that are necessary only with
+#   specific versions of GCC, guard them with appropriate conditionals.  We may
+#   need to use the same recipe to rebuild older versions of GCC at a later
+#   point and being able to rerun it as-is is extremely important
 # * you can build only one platform at the time.  To deploy the compiler shards
 #   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can either build &
@@ -32,8 +37,14 @@ using BinaryBuilder: BinaryBuilderBase
 @eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs, :platform_support)
 
 
-function gcc_script(compiler_target::Platform)
-    script = raw"""
+function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
+    script = """
+    GCC_VERSION_MAJOR=$(gcc_version.major)
+    GCC_VERSION_MINOR=$(gcc_version.minor)
+    GCC_VERSION_PATCH=$(gcc_version.patch)
+    """
+
+    script *= raw"""
     cd ${WORKSPACE}/srcdir
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
@@ -59,19 +70,11 @@ function gcc_script(compiler_target::Platform)
     sysroot="${prefix}/${COMPILER_TARGET}/sys-root"
     cp -ra "/opt/${COMPILER_TARGET}/${COMPILER_TARGET}" "${prefix}/${COMPILER_TARGET}"
 
-    # Some things need /lib64, others just need /lib
-    case ${COMPILER_TARGET} in
-        x86_64*)
-            LIB64=lib64
-            ;;
-        aarch64*)
-            LIB64=lib64
-            ;;
-        ppc64*)
-            LIB64=lib64
-            ;;
-        risc64*)
-            # TODO: Is this correct?
+    # Some things need /lib64, others just need /lib.  Be consistent with where
+    # our compiler wrappers expect the libraries to be:
+    # <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/4d0883a222bcb60871f8e24e56ef6e322502ec80/src/Runner.jl#L553-L559>.
+    case ${nbits} in
+        64)
             LIB64=lib64
             ;;
         *)
@@ -191,32 +194,53 @@ function gcc_script(compiler_target::Platform)
         # Apply libtapi patches, if any
         if [[ -d "${WORKSPACE}/srcdir/patches/libtapi" ]]; then
             for p in ${WORKSPACE}/srcdir/patches/libtapi/*.patch; do
-                atomic_patch -p1 -d src/ "${p}"
+                atomic_patch -p1 "${p}"
             done
         fi
 
+        # Install libtapi
         mkdir -p ${WORKSPACE}/srcdir/apple-libtapi/build
         cd ${WORKSPACE}/srcdir/apple-libtapi/build
-
         export TAPIDIR=${WORKSPACE}/srcdir/apple-libtapi
 
-        # Install libtapi
+        TAPI_CMAKE_FLAGS=()
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            TAPI_CMAKE_FLAGS+=(
+                -DLLVM_ENABLE_PROJECTS="tapi;clang"
+                -DLLVM_TARGETS_TO_BUILD:STRING="host"
+            )
+        fi
+
         cmake ../src/llvm \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_FLAGS="-I${TAPIDIR}/src/llvm/projects/clang/include -I${TAPIDIR}/build/projects/clang/include" \
             -DLLVM_INCLUDE_TESTS=OFF \
             -DCMAKE_BUILD_TYPE=RELEASE \
-            -DCMAKE_INSTALL_PREFIX=${prefix}
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            "${TAPI_CMAKE_FLAGS[@]}"
         make -j${nproc} VERBOSE=1 clangBasic
-        make -j${nproc} VERBOSE=1
-        make install
+        make -j${nproc} VERBOSE=1 libtapi
+        make -j${nproc} VERBOSE=1 install
 
         # Install cctools
+        cd ${WORKSPACE}/srcdir/cctools-port/cctools
+        ./autogen.sh
         mkdir -p ${WORKSPACE}/srcdir/cctools_build
         cd ${WORKSPACE}/srcdir/cctools_build
-        CC=/usr/bin/clang CXX=/usr/bin/clang++ LDFLAGS=-L/usr/lib ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
+
+        # TODO: Update RootFS to v3.17 or later, and preinstall libdispatch (and libdispatch-dev here only when building for macOS).
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+        fi
+
+        ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
             --prefix=${prefix} \
             --target=${COMPILER_TARGET} \
             --host=${MACHTYPE} \
+            CC=/usr/bin/clang \
+            CXX=/usr/bin/clang++ \
+            LDFLAGS=-L/usr/lib \
             --with-libtapi=${prefix}
         make -j${nproc}
         make install
@@ -357,10 +381,19 @@ function gcc_script(compiler_target::Platform)
             GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
         fi
 
-        if [[ ${COMPILER_TARGET} == riscv64-* ]]; then
-            # Explicitly disable C++
-            # (Disable for all architectures?)
-            GLIBC_CONFIGURE_OVERRIDES+=( CXX=false )
+        # Explicitly disable C++.
+        # If we don't do this, glibc will pick up the host C++
+        # compiler (/usr/bin/g++) to build some C++ files. With this
+        # setting, glibc will build C versions of these files instead.
+        GLIBC_CONFIGURE_OVERRIDES+=( CXX=false )
+
+        # These flags are necessary for GCC 14. GCC 14 defaults to a
+        # modern version of C, too modern for the old glibc libraries we are
+        # trying to build. Various configure tests would fail otherwise. (Why
+        # declare variables or functions if they default to int anyway?)
+        GLIBC_CFLAGS="${CFLAGS} -g -O2"
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            GLIBC_CFLAGS="${GLIBC_CFLAGS} -Wno-implicit-int -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-array-parameter -Wno-int-conversion"
         fi
 
         # Configure glibc
@@ -373,6 +406,7 @@ function gcc_script(compiler_target::Platform)
             --with-headers="${sysroot}/usr/include" \
             --disable-multilib \
             --disable-werror \
+            CFLAGS="${GLIBC_CFLAGS}" \
             ${GLIBC_CONFIGURE_OVERRIDES[@]}
 
 
@@ -386,7 +420,7 @@ function gcc_script(compiler_target::Platform)
         # Install CSU
         make csu/subdir_lib -j${nproc}
         mkdir -p ${sysroot}/usr/${LIB64}
-        install csu/crt1.o csu/crti.o csu/crtn.o ${sysroot}/usr/${LIB64}
+        install -v csu/crt1.o csu/crti.o csu/crtn.o ${sysroot}/usr/${LIB64}
         ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/${LIB64}/libc.so
 
     elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
@@ -410,7 +444,7 @@ function gcc_script(compiler_target::Platform)
         # Make CRT
         make lib/{crt1,crti,crtn}.o
         mkdir -p ${sysroot}/usr/lib
-        install lib/crt1.o lib/crti.o lib/crtn.o ${sysroot}/usr/lib
+        install -v lib/crt1.o lib/crti.o lib/crtn.o ${sysroot}/usr/lib
         ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/lib/libc.so
 
     elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
@@ -597,6 +631,12 @@ function gcc_script(compiler_target::Platform)
 
     # Remove heavy doc directories
     rm -rf ${sysroot}/usr/share/man
+
+    # Remove leftover dummy `libc.so` file:
+    # <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/403#issuecomment-2585717031>.
+    if [[ "${target}" == riscv64-linux-gnu ]]; then
+        rm -v ${sysroot}/usr/${LIB64}/libc.so
+    fi
     """
 
     return script
@@ -624,7 +664,7 @@ function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
     deleteat!(ARGS, length(ARGS))
 
     sources = gcc_sources(version, compiler_target)
-    script = gcc_script(compiler_target)
+    script = gcc_script(version, compiler_target)
     products = gcc_products()
 
     # Build the tarballs, and possibly a `build.jl` as well.
