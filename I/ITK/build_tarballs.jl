@@ -10,57 +10,163 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    CONFIG=msys2-64
-    OS=Windows
-fi
 
-if [[ "${target}" == *-apple-* ]]; then
-
-    export LDFLAGS="${LDFLAGS} -liconv"
-
-    export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-
-fi
-
-export LDFLAGS="-L${libdir}"
 cd $WORKSPACE/srcdir/ITK*
 
-mkdir build/
+
+# Create patch for Windows posix_memalign implementation
+
+if [[ "${target}" == *-mingw* ]]; then
+
+    cat << 'EOF' > posix_memalign.patch
+
+diff --git a/Modules/ThirdParty/GDCM/src/gdcm/Utilities/gdcmext/mec_mr3_io.c b/Modules/ThirdParty/GDCM/src/gdcm/Utilities/gdcmext/mec_mr3_io.c
+
+--- a/Modules/ThirdParty/GDCM/src/gdcm/Utilities/gdcmext/mec_mr3_io.c
+
++++ b/Modules/ThirdParty/GDCM/src/gdcm/Utilities/gdcmext/mec_mr3_io.c
+
+@@ -1,6 +1,20 @@
+
+ #include <stdlib.h>
+
+ #include <string.h>
+
+ 
+
++#ifdef _WIN32
+
++#include <malloc.h>
+
++#include <errno.h>
+
++static int posix_memalign(void **memptr, size_t alignment, size_t size) {
+
++    void *ptr;
+
++    if (alignment < sizeof(void*))
+
++        alignment = sizeof(void*);
+
++    ptr = _aligned_malloc(size, alignment);
+
++    if (!ptr)
+
++        return ENOMEM;
+
++    *memptr = ptr;
+
++    return 0;
+
++}
+
++#endif
+
+EOF
+
+    
+
+    # Apply the patch
+
+    patch -p1 < posix_memalign.patch
+
+    
+
+    # Windows-specific flags
+
+    export CFLAGS="-D_POSIX_C_SOURCE -DLIBICONV_PLUG"
+
+    export CXXFLAGS="-D_POSIX_C_SOURCE -DLIBICONV_PLUG"
+
+    export LDFLAGS="-L${libdir} -liconv"
+
+elif [[ "${target}" == *-apple-* ]]; then
+
+    # macOS-specific flags
+
+    export LDFLAGS="-L${libdir} -liconv"
+
+    export CPPFLAGS="-I${prefix}/include"
+
+    export CFLAGS="-I${prefix}/include"
+
+    export CXXFLAGS="-I${prefix}/include"
+
+else
+
+    export LDFLAGS="-L${libdir}"
+
+fi
+
+
+mkdir build
+
 cmake -B build -S . \
+
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+
     -DCMAKE_BUILD_TYPE=Release \
+
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+
     -DBUILD_SHARED_LIBS:BOOL=ON \
-    -DITK_USE_SYSTEM_EXPAT:BOOL=ON \
-    -DITK_USE_SYSTEM_FFTW:BOOL=ON \
-    -DITK_USE_SYSTEM_HDF5:BOOL=ON \
-    -DITK_USE_SYSTEM_JPEG:BOOL=ON \
-    -DITK_USE_SYSTEM_TIFF:BOOL=ON \
-    -DITK_USE_SYSTEM_PNG:BOOL=ON \
-    -DITK_USE_SYSTEM_EIGEN:BOOL=ON \
-    -DITK_USE_SYSTEM_ZLIB:BOOL=ON \
-    -DQNANHIBIT_VALUE:BOOL=0 \
-    -DQNANHIBIT_VALUE__TRYRUN_OUTPUT:STRING=0 \
-    -DVXL_HAS_SSE2_HARDWARE_SUPPORT:STRING=1 \
-    -DVCL_HAS_LFS:STRING=1 \
-    -DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
-    -DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
-    -D_libcxx_run_result:STRING=0 \
-    -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
-    -Dhave_sse2_extensions_var_EXITCODE:STRING=0 \
-    -Dhave_sse2_extensions_var_EXITCODE__TRYRUN_OUTPUT:STRING=0 \
+
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DITK_USE_SYSTEM_ICONV=ON
+
+    -DITK_USE_SYSTEM_ICONV=ON \
+
+    -DITK_USE_SYSTEM_EXPAT:BOOL=ON \
+
+    -DITK_USE_SYSTEM_FFTW:BOOL=ON \
+
+    -DITK_USE_SYSTEM_HDF5:BOOL=ON \
+
+    -DITK_USE_SYSTEM_JPEG:BOOL=ON \
+
+    -DITK_USE_SYSTEM_TIFF:BOOL=ON \
+
+    -DITK_USE_SYSTEM_PNG:BOOL=ON \
+
+    -DITK_USE_SYSTEM_EIGEN:BOOL=ON \
+
+    -DITK_USE_SYSTEM_ZLIB:BOOL=ON \
+
+    -DQNANHIBIT_VALUE:BOOL=0 \
+
+    -DQNANHIBIT_VALUE__TRYRUN_OUTPUT:STRING=0 \
+
+    -DVXL_HAS_SSE2_HARDWARE_SUPPORT:STRING=1 \
+
+    -DVCL_HAS_LFS:STRING=1 \
+
+    -DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
+
+    -DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
+
+    -D_libcxx_run_result:STRING=0 \
+
+    -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
+
+    -Dhave_sse2_extensions_var_EXITCODE:STRING=0 \
+
+    -Dhave_sse2_extensions_var_EXITCODE__TRYRUN_OUTPUT:STRING=0
+
 
 cmake --build build --parallel ${nproc}
+
 cmake --install build
+
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
-if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    cp $prefix/lib/libitkminc2-5.4.dll $prefix/bin
-    cp $prefix/lib/libitkminc2-5.4.dll.a $prefix/bin
+
+if [[ "${target}" == *-mingw* ]]; then
+
+    # Ensure Windows DLLs are in the right place
+
+    cp $prefix/lib/*.dll $prefix/bin/ || true
+
 fi
+
 """
 
 # These are the platforms we will build for by default, unless further
