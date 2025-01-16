@@ -379,7 +379,7 @@ augment_platform_block="""
                         Base.include_dependency(path)
                         gpu = "cuda"
                     else
-                        @debug "CUDA version \$(cuda_version) in \$(path) not supported with this version of Reactant (min: \$(min_cuda_version)"
+                        @debug "CUDA version \$(cuda_version) in \$(path) not supported with this version of Reactant (min: \$(min_cuda_version))"
                     end
                 end
             end
