@@ -18,7 +18,11 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd semigroups*
-./configure --build=${MACHTYPE} --host=${target} --with-gaproot=${prefix}/lib/gap
+./configure \
+    --build=${MACHTYPE} \
+    --host=${target} \
+    --with-gaproot=${prefix}/lib/gap \
+    --disable-hpcombi
 make -j${nproc}
 
 # copy the loadable module
