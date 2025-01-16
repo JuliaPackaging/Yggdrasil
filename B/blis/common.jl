@@ -32,21 +32,25 @@ function blis_script(;blis32::Bool=false)
 
     case ${target} in
 
-        *"x86_64"*"linux"*) 
+        *"x86_64"*"linux"*)
             export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
             ;;
-        *"x86_64"*"w64"*) 
+        *"aarch64"*"linux"*)
+            export BLI_CONFIG=arm64
+            export BLI_THREAD=openmp
+            ;;
+        *"arm"*"linux"*)
+            export BLI_CONFIG=arm32
+            export BLI_THREAD=none
+            ;;
+        *"x86_64"*"w64"*)
             # MinGW doesn't support savexmm instructions
             # Build only for AMD processors.
             export BLI_CONFIG=amd64
             export BLI_THREAD=openmp
             ;;
-        *"x86_64"*"apple"*) 
-            export BLI_CONFIG=x86_64
-            export BLI_THREAD=openmp
-            ;;
-        *"x86_64"*"freebsd"*) 
+        *"x86_64"*"apple"*)
             export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
             ;;
@@ -56,19 +60,15 @@ function blis_script(;blis32::Bool=false)
             export BLI_CONFIG=firestorm
             export BLI_THREAD=openmp
             ;;
-        *"aarch64"*"linux"*) 
-            export BLI_CONFIG=arm64
+        *"x86_64"*"freebsd"*)
+            export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
-            ;;
-        *"arm"*"linux"*) 
-            export BLI_CONFIG=arm32
-            export BLI_THREAD=none
             ;;
         *)
             # Default (Generic) configuration without optimized kernel.
             export BLI_CONFIG=generic
             export BLI_THREAD=none
-            ;; 
+            ;;
 
     esac
 
