@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "object_store_ffi"
-version = v"0.11.0"
+version = v"0.11.1"
 
 sources = [
     # https://github.com/RelationalAI/object_store_ffi/commit/5e48e67b09de61ed6214dec893026c492ffd30e6
