@@ -64,6 +64,10 @@ function blis_script(;blis32::Bool=false)
             export BLI_CONFIG=x86_64
             export BLI_THREAD=openmp
             ;;
+        *"aarch64"*"freebsd"*)
+            export BLI_CONFIG=arm64
+            export BLI_THREAD=openmp
+            ;;
         *)
             # Default (Generic) configuration without optimized kernel.
             export BLI_CONFIG=generic
@@ -153,7 +157,8 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("aarch64", "macos"),
-    Platform("x86_64", "freebsd")
+    Platform("x86_64", "freebsd"),
+    Platform("aarch64", "freebsd"),
 ]
 
 # Dependencies that must be installed before this package can be built
