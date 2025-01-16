@@ -9,16 +9,20 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-script = raw"""
-ITK_VERSION="5.3"  # Keep this as 5.3 for library names
-ITK_FULL_VERSION="5.3.0"
+sscript = raw"""
+# Keep these version variables for library names and paths
+ITK_VERSION="5.3"  # This matches the library names (e.g., libitkminc2-5.3.dll)
+ITK_FULL_VERSION="5.3.0"  # This matches the source version
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
 fi
 
+# Set specific C++ standard and flags
+export CXXFLAGS="-std=c++14 -DITK_LEGACY_REMOVE=OFF ${CXXFLAGS}"
 export LDFLAGS="-L${libdir}"
+
 cd $WORKSPACE/srcdir/ITK*
 mkdir build/
 cmake -B build -S . \
@@ -41,15 +45,18 @@ cmake -B build -S . \
     -DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
     -DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
     -D_libcxx_run_result:STRING=0 \
-    -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0
+    -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
+    -DCMAKE_CXX_STANDARD=14 \
+    -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+    -DITK_LEGACY_REMOVE=OFF
 
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
-    cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
+    cp $prefix/lib/libitkminc2-${ITK_VERSION}.dll $prefix/bin
+    cp $prefix/lib/libitkminc2-${ITK_VERSION}.dll.a $prefix/bin
 fi
 """
 # These are the platforms we will build for by default, unless further
