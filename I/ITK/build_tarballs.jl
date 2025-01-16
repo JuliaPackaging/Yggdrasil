@@ -4,23 +4,26 @@ name = "ITK"
 version = v"5.3.1"
 
 # Collection of sources required to complete build
-sources = [
+sources = [  
     GitSource("https://github.com/InsightSoftwareConsortium/ITK.git", "1fc47c7bec4ee133318c1892b7b745763a17d411")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Keep these version variables for library names and paths
-ITK_VERSION="5.3"  # This matches the library names (e.g., libitkminc2-5.3.dll)
-ITK_FULL_VERSION="5.3.0"  # This matches the source version
+ITK_VERSION="5.3"
+ITK_FULL_VERSION="5.3.0"
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
+    # Add Windows-specific flags
+    export CXXFLAGS="-std=c++14 -DITK_LEGACY_REMOVE=OFF -DVNL_DLL_DATA= -DITK_EXPORTS ${CXXFLAGS}"
+    export CFLAGS="${CFLAGS} -DVNL_DLL_DATA= -DITK_EXPORTS"
+else
+    export CXXFLAGS="-std=c++14 -DITK_LEGACY_REMOVE=OFF ${CXXFLAGS}"
 fi
 
-# Set specific C++ standard and flags
-export CXXFLAGS="-std=c++14 -DITK_LEGACY_REMOVE=OFF ${CXXFLAGS}"
 export LDFLAGS="-L${libdir}"
 
 cd $WORKSPACE/srcdir/ITK*
@@ -48,20 +51,27 @@ cmake -B build -S . \
     -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
     -DCMAKE_CXX_STANDARD=14 \
     -DCMAKE_CXX_STANDARD_REQUIRED=ON \
-    -DITK_LEGACY_REMOVE=OFF
+    -DITK_LEGACY_REMOVE=OFF \
+    -DITK_BUILD_TESTING=OFF \
+    -DBUILD_TESTING=OFF \
+    -DITK_USE_WIN32_LIBS=ON \
+    -DITK_SKIP_PATH_LENGTH_CHECKS=ON \
+    -DITK_SKIP_PATH_LENGTH_CHECKS=1
 
-cmake --build build --parallel ${nproc}
+cmake --build build --parallel ${nproc} -- -k
 cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    cp $prefix/lib/libitkminc2-${ITK_VERSION}.dll $prefix/bin
-    cp $prefix/lib/libitkminc2-${ITK_VERSION}.dll.a $prefix/bin
+    # Ensure all DLLs are in the correct location
+    mkdir -p ${prefix}/bin
+    cp $prefix/lib/*.dll ${prefix}/bin/ || true
+    cp $prefix/lib/libitkminc2-${ITK_VERSION}.dll $prefix/bin || true
+    cp $prefix/lib/libitkminc2-${ITK_VERSION}.dll.a $prefix/bin || true
 fi
 """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-
 platforms = supported_platforms()
 
 #sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
@@ -182,3 +192,67 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
