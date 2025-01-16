@@ -14,8 +14,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd mmtk-julia/
-make release 
-install  -Dvm 755 "mmtk/target/${rust_target}/release/libmmtk_julia.${dlext}" -t "${libdir}"
+make release
+
+# Install
+install -Dvm 755 "mmtk/target/${rust_target}/release/libmmtk_julia.${dlext}" -t "${libdir}"
+install -Dvm 644 "mmtk/api/mmtk.h" "${includedir}/mmtk.h"
+install -Dvm 644 "mmtk/api/mmtkMutator.h" "${includedir}/mmtkMutator.h"
 """
 
 # These are the platforms we will build for by default, unless further
@@ -28,6 +32,8 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libmmtk_julia", :libmmtk_julia)
+    FileProduct("include/mmtk.h", :mmtk_h)
+    FileProduct("include/mmtkMutator.h", :mmtkMutator_h)
 ]
 
 # Dependencies that must be installed before this package can be built
