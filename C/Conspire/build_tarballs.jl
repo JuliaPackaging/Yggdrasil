@@ -16,7 +16,7 @@ install -Dvm 755 "target/${rust_target}/release/"*conspire_wrapper.${dlext} "${l
 platforms = supported_platforms()
 filter!(p -> arch(p) != "riscv64", platforms)
 filter!(p -> libc(p) != "musl", platforms)
-filter!(p -> !(arch(p) == "aarch64" && libc(p) == "freebsd"), platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 products = [
     LibraryProduct("conspire_wrapper", :libconspire_wrapper)
