@@ -9,164 +9,91 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# Bash recipe for building across all platforms
 script = raw"""
-
 cd $WORKSPACE/srcdir/ITK*
 
-
 # Create patch for Windows posix_memalign implementation
-
 if [[ "${target}" == *-mingw* ]]; then
-
     cat << 'EOF' > posix_memalign.patch
-
 diff --git a/Modules/ThirdParty/GDCM/src/gdcm/Utilities/gdcmext/mec_mr3_io.c b/Modules/ThirdParty/GDCM/src/gdcm/Utilities/gdcmext/mec_mr3_io.c
-
 --- a/Modules/ThirdParty/GDCM/src/gdcm/Utilities/gdcmext/mec_mr3_io.c
-
 +++ b/Modules/ThirdParty/GDCM/src/gdcm/Utilities/gdcmext/mec_mr3_io.c
-
 @@ -1,6 +1,20 @@
-
  #include <stdlib.h>
-
  #include <string.h>
-
- 
-
-+#ifdef _WIN32
-
-+#include <malloc.h>
-
 +#include <errno.h>
-
+ 
++#ifdef _WIN32
++#include <malloc.h>
 +static int posix_memalign(void **memptr, size_t alignment, size_t size) {
-
 +    void *ptr;
-
 +    if (alignment < sizeof(void*))
-
 +        alignment = sizeof(void*);
-
 +    ptr = _aligned_malloc(size, alignment);
-
 +    if (!ptr)
-
 +        return ENOMEM;
-
 +    *memptr = ptr;
-
 +    return 0;
-
 +}
-
 +#endif
-
 EOF
-
-    
-
-    # Apply the patch
-
     patch -p1 < posix_memalign.patch
-
     
-
-    # Windows-specific flags
-
-    export CFLAGS="-D_POSIX_C_SOURCE -DLIBICONV_PLUG"
-
-    export CXXFLAGS="-D_POSIX_C_SOURCE -DLIBICONV_PLUG"
-
+    # Windows-specific settings
+    export CFLAGS="-D_POSIX_C_SOURCE -I${prefix}/include"
+    export CXXFLAGS="-D_POSIX_C_SOURCE -I${prefix}/include"
     export LDFLAGS="-L${libdir} -liconv"
-
+    
 elif [[ "${target}" == *-apple-* ]]; then
-
-    # macOS-specific flags
-
-    export LDFLAGS="-L${libdir} -liconv"
-
-    export CPPFLAGS="-I${prefix}/include"
-
+    # macOS-specific settings
     export CFLAGS="-I${prefix}/include"
-
     export CXXFLAGS="-I${prefix}/include"
-
+    export CPPFLAGS="-I${prefix}/include"
+    export LDFLAGS="-L${libdir} -liconv"
 else
-
     export LDFLAGS="-L${libdir}"
-
 fi
-
 
 mkdir build
-
 cmake -B build -S . \
-
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-
     -DCMAKE_BUILD_TYPE=Release \
-
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-
     -DBUILD_SHARED_LIBS:BOOL=ON \
-
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-
     -DITK_USE_SYSTEM_ICONV=ON \
-
     -DITK_USE_SYSTEM_EXPAT:BOOL=ON \
-
     -DITK_USE_SYSTEM_FFTW:BOOL=ON \
-
     -DITK_USE_SYSTEM_HDF5:BOOL=ON \
-
     -DITK_USE_SYSTEM_JPEG:BOOL=ON \
-
     -DITK_USE_SYSTEM_TIFF:BOOL=ON \
-
     -DITK_USE_SYSTEM_PNG:BOOL=ON \
-
     -DITK_USE_SYSTEM_EIGEN:BOOL=ON \
-
     -DITK_USE_SYSTEM_ZLIB:BOOL=ON \
-
     -DQNANHIBIT_VALUE:BOOL=0 \
-
     -DQNANHIBIT_VALUE__TRYRUN_OUTPUT:STRING=0 \
-
     -DVXL_HAS_SSE2_HARDWARE_SUPPORT:STRING=1 \
-
     -DVCL_HAS_LFS:STRING=1 \
-
     -DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
-
     -DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
-
     -D_libcxx_run_result:STRING=0 \
-
     -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
-
     -Dhave_sse2_extensions_var_EXITCODE:STRING=0 \
-
-    -Dhave_sse2_extensions_var_EXITCODE__TRYRUN_OUTPUT:STRING=0
-
+    -Dhave_sse2_extensions_var_EXITCODE__TRYRUN_OUTPUT:STRING=0 \
+    -DCMAKE_C_FLAGS="${CFLAGS}" \
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
+    -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
 
 cmake --build build --parallel ${nproc}
-
 cmake --install build
-
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
-
 if [[ "${target}" == *-mingw* ]]; then
-
-    # Ensure Windows DLLs are in the right place
-
+    # Copy all DLLs to bin directory
     cp $prefix/lib/*.dll $prefix/bin/ || true
-
 fi
-
 """
 
 # These are the platforms we will build for by default, unless further
@@ -291,3 +218,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
+
