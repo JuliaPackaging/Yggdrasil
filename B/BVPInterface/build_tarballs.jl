@@ -233,4 +233,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script,
-               platforms, products, dependencies; preferred_gcc_version=v"9.1.0")
+               platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9.1.0")
