@@ -2,15 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 name = "WrapIt"
-version = v"1.4.0"
+version = v"1.5.0"
 
 #Clang_jll version used for the build. Required clang libraries will be shipped with the package.
-clang_vers=v"16.0.6+3"
+clang_vers=v"13.0.1+3"
 clang_vers_maj=string(clang_vers.major)
+clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "5168a24862f6cc8a74cdd0c9427dee1baab4fa81")
+    GitSource("https://github.com/grasph/wrapit.git", "14eb9a69902c714fde9924804e756c24e097272d")
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
@@ -42,6 +43,7 @@ cmake -GNinja \
 -DCLANG_JLL=True \
 -DOPENSSL_USE_STATIC_LIBS=True \
 -DCLANG_RESOURCE_DIR="$clang_resource_dir" \
+-DOPENSSL_ROOT_DIR="$prefix" -DOPENSSL_CRYPTO_LIBRARY="$libdir/libcrypto.$dlext" \
 ../wrapit/
 cmake --build .
 cmake --install .
@@ -62,6 +64,9 @@ cd "$(readlink -f "$prefix")"
    llvmversiontag=`echo $clangversiontag | sed 's/^\./-/'` #.NNjl -> -NNjl
  fi
  clanglib=libclang.$dlext$clangversiontag
+ if  [ $clanglib=libclang.so.13jl ] && ! [ -f $libdir/libclang.so.13jl ] && [ -f $libdir/libclang.so.13 ]; then
+    clanglib=libclang.so.13
+ fi
  clangcpplib=libclang-cpp.$dlext$clangversiontag
  llvmlib=libLLVM$llvmversiontag.${dlext}
 
@@ -94,7 +99,11 @@ EOF
 # Add a link to the clang resource directory
 ln -sf artifacts/$clang_uuid ..
 mkdir -p lib/$clang_resource_dir
-cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw"""/include lib/"$clang_resource_dir"
+if [ -f ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw""" ]; then
+    cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw"""/include lib/"$clang_resource_dir"
+else
+    cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_patch * raw"""/include lib/"$clang_resource_dir"
+fi
 
 # Add libraries used by wrapit. Make copy as we haven't found how
 # To get symlinks to regular files included in the genrated tarball.
