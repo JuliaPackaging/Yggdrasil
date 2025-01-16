@@ -9,7 +9,7 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-sscript = raw"""
+script = raw"""
 # Keep these version variables for library names and paths
 ITK_VERSION="5.3"  # This matches the library names (e.g., libitkminc2-5.3.dll)
 ITK_FULL_VERSION="5.3.0"  # This matches the source version
