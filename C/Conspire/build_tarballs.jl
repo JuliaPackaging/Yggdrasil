@@ -13,12 +13,12 @@ cd $WORKSPACE/srcdir/Conspire.jl/deps/conspire_wrapper/
 cargo build --release
 install -Dvm 755 "target/${rust_target}/release/"*conspire_wrapper.${dlext} "${libdir}/conspire_wrapper.${dlext}"
 """
-
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 filter!(p -> libc(p) != "musl", platforms)
-
-products = [LibraryProduct("libconspire_wrapper", :libconspire_wrapper)]
+products = [
+    LibraryProduct("libconspire_wrapper", :libconspire_wrapper)
+]
 dependencies = Dependency[]
 build_tarballs(
     ARGS,
@@ -29,8 +29,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    compilers = [:c, :rust],
-    preferred_gcc_version = v"7",
-    lock_microarchitecture = false,
-    julia_compat = "1.11",
+    julia_compat="1.6",
+    compilers = [:rust, :c]
 )
