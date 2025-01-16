@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-version = v"1.0.0"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flame/blis.git", "6d0ab74f6975fdf4d19cee06d946b09b6ca89656"),
+    GitSource("https://github.com/flame/blis.git", "464180ff28e6a3f74f7c754ec01ed8a6a2f978df"),
     DirectorySource("../bundled")
 ]
 
