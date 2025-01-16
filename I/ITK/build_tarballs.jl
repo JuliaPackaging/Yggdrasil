@@ -1,13 +1,10 @@
 using BinaryBuilder, Pkg
-
 name = "ITK"
 version = v"5.3.1"
-
 # Collection of sources required to complete build
-sources = [  
+sources = [
     GitSource("https://github.com/InsightSoftwareConsortium/ITK.git", "1fc47c7bec4ee133318c1892b7b745763a17d411")
 ]
-
 # Bash recipe for building across all platforms
 script = raw"""
 # Keep these version variables for library names and paths
@@ -18,10 +15,10 @@ if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
     # Add Windows-specific flags
-    export CXXFLAGS="-std=c++14 -DITK_LEGACY_REMOVE=OFF -DVNL_DLL_DATA= -DITK_EXPORTS ${CXXFLAGS}"
+    export CXXFLAGS="-DITK_LEGACY_REMOVE=OFF -DVNL_DLL_DATA= -DITK_EXPORTS ${CXXFLAGS}"
     export CFLAGS="${CFLAGS} -DVNL_DLL_DATA= -DITK_EXPORTS"
 else
-    export CXXFLAGS="-std=c++14 -DITK_LEGACY_REMOVE=OFF ${CXXFLAGS}"
+    export CXXFLAGS="-DITK_LEGACY_REMOVE=OFF ${CXXFLAGS}"
 fi
 
 export LDFLAGS="-L${libdir}"
@@ -49,35 +46,37 @@ cmake -B build -S . \
     -DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
     -D_libcxx_run_result:STRING=0 \
     -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
-    -DCMAKE_CXX_STANDARD=14 \
-    -DCMAKE_CXX_STANDARD_REQUIRED=ON \
     -DITK_LEGACY_REMOVE=OFF \
     -DITK_BUILD_TESTING=OFF \
     -DBUILD_TESTING=OFF \
     -DITK_USE_WIN32_LIBS=ON \
-    -DITK_SKIP_PATH_LENGTH_CHECKS=ON \
-    -DITK_SKIP_PATH_LENGTH_CHECKS=1
+    -DITK_SKIP_PATH_LENGTH_CHECKS=ON
 
-cmake --build build --parallel ${nproc} -- -k
+cmake --build build --parallel ${nproc}
 cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    # Ensure all DLLs are in the correct location
-    mkdir -p ${prefix}/bin
-    cp $prefix/lib/*.dll ${prefix}/bin/ || true
-    cp $prefix/lib/libitkminc2-${ITK_VERSION}.dll $prefix/bin || true
-    cp $prefix/lib/libitkminc2-${ITK_VERSION}.dll.a $prefix/bin || true
+    echo "Creating bin directory..."
+    mkdir -pv ${prefix}/bin
+    
+    echo "Moving DLLs to bin directory..."
+    if [ -d "$prefix/lib" ]; then
+        # List and move only DLL files
+        find $prefix/lib -name "*.dll" -exec echo "Found DLL: {}" \;
+        find $prefix/lib -name "*.dll" -exec mv -v {} ${prefix}/bin/ \;
+    else
+        echo "Error: Library directory $prefix/lib does not exist"
+        exit 1
+    fi
 fi
 """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
-#sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
+# #sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
 filter!(p -> !(arch(p) == "i686"), platforms)
-
-#CMAKE errors for _libcxx_run_result in cross compilation for freebsd and x86_64 linux musl
+# #CMAKE errors for _libcxx_run_result in cross compilation for freebsd and x86_64 linux musl
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
@@ -189,70 +188,5 @@ dependencies = [
     Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
-
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
