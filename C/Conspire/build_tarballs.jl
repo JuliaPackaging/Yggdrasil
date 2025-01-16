@@ -17,7 +17,7 @@ platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 filter!(p -> libc(p) != "musl", platforms)
 products = [
-    LibraryProduct("libconspire_wrapper", :libconspire_wrapper)
+    LibraryProduct("conspire_wrapper", :libconspire_wrapper)
 ]
 dependencies = Dependency[]
 build_tarballs(
