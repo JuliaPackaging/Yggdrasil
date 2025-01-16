@@ -373,12 +373,13 @@ augment_platform_block="""
                 Libdl.dlclose(handle)
 
                 if cuda_version isa VersionNumber
-                    if cuda_version >= v"12.6"
+                    min_cuda_version = v"12.3"
+                    if cuda_version >= min_cuda_version
                         @debug "Adding include dependency on \$path"
                         Base.include_dependency(path)
                         gpu = "cuda"
                     else
-                        @debug "CUDA version \$(cuda_version) in \$(path) not supported with this version of Reactant"
+                        @debug "CUDA version \$(cuda_version) in \$(path) not supported with this version of Reactant (min: \$(min_cuda_version)"
                     end
                 end
             end
