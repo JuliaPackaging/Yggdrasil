@@ -7,6 +7,10 @@ sources = [
 ]
 # Bash recipe for building across all platforms
 script = raw"""
+# Keep these version variables for library names and paths
+ITK_VERSION="5.3"
+ITK_FULL_VERSION="5.3.0"
+
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
