@@ -160,6 +160,7 @@ fi
 
 if [[ "${bb_full_target}" == *cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
+    BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="12.6.2")
 fi
 
 if [[ "${bb_full_target}" == *rocm* ]]; then
