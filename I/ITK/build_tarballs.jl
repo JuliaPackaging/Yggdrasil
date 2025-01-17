@@ -7,10 +7,6 @@ sources = [
 ]
 # Bash recipe for building across all platforms
 script = raw"""
-# Keep these version variables for library names and paths
-ITK_VERSION="5.3"
-ITK_FULL_VERSION="5.3.0"
-
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
@@ -57,31 +53,21 @@ cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    echo "Creating bin directory..."
-    mkdir -pv ${prefix}/bin
-    
-    echo "Moving DLLs to bin directory..."
-    if [ -d "$prefix/lib" ]; then
-        # List and move only DLL files
-        find $prefix/lib -name "*.dll" -exec echo "Found DLL: {}" \;
-        find $prefix/lib -name "*.dll" -exec mv -v {} ${prefix}/bin/ \;
-    else
-        echo "Error: Library directory $prefix/lib does not exist"
-        exit 1
-    fi
+    mkdir -pv "${libdir}"
+    find "{$prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
 fi
 """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# #sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
+#sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
 filter!(p -> !(arch(p) == "i686"), platforms)
-# #CMAKE errors for _libcxx_run_result in cross compilation for freebsd and x86_64 linux musl
+#CMAKE errors for _libcxx_run_result in cross compilation for freebsd and x86_64 linux musl
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
-platforms = expand_cxxstring_abis(platforms)
-## The products that we will ensure are always built
+#platforms = expand_cxxstring_abis(platforms)
+# The products that we will ensure are always built
 products = [
     LibraryProduct(["libITKRegistrationMethodsv4", "libITKRegistrationMethodsv4-5.3", "libITKRegistrationMethodsv4-5"], :libITKRegistrationMethodsv4),
     LibraryProduct(["libITKIOCSV", "libITKIOCSV-5.3", "libITKIOCSV-5"], :libITKIOCSV),
@@ -190,3 +176,4 @@ dependencies = [
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
+
