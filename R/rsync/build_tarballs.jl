@@ -4,20 +4,20 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 
 name = "rsync"
-version = v"3.4.0"
+version = v"3.4.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.samba.org/pub/rsync/src/rsync-$(version).tar.gz",
-                  "8e942f95a44226a012fe822faffa6c7fc38c34047add3a0c941e9bc8b8b93aa4")
+                  "2924bcb3a1ed8b551fc101f740b9f0fe0a202b115027647cf69850d65fd88c52"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/rsync-*
 
-cd rsync-*
-install_license COPYING
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strlcpy.patch
 
 CONFIGURE_FLAGS=(--prefix=${prefix} --build=${MACHTYPE} --host=${target})
 # prefer to use JLLs instead of included deps
