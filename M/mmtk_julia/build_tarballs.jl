@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd mmtk-julia/
+cd $WORKSPACE/srcdir/mmtk-julia/
 make release
 
 # Install
@@ -31,7 +30,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libmmtk_julia", :libmmtk_julia)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia; dont_dlopen=true)
     FileProduct("include/mmtk.h", :mmtk_h)
     FileProduct("include/mmtkMutator.h", :mmtkMutator_h)
 ]
