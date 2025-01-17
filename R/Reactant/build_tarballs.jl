@@ -293,7 +293,9 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
 # platforms = filter(p -> arch(p) == "x86_64", platforms)
-# platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
+
+# Julia builds with libstdc++ C++03 string ABI are somewhat niche, ignore them
+platforms = filter(p -> cxxstring_abi(p) != "cxx03", platforms)
 
 augment_platform_block="""
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
