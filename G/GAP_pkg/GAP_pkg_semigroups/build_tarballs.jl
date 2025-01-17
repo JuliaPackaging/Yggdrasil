@@ -18,11 +18,24 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd semigroups*
+
+EXTRA_FLAGS=()
+if [[ "${target}" == *apple-darwin* ]]; then
+    # lld does support the single_module flag
+    # but the detection is broken due to a warning
+    # see https://savannah.gnu.org/support/?110937
+    EXTRA_FLAGS+=(lt_cv_apple_cc_single_mod=yes)
+elif [[ "${target}" == *-freebsd* ]]; then
+    # backward-cpp doesn't support freebsd
+    EXTRA_FLAGS+=(--disable-backward)
+fi
+
 ./configure \
     --build=${MACHTYPE} \
     --host=${target} \
     --with-gaproot=${prefix}/lib/gap \
-    --disable-hpcombi
+    --disable-hpcombi \
+    "${EXTRA_FLAGS[@]}"
 make -j${nproc}
 
 # copy the loadable module
@@ -44,6 +57,6 @@ products = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7", clang_use_lld=false)
+               julia_compat="1.6", preferred_gcc_version=v"7")
 
 # rebuild trigger: 1
