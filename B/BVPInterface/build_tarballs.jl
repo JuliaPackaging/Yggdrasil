@@ -104,6 +104,10 @@ products = [
   LibraryProduct("colmod_i32",   :libcolmod_i32),
   LibraryProduct("twpbvp",       :libtwpbvp),
   LibraryProduct("twpbvp_i32",   :libtwpbvp_i32),
+  LibraryProduct("musl",         :libmusl),
+  LibraryProduct("musl_i32",     :libmusl_i32),
+  LibraryProduct("musn",         :libmusn),
+  LibraryProduct("musn_i32",     :libmusn_i32),
   LibraryProduct("bvp_m_proxy",  :libbvp_m_proxy),
 ]
 
