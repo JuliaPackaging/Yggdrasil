@@ -8,9 +8,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # Keep these version variables for library names and paths
-ITK_VERSION="5.3"
-ITK_FULL_VERSION="5.3.0"
-
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
@@ -61,15 +58,16 @@ mkdir -pv ${prefix}/bin
 find $prefix/lib -name "*.dll" -exec mv -v {} ${prefix}/bin/ \;
 fi
 """
+platforms = [Platform("x86_64","Windows")]
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+#platforms = supported_platforms()
 #sse2 disabled errors in ITK with open issues on github for i686 platforms [https://github.com/InsightSoftwareConsortium/ITK/issues/2529] [https://github.com/microsoft/vcpkg/issues/37574]
-filter!(p -> !(arch(p) == "i686"), platforms)
+#filter!(p -> !(arch(p) == "i686"), platforms)
 #CMAKE errors for _libcxx_run_result in cross compilation for freebsd and x86_64 linux musl
-filter!(!Sys.isfreebsd, platforms)
-filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
-filter!(p -> !(arch(p) == "riscv64"), platforms)
+#filter!(!Sys.isfreebsd, platforms)
+#filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
+#filter!(p -> !(arch(p) == "riscv64"), platforms)
 #platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
