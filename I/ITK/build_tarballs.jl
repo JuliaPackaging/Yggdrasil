@@ -57,8 +57,8 @@ cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    mkdir -pv "${libdir}"
-    find "{$prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
+mkdir -pv ${prefix}/bin
+find $prefix/lib -name "*.dll" -exec mv -v {} ${prefix}/bin/ \;
 fi
 """
 # These are the platforms we will build for by default, unless further
