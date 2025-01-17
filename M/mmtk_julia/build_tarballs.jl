@@ -13,7 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mmtk-julia/
-make release
+# do a non-moving build until we support moving Immix
+MMTK_MOVING=0 make release 
 
 # Install
 install -Dvm 755 "mmtk/target/${rust_target}/release/libmmtk_julia.${dlext}" -t "${libdir}"
