@@ -13,7 +13,7 @@ pypowsybl_version = "1.9.0"
 
 sources = [
     GitSource("https://github.com/powsybl/powsybl.jl.git", "0a9e3110c366808e7ac23cfd9e19f51793807392"),
-    GitSource("https://github.com/powsybl/pypowsybl.git", "2bd6ed8f64b335a52483237e99b75a98d04e7cc4"),
+    GitSource("https://github.com/powsybl/pypowsybl.git", "81d7e40a32d056a9945293238ce09cf207fc47fc"),
     ArchiveSource("https://github.com/powsybl/pypowsybl/releases/download/v$(pypowsybl_version)/binaries-v$(pypowsybl_version)-windows.zip",
                   "a3d1912e9ed213a4ca157ffa8470e4c38cbce84fa1529c646cb32ec4562f8c13",
                   "powsybl-java-x86_64-w64-mingw32"),
