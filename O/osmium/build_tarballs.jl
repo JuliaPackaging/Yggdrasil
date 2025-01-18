@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "osmium"
-version = v"1.16.0"
+version = v"1.17.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/osmcode/osmium-tool.git", "583db02ac9193dfb5217f93c823a4975405338ac"),
+    GitSource("https://github.com/osmcode/osmium-tool.git", "02b70f2c0df142f09ca24ffa633b6d3d1ec1e3eb"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -45,6 +45,9 @@ install_license ../LICENSE.txt
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+
+# Disable riscv for now
+platforms = filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
