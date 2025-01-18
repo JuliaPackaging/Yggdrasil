@@ -37,7 +37,6 @@ platforms = vcat(libjulia_platforms.(julia_versions)...)
 
 #Filtering all the platforms, that ITK filters https://github.com/JuliaPackaging/Yggdrasil/blob/master/I/ITK/build_tarballs.jl#L42-L53
 filter!(p -> !(arch(p) == "i686"), platforms)
-filter!(!Sys.isapple, platforms)
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
@@ -50,7 +49,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("ITK_jll"; compat="5.3.0"),
+    Dependency("ITK_jll"; compat="5.3.1"),
     Dependency("libcxxwrap_julia_jll"; compat = "0.13.2"),
     BuildDependency("libjulia_jll")
 ]
