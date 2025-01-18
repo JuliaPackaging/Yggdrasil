@@ -160,7 +160,7 @@ fi
 
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
-    BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${CUDA_VERSION}")
+    BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
@@ -302,7 +302,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "11.8", "12.1.1", "12.6"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "11.8", "12.1", "12.6"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -328,9 +328,18 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
+    hermetic_cuda_version_map = Dict(
+        # Our platform tags use X.Y version scheme, but for some CUDA versions
+        # we need to pass Bazel a full version number X.Y.Z.
+        "none" => "none",
+        "11.8" => "11.8",
+        "12.1" => "12.1.1",
+        "12.6" => "12.6.2",
+    )
+
     prefix="""
     MODE=$(mode)
-    CUDA_VERSION=$(cuda_version)
+    HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
