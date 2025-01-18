@@ -49,6 +49,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     Dependency("ITK_jll"; compat="5.3.1"),
     Dependency("libcxxwrap_julia_jll"; compat = "0.13.2"),
     BuildDependency("libjulia_jll")
