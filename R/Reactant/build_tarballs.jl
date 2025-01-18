@@ -314,7 +314,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
-    if gpu != "cuda" && cuda_version != "none"
+    if !((gpu == "cuda") ⊻ (cuda_version == "none"))
         continue
     end
 
