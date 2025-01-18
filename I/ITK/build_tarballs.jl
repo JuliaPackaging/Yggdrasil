@@ -7,7 +7,6 @@ sources = [
 ]
 # Bash recipe for building across all platforms
 script = raw"""
-# Keep these version variables for library names and paths
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
@@ -172,7 +171,7 @@ dependencies = [
     Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8")),
     Dependency(PackageSpec(name="Libtiff_jll", uuid="89763e89-9b03-5906-acba-b20f662cd828")),
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
-    Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
+    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
 ]
 # Build the tarballs, and possibly a `build.jl` as well.
