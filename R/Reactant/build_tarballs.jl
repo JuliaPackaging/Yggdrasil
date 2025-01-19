@@ -355,6 +355,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
       push!(cuda_deps, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     end
 
+    preferred_gcc_version = v"13"
+
     should_build_platform(triplet(augmented_platform)) || continue
     products2 = copy(products)
     if gpu == "cuda"
@@ -386,11 +388,17 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+
+        if VersionNumber(cuda_version) < v"12.6"
+            # For older versions of CUDA we need to use GCC 12:
+            # <https://forums.developer.nvidia.com/t/strange-errors-after-system-gcc-upgraded-to-13-1-1/252441>.
+            preferred_gcc_version = v"12"
+        end
     end
 
     push!(builds, (;
                    dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
-        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version=v"13"
+        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version
     ))
 end
 
