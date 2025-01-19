@@ -167,6 +167,10 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 12.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
     fi
+    if [[ "${GCC_VERSION}" -le 11 ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 11.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
+    fi
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
