@@ -55,6 +55,8 @@ install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
 mkdir -pv ${libdir}
 find "${prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
+cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
+cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
 fi
 """
 # These are the platforms we will build for by default, unless further
