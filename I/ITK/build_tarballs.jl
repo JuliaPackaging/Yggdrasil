@@ -5,7 +5,7 @@ version = v"5.3.1"
 sources = [
     GitSource("https://github.com/InsightSoftwareConsortium/ITK.git", "1fc47c7bec4ee133318c1892b7b745763a17d411")
 ]
-# Bash recipe for building across all platforms
+# Bash recipe for building across all Platforms
 script = raw"""
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
