@@ -400,6 +400,11 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
             # <https://forums.developer.nvidia.com/t/strange-errors-after-system-gcc-upgraded-to-13-1-1/252441>.
             preferred_gcc_version = v"12"
         end
+        if VersionNumber(cuda_version) < v"12"
+            # For older versions of CUDA we need to use GCC 11:
+            # <https://stackoverflow.com/questions/72348456/error-when-compiling-a-cuda-program-invalid-type-argument-of-unary-have-i>.
+            preferred_gcc_version = v"11"
+        end
     end
 
     push!(builds, (;
