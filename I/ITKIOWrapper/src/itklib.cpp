@@ -4,7 +4,7 @@
 // Check if std::make_unique_for_overwrite is available
 #if !__cpp_lib_make_unique_for_overwrite
 
-// Custom implementation of make_unique_for_overwrite
+// Define the custom implementation in the global namespace
 template<typename T>
 typename std::enable_if<std::is_array<T>::value, std::unique_ptr<T>>::type
 make_unique_for_overwrite(std::size_t size) {
@@ -17,7 +17,13 @@ make_unique_for_overwrite(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
+// Inject the custom implementation into the std namespace
+namespace std {
+    using ::make_unique_for_overwrite;
+}
+
 #endif // !__cpp_lib_make_unique_for_overwrite
+
 
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/array.hpp"
