@@ -53,7 +53,6 @@ cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-mkdir -p ${prefix}/bin
 cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
 cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
 mkdir -pv ${libdir}
