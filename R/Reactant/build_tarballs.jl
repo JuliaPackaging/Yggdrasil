@@ -161,6 +161,12 @@ fi
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
+
+    GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
+    if [[ "${GCC_VERSION}" -le 12 ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 12.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
+    fi
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
