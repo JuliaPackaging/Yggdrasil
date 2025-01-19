@@ -10,7 +10,7 @@ const mode_preference = if haskey(preferences, "mode")
     if isa(preferences["mode"], String) && preferences["mode"] in expected
         preferences["mode"]
     else
-        @error "Mode preference is not valid; expected $(join(expected, ", ", ", or ")), but got '$(preferences[\"debug\"])'"
+        @error "Mode preference is not valid; expected $(join(expected, ", ", ", or ")), but got '$(preferences["debug"])'"
         nothing
     end
 else
@@ -22,7 +22,7 @@ const gpu_preference = if haskey(preferences, "gpu")
     if isa(preferences["gpu"], String) && preferences["gpu"] in expected
         preferences["gpu"]
     else
-        @error "GPU preference is not valid; expected $(join(expected, ", ", ", or ")), but got '$(preferences[\"gpu\"])'"
+        @error "GPU preference is not valid; expected $(join(expected, ", ", ", or ")), but got '$(preferences["gpu"])'"
         nothing
     end
 else
@@ -34,7 +34,7 @@ const cuda_version_preference = if haskey(preferences, "cuda_version")
     if isa(preferences["cuda_version"], String) && preferences["cuda_version"] in expected
         preferences["cuda_version"]
     else
-        @error "CUDA version preference is not valid; expected $(join(expected, ", ", ", or ")), but got '$(preferences[\"cuda_version\"])'"
+        @error "CUDA version preference is not valid; expected $(join(expected, ", ", ", or ")), but got '$(preferences["cuda_version"])'"
         nothing
     end
 else
