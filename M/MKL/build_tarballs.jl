@@ -20,7 +20,7 @@ if [[ ${target} == *x86_64-w64-mingw* ]]; then
     install -Dvm 755 mkl-${target}/mkl-*.data/data/Library/bin/* -t "${libdir}"
 fi
 if [[ ${target} == *x86_64-linux-gnu* ]]; then
-    install -Dvm 755 mkl-${target}/mkl-*.data/data/lib/*.${dlext} -t "${libdir}"
+    install -Dvm 755 mkl-${target}/mkl-*.data/data/lib/* -t "${libdir}"
 fi
 install_license mkl-${target}/mkl-*.dist-info/LICENSE.txt
 """
