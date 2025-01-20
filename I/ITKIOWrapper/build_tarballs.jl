@@ -16,7 +16,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 #needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
 
-# Bash recipe for building across all platforms
+# Bash recipe for building across all Platforms
 script = raw"""
 export CXXFLAGS="-I${includedir}/julia $CXXFLAGS"
 export CFLAGS="-I${includedir}/julia $CFLAGS"
