@@ -59,7 +59,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="libosmium_jll", uuid="7f0a2ee1-9b43-5740-ae82-b54233cf7071"))
     BuildDependency(PackageSpec(name="protozero_jll", uuid="e2028600-4f28-5e5c-ab86-957950af6e0a"))
-    BuildDependency("nlohmann_json_jll"),
+    BuildDependency("nlohmann_json_jll")
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.76.0")
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8")
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
