@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.73.10"
+version = v"0.73.11"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "9e61244b6ee7f64ea724de0b7d10685feecf5109"),
+    GitSource("https://github.com/sciapp/gr.git", "d78011216825093afc9c12f532632535857eb40b"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "41ee77c5872b5273487b02a1ec2d2012a48808ff1f5b9ddcf4aa5958660fb257", "gr.js"),
+               "4d9777dd19c602848870259296a5fa929a11a92adead23940f33f02f39825dce", "gr.js"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
