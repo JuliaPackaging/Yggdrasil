@@ -14,7 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libharu
 mkdir build
-cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-std=c99"
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_STANDARD="c99"
 cmake --build build --parallel ${nproc}
 cmake --build build --target install
 """
