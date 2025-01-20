@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.44"
+version = v"0.0.45"
 
 sources = [
-  GitSource(repo, "ce038f847afec02dc3e0d62919179ced25d4745a"),
+  GitSource(repo, "8ddb738b9e41725ac9201cca78d3ee1864e6d326"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -158,11 +158,22 @@ if [[ "${bb_full_target}" == *aarch64* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=@xla//build_with_mkl_aarch64=true)
 fi
 
-if [[ "${bb_full_target}" == *cuda* ]]; then
+if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
+    BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
+
+    GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
+    if [[ "${GCC_VERSION}" -le 12 ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 12.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
+    fi
+    if [[ "${GCC_VERSION}" -le 11 ]]; then
+        # Someone wants to compile some code which requires flags not understood by GCC 11.
+        BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
+    fi
 fi
 
-if [[ "${bb_full_target}" == *rocm* ]]; then
+if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=rocm)
 fi
 
@@ -219,7 +230,7 @@ rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
 
-if [[ "${bb_full_target}" == *cuda* ]]; then
+if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
     mkdir -p ${libdir}/cuda/nvvm/libdevice
@@ -292,137 +303,28 @@ platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
 # platforms = filter(p -> !(Sys.isapple(p)), platforms)
 # platforms = filter(p -> arch(p) == "x86_64", platforms)
-# platforms = filter(p -> cxxstring_abi(p) == "cxx11", platforms)
+
+# Julia builds with libstdc++ C++03 string ABI are somewhat niche, ignore them
+platforms = filter(p -> cxxstring_abi(p) != "cxx03", platforms)
 
 augment_platform_block="""
-    using Base.BinaryPlatforms
-    using Libdl
-    const Reactant_UUID = Base.UUID("0192cb87-2b54-54ad-80e0-3be72ad8a3c0")
-    const preferences = Base.get_preferences(Reactant_UUID)
-    Base.record_compiletime_preference(Reactant_UUID, "mode")
-    Base.record_compiletime_preference(Reactant_UUID, "gpu")
-
-    const mode_preference = if haskey(preferences, "mode")
-        if isa(preferences["mode"], String) && preferences["mode"] in ["opt", "dbg"]
-            preferences["mode"]
-        else
-            @error "Mode preference is not valid; expected 'opt' or 'dbg', but got '\$(preferences[\"debug\"])'"
-            nothing
-        end
-    else
-        nothing
-    end
-
-    const gpu_preference = if haskey(preferences, "gpu")
-    if isa(preferences["gpu"], String) && preferences["gpu"] in ["none", "cuda", "rocm"]
-            preferences["gpu"]
-        else
-            @error "GPU preference is not valid; expected 'none', 'cuda' or 'rocm', but got '\$(preferences[\"debug\"])'"
-            nothing
-        end
-    else
-        nothing
-    end
-
-    # adapted from `cudaRuntimeGetVersion` in CUDA_Runtime_jll
-    function cuDriverGetVersion(library_handle)
-        function_handle = Libdl.dlsym(library_handle, "cuDriverGetVersion"; throw_error=false)
-        if function_handle === nothing
-            @debug "CUDA Driver library seems invalid (does not contain 'cuDriverGetVersion')"
-            return nothing
-        end
-        version_ref = Ref{Cint}()
-        status = ccall(function_handle, Cint, (Ptr{Cint},), version_ref)
-        if status != 0
-            @debug "Call to 'cuDriverGetVersion' failed with status \$(status)"
-            return nothing
-        end
-        major, ver = divrem(version_ref[], 1000)
-        minor, patch = divrem(ver, 10)
-        version = VersionNumber(major, minor, patch)
-        @debug "Detected CUDA Driver version \$(version)"
-        return version
-    end
-
-    function augment_platform!(platform::Platform)
-
-        mode = get(ENV, "REACTANT_MODE", something(mode_preference, "opt"))
-        if !haskey(platform, "mode")
-            platform["mode"] = mode
-        end
-
-        # "none" is for no gpu, but use "nothing" here to distinguish the case where the
-        # user explicitly asked for no GPU in the preferences.
-        gpu = something(gpu_preference, "undecided")
-
-        # Don't do GPU discovery on platforms for which we don't have GPU builds.
-        # Keep this in sync with list of platforms for which we actually build with GPU support.
-        if !(Sys.isapple(platform) || (Sys.islinux(platform) && arch(platform) == "aarch64"))
-
-            cuname = if Sys.iswindows()
-                Libdl.find_library("nvcuda")
-            else
-                Libdl.find_library(["libcuda.so.1", "libcuda.so"])
-            end
-
-            # if we've found a system driver, put a dependency on it,
-            # so that we get recompiled if the driver changes.
-            if cuname != "" && gpu == "undecided"
-                handle = Libdl.dlopen(cuname)
-                cuda_version = cuDriverGetVersion(handle)
-                path = Libdl.dlpath(handle)
-                Libdl.dlclose(handle)
-
-                if cuda_version isa VersionNumber
-                    min_cuda_version = v"12.3"
-                    if cuda_version >= min_cuda_version
-                        @debug "Adding include dependency on \$path"
-                        Base.include_dependency(path)
-                        gpu = "cuda"
-                    else
-                        @debug "CUDA version \$(cuda_version) in \$(path) not supported with this version of Reactant (min: \$(min_cuda_version))"
-                    end
-                end
-            end
-
-            roname = ""
-            # if we've found a system driver, put a dependency on it,
-            # so that we get recompiled if the driver changes.
-            if roname != "" && gpu == "undecided"
-                handle = Libdl.dlopen(roname)
-                path = Libdl.dlpath(handle)
-                Libdl.dlclose(handle)
-
-                @debug "Adding include dependency on \$path"
-                Base.include_dependency(path)
-                gpu = "rocm"
-            end
-
-        end
-
-        # If gpu option is still "undecided" (no preference expressed) at this point, then
-        # make it "none" (no GPU support).
-        if gpu == "undecided"
-            gpu = "none"
-        end
-
-        gpu = get(ENV, "REACTANT_GPU", gpu)
-        if !haskey(platform, "gpu")
-            platform["gpu"] = gpu
-        end
-
-        return platform
-    end
+    $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.6"), platform in platforms
+
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
+    augmented_platform["cuda_version"] = cuda_version
     cuda_deps = []
 
     if mode == "dbg" && !Sys.isapple(platform)
+        continue
+    end
+
+    if !((gpu == "cuda") ⊻ (cuda_version == "none"))
         continue
     end
 
@@ -436,7 +338,19 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
         continue
     end
 
-    prefix="export MODE="*mode*"\n\n"
+    hermetic_cuda_version_map = Dict(
+        # Our platform tags use X.Y version scheme, but for some CUDA versions
+        # we need to pass Bazel a full version number X.Y.Z.
+        "none" => "none",
+        "11.8" => "11.8",
+        "12.1" => "12.1.1",
+        "12.6" => "12.6.2",
+    )
+
+    prefix="""
+    MODE=$(mode)
+    HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
+    """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
         push!(platform_sources,
@@ -450,6 +364,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
     if !Sys.isapple(platform)
       push!(cuda_deps, Dependency(PackageSpec(name="CUDA_Driver_jll")))
     end
+
+    preferred_gcc_version = v"13"
 
     should_build_platform(triplet(augmented_platform)) || continue
     products2 = copy(products)
@@ -482,11 +398,22 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), platform in platforms
 	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
 	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+
+        if VersionNumber(cuda_version) < v"12.6"
+            # For older versions of CUDA we need to use GCC 12:
+            # <https://forums.developer.nvidia.com/t/strange-errors-after-system-gcc-upgraded-to-13-1-1/252441>.
+            preferred_gcc_version = v"12"
+        end
+        if VersionNumber(cuda_version) < v"12"
+            # For older versions of CUDA we need to use GCC 11:
+            # <https://stackoverflow.com/questions/72348456/error-when-compiling-a-cuda-program-invalid-type-argument-of-unary-have-i>.
+            preferred_gcc_version = v"11"
+        end
     end
 
     push!(builds, (;
                    dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
-        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version=v"13"
+        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version
     ))
 end
 
