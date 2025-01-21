@@ -1,0 +1,373 @@
+From d2dab76e883fd44c7165c6faa6fe7e633ee246ed Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lars=20G=C3=B6ttgens?= <lars.goettgens@rwth-aachen.de>
+Date: Mon, 6 Jan 2025 15:13:18 +0100
+Subject: [PATCH] Add --packagedirs and ExtendPackageDirectories() (#5873)
+
+... to make it easier to use custom packages
+---
+ dev/ci.sh                   |  4 +-
+ doc/ref/files.xml           | 31 ++++++++++++++--
+ doc/ref/gappkg.xml          |  1 +
+ doc/ref/run.xml             | 21 +++++++++++
+ lib/package.gd              | 26 ++++++++++++-
+ lib/package.gi              | 73 ++++++++++++++++++++++++++++++++-----
+ lib/system.g                |  4 ++
+ tst/testinstall/package.tst | 27 ++++----------
+ 8 files changed, 151 insertions(+), 36 deletions(-)
+
+diff --git a/dev/ci.sh b/dev/ci.sh
+index f61e93b34..a39c816d2 100755
+--- a/dev/ci.sh
++++ b/dev/ci.sh
+@@ -99,11 +99,9 @@ testmockpkg () {
+     cd "$mockpkg_dir"
+     echo_and_run ./configure "$gaproot"
+     echo_and_run $MAKE V=1
+-    # trick to make it easy to load the package in GAP
+-    rm -f pkg && ln -sf . pkg
+     # try to load the kernel extension
+     cd "$gaproot"
+-    echo_and_run $gap -A -l "$mockpkg_dir;" "$mockpkg_dir/tst/testall.g"
++    echo_and_run $gap -A --packagedirs "$mockpkg_dir" "$mockpkg_dir/tst/testall.g"
+ }
+ 
+ 
+diff --git a/doc/ref/files.xml b/doc/ref/files.xml
+index 4da8aca5a..75cb5f68b 100644
+--- a/doc/ref/files.xml
++++ b/doc/ref/files.xml
+@@ -81,9 +81,9 @@ directories. For example when &GAP; wants to read its library file
+ <C>GAPInfo.RootPaths</C> until it finds the path of an existing file.
+ The first file found this way is read.
+ <P/>
+-Furthermore, &GAP; looks for available packages by examining the
+-subdirectories <F>pkg/</F> in each of the directories in
+-<C>GAPInfo.RootPaths</C>.
++Any subdirectories named <F>pkg/</F> in one of the directories in <C>GAPInfo.RootPaths</C>
++are added to <C>GAPInfo.PackageDirectories</C> (see <Ref Sect="GAP Package Directories"/>),
++which controls where &GAP; looks for available packages.
+ <P/>
+ The root directories are specified via one or several of the
+ <C>-l paths</C> command line options, see <Ref Sect="Command Line Options"/>.
+@@ -95,11 +95,36 @@ This directory can be used to tell &GAP; about personal preferences,
+ to always load some additional code, to install additional packages,
+ or to overwrite some &GAP; files. See <Ref Sect="sect:gap.ini"/>
+ for more information how to do this.
++After &GAP; has been started, one can add additional root directories
++via the function <Ref Func="ExtendRootDirectories"/>.
+ <P/>
+ 
+ </Section>
+ 
+ 
++<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
++<Section Label="GAP Package Directories">
++<Heading>GAP Package Directories</Heading>
++<Index Key="GAPInfo.PackageDirectories"><C>GAPInfo.PackageDirectories</C></Index>
++
++When &GAP; is started it determines a list of directories potentially
++containing packages. We refer to these as the <E>&GAP; package directories</E>.
++In a running &GAP; session this list can be found in <C>GAPInfo.PackageDirectories</C>.
++<P/>
++Every subdirectory <F>pkg</F> in a &GAP; root directory is automatically
++added to this list. Further package directories can be specified via one or several
++<C>--packagedirs paths</C> command line options, see <Ref Sect="Command Line Options"/>,
++or after &GAP; has been started via the function <Ref Func="ExtendPackageDirectories"/>.
++The order of the directories in <C>GAPInfo.PackageDirectories</C> is as follows:
++first the package directories specified via the command line option <C>--packagedirs</C>,
++then the subdirectories <F>pkg</F> of the &GAP; root directories that were known at startup in the
++same order, and finally the directories added after &GAP; has been started.
++<P/>
++&GAP; looks for available packages by examining each of the directories in
++<C>GAPInfo.PackageDirectories</C>.
++</Section>
++
++
+ <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+ <Section Label="Directories">
+ <Heading>Directories</Heading>
+diff --git a/doc/ref/gappkg.xml b/doc/ref/gappkg.xml
+index 03751f275..1fa68f75d 100644
+--- a/doc/ref/gappkg.xml
++++ b/doc/ref/gappkg.xml
+@@ -96,6 +96,7 @@ that is they will be loaded automatically when &GAP; starts
+ 
+ <#Include Label="SetPackagePath">
+ <#Include Label="ExtendRootDirectories">
++<#Include Label="ExtendPackageDirectories">
+ <#Include Label="DisplayPackageLoadingLog">
+ 
+ </Section>
+diff --git a/doc/ref/run.xml b/doc/ref/run.xml
+index 88101cfda..c87548230 100644
+--- a/doc/ref/run.xml
++++ b/doc/ref/run.xml
+@@ -269,6 +269,27 @@ It is not possible  to use &GAP; without the  library files, so you must
+ not  ignore this warning.  You  should leave &GAP;   and start it again,
+ specifying the correct root path using the <C>-l</C> option.
+ </Item>
++<Mark><Index Key="--packagedirs"><C>--packagedirs</C></Index>
++<C>--packagedirs </C><A>path_list</A></Mark>
++<Item>
++can be used to add paths to &GAP;'s list of package directories
++(see <Ref Sect="GAP Package Directories"/>).
++The list always contains all subdirectories <F>pkg</F> in a &GAP; root directory.
++<P/>
++<A>path_list</A> should be a list of directories separated by semicolons.
++No whitespace is permitted before or after a semicolon, and the first and
++last character of <A>path_list</A> may not be a semicolon.
++After &GAP; has completed its startup procedure and
++displays the prompt, the list of package directories can be seen in the
++variable <C>GAPInfo.PackageDirectories</C>,
++see <Ref Var="GAPInfo"/>.
++<P/>
++Usually this option is used inside a startup script to specify
++where additional &GAP; packages are located on the system.
++The <C>--packagedirs</C> option can also be used by individual users to tell &GAP;
++about additional &GAP; packages, without the need to set up a complete root
++directory structure.
++</Item>
+ <Mark><Index Key="-M"><C>-M</C></Index>
+ <C>-M</C></Mark>
+ <Item>
+diff --git a/lib/package.gd b/lib/package.gd
+index 8136cc518..cc1de684f 100644
+--- a/lib/package.gd
++++ b/lib/package.gd
+@@ -859,7 +859,8 @@ DeclareGlobalFunction( "LoadPackage" );
+ ##  <P/>
+ ##  See <Ref Func="SetPackagePath"/> for a way to force the loading of a
+ ##  prescribed package version.
+-##  See also <Ref Func="ExtendRootDirectories"/> for a method of adding
++##  See also <Ref Func="ExtendRootDirectories"/> and
++##  <Ref Func="ExtendPackageDirectories"/> for methods of adding
+ ##  directories containing packages <E>after</E> &GAP; has been started.
+ ##  </Subsection>
+ ##  <#/GAPDoc>
+@@ -947,6 +948,29 @@ DeclareGlobalFunction( "SetPackagePath" );
+ ##
+ DeclareGlobalFunction( "ExtendRootDirectories" );
+ 
++
++#############################################################################
++##
++#F  ExtendPackageDirectories( <paths> )
++##
++##  <#GAPDoc Label="ExtendPackageDirectories">
++##  <ManSection>
++##  <Func Name="ExtendPackageDirectories" Arg='paths'/>
++##
++##  <Description>
++##  Let <A>paths</A> be a list of strings that denote paths to intended
++##  &GAP; package directories (see <Ref Sect="GAP Package Directories"/>).
++##  The function <Ref Func="ExtendPackageDirectories"/> adds these paths to
++##  the global list <C>GAPInfo.PackageDirectories</C> and calls the initialization of
++##  available &GAP; packages,
++##  such that later calls to <Ref Func="LoadPackage"/> will find the &GAP;
++##  packages that are contained in the directories given by <A>paths</A>.
++##  </Description>
++##  </ManSection>
++##  <#/GAPDoc>
++##
++DeclareGlobalFunction( "ExtendPackageDirectories" );
++
+ #############################################################################
+ ##
+ #F  InstalledPackageVersion( <name> )
+diff --git a/lib/package.gi b/lib/package.gi
+index e7780524b..0a0068a7d 100644
+--- a/lib/package.gi
++++ b/lib/package.gi
+@@ -286,7 +286,7 @@ end );
+ ##  In earlier versions, this function had an argument; now we ignore it.
+ ##
+ InstallGlobalFunction( InitializePackagesInfoRecords, function( arg )
+-    local pkgdirs, pkgdir, ignore, name, files, record, r;
++    local pkgdirs, pkgdir, pkgdirstrs, ignore, name, file, files, record, r;
+ 
+     if IsBound( GAPInfo.PackagesInfoInitialized ) and
+        GAPInfo.PackagesInfoInitialized = true then
+@@ -300,8 +300,28 @@ InstallGlobalFunction( InitializePackagesInfoRecords, function( arg )
+ 
+     LogPackageLoadingMessage( PACKAGE_DEBUG,
+         "entering InitializePackagesInfoRecords", "GAP" );
++
++    # the first time this is called, add the cmd line args to the list
++    if IsEmpty(GAPInfo.PackageDirectories) then
++        for pkgdirstrs in GAPInfo.CommandLineOptions.packagedirs do
++            pkgdirs:= List( SplitString( pkgdirstrs, ";" ), Directory );
++            for pkgdir in pkgdirs do
++                if not pkgdir in GAPInfo.PackageDirectories then
++                    Add( GAPInfo.PackageDirectories, pkgdir );
++                fi;
++            od;
++        od;
++    fi;
++    # add any new pkg directories to the list
+     pkgdirs:= DirectoriesLibrary( "pkg" );
+-    if pkgdirs = fail then
++    if pkgdirs <> fail then
++        pkgdirs:= Filtered( pkgdirs, dir -> not dir in GAPInfo.PackageDirectories );
++        if not IsEmpty(pkgdirs) then
++            Append( GAPInfo.PackageDirectories, pkgdirs );
++        fi;
++    fi;
++
++    if IsEmpty(GAPInfo.PackageDirectories) then
+       LogPackageLoadingMessage( PACKAGE_DEBUG,
+           "exit InitializePackagesInfoRecords (no pkg directories found)",
+           "GAP" );
+@@ -327,7 +347,7 @@ InstallGlobalFunction( InitializePackagesInfoRecords, function( arg )
+     # Loop over the package directories,
+     # remove the packages listed in `NOAUTO' files from GAP's suggested
+     # packages, and unite the information for the directories.
+-    for pkgdir in pkgdirs do
++    for pkgdir in GAPInfo.PackageDirectories do
+ 
+       if IsBound( GAPInfo.ExcludeFromAutoload ) then
+         UniteSet( GAPInfo.ExcludeFromAutoload,
+@@ -335,15 +355,21 @@ InstallGlobalFunction( InitializePackagesInfoRecords, function( arg )
+                         LowercaseString ) );
+       fi;
+ 
+-      # Loop over subdirectories of this package directory.
+-      for name in Set( DirectoryContents( Filename( pkgdir, "" ) ) ) do
++      # pkgdir may be a package instead of a package directory
++      file:= Filename( [ pkgdir ], "PackageInfo.g" );
++      if file <> fail then
++        AddPackageInfos( [ [ file, "" ] ], pkgdir, ignore );
++      else
++        # Loop over subdirectories of this package directory.
++        for name in Set( DirectoryContents( pkgdir ) ) do
+ 
+-          ## Get all package dirs
+-          files := FindPackageInfosInSubdirectories( pkgdir, name );
++            ## Get all package dirs
++            files := FindPackageInfosInSubdirectories( pkgdir, name );
+ 
+-          AddPackageInfos( files, pkgdir, ignore );
++            AddPackageInfos( files, pkgdir, ignore );
+ 
+-      od;
++        od;
++      fi;
+     od;
+ 
+     # Sort the available info records by their version numbers.
+@@ -1958,6 +1984,35 @@ InstallGlobalFunction( ExtendRootDirectories, function( rootpaths )
+     end );
+ 
+ 
++#############################################################################
++##
++#F  ExtendPackageDirectories( <paths_or_dirs> )
++##
++InstallGlobalFunction( ExtendPackageDirectories, function( paths_or_dirs )
++    local p, changed;
++    changed:= false;
++    for p in paths_or_dirs do
++      if IsString( p ) then
++        p:= Directory( p );
++      elif not IsDirectory( p ) then
++        Error("input must be a list of path strings or directory objects");
++      fi;
++      if not p in GAPInfo.PackageDirectories then
++        Add( GAPInfo.PackageDirectories, p );
++        changed:= true;
++      fi;
++    od;
++    if changed then
++      # Reread the package information.
++      if IsBound( GAPInfo.PackagesInfoInitialized ) and
++         GAPInfo.PackagesInfoInitialized = true then
++        GAPInfo.PackagesInfoInitialized:= false;
++        InitializePackagesInfoRecords();
++      fi;
++    fi;
++    end );
++
++
+ #############################################################################
+ ##
+ #F  InstalledPackageVersion( <name> )
+diff --git a/lib/system.g b/lib/system.g
+index d79aca200..d3c5e5b11 100644
+--- a/lib/system.g
++++ b/lib/system.g
+@@ -95,6 +95,9 @@ BIND_GLOBAL( "GAPInfo", rec(
+                      "directories to the end/start of existing list",
+                      "of root paths" ] ),
+       rec( short:= "r", default := false, help := ["disable/enable user GAP root dir", "GAPInfo.UserGapRoot"] ),
++      rec( long := "packagedirs", default := [], arg := "<paths>",
++           help := [ "add additional GAP directory paths",
++                     "Directories are separated using ';'." ] ),
+       ,
+       rec( section:= ["Loading:"] ),
+       rec( short:= "A", default := false, help := ["disable/enable autoloading of suggested", "GAP packages"] ),
+@@ -302,6 +305,7 @@ CallAndInstallPostRestore( function()
+ 
+     # paths
+     GAPInfo.RootPaths:= GAPInfo.KernelInfo.GAP_ROOT_PATHS;
++    GAPInfo.PackageDirectories := [];
+     if  IsBound(GAPInfo.SystemEnvironment.HOME) then
+       GAPInfo.UserHome := GAPInfo.SystemEnvironment.HOME;
+     else
+diff --git a/tst/testinstall/package.tst b/tst/testinstall/package.tst
+index cd364a81b..10e515fc9 100644
+--- a/tst/testinstall/package.tst
++++ b/tst/testinstall/package.tst
+@@ -1,4 +1,4 @@
+-#@local entry,equ,pair,sml,oldTermEncoding,pkginfo,info,tmp_dir,mockpkgpath,old_warning_level,p,n,filename,IsDateFormatValid,loadinfo,eval_loadinfo
++#@local entry,equ,pair,sml,oldTermEncoding,pkginfo,info,mockpkgpath,old_warning_level,p,n,filename,IsDateFormatValid,loadinfo,eval_loadinfo
+ gap> START_TEST("package.tst");
+ 
+ # CompareVersionNumbers( <supplied>, <required>[, \"equal\"] )
+@@ -380,17 +380,9 @@ false
+ gap> IsPackageLoaded("mockpkg", ">=2.0");
+ false
+ 
+-# load mockpkg via a symlink in a directory called `pkg`
+-# so we can test ExtendRootDirectories below
+-# first create a temporary directory for all of this
+-gap> tmp_dir := DirectoryTemporary( );;
+-
+-# create a subdirectory `<tmp_dir>/pkg`
+-gap> Exec( Concatenation( "mkdir -p ", Filename( tmp_dir, "/pkg" ) ) );
+-
+-# make `<tmp_dir>/pkg/mockpkg` a symlink to `tst/mockpkg`
+-gap> Exec( Concatenation( "ln -sfn ", Filename( DirectoriesLibrary("tst/mockpkg"), "" )," ", Filename( tmp_dir, "pkg/mockpkg" ) ) );
+-gap> mockpkgpath := Directory( Filename( tmp_dir, "pkg/mockpkg" ) );;
++# load mockpkg first via SetPackagePath and later via
++# ExtendPackageDirectories
++gap> mockpkgpath := DirectoriesLibrary("tst/mockpkg")[1];;
+ gap> ValidatePackageInfo(Filename(mockpkgpath, "PackageInfo.g"));
+ true
+ 
+@@ -635,12 +627,8 @@ false
+ gap> IsPackageLoaded("mockpkg", ">=2.0");
+ false
+ 
+-# now add the temporary directory created above as a new root directory
+-gap> filename:= ShallowCopy( Filename( tmp_dir, "" ) );;
+-gap> while EndsWith( filename, "/" ) do Remove( filename ); od;
+-gap> ExtendRootDirectories( [ filename ] );
+-gap> ForAll( GAPInfo.RootPaths, x -> EndsWith( x, "/" ) );
+-true
++# now add the directory with mockpkgpath as a new package directory
++gap> ExtendPackageDirectories( [ mockpkgpath ] );
+ 
+ # make sure that the newly discovered installation path matches
+ # the path from which mockpkg was loaded above
+@@ -649,8 +637,7 @@ gap> Last( GAPInfo.PackagesInfo.mockpkg ).InstallationPath =
+ true
+ 
+ #
+-gap> SetPackagePath( "mockpkg", Filename( tmp_dir, "pkg/mockpkg" ) );
+-gap> SetPackagePath( "mockpkg", Filename( tmp_dir, "pkg/mockpkg/" ) );
++gap> SetPackagePath( "mockpkg", Filename( mockpkgpath, "" ) );
+ gap> SetPackagePath( "mockpkg", "/some/other/directory" );
+ Error, another version of package mockpkg is already loaded
+ 
+-- 
+2.47.1
+
