@@ -60,7 +60,7 @@ elif [[ $target == *freebsd* ]]; then
         extraargs="abi=aapcs ${extraargs}"
     fi
     echo "using clang : 6.0 : $CXX : <cxxflags>\\"-Wno-enum-constexpr-conversion\\" <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
-elif [[ $target == armv* ]];
+elif [[ $target == armv* ]]; then
     extraargs="abi=aapcs ${extraargs}"
 fi
 ./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
