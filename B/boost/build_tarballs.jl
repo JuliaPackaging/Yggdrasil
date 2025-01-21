@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.79.1" # Fake bump for picking up new platforms
+version = v"1.87.0"
 
 # Collection of sources required to build boost
 sources = [
