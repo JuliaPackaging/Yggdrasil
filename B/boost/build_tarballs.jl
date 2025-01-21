@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/boost*
 
-./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}" --cxxflags="-std=c++11"
+./bootstrap.sh --prefix=$prefix --without-libraries=python --with-toolset="--cxx=${CXX_FOR_BUILD}"
 
 rm project-config.jam
 toolset=gcc
@@ -111,6 +111,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
 
 # Build trigger: 1
