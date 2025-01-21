@@ -8,7 +8,7 @@ version = v"1.87.0"
 # Collection of sources required to build boost
 sources = [
     ArchiveSource(
-        "https://archives.boost.io/release/1.87.0/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
+        "https://archives.boost.io/release/$version/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
         "af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89"),
 ]
 
