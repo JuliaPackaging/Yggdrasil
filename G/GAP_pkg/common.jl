@@ -42,7 +42,7 @@ function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionN
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("GAP_jll", gap_version; compat="~$(gap_version)"),
-        Dependency("GAP_lib_jll", gap_lib_version; compat="~$(gap_lib_version)"),
+        BuildDependency(PackageSpec(name="GAP_lib_jll", version=gap_lib_version)),
     ]
 
     return platforms, dependencies
