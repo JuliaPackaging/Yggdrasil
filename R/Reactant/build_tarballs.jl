@@ -1,6 +1,9 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+# Do not build anything on Yggdrasil for the moment to avoid wasting resources.
+BinaryBuilder.is_yggdrasil() && error()
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
@@ -9,7 +12,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.54"
 
 sources = [
-  GitSource(repo, "59b1856a39d803fec1ecc94c906987f0bee3d0e1"),
+  GitSource(repo, "ad0a15252f92b06bcb01b82a724da49b65b59ad3"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -178,6 +181,16 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 11.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
     fi
+
+    if [[ "${target}" != x86_64-linux-gnu ]]; then
+        BAZEL_BUILD_FLAGS+=(
+            --@local_config_cuda//:cuda_compiler=clang
+            --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
+            --copt=-Wno-unused-command-line-argument
+            --cxxopt=-Wno-unused-command-line-argument
+        )
+    fi
+
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
@@ -344,10 +357,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
-    # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
-    if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
-        continue
-    end
+    # # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
+    # if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
+    #     continue
+    # end
 
     hermetic_cuda_version_map = Dict(
         # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
