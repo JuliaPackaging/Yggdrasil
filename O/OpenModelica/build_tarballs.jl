@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenModelica"
-version = v"1.24.0"
+version = v"1.24.3"
 
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
-             "904c4c783a5fa6eb9e99e4a98bdb0cca1d619303"),
+             "fcf63c83c7e8d66b7c5da922376ec54a5f1faad7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -37,11 +37,10 @@ install_license OSMC-License.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-
-[
+platforms = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -52,7 +51,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("flex_jll"),
-    BuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("libblastrampoline_jll"; compat="5.4"),
