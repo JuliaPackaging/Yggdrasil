@@ -4,8 +4,10 @@ Date: Mon, 6 Jan 2025 15:13:18 +0100
 Subject: [PATCH] Add --packagedirs and ExtendPackageDirectories() (#5873)
 
 ... to make it easier to use custom packages
+
+The changes in dev/ci.sh have been removed from this patch
+to make it apply to release tarballs.
 ---
- dev/ci.sh                   |  4 +-
  doc/ref/files.xml           | 31 ++++++++++++++--
  doc/ref/gappkg.xml          |  1 +
  doc/ref/run.xml             | 21 +++++++++++
@@ -13,25 +15,8 @@ Subject: [PATCH] Add --packagedirs and ExtendPackageDirectories() (#5873)
  lib/package.gi              | 73 ++++++++++++++++++++++++++++++++-----
  lib/system.g                |  4 ++
  tst/testinstall/package.tst | 27 ++++----------
- 8 files changed, 151 insertions(+), 36 deletions(-)
+ 7 files changed, 150 insertions(+), 33 deletions(-)
 
-diff --git a/dev/ci.sh b/dev/ci.sh
-index f61e93b34..a39c816d2 100755
---- a/dev/ci.sh
-+++ b/dev/ci.sh
-@@ -99,11 +99,9 @@ testmockpkg () {
-     cd "$mockpkg_dir"
-     echo_and_run ./configure "$gaproot"
-     echo_and_run $MAKE V=1
--    # trick to make it easy to load the package in GAP
--    rm -f pkg && ln -sf . pkg
-     # try to load the kernel extension
-     cd "$gaproot"
--    echo_and_run $gap -A -l "$mockpkg_dir;" "$mockpkg_dir/tst/testall.g"
-+    echo_and_run $gap -A --packagedirs "$mockpkg_dir" "$mockpkg_dir/tst/testall.g"
- }
- 
- 
 diff --git a/doc/ref/files.xml b/doc/ref/files.xml
 index 4da8aca5a..75cb5f68b 100644
 --- a/doc/ref/files.xml
