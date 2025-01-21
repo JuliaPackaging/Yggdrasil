@@ -50,6 +50,8 @@ elif [[ $target == x86_64*mingw* ]]; then
 elif [[ $target == i686*mingw* ]]; then
     targetos=windows
     extraargs="address-model=32 define=_WIN32_WINNT=0x0602 binary-format=pe abi=ms link=shared"
+elif [[ $target == i686*linux*]]; then
+    extraargs='cxxflags="-DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK=1"'
 elif [[ $target == *freebsd* ]]; then
     targetos=freebsd
     toolset=clang-6.0
