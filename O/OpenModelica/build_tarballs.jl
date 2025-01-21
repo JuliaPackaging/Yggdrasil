@@ -22,9 +22,9 @@ apk --update --no-chown add openjdk17-jdk
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DBLA_VENDOR=libblastrampoline \
-      -DBLAS_LIBRARIES="-L${libdir} -lblastrampoline" \
-      -DLAPACK_LIBRARIES="-L${libdir} -lblastrampoline" \
+      -DBLA_VENDOR=libopenblas \
+      -DBLAS_LIBRARIES="-L${libdir} -lopenblas" \
+      -DLAPACK_LIBRARIES="-L${libdir} -lopenblas" \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMC_ENABLE_IPOPT=OFF \
       -DHAVE_MMAP_DEV_ZERO=0 \
@@ -53,7 +53,7 @@ dependencies = [
     HostBuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libblastrampoline_jll"; compat="5.4"),
+    Dependency("OpenBLAS32_jll"),
     Dependency("flex_jll"),
     Dependency("LibCURL_jll"),
     Dependency("util_linux_jll"),
