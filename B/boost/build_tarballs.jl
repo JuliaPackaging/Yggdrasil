@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "boost"
-version = v"1.79.0"
+version = v"1.79.1" # Fake bump for picking up new platforms
 
 # Collection of sources required to build boost
 sources = [
@@ -66,7 +66,7 @@ install_license LICENSE_1_0.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
