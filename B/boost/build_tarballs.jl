@@ -46,10 +46,10 @@ if [[ $target == *apple* ]]; then
     fi
 elif [[ $target == x86_64*mingw* ]]; then
     targetos=windows
-    extraargs="address-model=64 binary-format=pe abi=ms link=shared"
+    extraargs='address-model=64 cxxflags="-D_WIN32_WINNT=0x0A00" binary-format=pe abi=ms link=shared'
 elif [[ $target == i686*mingw* ]]; then
     targetos=windows
-    extraargs="address-model=32 binary-format=pe abi=ms link=shared"
+    extraargs='address-model=32 cxxflags="-D_WIN32_WINNT=0x0A00" binary-format=pe abi=ms link=shared'
 elif [[ $target == i686*linux* ]]; then
     extraargs='cxxflags="-DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK=1"'
 elif [[ $target == *freebsd* ]]; then
@@ -60,6 +60,8 @@ elif [[ $target == *freebsd* ]]; then
         extraargs="abi=aapcs ${extraargs}"
     fi
     echo "using clang : 6.0 : $CXX : <cxxflags>\\"-Wno-enum-constexpr-conversion\\" <linkflags>\\"$LDFLAGS\\" ;" > project-config.jam
+elif [[ $target == armv* ]];
+    extraargs="abi=aapcs ${extraargs}"
 fi
 ./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install
 
