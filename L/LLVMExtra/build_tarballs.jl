@@ -78,9 +78,17 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
     ## we don't build LLVM 15 for i686-linux-musl.
-    filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-    ## freebsd-aarch64 doesn't have any LLVM build right now
-    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    if llvm_version >= v"15"
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    ## We only have LLVM builds for AArch64 BSD starting from LLVM 18
+    if version < v"18"
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
+    ## We only have LLVM builds for RISC-V starting from LLVM 19
+    if llvm_version < v"19"
+        filter!(p -> !(arch(p) == "riscv64"), platforms)
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
