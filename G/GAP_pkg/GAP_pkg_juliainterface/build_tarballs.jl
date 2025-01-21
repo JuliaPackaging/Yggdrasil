@@ -10,10 +10,10 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 gap_version = v"400.1400.0"
-gap_lib_version = v"400.1400.0"
+gap_lib_version = v"400.1401.0"
 name = "JuliaInterface"
 upstream_version = "0.13.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.3" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL

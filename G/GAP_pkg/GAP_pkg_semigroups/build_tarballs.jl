@@ -3,10 +3,10 @@
 include("../common.jl")
 
 gap_version = v"400.1400.0"
-gap_lib_version = v"400.1400.0"
+gap_lib_version = v"400.1401.0"
 name = "semigroups"
 upstream_version = "5.4.0" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
