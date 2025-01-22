@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GMT"
-version = v"6.5.2"
+version = v"6.5.3"
 GSHHG_VERSION="2.3.7"
 DCW_VERSION="2.2.0"
 
