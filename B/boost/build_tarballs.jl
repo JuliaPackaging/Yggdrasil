@@ -46,10 +46,10 @@ if [[ $target == *apple* ]]; then
     fi
 elif [[ $target == x86_64*mingw* ]]; then
     targetos=windows
-    extraargs=' --without-stacktrace address-model=64 cxxflags="-D_WIN32_WINNT=0x0603 -DBOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WINBLUE" binary-format=pe abi=ms link=shared'
+    extraargs='--without-stacktrace address-model=64 cxxflags="-D_WIN32_WINNT=0x0603 -DBOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WINBLUE" binary-format=pe abi=ms link=shared'
 elif [[ $target == i686*mingw* ]]; then
     targetos=windows
-    extraargs=' --without-stacktrace address-model=32 cxxflags="-D_WIN32_WINNT=0x0603 -DBOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WINBLUE" binary-format=pe abi=ms link=shared'
+    extraargs='--without-stacktrace address-model=32 cxxflags="-D_WIN32_WINNT=0x0603 -DBOOST_USE_WINAPI_VERSION=BOOST_WINAPI_VERSION_WINBLUE" binary-format=pe abi=ms link=shared'
 elif [[ $target == i686*linux* ]]; then
     extraargs='cxxflags="-DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK=1"'
 elif [[ $target == *freebsd* ]]; then
