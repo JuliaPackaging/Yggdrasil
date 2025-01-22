@@ -312,7 +312,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.6"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.3", "12.6"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -339,11 +339,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     hermetic_cuda_version_map = Dict(
-        # Our platform tags use X.Y version scheme, but for some CUDA versions
-        # we need to pass Bazel a full version number X.Y.Z.
+        # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
+        # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in
+        # <https://github.com/openxla/xla/blob/main/third_party/tsl/third_party/gpus/cuda/hermetic/cuda_redist_versions.bzl>.
         "none" => "none",
         "11.8" => "11.8",
         "12.1" => "12.1.1",
+        "12.3" => "12.3.1",
         "12.6" => "12.6.2",
     )
 
