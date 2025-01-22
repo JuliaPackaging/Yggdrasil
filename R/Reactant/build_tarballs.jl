@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.47"
+version = v"0.0.48"
 
 sources = [
-  GitSource(repo, "1936d6ee292b3796a47e30d5a323f9d2c38df51c"),
+  GitSource(repo, "678b90de9000707d3ba9f773287386074cf13f85"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -62,6 +62,9 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 # BAZEL_FLAGS+=(--extra_toolchains=@local_jdk//:all)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
+
+# Use ccache to speedup re-builds
+BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
@@ -312,7 +315,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.6"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.3", "12.6"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -339,11 +342,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     hermetic_cuda_version_map = Dict(
-        # Our platform tags use X.Y version scheme, but for some CUDA versions
-        # we need to pass Bazel a full version number X.Y.Z.
+        # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
+        # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in
+        # <https://github.com/openxla/xla/blob/main/third_party/tsl/third_party/gpus/cuda/hermetic/cuda_redist_versions.bzl>.
         "none" => "none",
         "11.8" => "11.8",
         "12.1" => "12.1.1",
+        "12.3" => "12.3.1",
         "12.6" => "12.6.2",
     )
 
