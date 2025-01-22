@@ -44,12 +44,15 @@ if [[ $target == *apple* ]]; then
         # See https://github.com/boostorg/context/issues/170#issuecomment-863669877
         extraargs="abi=aapcs ${extraargs}"
     fi
-elif [[ $target == x86_64*mingw* ]]; then
+elif [[ $target == *mingw* ]]; then
     targetos=windows
-    extraargs="address-model=64 cxxflags='-D_WIN32_WINNT=0x0603 -DBOOST_USE_WINAPI_VERSION=0x0603' binary-format=pe abi=ms link=shared"
-elif [[ $target == i686*mingw* ]]; then
-    targetos=windows
-    extraargs="address-model=32 cxxflags='-D_WIN32_WINNT=0x0603 -DBOOST_USE_WINAPI_VERSION=0x0603' binary-format=pe abi=ms link=shared"
+    echo "using gcc : 8.1 : $CXX : <cxxflags>\\"-DBOOST_USE_WINAPI_VERSION=0x0603 -D_WIN32_WINNT=0x0603 -DBOOST_STACKTRACE_USE_WINDBG=1\\" <linkflags>\\"-DBOOST_STACKTRACE_USE_WINDBG=1\\" ;" > project-config.jam
+
+    if [[ $target == x86_64*mingw* ]]; then
+        extraargs="address-model=64 binary-format=pe abi=ms link=shared"
+    elif [[ $target == i686*mingw* ]]; then
+        extraargs="address-model=32 binary-format=pe abi=ms link=shared"
+    fi
 elif [[ $target == i686*linux* ]]; then
     extraargs='cxxflags="-DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK=1"'
 elif [[ $target == *freebsd* ]]; then
