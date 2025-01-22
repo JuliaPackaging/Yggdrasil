@@ -41,6 +41,7 @@ install_license ../LICENSE.TXT
 platforms = supported_platforms()
 filter!(p -> libc(p) == "glibc", platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> !(arch(p) in ("armv7l", "armv6l")), platforms)
 
 # The products that we will ensure are always built
 products = [
