@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.47"
+version = v"0.0.48"
 
 sources = [
-  GitSource(repo, "1936d6ee292b3796a47e30d5a323f9d2c38df51c"),
+  GitSource(repo, "678b90de9000707d3ba9f773287386074cf13f85"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -62,6 +62,9 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 # BAZEL_FLAGS+=(--extra_toolchains=@local_jdk//:all)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
+
+# Use ccache to speedup re-builds
+BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
