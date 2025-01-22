@@ -46,7 +46,7 @@ if [[ $target == *apple* ]]; then
     fi
 elif [[ $target == *mingw* ]]; then
     targetos=windows
-    echo "using gcc : 8.1 : $CXX : <cxxflags>\\"-DBOOST_USE_WINAPI_VERSION=0x0603 -D_WIN32_WINNT=0x0603 -DBOOST_STACKTRACE_USE_WINDBG=1\\" <linkflags>\\"-DBOOST_STACKTRACE_USE_WINDBG=1 -Wl,--no-as-needed\\" ;" > project-config.jam
+    echo "using gcc : 8.1 : $CXX : <cxxflags>\\"-DBOOST_USE_WINAPI_VERSION=0x0601 -D_WIN32_WINNT=0x0601 -DBOOST_STACKTRACE_USE_WINDBG=1\\" <linkflags>\\"-DBOOST_STACKTRACE_USE_WINDBG=1\\" ;" > project-config.jam
 
     if [[ $target == x86_64*mingw* ]]; then
         extraargs="address-model=64 binary-format=pe abi=ms link=shared"
@@ -66,7 +66,7 @@ elif [[ $target == *freebsd* ]]; then
 elif [[ $target == armv* ]]; then
     extraargs="abi=aapcs ${extraargs}"
 fi
-./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install -q
+./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install -q --without-stacktrace
 
 install_license LICENSE_1_0.txt
 """
@@ -96,8 +96,8 @@ products = [
     LibraryProduct("libboost_random", :libboost_random),
     LibraryProduct("libboost_regex", :libboost_regex),
     LibraryProduct("libboost_serialization", :libboost_serialization),
-    LibraryProduct("libboost_stacktrace_basic", :libboost_stacktrace_basic),
-    LibraryProduct("libboost_stacktrace_noop", :libboost_stacktrace_noop),
+    # LibraryProduct("libboost_stacktrace_basic", :libboost_stacktrace_basic),
+    # LibraryProduct("libboost_stacktrace_noop", :libboost_stacktrace_noop),
     LibraryProduct("libboost_system", :libboost_system),
     LibraryProduct("libboost_thread", :libboost_thread),
     LibraryProduct("libboost_timer", :libboost_timer),
