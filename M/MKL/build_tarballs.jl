@@ -27,7 +27,8 @@ if [[ ${target} == *x86_64-linux-gnu* ]]; then
         ln -s "${libdir}/$lib" "${libdir}/$target"
     done
 fi
-install_license $WORKSPACE/srcdir/mkl-${target}/mkl-*.dist-info/LICENSE.txt
+cd $WORKSPACE/srcdir
+install_license mkl-${target}/mkl-*.dist-info/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
