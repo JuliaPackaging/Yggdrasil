@@ -7,8 +7,7 @@ version = v"3.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.com/qr_mumps/qr_mumps.git" ,"3ed9c3a42c7bb620c90c9c816097654c5d2cfc60"),
-    DirectorySource("./bundled"),
+    GitSource("https://gitlab.com/qr_mumps/qr_mumps.git" ,"3ed9c3a42c7bb620c90c9c816097654c5d2cfc60")
 ]
 
 # Bash recipe for building across all platforms
@@ -29,6 +28,8 @@ cmake .. -DARITH="d;s;c;z" -DBUILD_SHARED_LIBS=ON \
                            -DCMAKE_INSTALL_PREFIX=$prefix \
                            -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
                            -DCMAKE_CROSSCOMPILING_EMULATOR="" \
+                           -DQRM_WITH_TESTS=OFF \
+                           -DQRM_WITH_EXAMPLES=OFF \
                            -DQRM_ORDERING_AMD=ON \
                            -DQRM_ORDERING_METIS=ON \
                            -DQRM_ORDERING_SCOTCH=ON \
