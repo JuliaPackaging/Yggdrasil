@@ -28,7 +28,7 @@ if [[ ${target} == *x86_64-linux-gnu* ]]; then
     done
 fi
 cd $WORKSPACE/srcdir
-install_license mkl-${target}/mkl-*.dist-info/LICENSE.txt
+install_license mkl-${target}/mkl-2025.0.1.dist-info/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
