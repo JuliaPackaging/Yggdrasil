@@ -28,7 +28,7 @@ import Pkg.Types: VersionSpec
 #
 name = "Singular"
 
-upstream_version = v"4.4.1" # 4.4.1
+upstream_version = v"4.4.1-0" # 4.4.1
 version_offset = v"0.0.0"
 
 version = VersionNumber(upstream_version.major * 100 + upstream_version.minor + version_offset.major,
