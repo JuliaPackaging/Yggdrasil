@@ -46,7 +46,7 @@ if [[ $target == *apple* ]]; then
     fi
 elif [[ $target == x86_64*mingw* ]]; then
     targetos=windows
-    extraargs="address-model=64 cxxflags='-DBOOST_USE_WINAPI_VERSION=0x0603' binary-format=pe abi=ms link=shared"
+    extraargs="address-model=64 cxxflags='-D_WIN32_WINNT=0x0603 -DBOOST_USE_WINAPI_VERSION=0x0603' binary-format=pe abi=ms link=shared"
 elif [[ $target == i686*mingw* ]]; then
     targetos=windows
     extraargs="address-model=32 cxxflags='-D_WIN32_WINNT=0x0603 -DBOOST_USE_WINAPI_VERSION=0x0603' binary-format=pe abi=ms link=shared"
