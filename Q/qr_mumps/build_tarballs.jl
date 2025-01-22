@@ -12,8 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/qrmumps.patch
-
 cd $WORKSPACE/srcdir/qr_mumps*
 mkdir build
 cd build
