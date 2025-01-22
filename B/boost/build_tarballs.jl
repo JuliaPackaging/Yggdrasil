@@ -63,7 +63,7 @@ elif [[ $target == *freebsd* ]]; then
 elif [[ $target == armv* ]]; then
     extraargs="abi=aapcs ${extraargs}"
 fi
-./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install -q
+./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install -q --without-stacktrace
 
 install_license LICENSE_1_0.txt
 """
