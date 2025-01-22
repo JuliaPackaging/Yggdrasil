@@ -46,12 +46,13 @@ if [[ $target == *apple* ]]; then
     fi
 elif [[ $target == *mingw* ]]; then
     targetos=windows
+    toolset=gcc-mingw
     echo "using gcc : 8.1 : $CXX : <cxxflags>\\"-DBOOST_USE_WINAPI_VERSION=0x0601 -D_WIN32_WINNT=0x0601 -DBOOST_STACKTRACE_USE_WINDBG=1\\" <linkflags>\\"-DBOOST_STACKTRACE_USE_WINDBG=1\\" ;" > project-config.jam
 
     if [[ $target == x86_64*mingw* ]]; then
-        extraargs="address-model=64 binary-format=pe abi=ms link=shared"
+        extraargs="address-model=64 binary-format=pe abi=ms link=shared threadapi=win32"
     elif [[ $target == i686*mingw* ]]; then
-        extraargs="address-model=32 binary-format=pe abi=ms link=shared"
+        extraargs="address-model=32 binary-format=pe abi=ms link=shared threadapi=win32"
     fi
 elif [[ $target == i686*linux* ]]; then
     extraargs='cxxflags="-DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK=1"'
@@ -66,7 +67,7 @@ elif [[ $target == *freebsd* ]]; then
 elif [[ $target == armv* ]]; then
     extraargs="abi=aapcs ${extraargs}"
 fi
-./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install -q --without-stacktrace
+./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install -q
 
 install_license LICENSE_1_0.txt
 """
