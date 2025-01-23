@@ -289,10 +289,10 @@ dependencies = [
     Dependency("LibCURL_jll"; compat="7.73.0, 8"),
     # We are building with OpenSSL v"3.0.8".
     # Note that building with OpenSSL v"3.0.13" is broken (configuring ROS3-VFD fails on Windows). That might bite us later.
-    Dependency("OpenSSL_jll", compat="3.0.8"),
-    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("OpenSSL_jll", compat="3.0.15"),
+    Dependency("Zlib_jll"),
     # Dependency("dlfcn_win32_jll"; compat="1.3.1", platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll"; compat="1.0.6"), # This is the successor of szlib
+    Dependency("libaec_jll"; compat="1.1.3"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 
