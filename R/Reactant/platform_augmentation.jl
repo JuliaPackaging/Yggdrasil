@@ -30,7 +30,7 @@ else
 end
 
 const cuda_version_preference = if haskey(preferences, "cuda_version")
-    expected = ("none", "12.1", "12.6")
+    expected = ("none", "12.1", "12.3", "12.6")
     if isa(preferences["cuda_version"], String) && preferences["cuda_version"] in expected
         preferences["cuda_version"]
     else
@@ -93,8 +93,10 @@ function augment_platform!(platform::Platform)
             Libdl.dlclose(handle)
 
             if cuda_version_tag == "none" && current_cuda_version isa VersionNumber
-                if v"12.1" <= current_cuda_version < v"12.6"
+                if v"12.1" <= current_cuda_version < v"12.3"
                     cuda_version_tag = "12.1"
+                elseif v"12.3" <= current_cuda_version < v"12.6"
+                    cuda_version_tag = "12.3"
                 elseif v"12.6" <= current_cuda_version < v"13"
                     cuda_version_tag = "12.6"
                 else
