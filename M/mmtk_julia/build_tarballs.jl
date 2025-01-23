@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "mmtk_julia"
-version = v"0.30.3"
+version = v"0.30.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mmtk/mmtk-julia.git", "f07d66aafc86af84ea988b35335acc9bbc770fa1")
+    GitSource("https://github.com/mmtk/mmtk-julia.git", "c9e046baf3a0d52fe75d6c8b28f6afd69b045d95")
 ]
 
 # Bash recipe for building across all platforms
