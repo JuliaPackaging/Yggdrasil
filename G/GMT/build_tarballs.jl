@@ -75,7 +75,7 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"); compat="7.73.0, 8.0.1")
     Dependency("NetCDF_jll", compat="400.902.210")
-    Dependency("PROJ_jll", compat="902")
+    Dependency("PROJ_jll", compat="902.500")
     Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="302.1000")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="PCRE_jll", uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"))
