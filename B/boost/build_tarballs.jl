@@ -67,19 +67,23 @@ elif [[ $target == armv* ]]; then
     extraargs="abi=aapcs ${extraargs}"
 fi
 
-./b2 -j${nproc} \
-    toolset=$toolset \
-    target-os=$targetos \
-    $extraargs \
-    variant=release \
-    --prefix=$prefix \
-    --without-python \
-    --layout=system \
-    --debug-configuration install \
-    -q \ # Quit on error
-    -d0 \ # Limit logging output
-    --libdir=${libdir} \
+b2_args=(
+    -j${nproc}
+    toolset=$toolset
+    target-os=$targetos
+    $extraargs
+    variant=release
+    --prefix=$prefix
+    --without-python
+    --layout=system
+    --debug-configuration install
+    -q # Quit on error
+    -d0 # Limit logging output
+    --libdir=${libdir}
     --includedir=${includedir}
+)
+
+./b2 "${b2_args[@]}"
 
 install_license LICENSE_1_0.txt
 """
