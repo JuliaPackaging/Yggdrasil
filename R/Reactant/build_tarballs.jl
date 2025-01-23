@@ -189,6 +189,9 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
             --copt=-Wno-unused-command-line-argument
             --cxxopt=-Wno-unused-command-line-argument
         )
+
+        # Copy libcxx headers into the sysroot
+        cp -Lr "${prefix}/libcxx/include" "/opt/${target}/${target}/sys-root/usr/include"
     fi
 
 fi
@@ -278,10 +281,6 @@ install_license ../../LICENSE
 # determine exactly which tarballs we should build
 builds = []
 
-# Dependencies that must be installed before this package can be built
-
-dependencies = Dependency[]
-
 # The products that we will ensure are always built
 products = Product[
     LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
@@ -342,7 +341,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
     augmented_platform["cuda_version"] = cuda_version
-    cuda_deps = []
+    dependencies = []
+
+    preferred_gcc_version = v"13"
+    preferred_llvm_version = v"18.1.7"
 
     if mode == "dbg" && !Sys.isapple(platform)
         continue
@@ -385,10 +387,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     if !Sys.isapple(platform)
-      push!(cuda_deps, Dependency(PackageSpec(name="CUDA_Driver_jll")))
+      push!(dependencies, Dependency(PackageSpec(; name="CUDA_Driver_jll")))
     end
 
-    preferred_gcc_version = v"13"
+    if arch(platform) == "aarch64" && gpu == "cuda"
+      push!(dependencies, BuildDependency(PackageSpec("LLVMLibcxx_jll", preferred_llvm_version)))
+    end
 
     should_build_platform(triplet(augmented_platform)) || continue
     products2 = copy(products)
@@ -435,8 +439,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     push!(builds, (;
-                   dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
-        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version
+                   dependencies, products=products2, sources=platform_sources,
+                   platforms=[augmented_platform], script=prefix*script, preferred_gcc_version, preferred_llvm_version
     ))
 end
 
@@ -451,7 +455,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=build.preferred_gcc_version, preferred_llvm_version=v"18", julia_compat="1.10",
+                   preferred_gcc_version=build.preferred_gcc_version, build.preferred_llvm_version, julia_compat="1.10",
                    # We use GCC 13, so we can't dlopen the library during audit
                    augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true)
 end
