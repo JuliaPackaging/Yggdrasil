@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Libxc"
-version = v"6.1.0"
+version = v"6.2.2"
 include("../sources.jl")
 
 

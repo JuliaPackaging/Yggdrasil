@@ -5,7 +5,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Libxc_GPU"
-version = v"6.1.0"
+version = v"6.2.2"
 include("../sources.jl")
 
 sources = [
@@ -35,12 +35,9 @@ make -j${nproc}
 make install
 """
 
-augment_platform_block = CUDA.augment
-
 # Override the default platforms
 platforms = CUDA.supported_platforms()
 filter!(p -> arch(p) == "x86_64", platforms)
-
 
 # The products that we will ensure are always built
 products = [
@@ -55,11 +52,9 @@ dependencies = [
 # Build Libxc for all supported CUDA toolkits
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
-
     cuda_deps = CUDA.required_dependencies(platform)
-
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; lazy_artifacts=true,
-                   julia_compat="1.7", augment_platform_block,
+                   julia_compat="1.8", augment_platform_block=CUDA.augment,
                    skip_audit=true, dont_dlopen=true)
 end
