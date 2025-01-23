@@ -127,7 +127,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency(PackageSpec(name="Bzip2_jll"),
+    Dependency(PackageSpec(name="Bzip2_jll")),
     BuildDependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
 ]
 
