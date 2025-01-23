@@ -81,10 +81,6 @@ case "${target}" in
 esac
 cp ../files/get_config_setting saved
 
-#TODO if [[ ${target} == *-mingw* ]]; then
-#TODO     perl -pi -e 's/[[]crypto[]]/[crypto-3-x64]/g' configure.ac
-#TODO fi
-
 env \
     HDF5_ACLOCAL=/usr/bin/aclocal \
     HDF5_AUTOHEADER=/usr/bin/autoheader \
@@ -104,25 +100,16 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-MAKEFLAGS=()
-if [[ ${target} == *-mingw* ]]; then
-    # We need `-L${prefix}/lib64` for OpenSSL's libcrypto for ROS3-VFD.
-    # Note: Do not add `-L${prefix}/lib`, this activates Windows libraries that don't work.
-    # We need `-no-undefined` when running `make`, but cannot have it when running `configure.
-    #TODO MAKEFLAGS+=(LDFLAGS='-no-undefined -L${prefix}/lib64')
-    #TODO export LDFLAGS="${LDFLAGS} -L${prefix}/lib64"
-    export LDFLAGS="${LDFLAGS} -L${libdir}"
-    :
-fi
-
 # Check which VFD are available
 ENABLE_DIRECT_VFD=yes
 ENABLE_MIRROR_VFD=yes
+ENABLE_ROS3_VFD=yes
 if [[ ${target} == *-darwin* ]]; then
     ENABLE_DIRECT_VFD=no
 elif [[ ${target} == *-w64-mingw32 ]]; then
     ENABLE_DIRECT_VFD=no
     ENABLE_MIRROR_VFD=no
+    ENABLE_ROS3_VFD=no
 fi
 
 # Configure MPI
@@ -135,21 +122,12 @@ if grep -q MSMPI_VER ${prefix}/include/mpi.h; then
         :
     else
         # 64-bit system
-        # DISABLED
         # Do not enable MPI
         # Mingw-w64 runtime failure:
         # 32 bit pseudo relocation at 0000000007828E2C out of range, targeting 00007FFDE78BAD90, yielding the value 00007FFDE0091F60.
         # Consider: https://www.symscape.com/configure-msmpi-for-mingw-w64
         # gendef msmpi.dll - creates msmpi.def
         # x86_64-w64-mingw32-dlltool -d msmpi.def -l libmsmpi.a -D msmpi.dll - creates libmsmpi.a
-
-        # # Hide static libraries
-        # rm ${prefix}/lib/msmpi*.lib
-        # # Make shared libraries visible
-        # ln -s msmpi.dll ${libdir}/libmsmpi.dll
-        # ENABLE_PARALLEL=yes
-        # export FCFLAGS="${FCFLAGS} -I${prefix}/src -I${prefix}/include -fno-range-check"
-        # export LIBS="-L${libdir} -lmsmpi"
         :
     fi
 else
@@ -167,12 +145,12 @@ fi
     --build=${MACHTYPE} \
     --host=${target} \
     --enable-cxx=yes \
-    --enable-direct-vfd="$ENABLE_DIRECT_VFD" \
+    --enable-direct-vfd="${ENABLE_DIRECT_VFD}" \
     --enable-fortran=yes \
     --enable-hl=yes \
-    --enable-mirror-vfd="$ENABLE_MIRROR_VFD" \
-l    --enable-parallel="$ENABLE_PARALLEL" \
-    --enable-ros3-vfd=yes \
+    --enable-mirror-vfd="${ENABLE_MIRROR_VFD}" \
+    --enable-parallel="${ENABLE_PARALLEL}" \
+    --enable-ros3-vfd="${ENABLE_ROS3_VFD}" \
     --enable-static=no \
     --enable-tests=no \
     --enable-tools=yes \
@@ -226,7 +204,7 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 # `AM_V_P` is not defined. This must be a shell command that returns
 # true or false depending on whether `make` should be verbose. This is
 # probably caused by a bug in automake, or in how automake was used.
-make -j${nproc} AM_V_P=: "${MAKEFLAGS[@]}"
+make -j${nproc} AM_V_P=:
 
 make install
 
