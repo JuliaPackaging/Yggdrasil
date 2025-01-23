@@ -12,7 +12,7 @@ version = v"1.14.5"
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/hdf5_$(version)/hdf5-$(version).tar.gz",
                   "ec2e13c52e60f9a01491bb3158cb3778c985697131fc6a342262d32a26e58e44"),
-    DirectorySource("./bundled"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -56,6 +56,9 @@ case "${target}" in
     powerpc64le-linux-*)
         cp ../files/debian-ppc64le/* saved
         ;;
+    riscv64-linux-*)
+        cp ../files/debian-riscv64/* saved
+        ;;
     x86_64-apple-darwin*)
         cp ../files/darwin-amd64/* saved
         ;;
@@ -77,6 +80,10 @@ case "${target}" in
         ;;
 esac
 cp ../files/get_config_setting saved
+
+#TODO if [[ ${target} == *-mingw* ]]; then
+#TODO     perl -pi -e 's/[[]crypto[]]/[crypto-3-x64]/g' configure.ac
+#TODO fi
 
 env \
     HDF5_ACLOCAL=/usr/bin/aclocal \
@@ -103,7 +110,9 @@ if [[ ${target} == *-mingw* ]]; then
     # Note: Do not add `-L${prefix}/lib`, this activates Windows libraries that don't work.
     # We need `-no-undefined` when running `make`, but cannot have it when running `configure.
     #TODO MAKEFLAGS+=(LDFLAGS='-no-undefined -L${prefix}/lib64')
-    export LDFLAGS="${LDFLAGS} -L${prefix}/lib64"
+    #TODO export LDFLAGS="${LDFLAGS} -L${prefix}/lib64"
+    export LDFLAGS="${LDFLAGS} -L${libdir}"
+    :
 fi
 
 # Check which VFD are available
@@ -162,7 +171,7 @@ fi
     --enable-fortran=yes \
     --enable-hl=yes \
     --enable-mirror-vfd="$ENABLE_MIRROR_VFD" \
-    --enable-parallel="$ENABLE_PARALLEL" \
+l    --enable-parallel="$ENABLE_PARALLEL" \
     --enable-ros3-vfd=yes \
     --enable-static=no \
     --enable-tests=no \
@@ -238,15 +247,24 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
+# Disable riscv64; MPI isn't really support there
+filter!(p -> arch(p) != "riscv64", platforms)
+
+# Disable aarch64-*-freebsd; we don't know (yet?) how to cross-compile for it
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.1", OpenMPI_compat="4.1.6, 5")
 # TODO: Use MPI only on non-Windows platforms
 # platforms = [filter(!Sys.iswindows, mpi_platforms); filter(Sys.iswindows, platforms)]
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+
+# TODO
+filter!(Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
