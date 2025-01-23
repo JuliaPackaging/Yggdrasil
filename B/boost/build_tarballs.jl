@@ -78,8 +78,7 @@ fi
     --debug-configuration install -q \
     --without-stacktrace -d0 \
     --libdir=${libdir} \
-    --includedir=${includedir} \
-    --build-type=complete
+    --includedir=${includedir}
 
 install_license LICENSE_1_0.txt
 """
