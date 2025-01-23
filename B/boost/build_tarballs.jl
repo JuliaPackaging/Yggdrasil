@@ -81,6 +81,12 @@ b2_args=(
     -d0 # Limit logging output
     --libdir=${libdir}
     --includedir=${includedir}
+    -sZLIB_INCLUDE=${includedir}
+    -sZLIB_LIBPATH=${libdir}
+    -sBZIP2_BINARY=bz2 \
+    -sBZIP2_INCLUDE=${includedir}
+    -sBZIP2_LIBPATH=${libdir}
+
 )
 
 ./b2 "${b2_args[@]}"
