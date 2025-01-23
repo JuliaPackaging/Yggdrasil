@@ -75,6 +75,11 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
     platforms = filter(p -> arch(p) != "powerpc64le", platforms)
     platforms = filter(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
+    # RISC-V64 was recently added to BinaryBuilder.jl, for it to work,
+    # OpenFHE and OpenFHE_int128 must be recompiled.
+    # Remove this when the next version of OpenFHE is available.
+    platforms = filter(p -> arch(p) != "riscv64", platforms)
+
     if name == "openfhe_julia_int128"
         # 32 bit systems does not support __int128
         platforms = filter(p -> nbits(p) != 32, platforms)
