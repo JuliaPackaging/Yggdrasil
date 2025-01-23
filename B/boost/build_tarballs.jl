@@ -75,8 +75,9 @@ fi
     --prefix=$prefix \
     --without-python \
     --layout=system \
-    --debug-configuration install -q \
-    --without-stacktrace -d0 \
+    --debug-configuration install \
+    -q \ # Quit on error
+    -d0 \ # Limit logging output
     --libdir=${libdir} \
     --includedir=${includedir}
 
