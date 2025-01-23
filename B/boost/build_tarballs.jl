@@ -66,10 +66,7 @@ elif [[ $target == *freebsd* ]]; then
 elif [[ $target == armv* ]]; then
     extraargs="abi=aapcs ${extraargs}"
 fi
-<<<<<<< HEAD
-./b2 -j${nproc} toolset=$toolset target-os=$targetos $extraargs variant=release --prefix=$prefix --without-python --layout=system --debug-configuration install -q
 
-=======
 ./b2 -j${nproc} \
     toolset=$toolset \
     target-os=$targetos \
@@ -83,9 +80,7 @@ fi
     --libdir=${libdir} \
     --includedir=${includedir} \
     --build-type=complete
-"""
-cd aAAAAAAAAAAAAAAAAAAAAAAAAA
->>>>>>> bd8f01da2 (Refactor build_tarballs.jl to enhance b2 command with additional options for improved installation flexibility)
+
 install_license LICENSE_1_0.txt
 """
 
