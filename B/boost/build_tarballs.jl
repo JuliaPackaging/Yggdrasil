@@ -46,7 +46,7 @@ if [[ $target == *apple* ]]; then
     fi
 elif [[ $target == *mingw* ]]; then
     targetos=windows
-    echo "using gcc : 8.1 : $CXX : <cxxflags>\\"-DBOOST_USE_WINAPI_VERSION=0x0601 -D_WIN32_WINNT=0x0601 -DBOOST_STACKTRACE_USE_WINDBG=1\\" <linkflags>\\"-DBOOST_STACKTRACE_USE_WINDBG=1\\" ;" > project-config.jam
+    echo "using gcc : 8.1 : $CXX : <cxxflags>\\"-DBOOST_USE_WINAPI_VERSION=0x0601 -D_WIN32_WINNT=0x0601 -DBOOST_STACKTRACE_USE_WINDBG=1\\" <linkflags>\\"-DBOOST_STACKTRACE_USE_WINDBG=1 -ldl\\" ;" > project-config.jam
 
     if [[ $target == x86_64*mingw* ]]; then
         extraargs="address-model=64 binary-format=pe abi=ms link=shared threadapi=win32"
