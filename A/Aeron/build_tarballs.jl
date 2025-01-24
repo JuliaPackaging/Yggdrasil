@@ -8,7 +8,6 @@ version = v"1.47.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/real-logic/aeron.git", "066ba5518428aaadc3c4902f6cd37b8ac0864602"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
