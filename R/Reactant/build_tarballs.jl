@@ -186,8 +186,8 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run host `nvcc`/`ptxas`/`fatbinary` during compilation.
         export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
 
-        # # Delete shared libc++ to force statically linking to it.
-        # rm -v "${prefix}/libcxx/lib/libc++.so"*
+        # Delete shared libc++ to force statically linking to it.
+        rm -v "${prefix}/libcxx/lib/libc++.so"*
 
         BAZEL_BUILD_FLAGS+=(
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
@@ -407,6 +407,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
                   )
         end
         push!(dependencies,
+              # Build dependency because we statically link libc++
               BuildDependency(PackageSpec("LLVMLibcxx_jll", preferred_llvm_version)),
               )
     end
