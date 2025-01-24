@@ -186,6 +186,9 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run `nvcc` at some point, needed to run host `fatbinary`.
         export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
 
+        # # Delete shared libc++ to force statically linking to it.
+        # rm -v "${prefix}/libcxx/lib/libc++.so"*
+
         BAZEL_BUILD_FLAGS+=(
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
             --action_env=CUSTOM_PLATFORM_ARCHITECTURE="aarch64"
@@ -268,11 +271,15 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
-    mkdir -p ${libdir}/cuda/nvvm/libdevice
-    mkdir -p ${libdir}/cuda/bin
-    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
-    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
-    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/fatbinary ${libdir}/cuda/bin
+
+    if [[ "${target}" == x86_64-linux-gnu ]]; then
+        NVCC_DIR=(bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc)
+    else
+        NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
+    fi
+    install -Dvm 644 "${NVCC_DIR[@]}/nvvm/libdevice/libdevice.10.bc" -t "${libdir}/cuda/nvvm/libdevice"
+    install -Dvm 755 "${NVCC_DIR[@]}/bin/ptxas" -t "${libdir}/cuda/bin"
+    install -Dvm 755 "${NVCC_DIR[@]}/bin/fatbinary" -t "${libdir}/cuda/bin"
 fi
 
 install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dlext}"
@@ -392,7 +399,16 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
-      push!(dependencies, BuildDependency(PackageSpec("LLVMLibcxx_jll", preferred_llvm_version)))
+        if hermetic_cuda_version_map[cuda_version] == "12.6.2"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.6.2.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.77-archive.tar.xz",
+                                "fcee340e703c8dec0b7fc4748a70c4b676f1946f92f0b6584fefd7b1a4c0bd63"),
+                  )
+        end
+        push!(dependencies,
+              BuildDependency(PackageSpec("LLVMLibcxx_jll", preferred_llvm_version)),
+              )
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
@@ -419,9 +435,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 		"libcudnn_engines_runtime_compiled",
 		"libcusparse",
 	)
-		san = replace(lib, "-" => "_")
-		push!(products2, LibraryProduct([lib, lib],
-		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
+	    san = replace(lib, "-" => "_")
+	    push!(products2,
+                  LibraryProduct([lib, lib], Symbol(san);
+                                 dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
 	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
