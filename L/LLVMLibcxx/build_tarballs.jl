@@ -16,6 +16,7 @@ cd $WORKSPACE/srcdir/llvm-project/runtimes
 
 export CXXFLAGS=-pthread
 cmake -B build \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_INSTALL_PREFIX=${prefix}/libcxx \
     -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
     -DCMAKE_BUILD_TYPE=Release \
