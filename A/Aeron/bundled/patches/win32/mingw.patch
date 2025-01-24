@@ -1,0 +1,1496 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 97d871781..92cf0c4a5 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -134,7 +134,7 @@ if (AERON_HIDE_DEPRECATION_MESSAGE)
+ endif (AERON_HIDE_DEPRECATION_MESSAGE)
+ 
+ # all UNIX-based platform compiler flags
+-if (UNIX)
++if (UNIX OR MINGW)
+     add_compile_options(-fstrict-aliasing -Wall -Wpedantic -Wextra -Wno-unused-parameter -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer)
+ 
+     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "11.0")
+@@ -216,7 +216,7 @@ endif()
+ # Project variables, etc.
+ 
+ if (NOT DEFINED GRADLE_WRAPPER)
+-    if (MSVC)
++    if (WIN32)
+         set(GRADLE_WRAPPER "gradlew.bat" CACHE INTERNAL "Location of the Gradle wrapper script")
+     else ()
+         set(GRADLE_WRAPPER "./gradlew" CACHE INTERNAL "Location of the Gradle wrapper script")
+diff --git a/aeron-archive/src/main/c/CMakeLists.txt b/aeron-archive/src/main/c/CMakeLists.txt
+index c967be68f..4a986d8f3 100644
+--- a/aeron-archive/src/main/c/CMakeLists.txt
++++ b/aeron-archive/src/main/c/CMakeLists.txt
+@@ -16,12 +16,12 @@
+ 
+ include(CheckSymbolExists)
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+-    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 Iphlpapi)
++if (WIN32 AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 Iphlpapi winmm)
+     set(WSAPOLL_PROTOTYPE_EXISTS True)
+ endif ()
+ 
+-if (MSVC)
++if (WIN32)
+     set(AERON_STATIC_LIB_LINK_OPTS "")
+ else()
+     # Because dlsym() is used to load strategies.
+@@ -53,8 +53,13 @@ if (F_PREALLOCATE_PROTOTYPE_EXISTS)
+     add_definitions(-DHAVE_F_PREALLOCATE)
+ endif ()
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
++if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++    add_definitions(-DAERON_NO_GETOPT)
++    if (MSYS OR MINGW)
++        add_link_options("-Wl,--export-all-symbols")
++    else ()
++        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
++    endif ()
+     set(BUILD_SHARED_LIBS ON)
+ endif ()
+ 
+diff --git a/aeron-client/src/main/c/CMakeLists.txt b/aeron-client/src/main/c/CMakeLists.txt
+index 1f62af6bb..abcdf0792 100644
+--- a/aeron-client/src/main/c/CMakeLists.txt
++++ b/aeron-client/src/main/c/CMakeLists.txt
+@@ -14,12 +14,12 @@
+ 
+ include(CheckSymbolExists)
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+-    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 Iphlpapi)
++if (WIN32 AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 iphlpapi winmm)
+     set(WSAPOLL_PROTOTYPE_EXISTS True)
+ endif ()
+ 
+-if (MSVC)
++if (WIN32)
+     set(AERON_STATIC_LIB_LINK_OPTS "")
+ else()
+     # Because dlsym() is used to load strategies.
+@@ -51,8 +51,13 @@ if (F_PREALLOCATE_PROTOTYPE_EXISTS)
+     add_definitions(-DHAVE_F_PREALLOCATE)
+ endif ()
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
++if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++    add_definitions(-DAERON_NO_GETOPT)
++    if (MSYS OR MINGW)
++        add_link_options("-Wl,--export-all-symbols")
++    else ()
++        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
++    endif ()
+     set(BUILD_SHARED_LIBS ON)
+ endif ()
+ 
+diff --git a/aeron-client/src/main/c/aeron_alloc.c b/aeron-client/src/main/c/aeron_alloc.c
+index 2f54cad8a..36b07e0a2 100644
+--- a/aeron-client/src/main/c/aeron_alloc.c
++++ b/aeron-client/src/main/c/aeron_alloc.c
+@@ -26,7 +26,7 @@
+ #include <errno.h>
+ #include <inttypes.h>
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ #include <windows.h>
+ #endif
+ 
+@@ -70,7 +70,7 @@ int aeron_alloc_aligned(void **ptr, size_t *offset, size_t size, size_t alignmen
+     if (!(AERON_IS_POWER_OF_TWO(alignment)))
+     {
+         errno = EINVAL;
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+         SetLastError(ERROR_INCORRECT_SIZE);
+ #endif
+         return -1;
+@@ -99,7 +99,7 @@ int aeron_alloc_aligned(void **ptr, size_t *offset, size_t size, size_t alignmen
+     return 0;
+ }
+ 
+-#if defined(__linux__) || defined(AERON_COMPILER_MSVC)
++#if defined(__linux__) || defined(_WIN32)
+ int aeron_reallocf(void **ptr, size_t size)
+ {
+     void *new_ptr = NULL;
+@@ -115,7 +115,7 @@ int aeron_reallocf(void **ptr, size_t size)
+             free(*ptr);
+             *ptr = NULL;
+             errno = ENOMEM;
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+             SetLastError(ERROR_OUTOFMEMORY);
+ #endif
+             return -1;
+diff --git a/aeron-client/src/main/c/aeron_cnc_file_descriptor.c b/aeron-client/src/main/c/aeron_cnc_file_descriptor.c
+index 389232e93..f5e203a13 100644
+--- a/aeron-client/src/main/c/aeron_cnc_file_descriptor.c
++++ b/aeron-client/src/main/c/aeron_cnc_file_descriptor.c
+@@ -38,7 +38,7 @@ int32_t aeron_cnc_version_volatile(aeron_cnc_metadata_t *metadata)
+ 
+ static bool aeron_cnc_map_file_is_retry_err(int err)
+ {
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+     return
+         ERROR_FILE_NOT_FOUND == err ||
+         ERROR_PATH_NOT_FOUND == err ||
+diff --git a/aeron-client/src/main/c/aeron_socket.c b/aeron-client/src/main/c/aeron_socket.c
+index 520b06002..8fb46ce42 100644
+--- a/aeron-client/src/main/c/aeron_socket.c
++++ b/aeron-client/src/main/c/aeron_socket.c
+@@ -20,7 +20,7 @@
+ #include "aeron_alloc.h"
+ #include "util/aeron_netutil.h"
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ #include <fcntl.h>
+ #include <unistd.h>
+@@ -213,7 +213,7 @@ int aeron_setsockopt(aeron_socket_t fd, int level, int optname, const void *optv
+     return 0;
+ }
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ #if _WIN32_WINNT < 0x0600
+ #error Unsupported windows version
+diff --git a/aeron-client/src/main/c/aeron_socket.h b/aeron-client/src/main/c/aeron_socket.h
+index f9ddee4bf..2ec0d48ca 100644
+--- a/aeron-client/src/main/c/aeron_socket.h
++++ b/aeron-client/src/main/c/aeron_socket.h
+@@ -20,7 +20,7 @@
+ #include <stdint.h>
+ #include "util/aeron_platform.h"
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ #include <netinet/in.h>
+ #include <sys/socket.h>
+@@ -33,12 +33,12 @@
+ 
+ typedef int aeron_socket_t;
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+-#include <WinSock2.h>
+-#include <Windows.h>
++#include <winsock2.h>
++#include <windows.h>
+ #include <ws2ipdef.h>
+-#include <WS2tcpip.h>
++#include <ws2tcpip.h>
+ #include <iphlpapi.h>
+ 
+ // SOCKET is uint64_t but we need a signed type to match the Linux version
+diff --git a/aeron-client/src/main/c/aeron_windows.c b/aeron-client/src/main/c/aeron_windows.c
+index 322109379..0c0d8ffa9 100644
+--- a/aeron-client/src/main/c/aeron_windows.c
++++ b/aeron-client/src/main/c/aeron_windows.c
+@@ -15,22 +15,24 @@
+  */
+ #include "util/aeron_platform.h"
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ #include "aeron_windows.h"
+ #include "util/aeron_error.h"
+ 
+-#include <WinSock2.h>
+-#include <Windows.h>
++#include <winsock2.h>
++#include <windows.h>
+ #include <time.h>
+ #include <intrin.h>
+ 
+ #include "concurrent/aeron_thread.h"
+ #include "aeron_alloc.h"
+ 
++#if defined(AERON_COMPILER_MSVC)
+ #define __builtin_bswap32 _byteswap_ulong
+ #define __builtin_bswap64 _byteswap_uint64
+ #define __builtin_popcount __popcnt
+ #define __builtin_popcountll __popcnt64
++#endif
+ 
+ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+ {
+@@ -58,6 +60,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+     return TRUE;
+ }
+ 
++#if defined(AERON_COMPILER_MSVC)
+ typedef struct { UINT64 q[2]; } aeron_uint128_t;
+ 
+ aeron_uint128_t make_aeron_uint128_t(UINT64 x)
+@@ -177,6 +180,7 @@ BOOL aeron_ipv6_does_prefix_match(struct in6_addr *in6_addr1, struct in6_addr *i
+ 
+     return aeron_uint128_equals(aeron_uint128_bitwise_and(addr1, netmask), aeron_uint128_bitwise_and(addr2, netmask));
+ }
++#endif
+ 
+ void aeron_srand48(uint64_t aeron_nano_clock)
+ {
+diff --git a/aeron-client/src/main/c/aeron_windows.h b/aeron-client/src/main/c/aeron_windows.h
+index 372732bdd..97351c716 100644
+--- a/aeron-client/src/main/c/aeron_windows.h
++++ b/aeron-client/src/main/c/aeron_windows.h
+@@ -19,16 +19,17 @@
+ 
+ #include "util/aeron_platform.h"
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ #define aeron_erand48 erand48
+ #define aeron_srand48 srand48
+ #define aeron_drand48 drand48
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ #include <stddef.h>
+ #include <stdint.h>
++#include <time.h>
+ 
+ double aeron_erand48(unsigned short xsubi[3]);
+ void aeron_srand48(uint64_t aeron_nano_clock);
+diff --git a/aeron-client/src/main/c/concurrent/aeron_spsc_rb.h b/aeron-client/src/main/c/concurrent/aeron_spsc_rb.h
+index 9bfa35e19..f009f9f3b 100644
+--- a/aeron-client/src/main/c/concurrent/aeron_spsc_rb.h
++++ b/aeron-client/src/main/c/concurrent/aeron_spsc_rb.h
+@@ -19,7 +19,7 @@
+ 
+ #include "concurrent/aeron_rb.h"
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <sys/uio.h>
+ #else
+ struct iovec
+diff --git a/aeron-client/src/main/c/concurrent/aeron_thread.c b/aeron-client/src/main/c/concurrent/aeron_thread.c
+index 883004a20..59ef0253c 100644
+--- a/aeron-client/src/main/c/concurrent/aeron_thread.c
++++ b/aeron-client/src/main/c/concurrent/aeron_thread.c
+@@ -29,9 +29,11 @@
+ #if !defined(_WIN32)
+ #include <unistd.h>
+ #else
+-#include <Windows.h>
++#include <windows.h>
+ #include <mmsystem.h>
++#ifdef _MSC_VER
+ #pragma comment(lib, "winmm.lib")
++#endif
+ 
+ struct aeron_thread_stct
+ {
+@@ -47,7 +49,7 @@ struct aeron_thread_stct
+ 
+ void aeron_nano_sleep(uint64_t nanoseconds)
+ {
+-#ifdef AERON_COMPILER_MSVC
++#ifdef _WIN32
+     timeBeginPeriod(1);
+ 
+     HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+@@ -110,7 +112,7 @@ int aeron_thread_set_affinity(const char *role_name, uint8_t cpu_affinity_no)
+ #endif
+ }
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ void aeron_thread_set_name(const char *role_name)
+ {
+@@ -122,7 +124,7 @@ void aeron_thread_set_name(const char *role_name)
+ }
+ 
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ static BOOL WINAPI aeron_thread_once_callback(PINIT_ONCE init_once, void (*callback)(void), void **context)
+ {
+@@ -130,9 +132,9 @@ static BOOL WINAPI aeron_thread_once_callback(PINIT_ONCE init_once, void (*callb
+     return TRUE;
+ }
+ 
+-void aeron_thread_once(AERON_INIT_ONCE *s_init_once, void *callback)
++void aeron_thread_once(AERON_INIT_ONCE *s_init_once, void (*callback)(void))
+ {
+-    InitOnceExecuteOnce((PINIT_ONCE)s_init_once, (PINIT_ONCE_FN)aeron_thread_once_callback, callback, NULL);
++    InitOnceExecuteOnce((PINIT_ONCE)s_init_once, (PINIT_ONCE_FN)aeron_thread_once_callback, (PVOID)callback, NULL);
+ }
+ 
+ int aeron_mutex_init(aeron_mutex_t *mutex, void *attr)
+@@ -330,7 +332,7 @@ int aeron_cond_signal(aeron_cond_t *cv)
+ 
+  // sched
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ #include <sched.h>
+ 
+@@ -341,7 +343,7 @@ void proc_yield(void)
+ #endif
+ }
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ #else
+ #error Unsupported platform!
+diff --git a/aeron-client/src/main/c/concurrent/aeron_thread.h b/aeron-client/src/main/c/concurrent/aeron_thread.h
+index 2140879de..670d89386 100644
+--- a/aeron-client/src/main/c/concurrent/aeron_thread.h
++++ b/aeron-client/src/main/c/concurrent/aeron_thread.h
+@@ -28,7 +28,7 @@ void aeron_nano_sleep(uint64_t nanoseconds);
+ void aeron_micro_sleep(unsigned int microseconds);
+ int aeron_thread_set_affinity(const char *role_name, uint8_t cpu_affinity_no);
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ #include <pthread.h>
+ typedef pthread_mutex_t aeron_mutex_t;
+@@ -56,10 +56,10 @@ typedef pthread_cond_t aeron_cond_t;
+ #define aeron_cond_signal pthread_cond_signal
+ #define aeron_cond_wait pthread_cond_wait
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ #define WIN32_LEAN_AND_MEAN
+-#include <Windows.h>
++#include <windows.h>
+ 
+ typedef CRITICAL_SECTION aeron_mutex_t;
+ 
+@@ -79,7 +79,7 @@ typedef CONDITION_VARIABLE aeron_cond_t;
+ 
+ #define AERON_INIT_ONCE_VALUE {0}
+ 
+-void aeron_thread_once(AERON_INIT_ONCE *s_init_once, void *callback);
++void aeron_thread_once(AERON_INIT_ONCE *s_init_once, void (*callback)(void));
+ 
+ int aeron_mutex_init(aeron_mutex_t *mutex, void *attr);
+ int aeron_mutex_destroy(aeron_mutex_t *mutex);
+@@ -114,11 +114,11 @@ int aeron_cond_signal(aeron_cond_t *cv);
+ 
+ // sched
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ void proc_yield(void);
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ int sched_yield(void);
+ #define proc_yield _mm_pause
+diff --git a/aeron-client/src/main/c/util/aeron_bitutil.c b/aeron-client/src/main/c/util/aeron_bitutil.c
+index c58587861..d55253348 100644
+--- a/aeron-client/src/main/c/util/aeron_bitutil.c
++++ b/aeron-client/src/main/c/util/aeron_bitutil.c
+@@ -68,7 +68,7 @@ int32_t aeron_randomised_int32(void)
+         fprintf(stderr, "Failed to read from aeron_dev_random (%d): %s\n", errno, strerror(errno));
+         exit(EXIT_FAILURE);
+     }
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+     uint32_t value;
+     if (0 == rand_s(&value))
+     {
+diff --git a/aeron-client/src/main/c/util/aeron_clock.c b/aeron-client/src/main/c/util/aeron_clock.c
+index d1b57f7ae..f0c6937a4 100644
+--- a/aeron-client/src/main/c/util/aeron_clock.c
++++ b/aeron-client/src/main/c/util/aeron_clock.c
+@@ -23,7 +23,7 @@
+ #include "util/aeron_clock.h"
+ #include "concurrent/aeron_atomic.h"
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ 
+ #include <windows.h>
+ 
+diff --git a/aeron-client/src/main/c/util/aeron_dlopen.c b/aeron-client/src/main/c/util/aeron_dlopen.c
+index 26a776c87..95c8a90be 100644
+--- a/aeron-client/src/main/c/util/aeron_dlopen.c
++++ b/aeron-client/src/main/c/util/aeron_dlopen.c
+@@ -29,7 +29,7 @@
+ #include "util/aeron_strutil.h"
+ #include "aeron_alloc.h"
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ const char *aeron_dlinfo(const void *addr, char *buffer, size_t max_buffer_length)
+ {
+@@ -58,11 +58,11 @@ const char *aeron_dlinfo_func(void (*func)(void), char *buffer, size_t max_buffe
+     return aeron_dlinfo(addr, buffer, max_buffer_length);
+ }
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ #include "concurrent/aeron_counters_manager.h"
+ #include "aeronc.h"
+-#include <Windows.h>
++#include <windows.h>
+ 
+ void *aeron_dlsym_fallback(LPCSTR name)
+ {
+@@ -261,9 +261,9 @@ int aeron_dl_load_libs_delete(aeron_dl_loaded_libs_state_t *state)
+         {
+             aeron_dl_loaded_lib_state_t *lib = &state->libs[i];
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+             dlclose(lib->handle);
+-#elif defined(AERON_COMPILER_MSVC) && defined(AERON_CPU_X64)
++#elif defined(_WIN32)
+             FreeLibrary(lib->handle);
+ #else
+ #error Unsupported platform!
+diff --git a/aeron-client/src/main/c/util/aeron_dlopen.h b/aeron-client/src/main/c/util/aeron_dlopen.h
+index b31f1c9ac..bfb14579b 100644
+--- a/aeron-client/src/main/c/util/aeron_dlopen.h
++++ b/aeron-client/src/main/c/util/aeron_dlopen.h
+@@ -19,7 +19,7 @@
+ 
+ #include <util/aeron_platform.h>
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ #include <dlfcn.h>
+ #include <stddef.h>
+@@ -31,7 +31,7 @@
+ const char *aeron_dlinfo(const void *, char *buffer, size_t max_buffer_length);
+ const char *aeron_dlinfo_func(void (*func)(void), char *buffer, size_t max_buffer_length);
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ #define RTLD_DEFAULT ((void *)-123)
+ #define RTLD_NEXT ((void *)-124)
+diff --git a/aeron-client/src/main/c/util/aeron_env.c b/aeron-client/src/main/c/util/aeron_env.c
+index 27cb96346..230865999 100644
+--- a/aeron-client/src/main/c/util/aeron_env.c
++++ b/aeron-client/src/main/c/util/aeron_env.c
+@@ -24,7 +24,7 @@
+ 
+ int aeron_env_set(const char *key, const char *val)
+ {
+-#if defined(WIN32)
++#if defined(_WIN32)
+     return _putenv_s(key, val);
+ #else
+     return setenv(key, val, 1);
+@@ -33,7 +33,7 @@ int aeron_env_set(const char *key, const char *val)
+ 
+ int aeron_env_unset(const char *key)
+ {
+-#if defined(WIN32)
++#if defined(_WIN32)
+     return _putenv_s(key, "");
+ #else
+     return unsetenv(key);
+diff --git a/aeron-client/src/main/c/util/aeron_error.c b/aeron-client/src/main/c/util/aeron_error.c
+index 3319dcf83..2ca29619e 100644
+--- a/aeron-client/src/main/c/util/aeron_error.c
++++ b/aeron-client/src/main/c/util/aeron_error.c
+@@ -32,7 +32,7 @@
+ #define AERON_ERR_TRAILER "...\n"
+ #define AERON_ERR_DESCRIPTION_UNAVAILABLE "<Unable to get error description>";
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ const char *aeron_strerror_r(int errcode, char *buffer, size_t length)
+ {
+@@ -45,7 +45,7 @@ const char *aeron_strerror_r(int errcode, char *buffer, size_t length)
+     return buffer;
+ }
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ #include <windows.h>
+ 
+ const char *aeron_strerror_r(int errcode, char *buffer, size_t length)
+@@ -80,7 +80,7 @@ const char *aeron_strerror_r(int errcode, char *buffer, size_t length)
+ 
+ static AERON_INIT_ONCE error_is_initialized = AERON_INIT_ONCE_VALUE;
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ static pthread_key_t error_key = TLS_OUT_OF_INDEXES;
+ #else
+ static pthread_key_t error_key;
+@@ -97,7 +97,7 @@ static void initialize_per_thread_error(void)
+ 
+ static void initialize_error(void)
+ {
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+     if (error_key != TLS_OUT_OF_INDEXES)
+     {
+         return;
+@@ -164,7 +164,7 @@ static aeron_per_thread_error_t *get_required_error_state(void)
+ void aeron_set_errno(int errcode)
+ {
+     errno = errcode;
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+     switch (errcode)
+     {
+         case 0:
+@@ -328,7 +328,7 @@ void aeron_err_clear(void)
+     strcpy(error_state->errmsg, "no error");
+ }
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ 
+ bool aeron_error_dll_process_attach()
+ {
+diff --git a/aeron-client/src/main/c/util/aeron_error.h b/aeron-client/src/main/c/util/aeron_error.h
+index 873ebe1bb..54477b007 100644
+--- a/aeron-client/src/main/c/util/aeron_error.h
++++ b/aeron-client/src/main/c/util/aeron_error.h
+@@ -41,7 +41,7 @@ void aeron_err_set(int errcode, const char *function, const char *filename, int
+ void aeron_err_append(const char *function, const char *filename, int line_number, const char *format, ...);
+ void aeron_err_clear(void);
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ bool aeron_error_dll_process_attach();
+ void aeron_error_dll_thread_detach();
+ void aeron_error_dll_process_detach();
+diff --git a/aeron-client/src/main/c/util/aeron_fileutil.c b/aeron-client/src/main/c/util/aeron_fileutil.c
+index d55a31c8b..711770694 100644
+--- a/aeron-client/src/main/c/util/aeron_fileutil.c
++++ b/aeron-client/src/main/c/util/aeron_fileutil.c
+@@ -19,7 +19,7 @@
+ #define _GNU_SOURCE
+ #endif
+ 
+-#if defined(__linux__) || defined(AERON_COMPILER_MSVC)
++#if defined(__linux__) || defined(_WIN32)
+ #define AERON_NATIVE_PRETOUCH
+ #endif
+ 
+@@ -33,19 +33,19 @@
+ #include "aeron_error.h"
+ #include "aeron_fileutil.h"
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #define AERON_FILE_SEP '\\'
+ #else
+ #define AERON_FILE_SEP '/'
+ #endif
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #define AERON_FILE_SEP_STR "\\"
+ #else
+ #define AERON_FILE_SEP_STR "/"
+ #endif
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ 
+ #include <windows.h>
+ #include <stdbool.h>
+@@ -53,18 +53,22 @@
+ #include <stdio.h>
+ #include <io.h>
+ #include <direct.h>
++#include <share.h>
+ 
+ #define PROT_READ  1
+ #define PROT_WRITE 2
+ #define MAP_FAILED ((void *)-1)
+ 
+ #define MAP_SHARED 0x01
++
++#ifdef AERON_COMPILER_MSVC
+ #define S_IRUSR _S_IREAD
+ #define S_IWUSR _S_IWRITE
+ #define S_IRGRP 0
+ #define S_IWGRP 0
+ #define S_IROTH 0
+ #define S_IWOTH 0
++#endif
+ 
+ static int aeron_mmap(aeron_mapped_file_t *mapping, int fd, bool pre_touch)
+ {
+@@ -555,7 +559,7 @@ int aeron_map_existing_file(aeron_mapped_file_t *mapped_file, const char *path)
+     const int64_t file_length = aeron_file_length(path);
+     if (-1 == file_length)
+     {
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+         AERON_SET_ERR(errno, "Failed to determine the size of the file: %s", path);
+         close(fd);
+ #else
+@@ -607,7 +611,7 @@ int aeron_publication_image_location(char *dst, size_t length, const char *aeron
+ 
+ size_t aeron_temp_filename(char *filename, size_t length)
+ {
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+     char rawname[] = "/tmp/aeron-c.XXXXXXX";
+     int fd = mkstemp(rawname);
+     close(fd);
+@@ -693,7 +697,7 @@ int aeron_raw_log_map_existing(aeron_mapped_raw_log_t *mapped_raw_log, const cha
+     const int64_t file_length = aeron_file_length(path);
+     if (-1 == file_length)
+     {
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+         AERON_SET_ERR(errno, "Failed to determine the size of the existing raw log, filename: %s", path);
+         close(fd);
+ #else
+@@ -789,7 +793,7 @@ bool aeron_raw_log_free(aeron_mapped_raw_log_t *mapped_raw_log, const char *file
+ 
+ inline static const char *tmp_dir(void)
+ {
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+     static char buff[MAX_PATH + 1];
+ 
+     if (GetTempPath(MAX_PATH, &buff[0]) > 0)
+@@ -813,7 +817,7 @@ inline static const char *tmp_dir(void)
+ 
+ inline static bool has_file_separator_at_end(const char *path)
+ {
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+     const char last = path[strlen(path) - 1];
+     return last == '\\' || last == '/';
+ #else
+@@ -827,7 +831,7 @@ inline static bool has_file_separator_at_end(const char *path)
+ 
+ inline static const char *username(void)
+ {
+-#if (_MSC_VER)
++#if (_WIN32)
+     const char *username = getenv("USER");
+ 
+     if (NULL == username)
+@@ -862,7 +866,7 @@ int aeron_default_path(char *path, size_t path_length)
+ {
+ #if defined(__linux__)
+     return snprintf(path, path_length, "/dev/shm/aeron-%s", username());
+-#elif defined(_MSC_VER)
++#elif defined(_WIN32)
+     return snprintf(
+         path, path_length, "%s%saeron-%s", tmp_dir(), has_file_separator_at_end(tmp_dir()) ? "" : "\\", username());
+ #else
+diff --git a/aeron-client/src/main/c/util/aeron_fileutil.h b/aeron-client/src/main/c/util/aeron_fileutil.h
+index 654a36774..04e4e4f27 100644
+--- a/aeron-client/src/main/c/util/aeron_fileutil.h
++++ b/aeron-client/src/main/c/util/aeron_fileutil.h
+@@ -47,13 +47,13 @@ int aeron_unmap(aeron_mapped_file_t *mapped_file);
+ 
+ int aeron_msync(void *addr, size_t length);
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ #include <unistd.h>
+ 
+ #define AERON_FILEUTIL_ERROR_ENOSPC ENOSPC
+ 
+ #define aeron_mkdir mkdir
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ #define _CRT_RAND_S
+ #include <io.h>
+ #include <direct.h>
+@@ -61,9 +61,11 @@ int aeron_msync(void *addr, size_t length);
+ #include <winsock2.h>
+ #include <windows.h>
+ 
++#ifdef AERON_COMPILER_MSVC
+ #define S_IRWXU 0
+ #define S_IRWXG 0
+ #define S_IRWXO 0
++#endif
+ 
+ #define AERON_FILEUTIL_ERROR_ENOSPC ERROR_DISK_FULL
+ 
+diff --git a/aeron-client/src/main/c/util/aeron_strutil.c b/aeron-client/src/main/c/util/aeron_strutil.c
+index 3417d165b..88833366e 100644
+--- a/aeron-client/src/main/c/util/aeron_strutil.c
++++ b/aeron-client/src/main/c/util/aeron_strutil.c
+@@ -164,7 +164,7 @@ int aeron_tokenise(char *input, char delimiter, int max_tokens, char **tokens)
+     return num_tokens;
+ }
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ 
+ char *aeron_strndup(const char *value, size_t length)
+ {
+diff --git a/aeron-client/src/main/c/util/aeron_strutil.h b/aeron-client/src/main/c/util/aeron_strutil.h
+index 9859ea19f..2178b34b1 100644
+--- a/aeron-client/src/main/c/util/aeron_strutil.h
++++ b/aeron-client/src/main/c/util/aeron_strutil.h
+@@ -32,11 +32,11 @@
+ #define AERON_EXPORT __declspec(dllimport)
+ #endif
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ 
+ #define aeron_strndup strndup
+ 
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ 
+ char *aeron_strndup(const char *value, size_t length);
+ 
+diff --git a/aeron-client/src/main/cpp/CMakeLists.txt b/aeron-client/src/main/cpp/CMakeLists.txt
+index 98675e3b5..5f30c3583 100644
+--- a/aeron-client/src/main/cpp/CMakeLists.txt
++++ b/aeron-client/src/main/cpp/CMakeLists.txt
+@@ -14,7 +14,7 @@
+ # limitations under the License.
+ #
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++if (WIN32 AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+     set(BUILD_SHARED_LIBS ON)
+ endif ()
+ 
+diff --git a/aeron-client/src/main/cpp/Context.cpp b/aeron-client/src/main/cpp/Context.cpp
+index 9f02e5d93..a1dfaba92 100644
+--- a/aeron-client/src/main/cpp/Context.cpp
++++ b/aeron-client/src/main/cpp/Context.cpp
+@@ -22,7 +22,7 @@
+     #ifndef NOMINMAX
+         #define NOMINMAX
+     #endif // !NOMINMAX
+-    #include <Windows.h>
++    #include <windows.h>
+ #else
+ #include <unistd.h>
+ #include <sys/types.h>
+@@ -80,7 +80,7 @@ bool Context::requestDriverTermination(
+ #if !defined(__linux__)
+ inline static std::string tmpDir()
+ {
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+     char buff[MAX_PATH + 1];
+     std::string dir;
+ 
+@@ -106,7 +106,7 @@ inline static std::string tmpDir()
+ 
+ inline static std::string getUserName()
+ {
+-#if (_MSC_VER)
++#if (_WIN32)
+     const char *username = ::getenv("USER");
+ 
+     if (nullptr == username)
+@@ -141,7 +141,7 @@ std::string Context::defaultAeronPath()
+ {
+ #if defined(__linux__)
+     return "/dev/shm/aeron-" + getUserName();
+-#elif (_MSC_VER)
++#elif (_WIN32)
+     return tmpDir() + "aeron-" + getUserName();
+ #else
+     return tmpDir() + "/aeron-" + getUserName();
+diff --git a/aeron-client/src/main/cpp/concurrent/AgentRunner.h b/aeron-client/src/main/cpp/concurrent/AgentRunner.h
+index 9305e6661..0cf5a3bb4 100644
+--- a/aeron-client/src/main/cpp/concurrent/AgentRunner.h
++++ b/aeron-client/src/main/cpp/concurrent/AgentRunner.h
+@@ -25,7 +25,7 @@
+ #include "util/ScopeUtils.h"
+ #include "util/Platform.h"
+ 
+-#if !defined(AERON_COMPILER_MSVC)
++#if !defined(_WIN32)
+ #include <pthread.h>
+ #endif
+ 
+@@ -118,7 +118,7 @@ public:
+         m_thread = std::thread(
+             [&]()
+             {
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ #elif defined(Darwin)
+                 pthread_setname_np(m_name.c_str());
+ #else
+diff --git a/aeron-client/src/main/cpp/concurrent/reports/LossReportDescriptor.h b/aeron-client/src/main/cpp/concurrent/reports/LossReportDescriptor.h
+index 4b3d233b2..1aa9aaf3b 100644
+--- a/aeron-client/src/main/cpp/concurrent/reports/LossReportDescriptor.h
++++ b/aeron-client/src/main/cpp/concurrent/reports/LossReportDescriptor.h
+@@ -79,7 +79,7 @@ static const std::string LOSS_REPORT_FILE_NAME = "loss-report.dat";
+ 
+ inline static std::string file(std::string &aeronDirectoryName)
+ {
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+     return aeronDirectoryName + "\\" + LOSS_REPORT_FILE_NAME;
+ #else
+     return aeronDirectoryName + "/" + LOSS_REPORT_FILE_NAME;
+diff --git a/aeron-client/src/main/cpp/util/Exceptions.h b/aeron-client/src/main/cpp/util/Exceptions.h
+index bcd5446f3..37f375b3b 100644
+--- a/aeron-client/src/main/cpp/util/Exceptions.h
++++ b/aeron-client/src/main/cpp/util/Exceptions.h
+@@ -26,7 +26,7 @@
+ namespace aeron { namespace util
+ {
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #define AERON_FILE_SEP '\\'
+ #else
+ #define AERON_FILE_SEP '/'
+@@ -44,7 +44,7 @@ static constexpr const char *past_prefix(const char * const prefix, const char *
+     #define __SHORT_FILE__ __FILE__
+ #endif
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+     #define SOURCEINFO __FUNCTION__,  __SHORT_FILE__, __LINE__
+ #else
+     #define SOURCEINFO  __PRETTY_FUNCTION__,  __SHORT_FILE__, __LINE__
+diff --git a/aeron-client/src/main/cpp/util/MemoryMappedFile.cpp b/aeron-client/src/main/cpp/util/MemoryMappedFile.cpp
+index d105afd15..80227d0e0 100644
+--- a/aeron-client/src/main/cpp/util/MemoryMappedFile.cpp
++++ b/aeron-client/src/main/cpp/util/MemoryMappedFile.cpp
+@@ -23,7 +23,7 @@
+     #ifndef NOMINMAX
+         #define NOMINMAX
+     #endif // !NOMINMAX
+-    #include <Windows.h>
++    #include <windows.h>
+     #include "StringUtil.h"
+ #endif
+ 
+diff --git a/aeron-client/src/main/cpp_wrapper/CMakeLists.txt b/aeron-client/src/main/cpp_wrapper/CMakeLists.txt
+index af6d23af7..d293dd7c9 100644
+--- a/aeron-client/src/main/cpp_wrapper/CMakeLists.txt
++++ b/aeron-client/src/main/cpp_wrapper/CMakeLists.txt
+@@ -14,7 +14,7 @@
+ # limitations under the License.
+ #
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++if (WIN32 AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+     set(BUILD_SHARED_LIBS ON)
+ endif ()
+ 
+diff --git a/aeron-client/src/main/cpp_wrapper/Image.h b/aeron-client/src/main/cpp_wrapper/Image.h
+index 19ec176e6..d26923dc8 100644
+--- a/aeron-client/src/main/cpp_wrapper/Image.h
++++ b/aeron-client/src/main/cpp_wrapper/Image.h
+@@ -23,6 +23,7 @@
+ #include <atomic>
+ #include <cassert>
+ #include <functional>
++#include <memory>
+ 
+ #include "concurrent/AtomicBuffer.h"
+ #include "concurrent/logbuffer/Header.h"
+diff --git a/aeron-client/src/main/cpp_wrapper/Publication.h b/aeron-client/src/main/cpp_wrapper/Publication.h
+index 390d6673d..8d74b1301 100644
+--- a/aeron-client/src/main/cpp_wrapper/Publication.h
++++ b/aeron-client/src/main/cpp_wrapper/Publication.h
+@@ -22,6 +22,7 @@
+ #include <memory>
+ #include <string>
+ #include <vector>
++#include <mutex>
+ 
+ #include "concurrent/AtomicBuffer.h"
+ #include "concurrent/logbuffer/BufferClaim.h"
+diff --git a/aeron-client/src/main/cpp_wrapper/concurrent/AgentRunner.h b/aeron-client/src/main/cpp_wrapper/concurrent/AgentRunner.h
+index 6e24bb0c1..d42dda610 100644
+--- a/aeron-client/src/main/cpp_wrapper/concurrent/AgentRunner.h
++++ b/aeron-client/src/main/cpp_wrapper/concurrent/AgentRunner.h
+@@ -25,7 +25,7 @@
+ #include "util/ScopeUtils.h"
+ #include "concurrent/logbuffer/TermReader.h"
+ 
+-#if !defined(AERON_COMPILER_MSVC)
++#if !defined(_WIN32)
+ #include <pthread.h>
+ #endif
+ 
+@@ -118,7 +118,7 @@ public:
+         m_thread = std::thread(
+             [&]()
+             {
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ #elif defined(Darwin)
+                 pthread_setname_np(m_name.c_str());
+ #else
+diff --git a/aeron-client/src/main/cpp_wrapper/util/Exceptions.h b/aeron-client/src/main/cpp_wrapper/util/Exceptions.h
+index 6916279a6..72aa22043 100644
+--- a/aeron-client/src/main/cpp_wrapper/util/Exceptions.h
++++ b/aeron-client/src/main/cpp_wrapper/util/Exceptions.h
+@@ -28,7 +28,7 @@
+ namespace aeron { namespace util
+ {
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #define AERON_FILE_SEP '\\'
+ #else
+ #define AERON_FILE_SEP '/'
+@@ -46,7 +46,7 @@ static constexpr const char *past_prefix(const char * const prefix, const char *
+     #define __SHORT_FILE__ __FILE__
+ #endif
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+     #define SOURCEINFO __FUNCTION__,  __SHORT_FILE__, __LINE__
+ #else
+     #define SOURCEINFO  __PRETTY_FUNCTION__,  __SHORT_FILE__, __LINE__
+diff --git a/aeron-client/src/test/c/CMakeLists.txt b/aeron-client/src/test/c/CMakeLists.txt
+index d9e81f418..54a7dd135 100644
+--- a/aeron-client/src/test/c/CMakeLists.txt
++++ b/aeron-client/src/test/c/CMakeLists.txt
+@@ -14,8 +14,8 @@
+ # limitations under the License.
+ #
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+-    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 Iphlpapi)
++if (WIN32 AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 iphlpapi winmm)
+ endif ()
+ 
+ include_directories(${AERON_C_CLIENT_SOURCE_PATH})
+diff --git a/aeron-client/src/test/c/aeron_uri_test.cpp b/aeron-client/src/test/c/aeron_uri_test.cpp
+index 03fea2fb1..fa404abbd 100644
+--- a/aeron-client/src/test/c/aeron_uri_test.cpp
++++ b/aeron-client/src/test/c/aeron_uri_test.cpp
+@@ -27,6 +27,10 @@ extern "C"
+ #include "util/aeron_netutil.h"
+ }
+ 
++#ifdef _WIN32
++#define strdup _strdup
++#endif
++
+ static void assertParamsAreEqual(aeron_uri_params_t *params1, aeron_uri_params_t *params2)
+ {
+     EXPECT_EQ(params1->length, params2->length);
+diff --git a/aeron-client/src/test/c/util/aeron_fileutil_test.cpp b/aeron-client/src/test/c/util/aeron_fileutil_test.cpp
+index 93f48b443..6ef754dd7 100644
+--- a/aeron-client/src/test/c/util/aeron_fileutil_test.cpp
++++ b/aeron-client/src/test/c/util/aeron_fileutil_test.cpp
+@@ -25,13 +25,13 @@ extern "C"
+ #include "util/aeron_error.h"
+ }
+ 
+-#if defined(AERON_COMPILER_GCC)
++#if defined(AERON_COMPILER_GCC) && !defined(_WIN32)
+ #define removeDir remove
+-#elif defined(AERON_COMPILER_MSVC)
++#elif defined(_WIN32)
+ #define removeDir RemoveDirectoryA
+ #endif
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #define AERON_FILE_SEP_STR "\\"
+ #else
+ #define AERON_FILE_SEP_STR "/"
+@@ -125,7 +125,7 @@ TEST_F(FileUtilTest, resolveShouldConcatPaths)
+ {
+     const char *parent = "this_is_the_parent";
+     const char *child = "this_is_the_child";
+-#ifdef _MSC_VER
++#ifdef _WIN32
+     const char *expected = "this_is_the_parent\\this_is_the_child";
+ #else
+     const char *expected = "this_is_the_parent/this_is_the_child";
+diff --git a/aeron-client/src/test/cpp/ClientConductorTest.cpp b/aeron-client/src/test/cpp/ClientConductorTest.cpp
+index 6f5c68e37..57eece578 100644
+--- a/aeron-client/src/test/cpp/ClientConductorTest.cpp
++++ b/aeron-client/src/test/cpp/ClientConductorTest.cpp
+@@ -35,7 +35,7 @@ static const std::int64_t LOG_FILE_LENGTH = (TERM_LENGTH * 3) + LogBufferDescrip
+ static const std::string SOURCE_IDENTITY = "127.0.0.1:43567";
+ static const std::string COUNTER_LABEL = "counter label";
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #define unlink _unlink
+ #endif
+ 
+diff --git a/aeron-client/src/test/cpp/util/MemoryMappedFileTest.cpp b/aeron-client/src/test/cpp/util/MemoryMappedFileTest.cpp
+index 0855f21ba..3310a787b 100644
+--- a/aeron-client/src/test/cpp/util/MemoryMappedFileTest.cpp
++++ b/aeron-client/src/test/cpp/util/MemoryMappedFileTest.cpp
+@@ -23,7 +23,7 @@
+ using namespace aeron::util;
+ using namespace aeron::test;
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #define unlink _unlink
+ #endif
+ 
+diff --git a/aeron-client/src/test/cpp/util/TestUtils.h b/aeron-client/src/test/cpp/util/TestUtils.h
+index 4574cbd98..f031da60b 100644
+--- a/aeron-client/src/test/cpp/util/TestUtils.h
++++ b/aeron-client/src/test/cpp/util/TestUtils.h
+@@ -17,7 +17,7 @@
+ #ifndef AERON_TESTUTILS_H
+ #define AERON_TESTUTILS_H
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #include <cstdlib>
+ #else
+@@ -30,7 +30,7 @@ namespace aeron { namespace test {
+ 
+ std::string makeTempFileName()
+ {
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+     char rawname[] = "/tmp/aeron-c.XXXXXXX";
+     int fd = ::mkstemp(rawname);
+     ::close(fd);
+diff --git a/aeron-client/src/test/cpp/util/UtilTest.cpp b/aeron-client/src/test/cpp/util/UtilTest.cpp
+index 34917cbdb..8c56e5d5c 100644
+--- a/aeron-client/src/test/cpp/util/UtilTest.cpp
++++ b/aeron-client/src/test/cpp/util/UtilTest.cpp
+@@ -106,13 +106,13 @@ TEST(utilTests, numberOfTrailingZeroes)
+ 
+ TEST(utilTests, sourcedException)
+ {
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+     const std::string aeron_client_dir = " aeron-client\\";
+ #else
+     const std::string aeron_client_dir = " aeron-client/";
+ #endif
+ 
+-#if defined(_MSC_VER) && defined(MSVC_FILE_IS_LOWER_CASE)
++#if defined(_WIN32) && defined(MSVC_FILE_IS_LOWER_CASE)
+     const std::string testutils_h_filename = "testutils.h";
+ #else
+     const std::string testutils_h_filename = "TestUtils.h";
+diff --git a/aeron-driver/src/main/c/CMakeLists.txt b/aeron-driver/src/main/c/CMakeLists.txt
+index d4c8fe103..ead127b69 100644
+--- a/aeron-driver/src/main/c/CMakeLists.txt
++++ b/aeron-driver/src/main/c/CMakeLists.txt
+@@ -21,8 +21,13 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+     add_definitions(-D_DEFAULT_SOURCE)
+ endif ()
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
++if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++    add_definitions(-DAERON_NO_GETOPT)
++    if (MSYS OR MINGW)
++        add_link_options("-Wl,--export-all-symbols")
++    else ()
++        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
++    endif ()
+     set(BUILD_SHARED_LIBS ON)
+ endif ()
+ 
+@@ -50,8 +55,8 @@ if (UUID_H_EXISTS)
+     add_definitions(-DHAVE_UUID_H)
+ endif ()
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+-    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 Iphlpapi)
++if (WIN32 AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 iphlpapi winmm)
+     set(WSAPOLL_PROTOTYPE_EXISTS True)
+ endif ()
+ 
+diff --git a/aeron-driver/src/main/c/aeron_driver.c b/aeron-driver/src/main/c/aeron_driver.c
+index 0f694339d..30577912a 100644
+--- a/aeron-driver/src/main/c/aeron_driver.c
++++ b/aeron-driver/src/main/c/aeron_driver.c
+@@ -23,7 +23,7 @@
+ #endif
+ 
+ #include "util/aeron_platform.h"
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ #define _CRT_RAND_S
+ 
+ #define S_IRWXU 0
+diff --git a/aeron-driver/src/main/c/aeron_driver_conductor.c b/aeron-driver/src/main/c/aeron_driver_conductor.c
+index 5df38ad03..61a521417 100644
+--- a/aeron-driver/src/main/c/aeron_driver_conductor.c
++++ b/aeron-driver/src/main/c/aeron_driver_conductor.c
+@@ -24,7 +24,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ #include <errno.h>
+-#if !defined(AERON_COMPILER_MSVC)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-driver/src/main/c/aeron_driver_name_resolver.c b/aeron-driver/src/main/c/aeron_driver_name_resolver.c
+index e1a08efa4..3488572d6 100644
+--- a/aeron-driver/src/main/c/aeron_driver_name_resolver.c
++++ b/aeron-driver/src/main/c/aeron_driver_name_resolver.c
+@@ -24,7 +24,7 @@
+ #include <string.h>
+ #include <inttypes.h>
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ 
+ #include <winsock2.h>
+ #include <inaddr.h>
+diff --git a/aeron-driver/src/main/c/aeronmd.c b/aeron-driver/src/main/c/aeronmd.c
+index c02a6db36..4d1e90732 100644
+--- a/aeron-driver/src/main/c/aeronmd.c
++++ b/aeron-driver/src/main/c/aeronmd.c
+@@ -25,6 +25,7 @@
+ 
+ #ifndef _MSC_VER
+ #include <unistd.h>
++#include <getopt.h>
+ #endif
+ 
+ #include "aeronmd.h"
+diff --git a/aeron-driver/src/main/c/agent/aeron_driver_agent.c b/aeron-driver/src/main/c/agent/aeron_driver_agent.c
+index 247e40ab1..19509cc12 100644
+--- a/aeron-driver/src/main/c/agent/aeron_driver_agent.c
++++ b/aeron-driver/src/main/c/agent/aeron_driver_agent.c
+@@ -19,7 +19,7 @@
+ #define _GNU_SOURCE
+ #endif
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <pthread.h>
+ #include <arpa/inet.h>
+ #include <sys/socket.h>
+diff --git a/aeron-driver/src/main/c/media/aeron_udp_channel_transport.c b/aeron-driver/src/main/c/media/aeron_udp_channel_transport.c
+index e4c0c2f84..bace14bc3 100644
+--- a/aeron-driver/src/main/c/media/aeron_udp_channel_transport.c
++++ b/aeron-driver/src/main/c/media/aeron_udp_channel_transport.c
+@@ -21,7 +21,7 @@
+ 
+ #include "util/aeron_platform.h"
+ 
+-#if defined(AERON_COMPILER_MSVC)
++#if defined(_WIN32)
+ #include <io.h>
+ #else
+ #include <unistd.h>
+diff --git a/aeron-driver/src/main/c/media/aeron_udp_transport_poller.c b/aeron-driver/src/main/c/media/aeron_udp_transport_poller.c
+index d289fd805..8b24eadde 100644
+--- a/aeron-driver/src/main/c/media/aeron_udp_transport_poller.c
++++ b/aeron-driver/src/main/c/media/aeron_udp_transport_poller.c
+@@ -16,7 +16,7 @@
+ 
+ #include "util/aeron_platform.h"
+ 
+-#if !defined(AERON_COMPILER_MSVC)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-driver/src/test/c/CMakeLists.txt b/aeron-driver/src/test/c/CMakeLists.txt
+index d81a2d25c..594b80b3b 100644
+--- a/aeron-driver/src/test/c/CMakeLists.txt
++++ b/aeron-driver/src/test/c/CMakeLists.txt
+@@ -13,8 +13,8 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-if (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+-    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 Iphlpapi)
++if (WIN32 AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
++    set(AERON_LIB_WINSOCK_LIBS wsock32 ws2_32 iphlpapi winmm)
+ endif ()
+ 
+ include_directories(${AERON_DRIVER_SOURCE_PATH})
+diff --git a/aeron-samples/src/main/c/CMakeLists.txt b/aeron-samples/src/main/c/CMakeLists.txt
+index ce4e577ff..2e3328320 100644
+--- a/aeron-samples/src/main/c/CMakeLists.txt
++++ b/aeron-samples/src/main/c/CMakeLists.txt
+@@ -19,7 +19,7 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+     add_definitions(-D_DEFAULT_SOURCE)
+ endif ()
+ 
+-if (LINK_SAMPLES_CLIENT_SHARED OR (MSVC AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows"))
++if (LINK_SAMPLES_CLIENT_SHARED OR (WIN32 AND "${CMAKE_SYSTEM_NAME}" MATCHES "Windows"))
+     set(CLIENT_LINK_LIB "aeron")
+     add_definitions(-DCLIENT_SHARED)
+ else()
+diff --git a/aeron-samples/src/main/c/aeron_stat.c b/aeron-samples/src/main/c/aeron_stat.c
+index 9be2f20be..bd53c0bbe 100644
+--- a/aeron-samples/src/main/c/aeron_stat.c
++++ b/aeron-samples/src/main/c/aeron_stat.c
+@@ -20,7 +20,7 @@
+ #include <errno.h>
+ #include <string.h>
+ 
+-#ifndef _MSC_VER
++#ifndef _WIN32
+ #include <unistd.h>
+ #include <getopt.h>
+ #endif
+diff --git a/aeron-samples/src/main/c/basic_mds_subscriber.c b/aeron-samples/src/main/c/basic_mds_subscriber.c
+index 3121fe262..11848a5cd 100644
+--- a/aeron-samples/src/main/c/basic_mds_subscriber.c
++++ b/aeron-samples/src/main/c/basic_mds_subscriber.c
+@@ -25,7 +25,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/c/basic_publisher.c b/aeron-samples/src/main/c/basic_publisher.c
+index e3146333c..11445eaa4 100644
+--- a/aeron-samples/src/main/c/basic_publisher.c
++++ b/aeron-samples/src/main/c/basic_publisher.c
+@@ -25,7 +25,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+@@ -244,7 +244,7 @@ int main(int argc, char **argv)
+         }
+         else
+         {
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+                 message_len = sprintf_s(small_message, sizeof(small_message) - 1, "Hello World! %" PRIu64, (uint64_t)i);
+ #else
+                 message_len = snprintf(small_message, sizeof(small_message) - 1, "Hello World! %" PRIu64, (uint64_t)i);
+diff --git a/aeron-samples/src/main/c/basic_subscriber.c b/aeron-samples/src/main/c/basic_subscriber.c
+index 8e1463f19..d17357ed6 100644
+--- a/aeron-samples/src/main/c/basic_subscriber.c
++++ b/aeron-samples/src/main/c/basic_subscriber.c
+@@ -25,7 +25,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/c/cping.c b/aeron-samples/src/main/c/cping.c
+index 98be4f70a..2ff76cf1f 100644
+--- a/aeron-samples/src/main/c/cping.c
++++ b/aeron-samples/src/main/c/cping.c
+@@ -26,7 +26,7 @@
+ #include <inttypes.h>
+ #include <string.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/c/cpong.c b/aeron-samples/src/main/c/cpong.c
+index 5d1d9cc21..eb5372954 100644
+--- a/aeron-samples/src/main/c/cpong.c
++++ b/aeron-samples/src/main/c/cpong.c
+@@ -26,7 +26,7 @@
+ #include <inttypes.h>
+ #include <string.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/c/driver_tool.c b/aeron-samples/src/main/c/driver_tool.c
+index 83169a8b4..5e153aca8 100644
+--- a/aeron-samples/src/main/c/driver_tool.c
++++ b/aeron-samples/src/main/c/driver_tool.c
+@@ -18,7 +18,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#ifndef _MSC_VER
++#ifndef _WIN32
+ 
+ #include <unistd.h>
+ #include <getopt.h>
+diff --git a/aeron-samples/src/main/c/error_stat.c b/aeron-samples/src/main/c/error_stat.c
+index 32346aab7..eb404c6fe 100644
+--- a/aeron-samples/src/main/c/error_stat.c
++++ b/aeron-samples/src/main/c/error_stat.c
+@@ -18,7 +18,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#ifndef _MSC_VER
++#ifndef _WIN32
+ #include <unistd.h>
+ #include <getopt.h>
+ #endif
+diff --git a/aeron-samples/src/main/c/loss_stat.c b/aeron-samples/src/main/c/loss_stat.c
+index 85f67a0e0..eb510d3d4 100644
+--- a/aeron-samples/src/main/c/loss_stat.c
++++ b/aeron-samples/src/main/c/loss_stat.c
+@@ -19,7 +19,7 @@
+ #include <inttypes.h>
+ #include <errno.h>
+ 
+-#ifndef _MSC_VER
++#ifndef _WIN32
+ #include <unistd.h>
+ #include <getopt.h>
+ #endif
+diff --git a/aeron-samples/src/main/c/rate_subscriber.c b/aeron-samples/src/main/c/rate_subscriber.c
+index 2b9197b70..375ccd2b8 100644
+--- a/aeron-samples/src/main/c/rate_subscriber.c
++++ b/aeron-samples/src/main/c/rate_subscriber.c
+@@ -25,7 +25,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/c/response/response_client.c b/aeron-samples/src/main/c/response/response_client.c
+index e0fc613ac..8a0461f6f 100644
+--- a/aeron-samples/src/main/c/response/response_client.c
++++ b/aeron-samples/src/main/c/response/response_client.c
+@@ -25,7 +25,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/c/response/response_server.c b/aeron-samples/src/main/c/response/response_server.c
+index 0545d92ce..cff31b4da 100644
+--- a/aeron-samples/src/main/c/response/response_server.c
++++ b/aeron-samples/src/main/c/response/response_server.c
+@@ -25,7 +25,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/c/sample_util.h b/aeron-samples/src/main/c/sample_util.h
+index 0b0de827d..b122954e1 100644
+--- a/aeron-samples/src/main/c/sample_util.h
++++ b/aeron-samples/src/main/c/sample_util.h
+@@ -67,7 +67,7 @@ inline void rate_reporter_on_message(rate_reporter_t *reporter, size_t length)
+     AERON_SET_RELEASE(reporter->polling_fields.total_messages, reporter->polling_fields.total_messages + 1);
+ }
+ 
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+ #define SNPRINTF(_buf, _len, _fmt, ...) sprintf_s(_buf, _len, _fmt, __VA_ARGS__)
+ #else
+ #define SNPRINTF(_buf, _len, _fmt, ...) snprintf(_buf, _len, _fmt, __VA_ARGS__)
+diff --git a/aeron-samples/src/main/c/streaming_exclusive_publisher.c b/aeron-samples/src/main/c/streaming_exclusive_publisher.c
+index 73df1aaab..9f923b1d1 100644
+--- a/aeron-samples/src/main/c/streaming_exclusive_publisher.c
++++ b/aeron-samples/src/main/c/streaming_exclusive_publisher.c
+@@ -25,7 +25,7 @@
+ #include <stdio.h>
+ #include <inttypes.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/c/streaming_publisher.c b/aeron-samples/src/main/c/streaming_publisher.c
+index c12b4dbed..d9200bb88 100644
+--- a/aeron-samples/src/main/c/streaming_publisher.c
++++ b/aeron-samples/src/main/c/streaming_publisher.c
+@@ -26,7 +26,7 @@
+ #include <inttypes.h>
+ #include <string.h>
+ 
+-#if !defined(_MSC_VER)
++#if !defined(_WIN32)
+ #include <unistd.h>
+ #endif
+ 
+diff --git a/aeron-samples/src/main/cpp/BasicPublisher.cpp b/aeron-samples/src/main/cpp/BasicPublisher.cpp
+index 7827527e5..468f05242 100644
+--- a/aeron-samples/src/main/cpp/BasicPublisher.cpp
++++ b/aeron-samples/src/main/cpp/BasicPublisher.cpp
+@@ -128,7 +128,7 @@ int main(int argc, char **argv)
+ 
+         for (std::int64_t i = 0; i < settings.numberOfMessages && running; i++)
+         {
+-#if _MSC_VER
++#if _WIN32
+             const int messageLen = ::sprintf_s(message, sizeof(message), "Hello World! %" PRId64, i);
+ #else
+             const int messageLen = ::snprintf(message, sizeof(message), "Hello World! %" PRId64, i);
+diff --git a/aeron-samples/src/main/cpp/CMakeLists.txt b/aeron-samples/src/main/cpp/CMakeLists.txt
+index e9d46f633..395c3b6a4 100644
+--- a/aeron-samples/src/main/cpp/CMakeLists.txt
++++ b/aeron-samples/src/main/cpp/CMakeLists.txt
+@@ -17,7 +17,7 @@
+ set(CLIENT_LINK_LIB "aeron_client")
+ set(CLIENT_WRAPPER_LINK_LIB "aeron_client_wrapper")
+ set(C_CLIENT_LINK_LIB "aeron_static")
+-if (LINK_SAMPLES_CLIENT_SHARED OR MSVC)
++if (LINK_SAMPLES_CLIENT_SHARED OR WIN32)
+     set(C_CLIENT_LINK_LIB "aeron")
+     set(CLIENT_LINK_LIB "aeron_client_shared")
+     add_definitions(-DCLIENT_SHARED)
+diff --git a/aeron-samples/src/main/cpp/LossStat.cpp b/aeron-samples/src/main/cpp/LossStat.cpp
+index e187225f6..6f59cdc88 100644
+--- a/aeron-samples/src/main/cpp/LossStat.cpp
++++ b/aeron-samples/src/main/cpp/LossStat.cpp
+@@ -67,7 +67,7 @@ std::string formatDate(std::int64_t millisecondsSinceEpoch)
+     char tzBuffer[8];
+     struct tm localTm{};
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+     localtime_s(&localTm, &tm);
+ #else
+     ::localtime_r(&tm, &localTm);
