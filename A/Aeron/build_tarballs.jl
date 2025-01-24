@@ -31,23 +31,9 @@ CMAKE_FLAGS=(
 -DAERON_BUILD_DOCUMENTATION=OFF
 -DAERON_INSTALL_TARGETS=ON
 -DCMAKE_INSTALL_PREFIX=$prefix
--DGRADLE_WRAPPER="./gradlew"
 )
 
 export GRADLE_USER_HOME=$WORKSPACE/gradle
-
-# Apply patches
-# for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-#     atomic_patch -p1 ${f}
-# done
-
-case "${target}" in
-    *-mingw*)
-        for f in ${WORKSPACE}/srcdir/patches/win32/*.patch; do
-            atomic_patch -p1 ${f}
-        done
-        ;;
-esac
 
 cmake -B build "${CMAKE_FLAGS[@]}"
 cmake --build build --parallel ${nproc} --clean-first
@@ -62,7 +48,6 @@ platforms = [
     Platform("aarch64", "linux"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
 ]
 platforms = expand_cxxstring_abis(platforms)
 
