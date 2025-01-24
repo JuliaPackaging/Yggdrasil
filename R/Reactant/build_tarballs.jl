@@ -12,7 +12,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.54"
 
 sources = [
-  GitSource(repo, "633f9478ae195b2e96e8ba88e25918634509980f"),
+  GitSource(repo, "dbcce42e81dd1b298edaa5a2312d5ba23c02f1cc"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -186,9 +186,12 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         BAZEL_BUILD_FLAGS+=(
             --@local_config_cuda//:cuda_compiler=clang
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
+            --action_env=CUSTOM_PLATFORM_ARCHITECTURE="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
-            # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64`.
-            --action_env=LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
+            # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run `nvcc` at some point, needed to run host `fatbinary`.
+            export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
+            # Also pass it to Bazel, to run other executables.
+            --action_env=LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
         )
     fi
 
