@@ -35,4 +35,4 @@ products = [
     LibraryProduct("libspex", :libspex),
 ]
 build_tarballs(ARGS, name, version, sources, script, platforms, 
-               products, dependencies; julia_compat="1.11",preferred_gcc_version=v"9")
+               products, dependencies; julia_compat="1.12",preferred_gcc_version=v"9")
