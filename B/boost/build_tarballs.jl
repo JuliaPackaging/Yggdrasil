@@ -72,12 +72,11 @@ b2_args=(
     toolset=$toolset
     target-os=$targetos
     $extraargs
-    variant=release
+    variant=debug
     --prefix=$prefix
     --without-python
     --layout=system
     --debug-configuration install
-    -q # Quit on error
     -d0 # Limit logging output
     --libdir=${libdir}
     --includedir=${includedir}
