@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.52"
 
 sources = [
-  GitSource(repo, "fe1e9c39048cae518409d06b34b4be6d69a4dba1"),
+  GitSource(repo, "adcfa0a114b48f911a8f8f20c84d10c2cad43cda"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -22,7 +22,10 @@ cd Reactant.jl/deps/ReactantExtra
 echo Clang version: $(clang --version)
 echo GCC version: $(gcc --version)
 
-if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }')
+GCC_MAJOR_VERSION=$(echo "${GCC_VERSION}" | cut -d. -f1)
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # LLVM requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
@@ -40,8 +43,6 @@ export PATH="$LOCAL:$PATH"
 
 export BAZEL=$WORKSPACE/srcdir/bazel-dev
 chmod +x $BAZEL
-
-env
 
 ln -s `which ar` /usr/bin/ar
 
@@ -63,8 +64,9 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
-# # Use ccache to speedup re-builds
-# BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
+# Use ccache to speedup re-builds
+BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
+BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
@@ -89,7 +91,17 @@ BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
-if [[ "${bb_full_target}" == *darwin* ]]; then
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+   BAZEL_CPU=darwin
+elif [[ "${target}" == aarch64-apple-darwin* ]]; then
+   BAZEL_CPU=darwin_arm64
+elif [[ "${target}" == x86_64-linux-* ]]; then
+   BAZEL_CPU=k8
+elif [[ "${target}" == aarch64-linux-* ]]; then
+   BAZEL_CPU=aarch64
+fi
+
+if [[ "${target}" == *-darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_2=false)
@@ -101,22 +113,12 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false --define=build_with_mkl_aarch64=false)
     BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
 
-    pushd $WORKSPACE/srcdir/llvm*
-	mkdir build
-	cd build
-	cmake ../llvm -DLLVM_ENABLE_PROJECTS="lld" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CROSSCOMPILING=False -DLLVM_TARGETS_TO_BUILD="X86;AArch64" -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} -GNinja -DCMAKE_EXE_LINKER_FLAGS="-static"
-	ninja lld
-	export LLD2=`pwd`/bin/ld64.lld
-	popd
-
-    if [[ "${bb_full_target}" == *86* ]]; then
+    if [[ "${target}" == x86_64* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_x86_64)
-        BAZEL_BUILD_FLAGS+=(--cpu=darwin)
-    else
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
+    elif [[ "${target}" == aarch64-* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
-        sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"
-        sed -i '/gcc-install-dir/d'  "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang++"
-        BAZEL_BUILD_FLAGS+=(--cpu=darwin_arm64)
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
@@ -134,7 +136,7 @@ if [[ "${bb_full_target}" == *darwin* ]]; then
 fi
 
 
-if [[ "${bb_full_target}" == *linux* ]]; then
+if [[ "${target}" == *-linux-* ]]; then
     sed -i "s/getopts \\"/getopts \\"p/g" /sbin/ldconfig
     mkdir -p .local/bin
     echo "#!/bin/sh" > .local/bin/ldconfig
@@ -143,17 +145,17 @@ if [[ "${bb_full_target}" == *linux* ]]; then
     export PATH="`pwd`/.local/bin:$PATH"
     BAZEL_BUILD_FLAGS+=(--copt=-Wno-error=cpp)
 
-    if [[ "${bb_full_target}" == *86* ]]; then
+    if [[ "${target}" == x86_64-* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_x86_64)
-    else
+    elif [[ "${target}" == aarch64-* ]]; then
         BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
         BAZEL_BUILD_FLAGS+=(--platforms=@//:linux_aarch64)
-        BAZEL_BUILD_FLAGS+=(--cpu=aarch64)
+        BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
         BAZEL_BUILD_FLAGS+=(--@xla//xla/tsl/framework/contraction:disable_onednn_contraction_kernel=True)
     fi
 fi
 
-if [[ "${bb_full_target}" == *aarch64* ]]; then
+if [[ "${target}" == aarch64-* ]]; then
     BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_AES=1)
     BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_NEON=1)
     BAZEL_BUILD_FLAGS+=(--copt=-D__ARM_FEATURE_SHA2=1)
@@ -165,12 +167,11 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
 
-    GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
-    if [[ "${GCC_VERSION}" -le 12 ]]; then
+    if [[ "${GCC_MAJOR_VERSION}" -le 12 ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 12.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
     fi
-    if [[ "${GCC_VERSION}" -le 11 ]]; then
+    if [[ "${GCC_MAJOR_VERSION}" -le 11 ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 11.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
     fi
@@ -180,7 +181,7 @@ if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=rocm)
 fi
 
-if [[ "${bb_full_target}" == *freebsd* ]]; then
+if [[ "${target}" == *-freebsd* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_1=false)
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_64_2=false)
@@ -191,40 +192,38 @@ if [[ "${bb_full_target}" == *freebsd* ]]; then
     BAZEL_BUILD_FLAGS+=(--cpu=freebsd)
 fi
 
-if [[ "${bb_full_target}" == *i686* ]]; then
+if [[ "${target}" == i686-* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-sed -i "s/BB_TARGET/${bb_target}/g" BUILD
-sed -i "s/BB_FULL_TARGET/${bb_full_target}/g" BUILD
+sed -i "s/{{BB_TARGET}}/${bb_target}/g" BUILD
+sed -i "s/{{BB_FULL_TARGET}}/${bb_full_target}/g" BUILD
+sed -i "s/{{GCC_VERSION}}/${GCC_VERSION}/g" BUILD
+sed -i "s/{{BAZEL_CPU}}/${BAZEL_CPU}/g" BUILD
 
 export HERMETIC_PYTHON_VERSION=3.12
 
 $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]}
 sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/external/llvm-raw/utils/bazel/llvm-project-overlay/mlir/BUILD.bazel
 sed -i "s/name = \\"protoc\\"/name = \\"protoc\\", features=[\\"fully_static_link\\"]/g" /workspace/bazel_root/*/external/com_google_protobuf/BUILD.bazel
-if [[ "${bb_full_target}" == *darwin* ]]; then
+if [[ "${target}" == *-darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-    if [[ "${bb_full_target}" == *86* ]]; then
-        echo "x86"
-
+    if [[ "${target}" == x86_64-* ]]; then
         sed -i.bak1 "s/\\"k8|/\\"darwin\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         cat /workspace/bazel_root/*/external/local_config_cc/BUILD
-        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
-
-    else
+        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage 2
+    elif [[ "${target}" == aarch64-* ]]; then
         sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         cat /workspace/bazel_root/*/external/local_config_cc/BUILD
-        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage2
+        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+         # || echo stage 2
     fi
-	sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
-	sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
+    sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
+    sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
     sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
-	echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
-	echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
-	cat bazel-bin/libReactantExtra.so-2.params
+    echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
     cc @bazel-bin/libReactantExtra.so-2.params
 else
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
@@ -243,15 +242,8 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/fatbinary ${libdir}/cuda/bin
 fi
 
-cp -v bazel-bin/libReactantExtra.so ${libdir}
-if [[ "${bb_full_target}" == *darwin* ]]; then
-    mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dylib
-fi
-if [[ "${bb_full_target}" == *mingw* ]]; then
-    mv ${libdir}/libReactantExtra.so ${libdir}/libReactantExtra.dll
-fi
-cd ../..
-install_license LICENSE
+install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dlext}"
+install_license ../../LICENSE
 """
 
 # determine exactly which tarballs we should build
@@ -361,9 +353,6 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
-	push!(platform_sources,
-                  ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.4/llvm-project-18.1.4.src.tar.xz",
-                                "2c01b2fbb06819a12a92056a7fd4edcdc385837942b5e5260b9c2c0baff5116b"))
     end
 
     if !Sys.isapple(platform)
