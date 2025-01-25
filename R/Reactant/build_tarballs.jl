@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.52"
 
 sources = [
-  GitSource(repo, "adcfa0a114b48f911a8f8f20c84d10c2cad43cda"),
+  GitSource(repo, "7297f547cff764a0c6db104a38acd33cfa497940"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -236,9 +236,11 @@ if [[ "${target}" == *-darwin* ]]; then
     sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
     sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
     echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
-    # echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
-    SUPER_VERBOSE=1 cc @bazel-bin/libReactantExtra.so-2.params
 
+    # Show the params file for debugging, but convert newlines to spaces
+    cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
+
+    cc @bazel-bin/libReactantExtra.so-2.params
 else
     $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
