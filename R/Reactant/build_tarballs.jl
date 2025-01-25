@@ -67,6 +67,8 @@ BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 # Use ccache to speedup re-builds
 BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
 BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
+# Set `SUPER_VERBOSE` to a non empty value to make the compiler wrappers more
+# verbose. Useful for debugging.
 BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=1)
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
@@ -209,18 +211,37 @@ sed -i "s/^cc_library(/cc_library(linkstatic=True,/g" /workspace/bazel_root/*/ex
 sed -i "s/name = \\"protoc\\"/name = \\"protoc\\", features=[\\"fully_static_link\\"]/g" /workspace/bazel_root/*/external/com_google_protobuf/BUILD.bazel
 if [[ "${target}" == *-darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
-    if [[ "${target}" == x86_64-* ]]; then
-        sed -i.bak1 "s/\\"k8|/\\"darwin\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-        sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-        cat /workspace/bazel_root/*/external/local_config_cc/BUILD
-    elif [[ "${target}" == aarch64-* ]]; then
-        sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-        sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-        cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+    if [[ "${target}" == aarch64-* ]]; then
+        # The host compiler is called at some point, but the GCC installation
+        # dir is wrong in tje compiler wrapper because it takes the GCC version from
+        # the target, which is different (only for aarch64-darwin, because we
+        # have a special GCC). This is a bug in BinaryBuilderBase, we work
+        # around it here for the time being.
+        sed -i 's/12.0.1-iains/12.1.0/' "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"*
     fi
-fi
 
-${BAZEL} ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so --keep_going
+    sed -i.bak1 "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+
+    cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+
+    # We expect the following bazel build command to fail to link at the end, because the
+    # build system insists on linking with `-whole_archive` also on macOS.  Until we figure
+    # out how to make it stop doing this we have to manually do this.  Any other error
+    # before the final linking stage is unexpected and will have to be dealt with.
+    $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo "Bazel build failed, proceed to manual linking, check if there are are non-linking errors"
+
+    # Manually remove `whole-archive` directive for the linker
+    sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
+    sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
+    sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
+    echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
+    # echo "--ld-path=$LLD2" >> bazel-bin/libReactantExtra.so-2.params
+    SUPER_VERBOSE=1 cc @bazel-bin/libReactantExtra.so-2.params
+
+else
+    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+fi
 
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
