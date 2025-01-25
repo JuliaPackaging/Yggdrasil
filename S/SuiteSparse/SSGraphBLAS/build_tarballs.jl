@@ -1,9 +1,9 @@
 include("../common.jl")
 
 name = "SSGraphBLAS"
-version = v"9.1.0"
+version = v"9.3.1"
 
-SS_version_str = "7.7.0"
+SS_version_str = "7.8.3"
 SS_version = VersionNumber(SS_version_str)
 
 sources = suitesparse_sources(SS_version)
@@ -38,4 +38,4 @@ dependencies = append!(dependencies, [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, 
-               products, dependencies; preferred_gcc_version=v"9", julia_compat="1.6")
+               products, dependencies; preferred_gcc_version=v"9", julia_compat="1.12")
