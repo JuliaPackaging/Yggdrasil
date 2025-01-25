@@ -63,8 +63,8 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
-# Use ccache to speedup re-builds
-BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
+# # Use ccache to speedup re-builds
+# BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
