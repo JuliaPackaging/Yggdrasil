@@ -26,7 +26,7 @@ GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }')
 GCC_MAJOR_VERSION=$(echo "${GCC_VERSION}" | cut -d. -f1)
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # LLVM requires macOS SDK 10.14.
+    # Compiling LLVM components within XLA requires macOS SDK 10.14.
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
@@ -67,9 +67,9 @@ BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 # Use ccache to speedup re-builds
 BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
 BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
-# Set `SUPER_VERBOSE` to a non empty value to make the compiler wrappers more
+# Set `SUPER_VERBOSE` to a non empty string to make the compiler wrappers more
 # verbose. Useful for debugging.
-BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=1)
+BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=)
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
@@ -170,11 +170,11 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
 
-    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64 ]]; then
+    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64-* ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 12.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
     fi
-    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64 ]]; then
+    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64-* ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 11.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
     fi
@@ -199,10 +199,10 @@ if [[ "${target}" == i686-* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-sed -i "s/{{BB_TARGET}}/${bb_target}/g" BUILD
-sed -i "s/{{BB_FULL_TARGET}}/${bb_full_target}/g" BUILD
-sed -i "s/{{GCC_VERSION}}/${GCC_VERSION}/g" BUILD
-sed -i "s/{{BAZEL_CPU}}/${BAZEL_CPU}/g" BUILD
+sed -i "s/BB_TARGET/${bb_target}/g" BUILD
+sed -i "s/BB_FULL_TARGET/${bb_full_target}/g" BUILD
+sed -i "s/GCC_VERSION/${GCC_VERSION}/g" BUILD
+sed -i "s/BAZEL_CPU/${BAZEL_CPU}/g" BUILD
 
 export HERMETIC_PYTHON_VERSION=3.12
 
@@ -213,7 +213,7 @@ if [[ "${target}" == *-darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage1
     if [[ "${target}" == aarch64-* ]]; then
         # The host compiler is called at some point, but the GCC installation
-        # dir is wrong in tje compiler wrapper because it takes the GCC version from
+        # dir is wrong in the compiler wrapper because it takes the GCC version from
         # the target, which is different (only for aarch64-darwin, because we
         # have a special GCC). This is a bug in BinaryBuilderBase, we work
         # around it here for the time being.
@@ -234,11 +234,10 @@ if [[ "${target}" == *-darwin* ]]; then
     # Manually remove `whole-archive` directive for the linker
     sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
     sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
-    sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
-    echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
 
-    # Show the params file for debugging, but convert newlines to spaces
-    cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
+    # # Show the params file for debugging, but convert newlines to spaces
+    # cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
+    # echo ""
 
     cc @bazel-bin/libReactantExtra.so-2.params
 else
@@ -366,7 +365,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    if Sys.isapple(platform)
+    if Sys.isapple(platform) && arch(platform) == "x86_64"
         push!(platform_sources,
               ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                             "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
