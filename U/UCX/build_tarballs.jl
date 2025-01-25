@@ -25,7 +25,7 @@ for f in $WORKSPACE/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 fi
-
+./autogen.sh
 update_configure_scripts --reconf
 
 FLAGS=()
