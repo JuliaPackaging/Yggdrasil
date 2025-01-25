@@ -16,7 +16,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ucx-*
+cd $WORKSPACE/srcdir/ucx*
 
 # Apply all our patches
 if [ -d $WORKSPACE/srcdir/patches ]; then
