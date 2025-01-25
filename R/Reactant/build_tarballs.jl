@@ -212,22 +212,15 @@ if [[ "${target}" == *-darwin* ]]; then
         sed -i.bak1 "s/\\"k8|/\\"darwin\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         cat /workspace/bazel_root/*/external/local_config_cc/BUILD
-        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo stage 2
     elif [[ "${target}" == aarch64-* ]]; then
         sed -i.bak1 "s/\\"k8|/\\"darwin_arm64\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"darwin_arm64\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
         cat /workspace/bazel_root/*/external/local_config_cc/BUILD
-        $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
-         # || echo stage 2
     fi
-    sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
-    sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
-    sed -i.bak0 "/lld/d" bazel-bin/libReactantExtra.so-2.params
-    echo "-fuse-ld=lld" >> bazel-bin/libReactantExtra.so-2.params
-    cc @bazel-bin/libReactantExtra.so-2.params
-else
-    $BAZEL ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
 fi
+
+${BAZEL} ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
 mkdir -p ${libdir}
