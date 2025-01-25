@@ -27,8 +27,8 @@ rm -f ${includedir}/suitesparse/spex_python_connect.h
 dependencies = append!(dependencies, [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency("GMP_jll"; compat="6.2.1"),
-    Dependency("MPFR_jll"; compat="4.1.1"),
+    Dependency("GMP_jll"; compat="6.3.0"),
+    Dependency("MPFR_jll"; compat="4.2.1"),
     Dependency("SuiteSparse_jll"; compat = "=$SS_version_str")
 ])
 products = [
