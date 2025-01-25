@@ -90,7 +90,7 @@ products = [
 #   - gdrcopy -> kernel module
 # - ROCM -> TODO
 
-cuda_version = v"11.4.4"
+cuda_version = v"11.4"
 rocm_version = v"4.2.0"
 
 dependencies = [
