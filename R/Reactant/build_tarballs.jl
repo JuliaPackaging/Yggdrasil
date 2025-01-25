@@ -67,6 +67,7 @@ BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 # Use ccache to speedup re-builds
 BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
 BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
+BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=1)
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
@@ -167,11 +168,11 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     BAZEL_BUILD_FLAGS+=(--config=cuda)
     BAZEL_BUILD_FLAGS+=(--repo_env=HERMETIC_CUDA_VERSION="${HERMETIC_CUDA_VERSION}")
 
-    if [[ "${GCC_MAJOR_VERSION}" -le 12 ]]; then
+    if [[ "${GCC_MAJOR_VERSION}" -le 12 && "${target}" == x86_64 ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 12.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avxvnniint8=false)
     fi
-    if [[ "${GCC_MAJOR_VERSION}" -le 11 ]]; then
+    if [[ "${GCC_MAJOR_VERSION}" -le 11 && "${target}" == x86_64 ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 11.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
     fi
@@ -219,7 +220,7 @@ if [[ "${target}" == *-darwin* ]]; then
     fi
 fi
 
-${BAZEL} ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so
+${BAZEL} ${BAZEL_FLAGS[@]} build --repo_env=CC ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so --keep_going
 
 rm -f bazel-bin/libReactantExtraLib*
 rm -f bazel-bin/libReactant*params
