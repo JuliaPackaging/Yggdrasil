@@ -66,7 +66,6 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> arch(p) != "riscv64", platforms) # Disabled due to no OpenBLAS for riscv64, cf. https://github.com/JuliaPackaging/Yggdrasil/pull/10099
 
 mkl_platforms = Platform[
     Platform("x86_64", "Linux"),
