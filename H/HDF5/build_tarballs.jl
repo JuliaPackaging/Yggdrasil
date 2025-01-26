@@ -121,7 +121,7 @@ case ${target} in
             -DVALIDREALKINDS_RESULT_16=16
             -DPAC_SIZEOF_NATIVE_KINDS_RESULT='4;4;4;4;8;8;'
         )
-        cp ../files/freebsd-amd64/* saved
+        cp ../files/freebsd-arm64v8/* saved
         ;;
     arm-linux-*)
         cmake_options+=(
