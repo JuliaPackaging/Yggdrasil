@@ -26,7 +26,21 @@ cd ${WORKSPACE}/srcdir/mpich*
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
-EXTRA_FLAGS=()
+# Do not install doc and man files which contain files which clashing names on
+# case-insensitive file systems:
+# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
+# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
+configure_flags=(
+    --build=${MACHTYPE}
+    --disable-dependency-tracking
+    --disable-doc
+    --enable-fast=all,O3
+    --enable-static=no
+    --host=${target}
+    --prefix=${prefix}
+    --with-hwloc=${prefix}
+)
+
 # Define some obscure undocumented variables needed for cross compilation of
 # the Fortran bindings.  See for example
 # * https://stackoverflow.com/q/56759636/2442087
@@ -51,7 +65,7 @@ export CROSS_F90_DOUBLE_MODEL=15,307
 export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
 export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
 
-if [[ "${target}" == i686-linux-musl ]]; then
+if [[ ${target} == i686-linux-musl ]]; then
     # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
     # but not C++ or Fortran.  `configure` runs a C program to determine
     # whether it's cross-compiling or not, but when it comes to running
@@ -60,36 +74,28 @@ if [[ "${target}" == i686-linux-musl ]]; then
     # Small hack: edit `configure` script to force `cross_compiling` to be
     # always "yes".
     sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
-    EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
+    configure_flags+=(ac_cv_sizeof_bool="1")
 fi
 
-if [[ "${target}" == aarch64-apple-* ]]; then
-    EXTRA_FLAGS+=(
+if [[ ${target} == aarch64-apple-* ]]; then
+    configure_flags+=(
         FFLAGS=-fallow-argument-mismatch
         FCFLAGS=-fallow-argument-mismatch
     )
 fi
 
-if [[ "${target}" == *mingw* ]]; then
-    EXTRA_FLAGS+=(
-        --disable-romio           # disable romio which requires mpl
-        --with-pm=none            # disable hydra which requires mpl (which requires sockets)
+if [[ ${target} == *mingw* ]]; then
+    configure_flags+=(
+        --with-device=ch3
         --without-shared-memory
 )
+else
+    configure_flags+=(
+        --with-device=ch4
+    )
 fi
 
-# Do not install doc and man files which contain files which clashing names on
-# case-insensitive file systems:
-# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
-# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-dependency-tracking \
-    --disable-doc \
-    --enable-fast=all,O3 \
-    --enable-static=no \
-    --with-device=ch3 \
-    --with-hwloc=${prefix} \
-    "${EXTRA_FLAGS[@]}"
+./configure "${configure_flags[@]}"
 
 # Remove empty `-l` flags from libtool
 # (Why are they there? They should not be.)
@@ -104,10 +110,7 @@ make -j${nproc}
 # Install the library
 make install
 
-################################################################################
-# Install licenses
-################################################################################
-
+# Install the license
 install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
