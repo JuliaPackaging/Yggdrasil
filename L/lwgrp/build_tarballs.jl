@@ -49,6 +49,9 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# The makefile builds only a static library on Windows. (I guess this could be fixed.)
+filter!(!Sys.iswindows, platforms)
+
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.1", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
