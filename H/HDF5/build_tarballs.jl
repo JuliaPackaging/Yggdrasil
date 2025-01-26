@@ -32,9 +32,9 @@ fi
 
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_EXE_LINKER_FLAGS=-lsz      # help cmake link against the sz library
+    -DCMAKE_EXE_LINKER_FLAGS="-L${libdir} -lsz"      # help cmake link against the sz library
     -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_SHARED_LINKER_FLAGS=-lsz   # help cmake link against the sz library
+    -DCMAKE_SHARED_LINKER_FLAGS="-L${libdir} -lsz"   # help cmake link against the sz library
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DMPI_HOME=${prefix}
     -DALLOW_UNSUPPORTED=ON
