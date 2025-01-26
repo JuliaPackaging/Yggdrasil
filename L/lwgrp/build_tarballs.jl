@@ -22,11 +22,18 @@ export MPITRAMPOLINE_CC="${CC}"
 export MPITRAMPOLINE_CXX="${CXX}"
 export MPITRAMPOLINE_FC="${FC}"
 
+atomic_patch -p1 ../patches/libtoolize.patch
 atomic_patch -p1 ../patches/mpi.patch
+
 ./autogen.sh
 mkdir build
 pushd build
-../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+if [[ "${target}" == *-mingw* ]]; then
+    # There is no mpicc on Windows
+    ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+else
+    ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} CC=mpicc CXX=mpicxx
+fi
 make -j${nproc}
 make install
 popd
@@ -45,10 +52,18 @@ platforms = supported_platforms()
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.1", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+filter!(platforms) do p
+    if p["mpi"] == "mpich"
+        arch(p) == "riscv64" && return false
+    elseif p["mpi"] == "mpitrampoline"
+        libc(p) == "musl" && return false
+    elseif p["mpi"] == "openmpi"
+        arch(p) == "armv6l" && libc(p) == "glibc" && return false
+        Sys.isfreebsd(p) && arch(p) == "aarch64" && return false # we should build this
+        arch(p) == "riscv64" && return false                     # we should build this at some time
+    end
+    return true
+end
 
 # The products that we will ensure are always built
 products = [
