@@ -23,6 +23,13 @@ cd ${WORKSPACE}/srcdir/hdf5-*
 atomic_patch -p1 ../patches/cmake-fortran.patch
 atomic_patch -p1 ../patches/mpi.patch
 
+if [[ ${target} == *-mingw* ]]; then
+    #TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
+    #TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
+    #TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
+    cp ../headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
+fi
+
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_EXE_LINKER_FLAGS=-lsz      # help cmake link against the sz library
@@ -42,7 +49,6 @@ cmake_options=(
     -DHDF5_BUILD_TOOLS=ON
     -DHDF5_ENABLE_HDFS=OFF             # would require Java
     -DHDF5_ENABLE_MAP_API=ON
-    -DHDF5_ENABLE_MIRROR_VFD=ON
     -DHDF5_ENABLE_PLUGIN_SUPPORT=OFF   # would require PLUGIN
     -DHDF5_ENABLE_ROS3_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
@@ -57,6 +63,12 @@ if [[ ${target} == *darwin* || ${target} == *mingw* ]]; then
     cmake_options+=(-DHDF5_ENABLE_DIRECT_VFD=OFF)
 else
     cmake_options+=(-DHDF5_ENABLE_DIRECT_VFD=ON)
+fi
+
+if [[ ${target} == *mingw* ]]; then
+    cmake_options+=(-DHDF5_ENABLE_MIRROR_VFD=OFF)
+else
+    cmake_options+=(-DHDF5_ENABLE_MIRROR_VFD=ON)
 fi
 
 if [[ ${target} == *mingw* ]]; then
@@ -279,6 +291,7 @@ install_license COPYING
 
 # Clean up: We created the file, we need to remove it
 rm ${prefix}/cmake/szip-config.cmake
+rm -f "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 """
 
 augment_platform_block = """
