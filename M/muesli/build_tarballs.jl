@@ -20,9 +20,16 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakesupport.patch
 cmake -B builddir -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 cmake --build builddir --parallel ${nprocs}
 cmake --install builddir
+
+if [[ "${target}" == *-mingw* ]]; then
+#cmake install only grabs the .dll.a and leaves the actual .dll behind, manually move it 
+mv builddir/libmuesli.dll ${libdir}
+fi
+
 """
 
-platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = supported_platforms()
+platforms = filter(!Sys.iswindows, platforms)
 platforms = filter(!Sys.isapple, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -32,7 +39,9 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("OpenBLAS_jll", v"0.3.10"),
+    Dependency("LAPACK_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
