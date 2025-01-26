@@ -40,7 +40,6 @@ if [[ $bb_full_target == *cuda* ]]; then
     )
 fi
 
-configure() {
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -51,8 +50,6 @@ cmake -B build \
     -DBUILD_SHARED_LIBS=ON \
     -DFAISS_ENABLE_C_API=ON \
     ${cmake_extra_args[@]}
-}
-configure || configure || configure
 cmake --build build --parallel ${nproc}
 cmake --install build
 
