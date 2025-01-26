@@ -24,9 +24,6 @@ atomic_patch -p1 ../patches/cmake-fortran.patch
 atomic_patch -p1 ../patches/mpi.patch
 
 if [[ ${target} == *-mingw* ]]; then
-    #TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/h5ls.c.patch
-    #TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mkdir.patch
-    #TODO atomic_patch -p1 ${WORKSPACE}/srcdir/patches/strncpy.patch
     cp ../headers/pthread_time.h "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 fi
 
