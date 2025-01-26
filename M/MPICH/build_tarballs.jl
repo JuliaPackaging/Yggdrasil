@@ -70,6 +70,14 @@ if [[ "${target}" == aarch64-apple-* ]]; then
     )
 fi
 
+if [[ "${target}" == *mingw* ]]; then
+    EXTRA_FLAGS+=(
+        --disable-romio           # disable romio which requires mpl
+        --with-pm=none            # disable hydra which requires mpl (which requires sockets)
+        --without-shared-memory
+)
+fi
+
 # Do not install doc and man files which contain files which clashing names on
 # case-insensitive file systems:
 # * https://github.com/JuliaPackaging/Yggdrasil/pull/315
@@ -111,6 +119,8 @@ augment_platform_block = """
 
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
+
+# TODO: Try enabling Windows
 filter!(!Sys.iswindows, platforms)
 
 # Add `mpi+mpich` platform tag
