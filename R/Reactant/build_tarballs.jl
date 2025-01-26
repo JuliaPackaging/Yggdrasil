@@ -373,7 +373,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "11.8" => "11.8",
         "12.1" => "12.1.1",
         "12.3" => "12.3.1",
-        "12.6" => "12.6.2",
+        "12.6" => "12.6.3",
     )
 
     prefix="""
@@ -392,11 +392,23 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
-        if hermetic_cuda_version_map[cuda_version] == "12.6.2"
-            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.6.2.json
+        if hermetic_cuda_version_map[cuda_version] == "12.6.3"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.6.3.json
 	    push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.77-archive.tar.xz",
-                                "fcee340e703c8dec0b7fc4748a70c4b676f1946f92f0b6584fefd7b1a4c0bd63"),
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.85-archive.tar.xz",
+                                "1b834df41cb071884f33b1e4ffc185e4799975057baca57d80ba7c4591e67950"),
+                  )
+        elseif hermetic_cuda_version_map[cuda_version] == "12.3.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.3.1.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.3.103-archive.tar.xz",
+                                "1bb1faac058a1e122adad09dabaa378ee9591762b7787a9144de845f99e03aed"),
+                  )
+        elseif hermetic_cuda_version_map[cuda_version] == "12.1.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.1.1.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.1.105-archive.tar.xz",
+                                "6e795ec791241e9320ec300657408cbfafbe7e79ceda0da46522cc85ced358f4"),
                   )
         end
         push!(dependencies,
