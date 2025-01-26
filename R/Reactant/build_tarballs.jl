@@ -193,8 +193,6 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
             --action_env=CUSTOM_PLATFORM_ARCHITECTURE="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
-            # Also pass `LD_LIBRARY_PATH` to Bazel.
-            --action_env=LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
         )
     fi
 
