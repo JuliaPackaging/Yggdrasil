@@ -8,7 +8,7 @@ version = v"0.1.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://bitbucket.org/ignromero/muesli.git", "27e8204971602cb042d633b8b5f87761272b10df")
-    DirectorySource(joinpath(@__DIR__, "bundled"))
+    DirectorySource("bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,29 +17,13 @@ cd $WORKSPACE/srcdir/muesli
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakesupport.patch
 
-mkdir build &&  cd build && \
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --target install --parallel "$(nproc)" 
+cmake -B builddir -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake --build builddir --parallel ${nprocs}
+cmake --install builddir
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="glibc"),
-    Platform("armv6l", "linux"; call_abi="eabihf", libc="glibc"),
-    Platform("armv7l", "linux"; call_abi="eabihf", libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("riscv64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("armv6l", "linux"; call_abi="eabihf", libc="musl"),
-    Platform("armv7l", "linux"; call_abi="eabihf", libc="musl"),
-    # Platform("i686", "windows";),
-    # Platform("x86_64", "windows";)
-]
+platforms = filter(!Sys.iswindows , supported_platforms())
+platforms = filter(!Sys.isapple , platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
