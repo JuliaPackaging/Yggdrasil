@@ -27,6 +27,7 @@ cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_EXE_LINKER_FLAGS=-lsz      # help cmake link against the sz library
     -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_SHARED_LINKER_FLAGS=-lsz   # help cmake link against the sz library
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DMPI_HOME=${prefix}
     -DALLOW_UNSUPPORTED=ON
@@ -37,8 +38,8 @@ cmake_options=(
     -DHDF5_BUILD_FORTRAN=ON
     -DHDF5_BUILD_HL_LIB=ON
     -DHDF5_BUILD_JAVA=OFF              # would require Java
+    -DHDF5_BUILD_PARALLEL_TOOLS=OFF    # would require MFU (<https://github.com/hpc/mpifileutils>?)
     -DHDF5_BUILD_TOOLS=ON
-    -DHDF5_ENABLE_DIRECT_VFD=ON
     -DHDF5_ENABLE_HDFS=OFF             # would require Java
     -DHDF5_ENABLE_MAP_API=ON
     -DHDF5_ENABLE_MIRROR_VFD=ON
@@ -52,18 +53,22 @@ cmake_options=(
 # Help cmake find the sz library
 cp ${prefix}/cmake/libaec-config.cmake ${prefix}/cmake/szip-config.cmake
 
-if [[ "${target}" == *mingw* ]]; then
-    cmake_options+=(
-        -DHDF5_BUILD_PARALLEL_TOOLS=OFF
-        -DHDF5_ENABLE_PARALLEL=OFF
-        -DHDF5_ENABLE_SUBFILING_VFD=OFF
-    )
+if [[ ${target} == *darwin* || ${target} == *mingw* ]]; then
+    cmake_options+=(-DHDF5_ENABLE_DIRECT_VFD=OFF)
 else
-    cmake_options+=(
-        -DHDF5_BUILD_PARALLEL_TOOLS=OFF   # would require MFU (<https://github.com/hpc/mpifileutils>?)
-        -DHDF5_ENABLE_PARALLEL=ON
-        -DHDF5_ENABLE_SUBFILING_VFD=ON
-    )
+    cmake_options+=(-DHDF5_ENABLE_DIRECT_VFD=ON)
+fi
+
+if [[ ${target} == *mingw* ]]; then
+    cmake_options+=(-DHDF5_ENABLE_PARALLEL=OFF)
+else
+    cmake_options+=(-DHDF5_ENABLE_PARALLEL=ON)
+fi
+
+if [[ ${target} == *mingw* || ${target} == *freebsd* ]]; then
+    cmake_options+=(-DHDF5_ENABLE_SUBFILING_VFD=OFF)
+else
+    cmake_options+=(-DHDF5_ENABLE_SUBFILING_VFD=ON)
 fi
 
 export MPITRAMPOLINE_CC="${CC}"
@@ -71,7 +76,7 @@ export MPITRAMPOLINE_CXX="${CXX}"
 export MPITRAMPOLINE_FC="${FC}"
 
 mkdir saved
-case "${target}" in
+case ${target} in
     aarch64-apple-darwin*)
         cmake_options+=(
             -DFC_AVAIL_KINDS_RESULT='1,2,4,8,16;4,8,16;33;5;3;5;1,2,4,8,16;'
