@@ -128,12 +128,12 @@ if [[ "${target}" == *-darwin* ]]; then
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
-    BAZEL_BUILD_FLAGS+=(--macos_minimum_os=10.14)
     export MACOSX_DEPLOYMENT_TARGET=10.14
-    BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=10.14)
-    BAZEL_BUILD_FLAGS+=(--host_action_env=MACOSX_DEPLOYMENT_TARGET=10.14)
-    BAZEL_BUILD_FLAGS+=(--repo_env=MACOSX_DEPLOYMENT_TARGET=10.14)
-    BAZEL_BUILD_FLAGS+=(--test_env=MACOSX_DEPLOYMENT_TARGET=10.14)
+    BAZEL_BUILD_FLAGS+=(--macos_minimum_os=${MACOSX_DEPLOYMENT_TARGET})
+    BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
+    BAZEL_BUILD_FLAGS+=(--host_action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
+    BAZEL_BUILD_FLAGS+=(--repo_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
+    BAZEL_BUILD_FLAGS+=(--test_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--incompatible_remove_legacy_whole_archive)
     BAZEL_BUILD_FLAGS+=(--nolegacy_whole_archive)
 fi
