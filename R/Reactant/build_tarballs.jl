@@ -365,11 +365,6 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
-    # # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
-    # if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
-    #     continue
-    # end
-
     hermetic_cuda_version_map = Dict(
         # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
         # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in
