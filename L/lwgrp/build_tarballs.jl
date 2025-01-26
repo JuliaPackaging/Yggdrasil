@@ -49,6 +49,10 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# Our riscv64 work-arounds are broken for MPI:
+# `riscv64-linux-gnu-libgfortran5-cxx11-mpi+mpitrampoline` is not an officially supported platform
+filter!(p -> arch(p) != "riscv64", platforms)
+
 # The makefile builds only a static library on Windows. (I guess this could be fixed.)
 filter!(!Sys.iswindows, platforms)
 
