@@ -69,7 +69,6 @@ platforms = supported_platforms()
 
 mkl_platforms = Platform[
     Platform("x86_64", "Linux"),
-    Platform("i686", "Linux"),
     Platform("x86_64", "MacOS"),
     Platform("x86_64", "Windows"),
 ]
