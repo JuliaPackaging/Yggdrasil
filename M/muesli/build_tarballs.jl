@@ -22,8 +22,8 @@ cmake --build builddir --parallel ${nprocs}
 cmake --install builddir
 """
 
-platforms = filter(!Sys.iswindows , supported_platforms())
-platforms = filter(!Sys.isapple , platforms)
+platforms = filter(!Sys.iswindows, supported_platforms())
+platforms = filter(!Sys.isapple, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
