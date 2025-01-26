@@ -24,11 +24,9 @@ atomic_patch -p1 ../patches/cmake-fortran.patch
 atomic_patch -p1 ../patches/mpi.patch
 
 cmake_options=(
-    -Bbuild
     -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_FIND_ROOT_PATH=${prefix}
+    -DCMAKE_EXE_LINKER_FLAGS=-lsz      # help cmake link against the sz library
     -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_PREFIX_PATH=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DMPI_HOME=${prefix}
     -DALLOW_UNSUPPORTED=ON
@@ -38,13 +36,21 @@ cmake_options=(
     -DHDF5_BUILD_EXAMPLES=OFF
     -DHDF5_BUILD_FORTRAN=ON
     -DHDF5_BUILD_HL_LIB=ON
-    -DHDF5_BUILD_JAVA=OFF             # would require Java
+    -DHDF5_BUILD_JAVA=OFF              # would require Java
     -DHDF5_BUILD_TOOLS=ON
-    -DHDF5_ENABLE_HDFS=OFF            # would require Java
+    -DHDF5_ENABLE_DIRECT_VFD=ON
+    -DHDF5_ENABLE_HDFS=OFF             # would require Java
     -DHDF5_ENABLE_MAP_API=ON
+    -DHDF5_ENABLE_MIRROR_VFD=ON
+    -DHDF5_ENABLE_PLUGIN_SUPPORT=OFF   # would require PLUGIN
+    -DHDF5_ENABLE_ROS3_VFD=ON
+    -DHDF5_ENABLE_SZIP_SUPPORT=ON
     -DHDF5_ENABLE_THREADSAFE=ON
+    -DHDF5_ENABLE_Z_LIB_SUPPORT=ON
     -DONLY_SHARED_LIBS=ON
 )
+# Help cmake find the sz library
+cp ${prefix}/cmake/libaec-config.cmake ${prefix}/cmake/szip-config.cmake
 
 if [[ "${target}" == *mingw* ]]; then
     cmake_options+=(
@@ -260,9 +266,11 @@ case "${target}" in
         ;;
 esac
 
-cmake "${cmake_options[@]}"
-cmake --build build --parallel ${nproc}
-cmake --install build
+cmake -B builddir "${cmake_options[@]}"
+cmake --build builddir --parallel ${nproc}
+cmake --install builddir
+
+install_license COPYING
 """
 
 augment_platform_block = """
@@ -346,7 +354,3 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
-
-# TODO:
-# - could not find zlib
-# - could not find szip
