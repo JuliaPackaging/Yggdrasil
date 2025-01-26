@@ -39,15 +39,27 @@ cmake_options=(
     -DHDF5_BUILD_FORTRAN=ON
     -DHDF5_BUILD_HL_LIB=ON
     -DHDF5_BUILD_JAVA=OFF             # would require Java
-    -DHDF5_BUILD_PARALLEL_TOOLS=OFF   # would require MFU (<https://github.com/hpc/mpifileutils>?)
     -DHDF5_BUILD_TOOLS=ON
     -DHDF5_ENABLE_HDFS=OFF            # would require Java
     -DHDF5_ENABLE_MAP_API=ON
-    -DHDF5_ENABLE_PARALLEL=ON
-    -DHDF5_ENABLE_SUBFILING_VFD=ON
     -DHDF5_ENABLE_THREADSAFE=ON
     -DONLY_SHARED_LIBS=ON
 )
+
+if [[ "${target}" == *mingw* ]]; then
+    cmake_options+=(
+        -DHDF5_BUILD_PARALLEL_TOOLS=OFF
+        -DHDF5_ENABLE_PARALLEL=OFF
+        -DHDF5_ENABLE_SUBFILING_VFD=OFF
+    )
+else
+    cmake_options+=(
+        -DHDF5_BUILD_PARALLEL_TOOLS=OFF   # would require MFU (<https://github.com/hpc/mpifileutils>?)
+        -DHDF5_ENABLE_PARALLEL=ON
+        -DHDF5_ENABLE_SUBFILING_VFD=ON
+    )
+fi
+
 export MPITRAMPOLINE_CC="${CC}"
 export MPITRAMPOLINE_CXX="${CXX}"
 export MPITRAMPOLINE_FC="${FC}"
@@ -265,13 +277,25 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
+# Our riscv64 work-arounds are broken for MPI:
+# `riscv64-linux-gnu-libgfortran5-cxx11-mpi+mpitrampoline` is not an officially supported platform
+filter!(p -> arch(p) != "riscv64", platforms)
+
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.1", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+filter!(platforms) do p
+    if p["mpi"] == "mpich"
+        arch(p) == "riscv64" && return false
+    elseif p["mpi"] == "mpitrampoline"
+        libc(p) == "musl" && return false
+    elseif p["mpi"] == "openmpi"
+        arch(p) == "armv6l" && libc(p) == "glibc" && return false
+        Sys.isfreebsd(p) && arch(p) == "aarch64" && return false # we should build this
+        arch(p) == "riscv64" && return false                     # we should build this at some time
+    end
+    return true
+end
 
 # The products that we will ensure are always built
 products = [
