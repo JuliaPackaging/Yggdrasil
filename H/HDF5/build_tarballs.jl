@@ -271,6 +271,9 @@ cmake --build builddir --parallel ${nproc}
 cmake --install builddir
 
 install_license COPYING
+
+# Clean up: We created the file, we need to remove it
+rm ${prefix}/cmake/szip-config.cmake
 """
 
 augment_platform_block = """
