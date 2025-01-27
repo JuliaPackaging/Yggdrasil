@@ -39,7 +39,7 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; cuda_deps];
                    lazy_artifacts=true,
-                   julia_compat="1.6",
+                   julia_compat="1.9",
                    preferred_gcc_version=v"7",
                    augment_platform_block=CUDA.augment,
                    skip_audit=true,

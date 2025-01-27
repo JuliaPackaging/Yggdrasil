@@ -11,11 +11,25 @@ apk del cmake
 
 cd faiss
 
+atomic_patch -p1 ../patches/faiss-cmake-mkl-optional.patch
 atomic_patch -p1 ../patches/faiss-mingw32-cmake.patch
 atomic_patch -p1 ../patches/faiss-mingw32-InvertedListsIOHook.patch
 atomic_patch -p1 ../patches/faiss-mingw32.patch
 
 cmake_extra_args=()
+
+libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
+if [[ "$libblastrampoline_target" != armv6l-linux-* &&
+      "$bb_full_target" != i686-linux-gnu-cxx11 ]]; then
+    if [[ "$target" == *-freebsd* ]]; then
+        libblastrampoline_target=$rust_target
+    fi
+    cmake_extra_args+=(
+        "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
+        "-DBLAS_LIBRARIES=$libdir/libblastrampoline.$dlext"
+        "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
+    )
+fi
 
 if [[ $bb_full_target == *cuda* ]]; then
     cuda_version=${bb_full_target##*-cuda+}
@@ -45,6 +59,7 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DFAISS_ENABLE_GPU=OFF \
+    -DFAISS_ENABLE_MKL=OFF \
     -DFAISS_ENABLE_PYTHON=OFF \
     -DBUILD_TESTING=OFF \
     -DBUILD_SHARED_LIBS=ON \
@@ -62,19 +77,15 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
-mkl_platforms = Platform[
-    Platform("x86_64", "Linux"),
-    Platform("x86_64", "MacOS"),
-    Platform("x86_64", "Windows"),
-]
-
-openblas_platforms = filter(p -> p ∉ mkl_platforms, platforms)
-
-platforms = expand_cxxstring_abis(platforms)
-mkl_platforms = expand_cxxstring_abis(mkl_platforms)
-openblas_platforms = expand_cxxstring_abis(openblas_platforms)
+openblas_platforms = filter(p ->
+    arch(p) == "armv6l" ||
+    p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11") ||
+    Sys.isfreebsd(p) && arch(p) == "aarch64",
+    platforms
+)
+libblastrampoline_platforms = filter(p -> p ∉ openblas_platforms, platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -90,9 +101,7 @@ dependencies = [
      # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency("LAPACK_jll"; platforms = openblas_platforms),
-    Dependency("MKL_jll"; platforms = mkl_platforms),
-    BuildDependency("MKL_Headers_jll"; platforms = mkl_platforms),
+    Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
     HostBuildDependency(PackageSpec("CMake_jll", v"3.28.1")),
 ]
