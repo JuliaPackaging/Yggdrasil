@@ -49,8 +49,14 @@ if [[ "${target}" == *linux* ]]; then
     export CFLAGS="-lrt"
 fi
 
+LINKER_FLAGS=""
+if [[ "${target}" == *aarch64-apple-darwin* ]]; then
+    LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+fi
+
 cmake .. \
     -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_SHARED_LINKER_FLAGS="${LINKER_FLAGS}" \
     -DPASTIX_WITH_MPI=OFF \
     -DPASTIX_WITH_FORTRAN=ON \
     -DBUILD_PYTHON=OFF \
@@ -79,6 +85,7 @@ rm -r $prefix/lib/julia
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
+platforms = filter(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
