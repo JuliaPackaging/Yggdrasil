@@ -365,6 +365,11 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
+    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.3"
+        # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
+        continue
+    end
+
     hermetic_cuda_version_map = Dict(
         # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
         # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in

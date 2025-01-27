@@ -93,7 +93,7 @@ function augment_platform!(platform::Platform)
             Libdl.dlclose(handle)
 
             if cuda_version_tag == "none" && current_cuda_version isa VersionNumber
-                if v"12.1" <= current_cuda_version < v"12.3"
+                if v"12.1" <= current_cuda_version < v"12.3" && arch(platform) == "x86_64"
                     cuda_version_tag = "12.1"
                 elseif v"12.3" <= current_cuda_version < v"12.6"
                     cuda_version_tag = "12.3"
