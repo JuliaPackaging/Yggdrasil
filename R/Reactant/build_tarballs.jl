@@ -1,18 +1,15 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-# Do not build anything on Yggdrasil for the moment to avoid wasting resources.
-BinaryBuilder.is_yggdrasil() && error()
-
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.54"
+version = v"0.0.55"
 
 sources = [
-  GitSource(repo, "7b10629ef7fef49b1d286df3eb72a199feb540a9"),
+  GitSource(repo, "8db24b1b3e45e215c8be9647b57aa0ad0c9aa25d"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
