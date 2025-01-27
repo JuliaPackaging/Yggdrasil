@@ -50,9 +50,9 @@ if [[ "${target}" == *linux* ]]; then
 fi
 
 LINKER_FLAGS=""
-# if [[ "${target}" == *aarch64-apple-darwin* ]]; then
-#     LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
-# fi
+if [[ "${target}" == *aarch64-apple-darwin* ]]; then
+    LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+fi
 
 cmake .. \
     -DBUILD_SHARED_LIBS=ON \
@@ -105,4 +105,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_llvm_version=v"13.0.1")
