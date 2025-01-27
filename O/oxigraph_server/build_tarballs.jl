@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "oxigraph_server"
-version = v"0.3.22"
+version = v"0.4.7"
 
 url_prefix = "https://github.com/oxigraph/oxigraph/releases/download/v$version/oxigraph_server_v$version"
 
@@ -34,6 +34,8 @@ platforms = filter(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = Product[
