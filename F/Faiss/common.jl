@@ -18,10 +18,10 @@ atomic_patch -p1 ../patches/faiss-mingw32.patch
 
 cmake_extra_args=()
 
-if [[ "$bb_full_target" != armv6l-linux-* &&
-      "$bb_full_target" != i686-linux-gnu-cxx11 ]]; then
+if [[ "$bb_full_target" != armv6l-linux-* ]]; then
     cmake_extra_args+=(
         "-DBLAS_LIBRARIES=$libdir/libblastrampoline.$dlext"
+        "-DLAPACK_LIBRARIES=$libdir/libblastrampoline.$dlext"
     )
 fi
 
@@ -73,12 +73,7 @@ fi
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-openblas_platforms = filter(p ->
-    arch(p) == "armv6l" ||
-    p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11") ||
-    Sys.isfreebsd(p) && arch(p) == "aarch64",
-    platforms
-)
+openblas_platforms = filter(p -> arch(p) == "armv6l", platforms)
 libblastrampoline_platforms = filter(p -> p ∉ openblas_platforms, platforms)
 
 # The products that we will ensure are always built
