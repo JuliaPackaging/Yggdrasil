@@ -18,16 +18,10 @@ atomic_patch -p1 ../patches/faiss-mingw32.patch
 
 cmake_extra_args=()
 
-libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
-if [[ "$libblastrampoline_target" != armv6l-linux-* &&
+if [[ "$bb_full_target" != armv6l-linux-* &&
       "$bb_full_target" != i686-linux-gnu-cxx11 ]]; then
-    if [[ "$target" == *-freebsd* ]]; then
-        libblastrampoline_target=$rust_target
-    fi
     cmake_extra_args+=(
-        "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
         "-DBLAS_LIBRARIES=$libdir/libblastrampoline.$dlext"
-        "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
     )
 fi
 
