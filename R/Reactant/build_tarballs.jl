@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.55"
 
 sources = [
-  GitSource(repo, "8db24b1b3e45e215c8be9647b57aa0ad0c9aa25d"),
+  GitSource(repo, "23a57dfc8cd56a4f12b79a6fafc72446a53ec058"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -191,7 +191,7 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
 
         BAZEL_BUILD_FLAGS+=(
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
-            --action_env=CUSTOM_PLATFORM_ARCHITECTURE="aarch64"
+            --repo_env=CUDA_REDIST_TARGET_PLATFORM="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
         )
     fi
