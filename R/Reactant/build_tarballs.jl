@@ -31,7 +31,6 @@ if [[ "${target}" == *-darwin* ]]; then
     # <https://github.com/JuliaPackaging/Yggdrasil/pull/10313#issuecomment-2616125018>.
     pushd $WORKSPACE/srcdir/MacOSX*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/include
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
