@@ -65,6 +65,8 @@ function prepare_openfhe_julia_build(name::String, git_hash::String)
 
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
+    # Required Julia version is 1.10
+    filter!(v -> v >= v"1.10", julia_versions)
     platforms = vcat(libjulia_platforms.(julia_versions)...)
 
     # We cannot build with musl since OpenFHE requires the `execinfo.h` header for `backtrace`
