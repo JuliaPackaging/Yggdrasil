@@ -18,14 +18,6 @@ atomic_patch -p1 ../patches/faiss-mingw32.patch
 
 cmake_extra_args=()
 
-if [[ "$bb_full_target" != armv6l-linux-* ]]; then
-    libblastrampoline=$(find $libdir -name libblastrampoline'*'.$dlext) # Enable Windows builds to find libblastrampoline
-    cmake_extra_args+=(
-        "-DBLAS_LIBRARIES=$libblastrampoline"
-        "-DLAPACK_LIBRARIES=$libblastrampoline"
-    )
-fi
-
 if [[ $bb_full_target == *cuda* ]]; then
     cuda_version=${bb_full_target##*-cuda+}
     if [[ $cuda_version == "11.8" ]]; then
@@ -49,16 +41,21 @@ if [[ $bb_full_target == *cuda* ]]; then
     )
 fi
 
+libblastrampoline=$(find $libdir -name libblastrampoline'*'.$dlext) # Enable Windows builds to find libblastrampoline
+cmake_extra_args+=(
+    "-DBLAS_LIBRARIES=$libblastrampoline"
+    "-DLAPACK_LIBRARIES=$libblastrampoline"
+)
 cmake -B build \
+    -DBUILD_TESTING=OFF \
+    -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
+    -DFAISS_ENABLE_C_API=ON \
     -DFAISS_ENABLE_GPU=OFF \
     -DFAISS_ENABLE_MKL=OFF \
     -DFAISS_ENABLE_PYTHON=OFF \
-    -DBUILD_TESTING=OFF \
-    -DBUILD_SHARED_LIBS=ON \
-    -DFAISS_ENABLE_C_API=ON \
     ${cmake_extra_args[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -74,9 +71,6 @@ fi
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-openblas_platforms = filter(p -> arch(p) == "armv6l", platforms)
-libblastrampoline_platforms = filter(p -> p ∉ openblas_platforms, platforms)
-
 # The products that we will ensure are always built
 products = Product[
     FileProduct("include/faiss/Index.h", :faiss_index_h),
@@ -91,7 +85,6 @@ dependencies = [
      # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
-    Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
-    Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
+    Dependency("libblastrampoline_jll"; compat="5.4"),
     HostBuildDependency(PackageSpec("CMake_jll", v"3.28.1")),
 ]
