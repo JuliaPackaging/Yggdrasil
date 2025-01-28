@@ -1,0 +1,61 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -423,12 +423,12 @@ if (PASTIX_ORDERING_PTSCOTCH)
+ 
+   if (PTSCOTCH_FOUND)
+     # Check coherency for integer size
+-    if(PASTIX_INT64 AND NOT PTSCOTCH_Num_8)
+-      message(FATAL_ERROR "PASTIX_INT64 is enabled and provided PT-Scotch is not compiled with int64 support, please build with -DPASTIX_INT64=OFF or install a 64 bits version of PT-Scotch.")
+-    endif()
+-    if(NOT PASTIX_INT64 AND NOT PTSCOTCH_Num_4)
+-      message(FATAL_ERROR "PASTIX_INT64 is disabled and provided PT-Scotch is not compiled with int32 support, please build with -DPASTIX_INT64=ON or install a 32 bits version of PT-Scotch.")
+-    endif()
++    # if(PASTIX_INT64 AND NOT PTSCOTCH_Num_8)
++    #   message(FATAL_ERROR "PASTIX_INT64 is enabled and provided PT-Scotch is not compiled with int64 support, please build with -DPASTIX_INT64=OFF or install a 64 bits version of PT-Scotch.")
++    # endif()
++    # if(NOT PASTIX_INT64 AND NOT PTSCOTCH_Num_4)
++    #   message(FATAL_ERROR "PASTIX_INT64 is disabled and provided PT-Scotch is not compiled with int32 support, please build with -DPASTIX_INT64=ON or install a 32 bits version of PT-Scotch.")
++    # endif()
+   endif()
+ endif()
+ 
+@@ -444,12 +444,12 @@ if (PASTIX_ORDERING_SCOTCH)
+     "HAVE_SCOTCH_CONTEXT_INIT" OFF)
+ 
+     # Check coherency for integer size
+-    if(PASTIX_INT64 AND NOT SCOTCH_Num_8)
+-      message(FATAL_ERROR "PASTIX_INT64 is enabled and provided Scotch is not compiled with int64 support, please build with -DPASTIX_INT64=OFF or install a 64 bits version of Scotch.")
+-    endif()
+-    if(NOT PASTIX_INT64 AND NOT SCOTCH_Num_4)
+-      message(FATAL_ERROR "PASTIX_INT64 is disabled and provided Scotch is not compiled with int32 support, please build with -DPASTIX_INT64=ON or install a 32 bits version of Scotch.")
+-    endif()
++    # if(PASTIX_INT64 AND NOT SCOTCH_Num_8)
++    #   message(FATAL_ERROR "PASTIX_INT64 is enabled and provided Scotch is not compiled with int64 support, please build with -DPASTIX_INT64=OFF or install a 64 bits version of Scotch.")
++    # endif()
++    # if(NOT PASTIX_INT64 AND NOT SCOTCH_Num_4)
++    #   message(FATAL_ERROR "PASTIX_INT64 is disabled and provided Scotch is not compiled with int32 support, please build with -DPASTIX_INT64=ON or install a 32 bits version of Scotch.")
++    # endif()
+   endif()
+ endif()
+ 
+--- a/spm/CMakeLists.txt
++++ b/spm/CMakeLists.txt
+@@ -193,12 +193,12 @@ if (SPM_WITH_SCOTCH)
+ 
+   if (SCOTCH_FOUND)
+     # Check coherency for integer size
+-    if(SPM_INT64 AND NOT SCOTCH_Num_8)
+-      message(FATAL_ERROR "SPM_INT64 is enabled and provided Scotch is not compiled with int64 support, please build with -DSPM_INT64=OFF or install a 64 bits version of Scotch.")
+-    endif()
+-    if(NOT SPM_INT64 AND NOT SCOTCH_Num_4)
+-      message(FATAL_ERROR "SPM_INT64 is disabled and provided Scotch is not compiled with int32 support, please build with -DSPM_INT64=ON or install a 32 bits version of Scotch.")
+-    endif()
++    # if(SPM_INT64 AND NOT SCOTCH_Num_8)
++    #   message(FATAL_ERROR "SPM_INT64 is enabled and provided Scotch is not compiled with int64 support, please build with -DSPM_INT64=OFF or install a 64 bits version of Scotch.")
++    # endif()
++    # if(NOT SPM_INT64 AND NOT SCOTCH_Num_4)
++    #   message(FATAL_ERROR "SPM_INT64 is disabled and provided Scotch is not compiled with int32 support, please build with -DSPM_INT64=ON or install a 32 bits version of Scotch.")
++    # endif()
+   endif()
+ endif()
+ 

@@ -21,8 +21,13 @@ if [[ ${target} == *x86_64-w64-mingw* ]]; then
 fi
 if [[ ${target} == *x86_64-linux-gnu* ]]; then
     install -Dvm 755 mkl-${target}/mkl-*.data/data/lib/* -t "${libdir}"
+    cd mkl-${target}/mkl-*.data/data/lib
+    for lib in *.so.2; do
+        symlink="${lib%.2}"
+        ln -s "${libdir}/$lib" "${libdir}/$symlink"
+    done
 fi
-install_license mkl-${target}/mkl-*.dist-info/LICENSE.txt
+install_license $WORKSPACE/srcdir/mkl-${target}/mkl-*.dist-info/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further

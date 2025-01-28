@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "GMT"
-version = v"6.5.2"
+version = v"6.5.3"
 GSHHG_VERSION="2.3.7"
 DCW_VERSION="2.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/GenericMappingTools/gmt", 
-    "2629b65b2e179ea9fbe001ee6a42da01c8adfa53"),
+    "504e6d226ba1da344137d610a5256042b7cd2638"),
     
     ArchiveSource("https://github.com/GenericMappingTools/gshhg-gmt/releases/download/$GSHHG_VERSION/gshhg-gmt-$GSHHG_VERSION.tar.gz",
         "9bb1a956fca0718c083bef842e625797535a00ce81f175df08b042c2a92cfe7f"),
@@ -75,8 +75,8 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="LibCURL_jll", uuid="deac9b47-8bc7-5906-a0fe-35ac56dc84c0"); compat="7.73.0, 8.0.1")
     Dependency("NetCDF_jll", compat="400.902.210")
-    Dependency("PROJ_jll", compat="901.300.0")
-    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="301.900")
+    Dependency("PROJ_jll", compat="902.500")
+    Dependency(PackageSpec(name="GDAL_jll", uuid="a7073274-a066-55f0-b90d-d619367d196c"); compat="302.1000")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="PCRE_jll", uuid="2f80f16e-611a-54ab-bc61-aa92de5b98fc"))
     Dependency(PackageSpec(name="LAPACK32_jll", uuid="17f450c3-bd24-55df-bb84-8c51b4b939e3"))
