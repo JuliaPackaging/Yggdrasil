@@ -29,7 +29,7 @@ make install
 platforms = supported_platforms(; exclude=Sys.iswindows)
 
 # libevent_jll is not available yet for riscv64
-filter!(arch(p) != "riscv64", platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
