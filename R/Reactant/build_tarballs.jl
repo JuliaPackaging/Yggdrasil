@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.55"
 
 sources = [
-  GitSource(repo, "fd60aad440379a9b04a0164f34cbd65cd679ed89"),
+  GitSource(repo, "81e1eeaa1ea3ec9cf49fe03b74ee6806e9300398"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -131,7 +131,7 @@ if [[ "${target}" == *-darwin* ]]; then
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
-    export MACOSX_DEPLOYMENT_TARGET=13.3
+    export MACOSX_DEPLOYMENT_TARGET=10.14
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--host_action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
@@ -325,7 +325,7 @@ platforms = filter(p -> !(Sys.iswindows(p)), platforms)
 # [00:20:02] #include <linux/futex.h>
 platforms = filter(p -> !(Sys.isfreebsd(p)), platforms)
 
-# platforms = filter(p -> (Sys.isapple(p)), platforms)
+platforms = filter(p -> (Sys.isapple(p)), platforms)
 # platforms = filter(p -> arch(p) != "x86_64", platforms)
 
 # platforms = filter(p -> (Sys.isapple(p)), platforms)
@@ -387,9 +387,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     if Sys.isapple(platform)
-        push!(platform_sources,
-              ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
-                            "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"))
+	push!(platform_sources,
+              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
     end
 
     if !Sys.isapple(platform)
