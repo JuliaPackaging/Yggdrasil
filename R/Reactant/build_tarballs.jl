@@ -25,13 +25,10 @@ echo GCC version: $(gcc --version)
 GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }')
 GCC_MAJOR_VERSION=$(echo "${GCC_VERSION}" | cut -d. -f1)
 
-if [[ "${target}" == *-darwin* ]]; then
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Compiling LLVM components within XLA requires macOS SDK 10.14.
-    # But then we need 13.3 for another `std::hardware_destructive_interference_size`:
-    # <https://github.com/JuliaPackaging/Yggdrasil/pull/10313#issuecomment-2616125018>.
-    pushd $WORKSPACE/srcdir/MacOSX*.sdk
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/include
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
@@ -131,7 +128,7 @@ if [[ "${target}" == *-darwin* ]]; then
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
-    export MACOSX_DEPLOYMENT_TARGET=13.3
+    export MACOSX_DEPLOYMENT_TARGET=10.14
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--host_action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
@@ -386,10 +383,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    if Sys.isapple(platform)
+    if Sys.isapple(platform) && arch(platform) == "x86_64"
         push!(platform_sources,
-              ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
-                            "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"))
+              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
     end
 
     if !Sys.isapple(platform)
