@@ -41,17 +41,13 @@ if [[ $bb_full_target == *cuda* ]]; then
     )
 fi
 
-libblastrampoline=$(find $libdir -name libblastrampoline'*'.$dlext) # Enable Windows builds to find libblastrampoline
-cmake_extra_args+=(
-    "-DBLAS_LIBRARIES=$libblastrampoline"
-    "-DLAPACK_LIBRARIES=$libblastrampoline"
-)
 cmake -B build \
-    -DBUILD_TESTING=OFF \
+    -DBLA_VENDOR=libblastrampoline \
     -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_TESTING=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
     -DFAISS_ENABLE_C_API=ON \
     -DFAISS_ENABLE_GPU=OFF \
     -DFAISS_ENABLE_MKL=OFF \
@@ -86,5 +82,5 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     Dependency("libblastrampoline_jll"; compat="5.4"),
-    HostBuildDependency(PackageSpec("CMake_jll", v"3.28.1")),
+    HostBuildDependency(PackageSpec("CMake_jll", v"3.30.2")),
 ]
