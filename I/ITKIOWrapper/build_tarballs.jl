@@ -41,6 +41,7 @@ filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
+filter!(!Sys.isWindows, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
