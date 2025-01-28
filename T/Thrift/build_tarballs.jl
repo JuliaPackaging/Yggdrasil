@@ -9,11 +9,17 @@ version = v"0.21.1" # Bump rebuild for riscv, drop at next release
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/apache/thrift.git", "1a31d9051d35b732a5fce258955ef95f576694ba"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/thrift
+
+# Needed until https://github.com/apache/thrift/pull/3090 released
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 
 CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
