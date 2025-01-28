@@ -214,10 +214,11 @@ if [[ "${target}" == i686-* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-sed -i "s/BB_TARGET/${bb_target}/g" BUILD
-sed -i "s/BB_FULL_TARGET/${bb_full_target}/g" BUILD
-sed -i "s/GCC_VERSION/${GCC_VERSION}/g" BUILD
-sed -i "s/BAZEL_CPU/${BAZEL_CPU}/g" BUILD
+sed -i -e "s/BB_TARGET/${bb_target}/g" \
+       -e "s/BB_FULL_TARGET/${bb_full_target}/g" \
+       -e "s/GCC_VERSION/${GCC_VERSION}/g" \
+       -e "s/BAZEL_CPU/${BAZEL_CPU}/g" \
+       BUILD
 
 export HERMETIC_PYTHON_VERSION=3.12
 
@@ -235,8 +236,9 @@ if [[ "${target}" == *-darwin* ]]; then
         sed -i 's/12.0.1-iains/12.1.0/' "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"*
     fi
 
-    sed -i.bak1 "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-    sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
+                -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
+                /workspace/bazel_root/*/external/local_config_cc/BUILD
 
     cat /workspace/bazel_root/*/external/local_config_cc/BUILD
 
@@ -247,8 +249,9 @@ if [[ "${target}" == *-darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo "Bazel build failed, proceed to manual linking, check if there are are non-linking errors"
 
     # Manually remove `whole-archive` directive for the linker
-    sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
-    sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
+    sed -i.bak1 -e "/whole-archive/d" \
+                -e "/lrt/d" \
+                bazel-bin/libReactantExtra.so-2.params
 
     # # Show the params file for debugging, but convert newlines to spaces
     # cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
