@@ -19,9 +19,10 @@ atomic_patch -p1 ../patches/faiss-mingw32.patch
 cmake_extra_args=()
 
 if [[ "$bb_full_target" != armv6l-linux-* ]]; then
+    libblastrampoline=$(find $libdir -name libblastrampoline'*'.$dlext) # Enable Windows builds to find libblastrampoline
     cmake_extra_args+=(
-        "-DBLAS_LIBRARIES=$libdir/libblastrampoline.$dlext"
-        "-DLAPACK_LIBRARIES=$libdir/libblastrampoline.$dlext"
+        "-DBLAS_LIBRARIES=$libblastrampoline"
+        "-DLAPACK_LIBRARIES=$libblastrampoline"
     )
 fi
 
