@@ -57,14 +57,14 @@ platforms = [
 # The products that we will ensure are always built
 # We will build the cartesian product of all plans, moving and build types for MMTk
 products = [
-    LibraryProduct("immix/non_moving/debug/libmmtk_julia", :libmmtk_julia_immix_non_moving_debug; dont_dlopen=true)
-    LibraryProduct("immix/moving/debug/libmmtk_julia", :libmmtk_julia_immix_moving_debug; dont_dlopen=true)
-    LibraryProduct("immix/non_moving/release/libmmtk_julia", :libmmtk_julia_immix_non_moving_release; dont_dlopen=true)
-    LibraryProduct("immix/moving/release/libmmtk_julia", :libmmtk_julia_immix_moving_release; dont_dlopen=true)
-    LibraryProduct("sticky/non_moving/debug/libmmtk_julia", :libmmtk_julia_sticky_non_moving_debug; dont_dlopen=true)
-    LibraryProduct("sticky/moving/debug/libmmtk_julia", :libmmtk_julia_sticky_moving_debug; dont_dlopen=true)
-    LibraryProduct("sticky/non_moving/release/libmmtk_julia", :libmmtk_julia_sticky_non_moving_release; dont_dlopen=true)
-    LibraryProduct("sticy/moving/release/libmmtk_julia", :libmmtk_julia_sticky_moving_release; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_immix_moving_debug, "lib/immix/moving/debug"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_immix_non_moving_debug, "lib/immix/non_moving/debug"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_immix_moving_release, "lib/immix/moving/release"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_immix_non_moving_release, "lib/immix/non_moving/release"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_sticky_moving_debug, "lib/sticky/moving/debug"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_sticky_non_moving_debug, "lib/sticky/non_moving/debug"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_sticky_moving_release, "lib/sticky/moving/release"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_sticky_non_moving_release, "lib/sticky/non_moving/release"; dont_dlopen=true)
     FileProduct("include/mmtk.h", :mmtk_h)
     FileProduct("include/mmtkMutator.h", :mmtkMutator_h)
 ]
