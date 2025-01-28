@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "muesli"
-version = v"0.1.0"
+version = v"1.16"
 
 # Collection of sources required to complete build
 sources = [
