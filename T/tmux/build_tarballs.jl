@@ -28,6 +28,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude=Sys.iswindows)
 
+# libevent_jll is not available yet for riscv64
+filter!(arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("tmux", :tmux)
