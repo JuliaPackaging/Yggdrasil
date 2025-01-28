@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "mmtk_julia"
-version = v"0.30.4"
+version = v"0.30.5"
 
 # Collection of sources required to complete build
 sources = [
@@ -13,11 +13,36 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/mmtk-julia/
-# do a non-moving build until we support moving Immix
-MMTK_MOVING=0 make release 
+MMTK_PLANS=("Immix" "StickyImmix")
+MMTK_MOVING=(0 1)
+MMTK_BUILD=("debug" "release")
 
-# Install
-install -Dvm 755 "mmtk/target/${rust_target}/release/libmmtk_julia.${dlext}" -t "${libdir}"
+# Build MMTK (all configurations)
+for build in "${MMTK_BUILD[@]}"; do
+    for plan in "${MMTK_PLANS[@]}"; do
+        for moving in "${MMTK_MOVING[@]}"; do
+            # Build MMTK
+            MMTK_PLAN=$plan MMTK_MOVING=$moving make $build
+
+            if [ "$moving" == 1 ]; then
+                moving_name="moving"
+            else
+                moving_name="non_moving"
+            fi
+
+            if [ "$plan" == "Immix" ]; then
+                plan_name="immix"
+            else [ "$plan" == "StickyImmix" ]
+                plan_name="sticky"
+            fi
+
+            # Install files
+            install -Dvm 755 "mmtk/target/${rust_target}/${build}/libmmtk_julia.${dlext}" -t "${libdir}/${plan_name}/${moving_name}/${build}/"
+        done
+    done
+done
+
+# Install header files
 install -Dvm 644 "mmtk/api/mmtk.h" "${includedir}/mmtk.h"
 install -Dvm 644 "mmtk/api/mmtkMutator.h" "${includedir}/mmtkMutator.h"
 """
@@ -30,8 +55,16 @@ platforms = [
 
 
 # The products that we will ensure are always built
+# We will build the cartesian product of all plans, moving and build types for MMTk
 products = [
-    LibraryProduct("libmmtk_julia", :libmmtk_julia; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_immix_moving_debug, "lib/immix/moving/debug"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_immix_non_moving_debug, "lib/immix/non_moving/debug"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_immix_moving_release, "lib/immix/moving/release"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_immix_non_moving_release, "lib/immix/non_moving/release"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_sticky_moving_debug, "lib/sticky/moving/debug"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_sticky_non_moving_debug, "lib/sticky/non_moving/debug"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_sticky_moving_release, "lib/sticky/moving/release"; dont_dlopen=true)
+    LibraryProduct("libmmtk_julia", :libmmtk_julia_sticky_non_moving_release, "lib/sticky/non_moving/release"; dont_dlopen=true)
     FileProduct("include/mmtk.h", :mmtk_h)
     FileProduct("include/mmtkMutator.h", :mmtkMutator_h)
 ]
