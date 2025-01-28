@@ -39,7 +39,7 @@ dependencies = [
     BuildDependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
     Dependency("Expat_jll"; compat="2.2.10"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("boost_jll"; compat="=1.79.0"),
+    Dependency("boost_jll"; compat="=1.87.0"),
     BuildDependency(PackageSpec(name="protozero_jll", uuid="e2028600-4f28-5e5c-ab86-957950af6e0a")),
     BuildDependency("Lz4_jll"),
 ]
