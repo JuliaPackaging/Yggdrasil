@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.54"
+version = v"0.0.55"
 
 sources = [
-  GitSource(repo, "59b1856a39d803fec1ecc94c906987f0bee3d0e1"),
+  GitSource(repo, "69517088526a39f25fe6f9171f00dda39ca25691"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -65,11 +65,11 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
 # # Use ccache to speedup re-builds
-# BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE})
+# BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=/root/.ccache)
 # BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
-# Set `SUPER_VERBOSE` to a non empty string to make the compiler wrappers more
-# verbose. Useful for debugging.
-BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=)
+# # Set `SUPER_VERBOSE` to a non empty string to make the compiler wrappers more
+# # verbose. Useful for debugging.
+# BAZEL_BUILD_FLAGS+=(--action_env=SUPER_VERBOSE=true)
 
 BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--cxxopt=-std=c++17 --host_cxxopt=-std=c++17)
@@ -178,6 +178,21 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
         # Someone wants to compile some code which requires flags not understood by GCC 11.
         BAZEL_BUILD_FLAGS+=(--define=xnn_enable_avx512fp16=false)
     fi
+
+    if [[ "${target}" != x86_64-linux-gnu ]]; then
+        # This is the standard `LD_LIBRARY_PATH` we have in our environment + `/usr/lib/csl-glibc-x86_64` to be able to run host `nvcc`/`ptxas`/`fatbinary` during compilation.
+        export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib:/lib64:/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib:/workspace/x86_64-linux-musl-cxx11/destdir/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib64:/opt/x86_64-linux-musl/x86_64-linux-musl/lib:/opt/${target}/${target}/lib64:/opt/${target}/${target}/lib:/workspace/destdir/lib64"
+
+        # Delete shared libc++ to force statically linking to it.
+        rm -v "${prefix}/libcxx/lib/libc++.so"*
+
+        BAZEL_BUILD_FLAGS+=(
+            --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
+            --repo_env=CUDA_REDIST_TARGET_PLATFORM="aarch64"
+            --linkopt="-L${prefix}/libcxx/lib"
+        )
+    fi
+
 fi
 
 if [[ "${bb_full_target}" == *gpu+rocm* ]]; then
@@ -199,10 +214,11 @@ if [[ "${target}" == i686-* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=build_with_mkl=false --define=enable_mkl=false)
 fi
 
-sed -i "s/BB_TARGET/${bb_target}/g" BUILD
-sed -i "s/BB_FULL_TARGET/${bb_full_target}/g" BUILD
-sed -i "s/GCC_VERSION/${GCC_VERSION}/g" BUILD
-sed -i "s/BAZEL_CPU/${BAZEL_CPU}/g" BUILD
+sed -i -e "s/BB_TARGET/${bb_target}/g" \
+       -e "s/BB_FULL_TARGET/${bb_full_target}/g" \
+       -e "s/GCC_VERSION/${GCC_VERSION}/g" \
+       -e "s/BAZEL_CPU/${BAZEL_CPU}/g" \
+       BUILD
 
 export HERMETIC_PYTHON_VERSION=3.12
 
@@ -220,8 +236,9 @@ if [[ "${target}" == *-darwin* ]]; then
         sed -i 's/12.0.1-iains/12.1.0/' "/opt/bin/x86_64-linux-musl-cxx11/x86_64-linux-musl-clang"*
     fi
 
-    sed -i.bak1 "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
-    sed -i.bak1 "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" /workspace/bazel_root/*/external/local_config_cc/BUILD
+    sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
+                -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
+                /workspace/bazel_root/*/external/local_config_cc/BUILD
 
     cat /workspace/bazel_root/*/external/local_config_cc/BUILD
 
@@ -232,8 +249,9 @@ if [[ "${target}" == *-darwin* ]]; then
     $BAZEL ${BAZEL_FLAGS[@]} build ${BAZEL_BUILD_FLAGS[@]} :libReactantExtra.so || echo "Bazel build failed, proceed to manual linking, check if there are are non-linking errors"
 
     # Manually remove `whole-archive` directive for the linker
-    sed -i.bak1 "/whole-archive/d" bazel-bin/libReactantExtra.so-2.params
-    sed -i.bak1 "/lrt/d" bazel-bin/libReactantExtra.so-2.params
+    sed -i.bak1 -e "/whole-archive/d" \
+                -e "/lrt/d" \
+                bazel-bin/libReactantExtra.so-2.params
 
     # # Show the params file for debugging, but convert newlines to spaces
     # cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
@@ -251,11 +269,15 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
-    mkdir -p ${libdir}/cuda/nvvm/libdevice
-    mkdir -p ${libdir}/cuda/bin
-    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${libdir}/cuda/nvvm/libdevice
-    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/ptxas ${libdir}/cuda/bin
-    cp -v bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc/bin/fatbinary ${libdir}/cuda/bin
+
+    if [[ "${target}" == x86_64-linux-gnu ]]; then
+        NVCC_DIR=(bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc)
+    else
+        NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
+    fi
+    install -Dvm 644 "${NVCC_DIR[@]}/nvvm/libdevice/libdevice.10.bc" -t "${libdir}/cuda/nvvm/libdevice"
+    install -Dvm 755 "${NVCC_DIR[@]}/bin/ptxas" -t "${libdir}/cuda/bin"
+    install -Dvm 755 "${NVCC_DIR[@]}/bin/fatbinary" -t "${libdir}/cuda/bin"
 fi
 
 install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dlext}"
@@ -264,10 +286,6 @@ install_license ../../LICENSE
 
 # determine exactly which tarballs we should build
 builds = []
-
-# Dependencies that must be installed before this package can be built
-
-dependencies = Dependency[]
 
 # The products that we will ensure are always built
 products = Product[
@@ -329,7 +347,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     augmented_platform["mode"] = mode
     augmented_platform["gpu"] = gpu
     augmented_platform["cuda_version"] = cuda_version
-    cuda_deps = []
+    dependencies = []
+
+    preferred_gcc_version = v"13"
+    preferred_llvm_version = v"18.1.7"
 
     if mode == "dbg" && !Sys.isapple(platform)
         continue
@@ -344,8 +365,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
-    # TODO temporarily disable aarch64-linux-gnu + cuda: we need to build it with clang
-    if gpu != "none" && Sys.islinux(platform) && arch(platform) == "aarch64"
+    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.3"
+        # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
         continue
     end
 
@@ -357,7 +378,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "11.8" => "11.8",
         "12.1" => "12.1.1",
         "12.3" => "12.3.1",
-        "12.6" => "12.6.2",
+        "12.6" => "12.6.3",
     )
 
     prefix="""
@@ -372,10 +393,34 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     if !Sys.isapple(platform)
-      push!(cuda_deps, Dependency(PackageSpec(name="CUDA_Driver_jll")))
+      push!(dependencies, Dependency(PackageSpec(; name="CUDA_Driver_jll")))
     end
 
-    preferred_gcc_version = v"13"
+    if arch(platform) == "aarch64" && gpu == "cuda"
+        if hermetic_cuda_version_map[cuda_version] == "12.6.3"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.6.3.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.85-archive.tar.xz",
+                                "1b834df41cb071884f33b1e4ffc185e4799975057baca57d80ba7c4591e67950"),
+                  )
+        elseif hermetic_cuda_version_map[cuda_version] == "12.3.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.3.1.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.3.103-archive.tar.xz",
+                                "1bb1faac058a1e122adad09dabaa378ee9591762b7787a9144de845f99e03aed"),
+                  )
+        elseif hermetic_cuda_version_map[cuda_version] == "12.1.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.1.1.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.1.105-archive.tar.xz",
+                                "6e795ec791241e9320ec300657408cbfafbe7e79ceda0da46522cc85ced358f4"),
+                  )
+        end
+        push!(dependencies,
+              # Build dependency because we statically link libc++
+              BuildDependency(PackageSpec("LLVMLibcxx_jll", preferred_llvm_version)),
+              )
+    end
 
     should_build_platform(triplet(augmented_platform)) || continue
     products2 = copy(products)
@@ -401,9 +446,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 		"libcudnn_engines_runtime_compiled",
 		"libcusparse",
 	)
-		san = replace(lib, "-" => "_")
-		push!(products2, LibraryProduct([lib, lib],
-		Symbol(san); dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
+	    san = replace(lib, "-" => "_")
+	    push!(products2,
+                  LibraryProduct([lib, lib], Symbol(san);
+                                 dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
 	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
@@ -422,8 +468,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     push!(builds, (;
-                   dependencies=[dependencies; cuda_deps], products=products2, sources=platform_sources,
-        platforms=[augmented_platform], script=prefix*script, preferred_gcc_version
+                   dependencies, products=products2, sources=platform_sources,
+                   platforms=[augmented_platform], script=prefix*script, preferred_gcc_version, preferred_llvm_version
     ))
 end
 
@@ -438,7 +484,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=build.preferred_gcc_version, preferred_llvm_version=v"18", julia_compat="1.10",
+                   preferred_gcc_version=build.preferred_gcc_version, build.preferred_llvm_version, julia_compat="1.10",
                    # We use GCC 13, so we can't dlopen the library during audit
                    augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true)
 end

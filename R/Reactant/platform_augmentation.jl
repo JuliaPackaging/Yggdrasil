@@ -76,7 +76,7 @@ function augment_platform!(platform::Platform)
 
     # Don't do GPU discovery on platforms for which we don't have GPU builds.
     # Keep this in sync with list of platforms for which we actually build with GPU support.
-    if !(Sys.isapple(platform) || (Sys.islinux(platform) && arch(platform) == "aarch64"))
+    if !Sys.isapple(platform)
 
         cuname = if Sys.iswindows()
             Libdl.find_library("nvcuda")
@@ -93,7 +93,7 @@ function augment_platform!(platform::Platform)
             Libdl.dlclose(handle)
 
             if cuda_version_tag == "none" && current_cuda_version isa VersionNumber
-                if v"12.1" <= current_cuda_version < v"12.3"
+                if v"12.1" <= current_cuda_version < v"12.3" && arch(platform) == "x86_64"
                     cuda_version_tag = "12.1"
                 elseif v"12.3" <= current_cuda_version < v"12.6"
                     cuda_version_tag = "12.3"
