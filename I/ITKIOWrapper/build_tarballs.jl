@@ -3,15 +3,10 @@ using BinaryBuilder, Pkg
 name = "ITKIOWrapper"
 version = v"1.0.0"  # Update this to your package version
 
-# The following lines should be updated to reflect the actual URL and revision of your ITKWrapper package
-
-
 # Collection of sources required to build ITKWrapper
 sources = [
     DirectorySource("./src"),
 ]
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 #needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
@@ -33,10 +28,9 @@ install_license /usr/share/licenses/MIT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 
-#Filtering all the platforms, that ITK filters https://github.com/JuliaPackaging/Yggdrasil/blob/master/I/ITK/build_tarballs.jl#L42-L53
+#Filtering all the platforms, that ITK filters
 filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
@@ -54,8 +48,11 @@ dependencies = [
     BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     Dependency("ITK_jll"; compat="5.3.1"),
     Dependency("libcxxwrap_julia_jll"; compat = "0.13.2"),
-    BuildDependency("libjulia_jll")
+    BuildDependency(PackageSpec(name="libjulia_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+    julia_compat="1.6", 
+    preferred_gcc_version=v"8.1.0"
+)
