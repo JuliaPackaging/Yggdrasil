@@ -49,10 +49,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
-    Dependency("ITK_jll"; compat="5.3.1"),
-    Dependency("libcxxwrap_julia_jll"; compat = "0.13.2"),
-    BuildDependency("libjulia_jll")
-]
+    Dependency(PackageSpec(name="ITK_jll", uuid="3324d3a8-621a-5aaa-97fa-c3bc8dfc0481"); compat="5.3.1"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat = "0.13.2"),
+    BuildDependency(PackageSpec(name="libjulia_jll",uuid="5ad3ddd2-0711-543a-b040-befd59781bbf")),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"))
+
+   ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0")
