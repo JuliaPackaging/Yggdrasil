@@ -68,6 +68,7 @@ fi
 """
 
 function platform_exclude_filter(p::Platform)
+    arch(p) == "riscv64" || # riscv64 fails to link with undefined reference to MlasSgemmKernelAdd
     libc(p) == "musl" ||
     p == Platform("i686", "Linux") || # No binary - and source build fails linking CXX shared library libonnxruntime.so
     Sys.isfreebsd(p)
