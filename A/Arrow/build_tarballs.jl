@@ -3,14 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Arrow"
-# This installs Arrow 18.1.0.
-# We declare this as 18.1.1 because we enabled the Zstd library, changing the package dependencies.
-version = v"18.1.1"
+version = v"19.0.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/apache/arrow.git",
-              "6a0414bd9a91e890ec6a45369bf61f405180628c"),
+              "a999eaccb12378f9e4e9ab758f18edc25b0991e5"),
     DirectorySource("bundled"),
 ]
 
@@ -86,10 +84,10 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("Lz4_jll"),
-    Dependency("Thrift_jll"; compat="0.21"),
+    Dependency("Thrift_jll"; compat="0.21.1"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"; compat="1.5.6"),
-    Dependency("boost_jll"; compat="=1.79.0"),
+    Dependency("boost_jll"; compat="=1.87.0"),
     Dependency("brotli_jll"; compat="1.1.0"),
     Dependency("snappy_jll"; compat="1.2.1"),
 ]
