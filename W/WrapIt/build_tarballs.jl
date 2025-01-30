@@ -11,13 +11,14 @@ clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "14eb9a69902c714fde9924804e756c24e097272d")
+    GitSource("https://github.com/grasph/wrapit.git", "2c86cf3d33f65055836cb4a600daf24b960229db")
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+set -x
 # Default binarybuilder darwin chaintools miss support for filesytem
 # Install a newer SDK which supports following the recipee from
 # https://github.com/JuliaPackaging/Yggdrasil/pull/2741
@@ -28,6 +29,16 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -rp System "/opt/${target}/${target}/sys-root/."
     export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
+fi
+
+# Search for libcrypto.$dlext which can be in /workspace/destdir/lib ($libdir) or /workspace/destdir/lib64
+if [ -f "$libdir/libcrypto.$dlext" ]; then
+  libcrypto_path="$libdir/libcrypto.$dlext"
+elif [ -f "${libdir}/../lib64/libcrypto.$dlext" ]; then
+  libcrypto_path="${libdir}/../lib64/libcrypto.$dlext"
+else
+  echo "libcrypto.$dlext not found"
+  exit 1
 fi
 
 ######################################################################
@@ -43,7 +54,7 @@ cmake -GNinja \
 -DCLANG_JLL=True \
 -DOPENSSL_USE_STATIC_LIBS=True \
 -DCLANG_RESOURCE_DIR="$clang_resource_dir" \
--DOPENSSL_ROOT_DIR="$prefix" -DOPENSSL_CRYPTO_LIBRARY="$libdir/libcrypto.$dlext" \
+-DOPENSSL_ROOT_DIR="$prefix" -DOPENSSL_CRYPTO_LIBRARY="${libcrypto_path}" \
 ../wrapit/
 cmake --build .
 cmake --install .
@@ -138,7 +149,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
     BuildDependency(PackageSpec(name="Clang_jll", uuid="0ee61d77-7f21-5576-8119-9fcc46b10100", version=clang_vers))
-    BuildDependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95", version=v"1.1.23+0"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"), compat="3.0.8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
