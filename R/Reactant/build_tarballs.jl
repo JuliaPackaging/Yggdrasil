@@ -67,8 +67,8 @@ BAZEL_FLAGS+=(--server_javabase=$JAVA_HOME)
 
 BAZEL_BUILD_FLAGS+=(--jobs ${nproc})
 
-# # Use ccache to speedup re-builds
-# BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=/root/.ccache)
+# Use ccache to speedup re-builds
+BAZEL_BUILD_FLAGS+=(--action_env=USE_CCACHE=${USE_CCACHE} --action_env=CCACHE_DIR=/root/.ccache --sandbox_writable_path=/root/.ccache)
 # BAZEL_BUILD_FLAGS+=(--action_env=CCACHE_NOHASHDIR=yes)
 # # Set `SUPER_VERBOSE` to a non empty string to make the compiler wrappers more
 # # verbose. Useful for debugging.
