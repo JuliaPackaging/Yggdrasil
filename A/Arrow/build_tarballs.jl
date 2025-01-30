@@ -7,8 +7,8 @@ version = v"19.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/arrow.git",
-              "a999eaccb12378f9e4e9ab758f18edc25b0991e5"),
+    ArchiveSource("https://dlcdn.apache.org/arrow/arrow-$version/apache-arrow-$version.tar.gz",
+                  "f89b93f39954740f7184735ff1e1d3b5be2640396febc872c4955274a011f56b"),
     DirectorySource("bundled"),
 ]
 
