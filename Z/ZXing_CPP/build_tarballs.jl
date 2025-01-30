@@ -7,38 +7,43 @@ version = v"2.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zxing-cpp/zxing-cpp.git", "d6068bcebeb8fd9f0d35a99b00d202be86a14dbe")
+    GitSource("https://github.com/zxing-cpp/zxing-cpp.git", "d6068bcebeb8fd9f0d35a99b00d202be86a14dbe"),
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz", "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd zxing-cpp/
+cd $WORKSPACE/srcdir/zxing-cpp/
 git submodule update --init
-cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_CXX_STANDARD=20 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DZXING_READERS=ON -DZXING_WRITERS=NEW -DZXING_USE_BUNDLED_ZINT=ON -DZXING_C_API=ON -DZXING_EXPERIMENTAL_API=ON
-cmake --build build --parallel ${nproc} --config Release
+
+if [[ "$target" == *-apple-darwin* ]]; then
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX13.3.sdk
+    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+fi
+
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DZXING_READERS=ON \
+    -DZXING_WRITERS=NEW \
+    -DZXING_USE_BUNDLED_ZINT=ON \
+    -DZXING_C_API=ON \
+    -DZXING_EXPERIMENTAL_API=ON
+cmake --build build --parallel ${nproc}
 cmake --install build
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "freebsd"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
-
+platforms = supported_platforms()
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
