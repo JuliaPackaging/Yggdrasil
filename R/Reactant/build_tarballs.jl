@@ -11,9 +11,8 @@ version = v"0.0.58"
 sources = [
   GitSource(repo, "5c67d0a7c5950f999a823d40895c3a2edb1f4d1d"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
-             "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
+             "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade"),
 ]
-
 
 # Bash recipe for building across all platforms
 script = raw"""
