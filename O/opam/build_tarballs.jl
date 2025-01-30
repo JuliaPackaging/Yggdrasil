@@ -4,11 +4,12 @@ name = "opam"
 version = v"2.3.0"
 
 sources = [
-    GitSource("https://github.com/ocaml/opam.git", "e13109411952d4f723a165c2a24b8c03c4945041")
+    ArchiveSource("https://github.com/ocaml/opam/releases/download/2.3.0/opam-full-2.3.0.tar.gz",
+                  "506ba76865dc315b67df9aa89e7abd5c1a897a7f0a92d7b2694974fdc532b346")
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/opam
+cd $WORKSPACE/srcdir/opam-full-2.3.0
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-vendored-deps
 make -j
 make install
