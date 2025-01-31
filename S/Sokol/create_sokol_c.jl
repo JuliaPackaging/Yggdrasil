@@ -1,4 +1,4 @@
-create_sokol_c = """
+create_sokol_c = raw"""
 touch sokol.c
 
 cat >> sokol.c <<EOF

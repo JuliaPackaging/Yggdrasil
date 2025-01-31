@@ -1,4 +1,4 @@
-create_cmakelists = """
+create_cmakelists = raw"""
 touch CMakeLists.txt
 
 cat >> CMakeLists.txt <<EOF
