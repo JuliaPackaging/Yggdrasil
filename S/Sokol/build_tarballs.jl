@@ -14,12 +14,14 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sokol*
 export CFLAGS="-I${includedir}"
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/add_sokol_build.patch
+cp ${WORKSPACE}/srcdir/files/CMakeLists.txt ./CMakeLists.txt
+cp ${WORKSPACE}/srcdir/files/sokol.c ./sokol.c
 
 if [[ ${target} == aarch64-apple-* ]]; then
     # `libclang_rt.osx.a` from LLVM compiler-rt.
     FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
             -DCMAKE_EXE_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
+            -DUSE_METAL=ON
             )
 fi
 
@@ -43,7 +45,7 @@ install -Dm 755 "sokol_fetch.h" "${includedir}/sokol_fetch.h"
 """
 
 # Supported platforms
-platforms = supported_platforms(exclude=p->arch(p)=="armv6l"||Sys.isbsd(p)||arch(p)=="riscv64"||Sys.iswindows(p))
+platforms = supported_platforms(exclude=p->arch(p)=="armv6l"||Sys.isfreebsd(p)||arch(p)=="riscv64")
 llvm_version = v"13.0.1+1"
 
 # Platform-specific dependencies
