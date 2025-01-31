@@ -1,7 +1,8 @@
 using BinaryBuilder, Pkg
 
 name = "Octave"
-version = v"9.3.0"
+version = v"9.3.0" 
+bb_ver = v"9.3.1" # Bump patch level to have a new version for Ygg compat
 
 # Collection of sources required to build Octave
 sources = [
@@ -73,7 +74,7 @@ dependencies = [
     Dependency("FFTW_jll"),
     Dependency("GLPK_jll"),
     Dependency("GMP_jll"; compat="6.2"),
-    Dependency("LibCURL_jll"),
+    Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Qhull_jll"),
     Dependency("HDF5_jll"),
     Dependency("rapidjson_jll"),
@@ -83,5 +84,5 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, bb_ver, sources, script, platforms, products, dependencies;
                julia_compat="1.8", clang_use_lld=false, preferred_gcc_version=v"10")
