@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Bzip2"
-version = v"1.0.8"
+version = v"1.0.9" # Building v1.0.8, version bump to pick up riscv
 
 
 # Collection of sources required to build bzip2
@@ -75,5 +75,3 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build trigger: 2
