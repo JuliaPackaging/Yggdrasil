@@ -1,24 +1,22 @@
 using BinaryBuilder
 import Pkg: PackageSpec
-include("create_sokol_c.jl")
-include("create_cmakelists.jl")
 
 name = "Sokol"
 version = v"2025.28.1"  # Use the commit date or tag of Sokol you're targeting
 
 # Use the latest commit or a specific tag from the Sokol repository
 sources = [
-    GitSource("https://github.com/floooh/sokol.git", "db9ebdf24243572c190affde269b92725942ddd0"),  # Replace with actual commit
+    GitSource("https://github.com/floooh/sokol.git", "db9ebdf24243572c190affde269b92725942ddd0"),
+    DirectorySource("./bundled"),
 ]
 
 # Build script
 script = raw"""
 cd $WORKSPACE/srcdir/sokol*
 export CFLAGS="-I${includedir}"
-${create_sokol_c}
-${create_cmakelists}
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/add_sokol_build.patch
+
 if [[ ${target} == aarch64-apple-* ]]; then
-    # Linking FFMPEG requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
     FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
             -DCMAKE_EXE_LINKER_FLAGS="-L${libdir}/darwin -lclang_rt.osx"
@@ -45,7 +43,7 @@ install -Dm 755 "sokol_fetch.h" "${includedir}/sokol_fetch.h"
 """
 
 # Supported platforms
-platforms = supported_platforms(exclude=p->arch(p)=="armv6l"||Sys.isfreebsd(p)||arch(p)=="riscv64")
+platforms = supported_platforms(exclude=p->arch(p)=="armv6l"||Sys.isbsd(p)||arch(p)=="riscv64"||Sys.iswindows(p))
 llvm_version = v"13.0.1+1"
 
 # Platform-specific dependencies
