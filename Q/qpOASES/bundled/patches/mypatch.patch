@@ -1,7 +1,7 @@
-diff --git before/qpOASES-releases-3.2.1/CMakeLists.txt after/qpOASES-releases-3.2.1/CMakeLists.txt
+diff --git before/qpOASES/CMakeLists.txt after/qpOASES/CMakeLists.txt
 index adb111f..d3c6ce3 100644
---- before/qpOASES-releases-3.2.1/CMakeLists.txt
-+++ after/qpOASES-releases-3.2.1/CMakeLists.txt
+--- before/qpOASES/CMakeLists.txt
++++ after/qpOASES/CMakeLists.txt
 @@ -104,7 +104,7 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
  FILE(GLOB SRC src/*.cpp)
  
