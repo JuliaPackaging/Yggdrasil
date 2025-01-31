@@ -89,7 +89,7 @@ dependencies = [
     Dependency("Zstd_jll"; compat="1.5.7"),
     Dependency("boost_jll"; compat="=1.87.0"),
     Dependency("brotli_jll"; compat="1.1.0"),
-    Dependency("snappy_jll"; compat="1.2.1"),
+    Dependency("snappy_jll"; compat="1.2.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
