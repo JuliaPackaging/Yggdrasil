@@ -15,8 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/sokol*
 export CFLAGS="-I${includedir}"
-$(create_sokol_c)
-$(create_cmakelists)
+${create_sokol_c}
+${create_cmakelists}
 if [[ ${target} == aarch64-apple-* ]]; then
     # Linking FFMPEG requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
