@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd autossh-1.4f/
+cd $WORKSPACE/srcdir/autossh*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-ssh=${prefix}/bin \
             ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
 make -j${nproc}
