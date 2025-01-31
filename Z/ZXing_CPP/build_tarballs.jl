@@ -23,7 +23,11 @@ if [[ "$target" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.13
 fi
 
-# To-Do: remove it when https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/407 merged
+if [[ "$target" == aarch64-unknown-freebsd* ]]; then
+     export CXXFLAGS="-isystem /opt/${target}/${target}/sys-root/usr/include"
+fi
+
+# To-Do: remove it after https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/407 merged
 if [[ "$target" == riscv64-linux-gnu ]]; then
     export LDFLAGS="-lstdc++"
 fi
@@ -46,10 +50,6 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
-# aarch64-unknown-freebsd failed with "error: reference to '__builtin_va_list' is ambiguous"
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
