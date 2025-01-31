@@ -85,7 +85,7 @@ dependencies = [
     Dependency("Lz4_jll"),
     Dependency("Thrift_jll"; compat="0.21.1"),
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"; compat="1.5.6"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
     Dependency("boost_jll"; compat="=1.87.0"),
     Dependency("brotli_jll"; compat="1.1.0"),
     Dependency("snappy_jll"; compat="1.2.1"),
