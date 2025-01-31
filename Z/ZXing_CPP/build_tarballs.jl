@@ -23,15 +23,6 @@ if [[ "$target" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.13
 fi
 
-if [[ "$target" == aarch64-unknown-freebsd* ]]; then
-     export CXXFLAGS="-isystem /opt/${target}/${target}/sys-root/usr/include"
-fi
-
-# To-Do: remove it after https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/407 merged
-if [[ "$target" == riscv64-linux-gnu ]]; then
-    export LDFLAGS="-lstdc++"
-fi
-
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
