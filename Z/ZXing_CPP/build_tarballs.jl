@@ -23,6 +23,11 @@ if [[ "$target" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.13
 fi
 
+# To-Do: remove it when https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/407 merged
+if [[ "$target" == riscv64-linux-gnu ]]; then
+    export LDFLAGS="-lstdc++"
+fi
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -44,8 +49,6 @@ platforms = supported_platforms()
 
 # aarch64-unknown-freebsd failed with "error: reference to '__builtin_va_list' is ambiguous"
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-# riscv64-linux-gnu failed with "warning: libstdc++.so.6, needed by ../../core/libZXing.so.2.3.0, not found"
-filter!(p -> arch(p) != "riscv64", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 
