@@ -73,7 +73,7 @@ dependencies = [
     Dependency("FFTW_jll"),
     Dependency("GLPK_jll"),
     Dependency("GMP_jll"; compat="6.2"),
-    Dependency("LibCURL_jll"; compat="7.73.0,8")
+    Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("Qhull_jll"),
     Dependency("HDF5_jll"),
     Dependency("rapidjson_jll"),
