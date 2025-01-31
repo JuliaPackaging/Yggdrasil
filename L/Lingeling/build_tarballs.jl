@@ -9,7 +9,7 @@ version = v"1.0.0"
 sources = [
     GitSource("https://github.com/arminbiere/lingeling.git", "89a167d0d2efe98d983c87b5b84175b40ea55842"),
     DirectorySource("./bundled")
-    ]
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -37,7 +37,7 @@ products = [
     ExecutableProduct("lglmbt", :lglmbt),
     ExecutableProduct("lgluntrace", :lgluntrace),
     ExecutableProduct("lglddtrace", :lglddtrace),
-    LibraryProduct("liblgl",:liblgl)
+    LibraryProduct("liblgl", :liblgl)
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -45,4 +45,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"5.2.0", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"5.2.0", julia_compat="1.6")
