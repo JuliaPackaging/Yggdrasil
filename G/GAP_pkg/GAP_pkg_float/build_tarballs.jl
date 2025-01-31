@@ -3,7 +3,6 @@
 include("../common.jl")
 
 gap_version = v"400.1400.0"
-gap_lib_version = v"400.1400.0"
 name = "float"
 upstream_version = "1.0.5" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
@@ -30,7 +29,7 @@ install_license COPYING
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
+platforms, dependencies = setup_gap_package(gap_version)
 platforms = expand_cxxstring_abis(platforms)
 
 append!(dependencies, [
