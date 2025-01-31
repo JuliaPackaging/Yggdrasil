@@ -38,6 +38,7 @@ CMAKE_FLAGS=(
     -DARROW_DEPENDENCY_SOURCE=SYSTEM
     -DARROW_IPC=OFF
     -DARROW_JEMALLOC=OFF
+    -DARROW_MIMALLOC=OFF # We could turn this on when https://github.com/apache/arrow/pull/42090 is merged
     -DARROW_PARQUET=ON
     -DARROW_SIMD_LEVEL=NONE
     -DARROW_THRIFT_USE_SHARED=ON
