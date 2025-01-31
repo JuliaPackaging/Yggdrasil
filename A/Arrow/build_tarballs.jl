@@ -81,7 +81,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("Lz4_jll"),
     Dependency("Thrift_jll"; compat="0.21.1"),
