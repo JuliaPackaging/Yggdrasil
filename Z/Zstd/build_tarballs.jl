@@ -2,7 +2,7 @@ using BinaryBuilder
 
 name = "Zstd"
 upstream_version = v"1.5.6"
-version = v"1.5.7" # need to change version to change compat bounds, but in the future we can go back to follow upstream
+version = v"1.5.8" # need to change version to change compat bounds, but in the future we can go back to follow upstream
 
 sources = [
     ArchiveSource("https://github.com/facebook/zstd/releases/download/v$(upstream_version)/zstd-$(upstream_version).tar.gz",
@@ -46,5 +46,3 @@ dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6")
-
-# Build Trigger: 2
