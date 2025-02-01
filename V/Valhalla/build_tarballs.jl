@@ -39,8 +39,6 @@ cmake .. \
     -DENABLE_PYTHON_BINDINGS=OFF \
     -DENABLE_BENCHMARKS=OFF \
     -DENABLE_TESTS=OFF \
-    -DZLIB_LIBRARY=${libdir}/libz.${dlext} \
-    -DZLIB_INCLUDE_DIR=${includedir} \
     -DProtobuf_INCLUDE_DIR=${includedir} \
     -DPROTOBUF_LIBRARY=${libdir}/libprotobuf.${dlext} \
     -DENABLE_SERVICES=OFF \
@@ -74,7 +72,7 @@ dependencies = [
     Dependency("LibCURL_jll")
     Dependency("Lz4_jll")
     Dependency("protoc_jll")
-    HostBuildDependency("protoc_jll")
+    #HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
 ]
 
