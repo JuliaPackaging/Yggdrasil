@@ -16,17 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/SDL*/
 
-if [[ "${target}" == powerpc64le-* ]] || [[ "${target}" == *-freebsd* ]]; then
-    # We need to regenerate `configure` for this platforms
-
-    # Include directory with M4 macros
-    #atomic_patch -p1 ../patches/configure-add-macro-dir.patch
-    # Create absolutely important files
-    #touch AUTHORS NEWS README ChangeLog
-    # Regnerate `configure` script
-    #autoreconf -fiv
-fi
-
 mkdir build && cd build
 ../configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
