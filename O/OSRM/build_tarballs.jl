@@ -129,9 +129,9 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8")
+    Dependency("Bzip2_jll"; compat="1.0.9")
     Dependency("boost_jll"; compat="=1.87.0") # Earlier versions of boost seem uncompatible with C++20 deprecations
-    Dependency("Expat_jll"; compat="2.2.10")
+    Dependency("Expat_jll"; compat="2.6.5")
     Dependency("XML2_jll")
     Dependency("oneTBB_jll"; compat="2021.8.0")
     Dependency("Lua_jll"; compat="~5.4.3")
