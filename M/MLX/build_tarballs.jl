@@ -32,12 +32,6 @@ CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
     export MACOSX_DEPLOYMENT_TARGET=13.3
-elif [[ "$target" == *-freebsd* ||
-        "$target" == *-w64-mingw32* ]]; then
-    CMAKE_EXTRA_OPTIONS+=(
-        "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
-        "-DMLX_BUILD_SAFETENSORS=OFF" # Disabled safetensors, due to `mlx/io/safetensors.cpp.obj:safetensors.cpp:(.rdata$.refptr._ZTVN3mlx4core2io18ParallelFileReaderE[.refptr._ZTVN3mlx4core2io18ParallelFileReaderE]+0x0): undefined reference to `vtable for mlx::core::io::ParallelFileReader'`
-    )
 fi
 
 libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
