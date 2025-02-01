@@ -10,12 +10,12 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "CImGuiPack"
-version = v"0.7.0"
+version = v"0.7.1"
 
 # Collection of sources required to build CImGuiPack
 sources = [
     GitSource("https://github.com/JuliaImGui/cimgui-pack.git",
-              "98a11d0bbf6bacf226d00a62daaad9a13247f018")
+              "cb6b62c98883bff410faff7464d11af77ab967da")
 ]
 
 # Bash recipe for building across all platforms
