@@ -3,7 +3,8 @@
 using BinaryBuilder
 
 name = "Expat"
-version = v"2.6.5" # version built is 2.6.4, bumped to pick up riscv with new jll wrapper
+ygg_version = v"2.6.5"
+version = "2.6.4" # version built is 2.6.4, bumped to pick up riscv with new jll wrapper
 
 # Collection of sources required to build Expat
 sources = [
@@ -34,4 +35,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
