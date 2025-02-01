@@ -50,8 +50,8 @@ platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # We don't build for armv6l because GLFW_jll doesn't support it, and we don't
-# build for aarch64-freebsd because it's GLFW-related pain.
-platforms = filter(p -> arch(p) != "armv6l" && !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
+# build for aarch64-freebsd or riscv64 because they're dependency pain.
+platforms = filter(p -> arch(p) != "armv6l" && arch(p) != "riscv64" && !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
 
 # The products that we will ensure are always built
 products = [
