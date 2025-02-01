@@ -39,7 +39,7 @@ if [[ ${target} == *mingw* ]]; then
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
-CFLAGS="-Wno-error=suggest-override"
+CFLAGS="-Wno-error=suggest-override -Wno-deprecated-declarations"
 
 mkdir build && cd build
 
