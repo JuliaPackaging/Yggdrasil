@@ -3,19 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.21.1"
+version = v"0.22.0"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "50fa7051259d31da0778133bc7456dc029471bff"),
+    GitSource("https://github.com/ml-explore/mlx.git", "1ce0c0fcb0f58cb9322981a65d267abc41cc2785"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/72/1f/267d7fb06eb257feb7c281f73472bcae9735c9a7c09fe86d9362069c85a7/mlx-0.21.1-cp313-cp313-macosx_13_0_arm64.whl", "88328c058f4765b0376ac908b49e6711d25f93e02b972b8e68b73a9e1c358eab"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    FileSource("https://files.pythonhosted.org/packages/62/2b/427896261bc8d940eff561e6199d1aee9dbdc7caa117486654a44d7d793c/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "50d0d76826cfe939025791ce2c014e743ec7aff7aa67194ffaef40c40e574ef4"; filename = "mlx-aarch64-apple-darwin20.whl"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
-apk del cmake # Need CMake >= 3.24
+apk del cmake # Need CMake >= 3.30
 
 if [[ "$target" == *-apple-darwin* ]]; then
     apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
@@ -25,30 +25,28 @@ fi
 
 cd $WORKSPACE/srcdir/mlx
 
-if [[ "$target" == *-w64-mingw32* ]]; then
-    atomic_patch -p1 ../patches/cmake-win32-io.patch
-fi
+atomic_patch -p1 ../patches/nbits32-ops.patch
+atomic_patch -p1 ../patches/win32_freebsd-jit_compiler.patch
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
     export MACOSX_DEPLOYMENT_TARGET=13.3
-elif [[ "$target" == *-freebsd* ||
-        "$target" == *-w64-mingw32* ]]; then
+elif [[ "$target" == *-w64-mingw32* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
         "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
-        "-DMLX_BUILD_SAFETENSORS=OFF" # Disabled safetensors, due to `mlx/io/safetensors.cpp.obj:safetensors.cpp:(.rdata$.refptr._ZTVN3mlx4core2io18ParallelFileReaderE[.refptr._ZTVN3mlx4core2io18ParallelFileReaderE]+0x0): undefined reference to `vtable for mlx::core::io::ParallelFileReader'`
     )
 fi
 
 libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
 if [[ "$target" != *-apple-darwin* &&
-      "$libblastrampoline_target" != armv6l-linux-* &&
-      "$bb_full_target" != i686-linux-gnu-cxx11 ]]; then
+      "$target" != aarch64-unknown-freebsd* &&
+      "$libblastrampoline_target" != armv6l-linux-* ]]; then
     if [[ "$target" == *-freebsd* ]]; then
         libblastrampoline_target=$rust_target
     fi
     CMAKE_EXTRA_OPTIONS+=(
+        "-DBLA_VENDOR=libblastrampoline"
         "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
         "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
     )
@@ -88,9 +86,8 @@ platforms = expand_cxxstring_abis(platforms)
 
 accelerate_platforms = filter(Sys.isapple, platforms)
 openblas_platforms = filter(p ->
-    arch(p) == "armv6l" ||
-    p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11") ||
-    Sys.isfreebsd(p) && arch(p) == "aarch64",
+    arch(p) == "aarch64" && Sys.isfreebsd(p) || # aarch64-unknown-freebsd using libblastrampoline fails to compile: mlx/backend/common/lapack.h:17:10: fatal error: 'cblas.h' file not found
+    arch(p) == "armv6l", # armv6l-linux using libblastrampoline fails to compile: mlx/backend/common/lapack.h:17:10: fatal error: cblas.h: No such file or directory
     filter(p -> p ∉ accelerate_platforms, platforms)
 )
 libblastrampoline_platforms = filter(p -> p ∉ union(accelerate_platforms, openblas_platforms), platforms)
@@ -101,10 +98,9 @@ products = Product[
 ]
 
 dependencies = [
-    Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
-    HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
+    HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
