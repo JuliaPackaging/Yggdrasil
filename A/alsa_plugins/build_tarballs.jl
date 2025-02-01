@@ -24,6 +24,11 @@ make install
 # platforms are passed in on the command line
 platforms = filter!(Sys.islinux, supported_platforms())
 
+# Many library products are not built
+filter!(p -> arch(p) != "armv6l", platforms)
+
+# Many dependencies are missing
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -53,3 +58,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
