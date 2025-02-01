@@ -39,13 +39,13 @@ cmake .. \
     -DENABLE_PYTHON_BINDINGS=OFF \
     -DENABLE_BENCHMARKS=OFF \
     -DENABLE_TESTS=OFF \
-    -DProtobuf_INCLUDE_DIR=${includedir} \
+    -DPROTOBUF_INCLUDE_DIR=${includedir} \
     -DPROTOBUF_LIBRARY=${libdir}/libprotobuf.${dlext} \
     -DENABLE_SERVICES=OFF \
     -DENABLE_TOOLS=OFF \
     -DENABLE_CCACHE=OFF \
     -DENABLE_BENCHMARKS=OFF \
-    -DProtobuf_PROTOC_EXECUTABLE=${host_bindir}/protoc \
+    -DPROTOBUF_PROTOC_EXECUTABLE=${host_bindir}/protoc \
     -DLOGGING_LEVEL=DEBUG
 
 make -j${nproc}
