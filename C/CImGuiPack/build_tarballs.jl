@@ -46,7 +46,8 @@ install -Dvm 644 ../cimnodes/generator/output/*.json -t ${prefix}/share/cimnodes
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = vcat(libjulia_platforms.(julia_versions)...)
+cimgui_julia_versions = filter(>=(v"1.9"), julia_versions)
+platforms = vcat(libjulia_platforms.(cimgui_julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # We don't build for armv6l because GLFW_jll doesn't support it, and we don't
