@@ -33,7 +33,7 @@ cmake -B build \
 
 cmake --build build
 
-install -Dm 755 "build/libsokol.${dlext}" "${libdir}/libsokol.${dlext}"
+install -Dvm 755 "build/libsokol.${dlext}" "${libdir}/libsokol.${dlext}"
 install -Dm 755 "sokol_gfx.h" "${includedir}/sokol_gfx.h"
 install -Dm 755 "sokol_app.h" "${includedir}/sokol_app.h"
 install -Dm 755 "sokol_audio.h" "${includedir}/sokol_audio.h"
