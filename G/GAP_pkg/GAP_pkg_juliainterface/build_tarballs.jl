@@ -10,7 +10,6 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 gap_version = v"400.1400.0"
-gap_lib_version = v"400.1400.0"
 name = "JuliaInterface"
 upstream_version = "0.13.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
@@ -38,7 +37,7 @@ install_license ../../LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
+platforms, dependencies = setup_gap_package(gap_version)
 
 # expand julia platforms
 include("../../../L/libjulia/common.jl")
@@ -68,7 +67,6 @@ end
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
     Dependency("GAP_jll", gap_version),
-    Dependency("GAP_lib_jll", gap_lib_version),
     BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.13")),
 ]
 
