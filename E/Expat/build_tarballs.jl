@@ -3,8 +3,8 @@
 using BinaryBuilder
 
 name = "Expat"
-ygg_version = v"2.6.5"
-version = "2.6.4" # version built is 2.6.4, bumped to pick up riscv with new jll wrapper
+ygg_version = v"2.6.5" # version built is 2.6.4, bumped to pick up riscv with new jll wrapper
+version = v"2.6.4"
 
 # Collection of sources required to build Expat
 sources = [
