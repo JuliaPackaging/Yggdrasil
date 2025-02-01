@@ -34,14 +34,9 @@ cmake -B build \
 cmake --build build
 
 install -Dvm 755 "build/libsokol.${dlext}" "${libdir}/libsokol.${dlext}"
-install -Dm 755 "sokol_gfx.h" "${includedir}/sokol_gfx.h"
-install -Dm 755 "sokol_app.h" "${includedir}/sokol_app.h"
-install -Dm 755 "sokol_audio.h" "${includedir}/sokol_audio.h"
-install -Dm 755 "sokol_time.h" "${includedir}/sokol_time.h"
-install -Dm 755 "sokol_glue.h" "${includedir}/sokol_glue.h"
-install -Dm 755 "sokol_log.h" "${includedir}/sokol_log.h"
-install -Dm 755 "sokol_args.h" "${includedir}/sokol_args.h"
-install -Dm 755 "sokol_fetch.h" "${includedir}/sokol_fetch.h"
+for file in sokol_*.h; do
+    install -Dvm 644 "${file}" -t "${includedir}"
+done
 """
 
 # Supported platforms
