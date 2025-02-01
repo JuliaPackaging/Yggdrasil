@@ -1,10 +1,10 @@
---- a/configure.in
-+++ b/configure.in
+--- a/configure.ac
++++ b/configure.ac
 @@ -24,6 +24,7 @@
  AC_SUBST(INTERFACE_AGE)
  AC_SUBST(BINARY_AGE)
  AC_SUBST(VERSION)
 +AC_CONFIG_MACRO_DIR([acinclude])
  
- # libtool versioning
+ dnl libtool versioning
  LT_INIT([win32-dll])
