@@ -3,19 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Base"
-version = v"6.8.1"
+version = v"6.8.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registyry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtbase-everywhere-src-$version.tar.xz",
-                  "40b14562ef3bd779bc0e0418ea2ae08fa28235f8ea6e8c0cb3bce1d6ad58dcaf"),
-    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
-                  "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"),
+                  "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05"),
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
@@ -80,13 +80,17 @@ case "$bb_full_target" in
     ;;
 
     *apple-darwin*)
-        apple_sdk_root=$WORKSPACE/srcdir/MacOSX13.3.sdk
-        sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-        sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
-        deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=11"
+        apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
+        sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+        sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+        deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=12"
         export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
-        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions -DQT_INTERNAL_APPLE_SDK_VERSION=13.3 -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd -DQT_FEATURE_vulkan=OFF
+        ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions \
+            -DQT_INTERNAL_APPLE_SDK_VERSION=14.0 -DCMAKE_SYSROOT=$apple_sdk_root \
+            -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg \
+            -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd \
+            -DQT_FEATURE_vulkan=OFF -DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
