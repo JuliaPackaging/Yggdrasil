@@ -32,6 +32,10 @@ CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
     export MACOSX_DEPLOYMENT_TARGET=13.3
+elif [[ "$target" == *-w64-mingw32* ]]; then
+    CMAKE_EXTRA_OPTIONS+=(
+        "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
+    )
 fi
 
 libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
