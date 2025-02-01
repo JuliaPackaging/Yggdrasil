@@ -14,6 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/octave*
 
+apk add texinfo
+
 export CPPFLAGS="-I${includedir}"
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir -p ${TMPDIR}
