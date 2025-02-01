@@ -15,7 +15,7 @@ sources = [
 ]
 
 script = raw"""
-apk del cmake # Need CMake >= 3.24
+apk del cmake # Need CMake >= 3.30
 
 if [[ "$target" == *-apple-darwin* ]]; then
     apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
