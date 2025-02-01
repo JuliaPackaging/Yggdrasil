@@ -9,7 +9,6 @@ version = v"2.2.0"
 sources = [
     ArchiveSource("https://libsdl.org/projects/SDL_net/release/SDL2_net-$(version).tar.gz",
                   "4e4a891988316271974ff4e9585ed1ef729a123d22c08bd473129179dc857feb"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,6 +25,7 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 # Missing dep at the moment
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
