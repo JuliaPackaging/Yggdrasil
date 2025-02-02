@@ -70,7 +70,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("boost_jll"; compat="=1.87.0")
-    Dependency("GEOS_jll")
+    Dependency("GEOS_jll"; compat="3.13.1")
     Dependency("LibCURL_jll")
     Dependency("Lz4_jll")
     Dependency("protoc_jll")
