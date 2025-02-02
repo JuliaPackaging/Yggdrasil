@@ -78,6 +78,9 @@ BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 BAZEL_BUILD_FLAGS+=(--build_tag_filters=-jlrule)
 BAZEL_BUILD_FLAGS+=(--experimental_cc_shared_library)
 
+# Always link with lld
+BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
+
 # Disable enabled-by-default TensorFlow features that we don't care about.
 BAZEL_BUILD_FLAGS+=(--define=no_aws_support=true)
 BAZEL_BUILD_FLAGS+=(--define=no_gcp_support=true)
@@ -123,7 +126,6 @@ if [[ "${target}" == *-darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
     fi
-    BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
