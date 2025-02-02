@@ -301,13 +301,13 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
     elseif Sys.isfreebsd(compiler_target)
         if arch(compiler_target) == "aarch64"
             libc_sources = [
-                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/13.4-RELEASE/base.txz",
-                              "730f4d4d850fa96263a874340d84a2f0575cb917fc035359ae34823cae56c809"),
+                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.2-RELEASE/base.txz",
+                              "a6c3bb2310c25b7dc4130e57173cd1c5d8650bc4b0c73f254b3a712e5482d33d"),
             ]
         else
             libc_sources = [
-                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
-                              "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c"),
+                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/14.2-RELEASE/base.txz",
+                              "e3971a3d4f36ed1ac67d2e7a5501726de79dd3695aa76bfad2a4ebe91a88a134"),
             ]
         end
     elseif Sys.iswindows(compiler_target)
