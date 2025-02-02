@@ -16,7 +16,7 @@ sources = [
     ArchiveSource("$(url_prefix)-linux/$(url_infix)-linux_x86_64.tar.gz", "e2eda3e6ea7ac7e78d60e99a0e2aeb1096829f95791c06b768ed31a12889e58e", unpack_target = "x86_64-linux-gnu"),
     ArchiveSource("$(url_prefix)-linux-aarch64/$(url_infix)-linux_aarch64.tar.gz", "fee859a192bf8fe53f7f5aa6067d54b3713ba46b647ea3c5f78db6a3bc060ff7", unpack_target = "aarch64-linux-gnu"),
     ArchiveSource("$(url_prefix)-linux-musl/$(url_infix)-1-linux-musl_x86_64.tar.gz", "87ecc68fcdf0a3d60a8c03d2080d923a9f67d26f8db3f707784e2d45dd3694ab", unpack_target = "x86_64-linux-musl"),
-    ArchiveSource("$(url_prefix)-freebsd/$(url_infix)-freebsd_amd64.tar.gz", "2641f50928a21d278b737d4862e74938512d69609a3428411de0621923b339c4", unpack_target = "x86_64-unknown-freebsd13.4"),
+    ArchiveSource("$(url_prefix)-freebsd/$(url_infix)-freebsd_amd64.tar.gz", "2641f50928a21d278b737d4862e74938512d69609a3428411de0621923b339c4", unpack_target = "x86_64-unknown-freebsd13.2"),
     FileSource("https://raw.githubusercontent.com/plk/biber/v$(biber_version)/LICENSE", "40f4a14f946367c05e2b009c5c1ae093ad2fbf4eb43929a12f23bf53d1806af6")
 ]
 
