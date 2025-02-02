@@ -28,9 +28,16 @@ variable to change the path of ssh during runtime.
 script = raw"""
 cd $WORKSPACE/srcdir/autossh*
 
+if [[ "${target}" == *bsd* ]]; then
+    # the configure couldn't correctly check this on BSD
+    conf_args="ac_cv_have_decl___progname=yes"
+else
+    conf_args=""
+fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
-    ac_cv_path_ssh=ssh
+    ac_cv_path_ssh=ssh \
+    $conf_args
 
 make -j${nproc}
 make install
