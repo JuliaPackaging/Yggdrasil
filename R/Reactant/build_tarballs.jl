@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.58"
+version = v"0.0.59"
 
 sources = [
-  GitSource(repo, "5c67d0a7c5950f999a823d40895c3a2edb1f4d1d"),
+  GitSource(repo, "fe8ba34fd81de8efa3f9647021a8beb8d8cbfabb"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -78,6 +78,9 @@ BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 BAZEL_BUILD_FLAGS+=(--build_tag_filters=-jlrule)
 BAZEL_BUILD_FLAGS+=(--experimental_cc_shared_library)
 
+# Always link with lld
+BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
+
 # Disable enabled-by-default TensorFlow features that we don't care about.
 BAZEL_BUILD_FLAGS+=(--define=no_aws_support=true)
 BAZEL_BUILD_FLAGS+=(--define=no_gcp_support=true)
@@ -123,7 +126,6 @@ if [[ "${target}" == *-darwin* ]]; then
         BAZEL_BUILD_FLAGS+=(--platforms=@//:darwin_arm64)
         BAZEL_BUILD_FLAGS+=(--cpu=${BAZEL_CPU})
     fi
-    BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
