@@ -32,25 +32,34 @@ fi
 
 mkdir build && cd build
 
-cmake .. \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DENABLE_DATA_TOOLS=OFF \
-    -DENABLE_PYTHON_BINDINGS=OFF \
-    -DENABLE_BENCHMARKS=OFF \
-    -DENABLE_TESTS=OFF \
-    -DPROTOBUF_INCLUDE_DIR=${includedir} \
-    -DPROTOBUF_LIBRARY=${libdir}/libprotobuf.${dlext} \
-    -DLZ4_INCLUDE_DIR=${includedir} \
-    -DLZ4_LIBRARY=${libdir}/liblz4.${dlext} \
-    -DENABLE_SERVICES=OFF \
-    -DENABLE_TOOLS=OFF \
-    -DENABLE_CCACHE=OFF \
-    -DENABLE_BENCHMARKS=OFF \
-    -DPROTOBUF_PROTOC_EXECUTABLE=${host_bindir}/protoc \
+CMAKE_FLAGS = (
+    -DCMAKE_INSTALL_PREFIX=$prefix
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_SHARED_LIBS=ON
+    -DENABLE_DATA_TOOLS=OFF
+    -DENABLE_PYTHON_BINDINGS=OFF
+    -DENABLE_BENCHMARKS=OFF
+    -DENABLE_TESTS=OFF
+    -DPROTOBUF_INCLUDE_DIR=${includedir}
+    -DPROTOBUF_LIBRARY=${libdir}/libprotobuf.${dlext}
+    -DLZ4_INCLUDE_DIR=${includedir}
+    -DLZ4_LIBRARY=${libdir}/liblz4.${dlext}
+    -DENABLE_SERVICES=OFF
+    -DENABLE_TOOLS=OFF
+    -DENABLE_CCACHE=OFF
+    -DENABLE_BENCHMARKS=OFF
+    -DPROTOBUF_PROTOC_EXECUTABLE=${host_bindir}/protoc
     -DLOGGING_LEVEL=DEBUG
+)
+
+if [[ "${target}" == i686* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake)
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
+
+cmake "${CMAKE_FLAGS[@]}" ..
 
 make -j${nproc}
 make -j${nproc} install
