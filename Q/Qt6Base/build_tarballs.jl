@@ -6,9 +6,9 @@ name = "Qt6Base"
 version = v"6.8.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
-# After that JLL is in the registyry, set this to false to build for the other platforms, using
+# After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -85,12 +85,16 @@ case "$bb_full_target" in
         sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
         deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=12"
         export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
+        export MACOSX_DEPLOYMENT_TARGET=12
+        export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
+        export OBJCXXFLAGS=$OBJCFLAGS
+        export CXXFLAGS=$OBJCFLAGS
         sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
         ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions \
-            -DQT_INTERNAL_APPLE_SDK_VERSION=14.0 -DCMAKE_SYSROOT=$apple_sdk_root \
+            -DQT_INTERNAL_APPLE_SDK_VERSION=14 -DQT_INTERNAL_XCODE_VERSION=15 -DCMAKE_SYSROOT=$apple_sdk_root \
             -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg \
             -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd \
-            -DQT_FEATURE_vulkan=OFF -DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON
+            -DQT_FEATURE_vulkan=OFF 
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
