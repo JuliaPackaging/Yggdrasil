@@ -43,6 +43,8 @@ cmake .. \
     -DENABLE_TESTS=OFF \
     -DPROTOBUF_INCLUDE_DIR=${includedir} \
     -DPROTOBUF_LIBRARY=${libdir}/libprotobuf.${dlext} \
+    -DLZ4_INCLUDE_DIR=${includedir} \
+    -DLZ4_LIBRARY=${libdir}/liblz4.${dlext} \
     -DENABLE_SERVICES=OFF \
     -DENABLE_TOOLS=OFF \
     -DENABLE_CCACHE=OFF \
