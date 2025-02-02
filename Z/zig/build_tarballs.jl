@@ -14,7 +14,7 @@ sources = [
     ArchiveSource("$(url_prefix)-macos-aarch64-$(version).tar.xz", "c6ebf927bb13a707d74267474a9f553274e64906fd21bf1c75a20bde8cadf7b2"; unpack_target = "aarch64-apple-darwin20"),
     ArchiveSource("$(url_prefix)-windows-x86_64-$(version).zip", "142caa3b804d86b4752556c9b6b039b7517a08afa3af842645c7e2dcd125f652"; unpack_target = "x86_64-w64-mingw32"),
     ArchiveSource("$(url_prefix)-windows-x86-$(version).zip", "e72b362897f28c671633e650aa05289f2e62b154efcca977094456c8dac3aefa"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("$(url_prefix)-freebsd-x86_64-$(version).tar.xz", "ea430327f9178377b79264a1d492868dcff056cd76d43a6fb00719203749e958"; unpack_target = "x86_64-unknown-freebsd13.2"),
+    ArchiveSource("$(url_prefix)-freebsd-x86_64-$(version).tar.xz", "ea430327f9178377b79264a1d492868dcff056cd76d43a6fb00719203749e958"; unpack_target = "x86_64-unknown-freebsd13.4"),
 ]
 
 # Bash recipe for building across all platforms
