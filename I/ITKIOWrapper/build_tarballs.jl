@@ -53,7 +53,8 @@ products = [
 dependencies = [
     Dependency("ITK_jll"; compat="5.3.1"),
     Dependency("libcxxwrap_julia_jll"; compat = "0.13.2"),
-    BuildDependency("libjulia_jll")
+    BuildDependency("libjulia_jll"),
+    BuildDependency("Eigen_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
