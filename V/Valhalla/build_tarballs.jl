@@ -46,9 +46,7 @@ mkdir build && cd build
 
 CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=$prefix
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CXX_STANDARD=17
     -DBUILD_SHARED_LIBS=ON
     -DENABLE_DATA_TOOLS=OFF
     -DENABLE_PYTHON_BINDINGS=OFF
@@ -64,11 +62,15 @@ CMAKE_FLAGS=(
     -DLOGGING_LEVEL=DEBUG
 )
 
-if [[ "${target}" == i686* ]] || [[ "${target}" == armv7l* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake)
-else
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-fi
+# -DCMAKE_CXX_STANDARD=17
+
+
+# if [[ "${target}" == i686* ]] || [[ "${target}" == armv7l* ]]; then
+#     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake)
+# else
+# fi
+
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
 cmake "${CMAKE_FLAGS[@]}" ..
 
@@ -101,4 +103,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"11.1", clang_use_lld=false)
