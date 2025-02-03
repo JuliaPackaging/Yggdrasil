@@ -53,7 +53,7 @@ CMAKE_FLAGS=(
     -DLOGGING_LEVEL=DEBUG
 )
 
-if [[ "${target}" == i686* ]]; then
+if [[ "${target}" == i686* ]] || [[ "${target}" == armv7l* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
