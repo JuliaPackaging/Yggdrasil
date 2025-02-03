@@ -50,7 +50,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("ITK_jll"; compat="5.3.0"),
+    Dependency("ITK_jll"; compat="5.3.1"),
     Dependency("libcxxwrap_julia_jll"; compat = "0.13.2"),
     BuildDependency("libjulia_jll")
 ]
