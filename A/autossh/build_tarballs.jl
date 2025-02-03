@@ -42,11 +42,8 @@ fi
 make -j${nproc}
 make install
 
-cat > ${WORKSPACE}/srcdir/LICENSE << EOF
-Copyright (c) Carson Harding, 2002-2008.
-All rights reserved.
-EOF
-install_license ${WORKSPACE}/srcdir/LICENSE
+# If exists, LICENSE file will be auto installed
+head -n 22 autossh.c | tail -n 16 | sed -E 's/^ \* ?//' > LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
