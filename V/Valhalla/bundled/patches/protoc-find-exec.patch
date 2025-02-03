@@ -13,7 +13,6 @@ index 3af4452a7..1e9b92004 100644
 +  )
 +endif()
 +
-
  # and turn it off again
  message(STATUS "Using protoc from ${Protobuf_PROTOC_EXECUTABLE}")
  message(STATUS "Using pbf headers from ${Protobuf_INCLUDE_DIRS}")
