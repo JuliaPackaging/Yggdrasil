@@ -55,25 +55,25 @@ case "$bb_full_target" in
     ;;
 
     *mingw*)        
-        cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
-        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-        make install
+        # cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
+        # ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
+        # make install
         
         
-        cd ../mingw-w64-crt/
-        if [ ${target} == "i686-w64-mingw32" ]; then
-            _crt_configure_args="--disable-lib64 --enable-lib32"
-        elif [ ${target} == "x86_64-w64-mingw32" ]; then
-            _crt_configure_args="--disable-lib32 --enable-lib64"
-        fi
-        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-        make -j${nproc}
-        make install
+        # cd ../mingw-w64-crt/
+        # if [ ${target} == "i686-w64-mingw32" ]; then
+        #     _crt_configure_args="--disable-lib64 --enable-lib32"
+        # elif [ ${target} == "x86_64-w64-mingw32" ]; then
+        #     _crt_configure_args="--disable-lib32 --enable-lib64"
+        # fi
+        # ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
+        # make -j${nproc}
+        # make install
         
-        cd ../mingw-w64-libraries/winpthreads
-        ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
-        make -j${nproc}
-        make install
+        # cd ../mingw-w64-libraries/winpthreads
+        # ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
+        # make -j${nproc}
+        # make install
 
         cd $WORKSPACE/srcdir/build
         ../qtbase-everywhere-src-*/configure -prefix $prefix -opensource -confirm-license -nomake examples -release -opengl dynamic -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix
@@ -106,6 +106,10 @@ case "$bb_full_target" in
         sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
     ;;
 
+    *i686-linux-musl*)
+        ../qtbase-everywhere-src-*/configure -verbose -prefix $prefix $commonoptions -fontconfig -no-stack-protector -- $commoncmakeoptions -DQT_FEATURE_xcb=ON
+    ;;
+
     *)
         echo "#define ELFOSABI_GNU 3" >> /opt/$target/$target/sys-root/usr/include/elf.h
         echo "#define EM_AARCH64 183" >> /opt/$target/$target/sys-root/usr/include/elf.h
@@ -129,7 +133,9 @@ if host_build
     platforms_macos = AbstractPlatform[]
 else
     platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
+    filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms) # No OpenGL on aarch64 freeBSD
     filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
+    filter!(p -> arch(p) != "riscv64", platforms) # No OpenGL on riscv64
     platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
 end
 
@@ -206,9 +212,9 @@ include("../../fancy_toys.jl")
 
 @static if !host_build
     if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
+        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"13", preferred_llvm_version=llvm_version, julia_compat="1.6")
     end
 end
 if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6")
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"13", preferred_llvm_version=llvm_version, julia_compat="1.6")
 end
