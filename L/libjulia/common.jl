@@ -35,6 +35,9 @@ function libjulia_platforms(julia_version)
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
 
+    # RISC-V currently not supported
+    filter!(p -> arch(p) != "riscv64", platforms)
+
     for p in platforms
         p["julia_version"] = string(julia_version)
     end
