@@ -9,15 +9,19 @@ version = v"3.5.1"
 sources = [
     GitSource("https://github.com/valhalla/valhalla.git", "d377c8ace9ea88dfa989466258bf738b1080f22a"),
     DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/valhalla/
 
-# Handle Mac SDK <10.12 errors
+# Handle Mac SDK <10.14 errors
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.12
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
 
 git submodule update --init --recursive
