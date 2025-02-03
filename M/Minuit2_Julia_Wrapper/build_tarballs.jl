@@ -7,7 +7,7 @@ version = v"0.2"
 
 sources = [
 	GitSource("https://github.com/JuliaHEP/Minuit2_Julia_Wrapper.git",
-              "de92f78ab964cc251d207b59f3b0e82e9b8892a0")
+              "2d74673b6083bbd5066287b53be7c6676182768d")
 ]
 
 # Bash recipe for building across all platforms
