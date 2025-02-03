@@ -54,7 +54,7 @@ filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 filter!(!Sys.iswindows, platforms)
 
-Expand C++ string ABI platforms
+# Expand C++ string ABI platforms
 platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
