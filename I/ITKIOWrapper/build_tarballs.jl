@@ -7,10 +7,8 @@ version = v"1.0.0"
 sources = [
     DirectorySource("./src"),
 ]
-
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
+# uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+# delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 #needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
 
