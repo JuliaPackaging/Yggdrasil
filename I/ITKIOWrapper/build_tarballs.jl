@@ -39,6 +39,7 @@ platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(!Sys.iswindows, platforms)
 filter!(!Sys.isfreebsd, platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 
 platforms = expand_cxxstring_abis(platforms)
