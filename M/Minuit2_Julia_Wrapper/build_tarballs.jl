@@ -7,7 +7,7 @@ version = v"0.2"
 
 sources = [
 	GitSource("https://github.com/JuliaHEP/Minuit2_Julia_Wrapper.git",
-              "2d74673b6083bbd5066287b53be7c6676182768d")
+              "684c9f558f80b189e02ccd31293b9c7531bf26e3")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,7 +18,7 @@ cmake ${WORKSPACE}/srcdir/Minuit2_Julia_Wrapper -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD=17
+    -DCMAKE_CXX_STANDARD=20
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
@@ -55,5 +55,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
-    preferred_gcc_version=v"9", 
+    preferred_gcc_version=v"11", 
     julia_compat = "1.6")
