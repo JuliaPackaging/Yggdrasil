@@ -36,6 +36,9 @@ if [[ "${target}" == *freebsd* ]]; then
     cd third_party/cpp-statsd-client
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cpp-statsd-client.patch
     cd ../../
+
+    # FreeBSD doesn't seem to ship a lz4.pc file
+    mv ${WORKSPACE}/srcdir/patches/liblz4.pc ${prefix}/lib/pkgconfig/
 fi
 
 mkdir build && cd build
@@ -51,8 +54,6 @@ CMAKE_FLAGS=(
     -DENABLE_TESTS=OFF
     -DPROTOBUF_INCLUDE_DIR=${includedir}
     -DPROTOBUF_LIBRARY=${libdir}/libprotobuf.${dlext}
-    -DLZ4_INCLUDE_DIR=${includedir}
-    -DLZ4_LIBRARY=${libdir}/liblz4.${dlext}
     -DENABLE_SERVICES=OFF
     -DENABLE_TOOLS=OFF
     -DENABLE_CCACHE=OFF
