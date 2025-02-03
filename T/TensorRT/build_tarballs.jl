@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "TensorRT"
-version = v"10.4.0"
+version = v"10.5.0"
 
 cuda_versions = [
     v"11",
