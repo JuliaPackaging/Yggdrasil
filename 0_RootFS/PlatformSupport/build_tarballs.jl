@@ -10,7 +10,7 @@
 #     if Sys.isapple(platform)
 #         suffix = arch(platform) == "aarch64" ? "20" : "14"
 #     elseif Sys.isfreebsd(platform)
-#         suffix = "14.2"
+#         suffix = arch(platform) == "aarch64" ? "14.1" : "13.4"
 #     else
 #         suffix = ""
 #     end
@@ -56,11 +56,11 @@ sources = [
 ]
 
 freebsd_base = if Sys.isfreebsd(compiler_target) && arch(compiler_target) == "aarch64"
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.2-RELEASE/base.txz",
-                  "a6c3bb2310c25b7dc4130e57173cd1c5d8650bc4b0c73f254b3a712e5482d33d")
+    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.1-RELEASE/base.txz",
+                  "b25830252e0dce0161004a5b69a159cbbd92d5e92ae362b06158dbb3f2568d32")
 else
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/14.2-RELEASE/base.txz",
-                  "e3971a3d4f36ed1ac67d2e7a5501726de79dd3695aa76bfad2a4ebe91a88a134")
+    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
+                  "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c")
 end
 
 push!(sources, freebsd_base)
