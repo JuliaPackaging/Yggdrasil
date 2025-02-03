@@ -8,8 +8,8 @@ name = "MPICH"
 version = v"4.3.0"
 
 sources = [
-    ArchiveSource("https://www.mpich.org/static/downloads/$(version)rc4/mpich-$(version)rc4.tar.gz",
-                  "5d1f52c1be4b13cc4c83c5f5dba81af98051630aed834ca307edebfb638be3f5"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
+                  "5e04132984ad83cab9cc53f76072d2b5ef5a6d24b0a9ff9047a8ff96121bcc63"),
     DirectorySource("bundled"),
 ]
 
@@ -123,7 +123,6 @@ augment_platform_block = """
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
-# TODO: Try enabling Windows
 filter!(!Sys.iswindows, platforms)
 
 # Add `mpi+mpich` platform tag
