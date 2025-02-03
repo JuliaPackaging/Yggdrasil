@@ -50,7 +50,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
-    Dependency("Minuit2_jll"; compat = "~6.34",)
+    Dependency("Minuit2_jll"; compat = "~6.34.2",)
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
