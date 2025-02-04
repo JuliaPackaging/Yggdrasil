@@ -56,6 +56,7 @@ CMAKE_FLAGS=(
     -DPROTOBUF_INCLUDE_DIRS=${includedir}
     -DPROTOBUF_LIBRARIES=${libdir}/libprotobuf.${dlext}
     -DPROTOBUF_PROTOC_LIBRARIES=${libdir}/libprotoc.${dlext}
+    -DProtobuf_LITE_LIBRARIES=${libdir}/libprotobuf-lite.${dlext}
     -DENABLE_SERVICES=OFF
     -DENABLE_TOOLS=OFF
     -DENABLE_CCACHE=OFF
