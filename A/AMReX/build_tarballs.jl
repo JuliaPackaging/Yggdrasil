@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "25.01"
+version_string = "25.02"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "29eb35cf67d66b0fd0654282454c210abfadf27fcff8478b256e3196f237c74f"),
+                  "2680a5a9afba04e211cd48d27799c5a25abbb36c6c3d2b6c13cd4757c7176b23"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
@@ -117,17 +117,21 @@ platforms = filter(p -> libc(p) ≠ "musl", platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms;
                                                          MPICH_compat="4.2.3",
-                                                         MPItrampoline_compat="5.5.0",
+                                                         MPItrampoline_compat="5.5.1",
                                                          OpenMPI_compat="4.1.6, 5")
 # Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && ((arch(p) == "armv6l" && libc(p) == "glibc") ||
-                                                    (arch(p) == "aarch64" && Sys.isfreebsd(p)))), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && (Sys.iswindows(p) || libc(p) == "musl")), platforms)
-
-# No MPI for riscv64 yet
-platforms = filter(p -> arch(p) != "riscv64", platforms)
+filter!(platforms) do p
+    if p["mpi"] == "mpich"
+        arch(p) == "riscv64" && return false # very soon available
+    elseif p["mpi"] == "mpitrampoline"
+        libc(p) == "musl" && return false
+    elseif p["mpi"] == "openmpi"
+        arch(p) == "armv6l" && libc(p) == "glibc" && return false
+        Sys.isfreebsd(p) && arch(p) == "aarch64" && return false # we should build this
+        arch(p) == "riscv64" && return false                     # we should build this at some time
+    end
+    return true
+end
 
 # Windows does not supported parallel HDF5
 hdf5_platforms = filter(!Sys.iswindows, platforms)
@@ -156,4 +160,4 @@ append!(dependencies, platform_dependencies)
 # - AMReX requires C++17, and at least GCC 8 to provide the <filesystem> header
 # - GCC 8.1.0 suffers from an ICE, so we use GCC 9 instead
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"9", clang_use_lld=false)
+               augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version = v"9")
