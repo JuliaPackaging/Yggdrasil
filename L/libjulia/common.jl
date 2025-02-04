@@ -172,6 +172,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMVERMAJOR=16
     elif [[ "${version}" == 1.12.* ]]; then
         LLVMVERMAJOR=18
+    elif [[ "${version}" == 1.13.* ]]; then
+        LLVMVERMAJOR=18
     else
         echo "Error, LLVM version not specified"
         exit 1
