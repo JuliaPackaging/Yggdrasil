@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-DEV", v"1.13.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -62,7 +62,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.12.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "fea26ddecb8a6c404f0c501228bf17c9b384d686"),
+            GitSource("https://github.com/JuliaLang/julia.git", "0c1e800dbdcf76b24cf3ab2bc9861a587e7c1fb5"),
+            DirectorySource("./bundled"),
+        ]
+    elseif version == v"1.13.0-DEV"
+        sources = [
+            GitSource("https://github.com/JuliaLang/julia.git", "79ce1685e94a19edadd21544bce973cfd06cb168"),
             DirectorySource("./bundled"),
         ]
     else
