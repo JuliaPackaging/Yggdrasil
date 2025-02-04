@@ -9,8 +9,8 @@ version = v"3.5.1"
 sources = [
     GitSource("https://github.com/valhalla/valhalla.git", "d377c8ace9ea88dfa989466258bf738b1080f22a"),
     DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
-                  "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
+                  "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -26,7 +26,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-    export MACOSX_DEPLOYMENT_TARGET=12.3.0
+    export MACOSX_DEPLOYMENT_TARGET=11.1
 fi
 
 git submodule update --init --recursive
@@ -62,16 +62,9 @@ CMAKE_FLAGS=(
     -DLOGGING_LEVEL=DEBUG
 )
 
-# -DCMAKE_CXX_STANDARD=17
-
-
-# if [[ "${target}" == i686* ]] || [[ "${target}" == armv7l* ]]; then
-#     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake)
-# else
-# fi
-
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake)
+    CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11.1)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 fi
@@ -79,7 +72,6 @@ fi
 
 cmake "${CMAKE_FLAGS[@]}" ..
 
-# export LDFLAGS="-L${libdir}"
 make -j${nproc}
 make -j${nproc} install
 
