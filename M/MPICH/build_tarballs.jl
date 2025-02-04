@@ -26,15 +26,18 @@ cd ${WORKSPACE}/srcdir/mpich*
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
-# Do not install doc and man files which contain files which clashing names on
-# case-insensitive file systems:
-# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
-# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
+# - Do not install doc and man files which contain files which clashing names on
+#   case-insensitive file systems:
+#   * https://github.com/JuliaPackaging/Yggdrasil/pull/315
+#   * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
+# - `--enable-fast=all,O3` leads to very long compile times for the
+#   file `src/mpi/coll/mpir_coll.c`. It seems we need to avoid
+#   `alwaysinline`.
 configure_flags=(
     --build=${MACHTYPE}
     --disable-dependency-tracking
     --disable-doc
-    --enable-fast=all,O3
+    --enable-fast=ndebug,O3
     --enable-static=no
     --host=${target}
     --prefix=${prefix}
