@@ -6,7 +6,7 @@ version = v"2.10.0"
 # Collection of sources required to build NLopt
 sources = [
     GitSource("https://github.com/stevengj/nlopt.git",
-              "https://github.com/stevengj/nlopt/commit/7d04da19236148f9ae9d8dfa470a2264f5d2aa33"), # v2.10.0
+              "7d04da19236148f9ae9d8dfa470a2264f5d2aa33"), # v2.10.0
 ]
 
 # Bash recipe for building across all platforms
