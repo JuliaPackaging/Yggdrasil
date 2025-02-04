@@ -9,8 +9,8 @@ version = v"3.5.1"
 sources = [
     GitSource("https://github.com/valhalla/valhalla.git", "d377c8ace9ea88dfa989466258bf738b1080f22a"),
     DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                  "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+    "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,14 +19,13 @@ cd $WORKSPACE/srcdir/valhalla/
 
 # Handle Mac SDK <10.14 errors
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Install a newer SDK which supports C++20
-    pushd $WORKSPACE/srcdir/MacOSX12.*.sdk
+    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/*
+    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2/libxml
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-    export MACOSX_DEPLOYMENT_TARGET=11.1
+    export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
 git submodule update --init --recursive
