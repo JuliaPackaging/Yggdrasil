@@ -80,6 +80,8 @@ if [ $target != $MACHTYPE ]; then #cross compilation
    )
 
    # Compile for the host binary used in the build process
+   # Davix is switched off, as otherwise build fails in buildkite CI. It should not be
+   # needed for the NATIVE tools. 
    mkdir NATIVE
    cmake -GNinja \
          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
@@ -93,6 +95,7 @@ if [ $target != $MACHTYPE ]; then #cross compilation
          -DCLING_TARGET_GLIBC=1 \
          -DCLING_TARGET_GLIBCXX=1 \
          -DCLING_SYSTEM_INCLUDE_PATH="$SYSTEM_INCLUDE_PATH" \
+         -Ddavix=OFF \
          -B NATIVE -S srcdir/root
 
    cmake --build NATIVE -- -j$njobs rootcling_stage1 rootcling llvm-tblgen clang-tblgen llvm-config llvm-symbolizer
