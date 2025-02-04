@@ -98,8 +98,8 @@ dependencies = [
     Dependency("GEOS_jll"; compat="3.13.1")
     Dependency("LibCURL_jll")
     Dependency("Lz4_jll")
-    Dependency("protoc_jll")
-    HostBuildDependency("protoc_jll")
+    Dependency("protoc_jll"; compat="105.29.3")
+    HostBuildDependency("protoc_jll"; compat="105.29.3")
     Dependency("Zlib_jll")
 ]
 
