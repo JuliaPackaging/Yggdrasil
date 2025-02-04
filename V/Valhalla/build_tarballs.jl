@@ -99,7 +99,7 @@ dependencies = [
     Dependency("LibCURL_jll")
     Dependency("Lz4_jll")
     Dependency("protoc_jll"; compat="105.29.3")
-    HostBuildDependency("protoc_jll"; compat="105.29.3")
+    HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
 ]
 
