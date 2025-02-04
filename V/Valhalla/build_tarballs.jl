@@ -26,8 +26,8 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-    # export MACOSX_DEPLOYMENT_TARGET=12.3
-    export MACOSX_DEPLOYMENT_TARGET=10.15
+    export MACOSX_DEPLOYMENT_TARGET=12.3
+    # export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
 git submodule update --init --recursive
@@ -65,7 +65,9 @@ CMAKE_FLAGS=(
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake)
-    CMAKE_FLAGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11.1)
+    CMAKE_FLAGS+=(-DMACOSX_DEPLOYMENT_TARGET=12.3)
+    CMAKE_FLAGS+=(-DCMAKE_CXX_STANDARD=14)
+
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 fi
