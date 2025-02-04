@@ -27,7 +27,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
     export MACOSX_DEPLOYMENT_TARGET=12.3
-    # export MACOSX_DEPLOYMENT_TARGET=10.15
 fi
 
 git submodule update --init --recursive
@@ -48,6 +47,7 @@ mkdir build && cd build
 CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=$prefix
     -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DBUILD_SHARED_LIBS=ON
     -DENABLE_DATA_TOOLS=OFF
     -DENABLE_PYTHON_BINDINGS=OFF
@@ -63,14 +63,9 @@ CMAKE_FLAGS=(
     -DLOGGING_LEVEL=DEBUG
 )
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-    CMAKE_FLAGS+=(-DMACOSX_DEPLOYMENT_TARGET=12.3)
-    CMAKE_FLAGS+=(-DCMAKE_CXX_STANDARD=17)
-    CMAKE_FLAGS+=(-DCMAKE_PROGRAM_PATH=${host_bindir})
-else
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
-fi
+# if [[ "${target}" == x86_64-apple-darwin* ]]; then
+#     CMAKE_FLAGS+=(-DCMAKE_CXX_STANDARD=17)
+# fi
 
 
 cmake "${CMAKE_FLAGS[@]}" ..
