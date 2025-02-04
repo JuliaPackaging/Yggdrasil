@@ -1,11 +1,13 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3af4452a7..1e9b92004 100644
+index 3af4452a7..e3c46be57 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -176,6 +176,13 @@ endif()
+@@ -175,7 +175,14 @@ endif()
+ # for protoc location in a platform agnostic manner
  # newer protobuf versions require a compat bool
  set(protobuf_MODULE_COMPATIBLE ON CACHE BOOL "")
- find_package(Protobuf REQUIRED)
+-find_package(Protobuf REQUIRED)
++find_package(Protobuf CONFIG REQUIRED)
 +
 +if(Protobuf_PROTOC_EXECUTABLE)
 +  set_target_properties(protobuf::protoc PROPERTIES
