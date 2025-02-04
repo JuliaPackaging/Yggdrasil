@@ -47,6 +47,7 @@ mkdir build && cd build
 CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=$prefix
     -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_PREFIX_PATH=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DBUILD_SHARED_LIBS=ON
     -DENABLE_DATA_TOOLS=OFF
@@ -64,10 +65,6 @@ CMAKE_FLAGS=(
     -DPROTOBUF_PROTOC_EXECUTABLE=${host_bindir}/protoc
     -DLOGGING_LEVEL=DEBUG
 )
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_PREFIX_PATH=${prefix})
-fi
 
 cmake "${CMAKE_FLAGS[@]}" ..
 
