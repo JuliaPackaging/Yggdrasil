@@ -7,13 +7,17 @@ version = v"5.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ocaml/ocaml.git", "1ccb919e35f8378834060c503ae953897fe0fb7f")
+    GitSource("https://github.com/ocaml/ocaml.git", "1ccb919e35f8378834060c503ae953897fe0fb7f"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 cd ocaml
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
@@ -35,7 +39,8 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("ocamlopt.opt", :ocamlopt),
-    ExecutableProduct("ocamlc.opt", :ocamlc)
+    ExecutableProduct("ocamlc.opt", :ocamlc),
+    ExecutableProduct("ocamlrun", :ocamlrun),
 ]
 
 # Dependencies that must be installed before this package can be built
