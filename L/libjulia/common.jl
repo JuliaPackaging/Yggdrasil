@@ -200,6 +200,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMLINK="-L${prefix}/lib -lLLVM-${LLVMVERMAJOR}jl"
     fi
 
+    if [[ "${version}" == 1.[6-9].* ]] || [[ "${version}" == 1.1[0-1].* ]]; then
+        MBEDTLS_OR_OPENSSL="USE_SYSTEM_MBEDTLS=1"
+    else
+        MBEDTLS_OR_OPENSSL="USE_SYSTEM_OPENSSL=1"
+    fi
+
     # enable extglob for BB_TRIPLET_LIBGFORTRAN_CXXABI
     shopt -s extglob
 
@@ -219,11 +225,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     USE_SYSTEM_SUITESPARSE=1
     USE_SYSTEM_LIBUV=1
     USE_SYSTEM_UTF8PROC=1
-    if [[ "${version}" == 1.[6-9].* ]] || [[ "${version}" == 1.1[0-1].* ]]; then
-        USE_SYSTEM_MBEDTLS=1
-    else
-        USE_SYSTEM_OPENSSL=1
-    fi
+    ${MBEDTLS_OR_OPENSSL}
     USE_SYSTEM_LIBSSH2=1
     USE_SYSTEM_CURL=1
     USE_SYSTEM_LIBGIT2=1
