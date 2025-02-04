@@ -35,6 +35,9 @@ function libjulia_platforms(julia_version)
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
 
+    # RISC-V currently not supported
+    filter!(p -> arch(p) != "riscv64", platforms)
+
     for p in platforms
         p["julia_version"] = string(julia_version)
     end
@@ -59,7 +62,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
 
     if version == v"1.12.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "c6e7f83a6b6e9b7ec34a083983ab812278fa74a5"),
+            GitSource("https://github.com/JuliaLang/julia.git", "fea26ddecb8a6c404f0c501228bf17c9b384d686"),
             DirectorySource("./bundled"),
         ]
     else
@@ -436,10 +439,10 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"12.0.1+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"16.0.6+4")))
     elseif version.major == 1 && version.minor == 12
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.0+1")))
-        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+19")))
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.3+2")))
+        push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
-        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"14.0.6+0"); platforms=filter(Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
     else
         error("Unsupported Julia version")
