@@ -68,6 +68,7 @@ CMAKE_FLAGS=(
 echo ${includedir}
 echo ${libdir}
 
+cmake --version
 cmake "${CMAKE_FLAGS[@]}" ..
 
 make -j${nproc}
@@ -96,6 +97,7 @@ dependencies = [
     Dependency("protoc_jll"; compat="105.29.3")
     HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
+    HostBuildDependency("CMake_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
