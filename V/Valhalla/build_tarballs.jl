@@ -26,7 +26,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
-    export MACOSX_DEPLOYMENT_TARGET=12.3
+    export MACOSX_DEPLOYMENT_TARGET=12.3.0
 fi
 
 git submodule update --init --recursive
