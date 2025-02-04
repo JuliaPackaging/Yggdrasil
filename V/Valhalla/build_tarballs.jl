@@ -65,10 +65,8 @@ CMAKE_FLAGS=(
     -DLOGGING_LEVEL=DEBUG
 )
 
-# if [[ "${target}" == x86_64-apple-darwin* ]]; then
-#     CMAKE_FLAGS+=(-DCMAKE_CXX_STANDARD=17)
-# fi
-
+echo ${includedir}
+echo ${libdir}
 
 cmake "${CMAKE_FLAGS[@]}" ..
 
