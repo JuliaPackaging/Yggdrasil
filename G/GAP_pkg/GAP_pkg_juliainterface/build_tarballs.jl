@@ -67,7 +67,7 @@ end
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
     Dependency("GAP_jll", gap_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.13")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.14")),
 ]
 
 # The products that we will ensure are always built
