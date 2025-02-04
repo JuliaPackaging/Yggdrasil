@@ -65,8 +65,6 @@ CMAKE_FLAGS=(
     -DLOGGING_LEVEL=DEBUG
 )
 
-if 
-
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_PREFIX_PATH=${prefix})
 fi
