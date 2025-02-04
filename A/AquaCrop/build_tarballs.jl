@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "FAOAquaCrop"
+name = "AquaCrop"
 version = v"7.1"
 
 # url = "https://github.com/KUL-RSDA/AquaCrop"
