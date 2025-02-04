@@ -68,6 +68,7 @@ cmake \
 
 make
 make install
+install_license ${WORKSPACE}/srcdir/blockSQP/LICENSE
 "
 
 #platforms = vcat(libjulia_platforms.(julia_versions[julia_versions .>= v"1.7.0"])...) |> expand_cxxstring_abis
