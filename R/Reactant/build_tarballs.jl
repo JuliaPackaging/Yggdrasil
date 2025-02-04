@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.60"
+version = v"0.0.61"
 
 sources = [
   GitSource(repo, "85e08c32a72d4ea9edf402df19061f0ac74c6917"),
@@ -347,7 +347,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.3", "12.6"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -371,7 +371,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
-    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.3"
+    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
         # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
         continue
     end
@@ -384,6 +384,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "11.8" => "11.8",
         "12.1" => "12.1.1",
         "12.3" => "12.3.1",
+        "12.4" => "12.4.1",
         "12.6" => "12.6.3",
     )
 
@@ -414,6 +415,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	    push!(platform_sources,
                   ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.3.103-archive.tar.xz",
                                 "1bb1faac058a1e122adad09dabaa378ee9591762b7787a9144de845f99e03aed"),
+                  )
+        elseif hermetic_cuda_version_map[cuda_version] == "12.4.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.4.1.json
+	    push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.4.131-archive.tar.xz",
+                                "83f130dab0325e12b90fdf1279c0cbbd88acf638ef0a7e0cad72d50855a4f44a"),
                   )
         elseif hermetic_cuda_version_map[cuda_version] == "12.1.1"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.1.1.json
