@@ -49,7 +49,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         --without-libidn2 --without-librtmp
         --without-nss --without-libpsl
         --disable-ares --disable-manual
-        --disable-ldap --disable-ldaps --without-zsh-functions-dir
+        --without-zsh-functions-dir
         --disable-static --without-libgsasl
         --without-brotli
 
@@ -133,6 +133,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         Dependency("LibSSH2_jll"),
         Dependency("Zlib_jll"),
         Dependency("nghttp2_jll"),
+        Dependency("OpenLDAPClient_jll"; compat="2.5.19"),
         Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
