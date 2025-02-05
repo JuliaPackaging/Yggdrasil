@@ -37,8 +37,10 @@ if [[ "${target}" == *freebsd* ]]; then
     cd third_party/cpp-statsd-client
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cpp-statsd-client.patch
     cd ../../
+fi
 
-    # FreeBSD doesn't seem to ship a lz4.pc file
+if [[ "${target}" == *freebsd* ]] || [[ "${target}" == *mingw* ]]; then
+    # FreeBSD, Mingw don't seem to ship a lz4.pc file
     mv ${WORKSPACE}/srcdir/patches/liblz4.pc ${prefix}/lib/pkgconfig/
 fi
 
