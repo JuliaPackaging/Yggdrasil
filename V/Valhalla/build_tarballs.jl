@@ -84,6 +84,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = Product[
     LibraryProduct("libvalhalla", :libvalhalla),
+    ExecutableProduct("valhalla_service", :valhalla_service),
 ]
 
 # Dependencies that must be installed before this package can be built
