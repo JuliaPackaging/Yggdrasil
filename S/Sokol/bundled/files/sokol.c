@@ -5,7 +5,7 @@
 #define SOKOL_LOG(str) OutputDebugStringA(str)
 #elif defined(__EMSCRIPTEN__)
 #define SOKOL_GLES2
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && defined(__arm64__)
 // NOTE: on macOS, sokol.c is compiled explicitly as ObjC 
 #include <TargetConditionals.h>
 #define SOKOL_METAL
