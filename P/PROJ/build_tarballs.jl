@@ -97,7 +97,7 @@ dependencies = [
     HostBuildDependency("SQLite_jll")
     Dependency("SQLite_jll")
     Dependency("Libtiff_jll"; compat="4.5.1")
-    Dependency("LibCURL_jll"; compat="~8")
+    Dependency("LibCURL_jll"; compat="^8")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
