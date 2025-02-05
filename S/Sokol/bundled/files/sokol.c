@@ -21,6 +21,8 @@
 #include "sokol_log.h"
 #include "sokol_args.h"
 
-int main (int argc, char *argv[]) {
-  return 0;
+sapp_desc sokol_main(int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
+    return (sapp_desc){0};
 }
