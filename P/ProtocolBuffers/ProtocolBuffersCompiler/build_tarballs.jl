@@ -5,7 +5,6 @@ using BinaryBuilder, Pkg
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "ProtocolBuffersCompiler"
-version = base_version
 
 script = """
 export BB_PROTOBUF_PRODUCT=$name

@@ -1,37 +1,7 @@
-"""
-ProtocolBuffers versioning is a little complex: Since May, 2022, with the
-release of v21.0, each language runtime, e.g. the C++ runtime  `libprotobuf`,
-has its own major version, while the minor version and patch version
-respectively match the major version, and the minor version of the
-ProtocolBuffers project (and the `protoc` compiler).
-E.g., C++ runtime `libprotobuf` v"3.21.0" released with ProtocolBuffers v"21.0"
-matches `protoc` v"21.0".
-
-The `protoc` compiler (and `libprotoc`) depends on the C++ runtime `libprotobuf`,
-i.e. `protoc` v"21.0" requires C++ runtime `libprotobuf` v"3.21.0".
-
-Specific to the C++ runtime, in contrast to the other ProtocolBuffers
-language runtimes, there is no cross-version runtime support, i.e., C++ code
-generated with the `protoc` compiler v"21.0" requires C++ runtime
-`libprotobuf` v"3.21.0". Additionally, the C++ runtime makes no guarantees
-about ABI stability across any releases (major, minor, or patch).
-
-Finally, v"16" releases since v"16.2" has also adopted the May, 2022 versioning
-scheme, i.e. `libprotobuf` v"3.16.2" matches `protoc` v"16.2". The same is true
-for v"18" since v"18.3", v"19" since v"19.5", and v"20" since v"20.2".
-
-References:
-* https://protobuf.dev/support/version-support/
-* https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp
-* https://protobuf.dev/news/2022-05-06/#versioning
-* https://github.com/protocolbuffers/protobuf/blob/v21.0/version.json
-"""
-base_version = v"22.0"
-# Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
-cpp_library_version = VersionNumber(4, base_version.major, base_version.minor)
+version = v"3.16.0"
 
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "a847a8dc4ba1d99e7ba917146c84438b4de7d085"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "2dc747c574b68a808ea4699d26942c8132fe2b09"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
@@ -43,7 +13,6 @@ include_symbols = Dict{Symbol,String}()
 
 library_dirs = [
     "cmake/protobuf",
-    "cmake/utf8_range",
 ]
 
 protobuf_library_symbols = Dict(
@@ -57,15 +26,8 @@ protoc_library_symbols = Dict(
 )
 library_symbols = merge(protobuf_library_symbols, protobuf_lite_library_symbols)
 
-# `protobuf` includes https://github.com/protocolbuffers/utf8_range
-additional_include_symbols = Dict(
-    :utf8_range_h => "utf8_range.h",
-    :utf8_validity_h => "utf8_validity.h",
-)
-additional_library_symbols = Dict(
-    :libutf8_range => "utf8_range",
-    :libutf8_validity => "utf8_validity",
-)
+additional_include_symbols = Dict{Symbol,String}()
+additional_library_symbols = Dict{Symbol,String}()
 all_include_symbols = merge(include_symbols, additional_include_symbols)
 all_library_symbols = merge(library_symbols, additional_library_symbols)
 
@@ -114,8 +76,9 @@ BB_PROTOC_LIBRARIES=($(join(values(protoc_library_symbols), " ")))
 """ * raw"""
 cd $WORKSPACE/srcdir/protobuf
 
-# This patch stems from upstream: https://github.com/protocolbuffers/protobuf/pull/12043
-atomic_patch -p1 ../patches/aarch64.patch
+# Avoid problems with `-march`, `-ffast-math` etc.
+sed -i -e 's!set(CMAKE_C_COMPILER.*!set(CMAKE_C_COMPILER '${WORKSPACE}/srcdir/files/ccsafe')!' ${CMAKE_TARGET_TOOLCHAIN}
+sed -i -e 's!set(CMAKE_CXX_COMPILER.*!set(CMAKE_CXX_COMPILER '${WORKSPACE}/srcdir/files/c++safe')!' ${CMAKE_TARGET_TOOLCHAIN}
 
 cmake_extra_args=()
 
@@ -132,29 +95,26 @@ fi
 
 if [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersCompiler" ]]; then
     cmake_extra_args+=(
-        -Dprotobuf_BUILD_PROTOBUF_BINARIES=ON
         -Dprotobuf_BUILD_PROTOC_BINARIES=ON
     )
 else
     cmake_extra_args+=(
-        -Dprotobuf_BUILD_PROTOBUF_BINARIES=ON
         -Dprotobuf_BUILD_PROTOC_BINARIES=OFF
     )
 fi
 
-git submodule update --init --recursive --depth 1 third_party/jsoncpp
 cmake \
-    -B build \
+    -B work \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=14 \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
-    -Dprotobuf_ABSL_PROVIDER=package \
     -Dprotobuf_BUILD_TESTS=OFF \
-    ${cmake_extra_args[@]}
-cmake --build build --parallel $nproc
-cmake --install build
+    ${cmake_extra_args[@]} \
+    cmake
+cmake --build work --parallel $nproc
+cmake --install work
 install_license LICENSE
 
 # Ensure the proper files are in $prefix
@@ -240,9 +200,8 @@ fi
 platforms = expand_cxxstring_abis(supported_platforms())
 
 dependencies = [
-    Dependency("abseil_cpp_jll"; compat="20230125.0"),
     Dependency("Zlib_jll"),
 ]
 
 julia_compat = "1.6"
-preferred_gcc_version = v"8" # GCC >= 7.3 required: https://github.com/protocolbuffers/protobuf/blob/v22.0/src/google/protobuf/port_def.inc#L196
+preferred_gcc_version = v"8"
