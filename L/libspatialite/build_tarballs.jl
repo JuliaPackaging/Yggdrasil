@@ -28,11 +28,6 @@ autoreconf -vi
 if [[ ${target} == *-linux-musl* ]] || [[ ${target} == *-freebsd* ]]; then
     #help find sqlite.h header usually
     export CPPFLAGS="-I${includedir}"
-
-elif [[ "${target}" == *-mingw* ]]; then
-
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mingw-lowercase-include.patch
-
 fi
 
 ./configure \
