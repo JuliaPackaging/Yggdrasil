@@ -9,6 +9,9 @@
 // NOTE: on macOS, sokol.c is compiled explicitly as ObjC 
 #include <TargetConditionals.h>
 #define SOKOL_METAL
+#elif defined(__APPLE__) && defined(__x86_64__)
+#include <TargetConditionals.h>
+#define SOKOL_GLCORE
 #else
 #define SOKOL_GLCORE
 #endif

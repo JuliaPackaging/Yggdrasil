@@ -7,6 +7,8 @@ version = v"2025.28.1"  # Use the commit date or tag of Sokol you're targeting
 # Use the latest commit or a specific tag from the Sokol repository
 sources = [
     GitSource("https://github.com/floooh/sokol.git", "db9ebdf24243572c190affde269b92725942ddd0"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz", 
+               "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
     DirectorySource("./bundled"),
 ]
 
@@ -16,6 +18,16 @@ cd $WORKSPACE/srcdir/sokol*
 export CFLAGS="-I${includedir}"
 cp ${WORKSPACE}/srcdir/files/CMakeLists.txt ./CMakeLists.txt
 cp ${WORKSPACE}/srcdir/files/sokol.c ./sokol.c
+
+if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+    # LLVM 15+ requires macOS SDK 10.14.
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
 
 if [[ ${target} == aarch64-apple-* ]]; then
     # `libclang_rt.osx.a` from LLVM compiler-rt.
@@ -37,6 +49,7 @@ install -Dvm 755 "build/libsokol.${dlext}" "${libdir}/libsokol.${dlext}"
 for file in sokol_*.h; do
     install -Dvm 644 "${file}" -t "${includedir}"
 done
+install_license LICENSE
 """
 
 # Supported platforms
