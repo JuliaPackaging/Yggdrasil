@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderBase : get_addable_spec
+using BinaryBuilderBase: get_addable_spec
 name = "PROJ"
 upstream_version = v"9.5.1"
 version_offset = v"2.0.0"
