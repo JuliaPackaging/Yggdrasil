@@ -20,7 +20,6 @@ cd ${WORKSPACE}/srcdir/libxml2-*
     --without-python \
     --disable-static \
     --with-zlib=${prefix} \
-    --with-http \
     --with-iconv=${prefix}
 make -j${nproc}
 make install
