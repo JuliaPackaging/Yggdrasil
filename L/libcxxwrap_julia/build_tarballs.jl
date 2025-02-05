@@ -11,7 +11,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libcxxwrap_julia"
-version = v"0.13.3"
+version = v"0.13.4"
 
 git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
