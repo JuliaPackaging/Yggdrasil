@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-name = "libblocksqp"
+name = "blockSQP"
 version = v"0.0.1"
 sources = [
     GitSource("https://github.com/djanka2/blockSQP.git", "da05d3957b93bd55b9a7f08c859d302851056a6d"),
