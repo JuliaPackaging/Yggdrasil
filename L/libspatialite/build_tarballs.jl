@@ -16,6 +16,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libspatialite-*
 
+# Since libxml2 no longer supports HTTP, we removed that reference from libspatialite.
+atomic_patch -p1 ../patches/libxml2-http-deprecated.patch
+
 # Detection of MinGW and macOS is totally wrong: `target_alias` is empty.  We
 # could use `host_alias` (why not `host`?), but we should do regex matching,
 # which doesn't work very well with Alpine's (da)sh, easiest thing is to check
