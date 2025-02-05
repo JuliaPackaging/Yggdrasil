@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.13.6" # Building version 2.13.6; bumped to *.6 to build for riscv
+version = v"2.13.6" # Building version 2.13.5; bumped to *.6 to build for riscv
 
 # Collection of sources required to build XML2
 sources = [
