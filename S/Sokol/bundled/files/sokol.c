@@ -1,3 +1,4 @@
+#define SOKOL_NO_ENTRY
 #define SOKOL_IMPL
 #if defined(_MSC_VER)
 #define SOKOL_D3D11
@@ -21,8 +22,6 @@
 #include "sokol_log.h"
 #include "sokol_args.h"
 
-sapp_desc sokol_main(int argc, char* argv[]) {
-    (void)argc;
-    (void)argv;
-    return (sapp_desc){0};
+int main (int argc, char *argv[]) {
+  return 0;
 }
