@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
 name = "Valhalla"
 version = v"3.5.1"
@@ -102,7 +103,7 @@ dependencies = [
     Dependency("SQLite_jll")
     # Until we have a new version of OpenSSL built for riscv64 we need to use the
     # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
-    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)),
+    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms))
     Dependency("libspatialite_jll")
 ]
 
