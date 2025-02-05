@@ -62,15 +62,6 @@ fi
 
 make -j${nproc}
 make install
-
-if [[ "${target}" == *-darwin* ]]; then
-    # I have no idea how they managed to get the extension wrong only for mod_spatialite,
-    # but they did.  Let's rename everything manually, sigh.
-    mv "${libdir}/mod_spatialite.7.so" "${libdir}/mod_spatialite.7.${dlext}"
-    rm "${libdir}/mod_spatialite.so"
-    ln -s "mod_spatialite.7.${dlext}" "${libdir}/mod_spatialite.${dlext}"
-    sed -i "s/\.so/.${dlext}/g" ${libdir}/mod_spatialite.la
-fi
 """
 
 # These are the platforms we will build for by default, unless further
