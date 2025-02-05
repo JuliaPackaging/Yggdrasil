@@ -99,6 +99,7 @@ dependencies = [
     Dependency("protoc_jll"; compat="105.29.3")
     HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
+    Dependency("SQLite_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
