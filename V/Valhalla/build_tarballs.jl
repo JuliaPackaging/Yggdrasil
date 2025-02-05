@@ -64,6 +64,9 @@ CMAKE_FLAGS=(
     -DPROTOBUF_PROTOC_LIBRARIES=${libdir}/libprotoc.${dlext}
     -DProtobuf_LITE_LIBRARIES=${libdir}/libprotobuf-lite.${dlext}
     -DPROTOBUF_PROTOC_EXECUTABLE=${host_bindir}/protoc
+    -DGDAL_LIBRARY=${libdir}/libgdal.${dlext}
+    -DGDAL_INCLUDE_DIR=${includedir}
+    -DENABLE_GDAL=OFF
     -DLOGGING_LEVEL=DEBUG
 )
 
