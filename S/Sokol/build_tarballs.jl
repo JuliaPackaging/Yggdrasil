@@ -40,7 +40,7 @@ done
 """
 
 # Supported platforms
-platforms = supported_platforms(exclude=p->arch(p)=="armv6l"||Sys.isbsd(p)||Sys.iswindows(p))
+platforms = supported_platforms(exclude=p->arch(p)=="armv6l"||Sys.isfreebsd(p))
 llvm_version = v"13.0.1+1"
 
 # Platform-specific dependencies

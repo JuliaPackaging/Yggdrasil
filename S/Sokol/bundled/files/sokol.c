@@ -20,3 +20,7 @@
 #include "sokol_fetch.h"
 #include "sokol_log.h"
 #include "sokol_args.h"
+
+int main (int argc, char *argv[]) {
+  return 0;
+}
