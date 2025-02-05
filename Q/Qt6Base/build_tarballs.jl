@@ -16,8 +16,8 @@ sources = [
                   "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",
+                  "3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10"),
     DirectorySource("./bundled"),
 ]
 
@@ -55,25 +55,25 @@ case "$bb_full_target" in
     ;;
 
     *mingw*)        
-        # cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
-        # ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
-        # make install
+        cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
+        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
+        make install
         
         
-        # cd ../mingw-w64-crt/
-        # if [ ${target} == "i686-w64-mingw32" ]; then
-        #     _crt_configure_args="--disable-lib64 --enable-lib32"
-        # elif [ ${target} == "x86_64-w64-mingw32" ]; then
-        #     _crt_configure_args="--disable-lib32 --enable-lib64"
-        # fi
-        # ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
-        # make -j${nproc}
-        # make install
+        cd ../mingw-w64-crt/
+        if [ ${target} == "i686-w64-mingw32" ]; then
+            _crt_configure_args="--disable-lib64 --enable-lib32"
+        elif [ ${target} == "x86_64-w64-mingw32" ]; then
+            _crt_configure_args="--disable-lib32 --enable-lib64"
+        fi
+        ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
+        make -j${nproc}
+        make install
         
-        # cd ../mingw-w64-libraries/winpthreads
-        # ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
-        # make -j${nproc}
-        # make install
+        cd ../mingw-w64-libraries/winpthreads
+        ./configure --prefix=/opt/$target/$target/sys-root --host=$target --enable-static --enable-shared
+        make -j${nproc}
+        make install
 
         cd $WORKSPACE/srcdir/build
         ../qtbase-everywhere-src-*/configure -prefix $prefix -opensource -confirm-license -nomake examples -release -opengl dynamic -- -DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix
@@ -126,18 +126,8 @@ cmake --install .
 install_license $WORKSPACE/srcdir/qtbase-everywhere-src-*/LICENSES/LGPL-3.0-only.txt
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-if host_build
-    platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
-    platforms_macos = AbstractPlatform[]
-else
-    platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
-    filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms) # No OpenGL on aarch64 freeBSD
-    filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
-    filter!(p -> arch(p) != "riscv64", platforms) # No OpenGL on riscv64
-    platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
-end
+# Get the common Qt platforms
+include("common.jl")
 
 # The products that we will ensure are always built
 products = [
@@ -153,21 +143,6 @@ products = [
     LibraryProduct(["Qt6Test", "libQt6Test", "QtTest"], :libqt6test),
     LibraryProduct(["Qt6Widgets", "libQt6Widgets", "QtWidgets"], :libqt6widgets),
     LibraryProduct(["Qt6Xml", "libQt6Xml", "QtXml"], :libqt6xml),
-]
-
-products_macos = [
-    FrameworkProduct("QtConcurrent", :libqt6concurrent),
-    FrameworkProduct("QtCore", :libqt6core),
-    FrameworkProduct("QtDBus", :libqt6dbus),
-    FrameworkProduct("QtGui", :libqt6gui),
-    FrameworkProduct("QtNetwork", :libqt6network),
-    FrameworkProduct("QtOpenGL", :libqt6opengl),
-    FrameworkProduct("QtOpenGLWidgets", :libqt6openglwidgets),
-    FrameworkProduct("QtPrintSupport", :libqt6printsupport),
-    FrameworkProduct("QtSql", :libqt6sql),
-    FrameworkProduct("QtTest", :libqt6test),
-    FrameworkProduct("QtWidgets", :libqt6widgets),
-    FrameworkProduct("QtXml", :libqt6xml),
 ]
 
 # We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
@@ -208,13 +183,5 @@ if !host_build
     push!(dependencies, HostBuildDependency("Qt6Base_jll"))
 end
 
-include("../../fancy_toys.jl")
-
-@static if !host_build
-    if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"13", preferred_llvm_version=llvm_version, julia_compat="1.6")
-    end
-end
-if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"13", preferred_llvm_version=llvm_version, julia_compat="1.6")
-end
+# From Qt6Base/common.jl
+build_qt(name, version, sources, script, products, dependencies; preferred_llvm_version=llvm_version)
