@@ -7,7 +7,7 @@ version = v"5.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.gaia-gis.it/gaia-sins/libspatialite-$(version).tar.gz", "43be2dd349daffe016dd1400c5d11285828c22fea35ca5109f21f3ed50605080"),
+    ArchiveSource("http://www.gaia-gis.it/gaia-sins/libspatialite-sources/libspatialite-$(version).tar.gz", "43be2dd349daffe016dd1400c5d11285828c22fea35ca5109f21f3ed50605080"),
     DirectorySource("./bundled")
 ]
 
