@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "JlrsLedger"
-version = v"0.1.0"
+version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/Taaitaaiger/jlrs_ledger.git",
-              "ec587100061297e112f767038fed179db617031a"),
+              "7a6d9a45e9fd69f577587424c1477bff7b8b09db"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +22,8 @@ install -Dvm 0755 "target/${rust_target}/release/"*jlrs_ledger".${dlext}" "${lib
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+is_excluded(p) = arch(p) == "riscv64" || arch(p) == "aarch64" && os(p) == "freebsd"
+filter!(!is_excluded, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -29,10 +31,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency("Libiconv_jll"; platforms=filter(Sys.isapple, platforms)),
-]
+dependencies = []
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", compilers=[:c, :rust])
+               julia_compat="1.10", compilers=[:c, :rust])
