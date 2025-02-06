@@ -10,19 +10,13 @@ sources = [
 include("../../L/libjulia/common.jl")
 
 script = raw"
+apk del cmake
 cd ${WORKSPACE}/srcdir
 mv blockSQPWrapper/CMakeLists.txt blockSQP/CMakeLists.txt
 mv blockSQPWrapper/blockSQP_julia.cpp blockSQP/src/blockSQP_julia.cpp
 cd blockSQP
 mkdir build && cd build
 
-BLASLIBNAME=\"libblastrampoline\"
-if [ ! -f ${libdir}/${BLASLIBNAME}.${dlext} ]; then
-    echo \"${libdir}/${BLASLIBNAME}.${dlext} not found.\"
-    if [[ \"${target}\" == *-mingw* ]]; then
-        BLASLIBNAME=\"libblastrampoline-5\"
-    fi
-fi
 
 
 if [[ \"${nbits}\" == 64 ]]; then
@@ -50,8 +44,7 @@ cmake \
     -DCMAKE_PREFIX_PATH=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DLAPACK_LIBRARIES=${libdir}/${BLASLIBNAME}.${dlext}\
-    -DBLAS_LIBRARIES=${libdir}/${BLASLIBNAME}.${dlext} \
+    -DBLA_VENDOR=libblastrampoline \
     ..
 
 make
@@ -69,11 +62,11 @@ filter!(p -> !(os(p) == "freebsd"), platforms)
 
 
 dependencies = [
-    Dependency("qpOASES_jll"),
-    Dependency("libblastrampoline_jll"; compat="5.4"),
-    Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.13"),
-    BuildDependency(PackageSpec(name="libjulia_jll"))
+    Dependency("qpOASES_jll"; compat="3.2.1"),
+    Dependency("libblastrampoline_jll"; compat="3.0.4"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.4"),
+    HostBuildDependency(PackageSpec("CMake_jll", v"3.30.2")),
+    BuildDependency("libjulia_jll")
 ]
 
 products = [
