@@ -9,7 +9,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "libsingular_julia"
-version = v"0.47.1"
+version = v"0.47.2"
 
 # Collection of sources required to build libsingular-julia
 sources = [
@@ -55,10 +55,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.11")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.15")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.2"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.4"),
     # we do not set a compat entry for Singular_jll -- instead we leave it to
     # Singular.jl to ensure the right versions of libsingular_julia_jll and
     # Singular_jll are paired. This gives us flexibility in the development
