@@ -19,7 +19,7 @@ cmake -B build \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DENABLE_SANITIZER=FALSE \
-      -DBUILD_EXTENSIONS='autocomplete;icu;parquet;json;fts;tpcds;tpch' \
+      -DBUILD_EXTENSIONS='icu;parquet;json' \
       -DENABLE_EXTENSION_AUTOLOADING=1 \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
       -DBUILD_UNITTESTS=FALSE \
