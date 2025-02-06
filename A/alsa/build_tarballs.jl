@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "alsa"
-version = v"1.2.12"
+version = v"1.2.13"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/alsa-project/alsa-lib.git",
-              "34422861f5549aee3e9df9fd8240d10b530d9abd")
+    ArchiveSource("https://www.alsa-project.org/files/pub/lib/alsa-lib-$(version).tar.bz2",
+                  "8c4ff37553cbe89618e187e4c779f71a9bb2a8b27b91f87ed40987cc9233d8f6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/alsa-lib*/
+cd $WORKSPACE/srcdir/alsa-lib*
 autoreconf -fiv
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}

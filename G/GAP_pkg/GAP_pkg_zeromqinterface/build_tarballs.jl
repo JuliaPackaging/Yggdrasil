@@ -3,7 +3,6 @@
 include("../common.jl")
 
 gap_version = v"400.1400.0"
-gap_lib_version = v"400.1400.0"
 name = "zeromqinterface"
 upstream_version = "0.16" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
@@ -31,7 +30,7 @@ cp bin/*/*.so ${prefix}/lib/gap/
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
+platforms, dependencies = setup_gap_package(gap_version)
 
 append!(dependencies, [
     Dependency("ZeroMQ_jll"),

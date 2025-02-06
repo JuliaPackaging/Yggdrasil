@@ -45,11 +45,11 @@ version = "0.6.3"
 
 [[deps.BinaryBuilderBase]]
 deps = ["Bzip2_jll", "CodecZlib", "Downloads", "Gzip_jll", "HistoricalStdlibVersions", "InteractiveUtils", "JLLWrappers", "JSON", "LibGit2", "LibGit2_jll", "Libdl", "Logging", "OrderedCollections", "OutputCollectors", "Pkg", "Printf", "ProgressMeter", "REPL", "Random", "SHA", "Scratch", "SimpleBufferStream", "TOML", "Tar", "Tar_jll", "UUIDs", "XZ_jll", "Zstd_jll", "p7zip_jll", "pigz_jll", "unzip_jll"]
-git-tree-sha1 = "ee2cead3bc42e552ac8d3d3ec90a79910df2107c"
+git-tree-sha1 = "2a898b1cebc34c7d1bb4c5fd3e2020bbc7064523"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"
 uuid = "7f725544-6523-48cd-82d1-3fa08ff4056e"
-version = "1.35.0"
+version = "1.35.1"
 
 [[deps.BitFlags]]
 git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
@@ -158,9 +158,9 @@ version = "0.2.2"
 
 [[deps.HistoricalStdlibVersions]]
 deps = ["Pkg"]
-git-tree-sha1 = "d50c73e4abd8f7c58eb76a8884dfd531fa8dac81"
+git-tree-sha1 = "29151e35904c4300d9f64fc79b5a41fdd6c334e8"
 uuid = "6df8b67a-e8a0-4029-b4b7-ac196fe72102"
-version = "2.0.0"
+version = "2.0.1"
 
 [[deps.InlineStrings]]
 deps = ["Parsers"]
@@ -179,9 +179,9 @@ version = "1.0.0"
 
 [[deps.JLD2]]
 deps = ["FileIO", "MacroTools", "Mmap", "OrderedCollections", "PrecompileTools", "Requires", "TranscodingStreams"]
-git-tree-sha1 = "f1a1c1037af2a4541ea186b26b0c0e7eeaad232b"
+git-tree-sha1 = "91d501cb908df6f134352ad73cde5efc50138279"
 uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
-version = "0.5.10"
+version = "0.5.11"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
@@ -236,9 +236,9 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[deps.Libiconv_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "61dfdba58e585066d8bce214c5a51eaa0539f269"
+git-tree-sha1 = "be484f5c92fad0bd8acfef35fe017900b0b73809"
 uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531"
-version = "1.17.0+1"
+version = "1.18.0+0"
 
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "libblastrampoline_jll"]
@@ -328,9 +328,9 @@ uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
 version = "3.0.15+3"
 
 [[deps.OrderedCollections]]
-git-tree-sha1 = "12f1439c4f986bb868acda6ea33ebc78e19b95ad"
+git-tree-sha1 = "cc4054e898b852042d7b503313f7ad03de99c3dd"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
-version = "1.7.0"
+version = "1.8.0"
 
 [[deps.OutputCollectors]]
 git-tree-sha1 = "5d3f2b3b2e2a9d7d6f1774c78e94530ac7f360cc"
@@ -521,9 +521,9 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "beef98d5aad604d9e7d60b2ece5181f7888e2fd6"
+git-tree-sha1 = "56c6604ec8b2d82cc4cfe01aa03b00426aac7e1f"
 uuid = "ffd25f8a-64ca-5728-b0f7-c24cf3aae800"
-version = "5.6.4+0"
+version = "5.6.4+1"
 
 [[deps.ZMQ]]
 deps = ["FileWatching", "PrecompileTools", "Sockets", "ZeroMQ_jll"]

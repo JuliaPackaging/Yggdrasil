@@ -29,7 +29,7 @@ function gap_pkg_name(name::String)
     return "GAP_pkg_$(lowercase(name))"
 end
 
-function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionNumber = gap_version)
+function setup_gap_package(gap_version::VersionNumber)
 
     platforms = supported_platforms()
     filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
@@ -42,7 +42,6 @@ function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionN
 
     dependencies = BinaryBuilder.AbstractDependency[
         Dependency("GAP_jll", gap_version; compat="~$(gap_version)"),
-        Dependency("GAP_lib_jll", gap_lib_version; compat="~$(gap_lib_version)"),
     ]
 
     return platforms, dependencies

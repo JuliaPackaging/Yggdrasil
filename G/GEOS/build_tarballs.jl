@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "GEOS"
 version = v"3.13.0"
+ygg_version = v"3.13.1" # bump ygg version to pick up new platforms
 
 # Collection of sources required to build GEOS
 sources = [
@@ -47,4 +48,4 @@ products = [
 dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")

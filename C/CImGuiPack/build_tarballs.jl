@@ -10,12 +10,12 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "CImGuiPack"
-version = v"0.7.0"
+version = v"0.8.0"
 
 # Collection of sources required to build CImGuiPack
 sources = [
     GitSource("https://github.com/JuliaImGui/cimgui-pack.git",
-              "98a11d0bbf6bacf226d00a62daaad9a13247f018")
+              "c715ad63e3aa8d642743750d905ab9cfef747790")
 ]
 
 # Bash recipe for building across all platforms
@@ -46,12 +46,13 @@ install -Dvm 644 ../cimnodes/generator/output/*.json -t ${prefix}/share/cimnodes
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = vcat(libjulia_platforms.(julia_versions)...)
+cimgui_julia_versions = filter(>=(v"1.9"), julia_versions)
+platforms = vcat(libjulia_platforms.(cimgui_julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # We don't build for armv6l because GLFW_jll doesn't support it, and we don't
-# build for aarch64-freebsd because it's GLFW-related pain.
-platforms = filter(p -> arch(p) != "armv6l" && !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
+# build for aarch64-freebsd or riscv64 because they're dependency pain.
+platforms = filter(p -> arch(p) != "armv6l" && arch(p) != "riscv64" && !(arch(p) == "aarch64" && os(p) == "freebsd"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -80,4 +81,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9", preferred_gcc_version=v"8")

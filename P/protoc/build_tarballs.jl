@@ -18,11 +18,11 @@ name = "protoc"
 # When updating to a new release, check the released `CMakeFiles.txt`
 # for the variable `protobuf_VERSION_STRING`. This is the proper C++
 # version number we need. (Then add 100 as explained above.)
-version = v"105.28.2"
+version = v"105.29.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "9fff46d7327c699ef970769d5c9fd0e44df08fc7"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "b407e8416e3893036aee5af9a12bd9b6a0e2b2e6"),
     DirectorySource("bundled"),
 ]
 
@@ -160,5 +160,3 @@ dependencies = Dependency[
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"9")
-
-# Build trigger: 1
