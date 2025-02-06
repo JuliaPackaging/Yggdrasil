@@ -65,7 +65,7 @@ dependencies = [
     Dependency("qpOASES_jll"; compat="3.2.1"),
     Dependency("libblastrampoline_jll"; compat="3.0.4"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13.4"),
-    HostBuildDependency(PackageSpec("CMake_jll", v"3.30.2")),
+    HostBuildDependency(PackageSpec(; name = "CMake_jll")),
     BuildDependency("libjulia_jll")
 ]
 
