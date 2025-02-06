@@ -38,7 +38,7 @@ install_license ../../LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-include("../../L/libjulia/common.jl")
+include("../../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(!Sys.iswindows, platforms) # Singular does not support Windows
 
