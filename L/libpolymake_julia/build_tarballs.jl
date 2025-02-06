@@ -13,7 +13,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
-version = v"0.13.0"
+version = v"0.13.1"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl
@@ -22,7 +22,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "77a69c4ec4b00001d257e296dfe280606e68a7f7"),
+              "86391622a702d7dec1932dc8bd3f0733a59074ff"),
 ]
 
 # Bash recipe for building across all platforms
@@ -62,18 +62,18 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.11")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.15")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("FLINT_jll", compat = "~300.100.300"),
+    Dependency("FLINT_jll", compat = "~300.100.301"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.2"),
-    Dependency("polymake_jll"; compat = "~400.1300.1"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.4"),
+    Dependency("polymake_jll"; compat = "~400.1300.2"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1300.1")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1300.2")),
     HostBuildDependency(PackageSpec(name="lib4ti2_jll", version=v"1.6.10")),
     HostBuildDependency(PackageSpec(name="TOPCOM_jll", version=v"0.17.8")),
 ]
