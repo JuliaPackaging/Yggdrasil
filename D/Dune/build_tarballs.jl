@@ -4,7 +4,7 @@ name = "Dune"
 version = v"3.17.1"
 
 sources = [
-    FileSource("https://github.com/ocaml/dune/releases/download/3.17.1/dune-3.17.1.tbz",
+    FileSource("https://github.com/ocaml/dune/releases/download/$(version)/dune-$(version).tbz",
                "6b9ee5ed051379a69ca45173ac6c5deb56b44a1c16e30b7c371343303d835ac6"),
 ]
 
