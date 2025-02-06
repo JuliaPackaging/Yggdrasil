@@ -27,9 +27,6 @@ if [[ \"${nbits}\" == 64 ]]; then
             SYMB_DEFS+=(\"-D${sym}=${sym}64_\")
         done
     fi
-    if [[ \"${target}\" == *-apple-* ]] || [[ \"${target}\" == *-mingw* ]]; then
-        FLAGS+=(-DALLOW_OPENBLAS_MACOS=ON)
-    fi
 
 
     export CXXFLAGS=\"${SYMB_DEFS[@]}\"
