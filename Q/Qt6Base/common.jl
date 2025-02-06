@@ -14,6 +14,9 @@ platforms_macos = filter(Sys.isapple, platforms)
 platforms_win = filter(Sys.iswindows, platforms)
 platforms = setdiff(platforms, platforms_macos, platforms_win)
 
+# We must use the same version of LLVM for the build toolchain and LLVMCompilerRT_jll
+llvm_version = v"16.0.6"
+
 make_mac_product(p::Product) = p
 function make_mac_product(lp::LibraryProduct)
   for pname in lp.libnames
@@ -24,8 +27,9 @@ function make_mac_product(lp::LibraryProduct)
   @error "No product name starting with Qt6 found in $lp"
 end
 
-function build_qt(name, version, sources, script, products, dependencies; preferred_llvm_version)
+function build_qt(name, version, sources, script, products, dependencies)
   products_macos = make_mac_product.(products)
+  preferred_llvm_version = llvm_version
   julia_compat="1.6"
   if any(should_build_platform.(triplet.(platforms_macos)))
       build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_llvm_version, julia_compat)
