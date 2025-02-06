@@ -10,7 +10,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 name = "CImGuiPack"
-version = v"0.8.1"
+version = v"0.8.0"
 
 # Collection of sources required to build CImGuiPack
 sources = [
