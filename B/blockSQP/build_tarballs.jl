@@ -1,30 +1,18 @@
 using BinaryBuilder, Pkg
 
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
-
-name = "blockSQP"
+name = "libblocksqp"
 version = v"0.0.1"
 sources = [
     GitSource("https://github.com/djanka2/blockSQP.git", "da05d3957b93bd55b9a7f08c859d302851056a6d"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/mathopt/blockSQPWrapper.git", "02e97255af77f508f3ebfafc7e1ffc661738cf29"),
 ]
-
 
 include("../../L/libjulia/common.jl")
 
-# This is for anyone who is on macos
-preamble = if os() === "macos"
-    raw"cd /usr/share/cmake/Modules/Compiler/; find  . -name '._*' -exec rm {} \;"
-else
-    raw""
-end
-
-
-script = preamble * raw"
+script = raw"
 cd ${WORKSPACE}/srcdir
-mv CMakeLists.txt blockSQP/CMakeLists.txt
-mv blockSQP_julia.cpp blockSQP/src/blockSQP_julia.cpp
+mv blockSQPWrapper/CMakeLists.txt blockSQP/CMakeLists.txt
+mv blockSQPWrapper/blockSQP_julia.cpp blockSQP/src/blockSQP_julia.cpp
 cd blockSQP
 mkdir build && cd build
 
@@ -71,8 +59,8 @@ make install
 install_license ${WORKSPACE}/srcdir/blockSQP/LICENSE
 "
 
-#platforms = vcat(libjulia_platforms.(julia_versions[julia_versions .>= v"1.7.0"])...) |> expand_cxxstring_abis
-platforms = vcat(libjulia_platforms.(julia_versions)...) |> expand_cxxstring_abis
+platforms = vcat(libjulia_platforms.(julia_versions[julia_versions .>= v"1.10.0"])...)
+platforms = expand_cxxstring_abis(platforms)
 filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(p -> !(libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
@@ -82,10 +70,10 @@ filter!(p -> !(os(p) == "freebsd"), platforms)
 
 dependencies = [
     Dependency("qpOASES_jll"),
-    Dependency("libblastrampoline_jll"),#; compat="5.4.0"),
+    Dependency("libblastrampoline_jll"; compat="5.4"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("libcxxwrap_julia_jll"),
-    BuildDependency("libjulia_jll")
+    Dependency("libcxxwrap_julia_jll"; compat="0.13"),
+    BuildDependency(PackageSpec(name="libjulia_jll"))
 ]
 
 products = [
@@ -94,4 +82,4 @@ products = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-        julia_compat="1.7", preferred_gcc_version=v"9")
+        julia_compat="1.10", preferred_gcc_version=v"9")
