@@ -3,8 +3,6 @@
 #if defined(_MSC_VER)
 #define SOKOL_D3D11
 #define SOKOL_LOG(str) OutputDebugStringA(str)
-#elif defined(__EMSCRIPTEN__)
-#define SOKOL_GLES2
 #elif defined(__APPLE__) && defined(__arm64__)
 // NOTE: on macOS, sokol.c is compiled explicitly as ObjC 
 #include <TargetConditionals.h>
@@ -24,7 +22,3 @@
 #include "sokol_fetch.h"
 #include "sokol_log.h"
 #include "sokol_args.h"
-
-int main (int argc, char *argv[]) {
-  return 0;
-}
