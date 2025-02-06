@@ -53,7 +53,7 @@ install_license LICENSE
 """
 
 # Supported platforms
-platforms = supported_platforms(exclude=p->arch(p)=="armv6l"||Sys.isfreebsd(p))
+platforms = supported_platforms(exclude=p->arch(p)=="armv6l"||Sys.isfreebsd(p)||arch(p)=="riscv64")
 llvm_version = v"13.0.1+1"
 
 # Platform-specific dependencies
