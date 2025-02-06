@@ -8,14 +8,16 @@ version = v"6.8.2"
 # Set this to true first when updating the version. It will build only for the host (linux musl).
 # After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtshadertools-everywhere-src-$version.tar.xz",
                   "d1d5f90e8885fc70d63ac55a4ce4d9a2688562033a000bc4aff9320f5f551871"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",
+                  "3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10"),
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
 ]
 
 script = raw"""
@@ -24,6 +26,13 @@ cd $WORKSPACE/srcdir
 mkdir build
 cd build/
 qtsrcdir=`ls -d ../qtshadertools-*`
+
+if [[ "${target}" == *apple-darwin* ]]; then
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
+    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+    export MACOSX_DEPLOYMENT_TARGET=12
+fi
 
 case "$bb_full_target" in
 
