@@ -97,7 +97,7 @@ dependencies = [
     HostBuildDependency("SQLite_jll")
     Dependency("SQLite_jll")
     Dependency("Libtiff_jll"; compat="4.7.1")
-    Dependency("LibCURL_jll"; compat="8.11.1")
+    Dependency("LibCURL_jll"; compat="7.73,8")
     # Indirect dependency, but we need to force the use of this build number
     Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)) 
 ]
