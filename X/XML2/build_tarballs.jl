@@ -3,7 +3,8 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.13.5"
+ygg_version = v"2.13.6"
+version = v"2.13.5" # Building version 2.13.5; bumped to *.6 to build for riscv
 
 # Collection of sources required to build XML2
 sources = [
@@ -46,5 +47,5 @@ dependencies = [
 
 # XML2 requires full C11 support (so GCC >= 5), but GCC v5-7 crases with an ICE
 # on Windows, so we need GCC 8 for that platform.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"8", julia_compat="1.6")
