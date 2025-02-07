@@ -69,6 +69,9 @@ case "$bb_full_target" in
         sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
         sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
         export MACOSX_DEPLOYMENT_TARGET=12
+        export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
+        export OBJCXXFLAGS=$OBJCFLAGS
+        export CXXFLAGS=$OBJCFLAGS
         cmake -G Ninja -DQT_HOST_PATH=$host_prefix \
         -DPython_ROOT_DIR=/usr \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -161,3 +164,5 @@ if !host_build
 end
 
 build_qt(name, version, sources, script, products, dependencies; products_win)
+
+# rebuild 1
