@@ -6,18 +6,18 @@ name = "Qt6Declarative"
 version = v"6.8.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
-# After that JLL is in the registyry, set this to false to build for the other platforms, using
+# After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = true
+const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtdeclarative-everywhere-src-$version.tar.xz",
                   "144d876adc8bb55909735143e678d1e24eadcd0a380a0186792d88b731346d56"),
-    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
-                  "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",
+                  "3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10"),
 ]
 
 script = raw"""
@@ -65,15 +65,17 @@ case "$bb_full_target" in
     ;;
 
     *apple-darwin*)
-        apple_sdk_root=$WORKSPACE/srcdir/MacOSX13.3.sdk
-        sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+        apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
+        sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+        sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+        export MACOSX_DEPLOYMENT_TARGET=12
         cmake -G Ninja -DQT_HOST_PATH=$host_prefix \
         -DPython_ROOT_DIR=/usr \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_PREFIX_PATH=$host_prefix \
         -DCMAKE_FIND_ROOT_PATH=$prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
+        -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=12 \
         -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
         -DCMAKE_BUILD_TYPE=Release \
         $qtsrcdir
@@ -158,6 +160,4 @@ if !host_build
     push!(dependencies, HostBuildDependency("Qt6Declarative_jll"))
 end
 
-include("../../fancy_toys.jl")
-
-build_qt(name, version, sources, script, products, dependencies)
+build_qt(name, version, sources, script, products, dependencies; products_win)
