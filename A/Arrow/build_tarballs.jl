@@ -14,7 +14,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 cd $WORKSPACE/srcdir/apache-arrow-*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost.patch
