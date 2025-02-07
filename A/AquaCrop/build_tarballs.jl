@@ -24,7 +24,7 @@ make -j${nproc} EXECUTABLE="aquacrop${exeext}" SHARED_LIBRARY="libaquacrop.${dle
 if [ -f aquacrop.exe ]; then
     mv aquacrop.exe aquacrop
 fi
-install -Dvm 755 aquacrop "${bindir}"/aquacrop${exeext}
+install -Dvm 755 "aquacrop${exeext}" -t "${bindir}"
 install -Dvm 755 libaquacrop.so "${libdir}"/libaquacrop.${dlext}
 
 install_license ../LICENSE
