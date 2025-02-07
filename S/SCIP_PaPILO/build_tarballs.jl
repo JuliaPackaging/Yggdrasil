@@ -119,7 +119,7 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version=v"8",
+    preferred_gcc_version=v"9",
     julia_compat="1.6",
     clang_use_lld=false,
 )
