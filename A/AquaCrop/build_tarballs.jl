@@ -25,7 +25,7 @@ if [ -f aquacrop.exe ]; then
     mv aquacrop.exe aquacrop
 fi
 install -Dvm 755 "aquacrop${exeext}" -t "${bindir}"
-install -Dvm 755 libaquacrop.so "${libdir}"/libaquacrop.${dlext}
+install -Dvm 755 "libaquacrop.${dlext}" -t "${libdir}"
 
 install_license ../LICENSE
 """
