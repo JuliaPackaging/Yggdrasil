@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDNN"
-version = v"8.9.5"
+version = v"8.9.6"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -56,7 +56,6 @@ dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
 
 platforms = [Platform("x86_64", "linux"),
              Platform("powerpc64le", "linux"),
-             Platform("aarch64", "linux"; cuda_platform="jetson"),
              Platform("aarch64", "linux"; cuda_platform="sbsa"),
              Platform("x86_64", "windows")]
 
@@ -65,13 +64,6 @@ for cuda_version in [v"11", v"12"], platform in platforms
     augmented_platform = deepcopy(platform)
     augmented_platform["cuda"] = CUDA.platform(cuda_version)
     should_build_platform(triplet(augmented_platform)) || continue
-
-    if arch(platform) == "aarch64"
-        # Tegra binaries are only provided for CUDA 12.x
-        if platform["cuda_platform"] == "jetson" && cuda_version == v"11"
-            continue
-        end
-    end
 
     sources = get_sources("cudnn", ["cudnn"]; version, platform,
                            variant="cuda$(cuda_version.major)")
