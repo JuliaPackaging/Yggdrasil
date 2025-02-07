@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/AquaCrop*/src/
 sed -i -e 's/-march=native//g' Makefile
 
 export FC
-make -j${nproc}
+make -j${nproc} EXECUTABLE="aquacrop${exeext}" SHARED_LIBRARY="libaquacrop.${dlext}"
 
 # on x86_64-w64-mingw32-libgfortran4, the binary is 'aquacrop'
 # on i686-w64-mingw32-libgfortran5, the binary is 'aquacrop.exe'
