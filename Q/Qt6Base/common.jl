@@ -27,7 +27,7 @@ function make_mac_product(lp::LibraryProduct)
   @error "No product name starting with Qt6 found in $lp"
 end
 
-function build_qt(name, version, sources, script, products, dependencies)
+function build_qt(name, version, sources, script, products, dependencies; products_win=products)
   products_macos = make_mac_product.(products)
   preferred_llvm_version = llvm_version
   julia_compat="1.6"
@@ -36,7 +36,7 @@ function build_qt(name, version, sources, script, products, dependencies)
   end
   # GCC 12 and before fail with internal compiler error on mingw
   if any(should_build_platform.(triplet.(platforms_win)))
-    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies; preferred_gcc_version = v"13", preferred_llvm_version, julia_compat)
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products_win, dependencies; preferred_gcc_version = v"13", preferred_llvm_version, julia_compat)
   end
   if any(should_build_platform.(triplet.(platforms)))
       build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version, julia_compat)
