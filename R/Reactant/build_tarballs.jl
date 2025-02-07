@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.62"
+version = v"0.0.63"
 
 sources = [
-  GitSource(repo, "71941115a1d4c9fdb55ac608af74b9ceffd80547"),
+  GitSource(repo, "170e48d371468c8feffc32e78937938dd1e17a50"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -25,10 +25,13 @@ echo GCC version: $(gcc --version)
 GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }')
 GCC_MAJOR_VERSION=$(echo "${GCC_VERSION}" | cut -d. -f1)
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # Compiling LLVM components within XLA requires macOS SDK 10.14.
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+if [[ "${target}" == *-apple-darwin* ]]; then
+    # Compiling LLVM components within XLA requires macOS SDK 10.14
+    # and then we use `std::reinterpret_pointer_cast` in ReactantExtra
+    # which requires macOS SDK 11.3.
+    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
+    rm -rf /opt/${target}/${target}/sys-root/usr/include/libxml2
     cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
@@ -130,7 +133,7 @@ if [[ "${target}" == *-darwin* ]]; then
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
-    export MACOSX_DEPLOYMENT_TARGET=10.14
+    export MACOSX_DEPLOYMENT_TARGET=11.3
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
     BAZEL_BUILD_FLAGS+=(--host_action_env=MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET})
@@ -393,10 +396,10 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     HERMETIC_CUDA_VERSION=$(hermetic_cuda_version_map[cuda_version])
     """
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    if Sys.isapple(platform) && arch(platform) == "x86_64"
+    if Sys.isapple(platform)
         push!(platform_sources,
-              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
+                            "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"))
     end
 
     if !Sys.isapple(platform)
