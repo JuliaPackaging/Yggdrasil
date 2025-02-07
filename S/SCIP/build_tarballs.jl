@@ -65,7 +65,7 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP/
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 filter!(platforms) do p
-    !(Sys.isfreebsd(p) && arch(p) == "aarch64")
+    !(Sys.isfreebsd(p) && arch(p) == "aarch64") && !occursin("riscv", arch(p))
 end
 
 # The products that we will ensure are always built
