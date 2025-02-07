@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "libblocksqp"
+name = "blockSQP"
 version = v"0.0.1"
 sources = [
     GitSource("https://github.com/djanka2/blockSQP.git", "da05d3957b93bd55b9a7f08c859d302851056a6d"),
