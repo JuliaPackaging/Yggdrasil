@@ -30,7 +30,7 @@ if [[ "${target}" == *arm* ]] || [[ "${target}" == *aarch64-linux* ]] || [[ "${t
     QUADRUPLE="false"
 fi
 
-meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN} \
+meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
                            -Dint64=false \
                            -Dlibhwloc=$HWLOC \
@@ -47,7 +47,7 @@ meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN} \
 meson compile -C builddir_int32
 meson install -C builddir_int32
 
-meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN} \
+meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
                            -Dint64=true \
                            -Dlibhwloc=$HWLOC \
@@ -65,7 +65,7 @@ meson compile -C builddir_int64
 meson install -C builddir_int64
 
 if [[ "$QUADRUPLE" == "true" ]]; then
-    meson setup builddir_quad_int32 --cross-file=${MESON_TARGET_TOOLCHAIN} \
+    meson setup builddir_quad_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                                     --prefix=$prefix \
                                     -Dint64=false \
                                     -Dlibhwloc=$HWLOC \
@@ -82,7 +82,7 @@ if [[ "$QUADRUPLE" == "true" ]]; then
     meson compile -C builddir_quad_int32
     meson install -C builddir_quad_int32
 
-    meson setup builddir_quad_int64 --cross-file=${MESON_TARGET_TOOLCHAIN} \
+    meson setup builddir_quad_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                                     --prefix=$prefix \
                                     -Dint64=true \
                                     -Dlibhwloc=$HWLOC \
@@ -121,7 +121,6 @@ products = [
 dependencies = [
     HostBuildDependency(PackageSpec(name="Ninja_jll", uuid="76642167-d241-5cee-8c94-7a494e8cb7b7")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d")),
