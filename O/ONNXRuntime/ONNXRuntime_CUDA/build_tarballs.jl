@@ -7,34 +7,36 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "ONNXRuntime_CUDA"
-version = v"1.10.0"
+version = v"1.19.0"
 
 # Cf. https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements
 # Cf. https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#requirements
+# Cf. https://github.com/microsoft/onnxruntime/blob/v1.19.0/tools/ci_build/github/azure-pipelines/stages/py-cuda-packaging-stage.yml#L35
 cuda_versions = [
-    v"10.2",
-    v"11.3", # Using 11.3, and not 11.4, to be compatible with CUDNN v8.2.4, and with TensorRT (JLL) v8.0.1 (where the latter includes aarch64 support).
+    v"11",
+    v"12",
 ]
-cudnn_version = v"8.2.4"
-tensorrt_version = v"8.0.1"
 
-cudnn_compat = string(cudnn_version.major)
+cudnn_versions = Dict(
+    v"11" => v"8.9.5",
+    v"12" => v"9.4.0",
+)
+
+tensorrt_version = v"10.4.0"
+
 tensorrt_compat = string(tensorrt_version.major)
 
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 # Override the default sources
 append!(sources, [
-    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu-$version.zip", "0da11b8d953fad4ec75f87bb894f72dea511a3940cff2f4dad37451586d1ebbc"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda"),
+    ArchiveSource("https://github.com/microsoft/onnxruntime/releases/download/v$version/onnxruntime-win-x64-gpu-$version.zip", "0d3f6eb9482daaf01fb60595807139f7ad1d5d368ecda1916af58923bfc26130"; unpack_target="onnxruntime-x86_64-w64-mingw32-cuda"),
     # aarch64-linux-gnu binaries for NVIDIA Jetson from NVIDIA-managed Jetson Zoo: https://elinux.org/Jetson_Zoo#ONNX_Runtime
-    FileSource("https://nvidia.box.com/shared/static/jy7nqva7l88mq9i8bw3g3sklzf4kccn2.whl", "a608b7a4a4fc6ad5c90d6005edbfe0851847b991b08aafff4549bbbbdb938bf6"; filename = "onnxruntime-aarch64-linux-gnu-cuda.whl"),
+    FileSource("https://nvidia.box.com/shared/static/9yvw05k6u343qfnkhdv2x6xhygze0aq1.whl", "71b0b767c3fbf261800cb5e7d5eb22687286ed57ebe75b34b3fa338844ed321b"; filename = "onnxruntime-aarch64-linux-gnu-cuda.whl"),
 ])
 
 # Override the default platforms
-platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
-filter!(p -> !(arch(p) == "x86_64" && Sys.islinux(p) && p["cuda"] == "10.2"), platforms) # Fails with: nvcc error   : 'ptxas' died due to signal 11 (Invalid memory reference)
-push!(platforms, Platform("x86_64", "Linux"; cuda = "11.3"))
-push!(platforms, Platform("x86_64", "Windows"; cuda = "11.3"))
+platforms = CUDA.supported_platforms()
 platforms = expand_cxxstring_abis(platforms; skip=!Sys.islinux)
 
 # Override the default products
@@ -45,7 +47,6 @@ append!(products, [
 ])
 
 append!(dependencies, [
-    Dependency(get_addable_spec("CUDNN_jll", v"8.2.4+0"); compat = cudnn_compat), # Using v"8.2.4+0" to get support for cuda = "11.3"
     Dependency("TensorRT_jll", tensorrt_version; compat = tensorrt_compat),
     Dependency("Zlib_jll"),
 ])
@@ -53,15 +54,14 @@ append!(dependencies, [
 builds = []
 for platform in platforms
     should_build_platform(platform) || continue
-    additional_deps = BinaryBuilder.AbstractDependency[]
-    if platform["cuda"] == "11.3"
-        additional_deps = BinaryBuilder.AbstractDependency[
-            BuildDependency(PackageSpec("CUDA_full_jll", v"11.3.1")),
-            Dependency("CUDA_Runtime_jll", v"0.7.0"), # Using v"0.7.0" to get support for cuda = "11.3" - using Dependency rather than RuntimeDependency to be sure to pass audit
+    cuda_major_version = Base.thismajor(VersionNumber(platform["cuda"]))
+    cudnn_version = cudnn_versions[cuda_major_version]
+    additional_deps = append!(
+        CUDA.required_dependencies(platform, static_sdk = true),
+        [
+            Dependency("CUDNN_jll"; compat = string(cudnn_version.major)),
         ]
-    else
-        additional_deps = CUDA.required_dependencies(platform, static_sdk = true)
-    end
+    )
     push!(builds, (; platforms=[platform], dependencies=[dependencies; additional_deps]))
 end
 
@@ -79,5 +79,5 @@ for (i, build) in enumerate(builds)
                    augment_platform_block = CUDA.augment,
                    julia_compat = "1.6",
                    lazy_artifacts = true,
-                   preferred_gcc_version = v"8")
+                   preferred_gcc_version = v"9")
 end
