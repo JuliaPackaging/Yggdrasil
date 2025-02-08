@@ -1,7 +1,7 @@
 # Note: this script will require BinaryBuilder.jl v0.3.0 or greater
 using BinaryBuilder, Pkg
 name = "ITKIOWrapper"
-version = v"1.0.0"
+version = v"2.0.0"
 
 # Collection of sources required to build ITKWrapper
 sources = [
