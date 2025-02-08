@@ -68,5 +68,5 @@ dependencies = [
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version=v"8.1.0",
-preferred_llvm_version=v"13.0.1")
+preferred_llvm_version=v"18")
 
