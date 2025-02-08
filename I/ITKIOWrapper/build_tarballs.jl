@@ -11,6 +11,9 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 #needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
 
+#filter julia versions to include only Julia >= 1.10 for LTS
+julia_versions = filter(v-> v >= v"1.10", julia_versions)
+
 # Bash recipe for building across all platforms
 script = raw"""
 export CXXFLAGS="-I${includedir}/julia $CXXFLAGS"
@@ -64,5 +67,6 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7", preferred_gcc_version=v"8.1.0",
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version=v"8.1.0",
 preferred_llvm_version=v"13.0.1")
+
