@@ -14,9 +14,13 @@ cd $WORKSPACE/srcdir
 cuda_version=${bb_full_target##*-cuda+}
 if [[ $target != *-w64-mingw32* ]]; then
     if [[ $bb_full_target == x86_64-linux-gnu-*-cuda* ]]; then
-        export CUDA_PATH="$prefix/cuda"
+        export CUDA_PATH=$prefix/cuda
+        ln -s $prefix/cuda/lib $prefix/cuda/lib64
+
+        # CUDA compilation can run out of storage
         mkdir $WORKSPACE/tmpdir
         export TMPDIR=$WORKSPACE/tmpdir
+
         cmake_extra_args=(
             -DCUDAToolkit_ROOT=$CUDA_PATH
             -Donnxruntime_CUDA_HOME=$CUDA_PATH
