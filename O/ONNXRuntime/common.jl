@@ -8,6 +8,7 @@ sources = AbstractSource[
 
 script = raw"""
 apk del cmake # Need CMake >= 3.26
+apk del python2 # Need Python >= 3.8
 
 cd $WORKSPACE/srcdir
 
