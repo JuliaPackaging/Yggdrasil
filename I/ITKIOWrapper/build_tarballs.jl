@@ -48,7 +48,6 @@ filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
-filter!(!Sys.iswindows, platforms)
 
 # Expand C++ string ABI platforms
 platforms = expand_cxxstring_abis(platforms)
@@ -66,5 +65,5 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8.1.0",
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7", preferred_gcc_version=v"8.1.0",
 preferred_llvm_version=v"13.0.1")
