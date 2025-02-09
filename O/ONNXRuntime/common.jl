@@ -26,6 +26,7 @@ if [[ $target != *-w64-mingw32* ]]; then
             -DCUDAToolkit_ROOT=$CUDA_PATH
             -Donnxruntime_CUDA_HOME=$CUDA_PATH
             -Donnxruntime_CUDNN_HOME=$prefix
+            -Donnxruntime_TENSORRT_HOME=$prefix
             -Donnxruntime_USE_CUDA=ON
             -Donnxruntime_USE_TENSORRT=ON
         )
