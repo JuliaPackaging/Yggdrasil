@@ -56,7 +56,7 @@ CMAKE_FLAGS=(
     -DENABLE_SERVICES=OFF
     -DENABLE_TOOLS=ON
     -DENABLE_CCACHE=OFF
-    -DENABLE_DATA_TOOLS=ON
+    -DENABLE_DATA_TOOLS=OFF
     -DENABLE_PYTHON_BINDINGS=OFF
     -DENABLE_BENCHMARKS=OFF
     -DENABLE_TESTS=OFF
@@ -101,11 +101,9 @@ dependencies = [
     HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
     Dependency("SQLite_jll")
-    Dependency("Openresty_jll") # for providing LuaJIT
     # Until we have a new version of OpenSSL built for riscv64 we need to use the
     # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
     Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms))
-    Dependency("libspatialite_jll"; compat="5.1.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
