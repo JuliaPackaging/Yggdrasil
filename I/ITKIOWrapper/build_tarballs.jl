@@ -22,23 +22,15 @@ export CXXFLAGS="-I${includedir}/julia $CXXFLAGS"
 export CFLAGS="-I${includedir}/julia $CFLAGS"
 mkdir -p build/
 
-# Different CMake configuration for macOS
-if [[ "${target}" == *-apple-* ]]; then
-    cmake -B build -S . \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DBUILD_SHARED_LIBS:BOOL=ON \
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10
-else
-    cmake -B build -S . \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DBUILD_SHARED_LIBS:BOOL=ON \
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+if [[ "${target}" == x86_64-apple-* ]]; then
+    MACOSX_DEPLOYMENT_TARGET=10.10
 fi
+cmake -B build -S . \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DBUILD_SHARED_LIBS:BOOL=ON \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
 cmake --build build --parallel ${nproc}
 cmake --install build
