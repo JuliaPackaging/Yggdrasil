@@ -76,7 +76,7 @@ products = Product[
 ]
 
 dependencies = AbstractDependency[
-    HostBuildDependency(PackageSpec("protoc_jll", v"3.16.1")),
+    HostBuildDependency(PackageSpec("protoc_jll", v"3.21.12")),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.26
 ]
 
