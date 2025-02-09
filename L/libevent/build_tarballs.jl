@@ -4,8 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "libevent"
 libevent_version =v"2.1.12"
-# We update to 2.1.14 because we updated our dependencies
-version = v"2.1.14"
+# We update to 2.1.15 because we updated our dependencies
+version = v"2.1.15"
 
 # Collection of sources required to complete build
 sources = [
