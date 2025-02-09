@@ -21,10 +21,6 @@ script = raw"""
 export CXXFLAGS="-I${includedir}/julia $CXXFLAGS"
 export CFLAGS="-I${includedir}/julia $CFLAGS"
 mkdir -p build/
-
-if [[ "${target}" == x86_64-apple-* ]]; then
-    MACOSX_DEPLOYMENT_TARGET=10.10
-fi
 cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
