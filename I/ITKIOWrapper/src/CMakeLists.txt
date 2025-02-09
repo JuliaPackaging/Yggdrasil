@@ -2,12 +2,6 @@ cmake_policy(SET CMP0025 NEW)
 project(ITKIOWrapper)
 
 cmake_minimum_required(VERSION 3.14)
-
-# Add macOS specific settings
-if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum OS X deployment version")
-endif()
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(APPLE)
