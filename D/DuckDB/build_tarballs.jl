@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"1.1.2"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "f680b7d08f56183391b581077d4baf589e1cc8bd"),
+    GitSource("https://github.com/duckdb/duckdb.git", "5f5512b827df6397afd31daedb4bbdee76520019"),
 ]
 
 # Bash recipe for building across all platforms
@@ -19,7 +19,8 @@ cmake -B build \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DENABLE_SANITIZER=FALSE \
-      -DBUILD_EXTENSIONS='autocomplete;icu;parquet;json;fts;tpcds;tpch' \
+      -DBUILD_EXTENSIONS='parquet;json' \
+      -DSKIP_EXTENSIONS=jemalloc \
       -DENABLE_EXTENSION_AUTOLOADING=1 \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
       -DBUILD_UNITTESTS=FALSE \
