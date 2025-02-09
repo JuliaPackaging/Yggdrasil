@@ -69,7 +69,10 @@ if [[ $bb_full_target == aarch64-linux-gnu*-cuda* ]]; then
 fi
 """
 
-platforms = supported_platforms()
+function platform_exclude_filter(p::Platform)
+    libc(p) == "musl" # onnxruntime/core/platform/posix/stacktrace.cc:7:10: fatal error: execinfo.h: No such file or directory
+end
+platforms = supported_platforms(; exclude=platform_exclude_filter)
 platforms = expand_cxxstring_abis(platforms; skip=!Sys.islinux)
 
 products = Product[
