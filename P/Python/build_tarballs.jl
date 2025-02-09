@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+using BinaryBuilderBase: get_addable_spec
 
 name = "Python"
 version = v"3.10.16"
@@ -109,7 +110,10 @@ dependencies = [
     Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    # Dependency("OpenSSL_jll"; compat="3.0.15"),
+    # Until we have a new version of OpenSSL built for riscv64 we need to use the
+    # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
+    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15"),
 ]
 
 init_block = raw"""
