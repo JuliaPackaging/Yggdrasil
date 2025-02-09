@@ -7,7 +7,16 @@ sources = [
     DirectorySource("./src"),
 ]
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.10"), uuid)
+#delete!(Pkg.Types.get_last_stdlibs(v"1.10"), uuid)
+stdlibs = try
+    Pkg.Types.get_last_stdlibs(v"1.10")
+catch
+    Dict{Base.UUID,String}()
+end
+if haskey(stdlibs, uuid)
+    delete!(stdlibs, uuid)
+end
+
 #needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
 
