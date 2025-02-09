@@ -58,6 +58,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
+    Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
