@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LibMPDec"
-version = v"2.5.1"
+version = v"2.5.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -33,7 +33,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
