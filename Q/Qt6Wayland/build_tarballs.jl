@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Wayland"
-version = v"6.7.1"
+version = v"6.8.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
-# After that JLL is in the registyry, set this to false to build for the other platforms, using
+# After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
-const host_build = false
+const host_build = true
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtwayland-everywhere-src-$version.tar.xz",
-                  "7ef176a8e701c90edd8e591dad36f83c30d623ef94439ff62cafcffd46a83d20"),
+                  "5e46157908295f2bf924462d8c0855b0508ba338ced9e810891fefa295dc9647"),
 ]
 
 script = raw"""
@@ -42,13 +42,12 @@ cmake --install .
 install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-if host_build
-    platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
-else
-    platforms = expand_cxxstring_abis(filter(p -> arch(p) != "armv6l" && Sys.islinux(p), supported_platforms()))
-end
+# Get the common Qt platforms
+include("../Qt6Base/common.jl")
+
+# No Wayland on Windows and macOS
+empty!(platforms_macos)
+empty!(platforms_win)
 
 # The products that we will ensure are always built
 products = [
@@ -69,11 +68,9 @@ if !host_build
     push!(dependencies, HostBuildDependency("Qt6Wayland_jll"))
 end
 
-include("../../fancy_toys.jl")
-
 init_block = raw"""
 ENV["QT_PLUGIN_PATH"] = qt6plugins_dir
 ENV["__EGL_VENDOR_LIBRARY_DIRS"] = get(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
 """
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6", init_block)
+build_qt(name, version, sources, script, products, dependencies)
