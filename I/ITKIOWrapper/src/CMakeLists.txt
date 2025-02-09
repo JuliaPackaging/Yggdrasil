@@ -68,3 +68,4 @@ install(TARGETS ITKIOWrapper
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib
 )
+
