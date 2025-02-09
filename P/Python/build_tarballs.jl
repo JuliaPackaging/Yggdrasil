@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Python"
-version = v"3.10.14"
+version = v"3.10.16"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "9c50481faa8c2832329ba0fc8868d0a606a680fc4f60ec48d26ce8e076751fda"),
+                  "bfb249609990220491a1b92850a07135ed0831e41738cf681d63cf01b2a8fbd1"),
     DirectorySource("./bundled"),
 ]
 
@@ -102,14 +102,14 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Libffi_jll"; compat="~3.2.2"),
+    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Libffi_jll"; compat="3.4.6"),
     Dependency("SQLite_jll"),
     Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
-    Dependency("OpenSSL_jll"; compat="3.0.12"),
+    Dependency("OpenSSL_jll"; compat="3.0.15"),
 ]
 
 init_block = raw"""
