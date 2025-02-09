@@ -6,8 +6,6 @@ version = v"2.0.0"
 sources = [
     DirectorySource("./src"),
 ]
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.10"), uuid)
 
 uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
 delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
@@ -16,7 +14,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 include("../../L/libjulia/common.jl")
 
 #filter julia versions to include only Julia >= 1.10 for LTS
-julia_versions = filter(v-> v >= v"1.10" && v < v"1.13", julia_versions)
+julia_versions = filter(v-> v >= v"1.10", julia_versions)
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -67,7 +65,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
     Dependency(PackageSpec(name="ITK_jll", uuid="3324d3a8-621a-5aaa-97fa-c3bc8dfc0481"); compat="5.3.1"),
-    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat = "0.13.2"),
+    Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat = "0.13.4"),
     BuildDependency(PackageSpec(name="libjulia_jll", uuid="5ad3ddd2-0711-543a-b040-befd59781bbf"))
 ]
 
