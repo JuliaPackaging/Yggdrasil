@@ -16,7 +16,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 include("../../L/libjulia/common.jl")
 
 #filter julia versions to include only Julia >= 1.10 for LTS
-julia_versions = filter(v-> v >= v"1.10", julia_versions)
+julia_versions = filter(v-> v >= v"1.10" && v < v"1.13", julia_versions)
 
 # Bash recipe for building across all platforms
 script = raw"""
