@@ -18,4 +18,5 @@ echo "--- Cleanup"
 
 echo "+++ Build"
 cd "${PROJECT}"
-julia ./build_tarballs.jl --verbose "${PLATFORM}"
+# Start Julia with multiple thread to make auditor parallel.
+julia --threads "${BINARYBUILDER_NPROC:-16}" ./build_tarballs.jl --verbose "${PLATFORM}"
