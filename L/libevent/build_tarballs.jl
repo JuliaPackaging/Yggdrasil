@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
 name = "libevent"
 libevent_version =v"2.1.12"
@@ -45,7 +46,7 @@ products_unix = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.15"), # Required for aarch64-unknown-freebsd
+    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15"),
 ]
 
 include("../../fancy_toys.jl")
