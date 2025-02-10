@@ -45,6 +45,9 @@ if [[ "${target}" == *freebsd* ]] || [[ "${target}" == *mingw* ]]; then
     mv ${WORKSPACE}/srcdir/patches/liblz4.pc ${prefix}/lib/pkgconfig/
 fi
 
+if [[ "${target}" == riscv* ]]; then
+    export CXXFLAGS="-static"
+fi
 mkdir build && cd build
 
 CMAKE_FLAGS=(
