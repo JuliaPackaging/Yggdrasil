@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "AquaCrop"
-version = v"7.1"
+version = v"7.1.1"
 
 # url = "https://github.com/KUL-RSDA/AquaCrop"
 # description = "FAO AquaCrop model of plant growth"
 
 sources = [
     GitSource("https://github.com/KUL-RSDA/AquaCrop",
-              "33ae89706ff82c2c119930e47899cd3fad519d6f"),
+              "6b242b6650bce6f1387668aa30f40f0c293a4b8d"),
 ]
 
 script = raw"""
