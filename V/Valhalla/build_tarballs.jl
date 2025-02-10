@@ -65,9 +65,6 @@ CMAKE_FLAGS=(
     -DPROTOBUF_PROTOC_LIBRARIES=${libdir}/libprotoc.${dlext}
     -DProtobuf_LITE_LIBRARIES=${libdir}/libprotobuf-lite.${dlext}
     -DPROTOBUF_PROTOC_EXECUTABLE=${host_bindir}/protoc
-    -DGDAL_LIBRARY=${libdir}/libgdal.${dlext}
-    -DGDAL_INCLUDE_DIR=${includedir}
-    -DENABLE_GDAL=OFF
     -DLOGGING_LEVEL=DEBUG
 )
 
@@ -100,7 +97,6 @@ dependencies = [
     Dependency("protoc_jll"; compat="105.29.3")
     HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
-    Dependency("SQLite_jll")
     # Until we have a new version of OpenSSL built for riscv64 we need to use the
     # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
     Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms))
