@@ -1,13 +1,13 @@
-diff --git before/BPNET-0.0.2/src/CMakeLists.txt after/BPNET-0.0.2/src/CMakeLists.txt
+diff --git before/BPNET/src/CMakeLists.txt after/BPNET/src/CMakeLists.txt
 index 1432b8e..e4cf94a 100644
---- before/BPNET-0.0.2/src/CMakeLists.txt
-+++ after/BPNET-0.0.2/src/CMakeLists.txt
+--- before/BPNET/src/CMakeLists.txt
++++ after/BPNET/src/CMakeLists.txt
 @@ -55,7 +55,7 @@ install(FILES ${SOURCES} DESTINATION include)
  export(EXPORT bpnetConfig FILE bpnetConfig.cmake)
- 
+
  #set(CMAKE_Fortran_FLAGS "-g -fcheck=all -Wall -fbacktrace")# -finit-real=nan -finit-integer=-999")
 -set(CMAKE_Fortran_FLAGS "-O3 -pedantic")# -finit-real=nan -finit-integer=-999")
 +set(CMAKE_Fortran_FLAGS "-O3 -pedantic -ffree-line-length-none")# -finit-real=nan -finit-integer=-999")
- 
- 
+
+
  add_executable(bpnet_generate.x ${bpnet_dir}/bpnet_generate.f90)
