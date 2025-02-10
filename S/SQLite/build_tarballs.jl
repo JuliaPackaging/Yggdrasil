@@ -2,6 +2,20 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+# NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
+#
+# This version has been yanked (disabled) in the Julia registry.
+#
+# SQLite 3.49.0 uses a new build system (autosetup instead of
+# autoconf), and this leads to different names for all shared
+# libraries, in particular on Windows. This makes this version
+# incompatible with earlier versions.
+#
+# We will either need to rename the shared libraries (if possible) or
+# increase the major version number of this package.
+#
+# NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
+
 name = "SQLite"
 version = v"3.49.0"
 
