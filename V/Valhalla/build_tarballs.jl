@@ -66,7 +66,7 @@ CMAKE_FLAGS=(
     -DProtobuf_LITE_LIBRARIES=${libdir}/libprotobuf-lite.${dlext}
     -DPROTOBUF_PROTOC_EXECUTABLE=${host_bindir}/protoc
     -DLOGGING_LEVEL=DEBUG
-    -DCMAKE_CXX_STANDARD=17
+    -DCMAKE_CXX_FLAGS="-std=c++17"
 )
 
 cmake "${CMAKE_FLAGS[@]}" ..
