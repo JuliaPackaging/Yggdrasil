@@ -7,8 +7,7 @@ version = v"0.0.2"
 
 # Collection of sources required to complete build
 sources = [
-
-    GitSource("https://github.com/cometscome/BPNET.git", "653b739af6b6f4e0b9d588f2483a8142cad57c48a58ea5e870dfaf4a4275a4fd"),
+GitSource("https://github.com/cometscome/BPNET.git", "207fd1d739b8cadcf243fc1bd7e1e8d7d28af392"),
     DirectorySource("./bundled")
 ]
 
