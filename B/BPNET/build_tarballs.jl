@@ -30,16 +30,16 @@ GitSource("https://github.com/cometscome/BPNET.git", "207fd1d739b8cadcf243fc1bd7
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-cd BPNET/
-mkdir build
-cd build/
-cmake ..
-make
-cp bin/*.x $prefix/
-cp lib/* $prefix/
+	for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+	    atomic_patch -p1 ${f}
+	done
+	cd BPNET/ 
+	 cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+	cmake --build build 
+	mkdir -p ${bindir}
+	mkdir -p ${libdir}
+	cp build/bin/* ${bindir}/
+	cp build/lib/* ${libdir}/
 """
 
 # These are the platforms we will build for by default, unless further
