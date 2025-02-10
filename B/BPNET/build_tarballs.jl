@@ -26,7 +26,6 @@ GitSource("https://github.com/cometscome/BPNET.git", "207fd1d739b8cadcf243fc1bd7
     DirectorySource("./bundled")
 ]
 
-Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -58,6 +57,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
