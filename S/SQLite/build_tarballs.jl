@@ -13,6 +13,7 @@ name = "SQLite"
 # We will either need to rename the shared libraries (if possible) or
 # increase the major version number of this package.
 version = v"3.49.0"
+# Read carefully message above.
 
 # Collection of sources required to complete build
 sources = [
