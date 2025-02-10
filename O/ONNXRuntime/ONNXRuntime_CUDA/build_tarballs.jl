@@ -36,7 +36,7 @@ append!(sources, [
 ])
 
 # Override the default platforms
-platforms = CUDA.supported_platforms(; min_version=v"12.2", max_version=v"12.3")
+platforms = CUDA.supported_platforms(; min_version=v"12.0", max_version=v"12.1")
 platforms = expand_cxxstring_abis(platforms; skip=!Sys.islinux)
 
 # Override the default products
