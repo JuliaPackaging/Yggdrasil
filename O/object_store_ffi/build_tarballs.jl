@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "object_store_ffi"
-version = v"0.12.0"
+version = v"0.12.1"
 
 sources = [
-    # https://github.com/RelationalAI/object_store_ffi/commit/6580c337099b8a3b95804301347a309d4f5be1f6
-    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "6580c337099b8a3b95804301347a309d4f5be1f6")
+    # https://github.com/RelationalAI/object_store_ffi/commit/682228f8b511f21ec9038c146885db3122588a1b
+    GitSource("https://github.com/RelationalAI/object_store_ffi.git", "682228f8b511f21ec9038c146885db3122588a1b")
 ]
 
 # Bash recipe for building across all platforms
