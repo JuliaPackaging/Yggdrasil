@@ -15,7 +15,7 @@ include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "1dc929dc6f621b87bedb7d14705d2d439ab67823")
+    GitSource("https://github.com/awietek/xdiag.git", "0c82eac9a27ae7a5aafe7cd574c3ef2f7780766d")
 ]
 
 
@@ -54,7 +54,7 @@ cmake -S . \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DXDIAG_JULIA_WRAPPER=On \
-    -DJlCxx_DIR=$prefix/lib/cmake \
+    -DCMAKE_PREFIX_PATH=$prefix \
     -DBLAS_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
     -DLAPACK_LIBRARIES=${libdir}/libopenblas64_.${dlext} \
     "${OMP_DEFINES[@]}"
@@ -74,8 +74,7 @@ filter!(p -> (
     (os(p) == "macos" && arch(p) == "x86_64") ||
     (os(p) == "macos" && arch(p) == "aarch64") ||
     (os(p) == "windows" && arch(p) == "x86_64")) &&
-    p.tags["julia_version"] !="1.6.3" &&
-    p.tags["julia_version"] !="1.12.0", platforms)
+    p.tags["julia_version"] !="1.6.3", platforms)
 
 
 # The products that we will ensure are always built
