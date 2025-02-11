@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 name = "ITK"
-version = v"5.3.1"
+version = v"5.3.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/InsightSoftwareConsortium/ITK.git", "1fc47c7bec4ee133318c1892b7b745763a17d411")
@@ -49,8 +49,8 @@ cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-mkdir -pv ${libdir}
-find "${prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
+    cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
+    cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
 fi
 """
 # These are the platforms we will build for by default, unless further
