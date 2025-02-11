@@ -45,8 +45,9 @@ if [[ "${target}" == *freebsd* ]] || [[ "${target}" == *mingw* ]]; then
     mv ${WORKSPACE}/srcdir/patches/liblz4.pc ${prefix}/lib/pkgconfig/
 fi
 
-if [[ "${target}" == riscv* ]]; then
+if [[ "${target}" == riscv* ]] || ; then
     export CXXFLAGS="-static"
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-template-id-cdtor-error.patch
 fi
 mkdir build && cd build
 
