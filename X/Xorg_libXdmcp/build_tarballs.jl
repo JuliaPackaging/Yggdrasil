@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXdmcp"
-version = v"1.1.4"
-
+version = v"1.1.5"
 
 # Collection of sources required to build libXdmcp
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXdmcp-$(version).tar.xz",
-                  "2dce5cc317f8f0b484ec347d87d81d552cdbebb178bd13c5d8193b6b7cd6ad00"),
+                  "d8a5222828c3adab70adf69a5583f1d32eb5ece04304f7f8392b6a353aa2228c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,7 +24,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     LibraryProduct("libXdmcp", :libXdmcp),
@@ -39,3 +38,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Build trigger: 1

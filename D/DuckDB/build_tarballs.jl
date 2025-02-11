@@ -3,47 +3,45 @@
 using BinaryBuilder, Pkg
 
 name = "DuckDB"
-version = v"1.0.0"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "1f98600c2cf8722a6d2f2d805bb4af5e701319fc"),
+    GitSource("https://github.com/duckdb/duckdb.git", "5f5512b827df6397afd31daedb4bbdee76520019"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb/
 
-mkdir build && cd build
-
-if [[ "${target}" == *86*-linux-gnu ]]; then
-    export LDFLAGS="-lrt";
-elif [[ "${target}" == *-mingw* ]]; then
-    # `ResolveLocaleName` requires Windows 7: https://learn.microsoft.com/en-us/windows/win32/api/winnls/nf-winnls-resolvelocalename
-    export CXXFLAGS="-DWINVER=_WIN32_WINNT_WIN7 -D_WIN32_WINNT=_WIN32_WINNT_WIN7"
-fi
-
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+cmake -B build \
+      -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DENABLE_SANITIZER=FALSE \
-      -DBUILD_EXTENSIONS='autocomplete;icu;parquet;json;fts;tpcds;tpch' \
+      -DBUILD_EXTENSIONS='parquet;json' \
+      -DSKIP_EXTENSIONS=jemalloc \
       -DENABLE_EXTENSION_AUTOLOADING=1 \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
-      -DBUILD_UNITTESTS=FALSE .. \
-      -DBUILD_SHELL=TRUE .. \
+      -DBUILD_UNITTESTS=FALSE \
+      -DBUILD_SHELL=TRUE \
       -DDUCKDB_EXPLICIT_PLATFORM="${target}"
-make -j${nproc}
-make install
+cmake --build build --parallel ${nproc}
+cmake --install build
 
 if [[ "${target}" == *-mingw32 ]]; then
-    install -Dvm 755 "src/libduckdb.${dlext}" "${libdir}/libduckdb.${dlext}"
+    install -Dvm 755 "build/src/libduckdb.${dlext}" -t "${libdir}"
 fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
+# Building for PowerPC results in errors inside jemalloc:
+#     /tmp/ccmHnfhC.s: Assembler messages:
+#     /tmp/ccmHnfhC.s:7829: Error: unrecognized opcode: `pause'
+#     make[2]: *** [extension/jemalloc/jemalloc/CMakeFiles/jemalloc.dir/build.make:76: extension/jemalloc/jemalloc/CMakeFiles/jemalloc.dir/src/jemalloc.c.o] Error 1
+filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # The products that we will ensure are always built
 products = [

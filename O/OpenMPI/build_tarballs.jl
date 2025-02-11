@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.5"
+version = v"5.0.6"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "5cbefa0780b84f4126743c40cdd6a334b2f0574cd7fd95050fb1ac0ddbb7f0b8"),
+                  "1d6dd41f6b53c00db23b40e56733d16a996fa743957ef8add8e117feffd92689"),
     DirectorySource("bundled"),
 ]
 

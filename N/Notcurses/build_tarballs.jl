@@ -1,10 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Notcurses"
-version = v"3.0.9"
+# Our version number is ahead by one because we updated the FFMPEG_jll compat entry
+version = v"3.0.15"
+notcurses_version = v"3.0.14"
 sources = [
     GitSource("https://github.com/dankamongmen/notcurses",
-              "040ff99fb7ed6dee113ce303223f75cd8a38976c"),
+              "fb02ba185f42dd9eaae717c9bba2da6194982294"),
     DirectorySource("bundled"),
 ]
 
@@ -12,8 +14,6 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/notcurses*
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/repent.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-also-look-for-shared-libraries-on-Windows.patch
-# Reported as <https://github.com/dankamongmen/notcurses/issues/2739>
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mbstate.patch
 
 if [[ $target == *mingw* ]]; then
     export CFLAGS="${CFLAGS} -D_WIN32_WINNT=0x0600"
@@ -44,6 +44,12 @@ FLAGS=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
        -DUSE_STATIC=OFF
        )
 
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # Remove some host files that confuse the build system
+    rm /usr/lib/libncurses*
+    rm /usr/lib/libexpat.*
+fi
+
 if [[ ${target} == aarch64-apple-* ]]; then
     # Linking FFMPEG requires the function `__divdc3`, which is implemented in
     # `libclang_rt.osx.a` from LLVM compiler-rt.
@@ -62,6 +68,11 @@ install_license COPYRIGHT
 # platforms are passed in on the command line.
 platforms = supported_platforms()
 
+# Too many dependencies are not available for aarch64-*-freebsd
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# Too many dependencies are not available for riscv64
+filter!(p -> arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built.
 products = [
     ExecutableProduct("notcurses-demo", :notcurses_demo),
@@ -74,7 +85,7 @@ products = [
 # Dependencies that must be installed before this package can be built.
 llvm_version = v"13.0.1+1"
 dependencies = [
-    Dependency("FFMPEG_jll"),
+    Dependency("FFMPEG_jll"; compat="6.1.2"),
     Dependency("Ncurses_jll"),
     Dependency("libdeflate_jll"),
     Dependency("libunistring_jll"),

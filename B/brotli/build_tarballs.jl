@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "brotli"
-version = v"1.1.0"
+version = v"1.1.1" # Building v1.1.0, version bump to pick up riscv
 
 # Collection of sources required to complete build
 sources = [
@@ -13,11 +13,9 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/brotli
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
-make -j${nprocs}
-make install
-install_license ../LICENSE
+cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel ${nprocs}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further

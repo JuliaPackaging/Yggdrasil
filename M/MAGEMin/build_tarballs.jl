@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MAGEMin"
-version = v"1.5.1"
+version = v"1.6.8"
 
 MPItrampoline_compat_version="5.2.1"  
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "5c66a151a076692bec149b76cdb47ed571331181")                 ]
+                    "3ceba9889f6457a545abfe078d18ae5b70693d86")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -62,7 +62,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=p->Sys.isfreebsd(p) && arch(p) == "aarch64")
 platforms = expand_gfortran_versions(platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
@@ -70,10 +70,12 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-
+platforms = filter(p -> !(arch(p)  == "riscv64"), platforms)
+platforms = filter(p -> !( (libgfortran_version(p) == v"3" || libgfortran_version(p) == v"4") && arch(p)=="powerpc64le"), platforms)
 # MPItrampoline
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+
 
 # The products that we will ensure are always built
 products = [

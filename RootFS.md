@@ -3,10 +3,10 @@ The Care and Feeding of a Root Filesystem
 
 This document details some of the journey we have embarked upon to create a Linux environment that supports cross-compilation for a very wide range of architectures and platforms.  At the moment of writing, we support the following platforms (expressed in compiler triplet format):
 
-* glibc Linux: `i686-linux-gnu`, `x86_64-linux-gnu`, `aarch64-linux-gnu`, `armv7l-linux-gnueabihf`, `powerpc64le-linux-gnu`, `armv6l-linux-gnueabihf`
+* glibc Linux: `i686-linux-gnu`, `x86_64-linux-gnu`, `aarch64-linux-gnu`, `armv7l-linux-gnueabihf`, `armv6l-linux-gnueabihf`, `powerpc64le-linux-gnu`, `riscv64-linux-gnu`
 * musl Linux: `i686-linux-musl`, `x86_64-linux-musl`, `aarch64-linux-musl`, `armv7l-linux-musleabihf`, `armv6l-linux-musleabihf`
 * MacOS: `x86_64-apple-darwin`, `aarch64-apple-darwin`
-* FreeBSD: `x86_64-unknown-freebsd13.2`
+* FreeBSD: `x86_64-unknown-freebsd13.2`, `aarch64-unknown-freebsd13.2`
 * Windows: `i686-w64-mingw32`, `x86_64-w64-mingw32`
 
 These target platforms are compiled for by building a suite a cross-compilers (`gcc`, `gfortran`, `clang`, `binutils`, etc...) that run on `x86-64-linux-musl`, but target the specific platform.  Unfortunately, it is not sufficient to simply build these compilers once per target, because of incompatibilities between the generated code and the user's system where this code may eventually be running.
@@ -40,6 +40,7 @@ The version of `glibc` we can compile against varies by system; we attempt to us
 |    aarch64   | v2.19   |
 |     armv7l   | v2.19   |
 |  powerpc64le | v2.17   |
+|    riscv64   | v2.35   |
 
 
 Compiler Shards

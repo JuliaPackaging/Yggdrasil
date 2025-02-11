@@ -1,10 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-
+using BinaryBuilderBase: get_addable_spec
 name = "PROJ"
-upstream_version = v"9.4.0"
-version_offset = v"1.0.0"
+upstream_version = v"9.5.1"
+version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
-        "3643b19b1622fe6b2e3113bdb623969f5117984b39f173b4e3fb19a8833bd216")
+        "a8395f9696338ffd46b0feb603edbb730fad6746fba77753c77f7f997345e3d3")
 ]
 
 # Bash recipe for building across all platforms
@@ -64,7 +64,7 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libproj", "libproj_$(upstream_version.major)_$(upstream_version.minor)"], :libproj),
+    LibraryProduct(["libproj", "libproj_$(upstream_version.major)"], :libproj),
 
     ExecutableProduct("proj", :proj),
     ExecutableProduct("gie", :gie),
@@ -94,8 +94,10 @@ dependencies = [
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
     Dependency("SQLite_jll")
-    Dependency("Libtiff_jll"; compat="4.5.1")
+    Dependency("Libtiff_jll"; compat="4.7.1")
     Dependency("LibCURL_jll"; compat="7.73,8")
+    # Indirect dependency, but we need to force the use of this build number
+    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)) 
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

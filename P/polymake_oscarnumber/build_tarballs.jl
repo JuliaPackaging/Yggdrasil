@@ -5,15 +5,18 @@ using BinaryBuilder, Pkg
 # copied from libsingular_julia:
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
-uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+uuidosxunw = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
+delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuidosxunw)
+delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
+delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 
 # needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
 
 # reminder: change the version when changing the supported julia versions
 name = "polymake_oscarnumber"
-version = v"0.3.1"
+version = v"0.3.4"
 
 # julia_versions is now taken from libjulia/common.jl
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
@@ -21,7 +24,7 @@ julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* 
 # Collection of sources required to build polymake
 sources = [
     GitSource("https://github.com/benlorenz/oscarnumber",
-              "ecc1e516503ce7a7689c21bdf76a262290797237")
+              "5c1f09f4f135f8b06db7b81a2cc6578f564665e2")
     DirectorySource("./bundled")
 ]
 
@@ -68,6 +71,7 @@ install_license LICENSE
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -83,11 +87,11 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.15")),
 
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
-    Dependency("libpolymake_julia_jll", compat = "=0.12.1"),
-    Dependency("polymake_jll", compat = "~400.1200.001"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.4"),
+    Dependency("libpolymake_julia_jll", compat = "=0.13.1"),
+    Dependency("polymake_jll", compat = "~400.1300.002"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

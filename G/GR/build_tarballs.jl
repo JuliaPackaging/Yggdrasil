@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.73.7"
+version = v"0.73.12"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "a8f4f0b867ad8e40e9a927d72e4ada571fdca461"),
+    GitSource("https://github.com/sciapp/gr.git", "bbb16e529aa014a550f36b695e4d1141d3011f62"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "89a114eac7e96f0a32441da01e1929068aeaa286ad2ea22f923420cff8d4e2a4", "gr.js"),
+               "630295fe8fadcf1eeda697bfc245f1c6a6b6419bdc9bb4a3e2e19aac1ded0f0e", "gr.js"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
@@ -96,7 +96,7 @@ dependencies = [
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
     Dependency("Qt6Base_jll"; compat="~6.7.1"), # Never allow upgrading more than the minor version without recompilation

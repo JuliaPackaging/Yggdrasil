@@ -16,12 +16,17 @@
 #
 #      ORIGDIR=../../../GCCBootstrap@XYZ/bundled/patches; for p in ${ORIGDIR}/{,*/}*.patch; do DESTDIR=$(dirname ${p#"${ORIGDIR}/"}); mkdir -p "${DESTDIR}"; if [[ -L "${p}" ]]; then cp -a "${p}" "${DESTDIR}"; else ln -s $(realpath --relative-to="${DESTDIR}" "${p}") "${DESTDIR}"; fi; done
 #
+# * adapt the recipe as necessary, but try to make changes in a backward
+#   compatible way.  If you introduce steps that are necessary only with
+#   specific versions of GCC, guard them with appropriate conditionals.  We may
+#   need to use the same recipe to rebuild older versions of GCC at a later
+#   point and being able to rerun it as-is is extremely important
 # * you can build only one platform at the time.  To deploy the compiler shards
 #   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can either build &
 #   deploy the compilers one by one or run something like
 #
-#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd13.2 i686-w64-mingw32 x86_64-w64-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
+#      for p in i686-linux-gnu x86_64-linux-gnu aarch64-linux-gnu armv7l-linux-gnueabihf powerpc64le-linux-gnu riscv64-linux-gnu i686-linux-musl x86_64-linux-musl aarch64-linux-musl armv7l-linux-musleabihf x86_64-apple-darwin14 x86_64-unknown-freebsd13.2 aarch64-unknown-freebsd13.2 i686-w64-mingw32 x86_64-w64-mingw32; do julia build_tarballs.jl --debug --verbose --deploy "${p}"; done
 
 include("./common.jl")
 include("./gcc_sources.jl")
@@ -32,8 +37,14 @@ using BinaryBuilder: BinaryBuilderBase
 @eval BinaryBuilder.BinaryBuilderBase push!(bootstrap_list, :rootfs, :platform_support)
 
 
-function gcc_script(compiler_target::Platform)
-    script = raw"""
+function gcc_script(gcc_version::VersionNumber, compiler_target::Platform)
+    script = """
+    GCC_VERSION_MAJOR=$(gcc_version.major)
+    GCC_VERSION_MINOR=$(gcc_version.minor)
+    GCC_VERSION_PATCH=$(gcc_version.patch)
+    """
+
+    script *= raw"""
     cd ${WORKSPACE}/srcdir
     COMPILER_TARGET=${target}
     HOST_TARGET=${MACHTYPE}
@@ -59,15 +70,11 @@ function gcc_script(compiler_target::Platform)
     sysroot="${prefix}/${COMPILER_TARGET}/sys-root"
     cp -ra "/opt/${COMPILER_TARGET}/${COMPILER_TARGET}" "${prefix}/${COMPILER_TARGET}"
 
-    # Some things need /lib64, others just need /lib
-    case ${COMPILER_TARGET} in
-        x86_64*)
-            LIB64=lib64
-            ;;
-        aarch64*)
-            LIB64=lib64
-            ;;
-        ppc64*)
+    # Some things need /lib64, others just need /lib.  Be consistent with where
+    # our compiler wrappers expect the libraries to be:
+    # <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/blob/4d0883a222bcb60871f8e24e56ef6e322502ec80/src/Runner.jl#L553-L559>.
+    case ${nbits} in
+        64)
             LIB64=lib64
             ;;
         *)
@@ -187,32 +194,53 @@ function gcc_script(compiler_target::Platform)
         # Apply libtapi patches, if any
         if [[ -d "${WORKSPACE}/srcdir/patches/libtapi" ]]; then
             for p in ${WORKSPACE}/srcdir/patches/libtapi/*.patch; do
-                atomic_patch -p1 -d src/ "${p}"
+                atomic_patch -p1 "${p}"
             done
         fi
 
+        # Install libtapi
         mkdir -p ${WORKSPACE}/srcdir/apple-libtapi/build
         cd ${WORKSPACE}/srcdir/apple-libtapi/build
-
         export TAPIDIR=${WORKSPACE}/srcdir/apple-libtapi
 
-        # Install libtapi
+        TAPI_CMAKE_FLAGS=()
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            TAPI_CMAKE_FLAGS+=(
+                -DLLVM_ENABLE_PROJECTS="tapi;clang"
+                -DLLVM_TARGETS_TO_BUILD:STRING="host"
+            )
+        fi
+
         cmake ../src/llvm \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_FLAGS="-I${TAPIDIR}/src/llvm/projects/clang/include -I${TAPIDIR}/build/projects/clang/include" \
             -DLLVM_INCLUDE_TESTS=OFF \
             -DCMAKE_BUILD_TYPE=RELEASE \
-            -DCMAKE_INSTALL_PREFIX=${prefix}
+            -DCMAKE_INSTALL_PREFIX=${prefix} \
+            "${TAPI_CMAKE_FLAGS[@]}"
         make -j${nproc} VERBOSE=1 clangBasic
-        make -j${nproc} VERBOSE=1
-        make install
+        make -j${nproc} VERBOSE=1 libtapi
+        make -j${nproc} VERBOSE=1 install
 
         # Install cctools
+        cd ${WORKSPACE}/srcdir/cctools-port/cctools
+        ./autogen.sh
         mkdir -p ${WORKSPACE}/srcdir/cctools_build
         cd ${WORKSPACE}/srcdir/cctools_build
-        CC=/usr/bin/clang CXX=/usr/bin/clang++ LDFLAGS=-L/usr/lib ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
+
+        # TODO: Update RootFS to v3.17 or later, and preinstall libdispatch (and libdispatch-dev here only when building for macOS).
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            apk add libdispatch libdispatch-dev --repository=http://dl-cdn.alpinelinux.org/alpine/v3.17/community
+        fi
+
+        ${WORKSPACE}/srcdir/cctools-port/cctools/configure \
             --prefix=${prefix} \
             --target=${COMPILER_TARGET} \
             --host=${MACHTYPE} \
+            CC=/usr/bin/clang \
+            CXX=/usr/bin/clang++ \
+            LDFLAGS=-L/usr/lib \
             --with-libtapi=${prefix}
         make -j${nproc}
         make install
@@ -295,6 +323,7 @@ function gcc_script(compiler_target::Platform)
     if [[ ${COMPILER_TARGET} == *-gnu* ]]; then
         # patch glibc
         cd ${WORKSPACE}/srcdir/glibc-*
+
         # patch glibc to keep around libgcc_s_resume on arm
         # ref: https://sourceware.org/ml/libc-alpha/2014-05/msg00573.html
         atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_arm_gcc_fix.patch || true
@@ -336,13 +365,13 @@ function gcc_script(compiler_target::Platform)
 
         # Patches for building glibc 2.17 on ppc64le
         for p in ${WORKSPACE}/srcdir/patches/glibc-ppc64le-*.patch; do
-            atomic_patch -p1 ${p} || true;
+            atomic_patch -p1 ${p} || true
         done
 
         # Patch bad `movq` argument in glibc 2.17, adapted from:
         # https://github.com/bminor/glibc/commit/b1ec623ed50bb8c7b9b6333fa350c3866dbde87f
         # X-ref: https://github.com/crosstool-ng/crosstool-ng/issues/1825#issuecomment-1437918391
-        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_movq_fix.patch
+        atomic_patch -p1 $WORKSPACE/srcdir/patches/glibc_movq_fix.patch || true
 
         # Various configure overrides
         GLIBC_CONFIGURE_OVERRIDES=( libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes )
@@ -350,6 +379,21 @@ function gcc_script(compiler_target::Platform)
         # We have problems with libssp on ppc64le, x86_64 and i686
         if [[ ${COMPILER_TARGET} == powerpc64le-* ]] || [[ ${COMPILER_TARGET} == x86_64-* ]] || [[ ${COMPILER_TARGET} == i686-* ]]; then
             GLIBC_CONFIGURE_OVERRIDES+=( libc_cv_ssp=no libc_cv_ssp_strong=no )
+        fi
+
+        # Explicitly disable C++.
+        # If we don't do this, glibc will pick up the host C++
+        # compiler (/usr/bin/g++) to build some C++ files. With this
+        # setting, glibc will build C versions of these files instead.
+        GLIBC_CONFIGURE_OVERRIDES+=( CXX=false )
+
+        # These flags are necessary for GCC 14. GCC 14 defaults to a
+        # modern version of C, too modern for the old glibc libraries we are
+        # trying to build. Various configure tests would fail otherwise. (Why
+        # declare variables or functions if they default to int anyway?)
+        GLIBC_CFLAGS="${CFLAGS} -g -O2"
+        if [[ "${GCC_VERSION_MAJOR}" -ge 14 ]]; then
+            GLIBC_CFLAGS="${GLIBC_CFLAGS} -Wno-implicit-int -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-array-parameter -Wno-int-conversion"
         fi
 
         # Configure glibc
@@ -362,6 +406,7 @@ function gcc_script(compiler_target::Platform)
             --with-headers="${sysroot}/usr/include" \
             --disable-multilib \
             --disable-werror \
+            CFLAGS="${GLIBC_CFLAGS}" \
             ${GLIBC_CONFIGURE_OVERRIDES[@]}
 
 
@@ -375,7 +420,7 @@ function gcc_script(compiler_target::Platform)
         # Install CSU
         make csu/subdir_lib -j${nproc}
         mkdir -p ${sysroot}/usr/${LIB64}
-        install csu/crt1.o csu/crti.o csu/crtn.o ${sysroot}/usr/${LIB64}
+        install -v csu/crt1.o csu/crti.o csu/crtn.o ${sysroot}/usr/${LIB64}
         ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/${LIB64}/libc.so
 
     elif [[ ${COMPILER_TARGET} == *-musl* ]]; then
@@ -399,7 +444,7 @@ function gcc_script(compiler_target::Platform)
         # Make CRT
         make lib/{crt1,crti,crtn}.o
         mkdir -p ${sysroot}/usr/lib
-        install lib/crt1.o lib/crti.o lib/crtn.o ${sysroot}/usr/lib
+        install -v lib/crt1.o lib/crti.o lib/crtn.o ${sysroot}/usr/lib
         ${COMPILER_TARGET}-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o ${sysroot}/usr/lib/libc.so
 
     elif [[ ${COMPILER_TARGET} == *-mingw* ]]; then
@@ -478,7 +523,7 @@ function gcc_script(compiler_target::Platform)
 
     # Back to GCC-land, install libgcc
     cd ${WORKSPACE}/srcdir/gcc_stage1
-    make all-target-libgcc -j ${nproc}
+    make all-target-libgcc -j${nproc}
     make install-target-libgcc
 
     # Finish off libc
@@ -578,7 +623,7 @@ function gcc_script(compiler_target::Platform)
         ${GCC_CONF_ARGS}
 
     ## Build, build, build!
-    make -j ${nproc}
+    make -j${nproc}
     make install
 
     # Remove misleading libtool archives
@@ -586,6 +631,12 @@ function gcc_script(compiler_target::Platform)
 
     # Remove heavy doc directories
     rm -rf ${sysroot}/usr/share/man
+
+    # Remove leftover dummy `libc.so` file:
+    # <https://github.com/JuliaPackaging/BinaryBuilderBase.jl/pull/403#issuecomment-2585717031>.
+    if [[ "${target}" == riscv64-linux-gnu ]]; then
+        rm -v ${sysroot}/usr/${LIB64}/libc.so
+    fi
     """
 
     return script
@@ -613,7 +664,7 @@ function build_and_upload_gcc(version::VersionNumber, ARGS=ARGS)
     deleteat!(ARGS, length(ARGS))
 
     sources = gcc_sources(version, compiler_target)
-    script = gcc_script(compiler_target)
+    script = gcc_script(version, compiler_target)
     products = gcc_products()
 
     # Build the tarballs, and possibly a `build.jl` as well.

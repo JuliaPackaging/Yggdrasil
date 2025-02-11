@@ -1,8 +1,8 @@
 include("../common.jl")
 
 name = "ParU"
-version = v"0.1.3"
-SS_version_str = "7.7.0"
+version = v"1.0.0"
+SS_version_str = "7.8.3"
 SS_version = VersionNumber(SS_version_str)
 
 sources = suitesparse_sources(SS_version)
@@ -19,7 +19,7 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_UMFPACK=ON
         -DSUITESPARSE_USE_SYSTEM_CHOLMOD=ON
     )
-""" * build_script(true)
+""" * build_script(;use_omp=true)
 
 # Add dependency on SuiteSparse_jll
 dependencies = append!(dependencies, [
@@ -30,5 +30,7 @@ dependencies = append!(dependencies, [
 products = [
     LibraryProduct("libparu", :libparu),
 ]
-build_tarballs(ARGS, name, version, sources, script, platforms, products, 
-               dependencies; julia_compat="1.11",preferred_gcc_version=v"9")
+
+
+build_tarballs(ARGS, name, version, sources, script, platforms, 
+               products, dependencies; julia_compat="1.12",preferred_gcc_version=v"9")

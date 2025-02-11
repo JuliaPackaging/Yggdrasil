@@ -20,6 +20,7 @@ const llvm_tags = Dict(
     v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
     v"18.1.7" => "ed30d043a240d06bb6e010a41086e75713156f4f", # julia-18.1.7-2
+    v"19.1.7" => "3cb75bacf7f61380a4ef45fef519c2fb5940dd4a", # julia-19.1.7-0
 )
 
 const buildscript = raw"""
@@ -140,6 +141,9 @@ fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
 fi
+if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+    ninja -j${nproc} mlir-src-sharder
+fi
 popd
 
 # Let's do the actual build within the `build` subdirectory
@@ -244,7 +248,8 @@ if [[ ${target} == *linux* ]]; then
 #     CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
 fi
 # if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
-if [[ ${target} == *linux* ]]; then # TODO only LLVM12
+if [[ "${LLVM_MAJ_VER}" -ge "12" && ${target} == x86_64-linux* ]]; then
+    # Intel VTune is available only on x86_64 architectures
     CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
@@ -270,6 +275,9 @@ if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
     CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
+fi
+if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
 fi
 
 # Explicitly use our cmake toolchain file
@@ -337,7 +345,7 @@ if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
+    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -Dmlir_arm_sme_abi_stubs_EXPORTS)
     CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     # Windows is case-insensitive and some dependencies take full advantage of that
@@ -721,6 +729,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         script = lldscript
         products = [
             ExecutableProduct("lld", :lld, "tools"),
+            ExecutableProduct("ld.lld", :ld_lld, "tools"),      # Unix
+            ExecutableProduct("ld64.lld", :ld64_lld, "tools"),  # macOS
+            ExecutableProduct("lld-link", :lld_link, "tools"),  # Windows
+            ExecutableProduct("wasm-ld", :wasm_ld, "tools"),    # WebAssembly
+
             ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
 
@@ -744,10 +757,15 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     end
 
     platforms = supported_platforms(; experimental=experimental_platforms)
+    filter!(p->arch(p)!="riscv64", platforms) # Not supported yet, see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1366
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    if version < v"18"
+        # We only have LLVM builds for AArch64 BSD starting from LLVM 18
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
     platforms = expand_cxxstring_abis(platforms)
 

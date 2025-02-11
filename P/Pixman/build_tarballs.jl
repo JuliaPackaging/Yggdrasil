@@ -2,12 +2,12 @@ using BinaryBuilder, Pkg
 
 # Collection of sources required to build Pixman
 name = "Pixman"
-version = v"0.43.4"
+version = v"0.44.2"
 
 sources = [
     ArchiveSource("https://www.cairographics.org/releases/pixman-$(version).tar.gz",
-                  "a0624db90180c7ddb79fc7a9151093dc37c646d8c38d3f232f767cf64b85a226"),
-    DirectorySource("./bundled"),
+                  "6349061ce1a338ab6952b92194d1b0377472244208d47ff25bef86fc71973466"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,3 +48,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
+
+# Build trigger: 1

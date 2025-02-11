@@ -125,7 +125,8 @@ const cuda_full_versions = [
     v"12.3.2",
     v"12.4.1",
     v"12.5.1",
-    v"12.6.0",
+    v"12.6.3",
+    v"12.8.0",
 ]
 
 function full_version(ver::VersionNumber)
