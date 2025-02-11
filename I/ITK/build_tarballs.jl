@@ -15,7 +15,6 @@ else
 fi
 
 export LDFLAGS="-L${libdir}"
-
 cd $WORKSPACE/srcdir/ITK*
 mkdir build/
 cmake -B build -S . \
@@ -37,6 +36,13 @@ cmake -B build -S . \
     -DVCL_HAS_LFS:STRING=1 \
     -DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
     -DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
+    -D_libcxx_run_result:STRING=0 \
+    -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
+    -DITK_LEGACY_REMOVE=OFF \
+    -DITK_BUILD_TESTING=OFF \
+    -DBUILD_TESTING=OFF \
+    -DITK_USE_WIN32_LIBS=ON \
+    -DITK_SKIP_PATH_LENGTH_CHECKS=ON
 
 cmake --build build --parallel ${nproc}
 cmake --install build
