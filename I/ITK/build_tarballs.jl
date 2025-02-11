@@ -11,10 +11,11 @@ if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
 else
-    export CXXFLAGS="-DITK_LEGACY_REMOVE=OFF -D_libcxx_run_result:STRING=0 -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 -DITK_BUILD_TESTING=OFF -DBUILD_TESTING=OFF -DITK_USE_WIN32_LIBS=ON -DITK_SKIP_PATH_LENGTH_CHECKS=ON ${CXXFLAGS}"
+    export CXXFLAGS="-DITK_LEGACY_REMOVE=OFF ${CXXFLAGS}"
 fi
 
 export LDFLAGS="-L${libdir}"
+
 cd $WORKSPACE/srcdir/ITK*
 mkdir build/
 cmake -B build -S . \
@@ -36,14 +37,21 @@ cmake -B build -S . \
     -DVCL_HAS_LFS:STRING=1 \
     -DDOUBLE_CONVERSION_CORRECT_DOUBLE_OPERATIONS:STRING=1 \
     -DHAVE_CLOCK_GETTIME_RUN:STRING=0 \
+    -D_libcxx_run_result:STRING=0 \
+    -D_libcxx_run_result__TRYRUN_OUTPUT:STRING=0 \
+    -DITK_LEGACY_REMOVE=OFF \
+    -DITK_BUILD_TESTING=OFF \
+    -DBUILD_TESTING=OFF \
+    -DITK_USE_WIN32_LIBS=ON \
+    -DITK_SKIP_PATH_LENGTH_CHECKS=ON
 
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-    mkdir -pv ${libdir}
-    find "${prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
+mkdir -pv ${libdir}
+find "${prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
 fi
 """
 # These are the platforms we will build for by default, unless further
