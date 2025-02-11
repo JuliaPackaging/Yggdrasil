@@ -2,11 +2,12 @@ using BinaryBuilder
 
 # Collection of sources required to build Nettle
 name = "Nettle"
-version = v"3.9.1"
+version_string = "3.10.1"
+version = VersionNumber(version_string)
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/nettle/nettle-$(version).tar.gz",
-                  "ccfeff981b0ca71bbd6fbcb054f407c60ffb644389a5be80d6716d5b550c6ce3"),
+    ArchiveSource("https://ftp.gnu.org/gnu/nettle/nettle-$(version_string).tar.gz",
+                  "b0fcdd7fc0cdea6e80dcf1dd85ba794af0d5b4a57e26397eee3bc193272d9132"),
     DirectorySource("./bundled"),
 ]
 
@@ -29,7 +30,7 @@ install_license COPYING*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -40,7 +41,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

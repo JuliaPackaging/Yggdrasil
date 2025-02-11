@@ -5,7 +5,7 @@
 # ```
 # using BinaryBuilder
 # using BinaryBuilder: aatriplet
-# for platform in supported_platforms()
+# for platform in supported_platforms(; experimental=true)
 #     # Append version numbers for BSD systems
 #     if Sys.isapple(platform)
 #         suffix = arch(platform) == "aarch64" ? "20" : "14"
@@ -51,11 +51,19 @@ sources = [
                   "b5de28fd594a01edacd06e53491ad0890293e5fbf98329346426cf6030ef1ea6"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v7.0.0.tar.bz2",
                   "aa20dfff3596f08a7f427aab74315a6cb80c2b086b4a107ed35af02f9496b628"),
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.2-RELEASE/base.txz",
-                  "3a9250f7afd730bbe274691859756948b3c57a99bcda30d65d46ae30025906f0"),
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
                   "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"),
 ]
+
+freebsd_base = if Sys.isfreebsd(compiler_target) && arch(compiler_target) == "aarch64"
+    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/13.2-RELEASE/base.txz",
+                  "7d1b032a480647a73d6d7331139268a45e628c9f5ae52d22b110db65fdcb30ff")
+else
+    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.2-RELEASE/base.txz",
+                  "3a9250f7afd730bbe274691859756948b3c57a99bcda30d65d46ae30025906f0")
+end
+
+push!(sources, freebsd_base)
 
 macos_sdk = if Sys.isapple(compiler_target) && arch(compiler_target) == "aarch64"
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
@@ -81,6 +89,9 @@ target_to_linux_arch()
             ;;
         powerpc*)
             echo "powerpc"
+            ;;
+        riscv64*)
+            echo "riscv"
             ;;
         i686*)
             echo "x86"
@@ -172,7 +183,8 @@ ln -s "${prefix}" "${sysroot}/usr/local"
 
 # Build the artifacts
 ndARGS, deploy_target = find_deploy_arg(ARGS)
-build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], []; skip_audit=true)
+build_info = build_tarballs(ndARGS, "$(name)-$(triplet(compiler_target))", version, sources, script, [host_platform], Product[], [];
+                            skip_audit=true, validate_name=false)
 if deploy_target !== nothing
     upload_and_insert_shards(deploy_target, name, version, build_info; target=compiler_target)
 end

@@ -4,18 +4,21 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.7.2"
+version = v"1.9.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "5ce7a27531a7f4166ee5a8343169a1014febb41a",
+        "66f735e60ce4d4835edaa05a35f2bd4048969c54",
     ),
 ]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+# Disable riscv for now
+platforms = filter!(p -> arch(p) != "riscv64", platforms)
 
 function build_script(; shared_libs::String)
     build_static = shared_libs == "OFF" ? "ON" : "OFF"

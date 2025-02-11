@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "OpenSpiel"
-version = v"1.5"
+version = v"1.5.1" # bump for compat bounds changes
 
 # Collection of sources required to complete build
 sources = [
@@ -77,7 +77,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.11.2"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.2"),
     BuildDependency("libjulia_jll")
 ]
 

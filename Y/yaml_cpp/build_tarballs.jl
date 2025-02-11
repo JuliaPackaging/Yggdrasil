@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "yaml_cpp"
-version = v"0.8.0"
+version = v"0.8.1" # Corresponds to v0.8.0.  We had to change the version number to bump the compat bound, from next release we can go back to follow upstream version
 
 # Collection of sources required to complete build
 sources = [
@@ -40,3 +40,5 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+
+# Build trigger: 1

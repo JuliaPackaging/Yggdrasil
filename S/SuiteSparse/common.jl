@@ -47,6 +47,14 @@ function suitesparse_sources(version::VersionNumber; kwargs...)
             GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
                       "58e6558408f6a51c08e35a5557d5e68cae32147e")
         ],
+        v"7.8.2" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "c8c3a9de1c8eef54da5ff19fd0bcf7ca6e8bc9de")
+        ],
+        v"7.8.3" => [
+            GitSource("https://github.com/DrTimothyAldenDavis/SuiteSparse.git",
+                      "d3c4926d2c47fd6ae558e898bfc072ade210a2a1")
+        ],
     )
     return Any[
         suitesparse_version_sources[version]...,
@@ -77,10 +85,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"; compat="5.8.0"),
+    Dependency(PackageSpec(name="libblastrampoline_jll",
+                           uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
+               v"5.12.0";  # build version
+               compat="5.8.0"),
     BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
     # Need the most recent 3.29.3+1 version (or later) to get libblastrampoline support
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.29.3"))
+    HostBuildDependency(PackageSpec(; name="CMake_jll"))
 ]
 
 # Generate a common build script for most SuiteSparse packages.
@@ -91,8 +102,8 @@ dependencies = [
 # for instance -DSUITESPARSE_USE_SYSTEM_*=ON to use pre-existing JLLs for
 # certain packages.
 # Use PROJECTS_TO_BUILD to specify which projects to build.
-function build_script(; use_omp::Bool = false, use_cuda::Bool = false)
-    return "USEOMP=$(use_omp)\nUSECUDA=$(use_cuda)\n" * raw"""
+function build_script(; use_omp::Bool = false, use_cuda::Bool = false, build_32bit_blas::Bool = false)
+    return "USE_OMP=$(use_omp)\nUSE_CUDA=$(use_cuda)\nUSE_32BIT_BLAS=$(build_32bit_blas)\n" * raw"""
 cd $WORKSPACE/srcdir/SuiteSparse
 
 # Needs cmake >= 3.29 provided by jll
@@ -105,7 +116,7 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
 
-if [[ ${nbits} == 64 ]]; then
+if [[ ${nbits} == 64 ]] && [[ ${USE_32BIT_BLAS} == false ]]; then
     CMAKE_OPTIONS+=(
         -DBLAS64_SUFFIX="_64"
         -DSUITESPARSE_USE_64BIT_BLAS=YES
@@ -131,8 +142,8 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       -DSUITESPARSE_DEMOS=OFF \
       -DSUITESPARSE_USE_STRICT=ON \
       -DSUITESPARSE_USE_FORTRAN=OFF \
-      -DSUITESPARSE_USE_OPENMP=${USEOMP} \
-      -DSUITESPARSE_USE_CUDA=${USECUDA} \
+      -DSUITESPARSE_USE_OPENMP=${USE_OMP} \
+      -DSUITESPARSE_USE_CUDA=${USE_CUDA} \
       -DCHOLMOD_PARTITION=ON \
       "${CMAKE_OPTIONS[@]}" \
       ..

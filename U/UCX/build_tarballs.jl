@@ -6,18 +6,17 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "UCX"
-version = v"1.11.2"
+version = v"1.18.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/openucx/ucx/releases/download/v$(version)/ucx-$(version).tar.gz",
-                  "deebf86a5344fc2bd9e55449f88c650c4514928592807c9bc6fe4190e516c6df"),
-    DirectorySource("./bundled"),
-]
+    GitSource("https://github.com/openucx/ucx.git",
+                  "693d02837894b9c346c9f91b105e4aff6f259c09"),
+    ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ucx-*
+cd $WORKSPACE/srcdir/ucx*
 
 # Apply all our patches
 if [ -d $WORKSPACE/srcdir/patches ]; then
@@ -26,7 +25,7 @@ for f in $WORKSPACE/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 fi
-
+./autogen.sh
 update_configure_scripts --reconf
 
 FLAGS=()
@@ -91,7 +90,7 @@ products = [
 #   - gdrcopy -> kernel module
 # - ROCM -> TODO
 
-cuda_version = v"11.2"
+cuda_version = v"11.4"
 rocm_version = v"4.2.0"
 
 dependencies = [

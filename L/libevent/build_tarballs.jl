@@ -1,11 +1,12 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using BinaryBuilderBase: get_addable_spec
 
 name = "libevent"
 libevent_version =v"2.1.12"
-# We update to 2.1.13 because we updated our dependencies
-version = v"2.1.13"
+# We update to 2.1.15 because we updated our dependencies
+version = v"2.1.15"
 
 # Collection of sources required to complete build
 sources = [
@@ -20,6 +21,9 @@ cd $WORKSPACE/srcdir/libevent-*
 if [[ "${target}" == aarch64-apple-* ]]; then
     # Build without `-Wl,--no-undefined`
     atomic_patch -p1 ../patches/build_with_no_undefined.patch
+elif [[ "${target}" == *-mingw* ]]; then
+     # Required to find OpenSSL
+     export LDFLAGS="${LDFLAGS} -L${bindir}"
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
@@ -42,7 +46,7 @@ products_unix = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.12"),
+    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15"),
 ]
 
 include("../../fancy_toys.jl")

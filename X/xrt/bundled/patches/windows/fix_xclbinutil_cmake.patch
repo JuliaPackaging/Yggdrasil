@@ -1,0 +1,11 @@
+--- a/src/runtime_src/tools/xclbinutil/CMakeLists.txt
++++ b/src/runtime_src/tools/xclbinutil/CMakeLists.txt
+@@ -83,7 +83,9 @@ 
+ # Signing xclbin images currently is not support on windows
+ if(NOT WIN32)
+   target_link_libraries(${XCLBINUTIL_NAME} PRIVATE crypto)
++else()
++  target_link_libraries(${XCLBINUTIL_NAME} PRIVATE wsock32 ws2_32)
+ endif()
+ 
+ # Add compile definitions

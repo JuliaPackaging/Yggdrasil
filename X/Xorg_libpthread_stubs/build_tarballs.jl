@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Xorg_libpthread_stubs"
+version_string = "0.1"
 # Upstream version is still 0.1, incremented here for JLL compat reasons. 
-version = v"0.1.1"
+version = v"0.1.2"
 
 # Collection of sources required to build libpthread-stubs
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libpthread-stubs-$(version.major).$(version.minor).tar.bz2",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libpthread-stubs-$(version_string).tar.bz2",
                   "004dae11e11598584939d66d26a5ab9b48d08a00ca2d00ae8d38ee3ac7a15d65"),
 ]
 
@@ -25,14 +26,15 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Build trigger: 1

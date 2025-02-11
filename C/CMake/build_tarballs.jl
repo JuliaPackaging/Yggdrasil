@@ -3,35 +3,30 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.30.2"
+version = v"3.31.3"
 
 # Collection of sources required to build CMake
 sources = [
-    GitSource("https://github.com/Kitware/CMake", "d88682dff6bf053e5bbdc10accf5d6825303e656"),
-    #DirectorySource("bundled/"),
+    GitSource("https://github.com/Kitware/CMake", "41abd532b64f178017ed4ffdbdb5af42d9056a8d"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/CMake
 
-mkdir build
-cd build/
-
-cmake -B . -S .. \
+cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE:STRING=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBUILD_TESTING:BOOL=OFF \
-    -GNinja
-
-ninja
-ninja -j${nproc}
-ninja install
+    -DBUILD_TESTING:BOOL=OFF
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # Build for all supported platforms.
 platforms = expand_cxxstring_abis(supported_platforms())
+# OpenSSL is not available for riscv64
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -40,7 +35,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.14")
+    Dependency("OpenSSL_jll"; compat="3.0.15")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

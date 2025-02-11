@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "OpenJpeg"
-version = v"2.5.2"
+version = v"2.5.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/uclouvain/openjpeg.git",
-              "39e8c50a2f9bdcf36810ee3d41bcbf1cc78968ae"),
+              "210a8a5690d0da66f02d49420d7176a21ef409dc"),
     DirectorySource("./bundled")
 ]
 

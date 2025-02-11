@@ -1,6 +1,6 @@
 name = "LLD"
-llvm_full_version = v"18.1.7+2"
-libllvm_version = v"18.1.7+2"
+llvm_full_version = v"18.1.7+3"
+libllvm_version = v"18.1.7+3"
 
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
@@ -37,4 +37,5 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, julia_compat="1.12",
                    augment_platform_block)
 end
-#!
+
+# bump

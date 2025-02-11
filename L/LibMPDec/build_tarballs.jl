@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibMPDec"
-version = v"2.5.1"
+mpdecimal_version = v"2.5.1"
+version = v"2.5.2"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-$(version).tar.gz",
+    ArchiveSource("https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-$(mpdecimal_version).tar.gz",
                   "9f9cd4c041f99b5c49ffb7b59d9f12d95b683d88585608aa56a6307667b2b21f"),
     DirectorySource("./bundled"),
 ]
@@ -33,7 +34,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [

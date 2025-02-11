@@ -10,13 +10,17 @@
 #
 #      for p in ../../../LLVMBootstrap@X-1/bundled/patches/*.patch; do if [[ -L "${p}" ]]; then cp -a "${p}" .; else ln -s "${p}" .; fi; done
 #
+# * adapt the recipe as necessary, but try to make changes in a backward
+#   compatible way.  If you introduce steps that are necessary only with
+#   specific versions of LLVM, guard them with appropriate conditionals.  We may
+#   need to use the same recipe to rebuild older versions of LLVM at a later
+#   point and being able to rerun it as-is is extremely important
 # * you only need to build the platform `x86_64-linux-musl`. To deploy the shard
 #   and automatically update your BinaryBuilderBase's `Artifacts.toml`, use the
 #   `--deploy` flag to the `build_tarballs.jl` script.  You can build & deploy
 #   by running:
 #
 #      julia build_tarballs.jl --debug --verbose --deploy
-#
 
 include("./common.jl")
 
@@ -37,6 +41,7 @@ llvm_tags = Dict(
     v"15.0.7" => "8dfdcc7b7bf66834a761bd8de445840ef68e4d1a",
     v"16.0.6" => "7cbf1a2591520c2491aa35339f227775f4d3adf6",
     v"17.0.6" => "6009708b4367171ccdbf4b5905cb6a803753fe18",
+    v"18.1.7" => "768118d1ad38bf13c545828f67bd6b474d61fc55",
 )
 
 function llvm_sources(;version = "v8.0.1", kwargs...)

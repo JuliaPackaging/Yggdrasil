@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Rclone"
-version = v"1.67.0"
+version = v"1.69.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/rclone/rclone/releases/download/v$(version)/rclone-v$(version).tar.gz",
-                  "f3863ef3fcbcc0aa0ca00c6bf1c099be9470df360751912db5c9021d3e549d10"),
+                  "45e6a329af4f98e0c71233511ab8543e454eaa22adeeb73179bfdb22456a2123"),
     DirectorySource("bundled"),
 ]
 
@@ -31,10 +31,6 @@ install -t ${bindir} ${GOPATH}/bin/rclone${exeext}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
-# Disable 32-bit ARM platforms because the compiler reports an error:
-# `internal compiler error: typebits.Set: invalid initial alignment: type Fs has alignment 8, but offset is 4`
-filter!(p -> arch(p) ∉ ["armv6l", "armv7l"], platforms)
 
 # The products that we will ensure are always built
 products = [

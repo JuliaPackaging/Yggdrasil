@@ -1,0 +1,427 @@
+commit 4fff73c6f9981dc83e9726f03340773fddab22d2
+Author: Pekka Jääskeläinen <pekka.jaaskelainen@intel.com>
+Date:   Fri Aug 30 14:25:14 2024 +0300
+
+    Merge pull request #1543 from maleadt/path_overrides
+
+    Allow overriding paths to executables using env vars.
+
+diff --git a/doc/sphinx/source/using.rst b/doc/sphinx/source/using.rst
+index 08de1bb99..d3ee63d3e 100644
+--- a/doc/sphinx/source/using.rst
++++ b/doc/sphinx/source/using.rst
+@@ -297,6 +297,20 @@ pocl.
+  good for creating pocl binaries. Requires those drivers to be compiled with support
+  for compilation for those devices.
+
++- **POCL_PATH_XXX**
++
++ String. These variables can be used to override the path to executables that
++ pocl uses during compilation, linking, etc. By default, they are set to the
++ paths configured during the build.
++
++ The following variables are available:
++
++  * **POCL_PATH_CLANG** -- Path to the clang executable.
++  * **POCL_PATH_LLVM_LINK** -- Path to the llvm-link executable.
++  * **POCL_PATH_LLVM_OPT** -- Path to the llvm-opt executable.
++  * **POCL_PATH_LLVM_LLC** -- Path to the llc executable.
++  * **POCL_PATH_LLVM_SPIRV** -- Path to the llvm-spirv executable.
++  * **POCL_PATH_SPIRV_LINK** -- Path to the spirv-link executable.
+
+ - **POCL_SIGFPE_HANDLER**
+
+diff --git a/lib/CL/clCreateProgramWithIL.c b/lib/CL/clCreateProgramWithIL.c
+index 90e364783..3e2e85a4f 100644
+--- a/lib/CL/clCreateProgramWithIL.c
++++ b/lib/CL/clCreateProgramWithIL.c
+@@ -37,7 +37,8 @@
+ static int
+ get_program_spec_constants (cl_program program, char *program_bc_spirv)
+ {
+-  char *args[] = { LLVM_SPIRV, "--spec-const-info", program_bc_spirv, NULL };
++  const char *args[] = { pocl_get_path ("LLVM_SPIRV", LLVM_SPIRV),
++                         "--spec-const-info", program_bc_spirv, NULL };
+   char captured_output[MAX_OUTPUT_BYTES];
+   size_t captured_bytes = MAX_OUTPUT_BYTES;
+   int errcode = CL_SUCCESS;
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index 892e3c3ef..c21da29de 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -216,8 +216,8 @@ llvm_codegen (char *output, unsigned device_i, cl_kernel kernel,
+
+   /* Link through Clang driver interface who knows the correct toolchains
+      for all of its targets.  */
+-  const char *cmd_line[64] =
+-    {CLANG, "-o", tmp_module, tmp_objfile};
++  const char *cmd_line[64]
++    = { pocl_get_path ("CLANG", CLANG), "-o", tmp_module, tmp_objfile };
+   const char **device_ld_arg = device->final_linkage_flags;
+   const char **pos = &cmd_line[4];
+   while ((*pos++ = *device_ld_arg++)) {}
+diff --git a/lib/CL/devices/common_driver.c b/lib/CL/devices/common_driver.c
+index 2070398a2..27380aa1f 100644
+--- a/lib/CL/devices/common_driver.c
++++ b/lib/CL/devices/common_driver.c
+@@ -584,14 +584,15 @@ pocl_regen_spirv_binary (cl_program program, cl_uint device_i)
+    * all PoCL devices support, hence check the device */
+   char* spirv_target_env = (device->generic_as_support != CL_FALSE) ?
+                         "--spirv-target-env=CL2.0" :  "--spirv-target-env=CL1.2";
+-  char *args[8] = { LLVM_SPIRV,
+-                    concated_spec_const_option,
+-                    spirv_target_env,
+-                    "-r", "-o",
+-                    unlinked_program_bc_temp,
+-                    program_bc_spirv,
+-                    NULL };
+-  char **final_args = args;
++  const char *args[8] = { pocl_get_path ("LLVM_SPIRV", LLVM_SPIRV),
++                          concated_spec_const_option,
++                          spirv_target_env,
++                          "-r",
++                          "-o",
++                          unlinked_program_bc_temp,
++                          program_bc_spirv,
++                          NULL };
++  const char **final_args = args;
+
+   errcode = pocl_cache_tempname(unlinked_program_bc_temp, ".bc", NULL);
+   POCL_RETURN_ERROR_ON ((errcode != 0), CL_BUILD_PROGRAM_FAILURE,
+@@ -626,7 +627,7 @@ pocl_regen_spirv_binary (cl_program program, cl_uint device_i)
+     {
+       /* skip concated_spec_const_option */
+       args[0] = NULL;
+-      args[1] = LLVM_SPIRV;
++      args[1] = pocl_get_path ("LLVM_SPIRV", LLVM_SPIRV);
+       final_args = args + 1;
+     }
+
+diff --git a/lib/CL/devices/hsa/pocl-hsa.c b/lib/CL/devices/hsa/pocl-hsa.c
+index 830fa169d..29f07865a 100644
+--- a/lib/CL/devices/hsa/pocl-hsa.c
++++ b/lib/CL/devices/hsa/pocl-hsa.c
+@@ -1111,9 +1111,14 @@ compile_parallel_bc_to_brig (char *brigfile, _cl_command_node *cmd,
+                           " compiling parallel.bc to brig file: \n%s\n",
+                           parallel_bc_path);
+
+-
+-      char* args1[] = { LLVM_LLC, "-O2", "-march=hsail64", "-filetype=asm",
+-                        "-o", hsailfile, parallel_bc_path, NULL };
++      char *args1[] = { pocl_get_path ("LLVM_LLC", LLVM_LLC),
++                        "-O2",
++                        "-march=hsail64",
++                        "-filetype=asm",
++                        "-o",
++                        hsailfile,
++                        parallel_bc_path,
++                        NULL };
+       if ((error = pocl_run_command (args1)))
+         {
+           POCL_MSG_PRINT_HSA ("llc exit status %i\n", error);
+diff --git a/lib/CL/devices/level0/pocl-level0.cc b/lib/CL/devices/level0/pocl-level0.cc
+index f6aa14396..61d469bb3 100644
+--- a/lib/CL/devices/level0/pocl-level0.cc
++++ b/lib/CL/devices/level0/pocl-level0.cc
+@@ -272,7 +272,7 @@ static void convertProgramBcPathToSpv(char *ProgramBcPath,
+ static constexpr unsigned DefaultCaptureSize = 128 * 1024;
+
+ static int runAndAppendOutputToBuildLog(cl_program Program, unsigned DeviceI,
+-                                        char *const *Args) {
++                                        const char **Args) {
+   int Errcode = CL_SUCCESS;
+
+   char *CapturedOutput = nullptr;
+@@ -323,9 +323,9 @@ static int linkWithSpirvLink(cl_program Program, cl_uint DeviceI,
+                              std::vector<std::string> &SpvBinaryPaths,
+                              int CreateLibrary) {
+   std::vector<std::string> CompilationArgs;
+-  std::vector<char *> CompilationArgs2;
++  std::vector<const char *> CompilationArgs2;
+
+-  CompilationArgs.push_back(SPIRV_LINK);
++  CompilationArgs.push_back(pocl_get_path("SPIRV_LINK", SPIRV_LINK));
+   if (CreateLibrary != 0) {
+     CompilationArgs.push_back("--create-library");
+   }
+@@ -355,9 +355,9 @@ static int linkWithLLVMLink(cl_program Program, cl_uint DeviceI,
+                             std::vector<std::string> &BcBinaryPaths,
+                             int CreateLibrary) {
+   std::vector<std::string> CompilationArgs;
+-  std::vector<char *> CompilationArgs2;
++  std::vector<const char *> CompilationArgs2;
+
+-  CompilationArgs.push_back(LLVM_LINK);
++  CompilationArgs.push_back(pocl_get_path("LLVM_LINK", LLVM_LINK));
+ //  if (CreateLibrary != 0) {
+ //    CompilationArgs.push_back("--create-library");
+ //  }
+diff --git a/lib/CL/devices/vulkan/pocl-vulkan.c b/lib/CL/devices/vulkan/pocl-vulkan.c
+index fedc19dc2..dcd2074bb 100644
+--- a/lib/CL/devices/vulkan/pocl-vulkan.c
++++ b/lib/CL/devices/vulkan/pocl-vulkan.c
+@@ -1732,8 +1732,9 @@ pocl_vulkan_get_timer_value(void *data)
+ #endif
+
+ int
+-run_and_append_output_to_build_log (cl_program program, unsigned device_i,
+-                                    char *const *args)
++run_and_append_output_to_build_log (cl_program program,
++                                    unsigned device_i,
++                                    const char **args)
+ {
+   int errcode = CL_SUCCESS;
+
+@@ -1910,23 +1911,16 @@ pocl_vulkan_build_source (cl_program program, cl_uint device_i,
+   char program_spv_path_temp[POCL_MAX_PATHNAME_LENGTH];
+   pocl_cache_tempname (program_spv_path_temp, ".spv", NULL);
+
+-  char *COMPILATION[MAX_COMPILATION_ARGS]
+-      = { CLSPV,
+-          "-x=cl",
+-          "--spv-version=1.0",
+-          "--cl-kernel-arg-info",
+-          "--keep-unused-arguments",
+-          "--uniform-workgroup-size",
+-          "--global-offset",
+-          "--long-vector",
+-          "--global-offset-push-constant", // goffs as push constant
+-          "--module-constants-in-storage-buffer",
+-          /* push constants should be faster,
+-           * but currently don't work with goffs */
+-          /* "--pod-pushconstant",*/
+-          "--pod-ubo",
+-          "--cluster-pod-kernel-args",
+-          NULL };
++  const char *COMPILATION[MAX_COMPILATION_ARGS]
++    = { CLSPV, "-x=cl", "--spv-version=1.0", "--cl-kernel-arg-info",
++        "--keep-unused-arguments", "--uniform-workgroup-size",
++        "--global-offset", "--long-vector",
++        "--global-offset-push-constant", // goffs as push constant
++        "--module-constants-in-storage-buffer",
++        /* push constants should be faster,
++         * but currently don't work with goffs */
++        /* "--pod-pushconstant",*/
++        "--pod-ubo", "--cluster-pod-kernel-args", NULL };
+
+   unsigned last_arg_idx = 12;
+
+@@ -2106,8 +2100,8 @@ pocl_vulkan_build_source (cl_program program, cl_uint device_i,
+   POCL_GOTO_ERROR_ON (!pocl_exists (program_spv_path_temp),
+                       CL_BUILD_PROGRAM_FAILURE, "clspv produced no output\n");
+
+-  char *REFLECTION[] = { CLSPV_REFLECTION, program_spv_path_temp, "-o",
+-                         program_map_path_temp, NULL };
++  const char *REFLECTION[] = { CLSPV_REFLECTION, program_spv_path_temp, "-o",
++                               program_map_path_temp, NULL };
+   err = run_and_append_output_to_build_log (program, device_i, REFLECTION);
+
+   POCL_GOTO_ERROR_ON ((err != 0), CL_BUILD_PROGRAM_FAILURE,
+@@ -2230,8 +2224,8 @@ pocl_vulkan_build_binary (cl_program program, cl_uint device_i,
+           !pocl_exists (program_spv_path_temp), CL_BUILD_PROGRAM_FAILURE,
+           "failed to write SPIR-V file %s\n", program_spv_path_temp);
+
+-      char *REFLECTION[] = { CLSPV "-reflection", program_spv_path_temp, "-o",
+-                             program_map_path_temp, NULL };
++      const char *REFLECTION[] = { CLSPV "-reflection", program_spv_path_temp,
++                                   "-o", program_map_path_temp, NULL };
+
+       err = run_and_append_output_to_build_log (program, device_i, REFLECTION);
+       POCL_RETURN_ERROR_ON ((err != 0), CL_BUILD_PROGRAM_FAILURE,
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index fada2ca10..067748d7f 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -1027,7 +1027,8 @@ int pocl_invoke_clang(cl_device_id Device, const char** Args) {
+
+   DiagnosticsEngine Diags(DiagID, &*DiagOpts, DiagClient);
+
+-  clang::driver::Driver TheDriver(CLANG, Device->llvm_target_triplet, Diags);
++  clang::driver::Driver TheDriver(pocl_get_path("CLANG", CLANG),
++                                  Device->llvm_target_triplet, Diags);
+
+   const char **ArgsEnd = Args;
+   while (*ArgsEnd++ != nullptr) {}
+diff --git a/lib/CL/pocl_llvm_wg.cc b/lib/CL/pocl_llvm_wg.cc
+index 5eff8ffbd..d77317c43 100644
+--- a/lib/CL/pocl_llvm_wg.cc
++++ b/lib/CL/pocl_llvm_wg.cc
+@@ -845,7 +845,7 @@ static int convertBCorSPV(char *InputPath,
+   char CapturedOutput[MAX_OUTPUT_BYTES];
+   size_t CapturedBytes = MAX_OUTPUT_BYTES;
+   std::vector<std::string> CompilationArgs;
+-  std::vector<char *> CompilationArgs2;
++  std::vector<const char *> CompilationArgs2;
+
+   int r = -1;
+
+@@ -934,7 +934,7 @@ static int convertBCorSPV(char *InputPath,
+ #define ALLOW_EXTS "--spirv-ext=+SPV_KHR_no_integer_wrap_decoration"
+
+   // generate program.spv
+-  CompilationArgs.push_back(LLVM_SPIRV);
++  CompilationArgs.push_back(pocl_get_path("LLVM_SPIRV", LLVM_SPIRV));
+ #if (LLVM_MAJOR == 15) || (LLVM_MAJOR == 16)
+ #ifdef LLVM_OPAQUE_POINTERS
+   CompilationArgs.push_back("--opaque-pointers");
+@@ -1513,7 +1513,12 @@ int pocl_llvm_codegen(cl_device_id Device, cl_program program, void *Modp,
+                       AsmStr.size(), nullptr);
+   pocl_mk_tempname(ObjFileName, "/tmp/pocl-obj", ".o", nullptr);
+
+-  const char *Args[] = {CLANG, AsmFileName, "-c", "-o", ObjFileName, nullptr};
++  const char *Args[] = {pocl_get_path("CLANG", CLANG),
++                        AsmFileName,
++                        "-c",
++                        "-o",
++                        ObjFileName,
++                        nullptr};
+   int Res = pocl_invoke_clang(Device, Args);
+
+   if (Res == 0) {
+diff --git a/lib/CL/pocl_runtime_config.c b/lib/CL/pocl_runtime_config.c
+index bfc3d8b5d..3f596549e 100644
+--- a/lib/CL/pocl_runtime_config.c
++++ b/lib/CL/pocl_runtime_config.c
+@@ -25,6 +25,7 @@
+
+ #include "pocl_runtime_config.h"
+
++#include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+
+@@ -57,3 +58,12 @@ pocl_get_string_option (const char *key, const char *default_value)
+   const char *val = getenv (key);
+   return val != NULL ? val : default_value;
+ }
++
++/* Returns a string, but can be overriden by a POCL_PATH env var. */
++const char *
++pocl_get_path (const char *name, const char *default_value)
++{
++  char key[256];
++  snprintf (key, sizeof (key), "POCL_PATH_%s", name);
++  return pocl_get_string_option (key, default_value);
++}
+diff --git a/lib/CL/pocl_runtime_config.h b/lib/CL/pocl_runtime_config.h
+index 639777f83..3d58a7b9e 100644
+--- a/lib/CL/pocl_runtime_config.h
++++ b/lib/CL/pocl_runtime_config.h
+@@ -40,6 +40,9 @@ int pocl_get_bool_option(const char *key, int default_value);
+ POCL_EXPORT
+ const char* pocl_get_string_option(const char *key, const char *default_value);
+
++POCL_EXPORT
++const char *pocl_get_path (const char *name, const char *default_value);
++
+ #ifdef __cplusplus
+ }
+ #endif
+diff --git a/lib/CL/pocl_util.c b/lib/CL/pocl_util.c
+index 5be0d1b46..ee85dad76 100644
+--- a/lib/CL/pocl_util.c
++++ b/lib/CL/pocl_util.c
+@@ -2141,7 +2141,7 @@ pocl_command_to_str (cl_command_type cmd)
+  * vfork() does not copy pagetables.
+  */
+ int
+-pocl_run_command (char *const *args)
++pocl_run_command (const char **args)
+ {
+   POCL_MSG_PRINT_INFO ("Launching: %s\n", args[0]);
+ #ifdef HAVE_VFORK
+@@ -2172,7 +2172,7 @@ pocl_run_command (char *const *args)
+ #endif
+   if (p == 0)
+     {
+-      return execv (args[0], args);
++      return execv (args[0], (char *const *)args);
+     }
+   else
+     {
+@@ -2191,8 +2191,9 @@ pocl_run_command (char *const *args)
+ }
+
+ int
+-pocl_run_command_capture_output (char *capture_string, size_t *captured_bytes,
+-                                 char *const *args)
++pocl_run_command_capture_output (char *capture_string,
++                                 size_t *captured_bytes,
++                                 const char **args)
+ {
+   POCL_MSG_PRINT_INFO ("Launching: %s\n", args[0]);
+
+@@ -2217,7 +2218,7 @@ pocl_run_command_capture_output (char *capture_string, size_t *captured_bytes,
+       dup2 (out[1], STDOUT_FILENO);
+       dup2 (out[1], STDERR_FILENO);
+
+-      return execv (args[0], args);
++      return execv (args[0], (char *const *)args);
+     }
+   else
+     {
+diff --git a/lib/CL/pocl_util.h b/lib/CL/pocl_util.h
+index 42684a844..045f2cc8e 100644
+--- a/lib/CL/pocl_util.h
++++ b/lib/CL/pocl_util.h
+@@ -288,13 +288,12 @@ const char *
+ pocl_command_to_str (cl_command_type cmd);
+
+ POCL_EXPORT
+-int
+-pocl_run_command(char * const *args);
++int pocl_run_command (const char **args);
+
+ POCL_EXPORT
+ int pocl_run_command_capture_output (char *capture_string,
+                                      size_t *captured_bytes,
+-                                     char *const *args);
++                                     const char **args);
+
+ uint16_t float_to_half (float value);
+
+diff --git a/pocld/shared_cl_context.cc b/pocld/shared_cl_context.cc
+index 6bc358bbe..a74d73679 100644
+--- a/pocld/shared_cl_context.cc
++++ b/pocld/shared_cl_context.cc
+@@ -1225,7 +1225,7 @@ bool createSPIRVWithSVMOffset(const std::vector<unsigned char> *InputSPV,
+     // https://www.khronos.org/blog/offline-compilation-of-opencl-kernels-into-
+     // spir-v-using-open-source-tooling
+     std::stringstream OpenCLCCmd;
+-    OpenCLCCmd << CLANG
++    OpenCLCCmd << pocl_get_path("CLANG", CLANG)
+                << " -c -target spir64 -cl-kernel-arg-info -cl-std=CL3.0 "
+                << SrcFileName.c_str() << " " << BuildOptions
+                << " -emit-llvm -o " << OrigBcFileName.c_str();
+@@ -1242,8 +1242,8 @@ bool createSPIRVWithSVMOffset(const std::vector<unsigned char> *InputSPV,
+
+     std::stringstream SpvCmd;
+
+-    SpvCmd << LLVM_SPIRV << " -r " << OrigSpvFileName.c_str() << " -o "
+-           << OrigBcFileName.c_str();
++    SpvCmd << pocl_get_path("LLVM_SPIRV", LLVM_SPIRV) << " -r "
++           << OrigSpvFileName.c_str() << " -o " << OrigBcFileName.c_str();
+
+     if (system(SpvCmd.str().c_str()) != EXIT_SUCCESS)
+       return false;
+@@ -1266,7 +1266,8 @@ bool createSPIRVWithSVMOffset(const std::vector<unsigned char> *InputSPV,
+   // Without -strip-debug there might be crashes due to llvm-spirv
+   // not detecting its own produced debug output sometimes (to
+   // report).
+-  OptCmd << LLVM_OPT << " -load-pass-plugin=" << LibPoCLPath
++  OptCmd << pocl_get_path("LLVM_OPT", LLVM_OPT)
++         << " -load-pass-plugin=" << LibPoCLPath
+          << " -strip-debug -passes=svm-offset -svm-offset-value=" << SVMOffset
+          << " " << OrigBcFileName << " -o " << OffsettedBcFileName;
+
+@@ -1277,8 +1278,8 @@ bool createSPIRVWithSVMOffset(const std::vector<unsigned char> *InputSPV,
+
+   std::stringstream SpvCmd;
+
+-  SpvCmd << LLVM_SPIRV << " " << OffsettedBcFileName.c_str() << " -o "
+-         << OutSpvFileName.c_str();
++  SpvCmd << pocl_get_path("LLVM_SPIRV", LLVM_SPIRV) << " "
++         << OffsettedBcFileName.c_str() << " -o " << OutSpvFileName.c_str();
+
+   if (system(SpvCmd.str().c_str()) != EXIT_SUCCESS)
+     return false;
