@@ -137,7 +137,7 @@ function augment_platform!(platform::Platform)
         platform["gpu"] = gpu
     end
 
-    gpu = get(ENV, "REACTANT_CUDA_VERSION", cuda_version_tag)
+    cuda_version_tag = get(ENV, "REACTANT_CUDA_VERSION", cuda_version_tag)
     if !haskey(platform, "cuda_version")
         platform["cuda_version"] = cuda_version_tag
     end
