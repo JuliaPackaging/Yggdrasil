@@ -757,6 +757,7 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     end
 
     platforms = supported_platforms(; experimental=experimental_platforms)
+    filter!(p->arch(p)!="riscv64", platforms) # Not supported yet, see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1366
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
