@@ -4,6 +4,7 @@ using Pkg
 
 sources = AbstractSource[
     GitSource("https://github.com/microsoft/onnxruntime.git", "26250ae74d2c9a3c6860625ba4a147ddfb936907"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
@@ -44,6 +45,9 @@ if [[ $target != *-w64-mingw32* ]]; then
     fi
 
     cd onnxruntime
+
+    atomic_patch -p1 ../patches/aarch64-linux-bfloat16-float16-cmake.patch
+
     git submodule update --init --recursive --depth 1 --jobs $nproc
     mkdir build
     cd build
