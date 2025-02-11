@@ -96,7 +96,7 @@ products = Product[
 dependencies = [
     Dependency("boost_jll"; compat="=1.87.0")
     Dependency("GEOS_jll"; compat="3.13.1")
-    Dependency("LibCURL_jll")
+    Dependency("LibCURL_jll"; compat="7.73,8")
     Dependency("Lz4_jll")
     Dependency("protoc_jll"; compat="105.29.3")
     HostBuildDependency("protoc_jll")
