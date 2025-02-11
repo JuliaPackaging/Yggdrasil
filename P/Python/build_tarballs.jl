@@ -105,7 +105,7 @@ products = Product[
 dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("Libffi_jll"; compat="3.4.6"),
+    Dependency("Libffi_jll"; compat="~3.4.6"),
     Dependency("SQLite_jll"),
     Dependency("LibMPDec_jll"),
     Dependency("Zlib_jll"),
