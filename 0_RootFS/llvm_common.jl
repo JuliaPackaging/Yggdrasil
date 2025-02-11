@@ -135,7 +135,13 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE})
 
     # We want a lot of projects
-    CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;flang;lld;mlir;openmp;polly')
+    build_flang = version >= v"18"
+    if build_flang
+        # flang requires clang and mlir
+        CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;flang;lld;mlir;polly')
+    else
+        CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='clang;lld;polly')
+    end
 
     # Build runtimes
     CMAKE_FLAGS+=(-DLLVM_ENABLE_RUNTIMES='compiler-rt;libcxx;libcxxabi;libunwind')
@@ -144,8 +150,12 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST=)
 
     # Turn off docs
-    # (We need examples to build flang.)
-    CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=OFF -DLLVM_INCLUDE_EXAMPLES=ON)
+    if build_flang
+        # (We need examples to build flang)
+        CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=OFF -DLLVM_INCLUDE_EXAMPLES=ON)
+    else
+        CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF)
+    end
 
     # We want a shared library
     CMAKE_FLAGS+=(-DLLVM_BUILD_LLVM_DYLIB:BOOL=ON -DLLVM_LINK_LLVM_DYLIB:BOOL=ON)
