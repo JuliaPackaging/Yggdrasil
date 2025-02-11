@@ -35,8 +35,6 @@ cmake -B build -S . \
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
-cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
-cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
 mkdir -pv ${libdir}
 find "${prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
 
