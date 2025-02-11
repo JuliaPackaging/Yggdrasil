@@ -46,7 +46,6 @@ if [[ "${target}" == *freebsd* ]] || [[ "${target}" == *mingw* ]]; then
 fi
 
 if [[ "${target}" == riscv* ]] || [[ "${target}" == armv6l-linux-gnueabihf-cxx11 ]]; then
-    export CXXFLAGS="-std=c++17"
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-template-id-cdtor-error.patch
 fi
 mkdir build && cd build
@@ -64,13 +63,13 @@ CMAKE_FLAGS=(
     -DENABLE_PYTHON_BINDINGS=OFF
     -DENABLE_BENCHMARKS=OFF
     -DENABLE_TESTS=OFF
+    -DENABLE_GDAL
     -DPROTOBUF_INCLUDE_DIRS=${includedir}
     -DPROTOBUF_LIBRARIES=${libdir}/libprotobuf.${dlext}
     -DPROTOBUF_PROTOC_LIBRARIES=${libdir}/libprotoc.${dlext}
     -DProtobuf_LITE_LIBRARIES=${libdir}/libprotobuf-lite.${dlext}
     -DPROTOBUF_PROTOC_EXECUTABLE=${host_bindir}/protoc
     -DLOGGING_LEVEL=DEBUG
-    -DCMAKE_CXX_FLAGS="-std=c++17"
 )
 
 cmake "${CMAKE_FLAGS[@]}" ..
