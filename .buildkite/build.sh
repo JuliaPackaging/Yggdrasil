@@ -18,5 +18,10 @@ echo "--- Cleanup"
 
 echo "+++ Build"
 cd "${PROJECT}"
+
+# Parallel auditor can end up opening loads of files and causing
+# "Too many open files" errors.  Increase the limit.
+ulimit -n 65536
+
 # Start Julia with multiple thread to make auditor parallel.
 julia --threads "${BINARYBUILDER_NPROC:-16}" ./build_tarballs.jl --verbose "${PLATFORM}"
