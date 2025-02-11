@@ -32,7 +32,11 @@ fi
 
 git submodule update --init --recursive
 
+# Help cmake find protoc exec for host, protoc libs for target
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/protoc-find-exec.patch
+
+# Improve compatibility with more recent CXX20 oriented gcc version
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-template-id-cdtor-error.patch
 
 if [[ "${target}" == *freebsd* ]]; then
     cd third_party/cpp-statsd-client
@@ -45,9 +49,6 @@ if [[ "${target}" == *freebsd* ]] || [[ "${target}" == *mingw* ]]; then
     mv ${WORKSPACE}/srcdir/patches/liblz4.pc ${prefix}/lib/pkgconfig/
 fi
 
-if [[ "${target}" == riscv* ]] || [[ "${target}" == armv6l-linux-gnueabihf-cxx11 ]]; then
-    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fix-template-id-cdtor-error.patch
-fi
 mkdir build && cd build
 
 CMAKE_FLAGS=(
