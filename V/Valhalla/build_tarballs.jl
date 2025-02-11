@@ -83,7 +83,6 @@ install_license ../LICENSE.md
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# Windows is blocked until pkg-config issues are figured out (https://github.com/valhalla/valhalla/issues/3931)
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
