@@ -9,7 +9,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 
 name = "XDiag"
-version = v"0.2.2"
+version = v"0.3.1"
 
 include("../../L/libjulia/common.jl")
 
