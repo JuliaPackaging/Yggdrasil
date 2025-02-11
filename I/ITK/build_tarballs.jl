@@ -10,15 +10,11 @@ script = raw"""
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
     OS=Windows
-    # Add Windows-specific flags
-    export CXXFLAGS="-DITK_LEGACY_REMOVE=OFF -DVNL_DLL_DATA= -DITK_EXPORTS ${CXXFLAGS}"
-    export CFLAGS="${CFLAGS} -DVNL_DLL_DATA= -DITK_EXPORTS"
 else
     export CXXFLAGS="-DITK_LEGACY_REMOVE=OFF ${CXXFLAGS}"
 fi
 
 export LDFLAGS="-L${libdir}"
-
 cd $WORKSPACE/srcdir/ITK*
 mkdir build/
 cmake -B build -S . \
@@ -53,8 +49,6 @@ cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
-cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
 mkdir -pv ${libdir}
 find "${prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
 fi
