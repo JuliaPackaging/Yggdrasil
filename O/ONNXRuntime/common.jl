@@ -32,6 +32,17 @@ if [[ $target != *-w64-mingw32* ]]; then
         )
     fi
 
+    # Cross-compiling for aarch64-apple-darwin on x86_64 requires setting arch.: https://github.com/microsoft/onnxruntime/blob/29209784dd53965fb9fef0ebc1c837fe16574d09/docs/build/inferencing.md#macos
+    if [[ $target == aarch64-apple-darwin* ]]; then
+        cmake_extra_args+=(
+            -DCMAKE_OSX_ARCHITECTURES=arm64
+        )
+    elif [[ $target == x86_64-apple-darwin* ]]; then
+        cmake_extra_args+=(
+            -DCMAKE_OSX_ARCHITECTURES=x86_64
+        )
+    fi
+
     cd onnxruntime
     git submodule update --init --recursive --depth 1 --jobs $nproc
     mkdir build
