@@ -24,8 +24,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "MPItrampoline"
 
 mpitrampoline_version = v"5.5.0"
-version = v"5.5.1"
-mpich_version_str = "4.2.3"
+version = v"5.5.2"
+mpich_version = "4.3.0"
 mpiconstants_version = v"1.5.0"
 mpiwrapper_version = v"2.11.1"
 
@@ -33,8 +33,8 @@ mpiwrapper_version = v"2.11.1"
 sources = [
     GitSource("https://github.com/eschnett/MPItrampoline", "67292e8b1ac40aa5bd6d0a5dab669da32405a2d7"),
     GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
-    ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version_str)/mpich-$(mpich_version_str).tar.gz",
-                  "7a019180c51d1738ad9c5d8d452314de65e828ee240bcb2d1f80de9a65be88a8"),
+    ArchiveSource("https://www.mpich.org/static/downloads/$(mpich_version)/mpich-$(mpich_version).tar.gz",
+                  "5e04132984ad83cab9cc53f76072d2b5ef5a6d24b0a9ff9047a8ff96121bcc63"),
     GitSource("https://github.com/eschnett/MPIwrapper", "070c4e1b8a98fbe63ea8f84d046effb813c9febb"),
 ]
 
@@ -292,5 +292,3 @@ dependencies = [
 # We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"5")
-
-# Build trigger: 1
