@@ -31,6 +31,9 @@ fi
 script = sdk_update_script * raw"""
 cd $WORKSPACE/srcdir/osrm-backend
 
+# Use boost patch, drop once https://github.com/Project-OSRM/osrm-backend/pull/7073 is merged
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/boost_1_87.patch"
+
 if [[ ${target} == *mingw* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
 
