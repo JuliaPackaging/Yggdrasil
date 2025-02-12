@@ -1,11 +1,16 @@
 using BinaryBuilder, Pkg
 name = "ITK"
-version = v"5.3.1"
+version = v"5.3.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/InsightSoftwareConsortium/ITK.git", "1fc47c7bec4ee133318c1892b7b745763a17d411")
 ]
-# Bash recipe for building across all Platforms
+# Bash recipe for building across all platforms
+
+# [windows] The libitkminc2-5.3.dll and libitkminc2-5.3.dll.a results in CMAKE configuration errors upstream unless they are copied to $prefix/bin
+# [windows] Specifically CMAKe produces the following error which is eliminated by copying: 
+#  the imported target itkminc2 references the file 
+#  "/opt/x86_64-w64-mingw32/x86_64-w64-mingw32/sys-root/usr/local/lib/libitkminc2-5.3.dll" but this file does not exist
 script = raw"""
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
     CONFIG=msys2-64
@@ -49,10 +54,12 @@ cmake --install build
 install_license ${WORKSPACE}/srcdir/ITK/LICENSE
 
 if [[ "${target}" == *x86_64-w64-mingw32* ]]; then
-mkdir -pv ${libdir}
-find "${prefix}/lib" -name "*.${dlext}" -exec mv -v {} ${libdir} \;
+    cp $prefix/lib/libitkminc2-5.3.dll $prefix/bin
+    cp $prefix/lib/libitkminc2-5.3.dll.a $prefix/bin
 fi
 """
+# Fixing itkminc2 reference error on windows platforms with above
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
