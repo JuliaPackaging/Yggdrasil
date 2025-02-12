@@ -71,6 +71,7 @@ CMAKE_FLAGS+=(-DCMAKE_WARN_DEPRECATED=OFF)
 if [[ ${target} == *mingw* ]]; then
     CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
     CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
+    CMAKE_FLAGS+=(-D__TBB_USE_FENV=0)
 fi
 
 cmake .. ${CMAKE_FLAGS[@]}
