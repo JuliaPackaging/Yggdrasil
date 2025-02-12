@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_LLVM_Backend"
-version = v"19"
+version = v"20"
 
 # Collection of sources required to build SPIRV_LLVM_Backend
 sources = [
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/llvm-project-19.1.7.src.tar.xz",
-                  "82401fea7b79d0078043f7598b835284d6650a75b93e64b6f761ea7b63097501"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0-rc1/llvm-project-20.1.0-rc1.src.tar.xz",
+                  "5f8653a2ffb59febd07d816778efe0dfc7a3d55f65b4213399608535d7bdc9a2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -55,8 +55,7 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
 # Only build the SPIR-V back-end
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD=)
-CMAKE_FLAGS+=(-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=SPIRV)
+CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD=SPIRV)
 
 # Turn on ZLIB
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
