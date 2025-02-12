@@ -32,6 +32,7 @@ function Pkg.Types.is_stdlib(uuid::Base.UUID, julia_version::VersionNumber)
 end
 
 jllversion=v"1.10.15"
-for ver in julia_full_versions
+# Only build more recent Julia versions to reduce number of builds
+for ver in filter(>=(v"1.10"), julia_full_versions)
     build_julia(ARGS, ver; jllversion)
 end
