@@ -65,6 +65,8 @@ CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
 CMAKE_FLAGS+=(-DCMAKE_AR=$HOSTAR)
 CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 CMAKE_FLAGS+=(-DENABLE_LTO=OFF)
+CMAKE_FLAGS+=(-DCMAKE_WARN_DEPRECATED=OFF)
+
 
 if [[ ${target} == *mingw* ]]; then
     CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
@@ -86,10 +88,11 @@ install_license ../LICENSE.TXT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+# 32 bit platforms are not supported
 # oneTBB_jll isn't available for Windows i686 on Yggdrasil (version 2021.5.0)
 # oneTBB_jll isn't available for armv6l, armv7l
 # musl builds with lots of TBB errors like 'undefined reference to `getcontext''
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=p -> (nbits(p) == 32))
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
