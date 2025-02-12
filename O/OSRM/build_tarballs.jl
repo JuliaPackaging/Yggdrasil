@@ -45,7 +45,7 @@ if [[ ${target} == *mingw* ]]; then
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
-CFLAGS="-Wno-error=suggest-override -Wno-deprecated-declarations"
+CFLAGS="-Wno-error=suggest-override -Wno-deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds"
 mkdir build && cd build
 
 export AR=$HOSTAR
@@ -53,7 +53,7 @@ export AR=$HOSTAR
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
@@ -64,7 +64,7 @@ CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
 CMAKE_FLAGS+=(-DCMAKE_AR=$HOSTAR)
 CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 CMAKE_FLAGS+=(-DENABLE_LTO=OFF)
-CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations")
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-error=suggest-override -Wno-deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds")
 
 
 if [[ ${target} == *mingw* ]]; then
@@ -149,4 +149,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8", preferred_gcc_version = v"12", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8", preferred_gcc_version=v"12", clang_use_lld=false)
