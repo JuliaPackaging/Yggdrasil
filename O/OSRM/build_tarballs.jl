@@ -64,7 +64,7 @@ CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
 CMAKE_FLAGS+=(-DCMAKE_AR=$HOSTAR)
 CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 CMAKE_FLAGS+=(-DENABLE_LTO=OFF)
-CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations)
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-deprecated-declarations")
 
 
 if [[ ${target} == *mingw* ]]; then
