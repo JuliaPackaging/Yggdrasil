@@ -74,7 +74,9 @@ filter!(p -> (
     (os(p) == "macos" && arch(p) == "x86_64") ||
     (os(p) == "macos" && arch(p) == "aarch64") ||
     (os(p) == "windows" && arch(p) == "x86_64")) &&
-    p.tags["julia_version"] !="1.6.3", platforms)
+    p.tags["julia_version"] !="1.6.3" &&
+    p.tags["julia_version"] !="1.12.0" &&
+    p.tags["julia_version"] !="1.13.0", platforms)
 
 
 # The products that we will ensure are always built
