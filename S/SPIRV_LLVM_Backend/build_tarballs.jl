@@ -7,14 +7,13 @@ version = v"19"
 
 # Collection of sources required to build SPIRV_LLVM_Backend
 sources = [
-    # LLVM v19.1.7
-    GitSource("https://github.com/llvm/llvm-project",
-              "cd708029e0b2869e80abe31ddb175f7c35361f90"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/llvm-project-19.1.7.src.tar.xz",
+                  "82401fea7b79d0078043f7598b835284d6650a75b93e64b6f761ea7b63097501"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd llvm-project/llvm
+cd llvm-project-*/llvm
 LLVM_SRCDIR=$(pwd)
 
 install_license LICENSE.TXT
