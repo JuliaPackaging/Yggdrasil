@@ -30,6 +30,11 @@ if [[ ${target} == i686-linux-musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/i686-musl.patch"
 fi
 
+if [[ "${target}" == *-freebsd* ]]; then
+    # Follow oneTBB makefile fix for missing symbols error: https://cgit.freebsd.org/ports/commit/?id=3677983542cc09a0e5f085e463a895e9e4dce9aa
+    export LDFLAGS="-Wl,--undefined-version"
+fi
+
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
