@@ -4,7 +4,6 @@ include("common.jl")
 # different from what was bundled with the Julia running this script.
 # If/when we upgrade Yggdrasil to a newer version of Julia, this hack must be
 # adjusted (ideally, with a new Pkg.jl it could be removed)
-@assert v"1.7" <= VERSION < v"1.8"
 function Pkg.Types.is_stdlib(uuid::Base.UUID, julia_version::VersionNumber)
 
     # Only use the cache if we are asking for stdlibs in a custom Julia version
@@ -32,6 +31,7 @@ function Pkg.Types.is_stdlib(uuid::Base.UUID, julia_version::VersionNumber)
 end
 
 jllversion=v"1.10.19"
-for ver in julia_full_versions
+# Only build more recent Julia versions to reduce number of builds
+for ver in filter(>=(v"1.10"), julia_full_versions)
     build_julia(ARGS, ver; jllversion)
 end
