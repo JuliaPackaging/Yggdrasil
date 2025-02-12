@@ -11,7 +11,7 @@ version = v"0.0.66"
 sources = [
   GitSource(repo, "a31b2e0b3d034f600ff0137f5d6bd8bf84d12a0f"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
-             "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
+             "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade"),
 ]
 
 
