@@ -49,6 +49,8 @@ CFLAGS="-Wno-error=suggest-override -Wno-deprecated-declarations"
 
 mkdir build && cd build
 
+export AR=$HOSTAR
+
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
