@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Aeron"
-version = v"1.47.0"
+version = v"1.47.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/real-logic/aeron.git", "066ba5518428aaadc3c4902f6cd37b8ac0864602"),
+    GitSource("https://github.com/aeron-io/aeron.git", "591b1c76583127e00aebd859dc7846417710da51"),
 ]
 
 # Bash recipe for building across all platforms
