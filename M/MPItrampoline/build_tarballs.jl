@@ -134,11 +134,6 @@ sed -i 's/"-l /"/g;s/ -l / /g;s/-l"/"/g' libtool
 make -j${nproc}
 make -j${nproc} install
 
-# Delete duplicate file
-if ar t $prefix/lib/mpich/lib/libpmpi.a | grep -q setbotf.o; then
-    ar d $prefix/lib/mpich/lib/libmpifort.a setbotf.o
-fi
-
 ################################################################################
 # Install MPIwrapper
 ################################################################################
@@ -155,11 +150,25 @@ if [[ "${target}" == *-apple-* ]]; then
         -DMPI_CXX_LINK_FLAGS='-framework Foundation -framework IOKit'
         -DMPI_Fortran_LINK_FLAGS='-framework Foundation -framework IOKit'
     )
+elif [[ "${target}" == aarch64-*-freebsd* ]]; then
+    EXTRA_FLAGS+=(
+        -DMPI_C_LIB_NAMES='mpi;execinfo;gcc;m;pthread'
+        -DMPI_CXX_LIB_NAMES='mpicxx;mpi;execinfo;gcc;m;pthread'
+        -DMPI_Fortran_LIB_NAMES='mpifort;mpi;execinfo;gcc;m;pthread'
+        -DMPI_execinfo_LIBRARY="/opt/${target}/${target}/sys-root/usr/lib/libexecinfo.so"
+        -DMPI_gcc_LIBRARY="/opt/${target}/${target}/sys-root/usr/lib/libgcc.a"
+        -DMPI_m_LIBRARY="/opt/${target}/${target}/sys-root/usr/lib/libm.a"
+        -DMPI_mpi_LIBRARY="${prefix}/lib/mpich/lib/libmpi.a"
+        -DMPI_mpicxx_LIBRARY="${prefix}/lib/mpich/lib/libmpicxx.a"
+        -DMPI_mpifort_LIBRARY="${prefix}/lib/mpich/lib/libmpifort.a"
+        -DMPI_pthread_LIBRARY="/opt/${target}/${target}/sys-root/usr/lib/libpthread.so"
+    )
 elif [[ "${target}" == *-freebsd* ]]; then
     EXTRA_FLAGS+=(
         -DMPI_Fortran_LIB_NAMES='mpifort;mpi;gcc;pthread'
         -DMPI_gcc_LIBRARY="/opt/${target}/${target}/sys-root/usr/lib/libgcc.a"
         -DMPI_mpi_LIBRARY="${prefix}/lib/mpich/lib/libmpi.a"
+        -DMPI_mpicxx_LIBRARY="${prefix}/lib/mpich/lib/libmpicxx.a"
         -DMPI_mpifort_LIBRARY="${prefix}/lib/mpich/lib/libmpifort.a"
         -DMPI_pthread_LIBRARY="/opt/${target}/${target}/sys-root/usr/lib/libpthread.so"
     )
