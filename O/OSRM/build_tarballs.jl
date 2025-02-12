@@ -89,12 +89,7 @@ install_license ../LICENSE.TXT
 # oneTBB_jll isn't available for Windows i686 on Yggdrasil (version 2021.5.0)
 # oneTBB_jll isn't available for armv6l, armv7l
 # musl builds with lots of TBB errors like 'undefined reference to `getcontext''
-platforms = supported_platforms(; exclude=p -> 
-    (libc(p) == "musl") ||
-    (nbits(p) == 32) ||
-    Sys.iswindows(p) # Mingw version compatibility issues
-    )
-
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -142,7 +137,7 @@ dependencies = [
     Dependency("boost_jll"; compat="=1.87.0") # Earlier versions of boost seem uncompatible with C++20 deprecations
     Dependency("Expat_jll"; compat="2.6.5")
     Dependency("XML2_jll")
-    Dependency("oneTBB_jll"; compat="2021.8.0")
+    Dependency("oneTBB_jll"; compat="2021.12.0")
     Dependency("Lua_jll"; compat="~5.4.3")
     Dependency("Zlib_jll")
     HostBuildDependency("Lua_jll")
