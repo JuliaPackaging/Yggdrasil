@@ -361,7 +361,11 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_gcc_version = v"13"
     preferred_llvm_version = v"18.1.7"
 
-    if mode == "dbg" && !Sys.isapple(platform)
+    if !Sys.isapple(platform)
+        continue
+    end
+
+    if mode == "dbg"
         continue
     end
 
