@@ -45,7 +45,7 @@ if [[ ${target} == *mingw* ]]; then
     export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
-CFLAGS="-Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds"
+CFLAGS="-Wno-array-bounds -Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds"
 mkdir build && cd build
 
 export AR=$HOSTAR
@@ -64,7 +64,7 @@ CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
 CMAKE_FLAGS+=(-DCMAKE_AR=$HOSTAR)
 CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 CMAKE_FLAGS+=(-DENABLE_LTO=OFF)
-CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds")
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds")
 
 
 if [[ ${target} == *mingw* ]]; then
