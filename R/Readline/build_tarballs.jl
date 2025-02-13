@@ -16,9 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/readline-*/
 
-# Patch from https://aur.archlinux.org/cgit/aur.git/tree/readline-1-fixes.patch?h=mingw-w64-readline
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/readline-1-fixes.patch
-
 export CPPFLAGS="-I${includedir}"
 if [[ "${target}" == *-mingw* ]]; then
     # Only on Windows the library name embeds the ABI version
