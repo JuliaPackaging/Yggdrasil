@@ -93,7 +93,7 @@ install_license ../LICENSE.TXT
 # oneTBB_jll isn't available for Windows i686 on Yggdrasil (version 2021.5.0)
 # oneTBB_jll isn't available for armv6l, armv7l
 # musl builds with lots of TBB errors like 'undefined reference to `getcontext''
-platforms = supported_platforms(; exclude=p -> !Sys.iswindows(p) && (nbits(p) == 32))
+platforms = supported_platforms(; exclude=p -> !Sys.iswindows(p) || (nbits(p) == 32))
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
