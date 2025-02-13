@@ -28,7 +28,7 @@ if [[ "${target}" == *-mingw* ]] || [[ "${target}" == *-freebsd* ]]; then
     export LDFLAGS="-L${libdir}"
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-curses
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --target=${target} --with-curses
 make -j${nproc} SHLIB_LIBS="-lncurses${NCURSES_ABI_VER}"
 make install
 install_license COPYING
