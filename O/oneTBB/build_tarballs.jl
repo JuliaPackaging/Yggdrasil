@@ -46,7 +46,7 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
-platforms = supported_platforms(exclude= x -> !Sys.iswindows(x))
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
