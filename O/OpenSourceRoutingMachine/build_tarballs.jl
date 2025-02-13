@@ -70,7 +70,7 @@ if [[ ${target} == *mingw* ]]; then
     CMAKE_FLAGS+=(-D__TBB_USE_FENV=0)
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 
-    cmake_cxx_flags="-U__STRICT_ANSI__ -Wno-error=cpp ${cmake_cxx_flags}"
+    cmake_cxx_flags="-U__STRICT_ANSI__ -Wno-error=-W#warnings ${cmake_cxx_flags}"
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 fi
