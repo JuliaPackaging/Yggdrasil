@@ -21,7 +21,7 @@ if [[ ${target} == *mingw* ]]; then
 
     # `CreateSemaphoreEx` requires at least Windows Vista/Server 2008:
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
-    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600 -Dstrnlen_s=strnlen"
 fi
 
 if [[ ${target} == i686-linux-musl* ]]; then
