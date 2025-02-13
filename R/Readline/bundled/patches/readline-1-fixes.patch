@@ -1,3 +1,16 @@
+diff --git a/input.c b/input.c
+index f68fcac..4bc509d 100644
+--- a/input.c
++++ b/input.c
+@@ -834,7 +834,7 @@ rl_getc (FILE *stream)
+       /* We know at this point that _rl_caught_signal == 0 */
+ 
+ #if defined (__MINGW32__)
+-      if (isatty (fd)
++      if (isatty (fd))
+ 	return (_getch ());	/* "There is no error return." */
+ #endif
+       result = 0;
 diff --git a/rlprivate.h b/rlprivate.h
 index d87d07a..cb9cf17 100644
 --- a/rlprivate.h
