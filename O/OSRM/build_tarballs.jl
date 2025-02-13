@@ -65,16 +65,16 @@ CMAKE_FLAGS+=(-DCMAKE_AR=$HOSTAR)
 CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 CMAKE_FLAGS+=(-DENABLE_LTO=OFF)
 
-cxx_common_flags="-Wno-array-bounds -Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds"
+cmake_cxx_flags="-Wno-array-bounds -Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds"
 
 if [[ ${target} == *mingw* ]]; then
     CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
     CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
     CMAKE_FLAGS+=(-D__TBB_USE_FENV=0)
-    cxx_common_flags="-fext-numeric-literals ${common_flags}"
+    cmake_cxx_flags="-fext-numeric-literals ${cmake_cxx_flags}"
 fi
 
-CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${common_flags}")
+CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${cmake_cxx_flags}")
 
 cmake .. ${CMAKE_FLAGS[@]}
 cmake --build . -j${nproc}
