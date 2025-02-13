@@ -144,7 +144,7 @@ dependencies = [
     Dependency("boost_jll"; compat="=1.87.0") # Earlier versions of boost seem uncompatible with C++20 deprecations
     Dependency("Expat_jll"; compat="2.6.5")
     Dependency("XML2_jll")
-    Dependency("oneTBB_jll"; compat="2021.12.0")
+    Dependency("oneTBB_jll"; compat="2022.0.0")
     Dependency("Lua_jll"; compat="~5.4.3")
     Dependency("Zlib_jll")
     Dependency("Fmt_jll")
