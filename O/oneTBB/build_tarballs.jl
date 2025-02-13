@@ -46,7 +46,8 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms(exclude= x -> !Sys.iswindows(x))
+platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -61,4 +62,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"11")
+               julia_compat="1.6", preferred_gcc_version=v"12")
