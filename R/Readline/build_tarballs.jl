@@ -9,11 +9,15 @@ version = v"8.2.13"
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/readline/readline-$(version).tar.gz",
                   "0e5be4d2937e8bd9b7cd60d46721ce79f88a33415dd68c2d738fb5924638f656"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/readline-*/
+
+# Patch from https://aur.archlinux.org/cgit/aur.git/tree/readline-1-fixes.patch?h=mingw-w64-readline
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/readline-1-fixes.patch
 
 export CPPFLAGS="-I${includedir}"
 if [[ "${target}" == *-mingw* ]]; then
