@@ -52,6 +52,7 @@ export AR=$HOSTAR
 
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 CMAKE_FLAGS+=(-DENABLE_CCACHE=OFF)
@@ -69,9 +70,7 @@ if [[ ${target} == *mingw* ]]; then
     CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
     CMAKE_FLAGS+=(-D__TBB_USE_FENV=0)
     cmake_cxx_flags="-fext-numeric-literals ${cmake_cxx_flags}"
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
-else
-    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)    
 fi
 
 CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${cmake_cxx_flags}")
