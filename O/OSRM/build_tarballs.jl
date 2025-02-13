@@ -64,13 +64,14 @@ CMAKE_FLAGS+=(-DZLIB_INCLUDE_DIRS=${includedir})
 CMAKE_FLAGS+=(-DCMAKE_AR=$HOSTAR)
 CMAKE_FLAGS+=(-DZLIB_LIBRARY=${libdir}/libz.${dlext})
 CMAKE_FLAGS+=(-DENABLE_LTO=OFF)
-CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-fext-numeric-literals -Wno-array-bounds -Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds")
-
 
 if [[ ${target} == *mingw* ]]; then
     CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
     CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
     CMAKE_FLAGS+=(-D__TBB_USE_FENV=0)
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-fext-numeric-literals -Wno-array-bounds -Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds")
+else
+    CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-array-bounds -Wno-error=suggest-override -Wno-error=deprecated-declarations -Wno-error=stringop-overflow -Wno-error=uninitialized -Wno-error=array-bounds")
 fi
 
 cmake .. ${CMAKE_FLAGS[@]}
