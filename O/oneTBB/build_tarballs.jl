@@ -17,11 +17,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/oneTBB*
 
 if [[ ${target} == *mingw* ]]; then
-    # atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
+    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
 
     # `CreateSemaphoreEx` requires at least Windows Vista/Server 2008:
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
-    export CXXFLAGS="-D_WIN32_WINNT=0x0600 -Dstrnlen_s=strnlen"
+    export CXXFLAGS="-D_WIN32_WINNT=0x0600"
 fi
 
 if [[ ${target} == i686-linux-musl* ]]; then
@@ -62,4 +62,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9", preferred_gcc_version=v"13")
+               julia_compat="1.6", preferred_gcc_version=v"9")
