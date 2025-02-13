@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a8388b7db..e23c014cf 100644
+index a8388b7db..472ceb48e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -147,7 +147,7 @@ configure_file(
@@ -150,6 +150,7 @@ index a8388b7db..e23c014cf 100644
 -target_link_libraries(osrm_customize ${CUSTOMIZER_LIBRARIES} osrm_update osrm_store)
 -target_link_libraries(osrm_store ${STORAGE_LIBRARIES})
 +target_link_libraries(osrm 
++  fmt::fmt
 +  ${BZIP2_LIBRARIES}
 +  ${Boost_REGEX_LIBRARY}
 +  ${BOOST_BASE_LIBRARIES}
@@ -161,7 +162,6 @@ index a8388b7db..e23c014cf 100644
 +  ${TBB_LIBRARIES}
 +  ${MAYBE_RT_LIBRARY}
 +  ${ZLIB_LIBRARY}
-+  fmt::fmt
 +  ${MAYBE_COVERAGE_LIBRARIES})
  
  # BUILD_COMPONENTS
