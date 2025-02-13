@@ -146,7 +146,7 @@ dependencies = [
     Dependency("oneTBB_jll"; compat="2021.12.0")
     Dependency("Lua_jll"; compat="~5.4.3")
     Dependency("Zlib_jll")
-    Dependency("fmt_jll")
+    Dependency("Fmt_jll")
     HostBuildDependency("Lua_jll")
     # Dependency("libosmium_jll")
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms))
