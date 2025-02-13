@@ -3,15 +3,15 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.55.5"
+version = v"1.56.1"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "e396126ea08203cbd8ef12638e6222e2e1fd8aa9cac6743072fedc5f2d820dd8"),
+                  "426be66460c98b8378573e7f6b0b2ab450f6bb6d2ec7cecc33ae81178f246480"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
-    DirectorySource("bundled"),
+    #DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -35,7 +35,7 @@ fi
 
 cd $WORKSPACE/srcdir/pango*/
 
-atomic_patch -p1 ../patches/sentinel.patch
+#atomic_patch -p1 ../patches/sentinel.patch
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # When building for the host platform, the system libexpat is picked up
