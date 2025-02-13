@@ -69,7 +69,7 @@ if [[ ${target} == *mingw* ]]; then
     CMAKE_FLAGS+=(-DLUA_INCLUDE_DIR=${includedir})
     CMAKE_FLAGS+=(-DLUA_LIBRARIES=${libdir}/liblua.${dlext})
     CMAKE_FLAGS+=(-D__TBB_USE_FENV=0)
-    cmake_cxx_flags="-fext-numeric-literals ${cmake_cxx_flags}"
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)    
 fi
 
 CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${cmake_cxx_flags}")
@@ -93,7 +93,7 @@ install_license ../LICENSE.TXT
 # oneTBB_jll isn't available for Windows i686 on Yggdrasil (version 2021.5.0)
 # oneTBB_jll isn't available for armv6l, armv7l
 # musl builds with lots of TBB errors like 'undefined reference to `getcontext''
-platforms = supported_platforms(; exclude=p -> (nbits(p) == 32))
+platforms = supported_platforms(; exclude=p -> x -> !Sys.iswindows(x) && (nbits(p) == 32))
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
