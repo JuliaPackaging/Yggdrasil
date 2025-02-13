@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "nc"
+name = "OpenSourceRoutingMachine"
 version = v"5.28.0" # UNTAGGED / ASK FOR NEW RELEASE TAG
 
 # Collection of sources required to complete build
