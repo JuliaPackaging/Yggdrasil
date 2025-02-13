@@ -17,7 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/oneTBB*
 
 if [[ ${target} == *mingw* ]]; then
-    atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
+    # atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mingw.patch"
 
     # `CreateSemaphoreEx` requires at least Windows Vista/Server 2008:
     # https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createsemaphoreexa
