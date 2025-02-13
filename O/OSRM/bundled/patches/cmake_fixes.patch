@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a8388b7db..472ceb48e 100644
+index a8388b7db..ffdf31d6d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -147,7 +147,7 @@ configure_file(
@@ -49,18 +49,7 @@ index a8388b7db..472ceb48e 100644
  
  # Explicitly set the build type to Release if no other type is specified
  # on the command line.  Without this, cmake defaults to an unoptimized,
-@@ -314,9 +320,7 @@ add_subdirectory(${FLATBUFFERS_SRC_DIR}
-         ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build
-         EXCLUDE_FROM_ALL)
- 
--set(FMT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt/include")
--add_compile_definitions(FMT_HEADER_ONLY)
--include_directories(SYSTEM ${FMT_INCLUDE_DIR})
-+find_package(fmt REQUIRED)
- 
- 
- # see https://stackoverflow.com/questions/70898030/boost-link-error-using-conan-find-package
-@@ -478,86 +482,30 @@ set(BOOST_ENGINE_LIBRARIES
+@@ -478,86 +484,29 @@ set(BOOST_ENGINE_LIBRARIES
    ${BOOST_BASE_LIBRARIES})
  
  # Binaries
@@ -150,7 +139,6 @@ index a8388b7db..472ceb48e 100644
 -target_link_libraries(osrm_customize ${CUSTOMIZER_LIBRARIES} osrm_update osrm_store)
 -target_link_libraries(osrm_store ${STORAGE_LIBRARIES})
 +target_link_libraries(osrm 
-+  fmt::fmt
 +  ${BZIP2_LIBRARIES}
 +  ${Boost_REGEX_LIBRARY}
 +  ${BOOST_BASE_LIBRARIES}
@@ -166,7 +154,7 @@ index a8388b7db..472ceb48e 100644
  
  # BUILD_COMPONENTS
  add_executable(osrm-components src/tools/components.cpp $<TARGET_OBJECTS:MICROTAR> $<TARGET_OBJECTS:UTIL>)
-@@ -622,14 +570,6 @@ if (BUILD_ROUTED)
+@@ -622,14 +571,6 @@ if (BUILD_ROUTED)
    install(TARGETS osrm-routed DESTINATION bin)
  endif()
  install(TARGETS osrm DESTINATION lib)
