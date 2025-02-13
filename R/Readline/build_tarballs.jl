@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Readline"
-version = v"8.2.1"
+version = v"8.2.13"
 
 # Collection of sources required to build Readline
 sources = [
@@ -18,7 +18,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/readline-*/
 
-atomic_patch -p0 ${WORKSPACE}/srcdir/readline82-001
+atomic_patch -p0 ${WORKSPACE}/srcdir/readline82-013
 # Patch from https://aur.archlinux.org/cgit/aur.git/tree/readline-1-fixes.patch?h=mingw-w64-readline
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/readline-1-fixes.patch
 
