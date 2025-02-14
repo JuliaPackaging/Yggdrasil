@@ -132,7 +132,7 @@ cmake --build build -j${njobs}
 
 # Install the binaries
 cmake --install build --prefix $prefix
-cp -a build/core/rootcling_stage1/src/rootcling_stage1 $prefix/bin/
+install -Dvm 755 build/core/rootcling_stage1/src/rootcling_stage1 -t "${bindir}"
 """
 
 open("recipe.sh", "w") do io
