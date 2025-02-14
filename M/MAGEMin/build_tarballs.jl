@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MAGEMin"
-version = v"1.6.8"
+version = v"1.6.9"
 
 MPItrampoline_compat_version="5.2.1"  
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "3ceba9889f6457a545abfe078d18ae5b70693d86")                 ]
+                    "997d83d2a8e0fb974eefa313d72d0f92f735e1b9")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -85,7 +85,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778"))
+    Dependency(PackageSpec(name="NLopt_jll", uuid="079eb43e-fd8e-5478-9966-2cf3e3edb778"); compat="=2.8.0")
     Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
