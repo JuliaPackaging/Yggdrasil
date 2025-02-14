@@ -11,6 +11,5 @@
     "gpu": "optional"
   },
   "privileged": true,
-  "onCreateCommand": "julia -e 'using Pkg; Pkg.precompile();'",
-  "image": "mcr.microsoft.com/devcontainers/base:debian"
+  "onCreateCommand": "julia -e 'using Pkg; Pkg.precompile();'"
 }
