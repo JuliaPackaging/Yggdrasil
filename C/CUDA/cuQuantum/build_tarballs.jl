@@ -33,7 +33,7 @@ dependencies = [
 products = [
     LibraryProduct("libcustatevec", :libcustatevec),
     LibraryProduct("libcutensornet", :libcutensornet),
-    LibraryProduct("libcutensornet", :libcudensitymat),
+    LibraryProduct("libcudensitymat", :libcudensitymat),
 ]
 
 platforms = [Platform("x86_64", "linux"),
