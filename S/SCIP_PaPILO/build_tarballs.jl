@@ -62,6 +62,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DIPOPT_LIBRARIES=${libdir} \
   -DBLISS_INCLUDE_DIR=${includedir} \
   -DBLISS_LIBRARY=bliss \
+  -DBUILD_TESTING=OFF \
   ..
 make -j${nproc} scip
 make papilo-executable
@@ -104,7 +105,7 @@ dependencies = [
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.1"),
     Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"); compat="=300.1400.1400"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.10"),
-    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"); compat="2021.9.0"),
+    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"); compat="2022.0.0"),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
