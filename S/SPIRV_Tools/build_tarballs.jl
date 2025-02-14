@@ -13,6 +13,9 @@ sources = [
     GitSource("https://github.com/google/googletest", "35d0c365609296fa4730d62057c487e3cfa030ff"),
     GitSource("https://github.com/google/re2.git", "6dcd83d60f7944926bfd308cc13979fc53dd69ca"),
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "3f17b2af6784bfa2c5aa5dbb8e0e74a607dd8b3b"),
+    # updated macOS SDK
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +25,16 @@ mv effcee SPIRV-Tools/external/effcee
 mv re2 SPIRV-Tools/external/re2
 mv googletest SPIRV-Tools/external/googletest
 mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK which supports `std::filesystem`
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    popd
+fi
 
 cd SPIRV-Tools
 install_license LICENSE
@@ -42,9 +55,6 @@ CMAKE_FLAGS+=(-DSPIRV_SKIP_TESTS=ON)
 
 # Don't use -Werror
 CMAKE_FLAGS+=(-DSPIRV_WERROR=OFF)
-
-# Skip spirv-objdump, which fails to build on some platforms
-sed -i '/add_spvtools_tool(TARGET spirv-objdump/,+8d' tools/CMakeLists.txt
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -72,4 +82,4 @@ products = [
 dependencies = []
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8") # requires C++17 + filesystem
+               julia_compat="1.6", preferred_gcc_version=v"10") # requires C++17 + filesystem
