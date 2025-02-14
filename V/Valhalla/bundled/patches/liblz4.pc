@@ -1,7 +1,7 @@
 prefix=${pcfiledir}/../..
 exec_prefix=${pcfiledir}/../..
-libdir=/workspace/destdir/lib
-includedir=/workspace/destdir/include
+libdir=${prefix}/lib
+includedir=${prefix}/include
 
 Name: lz4
 Description: LZ4 compression library
