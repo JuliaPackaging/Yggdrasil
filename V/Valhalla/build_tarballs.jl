@@ -102,8 +102,6 @@ dependencies = [
     Dependency("protoc_jll"; compat="105.29.3")
     HostBuildDependency("protoc_jll")
     Dependency("Zlib_jll")
-    # Until we have a new version of OpenSSL built for riscv64 we need to use the
-    # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
     Dependency("OpenSSL_jll"; compat="3.0.16")
 ]
 
