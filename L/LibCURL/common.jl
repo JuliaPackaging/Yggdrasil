@@ -135,7 +135,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         Dependency("LibSSH2_jll"),
         Dependency("Zlib_jll"),
         Dependency("nghttp2_jll"),
-        Dependency("OpenSSL_jll", "3.0.16"),
+        Dependency("OpenSSL_jll"; compat="3.0.16"),
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
