@@ -94,7 +94,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("protoc_jll"; compat="105.29.3")
+    HostBuildDependency(PackageSpec(name="protoc_jll", version="105.29.3"))
     Dependency("boost_jll"; compat="=1.87.0")
     Dependency("GEOS_jll"; compat="3.13.1")
     Dependency("LibCURL_jll"; compat="7.73,8")
