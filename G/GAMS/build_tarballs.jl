@@ -22,6 +22,7 @@ chmod +x linux_x64_64_sfx.exe
 ./linux_x64_64_sfx.exe
 
 # install
+mkdir -p "${bindir}"
 cp -a gams*_sfx/* "${bindir}"
 """
 
