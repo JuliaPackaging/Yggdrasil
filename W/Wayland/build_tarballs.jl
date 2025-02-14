@@ -11,21 +11,25 @@ sources = [
              "a9fec8dd65977c57f4039ced34327204d9b9d779"),
 ]
 
+bootstrap = true
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wayland/
 
-mkdir bootstrap
-cd bootstrap
-
-meson setup .. \
-      --buildtype=release \
-      -Ddocumentation=false \
-      -Dtests=false
-meson compile
-meson install
-
-cd ../
+if [[ "${target}" == x86_64-linux-* ]]; then
+   mkdir bootstrap
+   cd bootstrap
+   
+   meson setup .. \
+         --buildtype=release \
+         -Ddocumentation=false \
+         -Dtests=false
+   meson compile
+   meson install
+   
+   cd ../
+fi
 
 mkdir build
 cd build
@@ -43,7 +47,11 @@ meson install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> arch(p) == "armv6l" || (!Sys.islinux(p) && !Sys.isfreebsd(p)))
+if bootstrap
+   platforms = supported_platforms(; exclude=p -> !Sys.islinux(p) || arch(p) != "x86_64")
+else
+   platforms = supported_platforms(; exclude=p -> arch(p) == "armv6l" || (!Sys.islinux(p) && !Sys.isfreebsd(p)))
+end
 
 # The products that we will ensure are always built
 products = [
@@ -60,8 +68,11 @@ dependencies = [
     Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
     Dependency("EpollShim_jll"),
-    # HostBuildDependency("Wayland_jll"),
 ]
+
+if !bootstrap
+   push!(dependencies, HostBuildDependency("Wayland_jll"))
+end
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
