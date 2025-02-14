@@ -15,6 +15,18 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wayland/
 
+mkdir bootstrap
+cd bootstrap
+
+meson setup .. \
+      --buildtype=release \
+      -D documentation=false
+ninja -j${nproc}
+
+ninja -install
+
+cd ../
+
 mkdir build
 cd build
 
@@ -31,7 +43,8 @@ ninja -install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> arch(p) != "armv6l" && (Sys.islinux(p) || Sys.isfreebsd(p)), supported_platforms())
+# platforms = supported_platforms(; exclude=p -> arch(p) == "armv6l" || !Sys.islinux(p) || !Sys.isfreebsd(p))
+platforms = Plat
 
 # The products that we will ensure are always built
 products = [
