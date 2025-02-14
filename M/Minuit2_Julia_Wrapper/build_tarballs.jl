@@ -54,7 +54,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.13.4"),
     Dependency("Minuit2_jll"; compat = "~6.34.2",)
 ]
 
