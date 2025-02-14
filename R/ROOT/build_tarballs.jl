@@ -207,7 +207,7 @@ dependencies = [
     Dependency("Xorg_libxkbfile_jll")
     Dependency("Libglvnd_jll")
     Dependency("OpenBLAS_jll")
-    Dependency("oneTBB_jll")
+    Dependency("oneTBB_jll", compat="2021.9.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
