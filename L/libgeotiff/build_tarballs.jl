@@ -51,7 +51,7 @@ dependencies = [
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("PROJ_jll"; compat="902.500.100"),
-    Dependency("Zlib_jll"; compat="1.5.7"),
+    Dependency("Zlib_jll"; compat="1.3.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
