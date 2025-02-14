@@ -20,10 +20,10 @@ cd bootstrap
 
 meson setup .. \
       --buildtype=release \
-      -D documentation=false
-ninja -j${nproc}
-
-ninja -install
+      -Ddocumentation=false \
+      -Dtests=false
+meson compile
+meson install
 
 cd ../
 
@@ -34,10 +34,10 @@ meson setup .. \
       --prefix=${prefix} \
       --buildtype=release \
       --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-      -D documentation=false
-ninja -j${nproc}
-
-ninja -install
+      -Ddocumentation=false \
+      -Dtests=false
+meson compile
+meson install
 # rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
