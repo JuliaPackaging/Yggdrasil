@@ -13,7 +13,6 @@ sources = [
                   "a511c1cf1ebfe6fe3b8ec005374b9c05e89ac28b3d4eb468873f59800c02b030"),
 ]
 
-
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/valhalla/
