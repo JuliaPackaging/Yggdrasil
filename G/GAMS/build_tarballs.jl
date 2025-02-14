@@ -12,6 +12,9 @@ sources = [
     FileSource("$url_prefix/linux/linux_x64_64_sfx.exe",
         "f6f0cbc085808a418d2d55d2f9744002a8139c0afdb20020d0465b4cbaafb9a2",
         filename="linux_x64_64_sfx.exe"),
+    FileSource("https://www.gams.com/GAMS_EULA.pdf",
+        "213a684e5607ece92513075e3419cdd8ae5c6f8947e394fe178df0826a9f7229",
+        filename="GAMS_EULA.pdf"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,6 +27,9 @@ chmod +x linux_x64_64_sfx.exe
 # install
 mkdir -p "${bindir}"
 cp -a gams*_sfx/* "${bindir}"
+
+# install the license
+install_license GAMS_EULA.pdf
 """
 
 # These are the platforms we will build for by default, unless further
