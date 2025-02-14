@@ -35,7 +35,6 @@ export SYSTEM_INCLUDE_PATH="`g++ --sysroot="/opt/$target/$target/sys-root" -E -x
 mkdir -p /tmp/user/0
 
 cd /
-[ -f /opt/bin/x86_64-linux-gnu-libgfortran5-cxx11/x86_64-linux-gnu-g++ ] && atomic_patch -p1 ${WORKSPACE}/srcdir/patches/x86_64-linux-gnu-g++.patch
 
 cd "$WORKSPACE"
 
@@ -212,5 +211,6 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, scriptwrapper, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, scriptwrapper, platforms, products,
+               dependencies; julia_compat="1.6", preferred_gcc_version=v"9", lock_microarchitecture=false)
 
