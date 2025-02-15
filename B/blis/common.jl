@@ -86,15 +86,15 @@ function blis_script(;blis32::Bool=false)
     # Include A64FX in Arm64 metaconfig.
     if [ ${BLI_CONFIG} = arm64 ]; then
         # Add A64FX to the registry.
-        patch config_registry ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
+        #patch config_registry ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
 
         # Unscreen Arm SVE code for metaconfig.
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve512_int_12xk.patch
-        atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve256_int_8x10.patch
+        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_arm_sve_h.patch
+        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve512_int_12xk.patch
+        #atomic_patch -p1 ${WORKSPACE}/srcdir/patches/armsve_kernels_unscreen_armsve256_int_8x10.patch
 
         # Screen out A64FX sector cache.
-        patch config/a64fx/bli_cntx_init_a64fx.c ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
+        #patch config/a64fx/bli_cntx_init_a64fx.c ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
     fi
 
     # Import libblastrampoline-style nthreads setter.
