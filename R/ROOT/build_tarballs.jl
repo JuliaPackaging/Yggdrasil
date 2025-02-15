@@ -49,7 +49,7 @@ sed -i 's/\(option(LLVM_INCLUDE_TESTS[[:space:]].*[[:space:]]\)on)\(.*\)/\1OFF)\
 echo "set(CXX_STANDARD 17)" >> srcdir/root/interpreter/llvm-project/llvm/CMakeLists.txt
 
 # N llvm links. LLVM link command needs 15GB
-njobs=$((2*`nproc`))
+njobs=${nproc}
 LLVM_PARALLEL_LINK_JOBS=`grep MemTot /proc/meminfo  | awk '{a=int($2/15100000); if(a>'"$njobs"') a='"$njobs"'; if(a<1) a=1; print a;}'`
 
 # For the rootcling execution performed during the build:
