@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/bison-*
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-relocatable
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --target=${target} --enable-relocatable
 
 make -j${nproc}
 make install
