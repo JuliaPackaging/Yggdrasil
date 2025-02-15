@@ -14,13 +14,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/icu*
+cd $WORKSPACE/srcdir/icu
 
 # Apply patch to link `libicudata` against the default standard libraries
 # to avoid toolchain weirdness when you have a dynamic library that has
 # _no_ dependencies (not even `libc`).  See this bug report for more:
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=653457
 atomic_patch -p1 $WORKSPACE/srcdir/patches/yes_stdlibs.patch
+
+cd icu4c/
 
 # Do the native build
 (
