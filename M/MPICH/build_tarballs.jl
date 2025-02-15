@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version = v"4.2.3"
+version = v"4.3.0"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "7a019180c51d1738ad9c5d8d452314de65e828ee240bcb2d1f80de9a65be88a8"),
+                  "5e04132984ad83cab9cc53f76072d2b5ef5a6d24b0a9ff9047a8ff96121bcc63"),
     DirectorySource("bundled"),
 ]
 
@@ -19,11 +19,6 @@ script = raw"""
 
 # Enter the funzone
 cd ${WORKSPACE}/srcdir/mpich*
-
-# MPICH does not include `<pthread_np.h>` on FreeBSD: <https://github.com/pmodels/mpich/issues/6821>.
-# (The MPICH developers say that this is a bug in MPICH and that
-# `<pthread_np.h>` should not actually be used on FreeBSD.)
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
 EXTRA_FLAGS=()
 # Define some obscure undocumented variables needed for cross compilation of
@@ -108,9 +103,8 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=x->Sys.iswindows(x))
 platforms = expand_gfortran_versions(platforms)
-filter!(!Sys.iswindows, platforms)
 
 # Add `mpi+mpich` platform tag
 for p in platforms
@@ -127,9 +121,9 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Hwloc_jll"; compat="2.11.1"), # We need 2.11.1+1 for aarch64-unknown-freebsd
+    Dependency("Hwloc_jll"; compat="2.11.2"),
     Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-               compat="0.1", top_level=true),
+               compat="0.20.22", top_level=true),
 ]
 
 # Build the tarballs.
