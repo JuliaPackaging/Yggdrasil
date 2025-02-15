@@ -58,8 +58,8 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 update_configure_scripts
-./configure --prefix=$prefix --host=$target \
-    --with-cross-build="/workspace/srcdir/icu/native_build"
+./configure --prefix=$prefix --host=${target} --target=${target} \
+    --with-cross-build="/workspace/srcdir/icu/icu4c/native_build"
 make -j${nproc}
 make install
 """
