@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/FuzzifiED_Fortran/
-make -j${nproc} DLEXT=${dlext} LIB_DIR=${libdir} NBITS=${nbits}
+make DLEXT=${dlext} LIB_DIR=${libdir} NBITS=${nbits}
 """
 
 # These are the platforms we will build for by default, unless further
