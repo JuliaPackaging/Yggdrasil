@@ -419,7 +419,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         BuildDependency("GMP_jll"),
         BuildDependency("Objconv_jll"),
         # needed for suitesparse >= 7.2.0
-        HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.24.3"))
+        HostBuildDependency(PackageSpec(; name="CMake_jll", version = "3.24.3"))
     ]
 
     # HACK: we can't install LLVM 12 JLLs for Julia 1.7 from within Julia 1.6. Similar
