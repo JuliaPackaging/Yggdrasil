@@ -38,4 +38,4 @@ dependencies = Dependency[
 
 # We require `gcc` v5+ to avoid the following error on some systems:
 # Inconsistency detected by ld.so: dl-version.c: 204: _dl_check_map_versions: Assertion `needed != NULL' failed!
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
