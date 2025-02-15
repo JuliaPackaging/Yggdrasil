@@ -84,7 +84,7 @@ function blis_script(;blis32::Bool=false)
     fi
 
     # Include A64FX in Arm64 metaconfig.
-    if [ ${BLI_CONFIG} = arm64 ]; then
+    #if [ ${BLI_CONFIG} = arm64 ]; then
         # Add A64FX to the registry.
         #patch config_registry ${WORKSPACE}/srcdir/patches/config_registry.metaconfig+a64fx.patch
 
@@ -95,7 +95,7 @@ function blis_script(;blis32::Bool=false)
 
         # Screen out A64FX sector cache.
         #patch config/a64fx/bli_cntx_init_a64fx.c ${WORKSPACE}/srcdir/patches/a64fx_config_screen_sector_cache.patch
-    fi
+    #fi
 
     # Import libblastrampoline-style nthreads setter.
     cp ${WORKSPACE}/srcdir/nthreads64_.c frame/compat/nthreads64_.c
@@ -110,7 +110,7 @@ function blis_script(;blis32::Bool=false)
     make install
 
     # Static library is not needed.
-    rm ${prefix}/lib/libblis.a
+    rm -f ${prefix}/lib/libblis.a
 
     # Rename .dll for Windows targets.
     if [[ "${target}" == *"x86_64"*"w64"* ]]; then
@@ -151,14 +151,17 @@ end
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="musl"),
-    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
     Platform("x86_64", "windows"),
     Platform("x86_64", "macos"),
-    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "freebsd"),
+    Platform("i686", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("aarch64", "macos"),
-    Platform("x86_64", "freebsd"),
     Platform("aarch64", "freebsd"),
+    Platform("armv7l", "linux"; libc="glibc"),
+    Platform("riscv64", "linux"; libc="glibc"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
 ]
 
 # Dependencies that must be installed before this package can be built
