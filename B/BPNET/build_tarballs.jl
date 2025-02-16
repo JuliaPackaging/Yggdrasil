@@ -36,8 +36,9 @@ done
 cd BPNET/ 
 cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-cmake --build build --parallel ${nproc}
+cmake --build build 
 cmake --install build
 """
 
