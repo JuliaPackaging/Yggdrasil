@@ -38,11 +38,8 @@ cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-cmake --build build 
-	mkdir -p ${bindir}
-	mkdir -p ${libdir}
-	cp build/bin/* ${bindir}/
-	cp build/lib/* ${libdir}/
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -64,4 +61,4 @@ Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",preferred_gcc_version = v"13.2.0")
