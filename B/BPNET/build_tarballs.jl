@@ -39,7 +39,10 @@ cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 cmake --build build 
-cmake --install build
+	mkdir -p ${bindir}
+	mkdir -p ${libdir}
+	cp build/bin/* ${bindir}/
+	cp build/lib/* ${libdir}/
 """
 
 # These are the platforms we will build for by default, unless further
