@@ -48,6 +48,7 @@ cmake_options=(
     -DHDF5_ENABLE_PLUGIN_SUPPORT=OFF   # would require PLUGIN
     -DHDF5_ENABLE_ROS3_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
+    -DHDF5_USE_LIBAEC_STATIC=OFF
     -DHDF5_ENABLE_THREADSAFE=ON
     -DHDF5_ENABLE_Z_LIB_SUPPORT=ON
     -DONLY_SHARED_LIBS=ON
@@ -63,6 +64,7 @@ fi
 
 if [[ ${target} == *mingw* ]]; then
     cmake_options+=(-DHDF5_ENABLE_MIRROR_VFD=OFF)
+    cmake_options+=(-DHDF5_USE_LIBAEC_STATIC=OFF)
 else
     cmake_options+=(-DHDF5_ENABLE_MIRROR_VFD=ON)
 fi
@@ -298,7 +300,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=x->!Sys.iswindows(x))
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
