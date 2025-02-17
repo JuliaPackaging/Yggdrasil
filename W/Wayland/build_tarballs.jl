@@ -11,10 +11,6 @@ sources = [
              "a9fec8dd65977c57f4039ced34327204d9b9d779"),
 ]
 
-# Wayland host exectuable (of the same version) is required to cross-compile wayland
-# Need to first build on x86_64-linux (by setting init_bootstrap = true) to then (by setting init_bootstrap = false) build on other platforms
-init_bootstrap = true
-
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wayland/
@@ -49,11 +45,7 @@ meson install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-if init_bootstrap
-   platforms = supported_platforms(; exclude=p -> !Sys.islinux(p) || arch(p) != "x86_64")
-else
-   platforms = supported_platforms(; exclude=p -> arch(p) == "armv6l" || (!Sys.islinux(p) && !Sys.isfreebsd(p)))
-end
+platforms = supported_platforms(; exclude=p -> arch(p) == "armv6l" || (!Sys.islinux(p) && !Sys.isfreebsd(p)))   
 
 # The products that we will ensure are always built
 products = [
@@ -71,10 +63,6 @@ dependencies = [
     Dependency("XML2_jll"),
     Dependency("EpollShim_jll"),
 ]
-
-if !init_bootstrap
-   push!(dependencies, HostBuildDependency("Wayland_jll"))
-end
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
