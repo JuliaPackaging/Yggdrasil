@@ -64,7 +64,7 @@ dependencies = [
     Dependency("EpollShim_jll"),
     HostBuildDependency("EpollShim_jll"),
     HostBuildDependency(PackageSpec("Expat_jll", v"2.2.10")),
-    HostBuildDependency(PackageSpec("Libffi_jll"; v"3.2.2")),
+    HostBuildDependency(PackageSpec("Libffi_jll", v"3.2.2")),
     HostBuildDependency("XML2_jll"),
 ]
 
