@@ -37,7 +37,6 @@ products = [
 ]
 
 platforms = [Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"; cuda_platform="jetson"),
     Platform("aarch64", "linux"; cuda_platform="sbsa")]
 
 builds = []
