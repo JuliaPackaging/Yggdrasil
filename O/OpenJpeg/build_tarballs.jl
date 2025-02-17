@@ -26,7 +26,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_STATIC_LIBS=OFF
 
-      make -j${nproc}
+make -j${nproc}
 make install
 """
 
