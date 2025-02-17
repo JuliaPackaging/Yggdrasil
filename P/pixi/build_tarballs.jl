@@ -25,9 +25,21 @@ cargo build --release
 install -Dvm 755 "target/${rust_target}/release/pixi${exeext}" "${bindir}/pixi${exeext}"
 """
 
-platforms = supported_platforms()
-# Our Rust toolchain for i686 Windows is unusable
-filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# Supported platforms from https://github.com/prefix-dev/pixi/releases/latest
+# plus x86_64-linux-musl and powerpc64le-linux-glibc which also happen to build
+platforms = [
+    # apple
+    Platform("aarch64", "macos"),
+    Platform("x86_64", "macos"),
+    # windows
+    Platform("aarch64", "windows"),
+    Platform("x86_64", "windows"),
+    # linux
+    Platform("aarch64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),
+    Platform("powerpc64le", "linux"; libc="glibc"),
+]
 
 # The products that we will ensure are always built
 products = [
@@ -39,5 +51,4 @@ dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               compilers=[:c, :rust], julia_compat="1.6", lock_microarchitecture=false,
-               lazy_artifacts=true)
+               compilers=[:c, :rust], julia_compat="1.6", lazy_artifacts=true)
