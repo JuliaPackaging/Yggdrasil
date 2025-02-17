@@ -18,6 +18,26 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+onkill(){
+    echo "Signal $1 received. List running processes for diagnostic." 1>&2
+    top -b -n 1
+    exit $((128+$2))
+}
+
+trap "onkill SIGTERM 15" SIGTERM
+trap "onkill SIGQUIT 3" SIGQUIT
+trap "onkill SIGXCPU 24" SIGXCPU
+
+echo "Mem. stat:"
+free -h
+
+echo -e "nproc command tells: "
+nproc
+
+echo BINARYBUILDER_NPROC = """ * get(ENV, "BINARYBUILDER_NPROC", "") * raw""";
+
+echo "nproc (variable) = $nproc"
+
 cd $WORKSPACE
 if echo "$target" | grep -q musl; then #build wih musl library
 # Disabling what is not working with musl:
@@ -54,9 +74,11 @@ sed -i 's/\(option(LLVM_INCLUDE_TESTS[[:space:]].*[[:space:]]\)on)\(.*\)/\1OFF)\
         srcdir/root/interpreter/llvm-project/llvm/CMakeLists.txt
 echo "set(CXX_STANDARD 17)" >> srcdir/root/interpreter/llvm-project/llvm/CMakeLists.txt
 
-# N llvm links. LLVM link command needs 15GB
 njobs=${nproc}
-LLVM_PARALLEL_LINK_JOBS=`grep MemTot /proc/meminfo  | awk '{a=int($2/15100000); if(a>'"$njobs"') a='"$njobs"'; if(a<1) a=1; print a;}'`
+
+# Uncomment next line to limit number of LLVM link commands run in parallel and reduce memory usage. 
+# LLVM doc refers 15GB per link job.  Measurements with this build shows a 0.7 GByte max. RSS usage, suggesting that the limitation is not needed.
+# LLVM_PARALLEL_LINK_JOBS=`grep MemTot /proc/meminfo  | awk '{a=int($2/15100000); if(a>'"$njobs"') a='"$njobs"'; if(a<1) a=1; print a;}'`
 
 # For the rootcling execution performed during the build:
 echo "include_directories(SYSTEM /opt/$target/$target/sys-root/usr/include)" >> ${CMAKE_TARGET_TOOLCHAIN}
