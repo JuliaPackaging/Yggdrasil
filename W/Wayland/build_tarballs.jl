@@ -22,7 +22,8 @@ cd $WORKSPACE/srcdir/wayland/
    meson setup .. \
          --buildtype=release \
          -Ddocumentation=false \
-         -Dtests=false
+         -Dtests=false \
+         -Dlibraries=false
    meson compile
    meson install
    
