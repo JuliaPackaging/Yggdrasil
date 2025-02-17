@@ -52,10 +52,6 @@ install_license ../LICENSE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# `OpenSSL_jll` is missing for riscv; might update to 3.0.16 if riscv included and then add 
-# Platform.
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libopen62541", :libopen62541)
@@ -63,7 +59,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.15")
+    Dependency("OpenSSL_jll"; compat="3.0.16")
 ]
 
 # Build the tarballs
