@@ -34,14 +34,14 @@ cd build
 
 
 
-meson setup .. \
+CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib meson setup .. \
       --prefix=${prefix} \
       --buildtype=release \
       --cross-file="${MESON_TARGET_TOOLCHAIN}" \
       -Ddocumentation=false \
       -Dtests=false
-meson compile
-meson install
+CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib meson compile
+CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib meson install
 # rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
