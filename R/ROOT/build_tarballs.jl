@@ -18,6 +18,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+CCACHE_RECACHE=y
+
 echo "Mem. stat:"
 free -h
 
@@ -135,7 +138,7 @@ fi
 # the same sysroot option as for compilation.
 export CPLUS_INCLUDE_PATH="$SYSTEM_INCLUDE_PATH"
 mkdir build
-cmake -G"Unix Makefiles" \
+cmake -GNinja \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_INSTALL_PREFIX=$prefix \
       -DLLVM_HOST_TRIPLE=$target \
