@@ -62,6 +62,7 @@ dependencies = [
     Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
     Dependency("EpollShim_jll"),
+    HostBuildDependency("EpollShim_jll"),
 ]
 
 # Build the tarballs.
