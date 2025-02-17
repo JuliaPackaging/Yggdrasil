@@ -17,13 +17,12 @@ mkdir $TMPDIR
 
 # the stack-size arg is wrong on windows, because we're using mingw not msvc
 sed -i 's|/STACK:|-Wl,--stack,|' .cargo/config.toml
-cat .cargo/config.toml
 
 # build pixi
 cargo build --release
 
 # install pixi
-install -D -m 755 "target/${rust_target}/release/pixi${exeext}" "${bindir}/pixi${exeext}"
+install -Dvm 755 "target/${rust_target}/release/pixi${exeext}" "${bindir}/pixi${exeext}"
 """
 
 platforms = supported_platforms()
@@ -36,7 +35,8 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers=[:c, :rust], julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               compilers=[:c, :rust], julia_compat="1.6", lock_microarchitecture=false)
