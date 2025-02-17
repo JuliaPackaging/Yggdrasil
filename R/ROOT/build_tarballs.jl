@@ -19,7 +19,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-CCACHE_RECACHE=y
+export CCACHE_RECACHE=y
 
 echo "Mem. stat:"
 free -h
