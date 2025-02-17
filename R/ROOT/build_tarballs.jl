@@ -48,6 +48,9 @@ CMAKE_EXTRA_OPTS+=(-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld)
 # Uncomment for a minimal build for debugging purposes
 #CMAKE_EXTRA_OPTS+=(-Dclad=OFF -Dhtml=OFF -Dwebgui=OFF -Dcxxmodules=OFF -Dproof=OFF -Dtmva=OFF -Drootfit=OFF -Dxproofd=OFF -Dxrootd=OFF -Dssl=OFF -Dpyroot=OFF -Dtesting=OFF -Droot7=OFF -Dspectrum=OFF -Dunfold=OFF -Dasimage=OFF -Dgviz=OFF -Dfitiso=OFF -Dcocoa=OFF -Dopengl=OFF -Dproof=OFF -Dxml=OFF -Dgfal=OFF -Dmpi=OFF)
 
+# We experience issue with building Davix on buildkite CI (not clear why not reproducible with local build). Switch it off. 
+CMAKE_EXTRA_OPTS+=(-Ddavix=OFF)
+
 export SYSTEM_INCLUDE_PATH="`g++ --sysroot="/opt/$target/$target/sys-root" -E -x c++ -v /dev/null  2>&1  | awk '{gsub(\"^ \", \"\")} /End of search list/{a=0} {if(a==1){s=s d $0;d=":"}} /#include <...> search starts here/{a=1} END{print s}'`"
 
 # built-in compilation of the libAfterImage library needs this directory
@@ -115,7 +118,6 @@ if [ $target != $MACHTYPE ]; then #cross compilation
          -DCLING_TARGET_GLIBC=1 \
          -DCLING_TARGET_GLIBCXX=1 \
          -DCLING_SYSTEM_INCLUDE_PATH="$SYSTEM_INCLUDE_PATH" \
-         -Ddavix=OFF \
          -B NATIVE -S srcdir/root
 
    cmake --build NATIVE -- -j$njobs rootcling_stage1 rootcling llvm-tblgen clang-tblgen llvm-config llvm-symbolizer
@@ -197,7 +199,6 @@ dependencies = [
     Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
     Dependency(PackageSpec(name="Xorg_libXpm_jll", uuid="1a3ddb2d-74e3-57f3-a27b-e9b16291b4f2"))
     Dependency(PackageSpec(name="Xorg_libXft_jll", uuid="2c808117-e144-5220-80d1-69d4eaa9352c"))
-    Dependency(PackageSpec(name="util_linux_jll", uuid="a762b42e-dc87-5958-a639-9c9eec9c0153"))
 
     #Optionnal dependencies (if absent, either a feature will be disabled or a built-in version will be compiled)
     Dependency(PackageSpec(name="VDT_jll", uuid="474730fa-5ea9-5b8c-8629-63de62f23418"))
