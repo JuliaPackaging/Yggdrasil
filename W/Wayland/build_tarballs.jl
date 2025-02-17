@@ -15,7 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wayland/
 
-if [[ "${target}" == x86_64-linux-* ]]; then
    mkdir bootstrap
    cd bootstrap
    
@@ -27,10 +26,11 @@ if [[ "${target}" == x86_64-linux-* ]]; then
    meson install
    
    cd ../
-fi
 
 mkdir build
 cd build
+
+
 
 meson setup .. \
       --prefix=${prefix} \
