@@ -197,6 +197,7 @@ dependencies = [
     Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
     Dependency(PackageSpec(name="Xorg_libXpm_jll", uuid="1a3ddb2d-74e3-57f3-a27b-e9b16291b4f2"))
     Dependency(PackageSpec(name="Xorg_libXft_jll", uuid="2c808117-e144-5220-80d1-69d4eaa9352c"))
+    Dependency(PackageSpec(name="util_linux_jll", uuid="a762b42e-dc87-5958-a639-9c9eec9c0153"))
 
     #Optionnal dependencies (if absent, either a feature will be disabled or a built-in version will be compiled)
     Dependency(PackageSpec(name="VDT_jll", uuid="474730fa-5ea9-5b8c-8629-63de62f23418"))
