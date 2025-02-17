@@ -26,19 +26,18 @@ install -Dvm 755 "target/${rust_target}/release/pixi${exeext}" "${bindir}/pixi${
 """
 
 # Supported platforms from https://github.com/prefix-dev/pixi/releases/latest
-# plus x86_64-linux-musl and powerpc64le-linux-glibc which also happen to build
 platforms = [
     # apple
     Platform("aarch64", "macos"),
     Platform("x86_64", "macos"),
     # windows
-    Platform("aarch64", "windows"),
+    # Platform("aarch64", "windows"),  # not supported by julia
     Platform("x86_64", "windows"),
     # linux
     Platform("aarch64", "linux"; libc="glibc"),
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
+    Platform("x86_64", "linux"; libc="musl"),  # also happens to build
+    Platform("powerpc64le", "linux"; libc="glibc"),  # also happens to build
 ]
 
 # The products that we will ensure are always built
