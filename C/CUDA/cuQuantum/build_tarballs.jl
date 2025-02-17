@@ -37,7 +37,8 @@ products = [
 ]
 
 platforms = [Platform("x86_64", "linux"),
-    Platform("aarch64", "linux")]
+    Platform("aarch64", "linux"; cuda_platform="jetson"),
+    Platform("aarch64", "linux"; cuda_platform="sbsa")]
 
 builds = []
 for cuda_version in [v"11", v"12"], platform in platforms
