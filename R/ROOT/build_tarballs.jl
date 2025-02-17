@@ -18,16 +18,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-onkill(){
-    echo "Signal $1 received. List running processes for diagnostic." 1>&2
-    top -b -n 1
-    exit $((128+$2))
-}
-
-trap "onkill SIGTERM 15" SIGTERM
-trap "onkill SIGQUIT 3" SIGQUIT
-trap "onkill SIGXCPU 24" SIGXCPU
-
 echo "Mem. stat:"
 free -h
 
@@ -51,6 +41,9 @@ fi
 
 # Required to compile graf3d/ftgl/src/FTVectoriser.cxx (for gcc to accept a conversion from char* to unsigned char*)
 CMAKE_EXTRA_OPTS+=(-DCMAKE_CXX_FLAGS=-fpermissive)
+
+# See https://github.com/JuliaPackaging/Yggdrasil/pull/9300#issuecomment-2662634111
+CMAKE_EXTRA_OPTS+=(-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld)
 
 # Uncomment for a minimal build for debugging purposes
 #CMAKE_EXTRA_OPTS+=(-Dclad=OFF -Dhtml=OFF -Dwebgui=OFF -Dcxxmodules=OFF -Dproof=OFF -Dtmva=OFF -Drootfit=OFF -Dxproofd=OFF -Dxrootd=OFF -Dssl=OFF -Dpyroot=OFF -Dtesting=OFF -Droot7=OFF -Dspectrum=OFF -Dunfold=OFF -Dasimage=OFF -Dgviz=OFF -Dfitiso=OFF -Dcocoa=OFF -Dopengl=OFF -Dproof=OFF -Dxml=OFF -Dgfal=OFF -Dmpi=OFF)
