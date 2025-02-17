@@ -135,7 +135,7 @@ fi
 # the same sysroot option as for compilation.
 export CPLUS_INCLUDE_PATH="$SYSTEM_INCLUDE_PATH"
 mkdir build
-cmake -GNinja \
+cmake -G"Unix Makefiles" \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_INSTALL_PREFIX=$prefix \
       -DLLVM_HOST_TRIPLE=$target \
