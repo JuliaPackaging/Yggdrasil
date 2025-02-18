@@ -33,16 +33,14 @@ cd $WORKSPACE/srcdir/wayland/
 mkdir build
 cd build
 
-
-
-CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib meson setup .. \
+meson setup .. \
       --prefix=${prefix} \
       --buildtype=release \
       --cross-file="${MESON_TARGET_TOOLCHAIN}" \
       -Ddocumentation=false \
       -Dtests=false
-CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib meson compile
-CXX=${HOSTCXX} CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib meson install
+meson compile
+meson install
 # rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
