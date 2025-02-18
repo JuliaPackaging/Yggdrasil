@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUTENSOR"
-version = v"2.0.1"
-full_version = "2.0.1.2"
+version = v"2.1.0"
+
 
 scripts = Dict()
 scripts[v"11"] = raw"""
@@ -79,9 +79,9 @@ dependencies = [
 ]
 
 platforms = [Platform("x86_64", "linux"),
-             Platform("powerpc64le", "linux"),
-             Platform("aarch64", "linux"),
-             Platform("x86_64", "windows")]
+    Platform("powerpc64le", "linux"),
+    Platform("aarch64", "linux"; cuda_platform="sbsa"),
+    Platform("x86_64", "windows")]
 
 builds = []
 for cuda_version in [v"11", v"12"], platform in platforms
