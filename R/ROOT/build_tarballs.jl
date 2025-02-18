@@ -19,7 +19,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
-export CCACHE_RECACHE=y
+#export CCACHE_RECACHE=y
 
 echo "Mem. stat:"
 free -h
@@ -123,7 +123,8 @@ if [ $target != $MACHTYPE ]; then #cross compilation
          -DCLING_SYSTEM_INCLUDE_PATH="$SYSTEM_INCLUDE_PATH" \
          -B NATIVE -S srcdir/root
 
-   cmake --build NATIVE -- -j$njobs rootcling_stage1 rootcling llvm-tblgen clang-tblgen llvm-config llvm-symbolizer
+   echo "Bootstrap: building tools needed to run on host for the target build..."
+   cmake --build NATIVE -- -j$njobs rootcling_stage1 rootcling llvm-tblgen clang-tblgen llvm-config llvm-symbolizer  1> /dev/null
 
    CMAKE_EXTRA_OPTS+=($CMAKE_EXTRA_OPTS "-DNATIVE_BINARY_DIR=$PWD/NATIVE" \
       "-DLLVM_TABLEGEN=$PWD/NATIVE/interpreter/llvm-project/llvm/bin/llvm-tblgen" \
