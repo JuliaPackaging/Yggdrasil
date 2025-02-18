@@ -1,5 +1,4 @@
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: get_addable_spec
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
@@ -101,10 +100,7 @@ products = [
 # Also use internal `PMix` and `prrte` packages since they might otherwise use an external `libevent`.
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    # Dependency("Hwloc_jll"; compat="2.11.2"),
-    # Until we have a new version of hwloc built for riscv64 we need to use the
-    # `get_addable_spec` hack.  From v2.11.3 on we should be able to remove it here.
-    Dependency(get_addable_spec("Hwloc_jll", v"2.11.2+2"); compat="2.11.2"),
+    Dependency("Hwloc_jll"; compat="2.12.0"),
     # Dependency("PMIx_jll"),     # compat="4.2.0"
     Dependency("Zlib_jll"; compat="1.2.12"),
     # Dependency("libevent_jll"), # compat="2.0.21"
