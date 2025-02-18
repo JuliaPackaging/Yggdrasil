@@ -154,6 +154,7 @@ cmake -GNinja \
       -B build -S srcdir/root
 
 # Build the code
+njobs=1
 cmake --build build -j${njobs}
 
 # Install the binaries
