@@ -16,19 +16,21 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wayland/
 
-   mkdir bootstrap
-   cd bootstrap
-   
-   meson setup .. \
-         --buildtype=release \
-         -Ddocumentation=false \
-         --cross-file="${MESON_HOST_TOOLCHAIN}" \
-         -Dtests=false \
-         -Dlibraries=false
-   meson compile
-   meson install
-   
-   cd ../
+mkdir bootstrap
+cd bootstrap
+
+meson setup .. \
+      --buildtype=release \
+      -Ddocumentation=false \
+      --cross-file="${MESON_HOST_TOOLCHAIN}" \
+      -Dtests=false \
+      -Dlibraries=false
+meson compile
+meson install
+
+cd ../
+
+cp ${host_prefix}/bin/wayland-scanner /usr/bin/wayland-scanner
 
 mkdir build
 cd build
