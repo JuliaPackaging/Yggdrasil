@@ -207,6 +207,7 @@ dependencies = [
     Dependency("Xorg_xcb_util_jll")
     Dependency("Xorg_libxkbfile_jll")
     Dependency("Libglvnd_jll")
+    Dependency(PackageSpec(name="GLU_jll", uuid="bd17208b-e95e-5925-bf81-e2f59b3e5c61"))
     Dependency("oneTBB_jll", compat="2021.9.0")
 ]
 
