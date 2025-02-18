@@ -79,7 +79,6 @@ dependencies = [
 ]
 
 platforms = [Platform("x86_64", "linux"),
-    Platform("powerpc64le", "linux"),
     Platform("aarch64", "linux"; cuda_platform="sbsa"),
     Platform("x86_64", "windows")]
 
