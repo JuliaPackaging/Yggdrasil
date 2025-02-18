@@ -66,5 +66,7 @@ dependencies = [
 
 ]
 
+# Need at least GCC XXX for asm instructions on i686
+# (We could instead patch the asm instructions.)
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9", preferred_llvm_version=llvm_version)
+               julia_compat="1.9", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)
