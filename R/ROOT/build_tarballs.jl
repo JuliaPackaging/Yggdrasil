@@ -18,19 +18,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-#export CCACHE_RECACHE=y
-
-echo "Mem. stat:"
-free -h
-
-echo -e "nproc command tells: "
-nproc
-
-echo BINARYBUILDER_NPROC = """ * get(ENV, "BINARYBUILDER_NPROC", "") * raw""";
-
-echo "nproc (variable) = $nproc"
-
 cd $WORKSPACE
 if echo "$target" | grep -q musl; then #build wih musl library
 # Disabling what is not working with musl:
@@ -39,24 +26,12 @@ else
     CMAKE_EXTRA_OPTS=(-Druntime_cxxmodules=OFF)
 fi
 
-# Help old releases of cmake to find libblastrampoline.so.
-[ -f "$libdir/libblastrampoline.so" ] && CMAKE_EXTRA_OPTS+=(-DBLAS_LIBRARIES="$libdir/libblastrampoline.so")
-
-# Required to compile graf3d/ftgl/src/FTVectoriser.cxx (for gcc to accept a conversion from char* to unsigned char*)
-CMAKE_EXTRA_OPTS+=(-DCMAKE_CXX_FLAGS=-fpermissive)
-
-# See https://github.com/JuliaPackaging/Yggdrasil/pull/9300#issuecomment-2662634111
-CMAKE_EXTRA_OPTS+=(-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld)
-
-# Uncomment for a minimal build for debugging purposes
+#Uncomment for a minimal build for debugging purposes
 #CMAKE_EXTRA_OPTS+=(-Dclad=OFF -Dhtml=OFF -Dwebgui=OFF -Dcxxmodules=OFF -Dproof=OFF -Dtmva=OFF -Drootfit=OFF -Dxproofd=OFF -Dxrootd=OFF -Dssl=OFF -Dpyroot=OFF -Dtesting=OFF -Droot7=OFF -Dspectrum=OFF -Dunfold=OFF -Dasimage=OFF -Dgviz=OFF -Dfitiso=OFF -Dcocoa=OFF -Dopengl=OFF -Dproof=OFF -Dxml=OFF -Dgfal=OFF -Dmpi=OFF)
-
-# We experience issue with building Davix on buildkite CI (not clear why not reproducible with local build). Switch it off. 
-CMAKE_EXTRA_OPTS+=(-Ddavix=OFF)
 
 export SYSTEM_INCLUDE_PATH="`g++ --sysroot="/opt/$target/$target/sys-root" -E -x c++ -v /dev/null  2>&1  | awk '{gsub(\"^ \", \"\")} /End of search list/{a=0} {if(a==1){s=s d $0;d=":"}} /#include <...> search starts here/{a=1} END{print s}'`"
 
-# built-in compilation of the libAfterImage library needs this directory
+# build-in compilation of the libAfterImage library needs this directory
 mkdir -p /tmp/user/0
 
 cd /
@@ -73,11 +48,9 @@ sed -i 's/\(option(LLVM_INCLUDE_TESTS[[:space:]].*[[:space:]]\)on)\(.*\)/\1OFF)\
         srcdir/root/interpreter/llvm-project/llvm/CMakeLists.txt
 echo "set(CXX_STANDARD 17)" >> srcdir/root/interpreter/llvm-project/llvm/CMakeLists.txt
 
+# N llvm links. LLVM link command needs 15GB
 njobs=${nproc}
-
-# Uncomment next line to limit number of LLVM link commands run in parallel and reduce memory usage. 
-# LLVM doc refers 15GB per link job.  Measurements with this build shows a 0.7 GByte max. RSS usage, suggesting that the limitation is not needed.
-# LLVM_PARALLEL_LINK_JOBS=`grep MemTot /proc/meminfo  | awk '{a=int($2/15100000); if(a>'"$njobs"') a='"$njobs"'; if(a<1) a=1; print a;}'`
+LLVM_PARALLEL_LINK_JOBS=`grep MemTot /proc/meminfo  | awk '{a=int($2/15100000); if(a>'"$njobs"') a='"$njobs"'; if(a<1) a=1; print a;}'`
 
 # For the rootcling execution performed during the build:
 echo "include_directories(SYSTEM /opt/$target/$target/sys-root/usr/include)" >> ${CMAKE_TARGET_TOOLCHAIN}
@@ -121,10 +94,10 @@ if [ $target != $MACHTYPE ]; then #cross compilation
          -DCLING_TARGET_GLIBC=1 \
          -DCLING_TARGET_GLIBCXX=1 \
          -DCLING_SYSTEM_INCLUDE_PATH="$SYSTEM_INCLUDE_PATH" \
+         -Ddavix=OFF \
          -B NATIVE -S srcdir/root
 
-   echo "Bootstrap: building tools needed to run on host for the target build..."
-   cmake --build NATIVE -- -j$njobs rootcling_stage1 rootcling llvm-tblgen clang-tblgen llvm-config llvm-symbolizer  1> /dev/null
+   cmake --build NATIVE -- -j$njobs rootcling_stage1 rootcling llvm-tblgen clang-tblgen llvm-config llvm-symbolizer
 
    CMAKE_EXTRA_OPTS+=($CMAKE_EXTRA_OPTS "-DNATIVE_BINARY_DIR=$PWD/NATIVE" \
       "-DLLVM_TABLEGEN=$PWD/NATIVE/interpreter/llvm-project/llvm/bin/llvm-tblgen" \
@@ -154,13 +127,16 @@ cmake -GNinja \
       -B build -S srcdir/root
 
 # Build the code
-njobs=1
 cmake --build build -j${njobs}
 
 # Install the binaries
 cmake --install build --prefix $prefix
 install -Dvm 755 build/core/rootcling_stage1/src/rootcling_stage1 -t "${bindir}"
 """
+
+open("recipe.sh", "w") do io
+    println(io, script)
+end
 
 # Add to the recipe script commands to write the recipe in a file into the sandbox
 # to ease debugging with the --debug build_tarballs.jl option.
@@ -200,40 +176,38 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     #Mandatory dependencies
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
-    Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
-    Dependency(PackageSpec(name="Xorg_libXpm_jll", uuid="1a3ddb2d-74e3-57f3-a27b-e9b16291b4f2"))
-    Dependency(PackageSpec(name="Xorg_libXft_jll", uuid="2c808117-e144-5220-80d1-69d4eaa9352c"))
+    BuildDependency("Xorg_xorgproto_jll")
+    Dependency("Xorg_libX11_jll")
+    Dependency("Xorg_libXpm_jll")
+    Dependency("Xorg_libXft_jll")
 
     #Optionnal dependencies (if absent, either a feature will be disabled or a built-in version will be compiled)
-    Dependency(PackageSpec(name="VDT_jll", uuid="474730fa-5ea9-5b8c-8629-63de62f23418"))
-    Dependency(PackageSpec(name="XRootD_jll", uuid="b6113df7-b24e-50c0-846f-35a2e36cb9d5"))
-    Dependency(PackageSpec(name="Lz4_jll", uuid="5ced341a-0733-55b8-9ab6-a4889d929147"))
+    Dependency("VDT_jll")
+    Dependency("XRootD_jll")
+    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
+    Dependency("Lz4_jll")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="Giflib_jll", uuid="59f7168a-df46-5410-90c8-f2779963d0ec"))
     Dependency(PackageSpec(name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4"))
     Dependency(PackageSpec(name="PCRE2_jll", uuid="efcefdf7-47ab-520b-bdef-62a2eaa19f15"))
     Dependency(PackageSpec(name="Graphviz_jll", uuid="3c863552-8265-54e4-a6dc-903eb78fde85"))
     Dependency(PackageSpec(name="xxHash_jll", uuid="5fdcd639-92d1-5a06-bf6b-28f2061df1a9"))
-    Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"))
+    Dependency("XZ_jll")
     Dependency(PackageSpec(name="Librsvg_jll", uuid="925c91fb-5dd6-59dd-8e8c-345e74382d89"))
-    Dependency(PackageSpec(name="FreeType2_jll", uuid="d7e528f0-a631-5988-bf34-fe36492bcfd7"))
-    Dependency(PackageSpec(name="Xorg_libICE_jll", uuid="f67eecfb-183a-506d-b269-f58e52b52d7c"))
-    Dependency(PackageSpec(name="Xorg_libSM_jll", uuid="c834827a-8449-5923-a945-d239c165b7dd"))
-    Dependency(PackageSpec(name="Xorg_libXfixes_jll", uuid="d091e8ba-531a-589c-9de9-94069b037ed8"))
-    Dependency(PackageSpec(name="Xorg_libXi_jll", uuid="a51aa0fd-4e3c-5386-b890-e753decda492"))
-    Dependency(PackageSpec(name="Xorg_libXinerama_jll", uuid="d1454406-59df-5ea1-beac-c340f2130bc3"))
-    Dependency(PackageSpec(name="Xorg_libXmu_jll", uuid="6bc1fdef-f8f4-516b-84c1-6f5f86a35b20"))
-    Dependency(PackageSpec(name="Xorg_libXt_jll", uuid="28c4a263-0105-5ca0-9a8c-f4f6b89a1dd4"))
-    Dependency(PackageSpec(name="Xorg_libXtst_jll", uuid="b6f176f1-7aea-5357-ad67-1d3e565ea1c6"))
-    Dependency(PackageSpec(name="Xorg_xcb_util_jll", uuid="2def613f-5ad1-5310-b15b-b15d46f528f5"))
-    Dependency(PackageSpec(name="Xorg_libxkbfile_jll", uuid="cc61e674-0454-545c-8b26-ed2c68acab7a"))
-    Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
-    Dependency(PackageSpec(name="GLU_jll", uuid="bd17208b-e95e-5925-bf81-e2f59b3e5c61"))
-    Dependency(PackageSpec(name="GLEW_jll", uuid="bde7f898-03f7-559e-8810-194d950ce600"))
-    Dependency(PackageSpec(name="nlohmann_json_jll", uuid="7c7c7bd4-5f1c-5db3-8b3f-fcf8282f06da"))
-    Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"))
-    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"), compat="2021.9.0")
+    Dependency("FreeType2_jll")
+    Dependency("Xorg_libICE_jll")
+    Dependency("Xorg_libSM_jll")
+    Dependency("Xorg_libXfixes_jll")
+    Dependency("Xorg_libXi_jll")
+    Dependency("Xorg_libXinerama_jll")
+    Dependency("Xorg_libXmu_jll")
+    Dependency("Xorg_libXt_jll")
+    Dependency("Xorg_libXtst_jll")
+    Dependency("Xorg_xcb_util_jll")
+    Dependency("Xorg_libxkbfile_jll")
+    Dependency("Libglvnd_jll")
+    Dependency("OpenBLAS_jll")
+    Dependency("oneTBB_jll", compat="2021.9.0")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
