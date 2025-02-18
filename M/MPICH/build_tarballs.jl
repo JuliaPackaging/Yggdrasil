@@ -41,6 +41,7 @@ configure_flags=(
     --enable-static=no
     --host=${target}
     --prefix=${prefix}
+    --with-device=ch4
     --with-hwloc=${prefix}
 )
 
@@ -68,7 +69,7 @@ export CROSS_F90_DOUBLE_MODEL=15,307
 export CROSS_F90_ALL_INTEGER_MODELS=2,1,4,2,9,4,18,8,
 export CROSS_F90_INTEGER_MODEL_MAP={2,1,1},{4,2,2},{9,4,4},{18,8,8},
 
-if [[ ${target} == i686-linux-musl ]]; then
+if [[ "${target}" == i686-linux-musl ]]; then
     # Our `i686-linux-musl` platform is a bit rotten: it can run C programs,
     # but not C++ or Fortran.  `configure` runs a C program to determine
     # whether it's cross-compiling or not, but when it comes to running
@@ -80,21 +81,10 @@ if [[ ${target} == i686-linux-musl ]]; then
     configure_flags+=(ac_cv_sizeof_bool="1")
 fi
 
-if [[ ${target} == aarch64-apple-* ]]; then
+if [[ "${target}" == aarch64-apple-* ]]; then
     configure_flags+=(
         FFLAGS=-fallow-argument-mismatch
         FCFLAGS=-fallow-argument-mismatch
-    )
-fi
-
-if [[ ${target} == *mingw* ]]; then
-    configure_flags+=(
-        --with-device=ch3
-        --without-shared-memory
-)
-else
-    configure_flags+=(
-        --with-device=ch4
     )
 fi
 
@@ -147,8 +137,8 @@ dependencies = [
     # Until we have a new version of hwloc built for riscv64 we need to use the
     # `get_addable_spec` hack.  From v2.11.3 on we should be able to remove it here.
     Dependency(get_addable_spec("Hwloc_jll", v"2.11.2+2"); compat="2.11.2"),
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-               compat="0.1", top_level=true),
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                      compat="0.1", top_level=true),
 ]
 
 # Build the tarballs.
