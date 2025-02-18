@@ -212,7 +212,6 @@ dependencies = [
     Dependency("Libglvnd_jll")
     Dependency(PackageSpec(name="GLU_jll", uuid="bd17208b-e95e-5925-bf81-e2f59b3e5c61"))
     Dependency(PackageSpec(name="GLEW_jll", uuid="bde7f898-03f7-559e-8810-194d950ce600"))
-    Dependency(PackageSpec(name="nlohmann_json_jll", uuid="7c7c7bd4-5f1c-5db3-8b3f-fcf8282f06da"))
     Dependency("oneTBB_jll", compat="2021.9.0")
 ]
 
