@@ -18,6 +18,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+echo USE_CCACHE: $USE_CCACHE
+
 cd $WORKSPACE
 if echo "$target" | grep -q musl; then #build wih musl library
 # Disabling what is not working with musl:
@@ -208,6 +211,7 @@ dependencies = [
     Dependency("Xorg_libxkbfile_jll")
     Dependency("Libglvnd_jll")
     Dependency(PackageSpec(name="GLU_jll", uuid="bd17208b-e95e-5925-bf81-e2f59b3e5c61"))
+    Dependency(PackageSpec(name="GLEW_jll", uuid="bde7f898-03f7-559e-8810-194d950ce600"))
     Dependency("oneTBB_jll", compat="2021.9.0")
 ]
 
