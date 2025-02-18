@@ -3,6 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Bison"
+ygg_version = v"3.8.3" # Bump to pick up riscv
 version = v"3.8.2"
 
 # Collection of sources required to complete build
@@ -13,14 +14,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/bison-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-relocatable
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --target=${target} --enable-relocatable
+
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -35,4 +38,4 @@ dependencies = Dependency[
 
 # We require `gcc` v5+ to avoid the following error on some systems:
 # Inconsistency detected by ld.so: dl-version.c: 204: _dl_check_map_versions: Assertion `needed != NULL' failed!
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
