@@ -22,6 +22,7 @@ cd $WORKSPACE/srcdir/wayland/
    meson setup .. \
          --buildtype=release \
          -Ddocumentation=false \
+         --cross-file="${MESON_HOST_TOOLCHAIN}" \
          -Dtests=false \
          -Dlibraries=false
    meson compile
