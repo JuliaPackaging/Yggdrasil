@@ -26,7 +26,13 @@ else
     CMAKE_EXTRA_OPTS=(-Druntime_cxxmodules=OFF)
 fi
 
-#Uncomment for a minimal build for debugging purposes
+# Help old releases of cmake to find libblastrampoline.so.
+[ -f "$libdir/libblastrampoline.so" ] && CMAKE_EXTRA_OPTS+=(-DBLAS_LIBRARIES="$libdir/libblastrampoline.so")
+
+# Required to compile graf3d/ftgl/src/FTVectoriser.cxx (for gcc to accept a conversion from char* to unsigned char*)
+CMAKE_EXTRA_OPTS+=(-DCMAKE_CXX_FLAGS=-fpermissive)
+
+# Uncomment for a minimal build for debugging purposes
 #CMAKE_EXTRA_OPTS+=(-Dclad=OFF -Dhtml=OFF -Dwebgui=OFF -Dcxxmodules=OFF -Dproof=OFF -Dtmva=OFF -Drootfit=OFF -Dxproofd=OFF -Dxrootd=OFF -Dssl=OFF -Dpyroot=OFF -Dtesting=OFF -Droot7=OFF -Dspectrum=OFF -Dunfold=OFF -Dasimage=OFF -Dgviz=OFF -Dfitiso=OFF -Dcocoa=OFF -Dopengl=OFF -Dproof=OFF -Dxml=OFF -Dgfal=OFF -Dmpi=OFF)
 
 export SYSTEM_INCLUDE_PATH="`g++ --sysroot="/opt/$target/$target/sys-root" -E -x c++ -v /dev/null  2>&1  | awk '{gsub(\"^ \", \"\")} /End of search list/{a=0} {if(a==1){s=s d $0;d=":"}} /#include <...> search starts here/{a=1} END{print s}'`"
@@ -134,10 +140,6 @@ cmake --install build --prefix $prefix
 install -Dvm 755 build/core/rootcling_stage1/src/rootcling_stage1 -t "${bindir}"
 """
 
-open("recipe.sh", "w") do io
-    println(io, script)
-end
-
 # Add to the recipe script commands to write the recipe in a file into the sandbox
 # to ease debugging with the --debug build_tarballs.jl option.
 scriptwrapper = """
@@ -184,7 +186,6 @@ dependencies = [
     #Optionnal dependencies (if absent, either a feature will be disabled or a built-in version will be compiled)
     Dependency("VDT_jll")
     Dependency("XRootD_jll")
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
     Dependency("Lz4_jll")
     Dependency(PackageSpec(name="FFTW_jll", uuid="f5851436-0d7a-5f13-b9de-f02708fd171a"))
     Dependency(PackageSpec(name="Giflib_jll", uuid="59f7168a-df46-5410-90c8-f2779963d0ec"))
@@ -206,7 +207,6 @@ dependencies = [
     Dependency("Xorg_xcb_util_jll")
     Dependency("Xorg_libxkbfile_jll")
     Dependency("Libglvnd_jll")
-    Dependency("OpenBLAS_jll")
     Dependency("oneTBB_jll", compat="2021.9.0")
 ]
 
