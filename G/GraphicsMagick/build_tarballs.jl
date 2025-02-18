@@ -43,7 +43,7 @@ for depth in 32 8 16; do
         --without-x \
         --without-wmf \
         --without-jxl \
-        --without-lzma 
+        --without-lzma \
         --disable-prof --disable-gprof --disable-gcov
     make -j${nproc}
     make install
@@ -76,7 +76,6 @@ dependencies = [
     # `CompilerSupportLibraries_jll` everywhere else.
     # Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     # Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
-    Dependency("CompilerSupportLibraries_jll"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("FreeType2_jll"; compat="2.10.4"),
     # Dependency("Ghostscript_jll"),
