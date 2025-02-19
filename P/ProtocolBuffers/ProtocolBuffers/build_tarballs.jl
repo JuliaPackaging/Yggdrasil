@@ -5,8 +5,8 @@ using BinaryBuilder, Pkg
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "ProtocolBuffers"
-# Cf. https://github.com/protocolbuffers/protobuf/blob/v28.2/version.json
-version = VersionNumber(5, base_version.minor, base_version.patch)
+# Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
+version = VersionNumber(4, base_version.minor, base_version.patch)
 
 script = raw"""
 export BB_PROTOBUF_BUILD_SHARED_LIBS=ON
@@ -15,13 +15,9 @@ export BB_PROTOBUF_PRODUCT=libprotobuf
 script
 
 products = vcat([
-    LibraryProduct("libprotobuf", :libprotobuf),
-    LibraryProduct("libprotobuf-lite", :libprotobuf_lite),
-
-    # `protobuf` includes upb
-    FileProduct("lib/libupb.a", :libupb),
+    LibraryProduct(name, symbol) for (symbol, name) in library_symbols
 ], [
-    LibraryProduct(String(lib), lib) for lib in additional_library_symbols
+    FileProduct("lib/$lib.a", lib) for lib in additional_library_symbols
 ])
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

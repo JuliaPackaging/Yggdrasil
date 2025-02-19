@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "ProtocolBuffersCompiler"
-# Cf. https://github.com/protocolbuffers/protobuf/blob/v28.2/version.json
+# Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
 version = VersionNumber(base_version.minor, base_version.patch)
 
 script = raw"""
@@ -18,7 +18,7 @@ products = vcat([
     LibraryProduct("libprotoc", :libprotoc),
     ExecutableProduct("protoc", :protoc),
 ], [
-    LibraryProduct(String(lib), lib) for lib in additional_library_symbols
+    LibraryProduct(name, symbol) for (symbol, name) in library_symbols
 ])
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
