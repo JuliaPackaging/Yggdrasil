@@ -5,10 +5,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
 # Note that OpenMPI 5 is ABI compatible with OpenMPI 4
-version = v"5.0.6"
+version = v"5.0.7"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "1d6dd41f6b53c00db23b40e56733d16a996fa743957ef8add8e117feffd92689"),
+                  "67435fdb2560f897882e69fead171d38e7f44a6dfe1d3c90506f549a943050b8"),
     DirectorySource("bundled"),
 ]
 
@@ -78,6 +78,7 @@ platforms = supported_platforms()
 # OpenMPI 5 supports only 64-bit systems
 filter!(p -> nbits(p) == 64, platforms)
 # Disable FreeBSD, it is not supported by PMIx (which we need)
+# (OpenMPI calls `pthread_setaffinity_np` which does not exist on FreeBSD.)
 filter!(!Sys.isfreebsd, platforms)
 # Disable Windows, we do not know how to cross-compile
 filter!(!Sys.iswindows, platforms)
@@ -96,13 +97,14 @@ products = [
 # Use an internal `libevent` to prevent hangs in MPI_Init.
 # Also use internal `PMix` and `prrte` packages since they might otherwise use an external `libevent`.
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll"),
-    Dependency("Hwloc_jll"; compat="2.5.0"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("Hwloc_jll"; compat="2.12.0"),
     # Dependency("PMIx_jll"),     # compat="4.2.0"
     Dependency("Zlib_jll"; compat="1.2.12"),
     # Dependency("libevent_jll"), # compat="2.0.21"
     # Dependency("prrte_jll"),    # compat="3.0.0"
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                      compat="0.1", top_level=true),
 ]
 
 augment_platform_block = """
