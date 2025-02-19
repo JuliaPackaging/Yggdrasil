@@ -5,8 +5,7 @@ version = v"9.4.0"
 
 # Collection of sources required to build Octave
 sources = [
-   ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
-                  "da9481205bfa717660b7d4a16732d8b2d58aadceab4993d41242a8e2848ea6c1"),
+   GitSource("https://github.com/gnu-octave/octave/", "155645d388b7f50b4081a4b769dc9dd4a757f72b"),
 ]
 
 # Bash recipe for building across all platforms
