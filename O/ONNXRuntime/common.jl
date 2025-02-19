@@ -49,9 +49,8 @@ if [[ $target != *-w64-mingw32* ]]; then
     atomic_patch -p1 ../patches/aarch64-linux-bfloat16-float16-cmake.patch
 
     git submodule update --init --recursive --depth 1 --jobs $nproc
-    mkdir build
-    cd build
     cmake \
+        -B build \
         -DCMAKE_INSTALL_PREFIX=$prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
@@ -60,8 +59,8 @@ if [[ $target != *-w64-mingw32* ]]; then
         -Donnxruntime_BUILD_UNIT_TESTS=OFF \
         "${cmake_extra_args[@]}" \
         $WORKSPACE/srcdir/onnxruntime/cmake
-    make -j $nproc
-    make install
+    cmake --build build --parallel $nproc
+    cmake --install build
     install_license $WORKSPACE/srcdir/onnxruntime/LICENSE
 else
     if [[ $bb_full_target == *-cuda* ]]; then
