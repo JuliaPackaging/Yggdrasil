@@ -19,7 +19,7 @@ llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "6fdedb036c1c3c2c07f5fac2d7227b95d01e37b0")
+              "f21ef2ade1f4c0b2e9767d8e27e5878131351e7c")
 ]
 
 #=
