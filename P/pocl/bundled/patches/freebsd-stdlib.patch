@@ -1,0 +1,16 @@
+diff --git a/lib/CL/pocl_util.c b/lib/CL/pocl_util.c
+index b3a785b7c..2af1840f3 100644
+--- a/lib/CL/pocl_util.c
++++ b/lib/CL/pocl_util.c
+@@ -26,11 +26,11 @@
+
+ #define _BSD_SOURCE
+ #define _DEFAULT_SOURCE
++#include <stdlib.h>
+ #define _POSIX_C_SOURCE 200809L
+
+ #include <errno.h>
+ #include <limits.h>
+-#include <stdlib.h>
+ #include <string.h>
+ #include <ctype.h>
