@@ -1,13 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Octave"
-version = v"9.3.0" 
-bb_ver = v"9.3.1" # Bump patch level to have a new version for Ygg compat
+version = v"9.4.0" 
 
 # Collection of sources required to build Octave
 sources = [
    ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
-                  "809fa39a7acc84815bf4dc4d2d7e6b228ce75a07f3b2413f3313aa8e0aaa3287"),
+                  "da9481205bfa717660b7d4a16732d8b2d58aadceab4993d41242a8e2848ea6c1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -44,8 +43,8 @@ make install
 
 # build on all supported platforms
 platforms = supported_platforms()
-filter!(!Sys.isfreebsd, platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
+#filter!(!Sys.isfreebsd, platforms)
+#filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -81,10 +80,9 @@ dependencies = [
     Dependency("HDF5_jll"),
     Dependency("rapidjson_jll"),
     Dependency("libsndfile_jll"),
-#    Dependency("GraphicsMagick_jll"),
-
+    Dependency("GraphicsMagick_jll"),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, bb_ver, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.8", clang_use_lld=false, preferred_gcc_version=v"10")
