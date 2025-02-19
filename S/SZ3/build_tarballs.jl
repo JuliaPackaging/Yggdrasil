@@ -79,8 +79,10 @@ dependencies = [
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
                platforms=filter(Sys.isbsd, platforms)),
     Dependency("GSL_jll"),
+    # We had to restrict compat with HDF5 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
     # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat="~1.14"),
+    Dependency("HDF5_jll"; compat="1.14.0 - 1.14.3"),
     Dependency("Zstd_jll"),
 ]
 
