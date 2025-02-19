@@ -1,0 +1,11 @@
+--- /opt/x86_64-linux-musl/bin/../lib/gcc/x86_64-linux-musl/9.1.0/../../../../x86_64-linux-musl/include/c++/9.1.0/variant.orig
++++ /opt/x86_64-linux-musl/bin/../lib/gcc/x86_64-linux-musl/9.1.0/../../../../x86_64-linux-musl/include/c++/9.1.0/variant
+@@ -1556,7 +1556,7 @@
+ #endif
+ 
+       template<size_t _Np, typename _Vp>
+-	friend constexpr decltype(auto) __detail::__variant::__get(_Vp&& __v);
++	friend constexpr decltype(auto) __detail::__variant::__get(_Vp&& __v) noexcept;
+ 
+       template<typename _Vp>
+ 	friend void* __detail::__variant::__get_storage(_Vp&& __v);
