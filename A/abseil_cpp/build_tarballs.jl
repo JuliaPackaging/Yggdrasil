@@ -8,11 +8,14 @@ version = v"20230125.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/abseil/abseil-cpp", "78be63686ba732b25052be15f8d6dee891c05749"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/abseil-cpp
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aarch64-cmake.patch
 
 cmake -B build -G Ninja \
     -DABSL_PROPAGATE_CXX_STD=OFF \
