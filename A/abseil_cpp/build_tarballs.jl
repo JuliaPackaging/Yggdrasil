@@ -3,21 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "abseil_cpp"
-version = v"20240116.2"
+version = v"20230125.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/abseil/abseil-cpp", "d7aaad83b488fd62bd51c81ecf16cd938532cc0a"),
-    DirectorySource("bundled"),
+    GitSource("https://github.com/abseil/abseil-cpp", "78be63686ba732b25052be15f8d6dee891c05749"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/abseil-cpp
-
-# Avoid problems with `-march`, `-ffast-math` etc.
-sed -i -e 's!set(CMAKE_C_COMPILER.*!set(CMAKE_C_COMPILER '${WORKSPACE}/srcdir/files/ccsafe')!' ${CMAKE_TARGET_TOOLCHAIN}
-sed -i -e 's!set(CMAKE_CXX_COMPILER.*!set(CMAKE_CXX_COMPILER '${WORKSPACE}/srcdir/files/c++safe')!' ${CMAKE_TARGET_TOOLCHAIN}
 
 cmake -B build -G Ninja \
     -DABSL_PROPAGATE_CXX_STD=OFF \
@@ -61,6 +56,7 @@ products = [
     LibraryProduct("libabsl_examine_stack", :libabsl_examine_stack),
     LibraryProduct("libabsl_exponential_biased", :libabsl_exponential_biased),
     LibraryProduct("libabsl_failure_signal_handler", :libabsl_failure_signal_handler),
+    LibraryProduct("libabsl_flags", :libabsl_flags),
     LibraryProduct("libabsl_flags_commandlineflag", :libabsl_flags_commandlineflag),
     LibraryProduct("libabsl_flags_commandlineflag_internal", :libabsl_flags_commandlineflag_internal),
     LibraryProduct("libabsl_flags_config", :libabsl_flags_config),
@@ -76,7 +72,6 @@ products = [
     LibraryProduct("libabsl_hash", :libabsl_hash),
     LibraryProduct("libabsl_hashtablez_sampler", :libabsl_hashtablez_sampler),
     LibraryProduct("libabsl_int128", :libabsl_int128),
-    LibraryProduct("libabsl_kernel_timeout_internal", :libabsl_kernel_timeout_internal),
     LibraryProduct("libabsl_leak_check", :libabsl_leak_check),
     LibraryProduct("libabsl_log_entry", :libabsl_log_entry),
     LibraryProduct("libabsl_log_flags", :libabsl_log_flags),
@@ -84,7 +79,6 @@ products = [
     LibraryProduct("libabsl_log_initialize", :libabsl_log_initialize),
     LibraryProduct("libabsl_log_internal_check_op", :libabsl_log_internal_check_op),
     LibraryProduct("libabsl_log_internal_conditions", :libabsl_log_internal_conditions),
-    LibraryProduct("libabsl_log_internal_fnmatch", :libabsl_log_internal_fnmatch),
     LibraryProduct("libabsl_log_internal_format", :libabsl_log_internal_format),
     LibraryProduct("libabsl_log_internal_globals", :libabsl_log_internal_globals),
     LibraryProduct("libabsl_log_internal_log_sink_set", :libabsl_log_internal_log_sink_set),
@@ -116,7 +110,6 @@ products = [
     LibraryProduct("libabsl_statusor", :libabsl_statusor),
     LibraryProduct("libabsl_str_format_internal", :libabsl_str_format_internal),
     LibraryProduct("libabsl_strerror", :libabsl_strerror),
-    LibraryProduct("libabsl_string_view", :libabsl_string_view),
     LibraryProduct("libabsl_strings", :libabsl_strings),
     LibraryProduct("libabsl_strings_internal", :libabsl_strings_internal),
     LibraryProduct("libabsl_symbolize", :libabsl_symbolize),
@@ -124,7 +117,6 @@ products = [
     LibraryProduct("libabsl_throw_delegate", :libabsl_throw_delegate),
     LibraryProduct("libabsl_time", :libabsl_time),
     LibraryProduct("libabsl_time_zone", :libabsl_time_zone),
-    LibraryProduct("libabsl_vlog_config_internal", :libabsl_vlog_config_internal),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -134,5 +126,3 @@ dependencies = Dependency[
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
-
-# Trigger CI: 2
