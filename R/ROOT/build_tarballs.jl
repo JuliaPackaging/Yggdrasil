@@ -29,9 +29,6 @@ else
     CMAKE_EXTRA_OPTS=(-Druntime_cxxmodules=OFF)
 fi
 
-# Help old releases of cmake to find libblastrampoline.so.
-[ -f "$libdir/libblastrampoline.so" ] && CMAKE_EXTRA_OPTS+=(-DBLAS_LIBRARIES="$libdir/libblastrampoline.so")
-
 # Required to compile graf3d/ftgl/src/FTVectoriser.cxx (for gcc to accept a conversion from char* to unsigned char*)
 CMAKE_EXTRA_OPTS+=(-DCMAKE_CXX_FLAGS=-fpermissive)
 
@@ -214,6 +211,7 @@ dependencies = [
     Dependency(PackageSpec(name="GLEW_jll", uuid="bde7f898-03f7-559e-8810-194d950ce600"))
     Dependency(PackageSpec(name="CFITSIO_jll", uuid="b3e40c51-02ae-5482-8a39-3ace5868dcf4"))
     Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"), compat="2021.9.0")
+    Dependency(PackageSpec(name="OpenBLAS32", uuid="51095b67-9e93-468d-a683-508b52f74e81"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
