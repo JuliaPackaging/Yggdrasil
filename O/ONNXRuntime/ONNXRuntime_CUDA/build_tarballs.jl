@@ -79,5 +79,5 @@ for (i, build) in enumerate(builds)
                    augment_platform_block = CUDA.augment,
                    julia_compat = "1.6",
                    lazy_artifacts = true,
-                   preferred_gcc_version = v"9")
+                   preferred_gcc_version = v"11")
 end

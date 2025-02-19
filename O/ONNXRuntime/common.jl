@@ -47,6 +47,7 @@ if [[ $target != *-w64-mingw32* ]]; then
     cd onnxruntime
 
     atomic_patch -p1 ../patches/aarch64-linux-bfloat16-float16-cmake.patch
+    atomic_patch -p1 ../patches/aarch64-linux-cmake-3.patch
 
     git submodule update --init --recursive --depth 1 --jobs $nproc
     cmake \
@@ -57,6 +58,8 @@ if [[ $target != *-w64-mingw32* ]]; then
         -DONNX_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
         -Donnxruntime_BUILD_SHARED_LIB=ON \
         -Donnxruntime_BUILD_UNIT_TESTS=OFF \
+        -Donnxruntime_DISABLE_RTTI=OFF \
+        -Donnxruntime_ENABLE_CPUINFO=OFF \
         "${cmake_extra_args[@]}" \
         $WORKSPACE/srcdir/onnxruntime/cmake
     cmake --build build --parallel $nproc
