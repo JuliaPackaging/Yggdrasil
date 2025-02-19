@@ -4,11 +4,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MPICH"
-version = v"4.2.3"
+version = v"4.3.0"
 
 sources = [
     ArchiveSource("https://www.mpich.org/static/downloads/$(version)/mpich-$(version).tar.gz",
-                  "7a019180c51d1738ad9c5d8d452314de65e828ee240bcb2d1f80de9a65be88a8"),
+                  "5e04132984ad83cab9cc53f76072d2b5ef5a6d24b0a9ff9047a8ff96121bcc63"),
     DirectorySource("bundled"),
 ]
 
@@ -25,7 +25,25 @@ cd ${WORKSPACE}/srcdir/mpich*
 # `<pthread_np.h>` should not actually be used on FreeBSD.)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 
-EXTRA_FLAGS=()
+# - Do not install doc and man files which contain files which clashing names on
+#   case-insensitive file systems:
+#   * https://github.com/JuliaPackaging/Yggdrasil/pull/315
+#   * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
+# - `--enable-fast=all,O3` leads to very long compile times for the
+#   file `src/mpi/coll/mpir_coll.c`. It seems we need to avoid
+#   `alwaysinline`.
+configure_flags=(
+    --build=${MACHTYPE}
+    --disable-dependency-tracking
+    --disable-doc
+    --enable-fast=ndebug,O3
+    --enable-static=no
+    --host=${target}
+    --prefix=${prefix}
+    --with-device=ch4
+    --with-hwloc=${prefix}
+)
+
 # Define some obscure undocumented variables needed for cross compilation of
 # the Fortran bindings.  See for example
 # * https://stackoverflow.com/q/56759636/2442087
@@ -59,28 +77,17 @@ if [[ "${target}" == i686-linux-musl ]]; then
     # Small hack: edit `configure` script to force `cross_compiling` to be
     # always "yes".
     sed -i 's/cross_compiling=no/cross_compiling=yes/g' configure
-    EXTRA_FLAGS+=(ac_cv_sizeof_bool="1")
+    configure_flags+=(ac_cv_sizeof_bool="1")
 fi
 
 if [[ "${target}" == aarch64-apple-* ]]; then
-    EXTRA_FLAGS+=(
+    configure_flags+=(
         FFLAGS=-fallow-argument-mismatch
         FCFLAGS=-fallow-argument-mismatch
     )
 fi
 
-# Do not install doc and man files which contain files which clashing names on
-# case-insensitive file systems:
-# * https://github.com/JuliaPackaging/Yggdrasil/pull/315
-# * https://github.com/JuliaPackaging/Yggdrasil/issues/6344
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-dependency-tracking \
-    --disable-doc \
-    --enable-fast=all,O3 \
-    --enable-static=no \
-    --with-device=ch3 \
-    --with-hwloc=${prefix} \
-    "${EXTRA_FLAGS[@]}"
+./configure "${configure_flags[@]}"
 
 # Remove empty `-l` flags from libtool
 # (Why are they there? They should not be.)
@@ -95,10 +102,7 @@ make -j${nproc}
 # Install the library
 make install
 
-################################################################################
-# Install licenses
-################################################################################
-
+# Install the license
 install_license $WORKSPACE/srcdir/mpich*/COPYRIGHT
 """
 
@@ -110,6 +114,7 @@ augment_platform_block = """
 
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
+
 filter!(!Sys.iswindows, platforms)
 
 # Add `mpi+mpich` platform tag
@@ -127,9 +132,9 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("Hwloc_jll"; compat="2.11.1"), # We need 2.11.1+1 for aarch64-unknown-freebsd
-    Dependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
-               compat="0.1", top_level=true),
+    Dependency("Hwloc_jll"; compat="2.12.0"),
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                      compat="0.1", top_level=true),
 ]
 
 # Build the tarballs.
