@@ -164,7 +164,10 @@ dependencies = [
     Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.101"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.3", platforms=hdf5_platforms),
+    # We had to restrict compat with HDF5 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency(PackageSpec(name="HDF5_jll"); compat="=1.14.3", platforms=hdf5_platforms),
     # Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     # Dependency(PackageSpec(name="Zstd_jll")),
