@@ -9,15 +9,10 @@ base_version = v"0.28.2"
 
 sources = [
     GitSource("https://github.com/protocolbuffers/protobuf.git", "9fff46d7327c699ef970769d5c9fd0e44df08fc7"),
-    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/protobuf
-
-# Avoid problems with `-march`, `-ffast-math` etc.
-sed -i -e 's!set(CMAKE_C_COMPILER.*!set(CMAKE_C_COMPILER '${WORKSPACE}/srcdir/files/ccsafe')!' ${CMAKE_TARGET_TOOLCHAIN}
-sed -i -e 's!set(CMAKE_CXX_COMPILER.*!set(CMAKE_CXX_COMPILER '${WORKSPACE}/srcdir/files/c++safe')!' ${CMAKE_TARGET_TOOLCHAIN}
 
 cmake_extra_args=()
 if [[ "$BB_PROTOBUF_BUILD_SHARED_LIBS" == "OFF" ]]; then
