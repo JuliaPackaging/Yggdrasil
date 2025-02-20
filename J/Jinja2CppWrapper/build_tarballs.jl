@@ -18,7 +18,6 @@ include("../../L/libjulia/common.jl")
 
 # Bash recipe for building across all platforms
 script = raw"""
-
 if [[ "$target" == *-apple-darwin* ]]; then
     apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
