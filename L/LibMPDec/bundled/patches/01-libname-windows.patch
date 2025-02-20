@@ -6,10 +6,10 @@
          ;;
 +    MSYS_NT*)
 +        LIBNAME="libmpdec.dll"
-+        LIBSONAME="libmpdec-3.dll"
-+        LIBSHARED="libmpdec-2.5.1.dll"
++        LIBSONAME="libmpdec-4.dll"
++        LIBSHARED="libmpdec-4.0.0.dll"
 +        CONFIGURE_LDFLAGS="-shared"
 +        ;;
      *)
          LIBNAME="libmpdec.so"
-         LIBSONAME="libmpdec.so.3"
+         LIBSONAME="libmpdec.so.4"
