@@ -1,7 +1,6 @@
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/facebookresearch/faiss.git", "d243e628880676332263347817b3fe7f474b8b5b"),
-    DirectorySource(joinpath(@__DIR__, "bundled")),
+    GitSource("https://github.com/facebookresearch/faiss.git", "189a9d4461233de798c2eb17fb6d354ceda542e6"),
 ]
 
 # Bash recipe for building across all platforms
@@ -10,11 +9,6 @@ script = raw"""
 apk del cmake
 
 cd faiss
-
-atomic_patch -p1 ../patches/faiss-cmake-mkl-optional.patch
-atomic_patch -p1 ../patches/faiss-mingw32-cmake.patch
-atomic_patch -p1 ../patches/faiss-mingw32-InvertedListsIOHook.patch
-atomic_patch -p1 ../patches/faiss-mingw32.patch
 
 cmake_extra_args=()
 

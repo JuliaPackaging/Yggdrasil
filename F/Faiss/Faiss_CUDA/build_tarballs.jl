@@ -7,13 +7,14 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Faiss_CUDA"
-version = v"1.9.0"
+version = v"1.10.0"
 
-# Conda GPU packages build on 11.4 and 12.1: https://github.com/facebookresearch/faiss/blob/v1.9.0/.github/workflows/build.yml#L182-L260
+# Conda GPU packages build on 11.4, 11.8, 12.1, and 12.4: https://github.com/facebookresearch/faiss/blob/v1.10.0/.github/workflows/build-release.yml#L25-L99
 cuda_versions = [
     # 11.4 does not provide cuda_profiler_api (used by faiss)
     "11.8", # 11.8 to have cuda_profiler_api, and SM 87;89;90 support.
     "12.1",
+    "12.4",
 ] 
 
 include(joinpath(@__DIR__, "..", "common.jl"))
