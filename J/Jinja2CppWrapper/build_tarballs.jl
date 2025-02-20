@@ -17,7 +17,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 #Temporary for win build debug
-julia_versions = filter(v-> v == v"1.10", julia_versions)
+julia_versions = filter(v-> v == v"1.10", julia_versions )
 
 # Bash recipe for building across all platforms
 script = raw"""
