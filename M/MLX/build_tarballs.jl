@@ -17,6 +17,7 @@ sources = [
                   unpack_target="freebsd-base-x86_64"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
     FileSource("https://files.pythonhosted.org/packages/62/2b/427896261bc8d940eff561e6199d1aee9dbdc7caa117486654a44d7d793c/mlx-0.22.0-cp313-cp313-macosx_13_0_arm64.whl", "50d0d76826cfe939025791ce2c014e743ec7aff7aa67194ffaef40c40e574ef4"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -34,6 +35,10 @@ elif [[ "$target" == *-unknown-freebsd* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/mlx
+
+if [[ "$target" == *-freebsd* ]]; then
+    atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
+fi
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
