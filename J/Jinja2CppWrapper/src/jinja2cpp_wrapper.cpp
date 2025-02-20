@@ -85,8 +85,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .method("asList", [](const Value& v) { return v.asList(); })
         .method("isMap", &Value::isMap)
         .method("asMap", [](const Value& v) { return v.asMap(); })
-        .method("isEmpty", &Value::isEmpty)
-        .method("IsEqual", [](const Value& lhs, const Value& rhs) { return lhs.IsEqual(rhs); });
+        .method("isEmpty", &Value::isEmpty);
 
     values_map
         .constructor<>()

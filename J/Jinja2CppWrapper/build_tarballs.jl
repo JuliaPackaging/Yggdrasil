@@ -3,8 +3,10 @@ using BinaryBuilder, Pkg
 
 name = "Jinja2CppWrapper"
 version = v"1.3.2"
-# Collection of sources required to build ITKWrapper
+# Collection of sources required to build Jinja2CppWrapper
 sources = [
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz", 
+        "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     DirectorySource("./src"),
 ]
 
@@ -16,6 +18,18 @@ include("../../L/libjulia/common.jl")
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "$target" == *-apple-darwin* ]]; then
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
+    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+
+    if [[ "$target" == aarch64-apple-darwin* ]]; then
+        export MACOSX_DEPLOYMENT_TARGET=13.5 
+    else
+        export MACOSX_DEPLOYMENT_TARGET=13.3 
+    fi
+fi
+
 mkdir -p build/
 cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=$prefix \
