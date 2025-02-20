@@ -18,6 +18,8 @@ if [[ $bb_full_target == *cuda* ]]; then
         cuda_archs="60-real;61-real;62-real;70-real;72-real;75-real;80;86-real;87-real;89-real;90"
     elif [[ $cuda_version == "12.1" ]]; then
         cuda_archs="70-real;72-real;75-real;80;86-real;87-real;89-real;90"
+    elif [[ $cuda_version == "12.4" ]]; then
+        cuda_archs="70-real;72-real;75-real;80;86-real;87-real;89-real;90"
     else
         false # Fail for unexpected CUDA version
     fi
