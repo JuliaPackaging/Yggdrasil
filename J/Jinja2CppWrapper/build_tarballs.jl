@@ -19,6 +19,8 @@ include("../../L/libjulia/common.jl")
 # Bash recipe for building across all platforms
 script = raw"""
 
+ls -la ${libdir}
+
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
@@ -50,6 +52,8 @@ install_license /usr/share/licenses/MIT
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+# Temporary for apple build debug
+filter!(p -> Sys.isapple(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
