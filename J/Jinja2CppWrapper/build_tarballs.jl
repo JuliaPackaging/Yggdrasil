@@ -18,7 +18,10 @@ include("../../L/libjulia/common.jl")
 
 # Bash recipe for building across all platforms
 script = raw"""
-
+cd $WORKSPACE/srcdir
+BIN_DIR="/opt/bin/${bb_full_target}"
+mkdir build
+cd build/
 ls -la ${libdir}
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -35,8 +38,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
 fi
 
-mkdir -p build/
-cmake -B build -S . \
+cmake -B . -S . \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -44,8 +46,8 @@ cmake -B build -S . \
     $deployarg \
     ..
 
-cmake --build build --parallel ${nproc}
-cmake --install build
+cmake --build . --parallel ${nproc}
+cmake --install .
 install_license /usr/share/licenses/MIT
 """
 
