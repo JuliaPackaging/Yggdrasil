@@ -18,36 +18,29 @@ include("../../L/libjulia/common.jl")
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-BIN_DIR="/opt/bin/${bb_full_target}"
-mkdir build
-cd build/
-ls -la ${libdir}
 
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
+if [[ "$target" == *-apple-darwin* ]]; then
     apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
-    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
-    deployarg="-DCMAKE_OSX_DEPLOYMENT_TARGET=12"
-    export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
-    export MACOSX_DEPLOYMENT_TARGET=12
-    export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
-    export OBJCXXFLAGS=$OBJCFLAGS
-    export CXXFLAGS=$OBJCFLAGS
-    sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
-    sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
+    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+
+    if [[ "$target" == aarch64-apple-darwin* ]]; then
+        export MACOSX_DEPLOYMENT_TARGET=13.5 # Targeting macOS 13.5 due to MLX targeting 13.5 in PyPI wheel
+    else
+        export MACOSX_DEPLOYMENT_TARGET=13.3 # Targeting same version as MLX recipe
+    fi
 fi
 
-cmake -B . -S . \
+mkdir -p build/
+cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
-    $deployarg \
     ..
 
-cmake --build . --parallel ${nproc}
-cmake --install .
+cmake --build build --parallel ${nproc}
+cmake --install build
 install_license /usr/share/licenses/MIT
 """
 
