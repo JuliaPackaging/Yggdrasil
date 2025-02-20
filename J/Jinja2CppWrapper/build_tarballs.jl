@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 
 name = "Jinja2CppWrapper"
 version = v"1.3.2"
-# Collection of sources required to build ITKWrapper
+# Collection of sources required to build Jinja2CppWrapper
 sources = [
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz", 
         "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
@@ -16,6 +16,9 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 # needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
 
+#Temporary for win build debug
+julia_versions = filter(v-> v == v"1.10", julia_versions)
+
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "$target" == *-apple-darwin* ]]; then
@@ -24,9 +27,9 @@ if [[ "$target" == *-apple-darwin* ]]; then
     sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
 
     if [[ "$target" == aarch64-apple-darwin* ]]; then
-        export MACOSX_DEPLOYMENT_TARGET=13.5 # Targeting macOS 13.5 due to MLX targeting 13.5 in PyPI wheel
+        export MACOSX_DEPLOYMENT_TARGET=13.5 
     else
-        export MACOSX_DEPLOYMENT_TARGET=13.3 # Targeting same version as MLX recipe
+        export MACOSX_DEPLOYMENT_TARGET=13.3 
     fi
 fi
 
@@ -47,7 +50,7 @@ install_license /usr/share/licenses/MIT
 # platforms are passed in on the command line
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 # Temporary for apple build debug
-filter!(p -> Sys.isapple(p), platforms)
+filter!(p -> Sys.iswindows(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
