@@ -20,12 +20,6 @@ sources = Dict(
     v"19.1.7" => [GitSource(repo, "46004f6330f20b55563ca8b8b969cc5a00f35fc2")],
 )
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-filter!(p -> libc(p) != "musl", platforms) # missing LLVM_full+asserts
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # missing LLVM_full
-
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator
@@ -83,6 +77,22 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     dependencies = [
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version))
     ]
+
+    # These are the platforms we will build for by default, unless further
+    # platforms are passed in on the command line
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+    ## we don't build LLVM 15 for i686-linux-musl.
+    if llvm_version >= v"15"
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    ## We only have LLVM builds for AArch64 BSD starting from LLVM 18
+    if version < v"18"
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
+    ## We only have LLVM builds for RISC-V starting from LLVM 19
+    if llvm_version < v"19"
+        filter!(p -> !(arch(p) == "riscv64"), platforms)
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
