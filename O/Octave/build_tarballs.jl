@@ -12,6 +12,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/octave
 
+apk add coreutils
 apk add texinfo
 
 export CPPFLAGS="-I${includedir}"
@@ -35,6 +36,7 @@ FLAGS=(
     --with-lapack="-L${libdir} -l${LBT}"
 )
 
+./bootstrap
 ./configure "${FLAGS[@]}"
 make -j${nproc}
 make install
