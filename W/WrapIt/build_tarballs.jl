@@ -5,13 +5,14 @@ name = "WrapIt"
 version = v"1.5.0"
 
 #Clang_jll version used for the build. Required clang libraries will be shipped with the package.
-clang_vers=v"13.0.1+3"
+clang_vers=v"19.1.7+0"
 clang_vers_maj=string(clang_vers.major)
+clang_vers_min=string(clang_vers.minor)
 clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "2c86cf3d33f65055836cb4a600daf24b960229db")
+    GitSource("https://github.com/grasph/wrapit.git", "930ecdc8fd5d595b504c42d938bcc2f7fa3a97d4")
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
@@ -67,42 +68,51 @@ cmake --install .
 [ "$dlext" = dll ] && (cd $prefix/lib && ln -s libLLVM-*.dll.a libLLVM.dll.a )
 
 cd "$(readlink -f "$prefix")"
- if [ "${dlext}" = dylib ]; then
-   clangversiontag=
-   llvmversiontag=
- else
-   clangversiontag=".""" * clang_vers_maj * raw"""jl"
-   llvmversiontag=`echo $clangversiontag | sed 's/^\./-/'` #.NNjl -> -NNjl
- fi
- clanglib=libclang.$dlext$clangversiontag
- if  [ $clanglib=libclang.so.13jl ] && ! [ -f $libdir/libclang.so.13jl ] && [ -f $libdir/libclang.so.13 ]; then
-    clanglib=libclang.so.13
- fi
- clangcpplib=libclang-cpp.$dlext$clangversiontag
- llvmlib=libLLVM$llvmversiontag.${dlext}
+if [ "${dlext}" = dylib ]; then
+  clangversiontag=
+  llvmversiontag=
+else
+  clangversiontag=".""" * clang_vers_maj * raw"""jl"
+  llvmversiontag=`echo $clangversiontag | sed 's/^\./-/'` #.NNjl -> -NNjl
+fi
+clanglib=libclang.$dlext$clangversiontag
+if  [ $clanglib = libclang.so.13jl ] && ! [ -f $libdir/libclang.so.13jl ] && [ -f $libdir/libclang.so.13 ]; then
+   clanglib=libclang.so.13
+fi
+if ! [ -f lib/$clanglib ]; then
+   clangversiontag=".""" *  clang_vers_maj * "." * clang_vers_min * raw"""jl"
+   llvmversiontag=$clangversiontag
+   clanglib=libclang.$dlext$clangversiontag
+   test -f lib/$clanglib
+fi
+clangcpplib=libclang-cpp.$dlext$clangversiontag
+test -f lib/$clangcpplib
+llvmlib=libLLVM$llvmversiontag.${dlext}
+[ -f lib/$llvmlib ] || llvmlib=libLLVM.${dlext}$llvmversiontag
+test -f lib/$llvmlib
 
- echo "Looking for ../artifacts/*/lib/$clanglib and ../artifacts/*/lib/$llvmlib" 1>&2
+echo "Looking for ../artifacts/*/lib/$clanglib and ../artifacts/*/lib/$llvmlib" 1>&2
 
- clang_search="../artifacts/*/lib/$clanglib"
- llvm_search="../artifacts/*/lib/$llvmlib"
- clang_uuid="`echo $clang_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
- llvm_uuid="`echo $llvm_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
+clang_search="../artifacts/*/lib/$clanglib"
+llvm_search="../artifacts/*/lib/$llvmlib"
+clang_uuid="`echo $clang_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
+llvm_uuid="`echo $llvm_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
 
- ret=0
- if echo "$clang_uuid" | grep -q '*'; then
-    echo "Failed to find clang library under path $clang_search" 1>&2
-    ret=1
- fi
+ret=0
+if echo "$clang_uuid" | grep -q '*'; then
+   echo "Failed to find clang library under path $clang_search" 1>&2
+   ret=1
+fi
 
- if echo "$llvm_uuid" | grep -q '*'; then
-    echo "Failed to find llvm library under path $llvm_search" 1>&2
-    ret=1
- fi
+if echo "$llvm_uuid" | grep -q '*'; then
+   echo "Failed to find llvm library under path $llvm_search" 1>&2
+   ret=1
+fi
 
- #trigger exit if at least one of the two library was not found
- [ $ret = 0 ] || false
+#trigger exit if at least one of the two library was not found
+[ $ret = 0 ] || false
 
- cat <<EOF 1>&2
+cat <<EOF 1>&2
 Clang artifact uuid: $clang_uuid
 LLVM artifact uuid: $llvm_uuid
 EOF
@@ -110,7 +120,7 @@ EOF
 # Add a link to the clang resource directory
 ln -sf artifacts/$clang_uuid ..
 mkdir -p lib/$clang_resource_dir
-if [ -f ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw""" ]; then
+if [ -d ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw""" ]; then
     cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw"""/include lib/"$clang_resource_dir"
 else
     cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_patch * raw"""/include lib/"$clang_resource_dir"
@@ -130,15 +140,20 @@ cp -p "../artifacts/$llvm_uuid/lib/$llvmlib" lib/
 install_license "${WORKSPACE}/srcdir/wrapit/LICENSE"
 """
 
-# LLVM_jll not available for i686+musl (see https://github.com/JuliaPackaging/Yggdrasil/blob/f756bd9eb500ad68a8b8bb4413d6692c8e766a47/L/LLVM/common.jl)
-# Windows not supported:
-platform_veto(p) = Sys.iswindows(p) || (arch(p) == "i686" && libc(p) == "musl")
+# Windows is not supported.
+# lidation done on 2025-02-20 leads to failure for x86_64-apple-darwin (issue with 'rm -r' 
+# from the recipe used to add std::filesystem support) => vetor this arch.
+# 2025-03-03: following arch vetoed because of validation failure:
+#  - x86_64-apple-darwin: I/O error when running the recipe to add std::filesystem support (was working before)
+#  - riscv64-linux-gnu, aarch64-unknown-freebsd: missing OpenSSL_jll artifacts
+#  - i686-linux-musl: missing Clang_jll and libLLVM_jll artifacts
+platform_veto(p) = Sys.iswindows(p) || triplet(p) ∈ [ "x86_64-apple-darwin", "riscv64-linux-gnu", "aarch64-unknown-freebsd", "i686-linux-musl" ]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(exclude = platform_veto)
-platforms = expand_cxxstring_abis(platforms)
 
+# platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
