@@ -5,7 +5,7 @@ version = v"9.4.0"
 
 # Collection of sources required to build Octave
 sources = [
-   GitSource("https://github.com/gnu-octave/octave/", "155645d388b7f50b4081a4b769dc9dd4a757f72b"),
+   GitSource("https://github.com/gnu-octave/octave.git", "155645d388b7f50b4081a4b769dc9dd4a757f72b"),
 ]
 
 # Bash recipe for building across all platforms
