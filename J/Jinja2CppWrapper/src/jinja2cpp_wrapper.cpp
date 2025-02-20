@@ -29,10 +29,6 @@ struct WrappedExpectedString {
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
-    using jinja2::Value;
-    using jinja2::ValuesMap;
-    using jinja2::ErrorInfo;
-
     mod.add_bits<ErrorCode>("ErrorCode", jlcxx::julia_type("CppEnum"));
     mod.set_const("Unspecified", ErrorCode::Unspecified);
     mod.set_const("UnexpectedException", ErrorCode::UnexpectedException);
@@ -73,43 +69,49 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .method("GetCode", &ErrorInfo::GetCode)
         .method("ToString", &ErrorInfo::ToString);
 
-    mod.add_type<ValuesMap>("ValuesMap")
+    auto values_map = mod.add_type<ValuesMap>("ValuesMap");
+    auto values_list = mod.add_type<ValuesList>("ValuesList");
+
+    mod.add_type<Value>("Value")
         .constructor<>()
-        .method("set", [](ValuesMap& map, const std::string& key, const std::string& val) { 
-            map[key] = Value(val); 
+        .constructor<const char*>()
+        .constructor<int>()
+        .constructor<double>()
+        .constructor<const ValuesList&>()
+        .constructor<const ValuesMap&>()
+        .method("isString", &Value::isString)
+        .method("asString", [](const Value& v) { return v.asString(); })
+        .method("isList", &Value::isList)
+        .method("asList", [](const Value& v) { return v.asList(); })
+        .method("isMap", &Value::isMap)
+        .method("asMap", [](const Value& v) { return v.asMap(); })
+        .method("isEmpty", &Value::isEmpty)
+        .method("IsEqual", [](const Value& lhs, const Value& rhs) { return lhs.IsEqual(rhs); });
+
+    values_map
+        .constructor<>()
+        .method("set", [](ValuesMap& map, const std::string& key, const Value& val) { 
+            map[key] = val; 
         })
-        .method("set", [](ValuesMap& map, const std::string& key, const std::vector<std::string>& val) { 
-            std::vector<Value> converted;
-            converted.reserve(val.size());
-            for (const auto& item : val) {
-                converted.emplace_back(item);
+        .method("set", [](ValuesMap& map, const std::string& key, const ValuesList& val) { 
+            map[key] = Value(val);
+        })
+        .method("set", [](ValuesMap& map, const std::string& key, const ValuesMap& val) { 
+            map[key] = Value(val);
+        })
+        .method("get", [](const ValuesMap& map, const std::string& key) {
+            return map.at(key);
+        });
+
+    values_list
+        .constructor<>()
+        .method("push", [](ValuesList& list, const Value& val) { list.push_back(val); })
+        .method("size", [](const ValuesList& list) { return list.size(); })
+        .method("get", [](const ValuesList& list, size_t index) -> Value {
+            if (index == 0 || index > list.size()) {
+                throw std::out_of_range("Index out of bounds");
             }
-            map[key] = Value(std::move(converted));
-        })
-        .method("set", [](jinja2::ValuesMap& map, const std::string& key, int val) { 
-            map[key] = jinja2::Value(val); 
-        })
-        .method("set", [](jinja2::ValuesMap& map, const std::string& key, const std::vector<int>& val) { 
-            std::vector<jinja2::Value> converted;
-            converted.reserve(val.size());
-            for (int item : val) {
-                converted.emplace_back(item);
-            }
-            map[key] = jinja2::Value(std::move(converted));
-        })
-        .method("set", [](jinja2::ValuesMap& map, const std::string& key, double val) { 
-            map[key] = jinja2::Value(val); 
-        })
-        .method("set", [](jinja2::ValuesMap& map, const std::string& key, const std::vector<double>& val) { 
-            std::vector<jinja2::Value> converted;
-            converted.reserve(val.size());
-            for (double item : val) {
-                converted.emplace_back(item);
-            }
-            map[key] = jinja2::Value(std::move(converted));
-        })
-        .method("get", [](const ValuesMap& map, const std::string& key) -> std::string {
-            return map.at(key).asString();
+            return list[index - 1];
         });
 
     mod.add_type<WrappedExpectedString>("ExpectedString")
