@@ -50,7 +50,6 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
@@ -67,4 +66,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"11")
+               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")
