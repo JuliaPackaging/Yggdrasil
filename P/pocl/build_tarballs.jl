@@ -243,10 +243,12 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         Dependency("OpenCL_jll"),
         Dependency("OpenCL_Headers_jll"),
         Dependency("Hwloc_jll"),
+        # only used at run time, but also detected by the build
         Dependency("SPIRV_LLVM_Translator_unified_jll"),
         Dependency("SPIRV_Tools_jll"),
-        Dependency("Clang_unified_jll"),
-        Dependency("LLD_unified_jll")
+        # only used at run time
+        RuntimeDependency("Clang_unified_jll"),
+        RuntimeDependency("LLD_unified_jll")
     ]
 
     # These are the platforms we will build for by default, unless further
