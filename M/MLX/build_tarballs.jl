@@ -15,8 +15,8 @@ sources = [
     ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
                   "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c";
                   unpack_target="freebsd-base-x86_64"),
-    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/62/2b/427896261bc8d940eff561e6199d1aee9dbdc7caa117486654a44d7d793c/mlx-0.22.0-cp313-cp313-macosx_13_0_arm64.whl", "50d0d76826cfe939025791ce2c014e743ec7aff7aa67194ffaef40c40e574ef4"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
+    FileSource("https://files.pythonhosted.org/packages/bb/14/a4e312129cca10acef484f0a370461cca785fdc821deaf9dbd61c5abb136/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "9fd0c4695e2afa388d6b436317e55f402f2aaef47aa748ba98b1590057a42563"; filename = "mlx-aarch64-apple-darwin20.whl"),
     DirectorySource("./bundled"),
 ]
 
