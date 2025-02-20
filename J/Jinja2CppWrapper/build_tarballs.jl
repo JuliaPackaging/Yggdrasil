@@ -18,14 +18,8 @@ include("../../L/libjulia/common.jl")
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir -p build/
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    commonoptions=" \
-        -opensource -confirm-license \
-        -openssl-linked  -nomake examples -release \
-        "
-    commoncmakeoptions="-DCMAKE_PREFIX_PATH=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DQT_HOST_PATH=$host_prefix -DQT_FEATURE_openssl_linked=ON"
     apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
     sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
@@ -36,19 +30,16 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export OBJCXXFLAGS=$OBJCFLAGS
     export CXXFLAGS=$OBJCFLAGS
     sed -i 's/exit 1/#exit 1/' /opt/bin/$bb_full_target/$target-clang++
-    ../qtbase-everywhere-src-*/configure -prefix $prefix $commonoptions -- $commoncmakeoptions \
-        -DQT_INTERNAL_APPLE_SDK_VERSION=14 -DQT_INTERNAL_XCODE_VERSION=15 -DCMAKE_SYSROOT=$apple_sdk_root \
-        -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks $deployarg \
-        -DCUPS_INCLUDE_DIR=$apple_sdk_root/usr/include -DCUPS_LIBRARIES=$apple_sdk_root/usr/lib/libcups.tbd \
-        -DQT_FEATURE_vulkan=OFF 
     sed -i 's/#exit 1/exit 1/' /opt/bin/$bb_full_target/$target-clang++
 fi
 
+mkdir -p build/
 cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
+    $deployarg \
     ..
 
 cmake --build build --parallel ${nproc}
