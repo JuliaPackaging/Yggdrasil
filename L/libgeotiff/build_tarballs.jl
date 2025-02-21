@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "libgeotiff"
 upstream_version = v"1.7.4"
-version_offset = v"0.2.1"
+version_offset = v"0.2.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
