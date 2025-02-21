@@ -11,7 +11,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/octave
+cd $WORKSPACE/srcdir/octave*
 
 apk add texinfo
 
