@@ -58,6 +58,7 @@ products = [
 dependencies = [
     HostBuildDependency("flex_jll"),
     HostBuildDependency("Bison_jll"),
+    HostBuildDependency("gperf_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
                v"5.12.0";  # build version
