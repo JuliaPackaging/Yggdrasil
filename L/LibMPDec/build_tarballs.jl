@@ -18,12 +18,12 @@ cd $WORKSPACE/srcdir/mpdecimal*
 
 #TODO # Give somewhat reasonable names to libraries for Windows
 #TODO atomic_patch -p1 ../patches/01-libname-windows.patch
-#TODO # By default use `${CC}` as linker
-#TODO atomic_patch -p1 ../patches/02-linker-cc.patch
+# By default use `${CC}` as linker
+atomic_patch -p1 ../patches/02-linker-cc.patch
 
 autoreconf -fiv
 
-export CFLAGS="-std=gnu99"
+#TODO export CFLAGS="-std=gnu99"
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \

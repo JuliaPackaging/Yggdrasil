@@ -1,15 +1,18 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -219,6 +219,12 @@
-         LINK_DYNAMIC="-Wl,-bshared"
-         LINK_SHLIBS="../libmpdec/$LIBIMPORT"
-         ;;
-+    MSYS_NT*)
-+        LIBNAME="libmpdec.dll"
-+        LIBSONAME="libmpdec-4.dll"
-+        LIBSHARED="libmpdec-4.0.0.dll"
-+        CONFIGURE_LDFLAGS="-shared"
-+        ;;
-     *)
-         LIBNAME="libmpdec.so"
-         LIBSONAME="libmpdec.so.4"
+@@ -359,11 +359,11 @@
+     ;;
+   *-*-mingw*)
+     FPIC=
+-    LIBNAME=
++    LIBNAME="libmpdec.dll"
+     LIBIMPORT="libmpdec.dll.a"
+-    LIBSONAME=
+-    LIBSHARED="libmpdec-4.dll"
+-    CONFIGURE_LDFLAGS="-shared -Wl,--out-implib,$LIBIMPORT"
++    LIBSONAME="libmpdec-4.dll"
++    LIBSHARED="libmpdec-4.0.0.dll"
++    CONFIGURE_LDFLAGS="-shared"
+     ENABLE_MINGW="yes"
+     ;;
+   *-*-msys)
