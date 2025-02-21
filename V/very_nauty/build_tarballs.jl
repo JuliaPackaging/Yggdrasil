@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/very_nauty/
 mkdir -p ${libdir}
 cc -shared -fPIC -Wall -O3 -o "${libdir}/libvn_graph.${dlext}" vn_graph.c
-cp vn_graph.h ${includedir}
+install -Dvm 644 vn_graph.h -t ${includedir}
 """
 
 # These are the platforms we will build for by default, unless further
