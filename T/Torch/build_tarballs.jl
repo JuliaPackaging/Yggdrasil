@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "Torch"
-version = v"1.10.2"
+version = v"1.11.0"
 
 sources = [
-    GitSource("https://github.com/pytorch/pytorch.git", "71f889c7d265b9636b93ede9d651c0a9c4bee191"),
+    GitSource("https://github.com/pytorch/pytorch.git", "bc2c6edaf163b1a1330e37a6e34caf8c553e4755"),
     FileSource("https://micromamba.snakepit.net/api/micromamba/linux-64/0.21.1", "c907423887b43bec4e8b24f17471262c8087b7095683f41dcef4a4e24e9a3bbd"; filename = "micromamba.tar.bz2"),
     DirectorySource("./bundled"),
 ]
@@ -138,11 +138,13 @@ git submodule update --init \
     third_party/FXdiv \
     third_party/eigen \
     third_party/fbgemm \
+    third_party/flatbuffers \
     third_party/fmt \
     third_party/foxi \
     third_party/gloo \
     third_party/kineto \
     third_party/onnx \
+    third_party/pocketfft \
     third_party/psimd \
     third_party/tensorpipe
 git submodule update --init --recursive \
@@ -290,7 +292,7 @@ for (i, build) in enumerate(builds)
                    name, version, sources, script,
                    build.platforms, products, build.dependencies;
         preferred_gcc_version = v"8",
-        preferred_llvm_version = v"13",
+        preferred_llvm_version = v"14",
         julia_compat = "1.6",
         augment_platform_block = CUDA.augment,
         lazy_artifacts = true)

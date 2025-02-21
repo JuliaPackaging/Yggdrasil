@@ -1,0 +1,270 @@
+---
+# quarto render torch_dependencies.qmd --to gfm
+
+engine: julia
+execute:
+  echo: false
+title: Torch dependencies
+---
+```{julia}
+using Dates
+```
+```{julia}
+#| output: false
+
+pytorch_version_current = v"1.11.0"
+pytorch_versions = [
+    v"1.10.2",
+    pytorch_version_current,
+    v"1.12.1",
+    v"1.13.1"
+]
+pytorch_versions_context = filter(v -> v != pytorch_version_current, pytorch_versions)
+
+component_names = Dict(
+    "pytorch" => ["cpuinfo", "pthreadpool", "XNNPACK"]
+)
+```
+```{julia}
+#| output: false
+
+pytorch_dir = joinpath(@__DIR__, "build", "pytorch")
+if !isdir(pytorch_dir)
+    run(`git clone --depth 1 https://github.com/pytorch/pytorch.git $pytorch_dir`)
+end
+```
+```{julia}
+#| output: false
+
+excluded_urls = [
+    "https://github.com/google/benchmark",
+    "https://github.com/google/googletest",
+]
+function get_component(path, work_dir, git_submodule_paths::AbstractVector{<:AbstractString}=String[])
+    @info "Extracting component for $path"
+    component = Dict{String, Any}()
+    component["components"] = Dict{String, Any}()
+
+    cd(path) do
+        component["commit"] = readchomp(`git rev-parse HEAD`)
+        component["tag"] = readchomp(ignorestatus(`git describe --tags --exact-match`))
+        component["commit_time"] = unix2datetime(parse(Int, readchomp(`git log -1 --format="%at"`)))
+        component["git_url"] = readchomp(`git remote get-url origin`)
+        component["url"] = startswith(component["git_url"], "https://github.com") ? first(splitext(component["git_url"])) : component["git_url"]
+        component["full_name"] = join(split(component["url"], "/")[end-1:end], "/")
+        component["name"] = last(splitdir(component["full_name"]))
+
+        for git_submodule_path in git_submodule_paths
+            run(`git submodule update --init $git_submodule_path`)
+        end
+        if isempty(git_submodule_paths)
+            run(`git submodule update --init`)
+        end
+        git_submodules = split.(split(readchomp(`git submodule foreach --quiet 'echo ${name}:${path}'`)), ":")
+        git_submodule_paths = last.(git_submodules)
+        for git_submodule_path in git_submodule_paths
+            component_name = last(splitdir(git_submodule_path))
+            component["components"][component_name] = get_component(git_submodule_path, work_dir)
+        end
+
+        # CMake downloads
+        cmake_external_project_urls = sort(            
+            unique(
+                filter(url -> url != "URL",
+                    split(
+                        readchomp(
+                            ignorestatus(pipeline(
+                                `find . -type f -name CMakeLists.txt -or -name '*.cmake'`,
+                                `xargs grep --no-filename 'URL '`
+                            ))
+                        )
+                    )
+                )
+            )
+        )
+        cmake_external_project_urls = filter(
+            url -> !any(
+                excluded_url -> startswith(url, excluded_url),
+                excluded_urls
+            ),
+            cmake_external_project_urls
+        )
+        for cmake_external_project_url in cmake_external_project_urls
+            m = match(r"^(?<url>https://github.com/(?<full_name>.+/.+))/archive/(?<commit>.+)\.(tar.gz|zip)$", cmake_external_project_url)
+            if isnothing(m)
+                @warn "Unexpected URL: $cmake_external_project_url"
+                continue
+            end
+            @info "Extracting component for $(m["url"]) @ $(m["commit"])"
+            component_dir = joinpath(work_dir, m["full_name"])
+            if !isdir(component_dir)
+                run(`git clone --depth 1 $(m["url"]) $component_dir`)
+            end
+            cd(component_dir) do
+                run(`git fetch --depth 1 origin $(m["commit"])`)
+                run(`git reset --hard $(m["commit"])`)
+                cmake_component = get_component(component_dir, work_dir)
+                component["components"][cmake_component["name"]] = cmake_component
+            end
+        end
+    end
+
+    return component
+end
+
+version_id(component) = !isempty(component["tag"]) ? component["tag"] : component["commit"][1:8]
+```
+```{julia}
+#| output: false
+
+root_components = Dict{VersionNumber, Any}()
+mktempdir() do work_dir
+cd(pytorch_dir) do
+    for version in pytorch_versions
+        @info "Extracting component for v$version"
+        run(`git fetch --depth 1 origin tag v$version`)
+        run(`git reset --hard v$version`)
+        root_components[version] = get_component(pytorch_dir, work_dir, ["third_party/$comp_name" for comp_name in component_names["pytorch"]])
+    end
+end
+end
+```
+
+Torch/PyTorch has a rather complex set of dependencies, which are to a large extent unversioned. The present document serves to document these dependencies, their versions, and their inter-dependencies.
+
+As an example of the complexity, the following shows the dependencies of Torch v`{julia} pytorch_version_current`:
+
+```{julia}
+#| eval: false
+
+using AbstractTrees
+
+AbstractTrees.children(component::Dict{String, Any}) = values(component["components"])
+AbstractTrees.nodevalue(components::Dict{String, Any}) = "$(components["name"]) @ $(version_id(components))"
+AbstractTrees.print_tree(root_components[pytorch_version_current])
+```
+```
+"pytorch @ v1.11.0"
+├─ "XNNPACK @ 79cd5f9e"
+│  ├─ "FP16 @ 0a92994d"
+│  ├─ "FXdiv @ b408327a"
+│  ├─ "pthreadpool @ 545ebe9f"
+│  │  └─ "cpuinfo @ 19b9316c"
+│  └─ "cpuinfo @ d5e37adf"
+├─ "FP16 @ 0a92994d"
+├─ "FXdiv @ b408327a"
+├─ "pthreadpool @ 545ebe9f"
+│  └─ "cpuinfo @ 19b9316c"
+└─ "cpuinfo @ d5e37adf"
+```
+
+Note the different versions of `cpuinfo` referenced by `pytorch`, `XNNPACK`, *and* `pthreadpool`.
+
+The current Torch version documented is v`{julia} pytorch_version_current` with versions `{julia} join(map(v -> "v$v", pytorch_versions_context), ", ")` serving as context.
+
+## Overview
+
+```{julia}
+function update_components_flattened!(components_flattened, component)
+    component_name = component["name"]
+    if haskey(components_flattened, component_name)
+        push!(components_flattened[component_name], component)
+        unique!(components_flattened[component_name])
+    else
+        push!(components_flattened, component_name => [component])
+    end
+    for component in values(component["components"])
+        update_components_flattened!(components_flattened, component)
+    end
+    return components_flattened
+end
+components_flattened = Dict{String, Any}()
+for version in pytorch_versions    
+    update_components_flattened!(components_flattened, root_components[version])
+end
+```
+```{julia}
+#| output: asis
+pytorch_nodes = Dict(v => "pytorch_$(v.major)_$(v.minor)_$(v.patch)" for v in pytorch_versions)
+
+print("""
+\`\`\`{mermaid}
+graph LR
+
+subgraph pytorch
+""")
+for pytorch_version in sort(pytorch_versions; rev=true)
+    pytorch_node = pytorch_nodes[pytorch_version]
+    print("""
+        $pytorch_node[pytorch v$pytorch_version]
+    """)
+end
+print("""
+end
+
+""")
+
+for pytorch_version in sort(pytorch_versions; rev=true)
+    pytorch_node = pytorch_nodes[pytorch_version]
+    for comp_name in sort(collect(keys(root_components[pytorch_version]["components"])))
+        if comp_name in ["pytorch", "FP16", "FXdiv"]
+            continue
+        end
+
+        comp = root_components[pytorch_version]["components"][comp_name]
+        print("""
+        $pytorch_node --> $(comp_name)_$(comp["commit"])
+        """)
+    end
+    print("\n")
+end
+
+for comp_name in sort(collect(keys(components_flattened)))
+    if comp_name in ["pytorch", "FP16", "FXdiv"]
+        continue
+    end
+
+    comp_versions = sort(components_flattened[comp_name]; by=v -> v["commit_time"], rev=true)
+    print("""
+    subgraph $comp_name
+    """)
+    for comp in comp_versions
+        comp_node = "$(comp_name)_$(comp["commit"])"
+        print("""
+            $comp_node["$(comp["full_name"]) @ $(version_id(comp)) / $(Dates.format(comp["commit_time"], "yyyymmdd"))"]
+        """)
+    end
+    print("""
+    end
+
+    """)
+end
+
+for comp_name in sort(collect(keys(components_flattened)))
+    if comp_name in ["pytorch", "FP16", "FXdiv"]
+        continue
+    end
+
+    comp_versions = sort(components_flattened[comp_name]; by=v -> v["commit_time"], rev=true)
+    for comp in comp_versions
+        comp_node = "$(comp_name)_$(comp["commit"])"
+        for (sub_comp_name, sub_comp) in comp["components"]
+            if sub_comp_name in ["pytorch", "FP16", "FXdiv"]
+                continue
+            end
+
+            sub_comp_node = "$(sub_comp_name)_$(sub_comp["commit"])"
+            print("""
+            $comp_node --> $sub_comp_node
+            """)
+        end
+    end
+    print("""
+
+    """)
+end
+
+print("""
+\`\`\`
+""")
+```
