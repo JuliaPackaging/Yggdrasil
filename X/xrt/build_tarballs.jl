@@ -68,6 +68,8 @@ products = [
     LibraryProduct("libxrt_core", :libxrt_core),
     LibraryProduct("libxdp_core", :libxdp_core),
     LibraryProduct("libxrt++", :libxrtxx),
+    ExecutableProduct(["xbutil", "unwrapped/xbutil.exe"], :xbutil),
+    ExecutableProduct(["xclbinutil", "unwrapped/xclbinutil.exe"], :xclbinutil),
 ]
 
 # Dependencies that must be installed before this package can be built
