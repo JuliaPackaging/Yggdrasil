@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "nauty_graph"
+name = "very_nauty"
 version = v"1.1.1"
 
 # Collection of sources required to complete build
