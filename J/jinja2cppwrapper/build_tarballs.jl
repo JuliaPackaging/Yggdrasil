@@ -1,9 +1,9 @@
 # Note: this script will require BinaryBuilder.jl v0.3.0 or greater
 using BinaryBuilder, Pkg
 
-name = "Jinja2CppWrapper"
+name = "jinja2cppwrapper"
 version = v"1.3.2"
-# Collection of sources required to build Jinja2CppWrapper
+# Collection of sources required to build jinja2cppwrapper
 sources = [
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz", 
         "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
