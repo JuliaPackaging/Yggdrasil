@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "CMake"
-version = v"3.31.3"
+version = v"3.31.5"
 
 # Collection of sources required to build CMake
 sources = [
-    GitSource("https://github.com/Kitware/CMake", "41abd532b64f178017ed4ffdbdb5af42d9056a8d"),
+    GitSource("https://github.com/Kitware/CMake", "9fe70fd76412f41ab2bec24ba42b081b48691961"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,8 +25,6 @@ cmake --install build
 
 # Build for all supported platforms.
 platforms = expand_cxxstring_abis(supported_platforms())
-# OpenSSL is not available for riscv64
-filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -35,7 +33,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.15")
+    Dependency("OpenSSL_jll"; compat="3.0.16")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
