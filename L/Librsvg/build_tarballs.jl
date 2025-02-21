@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Librsvg"
-version = v"2.54.5"
+version = v"2.59.90"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "4f03190f45324d1fa1f52a79dfcded1f64eaf49b3ae2f88eedab0c07617cae6e"),
+                  "d3d623a9839d2b7eb76a5b0b621c15d02abc4d9a886376c3a53b568206ebf545"),
 ]
 
 # Bash recipe for building across all platforms
@@ -49,11 +49,11 @@ install_license COPYING.LIB
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # We dont have all dependencies for armv6l
-filter!(p -> arch(p) != "armv6l", platforms)
+#filter!(p -> arch(p) != "armv6l", platforms)
 # Rust toolchain for i686 Windows is unusable
-filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+#filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 # The products that we will ensure are always built
 products = [
