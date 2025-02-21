@@ -5,14 +5,14 @@ version = v"9.4.0"
 
 # Collection of sources required to build Octave
 sources = [
-   GitSource("https://github.com/gnu-octave/octave.git", "155645d388b7f50b4081a4b769dc9dd4a757f72b"),
+  ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
+                  "809fa39a7acc84815bf4dc4d2d7e6b228ce75a07f3b2413f3313aa8e0aaa3287"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/octave
 
-apk add coreutils
 apk add texinfo
 
 export CPPFLAGS="-I${includedir}"
@@ -36,7 +36,6 @@ FLAGS=(
     --with-lapack="-L${libdir} -l${LBT}"
 )
 
-./bootstrap
 ./configure "${FLAGS[@]}"
 make -j${nproc}
 make install
@@ -45,7 +44,7 @@ make install
 # build on all supported platforms
 platforms = supported_platforms()
 #filter!(!Sys.isfreebsd, platforms)
-#filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -83,7 +82,6 @@ dependencies = [
     Dependency("rapidjson_jll"),
     Dependency("libsndfile_jll"),
     Dependency("GraphicsMagick_jll"),
-    Dependency("Librsvg_jll"),
 ]
 
 # Build the tarballs.
