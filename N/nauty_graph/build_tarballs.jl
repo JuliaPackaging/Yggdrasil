@@ -12,7 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
 cd $WORKSPACE/srcdir/very_nauty/
 mkdir -p ${libdir}
 cc -shared -fPIC -Wall -O3 -o "${libdir}/libvn_graph.${dlext}" vn_graph.c
