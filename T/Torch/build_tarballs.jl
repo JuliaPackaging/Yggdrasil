@@ -70,51 +70,52 @@ else
     )
 fi
 
-if [[ $target == x86_64* ]]; then # Restricting PYTORCH_QNNPACK to x86_64: Adapted from https://salsa.debian.org/deeplearning-team/pytorch/-/blob/master/debian/rules
+# if [[ $target == x86_64* ]]; then # Restricting PYTORCH_QNNPACK to x86_64: Adapted from https://salsa.debian.org/deeplearning-team/pytorch/-/blob/master/debian/rules
     cmake_extra_args+=(-DUSE_PYTORCH_QNNPACK=ON)
-else
-    cmake_extra_args+=(-DUSE_PYTORCH_QNNPACK=OFF)
-fi
+# else
+#     cmake_extra_args+=(-DUSE_PYTORCH_QNNPACK=OFF)
+# fi
 
-if [[ $target == aarch64-linux-gnu* # Disabled use of breakpad on aarch64-linux-gnu: Fails to build embedded breakpad library.
+if [[ $target == aarch64-linux-gnu* # Fails to build embedded breakpad library.
     || $target == *-w64-mingw32* # Disabling breakpad enables configure on Windows - in combination with pytorch-aten-qnnpack-cmake-windows.patch
-    || $target == *-freebsd*
+    || $target == *-freebsd* # Fails to build embedded breakpad library
 ]]; then
     cmake_extra_args+=(-DUSE_BREAKPAD=OFF)
 else
     cmake_extra_args+=(-DUSE_BREAKPAD=ON)
 fi
 
-if [[ $target == *-linux-musl* # Disabled use of TensorPipe on linux-musl: Fails to build embedded TensorPipe library.
-    || $target == *-w64-mingw32* # TensorPipe cannot be used on Windows
-]]; then
-    cmake_extra_args+=(-DUSE_TENSORPIPE=OFF)
-else
+# if [[ $target == *-linux-musl* # Disabled use of TensorPipe on linux-musl: Fails to build embedded TensorPipe library.
+#     || $target == *-w64-mingw32* # TensorPipe cannot be used on Windows
+# ]]; then
+#     cmake_extra_args+=(-DUSE_TENSORPIPE=OFF)
+# else
     cmake_extra_args+=(-DUSE_TENSORPIPE=ON)
-fi
+# fi
 
-if [[ $target == *-w64-* || $target == *-freebsd* ]]; then
-    cmake_extra_args+=(-DUSE_KINETO=OFF)
-fi
+# if [[ $target == *-w64-* || $target == *-freebsd* ]]; then
+#     cmake_extra_args+=(-DUSE_KINETO=OFF)
+# fi
 
 # Gloo is only available for 64-bit x86_64 or aarch64 - and cmake currently cannot find Gloo on *-linux-gnu
-if [[ $target != arm-* && $target == *-linux-musl* ]]; then
+# if [[ $target != arm-* && $target == *-linux-musl* ]]; then
     cmake_extra_args+=(-DUSE_SYSTEM_GLOO=ON)
-fi
+# fi
 
-if [[ $target == aarch64-* # A compiler with AVX512 support is required for FBGEM
-    || $target == arm-* # A compiler with AVX512 support is required for FBGEM
-    || $target == i686-* # x64 operating system is required for FBGEMM
-    || $target == x86_64-w64-mingw32*
+if [[ 0 -eq 1
+    || $nbits != 64 # Quiets the CMake Warning: x64 operating system is required for FBGEMM
+    || $target != x86_64-* # Quiets the CMake Warning: A compiler with AVX512 support is required for FBGEMM
+    || $target == x86_64-apple-darwin* # Fails to compile: third_party/fbgemm/third_party/asmjit
+    # || $target == x86_64-w64-mingw32*
 ]]; then
     cmake_extra_args+=(-DUSE_FBGEMM=OFF -DUSE_FAKELOWP=OFF)
 fi
 
-if [[ $target == x86_64-apple-darwin* # Fails to compile: /workspace/srcdir/pytorch/third_party/ideep/mkl-dnn/src/cpu/x64/jit_avx512_core_amx_conv_kernel.cpp:483:43: error: use of undeclared identifier 'noU';
-    || $target == *-w64-mingw32*
-    || $target == *-linux-musl* ]]; then
-    cmake_extra_args+=(-DUSE_MKLDNN=OFF)
-fi
+# if [[ $target == *-w64-mingw32*
+#     || $target == *-linux-musl*
+# ]]; then
+#     cmake_extra_args+=(-DUSE_MKLDNN=OFF)
+# fi
 
 cuda_version=${bb_full_target##*-cuda+}
 if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
