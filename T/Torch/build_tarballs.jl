@@ -215,7 +215,10 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("CompilerSupportLibraries_jll", platforms = filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll", platforms = filter(Sys.isbsd, platforms)),
+
     Dependency("CPUInfo_jll"; compat = "0.0.20201217"),
     Dependency("Gloo_jll";  compat = "0.0.20210521", platforms = filter(p -> nbits(p) == 64, platforms)),
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
