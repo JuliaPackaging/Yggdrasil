@@ -56,7 +56,7 @@ dependencies = [
     Dependency("flex_jll"),
     Dependency("LibCURL_jll"),
     Dependency("util_linux_jll"),
-    Dependency("boost_jll"),
+    Dependency("boost_jll"; compat="=1.76.0"),
     Dependency("LLVMOpenMP_jll"),
     Dependency("OpenCL_jll"),
     Dependency("Expat_jll"),
