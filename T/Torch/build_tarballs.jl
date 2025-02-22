@@ -63,7 +63,7 @@ chmod +x /opt/bin/$bb_full_target/xcrun
 
 cd $WORKSPACE/srcdir
 
-mkdir micromamba
+mkdir -p micromamba
 cd micromamba
 tar xfj ../micromamba.tar.bz2
 export PATH=$PATH:$WORKSPACE/srcdir/micromamba/bin
@@ -91,7 +91,12 @@ else
     cmake_extra_args+=(-DBLAS=OpenBLAS)
 fi
 
-if [[ $target == arm-* ]]; then
+# Only enable XNNPACK for supported architectures
+if [[ $bb_full_target == armv6l-*
+    || $bb_full_target == armv7l-* # XNNPACK for armv7l requires neon instructions
+    || $target == powerpc64le-*
+    || $target == riscv64-*
+]]; then
     cmake_extra_args+=(-DUSE_XNNPACK=OFF)
 else
     cmake_extra_args+=(
@@ -115,17 +120,19 @@ else
     cmake_extra_args+=(-DUSE_BREAKPAD=ON)
 fi
 
-# if [[ $target == *-linux-musl* # Disabled use of TensorPipe on linux-musl: Fails to build embedded TensorPipe library.
-#     || $target == *-w64-mingw32* # TensorPipe cannot be used on Windows
-# ]]; then
-#     cmake_extra_args+=(-DUSE_TENSORPIPE=OFF)
-# else
+if [[ $target == *-w64-mingw32* ]]; then # TensorPipe does not support Windows, and USE_DISTRIBUTED on Windows requires libuv 
+    cmake_extra_args+=(-DUSE_DISTRIBUTED=OFF)
+elif [[ $target == *-linux-musl* ]]; then # Fails to build embedded TensorPipe library.
+    cmake_extra_args+=(-DUSE_TENSORPIPE=OFF)
+else
     cmake_extra_args+=(-DUSE_TENSORPIPE=ON)
-# fi
+fi
 
-# if [[ $target == *-w64-* || $target == *-freebsd* ]]; then
-#     cmake_extra_args+=(-DUSE_KINETO=OFF)
-# fi
+if [[ $target == *-w64-mingw32-* # Fails to compile: third_party/kineto/libkineto/src/ThreadUtil.cpp:6:10: fatal error: sys/syscall.h: No such file or directory
+    # || $target == *-freebsd*
+]]; then
+    cmake_extra_args+=(-DUSE_KINETO=OFF)
+fi
 
 # Gloo is only available for 64-bit x86_64 or aarch64 - and cmake currently cannot find Gloo on *-linux-gnu
 # if [[ $target != arm-* && $target == *-linux-musl* ]]; then
@@ -136,7 +143,7 @@ if [[ 0 -eq 1
     || $nbits != 64 # Quiets the CMake Warning: x64 operating system is required for FBGEMM
     || $target != x86_64-* # Quiets the CMake Warning: A compiler with AVX512 support is required for FBGEMM
     || $target == x86_64-apple-darwin* # Fails to compile: third_party/fbgemm/third_party/asmjit
-    # || $target == x86_64-w64-mingw32*
+    || $target == x86_64-w64-mingw32* # Fails to compile: third_party/fbgemm
 ]]; then
     cmake_extra_args+=(-DUSE_FBGEMM=OFF -DUSE_FAKELOWP=OFF)
 fi
