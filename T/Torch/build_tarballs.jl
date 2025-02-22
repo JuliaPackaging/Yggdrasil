@@ -17,16 +17,46 @@ sources = [
 script = raw"""
 apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 
+export SDKROOT=/opt/$target/$target/sys-root
+
 cat > /opt/bin/$bb_full_target/xcrun << EOF
-#!/bin/bash
-if [[ "\${@}" == *"--show-sdk-path"* ]]; then
-   echo /opt/$target/$target/sys-root
-elif [[ "\${@}" == *"--show-sdk-version"* ]]; then
-   grep -A1 '<key>Version</key>' /opt/$target/$target/sys-root/SDKSettings.plist \
-   | tail -n1 \
-   | sed -E -e 's/\s*<string>([^<]+)<\/string>\s*/\1/'
-else
-   exec "\${@}"
+#!/bin/sh
+
+sdk_path="\$SDKROOT"
+
+show_sdk_path() {
+    echo "\$1"
+}
+
+show_sdk_version() {
+    plistutil -f xml -i "\$1"/SDKSettings.plist \\
+    | grep -A1 '<key>Version</key>' \\
+    | tail -n1 \\
+    | sed -E -e 's/\\s*<string>([^<]+)<\\/string>\\s*/\\1/'
+}
+
+while [ \$# -gt 0 ]; do
+    case "\$1" in
+        --sdk)
+            sdk_path="\$2"
+            shift 2
+            ;;
+        --show-sdk-path)
+            show_sdk_path "\$sdk_path"
+            shift
+            ;;
+        --show-sdk-version)
+            show_sdk_version "\$sdk_path"
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+if [ \$# -gt 0 ]; then
+"\$@"
 fi
 EOF
 chmod +x /opt/bin/$bb_full_target/xcrun
