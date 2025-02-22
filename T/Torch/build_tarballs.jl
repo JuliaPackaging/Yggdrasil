@@ -61,6 +61,15 @@ else
     cmake_extra_args+=(-DBLAS=OpenBLAS)
 fi
 
+if [[ $target == arm-* ]]; then
+    cmake_extra_args+=(-DUSE_XNNPACK=OFF)
+else
+    cmake_extra_args+=(
+        -DUSE_XNNPACK=ON
+        -DUSE_SYSTEM_XNNPACK=ON
+    )
+fi
+
 if [[ $target == x86_64* ]]; then # Restricting PYTORCH_QNNPACK to x86_64: Adapted from https://salsa.debian.org/deeplearning-team/pytorch/-/blob/master/debian/rules
     cmake_extra_args+=(-DUSE_PYTORCH_QNNPACK=ON)
 else
@@ -171,7 +180,6 @@ configure() {
         -DUSE_SYSTEM_CPUINFO=ON \
         -DUSE_SYSTEM_PTHREADPOOL=ON \
         -DUSE_SYSTEM_SLEEF=ON \
-        -DUSE_SYSTEM_XNNPACK=ON \
         -DPROTOBUF_PROTOC_EXECUTABLE=$host_bindir/protoc \
         -DCAFFE2_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
         -G Ninja \
