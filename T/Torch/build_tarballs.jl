@@ -236,6 +236,7 @@ install_license LICENSE
 """
 
 platforms = supported_platforms()
+filter!(!Sys.iswindows, platforms) # ONNX does not support cross-compiling for w64-mingw32 on linux
 
 let cuda_platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
     filter!(p -> arch(p) != "aarch64", cuda_platforms) # Cmake toolchain breaks on aarch64
