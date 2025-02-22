@@ -61,7 +61,9 @@ dependencies = [
     Dependency("OpenCL_jll"),
     Dependency("Expat_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("Gettext_jll")
+    Dependency("Gettext_jll"),
+    Dependency("Ncurses_jll"),
+    Dependency("Readline_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
