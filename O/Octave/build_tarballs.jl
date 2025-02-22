@@ -7,11 +7,14 @@ version = v"9.4.0"
 sources = [
   ArchiveSource("https://ftpmirror.gnu.org/octave/octave-$(version).tar.gz",
                 "da9481205bfa717660b7d4a16732d8b2d58aadceab4993d41242a8e2848ea6c1"),
+  DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/octave*
+
+atomic_patch -p0 ../patches/freebsd_sig_atomic_t.patch
 
 apk add texinfo
 
