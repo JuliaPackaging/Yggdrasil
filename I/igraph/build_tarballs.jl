@@ -14,6 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/igraph/
 
+
 if [[ "${target}" == *mingw* ]]; then
     LBT=blastrampoline-5
 else
@@ -25,6 +26,7 @@ if [[ "${target}" == *apple* ]]; then
 else
     LTO=ON
 fi
+
 
 CONF_FLAGS="\
     -DBUILD_SHARED_LIBS=ON \
@@ -74,4 +76,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9") # early gcc versions cause problems with std::isnan
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8") # early gcc versions cause problems with std::isnan
