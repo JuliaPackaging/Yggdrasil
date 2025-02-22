@@ -72,11 +72,6 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-#TODO # FreeBSD on ARM 64 is not supported for Julia versions before 1.12.
-#TODO # GMP isn't found for aarch64-unknown-freebsd-julia_version+1.12.0.
-#TODO # That's probably a BinaryBuilder problem.
-#TODO filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libz3", :libz3),
