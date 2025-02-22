@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.13.4"
+version = v"4.14.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "66944689398d19f831f94524e95e99961d998afa27cfef1918a5a441029ea73f"),
+                  "83736086dc73f6309a7bb9e45e6a0b6b73de8510b606247b366038f5f40899b4"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -72,10 +72,10 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
-# FreeBSD on ARM 64 is not supported for Julia versions before 1.12.
-# GMP isn't found for aarch64-unknown-freebsd-julia_version+1.12.0.
-# That's probably a BinaryBuilder problem.
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+#TODO # FreeBSD on ARM 64 is not supported for Julia versions before 1.12.
+#TODO # GMP isn't found for aarch64-unknown-freebsd-julia_version+1.12.0.
+#TODO # That's probably a BinaryBuilder problem.
+#TODO filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
