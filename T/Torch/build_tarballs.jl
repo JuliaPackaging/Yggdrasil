@@ -130,7 +130,7 @@ else
 fi
 
 if [[ $target == *-w64-mingw32-* # Fails to compile: third_party/kineto/libkineto/src/ThreadUtil.cpp:6:10: fatal error: sys/syscall.h: No such file or directory
-    # || $target == *-freebsd*
+    || $target == *-freebsd* # Fails to compile: third_party/kineto/libkineto/src/ThreadUtil.cpp:52:32: error: use of undeclared identifier 'SYS_gettid'
 ]]; then
     cmake_extra_args+=(-DUSE_KINETO=OFF)
 fi
