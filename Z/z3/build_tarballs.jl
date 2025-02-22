@@ -72,6 +72,9 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
+# libjulia_jll is not yet available for Julia 1.13
+filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libz3", :libz3),
