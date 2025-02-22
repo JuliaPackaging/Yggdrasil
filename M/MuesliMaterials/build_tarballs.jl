@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "MuesliMaterials"
-version = v"1.16.3"
+version = v"1.16"
 
 # Collection of sources required to complete build
 sources = [
@@ -16,7 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/muesli
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmakesupport.patch
-
 
 cmake -B builddir -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
                   -DBLAS_LIBRARIES="${libdir}/libopenblas.${dlext}" -DLAPACK_LIBRARIES="${libdir}/libopenblas.${dlext}" 
@@ -41,8 +40,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("OpenBLAS32_jll")
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14"))
+    Dependency("LAPACK_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version=v"8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"8")
