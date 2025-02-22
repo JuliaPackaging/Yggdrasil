@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "pixi"
-version = v"0.41.3"
+version = v"0.41.4"
 
 sources = [
-    GitSource("https://github.com/prefix-dev/pixi.git", "fc3e1a861deac099e51f7f0c3eaa2f64e217d4bf"),
+    GitSource("https://github.com/prefix-dev/pixi.git", "9bc64afdc98333d56d56dd8d6d530ae6d559846e"),
 ]
 
 # Bash recipe for building across all platforms
