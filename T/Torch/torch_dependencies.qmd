@@ -22,7 +22,15 @@ pytorch_versions = [
 pytorch_versions_context = filter(v -> v != pytorch_version_current, pytorch_versions)
 
 component_names = Dict(
-    "pytorch" => ["cpuinfo", "pthreadpool", "XNNPACK"]
+    "pytorch" => [
+        "cpuinfo",
+        "FP16",
+        "FXdiv",
+        "gloo",
+        "pthreadpool",
+        "sleef",
+        "XNNPACK",
+    ]
 )
 ```
 ```{julia}
