@@ -25,6 +25,7 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBLA_VENDOR=libopenblas \
       -DBLAS_LIBRARIES="-L${libdir} -lopenblas" \
       -DLAPACK_LIBRARIES="-L${libdir} -lopenblas" \
+      -DOM_OMSHELL_ENABLE_TERMINAL=ON \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMC_ENABLE_IPOPT=OFF \
       -DHAVE_MMAP_DEV_ZERO=0 \
