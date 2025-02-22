@@ -157,14 +157,16 @@ if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
         -DUSE_CUDNN=ON
         -DUSE_MAGMA=ON
         -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_PATH
-        -DCUB_INCLUDE_DIR=$WORKSPACE/srcdir/pytorch/third_party/cub
     )
     cuda_version_major=`echo $cuda_version | cut -d . -f 1`
     cuda_version_minor=`echo $cuda_version | cut -d . -f 2`
     micromamba install -y magma-cuda${cuda_version_major}${cuda_version_minor} -c pytorch
-    git submodule update --init \
-        third_party/cub \
-        third_party/cudnn_frontend
+    git submodule update --init third_party/cudnn_frontend
+
+    if [[ $cuda_version_major == 10 ]]; then
+        cmake_extra_args+=(-DCUB_INCLUDE_DIR=$WORKSPACE/srcdir/pytorch/third_party/cub)
+        git submodule update --init third_party/cub
+    fi
 else
     cmake_extra_args+=(-DUSE_CUDA=OFF -DUSE_MAGMA=OFF)
 fi
