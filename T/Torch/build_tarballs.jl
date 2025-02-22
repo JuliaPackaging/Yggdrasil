@@ -148,9 +148,7 @@ if [[ 0 -eq 1
     cmake_extra_args+=(-DUSE_FBGEMM=OFF -DUSE_FAKELOWP=OFF)
 fi
 
-# if [[ $target == *-w64-mingw32*
-#     || $target == *-linux-musl*
-# ]]; then
+# if [[ $target == *-linux-musl* ]]; then
 #     cmake_extra_args+=(-DUSE_MKLDNN=OFF)
 # fi
 
@@ -199,6 +197,7 @@ cd third_party/fbgemm && git submodule update --init --depth 1 third_party/asmji
 cd third_party/tensorpipe && git submodule update --init --depth 1 third_party/libnop third_party/libuv && cd ../..
 
 configure() {
+    cmake_generator=$([[ $target == *-w64-mingw32* ]] && echo "Unix Makefiles" || echo Ninja)
     cmake \
         -B build \
         -DCMAKE_BUILD_TYPE=Release \
@@ -222,7 +221,7 @@ configure() {
         -DUSE_SYSTEM_SLEEF=ON \
         -DPROTOBUF_PROTOC_EXECUTABLE=$host_bindir/protoc \
         -DCAFFE2_CUSTOM_PROTOC_EXECUTABLE=$host_bindir/protoc \
-        -G Ninja \
+        -G "$cmake_generator" \
         -Wno-dev \
         ${cmake_extra_args[@]}
 }
