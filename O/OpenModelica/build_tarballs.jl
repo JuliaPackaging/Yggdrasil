@@ -2,11 +2,10 @@ using BinaryBuilder, Pkg
 
 name = "OpenModelica"
 version = v"1.24.4"
-git_sha = "1fcd964f50824f82fd36d536804b0d80234131c9"
 
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
-             git_sha),
+             "1fcd964f50824f82fd36d536804b0d80234131c9"),
    DirectorySource("./bundled"),	     
 ]
 
@@ -17,6 +16,7 @@ cp ../patches/git-config ./.git/config
 git submodule update --force --init --recursive
 
 apk --update --no-chown add openjdk17-jdk
+apk add flex
 
 cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -33,7 +33,6 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
 cmake --build build_cmake --parallel ${nprocs} --target install
 
 install_license OSMC-License.txt
-x
 """
 
 # These are the platforms we will build for by default, unless further
@@ -53,10 +52,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("flex_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("OpenBLAS32_jll"),
-    Dependency("flex_jll"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
     Dependency("util_linux_jll"),
     Dependency("boost_jll"; compat="=1.76.0"),
