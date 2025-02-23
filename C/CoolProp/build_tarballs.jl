@@ -7,7 +7,7 @@ version = v"6.7.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "15b35071e3676b933c87606dcb73182fc483540f27f5830e79baa1b72b75888f"),
+    ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "11a02fe660c5c19f691398f7a71aaf6360cf4648f4ad57fd41bde74f51efd4ab"),
 ]
 
 # Bash recipe for building across all platforms
