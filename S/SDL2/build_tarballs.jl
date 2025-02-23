@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2"
-version = v"2.24.2"
+version = v"2.30.11"
 
 # Collection of sources required to build SDL2
 sources = [
     GitSource("https://github.com/libsdl-org/SDL.git",
-              "55b03c7493a7abed33cf803d1380a40fa8af903f"),
+              "fa24d868ac2f8fd558e4e914c9863411245db8fd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -67,4 +67,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=llvm_version)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_llvm_version=llvm_version)
