@@ -7,6 +7,7 @@ git_sha = "1fcd964f50824f82fd36d536804b0d80234131c9"
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
              git_sha),
+   DirectorySource("./bundled"),	     
 ]
 
 # Bash recipe for building across all platforms
@@ -23,6 +24,7 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBLA_VENDOR=libopenblas \
       -DBLAS_LIBRARIES="-L${libdir} -lopenblas" \
       -DLAPACK_LIBRARIES="-L${libdir} -lopenblas" \
+      -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMSHELL_ENABLE_TERMINAL=ON \
       -DOM_OMC_ENABLE_IPOPT=OFF \
       -DHAVE_MMAP_DEV_ZERO=0 \
@@ -31,19 +33,22 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
 cmake --build build_cmake --parallel ${nprocs} --target install
 
 install_license OSMC-License.txt
+x
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = [
-#    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-#]
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
+    Platform("x86_64", "windows"; cxxstring_abi="cxx11"),
+    Platform("aarch64", "macos"; cxxstring_abi="cxx11"),
+]
+#platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("omc", :omc),
-    ExecutableProduct("OMShell-terminal", :OMShell_terminal),
+#    ExecutableProduct("OMShell-terminal", :OMShell_terminal),
 ]
 
 # Dependencies that must be installed before this package can be built
