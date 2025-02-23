@@ -766,6 +766,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         # We only have LLVM builds for AArch64 BSD starting from LLVM 18
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
+    if version < v"19.1.7"
+        # We only have LLVM builds for riscv starting from LLVM 19.1.7
+        filter!(p -> arch(p) != "riscv64", platforms)
+    end
     platforms = expand_cxxstring_abis(platforms)
 
     if augmentation
