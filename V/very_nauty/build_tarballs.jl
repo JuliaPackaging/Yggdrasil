@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "very_nauty"
-version = v"1.1.1"
+version = v"1.1.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaGraphs/very_nauty.git", "b2c7765f2820ea5385846e4123323a1ba6e4f67e")
+    GitSource("https://github.com/JuliaGraphs/very_nauty.git", "f0680a2877fe25b0e59d90b24bad370f02525093")
 ]
 
 # Bash recipe for building across all platforms
