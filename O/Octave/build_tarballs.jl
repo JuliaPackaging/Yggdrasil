@@ -44,12 +44,13 @@ make -j${nproc}
 make install
 """
 
-# build on all supported platforms
 platforms = supported_platforms()
-#filter!(!Sys.isfreebsd, platforms)
+# Disable RISC-V
 filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
+# Disable old libgfortran builds - only use libgfortran5
+filter!(p -> !(any(libgfortran_version(p) .== (v"4.0.0", v"3.0.0"))), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -63,9 +64,7 @@ dependencies = [
     HostBuildDependency("Bison_jll"),
     HostBuildDependency("gperf_jll"),
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"),
-               v"5.12.0";  # build version
-               compat="5.8.0"),
+    Dependency("libblastrampoline_jll"; compat="5.11.0"),
     Dependency("OpenBLAS32_jll"),
     Dependency("SuiteSparse32_jll"),
     Dependency("Arpack32_jll"),
@@ -90,4 +89,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.8", clang_use_lld=false, preferred_gcc_version=v"8")
+               julia_compat="1.10", clang_use_lld=false, preferred_gcc_version=v"10")
