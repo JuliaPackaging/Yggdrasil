@@ -144,6 +144,7 @@ if [[ 0 -eq 1
     || $nbits != 64 # Quiets the CMake Warning: x64 operating system is required for FBGEMM
     || $target != x86_64-* # Quiets the CMake Warning: A compiler with AVX512 support is required for FBGEMM
     || $target == x86_64-apple-darwin* # Fails to compile: third_party/fbgemm/third_party/asmjit
+    || $target == x86_64-unknown-freebsd* # Fails to compile: third_party/fbgemm/third_party/asmjit
     || $target == x86_64-w64-mingw32* # Fails to compile: third_party/fbgemm
 ]]; then
     cmake_extra_args+=(-DUSE_FBGEMM=OFF -DUSE_FAKELOWP=OFF)
