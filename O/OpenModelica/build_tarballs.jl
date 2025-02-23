@@ -27,6 +27,8 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMSHELL_ENABLE_TERMINAL=ON \
       -DOM_OMC_ENABLE_IPOPT=OFF \
+      -DHAS_LIBCPP_EXITCODE=0 \
+      -DHAS_LIBCPP_EXITCODE__TRYRUN_OUTPUT="" \
       -DHAVE_MMAP_DEV_ZERO=0 \
       -DHAVE_MMAP_DEV_ZERO_EXITCODE__TRYRUN_OUTPUT=""
 
@@ -39,7 +41,6 @@ install_license OSMC-License.txt
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11"),
-    Platform("x86_64", "windows"; cxxstring_abi="cxx11"),
     Platform("aarch64", "macos"; cxxstring_abi="cxx11"),
 ]
 #platforms = expand_cxxstring_abis(supported_platforms())
