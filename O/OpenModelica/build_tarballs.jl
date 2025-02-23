@@ -11,11 +11,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-mv OpenModelica OM-ignore
-git clone https://github.com/OpenModelica/OpenModelica.git
-cd OpenModelica
-git checkout $git_sha
+cd $WORKSPACE/srcdir/OpenModelica*
+cp ../patches/git-config ./.git/config
 git submodule update --force --init --recursive
 
 apk --update --no-chown add openjdk17-jdk
