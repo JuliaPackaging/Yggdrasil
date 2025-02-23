@@ -12,7 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-export USE_CCACHE=0
 
 cd $WORKSPACE/srcdir/igraph/
 
