@@ -2,10 +2,11 @@ using BinaryBuilder, Pkg
 
 name = "OpenModelica"
 version = v"1.24.4"
+git_sha = "1fcd964f50824f82fd36d536804b0d80234131c9"
 
 sources = [
    GitSource("https://github.com/OpenModelica/OpenModelica.git",
-             "1fcd964f50824f82fd36d536804b0d80234131c9"),
+             git_sha),
 ]
 
 # Bash recipe for building across all platforms
@@ -14,7 +15,7 @@ cd $WORKSPACE/srcdir
 mv OpenModelica OM-ignore
 git clone https://github.com/OpenModelica/OpenModelica.git
 cd OpenModelica
-git checkout 904c4c783a5fa6eb9e99e4a98bdb0cca1d619303
+git checkout $git_sha
 git submodule update --force --init --recursive
 
 apk --update --no-chown add openjdk17-jdk
@@ -26,7 +27,6 @@ cmake -S . -B build_cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBLAS_LIBRARIES="-L${libdir} -lopenblas" \
       -DLAPACK_LIBRARIES="-L${libdir} -lopenblas" \
       -DOM_OMSHELL_ENABLE_TERMINAL=ON \
-      -DOM_ENABLE_GUI_CLIENTS=OFF \
       -DOM_OMC_ENABLE_IPOPT=OFF \
       -DHAVE_MMAP_DEV_ZERO=0 \
       -DHAVE_MMAP_DEV_ZERO_EXITCODE__TRYRUN_OUTPUT=""
