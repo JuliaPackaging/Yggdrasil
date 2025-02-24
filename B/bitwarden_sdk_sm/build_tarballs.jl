@@ -18,7 +18,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/
 install -Dvm 755 "${target}/bws${exeext}" -t "${bindir}"
-install_license LICENSE.txt
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
