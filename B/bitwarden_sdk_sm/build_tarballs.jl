@@ -11,14 +11,12 @@ sources = [
     ArchiveSource("$(url_prefix)/bws-x86_64-apple-darwin-$(version).zip", "7e06cbc0f3543dd68585a22bf1ce09eca1d413322aa22554a713cf97de60495a"; unpack_target = "x86_64-apple-darwin14"),
     ArchiveSource("$(url_prefix)/bws-aarch64-unknown-linux-gnu-$(version).zip", "20a3dcb9e3ce7716a1dc3c0e1c76cea9d5e2bf75094cbb5aad54ced4304929cb"; unpack_target = "aarch64-linux-gnu"),
     ArchiveSource("$(url_prefix)/bws-x86_64-pc-windows-msvc-$(version).zip", "69b8d0fb2facc8cec4dd2b8157a3496ecaaa376ee1b0fd822012192ce7437505"; unpack_target = "x86_64-w64-mingw32"),
-    ArchiveSource("$(url_prefix)/bws-aarch64-unknown-linux-gnu-$(version).zip", "20a3dcb9e3ce7716a1dc3c0e1c76cea9d5e2bf75094cbb5aad54ced4304929cb"; unpack_target = "aarch64-linux-gnu"),
     FileSource("https://raw.githubusercontent.com/bitwarden/sdk-sm/4518617715c7b4b3afd3700d129d6b535b2732ff/LICENSE", "81a78a0c6ee613b466974b74ac916573dd867c30ade85894a9d57f429600bef4")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/
-rm -rf .
 install -Dvm 755 "${target}/bw${exeext}" -t "${bindir}"
 install_license LICENSE.txt
 """
