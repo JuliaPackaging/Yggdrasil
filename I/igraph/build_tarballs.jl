@@ -7,14 +7,12 @@ version = v"0.10.15"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/igraph/igraph.git", "635b432eff0a89580ac9bb98068d2fbc8ef374f2")
+    ArchiveSource("https://github.com/igraph/igraph/releases/download/0.10.15/igraph-0.10.15.tar.gz", "03ba01db0544c4e32e51ab66f2356a034394533f61b4e14d769b9bbf5ad5e52c")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-cd $WORKSPACE/srcdir/igraph/
-
+cd $WORKSPACE/srcdir/igraph-0.10.15
 
 if [[ "${target}" == *mingw* ]]; then
     LBT=blastrampoline-5
@@ -22,16 +20,9 @@ else
     LBT=blastrampoline
 fi
 
-if [[ "${target}" == *apple* ]]; then
-    LTO=OFF
-else
-    LTO=ON
-fi
-
-
 CONF_FLAGS="\
     -DBUILD_SHARED_LIBS=ON \
-    -DIGRAPH_ENABLE_LTO=${LTO} \
+    -DIGRAPH_ENABLE_LTO=AUTO \
 	-DIGRAPH_ENABLE_TLS=ON \
 	-DIGRAPH_USE_INTERNAL_BLAS=OFF \
 	-DIGRAPH_USE_INTERNAL_LAPACK=OFF \
@@ -43,9 +34,11 @@ CONF_FLAGS="\
 	-DIGRAPH_GRAPHML_SUPPORT=ON \
 	-DIGRAPH_OPENMP_SUPPORT=ON \
     -DBLA_VENDOR=blastrampoline -DBLAS_LIBRARIES=\"${LBT}\" -DLAPACK_LIBRARIES=\"${LBT}\" \
-    -DBUILD_TESTING=OFF -DIGRAPH_WARNINGS_AS_ERRORS=OFF" # adapted from https://github.com/msys2/MINGW-packages/blob/master/mingw-w64-igraph due to issues on Windows
+    -DBUILD_TESTING=OFF" # adapted from https://github.com/msys2/MINGW-packages/blob/master/mingw-w64-igraph due to issues on Windows"
 BB_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 cmake -B build -DCMAKE_BUILD_TYPE=Release ${BB_FLAGS} ${CONF_FLAGS}
+
+install_license $WORKSPACE/srcdir/igraph-0.10.15/COPYING
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -77,4 +70,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"14") # early gcc versions cause problems with std::isnan
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8") # early gcc versions cause problems with std::isnan
