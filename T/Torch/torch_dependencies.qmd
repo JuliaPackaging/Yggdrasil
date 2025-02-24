@@ -23,23 +23,33 @@ pytorch_versions_context = filter(v -> v != pytorch_version_current, pytorch_ver
 
 component_names = Dict(
     "pytorch" => [
+        # BinaryBuilder dependencies
+        "XNNPACK",
         "cpuinfo",
-        "FP16",
-        "FXdiv",
         "gloo",
         "pthreadpool",
         "sleef",
-        "XNNPACK",
+
+        # git submodules
+        "FP16",
+        "FXdiv",
+        "eigen",
+        "fbgemm",
+        "flatbuffers",
+        "fmt",
+        "foxi",
+        "gloo",
+        "kineto",
+        "onnx",
+        "pocketfft",
+        "psimd",
+        "tensorpipe",
+        "breakpad",
+        "ideep",
     ]
 )
-```
-```{julia}
-#| output: false
 
 pytorch_dir = joinpath(@__DIR__, "build", "pytorch")
-if !isdir(pytorch_dir)
-    run(`git clone --depth 1 https://github.com/pytorch/pytorch.git $pytorch_dir`)
-end
 ```
 ```{julia}
 #| output: false
@@ -48,6 +58,7 @@ excluded_urls = [
     "https://github.com/google/benchmark",
     "https://github.com/google/googletest",
 ]
+
 function get_component(path, work_dir, git_submodule_paths::AbstractVector{<:AbstractString}=String[])
     @info "Extracting component for $path"
     component = Dict{String, Any}()
@@ -62,34 +73,65 @@ function get_component(path, work_dir, git_submodule_paths::AbstractVector{<:Abs
         component["full_name"] = join(split(component["url"], "/")[end-1:end], "/")
         component["name"] = last(splitdir(component["full_name"]))
 
+        git_submodules = split.(split(readchomp(`git submodule foreach --quiet 'echo ${name}:${path}'`)), ":")
+        all_git_submodule_paths = last.(git_submodules)
         for git_submodule_path in git_submodule_paths
+            if git_submodule_path ∉ all_git_submodule_paths
+                @info "Skipping $git_submodule_path"
+                continue
+            end
+
             run(`git submodule update --init $git_submodule_path`)
         end
         if isempty(git_submodule_paths)
             run(`git submodule update --init`)
         end
-        git_submodules = split.(split(readchomp(`git submodule foreach --quiet 'echo ${name}:${path}'`)), ":")
-        git_submodule_paths = last.(git_submodules)
         for git_submodule_path in git_submodule_paths
+            if !isdir(git_submodule_path)
+                @info "Skipping $git_submodule_path"
+                continue
+            end
+
             component_name = last(splitdir(git_submodule_path))
             component["components"][component_name] = get_component(git_submodule_path, work_dir)
         end
 
         # CMake downloads
-        cmake_external_project_urls = sort(            
-            unique(
-                filter(url -> url != "URL",
-                    split(
-                        readchomp(
-                            ignorestatus(pipeline(
-                                `find . -type f -name CMakeLists.txt -or -name '*.cmake'`,
-                                `xargs grep --no-filename 'URL '`
-                            ))
-                        )
-                    )
-                )
-            )
-        )
+        cmake_files = String[]
+        for (path, dirs, files) in walkdir(pwd())
+            append!(cmake_files, [
+                file_path
+                for file_path in joinpath.(path, files)
+                if basename(file_path) == "CMakeLists.txt" || endswith(basename(file_path), ".cmake")
+            ])
+        end
+        
+        cmake_external_project_regex = r"^[^#]*(ExternalProject_Add\((?<name>[^\s]+)[^)]+URL\s+\"?(?<url>[^\s]+)\"?[^)]+\))"ms
+        cmake_external_project_urls = String[]
+        for cmake_file in cmake_files
+            cmake_file_content = read(cmake_file, String)
+            ext_projects = collect(eachmatch(cmake_external_project_regex, cmake_file))
+            for ext_project in ext_projects
+                @show cmake_file, ext_project
+                push!(cmake_external_project_urls, ext_project["url"])
+            end
+        end
+        sort!(unique!(cmake_external_project_urls))
+
+        # cmake_external_project_urls = sort(            
+        #     unique(
+        #         filter(url -> url != "URL",
+        #             split(
+        #                 readchomp(
+        #                     ignorestatus(pipeline(
+        #                         `find . -type f -name CMakeLists.txt -or -name '*.cmake'`,
+        #                         `xargs grep --no-filename 'URL '`
+        #                     ))
+        #                 )
+        #             )
+        #         )
+        #     )
+        # )
         cmake_external_project_urls = filter(
             url -> !any(
                 excluded_url -> startswith(url, excluded_url),
@@ -126,6 +168,11 @@ version_id(component) = !isempty(component["tag"]) ? component["tag"] : componen
 #| output: false
 
 root_components = Dict{VersionNumber, Any}()
+
+if !isdir(pytorch_dir)
+    run(`git clone --depth 1 https://github.com/pytorch/pytorch.git $pytorch_dir`)
+end
+
 mktempdir() do work_dir
 cd(pytorch_dir) do
     for version in pytorch_versions
