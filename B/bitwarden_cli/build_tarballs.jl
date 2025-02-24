@@ -9,7 +9,7 @@ sources = [
     ArchiveSource("$(url_prefix)/bw-linux-$(version).zip", "f1d66b1a3971cc906ea3e44f0647899c1ca0c95ca83714fcf3039c0643dcd97a"; unpack_target = "x86_64-linux-gnu"),
     ArchiveSource("$(url_prefix)/bw-macos-$(version).zip", "103ee62a30284390559b5ff5ca21b77c235a43cb4e08e3c410726f873104cf42"; unpack_target = "x86_64-apple-darwin14"),
     ArchiveSource("$(url_prefix)/bw-windows-$(version).zip", "7ba89071061d30f94cea048289cd252cdb14b2635e9a57c0b020bf80121b16f5"; unpack_target = "x86_64-w64-mingw32"),
-    FileSource("https://raw.githubusercontent.com/bitwarden/clients/refs/heads/main/LICENSE.txt", "b98fbb37db5b23bc5cfdcd16793206a5a7120a7b01f75374e5e0888376e4691c")
+    FileSource("https://raw.githubusercontent.com/bitwarden/clients/fb191b1121c30b4e839fd31689ace8373de6c840/LICENSE.txt", "cc76886c8b11ab18c7e6dcca04b7bf75caf6a2ccea42b1cfe98842f280b9bc00")
 ]
 
 # Bash recipe for building across all platforms
