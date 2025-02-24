@@ -7,7 +7,7 @@ version = v"0.10.15"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/igraph/igraph/releases/download/0.10.15/igraph-0.10.15.tar.gz", "03ba01db0544c4e32e51ab66f2356a034394533f61b4e14d769b9bbf5ad5e52c")
+    ArchiveSource("https://github.com/igraph/igraph/releases/download/$(version)/igraph-$(version).tar.gz", "03ba01db0544c4e32e51ab66f2356a034394533f61b4e14d769b9bbf5ad5e52c")
 ]
 
 # Bash recipe for building across all platforms
