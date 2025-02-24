@@ -2,14 +2,14 @@ using BinaryBuilder
 
 # Collection of pre-build Bitwarden CLI binaries
 name = "bitwarden_cli"
-version = v"1.17.1"
+version = v"2025.1.3"
 
-url_prefix = "https://github.com/bitwarden/cli/releases/download/v$(version)"
+url_prefix = "https://github.com/bitwarden/clients/releases/download/cli-v$(version)"
 sources = [
-    ArchiveSource("$(url_prefix)/bw-linux-$(version).zip", "4704297B438041D39774AA7B077DB72A184A50223FAAE906D2C238D14E2056E9"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)/bw-macos-$(version).zip", "9d5c5a997c73b84aeb43db4c7be93d3fa6443f83ade35a4953b0f1c6862c00c2"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)/bw-windows-$(version).zip", "38FE9F5126BC723FB3C0FC00DC15B013826030D6A9F54539B18DBB56EB6FB5EE"; unpack_target = "x86_64-w64-mingw32"),
-    FileSource("https://raw.githubusercontent.com/bitwarden/cli/v$(version)/LICENSE.txt", "b98fbb37db5b23bc5cfdcd16793206a5a7120a7b01f75374e5e0888376e4691c")
+    ArchiveSource("$(url_prefix)/bw-linux-$(version).zip", "f1d66b1a3971cc906ea3e44f0647899c1ca0c95ca83714fcf3039c0643dcd97a"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)/bw-macos-$(version).zip", "103ee62a30284390559b5ff5ca21b77c235a43cb4e08e3c410726f873104cf42"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)/bw-windows-$(version).zip", "7ba89071061d30f94cea048289cd252cdb14b2635e9a57c0b020bf80121b16f5"; unpack_target = "x86_64-w64-mingw32"),
+    FileSource("https://raw.githubusercontent.com/bitwarden/clients/refs/heads/main/LICENSE.txt", "b98fbb37db5b23bc5cfdcd16793206a5a7120a7b01f75374e5e0888376e4691c")
 ]
 
 # Bash recipe for building across all platforms
