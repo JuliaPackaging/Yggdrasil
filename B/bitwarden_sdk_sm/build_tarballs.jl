@@ -17,7 +17,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/
-install -Dvm 755 "${target}/bw${exeext}" -t "${bindir}"
+install -Dvm 755 "${target}/bws${exeext}" -t "${bindir}"
 install_license LICENSE.txt
 """
 
