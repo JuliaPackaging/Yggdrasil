@@ -2,8 +2,6 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
-
 name = "abseil_cpp"
 version = v"20230125.0"
 
@@ -17,19 +15,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/abseil-cpp
 
-if [[ "$target" == aarch64-* # Never apply `-march=armv8-a+crypto` -- even for aarch64-*-march+armv8_2_crypto
+if [[ "$target" == aarch64-* # Never apply `-march=armv8-a+crypto`
     || "$target" == x86_64-apple-darwin* # For some reason, the ABSL_RANDOM_HWAES_ARM64_FLAGS are applied for x86_64-apple-darwin
 ]]; then
     atomic_patch -p1 ../patches/aarch64-crypto-cmake.patch
 fi
-if [[ "$target" == arm-* ]] \
-    && [[
-        "$bb_full_target" == armv6l-*
-        || "$bb_full_target" == armv7l-*-march+armv7l
-    ]]; then
+if [[ "$target" == arm-* ]]; then
     atomic_patch -p1 ../patches/arm-neon-cmake.patch
 fi
-if [[ "$target" == x86_64-* && "$bb_full_target" == x86_64-*-march+x86_64
+if [[ "$target" == x86_64-*
     || "$target" == aarch64-apple-darwin* # For some reason, the ABSL_RANDOM_HWAES_X64_FLAGS are applied for aarch64-apple-darwin
 ]]; then
     atomic_patch -p1 ../patches/x86_64-aes-cmake.patch
@@ -52,27 +46,7 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-platforms = expand_microarchitectures(platforms, ["armv8_0", "armv8_2_crypto"];  # Add microarchitecture supporting crypto
-    filter=!Sys.isapple # Exclude apple platforms, as these are different (apple_m1 rather than armv8_0, and armv8_2_crypto)
-)
-platforms = expand_microarchitectures(platforms, ["armv7l", "neonvfpv4"]) # Add microarchitecture supporting neon
-platforms = expand_microarchitectures(platforms, ["x86_64", "avx"]) # Add microarchitecture supporting aes and sse41
 platforms = expand_cxxstring_abis(platforms)
-
-augment_platform_block = """
-    $(MicroArchitectures.augment)
-
-    function augment_platform!(platform::Platform)
-        # We augment only aarch64, armv7l, and x86_64
-        @static if Sys.ARCH === :aarch64 && !Sys.isapple()
-            || Sys.ARCH === :armv7l
-            || Sys.ARCH === :x86_64
-            augment_microarchitecture!(platform)
-        else
-            platform
-        end
-    end
-"""
 
 # The products that we will ensure are always built
 products = [
@@ -167,7 +141,6 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block,
                julia_compat="1.6",
                preferred_gcc_version=v"7",
 )
