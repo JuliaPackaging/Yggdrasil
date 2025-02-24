@@ -17,7 +17,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/abseil-cpp
 
-if [[ "$target" == aarch64-*
+if [[ "$target" == aarch64-* # Never apply `-march=armv8-a+crypto` -- even for aarch64-*-march+armv8_2_crypto
     || "$target" == x86_64-apple-darwin* # For some reason, the ABSL_RANDOM_HWAES_ARM64_FLAGS are applied for x86_64-apple-darwin
 ]]; then
     atomic_patch -p1 ../patches/aarch64-crypto-cmake.patch
