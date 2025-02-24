@@ -5,6 +5,10 @@ jinja2cpp_template_t* jinja2cpp_template_create() {
     return new jinja2cpp_template_t();
 }
 
+jinja2cpp_template_t* jinja2cpp_template_create_template_env(jinja2cpp_template_env_t* env) {
+    return new jinja2cpp_template_t(env);
+}
+
 void jinja2cpp_template_destroy(jinja2cpp_template_t* tpl) {
     delete tpl;
 }
