@@ -39,6 +39,7 @@ augment_platform_block = CUDA.augment
 
 products = [
     LibraryProduct(["libcudss", "cudss64_$(version.major)"], :libcudss),
+    LibraryProduct(["libcudss_mtlayer_gomp", "cudss_mtlayer_vcomp140"], :libcudss_mtlayer),
 ]
 
 dependencies = [
