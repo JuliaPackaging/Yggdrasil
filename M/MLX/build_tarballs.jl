@@ -36,6 +36,7 @@ fi
 
 cd $WORKSPACE/srcdir/mlx
 
+atomic_patch -p1 ../patches/cmake-warning-as-error.patch
 if [[ "$target" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
 fi

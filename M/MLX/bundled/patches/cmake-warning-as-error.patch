@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d3df54878..e716e925a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -81,7 +81,6 @@ include(FetchContent)
+ cmake_policy(SET CMP0135 NEW)
+ 
+ add_library(mlx)
+-set_target_properties(mlx PROPERTIES COMPILE_WARNING_AS_ERROR ON)
+ 
+ if(MLX_BUILD_METAL)
+   set(METAL_LIB "-framework Metal")
