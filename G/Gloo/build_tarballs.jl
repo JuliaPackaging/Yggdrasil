@@ -53,7 +53,6 @@ platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms) # Gloo can only be built on 64-bit systems
 
 let cuda_platforms = CUDA.supported_platforms(min_version=v"10.2", max_version=v"11")
-    filter!(p -> arch(p) != "aarch64", cuda_platforms) # Cmake toolchain breaks on aarch64
     push!(cuda_platforms, Platform("x86_64", "Linux"; cuda = "11.3"))
 
      # Tag non-CUDA platforms matching CUDA platforms with cuda="none"
