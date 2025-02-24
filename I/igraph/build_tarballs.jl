@@ -38,7 +38,7 @@ CONF_FLAGS="\
 BB_FLAGS="-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
 cmake -B build -DCMAKE_BUILD_TYPE=Release ${BB_FLAGS} ${CONF_FLAGS}
 
-install_license $WORKSPACE/srcdir/igraph-0.10.15/COPYING
+install_license COPYING
 
 cmake --build build --parallel ${nproc}
 cmake --install build
