@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/igraph-0.10.15
+cd $WORKSPACE/srcdir/igraph*
 
 if [[ "${target}" == *mingw* ]]; then
     LBT=blastrampoline-5
