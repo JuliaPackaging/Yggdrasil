@@ -52,7 +52,9 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-platforms = expand_microarchitectures(platforms, ["armv8_0", "armv8_2_crypto"]) # Add microarchitecture supporting crypto
+platforms = expand_microarchitectures(platforms, ["armv8_0", "armv8_2_crypto"];  # Add microarchitecture supporting crypto
+    filter=!Sys.isapple # Exclude apple platforms, as these are different (apple_m1 rather than armv8_0, and armv8_2_crypto)
+)
 platforms = expand_microarchitectures(platforms, ["armv7l", "neonvfpv4"]) # Add microarchitecture supporting neon
 platforms = expand_microarchitectures(platforms, ["x86_64", "avx"]) # Add microarchitecture supporting aes and sse41
 platforms = expand_cxxstring_abis(platforms)
@@ -62,7 +64,9 @@ augment_platform_block = """
 
     function augment_platform!(platform::Platform)
         # We augment only aarch64, armv7l, and x86_64
-        @static if Sys.ARCH === :aarch64 || Sys.ARCH === :armv7l || Sys.ARCH === :x86_64
+        @static if Sys.ARCH === :aarch64 && !Sys.isapple()
+            || Sys.ARCH === :armv7l
+            || Sys.ARCH === :x86_64
             augment_microarchitecture!(platform)
         else
             platform
