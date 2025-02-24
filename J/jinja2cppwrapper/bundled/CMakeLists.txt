@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
-find_library(JINJA2CPP_LIBRARY NAMES jinja2cpp REQUIRED)
+find_library(JINJA2CPP_LIBRARY jinja2cpp REQUIRED)
 if(NOT JINJA2CPP_LIBRARY)
     message(FATAL_ERROR "Jinja2Cpp library not found!")
 endif()
@@ -24,7 +24,6 @@ target_link_libraries(jinja2cppwrapper PRIVATE ${JINJA2CPP_LIBRARY})
 set_target_properties(jinja2cppwrapper PROPERTIES
     OUTPUT_NAME "jinja2cppwrapper"
     PREFIX "lib"
-    SUFFIX ".dylib"
 )
 
 install(TARGETS jinja2cppwrapper

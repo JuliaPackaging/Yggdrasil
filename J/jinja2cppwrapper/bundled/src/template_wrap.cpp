@@ -1,4 +1,5 @@
 #include "template_wrap.h"
+#include <cstring>
 
 jinja2cpp_template_t* jinja2cpp_template_create() {
     return new jinja2cpp_template_t();
