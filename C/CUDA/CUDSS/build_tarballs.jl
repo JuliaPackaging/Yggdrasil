@@ -26,8 +26,8 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     cd libcudss-*
     install_license LICENSE
-    mv lib/cudss.lib ${prefix}/lib
-    mv bin/cudss*64_*.dll ${libdir}
+    mv lib/cudss*.lib ${prefix}/lib
+    mv bin/cudss*.dll ${libdir}
     mv include/* ${prefix}/include
 
     # fixup
@@ -41,7 +41,10 @@ products = [
     LibraryProduct(["libcudss", "cudss64_$(version.major)"], :libcudss),
 ]
 
-dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"));
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll", uuid="76a88914-d11a-5bdc-97e0-2f5a05c973a2"))
+]
 
 platforms = [Platform("x86_64", "linux"),
              Platform("aarch64", "linux"; cuda_platform="jetson"),
