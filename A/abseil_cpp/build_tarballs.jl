@@ -15,17 +15,18 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/abseil-cpp
 
-if [[ "$target" == aarch64-* # Never apply `-march=armv8-a+crypto`
-    || "$target" == x86_64-apple-darwin* # For some reason, the ABSL_RANDOM_HWAES_ARM64_FLAGS are applied for x86_64-apple-darwin
-]]; then
-    atomic_patch -p1 ../patches/aarch64-crypto-cmake.patch
-fi
-if [[ "$target" == arm-* ]]; then
+# ABSL_RANDOM_HWAES_*_FLAGS are used when compiling absl/random/internal/randen_hwaes.cc
+
+# Do not attempt to set ABSL_RANDOM_HWAES_ARM64_FLAGS (-march flag)
+atomic_patch -p1 ../patches/aarch64-crypto-cmake.patch
+
+# Do not attempt to set ABSL_RANDOM_HWAES_ARM32_FLAGS (Neon) for armv6l
+if [[ "$bb_full_target" == armv6l-* ]]; then
     atomic_patch -p1 ../patches/arm-neon-cmake.patch
 fi
-if [[ "$target" == x86_64-*
-    || "$target" == aarch64-apple-darwin* # For some reason, the ABSL_RANDOM_HWAES_X64_FLAGS are applied for aarch64-apple-darwin
-]]; then
+
+# For some reason, the ABSL_RANDOM_HWAES_X64_FLAGS are applied for aarch64-apple-darwin
+if [[ "$target" == aarch64-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/x86_64-aes-cmake.patch
 fi
 
