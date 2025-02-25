@@ -16,4 +16,4 @@ ghr_jll = "0.14.0"
 
 [sources]
 BinaryBuilder = {url = "https://github.com/JuliaPackaging/BinaryBuilder.jl", rev = "7c4c297ccc069b46e1b0f4e5869e53102f8e02d7"}
-BinaryBuilderBase = {url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git", rev = "3375fcadd3d503af47ad20aecb4c300193975f84"}
+BinaryBuilderBase = {url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git", rev = "ib/no_ctx"}
