@@ -1,5 +1,17 @@
 #include "result_wrap.h"
 
+void jinja2cpp_result_free_void(jinja2cpp_result_t<void*>* result) {
+    delete result;
+}
+
+void jinja2cpp_result_free_string(jinja2cpp_result_t<const char*>* result) {
+    delete result;
+}
+
+void jinja2cpp_result_free_template(jinja2cpp_result_t<jinja2cpp_template_t*>* result) {
+    delete result;
+}
+
 bool jinja2cpp_result_has_value_void(const jinja2cpp_result_t<void*>* result) {
     return result && result->has_value();
 }
