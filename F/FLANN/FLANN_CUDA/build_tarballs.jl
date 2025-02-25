@@ -19,6 +19,7 @@ cuda_versions = [
 
 platforms = expand_cxxstring_abis(CUDA.supported_platforms(; min_version=v"10.2"))
 filter!(p -> p["cuda"] in cuda_versions, platforms)
+filter!(p -> arch(p) == "x86_64", platforms)
 
 include(joinpath(@__DIR__, "..", "common.jl"))
 
