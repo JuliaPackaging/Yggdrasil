@@ -3,7 +3,7 @@ llvm_version = v"16.0.6"
 include("../common.jl")
 
 # Collection of sources required to build the package
-sources = [GitSource(repo, "b786f8c31eead5788ac8ca33ccedf29a4a7faedf")]
+sources = [GitSource(repo, "252b6d29e6d631526cf27a9055473e999f30ccce")]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
