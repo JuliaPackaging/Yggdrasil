@@ -1,6 +1,6 @@
 #include "result_wrap.h"
 
-void jinja2cpp_result_free_void(jinja2cpp_result_t<void*>* result) {
+void jinja2cpp_result_free_void(jinja2cpp_result_t<void>* result) {
     delete result;
 }
 

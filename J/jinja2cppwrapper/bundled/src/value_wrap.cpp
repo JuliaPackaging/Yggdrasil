@@ -46,11 +46,17 @@ jinja2cpp_values_map_t* jinja2cpp_value_as_map(jinja2cpp_value_t* value) {
 }
 
 jinja2cpp_values_map_t* jinja2cpp_values_map_create() { return new jinja2cpp_values_map_t(); }
-void jinja2cpp_values_map_destroy(jinja2cpp_values_map_t* map) { delete map; }
+void jinja2cpp_values_map_destroy(jinja2cpp_values_map_t* map) {
+    if (!map) return;
+    
+    map->clear();
+    
+    delete map;
+}
 
 void jinja2cpp_values_map_set(jinja2cpp_values_map_t* map, const char* key, jinja2cpp_value_t* value) {
     if (!map || !key || !value) return;
-    (*map)[key] = *value;
+    (*map)[key] = std::move(*value);
 }
 
 jinja2cpp_value_t* jinja2cpp_values_map_get(const jinja2cpp_values_map_t* map, const char* key) {
@@ -67,7 +73,12 @@ size_t jinja2cpp_values_map_size(const jinja2cpp_values_map_t* map) {
 }
 
 jinja2cpp_values_list_t* jinja2cpp_values_list_create() { return new jinja2cpp_values_list_t(); }
-void jinja2cpp_values_list_destroy(jinja2cpp_values_list_t* list) { delete list; }
+void jinja2cpp_values_list_destroy(jinja2cpp_values_list_t* list) {
+    if (!list) return;
+
+    list->clear(); 
+    delete list;
+}
 
 void jinja2cpp_values_list_push(jinja2cpp_values_list_t* list, const jinja2cpp_value_t* value) {
     if (!list || !value) return;

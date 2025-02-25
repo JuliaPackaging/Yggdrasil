@@ -15,7 +15,7 @@ using jinja2cpp_result_t = nonstd::expected<T, jinja2cpp_error_info_t>;
 extern "C" {
 #endif
 
-void jinja2cpp_result_free_void(jinja2cpp_result_t<void*>* result);
+void jinja2cpp_result_free_void(jinja2cpp_result_t<void>* result);
 void jinja2cpp_result_free_string(jinja2cpp_result_t<const char*>* result);
 void jinja2cpp_result_free_template(jinja2cpp_result_t<jinja2cpp_template_t*>* result);
 
