@@ -8,18 +8,18 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "pocl"
-version = v"6.0"
+version = v"6.1"
 
 # POCL supports LLVM 14 to 18
 # XXX: link statically to a single version of LLVM instead, and don't use augmentations?
 #      this causes issue with the compile-time link, so I haven't explored this yet
-llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
+llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "952bc559f790e5deb5ae48692c4a19619b53fcdc")
+              "f21ef2ade1f4c0b2e9767d8e27e5878131351e7c")
 ]
 
 #=
@@ -44,23 +44,26 @@ script = raw"""
 cd $WORKSPACE/srcdir/pocl/
 install_license LICENSE
 
-atomic_patch -p1 $WORKSPACE/srcdir/patches/freebsd.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/distro-generic.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/env-override.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/env-override-ld.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/env-override-args.patch
+if [[ "${target}" == *freebsd* ]]; then
+    atomic_patch -p1 -p1 $WORKSPACE/srcdir/patches/freebsd-stdlib.patch
+fi
 
 # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
 sysroot=/opt/${target}/${target}/sys-root
+if [[ "${target}" == *-mingw* ]]; then
+    sysroot_include=$sysroot/include
+else
+    sysroot_include=$sysroot/usr/include
+fi
 if [[ "${target}" == *apple* ]]; then
     # XXX: including the sysroot like this doesn't work on Apple, missing definitions like
     #      TARGET_OS_IPHONE. it seems like these headers should be included using -isysroot,
     #      but (a) that doesn't seem to work, and (b) isn't that already done by the cmake
     #      toolchain file? work around the issue by inserting an include for the missing
     #      definitions at the top of the headers included from POCL's kernel library.
-    sed -i '1s/^/#include <TargetConditionals.h>\n/' $sysroot/usr/include/stdio.h
+    sed -i '1s/^/#include <TargetConditionals.h>\n/' $sysroot_include/stdio.h
 fi
-sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot/usr/include\\"|" \
+sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot_include\\"|" \
        cmake/bitcode_rules.cmake
 
 CMAKE_FLAGS=()
@@ -89,9 +92,9 @@ CMAKE_FLAGS+=(-DLLC_HOST_CPU_AUTO=$CPU)
 CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
 # Build POCL as an dynamic library loaded by the OpenCL runtime
 CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
-# XXX: work around pocl#1528, disabling FP16 support in i686
-if [[ ${target} == i686-* ]]; then
-    CMAKE_FLAGS+=(-DHOST_CPU_SUPPORTS_FLOAT16:BOOL=OFF)
+# XXX: work around pocl#1776, disabling FP16 support in i686
+if [[ ${target} == *-freebsd* ]]; then
+    CMAKE_FLAGS+=(-DHOST_COMPILER_SUPPORTS_FLOAT16:BOOL=OFF)
 fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
@@ -121,19 +124,9 @@ elif [[ ${target} == *-linux-musl ]]; then
 fi
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-## i686-musl doesn't have LLVM
-filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-## Windows support is unmaintained
-filter!(!Sys.iswindows, platforms)
-## freebsd-aarch64 doesn't have an LLVM_full_jll build yet
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libpocl", :libpocl),
+    LibraryProduct(["libpocl", "pocl"], :libpocl),
     ExecutableProduct("poclcc", :poclcc),
 ]
 
@@ -248,12 +241,31 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         HostBuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
         BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
         Dependency("OpenCL_jll"),
+        Dependency("OpenCL_Headers_jll"),
         Dependency("Hwloc_jll"),
+        # only used at run time, but also detected by the build
         Dependency("SPIRV_LLVM_Translator_unified_jll"),
         Dependency("SPIRV_Tools_jll"),
-        Dependency("Clang_unified_jll"),
-        Dependency("LLD_unified_jll"),
+        # only used at run time
+        RuntimeDependency("Clang_unified_jll"),
+        RuntimeDependency("LLD_unified_jll")
     ]
+
+    # These are the platforms we will build for by default, unless further
+    # platforms are passed in on the command line
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+    ## we don't build LLVM 15 for i686-linux-musl.
+    if llvm_version >= v"15"
+        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    ## We only have LLVM builds for AArch64 BSD starting from LLVM 18
+    if version < v"18"
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
+    ## We only have LLVM builds for RISC-V starting from LLVM 19
+    if llvm_version < v"19"
+        filter!(p -> !(arch(p) == "riscv64"), platforms)
+    end
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
