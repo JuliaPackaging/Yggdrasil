@@ -7,6 +7,7 @@ version = v"1.9.2"
 
 sources = [
     GitSource("https://github.com/flann-lib/flann.git", "c50f296b0b27e14667d272b37acc63f949b305c4"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -16,20 +17,7 @@ if [[ "$target" == *-w64-mingw32 ]]; then
 
 # Lz4 *-unknown-freebsd* artifacts have no pkgconfig
 elif [[ "$target" == *-unknown-freebsd* ]]; then
-    mkdir -p $libdir/pkgconfig
-    cat > $libdir/pkgconfig/liblz4.pc << EOF
-prefix=\${pcfiledir}/../..
-libdir=\${prefix}/lib
-includedir=\${prefix}/include
-
-Name: lz4
-Description: extremely fast lossless compression algorithm library
-URL: http://www.lz4.org/
-Version: 1.10.0
-Libs: -L\${libdir} -llz4
-Cflags: -I\${includedir}
-EOF
-
+    install -D -m 644 -v ${WORKSPACE}/srcdir/lz4/liblz4.pc $libdir/pkgconfig/liblz4.pc
 fi
 
 cd $WORKSPACE/srcdir/flann
