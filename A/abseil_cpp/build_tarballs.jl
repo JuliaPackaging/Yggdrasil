@@ -21,17 +21,22 @@ cd $WORKSPACE/srcdir/abseil-cpp
 # Output ABSL_RANDOM_RANDEN_COPTS during configure
 atomic_patch -p1 ../patches/cmake-copts.patch
 
-# Do not attempt to set ABSL_RANDOM_HWAES_ARM64_FLAGS (-march flag)
-atomic_patch -p1 ../patches/aarch64-crypto-cmake.patch
+# Allow setting "-march=armv8-a+crypto"
+find $(dirname $(which $CC)) -type f \
+    | xargs grep --files-with-matches 'BinaryBuilder: Cannot force an architecture via -march' \
+    | xargs -n1 sed -i -E 's/^if \[\[ (" \$\{ARGS\[@\]\} " == \*"-march="\*) \]\]; then/if [[\n    \1\n    \&\& ! " \${ARGS[@]} " == *"-march=armv8-a+crypto"*\n]]; then/'
 
 # Do not attempt to set ABSL_RANDOM_HWAES_ARM32_FLAGS (Neon) for armv6l
 if [[ "$bb_full_target" == armv6l-* ]]; then
     atomic_patch -p1 ../patches/arm-neon-cmake.patch
 fi
 
-# For some reason, the ABSL_RANDOM_HWAES_X64_FLAGS are applied for aarch64-apple-darwin
+# For some reason, the ABSL_RANDOM_HWAES_X64_FLAGS are applied for aarch64-apple-darwin,
+# and the ABSL_RANDOM_HWAES_ARM64_FLAGS are applied for x86_64-apple-darwin
 if [[ "$target" == aarch64-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/x86_64-aes-cmake.patch
+elif [[ "$target" == x86_64-apple-darwin* ]]; then
+    atomic_patch -p1 ../patches/aarch64-crypto-cmake.patch
 fi
 
 cmake -B build -G Ninja \
