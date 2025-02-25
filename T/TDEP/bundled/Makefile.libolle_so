@@ -1,0 +1,156 @@
+#
+# Makefile for Shared Ollelib
+#
+# Computer dependent stuff
+include Makefile.inc
+# Where to put things
+OBJECT_PATH=../../build/libolle/
+MODULE_PATH=../../inc/libolle/
+DEST_PATH=../../lib/
+
+LPATH = $(blaslapackLPATH) $(incLPATHhdf) $(incLPATHfft) $(incLPATHmpi)
+IPATH = $(blaslapackIPATH) $(incIPATHhdf) $(incIPATHfft) $(incIPATHmpi)
+LIBS = $(blaslapackLIBS) $(incLIBShdf) $(incLIBSfft) $(incLIBSmpi)
+
+FFLAGS = $(OPT) $(LPATH) $(LIBS) $(IPATH) $(MODULE_FLAG) $(MODULE_PATH) $(FLG0)
+FFLAGS1 = $(OPT) $(LPATH) $(LIBS) $(IPATH) $(MODULE_FLAG) $(MODULE_PATH) $(FLG1)
+FFLAGS_LOW = $(OPTLOW) $(LPATH) $(LIBS) $(IPATH) $(MODULE_FLAG) $(MODULE_PATH) $(FLG0)
+
+OBJSf = \
+$(OBJECT_PATH)konstanter.o \
+$(OBJECT_PATH)gottochblandat.o \
+$(OBJECT_PATH)gottochblandat_tensors.o \
+$(OBJECT_PATH)gottochblandat_sorting.o \
+$(OBJECT_PATH)gottochblandat_linalg.o \
+$(OBJECT_PATH)gottochblandat_calculus.o \
+$(OBJECT_PATH)gottochblandat_physics.o \
+$(OBJECT_PATH)gottochblandat_boxes.o \
+$(OBJECT_PATH)lo_memtracker.o \
+$(OBJECT_PATH)lo_timetracker.o \
+$(OBJECT_PATH)lo_sorting.o \
+$(OBJECT_PATH)lo_verletboxes.o \
+$(OBJECT_PATH)lo_voronoi.o \
+$(OBJECT_PATH)lo_randomnumbers.o \
+$(OBJECT_PATH)lo_brents_method.o \
+$(OBJECT_PATH)lo_distribute_and_classify_things.o \
+$(OBJECT_PATH)lo_electron_density_of_states.o \
+$(OBJECT_PATH)lo_electron_dispersion_relations.o \
+$(OBJECT_PATH)lo_electron_bandstructure_on_path.o \
+$(OBJECT_PATH)lo_symmetry_of_interactions.o \
+$(OBJECT_PATH)lo_symmetry_of_interactions_helpers.o \
+$(OBJECT_PATH)lo_symmetry_of_interactions_tuplets.o \
+$(OBJECT_PATH)lo_symmetry_of_interactions_nullspace.o \
+$(OBJECT_PATH)lo_longrange_electrostatics.o \
+$(OBJECT_PATH)lo_longrange_electrostatics_optz.o \
+$(OBJECT_PATH)lo_longrange_electrostatics_dynmat.o \
+$(OBJECT_PATH)lo_dielectric_interaction.o \
+$(OBJECT_PATH)lo_dielectric_interaction_matrixelements.o \
+$(OBJECT_PATH)quadratures_stencils.o \
+$(OBJECT_PATH)quadratic_programming.o \
+$(OBJECT_PATH)quadratic_programming_slvr.o \
+$(OBJECT_PATH)geometryfunctions.o \
+$(OBJECT_PATH)geometryfunctions_slicingroutines.o \
+$(OBJECT_PATH)geometryfunctions_objectprocedures.o \
+$(OBJECT_PATH)geometryfunctions_generatingfunctions.o \
+$(OBJECT_PATH)dump_data.o \
+$(OBJECT_PATH)cgal_wrappers.o \
+$(OBJECT_PATH)hdf5_wrappers.o \
+$(OBJECT_PATH)fftw_wrappers.o \
+$(OBJECT_PATH)mpi_wrappers.o \
+$(OBJECT_PATH)glmnet_wrappers.o \
+$(OBJECT_PATH)ifc_solvers.o \
+$(OBJECT_PATH)ifc_solvers_putget.o \
+$(OBJECT_PATH)ifc_solvers_prepsolver.o \
+$(OBJECT_PATH)ifc_solvers_lsq.o \
+$(OBJECT_PATH)ifc_solvers_diel.o \
+$(OBJECT_PATH)ifc_solvers_trainpred.o \
+$(OBJECT_PATH)ifc_solvers_diagnostics.o \
+$(OBJECT_PATH)ifc_solvers_fastugly.o \
+$(OBJECT_PATH)type_distancetable.o \
+$(OBJECT_PATH)type_equation_of_state.o \
+$(OBJECT_PATH)type_equation_of_state_birchmur.o \
+$(OBJECT_PATH)type_equation_of_state_vinet.o \
+$(OBJECT_PATH)type_equation_of_state_2Dbirchmur.o \
+$(OBJECT_PATH)type_graph_distancetable.o \
+$(OBJECT_PATH)type_voronoi.o \
+$(OBJECT_PATH)type_voronoi_distancetable.o \
+$(OBJECT_PATH)type_blas_lapack_wrappers.o \
+$(OBJECT_PATH)type_crystalstructure.o \
+$(OBJECT_PATH)type_crystalstructure_atomdata.o \
+$(OBJECT_PATH)type_crystalstructure_io.o \
+$(OBJECT_PATH)type_crystalstructure_symmetry.o \
+$(OBJECT_PATH)type_crystalstructure_alloy.o \
+$(OBJECT_PATH)type_embeddedatom.o \
+$(OBJECT_PATH)type_forceconstant_alloy_secondorder.o \
+$(OBJECT_PATH)type_forceconstant_firstorder.o \
+$(OBJECT_PATH)type_forceconstant_firstorder_io.o \
+$(OBJECT_PATH)type_forceconstant_secondorder.o \
+$(OBJECT_PATH)type_forceconstant_secondorder_aux.o \
+$(OBJECT_PATH)type_forceconstant_secondorder_io.o \
+$(OBJECT_PATH)type_forceconstant_secondorder_loto.o \
+$(OBJECT_PATH)type_forceconstant_secondorder_dynamicalmatrix.o \
+$(OBJECT_PATH)type_forceconstant_thirdorder.o \
+$(OBJECT_PATH)type_forceconstant_fourthorder.o \
+$(OBJECT_PATH)type_jij_secondorder.o \
+$(OBJECT_PATH)type_lennardjones.o \
+$(OBJECT_PATH)type_linkedlist.o \
+$(OBJECT_PATH)type_mdsim.o \
+$(OBJECT_PATH)type_qpointmesh.o \
+$(OBJECT_PATH)type_qpointmesh_wedgegeneration.o \
+$(OBJECT_PATH)type_qpointmesh_gridgeneration.o \
+$(OBJECT_PATH)type_qpointmesh_integrationweights.o \
+$(OBJECT_PATH)type_qpointmesh_bandstructure.o \
+$(OBJECT_PATH)type_qpointmesh_commensurate.o \
+$(OBJECT_PATH)type_qpointmesh_io.o \
+$(OBJECT_PATH)lo_phonon_bandstructure_on_path.o \
+$(OBJECT_PATH)type_phonon_dispersions.o \
+$(OBJECT_PATH)type_phonon_dispersions_generation.o \
+$(OBJECT_PATH)type_phonon_dos.o \
+$(OBJECT_PATH)type_phonon_dos_integrations.o \
+$(OBJECT_PATH)type_sqs.o \
+$(OBJECT_PATH)type_symmetryoperation.o \
+$(OBJECT_PATH)type_symmetrylist.o \
+$(OBJECT_PATH)type_symmetrylist_helper.o \
+$(OBJECT_PATH)type_symmetrylist_unique.o \
+$(OBJECT_PATH)type_symmetrylist_coefficientmatrix.o \
+$(OBJECT_PATH)type_effective_hamiltonian.o \
+$(OBJECT_PATH)type_forcemap.o \
+$(OBJECT_PATH)type_forcemap_generate.o \
+$(OBJECT_PATH)type_forcemap_constraints.o \
+$(OBJECT_PATH)type_forcemap_coefficient_pair.o \
+$(OBJECT_PATH)type_forcemap_coefficient_triplet.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_01.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_02.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_03.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_04.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_05.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_06.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_07.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_08.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_09.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_10.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_11.o \
+$(OBJECT_PATH)type_forcemap_coefficient_quartet_12.o \
+$(OBJECT_PATH)type_forcemap_coefficient_diel.o \
+$(OBJECT_PATH)type_forcemap_returntensors.o \
+$(OBJECT_PATH)type_forcemap_io.o \
+$(OBJECT_PATH)type_lassosolvers.o
+# maybe CGAL, maybe not.
+ifeq ($(USECGAL),yes)
+OBJScg = \
+$(OBJECT_PATH)cgal_cleanup.o \
+$(OBJECT_PATH)cgal_chull2.o \
+$(OBJECT_PATH)cgal_chull3.o \
+$(OBJECT_PATH)cgal_chull3_intersection.o \
+$(OBJECT_PATH)cgal_deltri2.o \
+$(OBJECT_PATH)cgal_deltri3.o \
+$(OBJECT_PATH)cgal_tesselate_polyhedron.o
+endif
+
+OBJS = $(OBJSf) $(OBJSa) $(OBJScg)
+
+# rules to make the actual library
+libolle.so: $(OBJS)
+	-rm $(DEST_PATH)libolle.so
+	$(FC) -shared -o $(DEST_PATH)libolle.so $(OBJS) $(LDFLAGS)
