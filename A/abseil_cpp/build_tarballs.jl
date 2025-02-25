@@ -15,7 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/abseil-cpp
 
-# ABSL_RANDOM_HWAES_*_FLAGS are used when compiling absl/random/internal/randen_hwaes.cc
+# ABSL_RANDOM_HWAES_*_FLAGS are used to set ABSL_RANDOM_RANDEN_COPTS,
+# which is used when compiling absl/random/internal/randen_hwaes.cc
+
+# Output ABSL_RANDOM_RANDEN_COPTS during configure
+atomic_patch -p1 ../patches/cmake-copts.patch
 
 # Do not attempt to set ABSL_RANDOM_HWAES_ARM64_FLAGS (-march flag)
 atomic_patch -p1 ../patches/aarch64-crypto-cmake.patch
