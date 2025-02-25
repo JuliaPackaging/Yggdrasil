@@ -10,6 +10,10 @@ sources = [
 ]
 
 script = raw"""
+# Lz4 *-w64-mingw32 artifacts have pkgconfig in $prefix/bin, instead of $prefix/lib
+if [[ "$target" == *-w64-mingw32 ]]; then
+    export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$bindir/pkgconfig
+fi
 
 cd $WORKSPACE/srcdir/flann
 
