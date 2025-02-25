@@ -3,52 +3,62 @@
 using BinaryBuilder, Pkg
 
 name = "FLANN"
-version = v"1.9.1"
+version = v"1.9.2"
 
-# Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/mariusmuja/flann/archive/$version.tar.gz", "b23b5f4e71139faa3bcb39e6bbcc76967fbaf308c4ee9d4f5bfbeceaa76cc5d3"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/flann-lib/flann.git", "c50f296b0b27e14667d272b37acc63f949b305c4"),
+    DirectorySource("./bundled"),
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
+# Lz4 *-w64-mingw32 artifacts have pkgconfig in $prefix/bin, instead of $prefix/lib
+if [[ "$target" == *-w64-mingw32 ]]; then
+    export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$bindir/pkgconfig
 
-cd $WORKSPACE/srcdir/flann-*
+# Lz4 *-unknown-freebsd* artifacts have no pkgconfig
+elif [[ "$target" == *-unknown-freebsd* ]]; then
+    install -D -m 644 -v ${WORKSPACE}/srcdir/lz4/liblz4.pc $libdir/pkgconfig/liblz4.pc
+fi
 
-#CMake doesn't work straight from clone, see https://github.com/mariusmuja/flann/issues/369 for source of workaround
+cd $WORKSPACE/srcdir/flann
 
-atomic_patch -p1 "$WORKSPACE/srcdir/patches/cmake_empty_target.patch"
+cmake \
+    -B build \
+    -DBUILD_C_BINDINGS=ON \
+    -DBUILD_DOC=OFF \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_MATLAB_BINDINGS=OFF \
+    -DBUILD_PYTHON_BINDINGS=OFF \
+    -DBUILD_TESTS=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=11 \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
+    -G Ninja
 
-touch src/cpp/empty.cpp
+cmake --build build --parallel ${nproc}
+cmake --install build
 
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
-      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_EXAMPLES=OFF \
-      -DBUILD_TESTS=OFF \
-      -DBUILD_DOC=OFF \
-      -DBUILD_PYTHON_BINDINGS=OFF \
-      -DBUILD_MATLAB_BINDINGS=OFF
-
-make -j${nproc}
-make install
+if [[ "$target" == *-unknown-freebsd* ]]; then
+    rm -rf $libdir/pkgconfig
+fi
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
-# The products that we will ensure are always built
 products = [
     LibraryProduct("libflann_cpp", :libflann_cpp),
     LibraryProduct("libflann", :libflann)
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("CompilerSupportLibraries_jll", platforms = filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll", platforms = filter(Sys.isbsd, platforms)),
+
+    Dependency("Lz4_jll"),
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat = "1.6"
+)
