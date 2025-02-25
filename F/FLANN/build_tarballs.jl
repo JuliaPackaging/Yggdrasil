@@ -13,6 +13,23 @@ script = raw"""
 # Lz4 *-w64-mingw32 artifacts have pkgconfig in $prefix/bin, instead of $prefix/lib
 if [[ "$target" == *-w64-mingw32 ]]; then
     export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$bindir/pkgconfig
+
+# Lz4 *-unknown-freebsd* artifacts have no pkgconfig
+elif [[ "$target" == *-unknown-freebsd* ]]; then
+    mkdir -p $libdir/pkgconfig
+    cat > $libdir/pkgconfig/liblz4.pc << EOF
+prefix=\${pcfiledir}/../..
+libdir=\${prefix}/lib
+includedir=\${prefix}/include
+
+Name: lz4
+Description: extremely fast lossless compression algorithm library
+URL: http://www.lz4.org/
+Version: 1.10.0
+Libs: -L\${libdir} -llz4
+Cflags: -I\${includedir}
+EOF
+
 fi
 
 cd $WORKSPACE/srcdir/flann
@@ -33,6 +50,10 @@ cmake \
 
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+if [[ "$target" == *-unknown-freebsd* ]]; then
+    rm -rf $libdir/pkgconfig
+fi
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
