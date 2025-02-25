@@ -17,13 +17,12 @@ cd $WORKSPACE/srcdir/flann
 
 cmake_extra_args=()
 
-cuda_version=${bb_full_target##*-cuda+}
-if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
+if [[ $bb_full_target == *cuda* ]]; then
     export CUDA_PATH="$prefix/cuda"
     cmake_extra_args+=(
         -DBUILD_CUDA_LIB=ON
         -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_PATH
-        -DCUDA_NVCC_FLAGS=-std=c++11
+        -DCUDA_NVCC_FLAGS=-std=c++14
     )
 fi
 
@@ -36,7 +35,7 @@ cmake \
     -DBUILD_PYTHON_BINDINGS=OFF \
     -DBUILD_TESTS=OFF \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD=11 \
+    -DCMAKE_CXX_STANDARD=14 \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
     -G Ninja \
