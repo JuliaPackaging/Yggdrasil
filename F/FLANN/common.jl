@@ -1,13 +1,6 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-name = "FLANN"
-version = v"1.9.2"
-
 sources = [
     GitSource("https://github.com/flann-lib/flann.git", "c50f296b0b27e14667d272b37acc63f949b305c4"),
-    DirectorySource("./bundled"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
@@ -22,6 +15,18 @@ fi
 
 cd $WORKSPACE/srcdir/flann
 
+cmake_extra_args=()
+
+cuda_version=${bb_full_target##*-cuda+}
+if [[ $bb_full_target == *cuda* ]] && [[ $cuda_version != none ]]; then
+    export CUDA_PATH="$prefix/cuda"
+    cmake_extra_args+=(
+        -DBUILD_CUDA_LIB=ON
+        -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_PATH
+        -DCUDA_NVCC_FLAGS=-std=c++11
+    )
+fi
+
 cmake \
     -B build \
     -DBUILD_C_BINDINGS=ON \
@@ -34,7 +39,8 @@ cmake \
     -DCMAKE_CXX_STANDARD=11 \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
-    -G Ninja
+    -G Ninja \
+    ${cmake_extra_args[@]}
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -44,21 +50,15 @@ if [[ "$target" == *-unknown-freebsd* ]]; then
 fi
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
-
 products = [
     LibraryProduct("libflann_cpp", :libflann_cpp),
     LibraryProduct("libflann", :libflann)
 ]
 
-dependencies = Dependency[
+dependencies = [
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency("CompilerSupportLibraries_jll", platforms = filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll", platforms = filter(Sys.isbsd, platforms)),
 
     Dependency("Lz4_jll"),
 ]
-
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat = "1.6"
-)
