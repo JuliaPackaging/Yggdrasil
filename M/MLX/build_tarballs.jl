@@ -9,12 +9,6 @@ sources = [
     GitSource("https://github.com/ml-explore/mlx.git", "71de73a668df50f0638e74e77849d9232ddeb50e"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.1-RELEASE/base.txz",
-                  "b25830252e0dce0161004a5b69a159cbbd92d5e92ae362b06158dbb3f2568d32";
-                  unpack_target="freebsd-base-aarch64"),
-    ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
-                  "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c";
-                  unpack_target="freebsd-base-x86_64"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
     FileSource("https://files.pythonhosted.org/packages/28/e4/26be6c113b903156176710d09e0ec0543b28d2aecb64a83647f213ce6e1a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "8138c079957c4942553e1a242a58c4990e317680909e364e024fb7b8d8a14ac7"; filename = "mlx-aarch64-apple-darwin20.whl"),
     DirectorySource("./bundled"),
@@ -27,11 +21,6 @@ if [[ "$target" == *-apple-darwin* ]]; then
     sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
     sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
-elif [[ "$target" == *-unknown-freebsd* ]]; then
-    sdk_root=$WORKSPACE/srcdir/freebsd-base-$(echo $target | cut -d - -f1)
-    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
-    sed -i "s#/opt/$bb_target/$bb_target/lib#$sdk_root/usr/lib#" /opt/bin/$bb_full_target/$target-clang*
 fi
 
 cd $WORKSPACE/srcdir/mlx
