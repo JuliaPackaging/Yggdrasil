@@ -26,6 +26,7 @@ fi
 cd $WORKSPACE/srcdir/mlx
 
 atomic_patch -p1 ../patches/cmake-warning-as-error.patch
+atomic_patch -p1 ../patches/mpi-crosscompile.patch
 if [[ "$target" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
 fi
@@ -102,6 +103,7 @@ products = Product[
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
+    Dependency("OpenMPI_jll"),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
