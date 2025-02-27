@@ -16,8 +16,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tg
 clang -shared -o tg.so -fPIC -g -O3 tg.c
-mkdir ${bindir}
-mv tg.so ${bindir}/
+mkdir ${destdir}
+mv tg.so ${destdir}/
 """
 
 # These are the platforms we will build for by default, unless further
