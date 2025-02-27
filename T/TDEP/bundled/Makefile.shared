@@ -1,6 +1,7 @@
 #
 # Makefile for Shared Ollelib
 #
+
 # Computer dependent stuff
 include Makefile.inc
 # Where to put things
@@ -150,7 +151,20 @@ endif
 
 OBJS = $(OBJSf) $(OBJSa) $(OBJScg)
 
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Darwin)
+    OSFLAGS = -dynamiclib -install_name @rpath/libolle.$(dlext)
+else ifeq ($(UNAME_S),Linux)
+    OSFLAGS = -shared
+endif
+
+libolle.$(dlext): $(OBJS)
+	-rm $(DEST_PATH)libolle.$(dlext)
+	$(FC) $(OSFLAGS) -o $(DEST_PATH)libolle.$(dlext) $(OBJS) $(LDFLAGS) $(LIBS)
+
 # rules to make the actual library
-libolle.so: $(OBJS)
-	-rm $(DEST_PATH)libolle.so
-	$(FC) -shared -o $(DEST_PATH)libolle.so $(OBJS) $(LDFLAGS)
+#libolle.$(dlext): $(OBJS)
+#	-rm $(DEST_PATH)libolle.$(dlext)
+#	$(FC) -shared -o $(DEST_PATH)libolle.$(dlext) $(OBJS) $(LDFLAGS) $(LIBS)
+

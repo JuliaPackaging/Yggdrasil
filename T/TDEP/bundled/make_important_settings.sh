@@ -2,7 +2,7 @@
 GFORTRAN_VERSION=$(gfortran -dumpversion | cut -d. -f1)
 
 # Default values
-OPTIMIZATION_LEVEL="-O3" # BinaryBuilder doesnt like cause of fastmath "-Ofast"
+OPTIMIZATION_LEVEL="-O3" # BinaryBuilder doesnt like -Ofast cause of fastmath
 # FORTRAN_COMPILER="gfortran"
 FCFLAGS="-ffree-line-length-none -std=f2008 -cpp -fPIC"
 FCFLAGS_EXTRA=""
@@ -10,6 +10,9 @@ DOUBLE_FLAG="-fdefault-real-8"
 MODULE_FLAG="-J"
 PRECOMPILER_FLAGS="-Dclusterprogressbar"
 USECGAL="no"
+
+# FORTRAN_COMPILER="gfortran"
+# FORTRAN_COMPILER="mpifort"
 
 if [ "$MACHTYPE" = "$target" ]; then
     FORTRAN_COMPILER="gfortran"
@@ -29,7 +32,7 @@ fi
 declare -A REQUIRED_LIBS
 REQUIRED_LIBS[BLASLAPACK]="-lopenblas"
 REQUIRED_LIBS[FFTW]="-lfftw3"
-REQUIRED_LIBS[MPI]="-lmpi_mpifh -lmpi" #-lmpifort -lmpi for MPICH
+REQUIRED_LIBS[MPI]=$MPI_LIBS
 REQUIRED_LIBS[HDF5]="-lhdf5 -lhdf5_fortran"
 
 # Output file

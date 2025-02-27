@@ -17,8 +17,18 @@ sources = [
 
 script = raw"""
 
-cd ${libdir}
-cp ./*.mod ../include/
+case ${bb_full_target} in
+    *mpich*)
+        export MPI_LIBS="-lmpifort -lmpi"
+        ;;
+    *openmpi*)
+        export MPI_LIBS="-lmpi_mpifh -lmpi"
+        # TDEP expcets MPI mod files in the include dir
+        cd ${libdir}
+        cp ./*.mod ../include/
+        ;;
+esac
+
 
 cd ${WORKSPACE}/srcdir/tdep
 
@@ -35,9 +45,13 @@ bash build_things.sh --clean --nomanpage --nthreads_make ${nproc}
 
 
 export LDFLAGS="-L${libdir}"
-cp ../Makefile.libolle_so ./src/libolle/SharedMakefile
+cp ../Makefile.shared ./src/libolle/SharedMakefile
+cp ../Makefile.install ./src/libolle/InstallMakefile
+
 cd ./src/libolle
 make -f SharedMakefile -j ${nproc}
+
+make -f InstallMakefile install BB_bindir=${bindir} BB_libdir=${libdir}
 
 install_license ${WORKSPACE}/srcdir/tdep/LICENSE.md ${WORKSPACE}/srcdir/tdep/CITATION.cff
 """
@@ -51,12 +65,15 @@ augment_platform_block = """
 platforms = supported_platforms()
 # platforms = [Platform("x86_64", "linux", libc=:glibc)]
 
+# This breaks things, I expect its cause I used GCC10
+# platforms = expand_gfortran_versions(platforms) 
+
 # TODO REMOVE i686-linux-musl
+# platforms = filter(p -> os(p) == "linux" || os(p) == "macos", platforms) # could support others, but lets get it working first
 platforms = filter(p -> os(p) == "linux", platforms) # could support others, but lets get it working first
 platforms = filter(p -> arch(p) != "riscv64", platforms) # Doesn't work with gcc10 it seems
 platforms = filter(p -> nbits(p) ≠ 32, platforms) # Only support 64-bit platforms
 
-# platforms = expand_gfortran_versions(platforms)
 
 # We need to use the same compat bounds as HDF5
 platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
@@ -65,34 +82,30 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 # platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 
-# Remove Mpi-trampoline cause I don't understsand
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline"), platforms)
 
-# Remove MPICH just so things work 
-# I don't know how to dynamically change the
-# library name that I link to (e.g. mpifort vs mpi_fmpih)
-platforms = filter(p -> !(p["mpi"] == "mpich"), platforms)
+# Only use OpenMPI or MPICH, add windows here later if desired
+platforms = filter(p -> (p["mpi"] == "mpich" || p["mpi"] == "openmpi"), platforms)
 
-println(platform_dependencies)
-println(platforms)
+# println(platform_dependencies)
+# println(platforms)
 
 products = [
-    LibraryProduct("libolle", :libolle, "../../srcdir/tdep/lib"), #there is libolle.a and .so, this grabs the shared version I think
-    ExecutableProduct("generate_structure", :generate_structure, "../../srcdir/tdep/build/generate_structure"),
-    ExecutableProduct("canonical_configuration", :canonical_configuration, "../../srcdir/tdep/build/canonical_configuration"),
-    ExecutableProduct("extract_forceconstants", :extract_forceconstants, "../../srcdir/tdep/build/extract_forceconstants"),
-    ExecutableProduct("phonon_dispersion_relations", :phonon_dispersion_relations, "../../srcdir/tdep/build/phonon_dispersion_relations"),
-    ExecutableProduct("thermal_conductivity", :thermal_conductivity, "../../srcdir/tdep/build/thermal_conductivity"),
-    # ExecutableProduct("thermal_conductivity_2023", :thermal_conductivity_2023, "../../srcdir/tdep/build/thermal_conductivity_2023"),
-    ExecutableProduct("lineshape", :lineshape, "../../srcdir/tdep/build/lineshape"),
-    ExecutableProduct("anharmonic_free_energy", :anharmonic_free_energy, "../../srcdir/tdep/build/anharmonic_free_energy"),
-    ExecutableProduct("atomic_distribution", :atomic_distribution, "../../srcdir/tdep/build/atomic_distribution"),
-    ExecutableProduct("pack_simulation", :pack_simulation, "../../srcdir/tdep/build/pack_simulation"),
-    ExecutableProduct("samples_from_md", :samples_from_md, "../../srcdir/tdep/build/samples_from_md"),
-    ExecutableProduct("dump_dynamical_matrices", :dump_dynamical_matrices, "../../srcdir/tdep/build/dump_dynamical_matrices"),
-    ExecutableProduct("crystal_structure_info", :crystal_structure_info, "../../srcdir/tdep/build/crystal_structure_info"),
-    ExecutableProduct("refine_structure", :refine_structure, "../../srcdir/tdep/build/refine_structure"),
-    ExecutableProduct("phasespace_surface", :phasespace_surface, "../../srcdir/tdep/build/phasespace_surface")
+    LibraryProduct("libolle", :libolle), #there is libolle.a and .so, this grabs the shared version I think
+    ExecutableProduct("generate_structure", :generate_structure),
+    ExecutableProduct("canonical_configuration", :canonical_configuration),
+    ExecutableProduct("extract_forceconstants", :extract_forceconstants),
+    ExecutableProduct("phonon_dispersion_relations", :phonon_dispersion_relations),
+    ExecutableProduct("thermal_conductivity", :thermal_conductivity),
+    # ExecutableProduct("thermal_conductivity_2023", :thermal_conductivity_2023),
+    ExecutableProduct("lineshape", :lineshape),
+    ExecutableProduct("anharmonic_free_energy", :anharmonic_free_energy),
+    ExecutableProduct("atomic_distribution", :atomic_distribution),
+    ExecutableProduct("pack_simulation", :pack_simulation),
+    ExecutableProduct("samples_from_md", :samples_from_md),
+    ExecutableProduct("dump_dynamical_matrices", :dump_dynamical_matrices),
+    ExecutableProduct("crystal_structure_info", :crystal_structure_info),
+    ExecutableProduct("refine_structure", :refine_structure),
+    ExecutableProduct("phasespace_surface", :phasespace_surface)
 ]
 
 dependencies = [
