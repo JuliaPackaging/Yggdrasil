@@ -65,8 +65,15 @@ if [[ ${target} == x86_64-linux-musl ]]; then
 fi
 
 if [[ ${target} == *-unknown-freebsd* ]]; then
-     # based on the output of mpicc --showme
-     export LIBS="-lmpi -lm -lexecinfo -lutil -lz"
+    # MPI isn't autodetected; we need to specify the libraries
+    case ${bb_full_target} in
+        *mpich*)
+            export LIBS="-lmpi -lm -lexecinfo -lutil -lz";;
+        *mpitrampoline*)
+            export LIBS="-lmpitrampoline -ldl";;
+        *openmpi*)
+            export LIBS="-lmpi -lm -lexecinfo -lutil -lz";;
+    esac
 fi
 
 ./configure --prefix=${prefix} \
