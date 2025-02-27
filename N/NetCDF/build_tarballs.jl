@@ -53,7 +53,6 @@ if [[ ${target} -ne x86_64-linux-gnu ]]; then
     CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-utilities"
 fi
 
-
 if [[ ${target} == x86_64-linux-musl ]]; then
     # see
     # https://github.com/JuliaPackaging/Yggdrasil/blob/48af117395188f48d361a46ea929ee7563d9c2e4/A/ADIOS2/build_tarballs.jl
@@ -65,11 +64,10 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-if [[ ${target} == x86_64-unknown-freebsd* ]]; then
+if [[ ${target} == *-unknown-freebsd* ]]; then
      # based on the output of mpicc --showme
      export LIBS="-lmpi -lm -lexecinfo -lutil -lz"
 fi
-
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -78,7 +76,7 @@ fi
     --disable-static \
     --disable-dap-remote-tests \
     --disable-plugins \
-    $CONFIGURE_OPTIONS
+    ${CONFIGURE_OPTIONS}
 
 make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}
 
@@ -101,13 +99,7 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
