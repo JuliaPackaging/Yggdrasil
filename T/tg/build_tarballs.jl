@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tg
 clang -shared -o tg.so -fPIC -g -O3 tg.c
-mkdir ${destdir}
+mkdir -p ${destdir}
 mv tg.so ${destdir}/
 """
 
