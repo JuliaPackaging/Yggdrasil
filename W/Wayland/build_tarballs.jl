@@ -1,37 +1,54 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+using Pkg
 
 name = "Wayland"
-version = v"1.21.0"
+version = v"1.23.0"
 
 # Collection of sources required to build Wayland
 sources = [
-    ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
-                  "6dc64d7fc16837a693a51cfdb2e568db538bfdc9f457d4656285bb9594ef11ac"),
+   GitSource("https://gitlab.freedesktop.org/wayland/wayland.git",
+             "a9fec8dd65977c57f4039ced34327204d9b9d779"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/wayland-*/
+cd $WORKSPACE/srcdir/wayland/
 
-ln -s `which wayland-scanner` $bindir
-cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
+mkdir bootstrap
+cd bootstrap
 
-mkdir build-wayland
+meson setup .. \
+      --buildtype=release \
+      -Ddocumentation=false \
+      --cross-file="${MESON_HOST_TOOLCHAIN}" \
+      -Dtests=false \
+      -Dlibraries=false
+meson compile
+meson install
 
-cd build-wayland
-meson .. \
-    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-    -Ddocumentation=false
-ninja -j${nproc}
-ninja install
-rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
+cd ../
+
+cp ${host_prefix}/bin/wayland-scanner /usr/bin/wayland-scanner
+
+mkdir build
+cd build
+
+meson setup .. \
+      --prefix=${prefix} \
+      --buildtype=release \
+      --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+      -Ddocumentation=false \
+      -Dtests=false
+meson compile
+meson install
+# rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> arch(p) != "armv6l" && (Sys.islinux(p) || Sys.isfreebsd(p)), supported_platforms())
+platforms = supported_platforms(; exclude=p -> arch(p) == "armv6l" || (!Sys.islinux(p) && !Sys.isfreebsd(p)))   
 
 # The products that we will ensure are always built
 products = [
@@ -48,7 +65,10 @@ dependencies = [
     Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
     Dependency("EpollShim_jll"),
-    HostBuildDependency("Wayland_jll"),
+    HostBuildDependency("EpollShim_jll"),
+    HostBuildDependency(PackageSpec("Expat_jll", v"2.2.10")),
+    HostBuildDependency(PackageSpec("Libffi_jll", v"3.2.2")),
+    HostBuildDependency("XML2_jll"),
 ]
 
 # Build the tarballs.
