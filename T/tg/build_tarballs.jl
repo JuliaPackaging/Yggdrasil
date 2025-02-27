@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tg
 mkdir -p ${libdir}
-${CC} -std=c11 -shared -o ${libdir}/tg.${dlext} -fPIC -O3 tg.c
+${CC} -shared -o ${libdir}/tg.${dlext} -fPIC -O3 tg.c
 """
 
 # These are the platforms we will build for by default, unless further
