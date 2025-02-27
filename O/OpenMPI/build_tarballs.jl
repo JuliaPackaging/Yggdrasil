@@ -86,4 +86,4 @@ ENV["OPAL_PREFIX"] = artifact_dir
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, init_block, julia_compat="1.6", preferred_gcc_version=v"5")
+               augment_platform_block, clang_use_lld=false, init_block, julia_compat="1.6", preferred_gcc_version=v"5")
