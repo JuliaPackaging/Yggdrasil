@@ -7,14 +7,20 @@ version = v"3.25.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/intel/ittapi.git", "dec1d23ca65ab069d225dfe40dea14f455170959")
+    GitSource("https://github.com/intel/ittapi.git",
+              "dec1d23ca65ab069d225dfe40dea14f455170959"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/ittapi/
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DITT_API_IPT_SUPPORT=1
-make
+atomic_patch -p1 ../patches/0001-Add-non-exec-stack-annotation-only-for-ELF.patch
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+      -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DITT_API_IPT_SUPPORT=1
+make -j${nproc}
 ar -x bin/libittnotify.a
 ${CC} -shared ittnotify_static*.o ittptmark*.o -o libittnotify.${dlext}
 install -Dvm 0755 libittnotify.${dlext} ${libdir}/libittnotify.${dlext}
