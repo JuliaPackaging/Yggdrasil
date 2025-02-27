@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/tg
 mkdir -p ${libdir}
-${CC} -shared -o ${libdir}/tg.${dlext} -fPIC -O3 tg.c
+${CC} -shared -o ${libdir}/libtg.${dlext} -fPIC -O3 tg.c
 """
 
 # These are the platforms we will build for by default, unless further
@@ -24,7 +24,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("tg", :tg),
+    LibraryProduct("libtg", :libtg),
 ]
 
 # Dependencies that must be installed before this package can be built
