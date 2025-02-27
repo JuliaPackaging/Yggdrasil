@@ -11,10 +11,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 # So for example version 2.6.3 would become 200.600.300.
 
 name = "NetCDF"
-upstream_version = v"4.9.2"
+upstream_version = v"4.9.3"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.11"
+version_offset = v"0.2.0"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -23,8 +23,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build NetCDF
 sources = [
     ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
-                  "cf11babbbdb9963f09f55079e0b019f6d0371f52f8e1264a5ba8e9fdab1a6c48"),
-    DirectorySource("bundled"),
+                  "a474149844e6144566673facf097fea253dc843c37bc0a7d3de047dc8adda5dd"),
 ]
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
@@ -36,9 +35,6 @@ export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 CONFIGURE_OPTIONS=""
-
-# Apply patch https://github.com/Unidata/netcdf-c/pull/2690
-atomic_patch -p1 ../patches/0001-curl-cainfo.patch
 
 if [[ ${target} == *-mingw* ]]; then
     # we should determine the dll version (?) automatically
@@ -105,14 +101,13 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
 
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 # MPItrampoline
 filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -133,10 +128,7 @@ products = [
 dependencies = [
     Dependency("Blosc_jll"),
     Dependency("Bzip2_jll"),
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat = "=1.14.3"),
+    Dependency("HDF5_jll"; compat = "~1.14.5"),
     Dependency("LibCURL_jll"; compat = "7.73.0,8"),
     Dependency("XML2_jll"),
     Dependency("Zlib_jll"),
