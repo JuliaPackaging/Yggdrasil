@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "tg"
-upstream_version = v"0.7.2"
+version = v"0.7.2"
 
 # Collection of sources required to build Libtiff
 sources = [
