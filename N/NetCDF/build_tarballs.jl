@@ -38,11 +38,10 @@ CONFIGURE_OPTIONS=""
 
 if [[ ${target} == *-mingw* ]]; then
     # we should determine the dll version (?) automatically
-    export LIBS="-lhdf5-310 -lhdf5_hl-310 -lcurl-4 -lz"
+    export LIBS="-lcurl-4 -lz"
     # linking fails with: "libtool:   error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified"
     # unless -no-undefined is added to LDFLAGS
     LDFLAGS_MAKE="${LDFLAGS} ${LIBS} -no-undefined -Wl,--export-all-symbols"
-
     # additional configure options from
     # https://github.com/Unidata/netcdf-c/blob/5df5539576c5b2aa8f31d4b50c4f8258925589dd/.github/workflows/run_tests_win_mingw.yml#L38
     CONFIGURE_OPTIONS="--disable-byterange"
