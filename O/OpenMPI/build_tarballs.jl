@@ -4,10 +4,10 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "OpenMPI"
-version = v"4.1.7"
+version = v"4.1.8"
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/open-mpi/v$(version.major).$(version.minor)/openmpi-$(version).tar.gz",
-                  "3956daf86e8b570e31155d92ed4b2b1699bc36455ae24a0d98ca376d3e8b4e9d"),
+                  "fb41086bbed9300baa2f3d7572491facfe5257412fa524ec5a396aa9101d5c62"),
     DirectorySource("./bundled"),
 ]
 
