@@ -15,7 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tg
-clang -shared -o tg.so -fPIC -g -O3 tg.c
+clang -shared -o tg.so -fPIC -O3 -J${nprocs} tg.c
 mv tg.so ${destdir}/
 """
 
