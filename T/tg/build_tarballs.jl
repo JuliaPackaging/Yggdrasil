@@ -15,8 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tg
-clang -shared -o tg.so -fPIC -O3 -J${nprocs} tg.c
-mv tg.so ${destdir}/
+$(CC) -std=c11 -shared -o ${libdir}/tg.${dlext} -fPIC -O3 tg.c
 """
 
 # These are the platforms we will build for by default, unless further
