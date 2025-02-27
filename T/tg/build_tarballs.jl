@@ -15,6 +15,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/tg
+mkdir -p ${libdir}
 ${CC} -std=c11 -shared -o ${libdir}/tg.${dlext} -fPIC -O3 tg.c
 """
 
