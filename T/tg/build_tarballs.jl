@@ -21,6 +21,11 @@ ${CC} -shared -o ${libdir}/libtg.${dlext} -fPIC -O3 tg.c
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+# Don't build on 32 bit platforms, since the library does not build there
+# TODO: patch the library for 32 bit if necessary?  But I doubt it.
+platforms = filter!(platforms) do platform
+    !(nbits(platform) == 32)
+end
 
 # The products that we will ensure are always built
 products = [
