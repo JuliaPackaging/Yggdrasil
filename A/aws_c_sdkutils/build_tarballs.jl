@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_sdkutils"
-version = v"0.1.18"
+version = v"0.2.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "04e777c2c570f89cab362d74a091eaa9bb959c0f"),
+    GitSource("https://github.com/awslabs/aws-c-sdkutils.git", "ba6a28fab7ed5d7f1b3b1d12eb672088be093824"),
 ]
 
 # Bash recipe for building across all platforms
