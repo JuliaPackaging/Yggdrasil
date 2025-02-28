@@ -7,15 +7,13 @@ version = v"0.9.4"
 
 # Collection of sources required to complete build
 sources = [
-    "https://github.com/Auburn/FastNoise2/archive/refs/tags/v$version-alpha.tar.gz" => "e1bf4a2ea7d36efff0ae5b471c6311088f5fa5ab40a52021a79dda2563bdaa42",
+    "https://github.com/Auburn/FastNoise2.git" => "1001d767560a2d7b885d8c831512ae8c8750ebc4",
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-mv FastNoise2-* FastNoise2
-
 cd FastNoise2
-cmake -S . -B build -D FASTNOISE2_NOISETOOL=OFF -D FASTNOISE2_TESTS=OFF -D BUILD_SHARED_LIBS=ON -D CMAKE_FIND_ROOT_PATH=${prefix} -D CMAKE_INSTALL_PREFIX=${prefix} -D CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+cmake -S . -B build -D FASTNOISE2_NOISETOOL=OFF -D FASTNOISE2_TESTS=OFF -D BUILD_SHARED_LIBS=ON -D CMAKE_FIND_ROOT_PATH=${prefix} -D CMAKE_INSTALL_PREFIX=${prefix} -D CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 
 cd build
 make -j ${nprocs}
