@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_compression"
-version = v"0.2.19"
+version = v"0.3.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-compression.git", "f36d01672d61e49d96a777870d456f66fa391cd4"),
+    GitSource("https://github.com/awslabs/aws-c-compression.git", "f951ab2b819fc6993b6e5e6cfef64b1a1554bfc8"),
 ]
 
 # Bash recipe for building across all platforms
