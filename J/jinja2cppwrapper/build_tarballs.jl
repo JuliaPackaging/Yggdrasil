@@ -7,7 +7,7 @@ version = v"1.0.0"
 sources = [
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
     "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/AlexKlo/Jinja2C.git", "a4b461b0b5d71750d6f29c65060766e6caa75848")
 ]
 
 # Once this Pkg issue is resolved, this must be removed
@@ -18,6 +18,8 @@ include("../../L/libjulia/common.jl")
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd ${WORKSPACE}/srcdir/Jinja2C
+
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
     # Install a newer SDK which supports `shared_timed_mutex` and `std::filesystem`
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
