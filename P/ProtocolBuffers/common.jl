@@ -65,6 +65,7 @@ cmake \
     -G Ninja \
     -DBUILD_SHARED_LIBS=$BB_PROTOBUF_BUILD_SHARED_LIBS \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=14 \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
     -Dprotobuf_ABSL_PROVIDER=package \
@@ -92,3 +93,6 @@ dependencies = [
     Dependency("abseil_cpp_jll"; compat="20230125.0"),
     Dependency("Zlib_jll"),
 ]
+
+julia_compat = "1.6"
+preferred_gcc_version = v"8" # GCC >= 7.3 required: https://github.com/protocolbuffers/protobuf/blob/v22.0/src/google/protobuf/port_def.inc#L196
