@@ -9,10 +9,13 @@ base_version = v"0.22.0"
 
 sources = [
     GitSource("https://github.com/protocolbuffers/protobuf.git", "a847a8dc4ba1d99e7ba917146c84438b4de7d085"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/protobuf
+
+atomic_patch -p1 ../patches/aarch64.patch
 
 cmake_extra_args=()
 if [[ "$BB_PROTOBUF_BUILD_SHARED_LIBS" == "OFF" ]]; then
