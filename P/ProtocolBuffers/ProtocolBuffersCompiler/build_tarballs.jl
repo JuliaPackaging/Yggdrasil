@@ -6,7 +6,7 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 name = "ProtocolBuffersCompiler"
 # Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
-version = VersionNumber(base_version.minor, base_version.patch)
+version = base_version
 
 script = raw"""
 export BB_PROTOBUF_BUILD_SHARED_LIBS=ON
