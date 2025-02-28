@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/protobuf
 
+# This patch stems from upstream: https://github.com/protocolbuffers/protobuf/pull/12043
 atomic_patch -p1 ../patches/aarch64.patch
 
 cmake_extra_args=()
