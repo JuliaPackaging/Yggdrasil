@@ -39,6 +39,10 @@ cd $WORKSPACE/srcdir/protobuf
 # This patch stems from upstream: https://github.com/protocolbuffers/protobuf/pull/12043
 atomic_patch -p1 ../patches/aarch64.patch
 
+# Avoid problems with `-march`, `-ffast-math` etc.
+sed -i -e 's!set(CMAKE_C_COMPILER.*!set(CMAKE_C_COMPILER '${WORKSPACE}/srcdir/files/ccsafe')!' ${CMAKE_TARGET_TOOLCHAIN}
+sed -i -e 's!set(CMAKE_CXX_COMPILER.*!set(CMAKE_CXX_COMPILER '${WORKSPACE}/srcdir/files/c++safe')!' ${CMAKE_TARGET_TOOLCHAIN}
+
 cmake_extra_args=()
 if [[ "$BB_PROTOBUF_BUILD_SHARED_LIBS" == "OFF" ]]; then
     cmake_extra_args+=(
