@@ -90,4 +90,5 @@ additional_library_symbols = [
 
 dependencies = [
     Dependency("abseil_cpp_jll"; compat="20230125.0"),
+    Dependency("Zlib_jll"),
 ]
