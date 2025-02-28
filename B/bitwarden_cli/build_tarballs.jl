@@ -6,9 +6,9 @@ version = v"2025.1.3"
 
 url_prefix = "https://github.com/bitwarden/clients/releases/download/cli-v$(version)"
 sources = [
-    ArchiveSource("$(url_prefix)/bw-linux-$(version).zip", "f1d66b1a3971cc906ea3e44f0647899c1ca0c95ca83714fcf3039c0643dcd97a"; unpack_target = "x86_64-linux-gnu"),
-    ArchiveSource("$(url_prefix)/bw-macos-$(version).zip", "103ee62a30284390559b5ff5ca21b77c235a43cb4e08e3c410726f873104cf42"; unpack_target = "x86_64-apple-darwin14"),
-    ArchiveSource("$(url_prefix)/bw-windows-$(version).zip", "7ba89071061d30f94cea048289cd252cdb14b2635e9a57c0b020bf80121b16f5"; unpack_target = "x86_64-w64-mingw32"),
+    ArchiveSource("$(url_prefix)/bw-oss-linux-$(version).zip", "d970a7f5a7072ab5c01576cb55df4422f46518e33bf1547a0958cd8823197950"; unpack_target = "x86_64-linux-gnu"),
+    ArchiveSource("$(url_prefix)/bw-oss-macos-$(version).zip", "695ab61467f58431556ca7539a03238a02f9f67e217f192428071ece061636d3"; unpack_target = "x86_64-apple-darwin14"),
+    ArchiveSource("$(url_prefix)/bw-oss-windows-$(version).zip", "B0CD94029E3CFF8874325C160206385260E6327B34A9B8D48AA18D262728F82C"; unpack_target = "x86_64-w64-mingw32"),
     FileSource("https://raw.githubusercontent.com/bitwarden/clients/fb191b1121c30b4e839fd31689ace8373de6c840/LICENSE.txt", "cc76886c8b11ab18c7e6dcca04b7bf75caf6a2ccea42b1cfe98842f280b9bc00")
 ]
 
