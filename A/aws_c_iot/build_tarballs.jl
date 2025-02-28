@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_iot"
-version = v"0.1.21"
+version = v"0.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-iot.git", "b3fe015865d7ead9fe7c9df8f8c6b38c37a51f00"),
+    GitSource("https://github.com/awslabs/aws-c-iot.git", "9f0c152ed76af1a45d99fb98286707aa23c728af"),
 ]
 
 # Bash recipe for building across all platforms
