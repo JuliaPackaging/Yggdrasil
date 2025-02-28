@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 # include("mpi.jl")
 
 name = "TDEP"
-version = v"0.0.1"
+version = v"24.09"
 sources = [
     GitSource("https://github.com/tdep-developers/tdep.git", "8579c30cce7a3d78c2a88535cda247e0c00eb1a9"),
     DirectorySource("./bundled") # contents will be copied to ${WORKSPACE}/srcdir
