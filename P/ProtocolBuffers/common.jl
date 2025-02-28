@@ -1,11 +1,32 @@
-# Protobuf version numbers are weird: The version number across all languages
-# only includes the minor and patch release.
-# Each language runtime, e.g. the C++ runtime  `libprotobuf`, has its own major
-# version on top of that.
-# Thus, e.g. ProtocolBuffers, and protoc, v"22.0" matches C++ runtime v"5.22.0".
-# 
-# Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
-base_version = v"0.22.0"
+"""
+ProtocolBuffers versioning is a little complex: Since May, 2022, with the
+release of v21.0, each language runtime, e.g. the C++ runtime  `libprotobuf`,
+has its own major version, while the minor version and patch version
+respectively match the major version, and the minor version of the
+ProtocolBuffers project (and the `protoc` compiler).
+E.g., C++ runtime `libprotobuf` v"3.21.0" released with ProtocolBuffers v"21.0"
+matches `protoc` v"21.0".
+
+The `protoc` compiler (and `libprotoc`) depends on the C++ runtime `libprotobuf`,
+i.e. `protoc` v"21.0" requires C++ runtime `libprotobuf` v"3.21.0".
+
+Specific to the C++ runtime, in contrast to the other ProtocolBuffers
+language runtimes, there is no cross-version runtime support, i.e., C++ code
+generated with the `protoc` compiler v"21.0" requires C++ runtime
+`libprotobuf` v"3.21.0". Additionally, the C++ runtime makes no guarantees
+about ABI stability across any releases (major, minor, or patch).
+
+Finally, v"16" releases since v"16.2" has also adopted the May, 2022 versioning
+scheme, i.e. `libprotobuf` v"3.16.2" matches `protoc` v"16.2". The same is true
+for v"18" since v"18.3", v"19" since v"19.5", and v"20" since v"20.2".
+
+References:
+* https://protobuf.dev/support/version-support/
+* https://protobuf.dev/support/cross-version-runtime-guarantee/#cpp
+* https://protobuf.dev/news/2022-05-06/#versioning
+* https://github.com/protocolbuffers/protobuf/blob/v21.0/version.json
+"""
+base_version = v"22.0" # Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
 
 sources = [
     GitSource("https://github.com/protocolbuffers/protobuf.git", "a847a8dc4ba1d99e7ba917146c84438b4de7d085"),
