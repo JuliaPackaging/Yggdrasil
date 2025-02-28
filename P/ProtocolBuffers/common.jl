@@ -44,14 +44,12 @@ cmake \
     -G Ninja \
     -DBUILD_SHARED_LIBS=$BB_PROTOBUF_BUILD_SHARED_LIBS \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD=14 \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
     -Dprotobuf_ABSL_PROVIDER=package \
     -Dprotobuf_BUILD_TESTS=OFF \
-    "${cmake_extra_args[@]}"
-cmake --build build --parallel ${nproc}
+    ${cmake_extra_args[@]}
+cmake --build build --parallel $nproc
 cmake --install build
 install_license LICENSE
 """
