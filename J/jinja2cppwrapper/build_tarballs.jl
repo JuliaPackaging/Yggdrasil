@@ -2,7 +2,7 @@
 using BinaryBuilder, Pkg
 
 name = "jinja2cppwrapper"
-version = v"1.0.0"
+version = v"1.1.0"
 # Collection of sources required to build jinja2cppwrapper
 sources = [
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
