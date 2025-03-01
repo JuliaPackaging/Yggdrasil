@@ -16,6 +16,9 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 # needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
 
+#filter julia versions to include only Julia >= 1.9 for LTS
+julia_versions = filter(v-> v >= v"1.9", julia_versions)
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/Jinja2C
