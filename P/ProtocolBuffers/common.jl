@@ -33,7 +33,49 @@ sources = [
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
-script = raw"""
+binary_symbols = [:protoc]
+
+include_dirs = ["google/protobuf"]
+
+include_symbols = Dict{Symbol,String}()
+
+library_dirs = [
+    "cmake/protobuf",
+    "cmake/utf8_range",
+]
+
+protobuf_library_symbols = Dict(
+    :libprotobuf => "protobuf",
+)
+protobuf_lite_library_symbols = Dict(
+    :libprotobuf_lite => "protobuf-lite",
+)
+protoc_library_symbols = Dict(
+    :libprotoc => "protoc",
+)
+library_symbols = merge(protobuf_library_symbols, protobuf_lite_library_symbols)
+
+# `protobuf` includes https://github.com/protocolbuffers/utf8_range
+additional_include_symbols = Dict(
+    :utf8_range_h => "utf8_range.h",
+    :utf8_validity_h => "utf8_validity.h",
+)
+additional_library_symbols = Dict(
+    :libutf8_range => "utf8_range",
+    :libutf8_validity => "utf8_validity",
+)
+all_include_symbols = merge(include_symbols, additional_include_symbols)
+all_library_symbols = merge(library_symbols, additional_library_symbols)
+
+script = """
+BB_PROTOBUF_BIN_FILES=($(join(["bin/$bin" for bin in binary_symbols], " ")))
+BB_PROTOBUF_INCLUDE_DIRS=($(join(["include/$include_dir" for include_dir in include_dirs], " ")))
+BB_PROTOBUF_INCLUDE_FILES=($(join(["include/$include_file" for include_file in values(all_include_symbols)], " ")))
+BB_PROTOBUF_LIB_DIRS=($(join(["lib/$library_dir" for library_dir in library_dirs], " ")))
+BB_PROTOBUF_LIBRARIES=($(join(values(library_symbols), " ")))
+BB_PROTOBUF_ADDITIONAL_LIBRARIES=($(join(values(additional_library_symbols), " ")))
+BB_PROTOC_LIBRARIES=($(join(values(protoc_library_symbols), " ")))
+""" * raw"""
 cd $WORKSPACE/srcdir/protobuf
 
 # This patch stems from upstream: https://github.com/protocolbuffers/protobuf/pull/12043
@@ -41,7 +83,7 @@ atomic_patch -p1 ../patches/aarch64.patch
 
 cmake_extra_args=()
 
-if [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersSDK" ]]; then
+if [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersSDK_static" ]]; then
     cmake_extra_args+=(
         -DBUILD_SHARED_LIBS=OFF
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
@@ -79,25 +121,83 @@ cmake --build build --parallel $nproc
 cmake --install build
 install_license LICENSE
 
+# Ensure the proper files are in $prefix
+include_dirs_regex=$(IFS='|' ; echo "${BB_PROTOBUF_INCLUDE_DIRS[*]}")
+lib_dirs_regex=$(IFS='|' ; echo "${BB_PROTOBUF_LIB_DIRS[*]}")
+
+cd $prefix
+
+if [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersCompiler" ]]; then
+    bin_files=($(find bin -type f | sort))
+    for bin_file in "${bin_files[@]}"; do
+        match_found=false
+        for bin_name in "${BB_PROTOBUF_BIN_FILES[@]}"; do
+            if [[ "$bin_file" =~ ^${bin_name} ]]; then
+                match_found=true
+                break
+            fi
+        done
+        if ! $match_found; then
+            exit 1
+        fi
+    done
+else
+    [[ ! -d bin ]] || exit 1
+fi
+
+include_files=($(find include -type f | grep -E -v "^($include_dirs_regex)/" | sort))
+[[ "$(printf "%s\n" ${include_files[@]})" == "$(printf "%s\n" "${BB_PROTOBUF_INCLUDE_FILES[@]}" | sort)" ]] || exit 1
+
+lib_files=($(find lib -type f | grep -E -v "^($lib_dirs_regex)/" | sort))
+for lib_file in "${lib_files[@]}"; do
+    match_found=false
+    for lib_name in "${BB_PROTOBUF_LIBRARIES[@]}"; do
+        if $(echo "$lib_file" | grep -q -E "^lib/lib${lib_name}\.(${dlext}.*|.+\.${dlext})") || [[  "$lib_file" =~ ^lib/pkgconfig/${lib_name}.pc ]]; then
+            match_found=true
+            break
+        fi
+    done
+    for lib_name in "${BB_PROTOBUF_ADDITIONAL_LIBRARIES[@]}"; do
+        if [[ "$lib_file" =~ ^lib/lib${lib_name}.a ]]; then
+            match_found=true
+            break
+        fi
+    done
+    for lib_name in "${BB_PROTOC_LIBRARIES[@]}"; do
+        if $(echo "$lib_file" | grep -q -E "^lib/lib${lib_name}\.(${dlext}.*|.+\.${dlext})"); then
+            match_found=true
+            break
+        fi
+    done
+    if ! $match_found; then
+        exit 1
+    fi
+done
+
+# Ensure the proper files are in each tarball
+if [[ "$BB_PROTOBUF_PRODUCT" =~ ^ProtocolBuffers(Lite|Compiler)?$ ]]; then
+    rm -rv "${BB_PROTOBUF_INCLUDE_DIRS[@]}"
+    rm -v "${BB_PROTOBUF_INCLUDE_FILES[@]}"
+    find include -type d | xargs rmdir --ignore-fail-on-non-empty -p
+
+    rm -rv "${BB_PROTOBUF_LIB_DIRS[@]}"
+    rm -v $(for lib_name in "${BB_PROTOBUF_LIBRARIES[@]}"; do echo lib/pkgconfig/${lib_name}.pc; done)
+    rm -v $(for lib_name in "${BB_PROTOBUF_ADDITIONAL_LIBRARIES[@]}"; do echo lib/lib${lib_name}.a; done)
+    find lib -type d | xargs rmdir --ignore-fail-on-non-empty -p
+elif [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersSDK" ]]; then
+    rm -v $(for lib_name in "${BB_PROTOBUF_LIBRARIES[@]}"; do echo lib/lib${lib_name}.${dlext}*; done)
+fi
+
 if [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffers" ]]; then
-    rm -rv \
-        $prefix/include/{google/protobuf,utf8_range.h,utf8_validity.h} \
-        $prefix/lib/pkgconfig/protobuf*.pc
+    rm -v lib/libprotobuf-lite.${dlext}*
+elif [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersLite" ]]; then
+    rm -v lib/libprotobuf.${dlext}*
+elif [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersCompiler" ]]; then
+    rm -v $(for lib_name in "${BB_PROTOBUF_LIBRARIES[@]}"; do echo lib/lib${lib_name}.${dlext}*; done)
 fi
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
-
-library_symbols = Dict(
-    :libprotobuf => "libprotobuf",
-    :libprotobuf_lite => "libprotobuf-lite",
-)
-
-additional_library_symbols = [
-    # `protobuf` includes https://github.com/protocolbuffers/utf8_range
-    :libutf8_range,
-    :libutf8_validity,
-]
 
 dependencies = [
     Dependency("abseil_cpp_jll"; compat="20230125.0"),

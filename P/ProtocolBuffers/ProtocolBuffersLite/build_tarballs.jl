@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 include(joinpath(@__DIR__, "..", "common.jl"))
 
-name = "ProtocolBuffers"
+name = "ProtocolBuffersLite"
 # Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
 version = VersionNumber(4, base_version.major, base_version.minor)
 
@@ -14,7 +14,7 @@ export BB_PROTOBUF_PRODUCT=$name
 script
 
 products = [
-    LibraryProduct("lib$name", symbol) for (symbol, name) in protobuf_library_symbols
+    LibraryProduct("lib$name", symbol) for (symbol, name) in protobuf_lite_library_symbols
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

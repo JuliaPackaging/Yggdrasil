@@ -14,9 +14,11 @@ export BB_PROTOBUF_PRODUCT=$name
 script
 
 products = vcat([
-    FileProduct("lib/$name.a", symbol) for (symbol, name) in library_symbols
-], [
-    FileProduct("lib/$lib.a", lib) for lib in additional_library_symbols
+    FileProduct("include/$name", symbol) for (symbol, name) in all_include_symbols
+],[
+    FileProduct("lib/lib$name.a", symbol) for (symbol, name) in additional_library_symbols
+],[
+    FileProduct("lib/pkgconfig/$name.pc", Symbol(symbol, :_pkgconfig)) for (symbol, name) in library_symbols
 ])
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

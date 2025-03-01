@@ -14,10 +14,9 @@ export BB_PROTOBUF_PRODUCT=$name
 script
 
 products = vcat([
-    LibraryProduct("libprotoc", :libprotoc),
-    ExecutableProduct("protoc", :protoc),
+    LibraryProduct("lib$name", symbol) for (symbol, name) in protoc_library_symbols
 ], [
-    LibraryProduct(name, symbol) for (symbol, name) in library_symbols
+    ExecutableProduct("$binary_symbol", :binary_symbol) for binary_symbol in binary_symbols
 ])
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
