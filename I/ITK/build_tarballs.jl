@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 name = "ITK"
-version = v"5.3.2"
+version = v"5.3.3"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/InsightSoftwareConsortium/ITK.git", "1fc47c7bec4ee133318c1892b7b745763a17d411")
