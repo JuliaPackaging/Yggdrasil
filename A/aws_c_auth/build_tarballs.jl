@@ -28,7 +28,6 @@ cmake --build . -j${nproc} --target install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -37,9 +36,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_cal_jll"; compat="0.7.1"),
-    Dependency("aws_c_http_jll"; compat="0.8.1"),
-    Dependency("aws_c_sdkutils_jll"; compat="0.1.12"),
+    Dependency("aws_c_cal_jll"; compat="0.8.3"),
+    Dependency("aws_c_http_jll"; compat="0.9.3"),
+    Dependency("aws_c_sdkutils_jll"; compat="0.2.3"),
     BuildDependency("aws_lc_jll"),
 ]
 
