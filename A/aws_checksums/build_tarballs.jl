@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.3"),
+    Dependency("aws_c_common_jll"; compat="0.11.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
