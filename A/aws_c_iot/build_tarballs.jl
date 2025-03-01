@@ -36,7 +36,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_mqtt_jll"; compat="0.10.4"),
+    Dependency("aws_c_mqtt_jll"; compat="0.12.2"),
     BuildDependency("aws_lc_jll"),
 ]
 
