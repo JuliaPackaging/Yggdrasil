@@ -36,9 +36,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_checksums_jll"; compat="0.1.17"),
-    Dependency("aws_c_http_jll"; compat="0.8.3"),
-    Dependency("aws_c_auth_jll"; compat="0.7.18"),
+    Dependency("aws_checksums_jll"; compat="0.2.3"),
+    Dependency("aws_c_http_jll"; compat="0.9.3"),
+    Dependency("aws_c_auth_jll"; compat="0.8.5"),
     BuildDependency("aws_lc_jll"),
 ]
 
