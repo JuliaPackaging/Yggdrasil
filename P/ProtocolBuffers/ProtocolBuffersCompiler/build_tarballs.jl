@@ -8,9 +8,8 @@ name = "ProtocolBuffersCompiler"
 # Cf. https://github.com/protocolbuffers/protobuf/blob/v22.0/version.json
 version = base_version
 
-script = raw"""
-export BB_PROTOBUF_BUILD_SHARED_LIBS=ON
-export BB_PROTOBUF_PRODUCT=protoc
+script = """
+export BB_PROTOBUF_PRODUCT=$name
 """ *
 script
 

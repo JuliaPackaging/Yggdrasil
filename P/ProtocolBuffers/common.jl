@@ -40,30 +40,34 @@ cd $WORKSPACE/srcdir/protobuf
 atomic_patch -p1 ../patches/aarch64.patch
 
 cmake_extra_args=()
-if [[ "$BB_PROTOBUF_BUILD_SHARED_LIBS" == "OFF" ]]; then
+
+if [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersSDK" ]]; then
     cmake_extra_args+=(
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+        -DBUILD_SHARED_LIBS=OFF
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    )
+else
+    cmake_extra_args+=(
+        -DBUILD_SHARED_LIBS=ON
     )
 fi
-if [[ "$BB_PROTOBUF_PRODUCT" == "libprotobuf" ]]; then
-    cmake_extra_args+=(
-        -Dprotobuf_BUILD_PROTOBUF_BINARIES=ON
-        -Dprotobuf_BUILD_PROTOC_BINARIES=OFF
-    )
-elif [[ "$BB_PROTOBUF_PRODUCT" == "protoc" ]]; then
+
+if [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffersCompiler" ]]; then
     cmake_extra_args+=(
         -Dprotobuf_BUILD_PROTOBUF_BINARIES=ON
         -Dprotobuf_BUILD_PROTOC_BINARIES=ON
     )
 else
-    exit 1
+    cmake_extra_args+=(
+        -Dprotobuf_BUILD_PROTOBUF_BINARIES=ON
+        -Dprotobuf_BUILD_PROTOC_BINARIES=OFF
+    )
 fi
 
 git submodule update --init --recursive --depth 1 third_party/jsoncpp
 cmake \
     -B build \
     -G Ninja \
-    -DBUILD_SHARED_LIBS=$BB_PROTOBUF_BUILD_SHARED_LIBS \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_STANDARD=14 \
     -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -74,6 +78,12 @@ cmake \
 cmake --build build --parallel $nproc
 cmake --install build
 install_license LICENSE
+
+if [[ "$BB_PROTOBUF_PRODUCT" == "ProtocolBuffers" ]]; then
+    rm -rv \
+        $prefix/include/{google/protobuf,utf8_range.h,utf8_validity.h} \
+        $prefix/lib/pkgconfig/protobuf*.pc
+fi
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
