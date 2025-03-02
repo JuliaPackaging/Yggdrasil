@@ -1,4 +1,4 @@
-# Note: this script will require BinaryBuilder.jl v0.3.0 or greater 
+# Note: this script will require BinaryBuilder.jl v0.3.0 or greater
 using BinaryBuilder, Pkg
 
 name = "jinja2cppwrapper"
