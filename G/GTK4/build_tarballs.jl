@@ -38,8 +38,8 @@ if [[ "${target}" == *-apple-* ]]; then
     # Install a newer SDK to work around compilation failures
     pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+    cp -a System "/opt/${target}/${target}/sys-root/"
     popd
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland-backend=false)
