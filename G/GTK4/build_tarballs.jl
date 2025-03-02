@@ -12,8 +12,6 @@ sources = [
                   "5303c7624e15a48880591b9ddd43389afba3de4fb92a219719519bb1642ce3dc"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
@@ -34,13 +32,6 @@ rm ${prefix}/lib/pkgconfig/gio-2.0.pc
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
-
-    # Install a newer SDK to work around compilation failures
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-    cp -a System "/opt/${target}/${target}/sys-root/"
-    popd
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland-backend=false)
 elif [[ "${target}" == *-mingw* ]]; then
