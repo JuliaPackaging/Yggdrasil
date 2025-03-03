@@ -28,6 +28,7 @@ cmake \
     -DGINKGO_BUILD_SYCL=OFF \
     -DGINKGO_BUILD_HWLOC=OFF \
     -DGINKGO_BUILD_MPI=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
     -G "Ninja" ../
 ninja -j${nproc} 
 ninja install
