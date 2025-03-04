@@ -161,7 +161,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     # OR-Tools 9.12 starts depending on CMake 3.28.
     HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
 ]
