@@ -32,6 +32,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 # - `--enable-fast=all,O3` leads to very long compile times for the
 #   file `src/mpi/coll/mpir_coll.c`. It seems we need to avoid
 #   `alwaysinline`.
+# - We need to use `ch3` because `ch4` breaks on some systems, e.g. on
+#   x86_64 macOS. See
+#   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249> for a brief
+#   discussion.
 configure_flags=(
     --build=${MACHTYPE}
     --disable-dependency-tracking
@@ -40,7 +44,7 @@ configure_flags=(
     --enable-static=no
     --host=${target}
     --prefix=${prefix}
-    --with-device=ch4
+    --with-device=ch3
     --with-hwloc=${prefix}
 )
 
