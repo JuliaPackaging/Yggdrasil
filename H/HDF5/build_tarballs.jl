@@ -6,13 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.5"
+version = v"1.14.6"
 
 # Collection of sources required to complete build
 sources = [
-                   
     ArchiveSource("https://support.hdfgroup.org/releases/hdf5/v$(version.major)_$(version.minor)/v$(version.major)_$(version.minor)_$(version.patch)/downloads/hdf5-$(version).tar.gz",
-                  "ec2e13c52e60f9a01491bb3158cb3778c985697131fc6a342262d32a26e58e44"),
+                  "e4defbac30f50d64e1556374aa49e574417c9e72c6b1de7a4ff88c4b1bea6e9b"),
     DirectorySource("bundled"),
 ]
 
@@ -303,25 +302,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-# Our riscv64 work-arounds are broken for MPI:
-# `riscv64-linux-gnu-libgfortran5-cxx11-mpi+mpitrampoline` is not an officially supported platform
-filter!(p -> arch(p) != "riscv64", platforms)
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.1", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-filter!(platforms) do p
-    if p["mpi"] == "mpich"
-        arch(p) == "riscv64" && return false
-    elseif p["mpi"] == "mpitrampoline"
-        libc(p) == "musl" && return false
-    elseif p["mpi"] == "openmpi"
-        arch(p) == "armv6l" && libc(p) == "glibc" && return false
-        Sys.isfreebsd(p) && arch(p) == "aarch64" && return false # we should build this
-        arch(p) == "riscv64" && return false                     # we should build this at some time
-    end
-    return true
-end
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -358,7 +339,7 @@ dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll"),
     # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"),   # This is the successor of szlib
