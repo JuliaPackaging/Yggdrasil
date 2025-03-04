@@ -6,14 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.5"
+version = v"1.14.6"
 
 # Collection of sources required to complete build
 sources = [
-                   
-    ArchiveSource("https://support.hdfgroup.org/releases/hdf5/v$(version.major)_$(version.minor)/v$(version.major)_$(version.minor)_$(version.patch)/downloads/hdf5-$(version).tar.gz",
-                  "ec2e13c52e60f9a01491bb3158cb3778c985697131fc6a342262d32a26e58e44"),
-    DirectorySource("bundled"),
+    ArchiveSource("https://support.hdfgroup.org/releases/hdf5/v$(version.major)_$(version.minor)/v$(version.major)_$(version.minor)_$(version.patch)/downloads/hdf5-$version.tar.gz",
+                  "e4defbac30f50d64e1556374aa49e574417c9e72c6b1de7a4ff88c4b1bea6e9b"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -49,6 +48,7 @@ cmake_options=(
     -DHDF5_ENABLE_PLUGIN_SUPPORT=OFF   # would require PLUGIN
     -DHDF5_ENABLE_ROS3_VFD=ON
     -DHDF5_ENABLE_SZIP_SUPPORT=ON
+    -DHDF5_USE_LIBAEC_STATIC=OFF
     -DHDF5_ENABLE_THREADSAFE=ON
     -DHDF5_ENABLE_Z_LIB_SUPPORT=ON
     -DONLY_SHARED_LIBS=ON
@@ -64,6 +64,7 @@ fi
 
 if [[ ${target} == *mingw* ]]; then
     cmake_options+=(-DHDF5_ENABLE_MIRROR_VFD=OFF)
+    cmake_options+=(-DHDF5_USE_LIBAEC_STATIC=OFF)
 else
     cmake_options+=(-DHDF5_ENABLE_MIRROR_VFD=ON)
 fi
@@ -299,7 +300,7 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(; exclude=x->!Sys.iswindows(x))
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
@@ -358,7 +359,7 @@ dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll"),
     # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"),   # This is the successor of szlib
