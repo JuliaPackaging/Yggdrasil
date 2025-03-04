@@ -47,9 +47,7 @@ using Base.BinaryPlatforms
 mpi_abis = (
     # Note: riscv64 is only disabled because BinaryBuilder doesn't support it yet, the respective MPI packages have been built.
     ("MPICH", PackageSpec(name="MPICH_jll"), "4.3.0 - 4", p -> !Sys.iswindows(p) && !(arch(p) == "riscv64")),
-    # aarch64-unknown-freebsd is supported by OpenMPI 5, but we also need to support OpenMPI 4 for 32-bit architectures,
-    # and we can't express this yet, so we disable this architecture
-    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "4.1.6, 5", p -> !Sys.iswindows(p) && !(Sys.isfreebsd(p) && arch(p) == "aarch64") && !(arch(p) == "riscv64") && !(arch(p) == "armv6l" && libc(p) == "glibc")),
+    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "4.1.8, 5", p -> !Sys.iswindows(p) && !(arch(p) == "riscv64") && !(arch(p) == "armv6l" && libc(p) == "glibc")),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
     ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.5.2 - 5", p -> !Sys.iswindows(p) && !(arch(p) == "riscv64") && !(libc(p) == "musl")),
 )
