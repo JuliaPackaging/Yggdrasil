@@ -34,7 +34,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/pthread_np.patch
 #   `alwaysinline`.
 # - We need to use `ch3` because `ch4` breaks on some systems, e.g. on
 #   x86_64 macOS. See
-#   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249> for a brief
+#   <https://github.com/JuliaPackaging/Yggdrasil/pull/10249#discussion_r1975948816> for a brief
 #   discussion.
 configure_flags=(
     --build=${MACHTYPE}
