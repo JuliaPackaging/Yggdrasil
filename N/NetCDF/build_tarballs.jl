@@ -107,6 +107,10 @@ platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
+# HDF5 is missing for aarch64-*-freebsd with OpenMPI.
+# (This was an oversight in building HDF5, needs to be fixed there.)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64" && p["mpi"] == "openmpi"), platforms)
+
 # The products that we will ensure are always built
 products = [
     # NetCDF tools
