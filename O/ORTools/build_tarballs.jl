@@ -161,7 +161,10 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = Dependency[
+    # OR-Tools 9.12 starts depending on CMake 3.28.
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.9")
