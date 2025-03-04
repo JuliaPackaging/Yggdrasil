@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ORTools"
-version = v"9.11.1"
+version = v"9.12.0"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "f99e8e981e13035bb7ef074776525ad275182ef6")
+              "b8e881fbde473a9e33e0dac475e498559eb0459d")
 ]
 
 # Bash recipe for building across all platforms
