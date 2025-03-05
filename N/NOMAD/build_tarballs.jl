@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "NOMAD"
-version = v"4.4.0"
+version = v"4.5.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bbopt/nomad.git", "4cfa402d8a7dcfa8a8b1ad4b98111d88242d8fe4"),
+    GitSource("https://github.com/bbopt/nomad.git", "0f6d8ca40e5c9226bbaf6f1af7aadddbc3431a9b"),
 ]
 
 # Bash recipe for building across all platforms
