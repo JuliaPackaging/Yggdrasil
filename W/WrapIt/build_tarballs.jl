@@ -144,10 +144,8 @@ install_license "${WORKSPACE}/srcdir/wrapit/LICENSE"
 # lidation done on 2025-02-20 leads to failure for x86_64-apple-darwin (issue with 'rm -r' 
 # from the recipe used to add std::filesystem support) => vetor this arch.
 # 2025-03-03: following arch vetoed because of validation failure:
-#  - x86_64-apple-darwin: I/O error when running the recipe to add std::filesystem support (was working before)
-#  - riscv64-linux-gnu, aarch64-unknown-freebsd: missing OpenSSL_jll artifacts
 #  - i686-linux-musl: missing Clang_jll and libLLVM_jll artifacts
-platform_veto(p) = Sys.iswindows(p) || triplet(p) ∈ [ "x86_64-apple-darwin", "riscv64-linux-gnu", "aarch64-unknown-freebsd", "i686-linux-musl" ]
+platform_veto(p) = Sys.iswindows(p) || triplet(p) ∈ [ "i686-linux-musl" ]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -164,7 +162,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
     BuildDependency(PackageSpec(name="Clang_jll", uuid="0ee61d77-7f21-5576-8119-9fcc46b10100", version=clang_vers))
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"), compat="3.0.8")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"), compat="3.0.16")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
