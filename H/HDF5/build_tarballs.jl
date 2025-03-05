@@ -32,7 +32,6 @@ cmake_options=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_SHARED_LINKER_FLAGS="-L${libdir} -lsz"   # help cmake link against the sz library
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-    -DMPI_HOME=${prefix}
     -DALLOW_UNSUPPORTED=ON
     -DBUILD_TESTING=OFF
     -DHDF5_BUILD_CPP_LIB=ON
@@ -70,7 +69,7 @@ fi
 if [[ ${target} == *mingw* ]]; then
     cmake_options+=(-DHDF5_ENABLE_PARALLEL=OFF)
 else
-    cmake_options+=(-DHDF5_ENABLE_PARALLEL=ON)
+    cmake_options+=(-DHDF5_ENABLE_PARALLEL=ON -DMPI_HOME=${prefix})
 fi
 
 if [[ ${target} == *mingw* || ${target} == *freebsd* ]]; then
@@ -280,12 +279,43 @@ case ${target} in
 esac
 
 cmake -B builddir "${cmake_options[@]}"
+
+# On Windows, HDF5 finds libaec, but the generated Makefile still says "NOTFOUND".
+# Cmake outputs respective warnings:
+#     [15:19:01] CMake Warning (dev) in CMakeLists.txt:
+#     [15:19:01]   Policy CMP0111 is not set: An imported target missing its location property
+#     [15:19:01]   fails during generation.  Run "cmake --help-policy CMP0111" for policy
+#     [15:19:01]   details.  Use the cmake_policy command to set the policy and suppress this
+#     [15:19:01]   warning.
+#     [15:19:01]
+#     [15:19:01]   IMPORTED_IMPLIB not set for imported target "libaec::sz" configuration
+#     [15:19:01]   "Release".
+#     [15:19:01] This warning is for project developers.  Use -Wno-dev to suppress it.
+#     [15:19:01]
+#     [15:19:01] CMake Warning (dev) in CMakeLists.txt:
+#     [15:19:01]   Policy CMP0111 is not set: An imported target missing its location property
+#     [15:19:01]   fails during generation.  Run "cmake --help-policy CMP0111" for policy
+#     [15:19:01]   details.  Use the cmake_policy command to set the policy and suppress this
+#     [15:19:01]   warning.
+#     [15:19:01]
+#     [15:19:01]   IMPORTED_IMPLIB not set for imported target "libaec::aec" configuration
+#     [15:19:01]   "Release".
+#     [15:19:01] This warning is for project developers.  Use -Wno-dev to suppress it.
+# This seems to be a problem with the HDF5 CMakeLists.txt.
+# Reported as <https://github.com/HDFGroup/hdf5/issues/5354>.
+# We fix the generated Makefile etc manually.
+perl -pi -e 's+libaec::sz-NOTFOUND+/workspace/destdir/lib/libsz.dll.a+' builddir/src/CMakeFiles/hdf5-shared.dir/build.make
+perl -pi -e 's+libaec::aec-NOTFOUND+/workspace/destdir/lib/libaec.dll.a+' builddir/src/CMakeFiles/hdf5-shared.dir/build.make
+perl -pi -e 's+libaec::sz-NOTFOUND+/workspace/destdir/lib/libsz.dll.a+' builddir/src/CMakeFiles/hdf5-shared.dir/linklibs.rsp
+perl -pi -e 's+libaec::aec-NOTFOUND+/workspace/destdir/lib/libaec.dll.a+' builddir/src/CMakeFiles/hdf5-shared.dir/linklibs.rsp
+perl -pi -e 's+-llibname-NOTFOUND -llibname-NOTFOUND -llibname-NOTFOUND+-lsz -laec+' builddir/CMakeFiles/hdf5.pc
+
 cmake --build builddir --parallel ${nproc}
 cmake --install builddir
 
 install_license COPYING
 
-# Clean up: We created the file, we need to remove it
+# Clean up: We created these files, we need to remove them
 rm ${prefix}/cmake/szip-config.cmake
 rm -f "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 """
@@ -340,9 +370,9 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll"),   # This is the successor of szlib
+    Dependency("libaec_jll"; compat="1.1.3"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 
@@ -353,5 +383,3 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Build trigger: 2
