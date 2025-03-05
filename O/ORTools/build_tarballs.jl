@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 # OR-Tools 9.12 starts requiring CMake 3.24+.
 ARCH=$(uname -m)
+echo "ARCH: $ARCH"
 wget -q "https://cmake.org/files/v3.31/cmake-3.31.0-linux-${ARCH}.sh"
 chmod a+x cmake-3.31.0-linux-${ARCH}.sh
 ./cmake-3.31.0-linux-${ARCH}.sh --prefix=/usr/local/ --skip-license
