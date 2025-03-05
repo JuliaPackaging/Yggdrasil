@@ -34,10 +34,10 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("trainbin2ASCII.x", :bpnet_trainbin2ASCII),
-    ExecutableProduct("bpnet_predict.x", :bpnet_predict),
-    ExecutableProduct("nnASCII2bin.x", :bpnet_nnASCII2bin),
-    ExecutableProduct("bpnet_generate.x", :bpnet_generate)
+    ExecutableProduct("trainbin2ASCII.x", :trainbin2ASCII),
+    ExecutableProduct("bpnet_predict.x", :predict),
+    ExecutableProduct("nnASCII2bin.x", :nnASCII2bin),
+    ExecutableProduct("bpnet_generate.x", :generate)
 ]
 
 # Dependencies that must be installed before this package can be built
