@@ -14,6 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # OR-Tools 9.12 starts requiring CMake 3.24+.
+apk update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+apk upgrade --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
 # Prepare the source directory.
