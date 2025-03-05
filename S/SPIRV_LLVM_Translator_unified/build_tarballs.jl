@@ -62,7 +62,7 @@ install -Dm755 build/tools/llvm-spirv/llvm-spirv${exeext} -t ${bindir}
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct(["libLLVMSPIRVLib", "LLVMSPIRVLib"], :libLLVMSPIRV, dont_dlopen = true),
+    LibraryProduct(["libLLVMSPIRVLib", "LLVMSPIRVLib"], :libLLVMSPIRV),
     ExecutableProduct("llvm-spirv", :llvm_spirv),
 ]
 
