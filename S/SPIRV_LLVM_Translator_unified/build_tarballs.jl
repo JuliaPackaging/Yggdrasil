@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "SPIRV_LLVM_Translator_unified"
 repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
-version = v"0.7"
+version = v"0.7.1"
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
