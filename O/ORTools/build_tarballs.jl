@@ -13,6 +13,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+# OR-Tools 9.12 starts requiring CMake 3.24+.
+apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+
 # Prepare the source directory.
 cd $WORKSPACE/srcdir/or-tools*
 mkdir build
@@ -161,10 +164,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    # OR-Tools 9.12 starts depending on CMake 3.28.
-    BuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.9")
