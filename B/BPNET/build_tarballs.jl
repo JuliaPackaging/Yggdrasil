@@ -7,21 +7,6 @@ version = v"0.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/cometscome/BPNET.git", "207fd1d739b8cadcf243fc1bd7e1e8d7d28af392"),
-    DirectorySource("./bundled")
-]
-
-
-
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-name = "BPNET"
-version = v"0.0.2"
-
-# Collection of sources required to complete build
-sources = [
 GitSource("https://github.com/cometscome/BPNET.git", "207fd1d739b8cadcf243fc1bd7e1e8d7d28af392"),
     DirectorySource("./bundled")
 ]
