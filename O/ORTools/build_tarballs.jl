@@ -14,9 +14,12 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # OR-Tools 9.12 starts requiring CMake 3.24+.
-# apk update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-# apk upgrade --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+ARCH=$(uname -m)
+wget -q "https://cmake.org/files/v3.31/cmake-3.31.0-linux-${ARCH}.sh"
+chmod a+x cmake-3.31.0-linux-${ARCH}.sh
+./cmake-3.31.0-linux-${ARCH}.sh --prefix=/usr/local/ --skip-license
+rm cmake-3.31.0-linux-${ARCH}.sh
+export PATH=/usr/local/bin/:$PATH
 
 # Prepare the source directory.
 cd $WORKSPACE/srcdir/or-tools*
