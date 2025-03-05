@@ -353,3 +353,5 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
+
+# Build trigger: 1
