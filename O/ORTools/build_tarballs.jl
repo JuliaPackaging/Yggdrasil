@@ -14,8 +14,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 # OR-Tools 9.12 starts requiring CMake 3.24+.
-apk update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
-apk upgrade --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+# apk update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+# apk upgrade --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 apk add --upgrade cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
 # Prepare the source directory.
@@ -97,9 +97,9 @@ install -Dvm 644 ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/o
 
 platforms = [
     Platform("x86_64", "linux"),
-    # Platform("aarch64", "linux"),   # Abseil uses -march for some files.
-    # Platform("x86_64", "macos"),    # Abseil uses -march for some files.
-    # Platform("aarch64", "macos"),   # Abseil uses -march for some files.
+    Platform("aarch64", "linux"),   # Abseil uses -march for some files.
+    Platform("x86_64", "macos"),    # Abseil uses -march for some files.
+    Platform("aarch64", "macos"),   # Abseil uses -march for some files.
     Platform("x86_64", "freebsd"),
     # Platform("x86_64", "windows"),  # Requires dlfcn.h.
 ]
