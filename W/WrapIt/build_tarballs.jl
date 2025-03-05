@@ -141,8 +141,6 @@ install_license "${WORKSPACE}/srcdir/wrapit/LICENSE"
 """
 
 # Windows is not supported.
-# lidation done on 2025-02-20 leads to failure for x86_64-apple-darwin (issue with 'rm -r' 
-# from the recipe used to add std::filesystem support) => vetor this arch.
 # 2025-03-03: following arch vetoed because of validation failure:
 #  - i686-linux-musl: missing Clang_jll and libLLVM_jll artifacts
 platform_veto(p) = Sys.iswindows(p) || triplet(p) ∈ [ "i686-linux-musl" ]
