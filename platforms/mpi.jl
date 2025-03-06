@@ -45,11 +45,10 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 mpi_abis = (
-    # Note: riscv64 is only disabled because BinaryBuilder doesn't support it yet, the respective MPI packages have been built.
-    ("MPICH", PackageSpec(name="MPICH_jll"), "4.3.0 - 4", p -> !Sys.iswindows(p) && !(arch(p) == "riscv64")),
-    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "4.1.8, 5", p -> !Sys.iswindows(p) && !(arch(p) == "riscv64") && !(arch(p) == "armv6l" && libc(p) == "glibc")),
+    ("MPICH", PackageSpec(name="MPICH_jll"), "4.3.0 - 4", p -> !Sys.iswindows(p)),
+    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.5.3 - 5", p -> !Sys.iswindows(p) && !(libc(p) == "musl")),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
-    ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.5.2 - 5", p -> !Sys.iswindows(p) && !(arch(p) == "riscv64") && !(libc(p) == "musl")),
+    ("OpenMPI", PackageSpec(name="OpenMPI_jll"), "4.1.8, 5", p -> !Sys.iswindows(p) && !(arch(p) == "armv6l" && libc(p) == "glibc")),
 )
 
 """
