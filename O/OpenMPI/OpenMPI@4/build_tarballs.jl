@@ -77,6 +77,8 @@ products = [
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
+    #TODO Enable this at the next version number change:
+    #TODO Dependency("Zlib_jll"; compat="1.2.12"),
     RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267"); compat="0.1", top_level=true),
 ]
 
