@@ -25,6 +25,7 @@ sources = Dict(
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 filter!(p -> libc(p) != "musl", platforms) # missing LLVM_full+asserts
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # missing LLVM_full
+filter!(p -> arch(p) != "riscv64", platforms) # missing LLVM_full
 
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""
