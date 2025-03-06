@@ -99,9 +99,9 @@ install -Dvm 644 ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/o
 
 platforms = [
     Platform("x86_64", "linux"),
-    # Platform("aarch64", "linux"),   # Abseil uses -march for some files.
-    # Platform("x86_64", "macos"),    # Abseil uses -march for some files.
-    # Platform("aarch64", "macos"),   # Abseil uses -march for some files.
+    Platform("aarch64", "linux"),   # Abseil uses -march for some files.
+    Platform("x86_64", "macos"),    # Abseil uses -march for some files.
+    Platform("aarch64", "macos"),   # Abseil uses -march for some files.
     Platform("x86_64", "freebsd"),
     # Platform("x86_64", "windows"),  # Requires dlfcn.h.
 ]
@@ -171,4 +171,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.9", lock_microarchitecture=false)
