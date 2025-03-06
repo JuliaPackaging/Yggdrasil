@@ -66,6 +66,7 @@ wayland_platforms = filter(Sys.islinux, platforms)
 dependencies = [
     HostBuildDependency("Wayland_jll"; platforms=wayland_platforms),
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
+    Dependency("libdecor_jll"; platforms=wayland_platforms),
     Dependency("xkbcommon_jll"; platforms=wayland_platforms),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXcursor_jll"; platforms=x11_platforms),
@@ -76,3 +77,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, VersionNumber(version), sources, script, platforms, products, dependencies; julia_compat="1.6")
+# Build trigger: 1

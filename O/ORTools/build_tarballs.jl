@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "ORTools"
-version = v"9.7"
+version = v"9.11.1"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "6fa02e157a5c91067b7d7b88629472b9ed461193")
+              "f99e8e981e13035bb7ef074776525ad275182ef6")
 ]
 
 # Bash recipe for building across all platforms
@@ -93,9 +93,9 @@ install -Dvm 644 ortools/scheduling/jobshop_scheduling.proto ${prefix}/include/o
 platforms = [
     Platform("x86_64", "linux"),
     # Platform("aarch64", "linux"),   # Abseil uses -march for some files.
-    # Platform("x86_64", "macos"),    # Requires Clang 16+.
+    # Platform("x86_64", "macos"),    # Abseil uses -march for some files.
     # Platform("aarch64", "macos"),   # Abseil uses -march for some files.
-    # Platform("x86_64", "freebsd"),  # Requires Clang 16+.
+    Platform("x86_64", "freebsd"),
     # Platform("x86_64", "windows"),  # Requires dlfcn.h.
 ]
 platforms = expand_cxxstring_abis(platforms)

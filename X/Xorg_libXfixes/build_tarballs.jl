@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXfixes"
-version = v"5.0.3"
+version = v"6.0.0"
 
 # Collection of sources required to build libXfixes
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.bz2",
-                  "de1cd33aff226e08cefd0e6759341c2c8e8c9faf8ce9ac6ec38d43e287b22ad6"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXfixes-$(version).tar.gz",
+                  "82045da5625350838390c9440598b90d69c882c324ca92f73af9f0e992cb57c7"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,4 +38,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

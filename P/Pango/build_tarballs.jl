@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.52.2"
+version = v"1.56.1"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "d0076afe01082814b853deec99f9349ece5f2ce83908b8e58ff736b41f78a96b"),
+                  "426be66460c98b8378573e7f6b0b2ab450f6bb6d2ec7cecc33ae81178f246480"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
 ]
@@ -68,14 +68,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Cairo_jll"; compat="1.18.0"),
-    Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.13.1"),
-    Dependency("FriBidi_jll"),
-    Dependency("Glib_jll"; compat="2.74.0"),
-    Dependency("HarfBuzz_jll"; compat="2.8.1"),
-    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)),
+    HostBuildDependency("gperf_jll"),
+    Dependency("Cairo_jll"; compat="1.18.2"),
+    Dependency("Fontconfig_jll"; compat="2.15.0"),
+    Dependency("FreeType2_jll"; compat="2.13.3"),
+    Dependency("FriBidi_jll"; compat="1.0.16"),
+    Dependency("Glib_jll"; compat="2.82.2"),
+    Dependency("HarfBuzz_jll"; compat="8.5.0"),
+    BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

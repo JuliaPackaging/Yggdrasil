@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "Expat"
-version = v"2.6.2"
+ygg_version = v"2.6.5" # version built is 2.6.4, bumped to pick up riscv with new jll wrapper
+version = v"2.6.4"
 
 # Collection of sources required to build Expat
 sources = [
     ArchiveSource("https://github.com/libexpat/libexpat/releases/download/R_$(version.major)_$(version.minor)_$(version.patch)/expat-$(version).tar.xz",
-                  "ee14b4c5d8908b1bec37ad937607eab183d4d9806a08adee472c3c3121d27364"),
+                  "a695629dae047055b37d50a0ff4776d1d45d0a4c842cf4ccee158441f55ff7ee"),
 ]
 
 # Bash recipe for building across all platforms
@@ -34,4 +35,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "llama_cpp"
-version = v"0.0.16"  # fake version number
+version = v"0.0.17"  # fake version number
 
 # url = "https://github.com/ggerganov/llama.cpp"
 # description = "Port of Facebook's LLaMA model in C/C++"
@@ -53,36 +53,42 @@ version = v"0.0.16"  # fake version number
 # 0.0.14          2024-01-04       b1767             https://github.com/ggerganov/llama.cpp/releases/tag/b1767
 # 0.0.15          2024-01-09       b1796             https://github.com/ggerganov/llama.cpp/releases/tag/b1796
 # 0.0.16          2024-03-10       b2382             https://github.com/ggerganov/llama.cpp/releases/tag/b2382
-
+# 0.0.17          2024-12-20       b4371             https://github.com/ggerganov/llama.cpp/releases/tag/b4371
 
 sources = [
-    GitSource("https://github.com/ggerganov/llama.cpp.git",
-        "621e86b331f8b0e71f79fd82a4ae1cd54c3e4396"),
+    GitSource("https://github.com/ggerganov/llama.cpp.git", "eb5c3dc64bd967f2e23c87d9dec195f45468de60"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Install a newer SDK which supports `std::filesystem`
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+    cp -a System "/opt/${target}/${target}/sys-root/"
+    popd
+fi
+
 cd $WORKSPACE/srcdir/llama.cpp*
 
 # remove compiler flags forbidden in BinaryBuilder
 sed -i -e 's/-funsafe-math-optimizations//g' CMakeLists.txt
 
-EXTRA_CMAKE_ARGS=
+EXTRA_CMAKE_ARGS=()
 if [[ "${target}" == *-linux-* ]]; then
     # otherwise we have undefined reference to `clock_gettime' when
     # linking the `main' example program
-    EXTRA_CMAKE_ARGS='-DCMAKE_EXE_LINKER_FLAGS="-lrt"'
+    EXTRA_CMAKE_ARGS+=(-DCMAKE_EXE_LINKER_FLAGS="-lrt")
 fi
 
-# Use Metal on Apple Silicon, disable otherwise (eg, disable for Intel-based MacOS)
-if [[ "${target}" == aarch64-apple-darwin* ]]; then
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=ON"
-else
-    EXTRA_CMAKE_ARGS="$EXTRA_CMAKE_ARGS -DLLAMA_METAL=OFF"
+# Disable Metal on Intel Apple platforms
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    EXTRA_CMAKE_ARGS+=(-DGGML_METAL=OFF)
 fi
 
-mkdir build && cd build
-
-cmake .. \
+cmake -Bbuild -GNinja \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=RELEASE \
@@ -98,40 +104,72 @@ cmake .. \
     -DLLAMA_BLAS=OFF \
     -DLLAMA_CUBLAS=OFF \
     -DLLAMA_CLBLAST=OFF \
-    $EXTRA_CMAKE_ARGS
-make -j${nproc}
-
-make install
-
-# install header files
-for hdr in ../*.h; do
-    install -Dvm 644 "${hdr}" "${includedir}/$(basename "${hdr}")"
-done
-
-install_license ../LICENSE
+    "${EXTRA_CMAKE_ARGS[@]}"
+cmake --build build
+cmake --install build
+install_license LICENSE
 """
 
-platforms = supported_platforms(; exclude=p -> arch(p) == "powerpc64le" || (arch(p) == "i686" && Sys.iswindows(p)) || (arch(p) in ["armv6l", "armv7l"]))
+platforms = supported_platforms()
+
+# aarch64-linux-musl:
+# /workspace/srcdir/llama.cpp/ggml/src/ggml-cpu/ggml-cpu.c:2398:53: error: ‘HWCAP_ASIMDDP’ undeclared (first use in this function); did you mean ‘HWCAP_ASIMDHP’?
+filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libc(p) == "musl"), platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
-    ExecutableProduct("baby-llama", :baby_llama),
-    ExecutableProduct("benchmark", :benchmark),
-    ExecutableProduct("embedding", :embedding),
-    ExecutableProduct("main", :main),
-    ExecutableProduct("perplexity", :perplexity),
-    ExecutableProduct("quantize", :quantize),
-    ExecutableProduct("quantize-stats", :quantize_stats),
-    ExecutableProduct("save-load-state", :save_load_state),
-    ExecutableProduct("server", :server),
-    ExecutableProduct("simple", :simple),
-    ExecutableProduct("train-text-from-scratch", :train_text_from_scratch),
-    LibraryProduct("libggml_shared", :libggml),
+    ExecutableProduct("llama-batched", :llama_batched),
+    ExecutableProduct("llama-batched-bench", :llama_batched_bench),
+    ExecutableProduct("llama-bench", :llama_bench),
+    ExecutableProduct("llama-cli", :llama_cli),
+    ExecutableProduct("llama-convert-llama2c-to-ggml", :llama_convert_llama2c_to_ggml),
+    ExecutableProduct("llama-cvector-generator", :llama_cvector_generator),
+    ExecutableProduct("llama-embedding", :llama_embedding),
+    ExecutableProduct("llama-eval-callback", :llama_eval_callback),
+    ExecutableProduct("llama-export-lora", :llama_export_lora),
+    # ExecutableProduct("llama-gbnf-validator", :llama_gbnf_validator),   # not built on Windows
+    ExecutableProduct("llama-gen-docs", :llama_gen_docs),
+    ExecutableProduct("llama-gguf", :llama_gguf),
+    ExecutableProduct("llama-gguf-hash", :llama_gguf_hash),
+    ExecutableProduct("llama-gguf-split", :llama_gguf_split),
+    ExecutableProduct("llama-gritlm", :llama_gritlm),
+    ExecutableProduct("llama-imatrix", :llama_imatrix),
+    ExecutableProduct("llama-infill", :llama_infill),
+    ExecutableProduct("llama-llava-cli", :llama_llava_cli),
+    ExecutableProduct("llama-lookahead", :llama_lookahead),
+    ExecutableProduct("llama-lookup", :llama_lookup),
+    ExecutableProduct("llama-lookup-create", :llama_lookup_create),
+    ExecutableProduct("llama-lookup-merge", :llama_lookup_merge),
+    ExecutableProduct("llama-lookup-stats", :llama_lookup_stats),
+    ExecutableProduct("llama-minicpmv-cli", :llama_minicpmv_cli),
+    ExecutableProduct("llama-parallel", :llama_parallel),
+    ExecutableProduct("llama-passkey", :llama_passkey),
+    ExecutableProduct("llama-perplexity", :llama_perplexity),
+    ExecutableProduct("llama-quantize", :llama_quantize),
+    # ExecutableProduct("llama-quantize-stats", :llama_quantize_stats),   # not built on Windows
+    ExecutableProduct("llama-qwen2vl-cli", :llama_qwen2vl_cli),
+    ExecutableProduct("llama-retrieval", :llama_retrieval),
+    ExecutableProduct("llama-run", :llama_run),
+    ExecutableProduct("llama-save-load-state", :llama_save_load_state),
+    ExecutableProduct("llama-server", :llama_server),
+    ExecutableProduct("llama-simple", :llama_simple),
+    ExecutableProduct("llama-simple-chat", :llama_simple_chat),
+    ExecutableProduct("llama-speculative", :llama_speculative),
+    ExecutableProduct("llama-speculative-simple", :llama_speculative_simple),
+    ExecutableProduct("llama-tokenize", :llama_tokenize),
+    ExecutableProduct("llama-tts", :llama_tts),
+
+    LibraryProduct(["libggml-base", "ggml-base"], :libggml_base),
+    LibraryProduct(["libggml-cpu", "ggml-cpu"], :libggml_cpu),
+    LibraryProduct(["libggml", "ggml"], :libggml),
     LibraryProduct("libllama", :libllama),
+    LibraryProduct("libllava_shared", :libllava_shared),
 ]
 
-dependencies = Dependency[
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"10")
+               julia_compat="1.6", preferred_gcc_version=v"10")

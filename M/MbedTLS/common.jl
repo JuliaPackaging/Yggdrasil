@@ -77,6 +77,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DUSE_SHARED_MBEDTLS_LIBRARY=On \
     -DMBEDTLS_FATAL_WARNINGS=OFF \
     -DENABLE_TESTING=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
     ..
 make -j${nproc}
 make install

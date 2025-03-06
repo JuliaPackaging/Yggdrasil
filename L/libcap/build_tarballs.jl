@@ -3,22 +3,19 @@
 using BinaryBuilder
 
 name = "libcap"
-version = v"2.51"
-
-# NOTE: v2.52 and higher requires objcopy with --dump-sections support
-# (but also doesn't require -std=c99 anymore, so remove that below when upgrading)
+version = v"2.70"
 
 # Collection of sources required to build libcap
 sources = [
     ArchiveSource("https://mirrors.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-$(version.major).$(version.minor).tar.gz",
-                  "f146cf1fa282483673df969b76ccd392697b903ac27ab7924c0fda103f5a0d26")
+                  "d3b777ed413c9fafface03b917e171854709b5e4be38dbfb9219aaf7dfd4eea6")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libcap-*/
 
-make -j${nproc} BUILD_CC=${BUILD_CC} COPTS="-O2 -std=c99"
+make -j${nproc}
 make install DESTDIR=${prefix} prefix=/ lib=lib
 """
 
@@ -39,4 +36,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"8")
+# GCC bump for an objcopy with --dump-sections support

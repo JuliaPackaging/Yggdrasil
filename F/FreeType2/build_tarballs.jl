@@ -3,17 +3,17 @@
 using BinaryBuilder
 
 name = "FreeType2"
-version = v"2.13.2"
+version = v"2.13.3"
 
 # Collection of sources required to build FreeType2
 sources = [
     ArchiveSource("https://download.savannah.gnu.org/releases/freetype/freetype-$(version).tar.xz",
-                  "12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d")
+                  "0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/freetype-*/
+cd $WORKSPACE/srcdir/freetype-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-shared --disable-static
 make -j${nproc}
 make install
@@ -22,7 +22,7 @@ install_license docs/{FTL,GPLv2}.TXT
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -37,3 +37,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build trigger: 1

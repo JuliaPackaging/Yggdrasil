@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.80.2"
+version = v"2.82.4"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "b9cfb6f7a5bd5b31238fd5d56df226b2dda5ea37611475bf89f6a0f9400fe8bd"),
+                  "37dd0877fe964cd15e9a2710b044a1830fb1bd93652a6d0cb6b8b2dff187c709"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
@@ -87,6 +87,7 @@ products = [
     LibraryProduct(["libgmodule-2", "libgmodule-2.0"], :libgmodule),
     LibraryProduct(["libgobject-2", "libgobject-2.0"], :libgobject),
     LibraryProduct(["libgthread-2", "libgthread-2.0"], :libgthread),
+    LibraryProduct(["libgirepository-2", "libgirepository-2.0"], :libgirepository),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -104,4 +105,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version = v"6")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

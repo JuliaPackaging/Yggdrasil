@@ -1,9 +1,12 @@
---- a/source/config/mh-linux
-+++ b/source/config/mh-linux
-@@ -21,7 +21,8 @@ LD_RPATH= -Wl,-zorigin,-rpath,'$$'ORIGIN
+--- a/icu4c/source/config/mh-linux
++++ b/icu4c/source/config/mh-linux
+@@ -23,7 +23,8 @@ LD_RPATH= -Wl,-zorigin,-rpath,'$$'ORIGIN
  LD_RPATH_PRE = -Wl,-rpath,
-
+ 
  ## These are the library specific LDFLAGS
 -LDFLAGSICUDT=-nodefaultlibs -nostdlib
-+#LDFLAGSICUDT=-nodefaultlibs -nostdlib
++# LDFLAGSICUDT=-nodefaultlibs -nostdlib
 +LDFLAGSICUDT=
+ 
+ ## Compiler switch to embed a library name
+ # The initial tab in the next line is to prevent icu-config from reading it.

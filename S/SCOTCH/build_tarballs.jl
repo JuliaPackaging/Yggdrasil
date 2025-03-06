@@ -3,37 +3,31 @@
 using BinaryBuilder, Pkg
 
 name = "SCOTCH"
-version = v"7.0.4"
+version = v"7.0.6"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "82ec87f558f4acb7ccb69a079f531be380504c92"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "e231061e53f3ad63d6cce19d983be2c6c4301749"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/scotch*
-
-# https://github.com/conda-forge/scotch-feedstock
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-  atomic_patch -p1 ${f}
-done
-
-# We don't want to break the ABI if we have a new release.
-sed s/'set_target_properties(scotch PROPERTIES VERSION'/'#set_target_properties(scotch PROPERTIES VERSION'/ -i src/libscotch/CMakeLists.txt
-sed s/'  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/'#  ${SCOTCH_VERSION}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL})'/ -i src/libscotch/CMakeLists.txt
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/scotch.patch"
 
 mkdir -p src/dummysizes/build-host
 cd src/dummysizes/build-host
 cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt ../CMakeLists.txt
 
 CC=${CC_BUILD} cmake .. \
+    -DSCOTCH_VERSION=7 \
+    -DSCOTCH_RELEASE=0 \
+    -DSCOTCH_PATCHLEVEL=6 \
     -DBUILD_PTSCOTCH=OFF \
     -DCMAKE_BUILD_TYPE=Release
 
-# make -j${nproc}
-make
+make -j${nproc}
 
 cd ${WORKSPACE}/srcdir/scotch*
 mkdir build
@@ -62,23 +56,13 @@ CFLAGS=$FLAGS cmake .. \
     -DBUILD_LIBESMUMPS=ON \
     -DBUILD_LIBSCOTCHMETIS=ON \
     -DBUILD_DUMMYSIZES=OFF \
-    -DINSTALL_METIS_HEADERS=OFF
+    -DINSTALL_METIS_HEADERS=OFF \
+    -DLIBSCOTCHERR=scotcherr \
+    -DENABLE_TESTS=OFF
 
 # make -j${nproc}
 make
-
-# make install
-if [[ "${target}" == *mingw* ]]; then
-    rm bin/libptesmumps.dll
-    rm lib/libptesmumps.dll.a
-    cp bin/*.dll $libdir
-    cp lib/*.dll.a $prefix/lib
-else
-    rm lib/libptesmumps.$dlext
-    cp lib/*.${dlext} $libdir
-fi
-cd src/include
-cp scotch.h scotchf.h esmumps.h $includedir
+make install
 
 install_license ${WORKSPACE}/srcdir/scotch/LICENSE_en.txt
 """

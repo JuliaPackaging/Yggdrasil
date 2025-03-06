@@ -1,0 +1,15 @@
+#!/bin/bash
+
+host_tool=${host_prefix}/tools/llvm-config
+target_tool=${prefix}/tools/llvm-config
+
+host_prefix=$(dirname $(dirname $(realpath ${host_tool})))
+target_prefix=$(dirname $(dirname $(realpath ${target_tool})))
+
+if [[ ${target} == *apple* ]] && [[ "$@" == *--libs* ]]; then
+    # on macOS, the library file is called differently (LLVM-15.0 instead of LLVM-15jl,
+    # but this stopped being the case in LLVM 18)
+    $host_tool "$@" | perl -pe 's/(-lLLVM-)(14|15|16|17)(jl)/-lLLVM-$2.0/g'
+else
+    $host_tool "$@" | sed "s|${host_prefix}|${target_prefix}|g"
+fi

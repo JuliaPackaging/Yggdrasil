@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.13.0"
+version = v"4.14.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3-solver-$(version).0.tar.gz",
-                  "52588e92aec7cb338fd6288ce93758ae01770f62ca0c80e8f4f2b2333feaf51b"),
+    ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
+                  "83736086dc73f6309a7bb9e45e6a0b6b73de8510b606247b366038f5f40899b4"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -36,7 +36,7 @@ fi
 
 # Bash recipe for building across all platforms
 script = macfix * raw"""
-cd $WORKSPACE/srcdir/z3-*/core
+cd $WORKSPACE/srcdir/z3*/core
 
 # Patches Z3 to work around https://github.com/ahumenberger/Z3.jl/issues/28
 patch -p0 <<EOD
@@ -72,6 +72,9 @@ include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
+# libjulia_jll is not yet available for Julia 1.13
+filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libz3", :libz3),
@@ -87,6 +90,6 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms,
-               products, dependencies; preferred_gcc_version=v"9",
-               julia_compat="1.6")
+# Use GCC 10 to avoid compile errors on Windows
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"10")

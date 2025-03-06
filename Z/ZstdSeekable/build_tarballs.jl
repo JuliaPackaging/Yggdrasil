@@ -6,11 +6,11 @@ using BinaryBuilder, Pkg
 # even though this subproject doesn't necessarily change between zstd versions, simply
 # for convenience.
 name = "ZstdSeekable"
-version = v"1.5.6"
+version = v"1.5.7"
 
 sources = [
     ArchiveSource("https://github.com/facebook/zstd/releases/download/v$version/zstd-$version.tar.gz",
-                  "8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1"),
+                  "eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3"),
 ]
 
 script = raw"""
@@ -34,7 +34,7 @@ dependencies = [
     Dependency(PackageSpec(; name="Zstd_jll", uuid="3161d3a3-bdf6-5164-811a-617609db77b4");
                compat="^$version"),
     Dependency(PackageSpec(; name="xxHash_jll", uuid="5fdcd639-92d1-5a06-bf6b-28f2061df1a9");
-               compat="^0.8.2"),
+               compat="^0.8.3"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

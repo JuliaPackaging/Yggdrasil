@@ -3,19 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http"
-version = v"0.8.4"
+version = v"0.9.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-http.git", "2c6fd577dcd50192cb541658a658aebd7b395685"),
+    GitSource("https://github.com/awslabs/aws-c-http.git", "590c7b597f87e5edc080b8b77418690c30319832"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/aws-c-http
-
-# Patch for MinGW toolchain
-find . -type f -exec sed -i 's/WS2tcpip.h/ws2tcpip.h/g' '{}' \;
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -40,8 +37,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_compression_jll"; compat="0.2.17"),
-    Dependency("aws_c_io_jll"; compat="0.14.11"),
+    Dependency("aws_c_compression_jll"; compat="0.3.1"),
+    Dependency("aws_c_io_jll"; compat="0.17.0"),
     BuildDependency("aws_lc_jll"),
 ]
 

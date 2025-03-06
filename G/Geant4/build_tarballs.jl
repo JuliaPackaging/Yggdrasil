@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"11.2.1"
+version = v"11.3.0"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v$(version)/geant4-v$(version).tar.gz",
-                  "76c9093b01128ee2b45a6f4020a1bcb64d2a8141386dea4674b5ae28bcd23293"),
+                  "d9d71daff8890a7b5e0e33ea9a65fe6308ad6713000b43ba6705af77078e7ead"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
@@ -35,7 +35,10 @@ fi
 mkdir build && cd build
 FLAGS=()
 if [[ "${target}" != *-w64-* && "${target}" != *-apple-* ]]; then
-    FLAGS=(-DGEANT4_USE_OPENGL_X11=ON)
+    FLAGS+=(-DGEANT4_USE_OPENGL_X11=ON)
+fi
+if [[ "${target}" == *-apple-* ]]; then
+    FLAGS+=(-DGEANT4_USE_SYSTEM_ZLIB=ON)
 fi
 if [[ "${target}" == *-w64-* ]]; then
     FLAGS+=(-DGEANT4_BUILD_MULTITHREADED=OFF)
@@ -58,8 +61,11 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-platforms = filter(p -> libc(p) != "musl" && os(p) != "freebsd" && arch(p) != "armv6l" && arch(p) != "i686", platforms)
-
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        arch(p) != "armv6l" && 
+                        arch(p) != "i686" &&
+                        arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -73,7 +79,6 @@ products = [
     LibraryProduct("libG4GMocren", :libG4Mocren),
     LibraryProduct("libG4particles", :libG4Particles),
     LibraryProduct("libG4graphics_reps", :libG4Graphics),
-    LibraryProduct("libG4zlib", :libG4Zlib),
     LibraryProduct("libG4geometry", :libG4Geometry),
     LibraryProduct("libG4modeling", :libG4Modeling),
     LibraryProduct("libG4interfaces", :libG4Interfaces),
@@ -101,7 +106,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"; compat="2.4.8"),
+    Dependency("Expat_jll"; compat="2.6.4"),
     Dependency("Xorg_libXmu_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Xerces_jll"),

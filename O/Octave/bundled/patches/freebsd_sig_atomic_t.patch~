@@ -1,0 +1,11 @@
+--- a/liboctave/util/quit.h
++++ b/liboctave/util/quit.h
+@@ -224,7 +224,7 @@ namespace octave
+   // Signal handlers and the like need access to this
+   OCTAVE_API extern quit_debug* get_quit_debug (void);
+ 
+-  extern OCTAVE_API std::atomic<int> octave_interrupt_state;
++  extern OCTAVE_API std::atomic<sig_atomic_t> octave_interrupt_state;
+ 
+   // Called from octave_quit () to run all the octave_exit functions like
+   // atexit ()

@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOp"
-version = v"0.1.3"
+version = v"0.1.5"
 
-llvm_versions = [v"17.0.6"]
+llvm_versions = [v"18.1.7"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/compiler-research/CppInterOp.git", "ecbffafe0016022e40b7dea6e7197ee062dde38f"),
+    GitSource("https://github.com/compiler-research/CppInterOp.git", "e0546dd8fdf3fb0c7a2ba6beddaf359130d13f35"),
     DirectorySource("./bundled")
 ]
 
@@ -22,6 +22,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd CppInterOp/
+atomic_patch -p1 ../patches/windows.patch
 atomic_patch -p1 ../patches/cmake.patch
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -64,6 +65,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     # These are the platforms we will build for by default, unless further
     # platforms are passed in on the command line
     platforms = expand_cxxstring_abis(supported_platforms())
+    # disable riscv64
+    filter!(p -> arch(p) != "riscv64", platforms)
 
     if llvm_version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.

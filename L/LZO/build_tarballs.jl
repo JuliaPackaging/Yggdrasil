@@ -4,7 +4,7 @@ using BinaryBuilder
 
 name = "LZO"
 version_string = "2.10"
-version = v"2.10.2"
+version = v"2.10.3"
 
 # Collection of sources required to build LZO
 sources = [
@@ -36,3 +36,5 @@ dependencies = Dependency[
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")
+
+# Build Trigger: 2

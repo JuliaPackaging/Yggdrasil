@@ -3,12 +3,12 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "systemd"
-version = v"252"
+version = v"256.7"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/systemd/systemd",
-              "e8dc52766e1fdb4f8c09c3ab654d1270e1090c8d")
+              "7635d01869ba325b9cf450923c8f13912b7ca536")
 ]
 
 # Bash recipe for building across all platforms
@@ -28,8 +28,8 @@ pip install jinja2
 
 meson --cross-file=${MESON_TARGET_TOOLCHAIN} build \
     -Dmode=release \
-    -Dresolve=false -Dnss-resolve=false \
-    -Dmachined=false -Dnss-mymachines=false \
+    -Dresolve=false -Dnss-resolve=disabled \
+    -Dmachined=false -Dnss-mymachines=disabled \
     -Dnss-myhostname=false -Dnss-systemd=false \
     -Dtests=false
 ninja -C build -j${nproc}
@@ -37,9 +37,10 @@ ninja -C build -j${nproc}
 # we only care about libsystemd, so install to a temporary prefix and copy what we need
 meson install -C build --destdir "/tmp/prefix"
 cd /tmp/prefix
-cp -ar lib/lib* $libdir
 # XXX: how is there a workspace/destdir dir there?
+#      maybe this is because busybox's realpath doesn't support --relative
 cd workspace/destdir
+cp -ar lib/lib* $libdir
 cp -ar include/* $includedir
 cp -ar share/pkgconfig $prefix/share
 """
@@ -99,4 +100,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7", dont_dlopen=true)
+               julia_compat="1.6", preferred_gcc_version=v"8", dont_dlopen=true)

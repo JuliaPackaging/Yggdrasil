@@ -1,0 +1,142 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -258,12 +258,20 @@ cmake_dependent_option(PASTIX_DEBUG_MPI
+ option(PASTIX_LR_TESTINGS
+   "Enable the generation of low-rank testings (Requires LAPACKE with TMG support)" OFF)
+ 
++### Build libraries
++option(BUILD_LIBS "Build the libraries" ON)
++
++### BUILD wrappers
++option(BUILD_PYTHON "BUILD the python wrappers" ON)
++
++
+ #########################
+ # Look for dependencies #
+ #########################
+ 
+ # PaStiX depends on the libm
+ #---------------------------
++if(BUILD_LIBS)
+ find_package(M REQUIRED)
+ morse_export_imported_target(MORSE M m pastix)
+ 
+@@ -531,6 +539,10 @@ else()
+   mark_as_advanced( SPM_WITH_MPI     )
+   mark_as_advanced( SPM_WITH_SCOTCH  )
+   add_subdirectory(spm)
++
++  set(BUILD_PYTHON ${BUILD_PYTHON} CACHE BOOL "Build Python bindings in spm" FORCE)
++  set(BUILD_LIBS ${BUILD_LIBS} CACHE BOOL "Build libraries in spm" FORCE)
++  
+   add_library(SPM::spm ALIAS spm)
+   if ( SPM_WITH_FORTRAN )
+     add_library(SPM::spmf ALIAS spmf)
+@@ -955,9 +967,6 @@ add_subdirectory(example)
+ # Testing executables
+ add_subdirectory(test)
+ 
+-### Wrappers
+-add_subdirectory(wrappers)
+-
+ ### Build pkg-config and environment file
+ include(GenPkgConfig)
+ 
+@@ -1245,3 +1254,10 @@ install( FILES
+ # Print Options
+ #############################################################
+ include(PrintOpts)
++endif(BUILD_LIBS)
++
++### Wrappers
++add_subdirectory(wrappers)
++if (BUILD_PYTHON)
++  add_subdirectory(spm)
++endif()
+\ No newline at end of file
+--- a/spm/CMakeLists.txt
++++ b/spm/CMakeLists.txt
+@@ -14,6 +14,17 @@
+ cmake_minimum_required (VERSION 3.5)
+ project (SPM C Fortran)
+ 
++### Build libraries
++option(BUILD_LIBS "Build the libraries" ON)
++
++### BUILD wrappers
++option(BUILD_PYTHON "Build the python wrappers" ON)
++
++message(STATUS "BUILD_LIBS in spm is set to ${BUILD_LIBS}")
++message(STATUS "BUILD_PYTHON in spm is set to ${BUILD_PYTHON}")
++
++
++if(BUILD_LIBS)
+ # Check if compiled independently or within another project
+ if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+   set( BUILD_AS_SUBPROJECT OFF )
+@@ -275,8 +286,7 @@ add_subdirectory(examples)
+ ### Testing executables
+ add_subdirectory(tests)
+ 
+-### Wrappers
+-add_subdirectory(wrappers)
++
+ 
+ ###############################################################################
+ # Export targets #
+@@ -368,3 +378,8 @@ add_documented_files(
+   README.md
+   )
+ add_subdirectory(docs)
++
++endif(BUILD_LIBS)
++
++### Wrappers
++add_subdirectory(wrappers)
+\ No newline at end of file
+--- a/spm/wrappers/CMakeLists.txt
++++ b/spm/wrappers/CMakeLists.txt
+@@ -10,14 +10,14 @@
+ #  @date 2024-05-29
+ #
+ ###
++if (BUILD_SHARED_LIBS AND BUILD_PYTHON)
++  add_subdirectory( python )
++endif(BUILD_SHARED_LIBS AND BUILD_PYTHON)
+ 
+-if (SPM_WITH_FORTRAN)
++if (SPM_WITH_FORTRAN AND NOT BUILD_PYTHON)
+   add_subdirectory( fortran90 )
+ endif()
+ 
+-if (BUILD_SHARED_LIBS)
+-  add_subdirectory( python )
++if (BUILD_SHARED_LIBS AND NOT BUILD_PYTHON)
+   add_subdirectory( julia )
+-else()
+-  message(STATUS "--- Python and Julia wrappers are disabled with static libraries")
+-endif()
++endif(BUILD_SHARED_LIBS AND NOT BUILD_PYTHON)
+--- a/wrappers/CMakeLists.txt
++++ b/wrappers/CMakeLists.txt
+@@ -9,13 +9,14 @@
+ #
+ ###
+ 
+-if (PASTIX_WITH_FORTRAN)
++if (BUILD_SHARED_LIBS AND BUILD_PYTHON)
++  add_subdirectory( python )
++endif(BUILD_SHARED_LIBS AND BUILD_PYTHON)
++
++if (PASTIX_WITH_FORTRAN AND NOT BUILD_PYTHON)
+   add_subdirectory( fortran90 )
+ endif()
+ 
+-if (BUILD_SHARED_LIBS)
+-  add_subdirectory( python )
++if (BUILD_SHARED_LIBS AND NOT BUILD_PYTHON)
+   add_subdirectory( julia )
+-else()
+-  message(STATUS "--- Python and Julia wrappers are disabled with static libraries")
+-endif()
++endif(BUILD_SHARED_LIBS AND NOT BUILD_PYTHON)

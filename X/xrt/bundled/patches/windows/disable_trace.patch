@@ -1,0 +1,100 @@
+--- a/src/runtime_src/core/common/detail/windows/trace.h
++++ b/src/runtime_src/core/common/detail/windows/trace.h
+@@ -23,11 +23,11 @@
+ #include "core/common/trace.h"
+ #include <memory>
+ #include <windows.h>
+-#include <TraceLoggingProvider.h>
++// #include <TraceLoggingProvider.h>
+ 
+ // Forward declare the logging provider object.  The provider
+ // is defined in a single compilation unit (core/common/trace.cpp).
+-TRACELOGGING_DECLARE_PROVIDER(g_logging_provider);
++// TRACELOGGING_DECLARE_PROVIDER(g_logging_provider);
+ 
+ namespace xrt_core::trace::detail {
+ 
+@@ -35,30 +35,30 @@ template <typename ProbeType>
+ inline void
+ add_event(ProbeType&& p)
+ {
+-  TraceLoggingWrite(g_logging_provider,
+-                    "XRTTraceEvent", // must be a string literal
+-                    TraceLoggingValue(std::forward<ProbeType>(p), "Event"));
++  // TraceLoggingWrite(g_logging_provider,
++  //                   "XRTTraceEvent", // must be a string literal
++  //                   TraceLoggingValue(std::forward<ProbeType>(p), "Event"));
+ }
+ 
+ template <typename ProbeType, typename A1>
+ inline void
+ add_event(ProbeType&& p, A1&& a1)
+ {
+-  TraceLoggingWrite(g_logging_provider,
+-                    "XRTTraceEvent", // must be a string literal
+-                    TraceLoggingValue(std::forward<ProbeType>(p), "Event"),
+-                    TraceLoggingValue(std::forward<A1>(a1), "arg1"));
++  // TraceLoggingWrite(g_logging_provider,
++  //                   "XRTTraceEvent", // must be a string literal
++  //                   TraceLoggingValue(std::forward<ProbeType>(p), "Event"),
++  //                   TraceLoggingValue(std::forward<A1>(a1), "arg1"));
+ }
+ 
+ template <typename ProbeType, typename A1, typename A2>
+ inline void
+ add_event(ProbeType&& p, A1&& a1, A2&& a2)
+ {
+-  TraceLoggingWrite(g_logging_provider,
+-                    "XRTTraceEvent", // must be a string literal
+-                    TraceLoggingValue(std::forward<ProbeType>(p), "Event"),
+-                    TraceLoggingValue(std::forward<A1>(a1), "arg1"),
+-                    TraceLoggingValue(std::forward<A2>(a1), "arg2"));
++  // TraceLoggingWrite(g_logging_provider,
++  //                   "XRTTraceEvent", // must be a string literal
++  //                   TraceLoggingValue(std::forward<ProbeType>(p), "Event"),
++  //                   TraceLoggingValue(std::forward<A1>(a1), "arg1"),
++  //                   TraceLoggingValue(std::forward<A2>(a1), "arg2"));
+ }
+ 
+ template<typename ...Args>
+
+--- a/src/runtime_src/core/common/detail/windows/trace_init.h
++++ b/src/runtime_src/core/common/detail/windows/trace_init.h
+@@ -27,14 +27,14 @@
+ // ...
+ 
+ #include <windows.h>
+-#include <TraceLoggingProvider.h>
++// #include <TraceLoggingProvider.h>
+ 
+ // [System.Diagnostics.Tracing.EventSource]::new("XRT").Guid
+ // e3e140bd-8a94-50be-2264-48e444a715db
+-TRACELOGGING_DEFINE_PROVIDER(
+-  g_logging_provider,
+-  "XRT",
+-  (0xe3e140bd, 0x8a94, 0x50be, 0x22, 0x64, 0x48, 0xe4, 0x44, 0xa7, 0x15, 0xdb));
++// TRACELOGGING_DEFINE_PROVIDER(
++//   g_logging_provider,
++//   "XRT",
++//   (0xe3e140bd, 0x8a94, 0x50be, 0x22, 0x64, 0x48, 0xe4, 0x44, 0xa7, 0x15, 0xdb));
+ 
+ namespace xrt_core::trace::detail {
+ 
+@@ -43,7 +43,7 @@ namespace xrt_core::trace::detail {
+ inline void
+ init_trace_logging()
+ {
+-  TraceLoggingRegister(g_logging_provider);
++  // TraceLoggingRegister(g_logging_provider);
+ }
+   
+ // Deinitialize trace logging.  This function is called exactly once
+@@ -51,7 +51,7 @@ init_trace_logging()
+ inline void
+ deinit_trace_logging()
+ {
+-  TraceLoggingUnregister(g_logging_provider);
++  // TraceLoggingUnregister(g_logging_provider);
+ }
+ 
+ } // namespace xrt_core::trace::detail

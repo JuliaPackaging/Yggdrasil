@@ -3,20 +3,32 @@
 using BinaryBuilder
 
 name = "Libgcrypt"
-version = v"1.8.11"
+version = v"1.11.0"
 
 # Collection of sources required to build libgcrypt
 sources = [
     ArchiveSource("https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-$(version).tar.bz2",
-                  "c98249fb5bb1f6017f5f9bf484327a940b59075bca7c46fa69ebb54098249860"),
+                  "09120c9867ce7f2081d6aaa1775386b98c2f2f246135761aae47d81f58685b9c"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libgcrypt-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
-    --disable-padlock-support \
-    --disable-asm
+
+BUILD_FLAGS=(--disable-padlock-support --disable-asm)
+
+if [[ "${target}" == *linux* ]]; then
+    # on our old glibc, we don't have getentropy
+    BUILD_FLAGS+=(--enable-random=linux)
+fi
+
+if [[ "${target}" == *mingw* ]]; then
+    # Work around JuliaPackaging/Yggdrasil#9687
+    sed -i 's/CLOCK_REALTIME/0/g' random/jitterentropy-base-user.h
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} "${BUILD_FLAGS[@]}"
+
 make -j${nproc}
 make install
 """
@@ -33,8 +45,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll", v"1.42.0"; compat="1.42.0"),
+    # NOTE: only needs 1.49, but we don't have that version for freebsd-aarch64
+    Dependency("Libgpg_error_jll"; compat="1.50"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

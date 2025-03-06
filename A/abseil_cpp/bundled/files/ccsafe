@@ -1,2 +1,0 @@
-#!/bin/bash
-exec cc $(echo '' "$@" '' | sed -e 's/ -Ofast / -O3 -fexcess-precision=fast -fno-math-errno /g;s/ -ffast-math / -fexcess-precision=fast -fno-math-errno /g;s/ -funsafe-math-optimizations / /g;s/ -march=[^ ]* / /g;s/ -maes / /g;s/ -msse4[.]1 / /g;s/ -Xarch_[^ ]* / /g')

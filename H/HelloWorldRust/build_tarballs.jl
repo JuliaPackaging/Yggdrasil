@@ -20,6 +20,8 @@ platforms = supported_platforms()
 # 32-bit Windows seems to be broken
 # https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/499
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+# Not yet supported by our Rust toolchain
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [

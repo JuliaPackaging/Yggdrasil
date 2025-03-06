@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libtakum"
-version = v"0.2.0"
+version = v"1.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/takum-arithmetic/libtakum.git", "ed7eb168bccedf816d5cfa885ab5414bdf435394")
+    GitSource("https://github.com/takum-arithmetic/libtakum.git", "543811aa19a6e6749b305f66eef0e9a3517d27e3")
 ]
 
 # Bash recipe for building across all platforms
@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libtakum
 ./configure
 make PREFIX=${prefix} LDCONFIG= -j${nproc} install
-rm -f ${prefix}/lib/libtakum.a ${prefix}/lib/libtakum.lib
+rm -f ${prefix}/lib/libtakum.a ${prefix}/lib/libtakum.lib ${prefix}/share/man/man3/takum*.3 ${prefix}/share/man/man7/libtakum.7
 """
 
 # These are the platforms we will build for by default, unless further

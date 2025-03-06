@@ -1,7 +1,7 @@
 using BinaryBuilder
 
 name = "Bzip2"
-version = v"1.0.8"
+version = v"1.0.9" # Building v1.0.8, version bump to pick up riscv
 
 
 # Collection of sources required to build bzip2

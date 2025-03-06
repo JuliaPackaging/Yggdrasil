@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Kerberos_krb5"
-version = v"1.19.3"
+version = v"1.21.3"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://kerberos.org/dist/krb5/$(version.major).$(version.minor)/krb5-$(version).tar.gz",
-                  "56d04863cfddc9d9eb7af17556e043e3537d41c6e545610778676cf551b9dcd0"),
+    ArchiveSource("https://web.mit.edu/kerberos/dist/krb5/$(version.major).$(version.minor)/krb5-$(version).tar.gz",
+                  "b7a4cd5ead67fb08b980b21abd150ff7217e85ea320c9ed0c6dadd304840ad35"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,8 +21,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
-
+platforms = supported_platforms(; exclude=p -> !Sys.islinux(p) && !Sys.isfreebsd(p))
 
 # The products that we will ensure are always built
 products = [

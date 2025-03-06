@@ -1,0 +1,774 @@
+diff --git a/compiler-rt/CMakeLists.txt b/compiler-rt/CMakeLists.txt
+index 62737735695f..41552f2da661 100644
+--- a/compiler-rt/CMakeLists.txt
++++ b/compiler-rt/CMakeLists.txt
+@@ -35,10 +35,6 @@ include(CMakeDependentOption)
+ 
+ option(COMPILER_RT_BUILD_BUILTINS "Build builtins" ON)
+ mark_as_advanced(COMPILER_RT_BUILD_BUILTINS)
+-option(COMPILER_RT_BUILD_CRT "Build crtbegin.o/crtend.o" ON)
+-mark_as_advanced(COMPILER_RT_BUILD_CRT)
+-option(COMPILER_RT_CRT_USE_EH_FRAME_REGISTRY "Use eh_frame in crtbegin.o/crtend.o" ON)
+-mark_as_advanced(COMPILER_RT_CRT_USE_EH_FRAME_REGISTRY)
+ option(COMPILER_RT_BUILD_SANITIZERS "Build sanitizers" ON)
+ mark_as_advanced(COMPILER_RT_BUILD_SANITIZERS)
+ option(COMPILER_RT_BUILD_XRAY "Build xray" ON)
+diff --git a/compiler-rt/cmake/builtin-config-ix.cmake b/compiler-rt/cmake/builtin-config-ix.cmake
+index 439abc713bad..8715220f2be3 100644
+--- a/compiler-rt/cmake/builtin-config-ix.cmake
++++ b/compiler-rt/cmake/builtin-config-ix.cmake
+@@ -13,6 +13,11 @@ builtin_check_c_compiler_flag(-fvisibility=hidden   COMPILER_RT_HAS_VISIBILITY_H
+ builtin_check_c_compiler_flag(-fomit-frame-pointer  COMPILER_RT_HAS_OMIT_FRAME_POINTER_FLAG)
+ builtin_check_c_compiler_flag(-ffreestanding        COMPILER_RT_HAS_FFREESTANDING_FLAG)
+ builtin_check_c_compiler_flag(-fxray-instrument     COMPILER_RT_HAS_XRAY_COMPILER_FLAG)
++builtin_check_c_compiler_flag(-fno-lto              COMPILER_RT_HAS_FNO_LTO_FLAG)
++builtin_check_c_compiler_flag(-fno-profile-generate COMPILER_RT_HAS_FNO_PROFILE_GENERATE_FLAG)
++builtin_check_c_compiler_flag(-fno-profile-instr-generate COMPILER_RT_HAS_FNO_PROFILE_INSTR_GENERATE_FLAG)
++builtin_check_c_compiler_flag(-fno-profile-instr-use COMPILER_RT_HAS_FNO_PROFILE_INSTR_USE_FLAG)
++builtin_check_c_compiler_flag(-Wno-pedantic         COMPILER_RT_HAS_WNO_PEDANTIC)
+ 
+ builtin_check_c_compiler_source(COMPILER_RT_HAS_ATOMIC_KEYWORD
+ "
+@@ -44,6 +49,12 @@ asm(\".arch armv8-a+lse\");
+ asm(\"cas w0, w1, [x2]\");
+ ")
+ 
++if(ANDROID)
++  set(OS_NAME "Android")
++else()
++  set(OS_NAME "${CMAKE_SYSTEM_NAME}")
++endif()
++
+ set(ARM64 aarch64)
+ set(ARM32 arm armhf armv6m armv7m armv7em armv7 armv7s armv7k armv8m.main armv8.1m.main)
+ set(AVR avr)
+@@ -229,4 +240,10 @@ else()
+     ${ALL_BUILTIN_SUPPORTED_ARCH})
+ endif()
+ 
++if (OS_NAME MATCHES "Linux" AND NOT LLVM_USE_SANITIZER)
++  set(COMPILER_RT_HAS_CRT TRUE)
++else()
++  set(COMPILER_RT_HAS_CRT FALSE)
++endif()
++
+ message(STATUS "Builtin supported architectures: ${BUILTIN_SUPPORTED_ARCH}")
+diff --git a/compiler-rt/lib/CMakeLists.txt b/compiler-rt/lib/CMakeLists.txt
+index 18eed2446dc6..e48a2675a6a3 100644
+--- a/compiler-rt/lib/CMakeLists.txt
++++ b/compiler-rt/lib/CMakeLists.txt
+@@ -17,10 +17,6 @@ if(COMPILER_RT_BUILD_BUILTINS)
+   add_subdirectory(builtins)
+ endif()
+ 
+-if(COMPILER_RT_BUILD_CRT)
+-  add_subdirectory(crt)
+-endif()
+-
+ function(compiler_rt_build_runtime runtime)
+   string(TOUPPER ${runtime} runtime_uppercase)
+   if(COMPILER_RT_HAS_${runtime_uppercase})
+diff --git a/compiler-rt/lib/builtins/CMakeLists.txt b/compiler-rt/lib/builtins/CMakeLists.txt
+index df02682ae00f..2e75f045fb84 100644
+--- a/compiler-rt/lib/builtins/CMakeLists.txt
++++ b/compiler-rt/lib/builtins/CMakeLists.txt
+@@ -49,10 +49,7 @@ if (COMPILER_RT_STANDALONE_BUILD)
+ endif()
+ 
+ include(builtin-config-ix)
+-
+-if(${CMAKE_SYSTEM_NAME} MATCHES "AIX")
+-  include(CompilerRTAIXUtils)
+-endif()
++include(CMakeDependentOption)
+ 
+ option(COMPILER_RT_BUILTINS_HIDE_SYMBOLS
+   "Do not export any symbols from the static library." ON)
+@@ -646,7 +643,7 @@ set(powerpc64_SOURCES
+   ${GENERIC_SOURCES}
+ )
+ # These routines require __int128, which isn't supported on AIX.
+-if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "AIX")
++if (NOT OS_NAME MATCHES "AIX")
+   set(powerpc64_SOURCES
+     ppc/floattitf.c
+     ppc/fixtfti.c
+@@ -789,6 +786,8 @@ else ()
+   endforeach ()
+ endif ()
+ 
++add_dependencies(compiler-rt builtins)
++
+ option(COMPILER_RT_BUILD_STANDALONE_LIBATOMIC
+   "Build standalone shared atomic library."
+   OFF)
+@@ -797,7 +796,8 @@ if(COMPILER_RT_BUILD_STANDALONE_LIBATOMIC)
+   add_custom_target(builtins-standalone-atomic)
+   set(BUILTIN_DEPS "")
+   set(BUILTIN_TYPE SHARED)
+-  if(${CMAKE_SYSTEM_NAME} MATCHES "AIX")
++  if(OS_NAME MATCHES "AIX")
++    include(CompilerRTAIXUtils)
+     if(NOT COMPILER_RT_LIBATOMIC_LINK_FLAGS)
+       get_aix_libatomic_default_link_flags(COMPILER_RT_LIBATOMIC_LINK_FLAGS
+         "${CMAKE_CURRENT_SOURCE_DIR}/ppc/atomic.exp")
+@@ -823,7 +823,7 @@ if(COMPILER_RT_BUILD_STANDALONE_LIBATOMIC)
+   # FIXME: On AIX, we have to archive built shared libraries into a static
+   # archive, i.e., libatomic.a. Once cmake adds support of such usage for AIX,
+   # this ad-hoc part can be removed.
+-  if(${CMAKE_SYSTEM_NAME} MATCHES "AIX")
++  if(OS_NAME MATCHES "AIX")
+     archive_aix_libatomic(clang_rt.atomic libatomic
+                           ARCHS ${BUILTIN_SUPPORTED_ARCH}
+                           PARENT_TARGET builtins-standalone-atomic)
+@@ -831,4 +831,40 @@ if(COMPILER_RT_BUILD_STANDALONE_LIBATOMIC)
+   add_dependencies(compiler-rt builtins-standalone-atomic)
+ endif()
+ 
+-add_dependencies(compiler-rt builtins)
++cmake_dependent_option(COMPILER_RT_BUILD_CRT "Build crtbegin.o/crtend.o" ON "COMPILER_RT_HAS_CRT" OFF)
++
++if(COMPILER_RT_BUILD_CRT)
++  add_compiler_rt_component(crt)
++
++  option(COMPILER_RT_CRT_USE_EH_FRAME_REGISTRY "Use eh_frame in crtbegin.o/crtend.o" ON)
++
++  include(CheckSectionExists)
++  check_section_exists(".init_array" COMPILER_RT_HAS_INITFINI_ARRAY
++    SOURCE "volatile int x;\n__attribute__((constructor)) void f(void) {x = 0;}\nint main(void) { return 0; }\n")
++
++  append_list_if(COMPILER_RT_HAS_STD_C11_FLAG -std=c11 CRT_CFLAGS)
++  append_list_if(COMPILER_RT_HAS_INITFINI_ARRAY -DCRT_HAS_INITFINI_ARRAY CRT_CFLAGS)
++  append_list_if(COMPILER_RT_CRT_USE_EH_FRAME_REGISTRY -DEH_USE_FRAME_REGISTRY CRT_CFLAGS)
++  append_list_if(COMPILER_RT_HAS_FPIC_FLAG -fPIC CRT_CFLAGS)
++  append_list_if(COMPILER_RT_HAS_WNO_PEDANTIC -Wno-pedantic CRT_CFLAGS)
++  if (COMPILER_RT_HAS_FCF_PROTECTION_FLAG)
++    append_list_if(COMPILER_RT_ENABLE_CET -fcf-protection=full CRT_CFLAGS)
++  endif()
++
++  foreach(arch ${BUILTIN_SUPPORTED_ARCH})
++    add_compiler_rt_runtime(clang_rt.crtbegin
++      OBJECT
++      ARCHS ${arch}
++      SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/crtbegin.c
++      CFLAGS ${CRT_CFLAGS}
++      PARENT_TARGET crt)
++    add_compiler_rt_runtime(clang_rt.crtend
++      OBJECT
++      ARCHS ${arch}
++      SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/crtend.c
++      CFLAGS ${CRT_CFLAGS}
++      PARENT_TARGET crt)
++  endforeach()
++
++  add_dependencies(compiler-rt crt)
++endif()
+diff --git a/compiler-rt/lib/crt/CMakeLists.txt b/compiler-rt/lib/crt/CMakeLists.txt
+deleted file mode 100644
+index 60b30566b792..000000000000
+--- a/compiler-rt/lib/crt/CMakeLists.txt
++++ /dev/null
+@@ -1,63 +0,0 @@
+-if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+-  cmake_minimum_required(VERSION 3.13.4)
+-
+-  set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+-  project(CompilerRTCRT C)
+-  set(COMPILER_RT_STANDALONE_BUILD TRUE)
+-  set(COMPILER_RT_CRT_STANDALONE_BUILD TRUE)
+-
+-  set(COMPILER_RT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+-
+-  set(LLVM_COMMON_CMAKE_UTILS "${COMPILER_RT_SOURCE_DIR}/../cmake")
+-
+-  # Add path for custom modules
+-  list(INSERT CMAKE_MODULE_PATH 0
+-    "${COMPILER_RT_SOURCE_DIR}/cmake"
+-    "${COMPILER_RT_SOURCE_DIR}/cmake/Modules"
+-    "${LLVM_COMMON_CMAKE_UTILS}"
+-    "${LLVM_COMMON_CMAKE_UTILS}/Modules"
+-    )
+-
+-  include(base-config-ix)
+-  include(CompilerRTUtils)
+-
+-  load_llvm_config()
+-  construct_compiler_rt_default_triple()
+-
+-  include(SetPlatformToolchainTools)
+-  include(AddCompilerRT)
+-endif()
+-
+-include(crt-config-ix)
+-
+-if(COMPILER_RT_HAS_CRT)
+-  add_compiler_rt_component(crt)
+-
+-  include(CheckSectionExists)
+-  check_section_exists(".init_array" COMPILER_RT_HAS_INITFINI_ARRAY
+-    SOURCE "volatile int x;\n__attribute__((constructor)) void f(void) {x = 0;}\nint main(void) { return 0; }\n")
+-
+-  append_list_if(COMPILER_RT_HAS_STD_C11_FLAG -std=c11 CRT_CFLAGS)
+-  append_list_if(COMPILER_RT_HAS_INITFINI_ARRAY -DCRT_HAS_INITFINI_ARRAY CRT_CFLAGS)
+-  append_list_if(COMPILER_RT_CRT_USE_EH_FRAME_REGISTRY -DEH_USE_FRAME_REGISTRY CRT_CFLAGS)
+-  append_list_if(COMPILER_RT_HAS_FPIC_FLAG -fPIC CRT_CFLAGS)
+-  append_list_if(COMPILER_RT_HAS_WNO_PEDANTIC -Wno-pedantic CRT_CFLAGS)
+-  if (COMPILER_RT_HAS_FCF_PROTECTION_FLAG)
+-    append_list_if(COMPILER_RT_ENABLE_CET -fcf-protection=full CRT_CFLAGS)
+-  endif()
+-
+-  foreach(arch ${CRT_SUPPORTED_ARCH})
+-    add_compiler_rt_runtime(clang_rt.crtbegin
+-      OBJECT
+-      ARCHS ${arch}
+-      SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/crtbegin.c
+-      CFLAGS ${CRT_CFLAGS}
+-      PARENT_TARGET crt)
+-    add_compiler_rt_runtime(clang_rt.crtend
+-      OBJECT
+-      ARCHS ${arch}
+-      SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/crtend.c
+-      CFLAGS ${CRT_CFLAGS}
+-      PARENT_TARGET crt)
+-  endforeach()
+-endif()
+diff --git a/compiler-rt/lib/crt/crtbegin.c b/compiler-rt/lib/crt/crtbegin.c
+deleted file mode 100644
+index 7b041ff00b6b..000000000000
+--- a/compiler-rt/lib/crt/crtbegin.c
++++ /dev/null
+@@ -1,127 +0,0 @@
+-//===-- crtbegin.c - Start of constructors and destructors ----------------===//
+-//
+-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+-// See https://llvm.org/LICENSE.txt for license information.
+-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-//
+-//===----------------------------------------------------------------------===//
+-
+-#include <stddef.h>
+-
+-__attribute__((visibility("hidden"))) void *__dso_handle = &__dso_handle;
+-
+-#ifdef EH_USE_FRAME_REGISTRY
+-__extension__ static void *__EH_FRAME_LIST__[]
+-    __attribute__((section(".eh_frame"), aligned(sizeof(void *)))) = {};
+-
+-extern void __register_frame_info(const void *, void *) __attribute__((weak));
+-extern void *__deregister_frame_info(const void *) __attribute__((weak));
+-#endif
+-
+-#ifndef CRT_HAS_INITFINI_ARRAY
+-typedef void (*fp)(void);
+-
+-static fp __CTOR_LIST__[]
+-    __attribute__((section(".ctors"), aligned(sizeof(fp)))) = {(fp)-1};
+-extern fp __CTOR_LIST_END__[];
+-#endif
+-
+-extern void __cxa_finalize(void *) __attribute__((weak));
+-
+-static void __attribute__((used)) __do_init(void) {
+-  static _Bool __initialized;
+-  if (__builtin_expect(__initialized, 0))
+-    return;
+-  __initialized = 1;
+-
+-#ifdef EH_USE_FRAME_REGISTRY
+-  static struct { void *p[8]; } __object;
+-  if (__register_frame_info)
+-    __register_frame_info(__EH_FRAME_LIST__, &__object);
+-#endif
+-#ifndef CRT_HAS_INITFINI_ARRAY
+-  const size_t n = __CTOR_LIST_END__ - __CTOR_LIST__ - 1;
+-  for (size_t i = n; i >= 1; i--) __CTOR_LIST__[i]();
+-#endif
+-}
+-
+-#ifdef CRT_HAS_INITFINI_ARRAY
+-__attribute__((section(".init_array"),
+-               used)) static void (*__init)(void) = __do_init;
+-#elif defined(__i386__) || defined(__x86_64__)
+-__asm__(".pushsection .init,\"ax\",@progbits\n\t"
+-    "call " __USER_LABEL_PREFIX__ "__do_init\n\t"
+-    ".popsection");
+-#elif defined(__riscv)
+-__asm__(".pushsection .init,\"ax\",%progbits\n\t"
+-        "call " __USER_LABEL_PREFIX__ "__do_init\n\t"
+-        ".popsection");
+-#elif defined(__arm__) || defined(__aarch64__)
+-__asm__(".pushsection .init,\"ax\",%progbits\n\t"
+-    "bl " __USER_LABEL_PREFIX__ "__do_init\n\t"
+-    ".popsection");
+-#elif defined(__powerpc__) || defined(__powerpc64__)
+-__asm__(".pushsection .init,\"ax\",@progbits\n\t"
+-    "bl " __USER_LABEL_PREFIX__ "__do_init\n\t"
+-    "nop\n\t"
+-    ".popsection");
+-#elif defined(__sparc__)
+-__asm__(".pushsection .init,\"ax\",@progbits\n\t"
+-    "call " __USER_LABEL_PREFIX__ "__do_init\n\t"
+-    ".popsection");
+-#else
+-#error "crtbegin without .init_fini array unimplemented for this architecture"
+-#endif // CRT_HAS_INITFINI_ARRAY
+-
+-#ifndef CRT_HAS_INITFINI_ARRAY
+-static fp __DTOR_LIST__[]
+-    __attribute__((section(".dtors"), aligned(sizeof(fp)))) = {(fp)-1};
+-extern fp __DTOR_LIST_END__[];
+-#endif
+-
+-static void __attribute__((used)) __do_fini(void) {
+-  static _Bool __finalized;
+-  if (__builtin_expect(__finalized, 0))
+-    return;
+-  __finalized = 1;
+-
+-  if (__cxa_finalize)
+-    __cxa_finalize(__dso_handle);
+-
+-#ifndef CRT_HAS_INITFINI_ARRAY
+-  const size_t n = __DTOR_LIST_END__ - __DTOR_LIST__ - 1;
+-  for (size_t i = 1; i <= n; i++) __DTOR_LIST__[i]();
+-#endif
+-#ifdef EH_USE_FRAME_REGISTRY
+-  if (__deregister_frame_info)
+-    __deregister_frame_info(__EH_FRAME_LIST__);
+-#endif
+-}
+-
+-#ifdef CRT_HAS_INITFINI_ARRAY
+-__attribute__((section(".fini_array"),
+-               used)) static void (*__fini)(void) = __do_fini;
+-#elif defined(__i386__) || defined(__x86_64__)
+-__asm__(".pushsection .fini,\"ax\",@progbits\n\t"
+-    "call " __USER_LABEL_PREFIX__ "__do_fini\n\t"
+-    ".popsection");
+-#elif defined(__arm__) || defined(__aarch64__)
+-__asm__(".pushsection .fini,\"ax\",%progbits\n\t"
+-    "bl " __USER_LABEL_PREFIX__ "__do_fini\n\t"
+-    ".popsection");
+-#elif defined(__powerpc__) || defined(__powerpc64__)
+-__asm__(".pushsection .fini,\"ax\",@progbits\n\t"
+-    "bl " __USER_LABEL_PREFIX__ "__do_fini\n\t"
+-    "nop\n\t"
+-    ".popsection");
+-#elif defined(__riscv)
+-__asm__(".pushsection .fini,\"ax\",@progbits\n\t"
+-        "call " __USER_LABEL_PREFIX__ "__do_fini\n\t"
+-        ".popsection");
+-#elif defined(__sparc__)
+-__asm__(".pushsection .fini,\"ax\",@progbits\n\t"
+-    "call " __USER_LABEL_PREFIX__ "__do_fini\n\t"
+-    ".popsection");
+-#else
+-#error "crtbegin without .init_fini array unimplemented for this architecture"
+-#endif  // CRT_HAS_INIT_FINI_ARRAY
+diff --git a/compiler-rt/lib/crt/crtend.c b/compiler-rt/lib/crt/crtend.c
+deleted file mode 100644
+index ebcc60b89a10..000000000000
+--- a/compiler-rt/lib/crt/crtend.c
++++ /dev/null
+@@ -1,22 +0,0 @@
+-//===-- crtend.c - End of constructors and destructors --------------------===//
+-//
+-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+-// See https://llvm.org/LICENSE.txt for license information.
+-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-//
+-//===----------------------------------------------------------------------===//
+-
+-#include <stdint.h>
+-
+-// Put 4-byte zero which is the length field in FDE at the end as a terminator.
+-const int32_t __EH_FRAME_LIST_END__[]
+-    __attribute__((section(".eh_frame"), aligned(sizeof(int32_t)),
+-                   visibility("hidden"), used)) = {0};
+-
+-#ifndef CRT_HAS_INITFINI_ARRAY
+-typedef void (*fp)(void);
+-fp __CTOR_LIST_END__[]
+-    __attribute__((section(".ctors"), visibility("hidden"), used)) = {0};
+-fp __DTOR_LIST_END__[]
+-    __attribute__((section(".dtors"), visibility("hidden"), used)) = {0};
+-#endif
+diff --git a/compiler-rt/test/CMakeLists.txt b/compiler-rt/test/CMakeLists.txt
+index 3cbfc4b0e544..c28f2c651c0c 100644
+--- a/compiler-rt/test/CMakeLists.txt
++++ b/compiler-rt/test/CMakeLists.txt
+@@ -96,9 +96,6 @@ if(COMPILER_RT_CAN_EXECUTE_TESTS)
+   if(COMPILER_RT_BUILD_ORC)
+     compiler_rt_Test_runtime(orc)
+   endif()
+-  if(COMPILER_RT_BUILD_CRT)
+-    add_subdirectory(crt)
+-  endif()
+   # ShadowCallStack does not yet provide a runtime with compiler-rt, the tests
+   # include their own minimal runtime
+   add_subdirectory(shadowcallstack)
+diff --git a/compiler-rt/test/builtins/CMakeLists.txt b/compiler-rt/test/builtins/CMakeLists.txt
+index 1579e223e875..d2115501e772 100644
+--- a/compiler-rt/test/builtins/CMakeLists.txt
++++ b/compiler-rt/test/builtins/CMakeLists.txt
+@@ -13,6 +13,10 @@ configure_lit_site_cfg(
+ 
+ include(builtin-config-ix)
+ 
++if (COMPILER_RT_HAS_CRT)
++  list(APPEND BUILTINS_TEST_DEPS crt)
++endif()
++
+ # Indicate if this is an MSVC environment.
+ pythonize_bool(MSVC)
+ 
+diff --git a/compiler-rt/test/builtins/Unit/lit.cfg.py b/compiler-rt/test/builtins/Unit/lit.cfg.py
+index fa6dc86783d3..a531175ba8e9 100644
+--- a/compiler-rt/test/builtins/Unit/lit.cfg.py
++++ b/compiler-rt/test/builtins/Unit/lit.cfg.py
+@@ -2,6 +2,8 @@
+ 
+ import os
+ import platform
++import shlex
++import subprocess
+ 
+ import lit.formats
+ 
+@@ -25,6 +27,40 @@ def get_required_attr(config, attr_name):
+       "to lit.site.cfg.py " % attr_name)
+   return attr_value
+ 
++def get_library_path(file):
++    cmd = subprocess.Popen(
++        [config.clang.strip(), "-print-file-name=%s" % file]
++        + shlex.split(config.target_cflags),
++        stdout=subprocess.PIPE,
++        env=config.environment,
++        universal_newlines=True,
++    )
++    if not cmd.stdout:
++        lit_config.fatal("Couldn't find the library path for '%s'" % file)
++    dir = cmd.stdout.read().strip()
++    if sys.platform in ["win32"] and execute_external:
++        # Don't pass dosish path separator to msys bash.exe.
++        dir = dir.replace("\\", "/")
++    return dir
++
++
++def get_libgcc_file_name():
++    cmd = subprocess.Popen(
++        [config.clang.strip(), "-print-libgcc-file-name"]
++        + shlex.split(config.target_cflags),
++        stdout=subprocess.PIPE,
++        env=config.environment,
++        universal_newlines=True,
++    )
++    if not cmd.stdout:
++        lit_config.fatal("Couldn't find the library path for '%s'" % file)
++    dir = cmd.stdout.read().strip()
++    if sys.platform in ["win32"] and execute_external:
++        # Don't pass dosish path separator to msys bash.exe.
++        dir = dir.replace("\\", "/")
++    return dir
++
++
+ # Setup config name.
+ config.name = 'Builtins' + config.name_suffix
+ 
+@@ -51,6 +87,27 @@ else:
+     base_lib = base_lib.replace('\\', '/')
+   config.substitutions.append( ("%librt ", base_lib + ' -lc -lm ') )
+ 
++  if config.host_os == "Linux":
++      base_obj = os.path.join(
++          config.compiler_rt_libdir, "clang_rt.%%s%s.o" % config.target_suffix
++      )
++      if sys.platform in ["win32"] and execute_external:
++          # Don't pass dosish path separator to msys bash.exe.
++          base_obj = base_obj.replace("\\", "/")
++
++      config.substitutions.append(("%crtbegin", base_obj % "crtbegin"))
++      config.substitutions.append(("%crtend", base_obj % "crtend"))
++
++      config.substitutions.append(("%crt1", get_library_path("crt1.o")))
++      config.substitutions.append(("%crti", get_library_path("crti.o")))
++      config.substitutions.append(("%crtn", get_library_path("crtn.o")))
++
++      config.substitutions.append(("%libgcc", get_libgcc_file_name()))
++
++      config.substitutions.append(
++          ("%libstdcxx", "-l" + config.sanitizer_cxx_lib.lstrip("lib"))
++      )
++
+ builtins_source_dir = os.path.join(
+   get_required_attr(config, "compiler_rt_src_root"), "lib", "builtins")
+ if sys.platform in ['win32'] and execute_external:
+diff --git a/compiler-rt/test/builtins/Unit/lit.site.cfg.py.in b/compiler-rt/test/builtins/Unit/lit.site.cfg.py.in
+index e55dd5d51f3d..920c915feb08 100644
+--- a/compiler-rt/test/builtins/Unit/lit.site.cfg.py.in
++++ b/compiler-rt/test/builtins/Unit/lit.site.cfg.py.in
+@@ -4,6 +4,7 @@ config.name_suffix = "@BUILTINS_TEST_CONFIG_SUFFIX@"
+ config.builtins_lit_source_dir = "@BUILTINS_LIT_SOURCE_DIR@/Unit"
+ config.target_cflags = "@BUILTINS_TEST_TARGET_CFLAGS@"
+ config.target_arch = "@BUILTINS_TEST_TARGET_ARCH@"
++config.sanitizer_cxx_lib = "@SANITIZER_TEST_CXX_LIBNAME@"
+ config.is_msvc = @MSVC_PYBOOL@
+ config.builtins_is_msvc = @BUILTINS_IS_MSVC_PYBOOL@
+ config.builtins_lit_source_features = "@BUILTINS_LIT_SOURCE_FEATURES@"
+diff --git a/compiler-rt/test/crt/CMakeLists.txt b/compiler-rt/test/crt/CMakeLists.txt
+deleted file mode 100644
+index f539be34f6ca..000000000000
+--- a/compiler-rt/test/crt/CMakeLists.txt
++++ /dev/null
+@@ -1,41 +0,0 @@
+-include(crt-config-ix)
+-
+-if (COMPILER_RT_HAS_CRT)
+-  set(CRT_LIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+-
+-  if(NOT COMPILER_RT_STANDALONE_BUILD)
+-    list(APPEND CRT_TEST_DEPS crt)
+-  endif()
+-  if(NOT COMPILER_RT_STANDALONE_BUILD AND NOT LLVM_RUNTIMES_BUILD)
+-    # Use LLVM utils and Clang from the same build tree.
+-    list(APPEND CRT_TEST_DEPS
+-      clang clang-resource-headers FileCheck not llvm-config)
+-  endif()
+-
+-  set(CRT_TEST_ARCH ${CRT_SUPPORTED_ARCH})
+-  foreach(arch ${CRT_TEST_ARCH})
+-    set(CRT_TEST_TARGET_ARCH ${arch})
+-    string(TOLOWER "-${arch}-${OS_NAME}" CRT_TEST_CONFIG_SUFFIX)
+-    get_test_cc_for_arch(${arch} CRT_TEST_TARGET_CC CRT_TEST_TARGET_CFLAGS)
+-    string(TOUPPER ${arch} ARCH_UPPER_CASE)
+-    set(CONFIG_NAME ${ARCH_UPPER_CASE}${OS_NAME}Config)
+-
+-    if (COMPILER_RT_ENABLE_CET)
+-      if (${arch} MATCHES "i386|x86_64")
+-        list(APPEND CRT_TEST_TARGET_CFLAGS -fcf-protection=full)
+-        string(REPLACE ";" " " CRT_TEST_TARGET_CFLAGS "${CRT_TEST_TARGET_CFLAGS}")
+-      else()
+-        message(FATAL_ERROR "The target arch ${arch} doesn't support CET")
+-      endif()
+-    endif()
+-    configure_lit_site_cfg(
+-      ${CMAKE_CURRENT_SOURCE_DIR}/lit.site.cfg.py.in
+-      ${CMAKE_CURRENT_BINARY_DIR}/${CONFIG_NAME}/lit.site.cfg.py)
+-    list(APPEND CRT_TESTSUITES ${CMAKE_CURRENT_BINARY_DIR}/${CONFIG_NAME})
+-  endforeach()
+-
+-  add_lit_testsuite(check-crt "Running the CRT tests"
+-    ${CRT_TESTSUITES}
+-    DEPENDS ${CRT_TEST_DEPS})
+-  set_target_properties(check-crt PROPERTIES FOLDER "Compiler-RT Misc")
+-endif()
+diff --git a/compiler-rt/test/crt/ctor_dtor.c b/compiler-rt/test/crt/ctor_dtor.c
+deleted file mode 100644
+index 2bea05073b4d..000000000000
+--- a/compiler-rt/test/crt/ctor_dtor.c
++++ /dev/null
+@@ -1,41 +0,0 @@
+-// RUN: %clang -fno-use-init-array -g -c %s -o %t.o
+-// RUN: %clang -o %t -no-pie -nostdlib %crt1 %crti %crtbegin %t.o -lc %libgcc %crtend %crtn
+-// RUN: %run %t 2>&1 | FileCheck %s
+-
+-#include <stdio.h>
+-#include <stdlib.h>
+-
+-// Ensure the various startup functions are called in the proper order.
+-
+-// CHECK: __register_frame_info()
+-/// ctor() is here if ld.so/libc supports DT_INIT/DT_FINI
+-// CHECK:      main()
+-/// dtor() is here if ld.so/libc supports DT_INIT/DT_FINI
+-// CHECK:      __deregister_frame_info()
+-
+-struct object;
+-static int counter;
+-
+-void __register_frame_info(const void *fi, struct object *obj) {
+-  printf("__register_frame_info()\n");
+-}
+-
+-void __deregister_frame_info(const void *fi) {
+-  printf("__deregister_frame_info()\n");
+-}
+-
+-void __attribute__((constructor)) ctor() {
+-  printf("ctor()\n");
+-  ++counter;
+-}
+-
+-void __attribute__((destructor)) dtor() {
+-  printf("dtor()\n");
+-  if (--counter != 0)
+-    abort();
+-}
+-
+-int main() {
+-  printf("main()\n");
+-  return 0;
+-}
+diff --git a/compiler-rt/test/crt/dso_handle.cpp b/compiler-rt/test/crt/dso_handle.cpp
+deleted file mode 100644
+index a32ce4b8d382..000000000000
+--- a/compiler-rt/test/crt/dso_handle.cpp
++++ /dev/null
+@@ -1,35 +0,0 @@
+-// RUN: %clangxx -g -DCRT_SHARED -c %s -fPIC -o %tshared.o
+-// RUN: %clangxx -g -c %s -fPIC -o %t.o
+-// RUN: %clangxx -g -shared -o %t.so -nostdlib %crti %crtbegin %tshared.o %libstdcxx -lc -lm %libgcc %crtend %crtn
+-// RUN: %clangxx -g -o %t -fno-pic -no-pie -nostdlib %crt1 %crti %crtbegin %t.o %libstdcxx -lc -lm %libgcc %t.so %crtend %crtn
+-// RUN: %run %t 2>&1 | FileCheck %s
+-
+-// UNSUPPORTED: arm, aarch64
+-
+-#include <stdio.h>
+-
+-// CHECK: 1
+-// CHECK-NEXT: ~A()
+-
+-#ifdef CRT_SHARED
+-bool G;
+-void C() {
+-  printf("%d\n", G);
+-}
+-
+-struct A {
+-  A() { G = true; }
+-  ~A() {
+-    printf("~A()\n");
+-  }
+-};
+-
+-A a;
+-#else
+-void C();
+-
+-int main() {
+-  C();
+-  return 0;
+-}
+-#endif
+diff --git a/compiler-rt/test/crt/lit.cfg.py b/compiler-rt/test/crt/lit.cfg.py
+deleted file mode 100644
+index d5a6aa9862d9..000000000000
+--- a/compiler-rt/test/crt/lit.cfg.py
++++ /dev/null
+@@ -1,95 +0,0 @@
+-# -*- Python -*-
+-
+-import os
+-import subprocess
+-import shlex
+-
+-# Setup config name.
+-config.name = 'CRT' + config.name_suffix
+-
+-# Setup source root.
+-config.test_source_root = os.path.dirname(__file__)
+-
+-
+-# Choose between lit's internal shell pipeline runner and a real shell.  If
+-# LIT_USE_INTERNAL_SHELL is in the environment, we use that as an override.
+-use_lit_shell = os.environ.get("LIT_USE_INTERNAL_SHELL")
+-if use_lit_shell:
+-    # 0 is external, "" is default, and everything else is internal.
+-    execute_external = (use_lit_shell == "0")
+-else:
+-    # Otherwise we default to internal on Windows and external elsewhere, as
+-    # bash on Windows is usually very slow.
+-    execute_external = (not sys.platform in ['win32'])
+-
+-def get_library_path(file):
+-    cmd = subprocess.Popen([config.clang.strip(),
+-                            '-print-file-name=%s' % file] +
+-                           shlex.split(config.target_cflags),
+-                           stdout=subprocess.PIPE,
+-                           env=config.environment,
+-                           universal_newlines=True)
+-    if not cmd.stdout:
+-      lit_config.fatal("Couldn't find the library path for '%s'" % file)
+-    dir = cmd.stdout.read().strip()
+-    if sys.platform in ['win32'] and execute_external:
+-        # Don't pass dosish path separator to msys bash.exe.
+-        dir = dir.replace('\\', '/')
+-    return dir
+-
+-
+-def get_libgcc_file_name():
+-    cmd = subprocess.Popen([config.clang.strip(),
+-                            '-print-libgcc-file-name'] +
+-                           shlex.split(config.target_cflags),
+-                           stdout=subprocess.PIPE,
+-                           env=config.environment,
+-                           universal_newlines=True)
+-    if not cmd.stdout:
+-      lit_config.fatal("Couldn't find the library path for '%s'" % file)
+-    dir = cmd.stdout.read().strip()
+-    if sys.platform in ['win32'] and execute_external:
+-        # Don't pass dosish path separator to msys bash.exe.
+-        dir = dir.replace('\\', '/')
+-    return dir
+-
+-
+-def build_invocation(compile_flags):
+-    return ' ' + ' '.join([config.clang] + compile_flags) + ' '
+-
+-
+-# Setup substitutions.
+-config.substitutions.append(
+-    ('%clang ', build_invocation([config.target_cflags])))
+-config.substitutions.append(
+-    ('%clangxx ',
+-     build_invocation(config.cxx_mode_flags + [config.target_cflags])))
+-
+-base_lib = os.path.join(
+-    config.compiler_rt_libdir, "clang_rt.%%s%s.o" % config.target_suffix)
+-
+-if sys.platform in ['win32'] and execute_external:
+-    # Don't pass dosish path separator to msys bash.exe.
+-    base_lib = base_lib.replace('\\', '/')
+-
+-config.substitutions.append(('%crtbegin', base_lib % "crtbegin"))
+-config.substitutions.append(('%crtend', base_lib % "crtend"))
+-
+-config.substitutions.append(
+-    ('%crt1', get_library_path('crt1.o')))
+-config.substitutions.append(
+-    ('%crti', get_library_path('crti.o')))
+-config.substitutions.append(
+-    ('%crtn', get_library_path('crtn.o')))
+-
+-config.substitutions.append(
+-    ('%libgcc', get_libgcc_file_name()))
+-
+-config.substitutions.append(
+-    ('%libstdcxx', '-l' + config.sanitizer_cxx_lib.lstrip('lib')))
+-
+-# Default test suffixes.
+-config.suffixes = ['.c', '.cpp']
+-
+-if config.host_os not in ['Linux']:
+-    config.unsupported = True
+diff --git a/compiler-rt/test/crt/lit.site.cfg.py.in b/compiler-rt/test/crt/lit.site.cfg.py.in
+deleted file mode 100644
+index 53eda0c45948..000000000000
+--- a/compiler-rt/test/crt/lit.site.cfg.py.in
++++ /dev/null
+@@ -1,14 +0,0 @@
+-@LIT_SITE_CFG_IN_HEADER@
+-
+-# Tool-specific config options.
+-config.name_suffix = "@CRT_TEST_CONFIG_SUFFIX@"
+-config.crt_lit_source_dir = "@CRT_LIT_SOURCE_DIR@"
+-config.target_cflags = "@CRT_TEST_TARGET_CFLAGS@"
+-config.target_arch = "@CRT_TEST_TARGET_ARCH@"
+-config.sanitizer_cxx_lib = "@SANITIZER_TEST_CXX_LIBNAME@"
+-
+-# Load common config for all compiler-rt lit tests
+-lit_config.load_config(config, "@COMPILER_RT_BINARY_DIR@/test/lit.common.configured")
+-
+-# Load tool-specific config that would do the real work.
+-lit_config.load_config(config, "@CRT_LIT_SOURCE_DIR@/lit.cfg.py")

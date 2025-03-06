@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "OpenPolicyAgent"
-version = v"0.61.0"
+version = v"0.69.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/open-policy-agent/opa.git", "ea7a3e13c8fdceadeb199904facb4990fcb010f8")
+    GitSource("https://github.com/open-policy-agent/opa.git", "4a3fd1a715a8d24d102719421931020aafa8b778")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/opa/
-WASM_ENABLED=0 make build
+CGO_ENABLED=0 WASM_ENABLED=0 make build
 mkdir -p $bindir
 install -Dvm 755 opa_* $bindir/opa${exeext}
 install_license LICENSE

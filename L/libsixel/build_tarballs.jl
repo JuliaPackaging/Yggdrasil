@@ -3,19 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "libsixel"
-version = v"1.10.3"
+version = v"1.10.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libsixel/libsixel.git", "e2c493768ee0d48b38f7f9a6dde114215f1c3b8a"),
-    DirectorySource("./bundled")
+    GitSource("https://github.com/libsixel/libsixel.git", "37026b01a0bd38634ae0a8c5017bd4671101fe08"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libsixel
-
-atomic_patch -p1 ../patches/01-headers.patch
 
 meson --cross-file="${MESON_TARGET_TOOLCHAIN}" build
 cd build
@@ -40,4 +37,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6")

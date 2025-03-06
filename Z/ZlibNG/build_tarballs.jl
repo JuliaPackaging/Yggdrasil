@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ZlibNG"
-version = v"2.1.6"
+version = v"2.2.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zlib-ng/zlib-ng.git", "74253725f884e2424a0dd8ae3f69896d5377f325"),
+    GitSource("https://github.com/zlib-ng/zlib-ng.git", "860e4cff7917d93f54f5d7f0bc1d0e8b1a3cb988"),
     DirectorySource("bundled"),
 ]
 
@@ -16,21 +16,19 @@ script = raw"""
 cd $WORKSPACE/srcdir/zlib-ng
 # Correct Power build (see <https://github.com/zlib-ng/zlib-ng/issues/1648>)
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/power.patch
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix \
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DZLIB_ENABLE_TESTS=OFF \
-    ..
-make -j${nproc}
-make install
+    -DZLIB_ENABLE_TESTS=OFF
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
 
 # The products that we will ensure are always built
 products = [

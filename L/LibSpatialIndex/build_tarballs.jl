@@ -1,33 +1,26 @@
 using BinaryBuilder
 
 name = "LibSpatialIndex"
-version = v"1.9.3"
+version = v"2.0.0"
 
 # Collection of sources required to build LibSpatialIndex
 sources = [
     ArchiveSource("https://github.com/libspatialindex/libspatialindex/releases/download/$(version)/spatialindex-src-$(version).tar.bz2",
-        "4a529431cfa80443ab4dcd45a4b25aebbabe1c0ce2fa1665039c80e999dcc50a"),
-    DirectorySource("./patches")
-    ]
+        "949e3fdcad406a63075811ab1b11afcc4afddc035fbc69a3acfc8b655b82e9a5"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 
 cd spatialindex-src-*
-
-if [ $target = "x86_64-w64-mingw32" ] || [ $target = "i686-w64-mingw32" ]; then
-    # apply https://github.com/libspatialindex/libspatialindex/pull/185 for mingw builds
-    # to succeed
-    atomic_patch -p1 ${WORKSPACE}/srcdir/0001-fix-mingw-build-185.patch
-    # fix for https://github.com/JuliaPackaging/Yggdrasil/pull/7520#issuecomment-1760495334
-    atomic_patch -p1 ${WORKSPACE}/srcdir/0002-set-win-bin-dir.patch
-fi
-
-
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF \
+    ..
 cmake --build . -j${nproc}
 cmake --build . --target install
 install_license ../COPYING

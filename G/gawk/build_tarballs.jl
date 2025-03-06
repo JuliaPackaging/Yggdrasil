@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "gawk"
-version = v"5.2.1"
+version = v"5.3.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/gawk/gawk-$(version).tar.xz",
-                  "673553b91f9e18cc5792ed51075df8d510c9040f550a6f74e09c9add243a7e4f")
+                  "694db764812a6236423d4ff40ceb7b6c4c441301b72ad502bb5c27e00cd56f78")
 ]
 
 # Bash recipe for building across all platforms

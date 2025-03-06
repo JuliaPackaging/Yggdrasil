@@ -23,12 +23,9 @@ VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 exit
 """
 
-# Julia version compatibility
-julia_versions = [v"1.7", v"1.8", v"1.9", v"1.10"]
-julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
-
 # Get a full list of platforms supported by Libjulia
 include("../../L/libjulia/common.jl")
+filter!(x -> x >= v"1.7", julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -47,5 +44,5 @@ dependencies = [Dependency("libcxxwrap_julia_jll", compat="0.11.2"),
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat,
+               julia_compat="1.7",
                preferred_gcc_version=v"7") # We need C++17 for CxxWrap

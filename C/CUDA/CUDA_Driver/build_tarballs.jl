@@ -9,20 +9,20 @@ using BinaryBuilder, Pkg
 include("../../../fancy_toys.jl")
 
 name = "CUDA_Driver"
-version = v"0.9.1"
+version = v"0.12.0"
 
-cuda_version = v"12.5"
+cuda_version = v"12.8"
 cuda_version_str = "$(cuda_version.major)-$(cuda_version.minor)"
-driver_version_str = "555.42.06"
+driver_version_str = "570.86.10"
 build = 1
 
 sources_linux_x86 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).x86_64.rpm",
-               "66d63219c926733ecd641a709d98a5cb7406712af000d141d0c23d08e0bdb88b", "compat.rpm")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).el8.x86_64.rpm",
+               "012115a107352f3d0dd6b73206eaf8517477880a4be9329996612bcfd1621e2a", "compat.rpm")
 ]
 sources_linux_aarch64 = [
-    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).aarch64.rpm",
-               "600d86e143b9fa97ec7862ff634210cacf072ce709c738ee322c932b763ab138", "compat.rpm")
+    FileSource("https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-compat-$(cuda_version_str)-$(driver_version_str)-$(build).el8.aarch64.rpm",
+               "4fcc52fbf3b9323ddb3b26e799cd65bb8f73e122d65f27d78830f84117470fd6", "compat.rpm")
 ]
 
 dependencies = []
@@ -46,8 +46,7 @@ script = raw"""
 # CUDA_Driver.jl), but that complicates depending on it from other JLLs (like
 # CUDA_Runtime_jll). This will also simplify moving the logic into CUDA_Runtime_jll, which
 # we will have to at some point (because its pkg hooks shouldn't depend on CUDA_Driver_jll).
-init_block = "\nglobal compat_version = $(repr(cuda_version))\n" *
-             read(joinpath(@__DIR__, "init.jl"), String)
+init_block = read(joinpath(@__DIR__, "init.jl"), String)
 init_block = map(eachline(IOBuffer(init_block))) do line
         # indent non-empty lines
         (isempty(line) ? "" : "    ") * line * "\n"

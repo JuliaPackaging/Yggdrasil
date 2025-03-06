@@ -3,11 +3,11 @@
 using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "z5"
-version = v"2.0.17"
+version = v"2.0.18"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/constantinpape/z5", "90ffc7524de5b179c82920f3304ec46287b6d210"),
+    GitSource("https://github.com/constantinpape/z5", "c77f42e222ef91bd8cd4551cf9bb6b07b0adc28a"),
 ]
 
 # Bash recipe for building across all platforms

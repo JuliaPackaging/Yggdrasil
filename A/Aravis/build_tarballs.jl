@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Aravis"
-version = v"0.8.26"
+version = v"0.8.33"
 
 sources = [
     GitSource("https://github.com/AravisProject/aravis.git",
-              "e977fa4eedc8c4f4747ff370d53621b369930fe9"),
-    
+              "99081fbda9e820a171d2aaccea0bc95ba5f8c37b")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,9 +39,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Glib_jll"; compat="2.68.3"),
-    Dependency("libusb_jll")
+    Dependency("Glib_jll"; compat="2.82.2"),
+    Dependency("libusb_jll"),
+    Dependency("XML2_jll")
     ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5", clang_use_lld=false)

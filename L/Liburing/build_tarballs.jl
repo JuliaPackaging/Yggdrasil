@@ -3,31 +3,23 @@
 using BinaryBuilder, Pkg
 
 name = "Liburing"
-version = v"2.4.0"
+version = v"2.8.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/axboe/liburing.git", "8699273dee7b7f736144e2554bc32746f626f786"),
+    GitSource("https://github.com/axboe/liburing.git", "80272cbeb42bcd0b39a75685a50b0009b77cd380"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd liburing/
-./configure --prefix=${prefix}
+cd ${WORKSPACE}/srcdir/liburing
+env prefix=${prefix} ./configure
 make -C src install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#platforms = [
-#    Platform("x86_64", "linux"; libc = "glibc"),
-#    Platform("aarch64", "linux"; libc = "glibc")
-#]
-platforms = supported_platforms(;exclude=x->
-    startswith(arch(x), r"arm|power") ||
-    !Sys.islinux(x))
-
+platforms = supported_platforms(; exclude = !Sys.islinux)
 
 # The products that we will ensure are always built
 products = [
@@ -39,4 +31,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"10.2.0")

@@ -1,0 +1,33 @@
+diff --git a/compiler/utilities/global/compiler_options.ml b/compiler/utilities/global/compiler_options.ml
+index c9a03ebe..52677ddc 100644
+--- a/compiler/utilities/global/compiler_options.ml
++++ b/compiler/utilities/global/compiler_options.ml
+@@ -38,7 +38,18 @@ let date = "DATE"
+ (* standard module *)
+ let pervasives_module = Pervasives
+ let standard_lib = "STDLIB"
+-let standard_lib = try Sys.getenv "HEPTLIB" with Not_found -> standard_lib
++let standard_lib =
++  try
++    Sys.getenv "HEPTLIB"
++  with Not_found ->
++    let bindir = Filename.dirname Sys.executable_name in
++    let relative_libdir = Filename.concat
++      (Filename.concat bindir "..") 
++      (Filename.concat (Filename.concat "lib" "ocaml") "heptagon")
++    in
++      try
++        if Sys.is_directory standard_lib then standard_lib else relative_libdir
++      with Sys_error(_) -> relative_libdir
+ 
+ (* list of modules initially opened *)
+ let default_used_modules = ref [pervasives_module]
+@@ -55,7 +66,7 @@ and add_include d =
+ 
+ (* where is the standard library *)
+ let locate_stdlib () =
+-  print_string (try Sys.getenv "HEPTLIB" with Not_found -> standard_lib);
++  print_string (standard_lib);
+   print_newline ();
+   exit 0
+ 

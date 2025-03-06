@@ -3,21 +3,21 @@
 using BinaryBuilder, Pkg
 
 name = "Qt6Declarative"
-version = v"6.7.1"
+version = v"6.8.2"
 
 # Set this to true first when updating the version. It will build only for the host (linux musl).
-# After that JLL is in the registyry, set this to false to build for the other platforms, using
+# After that JLL is in the registry, set this to false to build for the other platforms, using
 # this same package as host build dependency.
 const host_build = false
 
 # Collection of sources required to build qt6
 sources = [
     ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtdeclarative-everywhere-src-$version.tar.xz",
-                  "81135c96ed2f599385b8a68c57f4f438dad193c62f946f5b200a321558fd9f1c"),
-    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/13.3/MacOSX13.3.sdk.tar.xz",
-                  "e5d0f958a079106234b3a840f93653308a76d3dcea02d3aa8f2841f8df33050c"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894")
+                  "144d876adc8bb55909735143e678d1e24eadcd0a380a0186792d88b731346d56"),
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",
+                  "3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10"),
 ]
 
 script = raw"""
@@ -65,15 +65,20 @@ case "$bb_full_target" in
     ;;
 
     *apple-darwin*)
-        apple_sdk_root=$WORKSPACE/srcdir/MacOSX13.3.sdk
-        sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+        apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
+        sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+        sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+        export MACOSX_DEPLOYMENT_TARGET=12
+        export OBJCFLAGS="-D__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=120000"
+        export OBJCXXFLAGS=$OBJCFLAGS
+        export CXXFLAGS=$OBJCFLAGS
         cmake -G Ninja -DQT_HOST_PATH=$host_prefix \
         -DPython_ROOT_DIR=/usr \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_PREFIX_PATH=$host_prefix \
         -DCMAKE_FIND_ROOT_PATH=$prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=11 \
+        -DCMAKE_SYSROOT=$apple_sdk_root -DCMAKE_FRAMEWORK_PATH=$apple_sdk_root/System/Library/Frameworks -DCMAKE_OSX_DEPLOYMENT_TARGET=12 \
         -DQT_NO_APPLE_SDK_AND_XCODE_CHECK=ON \
         -DCMAKE_BUILD_TYPE=Release \
         $qtsrcdir
@@ -97,17 +102,8 @@ cmake --install .
 install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-if host_build
-    platforms = [Platform("x86_64", "linux",cxxstring_abi=:cxx11,libc="musl")]
-else
-    platforms = expand_cxxstring_abis(filter(!Sys.isapple, supported_platforms()))
-    filter!(p -> arch(p) != "armv6l", platforms) # No OpenGL on armv6
-    platforms_macos = [ Platform("x86_64", "macos"), Platform("aarch64", "macos") ]
-end
-platforms_win = filter(Sys.iswindows, platforms)
-filter!(!Sys.iswindows, platforms)
+# Get the common Qt platforms
+include("../Qt6Base/common.jl")
 
 # The products that we will ensure are always built
 products = [
@@ -154,46 +150,6 @@ products_win = vcat(products,
     LibraryProduct(["Qt6QuickControls2WindowsStyleImpl", "libQt6QuickControls2WindowsStyleImpl", "QtQuickControls2WindowsStyleImpl"], :libqt6quickcontrols2windowsstyleimpl),
 )
 
-products_macos = [
-    FrameworkProduct("QtLabsAnimation", :libqt6labsanimation),
-    FrameworkProduct("QtLabsFolderListModel", :libqt6labsfolderlistmodel),
-    FrameworkProduct("QtLabsQmlModels", :libqt6labsqmlmodels),
-    FrameworkProduct("QtLabsSettings", :libqt6labssettings),
-    FrameworkProduct("QtLabsSharedImage", :libqt6labssharedimage),
-    FrameworkProduct("QtLabsWavefrontMesh", :libqt6labswavefrontmesh),
-    FrameworkProduct("QtQml", :libqt6qml),
-    FrameworkProduct("QtQmlCompiler", :libqt6qmlcompiler),
-    FrameworkProduct("QtQmlCore", :libqt6qmlcore),
-    FrameworkProduct("QtQmlLocalStorage", :libqt6qmllocalstorage),
-    FrameworkProduct("QtQmlModels", :libqt6qmlmodels),
-    FrameworkProduct("QtQmlNetwork", :libqt6qmlnetwork),
-    FrameworkProduct("QtQmlWorkerScript", :libqt6qmlworkerscript),
-    FrameworkProduct("QtQmlXmlListModel", :libqt6qmlxmllistmodel),
-    FrameworkProduct("QtQuick", :libqt6quick),
-    FrameworkProduct("QtQuickControls2", :libqt6quickcontrols2),
-    FrameworkProduct("QtQuickControls2Basic", :libqt6quickcontrols2basic),
-    FrameworkProduct("QtQuickControls2BasicStyleImpl", :libqt6quickcontrols2basicstyleimpl),
-    FrameworkProduct("QtQuickControls2Fusion", :libqt6quickcontrols2fusion),
-    FrameworkProduct("QtQuickControls2FusionStyleImpl", :libqt6quickcontrols2fusionstyleimpl),
-    FrameworkProduct("QtQuickControls2Imagine", :libqt6quickcontrols2imagine),
-    FrameworkProduct("QtQuickControls2ImagineStyleImpl", :libqt6quickcontrols2imaginestyleimpl),
-    FrameworkProduct("QtQuickControls2Impl", :libqt6quickcontrols2impl),
-    FrameworkProduct("QtQuickControls2Material", :libqt6quickcontrols2material),
-    FrameworkProduct("QtQuickControls2MaterialStyleImpl", :libqt6quickcontrols2materialstyleimpl),
-    FrameworkProduct("QtQuickControls2Universal", :libqt6quickcontrols2universal),
-    FrameworkProduct("QtQuickControls2UniversalStyleImpl", :libqt6quickcontrols2universalstyleimpl),
-    FrameworkProduct("QtQuickDialogs2", :libqt6quickdialogs2),
-    FrameworkProduct("QtQuickDialogs2QuickImpl", :libqt6quickdialogs2quickimpl),
-    FrameworkProduct("QtQuickDialogs2Utils", :libqt6quickdialogs2utils),
-    FrameworkProduct("QtQuickEffects", :libqt6quickeffects),
-    FrameworkProduct("QtQuickLayouts", :libqt6quicklayouts),
-    FrameworkProduct("QtQuickParticles", :libqt6quickparticles),
-    FrameworkProduct("QtQuickShapes", :libqt6quickshapes),
-    FrameworkProduct("QtQuickTemplates2", :libqt6quicktemplates2),
-    FrameworkProduct("QtQuickTest", :libqt6quicktest),
-    FrameworkProduct("QtQuickWidgets", :libqt6quickwidgets),
-]
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
@@ -207,16 +163,6 @@ if !host_build
     push!(dependencies, HostBuildDependency("Qt6Declarative_jll"))
 end
 
-include("../../fancy_toys.jl")
+build_qt(name, version, sources, script, products, dependencies; products_win)
 
-@static if !host_build
-    if any(should_build_platform.(triplet.(platforms_macos)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_macos, products_macos, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
-    end
-    if any(should_build_platform.(triplet.(platforms_win)))
-        build_tarballs(ARGS, name, version, sources, script, platforms_win, products_win, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
-    end
-end
-if any(should_build_platform.(triplet.(platforms)))
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
-end
+# rebuild 1

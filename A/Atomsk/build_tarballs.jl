@@ -3,37 +3,48 @@
 using BinaryBuilder, Pkg
 
 name = "Atomsk"
-version = v"0.11.2"
+version = v"0.12.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/pierrehirel/atomsk.git", "3333858281e0ebd6279825b83ab871cf4d050a8d")
+    GitSource("https://github.com/pierrehirel/atomsk.git", "258c75779adc828a947c8366012f75a66d3b8c5e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/atomsk/src/
-mkdir -p ${bindir}
+cd $WORKSPACE/srcdir/atomsk
+
+export ATOMSKLIB=$libdir/libatomsk.$dlext
+export LAPACK=-lopenblas
+if [[ "$target" == *mingw* ]]; then
+    export LDFLAGS="-L${libdir}"
+fi
+cd src
+
 # The makefile doesn't handle parallel builds
-make atomsk BIN="atomsk${exeext}"
-make install INSTPATH=${prefix} BIN="atomsk${exeext}"
+make shared=yes clib
+install -Dvm 755 "atomsk${exeext}" -t "${bindir}"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
+platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), platforms)
+# Atomsk is not supported for libgfortran versions less than 5
+platforms = filter(p -> libgfortran_version(p) >= v"5", platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libatomsk", :libatomsk),
     ExecutableProduct("atomsk", :atomsk)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="LAPACK_jll", uuid="51474c39-65e3-53ba-86ba-03b1b862ec14")),
+    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")

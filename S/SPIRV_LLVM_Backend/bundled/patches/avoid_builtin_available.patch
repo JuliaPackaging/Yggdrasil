@@ -1,0 +1,11 @@
+--- a/lib/Support/Unix/Path.inc
++++ b/lib/Support/Unix/Path.inc
+@@ -1487,7 +1487,7 @@
+   std::string FromS = From.str();
+   std::string ToS = To.str();
+ #if __has_builtin(__builtin_available)
+-  if (__builtin_available(macos 10.12, *)) {
++  {
+     // Optimistically try to use clonefile() and handle errors, rather than
+     // calling stat() to see if it'll work.
+     //

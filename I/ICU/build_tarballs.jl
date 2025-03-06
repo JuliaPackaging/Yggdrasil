@@ -3,24 +3,26 @@
 using BinaryBuilder
 
 name = "ICU"
-version = v"74.1"
+version = v"76.1"
 
 # Collection of sources required to build ICU
 sources = [
-    ArchiveSource("https://github.com/unicode-org/icu/releases/download/release-$(version.major)-$(version.minor)/icu4c-$(version.major)_$(version.minor)-src.tgz",
-                  "86ce8e60681972e60e4dcb2490c697463fcec60dd400a5f9bffba26d0b52b8d0"),
+    GitSource("https://github.com/unicode-org/icu.git",
+              "8eca245c7484ac6cc179e3e5f7c1ea7680810f39"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/icu/
+cd $WORKSPACE/srcdir/icu
 
 # Apply patch to link `libicudata` against the default standard libraries
 # to avoid toolchain weirdness when you have a dynamic library that has
 # _no_ dependencies (not even `libc`).  See this bug report for more:
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=653457
 atomic_patch -p1 $WORKSPACE/srcdir/patches/yes_stdlibs.patch
+
+cd icu4c/
 
 # Do the native build
 (
@@ -56,15 +58,15 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 update_configure_scripts
-./configure --prefix=$prefix --host=$target \
-    --with-cross-build="/workspace/srcdir/icu/native_build"
+./configure --prefix=$prefix --host=${target} --target=${target} \
+    --with-cross-build="/workspace/srcdir/icu/icu4c/native_build"
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [

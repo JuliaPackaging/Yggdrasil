@@ -1,6 +1,6 @@
-diff --color -ur qtbase-everywhere-src-6.7.1-orig/cmake/QtCompilerOptimization.cmake qtbase-everywhere-src-6.7.1/cmake/QtCompilerOptimization.cmake
---- qtbase-everywhere-src-6.7.1-orig/cmake/QtCompilerOptimization.cmake	2024-05-08 11:42:08.000000000 +0200
-+++ qtbase-everywhere-src-6.7.1/cmake/QtCompilerOptimization.cmake	2024-05-25 09:55:10.389859161 +0200
+diff -ur qtbase-everywhere-src-6.8.1-orig/cmake/QtCompilerOptimization.cmake qtbase-everywhere-src-6.8.1/cmake/QtCompilerOptimization.cmake
+--- qtbase-everywhere-src-6.8.1-orig/cmake/QtCompilerOptimization.cmake	2024-11-12 11:55:11.000000000 +0100
++++ qtbase-everywhere-src-6.8.1/cmake/QtCompilerOptimization.cmake	2025-01-03 10:14:15.474649627 +0100
 @@ -49,7 +49,7 @@
      set(QT_CFLAGS_RDSEED     "${__prefix}-mrdseed")
      set(QT_CFLAGS_AVX        "${__prefix}-mavx")
@@ -10,9 +10,11 @@ diff --color -ur qtbase-everywhere-src-6.7.1-orig/cmake/QtCompilerOptimization.c
      set(QT_CFLAGS_AVX512F    "${__prefix}-mavx512f")
      set(QT_CFLAGS_AVX512ER   "${__prefix}-mavx512er")
      set(QT_CFLAGS_AVX512CD   "${__prefix}-mavx512cd")
-diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/corelib/thread/qfutex_mac_p.h qtbase-everywhere-src-6.7.1/src/corelib/thread/qfutex_mac_p.h
---- qtbase-everywhere-src-6.7.1-orig/src/corelib/thread/qfutex_mac_p.h	2024-05-08 11:42:08.000000000 +0200
-+++ qtbase-everywhere-src-6.7.1/src/corelib/thread/qfutex_mac_p.h	2024-05-25 09:56:05.524088960 +0200
+Only in qtbase-everywhere-src-6.8.1/src/android/jar: .gradle
+Only in qtbase-everywhere-src-6.8.1/src/android/templates: .gradle
+diff -ur qtbase-everywhere-src-6.8.1-orig/src/corelib/thread/qfutex_mac_p.h qtbase-everywhere-src-6.8.1/src/corelib/thread/qfutex_mac_p.h
+--- qtbase-everywhere-src-6.8.1-orig/src/corelib/thread/qfutex_mac_p.h	2024-11-12 11:55:11.000000000 +0100
++++ qtbase-everywhere-src-6.8.1/src/corelib/thread/qfutex_mac_p.h	2025-01-03 10:14:59.794711719 +0100
 @@ -15,6 +15,7 @@
  // We mean it.
  //
@@ -21,9 +23,9 @@ diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/corelib/thread/qfutex_mac_
  #include <qdeadlinetimer.h>
  #include <qtsan_impl.h>
  #include <private/qglobal_p.h>
-diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/gui/opengl/qopengl.cpp qtbase-everywhere-src-6.7.1/src/gui/opengl/qopengl.cpp
---- qtbase-everywhere-src-6.7.1-orig/src/gui/opengl/qopengl.cpp	2024-05-08 11:42:08.000000000 +0200
-+++ qtbase-everywhere-src-6.7.1/src/gui/opengl/qopengl.cpp	2024-05-25 09:58:05.419293137 +0200
+diff -ur qtbase-everywhere-src-6.8.1-orig/src/gui/opengl/qopengl.cpp qtbase-everywhere-src-6.8.1/src/gui/opengl/qopengl.cpp
+--- qtbase-everywhere-src-6.8.1-orig/src/gui/opengl/qopengl.cpp	2024-11-12 11:55:11.000000000 +0100
++++ qtbase-everywhere-src-6.8.1/src/gui/opengl/qopengl.cpp	2025-01-03 10:18:33.215209902 +0100
 @@ -187,6 +187,14 @@
      return result;
  }
@@ -48,9 +50,10 @@ diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/gui/opengl/qopengl.cpp qtb
              return u"11"_s;
          return u"10"_s;
  #else
-diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowsiconengine.cpp qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowsiconengine.cpp
---- qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowsiconengine.cpp	2024-05-08 11:42:08.000000000 +0200
-+++ qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowsiconengine.cpp	2024-05-25 09:59:20.937091197 +0200
+Only in qtbase-everywhere-src-6.8.1/src/network/android/jar: .gradle
+diff -ur qtbase-everywhere-src-6.8.1-orig/src/plugins/platforms/windows/qwindowsiconengine.cpp qtbase-everywhere-src-6.8.1/src/plugins/platforms/windows/qwindowsiconengine.cpp
+--- qtbase-everywhere-src-6.8.1-orig/src/plugins/platforms/windows/qwindowsiconengine.cpp	2024-11-12 11:55:11.000000000 +0100
++++ qtbase-everywhere-src-6.8.1/src/plugins/platforms/windows/qwindowsiconengine.cpp	2025-01-03 10:20:35.525611881 +0100
 @@ -285,10 +285,18 @@
                                      : (m_iconName.length() == 1 ? m_iconName : QString());
  }
@@ -71,10 +74,10 @@ diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/
      return isWindows11 ? u"Segoe Fluent Icons"_s
                         : u"Segoe MDL2 Assets"_s;
  }
-diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowsintegration.cpp qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowsintegration.cpp
---- qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowsintegration.cpp	2024-05-08 11:42:08.000000000 +0200
-+++ qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowsintegration.cpp	2024-05-25 10:00:12.627847826 +0200
-@@ -611,6 +611,14 @@
+diff -ur qtbase-everywhere-src-6.8.1-orig/src/plugins/platforms/windows/qwindowsintegration.cpp qtbase-everywhere-src-6.8.1/src/plugins/platforms/windows/qwindowsintegration.cpp
+--- qtbase-everywhere-src-6.8.1-orig/src/plugins/platforms/windows/qwindowsintegration.cpp	2024-11-12 11:55:11.000000000 +0100
++++ qtbase-everywhere-src-6.8.1/src/plugins/platforms/windows/qwindowsintegration.cpp	2025-01-03 10:21:13.415749811 +0100
+@@ -606,6 +606,14 @@
      MessageBeep(MB_OK);  // For QApplication
  }
  
@@ -89,7 +92,7 @@ diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/
  void QWindowsIntegration::setApplicationBadge(qint64 number)
  {
      // Clamp to positive numbers, as the Windows API doesn't support negative numbers
-@@ -619,7 +627,7 @@
+@@ -614,7 +622,7 @@
      // Persist, so we can re-apply it on setting changes and Explorer restart
      m_applicationBadgeNumber = number;
  
@@ -98,10 +101,10 @@ diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/
  
  #if QT_CONFIG(cpp_winrt)
      // We prefer the native BadgeUpdater API, that allows us to set a number directly,
-diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowstheme.cpp qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowstheme.cpp
---- qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/qwindowstheme.cpp	2024-05-08 11:42:08.000000000 +0200
-+++ qtbase-everywhere-src-6.7.1/src/plugins/platforms/windows/qwindowstheme.cpp	2024-05-25 10:01:40.062432370 +0200
-@@ -476,10 +476,18 @@
+diff -ur qtbase-everywhere-src-6.8.1-orig/src/plugins/platforms/windows/qwindowstheme.cpp qtbase-everywhere-src-6.8.1/src/plugins/platforms/windows/qwindowstheme.cpp
+--- qtbase-everywhere-src-6.8.1-orig/src/plugins/platforms/windows/qwindowstheme.cpp	2024-11-12 11:55:11.000000000 +0100
++++ qtbase-everywhere-src-6.8.1/src/plugins/platforms/windows/qwindowstheme.cpp	2025-01-03 10:21:53.685902489 +0100
+@@ -504,10 +504,18 @@
      return appDir.isDir() ? QStringList(appDir.absoluteFilePath()) : QStringList();
  }
  
@@ -121,12 +124,12 @@ diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/platforms/windows/
          styles.prepend(QStringLiteral("Windows11"));
      return styles;
  }
-diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/styles/modernwindows/main.cpp qtbase-everywhere-src-6.7.1/src/plugins/styles/modernwindows/main.cpp
---- qtbase-everywhere-src-6.7.1-orig/src/plugins/styles/modernwindows/main.cpp	2024-05-08 11:42:08.000000000 +0200
-+++ qtbase-everywhere-src-6.7.1/src/plugins/styles/modernwindows/main.cpp	2024-05-25 10:02:42.603307987 +0200
-@@ -17,9 +17,17 @@
-     QStyle *create(const QString &key) override;
- };
+diff -ur qtbase-everywhere-src-6.8.1-orig/src/plugins/platforms/windows/qwindowswindow.cpp qtbase-everywhere-src-6.8.1/src/plugins/platforms/windows/qwindowswindow.cpp
+--- qtbase-everywhere-src-6.8.1-orig/src/plugins/platforms/windows/qwindowswindow.cpp	2024-11-12 11:55:11.000000000 +0100
++++ qtbase-everywhere-src-6.8.1/src/plugins/platforms/windows/qwindowswindow.cpp	2025-01-03 10:23:49.419705426 +0100
+@@ -2551,9 +2551,17 @@
+     return hasMaximumHeight() || hasMaximumWidth();
+ }
  
 +namespace QOSWorkaround {
 +    // Due to a mingw bug being confused by static constexpr variables in an exported class,
@@ -136,10 +139,10 @@ diff --color -ur qtbase-everywhere-src-6.7.1-orig/src/plugins/styles/modernwindo
 +                                                             10, 0, 22000 };
 +}
 +
- QStyle *QModernWindowsStylePlugin::create(const QString &key)
+ void QWindowsWindow::correctWindowPlacement(WINDOWPLACEMENT &windowPlacement)
  {
--    bool isWin11OrAbove = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows11;
-+    bool isWin11OrAbove = QOperatingSystemVersion::current() >= QOSWorkaround::Windows11;
-     if (isWin11OrAbove && key.compare(QLatin1String("windows11"), Qt::CaseInsensitive) == 0) {
-         return new QWindows11Style();
-     } else if (!isWin11OrAbove && key.compare(QLatin1String("windows11"), Qt::CaseInsensitive) == 0) {
+-    static const auto windows11 = QOperatingSystemVersion::Windows11_21H2;
++    static const auto windows11 = QOSWorkaround::Windows11;
+     static const bool isWindows10 = QOperatingSystemVersion::current() < windows11;
+     if (!isWindows10)
+         return;

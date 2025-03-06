@@ -1,0 +1,299 @@
+diff --git a/modules/julia/gen/binding_templates_cpp/cv_core.cpp b/modules/julia/gen/binding_templates_cpp/cv_core.cpp
+index 9966ea17..d7a14c74 100644
+--- a/modules/julia/gen/binding_templates_cpp/cv_core.cpp
++++ b/modules/julia/gen/binding_templates_cpp/cv_core.cpp
+@@ -22,17 +22,68 @@ template <typename T>
+ struct IsSmartPointerType<cv::Ptr<T>> : std::true_type
+ {
+ };
+-template <typename T>
+-struct ConstructorPointerType<cv::Ptr<T>>
+-{
+-    typedef T *type;
+-};
+ 
+ template<typename T, int Val>
+ struct BuildParameterList<cv::Vec<T, Val>>
+ {
+ typedef ParameterList<T, std::integral_constant<int, Val>> type;
+ };
++
++namespace stl
++{
++
++template<>
++struct container_has_less_than_operator<Mat> : std::false_type {};
++
++template<>
++struct container_has_less_than_operator<std::vector<Mat>> : std::false_type {};
++
++template<>
++struct container_has_less_than_operator<Point2f> : std::false_type {};
++
++template<>
++struct container_has_less_than_operator<Rect2i> : std::false_type {};
++
++template<>
++struct container_has_less_than_operator<Rect2f> : std::false_type {};
++
++template<>
++struct container_has_less_than_operator<Rect2d> : std::false_type {};
++
++template<>
++struct container_has_less_than_operator<Point> : std::false_type {};
++
++
++template<> struct container_has_less_than_operator<Vec<uchar,2>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<uchar,3>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<uchar,4>> : std::false_type {};
++
++template<> struct container_has_less_than_operator<Vec<short,2>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<short,3>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<short,4>> : std::false_type {};
++
++template<> struct container_has_less_than_operator<Vec<ushort,2>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<ushort,3>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<ushort,4>> : std::false_type {};
++
++template<> struct container_has_less_than_operator<Vec<int,2>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<int,3>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<int,4>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<int,6>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<int,8>> : std::false_type {};
++
++template<> struct container_has_less_than_operator<Vec<float,2>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<float,3>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<float,4>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<float,6>> : std::false_type {};
++
++template<> struct container_has_less_than_operator<Vec<double,2>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<double,3>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<double,4>> : std::false_type {};
++template<> struct container_has_less_than_operator<Vec<double,6>> : std::false_type {};
++
++}
++
+ ${include_code}
+ 
+ 
+@@ -60,7 +111,6 @@ ${include_code}
+ } // namespace jlcxx
+ JLCXX_MODULE cv_wrap(jlcxx::Module &mod)
+ {
+-    mod.map_type<RotatedRect>("RotatedRect");
+     mod.map_type<TermCriteria>("TermCriteria");
+     mod.map_type<Range>("Range");
+ 
+diff --git a/modules/julia/gen/cpp_files/jlcxx/array.hpp b/modules/julia/gen/cpp_files/jlcxx/array.hpp
+index 0fac6bc9..a05476fd 100644
+--- a/modules/julia/gen/cpp_files/jlcxx/array.hpp
++++ b/modules/julia/gen/cpp_files/jlcxx/array.hpp
+@@ -26,6 +26,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
+ namespace jlcxx
+ {
+ 
++/// wrapper for julia jl_array_data for different julia versions
++template <typename T>
++T* jlcxx_array_data(jl_array_t* arr) {
++#if (JULIA_VERSION_MAJOR * 100 + JULIA_VERSION_MINOR) >= 111
++  return jl_array_data(arr, T);
++#else
++  return static_cast<T*>(jl_array_data(arr));
++#endif
++}
++
+ template<typename PointedT, typename CppT>
+ struct ValueExtractor
+ {
+@@ -46,11 +56,18 @@ struct ValueExtractor<PointedT, PointedT>
+ };
+ 
+ template<typename PointedT, typename CppT>
+-class array_iterator_base : public std::iterator<std::random_access_iterator_tag, CppT>
++class array_iterator_base
+ {
+ private:
+   PointedT* m_ptr;
+ public:
++
++  using iterator_category = std::random_access_iterator_tag;
++  using value_type = CppT;
++  using difference_type = ptrdiff_t;
++  using pointer = CppT*;
++  using reference = CppT&;
++
+   array_iterator_base() : m_ptr(nullptr)
+   {
+   }
+@@ -73,12 +90,26 @@ public:
+     return *this;
+   }
+ 
++  array_iterator_base<PointedT, CppT> operator++(int)
++  {
++    auto result(*this);
++    ++(*this);
++    return result;
++  }
++
+   array_iterator_base<PointedT, CppT>& operator--()
+   {
+     --m_ptr;
+     return *this;
+   }
+ 
++  array_iterator_base<PointedT, CppT> operator--(int)
++  {
++    auto result(*this);
++    --(*this);
++    return result;
++  }
++
+   array_iterator_base<PointedT, CppT>& operator+=(std::ptrdiff_t n)
+   {
+     m_ptr += n;
+@@ -121,7 +152,8 @@ public:
+     JL_GC_PUSH1(&m_array);
+     const size_t pos = jl_array_len(m_array);
+     jl_array_grow_end(m_array, 1);
+-    jl_arrayset(m_array, box<ValueT>(val), pos);
++    jl_value_t* jval = box<ValueT>(val);
++    jl_array_ptr_set(m_array, pos, jval);
+     JL_GC_POP();
+   }
+ 
+@@ -163,7 +195,6 @@ template<typename ValueT, int Dim = 1>
+ class ArrayRef
+ {
+ public:
+-
+   using julia_t = typename detail::ArrayElementType<ValueT>::type;
+ 
+   ArrayRef(jl_array_t* arr) : m_array(arr)
+@@ -189,22 +220,22 @@ public:
+ 
+   iterator begin()
+   {
+-    return iterator(static_cast<julia_t*>(jl_array_data(wrapped())));
++    return iterator(jlcxx_array_data<julia_t>(wrapped()));
+   }
+ 
+   const_iterator begin() const
+   {
+-    return const_iterator(static_cast<julia_t*>(jl_array_data(wrapped())));
++    return const_iterator(jlcxx_array_data<julia_t>(wrapped()));
+   }
+ 
+   iterator end()
+   {
+-    return iterator(static_cast<julia_t*>(jl_array_data(wrapped())) + jl_array_len(wrapped()));
++    return iterator(jlcxx_array_data<julia_t>(wrapped()) + jl_array_len(wrapped()));
+   }
+ 
+   const_iterator end() const
+   {
+-    return const_iterator(static_cast<julia_t*>(jl_array_data(wrapped())) + jl_array_len(wrapped()));
++    return const_iterator(jlcxx_array_data<julia_t>(wrapped()) + jl_array_len(wrapped()));
+   }
+ 
+   void push_back(const ValueT& val)
+@@ -215,18 +246,18 @@ public:
+     JL_GC_PUSH1(&arr_ptr);
+     const size_t pos = size();
+     jl_array_grow_end(arr_ptr, 1);
+-    jl_arrayset(arr_ptr, box<ValueT>(val), pos);
++    data()[pos] = val;
+     JL_GC_POP();
+   }
+ 
+   const julia_t* data() const
+   {
+-    return (julia_t*)jl_array_data(wrapped());
++    return jlcxx_array_data<julia_t>(wrapped());
+   }
+ 
+   julia_t* data()
+   {
+-    return (julia_t*)jl_array_data(wrapped());
++    return jlcxx_array_data<julia_t>(wrapped());
+   }
+ 
+   std::size_t size() const
+@@ -293,7 +324,7 @@ struct PackedArrayType<T*, WrappedPtrTrait>
+ {
+   static jl_datatype_t* type()
+   {
+-    return (jl_datatype_t*)apply_type((jl_value_t*)jlcxx::julia_type("Ptr"), jl_svec1(julia_base_type<T>()));
++    return apply_type(jlcxx::julia_type("Ptr"), julia_base_type<T>());
+   }
+ };
+ 
+diff --git a/modules/julia/gen/gen3_cpp.py b/modules/julia/gen/gen3_cpp.py
+index 5019585f..9cbc2107 100644
+--- a/modules/julia/gen/gen3_cpp.py
++++ b/modules/julia/gen/gen3_cpp.py
+@@ -74,7 +74,7 @@ class ClassInfo(ClassInfo):
+     def get_cpp_code_header(self):
+         if self.ismap:
+             return 'mod.map_type<%s>("%s");\n'%(self.name, self.mapped_name)
+-        if not self.base:
++        elif not self.base:
+             return 'mod.add_type<%s>("%s");\n' % (self.name, self.mapped_name)
+         else:
+             return 'mod.add_type<%s>("%s", jlcxx::julia_base_type<%s>());\n' % (self.name, self.mapped_name, self.base)
+diff --git a/modules/julia/gen/jl_cxx_files/OpenCV.jl b/modules/julia/gen/jl_cxx_files/OpenCV.jl
+index 448d0055..7f2d0fd8 100644
+--- a/modules/julia/gen/jl_cxx_files/OpenCV.jl
++++ b/modules/julia/gen/jl_cxx_files/OpenCV.jl
+@@ -1,11 +1,7 @@
+ 
+-module OpenCV
+-
+ import Base.size
+ 
+ include("cv_cxx.jl")
+ 
+ 
+ include("cv_wrap.jl")
+-
+-end
+\ No newline at end of file
+diff --git a/modules/julia/gen/jl_cxx_files/cv_cxx.jl b/modules/julia/gen/jl_cxx_files/cv_cxx.jl
+index 948b22ac..2177eae1 100644
+--- a/modules/julia/gen/jl_cxx_files/cv_cxx.jl
++++ b/modules/julia/gen/jl_cxx_files/cv_cxx.jl
+@@ -1,12 +1,14 @@
+ # using StaticArrays
+ 
++using OpenCV_jll
++
+ include("typestructs.jl")
+ include("Vec.jl")
+ const dtypes = Union{UInt8, Int8, UInt16, Int16, Int32, Float32, Float64}
+ size_t = UInt64
+ 
+ using CxxWrap
+-@wrapmodule(joinpath(@__DIR__,"lib","libopencv_julia"), :cv_wrap)
++@wrapmodule(OpenCV_jll.get_libopencv_julia_path, :cv_wrap)
+ function __init__()
+     @initcxx
+ 
+diff --git a/modules/julia/gen/parse_tree.py b/modules/julia/gen/parse_tree.py
+index 5b044bf1..9b375f4b 100644
+--- a/modules/julia/gen/parse_tree.py
++++ b/modules/julia/gen/parse_tree.py
+@@ -116,11 +116,13 @@ class ClassProp(object):
+         if "/RW" in decl[3]:
+             self.readonly = False
+ 
++mapped_types = {"cv::RotatedRect"}  # Global variable
++
+ class ClassInfo(object):
+     def __init__(self, name, decl=None):
+         self.name = name
+         self.mapped_name = normalize_class_name(name)
+-        self.ismap = False  #CV_EXPORTS_W_MAP
++        self.ismap = (name in mapped_types)  #CV_EXPORTS_W_MAP
+         self.isalgorithm = False    #if class inherits from cv::Algorithm
+         self.methods = {}   #Dictionary of methods
+         self.props = []     #Collection of ClassProp associated with this class

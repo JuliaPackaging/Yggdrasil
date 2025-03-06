@@ -4,18 +4,21 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.7.1"
+version = v"1.9.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "43329e52883d8c930d9efa897307d6dec5230099",
+        "66f735e60ce4d4835edaa05a35f2bd4048969c54",
     ),
 ]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+# Disable riscv for now
+platforms = filter!(p -> arch(p) != "riscv64", platforms)
 
 function build_script(; shared_libs::String)
     build_static = shared_libs == "OFF" ? "ON" : "OFF"
@@ -38,8 +41,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=${BUILD_SHARED} \
     -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
-    -DFAST_BUILD=ON \
-    -DJULIA=ON ..
+    -DFAST_BUILD=ON ..
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}

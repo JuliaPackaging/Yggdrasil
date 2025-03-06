@@ -1,0 +1,24 @@
+From f1901de14ff1f1abcc729c4adccfbd5017e30357 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Fri, 7 May 2021 13:54:41 -0400
+Subject: [PATCH] [Compiler-RT] Fix compilation on musl
+
+---
+ compiler-rt/lib/fuzzer/FuzzerInterceptors.cpp                    | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/compiler-rt/lib/fuzzer/FuzzerInterceptors.cpp b/compiler-rt/lib/fuzzer/FuzzerInterceptors.cpp
+index b87798603fda..452a08aafe0e 100644
+--- a/compiler-rt/lib/fuzzer/FuzzerInterceptors.cpp
++++ b/compiler-rt/lib/fuzzer/FuzzerInterceptors.cpp
+@@ -26,6 +26,7 @@
+ 
+ #include <cassert>
+ #include <cstdint>
++#include <stddef.h>
+ #include <dlfcn.h> // for dlsym()
+ 
+ static void *getFuncAddr(const char *name, uintptr_t wrapper_addr) {
+-- 
+2.31.1
+

@@ -1,0 +1,18 @@
+diff --git a/p4est/CMakeLists.txt b/p4est/CMakeLists.txt
+index ca73876c..70bd62b3 100644
+--- a/p4est/CMakeLists.txt
++++ b/p4est/CMakeLists.txt
+@@ -46,7 +46,12 @@ target_include_directories(p4est PUBLIC
+   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+   $<INSTALL_INTERFACE:include>)
+-target_link_libraries(p4est PUBLIC SC::SC $<$<BOOL:${P4EST_HAVE_WINSOCK2_H}>:${WINSOCK_LIBRARIES}>)
++
++if(WIN32)
++  target_link_libraries(p4est PUBLIC SC::SC wsock32 ws2_32)
++else()
++  target_link_libraries(p4est PUBLIC SC::SC)
++endif()
+ 
+ # imported target, for use from parent projects
+ add_library(P4EST::P4EST INTERFACE IMPORTED GLOBAL)

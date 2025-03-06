@@ -7,23 +7,24 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "SPIRV_LLVM_Translator_unified"
 repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
-version = v"0.5"
+version = v"0.7"
 
-llvm_versions = [v"13.0.1", v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
 # Collection of sources required to build SPIRV_LLVM_Translator
 sources = Dict(
-    v"13.0.1" => [GitSource(repo, "093cf279cad6f12bb22abf0a94eae9aca938aaea")],
-    v"14.0.6" => [GitSource(repo, "62f5b09b11b1da42274371b1f7535f6f2ab11485")],
-    v"15.0.7" => [GitSource(repo, "0f9ad6622b1bf308facf35073c91c738b34081ba")],
-    v"16.0.6" => [GitSource(repo, "0b107dbf421593ed6f201ea2b7976e9456bc6bd3")],
-    v"17.0.6" => [GitSource(repo, "38e0a0dda82ab2807d7064b34bd7e81034ef3837")],
+    v"15.0.7" => [GitSource(repo, "4b96335944e70032f4dfa4807d9c5683eaabdae5")],
+    v"16.0.6" => [GitSource(repo, "b786f8c31eead5788ac8ca33ccedf29a4a7faedf")],
+    v"17.0.6" => [GitSource(repo, "27bbf0fa898b6945dbd097dfd1e87b4f4becb19a")],
+    v"18.1.7" => [GitSource(repo, "7515735e387c65cbb7821a78f122cfd89115a779")],
+    v"19.1.1" => [GitSource(repo, "90a976491d3847657396456e0e94d7dc48d35996")],
 )
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-filter!(p -> libc(p) != "musl", platforms)  # LLVM_full+asserts isn't available for musl
+filter!(p -> libc(p) != "musl", platforms) # missing LLVM_full+asserts
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # missing LLVM_full
 
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""

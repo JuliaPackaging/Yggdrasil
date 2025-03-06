@@ -26,6 +26,8 @@ function translate_target()
         echo darwin64-arm64-cc
     elif [[ ${target} == x86_64-unknown-freebsd* ]]; then
         echo BSD-x86_64
+    elif [[ ${target} == aarch64-unknown-freebsd* ]]; then
+        echo BSD-aarch64
     elif [[ ${target} == x86_64*mingw* ]]; then
         echo mingw64
     elif [[ ${target} == i686*mingw* ]]; then

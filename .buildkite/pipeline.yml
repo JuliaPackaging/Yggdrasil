@@ -4,7 +4,7 @@ steps:
       - JuliaCI/julia#v1:
           persist_depot_dirs: packages,artifacts,compiled
           version: "1.7"
-          depot_hard_size_limit: "268435456000" # 250GB
+          artifacts_size_limit: "268435456000" # 250GB
       - JuliaCI/merge-commit: ~
       - staticfloat/forerunner#v1:
           watch:

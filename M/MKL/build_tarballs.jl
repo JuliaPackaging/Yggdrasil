@@ -1,37 +1,39 @@
 using BinaryBuilder, Pkg
 
 name = "MKL"
-version = v"2024.2.0"
+version = v"2025.0.1"
+version_intel_openmp = v"2025.0.4"
 
 sources = [
-    ArchiveSource("https://conda.anaconda.org/intel/win-32/mkl-2024.2.0-intel_661.tar.bz2",
-                  "fa5f4a74600fcc81b7ecc1c61eac01d365ec0031986f847f435d752b8d059828"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://conda.anaconda.org/intel/win-64/mkl-2024.2.0-intel_661.tar.bz2",
-                  "162194f166a22ae2ac9bd7945a99c21e750b0122393a435189f81645d284cfe7"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://conda.anaconda.org/intel/linux-32/mkl-2024.2.0-intel_663.tar.bz2",
-                  "e46e0d056e7954a7c84f157acb93a51567c97844593f7469f504751723bfc396"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://conda.anaconda.org/intel/linux-64/mkl-2024.2.0-intel_663.tar.bz2",
-                  "f480deb23179471b5f05de50b06ad984702be25e66d58ef614b804b781a3613e"; unpack_target="x86_64-linux-gnu"),
+    FileSource("https://files.pythonhosted.org/packages/82/af/17d96670517ce773521ddd10c6f7752b4a2ffe34609dc367d5bd79425948/mkl-2025.0.1-py2.py3-none-win_amd64.whl",
+               "5b7ee0dd14038ea1e1b0eb484f3a883b50aa0130da5d31e8734b960218eb4255"; filename="mkl-x86_64-w64-mingw32.whl"),
+    FileSource("https://files.pythonhosted.org/packages/bd/d7/a86e897657596eaadc0f76b1dcde823451cdc4877fc39a8211a47f862202/mkl-2025.0.1-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "581b3de496bd004ab2d2bd38775bbcc885303270687940848a19747cce45d47b"; filename="mkl-x86_64-linux-gnu.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir -p "${libdir}"
-if [[ ${target} == *mingw* ]]; then
-    mv ${target}/Library/bin/* "${libdir}/."
-else
-    mv ${target}/lib/* "${libdir}/."
+unzip -d mkl-$target mkl-$target.whl
+
+if [[ ${target} == *x86_64-w64-mingw* ]]; then
+    install -Dvm 755 mkl-${target}/mkl-*.data/data/Library/bin/* -t "${libdir}"
 fi
-install_license ${target}/info/licenses/*.txt
+if [[ ${target} == *x86_64-linux-gnu* ]]; then
+    install -Dvm 755 mkl-${target}/mkl-*.data/data/lib/* -t "${libdir}"
+    cd mkl-${target}/mkl-*.data/data/lib
+    for lib in *.so.2; do
+        symlink="${lib%.2}"
+        ln -s "${libdir}/$lib" "${libdir}/$symlink"
+    done
+fi
+install_license $WORKSPACE/srcdir/mkl-${target}/mkl-*.dist-info/LICENSE.txt
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
-    Platform("i686", "linux"; libc="glibc"),
-    Platform("i686", "windows"),
     Platform("x86_64", "windows"),
 ]
 
@@ -47,8 +49,8 @@ dependencies = [
     # occasionally be incompatibilities, e.g. x86_64 macOS builds were removed in v2024,
     # using MKL v2023 with IntelOpenMP v2024 would be problematic:
     # <https://github.com/JuliaMath/FFTW.jl/issues/281>.
-    Dependency(PackageSpec(name="IntelOpenMP_jll", uuid="1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"); compat=string(version)),
-    Dependency("oneTBB_jll"),
+    Dependency(PackageSpec(name="IntelOpenMP_jll", uuid="1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"); compat="$version_intel_openmp"),
+    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

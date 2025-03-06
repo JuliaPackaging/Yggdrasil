@@ -1,0 +1,27 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c4fea46a..12f8aef5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -59,6 +59,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+ # Valid values are "generic", "avx2", "avx512", "sve".
+ option(FAISS_OPT_LEVEL "" "generic")
+ option(FAISS_ENABLE_GPU "Enable support for GPU indexes." ON)
++option(FAISS_ENABLE_MKL "Enable MKL." ON)
+ option(FAISS_ENABLE_RAFT "Enable RAFT for GPU indexes." OFF)
+ option(FAISS_ENABLE_ROCM "Enable ROCm for GPU indexes." OFF)
+ option(FAISS_ENABLE_PYTHON "Build Python extension." ON)
+diff --git a/faiss/CMakeLists.txt b/faiss/CMakeLists.txt
+index 2871d974..6588b2d2 100644
+--- a/faiss/CMakeLists.txt
++++ b/faiss/CMakeLists.txt
+@@ -354,7 +354,9 @@ target_link_libraries(faiss_avx2 PRIVATE OpenMP::OpenMP_CXX)
+ target_link_libraries(faiss_avx512 PRIVATE OpenMP::OpenMP_CXX)
+ target_link_libraries(faiss_sve PRIVATE OpenMP::OpenMP_CXX)
+ 
+-find_package(MKL)
++if(FAISS_ENABLE_MKL)
++  find_package(MKL)
++endif()
+ if(MKL_FOUND)
+   target_link_libraries(faiss PRIVATE ${MKL_LIBRARIES})
+   target_link_libraries(faiss_avx2 PRIVATE ${MKL_LIBRARIES})

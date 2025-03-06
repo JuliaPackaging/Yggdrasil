@@ -1,0 +1,44 @@
+diff --git a/configure b/configure
+index b27352f23c..af2a8738f5 100755
+--- a/configure
++++ b/configure
+@@ -13281,7 +13281,7 @@ esac
+  ;; #(
+   *,i[3456]86-*) :
+     # Explicitly disable PIE executables on Linux and *BSD x86_32
+-    mkexe="$mkexe -no-pie " ;; #(
++    mkexe="$mkexe -fno-pie " ;; #(
+   xlc*,powerpc-ibm-aix*) :
+     mkexe="$mkexe "
+      oc_ldflags="-brtl -bexpfull"
+@@ -14587,7 +14587,7 @@ case $arch in #(
+   # expected to match "*-linux-musl" as well as "*-linux-musleabi*"
+     *-linux-musl*) :
+     # Alpine and other musl-based Linux distributions
+-       common_cflags="-no-pie $common_cflags" ;; #(
++       common_cflags="-fno-pie $common_cflags" ;; #(
+   *) :
+      ;;
+ esac ;;
+diff --git a/configure.ac b/configure.ac
+index 892af53fad..1a7840524f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -837,7 +837,7 @@ AS_CASE([$cc_basename,$host],
+     AC_DEFINE([HAS_ARCH_CODE32], [1]),
+   [[*,i[3456]86-*]],
+     # Explicitly disable PIE executables on Linux and *BSD x86_32
+-    [mkexe="$mkexe -no-pie "],
++    [mkexe="$mkexe -fno-pie "],
+   [xlc*,powerpc-ibm-aix*],
+     [mkexe="$mkexe "
+      oc_ldflags="-brtl -bexpfull"
+@@ -1215,7 +1215,7 @@ AS_CASE([$arch],
+     # expected to match "*-linux-musl" as well as "*-linux-musleabi*"
+     [*-linux-musl*],
+        # Alpine and other musl-based Linux distributions
+-       [common_cflags="-no-pie $common_cflags"],
++       [common_cflags="-fno-pie $common_cflags"],
+     [])])
+ 
+ # Assembler
