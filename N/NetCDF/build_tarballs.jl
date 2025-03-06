@@ -107,10 +107,6 @@ platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# HDF5 is missing for aarch64-*-freebsd with OpenMPI.
-# (This was an oversight in building HDF5, needs to be fixed there.)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64" && p["mpi"] == "openmpi"), platforms)
-
 # The products that we will ensure are always built
 products = [
     # NetCDF tools
@@ -128,14 +124,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Blosc_jll"),
-    Dependency("Bzip2_jll"),
-    Dependency("HDF5_jll"; compat = "~1.14.5"),
-    Dependency("LibCURL_jll"; compat = "7.73.0,8"),
-    Dependency("XML2_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
-    Dependency("libzip_jll"),
+    Dependency("Blosc_jll"; compat="1.21.6"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("LibCURL_jll"; compat="7.73.0,8"),
+    Dependency("XML2_jll"; compat="2.13.6"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("libzip_jll"; compat="1.11.3"),
 ]
 append!(dependencies, platform_dependencies)
 
