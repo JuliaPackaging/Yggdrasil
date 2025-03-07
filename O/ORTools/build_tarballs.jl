@@ -167,7 +167,7 @@ products = [
 dependencies = [
     # OR-Tools 9.12 starts depending on CMake 3.28.
     # OR-Tools 9.12 starts depending on CMake 3.28.
-    BuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
