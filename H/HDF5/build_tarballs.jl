@@ -28,9 +28,7 @@ fi
 
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_EXE_LINKER_FLAGS="-L${libdir} -lsz"      # help cmake link against the sz library
     -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_SHARED_LINKER_FLAGS="-L${libdir} -lsz"   # help cmake link against the sz library
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DALLOW_UNSUPPORTED=ON
     -DBUILD_TESTING=OFF
@@ -51,8 +49,6 @@ cmake_options=(
     -DHDF5_ENABLE_Z_LIB_SUPPORT=ON
     -DONLY_SHARED_LIBS=ON
 )
-# Help cmake find the sz library
-cp ${prefix}/cmake/libaec-config.cmake ${prefix}/cmake/szip-config.cmake
 
 if [[ ${target} == *darwin* || ${target} == *mingw* ]]; then
     cmake_options+=(-DHDF5_ENABLE_DIRECT_VFD=OFF)
@@ -316,7 +312,6 @@ cmake --install builddir
 install_license COPYING
 
 # Clean up: We created these files, we need to remove them
-rm ${prefix}/cmake/szip-config.cmake
 rm -f "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 """
 
