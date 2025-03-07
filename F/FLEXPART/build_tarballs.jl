@@ -43,7 +43,6 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("eccodes_jll"; compat="2.36.0"),
     Dependency("NetCDFF_jll"; compat="4.6.1"),
-    Dependency("JasPer_jll"; compat="2.0.33"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
