@@ -1,5 +1,5 @@
 diff --git a/src/makefile_gfortran b/src/makefile_gfortran
-index f08f9bd..fa6e0f1 100644
+index f08f9bd..6513f30 100644
 --- a/src/makefile_gfortran
 +++ b/src/makefile_gfortran
 @@ -37,6 +37,8 @@ FLEXPART-ETA-BIN = FLEXPART_ETA_BIN
@@ -11,3 +11,21 @@ index f08f9bd..fa6e0f1 100644
  ROOT_DIR = . #MD
  
  #F90 = /usr/bin/gfortran
+@@ -87,13 +89,13 @@ O_LEV_DBG = g # [0,g]
+ # (defined by the machine where you are compiling it)
+ #
+ ifeq ($(arch), generic)
+-	FUSER = -g -fopenmp -march=core-avx2
++	FUSER = -g -fopenmp
+ else ifeq ($(arch), x86-64)
+-	FUSER = -g -fopenmp -march=x86-64
++	FUSER = -g -fopenmp
+ else ifeq ($(arch), skylake)
+-	FUSER = -g -fopenmp -march=skylake-avx512
++	FUSER = -g -fopenmp
+ else
+-	FUSER = -g -fopenmp -march=native -mtune=native
++	FUSER = -g -fopenmp
+ endif
+ 
+ # To compile in serial
