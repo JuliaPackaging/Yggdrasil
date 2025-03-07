@@ -4,11 +4,11 @@
 using BinaryBuilder, Pkg
 
 name = "FLEXPART"
-version = v"10.4.2"
+version = v"11.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://www.flexpart.eu/gitmob/flexpart", "8ad70c708b59dad8f4adabf7ab51dd110ace76d1"),
+    GitSource("https://gitlab.phaidra.org/flexpart/flexpart", "59eb95e770490f551425cdb30432f82693d585bc"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,10 +18,9 @@ sources = [
 script = raw"""
 cd flexpart
 atomic_patch -p1 /workspace/srcdir/patches/flexpart-makefile.patch
-atomic_patch -p1 /workspace/srcdir/patches/flexpart-parmod.patch
 cd src
-make ncf=yes
-cp FLEXPART $bindir
+make -f makefile_gfortran eta=yes ncf=yes
+cp FLEXPART_ETA $bindir
 install_license ../LICENSE
 """
 
@@ -36,7 +35,7 @@ filter!(!Sys.isapple, platforms) # Excluded because of "invalid variant" errors
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("FLEXPART", :FLEXPART),
+    ExecutableProduct("FLEXPART_ETA", :FLEXPART),
 ]
 
 # Dependencies that must be installed before this package can be built
