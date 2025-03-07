@@ -4,7 +4,8 @@ name = "blockSQP"
 version = v"0.0.1"
 sources = [
     GitSource("https://github.com/djanka2/blockSQP.git", "da05d3957b93bd55b9a7f08c859d302851056a6d"),
-    GitSource("https://github.com/mathopt/blockSQPWrapper.git", "02e97255af77f508f3ebfafc7e1ffc661738cf29"),
+    GitSource("https://github.com/mathopt/blockSQPWrapper.git", "8d796eda6ceb986c2e04888176c6cb292b94011e"),
+    DirectorySource("./bundled")
 ]
 
 include("../../L/libjulia/common.jl")
@@ -15,23 +16,10 @@ cd ${WORKSPACE}/srcdir
 mv blockSQPWrapper/CMakeLists.txt blockSQP/CMakeLists.txt
 mv blockSQPWrapper/blockSQP_julia.cpp blockSQP/src/blockSQP_julia.cpp
 cd blockSQP
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 mkdir build && cd build
-
-
-
-if [[ \"${nbits}\" == 64 ]]; then
-
-    SYMB_DEFS=()
-    if [[ \"${target}\" != *-apple-* ]]; then
-        for sym in cblas_dgemm; do
-            SYMB_DEFS+=(\"-D${sym}=${sym}64_\")
-        done
-    fi
-
-
-    export CXXFLAGS=\"${SYMB_DEFS[@]}\"
-
-fi
 
 cmake \
     -DJulia_PREFIX=$prefix \
@@ -41,7 +29,6 @@ cmake \
     -DCMAKE_PREFIX_PATH=$prefix \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DBLA_VENDOR=libblastrampoline \
     ..
 
 make
@@ -55,12 +42,11 @@ filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(p -> !(libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 filter!(p -> !(os(p) == "freebsd"), platforms)
-
+filter!(p -> (os(p) == "linux"), platforms)
 
 
 dependencies = [
     Dependency("qpOASES_jll"; compat="3.2.1"),
-    Dependency("libblastrampoline_jll"; compat="5.4"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13.4"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll")),
     BuildDependency("libjulia_jll")
