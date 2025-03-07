@@ -13,12 +13,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# OR-Tools 9.12 starts requiring CMake 3.24+.
-wget -q "https://cmake.org/files/v3.31/cmake-3.31.0-linux-x86_64.sh"
-chmod a+x cmake-3.31.0-linux-x86_64.sh
-./cmake-3.31.0-linux-x86_64.sh --prefix=/usr/local/ --skip-license
-rm cmake-3.31.0-linux-x86_64.sh
-export PATH=/usr/local/bin/:$PATH
+# OR-Tools 9.12 starts requiring CMake 3.24+. Thus, uninstall the previous version to use the one from CMake_jll.
+apk del cmake
 
 # Prepare the source directory.
 cd $WORKSPACE/srcdir/or-tools*
@@ -168,7 +164,11 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    # OR-Tools 9.12 starts depending on CMake 3.28.
+    # OR-Tools 9.12 starts depending on CMake 3.28.
+    BuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 #
