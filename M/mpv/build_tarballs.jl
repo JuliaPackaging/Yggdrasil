@@ -3,48 +3,31 @@
 using BinaryBuilder, Pkg
 
 name = "mpv"
-version = v"0.32.0"
+version = v"0.39.0"
 
 # Collection of sources required to complete build #
 sources = [
-    ArchiveSource("https://github.com/mpv-player/mpv/archive/v0.32.0.tar.gz", "9163f64832226d22e24bbc4874ebd6ac02372cd717bef15c28a0aa858c5fe592")
+    GitSource("https://github.com/mpv-player/mpv.git", "a0fba7be57f3822d967b04f0f6b6d6341e7516e7")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd mpv-*
-ln -s /usr/bin/pkg-config /usr/bin/$target-pkg-config
+cd $WORKSPACE/srcdir/mpv
 
-# libstc++ required for c++ libs when using C compiler
-if [[ "${nbits}" == 32 ]]; then
-    export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib"
-elif [[ "${target}" != *-apple-* ]]; then 
-    export LDFLAGS="-L${prefix}/lib -liconv -Wl,-rpath-link,/opt/${target}/${target}/lib64"
-else 
-    export LDFLAGS="-L${prefix}/lib -liconv"
-fi
+apk del cmake
 
-# pkg-config files for ffmpeg are in $bindir for windows
-if [[ "${target}" == *-mingw* ]]; then
-    cp $bindir/pkgconfig/lib*  /workspace/destdir/lib/pkgconfig/
-fi
-python3 bootstrap.py
+mkdir -p subprojects
+git clone https://code.videolan.org/videolan/libplacebo.git --depth=1 --recursive subprojects/libplacebo
 
-# No opengl on MacOS
-if [[  "${target}" == *-apple-* ]]; then
-    TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 --disable-gl configure
-else 
-    TARGET=$target ./waf --prefix=${prefix} --disable-manpage-build --enable-sdl2 configure
-fi
-./waf build -j${nproc}
-./waf install
+meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN}
+meson compile -C build
+meson install -C build
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(!Sys.isfreebsd, platforms)
+#filter!(!Sys.isfreebsd, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -53,18 +36,21 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531"))
-    Dependency(PackageSpec(name="SDL2_jll", uuid="ab825dc5-c88e-5901-9575-1e5e20358fcf"))
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    Dependency(PackageSpec(name="FFMPEG_jll", uuid="b22a6f82-2f65-5046-a5b2-351ab43fb4e5"))
-    Dependency(PackageSpec(name="Lua_jll", uuid="a4086b1d-a96a-5d6b-8e4f-2030e6f25ba6"); compat="~5.3.6")
-    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8"))
-    Dependency(PackageSpec(name="Xorg_libXrandr_jll", uuid="ec84b674-ba8e-5d96-8ba1-2a689ba10484"))
-    Dependency(PackageSpec(name="Xorg_libXinerama_jll", uuid="d1454406-59df-5ea1-beac-c340f2130bc3"))
-    Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"))
-    Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc"))
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b"))
+    HostBuildDependency("CMake_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("SDL2_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("FFMPEG_jll"),
+    Dependency("Lua_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Xorg_libXrandr_jll"),
+    Dependency("Xorg_libXinerama_jll"),
+    Dependency("Libglvnd_jll"),
+    Dependency("Xorg_libX11_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;preferred_gcc_version=v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")
+
