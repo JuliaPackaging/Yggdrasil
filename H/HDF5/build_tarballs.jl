@@ -6,13 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"1.14.5"
+version = v"1.14.6"
 
 # Collection of sources required to complete build
 sources = [
-                   
     ArchiveSource("https://support.hdfgroup.org/releases/hdf5/v$(version.major)_$(version.minor)/v$(version.major)_$(version.minor)_$(version.patch)/downloads/hdf5-$(version).tar.gz",
-                  "ec2e13c52e60f9a01491bb3158cb3778c985697131fc6a342262d32a26e58e44"),
+                  "e4defbac30f50d64e1556374aa49e574417c9e72c6b1de7a4ff88c4b1bea6e9b"),
     DirectorySource("bundled"),
 ]
 
@@ -29,11 +28,8 @@ fi
 
 cmake_options=(
     -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_EXE_LINKER_FLAGS="-L${libdir} -lsz"      # help cmake link against the sz library
     -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_SHARED_LINKER_FLAGS="-L${libdir} -lsz"   # help cmake link against the sz library
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-    -DMPI_HOME=${prefix}
     -DALLOW_UNSUPPORTED=ON
     -DBUILD_TESTING=OFF
     -DHDF5_BUILD_CPP_LIB=ON
@@ -53,8 +49,6 @@ cmake_options=(
     -DHDF5_ENABLE_Z_LIB_SUPPORT=ON
     -DONLY_SHARED_LIBS=ON
 )
-# Help cmake find the sz library
-cp ${prefix}/cmake/libaec-config.cmake ${prefix}/cmake/szip-config.cmake
 
 if [[ ${target} == *darwin* || ${target} == *mingw* ]]; then
     cmake_options+=(-DHDF5_ENABLE_DIRECT_VFD=OFF)
@@ -71,7 +65,7 @@ fi
 if [[ ${target} == *mingw* ]]; then
     cmake_options+=(-DHDF5_ENABLE_PARALLEL=OFF)
 else
-    cmake_options+=(-DHDF5_ENABLE_PARALLEL=ON)
+    cmake_options+=(-DHDF5_ENABLE_PARALLEL=ON -DMPI_HOME=${prefix})
 fi
 
 if [[ ${target} == *mingw* || ${target} == *freebsd* ]]; then
@@ -281,13 +275,43 @@ case ${target} in
 esac
 
 cmake -B builddir "${cmake_options[@]}"
+
+# On Windows, HDF5 finds libaec, but the generated Makefile still says "NOTFOUND".
+# Cmake outputs respective warnings:
+#     [15:19:01] CMake Warning (dev) in CMakeLists.txt:
+#     [15:19:01]   Policy CMP0111 is not set: An imported target missing its location property
+#     [15:19:01]   fails during generation.  Run "cmake --help-policy CMP0111" for policy
+#     [15:19:01]   details.  Use the cmake_policy command to set the policy and suppress this
+#     [15:19:01]   warning.
+#     [15:19:01]
+#     [15:19:01]   IMPORTED_IMPLIB not set for imported target "libaec::sz" configuration
+#     [15:19:01]   "Release".
+#     [15:19:01] This warning is for project developers.  Use -Wno-dev to suppress it.
+#     [15:19:01]
+#     [15:19:01] CMake Warning (dev) in CMakeLists.txt:
+#     [15:19:01]   Policy CMP0111 is not set: An imported target missing its location property
+#     [15:19:01]   fails during generation.  Run "cmake --help-policy CMP0111" for policy
+#     [15:19:01]   details.  Use the cmake_policy command to set the policy and suppress this
+#     [15:19:01]   warning.
+#     [15:19:01]
+#     [15:19:01]   IMPORTED_IMPLIB not set for imported target "libaec::aec" configuration
+#     [15:19:01]   "Release".
+#     [15:19:01] This warning is for project developers.  Use -Wno-dev to suppress it.
+# This seems to be a problem with the HDF5 CMakeLists.txt.
+# Reported as <https://github.com/HDFGroup/hdf5/issues/5354>.
+# We fix the generated Makefile etc manually.
+perl -pi -e 's+libaec::sz-NOTFOUND+/workspace/destdir/lib/libsz.dll.a+' builddir/src/CMakeFiles/hdf5-shared.dir/build.make
+perl -pi -e 's+libaec::aec-NOTFOUND+/workspace/destdir/lib/libaec.dll.a+' builddir/src/CMakeFiles/hdf5-shared.dir/build.make
+perl -pi -e 's+libaec::sz-NOTFOUND+/workspace/destdir/lib/libsz.dll.a+' builddir/src/CMakeFiles/hdf5-shared.dir/linklibs.rsp
+perl -pi -e 's+libaec::aec-NOTFOUND+/workspace/destdir/lib/libaec.dll.a+' builddir/src/CMakeFiles/hdf5-shared.dir/linklibs.rsp
+perl -pi -e 's+-llibname-NOTFOUND -llibname-NOTFOUND -llibname-NOTFOUND+-lsz -laec+' builddir/CMakeFiles/hdf5.pc
+
 cmake --build builddir --parallel ${nproc}
 cmake --install builddir
 
 install_license COPYING
 
-# Clean up: We created the file, we need to remove it
-rm ${prefix}/cmake/szip-config.cmake
+# Clean up: We created these files, we need to remove them
 rm -f "/opt/${target}/${target}/sys-root/include/pthread_time.h"
 """
 
@@ -303,25 +327,7 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
-# Our riscv64 work-arounds are broken for MPI:
-# `riscv64-linux-gnu-libgfortran5-cxx11-mpi+mpitrampoline` is not an officially supported platform
-filter!(p -> arch(p) != "riscv64", platforms)
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.1", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-filter!(platforms) do p
-    if p["mpi"] == "mpich"
-        arch(p) == "riscv64" && return false
-    elseif p["mpi"] == "mpitrampoline"
-        libc(p) == "musl" && return false
-    elseif p["mpi"] == "openmpi"
-        arch(p) == "armv6l" && libc(p) == "glibc" && return false
-        Sys.isfreebsd(p) && arch(p) == "aarch64" && return false # we should build this
-        arch(p) == "riscv64" && return false                     # we should build this at some time
-    end
-    return true
-end
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -358,10 +364,10 @@ dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
-    Dependency("Zlib_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     # Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll"),   # This is the successor of szlib
+    Dependency("libaec_jll"; compat="1.1.3"), # This is the successor of szlib
 ]
 append!(dependencies, platform_dependencies)
 

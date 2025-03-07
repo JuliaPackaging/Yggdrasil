@@ -20,7 +20,7 @@ const llvm_tags = Dict(
     v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
     v"18.1.7" => "ed30d043a240d06bb6e010a41086e75713156f4f", # julia-18.1.7-2
-    v"19.1.7" => "3cb75bacf7f61380a4ef45fef519c2fb5940dd4a", # julia-19.1.7-0
+    v"19.1.7" => "a9df916357c2fd0851df026a84f83d87efd6e212", # julia-19.1.7-1
 )
 
 const buildscript = raw"""
@@ -757,7 +757,6 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     end
 
     platforms = supported_platforms(; experimental=experimental_platforms)
-    filter!(p->arch(p)!="riscv64", platforms) # Not supported yet, see https://github.com/JuliaPackaging/BinaryBuilder.jl/issues/1366
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
@@ -766,6 +765,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if version < v"18"
         # We only have LLVM builds for AArch64 BSD starting from LLVM 18
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
+    if version < v"19.1.7"
+        # We only have LLVM builds for riscv starting from LLVM 19.1.7
+        filter!(p -> arch(p) != "riscv64", platforms)
     end
     platforms = expand_cxxstring_abis(platforms)
 

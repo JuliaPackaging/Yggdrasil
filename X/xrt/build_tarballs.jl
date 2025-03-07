@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message
 using BinaryBuilder
+using Pkg
 
 name = "xrt"
 version = v"2.17"
@@ -67,11 +68,13 @@ products = [
     LibraryProduct("libxrt_core", :libxrt_core),
     LibraryProduct("libxdp_core", :libxdp_core),
     LibraryProduct("libxrt++", :libxrtxx),
+    ExecutableProduct(["xbutil", "unwrapped/xbutil.exe"], :xbutil),
+    ExecutableProduct(["xclbinutil", "unwrapped/xclbinutil.exe"], :xclbinutil),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("boost_jll"),
+    BuildDependency(PackageSpec(name="boost_jll", version=v"1.79.0")),
     BuildDependency("ELFIO_jll"),
     BuildDependency("OpenCL_Headers_jll"),
     Dependency("ocl_icd_jll"),
