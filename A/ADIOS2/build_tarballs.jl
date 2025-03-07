@@ -119,20 +119,10 @@ platforms = expand_cxxstring_abis(platforms)
 # <https://github.com/ornladios/ADIOS2/issues/2704>
 filter!(p -> nbits(p) ≠ 32, platforms)
 
-# We need to use the same compat bounds as HDF5
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.2", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-filter!(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
-# MPItrampoline
-filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-
-# Platform `riscv64-linux-gnu-libgfortran5-cxx11-mpi+mpitrampoline` is not an officially supported platform
-filter!(p -> arch(p) ≠ "riscv64", platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # We don't need HDF5 on Windows (see above)
-hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
+hdf5_platforms = filter(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -165,10 +155,10 @@ products = [
 # - We currently need to disable MGARD. It seems that MGARD uses Zstd,
 #   and the ADIOS2 build system cannot handle this.
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1600.0"),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1700.0"),
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.5", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.6", platforms=hdf5_platforms),
     # Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
     Dependency(PackageSpec(name="ZeroMQ_jll")),
     # Dependency(PackageSpec(name="Zstd_jll")),
