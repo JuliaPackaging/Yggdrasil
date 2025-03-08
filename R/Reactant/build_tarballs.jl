@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.83"
+version = v"0.0.84"
 
 sources = [
   GitSource(repo, "e191da45854a8f103af2a858805ecbe983aed2fd"),
@@ -296,11 +296,6 @@ install_license ../../LICENSE
 # determine exactly which tarballs we should build
 builds = []
 
-# The products that we will ensure are always built
-products = Product[
-    LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
-]
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -439,7 +434,15 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
-    products2 = copy(products)
+	
+    # The products that we will ensure are always built
+    products2 = Product[]
+    if Sys.isapple(platform)
+	push!(products2, LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra))
+    else
+	push!(products2, LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra, dlopen_flags=[:RTLD_GLOBAL,:RTLD_DEEPBIND]))
+    end
+	
     if gpu == "cuda"
     	for lib in (
 		"libnccl",
