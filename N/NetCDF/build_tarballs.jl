@@ -11,10 +11,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 # So for example version 2.6.3 would become 200.600.300.
 
 name = "NetCDF"
-upstream_version = v"4.9.2"
+upstream_version = v"4.9.3"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.11"
+version_offset = v"0.2.0"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -23,8 +23,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build NetCDF
 sources = [
     ArchiveSource("https://downloads.unidata.ucar.edu/netcdf-c/$(upstream_version)/netcdf-c-$(upstream_version).tar.gz",
-                  "cf11babbbdb9963f09f55079e0b019f6d0371f52f8e1264a5ba8e9fdab1a6c48"),
-    DirectorySource("bundled"),
+                  "a474149844e6144566673facf097fea253dc843c37bc0a7d3de047dc8adda5dd"),
 ]
 
 # HDF5.h in /workspace/artifacts/805ccba77cd286c1afc127d1e45aae324b507973/include
@@ -37,16 +36,12 @@ export LDFLAGS="-L${libdir}"
 export LDFLAGS_MAKE="${LDFLAGS}"
 CONFIGURE_OPTIONS=""
 
-# Apply patch https://github.com/Unidata/netcdf-c/pull/2690
-atomic_patch -p1 ../patches/0001-curl-cainfo.patch
-
 if [[ ${target} == *-mingw* ]]; then
     # we should determine the dll version (?) automatically
-    export LIBS="-lhdf5-310 -lhdf5_hl-310 -lcurl-4 -lz"
+    export LIBS="-lcurl-4 -lz"
     # linking fails with: "libtool:   error: can't build x86_64-w64-mingw32 shared library unless -no-undefined is specified"
     # unless -no-undefined is added to LDFLAGS
     LDFLAGS_MAKE="${LDFLAGS} ${LIBS} -no-undefined -Wl,--export-all-symbols"
-
     # additional configure options from
     # https://github.com/Unidata/netcdf-c/blob/5df5539576c5b2aa8f31d4b50c4f8258925589dd/.github/workflows/run_tests_win_mingw.yml#L38
     CONFIGURE_OPTIONS="--disable-byterange"
@@ -56,7 +51,6 @@ if [[ ${target} -ne x86_64-linux-gnu ]]; then
     # utilities are necessary to run the tests
     CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS --disable-utilities"
 fi
-
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # see
@@ -69,11 +63,17 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libnghttp2.*
 fi
 
-if [[ ${target} == x86_64-unknown-freebsd* ]]; then
-     # based on the output of mpicc --showme
-     export LIBS="-lmpi -lm -lexecinfo -lutil -lz"
+if [[ ${target} == *-unknown-freebsd* ]]; then
+    # MPI isn't autodetected; we need to specify the libraries
+    case ${bb_full_target} in
+        *mpich*)
+            export LIBS="-lmpi -lm -lexecinfo -lutil -lz";;
+        *mpitrampoline*)
+            export LIBS="-lmpitrampoline -ldl";;
+        *openmpi*)
+            export LIBS="-lmpi -lm -lexecinfo -lutil -lz";;
+    esac
 fi
-
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -82,7 +82,7 @@ fi
     --disable-static \
     --disable-dap-remote-tests \
     --disable-plugins \
-    $CONFIGURE_OPTIONS
+    ${CONFIGURE_OPTIONS}
 
 make LDFLAGS="${LDFLAGS_MAKE}" -j${nproc}
 
@@ -105,14 +105,7 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-# MPItrampoline
-filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -131,17 +124,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Blosc_jll"),
-    Dependency("Bzip2_jll"),
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency("HDF5_jll"; compat = "=1.14.3"),
-    Dependency("LibCURL_jll"; compat = "7.73.0,8"),
-    Dependency("XML2_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
-    Dependency("libzip_jll"),
+    Dependency("Blosc_jll"; compat="1.21.6"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("LibCURL_jll"; compat="7.73.0,8"),
+    Dependency("XML2_jll"; compat="2.13.6"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("libzip_jll"; compat="1.11.3"),
 ]
 append!(dependencies, platform_dependencies)
 
