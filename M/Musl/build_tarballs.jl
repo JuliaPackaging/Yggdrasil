@@ -1,17 +1,24 @@
 using BinaryBuilder
 
 name = "Musl"
-version = v"1.2.5"
+# We call this version 1.2.6 since we apply patches from upstream
+musl_version = v"1.2.5"
+version = v"1.2.6"
 
 # sources to build, such as mingw32, our patches, etc....
 sources = [
-    ArchiveSource("https://www.musl-libc.org/releases/musl-$(version).tar.gz",
+    ArchiveSource("https://www.musl-libc.org/releases/musl-$(musl_version).tar.gz",
                   "a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/musl-*
+
+# Patches recommended on <https://musl.libc.org> for musl 1.2.5
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/iconv-1.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/iconv-2.patch
 
 mkdir musl_build && cd musl_build
 
