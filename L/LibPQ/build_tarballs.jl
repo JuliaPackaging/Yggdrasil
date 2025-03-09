@@ -27,7 +27,8 @@ make CC=$BUILD_CC VERSION_DEPS= zic
 mv zic ../ && cd ../ && rm -rf zic-build
 export ZIC=$WORKSPACE/srcdir/zic
 export PATH=$WORKSPACE/srcdir:$PATH
-export CFLAGS="-std=c99"
+# We need `__STDC_WANT_LIB_EXT1__` for `memset_s` on macOS
+export CFLAGS="-std=c11 -D__STDC_WANT_LIB_EXT1__"
 
 cd postgres
 
@@ -95,4 +96,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"7")
