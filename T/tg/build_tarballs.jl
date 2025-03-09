@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "tg"
-version = v"0.7.2"
+version = v"0.7.3"
 
 # Collection of sources required to build Libtiff
 sources = [
     GitSource("https://github.com/tidwall/tg.git",
-              "8fcb9b2809ad696025b4618ad226140f9ddbc452"),
+              "9464d05791814fa6005b1075570c7c501b37bf2a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -23,9 +23,9 @@ ${CC} -shared -o ${libdir}/libtg.${dlext} -fPIC -O3 tg.c
 platforms = supported_platforms()
 # Don't build on 32 bit platforms, since the library does not build there
 # TODO: patch the library for 32 bit if necessary?  But I doubt it.
-platforms = filter!(platforms) do platform
-    !(nbits(platform) == 32)
-end
+# platforms = filter!(platforms) do platform
+#     !(nbits(platform) == 32)
+# end
 
 # The products that we will ensure are always built
 products = [
