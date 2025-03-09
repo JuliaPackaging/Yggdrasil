@@ -25,7 +25,8 @@ cmake .. \
         -DMATIO_WITH_ZLIB:BOOL=ON \
         -DHDF5_ROOT:PATH=${prefix} \
         -DHDF5_DIR:PATH=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release
 make -j${nproc}
 make install
 """

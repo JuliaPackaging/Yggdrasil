@@ -39,7 +39,8 @@ meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dglib=enabled \
     -Ddefault_library=shared \
     -Dtests=disabled \
-    -Ddwrite=disabled
+    -Ddwrite=disabled \
+    --buildtype=release
 
 if [[ "${target}" == *apple* ]]; then
     # Fix the error: undefined reference to `backtrace_symbols'
