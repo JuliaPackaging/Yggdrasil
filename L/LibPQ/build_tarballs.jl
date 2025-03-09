@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "LibPQ"
-version = v"16.0"
-tzcode_version = "2023c"
+version = v"16.8"
+tzcode_version = "2025a"
 
 # Collection of sources required to build LibPQ
 sources = [
     GitSource(
         "https://github.com/postgres/postgres.git",
-        "c372fbbd8e911f2412b80a8c39d7079366565d67",
+        "71eb35c0b18de96537bd3876ec9bf8075bfd484f",
     ),
     ArchiveSource(
         "https://data.iana.org/time-zones/releases/tzcode$tzcode_version.tar.gz",
-        "46d17f2bb19ad73290f03a203006152e0fa0d7b11e5b71467c4a823811b214e7",
+        "119679d59f76481eb5e03d3d2a47d7870d592f3999549af189dbd31f2ebf5061",
         unpack_target="zic-build",
     ),
 ]
@@ -87,11 +87,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
-    Dependency("Kerberos_krb5_jll"; platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-    Dependency("ICU_jll"; compat="69.1"),
     HostBuildDependency("Bison_jll"),
-    Dependency("Zstd_jll"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
+    Dependency("Kerberos_krb5_jll"; compat="1.21.3", platforms=filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+    Dependency("ICU_jll"; compat="76.1"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
