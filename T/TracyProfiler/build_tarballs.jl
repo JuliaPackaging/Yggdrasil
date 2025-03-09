@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "TracyProfiler"
-version = v"0.9.1"
+version = v"0.10.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/wolfpld/tracy.git",
-              "897aec5b062664d2485f4f9a213715d2e527e0ca"), # v0.9.1
+              "37aff70dfa50cf6307b3fee6074d627dc2929143"), # v0.10
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
                   "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
     DirectorySource("./bundled"),
@@ -40,11 +40,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/."
     popd
 fi
-
-atomic_patch -p1 ../patches/TracyProfiler-nfd-extended-1.0.2.patch
-atomic_patch -p1 ../patches/TracyProfiler-filter-user-text.patch
-atomic_patch -p1 ../patches/TracyProfiler-no-divide-zero.patch
-atomic_patch -p1 ../patches/TracyProfiler-rr-nopl-seq.patch
 
 # Build / install the profiler GUI
 make -e -j${nproc} -C profiler/build/unix LEGACY=1 IMAGE=tracy release
@@ -93,8 +88,8 @@ dependencies = [
     Dependency("Dbus_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("GLFW_jll"),
     # Needed for `pkg-config glfw3`
-    Dependency("Xorg_xproto_jll", platforms=x11_platforms),
-    Dependency("Xorg_kbproto_jll", platforms=x11_platforms),
+    BuildDependency("Xorg_xproto_jll", platforms=x11_platforms),
+    BuildDependency("Xorg_kbproto_jll", platforms=x11_platforms),
 ]
 
 # requires std-c++17, full support in gcc 7+, clang 8+
