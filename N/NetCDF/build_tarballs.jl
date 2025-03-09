@@ -14,7 +14,7 @@ name = "NetCDF"
 upstream_version = v"4.9.3"
 
 # Offset to add to the version number.  Remember to always bump this.
-version_offset = v"0.2.0"
+version_offset = v"1.0.0"
 
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -131,6 +131,7 @@ dependencies = [
     Dependency("XML2_jll"; compat="2.13.6"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("libaec_jll"; compat="1.1.3"), # This is the successor of szlib
     Dependency("libzip_jll"; compat="1.11.3"),
 ]
 append!(dependencies, platform_dependencies)
