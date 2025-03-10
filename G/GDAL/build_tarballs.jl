@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.10.1"
+upstream_version = v"3.10.2"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -19,7 +19,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "9b7a7c8ffa7b7aff696974c432d4254a809b3efe"),
+        "e31053b64d9db2e0dc6f8eec0982908a2087eedf"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled")
@@ -121,11 +121,6 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-# Disable until the dependencies are available for this platform
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
-# Disable riscv for now
-platforms = filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -200,10 +195,10 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
-    Dependency("Arrow_jll"; compat="18.1.0"),
-    Dependency("Blosc_jll"; compat="1.21.1"),
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("GEOS_jll"; compat="3.11.2"),
+    Dependency("Arrow_jll"; compat="19.0.0"),
+    Dependency("Blosc_jll"; compat="1.21.6"),
+    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("GEOS_jll"; compat="3.13.1"),
     # Dependency("HDF4_jll"; compat="4.3.0"),
     # We had to restrict compat with HDF5 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
@@ -211,22 +206,22 @@ dependencies = [
     Dependency("HDF5_jll"; compat="=1.14.3", platforms=hdf5_platforms),
     Dependency("LERC_jll"; compat="4"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
-    Dependency("LibPQ_jll"; compat="16"),
-    Dependency("Libtiff_jll"; compat="4.7"),
-    Dependency("Lz4_jll"; compat="1.9.3"),
-    Dependency("NetCDF_jll"; compat="400.902.210", platforms=hdf5_platforms),
+    Dependency("LibPQ_jll"; compat="16.8"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("Lz4_jll"; compat="1.10.1"),
+    Dependency("NetCDF_jll"; compat="401.900.300", platforms=hdf5_platforms),
     Dependency("OpenJpeg_jll"; compat="2.5"),
     Dependency("PCRE2_jll"; compat="10.35.0"),
-    Dependency("PROJ_jll"; compat="902.500"),
-    Dependency("Qhull_jll"; compat="8.0.999"),
-    Dependency("SQLite_jll"; compat="3.45"),
-    Dependency("XML2_jll"; compat="2.9.11"),
-    Dependency("XZ_jll"; compat="5.2.5"),
+    Dependency("PROJ_jll"; compat="902.500.100"),
+    Dependency("Qhull_jll"; compat="10008.0.1004"),
+    Dependency("SQLite_jll"; compat="3.49"),
+    Dependency("XML2_jll"; compat="2.13.6"),
+    Dependency("XZ_jll"; compat="5.6.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("Zstd_jll"; compat="1.5.6"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
     Dependency("libgeotiff_jll"; compat="100.702.300"),
-    Dependency("libpng_jll"; compat="1.6.38"),
-    Dependency("libwebp_jll"; compat="1.2.4"),
+    Dependency("libpng_jll"; compat="1.6.46"),
+    Dependency("libwebp_jll"; compat="1.5.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
