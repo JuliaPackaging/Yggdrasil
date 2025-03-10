@@ -19,7 +19,7 @@ apk del cmake
 mkdir -p subprojects
 git clone https://code.videolan.org/videolan/libplacebo.git --depth=1 --recursive subprojects/libplacebo
 
-meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release setup build
+meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release
 meson compile -C build
 meson install -C build
 """
