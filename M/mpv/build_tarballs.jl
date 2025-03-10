@@ -19,7 +19,7 @@ apk del cmake
 mkdir -p subprojects
 git clone https://code.videolan.org/videolan/libplacebo.git --depth=1 --recursive subprojects/libplacebo
 
-meson setup build --cross-file=${MESON_TARGET_TOOLCHAIN}
+meson --cross-file=${MESON_TARGET_TOOLCHAIN} --buildtype=release setup build
 meson compile -C build
 meson install -C build
 """
@@ -53,5 +53,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6", clang_use_lld=false, preferred_gcc_version=v"8")
 
