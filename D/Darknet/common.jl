@@ -1,13 +1,14 @@
 using BinaryBuilder, Pkg
 
-function gen_common(rest...; openmp = true, gpu = false, kwargs...)
-    version = v"2020.6.5"
+function gen_common(platforms; openmp = true, gpu = false, kwargs...)
+    # "yolov4" https://github.com/AlexeyAB/darknet/releases/tag/yolov4
+    version = v"2021.10.29"
     sources = BinaryBuilder.AbstractSource[
-        ArchiveSource("https://github.com/AlexeyAB/darknet/archive/3708b2e47d355ba0a206fd7a06bbc5a6e38af4ff.zip", "e18a6374822fe3c9b95f2b6a4086decbdfbd1c589f2481ce5704a4384044ea6f")
+        GitSource("https://github.com/AlexeyAB/darknet.git", "9d40b619756be9521bc2ccd81808f502daaa3e9a"),
     ]
 
     script = "OPENMP=$(Int(openmp))\nGPU=$(Int(gpu))\n" * raw"""
-cd $WORKSPACE/srcdir/darknet-*
+cd $WORKSPACE/srcdir/darknet
 
 if [[ "${GPU}" -eq 1 ]]; then
     ## CUDA setup
