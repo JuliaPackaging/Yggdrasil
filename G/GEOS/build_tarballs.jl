@@ -4,7 +4,6 @@ using BinaryBuilder
 
 name = "GEOS"
 version = v"3.13.1"
-ygg_version = v"3.13.1" # bump ygg version to pick up new platforms
 
 # Collection of sources required to build GEOS
 sources = [
