@@ -42,7 +42,6 @@ filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(p -> !(libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
 filter!(p -> !(os(p) == "freebsd"), platforms)
-filter!(p -> (os(p) == "linux"), platforms)
 
 
 dependencies = [
