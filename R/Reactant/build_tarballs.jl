@@ -436,12 +436,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     should_build_platform(triplet(augmented_platform)) || continue
 	
     # The products that we will ensure are always built
-    products2 = Product[]
-    if Sys.isapple(platform)
-	push!(products2, LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra))
-    else
-	push!(products2, LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra, dlopen_flags=[:RTLD_GLOBAL,:RTLD_DEEPBIND]))
-    end
+    products = Product[
+        LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra)
+    ]
 	
     if gpu == "cuda"
     	for lib in (
@@ -466,13 +463,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 		"libcusparse",
 	)
 	    san = replace(lib, "-" => "_")
-	    push!(products2,
+	    push!(products,
                   LibraryProduct([lib, lib], Symbol(san);
                                  dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
-	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
-	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
-	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
+	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
 
         if VersionNumber(cuda_version) < v"12.6"
             # For older versions of CUDA we need to use GCC 12:
@@ -487,7 +484,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     push!(builds, (;
-                   dependencies, products=products2, sources=platform_sources,
+                   dependencies, products, sources=platform_sources,
                    platforms=[augmented_platform], script=prefix*script, preferred_gcc_version, preferred_llvm_version
     ))
 end
