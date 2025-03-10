@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SDL2"
-version = v"2.24.2"
+version = v"2.32.2"
 
 # Collection of sources required to build SDL2
 sources = [
     GitSource("https://github.com/libsdl-org/SDL.git",
-              "55b03c7493a7abed33cf803d1380a40fa8af903f"),
+              "e11183ea6caa3ae4895f4bc54cad2bbb0e365417"),
 ]
 
 # Bash recipe for building across all platforms
