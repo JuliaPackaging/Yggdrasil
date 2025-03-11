@@ -21,6 +21,7 @@ const llvm_tags = Dict(
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
     v"18.1.7" => "ed30d043a240d06bb6e010a41086e75713156f4f", # julia-18.1.7-2
     v"19.1.7" => "a9df916357c2fd0851df026a84f83d87efd6e212", # julia-19.1.7-1
+    v"20.1.0" => "9191f0d890728ba959cb2b2a76e3ab914069cabc", # julia-20.1.0-0
 )
 
 const buildscript = raw"""
@@ -122,6 +123,7 @@ else
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
@@ -139,7 +141,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} mlir-linalg-ods-yaml-gen
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
-    ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
+    ninja -j${nproc} clang-tidy-confusable-chars-gen mlir-pdll
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
+    ninja -j${nproc} clang-pseudo-gen
 fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
     ninja -j${nproc} mlir-src-sharder
@@ -188,6 +193,7 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
 if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
 fi
 
 # We want a build with no bindings
@@ -273,8 +279,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
-    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
+    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
 fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
     CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
