@@ -14,9 +14,16 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/libfabric
 
+args=(--with-dlopen)
+if [[ ${target} == *freebsd* ]]; then
+    # verbs on FreeBSD requires the Linux kernel header files
+    # (Maybe a cross-compiling bug?)
+    args+=(--enable-verbs=no)
+fi
+
 ./autogen.sh
 # export CPPFLAGS=-I${prefix}/usr/include
-./configure --build=${MACHTYPE} --host=${target} --prefix=${prefix} --with-dlopen
+./configure --build=${MACHTYPE} --host=${target} --prefix=${prefix} ${args[@]}
 make -j${nproc}
 make install
 """
