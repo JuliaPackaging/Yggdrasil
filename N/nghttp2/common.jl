@@ -9,6 +9,7 @@ function configure_nghttp2_build(version; kwargs...)
     versions_tags = Dict(
         v"1.41.0" => "8f7b008b158e12de0e58247afd170f127dbb6456",
         v"1.64.0" => "526ff38e0249acbcc4d0e8958c12cdeae9960cfe",
+        v"1.65.0" => "319bf015de8fa38e21ac271ce2f7d61aa77d90cb",
     )
 
     sources = [
