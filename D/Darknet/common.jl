@@ -47,8 +47,13 @@ make -j${nproc} \
     ZED_CAMERA=0 \
     AVX=${AVXENABLE}
 
+ls -lh
+
 mkdir -p "${libdir}"
 cp libdarknet.${dlext} "${libdir}"
+mkdir -p ${includedir}
+cp include/* "${includedir}/."
+
 install_license LICENSE
 
 rm -rf "${prefix}/cuda"
