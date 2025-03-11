@@ -82,21 +82,25 @@ export MPITRAMPOLINE_FC=${FC}
 # We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
 cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DADIOS2_BUILD_EXAMPLES=OFF \
-    -DADIOS2_HAVE_ZFP_CUDA=OFF \
-    -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_Blosc2_PREFER_SHARED=ON \
+    -DADIOS2_HAVE_ZFP_CUDA=OFF \
+    -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
+    -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_USE_CUDA=OFF \
+    -DADIOS2_USE_EXTERNAL_NLOHMANN_JSON=ON \
+    -DADIOS2_USE_EXTERNAL_PUGIXML=ON \
+    -DADIOS2_USE_EXTERNAL_YAMLCPP=ON \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
+    -DADIOS2_USE_ZFP=ON \
     -DADIOS2_USE_ZeroMQ=ON \
-    -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
     -DMPI_HOME=${prefix} \
     ${archopts[@]}
 cmake --build build --parallel ${nproc}
@@ -159,14 +163,16 @@ dependencies = [
     Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.6", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="Libffi_jll"); compat="3.4.7"),
     # Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
     Dependency(PackageSpec(name="ZeroMQ_jll"); compat="4.3.6"),
     # Dependency(PackageSpec(name="Zstd_jll")),
     Dependency(PackageSpec(name="libpng_jll"); compat="1.6.47"),
+    Dependency(PackageSpec(name="nlohmann_json_jll"); compat="3.11.3"),
     Dependency(PackageSpec(name="protoc_jll")),
-    Dependency(PackageSpec(name="pugixml_jll")),
-    Dependency(PackageSpec(name="yaml_cpp_jll")),
-    Dependency(PackageSpec(name="zfp_jll"); compat="1.0.1"),
+    Dependency(PackageSpec(name="pugixml_jll"); compat="1.14.1"),
+    Dependency(PackageSpec(name="yaml_cpp_jll"); compat="0.8.1"),
+    Dependency(PackageSpec(name="zfp_jll"); compat="1.0.2"),
 ]
 append!(dependencies, platform_dependencies)
 
