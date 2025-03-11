@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.83"
+version = v"0.0.84"
 
 sources = [
   GitSource(repo, "e191da45854a8f103af2a858805ecbe983aed2fd"),
@@ -296,11 +296,6 @@ install_license ../../LICENSE
 # determine exactly which tarballs we should build
 builds = []
 
-# The products that we will ensure are always built
-products = Product[
-    LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra), #; dlopen_flags=[:RTLD_NOW,:RTLD_DEEPBIND]),
-]
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
@@ -439,7 +434,12 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     should_build_platform(triplet(augmented_platform)) || continue
-    products2 = copy(products)
+	
+    # The products that we will ensure are always built
+    products = Product[
+        LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra)
+    ]
+	
     if gpu == "cuda"
     	for lib in (
 		"libnccl",
@@ -463,13 +463,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 		"libcusparse",
 	)
 	    san = replace(lib, "-" => "_")
-	    push!(products2,
+	    push!(products,
                   LibraryProduct([lib, lib], Symbol(san);
                                  dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
 	end
-	push!(products2, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
-	push!(products2, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
-	push!(products2, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
+	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
+	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
+	push!(products, FileProduct("lib/cuda/nvvm/libdevice/libdevice.10.bc", :libdevice))
 
         if VersionNumber(cuda_version) < v"12.6"
             # For older versions of CUDA we need to use GCC 12:
@@ -484,7 +484,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     push!(builds, (;
-                   dependencies, products=products2, sources=platform_sources,
+                   dependencies, products, sources=platform_sources,
                    platforms=[augmented_platform], script=prefix*script, preferred_gcc_version, preferred_llvm_version
     ))
 end
