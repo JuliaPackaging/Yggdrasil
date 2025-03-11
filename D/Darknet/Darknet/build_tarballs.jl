@@ -20,4 +20,3 @@ version, sources, script, products, dependencies = gen_common(platforms; gpu=fal
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10")
-
