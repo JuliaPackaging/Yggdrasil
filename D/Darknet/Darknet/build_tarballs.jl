@@ -15,6 +15,8 @@ filter!(p -> cxxstring_abi(p) != "cxx03", platforms)
 # # same for old intel macOS
 filter!(p -> !(Sys.isapple(p) && arch(p) == "x86_64"), platforms)
 
+# Hitting ./src/utils.c:21:22: fatal error: execinfo.h: No such file or directory
+filter!(p -> libc(p) ≠ "musl", platforms)
 
 version, sources, script, products, dependencies = gen_common(platforms; gpu=false)
 
