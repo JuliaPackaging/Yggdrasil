@@ -29,6 +29,7 @@ platforms = supported_platforms()
 filter!(p -> nbits(p) == 64, platforms)
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> libgfortran_version(p) != v"3", platforms) # Also for eccodes compatibility
+filter!(p -> libgfortran_version(p) != v"4", platforms) # Needs support for higher dimension arrays
 filter!(p -> arch(p) != "powerpc64le" && arch(p) != "riscv64" && !Sys.isfreebsd(p) && libc(p) != "musl", platforms) # Fliter for netcdff platforms
 filter!(!Sys.iswindows, platforms) # Excluded because of "Error: value of ... too large for field of 4 bytes at ..."
 filter!(!Sys.isapple, platforms) # Excluded because of "invalid variant" errors
