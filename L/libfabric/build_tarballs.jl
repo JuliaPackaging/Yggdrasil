@@ -24,6 +24,8 @@ products = [
 ]
 
 dependencies = [
+    # We need the header file `bits/types/struct_iovec.h` that was added in glibc 2.26
+    BuildDependency(PackageSpec(name="Glibc_jll", version=v"2.26"); platforms=glibc_platforms))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
