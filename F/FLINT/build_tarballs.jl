@@ -33,7 +33,8 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build FLINT
 sources = [
-    GitSource("https://github.com/flintlib/flint.git", "0c0c11fa997b2f694607d1e7ddd6f57ec43c4df8"), # v3.2.0
+   ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
+                 "6d182c4a05d3d6bfc611565d6331d02f94066a3be32df36ed880264afa9c30f4"),
 ]
 
 # Bash recipe for building across all platforms
