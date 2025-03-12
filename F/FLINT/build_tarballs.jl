@@ -57,6 +57,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# Currently skipped due to the following error: `configure: error: Could not find mpfr.h`
+filter!(p -> arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libflint", :libflint)
