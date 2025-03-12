@@ -9,7 +9,6 @@ version = v"0.3.29"
 sources = openblas_sources(version)
 script = openblas_script(;aarch64_ilp64=true, num_64bit_threads=512, bfloat16=true, consistent_fpcsr=true)
 platforms = expand_gfortran_versions(supported_platforms(; exclude=p -> !(arch(p) in ("x86_64", "aarch64"))))
-push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
 products = openblas_products()
 dependencies = openblas_dependencies(platforms)
 
