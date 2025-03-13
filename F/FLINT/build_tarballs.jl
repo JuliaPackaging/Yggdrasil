@@ -35,11 +35,18 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 sources = [
    ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
                  "6d182c4a05d3d6bfc611565d6331d02f94066a3be32df36ed880264afa9c30f4"),
+   DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/flint*
+cd ${WORKSPACE}/srcdir/flint*
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+
+
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
    export CFLAGS=-D_GNU_SOURCE
