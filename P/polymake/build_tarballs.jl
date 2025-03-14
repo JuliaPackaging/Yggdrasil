@@ -23,7 +23,7 @@ import Pkg.Types: VersionSpec
 
 name = "polymake"
 upstream_version = v"4.13"
-version_offset = v"0.0.2"
+version_offset = v"0.0.3"
 version = VersionNumber(upstream_version.major*100+version_offset.major,
                         upstream_version.minor*100+version_offset.minor,
                         version_offset.patch)
@@ -155,7 +155,7 @@ dependencies = [
 
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~300.100.300"),
+    Dependency("FLINT_jll", compat = "~300.200.0"),
     Dependency("MongoC_jll", compat = "~1.28.1"),
     Dependency("PPL_jll", compat = "~1.2.1"),
     Dependency("Perl_jll", compat = "=5.34.1"),
