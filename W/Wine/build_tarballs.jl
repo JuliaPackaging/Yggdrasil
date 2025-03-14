@@ -13,9 +13,9 @@ platform_spec = [a for a in ARGS if !startswith(a, "-")]
 is_meta = any(a->startswith(a, "--meta-json"), ARGS)
 requested_platforms = map(p->parse(Platform, p; validate_strict=true), platform_spec)
 
-version = v"7.0-rc3"
+version = v"7.13"
 sources = Any[
-    GitSource("https://github.com/JuliaComputing/wine-staging.git", "10ff6d27133070cff6369c48d7ee4c56ee8da7aa"),
+    GitSource("https://github.com/JuliaComputing/wine-staging.git", "e31912369024e2486f3f96a14b6e6f82b6c463de"),
     DirectorySource("./bundled")
 ]
 
@@ -127,7 +127,6 @@ end
 script = raw"""
 cd $WORKSPACE/srcdir/wine-staging
 atomic_patch -p1 $WORKSPACE/srcdir/patches/hwcap2.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/darwin.patch
 
 if [[ "${target}" == *darwin* ]]; then
     # On macOS, we currently do not support 32-bit wine. It is unclear whether
