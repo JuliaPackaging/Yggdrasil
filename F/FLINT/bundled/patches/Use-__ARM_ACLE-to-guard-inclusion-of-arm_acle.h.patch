@@ -1,0 +1,25 @@
+From efcd23a2ea0e176ac0c0950c656c466791f4f7b7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lars=20G=C3=B6ttgens?= <lars.goettgens@rwth-aachen.de>
+Date: Thu, 13 Mar 2025 00:56:32 +0100
+Subject: [PATCH] Use __ARM_ACLE to guard inclusion of arm_acle.h
+
+---
+ src/ulong_extras/revbin.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/ulong_extras/revbin.c b/src/ulong_extras/revbin.c
+index 922a123e9..8698f8e18 100644
+--- a/src/ulong_extras/revbin.c
++++ b/src/ulong_extras/revbin.c
+@@ -19,7 +19,7 @@
+ # define HAVE_RBIT 1
+ #endif
+ 
+-#if defined(__GNUC__) && FLINT64 && HAVE_RBIT
++#if defined(__GNUC__) && FLINT64 && defined(__ARM_ACLE) && HAVE_RBIT
+ # include <arm_acle.h>
+ ulong
+ n_revbin(ulong n, ulong b)
+-- 
+2.48.1
+
