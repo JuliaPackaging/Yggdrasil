@@ -29,6 +29,9 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)   # not POSIX
+
+filter!(p -> arch(p) != "riscv64", platforms)  # missing FLINT
+
 # At the moment we cannot add optimized versions for specific architectures
 # since the logic of artifact selection when loading the package is not
 # working well.
