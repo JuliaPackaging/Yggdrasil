@@ -57,6 +57,7 @@ make install
 # windows build would require MPIR instead of GMP for 'long long'
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)  # missing FLINT
 platforms = expand_cxxstring_abis(platforms)
 
 
