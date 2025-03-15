@@ -1,7 +1,7 @@
-diff --git a/include/locale b/include/locale
+diff --git a/include/locale/__cxx03 b/include/locale/__cxx03
 index 9e97eb9f3395..896dac226dd7 100644
---- a/include/locale
-+++ b/include/locale
+--- a/include/locale/__cxx03
++++ b/include/locale/__cxx03
 @@ -716,7 +716,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end, ios_base::iostat
      __libcpp_remove_reference_t<decltype(errno)> __save_errno = errno;
      errno                                                     = 0;
