@@ -1,7 +1,7 @@
-diff --git a/libcxx/include/__cxx03/locale b/libcxx/include/__cxx03/locale
+diff --git a/include/__cxx03/locale b/include/__cxx03/locale
 index 6360bbc2f6b6..add75d2fc6f5 100644
---- a/libcxx/include/__cxx03/locale
-+++ b/libcxx/include/__cxx03/locale
+--- a/include/__cxx03/locale
++++ b/include/__cxx03/locale
 @@ -727,7 +727,7 @@ __num_get_signed_integral(const char* __a, const char* __a_end, ios_base::iostat
      __libcpp_remove_reference_t<decltype(errno)> __save_errno = errno;
      errno                                                     = 0;
