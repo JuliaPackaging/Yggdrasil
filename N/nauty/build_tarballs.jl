@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "nauty"
-version = v"2.8.9" 
+upstream_version = v"2.8.9"
+version = v"2.8.10"
 
 # Collection of sources required to build nauty
 sources = [
-    ArchiveSource("https://pallini.di.uniroma1.it/nauty$(version.major)_$(version.minor)_$(version.patch).tar.gz",
+    ArchiveSource("https://pallini.di.uniroma1.it/nauty$(upstream_version.major)_$(upstream_version.minor)_$(upstream_version.patch).tar.gz",
 		  "c97ab42bf48796a86a598bce3e9269047ca2b32c14fc23e07208a244fe52c4ee"),
     DirectorySource("./bundled")
 ]
