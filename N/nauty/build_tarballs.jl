@@ -58,9 +58,6 @@ install_license COPYRIGHT
 platforms = supported_platforms(;experimental=true)
 filter!(!Sys.iswindows, platforms)
 
-# Currently skipped due to the following error: `sumlines.c:152:10: fatal error: gmp.h: No such file or directory`
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
    LibraryProduct("libnauty", :libnauty),
@@ -127,7 +124,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"), # for sumlines
+    Dependency("GMP_jll", v"6.2.1"), # for sumlines
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
