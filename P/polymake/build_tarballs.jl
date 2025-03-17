@@ -133,6 +133,8 @@ platforms = filter!(p -> !Sys.iswindows(p) &&
                     supported_platforms())
 # filter aarch64 freebsd until supported by all dependencies
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# filter riscv64 until supported by all dependencies
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
