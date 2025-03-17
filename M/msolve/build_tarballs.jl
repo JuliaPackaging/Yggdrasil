@@ -46,7 +46,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("FLINT_jll", compat = "~300.200.0"),
+    Dependency("FLINT_jll", compat = "~300.100.301"),
     Dependency("MPFR_jll", v"4.1.1"),
 
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
