@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "Cairo"
-version = v"1.18.2"
+version = v"1.18.4"
 
 sources = [
-    GitSource("https://gitlab.freedesktop.org/cairo/cairo.git",
-              "b9eed915f9a67380e7ef9d8746656455c43f67e2"),  # this is a few commits after 1.18.2 but includes an important bugfix
+    ArchiveSource("https://cairographics.org/releases/cairo-1.18.4.tar.xz",
+                  "445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cairo
+cd $WORKSPACE/srcdir/cairo*
 
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
