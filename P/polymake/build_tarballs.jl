@@ -148,12 +148,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
     Dependency("FLINT_jll", compat = "~300.200.0"),
     Dependency("MongoC_jll", compat = "~1.28.1"),
@@ -164,7 +164,7 @@ dependencies = [
     Dependency("boost_jll", compat = "=1.76.0"),
     Dependency("cddlib_jll", compat = "~0.94.14"),
     Dependency("lrslib_jll", compat = "~0.3.3"),
-    Dependency("normaliz_jll", compat = "~300.1000.200"),
+    Dependency("normaliz_jll", compat = "~300.1000.201"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
