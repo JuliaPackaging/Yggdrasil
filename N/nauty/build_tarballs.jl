@@ -4,7 +4,7 @@ using BinaryBuilder
 
 name = "nauty"
 upstream_version = v"2.8.9"
-version = v"2.8.11"
+version = v"2.8.10"
 
 # Collection of sources required to build nauty
 sources = [
