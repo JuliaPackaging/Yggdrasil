@@ -17,6 +17,10 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/nauty*
 
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
 
@@ -27,7 +31,6 @@ export LDFLAGS="${LDFLAGS} -L${prefix}/lib"
 # `popcnt` CPU instruction is available. This check is not possible during cross-compilation,
 # which causes the entire configure script to fail. We patch `configure.ac` to simply disable
 # `popcnt` while cross-compiling, and generate a new, working configure script with `autoreconf`.
-atomic_patch -p1 ../patches/autotools.patch
 autoreconf -v
 
 # We use --enable-generic to ensure maximum hardware compatibility and we
