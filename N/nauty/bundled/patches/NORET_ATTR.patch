@@ -33,7 +33,7 @@ index 289831d..9e25d6d 100644
 -#define C_NORET_ATTR @ac_cv_noret@   /* Only for C */
 -#if (defined(__cplusplus) && __cplusplus >= 202302L) \
 +#define C_NORET_ATTR _Noreturn   /* Only for C */
-+#if (defined(__cplusplus) && __cplusplus >= 201102L) \
++#if (defined(__cplusplus) && __cplusplus >= 201103L) \
          || (!defined(__cplusplus) && __STDC_VERSION__ >= 202311L)
  #define NORET_ATTR [[noreturn]]
 -#elif defined(__cplusplus) && __cplusplus >= 201103L
