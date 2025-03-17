@@ -48,6 +48,7 @@ dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
     Dependency("FLINT_jll", compat = "~300.100.301"),
     Dependency("MPFR_jll", v"4.1.1"),
+    Dependency("OpenBLAS32_jll", v"0.3.28"),
 
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
