@@ -42,7 +42,7 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms((; exclude=p->Sys.isfreebsd(p) && arch(p) == "aarch64"))
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> !(arch(p)  == "riscv64"), platforms)
 platforms = filter(p -> !( (libgfortran_version(p) == v"3" || libgfortran_version(p) == v"4") && arch(p)=="powerpc64le"), platforms)
