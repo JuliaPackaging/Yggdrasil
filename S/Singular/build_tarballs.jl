@@ -112,7 +112,7 @@ products = [
 dependencies = [
     Dependency("cddlib_jll"),
     Dependency(PackageSpec(name="FLINT_jll"), compat = "~300.200.000"),
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
 ]
 
