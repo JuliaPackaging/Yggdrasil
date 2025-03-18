@@ -2,7 +2,6 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
-const YGGDRASIL_DIR = "../.."
 
 name = "MAGEMin"
 version = v"1.7.3"
@@ -27,10 +26,10 @@ else
 fi
 
 # Compile library:
-make CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
+make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
 
 # Compile binary
-make EXE_NAME="MAGEMin${exeext}" CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
+make -j${nproc} EXE_NAME="MAGEMin${exeext}" CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
 
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
 install -Dvm 755 MAGEMin${exeext} "${bindir}/MAGEMin${exeext}"
@@ -39,10 +38,6 @@ install -Dvm 755 MAGEMin${exeext} "${bindir}/MAGEMin${exeext}"
 install -vm 644 src/*.h "${includedir}"
 
 install_license LICENSE
-"""
-
-augment_platform_block = """
-    using Base.BinaryPlatforms
 """
 
 # These are the platforms we will build for by default, unless further
@@ -69,4 +64,4 @@ append!(dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
+               julia_compat="1.6", preferred_gcc_version=v"6")
