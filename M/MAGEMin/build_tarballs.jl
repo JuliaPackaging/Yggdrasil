@@ -3,7 +3,6 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms"))
 
 name = "MAGEMin"
 version = v"1.7.3"
