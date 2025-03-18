@@ -3,47 +3,35 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms"))
 
 name = "MAGEMin"
-version = v"1.7.2"
-
-MPItrampoline_compat_version="5.2.1"  
+version = v"1.7.3"
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "d4f464bc1cf7cf165faa980ff3694ae596f45f41")                 ]
+                    "98ede02c4634a3bd0a1860d33f46a36be678ee98")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd MAGEMin*
 
-if [[ "${target}" == *-mingw* ]]; then
-    MPI_LIBS="-lmsmpi"
-elif grep -q MPICH_NAME $prefix/include/mpi.h; then
-    MPI_LIBS="-lmpi"
-elif grep -q MPItrampoline $prefix/include/mpi.h; then
-    MPI_LIBS="-lmpitrampoline"
-elif grep -q OMPI_MAJOR_VERSION $prefix/include/mpi.h; then
-    MPI_LIBS="-lmpi"
-fi
-
-CCFLAGS="-O3 -g -fPIC -std=c99"
+CCFLAGS="-DUSE_MPI=0 -O3 -g -fPIC -std=c99"
 
 if [[ "${target}" == *-apple* ]]; then 
     # Use Accelerate for Lapack dependencies
-    LIBS="-L${libdir} -lm -framework Accelerate -lnlopt ${MPI_LIBS}"
+    LIBS="-L${libdir} -lm -framework Accelerate -lnlopt"
     INC="-I${includedir}"
 else
-    LIBS="-L${libdir} -lm -lopenblas -lnlopt ${MPI_LIBS}"
+    LIBS="-L${libdir} -lm -lopenblas -lnlopt"
     INC="-I${includedir}"
 fi
 
 # Compile library:
-make -j${nproc} CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
+make CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
 
 # Compile binary
-make -j${nproc} EXE_NAME="MAGEMin${exeext}" CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
+make EXE_NAME="MAGEMin${exeext}" CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
 
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
 install -Dvm 755 MAGEMin${exeext} "${bindir}/MAGEMin${exeext}"
@@ -56,25 +44,14 @@ install_license LICENSE
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; exclude=p->Sys.isfreebsd(p) && arch(p) == "aarch64")
 platforms = expand_gfortran_versions(platforms)
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.3.1", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
 platforms = filter(p -> !(arch(p)  == "riscv64"), platforms)
 platforms = filter(p -> !( (libgfortran_version(p) == v"3" || libgfortran_version(p) == v"4") && arch(p)=="powerpc64le"), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 
 # The products that we will ensure are always built
