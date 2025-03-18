@@ -16,7 +16,7 @@ sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin",
 script = raw"""
 cd MAGEMin*
 
-CCFLAGS="-DUSE_MPI=0 -O3 -g -fPIC -std=c99"
+CCFLAGS="-O3 -g -fPIC -std=c99"
 
 if [[ "${target}" == *-apple* ]]; then 
     # Use Accelerate for Lapack dependencies
@@ -28,10 +28,10 @@ else
 fi
 
 # Compile library:
-make USE_MPI=0 CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
+make CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" lib
 
 # Compile binary
-make USE_MPI=0 EXE_NAME="MAGEMin${exeext}" CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
+make EXE_NAME="MAGEMin${exeext}" CC="${CC}" CCFLAGS="${CCFLAGS}" LIBS="${LIBS}" INC="${INC}" all
 
 install -Dvm 755 libMAGEMin.dylib "${libdir}/libMAGEMin.${dlext}"
 install -Dvm 755 MAGEMin${exeext} "${bindir}/MAGEMin${exeext}"
