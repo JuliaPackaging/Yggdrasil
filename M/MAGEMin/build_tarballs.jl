@@ -66,7 +66,7 @@ dependencies = [
     Dependency("OpenBLAS32_jll"; platforms=filter(!Sys.isapple, platforms))
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
-append!(dependencies, platform_dependencies)
+append!(dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
