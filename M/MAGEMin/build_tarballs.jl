@@ -16,9 +16,7 @@ sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin",
 script = raw"""
 cd MAGEMin*
 
-USE_MPI ?= 0
-
-CCFLAGS="-DUSE_MPI -O3 -g -fPIC -std=c99"
+CCFLAGS="-DUSE_MPI=0 -O3 -g -fPIC -std=c99"
 
 if [[ "${target}" == *-apple* ]]; then 
     # Use Accelerate for Lapack dependencies
