@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "TDLib"
-version = v"1.8.0"
+version = v"1.8.46"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tdlib/td.git", "ca14dfe7ad2cc704b6c63d54c556a3a17e0aa2fe")
+    GitSource("https://github.com/tdlib/td.git", "207f3be7b58b2a2b9f0a066b5b6ef18782b8b517")
 ]
 
 # Bash recipe for building across all platforms
