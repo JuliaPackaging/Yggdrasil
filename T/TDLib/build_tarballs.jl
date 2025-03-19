@@ -29,7 +29,7 @@ cp libtdjson.${dlext} $libdir/libtdjson.${dlext}
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> Sys.isapple(p) || Sys.islinux(p) && (libc(p) == "glibc" && arch(p) == "i686" || arch(p) == "x86_64"), supported_platforms())
+platforms = filter(p -> Sys.isapple(p), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 
@@ -43,6 +43,7 @@ dependencies = [
 	HostBuildDependency("gperf_jll")
 	Dependency("OpenSSL_jll"; compat="1.1.10")
 	Dependency("Zlib_jll")
+	Dependency("CompilerSupportLibraries_jll")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
