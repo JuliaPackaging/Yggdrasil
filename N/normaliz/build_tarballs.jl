@@ -22,14 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.1000.200"
+version = v"300.1000.201"
 upstream_version = v"3.10.2"
 
 # Collection of sources required to complete build
 sources = [
     #ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
     #              "365e1d1e2a338dc4df1947a440e606bb66dd261307e617905e8eca64eaafcf6e"),
-    # this is basically 3.10.1 + flint3 support
     GitSource("https://github.com/Normaliz/Normaliz.git",
               "3bc242209e82488886eada17006e372fd89aa032"),
 ]
@@ -58,6 +57,7 @@ make install
 # windows build would require MPIR instead of GMP for 'long long'
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)  # missing FLINT
 platforms = expand_cxxstring_abis(platforms)
 
 
@@ -69,12 +69,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll"; compat = "~300.100.300"),
-    Dependency("nauty_jll"; compat = "~2.6.13"),
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("OpenBLAS32_jll", v"0.3.28"),
+    Dependency("FLINT_jll"; compat = "~300.200.0"),
+    Dependency("nauty_jll"; compat = "~2.8.10"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]

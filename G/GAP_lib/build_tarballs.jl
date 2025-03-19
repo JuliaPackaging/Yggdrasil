@@ -22,7 +22,7 @@ using BinaryBuilder, Pkg
 
 name = "GAP_lib"
 upstream_version = v"4.14.0"
-version = v"400.1400.003"
+version = v"400.1400.004"
 
 # Collection of sources required to complete build
 sources = [
@@ -78,3 +78,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+
+# Build trigger: 1
