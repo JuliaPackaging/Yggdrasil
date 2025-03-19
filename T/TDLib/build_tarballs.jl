@@ -23,7 +23,7 @@ do
     # without this flag it cannot find libz
     sed -i ' 1 s/$/ -lz/' $f
 done
-cmake --build . -j${nproc}
+cmake --build . -j${nproc} --target tdjson
 cp libtdjson.${dlext} $libdir/libtdjson.${dlext}
 """
 
