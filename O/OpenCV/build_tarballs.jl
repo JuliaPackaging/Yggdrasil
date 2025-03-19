@@ -8,15 +8,15 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "OpenCV"
-version = v"4.10.0"
+version = v"4.11.0"
 version_collapsed_str = replace(string(version), "." => "")
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/opencv/opencv.git", "71d3237a093b60a27601c20e9ee6c3e52154e8b1"),
-    GitSource("https://github.com/opencv/opencv_contrib.git", "1ed3dd2c53888e3289afdb22ec4e9ebbff3dba87"),
+    GitSource("https://github.com/opencv/opencv.git", "31b0eeea0b44b370fd0712312df4214d4ae1b158"),
+    GitSource("https://github.com/opencv/opencv_contrib.git", "0e5254ebf54d2aed6e7eaf6660bf3b797cf50a02"),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
         "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
