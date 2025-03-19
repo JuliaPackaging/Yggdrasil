@@ -47,8 +47,7 @@ install_license LICENSE*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> libc(p) != "musl", platforms)
-filter!(p -> !Sys.isfreebsd(p) && !Sys.iswindows(p), platforms)
+filter!(p -> libc(p) != "musl" && arch(p) != "riscv64" && !Sys.isfreebsd(p) && !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
