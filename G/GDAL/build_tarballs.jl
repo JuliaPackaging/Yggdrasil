@@ -54,10 +54,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-# We cannot enable HDF4. Our HDF4_jll package provides a file `netcdf.h` that conflicts with NetCDF_jll.
-# -DGDAL_ENABLE_DRIVER_HDF4=ON
-# -DGDAL_USE_HDF4=ON
-
 CMAKE_FLAGS=(
     -B build
     -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -72,6 +68,8 @@ CMAKE_FLAGS=(
     -DGDAL_USE_BLOSC=ON
     -DGDAL_USE_CURL=ON
     -DGDAL_USE_EXPAT=ON
+    -DGDAL_ENABLE_DRIVER_HDF4=ON
+    -DGDAL_USE_HDF4=ON
     -DGDAL_USE_GEOS=ON
     -DGDAL_USE_GEOTIFF=ON
     # TODO: Disable gif only on Windows
@@ -199,7 +197,7 @@ dependencies = [
     Dependency("Blosc_jll"; compat="1.21.6"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
-    # Dependency("HDF4_jll"; compat="4.3.0"),
+    Dependency("HDF4_jll"; compat="4.3.1"),
     Dependency("HDF5_jll"; compat="~1.14.3", platforms=hdf5_platforms),
     Dependency("LERC_jll"; compat="4"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
