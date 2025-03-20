@@ -2,7 +2,7 @@ include("../common.jl")
 
 name = "SPEX"
 version = v"3.2.1"
-SS_version_str = "7.8.3"
+SS_version_str = "7.10.1"
 SS_version = VersionNumber(SS_version_str)
 
 sources = suitesparse_sources(SS_version)
