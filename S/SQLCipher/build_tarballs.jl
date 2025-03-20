@@ -47,7 +47,7 @@ install_license LICENSE*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> libc(p) != "musl" && arch(p) != "riscv64" && !Sys.isfreebsd(p) && !Sys.iswindows(p), platforms)
+filter!(p -> libc(p) != "musl" && !Sys.isfreebsd(p) && !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -59,7 +59,7 @@ products = [
 dependencies = [
     # Required for amalgamation, could not build without it
     HostBuildDependency("Tcl_jll"),
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8"),
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
