@@ -123,6 +123,14 @@ platforms = expand_cxxstring_abis(platforms)
 # <https://github.com/ornladios/ADIOS2/issues/2704>
 filter!(p -> nbits(p) ≠ 32, platforms)
 
+# riscv64 builds fail.
+# It seems that some vendored libraries aren't built, leading to undefined references later on
+# ld: warning: libadios2_perfstubs.so.2.10, needed by lib/libadios2_core_mpi.so.2.10.2, not found (try using -rpath or -rpath-link)
+# ld: warning: libadios2_evpath.so.2.10, needed by lib/libadios2_core.so.2.10.2, not found (try using -rpath or -rpath-link)
+# ld: warning: libadios2_ffs.so.2.10, needed by lib/libadios2_core.so.2.10.2, not found (try using -rpath or -rpath-link)
+# ld: warning: libadios2_atl.so.2.10, needed by lib/libadios2_core.so.2.10.2, not found (try using -rpath or -rpath-link)
+filter!(p -> arch(p) != "riscv64", platforms)
+
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # We don't need HDF5 on Windows (see above)
