@@ -2,28 +2,20 @@ using BinaryBuilder
 
 # Collection of sources required to build Gettext
 name = "Gettext"
-version = v"0.21.0"
+version = v"0.21.1"
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
-                  "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"),
-    DirectorySource("./bundled"),
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version).tar.xz",
+                  "50dbc8f39797950aa2c98e939947c527e5ac9ebd2c1b99dd7b06ba33a6767ae6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gettext-*/
+cd $WORKSPACE/srcdir/gettext-*
 
 export CFLAGS="-O2"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
-
-if [[ "${target}" == *-mingw* ]]; then
-    # Apply patch from https://lists.gnu.org/archive/html/bug-gettext/2020-07/msg00035.html
-    #      ../woe32dll/.libs/libgettextsrc_la-c++format.o: In function `__static_initialization_and_destruction_0':
-    #      /workspace/srcdir/gettext-0.21/gettext-tools/src/../woe32dll/../src/format.c:67: undefined reference to `__imp_formatstring_ruby'
-    atomic_patch -p1 ../patches/0001-build-Fix-build-failure-on-mingw-formatstring_ruby.patch
-fi
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
@@ -39,7 +31,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
