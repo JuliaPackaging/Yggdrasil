@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "Ghostscript"
-version = v"9.55.0"
+version = v"9.56.1"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource(
         "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$(version.major)$(version.minor)$(version.patch)/ghostscript-$(version).tar.gz", # URL
-        "31e2064be67e15b478a8da007d96d6cd4d2bee253e5be220703a225f7f79a70b" # SHA256 hash
+        "1598b9a38659cce8448d42a73054b2f9cbfcc40a9b97eeec5f22d4d6cd1de8e6" # SHA256 hash
     ),
     DirectorySource("./bundled"),
 ]
@@ -32,13 +32,14 @@ export CCAUX=${CC_BUILD}
 # configure the Makefiles.  Note we disable Tesseract because we don't need it
 # at the moment, it requires a C++17 compiler, and configure for Windows fails
 # because it doesn't find "threading".
-./configure --prefix=${prefix} \
+./configure \
+    --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
-    --without-x \
     --disable-contrib \
     --disable-cups \
-    --without-tesseract
+    --without-tesseract \
+    --without-x
 
 # create the binaries
 make -j${nproc} so
@@ -102,7 +103,13 @@ products = [
     FileProduct("include/ghostscript/gserrors.h", :gserrors_h),
 ]
 
-dependencies = Dependency[
+dependencies = [
+    Dependency("JpegTurbo_jll"; compat="3.0.4"),
+    Dependency("XZ_jll"; compat="5.6.3"),
+    Dependency("Zlib_jll"),
+    Dependency("Zstd_jll"; compat="1.5.6"),
+    Dependency("libdeflate_jll"; compat="1.20.0"),
+    Dependency("libwebp_jll"; compat="1.4.0"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
