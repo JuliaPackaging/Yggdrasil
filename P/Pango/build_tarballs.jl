@@ -48,6 +48,7 @@ meson --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dintrospection=disabled \
     -Dfontconfig=enabled \
     -Dfreetype=enabled \
+    --buildtype=release \
     ..
 ninja -j${nproc}
 ninja install
