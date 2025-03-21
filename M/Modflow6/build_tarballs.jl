@@ -15,7 +15,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/modflow6*
 
-meson -Dnetcdf=true --cross-file=${MESON_TARGET_TOOLCHAIN} builddir
+meson -Ddebug=false -Doptimization=2 -Dnetcdf=true --cross-file=${MESON_TARGET_TOOLCHAIN} builddir
 meson compile -C builddir -j${nproc}
 meson install -C builddir
 """
