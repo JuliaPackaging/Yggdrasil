@@ -64,6 +64,7 @@ CMAKE_FLAGS=(
     -DBUILD_CSHARP_BINDINGS=OFF
     -DBUILD_JAVA_BINDINGS=OFF
     -DBUILD_PYTHON_BINDINGS=OFF
+    -DGDAL_ENABLE_DRIVER_HDF4=ON
     -DGDAL_USE_ARROW=ON
     -DGDAL_USE_BLOSC=ON
     -DGDAL_USE_CURL=ON
@@ -74,6 +75,7 @@ CMAKE_FLAGS=(
     -DGDAL_USE_GEOTIFF=ON
     # TODO: Disable gif only on Windows
     -DGDAL_USE_GIF=OFF   # Would break GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
+    -DGDAL_USE_HDF4=ON
     -DGDAL_USE_LERC=ON
     -DGDAL_USE_LIBLZMA=ON
     -DGDAL_USE_LIBXML2=ON
@@ -95,13 +97,14 @@ CMAKE_FLAGS=(
     -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
 )
 
-# NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
-if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
-    CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=ON)
-else
-    echo "Disabling NetCDF support"
-    CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=OFF)
-fi
+# # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
+# if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
+#     CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=ON)
+# else
+#     echo "Disabling NetCDF support"
+#     CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=OFF)
+# fi
+CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=ON)
 
 # HDF5 is also a restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
 if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
@@ -192,30 +195,30 @@ hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.6"); platforms=filter(p -> nbits(p)==32, platforms)),
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
     Dependency("Arrow_jll"; compat="19.0.0"),
-    Dependency("Blosc_jll"; compat="1.21.6"),
+    Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
     Dependency("HDF4_jll"; compat="4.3.1"),
-    Dependency("HDF5_jll"; compat="1.14.6", platforms=hdf5_platforms),
-    Dependency("LERC_jll"; compat="4"),
+    Dependency("HDF5_jll"; compat="~1.14.6", platforms=hdf5_platforms),
+    Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16.8"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Lz4_jll"; compat="1.10.1"),
     Dependency("NetCDF_jll"; compat="401.900.300", platforms=hdf5_platforms),
-    Dependency("OpenJpeg_jll"; compat="2.5"),
-    Dependency("PCRE2_jll"; compat="10.35.0"),
+    Dependency("OpenJpeg_jll"; compat="2.5.4"),
+    Dependency("PCRE2_jll"; compat="10.35.0"), # riscv64?
     Dependency("PROJ_jll"; compat="902.500.100"),
     Dependency("Qhull_jll"; compat="10008.0.1004"),
-    Dependency("SQLite_jll"; compat="3.49"),
+    Dependency("SQLite_jll"; compat="3.48.0"),
     Dependency("XML2_jll"; compat="2.13.6"),
     Dependency("XZ_jll"; compat="5.6.4"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Zstd_jll"; compat="1.5.7"),
-    Dependency("libgeotiff_jll"; compat="100.702.300"),
-    Dependency("libpng_jll"; compat="1.6.46"),
+    Dependency("libgeotiff_jll"; compat="100.702.400"),
+    Dependency("libpng_jll"; compat="1.6.47"),
     Dependency("libwebp_jll"; compat="1.5.0"),
 ]
 
