@@ -195,7 +195,9 @@ dependencies = [
     Dependency("Lz4_jll"; compat="1.10.1"),
     Dependency("NetCDF_jll"; compat="401.900.300"),
     Dependency("OpenJpeg_jll"; compat="2.5.4"),
-    Dependency("PCRE2_jll"; compat="10.35.0"), # riscv64?
+    # No compat bound so that things work for riscv64
+    # Dependency("PCRE2_jll"; compat="10.35.0"),
+    Dependency("PCRE2_jll"),
     Dependency("PROJ_jll"; compat="902.500.100"),
     Dependency("Qhull_jll"; compat="10008.0.1004"),
     Dependency("SQLite_jll"; compat="3.48.0"),
