@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "ADIOS2"
 adios2_version = v"2.10.2"
-version = v"2.10.3"
+version = v"2.10.4"
 
 # Collection of sources required to complete build
 sources = [
@@ -82,21 +82,25 @@ export MPITRAMPOLINE_FC=${FC}
 # We need `-DADIOS2_Blosc2_PREFER_SHARED=ON` because of <https://github.com/ornladios/ADIOS2/issues/3924>.
 cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DADIOS2_BUILD_EXAMPLES=OFF \
-    -DADIOS2_HAVE_ZFP_CUDA=OFF \
-    -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_Blosc2_PREFER_SHARED=ON \
+    -DADIOS2_HAVE_ZFP_CUDA=OFF \
+    -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
+    -DADIOS2_USE_Blosc2=ON \
     -DADIOS2_USE_CUDA=OFF \
+    -DADIOS2_USE_EXTERNAL_NLOHMANN_JSON=ON \
+    -DADIOS2_USE_EXTERNAL_PUGIXML=ON \
+    -DADIOS2_USE_EXTERNAL_YAMLCPP=ON \
     -DADIOS2_USE_Fortran=OFF \
     -DADIOS2_USE_MPI=ON \
     -DADIOS2_USE_PNG=ON \
+    -DADIOS2_USE_ZFP=ON \
     -DADIOS2_USE_ZeroMQ=ON \
-    -DADIOS2_INSTALL_GENERATE_CONFIG=OFF \
     -DMPI_HOME=${prefix} \
     ${archopts[@]}
 cmake --build build --parallel ${nproc}
@@ -113,22 +117,24 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# 32-bit architectures are not supported; see
-# <https://github.com/ornladios/ADIOS2/issues/2704>
-platforms = filter(p -> nbits(p) ≠ 32, platforms)
 platforms = expand_cxxstring_abis(platforms)
 
-# We need to use the same compat bounds as HDF5
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
+# 32-bit architectures are not supported; see
+# <https://github.com/ornladios/ADIOS2/issues/2704>
+filter!(p -> nbits(p) ≠ 32, platforms)
 
-# Avoid platforms where the MPI implementation isn't supported
-# OpenMPI
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+# riscv64 builds fail.
+# It seems that some vendored libraries aren't built, leading to undefined references later on
+# ld: warning: libadios2_perfstubs.so.2.10, needed by lib/libadios2_core_mpi.so.2.10.2, not found (try using -rpath or -rpath-link)
+# ld: warning: libadios2_evpath.so.2.10, needed by lib/libadios2_core.so.2.10.2, not found (try using -rpath or -rpath-link)
+# ld: warning: libadios2_ffs.so.2.10, needed by lib/libadios2_core.so.2.10.2, not found (try using -rpath or -rpath-link)
+# ld: warning: libadios2_atl.so.2.10, needed by lib/libadios2_core.so.2.10.2, not found (try using -rpath or -rpath-link)
+filter!(p -> arch(p) != "riscv64", platforms)
+
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # We don't need HDF5 on Windows (see above)
-hdf5_platforms = filter(p -> os(p) ≠ "windows", platforms)
+hdf5_platforms = filter(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -161,21 +167,20 @@ products = [
 # - We currently need to disable MGARD. It seems that MGARD uses Zstd,
 #   and the ADIOS2 build system cannot handle this.
 dependencies = [
-    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1500.101"),
-    Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.8"),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"), v"0.5.2"),
-    # We had to restrict compat with HDF5 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
-    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
-    Dependency(PackageSpec(name="HDF5_jll"); compat="=1.14.3", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="Blosc2_jll"); compat="201.1700.0"),
+    Dependency(PackageSpec(name="Bzip2_jll"); compat="1.0.9"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.6", platforms=hdf5_platforms),
+    Dependency(PackageSpec(name="Libffi_jll"); compat="3.4.7"),
     # Dependency(PackageSpec(name="MGARD_jll"); compat="1.5.2"),
-    Dependency(PackageSpec(name="ZeroMQ_jll")),
+    Dependency(PackageSpec(name="ZeroMQ_jll"); compat="4.3.6"),
     # Dependency(PackageSpec(name="Zstd_jll")),
-    Dependency(PackageSpec(name="libpng_jll")),
+    Dependency(PackageSpec(name="libpng_jll"); compat="1.6.47"),
+    Dependency(PackageSpec(name="nlohmann_json_jll"); compat="3.11.3"),
     Dependency(PackageSpec(name="protoc_jll")),
-    Dependency(PackageSpec(name="pugixml_jll")),
-    Dependency(PackageSpec(name="yaml_cpp_jll")),
-    Dependency(PackageSpec(name="zfp_jll"); compat="1.0.1"),
+    Dependency(PackageSpec(name="pugixml_jll"); compat="1.14.1"),
+    Dependency(PackageSpec(name="yaml_cpp_jll"); compat="0.8.1"),
+    Dependency(PackageSpec(name="zfp_jll"); compat="1.0.2"),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -189,5 +194,3 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # GCC 5 is too old for FreeBSD; it doesn't have `std::to_string`
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"6")
-
-# Build trigger: 3
