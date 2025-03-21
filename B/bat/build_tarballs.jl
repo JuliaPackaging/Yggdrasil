@@ -18,14 +18,13 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/bat
 cargo build --no-default-features --features minimal-application --locked --release
-mkdir -p "${bindir}"
-cp "target/${rust_target}/release/bat${exeext}" "${bindir}/."
+install -Dvm 755 "target/${rust_target}/release/bat${exeext}" -t "${bindir}"
 install_license LICENSE-MIT LICENSE-APACHE NOTICE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 # Required Rust toolchain not available for RISC-V or FreeBSD/aarch64
@@ -43,4 +42,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", compilers=[:c, :rust])
+               julia_compat="1.6", compilers=[:c, :rust], lock_microarchitecture=false)
