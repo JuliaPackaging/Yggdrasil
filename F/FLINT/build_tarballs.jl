@@ -25,7 +25,7 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll.jl
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"3.2.0"
+upstream_version = v"3.2.1"
 version_offset = v"0.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -34,7 +34,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build FLINT
 sources = [
    ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
-                 "6d182c4a05d3d6bfc611565d6331d02f94066a3be32df36ed880264afa9c30f4"),
+                 "ca7be46d77972277eb6fe0c4f767548432f56bb534aa17d6dba2d7cce15cd23f"),
    DirectorySource("./bundled"),
 ]
 
