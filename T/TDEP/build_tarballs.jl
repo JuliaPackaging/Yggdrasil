@@ -78,8 +78,8 @@ platforms = filter(p -> nbits(p) != 32, platforms)
 platforms = expand_gfortran_versions(platforms) 
 
 # This library uses Fortran 2008 features which are only
-# supported by gfortran>=7 --> libgfortran 4,5
-platforms = filter(p -> libgfortran_version(p) >= v"4.0.0", platforms)
+# libgfortran 3 & 4 always crash with syntax issues
+platforms = filter(p -> libgfortran_version(p) >= v"5.0.0", platforms)
 
 
 # We need to use the same compat bounds as HDF5
@@ -116,7 +116,8 @@ products = [
 dependencies = [
     Dependency("HDF5_jll"),
     Dependency("FFTW_jll"),
-    Dependency("OpenBLAS32_jll")
+    Dependency("OpenBLAS32_jll"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
 # This will add the MPI dependencies
