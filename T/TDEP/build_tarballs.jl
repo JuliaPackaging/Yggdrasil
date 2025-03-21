@@ -52,6 +52,8 @@ bash build_things.sh --clean --nomanpage --nthreads_make ${nproc} --install
 
 pip3 install pytest
 cd ${WORKSPACE}/srcdir/tdep/tests
+chmod +x make_all_testfiles.sh
+./make_all_testfiles.sh
 pytest > test_results.txt
 RESULT=$?
 if [RESULT -eq 0 ]; then
