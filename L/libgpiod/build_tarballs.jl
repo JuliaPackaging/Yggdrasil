@@ -2,37 +2,37 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Packmol"
-version = v"20.16.1"
+name = "libgpiod"
+version = v"2.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/m3g/packmol", "76960a22fc24b09f62aaaa667292ba9a68d077a7"),
+    ArchiveSource("https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/libgpiod-$(version).tar.xz",
+                  "0e948049c309b87c220fb24ee0d605d7cd5b72f22376e608470903fffa2d4b18")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/packmol*
-install_license LICENSE
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release ..
+cd $WORKSPACE/srcdir/libgpiod-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = [
+    Platform("armv7l", "linux", libc="glibc"),
+    Platform("aarch64", "linux", libc="glibc"),
+]
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("packmol", :packmol)
+    LibraryProduct("libgpiod", :libgpiod)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
