@@ -179,35 +179,26 @@ products = [
     ExecutableProduct("ogrtindex", :ogrtindex_path),
 ]
 
-hdf5_platforms = [
-    Platform("x86_64", "linux"),
-    Platform("aarch64", "linux"),
-    Platform("armv6l", "linux"),
-    Platform("armv7l", "linux"),
-    Platform("i686", "linux"),
-    Platform("powerpc64le", "linux"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("i686", "windows"),
-]
-hdf5_platforms = expand_cxxstring_abis(hdf5_platforms)
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
-    Dependency("Arrow_jll"; compat="19.0.0"),
+    # We cannot build with Arrow 19.0.0. There are undefined
+    # references to many GLIBC symbols from Arrow_jll. It might be
+    # that we would need to switch to a newer GCC when building;
+    # Arrow_jll uses GCC 11.1
+    # Dependency("Arrow_jll"; compat="19.0.0"),
+    Dependency("Arrow_jll"; compat="18.1.1"),
     Dependency("Blosc_jll"; compat="1.21.7"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("GEOS_jll"; compat="3.13.1"),
     Dependency("HDF4_jll"; compat="4.3.1"),
-    Dependency("HDF5_jll"; compat="~1.14.6", platforms=hdf5_platforms),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("LERC_jll"; compat="4.0.1"),
     Dependency("LibCURL_jll"; compat="7.73,8"),
     Dependency("LibPQ_jll"; compat="16.8"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Lz4_jll"; compat="1.10.1"),
-    Dependency("NetCDF_jll"; compat="401.900.300", platforms=hdf5_platforms),
+    Dependency("NetCDF_jll"; compat="401.900.300"),
     Dependency("OpenJpeg_jll"; compat="2.5.4"),
     Dependency("PCRE2_jll"; compat="10.35.0"), # riscv64?
     Dependency("PROJ_jll"; compat="902.500.100"),
