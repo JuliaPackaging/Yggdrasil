@@ -65,23 +65,20 @@ CMAKE_FLAGS=(
     -DBUILD_JAVA_BINDINGS=OFF
     -DBUILD_PYTHON_BINDINGS=OFF
     -DGDAL_ENABLE_DRIVER_HDF4=ON
-    -DGDAL_USE_ARROW=ON
     -DGDAL_USE_BLOSC=ON
     -DGDAL_USE_CURL=ON
     -DGDAL_USE_EXPAT=ON
-    -DGDAL_ENABLE_DRIVER_HDF4=ON
     -DGDAL_USE_HDF4=ON
     -DGDAL_USE_GEOS=ON
     -DGDAL_USE_GEOTIFF=ON
-    # TODO: Disable gif only on Windows
-    -DGDAL_USE_GIF=OFF   # Would break GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
     -DGDAL_USE_HDF4=ON
+    -DGDAL_USE_HDF5=ON
     -DGDAL_USE_LERC=ON
     -DGDAL_USE_LIBLZMA=ON
     -DGDAL_USE_LIBXML2=ON
     -DGDAL_USE_LZ4=ON
+    -DGDAL_USE_NETCDF=ON
     -DGDAL_USE_OPENJPEG=ON
-    -DGDAL_USE_PARQUET=ON
     -DGDAL_USE_PNG=ON
     -DGDAL_USE_POSTGRESQL=ON
     -DGDAL_USE_QHULL=ON
@@ -97,22 +94,18 @@ CMAKE_FLAGS=(
     -DPostgreSQL_LIBRARY=${libdir}/libpq.${dlext}
 )
 
-# # NetCDF is the most restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
-# if ! find ${libdir} -name "libnetcdf*.${dlext}" -exec false '{}' +; then
-#     CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=ON)
-# else
-#     echo "Disabling NetCDF support"
-#     CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=OFF)
-# fi
-CMAKE_FLAGS+=(-DGDAL_USE_NETCDF=ON)
-
-# HDF5 is also a restrictive dependency as far as platform availability, so we'll use it where applicable but disable it otherwise
-if ! find ${libdir} -name "libhdf5*.${dlext}" -exec false '{}' +; then
-    CMAKE_FLAGS+=(-DGDAL_USE_HDF5=ON)
-else
-    echo "Disabling HDF5 support"
-    CMAKE_FLAGS+=(-DGDAL_USE_HDF5=OFF)
+# Use Arrow only if available
+if [ -e "${libdir}/libarrow.${dlext}" ]; then
+    CMAKE_FLAGS+=(
+        -DGDAL_USE_ARROW=ON
+        -DGDAL_USE_PARQUET=ON
+    )
 fi
+
+# Disable gif on Windows
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DGDAL_USE_GIF=OFF)   # Would break GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
+end
 
 cmake ${CMAKE_FLAGS[@]}
 cmake --build build --parallel ${nproc}
