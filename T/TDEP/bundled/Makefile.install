@@ -16,7 +16,7 @@ PROGS = \
   samples_from_md \
   thermal_conductivity \
   dump_dynamical_matrices \
-  phasespace_surface \
+  thermal_conductivity_2023 \
 
 
 install:
@@ -25,5 +25,4 @@ install:
 		install -m 755 "../../build/$$prog/$$prog" "$(BB_bindir)/$$prog"; \
 	done
 
-	echo " - Installing libolle.so -> $(BB_libdir)/libolle.so"
-	install -m 644 "../../lib/libolle.so" "$(BB_libdir)/libolle.$(dlext)"
+	install -m 644 "../../lib/libolle.$(dlext)" "$(BB_libdir)/libolle.$(dlext)"

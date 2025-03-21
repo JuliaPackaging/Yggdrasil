@@ -42,7 +42,6 @@ $(OBJECT_PATH)lo_symmetry_of_interactions_helpers.o \
 $(OBJECT_PATH)lo_symmetry_of_interactions_tuplets.o \
 $(OBJECT_PATH)lo_symmetry_of_interactions_nullspace.o \
 $(OBJECT_PATH)lo_longrange_electrostatics.o \
-$(OBJECT_PATH)lo_longrange_electrostatics_optz.o \
 $(OBJECT_PATH)lo_longrange_electrostatics_dynmat.o \
 $(OBJECT_PATH)lo_dielectric_interaction.o \
 $(OBJECT_PATH)lo_dielectric_interaction_matrixelements.o \
@@ -108,12 +107,7 @@ $(OBJECT_PATH)type_phonon_dispersions.o \
 $(OBJECT_PATH)type_phonon_dispersions_generation.o \
 $(OBJECT_PATH)type_phonon_dos.o \
 $(OBJECT_PATH)type_phonon_dos_integrations.o \
-$(OBJECT_PATH)type_sqs.o \
 $(OBJECT_PATH)type_symmetryoperation.o \
-$(OBJECT_PATH)type_symmetrylist.o \
-$(OBJECT_PATH)type_symmetrylist_helper.o \
-$(OBJECT_PATH)type_symmetrylist_unique.o \
-$(OBJECT_PATH)type_symmetrylist_coefficientmatrix.o \
 $(OBJECT_PATH)type_effective_hamiltonian.o \
 $(OBJECT_PATH)type_forcemap.o \
 $(OBJECT_PATH)type_forcemap_generate.o \
@@ -136,7 +130,8 @@ $(OBJECT_PATH)type_forcemap_coefficient_quartet_12.o \
 $(OBJECT_PATH)type_forcemap_coefficient_diel.o \
 $(OBJECT_PATH)type_forcemap_returntensors.o \
 $(OBJECT_PATH)type_forcemap_io.o \
-$(OBJECT_PATH)type_lassosolvers.o
+$(OBJECT_PATH)type_lassosolvers.o\
+$(OBJECT_PATH)lo_fftgrid_helper.o
 # maybe CGAL, maybe not.
 ifeq ($(USECGAL),yes)
 OBJScg = \
@@ -155,16 +150,16 @@ UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Darwin)
     OSFLAGS = -dynamiclib -install_name @rpath/libolle.$(dlext)
+    LOAD_CMD = -all_load
 else ifeq ($(UNAME_S),Linux)
     OSFLAGS = -shared
+    LOAD_CMD = -Wl,--whole-archive
+	END_LOAD_CMD = -Wl,--no-whole-archive
 endif
+
+# Get rid of all the other flags on there
+COMPILER = $(shell echo $(FC) | cut -d' ' -f1)
 
 libolle.$(dlext): $(OBJS)
 	-rm $(DEST_PATH)libolle.$(dlext)
-	$(FC) $(OSFLAGS) -o $(DEST_PATH)libolle.$(dlext) $(OBJS) $(LDFLAGS) $(LIBS)
-
-# rules to make the actual library
-#libolle.$(dlext): $(OBJS)
-#	-rm $(DEST_PATH)libolle.$(dlext)
-#	$(FC) -shared -o $(DEST_PATH)libolle.$(dlext) $(OBJS) $(LDFLAGS) $(LIBS)
-
+	$(COMPILER) $(OSFLAGS) -o $(DEST_PATH)libolle.$(dlext) $(LOAD_CMD) $(DEST_PATH)libolle.a $(END_LOAD_CMD) $(LDFLAGS) $(LPATH) $(LIBS)
