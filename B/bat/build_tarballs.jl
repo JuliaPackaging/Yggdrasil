@@ -13,10 +13,11 @@ sources = [
         "25f4f96ea3afb6fe44552f3b38ed8b1540ffa1b3"),
 ]
 
-# Bash recipe for building across all platforms
+# For now build only minimal-application because of linking problems
+# when enabling git support with libgit2/zlib and apple platforms
 script = raw"""
 cd $WORKSPACE/srcdir/bat
-cargo build --locked --release
+cargo build --no-default-features --features minimal-application --locked --release
 mkdir -p "${bindir}"
 cp "target/${rust_target}/release/bat${exeext}" "${bindir}/."
 install_license LICENSE-MIT LICENSE-APACHE NOTICE
