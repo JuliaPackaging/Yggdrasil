@@ -3,25 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "Modflow6"
-version = v"6.3.0"
+version = v"6.6.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/MODFLOW-USGS/modflow6/archive/refs/tags/$version.tar.gz",
-                  "07c4ceda5adcda21426ab7936be1c9133350e206357baeb1313863ee6a837171")
+    GitSource("https://github.com/MODFLOW-ORG/modflow6.git",
+        "056cf5c7283d63d1b57316535afcc63772860d5b")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/modflow6*
 
-# change ar for macOS, llvm-ar seems to generate corrupted static archives
-# fix copied from https://github.com/JuliaPackaging/Yggdrasil/pull/3915/commits/b952adb6f936
-if [[ "${target}" == *apple* ]]; then
-    sed -i "s?^ar = .*?ar = '/opt/${target}/bin/${target}-ar'?g" "${MESON_TARGET_TOOLCHAIN}"
-fi
-
-meson -Ddebug=false -Doptimization=2 --cross-file=${MESON_TARGET_TOOLCHAIN} builddir
+meson -Dnetcdf=true --cross-file=${MESON_TARGET_TOOLCHAIN} builddir
 meson compile -C builddir -j${nproc}
 meson install -C builddir
 """
@@ -30,7 +24,6 @@ meson install -C builddir
 # platforms are passed in on the command line
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
-
 
 # The products that we will ensure are always built
 products = [
@@ -42,8 +35,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("CompilerSupportLibraries_jll"),
+    Dependency("NetCDFF_jll"; compat="4.6.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"5.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"9")
