@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "OptimPack"
-version = v"3.3.0"
+version = v"3.3.1"
 
 # Collection of sources required to build OptimPack
 sources = [
     ArchiveSource("https://github.com/emmt/OptimPack/releases/download/v$(version)/optimpack-$(version).tar.gz",
-                  "5e1928ac9ba688d694a7da4f990114c47b0d5a8fd95ebc3349e322db6c52c218"),
+                  "f59815f6a6dbd9c93caf60f0270781af9b10218772a9d58fa357004c59b9c1d8"),
 ]
 
 # Bash recipe for building across all platforms
