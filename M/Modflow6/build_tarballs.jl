@@ -23,7 +23,6 @@ meson install -C builddir
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
