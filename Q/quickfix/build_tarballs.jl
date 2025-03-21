@@ -13,11 +13,8 @@ sources = [
     DirectorySource("./bundled")
 ]
 
-# needed for libjulia_platforms and julia_versions
 include("../../L/libjulia/common.jl")
-
-#filter julia versions to include only Julia >= 1.8 for LTS
-julia_versions = filter(v-> v >= v"1.8", julia_versions)
+julia_versions = [v"1.8", v"1.9", v"1.10", v"1.11"]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -48,12 +45,11 @@ cmake \
     -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS" \
     ..
 
-make -j 4 install
+make -j${nproc} install
 
 install_license ${WORKSPACE}/srcdir/quickfix/LICENSE
 """
 
-# Build for all supported platforms.
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = filter(!Sys.iswindows, platforms)
 platforms = expand_cxxstring_abis(platforms)
