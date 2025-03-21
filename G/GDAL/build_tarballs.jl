@@ -117,6 +117,8 @@ fi
 cmake ${CMAKE_FLAGS[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
+
+install_license LICENSE.TXT
 """
 
 # These are the platforms we will build for by default, unless further
