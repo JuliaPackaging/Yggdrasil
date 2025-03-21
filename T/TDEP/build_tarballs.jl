@@ -1,5 +1,6 @@
 using BinaryBuilder
 using Base.BinaryPlatforms
+import Pkg: PackageSpec
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
