@@ -9,16 +9,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "TDEP"
 version = v"24.09"
 sources = [
-    GitSource("https://github.com/ejmeitz/tdep.git", "8d36ad97bf974116c29fef8c3d3be9ffa7ebe554"),
+    GitSource("https://github.com/ejmeitz/tdep.git", "66eefc080ec03463511ecf24113f9067b9c0c347"),
     DirectorySource("./bundled")
 ]
 
 # IF OPENMPI USE -lmpi -lmpi_mpifh
 # IF MPICH USE -lmpi -lmpifort
-
-# cp ../Makefile.shared ./src/libolle/SharedMakefile
-# cp ../Makefile.install ./src/libolle/InstallMakefile
-
 
 script = raw"""
 
@@ -52,6 +48,7 @@ bash build_things.sh --clean --nomanpage --nthreads_make ${nproc} --install
 
 pip3 install pytest
 cd ${WORKSPACE}/srcdir/tdep/tests
+export TDEP_BIN_DIR=${bindir}
 chmod +x make_all_testfiles.sh
 ./make_all_testfiles.sh
 pytest > test_results.txt
@@ -60,6 +57,7 @@ if [RESULT -eq 0 ]; then
   echo "All tests passed!"
 else
   echo "Tests failed with exit code $RESULT"
+  exit $RESULT
 fi
 
 install_license ${WORKSPACE}/srcdir/tdep/LICENSE.md ${WORKSPACE}/srcdir/tdep/CITATION.cff
