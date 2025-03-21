@@ -105,7 +105,7 @@ fi
 # Disable gif on Windows
 if [[ "${target}" == *mingw* ]]; then
     CMAKE_FLAGS+=(-DGDAL_USE_GIF=OFF)   # Would break GDAL on Windows as of Giflib_jll v5.2.2 (#8781)
-end
+fi
 
 cmake ${CMAKE_FLAGS[@]}
 cmake --build build --parallel ${nproc}
