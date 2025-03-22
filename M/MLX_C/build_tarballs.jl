@@ -49,6 +49,9 @@ products = Product[
 ]
 
 dependencies = [
+     # MLX_C 0.1.1 is not completely compatible with MLX 0.22, but MLX_C
+     # skipped releasing a version compatible with 0.22, so adding a
+     # slightly artificial compat for MLX to allow use of 0.22.
     Dependency("MLX_jll", v"0.23.1"; compat = "0.22, 0.23")
 ]
 
