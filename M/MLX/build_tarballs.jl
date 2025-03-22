@@ -25,7 +25,6 @@ fi
 
 cd $WORKSPACE/srcdir/mlx
 
-atomic_patch -p1 ../patches/cmake-warning-as-error.patch
 atomic_patch -p1 ../patches/mpi-crosscompile.patch
 if [[ "$target" == *-freebsd* ]]; then
     atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
@@ -59,6 +58,7 @@ install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
     cmake \
+        --compile-no-warning-as-error \
         -B build \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$prefix \
