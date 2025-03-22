@@ -27,7 +27,7 @@ install_license LICENSE-MIT LICENSE-APACHE NOTICE
 platforms = supported_platforms()
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-# Required Rust toolchain not available for RISC-V or FreeBSD/aarch64
+# Rust toolchain seems to not be available for RISC-V or FreeBSD/aarch64
 filter!(p -> arch(p) != "riscv64", platforms)
 filter!(p -> os(p) != "freebsd" || arch(p) != "aarch64", platforms)
 
