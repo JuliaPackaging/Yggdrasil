@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.23.1"
+version = v"0.24.0"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "71de73a668df50f0638e74e77849d9232ddeb50e"),
+    GitSource("https://github.com/ml-explore/mlx.git", "1177d283954facd3d1c40ff1ea59929549045c12"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/28/e4/26be6c113b903156176710d09e0ec0543b28d2aecb64a83647f213ce6e1a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "8138c079957c4942553e1a242a58c4990e317680909e364e024fb7b8d8a14ac7"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    FileSource("https://files.pythonhosted.org/packages/70/dd/7214d21a1f467d482dbe8b71f80bca6b47465be732f2752f31bd25799b8a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "46f8acf48cb639ba72321c42a2851ee7a0d5acb00a980e1b58d7a20178627731"; filename = "mlx-aarch64-apple-darwin20.whl"),
     DirectorySource("./bundled"),
 ]
 
@@ -26,9 +26,6 @@ fi
 cd $WORKSPACE/srcdir/mlx
 
 atomic_patch -p1 ../patches/mpi-crosscompile.patch
-if [[ "$target" == *-freebsd* ]]; then
-    atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
-fi
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
