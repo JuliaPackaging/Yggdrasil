@@ -39,7 +39,7 @@ mkdir build && cd build
 cmake \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_BUILD_TYPE=Release \
     -DHAVE_SSL=ON \
     -DHAVE_GETTIMEOFDAY=ON \
     -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS" \
