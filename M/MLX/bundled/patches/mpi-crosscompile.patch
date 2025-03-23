@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 54d974a2..0f9b9bb7 100644
+index 1cd5892d..18ad9b90 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -202,20 +202,7 @@ endif()
+@@ -216,20 +216,7 @@ endif()
  
  find_package(MPI)
  if(MPI_FOUND)
