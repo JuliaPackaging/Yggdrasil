@@ -7,6 +7,8 @@ version = v"2.84.0"
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
                   "f8823600cb85425e2815cfad82ea20fdaa538482ab74e7293d58b3f64a5aff6a"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+                  "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                   "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
@@ -14,6 +16,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+    cp -a System "/opt/${target}/${target}/sys-root/"
+    popd
+fi
+
 if [[ "${target}" == *-mingw* ]]; then
     cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
     ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
