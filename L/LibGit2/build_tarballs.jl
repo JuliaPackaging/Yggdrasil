@@ -15,9 +15,13 @@ cd $WORKSPACE/srcdir/libgit2*
 
 BUILD_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_SHARED_LIBS=ON
     -DUSE_THREADS=ON
     -DUSE_SSH=ON
     -DBUILD_CLI=OFF
+    -DBUILD_TESTS=OFF
+    -DBUILD_EXAMPLES=OFF
+    -DBUILD_FUZZERS=OFF
     "-DCMAKE_INSTALL_PREFIX=${prefix}"
     "-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}""
 )
@@ -60,7 +64,7 @@ llvm_version = v"13.0.1"
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"; compat="1.3.1"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("LibSSH2_jll"; compat="1.11.3"),
     # Until we have a new version of OpenSSL built for riscv64 we need to use the
     # `get_addable_spec` hack.  From v3.0.16 we should be able to remove it here.
