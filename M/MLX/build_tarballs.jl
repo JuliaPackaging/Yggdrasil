@@ -26,6 +26,8 @@ fi
 cd $WORKSPACE/srcdir/mlx
 
 atomic_patch -p1 ../patches/mpi-crosscompile.patch
+atomic_patch -p1 ../patches/nbits32.patch
+atomic_patch -p1 ../patches/ring-freebsd.patch
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
