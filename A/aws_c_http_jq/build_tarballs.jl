@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http_jq"
-version = v"0.9.5"
+version = v"0.9.6"
 
 # Collection of sources required to complete build
 sources = [
