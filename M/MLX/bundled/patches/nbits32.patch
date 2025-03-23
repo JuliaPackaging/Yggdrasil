@@ -1,17 +1,17 @@
 diff --git a/mlx/distributed/ring/ring.cpp b/mlx/distributed/ring/ring.cpp
-index 5bf08200e..a48769770 100644
+index d8fe5305..1f692e0b 100644
 --- a/mlx/distributed/ring/ring.cpp
 +++ b/mlx/distributed/ring/ring.cpp
-@@ -705,7 +705,7 @@ class RingGroup : public GroupImpl {
-         std::min(
-             sockets_right_.size() + sockets_left_.size(),
-             output.nbytes() / (size_ * min_send_size)),
--        1UL);
-+        size_t(1));
-     size_t step = ceildiv(output.size(), n_reduces);
-     std::vector<std::future<void>> all_sums;
+@@ -708,7 +708,7 @@ class RingGroup : public GroupImpl {
+           std::min(
+               sockets_right_.size() + sockets_left_.size(),
+               nbytes / (size_ * min_send_size)),
+-          1UL);
++          size_t(1));
+       size_t step = ceildiv(size, n_reduces);
+       std::vector<std::future<void>> all_sums;
  
-@@ -742,7 +742,7 @@ class RingGroup : public GroupImpl {
+@@ -746,7 +746,7 @@ class RingGroup : public GroupImpl {
      // of these in smaller segments of ALL_SUM_SIZE which we 'll call packets.
      size_t segment_size = ceildiv(data_size, size_);
      size_t BUFFER_SIZE =
@@ -20,16 +20,16 @@ index 5bf08200e..a48769770 100644
      size_t n_packets = ceildiv(segment_size, BUFFER_SIZE);
  
      // Initial segments
-@@ -824,7 +824,7 @@ class RingGroup : public GroupImpl {
-   }
+@@ -829,7 +829,7 @@ class RingGroup : public GroupImpl {
  
-   void send(const std::vector<int>& sockets, char* data, size_t data_size) {
+   void
+   send(const std::vector<int>& sockets, const char* data, size_t data_size) {
 -    size_t segment_size = std::max(1024UL, ceildiv(data_size, sockets.size()));
 +    size_t segment_size = std::max(size_t(1024), ceildiv(data_size, sockets.size()));
      std::vector<std::future<void>> sends;
      for (int i = 0; i < sockets.size(); i++) {
        if (i * segment_size >= data_size) {
-@@ -841,7 +841,7 @@ class RingGroup : public GroupImpl {
+@@ -846,7 +846,7 @@ class RingGroup : public GroupImpl {
    }
  
    void recv(const std::vector<int>& sockets, char* data, size_t data_size) {
