@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "FreeType2"
 version = v"2.13.3"
+# We bumped the Yggdrasil version because we built for risv64
+ygg_version = v"2.13.3"
 
 # Collection of sources required to build FreeType2
 sources = [
@@ -31,11 +33,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Zlib_jll"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build trigger: 1
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
