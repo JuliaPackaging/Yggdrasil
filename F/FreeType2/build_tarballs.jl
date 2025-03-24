@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "FreeType2"
 version = v"2.13.3"
 # We bumped the Yggdrasil version because we built for risv64
-ygg_version = v"2.13.3"
+ygg_version = v"2.13.4"
 
 # Collection of sources required to build FreeType2
 sources = [
