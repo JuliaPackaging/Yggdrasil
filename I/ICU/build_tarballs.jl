@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "ICU"
 version = v"76.1"
+ygg_version = v"76.2"
 
 # Collection of sources required to build ICU
 sources = [
@@ -83,4 +84,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"7")
