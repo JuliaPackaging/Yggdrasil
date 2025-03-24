@@ -8,25 +8,10 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "TDEP"
 version = v"24.09"
 sources = [
-    GitSource("https://github.com/ejmeitz/tdep.git", "66eefc080ec03463511ecf24113f9067b9c0c347"),
+    GitSource("https://github.com/ejmeitz/tdep.git", "55e97dc98e8f85e8f607f2549e62d7f8d10357ac"),
     DirectorySource("./bundled")
 ]
 
-# breaks for now
-# cd ${WORKSPACE}/srcdir/tdep/tests
-# apk add python3-dev
-# pip3 install pytest numpy "xarray[io]"
-# export TDEP_BIN_DIR=${bindir}
-# chmod +x make_all_testfiles.sh
-# ./make_all_testfiles.sh
-# pytest > test_results.txt
-# RESULT=$?
-# if [ $RESULT -eq 0 ]; then
-#   echo "All tests passed!"
-# else
-#   echo "Tests failed with exit code $RESULT"
-#   exit $RESULT
-# fi
 
 script = raw"""
 
@@ -68,7 +53,6 @@ augment_platform_block = """
 """
 
 platforms = supported_platforms()
-# platforms = [Platform("x86_64", "linux")]
 
 # Do no support Windows (yet)
 platforms = filter(p -> os(p) == "linux" || os(p) == "macos", platforms)
