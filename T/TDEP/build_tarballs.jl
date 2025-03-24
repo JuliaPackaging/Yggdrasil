@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "TDEP"
 version = v"24.09"
 sources = [
-    GitSource("https://github.com/ejmeitz/tdep.git", "55e97dc98e8f85e8f607f2549e62d7f8d10357ac"),
+    GitSource("https://github.com/tdep-developers/tdep.git", "55e97dc98e8f85e8f607f2549e62d7f8d10357ac"),
     DirectorySource("./bundled")
 ]
 
