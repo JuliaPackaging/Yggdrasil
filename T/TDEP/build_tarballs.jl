@@ -7,11 +7,15 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "TDEP"
 version = v"24.09"
+# sources = [
+#     GitSource("https://github.com/tdep-developers/tdep.git", "55e97dc98e8f85e8f607f2549e62d7f8d10357ac"),
+#     DirectorySource("./bundled")
+# ]
+
 sources = [
-    GitSource("https://github.com/tdep-developers/tdep.git", "55e97dc98e8f85e8f607f2549e62d7f8d10357ac"),
+    GitSource("https://github.com/ejmeitz/tdep.git", "8f699efe88d14ca7a82cf807fe6c91141c220943"),
     DirectorySource("./bundled")
 ]
-
 
 script = raw"""
 
@@ -37,8 +41,6 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libevent*
     rm /usr/lib/libnghttp2.*
 fi
-
-export LDFLAGS="-L${libdir} -L${WORKSPACE}srcdir/tdep/build/libolle"
 
 bash ${WORKSPACE}/srcdir/make_important_settings.sh
 bash build_things.sh --clean --nomanpage --nthreads_make ${nproc} --install
