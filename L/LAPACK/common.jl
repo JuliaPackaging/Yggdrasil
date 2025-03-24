@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 # LAPACK mirrors the OpenBLAS build, whereas LAPACK32 mirrors the OpenBLAS32 build.
 
-version = v"3.12.0"
+version = v"3.12.1"
 
 # Collection of sources required to build lapack
 sources = [
@@ -316,6 +316,8 @@ function lapack_script(;lapack32::Bool=false)
         SSYSV_AA_2STAGE SSYTRF_AA_2STAGE SSYTRS_AA_2STAGE
         ZHESV_AA_2STAGE ZHETRF_AA_2STAGE ZHETRS_AA_2STAGE
         ZSYSV_AA_2STAGE ZSYTRF_AA_2STAGE ZSYTRS_AA_2STAGE
+        DLARF1F
+        CGEMMTR DGEMMTR SGEMMTR ZGEMMTR
       )
 
       for sym in ${syms[@]}; do
