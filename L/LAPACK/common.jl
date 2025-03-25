@@ -324,6 +324,10 @@ function lapack_script(;lapack32::Bool=false)
       CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\")
     fi
 
+    # TODO: LAPACK has a cmake option `BUILD_INDEX64_EXT_API`.
+    # This seems to be doing the same as we're doing manually.
+    # We should try using this option instead of our hand-rolled magic.
+
     mkdir build && cd build
     cmake .. "${CMAKE_FLAGS[@]}" \
        -DCMAKE_INSTALL_PREFIX="$prefix" \
@@ -331,6 +335,7 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
+       -DBUILD_INDEX64_EXT_API=OFF \
        -DTEST_FORTRAN_COMPILER=OFF \
        -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
 
