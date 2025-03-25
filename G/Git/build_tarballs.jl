@@ -3,16 +3,20 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.47.1"
+version = v"2.49.0"
+
+# <https://github.com/git-for-windows/git/releases> says:
+# "Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive."
+last_windows_32_bit_version = v"2.48.1"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "f3d8f9bb23ae392374e91cd9d395970dabc5b9c5ee72f39884613cd84a6ed310"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-32-bit.tar.bz2",
-                  "99a91af7a6a7a8791ebede7c0fd5339084853ec1a3c4f9dffdb91145ce934c1e"; unpack_target = "i686-w64-mingw32"),
+                  "618190cf590b7e9f6c11f91f23b1d267cd98c3ab33b850416d8758f8b5a85628"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
+                  "41af3c80fd618855ad20b441f5f47763cece1ed07f6849ecbdb43066d0aa1dfd"; unpack_target = "i686-w64-mingw32"),
     ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
-                  "45d2bdc96712b0ab785c307461429cf5bd744227108805edaaec7517432db54c"; unpack_target = "x86_64-w64-mingw32"),
+                  "6c5d66e3dd6cd44e50ba7892e9e24ace57934f277a3424c9702a400b3fedc1eb"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
@@ -117,11 +121,11 @@ dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
-    Dependency("Expat_jll"; compat="2.6.4"),
-    Dependency("OpenSSL_jll"; compat="3.0.15"),
+    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Libiconv_jll"),
     Dependency("PCRE2_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
