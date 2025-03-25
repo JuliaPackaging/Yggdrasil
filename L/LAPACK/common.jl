@@ -7,7 +7,7 @@ version = v"3.12.1"
 # Collection of sources required to build lapack
 sources = [
     GitSource("https://github.com/Reference-LAPACK/lapack",
-              "04b044e020a3560ccfa9988c8a80a1fb7083fc2e"),
+              "6ec7f2bc4ecf4c4a93496aa2fa519575bc0e39ca"),
     DirectorySource("../bundled"),
 ]
 
