@@ -1,5 +1,7 @@
 using BinaryBuilder, Pkg
 
+include("../../L/libjulia/common.jl")
+
 function prepare_openfhe_build(name::String, git_hash::String)
     # Collection of sources required to complete build
     sources = [
