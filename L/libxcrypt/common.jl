@@ -17,6 +17,8 @@ function build_libxcrypt(ARGS; legacy::Bool)
    cd $WORKSPACE/srcdir/libxcrypt-*/
    if [[ ${target} == *freebsd* ]]; then
       extraflags="${extraflags} ax_cv_check_vscript_flag=--version-script"
+      # See <https://github.com/NixOS/nixpkgs/pull/309884>:
+      export LDFLAGS=-Wl,--undefined-version
    fi
    ./configure \
                --prefix=${prefix} \
@@ -56,6 +58,5 @@ function build_libxcrypt(ARGS; legacy::Bool)
    ]
 
    # Build the tarballs, and possibly a `build.jl` as well.
-   build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                  clang_use_lld=false, julia_compat="1.6")
+   build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 end
