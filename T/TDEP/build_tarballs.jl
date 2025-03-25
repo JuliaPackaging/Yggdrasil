@@ -7,13 +7,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "TDEP"
 version = v"24.09"
-# sources = [
-#     GitSource("https://github.com/tdep-developers/tdep.git", "55e97dc98e8f85e8f607f2549e62d7f8d10357ac"),
-#     DirectorySource("./bundled")
-# ]
-
 sources = [
-    GitSource("https://github.com/ejmeitz/tdep.git", "8f699efe88d14ca7a82cf807fe6c91141c220943"),
+    GitSource("https://github.com/tdep-developers/tdep.git", "6d42db45c3f7fb1ae45b5e16773c39caf56dda05"),
     DirectorySource("./bundled")
 ]
 
@@ -30,7 +25,6 @@ case ${bb_full_target} in
         cp ./*.mod ../include/
         ;;
 esac
-
 
 cd ${WORKSPACE}/srcdir/tdep
 
@@ -76,7 +70,7 @@ platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampolin
 # Avoid platforms where the MPI implementation isn't supported
 platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 
-# Only use OpenMPI or MPICH, add windows here later if desired
+# Only support OpenMPI or MPICH, add windows here later if desired
 platforms = filter(p -> (p["mpi"] == "mpich" || p["mpi"] == "openmpi"), platforms)
 
 
