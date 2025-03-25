@@ -8,7 +8,6 @@ version = v"3.12.1"
 sources = [
     GitSource("https://github.com/Reference-LAPACK/lapack",
               "6ec7f2bc4ecf4c4a93496aa2fa519575bc0e39ca"),
-    DirectorySource("../bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,8 +19,6 @@ function lapack_script(;lapack32::Bool=false)
 
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
-
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/cmake.patch
 
     if [[ "${target}" == *-mingw* ]]; then
         BLAS="blastrampoline-5"
