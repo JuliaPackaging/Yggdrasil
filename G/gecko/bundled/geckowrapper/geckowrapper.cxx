@@ -5,7 +5,7 @@
 // struct JLProgress : public Progress {
 //     virtual void beginorder(const Graph* /*graph*/, Float /*cost*/) const {}
 //     virtual void endorder(const Graph* /*graph*/, Float /*cost*/) const {}
-//     virtual void beginiter(const Graph* /*graph*/, uint /*iter*/, uint /*maxiter*/, uint /*window*/) const {}
+//     virtual void beginiter(const Graph* /*graph*/, Gecko::uint /*iter*/, Gecko::uint /*maxiter*/, Gecko::uint /*window*/) const {}
 //     virtual void enditer(const Graph* /*graph*/, Float /*mincost*/, Float /*cost*/) const {}
 //     virtual void beginphase(const Graph* /*graph*/, std::string /*name*/) const {};
 //     virtual void endphase(const Graph* /*graph*/, bool /*show*/) const {};
@@ -50,8 +50,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& gecko)
     functional_type.method("less", [](const Gecko::Functional* a, Gecko::WeightedSum& s, const Gecko::WeightedSum& t)-> bool {return a->less(s, t); } );
     functional_type.method("mean", [](const Gecko::Functional& a, Gecko::WeightedSum& s)-> Gecko::Float {return a.mean(s); } );
     functional_type.method("mean", [](const Gecko::Functional* a, Gecko::WeightedSum& s)-> Gecko::Float {return a->mean(s); } );
-    functional_type.method("bond", [](const Gecko::Functional& a, Gecko::Float f, Gecko::Float l, uint k)-> Gecko::Float {return a.bond(f, l, k); } );
-    functional_type.method("bond", [](const Gecko::Functional* a, Gecko::Float f, Gecko::Float l, uint k)-> Gecko::Float {return a->bond(f, l, k); } );
+    functional_type.method("bond", [](const Gecko::Functional& a, Gecko::Float f, Gecko::Float l, Gecko::uint k)-> Gecko::Float {return a.bond(f, l, k); } );
+    functional_type.method("bond", [](const Gecko::Functional* a, Gecko::Float f, Gecko::Float l, Gecko::uint k)-> Gecko::Float {return a->bond(f, l, k); } );
     functional_type.method("optimum", [](const Gecko::Functional& a, const std::vector<Gecko::WeightedValue>& s)-> Gecko::Float {return a.optimum(s); } );
     functional_type.method("optimum", [](const Gecko::Functional* a, const std::vector<Gecko::WeightedValue>& s)-> Gecko::Float {return a->optimum(s); } );
 
@@ -64,7 +64,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& gecko)
     gecko.add_type<Gecko::FunctionalMaximum>("FunctionalMaximum", jlcxx::julia_base_type<Gecko::Functional>());
 
     auto graph_type = gecko.add_type<Gecko::Graph>("Graph");
-    graph_type.constructor<uint>();
+    graph_type.constructor<Gecko::uint>();
     graph_type.method("nodes", &Gecko::Graph::nodes);
     graph_type.method("edges", &Gecko::Graph::edges);
     graph_type.method("insert_node", &Gecko::Graph::insert_node);
@@ -81,8 +81,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& gecko)
     graph_type.method("order", &Gecko::Graph::order);
     graph_type.method("permutation", [](const Gecko::Graph& a)-> const std::vector<Gecko::Node::Index>& {return a.permutation(); } );
     graph_type.method("permutation", [](const Gecko::Graph* a)-> const std::vector<Gecko::Node::Index>& {return a->permutation(); } );
-    graph_type.method("permutation", [](const Gecko::Graph& a, uint rank)-> Gecko::Node::Index {return a.permutation(rank); } );
-    graph_type.method("permutation", [](const Gecko::Graph* a, uint rank)-> Gecko::Node::Index {return a->permutation(rank); } );
+    graph_type.method("permutation", [](const Gecko::Graph& a, Gecko::uint rank)-> Gecko::Node::Index {return a.permutation(rank); } );
+    graph_type.method("permutation", [](const Gecko::Graph* a, Gecko::uint rank)-> Gecko::Node::Index {return a->permutation(rank); } );
     graph_type.method("rank", &Gecko::Graph::rank);
     graph_type.method("cost", [](const Gecko::Graph& a)-> Gecko::Float {return a.cost(); } );
     graph_type.method("cost", [](const Gecko::Graph* a)-> Gecko::Float {return a->cost(); } );
