@@ -1,5 +1,4 @@
 #!/bin/bash
-GFORTRAN_VERSION=$(gfortran -dumpversion | cut -d. -f1)
 
 # Default values
 OPTIMIZATION_LEVEL="-O3" # BinaryBuilder doesnt like -Ofast cause of fastmath
@@ -11,16 +10,7 @@ MODULE_FLAG="-J"
 PRECOMPILER_FLAGS="-Dclusterprogressbar"
 USECGAL="no"
 
-# FORTRAN_COMPILER="gfortran"
-# FORTRAN_COMPILER="mpifort"
-
-# if [ "$MACHTYPE" = "$target" ]; then
-#     FORTRAN_COMPILER="gfortran"
-# else
-#     FORTRAN_COMPILER="${target}-gfortran"
-# fi
-
-
+GFORTRAN_VERSION=$(gfortran -dumpversion | cut -d. -f1)
 if [[ "$GFORTRAN_VERSION" -ge 10 ]]; then
     FCFLAGS="$FCFLAGS -fallow-argument-mismatch"
 else
