@@ -51,7 +51,8 @@ augment_platform_block = """
 platforms = supported_platforms()
 
 # Do no support Windows (yet)
-platforms = filter(p -> os(p) == "linux" || os(p) == "macos", platforms)
+# platforms = filter(p -> os(p) == "linux" || os(p) == "macos", platforms)
+platforms = filter(p -> os(p) != "windows", platforms)
 
 # Remove RiscV until thats something someone actually wants
 platforms = filter(p -> arch(p) != "riscv64", platforms)
@@ -65,14 +66,16 @@ platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) >= v"5.0.0", platforms)
 
 # Need to use the same compat bounds as HDF5
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
+# platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.0", OpenMPI_compat="4.1.6, 5")
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
 
 # Avoid platforms where the MPI implementation isn't supported
-platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
+# platforms = filter(p -> !(p["mpi"] == "openmpi" && Sys.isfreebsd(p)), platforms)
 
 # Only support OpenMPI or MPICH, add windows here later if desired
-platforms = filter(p -> (p["mpi"] == "mpich" || p["mpi"] == "openmpi"), platforms)
-
+# platforms = filter(p -> (p["mpi"] == "mpich" || p["mpi"] == "openmpi"), platforms)
+platforms = filter(p -> (p["mpi"] != "microsoftmpi"), platforms)
 
 products = [
     LibraryProduct("libolle", :libolle),
@@ -94,7 +97,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("FFTW_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
