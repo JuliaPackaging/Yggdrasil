@@ -18,6 +18,8 @@ case ${bb_full_target} in
     *mpich*)
         export MPI_LIBS="-lmpifort -lmpi"
         ;;
+    *mpitrampoline*)
+        export MPI_LIBS="-lmpitrampoline -ldl";;
     *openmpi*)
         export MPI_LIBS="-lmpi_mpifh -lmpi"
         # TDEP expcets MPI mod files in the include dir
@@ -51,8 +53,7 @@ augment_platform_block = """
 platforms = supported_platforms()
 
 # Do no support Windows (yet)
-# platforms = filter(p -> os(p) == "linux" || os(p) == "macos", platforms)
-platforms = filter(p -> os(p) != "windows", platforms)
+platforms = filter(p -> os(p) == "linux" || os(p) == "macos", platforms)
 
 # Remove RiscV until thats something someone actually wants
 platforms = filter(p -> arch(p) != "riscv64", platforms)
