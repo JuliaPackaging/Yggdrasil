@@ -45,7 +45,7 @@ cmake \
     -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS" \
     ..
 
-make -j1 install
+make -j${nproc} install
 
 install_license ${WORKSPACE}/srcdir/quickfix/LICENSE
 """
