@@ -45,13 +45,12 @@ cmake \
     -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS" \
     ..
 
-make -j${nproc} install
+make -j1 install
 
 install_license ${WORKSPACE}/srcdir/quickfix/LICENSE
 """
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
-platforms = filter(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
