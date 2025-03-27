@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "aws_checksums"
-version = v"0.2.4"
+
+version = v"0.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-checksums.git", "32e69ae689783d2a6055c63ad467534c23c54b1a"),
+    GitSource("https://github.com/awslabs/aws-checksums.git", "66b447c0765a2caff2d806111e6ec1db2383e4d2"),
 ]
 
 # Bash recipe for building across all platforms
