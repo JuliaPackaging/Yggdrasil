@@ -14,7 +14,7 @@ sources = [
 ]
 
 include("../../L/libjulia/common.jl")
-julia_versions = filter(v-> v >= v"1.9", julia_versions)
+julia_versions = [v"1.9", v"1.10", v"1.11"]
 
 # Bash recipe for building across all platforms
 script = raw"""
