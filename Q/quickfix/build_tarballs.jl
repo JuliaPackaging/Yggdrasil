@@ -14,7 +14,7 @@ sources = [
 ]
 
 include("../../L/libjulia/common.jl")
-julia_versions = [v"1.8", v"1.9", v"1.10", v"1.11"]
+julia_versions = filter(v-> v >= v"1.9", julia_versions)
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -51,6 +51,7 @@ install_license ${WORKSPACE}/srcdir/quickfix/LICENSE
 """
 
 platforms = vcat(libjulia_platforms.(julia_versions)...)
+platforms = filter(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
