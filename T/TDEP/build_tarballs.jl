@@ -6,9 +6,9 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "TDEP"
-version = v"24.09"
+version = v"25.03"
 sources = [
-    GitSource("https://github.com/tdep-developers/tdep.git", "6d42db45c3f7fb1ae45b5e16773c39caf56dda05"),
+    GitSource("https://github.com/tdep-developers/tdep.git", "d38f435d75f33e0e86629ce7b7059ce95fbc06c5"),
     DirectorySource("./bundled")
 ]
 
