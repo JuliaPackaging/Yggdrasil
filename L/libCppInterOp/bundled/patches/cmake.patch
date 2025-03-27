@@ -1,50 +1,54 @@
-From 743c35943a73e461d5946683c1b095020f610c0c Mon Sep 17 00:00:00 2001
+From 2e0203168dcaf52b443949db4725da638f93c9c5 Mon Sep 17 00:00:00 2001
 From: Gnimuc <qiyupei@gmail.com>
-Date: Sat, 11 Jan 2025 20:47:32 +0900
+Date: Tue, 25 Mar 2025 12:21:31 +0900
 Subject: [PATCH] Rewrite CMake build scripts
 
 ---
- CMakeLists.txt                           | 574 +++--------------------
+ CMakeLists.txt                           | 578 +++--------------------
  include/CMakeLists.txt                   |   1 +
  include/clang-c/CMakeLists.txt           |   1 +
  include/clang/CMakeLists.txt             |   1 +
  include/clang/Interpreter/CMakeLists.txt |   1 +
- lib/Interpreter/CMakeLists.txt           | 139 +-----
- 6 files changed, 76 insertions(+), 641 deletions(-)
+ lib/Interpreter/CMakeLists.txt           | 157 +-----
+ 6 files changed, 79 insertions(+), 660 deletions(-)
  create mode 100644 include/CMakeLists.txt
  create mode 100644 include/clang-c/CMakeLists.txt
  create mode 100644 include/clang/CMakeLists.txt
  create mode 100644 include/clang/Interpreter/CMakeLists.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 883885d..61e01b0 100644
+index cb0c588..c4571d8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,520 +1,72 @@
+@@ -1,523 +1,77 @@
 -cmake_minimum_required(VERSION 3.13)
 +cmake_minimum_required(VERSION 3.21)
- 
--enable_language(CXX)
--set(CMAKE_CXX_EXTENSIONS NO)
-+project(CppInterOp LANGUAGES CXX)
- 
--include(GNUInstallDirs)
-+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fno-rtti")
  
 -set(CMAKE_MODULE_PATH
 -  ${CMAKE_MODULE_PATH}
 -  "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 -  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
 -  )
++project(CppInterOp LANGUAGES CXX)
+ 
+-enable_language(CXX)
+-set(CMAKE_CXX_EXTENSIONS NO)
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fno-rtti")
+ 
+-option(CPPINTEROP_USE_CLING "Use Cling as backend" OFF)
+-option(CPPINTEROP_USE_REPL "Use clang-repl as backend" ON)
+-option(CPPINTEROP_ENABLE_TESTING "Enable the CppInterOp testing infrastructure." ON)
 +# Turn on using VS solution folders
 +set_property(GLOBAL PROPERTY USE_FOLDERS ON)
  
+-if (CPPINTEROP_USE_CLING AND CPPINTEROP_USE_REPL)
+-message(FATAL_ERROR "We can only use Cling (${CPPINTEROP_USE_CLING}=On) or Repl (CPPINTEROP_USE_REPL=On), but not both of them.")
+-endif()
 -# If we are not building as a part of LLVM, build CppInterOp as a standalone
 -# project, using LLVM as an external library:
 -if( CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR )
 -  project(CppInterOp)
-+# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
- 
+-
 -  # LLVM/Clang/Cling default paths
 -  if (DEFINED LLVM_DIR)
 -    if (NOT DEFINED Clang_DIR)
@@ -87,20 +91,8 @@ index 883885d..61e01b0 100644
 -      set(Clang_DIR ${Cling_DIR})
 -    endif()
 -  endif()
-+find_package(LLVM REQUIRED CONFIG)
-+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
- 
--  option(USE_CLING "Use Cling as backend" OFF)
--  option(USE_REPL "Use clang-repl as backend" ON)
-+find_package(Clang REQUIRED CONFIG)
-+message(STATUS "Found Clang ${Clang_PACKAGE_VERSION}")
-+message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
- 
--  if (USE_CLING AND USE_REPL)
--    message(FATAL_ERROR "We can only use Cling (USE_CLING=On) or Repl (USE_REPL=On), but not both of them.")
--  endif()
--  
+-
+-include(GNUInstallDirs)
 -  ## Define supported version of clang and llvm
 -
 -  set(CLANG_MIN_SUPPORTED 13.0)
@@ -139,12 +131,12 @@ index 883885d..61e01b0 100644
 -
 -  ## Find supported LLVM
 -
--  if (USE_CLING)
--    message(STATUS "Mode USE_CLING = ON")
+-  if (CPPINTEROP_USE_CLING)
+-    message(STATUS "Mode CPPINTEROP_USE_CLING = ON")
 -    find_package(LLVM REQUIRED CONFIG ${llvm_search_hints} NO_DEFAULT_PATH)
 -    find_package(Clang REQUIRED CONFIG ${clang_search_hints} NO_DEFAULT_PATH)
 -    find_package(Cling REQUIRED CONFIG ${cling_search_hints} NO_DEFAULT_PATH)
--  endif(USE_CLING)
+-  endif(CPPINTEROP_USE_CLING)
 -
 -  if (LLVM_FOUND)
 -    if (LLVM_PACKAGE_VERSION VERSION_LESS LLVM_MIN_SUPPORTED OR LLVM_PACKAGE_VERSION VERSION_GREATER_EQUAL LLVM_VERSION_UPPER_BOUND)
@@ -285,7 +277,7 @@ index 883885d..61e01b0 100644
 -  
 -  ## Find supported Cling
 -  
--  if (USE_CLING)
+-  if (CPPINTEROP_USE_CLING)
 -    if (NOT Cling_FOUND AND DEFINED Cling_DIR)
 -      find_package(Cling REQUIRED CONFIG ${cling_extra_hints} NO_DEFAULT_PATH)
 -    endif()
@@ -309,9 +301,13 @@ index 883885d..61e01b0 100644
 -  # When in debug mode the llvm package thinks it is built with -frtti.
 -  # For consistency we should set it to the correct value.
 -  set(LLVM_CONFIG_HAS_RTTI NO CACHE BOOL "" FORCE)
--
++# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+ 
 -  ## Init
--
++find_package(LLVM REQUIRED CONFIG)
++message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
++message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+ 
 -  # In case this was a path to a build folder of llvm still try to find AddLLVM
 -  list(APPEND CMAKE_MODULE_PATH "${LLVM_DIR}")
 -
@@ -329,27 +325,19 @@ index 883885d..61e01b0 100644
 -# In rare cases we might want to have clang installed in a different place
 -# than llvm and the header files should be found first (even though the
 -# LLVM_INCLUDE_DIRS) contain clang headers, too.
--if (USE_CLING)
--  add_definitions(-DUSE_CLING)
+-if(CPPINTEROP_USE_CLING)
+-  add_definitions(-DCPPINTEROP_USE_CLING)
 -  include_directories(SYSTEM ${CLING_INCLUDE_DIRS})
--  else()
--  if (NOT USE_REPL)
--  message(FATAL_ERROR "We need either USE_CLING or USE_REPL")
--  endif()
--  add_definitions(-DUSE_REPL)
+-elseif(CPPINTEROP_USE_REPL)
+-  add_definitions(-DCPPINTEROP_USE_REPL)
+-else()
+-  message(FATAL_ERROR "We need either CPPINTEROP_USE_CLING or CPPINTEROP_USE_REPL")
+-endif()
 -
--endif(USE_CLING)
 -include_directories(SYSTEM ${CLANG_INCLUDE_DIRS})
 -include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 -separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
 -add_definitions(${LLVM_DEFINITIONS_LIST})
--
--if (USE_CLING)
--  message(STATUS "CLING_INCLUDE_DIRS: ${CLING_INCLUDE_DIRS}")
--endif(USE_CLING)
--message(STATUS "CLANG_INCLUDE_DIRS: ${CLANG_INCLUDE_DIRS}")
--message(STATUS "LLVM_INCLUDE_DIRS: ${LLVM_INCLUDE_DIRS}")
--message(STATUS "LLVM_DEFINITIONS_LIST: ${LLVM_DEFINITIONS_LIST}")
 -
 -# If the llvm sources are present add them with higher priority.
 -if (LLVM_BUILD_MAIN_SRC_DIR)
@@ -398,7 +386,7 @@ index 883885d..61e01b0 100644
 -
 -# Add appropriate flags for GCC
 -if (LLVM_COMPILER_IS_GCC_COMPATIBLE)
--  if (APPLE)
+-  if (APPLE OR EMSCRIPTEN)
 -    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-common -Woverloaded-virtual -Wcast-qual -fno-strict-aliasing -Wno-long-long -Wall -W -Wno-unused-parameter -Wwrite-strings")
 -  else()
 -    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-common -Woverloaded-virtual -Wcast-qual -fno-strict-aliasing -pedantic -Wno-long-long -Wall -W -Wno-unused-parameter -Wwrite-strings")
@@ -488,43 +476,55 @@ index 883885d..61e01b0 100644
 -option(CPPINTEROP_ENABLE_SPHINX "Use sphinx to generage CppInterOp user documentation")
 -
 -
--if(EMSCRIPTEN)
--    message("Build with emscripten")
--    option(CPPINTEROP_ENABLE_TESTING "Enables the testing infrastructure." OFF)
--else()
--    message("Build with cmake")
--    option(CPPINTEROP_ENABLE_TESTING "Enables the testing infrastructure." ON)
--endif()
--
 -if(MSVC)
 -
 -  set(MSVC_EXPORTLIST
--   ??_7type_info@@6B@
--   ?nothrow@std@@3Unothrow_t@1@B
--   _Init_thread_header
--   _Init_thread_footer
--   ??_7type_info@@6B@
--   ?_Facet_Register@std@@YAXPEAV_Facet_base@1@@Z
+-    _Init_thread_header
+-    _Init_thread_footer
+-    ?nothrow@std@@3Unothrow_t@1@B
+-    ??_7type_info@@6B@
 -  )
 -
--  set(MSVC_EXPORTLIST ${MSVC_EXPORTLIST}
--   ??2@YAPEAX_K@Z
--   ??3@YAXPEAX@Z
--   ??3@YAXPEAX_K@Z
--   ??_U@YAPEAX_K@Z
--   ??_V@YAXPEAX@Z
--   ??_V@YAXPEAX_K@Z
--   ??2@YAPEAX_KAEBUnothrow_t@std@@@Z
--   ??_U@YAPEAX_KAEBUnothrow_t@std@@@Z
--   ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@H@Z
--   ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@M@Z
--   ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@N@Z
--   ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@PEBX@Z
--   ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@P6AAEAV01@AEAV01@@Z@Z
--   ??$?6U?$char_traits@D@std@@@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@D@Z
--   ??$?6U?$char_traits@D@std@@@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@PEBD@Z
--   ?_Facet_Register@std@@YAXPEAV_Facet_base@1@@Z
--  )
+-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+-    # new/delete variants needed when linking to static msvc runtime (esp. Debug)
+-    set(MSVC_EXPORTLIST ${MSVC_EXPORTLIST}
+-      ??2@YAPEAX_K@Z
+-      ??3@YAXPEAX@Z
+-      ??_U@YAPEAX_K@Z
+-      ??_V@YAXPEAX@Z
+-      ??3@YAXPEAX_K@Z
+-      ??_V@YAXPEAX_K@Z
+-      ??2@YAPEAX_KAEBUnothrow_t@std@@@Z
+-      ??_U@YAPEAX_KAEBUnothrow_t@std@@@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@H@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@M@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@N@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@PEBX@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QEAAAEAV01@P6AAEAV01@AEAV01@@Z@Z
+-      ??$?6U?$char_traits@D@std@@@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@D@Z
+-      ??$?6U?$char_traits@D@std@@@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@PEBD@Z
+-      ?_Facet_Register@std@@YAXPEAV_Facet_base@1@@Z
+-    )
+-  else()
+-    set(MSVC_EXPORTLIST ${MSVC_EXPORTLIST}
+-      ??2@YAPAXI@Z
+-      ??3@YAXPAX@Z
+-      ??3@YAXPAXI@Z
+-      ??_U@YAPAXI@Z
+-      ??_V@YAXPAX@Z
+-      ??_V@YAXPAXI@Z
+-      ??2@YAPAXIABUnothrow_t@std@@@Z
+-      ??_U@YAPAXIABUnothrow_t@std@@@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@H@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@M@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@N@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@PBX@Z
+-      ??6?$basic_ostream@DU?$char_traits@D@std@@@std@@QAEAAV01@P6AAAV01@AAV01@@Z@Z
+-      ??$?6U?$char_traits@D@std@@@std@@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@0@AAV10@D@Z
+-      ??$?6U?$char_traits@D@std@@@std@@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@0@AAV10@PBD@Z
+-      ?_Facet_Register@std@@YAXPAV_Facet_base@1@@Z
+-    )
+-  endif()
 -
 -  if(MSVC_VERSION LESS 1914)
 -    set(MSVC_EXPORTLIST ${MSVC_EXPORTLIST} ??3@YAXPAX0@Z ??_V@YAXPAX0@Z)
@@ -542,11 +542,10 @@ index 883885d..61e01b0 100644
 -foreach(sym ${MSVC_EXPORTLIST})
 -  set(MSVC_EXPORTS "${MSVC_EXPORTS} /EXPORT:${sym}")
 -endforeach(sym ${MSVC_EXPORTLIST})
--
--endif()
--
--if (CPPINTEROP_INCLUDE_DOCS)
--  add_subdirectory(docs)
++find_package(Clang REQUIRED CONFIG)
++message(STATUS "Found Clang ${Clang_PACKAGE_VERSION}")
++message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
+ 
 +add_library(CppInterOp SHARED)
 +add_subdirectory(lib)
 +add_subdirectory(include)
@@ -576,6 +575,13 @@ index 883885d..61e01b0 100644
 +
 +target_link_libraries(CppInterOp PUBLIC LLVM clang-cpp)
 +
++if(UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
++    target_link_options(CppInterOp PUBLIC -Wl,--export=__clang_Interpreter_SetValueNoAlloc)
++    target_link_options(CppInterOp PUBLIC -Wl,--export=__clang_Interpreter_SetValueWithAlloc)
+ endif()
+ 
+-if (CPPINTEROP_INCLUDE_DOCS)
+-  add_subdirectory(docs)
 +# Install CompilationDatabase
 +set_target_properties(CppInterOp PROPERTIES EXPORT_COMPILE_COMMANDS true)
 +set(ccmds_json ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json)
@@ -637,29 +643,13 @@ index 0000000..c6c9939
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/CppInterOp.h)
 \ No newline at end of file
 diff --git a/lib/Interpreter/CMakeLists.txt b/lib/Interpreter/CMakeLists.txt
-index 103b331..4205ada 100644
+index 7568f7f..4205ada 100644
 --- a/lib/Interpreter/CMakeLists.txt
 +++ b/lib/Interpreter/CMakeLists.txt
-@@ -1,130 +1,9 @@
+@@ -1,148 +1,9 @@
 -if(EMSCRIPTEN)
 -  set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
--  set(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "-s SIDE_MODULE=1")
--  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "-s SIDE_MODULE=1")
--  set(CMAKE_STRIP FALSE)
--
--  add_llvm_library(clangCppInterOp
--    SHARED
--
--    CppInterOp.cpp
--    CXCppInterOp.cpp
--    DynamicLibraryManager.cpp
--    DynamicLibraryManagerSymbol.cpp
--    Paths.cpp
--
--    # Additional libraries from Clang and LLD
--    LINK_LIBS
--    clangInterpreter
--  )
+-  set(LLVM_LINK_COMPONENTS "")
 -else()
 -  set(LLVM_LINK_COMPONENTS
 -    ${LLVM_TARGETS_TO_BUILD}
@@ -676,27 +666,32 @@ index 103b331..4205ada 100644
 -  if ("LLVMOrcDebugging" IN_LIST LLVM_AVAILABLE_LIBS)
 -    list(APPEND LLVM_LINK_COMPONENTS OrcDebugging)
 -  endif()
--
+-endif()
 -  set(DLM
 -    DynamicLibraryManager.cpp
 -    DynamicLibraryManagerSymbol.cpp
 -    Paths.cpp
 -  )
--  if (USE_CLING)
+-  if (CPPINTEROP_USE_CLING)
 -    set(LLVM_OPTIONAL_SOURCES ${LLVM_OPTIONAL_SOURCES} ${DLM})
 -    set(DLM)
--  endif(USE_CLING)
--  if (USE_REPL)
+-  endif(CPPINTEROP_USE_CLING)
+-  if (CPPINTEROP_USE_REPL)
 -    #Use DML optional sources
--  endif(USE_REPL)
+-  endif(CPPINTEROP_USE_REPL)
 -
--  if (USE_CLING)
+-  if (CPPINTEROP_USE_CLING)
 -    set(cling_clang_interp clingInterpreter)
 -  endif()
--  if (USE_REPL)
+-  if (CPPINTEROP_USE_REPL)
 -    set(cling_clang_interp clangInterpreter)
 -  endif()
 -
+-if(EMSCRIPTEN)
+-  set(link_libs
+-    ${cling_clang_interp}
+-    )
+-else()
 -  set(link_libs
 -    ${cling_clang_interp}
 -    clangAST
@@ -705,8 +700,9 @@ index 103b331..4205ada 100644
 -    clangLex
 -    clangSema
 -    )
+-endif()
 -
--  if(NOT WIN32)
+-  if(NOT WIN32 AND NOT EMSCRIPTEN)
 -    list(APPEND link_libs dl)
 -  endif()
 -
@@ -756,7 +752,6 @@ index 103b331..4205ada 100644
 -      clangStaticAnalyzerCore
 -      )
 -  endif(LLVM_LINK_LLVM_DYLIB)
--
 -  add_llvm_library(clangCppInterOp
 -    DISABLE_LLVM_LINK_LLVM_DYLIB
 -    CppInterOp.cpp
@@ -765,7 +760,36 @@ index 103b331..4205ada 100644
 -    LINK_LIBS
 -    ${link_libs}
 -  )
+-
+-
+-if(EMSCRIPTEN)
+-  # FIXME: When dynamically linking the Emscripten shared library to the 
+-  # unit tests main_module you get errors due to undefined symbols. The reading of the file
+-  # below into a SYMBOLS_LIST variable is a temporary workaround that exports the undefined
+-  # symbols from the shared library, until it can be determined why they are not being exported already.
+-  file(READ "${CMAKE_SOURCE_DIR}/lib/Interpreter/exports.ld" SYMBOLS_LIST)
+-  
+-  # Replace newlines with spaces
+-  string(REPLACE "\n" " " SYMBOLS_LIST "${SYMBOLS_LIST}")
+-
+-  set_target_properties(clangCppInterOp
+-    PROPERTIES NO_SONAME 1
+-  )
+-  target_link_options(clangCppInterOp
+-    PRIVATE "SHELL: -s WASM_BIGINT"
+-    PRIVATE "SHELL: -s SIDE_MODULE=1"
+-    PRIVATE "SHELL: ${SYMBOLS_LIST}"
+-  )
+-  if (CPPINTEROP_ENABLE_TESTING)
+-    # When compiling Emscripten tests the shared library it links to is expected to be in the same folder as the compiled Javascript
+-    add_custom_command(TARGET clangCppInterOp POST_BUILD
+-      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:clangCppInterOp> ${CMAKE_BINARY_DIR}/unittests/CppInterOp/
+-    )
+-  endif(CPPINTEROP_ENABLE_TESTING)
+-
 -endif()
+-
+-target_compile_definitions(clangCppInterOp PUBLIC "_CINDEX_LIB_") # workaround for the use of `CINDEX_LINKAGE`
 -
 -string(REPLACE ";" "\;" _VER CPPINTEROP_VERSION)
 -set_source_files_properties(CppInterOp.cpp PROPERTIES COMPILE_DEFINITIONS
