@@ -15,7 +15,7 @@ sources = [
 ]
 
 script = raw"""
-apk del cmake # Need CMake >= 3.30
+apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 
 if [[ "$target" == *-apple-darwin* ]]; then
     sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
@@ -102,12 +102,8 @@ products = Product[
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
-
-    # OpenMPI 5 is ABI compatible with OpenMPI 4, but OpenMPI 5 does not support 32-bit platforms, or FreeBSD
-    Dependency("OpenMPI_jll", v"4.1.8"; compat="4, 5", platforms = filter(p -> nbits(p) == 32 || Sys.isfreebsd(p), platforms)),
-    Dependency("OpenMPI_jll", v"5.0.7"; compat="4, 5", platforms = filter(p -> !(nbits(p) == 32 || Sys.isfreebsd(p)), platforms)),
-
-    HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
+    Dependency("OpenMPI_jll", v"4.1.8"; compat="4, 5"), # OpenMPI 5 is ABI compatible with OpenMPI 4
+    HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
