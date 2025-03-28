@@ -11,7 +11,7 @@ sources = [
 ]
 
 dependencies = [
-    Dependency("soapysdr_jll"; compat="0.8.0")
+    Dependency("soapysdr_jll", v"0.8.1"; compat="0.8")
 ]
 
 # Bash recipe for building across all platforms
