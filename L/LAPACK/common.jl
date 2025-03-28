@@ -2,13 +2,12 @@ using BinaryBuilder, Pkg
 
 # LAPACK mirrors the OpenBLAS build, whereas LAPACK32 mirrors the OpenBLAS32 build.
 
-version = v"3.12.0"
+version = v"3.12.1"
 
 # Collection of sources required to build lapack
 sources = [
     GitSource("https://github.com/Reference-LAPACK/lapack",
-              "04b044e020a3560ccfa9988c8a80a1fb7083fc2e"),
-    DirectorySource("../bundled"),
+              "6ec7f2bc4ecf4c4a93496aa2fa519575bc0e39ca"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,8 +19,6 @@ function lapack_script(;lapack32::Bool=false)
 
     script *= raw"""
     cd $WORKSPACE/srcdir/lapack*
-
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/cmake.patch
 
     if [[ "${target}" == *-mingw* ]]; then
         BLAS="blastrampoline-5"
@@ -316,6 +313,8 @@ function lapack_script(;lapack32::Bool=false)
         SSYSV_AA_2STAGE SSYTRF_AA_2STAGE SSYTRS_AA_2STAGE
         ZHESV_AA_2STAGE ZHETRF_AA_2STAGE ZHETRS_AA_2STAGE
         ZSYSV_AA_2STAGE ZSYTRF_AA_2STAGE ZSYTRS_AA_2STAGE
+        DLARF1F
+        CGEMMTR DGEMMTR SGEMMTR ZGEMMTR
       )
 
       for sym in ${syms[@]}; do
@@ -325,6 +324,10 @@ function lapack_script(;lapack32::Bool=false)
       CMAKE_FLAGS+=(-DCMAKE_Fortran_FLAGS=\"${FFLAGS[*]}\")
     fi
 
+    # TODO: LAPACK has a cmake option `BUILD_INDEX64_EXT_API`.
+    # This seems to be doing the same as we're doing manually.
+    # We should try using this option instead of our hand-rolled magic.
+
     mkdir build && cd build
     cmake .. "${CMAKE_FLAGS[@]}" \
        -DCMAKE_INSTALL_PREFIX="$prefix" \
@@ -332,6 +335,7 @@ function lapack_script(;lapack32::Bool=false)
        -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
        -DCMAKE_BUILD_TYPE=Release \
        -DBUILD_SHARED_LIBS=ON \
+       -DBUILD_INDEX64_EXT_API=OFF \
        -DTEST_FORTRAN_COMPILER=OFF \
        -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
 
