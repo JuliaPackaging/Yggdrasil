@@ -17,7 +17,7 @@ sources = [
 # we use cargo-c to install the library
 script = raw"""
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
-cargo install cargo-c
+cargo install cargo-c --features=vendored-openssl
 cargo cinstall --destdir=${sysroot} --prefix${prefix} --libdir=${libdir}
 install_license ./COPYRIGHT
 """
