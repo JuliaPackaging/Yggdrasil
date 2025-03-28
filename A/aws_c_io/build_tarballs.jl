@@ -52,7 +52,7 @@ products = [
 dependencies = [
     Dependency("s2n_tls_jll"; compat="1.5.13"),
     Dependency("aws_c_cal_jll"; compat="0.8.3"),
-    Dependency("aws_c_common_jll"; compat="0.12.2"),
+    Dependency("aws_c_common_jll"; compat="0.12.0"),
     BuildDependency("aws_lc_jll"),
 ]
 
