@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ColPack"
-version = v"0.4.2"
+version = v"0.4.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/amontoison/ColPack.git", "707282d64b11c7f29e87b05df5edca72d31ab05e")
+    GitSource("https://github.com/amontoison/ColPack.git", "b8487f1430d6a2d4d9704cd8cbbb9cd4c6882761")
 ]
 
 # Bash recipe for building across all platforms
@@ -18,17 +18,17 @@ autoreconf -vif
 
 mkdir build
 cd build
-../configure --enable-examples --build=${MACHTYPE} --host=${target}
+../configure --disable-openmp --enable-examples --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 
 mkdir -p ${bindir}
 cp ColPack${exeext} ${bindir}/ColPack${exeext}
 
-if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
-    LDFLAGS=-lomp
-else
-    LDFLAGS=-lgomp
-fi
+# if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
+#     LDFLAGS=-lomp
+# else
+#     LDFLAGS=-lgomp
+# fi
 ${CXX} -shared $(flagon -Wl,--whole-archive) libcolpack.a $(flagon -Wl,--no-whole-archive) ${LDFLAGS} -o ${libdir}/libcolpack.${dlext}
 """
 
@@ -45,11 +45,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    # If we recompile ColPack with OpenMP, we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
     # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
-    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
+    # Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
+    # Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0", julia_compat="1.6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", clang_use_lld=false)
