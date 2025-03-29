@@ -1,0 +1,12 @@
+diff --git a/mlx/distributed/ring/ring.cpp b/mlx/distributed/ring/ring.cpp
+index 5bf08200..d4565073 100644
+--- a/mlx/distributed/ring/ring.cpp
++++ b/mlx/distributed/ring/ring.cpp
+@@ -3,6 +3,7 @@
+ #include <arpa/inet.h>
+ #include <fcntl.h>
+ #include <netdb.h>
++#include <netinet/in.h>
+ #include <netinet/tcp.h>
+ #include <sys/socket.h>
+ #include <unistd.h>
