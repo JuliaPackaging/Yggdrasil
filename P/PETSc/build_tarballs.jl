@@ -5,17 +5,18 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "PETSc"
-version = v"3.22.0"
-petsc_version = v"3.22.0"
+version = v"3.22.1"
+petsc_version = v"3.22.1"
 
 MPItrampoline_compat_version="5.5.0"
 MicrosoftMPI_compat_version="10.1.4" 
 MPICH_compat_version="4.2.3"    
 
 # Collection of sources required to build PETSc. 
+# Collection of sources required to build PETSc. 
 sources = [
     ArchiveSource("https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-$(petsc_version).tar.gz",
-                  "2c03f7c0f7ad2649240d4989355cf7fb7f211b75156cd7d424e1d9dd7dfb290b"),
+                  "7117d3ae6827f681ed9737939d4e86896b4751e27cca941bb07e5703f19a0a7b"),
     DirectorySource("./bundled"),
 ]
 
@@ -86,7 +87,7 @@ else
 fi
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-version.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
+#atomic_patch -p1 $WORKSPACE/srcdir/patches/mpi-constants.patch
 atomic_patch -p1 $WORKSPACE/srcdir/patches/sosuffix.patch
 
 mkdir $libdir/petsc
@@ -381,12 +382,12 @@ build_petsc()
 build_petsc double real Int64 opt
 build_petsc double real Int64 deb       # compile at least one debug version
 build_petsc double real Int32 opt
-build_petsc single real Int32 opt
-build_petsc double complex Int32 opt
-build_petsc single complex Int32 opt
-build_petsc single real Int64 opt
-build_petsc double complex Int64 opt
-build_petsc single complex Int64 opt
+#build_petsc single real Int32 opt
+#build_petsc double complex Int32 opt
+#build_petsc single complex Int32 opt
+#build_petsc single real Int64 opt
+#build_petsc double complex Int64 opt
+#build_petsc single complex Int64 opt
 """
 
 augment_platform_block = """
@@ -447,13 +448,13 @@ products = [
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64", :libpetsc_Float64_Real_Int64, "\$libdir/petsc/double_real_Int64/lib")
     LibraryProduct("libpetsc_double_real_Int64_deb", :libpetsc_Float64_Real_Int64_deb, "\$libdir/petsc/double_real_Int64_deb/lib")
-    LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
-    LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
-    LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
-    LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
-    LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
+    #LibraryProduct("libpetsc_double_real_Int32", :libpetsc_Float64_Real_Int32, "\$libdir/petsc/double_real_Int32/lib")
+    #LibraryProduct("libpetsc_single_real_Int32", :libpetsc_Float32_Real_Int32, "\$libdir/petsc/single_real_Int32/lib")
+    #LibraryProduct("libpetsc_double_complex_Int32", :libpetsc_Float64_Complex_Int32, "\$libdir/petsc/double_complex_Int32/lib")
+    #LibraryProduct("libpetsc_single_complex_Int32", :libpetsc_Float32_Complex_Int32, "\$libdir/petsc/single_complex_Int32/lib")
+    #LibraryProduct("libpetsc_single_real_Int64", :libpetsc_Float32_Real_Int64, "\$libdir/petsc/single_real_Int64/lib")
+    #LibraryProduct("libpetsc_double_complex_Int64", :libpetsc_Float64_Complex_Int64, "\$libdir/petsc/double_complex_Int64/lib")
+    #LibraryProduct("libpetsc_single_complex_Int64", :libpetsc_Float32_Complex_Int64, "\$libdir/petsc/single_complex_Int64/lib")
 ]
 
 dependencies = [
