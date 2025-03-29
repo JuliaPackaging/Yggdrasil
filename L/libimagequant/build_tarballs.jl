@@ -16,6 +16,7 @@ sources = [
 # following https://github.com/ImageOptim/libimagequant/tree/main/imagequant-sys#building-for-c
 # we use cargo-c to install the library
 script = raw"""
+export CARGO_HOME="$WORKSPACE/cargo"
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 cargo install cargo-c
 cargo cinstall --destdir=${sysroot} --prefix${prefix} --libdir=${libdir}
