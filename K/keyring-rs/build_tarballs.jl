@@ -27,7 +27,7 @@ echo "Building for target: ${rust_target}"
 cargo build -v --release --example keyring-cli
 
 # Install the CLI example binary
-install -D -m 755 "target/${rust_target}/release/examples/cli${exeext}" "${bindir}/keyring-cli${exeext}"
+install -Dvm 755 "target/${rust_target}/release/examples/cli${exeext}" -t "${bindir}"
 
 install_license LICENSE-MIT LICENSE-APACHE
 """
