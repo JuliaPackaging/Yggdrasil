@@ -17,7 +17,7 @@ sources = [
 # we use cargo-c to install the library
 script = raw"""
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
-cargo install cargo-c --features=vendored-openssl
+cargo install cargo-c
 cargo cinstall --destdir=${sysroot} --prefix${prefix} --libdir=${libdir}
 install_license ./COPYRIGHT
 """
@@ -38,6 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    HostBuildDependency("OpenSSL_jll"; compat="3.0.15"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
