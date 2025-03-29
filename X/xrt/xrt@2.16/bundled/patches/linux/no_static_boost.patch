@@ -1,0 +1,11 @@
+--- a/src/CMake/nativeLnx.cmake
++++ b/src/CMake/nativeLnx.cmake
+@@ -94,7 +94,7 @@
+ # can be used to resolve symbols in XRT dynamic libraries.
+ if (DEFINED ENV{XRT_BOOST_INSTALL})
+   set(XRT_BOOST_INSTALL $ENV{XRT_BOOST_INSTALL})
+-  set(Boost_USE_STATIC_LIBS ON)
++  set(Boost_USE_STATIC_LIBS OFF)
+   find_package(Boost
+     HINTS $ENV{XRT_BOOST_INSTALL}
+     REQUIRED COMPONENTS system filesystem program_options)
