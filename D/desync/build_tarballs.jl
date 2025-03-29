@@ -13,8 +13,7 @@ script = raw"""
 install_license ${WORKSPACE}/srcdir/desync/LICENSE
 cd ${WORKSPACE}/srcdir/desync/cmd/desync
 go build
-mkdir -p ${bindir}
-mv desync ${bindir}/
+install -Dvm 755 "desync${exeext}" -t "${bindir}"
 """
 
 # These are the platforms we will build for by default, unless further
