@@ -2,6 +2,7 @@ using BinaryBuilder
 
 name = "Lua"
 version = v"5.4.7"
+ygg_version = v"5.4.8" # version increment to pick up riscv
 
 sources = [
     ArchiveSource("https://www.lua.org/ftp/lua-$(version).tar.gz",
@@ -55,5 +56,5 @@ dependencies = [
     Dependency("Readline_jll"),
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6")
