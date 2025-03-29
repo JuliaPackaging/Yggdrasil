@@ -18,19 +18,22 @@ sources = [
 script = raw"""
 export CARGO_HOME="$WORKSPACE/cargo"
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
-cargo install cargo-c --target ${HOST_TARGET}
+cargo install cargo-c --target ${rust_host}
 cargo cinstall --destdir=${sysroot} --prefix${prefix} --libdir=${libdir}
 install_license ./COPYRIGHT
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-# Rust toolchain for i686 Windows is unusable
-filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-# Rust toolchain seems to not be available for RISC-V or FreeBSD/aarch64
-filter!(p -> arch(p) != "riscv64", platforms)
-filter!(p -> os(p) != "freebsd" || arch(p) != "aarch64", platforms)
+# platforms = supported_platforms()
+# # Rust toolchain for i686 Windows is unusable
+# filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# # Rust toolchain seems to not be available for RISC-V or FreeBSD/aarch64
+# filter!(p -> arch(p) != "riscv64", platforms)
+# filter!(p -> os(p) != "freebsd" || arch(p) != "aarch64", platforms)
+
+# let's not waste CI until we get one platform working
+platforms = [Platform("x86_64", "linux")]
 
 # The products that we will ensure are always built
 products = [
