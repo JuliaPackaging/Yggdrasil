@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ColPack"
-version = v"0.4.1"
+version = v"0.4.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/amontoison/ColPack.git", "d873bad2a269355ccf30924ad18bd53a6abfe590")
+    GitSource("https://github.com/amontoison/ColPack.git", "707282d64b11c7f29e87b05df5edca72d31ab05e")
 ]
 
 # Bash recipe for building across all platforms
@@ -52,4 +52,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", clang_use_lld=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"8.1.0", julia_compat="1.6", clang_use_lld=false)
