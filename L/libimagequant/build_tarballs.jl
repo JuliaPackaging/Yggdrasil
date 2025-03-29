@@ -17,6 +17,8 @@ sources = [
 # we use cargo-c to install the library
 script = raw"""
 export CARGO_HOME="$WORKSPACE/cargo"
+export PATH="$CARGO_HOME/bin:$PATH"
+
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 cargo install cargo-c --target ${rust_host}
 cargo cinstall --destdir=${sysroot} --prefix${prefix} --libdir=${libdir}
