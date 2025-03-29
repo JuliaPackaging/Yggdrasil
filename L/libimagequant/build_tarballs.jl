@@ -18,7 +18,7 @@ sources = [
 script = raw"""
 export CARGO_HOME="$WORKSPACE/cargo"
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
-cargo install cargo-c
+cargo install cargo-c --target ${HOST_TARGET}
 cargo cinstall --destdir=${sysroot} --prefix${prefix} --libdir=${libdir}
 install_license ./COPYRIGHT
 """
