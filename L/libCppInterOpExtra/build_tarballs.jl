@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOpExtra"
 repo = "https://github.com/Gnimuc/CppInterOp.jl.git"
-version = v"0.0.2"
+version = v"0.0.3"
 
 llvm_versions = [v"18.1.7"]
 
@@ -76,6 +76,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     platforms = expand_cxxstring_abis(supported_platforms())
     # disable riscv64
     filter!(p -> arch(p) != "riscv64", platforms)
+    # disable aarch64 freebsd
+    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
     if llvm_version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
