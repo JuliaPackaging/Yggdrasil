@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.111"
+version = v"0.0.112"
 
 sources = [
   GitSource(repo, "d5ecd34cd67eb65f51f25e938bca54ea2f2c5c14"),
@@ -437,7 +437,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	
     # The products that we will ensure are always built
     products = Product[
-        LibraryProduct(["libReactantExtra", "libReactantExtra"], :libReactantExtra)
+        # Use lowercase name for the variable, to ensure it's listed after libnccl in the
+        # JLL wrapper and we can dlopen libnccl before libreactant.
+        LibraryProduct("libReactantExtra", :libreactantextra)
     ]
 	
     if gpu == "cuda"
@@ -465,7 +467,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
 	    san = replace(lib, "-" => "_")
 	    push!(products,
                   LibraryProduct([lib, lib], Symbol(san);
-                                 dont_dlopen=true, dlopen_flags=[:RTLD_LOCAL]))
+                                 # We want to dlopen libnccl, to possibly point
+                                 # it to a system library if necessary.
+                                 dont_dlopen=lib!="libnccl", dlopen_flags=[:RTLD_LOCAL]))
 	end
 	push!(products, ExecutableProduct(["ptxas"], :ptxas, "lib/cuda/bin"))
 	push!(products, ExecutableProduct(["fatbinary"], :fatbinary, "lib/cuda/bin"))
