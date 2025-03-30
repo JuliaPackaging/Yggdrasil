@@ -100,7 +100,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Fmt_jll", uuid="5dc1e892-f187-50dd-85f3-7dff85c47fc5"))
+    Dependency(PackageSpec(name="Fmt_jll", uuid="5dc1e892-f187-50dd-85f3-7dff85c47fc5"); compat="9.1.0 - 9")
     # We had to restrict compat with HDF5 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
     # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
