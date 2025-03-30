@@ -4,8 +4,10 @@ name = "desync"
 version = v"0.9.6"
 
 sources = [
-    GitSource("https://github.com/folbricht/desync",
-              "0aef76def97e1aa148d58b8a831f7c89b41ba9c4"),
+    # Building `@staticfloat`'s fork until https://github.com/folbricht/desync/pull/283 is merged
+    # This allows for easy piping of content into `desync`.
+    GitSource("https://github.com/staticfloat/desync",
+              "979d6ac3735680e60cd323bc6f70b433fb6027b4"),
 ]
 
 # Bash recipe for building across all platforms
