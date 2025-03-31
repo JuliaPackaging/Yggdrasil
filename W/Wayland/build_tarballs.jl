@@ -3,20 +3,27 @@
 using BinaryBuilder
 
 name = "Wayland"
-version = v"1.21.0"
+version = v"1.23.1"
 
 # Collection of sources required to build Wayland
 sources = [
     ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland/-/releases/$(version)/downloads/wayland-$(version).tar.xz",
-                  "6dc64d7fc16837a693a51cfdb2e568db538bfdc9f457d4656285bb9594ef11ac"),
+                  "864fb2a8399e2d0ec39d56e9d9b753c093775beadc6022ce81f441929a81e5ed"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wayland-*/
 
-ln -s `which wayland-scanner` $bindir
-cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
+mkdir build-host
+cd build-host
+meson .. \
+    --native-file="${MESON_HOST_TOOLCHAIN}" \
+    --prefix ${host_prefix} \
+    -Ddocumentation=false
+ninja -j${nproc}
+ninja install
+cd ..
 
 mkdir build-wayland
 
@@ -26,7 +33,6 @@ meson .. \
     -Ddocumentation=false
 ninja -j${nproc}
 ninja install
-rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
 # These are the platforms we will build for by default, unless further
@@ -48,7 +54,6 @@ dependencies = [
     Dependency("Libffi_jll"; compat="~3.2.2"),
     Dependency("XML2_jll"),
     Dependency("EpollShim_jll"),
-    HostBuildDependency("Wayland_jll"),
 ]
 
 # Build the tarballs.
