@@ -1,14 +1,15 @@
+
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "AcousticsToolbox"
-version_string = "2022_4_20"
+version_string = "2024_12_25"
 version = VersionNumber(replace(version_string, "_" => "."))
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_$(version_string).zip", "ff3494c8a0c696dca17ddacb9a2a412eaf664c3204f4a424afe77e66edefc950")
+    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_$(version_string).zip", "7b57e80bded7f71ea9536e541029615f3f430e390651d697a2212569cbafd85c")
 ]
 
 # Bash recipe for building across all platforms
