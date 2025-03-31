@@ -3,11 +3,12 @@
 using BinaryBuilder
 
 name = "nauty"
-version = v"2.8.9" 
+upstream_version = v"2.8.9"
+version = v"2.8.10"
 
 # Collection of sources required to build nauty
 sources = [
-    ArchiveSource("https://pallini.di.uniroma1.it/nauty$(version.major)_$(version.minor)_$(version.patch).tar.gz",
+    ArchiveSource("https://pallini.di.uniroma1.it/nauty$(upstream_version.major)_$(upstream_version.minor)_$(upstream_version.patch).tar.gz",
 		  "c97ab42bf48796a86a598bce3e9269047ca2b32c14fc23e07208a244fe52c4ee"),
     DirectorySource("./bundled")
 ]
@@ -15,6 +16,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/nauty*
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
 
 # Remove misleading libtool files
 rm -f ${prefix}/lib/*.la
@@ -26,7 +31,6 @@ export LDFLAGS="${LDFLAGS} -L${prefix}/lib"
 # `popcnt` CPU instruction is available. This check is not possible during cross-compilation,
 # which causes the entire configure script to fail. We patch `configure.ac` to simply disable
 # `popcnt` while cross-compiling, and generate a new, working configure script with `autoreconf`.
-atomic_patch -p1 ../patches/autotools.patch
 autoreconf -v
 
 # We use --enable-generic to ensure maximum hardware compatibility and we
@@ -123,9 +127,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"), # for sumlines
+    Dependency("GMP_jll", v"6.2.1"), # for sumlines
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6",
+               preferred_gcc_version=v"6")
 

@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "aws_checksums"
-version = v"0.1.18"
+
+version = v"0.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-checksums.git", "aac442a2dbbb5e72d0a3eca8313cf65e7e1cac2f"),
+    GitSource("https://github.com/awslabs/aws-checksums.git", "66b447c0765a2caff2d806111e6ec1db2383e4d2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,7 +37,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.3"),
+    Dependency("aws_c_common_jll"; compat="0.11.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

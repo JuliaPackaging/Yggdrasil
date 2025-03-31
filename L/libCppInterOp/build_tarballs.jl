@@ -8,21 +8,19 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOp"
-version = v"0.1.5"
+version = v"0.1.6"
 
 llvm_versions = [v"18.1.7"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/compiler-research/CppInterOp.git", "e0546dd8fdf3fb0c7a2ba6beddaf359130d13f35"),
+    GitSource("https://github.com/compiler-research/CppInterOp.git", "a22df968590709eb2d3957fb6c88feb61639621e"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd CppInterOp/
-atomic_patch -p1 ../patches/windows.patch
+cd $WORKSPACE/srcdir/CppInterOp/
 atomic_patch -p1 ../patches/cmake.patch
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -67,6 +65,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     platforms = expand_cxxstring_abis(supported_platforms())
     # disable riscv64
     filter!(p -> arch(p) != "riscv64", platforms)
+    # disable aarch64 freebsd
+    filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
     if llvm_version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.

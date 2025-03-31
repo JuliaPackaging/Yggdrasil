@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Binutils"
-version = v"2.43"
+version = v"2.44"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/binutils/binutils-$(version.major).$(version.minor).tar.xz",
-                  "b53606f443ac8f01d1d5fc9c39497f2af322d99e14cea5c0b4b124d630379365"),
+                  "ce2017e059d63e67ddb9240e9d4ec49c2893605035cd60e92ad53177f4377237"),
     DirectorySource("bundled"),
 ]
 

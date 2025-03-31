@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_cal"
-version = v"0.7.4"
+version = v"0.8.8"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-cal.git", "2cb1d2eac925e2dbc45025eb89af82bd790c23a0"),
+    GitSource("https://github.com/awslabs/aws-c-cal.git", "4805a96e694b07c89889de696418c429151f647a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.3"),
+    Dependency("aws_c_common_jll"; compat="0.11.1"),
     BuildDependency("aws_lc_jll"),
 ]
 

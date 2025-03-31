@@ -1,7 +1,9 @@
 using BinaryBuilder
 
 name = "ZeroMQ"
-version = v"4.3.5"
+# We bumped the version number to build for riscv64
+zeromq_version = v"4.3.5"
+version = v"4.3.6"
 
 # Collection of sources required to build ZMQ
 sources = [
@@ -46,10 +48,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libsodium_jll")
+    Dependency("libsodium_jll"; compat="1.0.21")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6")
-
-# Build trigger: 1
