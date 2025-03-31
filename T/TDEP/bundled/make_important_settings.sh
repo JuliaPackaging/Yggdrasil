@@ -2,7 +2,7 @@
 
 # Default values
 OPTIMIZATION_LEVEL="-O3" # BinaryBuilder doesnt like -Ofast cause of fastmath
-FORTRAN_COMPILER="gfortran"
+FORTRAN_COMPILER=$FC
 FCFLAGS="-ffree-line-length-none -std=f2008 -cpp -fPIC"
 FCFLAGS_EXTRA=""
 DOUBLE_FLAG="-fdefault-real-8"
@@ -10,7 +10,7 @@ MODULE_FLAG="-J"
 PRECOMPILER_FLAGS="-Dclusterprogressbar"
 USECGAL="no"
 
-GFORTRAN_VERSION=$(gfortran -dumpversion | cut -d. -f1)
+GFORTRAN_VERSION=$($FC -dumpversion | cut -d. -f1)
 if [[ "$GFORTRAN_VERSION" -ge 10 ]]; then
     FCFLAGS="$FCFLAGS -fallow-argument-mismatch"
 else
