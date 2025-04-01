@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Wayland"
 version = v"1.23.1"
@@ -17,12 +17,17 @@ cd $WORKSPACE/srcdir/wayland-*/
 
 mkdir build-host
 cd build-host
+
+# Hack to make the pkgconfig paths work on the host build
+ln -s /workspace /workspace/destdir
+
 meson .. \
     --native-file="${MESON_HOST_TOOLCHAIN}" \
-    --prefix ${host_prefix} \
+    --prefix ${host_prefix} --pkg-config-path ${host_prefix}/lib/pkgconfig \
     -Ddocumentation=false
 ninja -j${nproc}
 ninja install
+rm /workspace/destdir/workspace
 cd ..
 
 mkdir build-wayland
@@ -50,10 +55,15 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("Libffi_jll"; compat="~3.2.2"),
+    Dependency("Expat_jll"; compat="2.6.4"),
+    Dependency("Libffi_jll"; compat="~3.4.7"),
     Dependency("XML2_jll"),
     Dependency("EpollShim_jll"),
+    HostBuildDependency(PackageSpec("Expat_jll", v"2.6.4")),
+    HostBuildDependency(PackageSpec("Libffi_jll", v"3.4.7")),
+    HostBuildDependency("XML2_jll"),
+    HostBuildDependency("EpollShim_jll"),
+
 ]
 
 # Build the tarballs.
