@@ -20,6 +20,8 @@ cd build-host
 
 # Hack to make the pkgconfig paths work on the host build
 ln -s /workspace /workspace/destdir
+# Avoid parasitic linking on freebsd, somehow $prefix/lib ends up in /opt/x86_64-linux-musl/x86_64-linux-musl/sys-root/usr/local/lib
+mv $prefix/lib $prefix/lib_
 
 meson .. \
     --native-file="${MESON_HOST_TOOLCHAIN}" \
@@ -29,6 +31,8 @@ ninja -j${nproc}
 ninja install
 rm /workspace/destdir/workspace
 cd ..
+
+mv $prefix/lib_ $prefix/lib
 
 mkdir build-wayland
 
