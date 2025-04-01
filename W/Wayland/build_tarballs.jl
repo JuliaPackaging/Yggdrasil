@@ -37,7 +37,7 @@ mv $prefix/lib_ $prefix/lib
 mkdir build-wayland
 
 cd build-wayland
-meson .. \
+CMAKE=/usr/bin/cmake meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Ddocumentation=false
 ninja -j${nproc}
