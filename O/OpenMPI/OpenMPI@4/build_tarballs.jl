@@ -72,6 +72,9 @@ foreach(p -> (p["mpi"] = "OpenMPI"), platforms)
 products = [
     # OpenMPI
     LibraryProduct("libmpi", :libmpi),
+    LibraryProduct("libmpi_mpifh", :libmpi_mpifh),
+    LibraryProduct("libmpi_usempi_ignore_tkr", :libmpi_usempi_ignore_tkr),
+    LibraryProduct("libmpi_usempif08", :libmpi_usempif08),
     ExecutableProduct("mpiexec", :mpiexec),
 ]
 
