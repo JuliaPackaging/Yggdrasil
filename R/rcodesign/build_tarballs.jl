@@ -27,7 +27,7 @@ fi
 cd $WORKSPACE/srcdir/apple-platform-rs-apple-codesign-*/
 cargo build --release --package apple-codesign --target-dir ${WORKSPACE}/tmp
 
-install_license $WORKSPACE/srcdir/apple-platform-rs-apple-codesign-$version/apple-codesign/LICENSE
+install_license apple-codesign/LICENSE
 install -Dvm 755 "${WORKSPACE}/tmp/${rust_target}/release/rcodesign${exeext}" "${bindir}/rcodesign${exeext}"
 """
 
