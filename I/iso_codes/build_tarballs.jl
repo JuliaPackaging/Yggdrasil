@@ -22,14 +22,10 @@ make install
 """
 
 # The files are identical for all platforms, and in principle we could
-# use `AnyPlatform()` instead. However:
-#
-# @staticfloat says: Sadly, if you have a platformless binding in an
-# Artifacts.toml file, you can't also have other platform-specific
-# bindings in that same Artifacts.toml file. So the best we can do
-# here is to just have the same tarball listed for a bunch of
-# different platforms, then a different tarball for the windows
-# platforms.
+# use `AnyPlatform()` instead. However this artifact contains symlinks
+# which have to be replaced with copies on Windows, and for that to
+# happen we need to build it for Windows specifically (and hence for
+# all other platforms as well)
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
