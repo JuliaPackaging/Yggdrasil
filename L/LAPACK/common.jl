@@ -328,13 +328,6 @@ function lapack_script(;lapack32::Bool=false)
     # This seems to be doing the same as we're doing manually.
     # We should try using this option instead of our hand-rolled magic.
 
-    #TODO echo $target
-    #TODO echo $bb_full_target
-    #TODO if [[ "${LAPACK32}" == "true" && "${bb_full_target}" == aarch64-linux-gnu-libgfortran4 ]]; then
-    #TODO     # Compiler segfaults at `SRC/claqhp.f:216:0`
-    #TODO     nproc=1
-    #TODO fi
-
     mkdir build && cd build
     cmake .. "${CMAKE_FLAGS[@]}" \
        -DCMAKE_INSTALL_PREFIX="$prefix" \
@@ -346,8 +339,11 @@ function lapack_script(;lapack32::Bool=false)
        -DTEST_FORTRAN_COMPILER=OFF \
        -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
 
-    # TODO
-    # [20:02:11] cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O2 -DNDEBUG -O2 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/claqhe.f -o CMakeFiles/lapack_obj.dir/claqhe.f.o
+    if [[ "${LAPACK32}" == "true" && "${bb_full_target}" == aarch64-linux-gnu-libgfortran4-cxx11 ]]; then
+        # Compiler segfaults at `SRC/claqhp.f:216:0`
+        # Build this file ahead of time with reduced optimization.
+        (cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O1 -DNDEBUG -O1 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/claqhp.f -o CMakeFiles/lapack_obj.dir/claqhp.f.o)
+    fi
 
     make -j${nproc}
     make install
