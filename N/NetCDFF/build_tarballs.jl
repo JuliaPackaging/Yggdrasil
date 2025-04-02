@@ -14,13 +14,29 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/netcdf-fortran*
+
+if [[ ${target} == x86_64-linux-musl ]]; then
+    # see
+    # https://github.com/JuliaPackaging/Yggdrasil/blob/48af117395188f48d361a46ea929ee7563d9c2e4/A/ADIOS2/build_tarballs.jl
+
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
+    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
+    rm /usr/lib/libcurl.*
+    rm /usr/lib/libevent*
+    rm /usr/lib/libnghttp2.*
+fi
+
+export CPPFLAGS="-I${includedir}"
+export LDFLAGS="-L${libdir} -lnetcdf"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
+
 if [[ "${target}" == *-mingw* ]]; then
     # Manually build shared library for Windows
-    gfortran -shared -fPIC -o ${libdir}/libnetcdff.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libnetcdff.a -Wl,$(flagon --no-whole-archive) -lnetcdf
+    ${FC} -shared -fPIC -o ${libdir}/libnetcdff.${dlext} -Wl,$(flagon --whole-archive) ${prefix}/lib/libnetcdff.a -Wl,$(flagon --no-whole-archive) -lnetcdf
 fi
+
 # Remove static libraries
 rm ${prefix}/lib/*.a
 """
@@ -54,7 +70,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# Note: for some reason GCC 4.8 is still linked to glibc 2.12, we need
+# to use GCC 5 to have glibc 2.17.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               # Note: for some reason GCC 4.8 is still linked to glibc 2.12, we
-               # need to use GCC 5 to have glibc 2.17.
-               julia_compat="1.6", preferred_gcc_version=v"5")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
