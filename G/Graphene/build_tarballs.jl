@@ -3,17 +3,16 @@
 using BinaryBuilder
 
 name = "Graphene"
-version = v"1.10.6"
+version = v"1.10.8"
 
 # Collection of sources required to build Graphene
 sources = [
-    ArchiveSource("https://github.com/ebassi/graphene/releases/download/$(version)/graphene-$(version).tar.xz",
-                  "80ae57723e4608e6875626a88aaa6f56dd25df75024bd16e9d77e718c3560b25"),
+    GitSource("https://github.com/ebassi/graphene", "4e2578450809c2099400cf85caf18eafcd7100aa"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/graphene-*/
+cd $WORKSPACE/srcdir/graphene
 mkdir build && cd build
 meson .. \
     -Dgtk_doc=false \
@@ -28,7 +27,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
@@ -37,7 +36,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Glib_jll"; compat="2.68.3"),
+    Dependency("Glib_jll"; compat="2.84.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
