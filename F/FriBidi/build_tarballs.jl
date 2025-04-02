@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "FriBidi"
 version = v"1.0.16"
+# We bumped the version number because we built for new architectures
+ygg_version = v"1.0.17"
 
 # Collection of sources required to build FriBidi
 sources = [
