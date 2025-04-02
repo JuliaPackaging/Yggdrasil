@@ -38,7 +38,7 @@ script = replace(script, raw"$version" => version)
 platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="glibc"),
-    # #Platform("x86_64", "linux"; libc="musl"), # Duplicate mount point: /opt/x86_64-linux-musl/nonce
+    Platform("x86_64", "linux"; libc="musl"),
     Platform("aarch64", "linux"; libc="musl"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
