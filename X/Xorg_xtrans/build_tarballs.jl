@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_xtrans"
-version = v"1.5.1"
+version = v"1.6.0"
 
 # Collection of sources required to build xtrans
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/xtrans-$(version).tar.xz",
-                  "dea80fbd8c3c941495b4b1d2785cb652815d016849a0d2ef90d1140de916993e"),
+                  "faafea166bf2451a173d9d593352940ec6404145c5d1da5c213423ce4d359e92"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/xtrans-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/xtrans-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -35,4 +32,3 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-# Build trigger: 1
