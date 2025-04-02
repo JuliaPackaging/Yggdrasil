@@ -3,29 +3,41 @@
 using BinaryBuilder, Pkg
 
 name = "ssht"
-version = v"1.5.2"
+ssht_version = v"1.5.2"
+# We bumped the version because we rebuilt for new architectures
+version = v"1.5.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/astro-informatics/ssht.git", "c83fb2a07e1869e875e819523d2e19d91bc8a4bf"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/ssht
 
+# Do not expect `-lm` to work on all systems
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake_math_library.patch
+
+# Add missing declarations for certain complex long double functions.
+# These declarations seem to be missing from our system header files.
+# They should be in `<complex.h>` but they aren't.
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/complex_long_double.patch
+
 # Build using the regular instructions
 mkdir build
 cd build
 cmake \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS_INIT='-fPIC' \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_TESTING=OFF \
-    -DCMAKE_C_FLAGS_INIT='-fPIC' \
     ..
-cmake --build . --config RelWithDebInfo --parallel ${nproc}
-cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
+cmake --build . --parallel ${nproc}
+cmake --install .
 
 # Convert the static into a shared library
 whole_archive=$(flagon --whole-archive)
@@ -53,8 +65,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="FFTW_jll")),
+    Dependency(PackageSpec(name="FFTW_jll"); compat="3.3.11"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
