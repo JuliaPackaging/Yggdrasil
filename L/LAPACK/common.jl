@@ -328,6 +328,13 @@ function lapack_script(;lapack32::Bool=false)
     # This seems to be doing the same as we're doing manually.
     # We should try using this option instead of our hand-rolled magic.
 
+    echo $target
+    echo $bb_full_target
+    if [[ "${LAPACK32}" == "true" && "${bb_full_target}" == aarch64-linux-gnu-libgfortran4 ]]; then
+        # Compiler segfaults at `SRC/claqhp.f:216:0`
+        nproc=1
+    fi
+
     mkdir build && cd build
     cmake .. "${CMAKE_FLAGS[@]}" \
        -DCMAKE_INSTALL_PREFIX="$prefix" \
@@ -373,6 +380,9 @@ end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
+
+# TODO
+filter!(p -> arch(p) == "aarch64" && Sys.islinux(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
