@@ -59,11 +59,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"; compat="2.6.4"),
+    Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
     Dependency("XML2_jll"),
     Dependency("EpollShim_jll"),
-    HostBuildDependency(PackageSpec("Expat_jll", v"2.6.4")),
+    HostBuildDependency(PackageSpec("Expat_jll", v"2.6.5")),
     HostBuildDependency(PackageSpec("Libffi_jll", v"3.4.7")),
     HostBuildDependency("XML2_jll"),
     HostBuildDependency("EpollShim_jll"),
