@@ -4,7 +4,8 @@ using BinaryBuilder
 
 name = "Xorg_libXau"
 version = v"1.0.12"
-
+# We bumped the version number because we built for riscv64
+ygg_version = v"1.0.13"
 
 # Collection of sources required to build libXau
 sources = [
@@ -14,11 +15,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXau-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXau-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -33,9 +31,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("Xorg_util_macros_jll"),
     BuildDependency("Xorg_xproto_jll")
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-# Build trigger: 1
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
