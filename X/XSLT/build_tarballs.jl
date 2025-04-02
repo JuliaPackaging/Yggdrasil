@@ -1,12 +1,12 @@
 using BinaryBuilder
 
 name = "XSLT"
-version = v"1.1.42"
+version = v"1.1.43"
 
 # Collection of sources required to build XSLT
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxslt/$(version.major).$(version.minor)/libxslt-$(version).tar.xz",
-                  "85ca62cac0d41fc77d3f6033da9df6fd73d20ea2fc18b0a3609ffb4110e1baeb"),
+                  "5a3d6b383ca5afc235b171118e90f5ff6aa27e9fea3303065231a6d403f0183a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -24,7 +24,7 @@ rm -rf ${prefix}/share/doc/libxslt-*
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -34,11 +34,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Libgpg_error_jll"; compat="1.50"),
-    Dependency("Libgcrypt_jll"),
-    Dependency("Libiconv_jll"),
-    Dependency("XML2_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Libgpg_error_jll"; compat="1.51.1"),
+    Dependency("Libgcrypt_jll"; compat="1.11.1"),
+    Dependency("Libiconv_jll"; compat="1.18"),
+    Dependency("XML2_jll"; compat="2.13.6"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
