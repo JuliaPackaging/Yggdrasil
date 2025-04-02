@@ -24,7 +24,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
-cd $WORKSPACE/srcdir/apple-platform-rs-apple-codesign-$version/
+cd $WORKSPACE/srcdir/apple-platform-rs-apple-codesign-*/
 cargo build --release --package apple-codesign --target-dir ${WORKSPACE}/tmp
 
 install_license $WORKSPACE/srcdir/apple-platform-rs-apple-codesign-$version/apple-codesign/LICENSE
