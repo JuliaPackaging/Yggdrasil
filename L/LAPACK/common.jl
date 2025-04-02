@@ -328,12 +328,12 @@ function lapack_script(;lapack32::Bool=false)
     # This seems to be doing the same as we're doing manually.
     # We should try using this option instead of our hand-rolled magic.
 
-    echo $target
-    echo $bb_full_target
-    if [[ "${LAPACK32}" == "true" && "${bb_full_target}" == aarch64-linux-gnu-libgfortran4 ]]; then
-        # Compiler segfaults at `SRC/claqhp.f:216:0`
-        nproc=1
-    fi
+    #TODO echo $target
+    #TODO echo $bb_full_target
+    #TODO if [[ "${LAPACK32}" == "true" && "${bb_full_target}" == aarch64-linux-gnu-libgfortran4 ]]; then
+    #TODO     # Compiler segfaults at `SRC/claqhp.f:216:0`
+    #TODO     nproc=1
+    #TODO fi
 
     mkdir build && cd build
     cmake .. "${CMAKE_FLAGS[@]}" \
@@ -345,6 +345,9 @@ function lapack_script(;lapack32::Bool=false)
        -DBUILD_INDEX64_EXT_API=OFF \
        -DTEST_FORTRAN_COMPILER=OFF \
        -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
+
+    # TODO
+    # [20:02:11] cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O2 -DNDEBUG -O2 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/claqhe.f -o CMakeFiles/lapack_obj.dir/claqhe.f.o
 
     make -j${nproc}
     make install
@@ -382,7 +385,7 @@ end
 platforms = expand_gfortran_versions(supported_platforms())
 
 # TODO
-filter!(p -> arch(p) == "aarch64" && Sys.islinux(p), platforms)
+filter!(p -> arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "glibc", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
