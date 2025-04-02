@@ -16,14 +16,21 @@ script = raw"""
 cd $WORKSPACE/srcdir/iso-codes-*
 apk update
 apk add gettext
-./configure --prefix=${prefix}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [AnyPlatform()]
+# The files are identical for all platforms, and in principle we could
+# use `AnyPlatform()` instead. However:
+#
+# @staticfloat says: Sadly, if you have a platformless binding in an
+# Artifacts.toml file, you can't also have other platform-specific
+# bindings in that same Artifacts.toml file. So the best we can do
+# here is to just have the same tarball listed for a bunch of
+# different platforms, then a different tarball for the windows
+# platforms.
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
