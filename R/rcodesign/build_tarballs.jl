@@ -31,8 +31,6 @@ install_license apple-codesign/LICENSE
 install -Dvm 755 "${WORKSPACE}/tmp/${rust_target}/release/rcodesign${exeext}" "${bindir}/rcodesign${exeext}"
 """
 
-script = replace(script, raw"$version" => version)
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
