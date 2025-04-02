@@ -27,14 +27,14 @@ rm ${prefix}/lib/*.a
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-# platforms = [
-#     Platform("x86_64", "linux"; libc = "glibc"),
-#     Platform("aarch64", "linux"; libc="glibc"),
-#     Platform("x86_64", "macos"),
-#     Platform("aarch64", "macos"),
-#     Platform("i686", "windows"),
-#     Platform("x86_64", "windows"),
-# ]
+#TODO platforms = [
+#TODO     Platform("x86_64", "linux"; libc = "glibc"),
+#TODO     Platform("aarch64", "linux"; libc="glibc"),
+#TODO     Platform("x86_64", "macos"),
+#TODO     Platform("aarch64", "macos"),
+#TODO     Platform("i686", "windows"),
+#TODO     Platform("x86_64", "windows"),
+#TODO ]
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
@@ -45,6 +45,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # Without OpenMPI as build dependency the build fails on 32-bit
+    # platforms. Other packages (e.g. GDAL_jll) have the same problem
+    # and solve it in the same way.
+    BuildDependency(PackageSpec(; name="OpenMPI_jll", version=v"4.1.8"); platforms=filter(p -> nbits(p)==32, platforms)),
     Dependency(PackageSpec(name="NetCDF_jll", uuid="7243133f-43d8-5620-bbf4-c2c921802cf3"); compat="401.900.300"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
