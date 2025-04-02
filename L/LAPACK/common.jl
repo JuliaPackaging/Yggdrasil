@@ -340,7 +340,7 @@ function lapack_script(;lapack32::Bool=false)
        -DBLAS_LIBRARIES="-L${libdir} -l${BLAS}"
 
     if [[ "${LAPACK32}" == "true" && "${bb_full_target}" == aarch64-linux-gnu-libgfortran4-cxx11 ]]; then
-        # Compiler segfaults at `SRC/claqhp.f:216:0`
+        # The compiler segfaults at `SRC/claqhp.f:216:0`
         # Build this file ahead of time with reduced optimization.
         (cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O1 -DNDEBUG -O1 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/claqhp.f -o CMakeFiles/lapack_obj.dir/claqhp.f.o)
         (cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O1 -DNDEBUG -O1 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/zlaqhp.f -o CMakeFiles/lapack_obj.dir/zlaqhp.f.o)
@@ -380,9 +380,6 @@ end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-
-# TODO
-filter!(p -> arch(p) == "aarch64" && Sys.islinux(p) && libc(p) == "glibc", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
