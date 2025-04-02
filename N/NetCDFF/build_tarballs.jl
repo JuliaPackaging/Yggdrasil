@@ -43,14 +43,6 @@ rm ${prefix}/lib/*.a
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-#TODO platforms = [
-#TODO     Platform("x86_64", "linux"; libc = "glibc"),
-#TODO     Platform("aarch64", "linux"; libc="glibc"),
-#TODO     Platform("x86_64", "macos"),
-#TODO     Platform("aarch64", "macos"),
-#TODO     Platform("i686", "windows"),
-#TODO     Platform("x86_64", "windows"),
-#TODO ]
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
