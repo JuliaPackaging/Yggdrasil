@@ -343,6 +343,7 @@ function lapack_script(;lapack32::Bool=false)
         # Compiler segfaults at `SRC/claqhp.f:216:0`
         # Build this file ahead of time with reduced optimization.
         (cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O1 -DNDEBUG -O1 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/claqhp.f -o CMakeFiles/lapack_obj.dir/claqhp.f.o)
+        (cd /workspace/srcdir/lapack/build/SRC && /opt/bin/aarch64-linux-gnu-libgfortran4-cxx11/aarch64-linux-gnu-gfortran --sysroot=/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/   -O1 -DNDEBUG -O1 -fPIC -frecursive -cpp -c /workspace/srcdir/lapack/SRC/zlaqhp.f -o CMakeFiles/lapack_obj.dir/zlaqhp.f.o)
     fi
 
     make -j${nproc}
