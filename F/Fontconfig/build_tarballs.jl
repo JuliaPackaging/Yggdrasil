@@ -3,18 +3,18 @@
 using BinaryBuilder
 
 name = "Fontconfig"
-version = v"2.15.0"
+version = v"2.16.0"
 
 # Collection of sources required to build FriBidi
 sources = [
     ArchiveSource("https://www.freedesktop.org/software/fontconfig/release/fontconfig-$(version).tar.xz",
-                  "63a0658d0e06e0fa886106452b58ef04f21f58202ea02a94c39de0d3335d7c0e"),
-    DirectorySource("./bundled"),
+                  "6a33dc555cc9ba8b10caf7695878ef134eeb36d0af366041f639b1da9b6ed220"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/fontconfig-*/
+cd $WORKSPACE/srcdir/fontconfig-*
 
 FLAGS=()
 if [[ "${target}" == *-linux-* ]] || [[ "${target}" == *-freebsd* ]]; then
@@ -64,11 +64,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("gperf_jll"),
-    Dependency("FreeType2_jll"; compat="2.13.3"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Zlib_jll"),
-    Dependency("Libuuid_jll"),
-    Dependency("Expat_jll"; compat="2.6.4"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Libuuid_jll"; compat="2.41.0"),
+    Dependency("Expat_jll"; compat="2.6.5"),
 ]
 
 # @giordano: "I know this looks funky, but it makes code in the JLL indented correctly"
