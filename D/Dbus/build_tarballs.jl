@@ -29,7 +29,9 @@ meson setup builddir \
     -Dasserts=false \
     -Duser_session=true \
     -Dsession_socket_dir=/tmp \
-    -Dx11_autolaunch=disabled
+    -Dx11_autolaunch=disabled \
+    -Dmodular_tests=disabled \
+    -Dc_link_args=-lrt
 
 meson compile -C builddir
 meson install -C builddir
@@ -48,7 +50,6 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="Expat_jll", uuid="2e619515-83b5-522b-bb60-26c02a35a201"); compat="2.6.5"),
-    Dependency("Glib_jll"; compat="2.84.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
