@@ -16,9 +16,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/cfitsio*
 
-# Keep things ABI compatible
-sed -i 's/SONAME 10/SONAME 4/g' CMakeLists.txt fitsio.h
-
 if [[ "${target}" == *-mingw* ]]; then
     # This is ridiculous: when CURL is enabled, CFITSIO defines a macro,
     # `TBYTE`, that has the same name as a mingw macro.  Let's rename all
@@ -37,6 +34,7 @@ options=(
     -DTESTS=OFF
     -DUSE_BZIP2=ON
     -DUSE_PTHREADS=ON
+    -DCMAKE_C_FLAGS=-DgFortran
 )
 
 if [[ ${target} == x86_64-* ]]; then
