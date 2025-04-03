@@ -17,10 +17,12 @@ export vim_cv_toupper_broken=no
 export vim_cv_terminfo=yes
 export vim_cv_tty_group=tty
 export vim_cv_getcwd_broken=no
-export vim_cv_stat_ignores_slash=yes  # Already set, but ensuring it’s correct
+export vim_cv_stat_ignores_slash=yes
 export vim_cv_tgetent=zero
-export vim_cv_timer_create=yes  # Assume timer_create is available without -lrt
-export vim_cv_memmove_handles_overlap=yes  # Assume memmove handles overlaps
+export vim_cv_timer_create=no
+export vim_cv_memmove_handles_overlap=no
+export vim_cv_bcopy_handles_overlap=no
+export vim_cv_memcpy_handles_overlap=no
 
 ./configure \
     --prefix=${prefix} \
@@ -50,10 +52,10 @@ products = [
 # Dependencies
 dependencies = [
     Dependency("Ncurses_jll"),
+    Dependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("libxcrypt_jll"),
 ]
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"6", clang_use_lld=false)
