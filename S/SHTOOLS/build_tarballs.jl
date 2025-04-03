@@ -49,7 +49,7 @@ products = [
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FFTW_jll"; compat="3.3.11"),
-    Dependency("OpenBLAS32_jll"; compat="0.3.29"),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
