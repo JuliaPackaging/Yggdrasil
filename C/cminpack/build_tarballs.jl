@@ -18,33 +18,32 @@ apk del cmake
 
 cd $WORKSPACE/srcdir/cminpack
 
-# Build single precision library
-mkdir build_s
-cmake -B build_s/ -S . \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DCMINPACK_PRECISION="s" \
-    -DBUILD_EXAMPLES=OFF \
-    -DBLA_VENDOR=libblastrampoline \
+options=(
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+    -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_SHARED_LIBS=ON
+    -DBUILD_EXAMPLES=OFF
+    -DBLA_VENDOR=libblastrampoline
     -DUSE_BLAS=ON
-cmake --build build_s/ --parallel ${nproc}
-cmake --install build_s/
+)
+
+if [[ ${target} == *-apple-* ]]; then
+    # cminpack calls Fortran functions without declaring them
+    options+=(
+        -DCMAKE_C_FLAGS=-Wno-error=implicit-function-declaration
+    )
+fi
+
+# Build single precision library
+cmake -B build_s -DCMINPACK_PRECISION="s" "${options[@]}"
+cmake --build build_s --parallel ${nproc}
+cmake --install build_s
 
 # Build double precision library
-mkdir build_d
-cmake -B build_d/ -S . \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DCMINPACK_PRECISION="d" \
-    -DBUILD_EXAMPLES=OFF \
-    -DBLA_VENDOR=libblastrampoline \
-    -DUSE_BLAS=ON
-cmake --build build_d/ --parallel ${nproc}
-cmake --install build_d/
+cmake -B build_d -DCMINPACK_PRECISION="d" "${options[@]}"
+cmake --build build_d --parallel ${nproc}
+cmake --install build_d
 
 install_license CopyrightMINPACK.txt
 """
