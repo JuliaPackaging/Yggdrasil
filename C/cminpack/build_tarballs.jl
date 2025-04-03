@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "cminpack"
-version = v"1.3.9"
+version = v"1.3.11"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/devernay/cminpack.git", "843a1a2a5cc7ec6c90d938687d3646bda2285254"),
+    GitSource("https://github.com/devernay/cminpack.git", "17dab75c6160d2ee42a3c95ea55e94738d7e559d"),
 ]
 
 # Bash recipe for building across all platforms
