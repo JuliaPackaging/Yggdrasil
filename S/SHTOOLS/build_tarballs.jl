@@ -48,7 +48,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("FFTW_jll"; compat="3.3.11"),
+    Dependency("FFTW_jll"),
     Dependency("OpenBLAS32_jll"),
 ]
 
