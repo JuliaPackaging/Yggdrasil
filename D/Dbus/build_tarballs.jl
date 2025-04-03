@@ -16,23 +16,32 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/dbus-*
+cd ${WORKSPACE}/srcdir/dbus-*
 
-meson setup builddir \
-    --buildtype=release \
-    --cross-file=${MESON_TARGET_TOOLCHAIN} \
-    --prefix=${prefix} \
-    -Ddbus_user=messagebus \
-    -Dsystem_pid_file=/var/run/dbus.pid \
-    -Dverbose_mode=false \
-    -Dinotify=auto \
-    -Dasserts=false \
-    -Duser_session=true \
-    -Dsession_socket_dir=/tmp \
-    -Dx11_autolaunch=disabled \
-    -Dmodular_tests=disabled \
-    -Dc_link_args=-lrt
+# -Dinotify=enabled ?
+options=(
+    --buildtype=release
+    --cross-file=${MESON_TARGET_TOOLCHAIN}
+    --prefix=${prefix}
+    -Ddbus_user=messagebus
+    -Dsystem_pid_file=/var/run/dbus.pid
+    -Dverbose_mode=false
+    -Dinotify=auto
+    -Dasserts=false
+    -Duser_session=true
+    -Dsession_socket_dir=/tmp
+    -Dx11_autolaunch=disabled
+    -Dmodular_tests=disabled
+    -Dc_link_args='-lrt'
+)
 
+if [[ ${target} == x86_64-*-freebsd* ]]; then
+    # The symbol `environ` is not provided by a shared library but by `crt1.o`, which is only loaded at run time.
+    # We thus cannot check for undefined references during linking.
+    options+=(-Db_lundef=false)
+fi
+
+meson setup builddir "${options[@]}"
 meson compile -C builddir
 meson install -C builddir
 """
@@ -53,4 +62,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
