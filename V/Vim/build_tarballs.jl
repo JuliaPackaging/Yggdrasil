@@ -20,9 +20,7 @@ export vim_cv_getcwd_broken=no
 export vim_cv_stat_ignores_slash=yes
 export vim_cv_tgetent=zero
 export vim_cv_timer_create=no
-export vim_cv_memmove_handles_overlap=no
-export vim_cv_bcopy_handles_overlap=no
-export vim_cv_memcpy_handles_overlap=no
+export vim_cv_memmove_handles_overlap=yes
 
 ./configure \
     --prefix=${prefix} \
