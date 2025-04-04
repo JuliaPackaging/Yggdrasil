@@ -1,4 +1,4 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder, BinaryBuilderBase, Pkg
 
 name = "Vim"
 version = v"9.1.0"  # Update this to match desired Vim version
@@ -6,11 +6,16 @@ version = v"9.1.0"  # Update this to match desired Vim version
 sources = [
     GitSource("https://github.com/vim/vim.git", 
               "b4ddc6c11e95cef4b372e239871fae1c8d4f72b6"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building Vim
 script = raw"""
 cd $WORKSPACE/srcdir/vim*/
+
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p0 ../patches/windows_build.patch
+fi
 
 # Set environment variables to help configure script during cross-compilation
 export vim_cv_toupper_broken=no
@@ -35,16 +40,27 @@ export vim_cv_memmove_handles_overlap=yes
     --disable-netbeans
 
 # Build and install
-make -j${nproc}
-make install
+if [[ "${target}" == *-mingw* ]]; then
+   cd src 
+   make -j${nproc} -f Make_ming.mak
+   cp *.exe ${bindir}
+   cd ..
+else
+   make -j${nproc}
+   make install
+fi
 """
 
 # Platforms to build for
-platforms = supported_platforms()
+platforms = filter!(p -> !Sys.iswindows(p), supported_platforms())
+platforms_windows = filter!(p -> Sys.iswindows(p), supported_platforms())
 
 # Products to be built
 products = [
     ExecutableProduct("vim", :vim),
+]
+products_windows = [
+    ExecutableProduct("gvim", :gvim),
 ]
 
 # Dependencies
@@ -55,5 +71,12 @@ dependencies = [
 ]
 
 # Build the tarballs
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+include("../../fancy_toys.jl")
+
+if any(should_build_platform.(triplet.(platforms_windows)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_windows, products_windows, dependencies; julia_compat="1.6")
+end
+
+if any(should_build_platform.(triplet.(platforms)))
+    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+end
