@@ -12,7 +12,8 @@ sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
                   "8b90c18b25f94319c5969796e63fea96f3f85d9eff41323f12e9964706935632"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+    DirectorySource("./bundled")
 ]
 
 script = raw"""
