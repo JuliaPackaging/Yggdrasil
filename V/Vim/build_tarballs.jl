@@ -51,8 +51,8 @@ products = [
 
 # Dependencies
 dependencies = [
+    HostBuildDependency("Gettext_jll"),
     Dependency("Ncurses_jll"),
-    Dependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
 ]
 
