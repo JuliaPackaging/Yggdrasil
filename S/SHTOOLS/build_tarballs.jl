@@ -14,8 +14,9 @@ script = raw"""
 cd $WORKSPACE/srcdir/SHTOOLS
 
 # Build and install static libraries
-make fortran -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
-make fortran-mp -j${nproc} F95FLAGS="-fPIC -O3 -std=gnu"
+# The Makefile has a bug: we cannot build in parallel
+make fortran -j1 F95FLAGS="-fPIC -O3 -std=gnu"
+make fortran-mp -j1 F95FLAGS="-fPIC -O3 -std=gnu"
 make install PREFIX=${prefix}
 
 # Create shared libraries
@@ -48,7 +49,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("FFTW_jll"; compat="3.3.11"),
+    Dependency("FFTW_jll"),
     Dependency("OpenBLAS32_jll"),
 ]
 
