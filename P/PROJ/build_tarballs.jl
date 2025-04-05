@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 name = "PROJ"
 upstream_version = v"9.6.0"
-version_offset = v"3.0.0"
+version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
