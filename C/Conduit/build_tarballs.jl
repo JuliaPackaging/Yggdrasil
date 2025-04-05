@@ -32,13 +32,18 @@ options=(
     -DENABLE_COVERAGE=OFF
     -DENABLE_PYTHON=OFF
     -DENABLE_FORTRAN=OFF
-    -DENABLE_MPI=ON
     -DENABLE_OPENMP=ON
     -DCONDUIT_ENABLE_TESTS=OFF
     -DHDF5_DIR=${prefix}
     -DZFP_DIR=${prefix}
     -DZLIB_DIR=${prefix}
 )
+if [[ ${target} == i686*-mingw* ]]; then
+    # Conduit has build errors with MicrosoftMPI on 32-bit Intel, disable it
+    options+=(-DENABLE_MPI=OFF)
+else
+    options+=(-DENABLE_MPI=ON)
+fi
 
 cmake -Bbuild "${options[@]}" src
 cmake --build build --parallel ${nproc}
