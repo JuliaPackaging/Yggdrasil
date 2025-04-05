@@ -23,7 +23,8 @@ cp $WORKSPACE/srcdir/tsl/* tsl/
 
 cmake .
 make satsuma
-install satsuma $WORKSPACE/bin
+install satsuma $bindir
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
