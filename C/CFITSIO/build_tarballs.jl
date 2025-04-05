@@ -43,7 +43,7 @@ if [[ ${target} == x86_64-* ]]; then
     )
 fi
 
-cmake -Bbuilddir "${options[@]}"
+cmake -B builddir "${options[@]}"
 cmake --build builddir -j ${nproc}
 cmake --install builddir
 install_license licenses/License.txt
