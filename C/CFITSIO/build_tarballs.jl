@@ -26,7 +26,6 @@ fi
 options=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_FIND_ROOT_PATH=${prefix}
-    -DCMAKE_SYSROOT=/opt/${target}/${target}/sys-root
     -DCMAKE_SYSTEM_LIBRARY_PATH=/opt/${target}/${target}/sys-root/usr/lib64/lp64d
     -DCMAKE_INSTALL_PREFIX=${prefix}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
