@@ -29,7 +29,8 @@ install_license LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(!Sys.iswindows, supported_platforms(; experimental=true))
+platforms = filter(!Sys.iswindows, supported_platforms(; experimental=true)) # windows has no boost
+platforms = filter(≠(Platform("x86_64","macOS")),platforms) # ld64.lld: error: undefined symbol: std::__1::__itoa::__u32toa(unsigned int, char*)
 
 # The products that we will ensure are always built
 products = [
