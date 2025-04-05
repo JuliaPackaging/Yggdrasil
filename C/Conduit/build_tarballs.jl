@@ -73,11 +73,17 @@ products = [
 # - Python
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
+    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
+               platforms=filter(!Sys.isbsd, platforms)),
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+               platforms=filter(Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="HDF5_jll"); compat="~1.14.6"),
     Dependency(PackageSpec(name="Zlib_jll"); compat="1.2.12"),
     Dependency(PackageSpec(name="zfp_jll"); compat="1.0.2"),
 ]
+append!(dependencies, platform_dependencies)
 
 # Don't look for `mpiwrapper.so` when BinaryBuilder examines and `dlopen`s the shared libraries.
 # (MPItrampoline will skip its automatic initialization.)
