@@ -17,9 +17,6 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/ssht
 
-# Do not expect `-lm` to work on all systems
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cmake_math_library.patch
-
 # Add missing declarations for certain complex long double functions.
 # These declarations seem to be missing from our system header files.
 # They should be in `<complex.h>` but they aren't.
@@ -34,6 +31,7 @@ cmake \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_SYSTEM_LIBRARY_PATH=/opt/${target}/${target}/sys-root/usr/lib64/lp64d \
     -DBUILD_TESTING=OFF \
     ..
 cmake --build . --parallel ${nproc}

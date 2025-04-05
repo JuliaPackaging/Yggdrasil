@@ -1,9 +1,0 @@
---- a/src/c/CMakeLists.txt
-+++ b/src/c/CMakeLists.txt
-@@ -1,5 +1,5 @@
- add_library(ssht STATIC ssht_adjoint.c ssht_core.c ssht_dl.c ssht_sampling.c)
--target_link_libraries(ssht PUBLIC FFTW3::FFTW3 ${MATH_LIBRARY})
-+target_link_libraries(ssht PUBLIC FFTW3::FFTW3)
- target_include_directories(
-     ssht
-     PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
