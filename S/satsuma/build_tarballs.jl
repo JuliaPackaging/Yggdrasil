@@ -21,8 +21,10 @@ done
 
 cp $WORKSPACE/srcdir/tsl/* tsl/
 
-cmake .
-make satsuma
+cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+# cmake --build build --parallel ${nproc} # this builds the wrong targets, namely dejavu
+# cmake --install build # this doesn't install anything
+make -B build satsuma
 install satsuma $bindir
 install_license LICENSE
 """
