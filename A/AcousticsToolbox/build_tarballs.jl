@@ -16,8 +16,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/at
 rm -rf ../__MACOSX
-perl -p -i -e 's/^export FFLAGS.*$/export FFLAGS=-Bstatic -Waliasing -Wampersand -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -std=gnu  -O1 -funroll-all-loops -fomit-frame-pointer/;' Makefile
-find . -name *.exe -exec rm {} \;
+perl -p -i -e 's/^export FFLAGS=.*apple.*$/export FFLAGS= -Bstatic -Waliasing -Wampersand -Wintrinsics-std -Wno-tabs -Wintrinsic-shadow -Wline-truncation -std=gnu -O1 -funroll-all-loops -fomit-frame-pointer/;' Makefile
+make clean
 make
 mkdir -p $bindir
 find . -name *.exe -exec cp {} $bindir \;
