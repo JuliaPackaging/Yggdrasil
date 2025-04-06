@@ -75,7 +75,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built.
 dependencies = [
-    Dependency("OpenBLAS_jll")
+    # We need either an older OpenBLAS or a newer GCC for PowerPC, because newer versions of
+    # OpenBLAS require libgfortran5 (gcc >= 8).  For the time let's go with older OpenBLAS.
+    Dependency("OpenBLAS_jll", v"0.3.28")
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")
