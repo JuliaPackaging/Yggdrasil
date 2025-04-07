@@ -3,15 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.24.0"
+version = v"0.24.2"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "1177d283954facd3d1c40ff1ea59929549045c12"),
+    GitSource("https://github.com/ml-explore/mlx.git", "86389bf9707f46101af45d90510e8e97c8a90b93"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/70/dd/7214d21a1f467d482dbe8b71f80bca6b47465be732f2752f31bd25799b8a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "46f8acf48cb639ba72321c42a2851ee7a0d5acb00a980e1b58d7a20178627731"; filename = "mlx-aarch64-apple-darwin20.whl"),
-    DirectorySource("./bundled"),
+    FileSource("https://files.pythonhosted.org/packages/20/21/6676f287859b18e794a3db262a7c2e71b3bf06d7a067408cbc5e93eee0aa/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "1359bae501e4afd378e921d99db1f8307de9084b34eefb1ade2dfef27b92755a"; filename = "mlx-aarch64-apple-darwin20.whl"),
 ]
 
 script = raw"""
@@ -24,10 +23,6 @@ if [[ "$target" == *-apple-darwin* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/mlx
-
-atomic_patch -p1 ../patches/mpi-crosscompile.patch
-atomic_patch -p1 ../patches/nbits32.patch
-atomic_patch -p1 ../patches/ring-freebsd.patch
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
@@ -108,5 +103,5 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.9",
-    preferred_gcc_version = v"10", # C++-17, with std::reduce, required
+    preferred_gcc_version = v"11", # v10: C++-17, with std::reduce, required, v11: ICE on v10 for mlx/3rdparty/pocketfft.h:1253:37: internal compiler error
 )
