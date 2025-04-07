@@ -194,7 +194,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("armadillo_jll"; compat="12.4.1"),
+    Dependency("armadillo_jll"; compat="14.4.1"),
     Dependency("OpenBLAS_jll"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
