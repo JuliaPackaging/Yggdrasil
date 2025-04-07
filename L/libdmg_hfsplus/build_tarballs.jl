@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libdmg_hfsplus"
-version = v"0.1.0"
+version = v"0.0.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -12,25 +12,47 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir -p /tmp/libdmg-build
-cd /tmp/libdmg-build
-cmake /workspace/srcdir/libdmg-hfsplus   -DZLIB_INCLUDE_DIR=$WORKSPACE/destdir/include   -DZLIB_LIBRARY=$WORKSPACE/destdir/lib/libz.so   -DBZIP2_INCLUDE_DIR=$WORKSPACE/destdir/include   -DBZIP2_LIBRARIES=$WORKSPACE/destdir/lib/libbz2.so   -DLIBLZMA_INCLUDE_DIR=$WORKSPACE/destdir/include   -DLIBLZMA_LIBRARY=$WORKSPACE/destdir/lib/liblzma.so   -DOPENSSL_INCLUDE_DIR=$WORKSPACE/destdir/include   -DOPENSSL_CRYPTO_LIBRARY=$WORKSPACE/destdir/lib/libcrypto.so   -DWITH_LZFSE=OFF
-make
-install -Dvm 755 "/tmp/libdmg-build/dmg/dmg${exeext}" "${bindir}/dmg${exeext}"
-cd /workspace/srcdir/libdmg-hfsplus/
-install_license LICENSE 
+
+    cd $WORKSPACE/srcdir/libdmg-hfsplus
+
+    cmake -B build \
+        -DCMAKE_INSTALL_PREFIX=${prefix} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DZLIB_INCLUDE_DIR=$WORKSPACE/destdir/include \
+        -DZLIB_LIBRARY="$WORKSPACE/destdir/lib/libz.${dlext}" \
+        -DBZIP2_INCLUDE_DIR=$WORKSPACE/destdir/include  \
+        -DBZIP2_LIBRARIES="$WORKSPACE/destdir/lib/libbz2.${dlext}" \
+        -DLIBLZMA_INCLUDE_DIR=$WORKSPACE/destdir/include \
+        -DLIBLZMA_LIBRARY="$WORKSPACE/destdir/lib/liblzma.${dlext}" \
+        -DOPENSSL_INCLUDE_DIR=$WORKSPACE/destdir/include \
+        -DOPENSSL_CRYPTO_LIBRARY="$WORKSPACE/destdir/lib/libcrypto.${dlext}"  
+
+    cmake --build build --parallel ${nproc}
+
+    install -Dvm 755 "build/dmg/dmg${exeext}" "${bindir}/dmg${exeext}"
+    install -Dvm 755 "build/hdutil/hdutil${exeext}" "${bindir}/hdutil${exeext}"
+    install -Dvm 755 "build/hfs/hfsplus${exeext}" "${bindir}/hfsplus${exeext}"
+    install_license LICENSE 
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("aarch64", "linux"; libc = "glibc"),
+    Platform("x86_64", "linux"; libc = "musl"),
+    Platform("aarch64", "linux"; libc = "musl"),
+    Platform("x86_64", "macos"),
+    Platform("aarch64", "macos"),
 ]
 
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("dmg", :dmg)
+    ExecutableProduct("hdutil", :hdutil)
+    ExecutableProduct("hfsplus", :hfsplus)
 ]
 
 # Dependencies that must be installed before this package can be built
