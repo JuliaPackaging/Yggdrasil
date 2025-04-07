@@ -13,6 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 # GCC >=11 is necessary because the source code uses the two-argument version
 # of the attribute malloc, see https://github.com/mattsignorelli/gtpsa/blob/394a20847b869a842c6a89f2af1a889c3a1c2813/code/mad_mem.h#L73-L75 (also unsupported by clang)
+# Furthermore, GCC >= 12.1 is also required because 11.1.0 throws an internal compiler error
+# when trying to compile GTPSA_jll  >= v1.6.1
 script = raw"""
 cd $WORKSPACE/srcdir
 cd gtpsa/
