@@ -21,7 +21,7 @@ export PATH="$CARGO_HOME/bin:$PATH"
 
 cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 cargo install cargo-c --target ${rust_host}
-cargo cinstall --destdir=${sysroot} --prefix${prefix} --libdir=${libdir}
+cargo cinstall --destdir=${sysroot} --prefix=${prefix} --libdir=${libdir}
 install_license ./COPYRIGHT
 """
 
