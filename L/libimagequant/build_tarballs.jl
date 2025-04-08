@@ -23,7 +23,7 @@ cd $WORKSPACE/srcdir/libimagequant/imagequant-sys
 
 # cargo-c 0.10.12 requires rust 1.84 which is not yet supported on Yggdrasil
 # also, avoid the compiler wrappers by modifying the path to compile cargo-c for the host, not the target
-RUSTC="/opt/bin/${rust_host}/${rust_host}-rustc" CARGO_BUILD_TARGET=${rust_host} cargo install cargo-c --version 0.10.11
+CARGO_BUILD_TARGET=${rust_host} cargo install cargo-c --version 0.10.11
 cargo cinstall --destdir=${sysroot} --prefix=${prefix} --libdir=${libdir}
 install_license ./COPYRIGHT
 """
