@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p build && cd build
 export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
-cmake -S ../zenoh-c -B .\ 
+cmake -S ../zenoh-c -B . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
