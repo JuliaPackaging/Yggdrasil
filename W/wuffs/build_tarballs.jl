@@ -24,6 +24,9 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# The build system (#ifdefs) in the source code does not handle our Windows setup
+filter!(!Sys.iswindows, platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libwuffs", :libwuffs)
