@@ -20,8 +20,7 @@ cmake -S ../zenoh-c -B . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DZENOHC_CUSTOM_TARGET=${rust_target} \
-    -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE
+    -DZENOHC_CUSTOM_TARGET=${rust_target}
 cmake --build . --target install --config Release --parallel ${nproc}
 """
 
@@ -43,4 +42,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", 
-    compilers = [:rust, :c], preferred_gcc_version = v"14.2.0")
+    compilers = [:rust, :c], preferred_gcc_version = v"14.2.0", lock_microarchitecture=false)
