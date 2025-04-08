@@ -16,17 +16,20 @@ script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p build && cd build
 export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
-cmake ../zenoh-c -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DZENOHC_CUSTOM_TARGET=${rust_target} -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE
-cmake --build . --target install --config Release
-exit
+cmake -S ../zenoh-c -B .\ 
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DZENOHC_CUSTOM_TARGET=${rust_target} \
+    -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE
+cmake --build . --target install --config Release --parallel ${nproc}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc")
-    Platform("aarch64", "linux"; libc = "glibc")
-]
+platforms = supported_platforms()
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
 
 
 # The products that we will ensure are always built
