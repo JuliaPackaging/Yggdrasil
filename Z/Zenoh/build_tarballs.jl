@@ -11,19 +11,22 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
+# sets up the host compiler for use by the ring native compilation path
 script = raw"""
 cd $WORKSPACE/srcdir
 mkdir -p build && cd build
-cmake ../zenoh-c -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DZENOHC_CUSTOM_TARGET=${CARGO_BUILD_TARGET} -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE
+export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
+cmake ../zenoh-c -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DZENOHC_CUSTOM_TARGET=${rust_target} -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE
 cmake --build . --target install --config Release
 exit
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-# Rust toolchain for i686 Windows is unusable
-filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+platforms = [
+    Platform("x86_64", "linux"; libc = "glibc")
+    Platform("aarch64", "linux"; libc = "glibc")
+]
 
 
 # The products that we will ensure are always built
