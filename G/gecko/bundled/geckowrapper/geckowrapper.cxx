@@ -27,7 +27,10 @@ namespace jlcxx
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& gecko)
 {
-    gecko.add_type<Gecko::WeightedValue>("WeightedValue");
+    auto wv_type =  gecko.add_type<Gecko::WeightedValue>("WeightedValue");
+    wv_type.constructor<Gecko::Float, Gecko::Float>();
+    auto ws_type = gecko.add_type<Gecko::WeightedSum>("WeightedSum", jlcxx::julia_base_type<Gecko::WeightedValue>());
+    ws_type.constructor<Gecko::Float, Gecko::Float>();
 
     auto arc_type = gecko.add_type<Gecko::Arc>("Arc");
 
