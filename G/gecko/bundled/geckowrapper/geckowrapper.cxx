@@ -98,8 +98,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& gecko)
     progress_type.method("beginorder", [](const Gecko::Progress* a, const Gecko::Graph* s, Gecko::Float c)-> void {return a->beginorder(s, c); } );
     progress_type.method("endorder", [](const Gecko::Progress& a, const Gecko::Graph* s, Gecko::Float c)-> void {return a.endorder(s, c); } );
     progress_type.method("endorder", [](const Gecko::Progress* a, const Gecko::Graph* s, Gecko::Float c)-> void {return a->endorder(s, c); } );
-    progress_type.method("beginiter", [](const Gecko::Progress& a, const Gecko::Graph* s, uint c, uint c2, uint c3)-> void {return a.beginiter(s, c, c2, c3); } );
-    progress_type.method("beginiter", [](const Gecko::Progress* a, const Gecko::Graph* s, uint c, uint c2, uint c3)-> void {return a->beginiter(s, c, c2, c3); } );
+    progress_type.method("beginiter", [](const Gecko::Progress& a, const Gecko::Graph* s, Gecko::uint c, Gecko::uint c2, Gecko::uint c3)-> void {return a.beginiter(s, c, c2, c3); } );
+    progress_type.method("beginiter", [](const Gecko::Progress* a, const Gecko::Graph* s, Gecko::uint c, Gecko::uint c2, Gecko::uint c3)-> void {return a->beginiter(s, c, c2, c3); } );
     progress_type.method("enditer", [](const Gecko::Progress& a, const Gecko::Graph* s, Gecko::Float c, Gecko::Float c2)-> void {return a.enditer(s, c, c2); } );
     progress_type.method("enditer", [](const Gecko::Progress* a, const Gecko::Graph* s, Gecko::Float c, Gecko::Float c2)-> void {return a->enditer(s, c, c2); } );
     progress_type.method("beginphase", [](const Gecko::Progress& a, const Gecko::Graph* s, std::string c)-> void {return a.beginphase(s, c); } );
