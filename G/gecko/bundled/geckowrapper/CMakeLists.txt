@@ -19,7 +19,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${INTERFACE_INCLUDE_DIRECTORIES})
 
 add_library(geckowrapper SHARED geckowrapper.cxx)
-target_link_libraries(geckowrapper JlCxx::cxxwrap_julia ${GECKO_LIBRARY})
+target_link_libraries(geckowrapper JlCxx::cxxwrap_julia JlCxx::cxxwrap_julia_stl ${GECKO_LIBRARY})
 
 install(TARGETS
     geckowrapper
