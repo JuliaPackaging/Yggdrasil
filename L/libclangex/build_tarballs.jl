@@ -33,12 +33,10 @@ fi
 
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-     -DCMAKE_CROSSCOMPILING:BOOL=ON \
      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
      -DBUILD_SHARED_LIBS=ON \
      -DLLVM_DIR=${prefix}/lib/cmake/llvm \
-     -DClang_DIR=${prefix}/lib/cmake/clang \
-     -DCMAKE_BUILD_TYPE=Release
+     -DClang_DIR=${prefix}/lib/cmake/clang
 make -j${nproc}
 make install
 install_license ../COPYRIGHT ../LICENSE-APACHE ../LICENSE-MIT
@@ -78,11 +76,8 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
     filter!(p -> arch(p) != "riscv64", platforms)
     # disable aarch64 freebsd
     filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
-    if llvm_version >= v"15"
-        # We don't build LLVM 15 for i686-linux-musl.
-        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-    end
+    # disable i686-linux-musl
+    filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
     for platform in platforms
         augmented_platform = deepcopy(platform)
