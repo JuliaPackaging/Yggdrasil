@@ -1,6 +1,8 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+ENV["JULIA_SSL_NO_VERIFY_HOSTS"] = "github.com"
+
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
@@ -9,7 +11,8 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.26"
 
 sources = [
-  GitSource(repo, "4761cce5187023e52f2a3b81cedfffd63683cecb"),
+#   GitSource(repo, "d0c1b261200a83f8b170c581608a446a4c483ceb"),
+  DirectorySource(@__DIR__),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
