@@ -13,6 +13,15 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
+
 cd $WORKSPACE/srcdir/aws-c-io
 
 # Patch for MinGW toolchain
@@ -26,8 +35,6 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
 sed -i -e 's/Secur32/secur32/g' -e 's/Crypt32/crypt32/g' CMakeLists.txt
 # MinGW is missing some macros in sspi.h
 atomic_patch -p1 ../patches/win32_sspi_h_missing_macros.patch
-# fix macos frameworks
-atomic_patch -p1 ../patches/fix-macos-frameworks.patch
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
