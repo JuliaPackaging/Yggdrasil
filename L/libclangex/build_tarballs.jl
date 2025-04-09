@@ -109,7 +109,7 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, script,
                    build.platforms, build.products, build.dependencies;
-                   preferred_gcc_version=v"12", julia_compat="1.7",
+                   preferred_gcc_version=v"12", julia_compat="1.12",
                    augment_platform_block, lazy_artifacts=true)
 end
 
