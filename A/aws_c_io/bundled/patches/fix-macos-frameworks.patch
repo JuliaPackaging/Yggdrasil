@@ -1,24 +1,14 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1234567..abcdefg 100644
+index 403bbf6..72bfcc0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -123,7 +123,11 @@ elseif (APPLE)
-
-     find_library(SECURITY_LIB Security)
-     find_library(NETWORK_LIB Network)
-
+@@ -106,7 +106,8 @@ elseif (APPLE)
+ 
      # Enable dispatch queue if the libraries are avaliable
--    if (NETWORK_LIB AND SECURITY_LIB)
+     if (NETWORK_LIB AND SECURITY_LIB)
 -        list(APPEND PLATFORM_LIBS "-framework Security -framework Network")
--        list(APPEND EVENT_LOOP_DEFINES "DISPATCH_QUEUE")
--    endif ()
-+    if (NETWORK_LIB AND SECURITY_LIB)
-+        # Fix: Split -framework flags into separate list elements for correct expansion
 +        list(APPEND PLATFORM_LIBS "-framework" "Security")
 +        list(APPEND PLATFORM_LIBS "-framework" "Network")
-+        list(APPEND EVENT_LOOP_DEFINES "DISPATCH_QUEUE")
-+    endif ()
-
-     # Enable KQUEUE on MacOS only if AWS_USE_SECITEM is not declared. SecItem requires Dispatch Queue.
-     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND NOT DEFINED AWS_USE_SECITEM)
-         list(APPEND EVENT_LOOP_DEFINES "KQUEUE")
+         list(APPEND EVENT_LOOP_DEFINES "DISPATCH_QUEUE")
+     endif ()
+ 
