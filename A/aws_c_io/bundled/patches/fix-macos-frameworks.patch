@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 403bbf6..72bfcc0 100644
+index 403bbf6..04da23e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -106,7 +106,8 @@ elseif (APPLE)
@@ -7,8 +7,8 @@ index 403bbf6..72bfcc0 100644
      # Enable dispatch queue if the libraries are avaliable
      if (NETWORK_LIB AND SECURITY_LIB)
 -        list(APPEND PLATFORM_LIBS "-framework Security -framework Network")
-+        list(APPEND PLATFORM_LIBS "-framework" "Security")
-+        list(APPEND PLATFORM_LIBS "-framework" "Network")
++        list(APPEND PLATFORM_LIBS ${SECURITY_LIB})
++        list(APPEND PLATFORM_LIBS ${NETWORK_LIB})
          list(APPEND EVENT_LOOP_DEFINES "DISPATCH_QUEUE")
      endif ()
  
