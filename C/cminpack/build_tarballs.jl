@@ -50,6 +50,13 @@ install_license CopyrightMINPACK.txt
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# OpenBLAS 0.3.29 doesn't support GCC < v11 on powerpc64le:
+# <https://github.com/OpenMathLib/OpenBLAS/issues/5068#issuecomment-2585836284>.
+# Also, OpenBLAS <0.3.29 does not support riscv64.
+# To address this we need expand gfortran versions.
+platforms = expand_gfortran_versions(platforms)
+filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcminpack", :libcminpack),
@@ -58,9 +65,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS32_jll"),
+    Dependency("OpenBLAS32_jll"), # ; compat="0.3.27"),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# We need at least GCC 5 for OpenBLAS32's `memcpy` calls on x86_64
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"5")
