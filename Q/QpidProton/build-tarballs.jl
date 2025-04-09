@@ -50,6 +50,9 @@ dependencies = [
     Dependency(
         PackageSpec(name = "OpenSSL_jll", uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95")
     ),
+    Dependency(
+        PackageSpec(name = "CyrusSASL_jll", uuid = "6422fedd-75a7-50c2-a7c3-a11dad25a896")
+    ),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
