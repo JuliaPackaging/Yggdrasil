@@ -4,6 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "cminpack"
 version = v"1.3.11"
+# We bumped the version number because we changed the dependencies
+ygg_version = v"1.3.12"
 
 # Collection of sources required to complete build
 sources = [
@@ -12,10 +14,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-# We need a newer version of CMake to support libblastrampoline
-apk del cmake
-
 cd $WORKSPACE/srcdir/cminpack
 
 options=(
@@ -24,7 +22,7 @@ options=(
     -DCMAKE_BUILD_TYPE=Release
     -DBUILD_SHARED_LIBS=ON
     -DBUILD_EXAMPLES=OFF
-    -DBLA_VENDOR=libblastrampoline
+    -DBLA_VENDOR=OpenBLAS
     -DUSE_BLAS=ON
 )
 
@@ -60,12 +58,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libblastrampoline_jll"; compat="5.4"),
-    # We need at least 3.29 (Ygg version), or 3.30 upstream version
-    # for LBT support, so always pull the most recent CMake version.
-    HostBuildDependency(PackageSpec(; name="CMake_jll")),
+    Dependency("OpenBLAS32_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.9")
+               julia_compat="1.6")
