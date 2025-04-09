@@ -26,6 +26,8 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
 sed -i -e 's/Secur32/secur32/g' -e 's/Crypt32/crypt32/g' CMakeLists.txt
 # MinGW is missing some macros in sspi.h
 atomic_patch -p1 ../patches/win32_sspi_h_missing_macros.patch
+# fix macos frameworks
+atomic_patch -p1 ../patches/fix-macos-frameworks.patch
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
