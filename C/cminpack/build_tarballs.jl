@@ -52,8 +52,8 @@ platforms = supported_platforms()
 
 # OpenBLAS 0.3.29 doesn't support GCC < v11 on powerpc64le:
 # <https://github.com/OpenMathLib/OpenBLAS/issues/5068#issuecomment-2585836284>.
-# Also, OpenBLAS <0.3.29 does not support riscv64.
-# To address this we need expand gfortran versions.
+# Also, we did not build OpenBLAS <0.3.29 for riscv64.
+# To address this we need expand gfortran versions so that we can filter on them.
 platforms = expand_gfortran_versions(platforms)
 filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
 
@@ -65,7 +65,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS32_jll"), # ; compat="0.3.27"),
+    Dependency("OpenBLAS32_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
