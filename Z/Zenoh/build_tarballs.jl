@@ -29,7 +29,11 @@ cmake --build . --target install --config Release --parallel ${nproc}
 platforms = supported_platforms()
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-
+# Rust toolchain seems to not be available for RISC-V or FreeBSD/aarch64
+filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> os(p) != "freebsd" || arch(p) != "aarch64", platforms)
+# cdylib isn't available on musl
+filter!(p -> !(os(p) == "linux" && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = Product[
@@ -41,5 +45,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",
     compilers = [:rust, :c], preferred_gcc_version = v"14.2.0", lock_microarchitecture=false)
