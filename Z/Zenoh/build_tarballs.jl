@@ -14,6 +14,8 @@ sources = [
 # sets up the host compiler for use by the ring native compilation path
 script = raw"""
 cd $WORKSPACE/srcdir
+install_license LICENSE
+
 mkdir -p build && cd build
 export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
 cmake -S ../zenoh-c -B . \
