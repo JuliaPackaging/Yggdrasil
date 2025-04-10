@@ -29,11 +29,12 @@ cmake --build . --target install --config Release --parallel ${nproc}
 platforms = supported_platforms()
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-# Rust toolchain seems to not be available for RISC-V or FreeBSD/aarch64
+# Rust toolchain is not be available for RISC-V
 filter!(p -> arch(p) != "riscv64", platforms)
-filter!(p -> os(p) != "freebsd" || arch(p) != "aarch64", platforms)
-# cdylib isn't available on musl
+# cdylib isn't available on musl (`dropping unsupported crate type 'cdylib')
 filter!(p -> !(os(p) == "linux" && libc(p) == "musl"), platforms)
+# zenoh doesn't support FreeBSD (missing `set_bind_to_device_tcp_socket` in `zenoh_util::net`)
+filter!(p -> os(p) != "freebsd", platforms)
 
 # The products that we will ensure are always built
 products = Product[
