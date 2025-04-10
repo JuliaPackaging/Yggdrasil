@@ -13,12 +13,12 @@ sources = [
 # Bash recipe for building across all platforms
 # sets up the host compiler for use by the ring native compilation path
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/zenoh-c
 install_license LICENSE
 
 mkdir -p build && cd build
 export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
-cmake -S ../zenoh-c -B . \
+cmake -S .. -B . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
