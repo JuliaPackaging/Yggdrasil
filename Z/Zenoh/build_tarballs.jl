@@ -44,9 +44,9 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",
-    compilers = [:rust, :c], preferred_gcc_version = v"14.2.0", lock_microarchitecture=false)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat = "1.6", compilers = [:rust, :c],
+               preferred_gcc_version = v"14.2.0", lock_microarchitecture = false)
