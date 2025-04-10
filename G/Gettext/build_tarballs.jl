@@ -2,11 +2,12 @@ using BinaryBuilder
 
 # Collection of sources required to build Gettext
 name = "Gettext"
-version = v"0.21.0"
+version_string = "0.21.1"
+version = VersionNumber(version_string)
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
-                  "d20fcbb537e02dcf1383197ba05bd0734ef7bf5db06bdb241eb69b7d16b73192"),
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
+                  "50dbc8f39797950aa2c98e939947c527e5ac9ebd2c1b99dd7b06ba33a6767ae6"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,8 +16,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/gettext-*/
 
 export CFLAGS="-O2"
-export CPPFLAGS="-I${includedir}"
-export LDFLAGS="-L${libdir}"
 
 if [[ "${target}" == *-mingw* ]]; then
     # Apply patch from https://lists.gnu.org/archive/html/bug-gettext/2020-07/msg00035.html
@@ -39,7 +38,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
@@ -49,9 +48,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    Dependency("Libiconv_jll"),
-    Dependency("XML2_jll"),
+    Dependency("Libiconv_jll"; compat="1.16.1"),
+    Dependency("XML2_jll"; compat="2.12.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"6")
