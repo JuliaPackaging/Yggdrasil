@@ -16,8 +16,14 @@ script = raw"""
 cd $WORKSPACE/srcdir/zenoh-c
 install_license LICENSE
 
-mkdir -p build && cd build
 export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
+
+# needed to build dylibs on musl
+if [[ "${target}" == *-musl* ]]; then
+    export RUSTFLAGS="-C target-feature=-crt-static"
+fi
+
+mkdir -p build && cd build
 cmake -S .. -B . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -31,10 +37,8 @@ cmake --build . --target install --config Release --parallel ${nproc}
 platforms = supported_platforms()
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
-# Rust toolchain is not be available for RISC-V
+# Rust toolchain is not available for RISC-V
 filter!(p -> arch(p) != "riscv64", platforms)
-# cdylib isn't available on musl (`dropping unsupported crate type 'cdylib')
-filter!(p -> !(os(p) == "linux" && libc(p) == "musl"), platforms)
 # zenoh doesn't support FreeBSD (missing `set_bind_to_device_tcp_socket` in `zenoh_util::net`)
 filter!(p -> os(p) != "freebsd", platforms)
 
