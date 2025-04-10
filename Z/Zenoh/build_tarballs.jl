@@ -12,11 +12,11 @@ sources = [
 ]
 
 # Bash recipe for building across all platforms
-# sets up the host compiler for use by the ring native compilation path
 script = raw"""
 cd $WORKSPACE/srcdir/zenoh-c
 install_license LICENSE
 
+# set up the host compiler for use by the ring native compilation path
 export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
 
 # needed to build dylibs on musl
@@ -24,12 +24,17 @@ if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="-C target-feature=-crt-static"
 fi
 
+# update static_init_macro to support cross-compilation
+cargo update -p static_init_macro
+cargo update -p static_init_macro --manifest-path build-resources/opaque-types/Cargo.toml
+
 mkdir -p build && cd build
 cmake -S .. -B . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DZENOHC_CUSTOM_TARGET=${rust_target}
+    -DZENOHC_CUSTOM_TARGET=${rust_target} \
+    -DZENOHC_BUILD_WITH_SHARED_MEMORY=TRUE
 cmake --build . --target install --config Release --parallel ${nproc}
 """
 
