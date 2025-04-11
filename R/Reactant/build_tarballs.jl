@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.120"
+version = v"0.0.135"
 
 sources = [
-  GitSource(repo, "af6f816188d184e04195f1c0f18127ad5be305f6"),
+  GitSource(repo, "4b6ad22c48376350642e80d020148bf2c1ef24d4"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -132,6 +132,8 @@ if [[ "${target}" == *-darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
     # BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
+    # `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
+    BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
     BAZEL_BUILD_FLAGS+=(--define HAVE_LINK_H=0)
     export MACOSX_DEPLOYMENT_TARGET=11.3
     BAZEL_BUILD_FLAGS+=(--macos_minimum_os=${MACOSX_DEPLOYMENT_TARGET})
@@ -193,6 +195,7 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
 
         BAZEL_BUILD_FLAGS+=(
             --action_env=CLANG_CUDA_COMPILER_PATH=$(which clang)
+            --define=using_clang=true
             --repo_env=CUDA_REDIST_TARGET_PLATFORM="aarch64"
             --linkopt="-L${prefix}/libcxx/lib"
         )
