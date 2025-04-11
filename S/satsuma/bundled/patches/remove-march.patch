@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 58b3641..51a9efe 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -16,7 +16,7 @@ FetchContent_MakeAvailable(dejavu)
+ 
+ add_compile_options("-O3")
+ add_compile_options("-Wall")
+-add_compile_options("-march=native")
++# add_compile_options("-march=native")
+ # add_definitions(-g)
+ add_definitions(-DNDEBUG)
+ 
