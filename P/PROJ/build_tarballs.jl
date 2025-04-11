@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 using BinaryBuilderBase: get_addable_spec
 name = "PROJ"
-upstream_version = v"9.5.1"
+upstream_version = v"9.6.0"
 version_offset = v"2.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
@@ -12,7 +12,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://download.osgeo.org/proj/proj-$upstream_version.tar.gz",
-        "a8395f9696338ffd46b0feb603edbb730fad6746fba77753c77f7f997345e3d3")
+                  "d8cae521c311c39513193657e75767f7cfbf2f91bd202fcd4a200028d3b57e14")
 ]
 
 # Bash recipe for building across all platforms
@@ -93,15 +93,11 @@ products = [
 dependencies = [
     # Host SQLite needed to build proj.db
     HostBuildDependency("SQLite_jll")
-    Dependency("SQLite_jll")
+    Dependency("SQLite_jll"; compat="3.48.0")
     Dependency("Libtiff_jll"; compat="4.7.1")
     Dependency("LibCURL_jll"; compat="7.73,8")
-    # Indirect dependency, but we need to force the use of this build number
-    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15", platforms=filter(p -> !(Sys.iswindows(p) || Sys.isapple(p)), platforms)) 
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
-
-# Build trigger: 1
+               julia_compat="1.6", preferred_gcc_version=v"9")
