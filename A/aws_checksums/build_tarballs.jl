@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "aws_checksums"
 
-version = v"0.2.6"
+version = v"0.2.7"
 
 # Collection of sources required to complete build
 sources = [
