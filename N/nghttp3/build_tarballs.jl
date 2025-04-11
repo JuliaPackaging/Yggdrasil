@@ -3,6 +3,7 @@ using BinaryBuilderBase: sanitize
 
 name = "nghttp3"
 version = v"1.8.0"
+llvm_version = v"13.0.1"
 
 sources = [
     GitSource("https://github.com/ngtcp2/nghttp3.git",
