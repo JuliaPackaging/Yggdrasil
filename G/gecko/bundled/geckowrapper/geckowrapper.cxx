@@ -1,8 +1,85 @@
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/stl.hpp"
+#include "jlcxx/functions.hpp"
 #include <gecko.h>
 #include <gecko/graph.h>
 #include <gecko/progress.h>
+
+// Can we automate this process here in WrapIt? We are essentially emulating C++ v-table behavior manually.
+class JuliaProgressWrapper final : public Gecko::Progress {
+private:
+    jl_value_t*    data;
+    jl_function_t* fbeginorder;
+    jl_function_t* fendorder;
+    jl_function_t* fbeginiter;
+    jl_function_t* fenditer;
+    jl_function_t* fbeginphase;
+    jl_function_t* fendphase;
+    jl_function_t* fquit;
+
+public:
+    JuliaProgressWrapper( jl_value_t*    data_
+                        , jl_function_t* fbeginorder_
+                        , jl_function_t* fendorder_
+                        , jl_function_t* fbeginiter_
+                        , jl_function_t* fenditer_
+                        , jl_function_t* fbeginphase_
+                        , jl_function_t* fendphase_
+                        , jl_function_t* fquit_
+                    )
+    : data(data_)
+    , fbeginorder(fbeginorder_)
+    , fendorder(fendorder_)
+    , fbeginiter(fbeginiter_)
+    , fenditer(fenditer_)
+    , fbeginphase(fbeginphase_)
+    , fendphase(fendphase_)
+    , fquit(fquit_)
+    {}
+    void beginorder(const Gecko::Graph* graph, Gecko::Float cost) const {
+        if (this->fbeginorder != nullptr) {
+            jlcxx::JuliaFunction f(this->fbeginorder);
+            f(this->data, graph, cost);
+        }
+    }
+    void endorder(const Gecko::Graph* graph, Gecko::Float cost) const {
+        if (this->fendorder != nullptr) {
+            jlcxx::JuliaFunction f(this->fendorder);
+            f(this->data, graph, cost);
+        }
+    }
+    void beginiter(const Gecko::Graph* graph, Gecko::uint iter, Gecko::uint maxiter, Gecko::uint window) const {
+        if (this->fbeginiter != nullptr) {
+            jlcxx::JuliaFunction f(this->fbeginiter);
+            f(this->data, graph, iter, maxiter, window);
+        }
+    }
+    void enditer(const Gecko::Graph* graph, Gecko::Float mincost, Gecko::Float cost) const {
+        if (this->fenditer != nullptr) {
+            jlcxx::JuliaFunction f(this->fenditer);
+            f(this->data, graph, mincost, cost);
+        }
+    }
+    void beginphase(const Gecko::Graph* graph, std::string name) const {
+        if (this->fbeginphase != nullptr) {
+            jlcxx::JuliaFunction f(this->fbeginphase);
+            f(this->data, graph, name);
+        }
+    };
+    void endphase(const Gecko::Graph* graph, bool show) const {
+        if (this->fendphase != nullptr) {
+            jlcxx::JuliaFunction f(this->fendphase);
+            f(this->data, graph, show);
+        }
+    };
+    bool quit() const {
+        if (this->fquit != nullptr) {
+            jlcxx::JuliaFunction f(this->fquit);
+            return jlcxx::unbox<bool>(f(this->data));
+        }
+        return false;
+    }
+};
 
 namespace jlcxx
 {
@@ -17,6 +94,8 @@ namespace jlcxx
     template<> struct SuperType<Gecko::FunctionalArithmetic> { typedef Gecko::Functional type; };
     template<> struct SuperType<Gecko::FunctionalRMS> { typedef Gecko::Functional type; };
     template<> struct SuperType<Gecko::FunctionalMaximum> { typedef Gecko::Functional type; };
+
+    template<> struct SuperType<JuliaProgressWrapper> { typedef Gecko::Progress type; };
 }
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& gecko)
@@ -108,4 +187,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& gecko)
     progress_type.method("endphase", [](const Gecko::Progress* a, const Gecko::Graph* s, bool c)-> void {return a->endphase(s, c); } );
     progress_type.method("quit", [](const Gecko::Progress& a)-> bool {return a.quit(); } );
     progress_type.method("endorder", [](const Gecko::Progress* a)-> bool {return a->quit(); } );
+
+    auto jlprogress_type = gecko.add_type<JuliaProgressWrapper>("JuliaProgressWrapper", jlcxx::julia_base_type<Gecko::Progress>());
+    jlprogress_type.constructor<jl_value_t*, jl_function_t*, jl_function_t*, jl_function_t*, jl_function_t*, jl_function_t*, jl_function_t*, jl_function_t*>();
 }
