@@ -35,22 +35,30 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     # Collection of sources required to build LibCURL
     sources = [
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
-        ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-                      "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
         DirectorySource("../patches"),
     ]
+    if version >= v"8.13"
+        append!(sources, [
+            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+                          "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4")
+                ])
+        unpack_macosx_sdk = raw"""
+        if [[ "${target}" == x86_64-apple-darwin* ]]; then
+            export MACOSX_DEPLOYMENT_TARGET=10.13
+            pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+            rm -rf /opt/${target}/${target}/sys-root/System
+            cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+            cp -a System "/opt/${target}/${target}/sys-root/"
+            popd
+        fi
+        """
+    else
+        unpack_macosx_sdk = ""
+    end
+
 
     # Bash recipe for building across all platforms
-    script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * raw"""
-    if [[ "${target}" == x86_64-apple-darwin* ]]; then
-        export MACOSX_DEPLOYMENT_TARGET=10.13
-        pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
-        rm -rf /opt/${target}/${target}/sys-root/System
-        cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-        cp -a System "/opt/${target}/${target}/sys-root/"
-        popd
-    fi
-
+    script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * unpack_macosx_sdk * raw"""
     cd $WORKSPACE/srcdir/curl-*
 
     # Address <https://github.com/curl/curl/issues/12849>
