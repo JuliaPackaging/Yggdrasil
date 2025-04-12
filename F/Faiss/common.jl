@@ -11,6 +11,9 @@ apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 cd faiss
 
 atomic_patch -p1 ../patches/faiss-install-faiss_c.patch
+atomic_patch -p1 ../patches/faiss-mingw32-cmake.patch
+atomic_patch -p1 ../patches/faiss-mingw32-InvertedListsIOHook.patch
+atomic_patch -p1 ../patches/faiss-mingw32.patch
 atomic_patch -p1 ../patches/gpu-shared_library.patch
 
 cmake_extra_args=()
@@ -18,7 +21,8 @@ cmake_extra_args=()
 cuda_version=$(echo $bb_full_target | sed -E 's/.*-cuda\+([^-]+).*/\1/')
 if [[ $bb_full_target == *cuda* ]]; then
     if [[ $cuda_version == "11.8" ]]; then
-        cuda_archs="60-real;61-real;62-real;70-real;72-real;75-real;80;86-real;87-real;89-real;90"
+        cuda_archs=90
+        #"60-real;61-real;62-real;70-real;72-real;75-real;80;86-real;87-real;89-real;90"
     elif [[ $cuda_version == "12.1" ]]; then
         cuda_archs="70-real;72-real;75-real;80;86-real;87-real;89-real;90"
     elif [[ $cuda_version == "12.4" ]]; then
