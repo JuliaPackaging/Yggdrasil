@@ -8,10 +8,21 @@ version = v"0.9.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/awslabs/aws-c-cal.git", "fa108de5280afd71018e0a0534edb36b33f030f6"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    popd
+fi
+
 cd $WORKSPACE/srcdir/aws-c-cal
 # Lowercase names for MinGW
 sed -i -e 's/BCrypt/bcrypt/g' -e 's/NCrypt/ncrypt/g' CMakeLists.txt
