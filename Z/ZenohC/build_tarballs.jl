@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
-name = "Zenoh"
+name = "ZenohC"
 version = v"1.3.2"
 
 # Collection of sources required to complete build
