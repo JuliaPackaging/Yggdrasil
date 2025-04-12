@@ -13,10 +13,14 @@ sources = [
 script = raw"""
     cd $WORKSPACE/srcdir/lzfse
 
+    if [[ "${target}" == *"freebsd"* ]]; then
+        export CMAKE_TARGET_TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
+    fi
+
     # Build with CMake
     cmake -B build \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%} \
         -DCMAKE_BUILD_TYPE=Release 
 
     cmake --build build --parallel ${nproc}
@@ -35,8 +39,8 @@ platforms = [
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
     Platform("x86_64", "windows"),
-    #Platform("x86_64", "freebsd"), 
-    #Platform("aarch64", "freebsd")
+    Platform("x86_64", "freebsd"), 
+    Platform("aarch64", "freebsd")
 ]
 
 # The products that we will ensure are always built
