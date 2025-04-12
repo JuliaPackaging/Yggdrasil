@@ -14,7 +14,7 @@ script = raw"""
     cd $WORKSPACE/srcdir/lzfse
 
     if [[ "${target}" == *"freebsd"* ]]; then
-        export CMAKE_TARGET_TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN.*}_gcc.cmake
+        export CMAKE_TARGET_TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
     fi
 
     # Build with CMake
