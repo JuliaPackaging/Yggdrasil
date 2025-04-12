@@ -15,6 +15,7 @@ atomic_patch -p1 ../patches/faiss-cmake-mkl-optional.patch
 atomic_patch -p1 ../patches/faiss-mingw32-cmake.patch
 atomic_patch -p1 ../patches/faiss-mingw32-InvertedListsIOHook.patch
 atomic_patch -p1 ../patches/faiss-mingw32.patch
+atomic_patch -p1 ../patches/gpu-shared_library.patch
 
 cmake_extra_args=()
 
