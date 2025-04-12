@@ -14,14 +14,16 @@ script = raw"""
     cd $WORKSPACE/srcdir/lzfse
 
     if [[ "${target}" == *"freebsd"* ]]; then
-        export CMAKE_TARGET_TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
+        # Add the flag for FreeBSD targets
+        export CFLAGS="${CFLAGS} -D_XOPEN_SOURCE=700"
     fi
 
     # Build with CMake
     cmake -B build \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release 
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_FLAGS="${CFLAGS}"
 
     cmake --build build --parallel ${nproc}
     cmake --install build
