@@ -1,6 +1,7 @@
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/facebookresearch/faiss.git", "189a9d4461233de798c2eb17fb6d354ceda542e6"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 # Bash recipe for building across all platforms
@@ -10,12 +11,17 @@ apk del cmake
 
 cd faiss
 
+atomic_patch -p1 ../patches/faiss-mingw32-cmake.patch
+atomic_patch -p1 ../patches/faiss-mingw32-InvertedListsIOHook.patch
+atomic_patch -p1 ../patches/faiss-mingw32.patch
+
 cmake_extra_args=()
 
 if [[ $bb_full_target == *cuda* ]]; then
     cuda_version=${bb_full_target##*-cuda+}
     if [[ $cuda_version == "11.8" ]]; then
-        cuda_archs="60-real;61-real;62-real;70-real;72-real;75-real;80;86-real;87-real;89-real;90"
+        cuda_archs=90
+        #"60-real;61-real;62-real;70-real;72-real;75-real;80;86-real;87-real;89-real;90"
     elif [[ $cuda_version == "12.1" ]]; then
         cuda_archs="70-real;72-real;75-real;80;86-real;87-real;89-real;90"
     elif [[ $cuda_version == "12.4" ]]; then
