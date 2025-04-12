@@ -14,7 +14,7 @@ script = raw"""
     cd $WORKSPACE/srcdir/lzfse
 
     if [[ "${target}" == *"freebsd"* ]]; then
-        # Add the flag for FreeBSD targets
+        # FreeBSD requires _XOPEN_SOURCE=700 to make gettimeofday() visible in <sys/time.h>
         export CFLAGS="${CFLAGS} -D_XOPEN_SOURCE=700"
     fi
 
@@ -23,7 +23,6 @@ script = raw"""
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_C_FLAGS="${CFLAGS}"
 
     cmake --build build --parallel ${nproc}
     cmake --install build
