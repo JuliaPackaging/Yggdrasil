@@ -14,7 +14,7 @@ script = raw"""
     cd $WORKSPACE/srcdir/lzfse
 
     if [[ "${target}" == *"freebsd"* ]]; then
-        export CMAKE_TARGET_TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_gcc.cmake
+        export CMAKE_TARGET_TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN.*}_gcc.cmake
     fi
 
     # Build with CMake
@@ -31,17 +31,7 @@ script = raw"""
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
-    Platform("x86_64", "freebsd"), 
-    Platform("aarch64", "freebsd")
-]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
