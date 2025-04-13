@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "xorriso"
-version = v"1.5.5"
+version = v"1.5.6"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/gnu-mirror-unofficial/xorriso/raw/refs/heads/master/xorriso-$(version).tar.gz", "89a78b902ded443c3e4b31b3ba586ccbf06a447836d37f1082dfb1e429952217")
+    ArchiveSource("https://www.gnu.org/software/xorriso/xorriso-1.5.6.pl02.tar.gz", "786f9f5df9865cc5b0c1fecee3d2c0f5e04cab8c9a859bd1c9c7ccd4964fdae1")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +21,8 @@ if [[ "${target}" == *-apple-* ]]; then
     export CPPFLAGS="-I${includedir}"
 fi
 
+update_configure_scripts # to add riscv support
+
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} --disable-launch-frontend
 make -j${nproc}
 
@@ -30,16 +32,8 @@ install -Dvm 755 "xorriso/xorriso${exeext}" "${bindir}/xorriso${exeext}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "freebsd"), 
-    Platform("aarch64", "freebsd")
-]
+platforms = supported_platforms()
+filter(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
