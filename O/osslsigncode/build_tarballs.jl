@@ -39,7 +39,7 @@ products = [
 
 dependencies = [
     Dependency("OpenSSL_jll", compat="3.0.16"),
-    Dependency("Zlib_jll", compat="1.3.1"),
+    Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
