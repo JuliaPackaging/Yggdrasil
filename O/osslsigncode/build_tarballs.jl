@@ -20,7 +20,7 @@ script = raw"""
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
-        -DZLIB_INCLUDE_DIR=/workspace/destdir/include \
+        -DZLIB_INCLUDE_DIR=${includedir} \
         -DZLIB_LIBRARY=/workspace/destdir/lib/libz.a
 
     cmake --build build --parallel ${nproc}
