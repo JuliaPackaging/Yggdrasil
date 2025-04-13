@@ -18,7 +18,7 @@ atomic_patch -p1 ../patches/gpu-shared_library.patch
 
 cmake_extra_args=()
 
-cuda_version=${bb_full_target##*-cuda+}
+cuda_version=$(echo $bb_full_target | sed -E 's/.*-cuda\+([^-]+).*/\1/')
 if [[ $bb_full_target == *cuda* ]]; then
     if [[ $cuda_version == "11.8" ]]; then
         cuda_archs=90
