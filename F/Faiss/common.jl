@@ -42,6 +42,10 @@ if [[ $bb_full_target == *cuda* ]]; then
     )
 fi
 
+if $USE_CCACHE; then
+    export CMAKE_CUDA_COMPILER_LAUNCHER=ccache
+fi
+
 cmake -B build \
     -DBLA_VENDOR=libblastrampoline \
     -DBUILD_SHARED_LIBS=ON \
