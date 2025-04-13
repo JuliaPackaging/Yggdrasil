@@ -7,7 +7,7 @@ version = v"1.5.5"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/gnu-mirror-unofficial/xorriso/raw/refs/heads/master/xorriso-1.5.5.tar.gz", "89a78b902ded443c3e4b31b3ba586ccbf06a447836d37f1082dfb1e429952217")
+    ArchiveSource("https://github.com/gnu-mirror-unofficial/xorriso/raw/refs/heads/master/xorriso-$(version).tar.gz", "89a78b902ded443c3e4b31b3ba586ccbf06a447836d37f1082dfb1e429952217")
 ]
 
 # Bash recipe for building across all platforms
