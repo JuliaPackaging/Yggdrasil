@@ -12,12 +12,9 @@ sources = [
 ]
 
 script = raw"""
-    if [[ "${target}" == *-mingw32 ]]; then
-        cd /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/lib/
-        ln -s libws2_32.a libWs2_32.a
-    fi
-
     cd $WORKSPACE/srcdir/osslsigncode
+
+    sed -i 's/Ws2_32/ws2_32/g' CMakeLists.txt
 
     cmake -B build \
         -DCMAKE_INSTALL_PREFIX=${prefix} \
