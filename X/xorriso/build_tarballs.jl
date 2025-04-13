@@ -16,8 +16,9 @@ cd $WORKSPACE/srcdir/xorriso-*
 
 # Platform-specific configuration
 if [[ "${target}" == *-apple-* ]]; then
-    export LDFLAGS="-L${prefix}/lib -liconv"
-    export CPPFLAGS="-I${prefix}/include"
+    export LDFLAGS="-L${libdir}"
+    export LIBS="-liconv"
+    export CPPFLAGS="-I${includedir}"
 fi
 
 ./configure --prefix=$prefix --build=${MACHTYPE} --host=${target} --disable-launch-frontend
