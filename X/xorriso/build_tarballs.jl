@@ -41,8 +41,6 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-platforms = expand_cxxstring_abis(platforms)
-
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Readline_jll"),
