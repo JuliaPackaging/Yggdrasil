@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "osslsigncode"
-version = v"2.10.0"
+version = v"2.9.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/mtrojnar/osslsigncode",
-                  "4568c890cc1538ca80be3ee36775ba42223dea04"),
+                  "76ee550c9d3b9f0e559f044e18136b74c167fef2"),
 ]
 
 script = raw"""
