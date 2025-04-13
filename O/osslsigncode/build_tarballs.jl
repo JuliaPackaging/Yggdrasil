@@ -33,6 +33,7 @@ script = raw"""
 """
 
 platforms = supported_platforms()
+filter(!(==)(Platform("i686", "windows")), platforms)
 
 # The products that we will ensure are always built
 products = [
