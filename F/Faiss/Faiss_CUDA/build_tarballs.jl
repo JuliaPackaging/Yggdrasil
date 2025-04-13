@@ -21,8 +21,10 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 # Override the default platforms
 platforms = CUDA.supported_platforms()
-
 filter!(p -> p["cuda"] in cuda_versions, platforms)
+for cuda_version in cuda_versions
+    push!(platforms, Platform("powerpc64le", "linux"; cuda=cuda_version))
+end
 
 # Override the default products
 products = [
