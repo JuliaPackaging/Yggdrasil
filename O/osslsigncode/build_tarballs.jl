@@ -21,7 +21,7 @@ script = raw"""
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
         -DZLIB_INCLUDE_DIR=${includedir} \
-        -DZLIB_LIBRARY=/workspace/destdir/lib/libz.a
+        -DZLIB_LIBRARY=/workspace/destdir/lib/libz.${libext}
 
     cmake --build build --parallel ${nproc}
     
@@ -30,7 +30,6 @@ script = raw"""
 """
 
 platforms = supported_platforms()
-filter(!(==)(Platform("i686", "windows")), platforms)
 
 # The products that we will ensure are always built
 products = [
