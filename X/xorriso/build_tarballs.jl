@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/xorriso-*
 
-# Platform-specific configuration
+# MacOS specific configuration
 if [[ "${target}" == *-apple-* ]]; then
     export LDFLAGS="-L${libdir}"
     export LIBS="-liconv"
