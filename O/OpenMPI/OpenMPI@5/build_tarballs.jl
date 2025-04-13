@@ -88,8 +88,14 @@ filter!(!Sys.iswindows, platforms)
 
 platforms = expand_gfortran_versions(platforms)
 
+function tag_platform!(p)
+    p["mpi"] = "OpenMPI"
+    p["mpi_provider"] = "jll"
+    p
+end
+
 # Add `mpi+openmpi` platform tag
-foreach(p -> (p["mpi"] = "OpenMPI"), platforms)
+foreach(tag_platform!, platforms)
 
 products = [
     # OpenMPI
@@ -115,8 +121,8 @@ dependencies = [
 
 augment_platform_block = """
     using Base.BinaryPlatforms
-    $(MPI.augment)
-    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    $(MPI.augment_provider)
+    augment_platform!(platform::Platform) = augment_mpi_provider!(platform)
 """
 
 init_block = raw"""
