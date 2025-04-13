@@ -12,6 +12,11 @@ sources = [
 ]
 
 script = raw"""
+    if [[ "${target}" == *-mingw32 ]]; then
+        cd /opt/x86_64-w64-mingw32/x86_64-w64-mingw32/lib/
+        ln -s libws2_32.a libWs2_32.a
+    fi
+
     cd $WORKSPACE/srcdir/osslsigncode
 
     cmake -B build \
@@ -27,15 +32,7 @@ script = raw"""
     install -Dvm 755 "build/osslsigncode${exeext}" "${bindir}/osslsigncode${exeext}"
 """
 
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -44,7 +41,7 @@ products = [
 
 dependencies = [
     Dependency("OpenSSL_jll", compat="3.0.16"),
-    Dependency("Zlib_jll", compat="1.3.0"),
+    Dependency("Zlib_jll", compat="1.3.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
