@@ -12,7 +12,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-
     cd $WORKSPACE/srcdir/libdmg-hfsplus
 
     cmake -B build \
@@ -26,8 +25,10 @@ script = raw"""
         -DLIBLZMA_INCLUDE_DIR=$WORKSPACE/destdir/include \
         -DLIBLZMA_LIBRARY="$WORKSPACE/destdir/lib/liblzma.${dlext}" \
         -DOPENSSL_INCLUDE_DIR=$WORKSPACE/destdir/include \
-        -DOPENSSL_CRYPTO_LIBRARY="$WORKSPACE/destdir/lib/libcrypto.${dlext}"  
-
+        -DOPENSSL_CRYPTO_LIBRARY="$WORKSPACE/destdir/lib/libcrypto.${dlext}" \
+        -DLZFSE_INCLUDE_DIR=$WORKSPACE/destdir/include \
+        -DLZFSE_LIBRARY="$WORKSPACE/destdir/lib/liblzfse.${dlext}"
+ 
     cmake --build build --parallel ${nproc}
 
     install -Dvm 755 "build/dmg/dmg${exeext}" "${bindir}/dmg${exeext}"
@@ -41,7 +42,7 @@ script = raw"""
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> arch(p) == "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -52,9 +53,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a"))
-    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9")
-    Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800"))
+    Dependency(PackageSpec(name="LZFSE_jll")),
+    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
+    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9"),
+    Dependency(PackageSpec(name="XZ_jll", uuid="ffd25f8a-64ca-5728-b0f7-c24cf3aae800")),
     Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16")
 ]
 
