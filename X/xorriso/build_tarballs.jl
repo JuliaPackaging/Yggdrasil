@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/xorriso-1.5.5
+cd $WORKSPACE/srcdir/xorriso-*
 
 # Platform-specific configuration
 if [[ "${target}" == *-apple-* ]]; then
