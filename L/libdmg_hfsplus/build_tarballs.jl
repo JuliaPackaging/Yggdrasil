@@ -39,7 +39,7 @@ script = raw"""
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+filter!(!Sys.iswindows, platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> arch(p) != "riscv64", platforms)
 
