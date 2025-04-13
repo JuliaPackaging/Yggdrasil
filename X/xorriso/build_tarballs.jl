@@ -46,22 +46,16 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+platforms = expand_cxxstring_abis(platforms)
+
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Readline_jll"),
     Dependency("Bzip2_jll"),
     Dependency("Libiconv_jll"),
+    Dependency("acl_jll", platforms=filter(Sys.islinux, platforms)),
+    Dependency("Attr_jll", platforms=filter(Sys.islinux, platforms)),
 ]
-
-# Add platform-specific dependencies
-platforms = expand_cxxstring_abis(platforms)
-for platform in platforms
-    if Sys.islinux(platform)
-        # Only add Linux-specific dependencies for Linux platforms
-        push!(dependencies, Dependency("acl_jll", platforms=[platform]))
-        push!(dependencies, Dependency("Attr_jll", platforms=[platform]))
-    end
-end
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
