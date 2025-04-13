@@ -21,7 +21,6 @@ include(joinpath(@__DIR__, "..", "common.jl"))
 
 # Override the default platforms
 platforms = CUDA.supported_platforms()
-filter!(p -> arch(p) == "x86_64", platforms)
 
 filter!(p -> p["cuda"] in cuda_versions, platforms)
 
@@ -38,7 +37,14 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, [dependencies; cuda_deps];
+    # Download the CUDA nvcc redist for the host architecture (x86_64)
+    platform_sources = BinaryBuilder.AbstractSource[sources...]
+    if arch(platform) == "aarch64"
+        cuda_version = platform["cuda"]
+        push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_version, "x86_64"))
+    end
+
+    build_tarballs(ARGS, name, version, platform_sources, script, [platform], products, [dependencies; cuda_deps];
                    lazy_artifacts=true,
                    julia_compat="1.9",
                    preferred_gcc_version=v"7",
