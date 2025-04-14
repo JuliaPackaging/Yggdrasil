@@ -35,7 +35,7 @@ install -Dvm 755 "${WORKSPACE}/tmp/${rust_target}/release/rcodesign${exeext}" "$
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> arch(p) != "riscv64", platforms) # rust toolchain not available
-filter!(p -> !Sys.isfreebsd(p), platforms) 
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) 
 filter!(p -> !(arch(p) == "armv6l" || arch(p) == "armv7l" || arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
