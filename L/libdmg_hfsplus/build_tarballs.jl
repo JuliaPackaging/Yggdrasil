@@ -18,16 +18,16 @@ script = raw"""
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
-        -DZLIB_INCLUDE_DIR=$WORKSPACE/destdir/include \
-        -DZLIB_LIBRARY="$WORKSPACE/destdir/lib/libz.${dlext}" \
-        -DBZIP2_INCLUDE_DIR=$WORKSPACE/destdir/include  \
-        -DBZIP2_LIBRARIES="$WORKSPACE/destdir/lib/libbz2.${dlext}" \
-        -DLIBLZMA_INCLUDE_DIR=$WORKSPACE/destdir/include \
-        -DLIBLZMA_LIBRARY="$WORKSPACE/destdir/lib/liblzma.${dlext}" \
-        -DOPENSSL_INCLUDE_DIR=$WORKSPACE/destdir/include \
-        -DOPENSSL_CRYPTO_LIBRARY="$WORKSPACE/destdir/lib/libcrypto.${dlext}" \
-        -DLZFSE_INCLUDE_DIR=$WORKSPACE/destdir/include \
-        -DLZFSE_LIBRARY="$WORKSPACE/destdir/lib/liblzfse.${dlext}"
+        -DZLIB_INCLUDE_DIR=${includedir} \
+        -DZLIB_LIBRARY="${libdir}/libz.${dlext}" \
+        -DBZIP2_INCLUDE_DIR=${includedir}  \
+        -DBZIP2_LIBRARIES="${libdir}/libbz2.${dlext}" \
+        -DLIBLZMA_INCLUDE_DIR=${includedir} \
+        -DLIBLZMA_LIBRARY="${libdir}/liblzma.${dlext}" \
+        -DOPENSSL_INCLUDE_DIR=${includedir} \
+        -DOPENSSL_CRYPTO_LIBRARY="${libdir}/libcrypto.${dlext}" \
+        -DLZFSE_INCLUDE_DIR=${includedir} \
+        -DLZFSE_LIBRARY="${libdir}/liblzfse.${dlext}"
  
     cmake --build build --parallel ${nproc}
 
