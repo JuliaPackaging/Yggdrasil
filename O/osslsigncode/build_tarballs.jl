@@ -21,7 +21,7 @@ script = raw"""
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DCMAKE_BUILD_TYPE=Release \
         -DZLIB_INCLUDE_DIR=${includedir} \
-        -DZLIB_LIBRARY=/workspace/destdir/lib/libz.${dlext}
+        -DZLIB_LIBRARY="${libdir}/libz.${dlext}"
 
     cmake --build build --parallel ${nproc}
     
