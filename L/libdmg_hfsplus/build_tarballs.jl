@@ -41,8 +41,6 @@ script = raw"""
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> arch(p) == "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
