@@ -24,6 +24,7 @@ platforms = CUDA.supported_platforms()
 filter!(p -> p["cuda"] in cuda_versions, platforms)
 for cuda_version in cuda_versions
     push!(platforms, Platform("powerpc64le", "linux"; cuda=cuda_version))
+    push!(platforms, Platform("x86_64", "windows"; cuda=cuda_version))
 end
 
 # Override the default products
@@ -39,9 +40,9 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-    # Download the CUDA nvcc redist for the host architecture (x86_64)
+    # Download the CUDA nvcc redist for the host architecture (x86_64) for non-x86_64 platforms
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    if arch(platform) == "aarch64"
+    if arch(platform) != "x86_64"
         cuda_version = platform["cuda"]
         push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_version, "x86_64"))
     end
