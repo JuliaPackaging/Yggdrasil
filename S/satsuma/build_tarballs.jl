@@ -8,11 +8,22 @@ version = v"0.0.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/markusa4/satsuma", "be6beeb6d2538aa133b1f6b7cad84655cda950bb"),
-    DirectorySource("./bundled")
+    DirectorySource("./bundled"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    popd
+fi
+
 cd $WORKSPACE/srcdir/satsuma
 
 for f in $WORKSPACE/srcdir/patches/*.patch; do
@@ -32,7 +43,7 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter(!Sys.iswindows, supported_platforms(; experimental=true)) # windows has no boost
-platforms = filter(≠(Platform("x86_64","macOS")),platforms) # ld64.lld: error: undefined symbol: std::__1::__itoa::__u32toa(unsigned int, char*)
+#platforms = filter(≠(Platform("x86_64","macOS")),platforms) # ld64.lld: error: undefined symbol: std::__1::__itoa::__u32toa(unsigned int, char*)
 
 # The products that we will ensure are always built
 products = [
