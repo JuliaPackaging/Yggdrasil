@@ -40,9 +40,9 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
 
-    # Download the CUDA nvcc redist for the host architecture (x86_64) for non-x86_64 platforms
+    # Download the CUDA nvcc redist for the host architecture (x86_64) for non-x86_64-linux-gnu platforms
     platform_sources = BinaryBuilder.AbstractSource[sources...]
-    if arch(platform) != "x86_64"
+    if !platforms_match(platform, Platform("x86_64", "linux"))
         cuda_version = platform["cuda"]
         push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_version, "x86_64"))
     end
