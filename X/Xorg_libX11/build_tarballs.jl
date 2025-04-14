@@ -15,8 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libX11-*
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-# # For some obscure reason, this Makefile may not get the value of CPPFLAGS
-# sed -i "s?CPPFLAGS = ?CPPFLAGS = ${CPPFLAGS}?" src/util/Makefile
 make -j${nproc}
 make install
 """
