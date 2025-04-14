@@ -48,7 +48,7 @@ if $USE_CCACHE; then
     export CMAKE_CUDA_COMPILER_LAUNCHER=ccache
 fi
 
-if [[ $target != x86_64-linux-gnu* ]]; then
+if [[ $bb_full_target == *cuda* && $target != x86_64-linux-gnu* ]]; then
     # Add /usr/lib/csl-glibc-x86_64 to LD_LIBRARY_PATH to be able to run host `nvcc`/`ptxas`/`fatbinary`
     # while keeping the default /usr/lib/csl-musl-x86_64,
     export LD_LIBRARY_PATH=/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:$LD_LIBRARY_PATH
