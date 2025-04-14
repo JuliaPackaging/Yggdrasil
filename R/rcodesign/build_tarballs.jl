@@ -14,21 +14,26 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    #install a newer SDK which supports `kSecKeyAlgorithmRSASignatureMessagePSSSHA256`
-    pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
-    rm -rf /opt/${target}/${target}/sys-root/System
-    rm -rf /opt/${target}/${target}/sys-root/usr/*
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
-fi
+    if [[ "${target}" == *"freebsd"* ]]; then
+        # FreeBSD requires _XOPEN_SOURCE=700 to make gettimeofday() visible in <sys/time.h>
+        export CFLAGS="${CFLAGS} -D_XOPEN_SOURCE=700"
+    fi
 
-cd $WORKSPACE/srcdir/apple-platform-rs-apple-codesign-*/
-cargo build --release --package apple-codesign --target-dir ${WORKSPACE}/tmp
+    if [[ "${target}" == x86_64-apple-darwin* ]]; then
+        #install a newer SDK which supports `kSecKeyAlgorithmRSASignatureMessagePSSSHA256`
+        pushd $WORKSPACE/srcdir/MacOSX11.*.sdk
+        rm -rf /opt/${target}/${target}/sys-root/System
+        rm -rf /opt/${target}/${target}/sys-root/usr/*
+        cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+        cp -ra System "/opt/${target}/${target}/sys-root/."
+        popd
+    fi
 
-install_license apple-codesign/LICENSE
-install -Dvm 755 "${WORKSPACE}/tmp/${rust_target}/release/rcodesign${exeext}" "${bindir}/rcodesign${exeext}"
+    cd $WORKSPACE/srcdir/apple-platform-rs-apple-codesign-*/
+    cargo build --release --package apple-codesign --target-dir ${WORKSPACE}/tmp
+
+    install_license apple-codesign/LICENSE
+    install -Dvm 755 "${WORKSPACE}/tmp/${rust_target}/release/rcodesign${exeext}" "${bindir}/rcodesign${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
