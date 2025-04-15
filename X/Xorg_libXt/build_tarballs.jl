@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXt"
-version = v"1.2.0"
+version = v"1.3.1"
 
 # Collection of sources required to build libXt
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXt-$(version).tar.bz2",
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXt-$(version).tar.xz",
                   "b31df531dabed9f4611fc8980bc51d7782967e2aff44c4105251a1acb5a77831"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXt-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXt-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -39,4 +36,5 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")
