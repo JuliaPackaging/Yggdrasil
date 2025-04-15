@@ -40,8 +40,18 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
-CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+if [[ "${target}" == *mingw* ]]; then
+    # on Windows, we run into "multiple definition" errors when linking with gcc
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
+else
+    CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
+
+# More hacks for Windows
+if [[ "${target}" == *mingw* ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_SHARED_LIBRARY_CXX_FLAGS=\"-pthread\")
+fi
 
 # Tell CMake where LLVM is
 CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
