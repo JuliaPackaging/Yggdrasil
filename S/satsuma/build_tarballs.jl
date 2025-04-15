@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "satsuma"
-version = v"0.0.0"
+version = v"1.2.0"
 
 # Collection of sources required to complete build
 sources = [
@@ -33,18 +33,15 @@ done
 cp $WORKSPACE/srcdir/tsl/* tsl/
 
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-# cmake --build build --parallel ${nproc} # this builds the wrong targets, namely dejavu
-# cmake --install build # this doesn't install anything
-make -B build satsuma
+
+make -C build satsuma
 install satsuma $bindir
 install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(!Sys.iswindows, supported_platforms(; experimental=true)) # windows has no boost
-#platforms = filter(≠(Platform("x86_64","macOS")),platforms) # ld64.lld: error: undefined symbol: std::__1::__itoa::__u32toa(unsigned int, char*)
-
+platforms = supported_platforms(; exclude=Sys.iswindows) # windows has no boost
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("satsuma", :satsuma)
@@ -57,4 +54,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-  julia_compat="1.6", preferred_gcc_version=v"13")
+               julia_compat="1.6", preferred_gcc_version=v"13")
