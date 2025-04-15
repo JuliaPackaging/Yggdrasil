@@ -1,4 +1,4 @@
-name = "LLVM"
+name = "LLD"
 llvm_full_version = v"20.1.2+0"
 libllvm_version = v"20.1.2+0"
 
@@ -37,4 +37,5 @@ for (i, build) in enumerate(builds)
                    skip_audit=true, julia_compat="1.12",
                    augment_platform_block)
 end
-#!
+
+# bump
