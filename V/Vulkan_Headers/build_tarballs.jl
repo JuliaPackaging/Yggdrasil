@@ -11,6 +11,8 @@ sources = [
 ]
 
 script = raw"""
+apk del cmake
+
 cd Vulkan-Headers
 install_license LICENSE.md
 
