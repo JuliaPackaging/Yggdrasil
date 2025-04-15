@@ -31,6 +31,12 @@ if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
     popd
 fi
 
+if [[ "${target}" == i686-w64-mingw32 ]]; then
+    # Work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=116159
+    # Should be fixed with GCC 14.3
+    sed -i '/_ZSt21ios_base_library_initv/s/.*/#define XSTRINGIFY(X) STRINGIFY(X)\n#define STRINGIFY(X) #X\n__extension__ __asm (".globl " XSTRINGIFY(__USER_LABEL_PREFIX__) "_ZSt21ios_base_library_initv");/' /opt/i686-w64-mingw32/i686-w64-mingw32/include/c++/13.2.0/iostream
+fi
+
 CMAKE_FLAGS=()
 
 # Release build for best performance
