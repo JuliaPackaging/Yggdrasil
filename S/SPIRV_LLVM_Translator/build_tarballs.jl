@@ -95,4 +95,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, get_script(llvm_version), platforms, products,
-               dependencies; preferred_gcc_version=v"10", julia_compat="1.6")
+               dependencies; preferred_gcc_version=v"13", julia_compat="1.6")
