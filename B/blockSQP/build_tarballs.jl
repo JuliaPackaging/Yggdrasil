@@ -27,7 +27,7 @@ cmake \
     -DCMAKE_FIND_ROOT_PATH=$prefix \
     -DBUILD_SHARED_LIBS=ON \
     -DCMAKE_PREFIX_PATH=$prefix \
-    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     ..
 
