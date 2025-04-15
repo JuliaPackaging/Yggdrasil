@@ -8,7 +8,7 @@ version = v"1.3.1"
 # Collection of sources required to build libXt
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXt-$(version).tar.xz",
-                  "b31df531dabed9f4611fc8980bc51d7782967e2aff44c4105251a1acb5a77831"),
+                  "e0a774b33324f4d4c05b199ea45050f87206586d81655f8bef4dba434d931288"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +31,8 @@ products = [
 dependencies = [
     BuildDependency("Xorg_util_macros_jll"),
     BuildDependency("Xorg_kbproto_jll"),
+    BuildDependency("Xorg_xproto_jll"),
+    Dependency("Xorg_libICE_jll"),
     Dependency("Xorg_libSM_jll"),
     Dependency("Xorg_libX11_jll"),
 ]
