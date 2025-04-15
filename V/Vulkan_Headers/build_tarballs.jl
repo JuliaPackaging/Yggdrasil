@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "Vulkan_Headers"
-version = v"1.3.243"
+version = v"1.4.312"
 
 source = "https://github.com/KhronosGroup/Vulkan-Headers.git"
-commit = "65ad768d8603671fc1085fe115019e72a595ced8"
+commit = "5ceb9ed481e58e705d0d9b5326537daedd06b97d"
 
 sources = [
     GitSource(source, commit)
