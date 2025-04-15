@@ -1,4 +1,4 @@
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Vulkan_Headers"
 version = v"1.4.312"
