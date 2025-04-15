@@ -17,6 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libXt-*
 
 # Correct syntax error in header file
+# (Already fixed upstream.)
 atomic_patch -p1 $WORKSPACE/srcdir/patches/Xtos.h.patch
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
