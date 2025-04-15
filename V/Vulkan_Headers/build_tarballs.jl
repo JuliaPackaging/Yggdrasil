@@ -37,6 +37,8 @@ products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = Dependency[
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.22.1")),
+]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
