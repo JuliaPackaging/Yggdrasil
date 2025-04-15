@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_LLVM_Translator"
-version = v"20.1"
-llvm_version = v"20.1.2"
+version = v"19.1"
+llvm_version = v"19.1.7"
 
 # Collection of sources required to build the package
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "dee371987a59ed8654083c09c5f1d5c54f5db318"),
+        "5e73fab9bf001890789f97fd389fe7e50f4aefba"),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
         "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
