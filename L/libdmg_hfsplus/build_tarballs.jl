@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "libdmg_hfsplus"
-version = v"0.0.0"
+version = v"0.5.0"
 
 # Collection of sources required to complete build
 sources = [
