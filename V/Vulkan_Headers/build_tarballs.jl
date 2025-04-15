@@ -38,7 +38,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.22.1")),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.31.6")),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
