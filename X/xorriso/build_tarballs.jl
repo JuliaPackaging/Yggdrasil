@@ -44,7 +44,7 @@ products = [
 dependencies = [
     Dependency("Zlib_jll"),
     Dependency("Readline_jll"),
-    Dependency("Bzip2_jll"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Libiconv_jll"),
     Dependency("acl_jll", platforms=filter(Sys.islinux, platforms)),
     Dependency("Attr_jll", platforms=filter(Sys.islinux, platforms)),
