@@ -8,14 +8,28 @@ llvm_version = v"20.1.2"
 
 # Collection of sources required to build the package
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-              "dee371987a59ed8654083c09c5f1d5c54f5db318")
+    GitSource(
+        "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
+        "dee371987a59ed8654083c09c5f1d5c54f5db318"),
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator
 install_license LICENSE.TXT
+
+if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
+    # LLVM 15+ requires macOS SDK 10.14
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
 
 CMAKE_FLAGS=()
 
