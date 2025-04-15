@@ -26,9 +26,6 @@ fi
 # Correct pkgconfig entries for host build dependencies, i.e. for
 # scripts that need to run at build time. These pkgconfig entries
 # would otherwise point to non-existing files, making meson fail.
-host_prefix=$(awk '/prefix/ { print $3; }' $MESON_HOST_TOOLCHAIN | tr -d \')
-host_bindir=${host_prefix}/bin
-host_libdir=${host_prefix}/lib
 sed -i 's+glib_genmarshal=${bindir}+'"glib_genmarshal=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
 sed -i 's+gobject_query=${bindir}+'"gobject_query=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
 sed -i 's+glib_mkenums=${bindir}+'"glib_mkenums=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
