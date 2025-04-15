@@ -12,7 +12,7 @@ sources = [
 
 script = raw"""
 cd Vulkan-Headers
-install_license LICENSE.txt
+install_license LICENSE.md
 
 CMAKE_FLAGS=()
 
