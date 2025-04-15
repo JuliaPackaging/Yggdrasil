@@ -9,11 +9,16 @@ version = v"1.3.1"
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXt-$(version).tar.xz",
                   "e0a774b33324f4d4c05b199ea45050f87206586d81655f8bef4dba434d931288"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libXt-*
+
+# Correct syntax error in header file
+atomic_patch -p1 $WORKSPACE/srcdir/patches/Xtos.h.patch
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
