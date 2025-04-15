@@ -9,8 +9,8 @@ version = v"1.2.0"
 sources = [
     GitSource("https://github.com/markusa4/satsuma", "be6beeb6d2538aa133b1f6b7cad84655cda950bb"),
     DirectorySource("./bundled"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
+#    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+#                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
@@ -35,13 +35,13 @@ cp $WORKSPACE/srcdir/tsl/* tsl/
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 
 make -C build satsuma
-install satsuma $bindir
+install build/satsuma $bindir
 install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows) # windows has no boost
+platforms = supported_platforms(; exclude=Sys.iswindows) |> expand_cxxstring_abis # windows has no boost
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("satsuma", :satsuma)
