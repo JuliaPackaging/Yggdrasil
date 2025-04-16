@@ -35,8 +35,8 @@ meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson 
                             -Dquadruple=${QUADRUPLE} \
                             -Ddefault_library=shared
 
-# meson compile -C builddir_shared
-# meson install -C builddir_shared
+meson compile -C builddir_shared
+meson install -C builddir_shared
 
 install_license lgpl-3.0.txt
 """
