@@ -41,7 +41,10 @@ products = [
 dependencies = [
     Dependency("Glib_jll"; compat="2.82.2"),
     Dependency("libusb_jll"),
-    Dependency("XML2_jll")
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="2.0.0 - 2.13")
     ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

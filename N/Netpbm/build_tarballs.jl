@@ -446,7 +446,10 @@ dependencies = [
     BuildDependency("Xorg_xproto_jll"),  # compat="7.0.31"
     Dependency("JpegTurbo_jll"; compat="3.1.1"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
-    Dependency("XML2_jll"; compat="2.13.6"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="2.13.6 - 2.13"),
     # Need at least Xorg_libX11 v1.8.6 for armv6l support
     Dependency("Xorg_libX11_jll"; compat="1.8.6"),
     Dependency("Zlib_jll"; compat="1.2.12"),

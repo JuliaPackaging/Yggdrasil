@@ -47,9 +47,12 @@ products = [
 ]
 
 dependencies = [
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
     # XML2 apparently had a breaking change, so it's important to specify the compat bound:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/9673#issuecomment-2434514026
-    Dependency("XML2_jll"; compat="2.13.4"),
+    Dependency("XML2_jll"; compat="2.13.4 - 2.13"),
     Dependency("Zlib_jll"),
 ]
 
