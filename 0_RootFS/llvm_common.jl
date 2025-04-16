@@ -76,6 +76,7 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     # Then create the symlinks
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so
     ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.2
+    ln -s $(basename ${prefix}/${target}/lib64/libxml2.so.*) ${prefix}/${target}/lib64/libxml2.so.16
     ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so
     ln -s $(basename ${prefix}/${target}/lib64/libiconv.so.*) ${prefix}/${target}/lib64/libiconv.so.2
     ln -s $(basename ${prefix}/${target}/lib64/libz.so.*) ${prefix}/${target}/lib64/libz.so
