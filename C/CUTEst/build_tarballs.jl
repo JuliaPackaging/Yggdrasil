@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.4.0"
+version = v"2.5.0"
 
 # Collection of sources required to build CUTEst
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "c58fb3452ad4ea37795afbea77b33a3d4ce74219"),
+    GitSource("https://github.com/ralna/CUTEst.git", "f88657b36af8e89f5921b9d4974ffcc181ed756d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +16,7 @@ script = raw"""
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
 QUADRUPLE="true"
-if [[ "${target}" == *arm* ]]; then
+if [[ "${target}" == *arm* ]] || [[ "${target}" == *aarch64-linux* ]] || [[ "${target}" == *aarch64-unknown-freebsd* ]] || [[ "${target}" == *powerpc64le-linux-gnu* ]] || [[ "${target}" == *riscv64* ]]; then
     QUADRUPLE="false"
 fi
 
@@ -30,29 +30,17 @@ meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
 meson compile -C builddir
 meson install -C builddir
 
-# meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
-#                             --prefix=$prefix \
-#                             -Dquadruple=${QUADRUPLE} \
-#                             -Ddefault_library=shared
+if [[ "${target}" != *i686-w64-mingw32* ]]; then
+    meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                                --prefix=$prefix \
+                                -Dquadruple=${QUADRUPLE} \
+                                -Ddefault_library=shared
 
-# meson compile -C builddir_shared
-# meson install -C builddir_shared
+    meson compile -C builddir_shared
+    meson install -C builddir_shared
+fi
 
 install_license lgpl-3.0.txt
-
-# build incomplete shared libraries
-if [[ "${target}" != *mingw* ]]; then
-    extra=""
-    if [[ "${target}" == *-apple-* ]]; then
-      extra="-Wl,-undefined -Wl,dynamic_lookup -headerpad_max_install_names"
-    fi
-    cd $libdir
-    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_single.a $(flagon -Wl,--no-whole-archive) -o libcutest_single.${dlext}
-    gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_double.a $(flagon -Wl,--no-whole-archive) -o libcutest_double.${dlext}
-    if [[ "${target}" != *arm* ]]; then
-        gfortran -fPIC -shared ${extra} $(flagon -Wl,--whole-archive) libcutest_quadruple.a $(flagon -Wl,--no-whole-archive) -o libcutest_quadruple.${dlext}
-    fi
-fi
 """
 
 # These are the platforms we will build for by default, unless further platforms are passed in on the command line
@@ -64,10 +52,10 @@ platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
 products = [
     FileProduct("lib/libcutest_single.a", :libcutest_single_a),
     FileProduct("lib/libcutest_double.a", :libcutest_double_a),
-    # FileProduct("lib/libcutest_quadruple.a", :libcutest_quadruple_a),
+    # FileProduct("lib/libcutest_quadruple.a", :libcutest_quadruple_a), <-- not available on all platforms
     # LibraryProduct("libcutest_single", :libcutest_single),
     # LibraryProduct("libcutest_double", :libcutest_double),
-    # LibraryProduct("libcutest_quadruple", :libcutest_quadruple),
+    # LibraryProduct("libcutest_quadruple", :libcutest_quadruple), <-- not available on all platforms
 ]
 
 dependencies = [
