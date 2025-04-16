@@ -178,12 +178,11 @@ function llvm_script(;version = v"8.0.1", llvm_build_type = "Release", kwargs...
     CMAKE_FLAGS+=(-DZLIB_ROOT="${prefix}")
 
     # Build!
-    cmake ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-    cmake -LA || true
-    make -j${nproc} VERBOSE=1
+    cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
+    ninja -j${nproc} -vv
 
     # Install!
-    make install -j${nproc} VERBOSE=1
+    ninja install
     """
 end
 
