@@ -7,8 +7,8 @@ version = v"2025.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://files.pythonhosted.org/packages/44/5c/7bfaa300e5cdc6e50328c8e85f703a852a681db92c26aa31ee33ade51fd2/mkl_devel_dpcpp-2025.1.0-py2.py3-none-manylinux_2_28_x86_64.whl",
-                  "92adbc773739a247b596844e8b6b2ec34adb3bb6e6de01e0889994cafd7ca5a9"; filename="oneapi-headers.whl"),
+    FileSource("https://files.pythonhosted.org/packages/44/5c/7bfaa300e5cdc6e50328c8e85f703a852a681db92c26aa31ee33ade51fd2/mkl_devel_dpcpp-2025.1.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "92adbc773739a247b596844e8b6b2ec34adb3bb6e6de01e0889994cafd7ca5a9"; filename="oneapi-headers.whl"),
 ]
 
 # Bash recipe for building across all platforms
