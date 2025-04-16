@@ -199,13 +199,15 @@ function llvm_products(;kwargs...)
 end
 
 # Dependencies that must be installed before this package can be built
-function llvm_dependencies(; kwargs...)
+function llvm_dependencies(; version=v"8.0.1", kwargs...)
+    # XML2 had an ABI break between the 2.13 and 2.14 series: 2.14 bumped its SONAME from
+    # `libxml2.so.2` to `libxml2.so.16` (https://github.com/JuliaPackaging/Yggdrasil/pull/10965).
+    # LLVM >= 19 links against the new SONAME, older LLVM against the old one, so pin XML2 to
+    # the series matching the LLVM version we're building (older shards stay reproducible).
+    xml2_compat = version >= v"19" ? "~2.14" : "~2.13.6"
     return [
         Dependency("Zlib_jll"),
-        # We had to restrict compat with XML2 because of ABI breakage:
-        # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-        # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
-        Dependency("XML2_jll"; compat="~2.13.6"),
+        Dependency("XML2_jll"; compat=xml2_compat),
 	# transitive dependency libiconv
     ]
 end
