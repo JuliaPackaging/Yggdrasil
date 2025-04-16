@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_LLVM_Translator"
-version = v"19.1"
-llvm_version = v"19.1.7"
+version = v"20.1"
+llvm_version = v"20.1.2"
 
 # Collection of sources required to build the package
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "5e73fab9bf001890789f97fd389fe7e50f4aefba"),
+        "dee371987a59ed8654083c09c5f1d5c54f5db318"),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
         "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
@@ -29,12 +29,6 @@ if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
     cp -ra System "/opt/${target}/${target}/sys-root/."
     export MACOSX_DEPLOYMENT_TARGET=10.14
     popd
-fi
-
-if [[ "${target}" == i686-w64-mingw32 ]]; then
-    # Work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=116159
-    # Should be fixed with GCC 14.3
-    sed -i '/_ZSt21ios_base_library_initv/s/.*/#define XSTRINGIFY(X) STRINGIFY(X)\n#define STRINGIFY(X) #X\n__extension__ __asm (".globl " XSTRINGIFY(__USER_LABEL_PREFIX__) "_ZSt21ios_base_library_initv");/' /opt/i686-w64-mingw32/i686-w64-mingw32/include/c++/13.2.0/iostream
 fi
 
 CMAKE_FLAGS=()
@@ -111,4 +105,4 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, get_script(llvm_version), platforms, products,
-               dependencies; preferred_gcc_version=v"13", julia_compat="1.6")
+               dependencies; preferred_gcc_version=v"10", julia_compat="1.6")
