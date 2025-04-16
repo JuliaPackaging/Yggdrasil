@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "Libglvnd"
 version = v"1.7.0"
+# We bumped the version number to build for riscv64
+ygg_version = v"1.7.1"
 
 # Collection of sources required to build Libglvnd
 sources = [
