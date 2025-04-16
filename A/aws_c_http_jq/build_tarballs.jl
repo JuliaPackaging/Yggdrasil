@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http_jq"
-version = v"0.9.7"
+version = v"0.9.8"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/quinnj/aws-c-http.git", "d2d34aecb5fb3ccf91d3245af36196adc5486163"),
+    GitSource("https://github.com/quinnj/aws-c-http.git", "3c4527eb051602e9b760286241d71e9327e7a695"),
 ]
 
 # Bash recipe for building across all platforms
