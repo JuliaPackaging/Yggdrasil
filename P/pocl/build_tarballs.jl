@@ -92,6 +92,8 @@ CMAKE_FLAGS+=(-DSTATIC_LLVM:Bool=ON)
 # XXX: we add -pthread to the flags used to link libLLVM, so need that here too
 #      (as that is not reflected by llvm-config)
 CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
+# Force use of the SPIRV LLVM translator library by nuking the executable variant
+CMAKE_FLAGS+=(-DLLVM_SPIRV="")
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -190,11 +192,6 @@ init_block = raw"""
     ENV["POCL_PATH_CLANG"] =
         generate_wrapper_script("clang", Clang_unified_jll.clang_path,
                                 Clang_unified_jll.LIBPATH[], Clang_unified_jll.PATH[])
-    ENV["POCL_PATH_LLVM_SPIRV"] =
-        generate_wrapper_script("llvm-spirv",
-                                SPIRV_LLVM_Translator_unified_jll.llvm_spirv_path,
-                                SPIRV_LLVM_Translator_unified_jll.LIBPATH[],
-                                SPIRV_LLVM_Translator_unified_jll.PATH[])
     ld_path = if Sys.islinux()
             LLD_unified_jll.ld_lld_path
         elseif Sys.isapple()
