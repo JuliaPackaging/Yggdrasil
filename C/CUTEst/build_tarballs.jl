@@ -30,13 +30,15 @@ meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
 meson compile -C builddir
 meson install -C builddir
 
-meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
-                            --prefix=$prefix \
-                            -Dquadruple=${QUADRUPLE} \
-                            -Ddefault_library=shared
+if [[ "${target}" != *i686-w64-mingw32* ]]; then
+    meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                                --prefix=$prefix \
+                                -Dquadruple=${QUADRUPLE} \
+                                -Ddefault_library=shared
 
-meson compile -C builddir_shared
-meson install -C builddir_shared
+    meson compile -C builddir_shared
+    meson install -C builddir_shared
+fi
 
 install_license lgpl-3.0.txt
 """
@@ -51,8 +53,8 @@ products = [
     FileProduct("lib/libcutest_single.a", :libcutest_single_a),
     FileProduct("lib/libcutest_double.a", :libcutest_double_a),
     # FileProduct("lib/libcutest_quadruple.a", :libcutest_quadruple_a), <-- not available on all platforms
-    LibraryProduct("libcutest_single", :libcutest_single),
-    LibraryProduct("libcutest_double", :libcutest_double),
+    # LibraryProduct("libcutest_single", :libcutest_single),
+    # LibraryProduct("libcutest_double", :libcutest_double),
     # LibraryProduct("libcutest_quadruple", :libcutest_quadruple), <-- not available on all platforms
 ]
 
