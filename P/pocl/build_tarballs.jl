@@ -3,23 +3,14 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
-include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
-
 name = "pocl"
-version = v"6.1"
-
-# POCL supports LLVM 14 to 18
-# XXX: link statically to a single version of LLVM instead, and don't use augmentations?
-#      this causes issue with the compile-time link, so I haven't explored this yet
-llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
+version = v"7.0"
 
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "f21ef2ade1f4c0b2e9767d8e27e5878131351e7c")
+              "6accdd750d8ff66dbcc60c499b5aca5004e61c0e")
 ]
 
 #=
@@ -96,6 +87,11 @@ CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
 if [[ ${target} == *-freebsd* ]]; then
     CMAKE_FLAGS+=(-DHOST_COMPILER_SUPPORTS_FLOAT16:BOOL=OFF)
 fi
+# Link LLVM statically so that we don't have to worry about versioning the JLL against it
+CMAKE_FLAGS+=(-DSTATIC_LLVM:Bool=ON)
+# XXX: we add -pthread to the flags used to link libLLVM, so need that here too
+#      (as that is not reflected by llvm-config)
+CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -123,21 +119,6 @@ elif [[ ${target} == *-linux-musl ]]; then
     cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
 fi
 """
-
-# The products that we will ensure are always built
-products = [
-    LibraryProduct(["libpocl", "pocl"], :libpocl),
-    ExecutableProduct("poclcc", :poclcc),
-]
-
-augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
 
 init_block = raw"""
     # Register this driver with OpenCL_jll
@@ -232,66 +213,34 @@ init_block = raw"""
         ], ";")
 """
 
-# determine exactly which tarballs we should build
-builds = []
-for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    # Dependencies that must be installed before this package can be built
-    llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
-    dependencies = [
-        HostBuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        Dependency("OpenCL_jll"),
-        Dependency("OpenCL_Headers_jll"),
-        Dependency("Hwloc_jll"),
-        # only used at run time, but also detected by the build
-        Dependency("SPIRV_LLVM_Translator_unified_jll"),
-        Dependency("SPIRV_Tools_jll"),
-        # only used at run time
-        RuntimeDependency("Clang_unified_jll"),
-        RuntimeDependency("LLD_unified_jll")
-    ]
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+## we don't build LLVM 15+ for i686-linux-musl.
+filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
-    # These are the platforms we will build for by default, unless further
-    # platforms are passed in on the command line
-    platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
-    ## we don't build LLVM 15 for i686-linux-musl.
-    if llvm_version >= v"15"
-        filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-    end
-    ## We only have LLVM builds for AArch64 BSD starting from LLVM 18
-    if version < v"18"
-        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-    end
-    ## We only have LLVM builds for RISC-V starting from LLVM 19
-    if llvm_version < v"19"
-        filter!(p -> !(arch(p) == "riscv64"), platforms)
-    end
+# The products that we will ensure are always built
+products = [
+    LibraryProduct(["libpocl", "pocl"], :libpocl),
+    ExecutableProduct("poclcc", :poclcc),
+]
 
-    for platform in platforms
-        augmented_platform = deepcopy(platform)
-        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
+    Dependency("OpenCL_jll"),
+    Dependency("OpenCL_Headers_jll"),
+    Dependency("Hwloc_jll"),
+    # only used at run time, but also detected by the build
+    Dependency("SPIRV_LLVM_Translator_jll", compat="20.1"),
+    Dependency("SPIRV_Tools_jll"),
+    # only used at run time
+    RuntimeDependency("Clang_unified_jll"),
+    RuntimeDependency("LLD_unified_jll")
+]
 
-        should_build_platform(triplet(augmented_platform)) || continue
-        push!(builds, (;
-            dependencies,
-            platforms=[augmented_platform],
-            preferred_llvm_version=Base.thismajor(llvm_version),
-        ))
-    end
-end
-
-# don't allow `build_tarballs` to override platform selection based on ARGS.
-# we handle that ourselves by calling `should_build_platform`
-non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
-
-# `--register` should only be passed to the latest `build_tarballs` invocation
-non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
-
-for (i,build) in enumerate(builds)
-    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, sources, script,
-                   build.platforms, products, build.dependencies;
-                   preferred_gcc_version=v"10", build.preferred_llvm_version,
-                   julia_compat="1.6", augment_platform_block, init_block)
-end
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               preferred_gcc_version=v"10", preferred_llvm_version=v"20",
+               julia_compat="1.6", init_block)
 
