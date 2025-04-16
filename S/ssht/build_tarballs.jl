@@ -23,6 +23,7 @@ cmake \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DBUILD_TESTING=OFF \
     -DCMAKE_C_FLAGS_INIT='-fPIC' \
+    -DCMAKE_BUILD_TYPE=Release \
     ..
 cmake --build . --config RelWithDebInfo --parallel ${nproc}
 cmake --build . --config RelWithDebInfo --parallel ${nproc} --target install
