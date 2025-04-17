@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "xorriso"
+name = "Xorriso"
 version = v"1.5.6"
 
 # Collection of sources required to complete build
