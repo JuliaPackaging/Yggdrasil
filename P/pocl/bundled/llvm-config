@@ -25,10 +25,14 @@ if [[ "$@" == *--targets-built* ]]; then
     exit 0
 fi
 
-# get rid of -lrt and -ldl on Windows
+# correct list of system libraries
 if [[ "${target}" == *mingw*  && "$@" == *--system-libs* ]]; then
     echo -n "-lntdll "
     $host_tool "$@" | sed -e 's/-lrt//' -e 's/-ldl//'
+    exit 0
+fi
+if [[ "${target}" == *darwin*  && "$@" == *--system-libs* ]]; then
+    $host_tool "$@" | sed -e 's/-lrt//'
     exit 0
 fi
 if [[ "${target}" == *freebsd*  && "$@" == *--system-libs* ]]; then
