@@ -70,6 +70,13 @@ fi
 sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot_include\\"|" \
        cmake/bitcode_rules.cmake
 
+# since we'll reuse the native LLVM utilities, they lack the binary suffix PoCL expects
+if [[ "${target}" == *mingw* ]]; then
+    for tool in clang clang++ llvm-as llvm-dis llvm-link opt llc lli; do
+        ln -s /opt/$MACHTYPE/bin/$tool /opt/$MACHTYPE/bin/$tool.exe
+    done
+fi
+
 CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
