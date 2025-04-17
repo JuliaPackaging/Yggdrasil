@@ -110,6 +110,12 @@ CMAKE_FLAGS+=(-DSTATIC_LLVM:Bool=ON)
 CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 # Force use of the SPIRV LLVM translator library by nuking the executable variant
 CMAKE_FLAGS+=(-DLLVM_SPIRV="")
+# PoCL's CPU autodetection doesn't work on RISC-V
+if [[ ${target} == riscv64-* ]]; then
+    CMAKE_FLAGS+=(-DLLC_HOST_CPU=rv64gc)
+    # forcing a CPU disables distro kernellib mode, so only provide a native build
+    CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=native)
+fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -117,7 +123,14 @@ ninja -C build -j ${nproc} install
 # PoCL uses Clang, which relies on certain system libraries Clang_jll.jl doesn't provide
 mkdir -p $prefix/share/lib
 if [[ ${target} == *-linux-gnu ]]; then
-    if [[ "${nbits}" == 64 ]]; then
+    if [[ ${target} == riscv64-* ]]; then
+        cp -a $sysroot/lib64/lp64d/libc.* $prefix/share/lib
+        cp -a $sysroot/usr/lib64/lp64d/libm.* $prefix/share/lib
+        ln -sf libm.so.6 $prefix/share/lib/libm.so
+        cp -a $sysroot/lib64/lp64d/libm.* $prefix/share/lib
+        cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
+        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+    elif [[ "${nbits}" == 64 ]]; then
         cp -a $sysroot/lib64/libc{.,-}* $prefix/share/lib
         cp -a $sysroot/usr/lib64/libm.* $prefix/share/lib
         ln -sf libm.so.6 $prefix/share/lib/libm.so
