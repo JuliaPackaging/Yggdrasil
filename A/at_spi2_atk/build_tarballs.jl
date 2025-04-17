@@ -39,10 +39,7 @@ dependencies = [
     Dependency("at_spi2_core_jll"),
     Dependency("ATK_jll"),
     Dependency("Xorg_libX11_jll"),
-    # We had to restrict compat with XML2 because of ABI breakage:
-    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
-    Dependency("XML2_jll", v"2.13.6"; compat="2.9.9 - 2.13"),
+    Dependency("XML2_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
