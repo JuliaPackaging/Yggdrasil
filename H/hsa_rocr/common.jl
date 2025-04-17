@@ -66,10 +66,7 @@ function configure_build(version)
         Dependency("hsakmt_roct_jll", version),
         Dependency("ROCmDeviceLibs_jll", version),
         Dependency("NUMA_jll"),
-        # We had to restrict compat with XML2 because of ABI breakage:
-        # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-        # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
-        Dependency("XML2_jll"; compat="2.9.9 - 2.13"),
+        Dependency("XML2_jll"),
         Dependency("Elfutils_jll"),
     ]
     if version < v"5"

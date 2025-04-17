@@ -138,7 +138,7 @@ dependencies = [
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
     # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
-    Dependency("XML2_jll"; compat="2.12.0 - 2.13"),
+    Dependency("XML2_jll", v"2.13.6"; compat="2.12.0 - 2.13"),
     RuntimeDependency("CUDA_Runtime_jll"; platforms=cuda_platforms),
 ]
 

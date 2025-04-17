@@ -86,7 +86,7 @@ dependencies = [
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
     # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
-    Dependency("XML2_jll"; compat="2.9.9 - 2.13"),
+    Dependency("XML2_jll", v"2.13.6"; compat="2.9.9 - 2.13"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),
