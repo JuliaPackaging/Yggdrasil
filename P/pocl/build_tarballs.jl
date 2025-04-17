@@ -48,10 +48,6 @@ if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
     popd
 fi
 
-if [[ "${target}" == *freebsd* ]]; then
-    atomic_patch -p1 -p1 $WORKSPACE/srcdir/patches/freebsd-stdlib.patch
-fi
-
 # POCL wants a target sysroot for compiling the host kernellib (for `math.h` etc)
 sysroot=/opt/${target}/${target}/sys-root
 if [[ "${target}" == *-mingw* ]]; then
