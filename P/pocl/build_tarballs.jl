@@ -66,56 +66,80 @@ fi
 sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot_include\\"|" \
        cmake/bitcode_rules.cmake
 
-# since we'll reuse the native LLVM utilities, they lack the binary suffix PoCL expects
-if [[ "${target}" == *mingw* ]]; then
-    for tool in clang clang++ llvm-as llvm-dis llvm-link opt llc lli; do
-        ln -s /opt/$MACHTYPE/bin/$tool /opt/$MACHTYPE/bin/$tool.exe
-    done
-fi
+# our version of MinGW is ancient (?) and lacks `_aligned_malloc`
+sed -i 's/_aligned_malloc/__mingw_aligned_malloc/g' include/vccompat.hpp
 
 CMAKE_FLAGS=()
+
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+
 # Enable optional debug messages for debuggability
 CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
+
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
+
 # Explicitly use our cmake toolchain file and tell CMake we're cross-compiling
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
+
 # Point to relevant LLVM tools (see above)
 ## HostDependency: llvm-config, but spoofed to return Dependency's paths
 CMAKE_FLAGS+=(-DWITH_LLVM_CONFIG=$WORKSPACE/srcdir/llvm-config)
 ## Native toolchain: for LLVM tools to ensure they can target the right architecture
 CMAKE_FLAGS+=(-DLLVM_BINDIR=/opt/$MACHTYPE/bin)
+if [[ "${target}" == *mingw* ]]; then
+    # XXX: fake .exe binaries so CMake finds them (PoCL isn't good at cross-compilation)
+    for tool in clang clang++ llvm-as llvm-dis llvm-link opt llc lli; do
+        ln -s /opt/$MACHTYPE/bin/$tool /opt/$MACHTYPE/bin/$tool.exe
+    done
+fi
+
 # Override the target and triple, which POCL takes from `llvm-config --host-target`
 triple=$(clang -print-target-triple)
 CMAKE_FLAGS+=(-DLLVM_HOST_TARGET=$triple)
 CMAKE_FLAGS+=(-DLLC_TRIPLE=$triple)
+
 # Override the auto-detected target CPU (which POCL takes from `llc --version`)
 CPU=$(clang --print-supported-cpus 2>&1 | grep -P '\t' | head -n 1 | sed 's/\s//g')
 CMAKE_FLAGS+=(-DLLC_HOST_CPU_AUTO=$CPU)
+
 # Generate a portable build
 CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
+
 # Build POCL as an dynamic library loaded by the OpenCL runtime
 CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
+
 # XXX: work around pocl#1776, disabling FP16 support in i686
 if [[ ${target} == *-freebsd* ]]; then
     CMAKE_FLAGS+=(-DHOST_COMPILER_SUPPORTS_FLOAT16:BOOL=OFF)
 fi
+
 # Link LLVM statically so that we don't have to worry about versioning the JLL against it
 CMAKE_FLAGS+=(-DSTATIC_LLVM:Bool=ON)
 # XXX: we add -pthread to the flags used to link libLLVM, so need that here too
 #      (as that is not reflected by llvm-config)
 CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
+
 # Force use of the SPIRV LLVM translator library by nuking the executable variant
 CMAKE_FLAGS+=(-DLLVM_SPIRV="")
+if [[ "${target}" == *-mingw* ]]; then
+    # PoCL looks for LLVMSPIRVLib in the LLVM libdir, which on Windows contains static libs.
+    # XXX: fix this upstream
+    CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDEDIR="${prefix}/include/LLVMSPIRVLib")
+    CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB="${prefix}/bin/libLLVMSPIRVLib.dll")
+fi
+
 # PoCL's CPU autodetection doesn't work on RISC-V
 if [[ ${target} == riscv64-* ]]; then
     CMAKE_FLAGS+=(-DLLC_HOST_CPU=rv64gc)
     # forcing a CPU disables distro kernellib mode, so only provide a native build
     CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=native)
 fi
+
+# XXX: PoCL defaults to not using shared libraries on MinGW -- this seems to work fine?
+CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
@@ -267,6 +291,6 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"10", preferred_llvm_version=v"20",
+               preferred_gcc_version=v"13", preferred_llvm_version=v"20",
                julia_compat="1.6", init_block)
 
