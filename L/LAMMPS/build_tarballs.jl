@@ -32,14 +32,14 @@ version = v"2025.4.0-feature" # Equivalent to patch_2Apr2025
 # 2.EVEN -> features
 
 # From now on, we use dates for versioning, similarly to LAMMPS versioning
-# For feature releases: <Year>.<Month>.0-feature+<Build Counter>
+# For feature releases: <Year>.<Month>.<update>-feature+<Build Counter>
 # For stable releases: <Year>.<Month>.<update>+<Build Counter>
 
 # 2025.4.0-feature -> https://github.com/lammps/lammps/releases/tag/patch_2Apr2025
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "0435e156bad04187a813bd82302f129155360825"),
+    GitSource("https://github.com/lammps/lammps.git", "7b4c33630d544953d2abe12eccdf0fab5ba0e7d1"),
 ]
 
 # Bash recipe for building across all platforms
