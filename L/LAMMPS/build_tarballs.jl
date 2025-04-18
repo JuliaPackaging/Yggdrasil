@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "LAMMPS"
-version = v"2.7.0" # Equivalent to stable_29Aug2024
+version = v"2025.4.0" # Equivalent to patch_2Apr2025
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -31,9 +31,14 @@ version = v"2.7.0" # Equivalent to stable_29Aug2024
 # 2.ODD -> stable
 # 2.EVEN -> features
 
+# From now on, we use dates for versioning, similarly to LAMMPS versioning
+# <Year>.<Month>.<counter for updates, stable releases, pre-releases etc.>
+
+# 2025.4.0 -> https://github.com/lammps/lammps/releases/tag/patch_2Apr2025
+
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "570c9d190fee556c62e5bd0a9c6797c4dffcc271"),
+    GitSource("https://github.com/lammps/lammps.git", "7b4c33630d544953d2abe12eccdf0fab5ba0e7d1"),
 ]
 
 # Bash recipe for building across all platforms
