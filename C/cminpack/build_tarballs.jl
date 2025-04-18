@@ -71,5 +71,5 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 5 for OpenBLAS32's `memcpy` calls on x86_64
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"5")
