@@ -77,11 +77,11 @@ fi
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency("Cairo_jll"; compat="1.18.4"),
-        Dependency("Fontconfig_jll"; compat="2.15.0"),
+        Dependency("Cairo_jll"; compat="1.18.5"),
+        Dependency("Fontconfig_jll"; compat="2.16.0"),
         Dependency("FreeType2_jll"; compat="2.13.4"),
         Dependency("Glib_jll"; compat="2.84.0"),
-        Dependency("Graphite2_jll"; compat="1.3.14"),
+        Dependency("Graphite2_jll"; compat="1.3.15"),
         Dependency("Libffi_jll"; compat="~3.4.7"),
         BuildDependency("Xorg_xorgproto_jll"),
     ]
