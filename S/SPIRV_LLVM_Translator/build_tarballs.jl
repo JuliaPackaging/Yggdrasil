@@ -2,6 +2,9 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "SPIRV_LLVM_Translator"
 version = v"20.1"
 llvm_version = v"20.1.2"
@@ -10,14 +13,11 @@ llvm_version = v"20.1.2"
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "dee371987a59ed8654083c09c5f1d5c54f5db318"),
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
+        "dee371987a59ed8654083c09c5f1d5c54f5db318")
 ]
 
 # Bash recipe for building across all platforms
-get_script(llvm_version) = raw"""
+script = raw"""
 cd SPIRV-LLVM-Translator
 install_license LICENSE.TXT
 
@@ -73,23 +73,24 @@ CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * r
 # Suppress certain errors
 CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion")
 
+# Enable support for SPIR-V Tools-assisted disassembly
+CMAKE_FLAGS+=(-DLLVM_SPIRV_ENABLE_LIBSPIRV_DIS:BOOL=ON)
+
+# Point to the SPIR-V headers
+CMAKE_FLAGS+=(-DLLVM_EXTERNAL_SPIRV_HEADERS_SOURCE_DIR=${includedir})
+
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} llvm-spirv install
 install -Dm755 build/tools/llvm-spirv/llvm-spirv${exeext} -t ${bindir}
+
+# Remove unwanted static libraries
+rm -f $prefix/lib/libLLVMSPIRVLib*.a
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-
-# We don't build LLVM 15+ for i686-linux-musl, see
-# <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1430063957>:
-#     In file included from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_flags.h:16:0,
-#                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_common.h:18,
-#                      from /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_platform_limits_posix.cpp:173:
-#     /workspace/srcdir/llvm-project/compiler-rt/lib/sanitizer_common/sanitizer_internal_defs.h:352:30: error: static assertion failed
-#      #define COMPILER_CHECK(pred) static_assert(pred, "")
-#                                   ^
+## We don't build LLVM 15+ for i686-linux-musl
 filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
@@ -100,9 +101,43 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("SPIRV_Tools_jll"),
+    BuildDependency("SPIRV_Headers_jll"),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
 ]
 
-# Build the tarballs.
-build_tarballs(ARGS, name, version, sources, get_script(llvm_version), platforms, products,
-               dependencies; preferred_gcc_version=v"10", julia_compat="1.6")
+builds = []
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+
+    # On macOS, we need to use a newer SDK which supports `std::filesystem`
+    platform_sources = if Sys.isapple(platform)
+        [sources;
+         ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                       "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")]
+    else
+        sources
+    end
+
+    # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
+    preferred_gcc_version = if Sys.iswindows(platform)
+        v"13"
+    else
+        v"10"
+    end
+
+    push!(builds, (; platform, sources=platform_sources, preferred_gcc_version))
+end
+
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+for (i,build) in enumerate(builds)
+    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+                   name, version, build.sources, script, [build.platform], products,
+                   dependencies; build.preferred_gcc_version, julia_compat="1.6")
+end
