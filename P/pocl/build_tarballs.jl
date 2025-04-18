@@ -272,6 +272,8 @@ init_block = raw"""
 platforms = expand_cxxstring_abis(supported_platforms())
 ## we don't build LLVM 15+ for i686-linux-musl.
 filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+## PoCL doesn't support 32-bit Windows
+filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 # The products that we will ensure are always built
 products = [
