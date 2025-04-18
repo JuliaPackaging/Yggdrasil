@@ -22,10 +22,7 @@ install -Dvm 755 "launcher" "${bindir}/macos_launcher"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-]
+platforms = supported_platforms(; exclude=!Sys.isapple)
 
 # The products that we will ensure are always built
 products = [
