@@ -330,8 +330,10 @@ end
 # we handle that ourselves by calling `should_build_platform`
 non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
 
-# `--register` should only be passed to the latest `build_tarballs` invocation
-non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+# `--register` and `--deploy` should only be passed to the final `build_tarballs` invocation
+non_reg_ARGS = filter(non_platform_ARGS) do arg
+    arg != "--register" && !startswith(arg, "--deploy")
+end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
