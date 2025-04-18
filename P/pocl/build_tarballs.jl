@@ -12,7 +12,6 @@ version = v"7.0"
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
-    # DirectorySource("/home/tim/Julia/src/pocl"; target="pocl"),
     GitSource("https://github.com/pocl/pocl",
               "6accdd750d8ff66dbcc60c499b5aca5004e61c0e")
 ]
@@ -33,6 +32,14 @@ builds of LLVM we need:
   LLVM version is compatible with the one used at run time, to avoid IR incompatibilities.
 
 =#
+
+# These are the platforms we will build for by default, unless further
+# platforms are passed in on the command line
+platforms = expand_cxxstring_abis(supported_platforms())
+## we don't build LLVM 15+ for i686-linux-musl.
+filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+## PoCL doesn't support 32-bit Windows
+filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -115,7 +122,7 @@ CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
 # Build POCL as an dynamic library loaded by the OpenCL runtime
 CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
 
-# XXX: work around pocl#1776, disabling FP16 support in i686
+# XXX: work around pocl#1776, disabling FP16 support for FreeBSD
 if [[ ${target} == *-freebsd* ]]; then
     CMAKE_FLAGS+=(-DHOST_COMPILER_SUPPORTS_FLOAT16:BOOL=OFF)
 fi
@@ -266,14 +273,6 @@ init_block = raw"""
             "-L" * joinpath(artifact_dir, "share", "lib")
         ], ";")
 """
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-## we don't build LLVM 15+ for i686-linux-musl.
-filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-## PoCL doesn't support 32-bit Windows
-filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 # The products that we will ensure are always built
 products = [
