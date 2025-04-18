@@ -164,25 +164,32 @@ if [[ ${target} == *-linux-gnu ]]; then
         ln -sf libm.so.6 $prefix/share/lib/libm.so
         cp -a $sysroot/lib64/lp64d/libm.* $prefix/share/lib
         cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
-        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     elif [[ "${nbits}" == 64 ]]; then
         cp -a $sysroot/lib64/libc{.,-}* $prefix/share/lib
         cp -a $sysroot/usr/lib64/libm.* $prefix/share/lib
         ln -sf libm.so.6 $prefix/share/lib/libm.so
         cp -a $sysroot/lib64/libm{.,-}* $prefix/share/lib
         cp -a /opt/${target}/${target}/lib64/libgcc_s.* $prefix/share/lib
-        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     else
         cp -a $sysroot/lib/libc{.,-}* $prefix/share/lib
         cp -a $sysroot/usr/lib/libm.* $prefix/share/lib
         ln -sf libm.so.6 $prefix/share/lib/libm.so
         cp -a $sysroot/lib/libm{.,-}* $prefix/share/lib
         cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
-        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     fi
+    cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
 elif [[ ${target} == *-linux-musl ]]; then
     cp -a $sysroot/usr/lib/*.{o,a} $prefix/share/lib
     cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+elif [[ "${target}" == *-mingw* ]]; then
+    cp -va $sysroot/lib/*.o $prefix/share/lib
+    cp -va $sysroot/lib/libmsvcrt*.a $prefix/share/lib
+    cp -va $sysroot/lib/libucrt*.a $prefix/share/lib
+    cp -va $sysroot/lib/libm.a $prefix/share/lib
+    cp -va $sysroot/lib/lib{kernel,user,shell}32.a $prefix/share/lib
+    cp -va $sysroot/lib/libmingw*.a $prefix/share/lib
+    cp -va /opt/${target}/${target}/lib/libgcc* $prefix/share/lib
+    cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
 fi
 """
 
