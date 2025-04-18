@@ -3,52 +3,52 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.21.1"
+version = v"0.23.1"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "50fa7051259d31da0778133bc7456dc029471bff"),
+    GitSource("https://github.com/ml-explore/mlx.git", "71de73a668df50f0638e74e77849d9232ddeb50e"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/72/1f/267d7fb06eb257feb7c281f73472bcae9735c9a7c09fe86d9362069c85a7/mlx-0.21.1-cp313-cp313-macosx_13_0_arm64.whl", "88328c058f4765b0376ac908b49e6711d25f93e02b972b8e68b73a9e1c358eab"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
+    FileSource("https://files.pythonhosted.org/packages/28/e4/26be6c113b903156176710d09e0ec0543b28d2aecb64a83647f213ce6e1a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "8138c079957c4942553e1a242a58c4990e317680909e364e024fb7b8d8a14ac7"; filename = "mlx-aarch64-apple-darwin20.whl"),
     DirectorySource("./bundled"),
 ]
 
 script = raw"""
-apk del cmake # Need CMake >= 3.24
+apk del cmake # Need CMake >= 3.30
 
 if [[ "$target" == *-apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
-    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+    sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
+    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
+    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
 fi
 
 cd $WORKSPACE/srcdir/mlx
 
-if [[ "$target" == *-w64-mingw32* ]]; then
-    atomic_patch -p1 ../patches/cmake-win32-io.patch
+atomic_patch -p1 ../patches/mpi-crosscompile.patch
+if [[ "$target" == *-freebsd* ]]; then
+    atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
 fi
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
     export MACOSX_DEPLOYMENT_TARGET=13.3
-elif [[ "$target" == *-freebsd* ||
-        "$target" == *-w64-mingw32* ]]; then
+elif [[ "$target" == *-w64-mingw32* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
         "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
-        "-DMLX_BUILD_SAFETENSORS=OFF" # Disabled safetensors, due to `mlx/io/safetensors.cpp.obj:safetensors.cpp:(.rdata$.refptr._ZTVN3mlx4core2io18ParallelFileReaderE[.refptr._ZTVN3mlx4core2io18ParallelFileReaderE]+0x0): undefined reference to `vtable for mlx::core::io::ParallelFileReader'`
     )
 fi
 
 libblastrampoline_target=$(echo $bb_full_target | cut -d- -f 1-3)
 if [[ "$target" != *-apple-darwin* &&
-      "$libblastrampoline_target" != armv6l-linux-* &&
-      "$bb_full_target" != i686-linux-gnu-cxx11 ]]; then
+      "$target" != aarch64-unknown-freebsd* &&
+      "$libblastrampoline_target" != armv6l-linux-* ]]; then
     if [[ "$target" == *-freebsd* ]]; then
         libblastrampoline_target=$rust_target
     fi
     CMAKE_EXTRA_OPTIONS+=(
+        "-DBLA_VENDOR=libblastrampoline"
         "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
         "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
     )
@@ -58,6 +58,7 @@ install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
     cmake \
+        --compile-no-warning-as-error \
         -B build \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -88,9 +89,8 @@ platforms = expand_cxxstring_abis(platforms)
 
 accelerate_platforms = filter(Sys.isapple, platforms)
 openblas_platforms = filter(p ->
-    arch(p) == "armv6l" ||
-    p == Platform("i686", "Linux"; libc = "glibc", cxxstring_abi = "cxx11") ||
-    Sys.isfreebsd(p) && arch(p) == "aarch64",
+    arch(p) == "aarch64" && Sys.isfreebsd(p) || # aarch64-unknown-freebsd using libblastrampoline fails to compile: mlx/backend/common/lapack.h:17:10: fatal error: 'cblas.h' file not found
+    arch(p) == "armv6l", # armv6l-linux using libblastrampoline fails to compile: mlx/backend/common/lapack.h:17:10: fatal error: cblas.h: No such file or directory
     filter(p -> p ∉ accelerate_platforms, platforms)
 )
 libblastrampoline_platforms = filter(p -> p ∉ union(accelerate_platforms, openblas_platforms), platforms)
@@ -101,10 +101,10 @@ products = Product[
 ]
 
 dependencies = [
-    Dependency("dlfcn_win32_jll"; platforms = filter(Sys.iswindows, platforms)),
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
-    HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.24
+    Dependency("OpenMPI_jll"),
+    HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;

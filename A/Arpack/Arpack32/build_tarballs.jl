@@ -16,3 +16,5 @@ products = [
 build_tarballs(ARGS, name, version, arpack_sources(version), build_script(build_32bit=true),
                platforms, products, dependencies;
 	       julia_compat="1.9", clang_use_lld=false, preferred_gcc_version=v"8")
+
+# Build trigger: 1

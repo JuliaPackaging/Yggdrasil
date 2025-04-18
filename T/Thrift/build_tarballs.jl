@@ -3,7 +3,8 @@
 using BinaryBuilder, Pkg
 
 name = "Thrift"
-version = v"0.21.0"
+source_version = v"0.21.0" 
+version = v"0.21.1" # Bump rebuild for riscv, drop at next release
 
 # Collection of sources required to complete build
 sources = [
@@ -15,7 +16,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/thrift
 
-# Needed as https://github.com/apache/thrift/pull/2518 isn't released yet
+# Needed until https://github.com/apache/thrift/pull/3090 released
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
@@ -59,7 +60,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("boost_jll", compat="=1.79.0"),
+    Dependency("boost_jll", compat="=1.87.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -6,7 +6,7 @@ name = "libsodium"
 # Note: upstream stopped giving version numbers to new releases.  "Releases" are
 # commits to the "stable" branch.  Here we just invent new versions numbers
 # because we need having different versions.
-version = v"1.0.20"
+version = v"1.0.21"
 
 # Collection of sources required to complete build
 sources = [

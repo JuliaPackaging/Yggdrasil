@@ -13,8 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd libusb/
+cd $WORKSPACE/srcdir/libusb/
 ./bootstrap.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-udev
 make -j${nproc}
@@ -37,4 +36,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"5")

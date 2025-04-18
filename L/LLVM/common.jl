@@ -17,10 +17,11 @@ const llvm_tags = Dict(
     v"14.0.5" => "73db33ead13c3596f53408ad6d1de4d0f2270adb", # julia-14.0.5-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
     v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
-    v"16.0.6" => "499f87882a4ba1837ec12a280478cf4cb0d2753d", # julia-16.0.6-2
+    v"16.0.6" => "4a5c1da0d268d2858def6c1aa206ac4b31956208", # julia-16.0.6-4
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
     v"18.1.7" => "ed30d043a240d06bb6e010a41086e75713156f4f", # julia-18.1.7-2
-    v"19.1.1" => "49c6812e2c4624a7f0cee34859a0511209f44b67", # julia-19.1.1-1
+    v"19.1.7" => "a9df916357c2fd0851df026a84f83d87efd6e212", # julia-19.1.7-1
+    v"20.1.2" => "4f020e6d4d37d271d46befedb896ea3df95fdc49", # julia-20.1.2-0
 )
 
 const buildscript = raw"""
@@ -122,6 +123,7 @@ else
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
@@ -139,7 +141,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} mlir-linalg-ods-yaml-gen
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
-    ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
+    ninja -j${nproc} clang-tidy-confusable-chars-gen mlir-pdll
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
+    ninja -j${nproc} clang-pseudo-gen
 fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
     ninja -j${nproc} mlir-src-sharder
@@ -188,13 +193,14 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
 if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
 fi
 
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
 
 # Turn on ZLIB
-CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=FORCE_ON)
 # Turn off XML2
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
@@ -248,7 +254,8 @@ if [[ ${target} == *linux* ]]; then
 #     CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
 fi
 # if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
-if [[ ${target} == *linux* ]]; then # TODO only LLVM12
+if [[ "${LLVM_MAJ_VER}" -ge "12" && ${target} == x86_64-linux* ]]; then
+    # Intel VTune is available only on x86_64 architectures
     CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
@@ -272,8 +279,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
-    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
+    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
 fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
     CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
@@ -764,6 +773,10 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if version < v"18"
         # We only have LLVM builds for AArch64 BSD starting from LLVM 18
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
+    if version < v"19.1.7"
+        # We only have LLVM builds for riscv starting from LLVM 19.1.7
+        filter!(p -> arch(p) != "riscv64", platforms)
     end
     platforms = expand_cxxstring_abis(platforms)
 

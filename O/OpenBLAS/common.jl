@@ -4,6 +4,10 @@ using BinaryBuilderBase: sanitize
 # Collection of sources required to build OpenBLAS
 function openblas_sources(version::VersionNumber; kwargs...)
     openblas_version_sources = Dict(
+        v"0.3.29" => [
+            ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.29/OpenBLAS-0.3.29.tar.gz",
+                          "38240eee1b29e2bde47ebb5d61160207dc68668a54cac62c076bb5032013b1eb")
+        ],
         v"0.3.28" => [
             ArchiveSource("https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.28/OpenBLAS-0.3.28.tar.gz",
                           "f1003466ad074e9b0c8d421a204121100b0751c96fc6fcf3d1456bd12f8a00a1")
@@ -182,6 +186,8 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         flags+=(TARGET=ARMV7)
     elif [[ ${target} == powerpc64le-* ]]; then
         flags+=(TARGET=POWER8 DYNAMIC_ARCH=1)
+    elif [[ ${target} == riscv64-* ]]; then
+        flags+=(TARGET=RISCV64_GENERIC DYNAMIC_ARCH=1)
     fi
 
     # If we're building for x86_64 Windows gcc7+, we need to disable usage of
@@ -255,8 +261,16 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
 
 end
 
-# Nothing complicated here; we build for everywhere
-openblas_platforms(;experimental::Bool=true, kwargs...) = expand_gfortran_versions(supported_platforms(;experimental))
+function openblas_platforms(;experimental::Bool=true, version::Union{Nothing,VersionNumber}=nothing, kwargs...)
+    platforms = expand_gfortran_versions(supported_platforms(;experimental))
+    # OpenBLAS 0.3.29 doesn't support GCC < v11 on powerpc64le:
+    # <https://github.com/OpenMathLib/OpenBLAS/issues/5068#issuecomment-2585836284>.
+    # This means we can't build it at all for libgfortran 3 and 4.
+    if version isa VersionNumber && version >= v"0.3.29"
+        filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
+    end
+    return platforms
+end
 
 # The products that we will ensure are always built
 function openblas_products(;kwargs...)

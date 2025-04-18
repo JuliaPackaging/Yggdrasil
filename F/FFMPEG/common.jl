@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version_string = "6.1.2"   # when patch number is zero, they use X.Y format
+version_string = "7.1"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "3b624649725ecdc565c903ca6643d41f33bd49239922e45c9b1442c63dca4e38",
+        "40973d44970dbc83ef302b0609f2e74982be2d85916dd2ee7472d30678a7abe6",
     ),
     ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
     ArchiveSource(
@@ -135,6 +135,12 @@ end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
+platforms = supported_platforms()
+# `libass_jll` is missing
+filter!(p -> arch(p) != "armv6l", platforms)
+# `libass_jll` is missing
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# `OpenSSL_jll` is missing
+filter!(p -> arch(p) != "riscv64", platforms)
 
 preferred_gcc_version = v"8"

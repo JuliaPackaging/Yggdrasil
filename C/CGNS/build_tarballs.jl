@@ -47,7 +47,10 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="~1.14"),
+    # We had to restrict compat with HDF5 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; compat="1.14.0 - 1.14.3"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

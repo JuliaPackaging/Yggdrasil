@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Lz4"
-version = v"1.10.0"
+version = v"1.10.1" # Corresponds to upstream v1.10.0, next time can go back to follow upstream version
 
 # Collection of sources required to build Lz4
 sources = [
@@ -48,4 +48,4 @@ dependencies = Dependency[
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
 
-# Build Trigger: 1
+# Build Trigger: 2

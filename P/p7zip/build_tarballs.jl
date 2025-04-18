@@ -52,13 +52,14 @@ else
             powerpc64le*linux*)  echo makefile.linux_cross_ppc64le;;
             aarch64*linux*)      echo makefile.linux_cross_aarch64;;
             arm-*linux*)         echo makefile.linux_cross_arm;;
+            riscv64-linux*)      echo makefile.linux_any_cpu;;
             x86_64-*freebsd*)    echo makefile.freebsd6+;;
             aarch64-*freebsd*)   echo makefile.freebsd6+;;
             x86_64-*darwin*)     echo makefile.macosx_llvm_64bits;;
             aarch64-*darwin*)    echo makefile.macosx_llvm_64bits;;
         esac
     }
-    cp $(target_makefile) makefile.machine
+    cp -v $(target_makefile) makefile.machine
 
     # clang doesn't like this c++11 narrowing, so we disable the error
     if [[ "${target}" == *darwin* ]] || [[ "${target}" == *freebsd* ]]; then
@@ -68,8 +69,7 @@ else
     install_license DOC/License.txt
 
     make -j${nproc} 7za CC="${CC} ${CFLAGS}" CXX="${CXX} ${CXXFLAGS}"
-    mkdir -p ${prefix}/bin
-    cp -a bin/7za ${prefix}/bin/7z
+    install -Dvm 755 bin/7za "${bindir}/7z"
 fi
 """
 
@@ -91,3 +91,5 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version=llvm_version)
+
+# Build trigger: 1

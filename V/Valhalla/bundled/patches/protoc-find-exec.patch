@@ -1,0 +1,20 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3af4452a7..e3c46be57 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -175,7 +175,14 @@ endif()
+ # for protoc location in a platform agnostic manner
+ # newer protobuf versions require a compat bool
+ set(protobuf_MODULE_COMPATIBLE ON CACHE BOOL "")
+-find_package(Protobuf REQUIRED)
++find_package(Protobuf CONFIG REQUIRED)
++
++if(Protobuf_PROTOC_EXECUTABLE)
++  set_target_properties(protobuf::protoc PROPERTIES
++    IMPORTED_LOCATION_RELEASE "${Protobuf_PROTOC_EXECUTABLE}"
++  )
++endif()
++
+ # and turn it off again
+ message(STATUS "Using protoc from ${Protobuf_PROTOC_EXECUTABLE}")
+ message(STATUS "Using pbf headers from ${Protobuf_INCLUDE_DIRS}")

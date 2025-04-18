@@ -4,6 +4,8 @@ using BinaryBuilder
 
 name = "Xorg_libXext"
 version = v"1.3.6"
+# We bumped the version because we built for riscv64
+ygg_version = v"1.3.7"
 
 # Collection of sources required to build libXext
 sources = [
@@ -13,10 +15,8 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXext-*/
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXext-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=yes
 make -j${nproc}
 make install
 """
@@ -33,10 +33,9 @@ products = [
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
-    Dependency("Xorg_libX11_jll"; compat="1.8.6"),
+    Dependency("Xorg_libX11_jll"; compat="1.8.12"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"6")
-# Build trigger: 1

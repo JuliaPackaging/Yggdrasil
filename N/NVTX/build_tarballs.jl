@@ -1,20 +1,17 @@
 using BinaryBuilder, Pkg
 
 name = "NVTX"
-version = v"3.1.0"
+version = v"3.1.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/NVIDIA/NVTX",
-              "e170594ac7cf1dac584da473d4ca9301087090c1"), # v3.1.0 tag
+              "6230bdf710bc94f44d433acceba735aaa9090ba5"), # v3.1.1 tag
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-atomic_patch -p1 $WORKSPACE/srcdir/patches/nvtx-linux-limits.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/nvtx-windows-case.patch
-atomic_patch -p1 $WORKSPACE/srcdir/patches/nvtx-pragma-hidden.patch
 cd ${WORKSPACE}/srcdir/
 mkdir -p ${libdir}
 if [[ "${target}" == *-linux-* ]]; then

@@ -3,24 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "Arrow"
-# This installs Arrow 18.1.0.
-# We declare this as 18.1.1 because we enabled the Zstd library, changing the package dependencies.
-version = v"18.1.1"
+version = v"19.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/arrow.git",
-              "6a0414bd9a91e890ec6a45369bf61f405180628c"),
+    ArchiveSource("https://dlcdn.apache.org/arrow/arrow-$version/apache-arrow-$version.tar.gz",
+                  "f89b93f39954740f7184735ff1e1d3b5be2640396febc872c4955274a011f56b"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-
-cd $WORKSPACE/srcdir/arrow
+cd $WORKSPACE/srcdir/apache-arrow-*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/windows.patch
 if [[ $target == *mingw32* ]]; then
     # This hard-codes the name and location of the zstd library and
     # must not be applied on other architectures
@@ -41,6 +37,7 @@ CMAKE_FLAGS=(
     -DARROW_DEPENDENCY_SOURCE=SYSTEM
     -DARROW_IPC=OFF
     -DARROW_JEMALLOC=OFF
+    -DARROW_MIMALLOC=OFF # We could turn this on when https://github.com/apache/arrow/pull/42090 is merged
     -DARROW_PARQUET=ON
     -DARROW_SIMD_LEVEL=NONE
     -DARROW_THRIFT_USE_SHARED=ON
@@ -83,17 +80,17 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("Lz4_jll"),
-    Dependency("Thrift_jll"; compat="0.21"),
+    Dependency("Thrift_jll"; compat="0.21.1"),
     Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"; compat="1.5.6"),
-    Dependency("boost_jll"; compat="=1.79.0"),
-    Dependency("brotli_jll"; compat="1.1.0"),
-    Dependency("snappy_jll"; compat="1.2.1"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
+    Dependency("boost_jll"; compat="=1.87.0"),
+    Dependency("brotli_jll"; compat="1.1.1"),
+    Dependency("snappy_jll"; compat="1.2.2"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"11.1")

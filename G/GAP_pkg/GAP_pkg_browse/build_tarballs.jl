@@ -3,7 +3,6 @@
 include("../common.jl")
 
 gap_version = v"400.1400.0"
-gap_lib_version = v"400.1400.0"
 name = "Browse"
 upstream_version = "1.8.21" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
@@ -38,7 +37,7 @@ install_license /usr/share/licenses/GPL-3.0+
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
+platforms, dependencies = setup_gap_package(gap_version)
 
 # The products that we will ensure are always built
 products = [

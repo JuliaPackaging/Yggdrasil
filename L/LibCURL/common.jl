@@ -1,7 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
-using BinaryBuilderBase: sanitize
+using BinaryBuilderBase: sanitize, get_addable_spec
 
 const curl_hashes = Dict(
     v"7.88.1" => "cdb38b72e36bc5d33d5b8810f8018ece1baa29a8f215b4495e495ded82bbf3c7",
@@ -15,6 +15,9 @@ const curl_hashes = Dict(
     v"8.9.1"  => "291124a007ee5111997825940b3876b3048f7d31e73e9caa681b80fe48b2dcd5",
     v"8.11.0" => "264537d90e58d2b09dddc50944baf3c38e7089151c8986715e2aaeaaf2b8118f",
     v"8.11.1" => "a889ac9dbba3644271bd9d1302b5c22a088893719b72be3487bc3d401e5c4e80",
+    v"8.12.0" => "b72ec874e403c90462dc3019c5b24cc3cdd895247402bf23893b3b59419353bc",
+    v"8.12.1" => "7b40ea64947e0b440716a4d7f0b7aa56230a5341c8377d7b609649d4aea8dbcf",
+    v"8.13.0" => "c261a4db579b289a7501565497658bbd52d3138fdbaccf1490fa918129ab45bc",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber)
@@ -34,9 +37,28 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
         DirectorySource("../patches"),
     ]
+    if version >= v"8.13"
+        append!(sources, [
+            ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+                          "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4")
+                ])
+        unpack_macosx_sdk = raw"""
+        if [[ "${target}" == x86_64-apple-darwin* ]]; then
+            export MACOSX_DEPLOYMENT_TARGET=10.13
+            pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+            rm -rf /opt/${target}/${target}/sys-root/System
+            cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+            cp -a System "/opt/${target}/${target}/sys-root/"
+            popd
+        fi
+        """
+    else
+        unpack_macosx_sdk = ""
+    end
+
 
     # Bash recipe for building across all platforms
-    script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * raw"""
+    script = "THIS_IS_CURL=$(this_is_curl_jll)\n" * unpack_macosx_sdk * raw"""
     cd $WORKSPACE/srcdir/curl-*
 
     # Address <https://github.com/curl/curl/issues/12849>
@@ -133,8 +155,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         Dependency("LibSSH2_jll"),
         Dependency("Zlib_jll"),
         Dependency("nghttp2_jll"),
-        Dependency("OpenSSL_jll"; compat="3.0.15", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
-        # Dependency("Kerberos_krb5_jll"; platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]

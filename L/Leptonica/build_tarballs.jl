@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Leptonica"
-version = v"1.83.1"
+version = v"1.85.0"
 
 # Collection of sources required to build Leptonica
 sources = [
     GitSource("https://github.com/DanBloomberg/leptonica.git",
-                  "b667978e86c4bf74f7fdd75f833127d2de327550"),
+                  "63aef18d98432b8582a1565e241f7bd2ee9cc8d9"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,7 +46,7 @@ dependencies = [
     Dependency(PackageSpec(name="Giflib_jll", uuid="59f7168a-df46-5410-90c8-f2779963d0ec")),
     Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8")),
     Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
+    Dependency("Libtiff_jll"; compat="4.7"),
     Dependency("libwebp_jll"; compat="1.2.4"),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
     # Leptonica has a runtime check on the minor version of OpenJpeg, because why not:

@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDSS"
-version = v"0.4.0"
-full_version = "0.4.0.2"
+version = v"0.5.0"
+full_version = "0.5.0.16"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -26,8 +26,8 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
 
     cd libcudss-*
     install_license LICENSE
-    mv lib/cudss.lib ${prefix}/lib
-    mv bin/cudss*64_*.dll ${libdir}
+    mv lib/cudss*.lib ${prefix}/lib
+    mv bin/cudss*.dll ${libdir}
     mv include/* ${prefix}/include
 
     # fixup
@@ -39,9 +39,13 @@ augment_platform_block = CUDA.augment
 
 products = [
     LibraryProduct(["libcudss", "cudss64_$(version.major)"], :libcudss),
+    LibraryProduct(["libcudss_mtlayer_gomp", "cudss_mtlayer_vcomp140"], :libcudss_mtlayer),
 ]
 
-dependencies = [RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))]
+dependencies = [
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"));
+    RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll", uuid="76a88914-d11a-5bdc-97e0-2f5a05c973a2"))
+]
 
 platforms = [Platform("x86_64", "linux"),
              Platform("aarch64", "linux"; cuda_platform="jetson"),

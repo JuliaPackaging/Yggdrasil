@@ -19,7 +19,7 @@ jobs:
         with:
           version: '1.7.3' # Use the version of Julia used on the build machine
           arch: x64
-      - uses: julia-actions/cache@824243901fb567ccb490b0d0e2483ccecde46834 # v2.0.5
+      - uses: julia-actions/cache@d10a6fd8f31b12404a54613ebad242900567f2b9 # v2.1.0
         with:
           cache-registries: "true"
           cache-compiled: "true"
@@ -34,7 +34,7 @@ jobs:
         id: commit_message
       - name: Show git status
         run: git status
-      - uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f # v7.0.5
+      - uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true

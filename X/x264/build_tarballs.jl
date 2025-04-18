@@ -13,15 +13,16 @@ x264_build = 164
 # bit. Versioning scheme is convoluted, follow me: we add and offset of "10_000" to the
 # major version (inflated by 1000) because we need a major version larger than the previous
 # calendar-based versioning, then we add also the `x264_build`, to make any new ABI-breaking
-# version automatically semver-breaking.
-version = VersionNumber(10_000 + 1000 * major_version + x264_build,
-                        0,
-                        0)
+# version automatically semver-breaking.  Bump the minor and patch offsets as necessary for
+# new builds/versions.
+version = VersionNumber(10_000 + 1000 * major_version + x264_build, # Major version
+                        0, # Minor version
+                        1) # Patch version
 
 # Collection of sources required to build x264
 sources = [
     GitSource("https://code.videolan.org/videolan/x264.git",
-              "31e19f92f00c7003fa115047ce50978bc98c3a0d"),
+              "52f7694ddd35209cb95225e7acce91d8a30cb57d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +32,10 @@ if [[ "${target}" == x86_64* ]] || [[ "${target}" == i686* ]]; then
     export AS=nasm
 else
     export AS="${CC}"
+fi
+if [[ "${target}" == riscv64-* ]]; then
+    # Update configure scripts to make riscv64 architecture work: https://code.videolan.org/videolan/x264/-/issues/52
+    update_configure_scripts
 fi
 # Remove `-march` flag from `configure` script
 sed -i 's/ -march=i686//g' configure

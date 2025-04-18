@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "pugixml"
-version = v"1.14.0"
+version_string = "1.14"
+version = VersionNumber("1.14.1") # We had to change the version number to bump the compat bound, from next release we can go back to follow upstream version
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.14.tar.gz",
+    ArchiveSource("http://github.com/zeux/pugixml/releases/download/v$(version_string)/pugixml-$(version_string).tar.gz",
                   "2f10e276870c64b1db6809050a75e11a897a8d7456c4be5c6b2e35a11168a015")
 ]
 
@@ -39,3 +40,5 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+
+# Build trigger: 1

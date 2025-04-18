@@ -2,16 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "Cairo"
-version = v"1.18.2"
+version = v"1.18.4"
 
 sources = [
-    GitSource("https://gitlab.freedesktop.org/cairo/cairo.git",
-              "b9eed915f9a67380e7ef9d8746656455c43f67e2"),  # this is a few commits after 1.18.2 but includes an important bugfix
+    ArchiveSource("https://cairographics.org/releases/cairo-1.18.4.tar.xz",
+                  "445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/cairo
+cd $WORKSPACE/srcdir/cairo*
 
 # Add nipc_rmid_deferred_release = false for non linux builds to avoid running test
 if [[ "${target}" != x86_64-linux-* ]]; then
@@ -27,8 +27,7 @@ if [[ "${target}" == *-freebsd* ]]; then
     sed -i -e "s~cpp_link_args = .*~cpp_link_args = ['-L${libdir}', '-lexecinfo']~" ${MESON_TARGET_TOOLCHAIN}
 fi
 
-mkdir output && cd output/
-
+mkdir output && cd output
 
 meson .. --cross-file=${MESON_TARGET_TOOLCHAIN} \
     -Dfreetype=enabled \
@@ -57,6 +56,9 @@ ninja install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# Many dependencies for riscv64 are missing
+filter!(p -> arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcairo-gobject", :libcairo_gobject),
@@ -65,23 +67,23 @@ products = [
 ]
 
 # Some dependencies are needed only on Linux and FreeBSD
-linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
+linux_freebsd = filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=linux_freebsd),
-    Dependency("Glib_jll"),
-    Dependency("Pixman_jll"; compat="0.43.4"),
-    Dependency("libpng_jll"),
-    Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.13.1"),
-    Dependency("Bzip2_jll"; compat="1.0.8"),
+    Dependency("Glib_jll"; compat="2.82.4"),
+    Dependency("Pixman_jll"; compat="0.44.2"),
+    Dependency("libpng_jll"; compat="1.6.47"),
+    Dependency("Fontconfig_jll"; compat="2.15.0"),
+    Dependency("FreeType2_jll"; compat="2.13.3"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Xorg_libXext_jll"; platforms=linux_freebsd),
     Dependency("Xorg_libXrender_jll"; platforms=linux_freebsd),
     # Build with LZO errors on macOS:
     # /workspace/destdir/include/lzo/lzodefs.h:2197:1: error: 'lzo_cta__3' declared as an array with a negative size
-    Dependency("LZO_jll"; platforms=filter(!Sys.isapple, platforms)), 
-    Dependency("Zlib_jll"),
+    Dependency("LZO_jll"; compat="2.10.3", platforms=filter(!Sys.isapple, platforms)), 
+    Dependency("Zlib_jll"; compat="1.2.12"),
     # libcairo needs libssp on Windows, which is provided by CSL, but not in all versions of
     # Julia.  Note that above we're copying libssp to libdir for the versions of Julia where
     # this wasn't available.

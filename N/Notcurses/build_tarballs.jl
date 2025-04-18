@@ -1,10 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "Notcurses"
-version = v"3.0.11"
+# Our version number is ahead by one because we updated the FFMPEG_jll compat entry
+version = v"3.0.15"
+notcurses_version = v"3.0.14"
 sources = [
     GitSource("https://github.com/dankamongmen/notcurses",
-              "bfb65c252e0764796e379595ad6e089dcb573ffe"),
+              "fb02ba185f42dd9eaae717c9bba2da6194982294"),
     DirectorySource("bundled"),
 ]
 
@@ -68,6 +70,8 @@ platforms = supported_platforms()
 
 # Too many dependencies are not available for aarch64-*-freebsd
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# Too many dependencies are not available for riscv64
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built.
 products = [
@@ -81,7 +85,7 @@ products = [
 # Dependencies that must be installed before this package can be built.
 llvm_version = v"13.0.1+1"
 dependencies = [
-    Dependency("FFMPEG_jll"),
+    Dependency("FFMPEG_jll"; compat="6.1.2"),
     Dependency("Ncurses_jll"),
     Dependency("libdeflate_jll"),
     Dependency("libunistring_jll"),
