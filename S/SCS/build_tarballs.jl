@@ -13,7 +13,12 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/scs*
 flags="DLONG=1 USE_OPENMP=1"
-blasldflags="-L${prefix}/lib -lopenblas"
+if [[ "${target}" == *-mingw* ]]; then
+    LBT=blastrampoline-5
+else
+    LBT=blastrampoline
+fi
+blasldflags="-L${prefix}/lib -l${LBT}"
 
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsdir.${dlext}
 make BLASLDFLAGS="${blasldflags}" ${flags} out/libscsindir.${dlext}
@@ -34,7 +39,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenBLAS32_jll", v"0.3.10"),
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"), compat="5.4.0"),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
@@ -44,4 +49,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.10")
