@@ -3,19 +3,18 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.23.1"
+version = v"0.24.2"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "71de73a668df50f0638e74e77849d9232ddeb50e"),
+    GitSource("https://github.com/ml-explore/mlx.git", "86389bf9707f46101af45d90510e8e97c8a90b93"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/28/e4/26be6c113b903156176710d09e0ec0543b28d2aecb64a83647f213ce6e1a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "8138c079957c4942553e1a242a58c4990e317680909e364e024fb7b8d8a14ac7"; filename = "mlx-aarch64-apple-darwin20.whl"),
-    DirectorySource("./bundled"),
+    FileSource("https://files.pythonhosted.org/packages/20/21/6676f287859b18e794a3db262a7c2e71b3bf06d7a067408cbc5e93eee0aa/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "1359bae501e4afd378e921d99db1f8307de9084b34eefb1ade2dfef27b92755a"; filename = "mlx-aarch64-apple-darwin20.whl"),
 ]
 
 script = raw"""
-apk del cmake # Need CMake >= 3.30
+apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 
 if [[ "$target" == *-apple-darwin* ]]; then
     sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
@@ -24,11 +23,6 @@ if [[ "$target" == *-apple-darwin* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/mlx
-
-atomic_patch -p1 ../patches/mpi-crosscompile.patch
-if [[ "$target" == *-freebsd* ]]; then
-    atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
-fi
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
@@ -103,11 +97,11 @@ products = Product[
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
-    Dependency("OpenMPI_jll"),
-    HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
+    Dependency("OpenMPI_jll"; compat="4.1.8, 5"), # OpenMPI 5 is ABI compatible with OpenMPI 4
+    HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.9",
-    preferred_gcc_version = v"10", # C++-17, with std::reduce, required
+    preferred_gcc_version = v"11", # v10: C++-17, with std::reduce, required, v11: ICE on v10 for mlx/3rdparty/pocketfft.h:1253:37: internal compiler error
 )
