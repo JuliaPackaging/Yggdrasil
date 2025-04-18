@@ -4,16 +4,17 @@ using BinaryBuilder
 
 name = "Libepoxy"
 version = v"1.5.10"
+# We bumped the version number to build for riscv64
+ygg_version = v"1.5.11"
 
 # Collection of sources required to build Libepoxy
 sources = [
-    ArchiveSource("https://github.com/anholt/libepoxy/archive/refs/tags/$(version).tar.gz",
-                  "a7ced37f4102b745ac86d6a70a9da399cc139ff168ba6b8002b4d8d43c900c15")
+    GitSource("https://github.com/anholt/libepoxy", "c84bc9459357a40e46e2fec0408d04fbdde2c973"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libepoxy-*/
+cd $WORKSPACE/srcdir/libepoxy
 mkdir build && cd build
 meson .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
@@ -39,4 +40,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
