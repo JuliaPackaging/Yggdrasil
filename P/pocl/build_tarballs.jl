@@ -75,6 +75,9 @@ CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
+# Don't build tests
+CMAKE_FLAGS+=(-DENABLE_TESTS:Bool=OFF)
+
 # Enable optional debug messages for debuggability
 CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
 
