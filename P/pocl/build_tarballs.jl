@@ -3,17 +3,18 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "pocl"
 version = v"7.0"
 
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
+    # DirectorySource("/home/tim/Julia/src/pocl"; target="pocl"),
     GitSource("https://github.com/pocl/pocl",
-              "6accdd750d8ff66dbcc60c499b5aca5004e61c0e"),
-    ArchiveSource(
-        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-        "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
+              "6accdd750d8ff66dbcc60c499b5aca5004e61c0e")
 ]
 
 #=
@@ -265,7 +266,7 @@ init_block = raw"""
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
+platforms = expand_cxxstring_abis(supported_platforms())
 ## we don't build LLVM 15+ for i686-linux-musl.
 filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
@@ -290,7 +291,41 @@ dependencies = [
     RuntimeDependency("LLD_unified_jll")
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"13", preferred_llvm_version=v"20",
-               julia_compat="1.6", init_block)
+builds = []
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
 
+    # On macOS, we need to use a newer SDK to match the one LLVM was built with
+    platform_sources = if Sys.isapple(platform)
+        [sources;
+         ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                       "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")]
+    else
+        sources
+    end
+
+    # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
+    # or we run into export ordinal limits
+    preferred_gcc_version = if Sys.iswindows(platform)
+        v"13"
+    else
+        v"10"
+    end
+
+    push!(builds, (; platform, sources=platform_sources, preferred_gcc_version))
+end
+
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+for (i,build) in enumerate(builds)
+    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+                   name, version, build.sources, script,
+                   [build.platform], products, dependencies;
+                   build.preferred_gcc_version, preferred_llvm_version=v"20",
+                   julia_compat="1.6", init_block)
+end
