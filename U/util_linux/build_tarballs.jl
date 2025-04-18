@@ -17,10 +17,19 @@ script = raw"""
 cd $WORKSPACE/srcdir/util-linux-*
 export CPPFLAGS="-I${includedir}"
 
+# This constant is provided by newer Linux kernel headers
+`#define EM_RISCV      243     /* RISC-V */`
+`#define AUDIT_ARCH_RISCV64    (EM_RISCV|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)`
+perl -pi -e 's/AUDIT_ARCH_RISCV64/(243|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)/g' include/audit-arch.h
+
 configure_flags=()
 if [[ ${nbits} == 32 ]]; then
    # We disable the year 2038 check because we don't have an alternative on the affected systems
    configure_flags+=(--disable-year2038)
+fi
+if [[ ${target} == powerpc64le-linux-gnu* || ${target} == x86_64-linux-gnu* || ${target} == i686-linux-gnu* ]]; then
+    # `AF_VSOCK` is not defined. Maybe our glibc is too old?
+    configure_flags+=(--disable-lsfd)
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-makeinstall-chown --enable-fdformat ${configure_flags[@]}
