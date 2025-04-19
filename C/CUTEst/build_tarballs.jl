@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.5.0"
+version = v"2.5.1"
 
 # Collection of sources required to build CUTEst
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "f88657b36af8e89f5921b9d4974ffcc181ed756d"),
+    GitSource("https://github.com/ralna/CUTEst.git", "73c9663200d2e40cb72102257b552829f99b8f72"),
 ]
 
 # Bash recipe for building across all platforms
@@ -16,7 +16,7 @@ script = raw"""
 cp ${host_prefix}/bin/ninja /usr/bin/ninja
 
 QUADRUPLE="true"
-if [[ "${target}" == *arm* ]] || [[ "${target}" == *aarch64-linux* ]] || [[ "${target}" == *aarch64-unknown-freebsd* ]] || [[ "${target}" == *powerpc64le-linux-gnu* ]] || [[ "${target}" == *riscv64* ]]; then
+if [[ "${target}" == *arm* ]] || [[ "${target}" == *i686* ]] || [[ "${target}" == *aarch64-linux* ]] || [[ "${target}" == *aarch64-unknown-freebsd* ]] || [[ "${target}" == *powerpc64le-linux-gnu* ]] || [[ "${target}" == *riscv64* ]]; then
     QUADRUPLE="false"
 fi
 
