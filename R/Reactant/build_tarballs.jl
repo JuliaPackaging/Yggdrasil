@@ -249,6 +249,9 @@ if [[ "${target}" == *-darwin* ]]; then
     
     sed -i.bak2 -e "s/\\"aarch64\\"/\\"darwin_amd64\\"/g" \
                 /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
+    
+   sed -i.bak2 -e "s/\\"cpu_aarch64\\":/\\"@platforms//cpu:aarch64\\":/g" \
+                /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
 
     cat /workspace/bazel_root/*/external/local_config_cc/BUILD
 
