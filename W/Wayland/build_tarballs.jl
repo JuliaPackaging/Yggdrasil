@@ -61,7 +61,10 @@ products = [
 dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
-    Dependency("XML2_jll"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="2.0.0 - 2.13"),
     Dependency("EpollShim_jll"),
     HostBuildDependency(PackageSpec("Expat_jll", v"2.6.5")),
     HostBuildDependency(PackageSpec("Libffi_jll", v"3.4.7")),
