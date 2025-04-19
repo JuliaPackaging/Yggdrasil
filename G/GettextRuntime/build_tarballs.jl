@@ -24,6 +24,11 @@ cd gettext-runtime
 
 make -j${nproc}
 make install
+
+# Multiple licenses are required
+cp ../COPYING toplevel-COPYING
+cp intl/COPYING.LIB intl-COPYING.LIB
+install_license COPYING toplevel-COPYING intl-COPYING.LIB
 """
 
 # These are the platforms we will build for by default, unless further
