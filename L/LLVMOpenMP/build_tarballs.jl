@@ -3,18 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "LLVMOpenMP"
-version = v"18.1.8"
+version = v"18.1.7"
+# We bumped the version number to build for riscv64
+ygg_version = v"18.1.8"
 
 sources = [
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/openmp-$(version).src.tar.xz",
-        "60ed57245e73894e4a2a89b15889f367bd906abfe6d3f92e1718223d4b496150"
+        "6523c898d754d466b77b64ddca8fd0185c5aeb7f24260ddb0fae5779eb31cee3"
     ),
     # we need a bunch of additional cmake files to build the subproject separately
     # see: https://github.com/llvm/llvm-project/issues/53281#issuecomment-1260187944
     ArchiveSource(
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
-        "59badef592dd34893cd319d42b323aaa990b452d05c7180ff20f23ab1b41e837"
+        "f0b67599f51cddcdbe604c35b6de97f2d0a447e18b9c30df300c82bf1ee25bd7"
     ),
     DirectorySource("./bundled"),
 ]
@@ -74,7 +76,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                # Note: GCC 9 is needed to work around https://github.com/llvm/llvm-project/issues/55006
                # (failing compilation for i686 platforms with GCC 8).
                julia_compat="1.6", preferred_gcc_version=v"9", preferred_llvm_version=llvm_version)
