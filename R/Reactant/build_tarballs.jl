@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.148"
+version = v"0.0.149"
 
 sources = [
-  GitSource(repo, "a2eb7dc442fe0a4b46d2ab91d52dca934c4350a6"),
+  GitSource(repo, "8056ea90b4896f02803f0c2bdae229deede218b7"),
   FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
              "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
 ]
@@ -246,6 +246,11 @@ if [[ "${target}" == *-darwin* ]]; then
     sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
                 -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
                 /workspace/bazel_root/*/external/local_config_cc/BUILD
+    
+    sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
+                /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
+
+    sed -i.bak3 "s/DCHECK_EQ(in_edges_it->kind, out_edges_it->kind)/DCHECK_EQ((int)in_edges_it->kind, (int)out_edges_it->kind)/g" /workspace/bazel_root/*/external/xla/xla/runtime/execution_graph.cc
 
     cat /workspace/bazel_root/*/external/local_config_cc/BUILD
 
