@@ -15,15 +15,70 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libepoxy
+
+# meson unconditionally (?) adds the command line argument
+# `-Werror=unused-command-line-argument`. That would be fine, except
+# that we (the `cc` script) add `-Wl,-sdk_version,11.0` on Darwin,
+# which is actually unused when meson checks for supported compiler
+# options. This means that each such check fails, and meson won't use
+# any options. That's mostly fine, except for the option
+# `-Wno-int-conversion` which is required by the source code.
+#
+# The code below modifies the `cc` script to filter out the option
+# `-Werror=unused-command-line-argument`. This should arguably either
+# happen by default, or `cc` should only add the
+# `-Wl,-sdk_version,11.0` when the linker is actually called.
+#
+# We modify `cc` on all architectures to prevent possible similar
+# errors there.
+
+ccfile=$(which cc)
+{
+    head -n 16 ${ccfile}
+    cat <<'EOT'
+        # Remove the meson option we don't like
+        newargs=()
+        for arg in "${ARGS[@]}"; do
+            if [[ "${arg}" != "-Werror=unused-command-line-argument" ]]; then
+                newargs+=("${arg}")
+            fi
+        done
+        ARGS=("${newargs[@]}")
+EOT
+    tail -n +17 ${ccfile}
+} >${ccfile}.tmp
+# Use `cat; rm` instead of `mv` to use the same file to keep symlinks, file permissions etc.
+cat ${ccfile}.tmp >${ccfile}
+rm ${ccfile}.tmp
+
+ccfile=$(which clang)
+{
+    head -n 16 ${ccfile}
+    cat <<'EOT'
+        # Remove the meson option we don't like
+        newargs=()
+        for arg in "${ARGS[@]}"; do
+            if [[ "${arg}" != "-Werror=unused-command-line-argument" ]]; then
+                newargs+=("${arg}")
+            fi
+        done
+        ARGS=("${newargs[@]}")
+EOT
+    tail -n +17 ${ccfile}
+} >${ccfile}.tmp
+# Use `cat; rm` instead of `mv` to use the same file to keep symlinks, file permissions etc.
+cat ${ccfile}.tmp >${ccfile}
+rm ${ccfile}.tmp
+
 mkdir build && cd build
-meson .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+env CC=cc meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -40,4 +95,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6")
