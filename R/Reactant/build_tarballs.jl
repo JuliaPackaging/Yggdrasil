@@ -247,11 +247,10 @@ if [[ "${target}" == *-darwin* ]]; then
                 -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
                 /workspace/bazel_root/*/external/local_config_cc/BUILD
     
-    sed -i.bak2 -e "s/\\"aarch64\\"/\\"darwin_amd64\\"/g" \
+    sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
                 /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
-    
-   sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
-                /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
+
+    sed -i.bak3 "s/DCHECK_EQ(in_edges_it->kind, out_edges_it->kind)/DCHECK_EQ((int)in_edges_it->kind, (int)out_edges_it->kind)/g" /workspace/bazel_root/*/external/xla/xla/runtime/execution_graph.cc
 
     cat /workspace/bazel_root/*/external/local_config_cc/BUILD
 
