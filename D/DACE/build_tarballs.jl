@@ -8,11 +8,11 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "DACE"
-version = v"0.6.0"
+version = v"0.7.0"
 
 # Collection of sources required to build DACE
 sources = [
-    GitSource("https://github.com/a-ev/dace.git", "b8518928976a381b982446a1d2caa965ec9a53c9"),
+    GitSource("https://github.com/a-ev/dace.git", "f8ca536854a6b47cc0033dadac4b92cd0ced2fe3"),
     DirectorySource("./bundled"),
 ]
 
@@ -54,7 +54,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="libjulia_jll")),
     BuildDependency("Eigen_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="~0.14.0"),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
