@@ -20,8 +20,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/dace
 
-git apply ../patches/no-safe-strings.patch
-
 cmake . -B build \
     -DJulia_PREFIX=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
