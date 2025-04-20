@@ -19,6 +19,6 @@ products = [
 ]
 
 # Build the tarballs.
-# We need GCC 5 for asm instructions on powerpc64le
+# We need GCC 6 for asm instructions on powerpc64le
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"5")
+               julia_compat="1.6", preferred_gcc_version=v"6")
