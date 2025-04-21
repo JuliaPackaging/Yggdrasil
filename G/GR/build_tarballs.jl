@@ -25,6 +25,7 @@ make -C 3rdparty/qhull -j${nproc}
 if [[ $target == *"mingw"* ]]; then
     winflags="-DCMAKE_C_FLAGS='-D_WIN32_WINNT=0x0f00' -DCMAKE_EXE_LINKER_FLAGS='-Wl,--verbose' -DCMAKE_MODULE_LINKER_FLAGS='-Wl,--verbose' -DCMAKE_SHARED_LINKER_FLAGS='-Wl,--verbose'"
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-6.dll
+    identify $WORKSPACE/destdir/lib/libQt6EntryPoint.a
     cat $WORKSPACE/destdir/lib/libQt6EntryPoint.a
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
