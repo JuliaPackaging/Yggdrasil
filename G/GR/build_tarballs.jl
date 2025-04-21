@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.73.14"
+version = v"0.73.15"
 
 # Collection of sources required to complete build
 sources = [
@@ -78,28 +78,28 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGR", :libGR, dont_dlopen=true),
-    LibraryProduct("libGR3", :libGR3, dont_dlopen=true),
-    LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
-    LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
+    LibraryProduct("libGR", :libGR; dont_dlopen=true),
+    LibraryProduct("libGR3", :libGR3; dont_dlopen=true),
+    LibraryProduct("libGRM", :libGRM; dont_dlopen=true),
+    LibraryProduct("libGKS", :libGKS; dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
     ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Cairo_jll"; compat="1.16.1"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Cairo_jll"; compat="1.18.5"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"; compat="~6.7.1"), # Never allow upgrading more than the minor version without recompilation
+    Dependency("Qt6Base_jll"; compat="~6.8.2"), # Never allow upgrading more than the minor version without recompilation
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
