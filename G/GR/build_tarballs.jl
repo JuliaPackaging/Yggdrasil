@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+include("../../fancy_toys.jl")  # for `should_build_platform`
+
 name = "GR"
 version = v"0.73.14"
 
@@ -47,7 +49,7 @@ mkdir build
 cd build
 cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
 
-cmake --build . --verbose --config Release --target install -- -j${nproc}
+VERBOSE=1 cmake --build . --config Release --target install -- -j${nproc}
 cp ../../gr.js ${libdir}/
 
 install_license $WORKSPACE/srcdir/gr/LICENSE.md
