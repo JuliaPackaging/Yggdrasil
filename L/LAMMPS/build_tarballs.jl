@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "LAMMPS"
-version = v"2.7.0" # Equivalent to stable_29Aug2024
+version = v"2.8.0" # Equivalent to patch_2Apr2025
 
 # Version table
 # 1.0.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Oct2020
@@ -24,6 +24,7 @@ version = v"2.7.0" # Equivalent to stable_29Aug2024
 # 2.6.0 -> https://github.com/lammps/lammps/releases/tag/stable_29Aug2024
 # 2.6.1 -- BLAS & Openmp
 # 2.7.0 -- Enables CUDA
+# 2.8.0 -> https://github.com/lammps/lammps/releases/tag/patch_2Apr2025
 
 # https://docs.lammps.org/Manual_version.html
 # We have "stable" releases and we have feature/patch releases
@@ -33,7 +34,7 @@ version = v"2.7.0" # Equivalent to stable_29Aug2024
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lammps/lammps.git", "570c9d190fee556c62e5bd0a9c6797c4dffcc271"),
+    GitSource("https://github.com/lammps/lammps.git", "7b4c33630d544953d2abe12eccdf0fab5ba0e7d1"),
 ]
 
 # Bash recipe for building across all platforms
@@ -163,10 +164,13 @@ end
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 # platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
+all_platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "riscv64"), all_platforms)
+
 # MPItrampoline
 all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), all_platforms)
 all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), all_platforms)
 all_platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), all_platforms)
+all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "riscv64"), all_platforms)
 
 # The products that we will ensure are always built
 products = [
