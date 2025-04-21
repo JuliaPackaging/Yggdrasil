@@ -113,9 +113,9 @@ platforms_rest = setdiff(platforms, platforms_win)
 if any(should_build_platform.(triplet.(platforms_win)))
     # GCC 12 and before fail with internal compiler error on mingw
     build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies;
-                   preferred_gcc_version = v"13", julia_compat="1.6")
+                   preferred_gcc_version=v"13", julia_compat="1.6")
 end
 if any(should_build_platform.(triplet.(platforms_rest)))
     build_tarballs(ARGS, name, version, sources, script, platforms_rest, products, dependencies;
-                   preferred_gcc_version = v"10", julia_compat="1.6")
+                   preferred_gcc_version=v"10", julia_compat="1.6")
 end
