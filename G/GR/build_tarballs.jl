@@ -23,10 +23,8 @@ update_configure_scripts
 make -C 3rdparty/qhull -j${nproc}
 
 if [[ $target == *"mingw"* ]]; then
-    winflags="-DCMAKE_C_FLAGS='-D_WIN32_WINNT=0x0f00' -DCMAKE_EXE_LINKER_FLAGS='-Wl,--verbose' -DCMAKE_MODULE_LINKER_FLAGS='-Wl,--verbose' -DCMAKE_SHARED_LINKER_FLAGS='-Wl,--verbose'"
+    winflags=-DCMAKE_C_FLAGS=-D_WIN32_WINNT=0x0f00
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-6.dll
-    file $WORKSPACE/destdir/lib/libQt6EntryPoint.a
-    cat $WORKSPACE/destdir/lib/libQt6EntryPoint.a
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
 fi
@@ -107,7 +105,17 @@ dependencies = [
     Dependency("Zlib_jll"),
 ]
 
+platforms_win = filter(Sys.iswindows, platforms)
+platforms_rest = setdiff(platforms, platforms_win)
+
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC version 10 because of Qt6.7
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"10", julia_compat="1.6")
+if any(should_build_platform.(triplet.(platforms_win)))
+    # GCC 12 and before fail with internal compiler error on mingw
+    build_tarballs(ARGS, name, version, sources, script, platforms_win, products, dependencies;
+                   preferred_gcc_version = v"13", julia_compat="1.6")
+end
+if any(should_build_platform.(triplet.(platforms_rest)))
+    build_tarballs(ARGS, name, version, sources, script, platforms_rest, products, dependencies;
+                   preferred_gcc_version = v"10", julia_compat="1.6")
+end
