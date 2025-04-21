@@ -12,7 +12,7 @@ sources = [
     GitSource("https://github.com/sciapp/gr.git", "9a62289c2e4e36c28e045c3a34f02d0d01c4231c"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
                "7f94982b410c686d67be956f1e0317b6e2644702b3f3d69328ee8217e7be5217", "gr.js"),
-    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
 
