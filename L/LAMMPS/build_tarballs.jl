@@ -164,10 +164,13 @@ end
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 # platforms = filter(p -> !(p["mpi"] == "openmpi" && nbits(p) == 32), platforms)
+all_platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "riscv64"), all_platforms)
+
 # MPItrampoline
 all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), all_platforms)
 all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), all_platforms)
 all_platforms = filter(p -> !(Sys.isfreebsd(p) || libc(p) == "musl"), all_platforms)
+all_platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && arch(p) == "riscv64"), all_platforms)
 
 # The products that we will ensure are always built
 products = [
