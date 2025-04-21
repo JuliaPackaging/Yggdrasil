@@ -23,7 +23,7 @@ update_configure_scripts
 make -C 3rdparty/qhull -j${nproc}
 
 if [[ $target == *"mingw"* ]]; then
-    winflags=-DCMAKE_C_FLAGS="-D_WIN32_WINNT=0x0f00"
+    winflags="-DCMAKE_C_FLAGS='-D_WIN32_WINNT=0x0f00' -DCMAKE_EXE_LINKER_FLAGS='-Wl,--verbose' -DCMAKE_MODULE_LINKER_FLAGS='-Wl,--verbose'"
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff-6.dll
 else
     tifflags=-DTIFF_LIBRARY=${libdir}/libtiff.${dlext}
@@ -47,7 +47,7 @@ mkdir build
 cd build
 cmake $winflags -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DGR_USE_BUNDLED_LIBRARIES=ON $tifflags -DCMAKE_BUILD_TYPE=Release ..
 
-VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
+cmake --build . --verbose --config Release --target install -- -j${nproc}
 cp ../../gr.js ${libdir}/
 
 install_license $WORKSPACE/srcdir/gr/LICENSE.md
