@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOp"
-version = v"0.1.6"
+version = v"0.1.7"
 
 llvm_versions = [v"18.1.7"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/compiler-research/CppInterOp.git", "a22df968590709eb2d3957fb6c88feb61639621e"),
+    GitSource("https://github.com/compiler-research/CppInterOp.git", "da58066ca29649145b25b5fc0e22d8aee57e356a"),
     DirectorySource("./bundled")
 ]
 
@@ -24,7 +24,6 @@ cd $WORKSPACE/srcdir/CppInterOp/
 atomic_patch -p1 ../patches/cmake.patch
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-     -DBUILD_SHARED_LIBS=ON \
      -DLLVM_DIR=${prefix}/lib/cmake/llvm \
      -DClang_DIR=${prefix}/lib/cmake/clang \
      -DCMAKE_BUILD_TYPE=Release
