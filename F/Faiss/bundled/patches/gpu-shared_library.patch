@@ -11,43 +11,46 @@ index c4fea46a3..5689fbcb5 100644
  
  if(FAISS_ENABLE_GPU)
 diff --git a/c_api/gpu/CMakeLists.txt b/c_api/gpu/CMakeLists.txt
-index 2fa1209c4..e07011f44 100644
+index 2fa1209c4..4cc65bdb9 100644
 --- a/c_api/gpu/CMakeLists.txt
 +++ b/c_api/gpu/CMakeLists.txt
-@@ -3,7 +3,15 @@
+@@ -3,7 +3,7 @@
  # This source code is licensed under the MIT license found in the
  # LICENSE file in the root directory of this source tree.
  
 -target_sources(faiss_c PRIVATE
-+if(FAISS_BUILD_GPU_SHARED_LIBS)
-+  add_library(faiss_gpu_c)
-+  target_link_libraries(faiss_gpu_c PRIVATE faiss_gpu)
-+  set(FAISS_GPU_C faiss_gpu_c)
-+else()
-+  set(FAISS_GPU_C faiss_c)
-+endif()
-+
-+target_sources(FAISS_GPU_C PRIVATE
++set(FAISS_GPU_C_SRC
    DeviceUtils_c.cpp
    GpuAutoTune_c.cpp
    GpuClonerOptions_c.cpp
-@@ -16,13 +24,13 @@ file(GLOB FAISS_C_API_GPU_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h")
+@@ -12,17 +12,24 @@ target_sources(faiss_c PRIVATE
+   StandardGpuResources_c.cpp
+ )
+ 
++if(FAISS_BUILD_GPU_SHARED_LIBS)
++  add_library(faiss_gpu_c SHARED ${FAISS_GPU_C_SRC})
++else()
++  add_library(faiss_gpu_c STATIC ${FAISS_GPU_C_SRC})
++endif()
++target_link_libraries(faiss_gpu_c PRIVATE faiss_gpu)
++
+ file(GLOB FAISS_C_API_GPU_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h")
  faiss_install_headers("${FAISS_C_API_GPU_HEADERS}" c_api/gpu)
  
  if (FAISS_ENABLE_ROCM)
 -  target_link_libraries(faiss_c PUBLIC hip::host roc::hipblas)
-+  target_link_libraries(FAISS_GPU_C PUBLIC hip::host roc::hipblas)
++  target_link_libraries(faiss_gpu_c PUBLIC hip::host roc::hipblas)
  else()
    find_package(CUDAToolkit REQUIRED)
 -  target_link_libraries(faiss_c PUBLIC CUDA::cudart CUDA::cublas
-+  target_link_libraries(FAISS_GPU_C PUBLIC CUDA::cudart CUDA::cublas
++  target_link_libraries(faiss_gpu_c PUBLIC CUDA::cudart CUDA::cublas
      $<$<BOOL:${FAISS_ENABLE_RAFT}>:raft::raft>
      $<$<BOOL:${FAISS_ENABLE_RAFT}>:nvidia::cutlass::cutlass>)
  endif()
  
  add_executable(example_gpu_c EXCLUDE_FROM_ALL example_gpu_c.c)
 -target_link_libraries(example_gpu_c PRIVATE faiss_c)
-+target_link_libraries(example_gpu_c PRIVATE FAISS_GPU_C)
++target_link_libraries(example_gpu_c PRIVATE faiss_gpu_c)
 diff --git a/faiss/gpu/CMakeLists.txt b/faiss/gpu/CMakeLists.txt
 index b84362266..71171acb7 100644
 --- a/faiss/gpu/CMakeLists.txt
