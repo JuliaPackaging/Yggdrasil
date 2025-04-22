@@ -10,11 +10,12 @@ ygg_version = v"1.5.11"
 # Collection of sources required to build Libepoxy
 sources = [
     GitSource("https://github.com/anholt/libepoxy", "c84bc9459357a40e46e2fec0408d04fbdde2c973"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libepoxy
+cd ${WORKSPACE}/srcdir/libepoxy
 
 # meson unconditionally (?) adds the command line argument
 # `-Werror=unused-command-line-argument`. That would be fine, except
@@ -24,54 +25,19 @@ cd $WORKSPACE/srcdir/libepoxy
 # any options. That's mostly fine, except for the option
 # `-Wno-int-conversion` which is required by the source code.
 #
-# The code below modifies the `cc` script to filter out the option
+# We thus use a wrapper for the `cc` script to filter out the option
 # `-Werror=unused-command-line-argument`. This should arguably either
 # happen by default, or `cc` should only add the
 # `-Wl,-sdk_version,11.0` when the linker is actually called.
+
+# Point meson our our C compiler wrapper wrapper.
+# (The meson toolchain overwrites whatever we try to set via an
+# environment variable so we need to modify the toolchain.)
 #
-# We modify `cc` on all architectures to prevent possible similar
-# errors there.
-
-ccfile=$(which cc)
-{
-    head -n 16 ${ccfile}
-    cat <<'EOT'
-        # Remove the meson option we don't like
-        newargs=()
-        for arg in "${ARGS[@]}"; do
-            if [[ "${arg}" != "-Werror=unused-command-line-argument" ]]; then
-                newargs+=("${arg}")
-            fi
-        done
-        ARGS=("${newargs[@]}")
-EOT
-    tail -n +17 ${ccfile}
-} >${ccfile}.tmp
-# Use `cat; rm` instead of `mv` to use the same file to keep symlinks, file permissions etc.
-cat ${ccfile}.tmp >${ccfile}
-rm ${ccfile}.tmp
-
-ccfile=$(which clang)
-{
-    head -n 16 ${ccfile}
-    cat <<'EOT'
-        # Remove the meson option we don't like
-        newargs=()
-        for arg in "${ARGS[@]}"; do
-            if [[ "${arg}" != "-Werror=unused-command-line-argument" ]]; then
-                newargs+=("${arg}")
-            fi
-        done
-        ARGS=("${newargs[@]}")
-EOT
-    tail -n +17 ${ccfile}
-} >${ccfile}.tmp
-# Use `cat; rm` instead of `mv` to use the same file to keep symlinks, file permissions etc.
-cat ${ccfile}.tmp >${ccfile}
-rm ${ccfile}.tmp
+sed -i "s+^c *=.*$+c = '${WORKSPACE}/srcdir/files/sanecc'+" ${MESON_TARGET_TOOLCHAIN}
 
 mkdir build && cd build
-env CC=cc meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
