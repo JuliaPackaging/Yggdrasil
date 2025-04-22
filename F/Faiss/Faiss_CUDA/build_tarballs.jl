@@ -30,6 +30,8 @@ products = [
     products...,
     FileProduct("include/faiss/gpu/GpuIndex.h", :faiss_gpu_gpuindex_h),
     FileProduct("include/faiss/c_api/gpu/GpuIndex_c.h", :faiss_c_api_gpu_gpuindex_c_h),
+    LibraryProduct(["libfaiss_gpu", "faiss_gpu"], :libfaiss_gpu),
+    LibraryProduct(["libfaiss_gpu_c", "faiss_gpu_c"], :libfaiss_gpu_c),
 ]
 
 # Build for all supported CUDA toolkits
