@@ -18,11 +18,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/gdk-pixbuf-*
 mkdir build && cd build
 
-FLAGS=()
-if [[ "${target}" == x86_64-linux-gnu ]]; then
-    FLAGS+=(-Dintrospection=enabled)
-fi
-
 # Correct pkgconfig entries for host build dependencies, i.e. for
 # scripts that need to run at build time. These pkgconfig entries
 # would otherwise point to non-existing files, making meson fail.
@@ -34,7 +29,6 @@ meson .. \
     -Dman=false \
     -Dinstalled_tests=false \
     -Dgio_sniffing=false \
-    "${FLAGS[@]}" \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
@@ -57,9 +51,6 @@ products = [
 # Some dependencies are needed only on Linux and FreeBSD
 linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 
-# gobject_introspection is needed only on x86_64-linux-gnu
-introspect_platform = filter(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) == "x86_64", platforms)
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host gettext for msgfmt
@@ -73,7 +64,6 @@ dependencies = [
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
-    BuildDependency("gobject_introspection_jll"; platforms=introspect_platform)
 ]
 
 # Build the tarballs.
