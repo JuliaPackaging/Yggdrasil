@@ -36,6 +36,7 @@ if [[ $bb_full_target == *cuda* ]]; then
     export CUDA_PATH=$prefix/cuda
     ln -s $prefix/cuda/lib $prefix/cuda/lib64
     cmake_extra_args+=(
+        -DFAISS_BUILD_GPU_SHARED_LIBS=ON
         -DFAISS_ENABLE_GPU=ON
         -DCUDAToolkit_ROOT=$CUDA_PATH
         -DCMAKE_CUDA_ARCHITECTURES=$cuda_archs
