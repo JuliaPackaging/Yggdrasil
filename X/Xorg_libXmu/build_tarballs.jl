@@ -33,7 +33,7 @@ dependencies = [
     BuildDependency("Xorg_kbproto_jll"),
     BuildDependency("Xorg_xproto_jll"),
     BuildDependency("Xorg_util_macros_jll"),
-    Dependency("Xorg_xextproto_jll"),
+    BuildDependency("Xorg_xextproto_jll"),
     Dependency("Xorg_libXext_jll"),
     Dependency("Xorg_libXt_jll"),
 ]
