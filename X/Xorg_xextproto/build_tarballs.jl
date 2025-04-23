@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "Xorg_xextproto"
 version = v"7.3.0"
 # We bumped the version number because we built for riscv64
-ygg_version = v"7.3.1"
+ygg_version = v"7.3.2"
 
 # Collection of sources required to build xextproto
 sources = [
@@ -24,13 +24,13 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = [AnyPlatform()]
 
 products = Product[
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
