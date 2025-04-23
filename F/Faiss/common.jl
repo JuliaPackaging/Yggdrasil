@@ -12,6 +12,7 @@ apk del cmake
 cd faiss
 
 atomic_patch -p1 ../patches/faiss-cmake-mkl-optional.patch
+atomic_patch -p1 ../patches/faiss-install-faiss_c.patch
 atomic_patch -p1 ../patches/faiss-mingw32-cmake.patch
 atomic_patch -p1 ../patches/faiss-mingw32-InvertedListsIOHook.patch
 atomic_patch -p1 ../patches/faiss-mingw32.patch
@@ -75,8 +76,6 @@ cmake -B build \
     ${cmake_extra_args[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
-
-install -Dvm 755 build/c_api/libfaiss_c.$dlext $libdir/libfaiss_c.$dlext
 
 if [[ $bb_full_target == *cuda* ]]; then
     unlink $prefix/cuda/lib64
