@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "Xorg_xextproto"
 version = v"7.3.0"
 # We bumped the version number because we built for riscv64
-ygg_version = v"7.3.2"
+ygg_version = v"7.3.1"
 
 # Collection of sources required to build xextproto
 sources = [
