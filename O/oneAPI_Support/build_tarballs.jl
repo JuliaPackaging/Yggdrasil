@@ -164,7 +164,7 @@ for package in compiler_shared dpcpp-cpp-rt dpcpp_impl_linux-64 dpcpp_linux-64 i
                intel-cmplr-lib-ur intel-cmplr-lic-rt intel-opencl-rt intel-openmp intel-sycl-rt mkl \
                mkl-devel mkl-devel-dpcpp mkl-dpcpp mkl-include onemkl-sycl-blas onemkl-sycl-datafitting \
                onemkl-sycl-dft onemkl-sycl-lapack onemkl-sycl-rng onemkl-sycl-sparse onemkl-sycl-stats \
-               onemkl-sycl-vm tbb tbb-devel tcm umf
+               onemkl-sycl-vm tbb tbb-devel tcm umf; do
     tar -xvf ${package}.conda
 done
 
