@@ -26,6 +26,7 @@ if [[ "${target}" == aarch64-apple-darwin* ]]; then
 fi
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-remove-unknown-ld-option.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/ieee_interface.patch
 update_configure_scripts
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-static
 make -j${nproc}
