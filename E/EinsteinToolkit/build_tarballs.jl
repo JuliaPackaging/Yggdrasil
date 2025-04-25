@@ -175,6 +175,7 @@ augment_platform_block = """
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
+platforms = expand_microarchitectures(platforms, ["x86_64", "avx2", "avx512"])
 
 # Disable unsupported platforms
 filter!(platforms) do p
@@ -182,8 +183,9 @@ filter!(platforms) do p
     Sys.islinux(p) && arch(p) == "aarch64" && libgfortran_version(p) <= v"4" && return false
     # SIMD vectorization not supported
     Sys.islinux(p) && arch(p) == "powerpc64le" && libgfortran_version(p) <= v"4" && return false
-    Sys.isfreebsd(p) && arch(p) == "x86_64" && return false
-    Sys.isapple(p) && arch(p) == "x86_64" && return false
+    #TODO # SIMD vectorization broken: `_mm_castsi128_ps` not found. Maybe we detect or select the wrong architecture?
+    #TODO Sys.isfreebsd(p) && arch(p) == "x86_64" && return false
+    #TODO Sys.isapple(p) && arch(p) == "x86_64" && return false
     # <fpu_control.h> does not exist
     libc(p) == "musl" && return false
 
