@@ -29,7 +29,7 @@ cd normd_noexpat/
 sed -i '/#include "score.h"/a#include <string.h>' init.c
 make
 mkdir ${bindir}
-cp normd ${bindir}/
+cp normd${exeext} ${bindir}/
 """
 # NOTE: Only the normd executable is installed.
 # The programs normd_subaln, normd_range, normd_sw, normd_aln, and normd_aln1 are built but not installed.
