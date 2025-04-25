@@ -7,7 +7,7 @@ version = v"1.2.10"
 
 release_url = "https://github.com/oven-sh/bun/releases/download/bun-v$version"
 
-# We download the SHA file to extract the SHAs of the archives
+# We download the SHA file to extract the SHAs of the archives, taken from https://github.com/MichaelHatherly/BundledWebResources.jl
 sha256sums = let 
     d = Dict{String,String}()
     sha256sums_url = "$(release_url)/SHASUMS256.txt"
