@@ -18,19 +18,21 @@ version = v"1.3.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.bork.embl.de/Docu/AQUA/latest/norMD1_3.tar.gz", "24ba32425640ae6288d59ca2bf5820dd85616132fe6a05337d849035184c660d")
+    ArchiveSource("https://www.bork.embl.de/Docu/AQUA/latest/norMD1_3.tar.gz", "24ba32425640ae6288d59ca2bf5820dd85616132fe6a05337d849035184c660d"),
+    FileSource("https://www.bork.embl.de/Docu/AQUA/latest/License.txt", "ddb9db7630752f8fdc6898f7c99a99eaeeac5213627ecb093df9c82f56175dc7")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd normd_noexpat
+cd normd_noexpat/
 sed -i '/#include "score.h"/a#include <string.h>' init.c
 make
-# Only the normd executable is installed to the prefix.
-# The programs normd_subaln, normd_range, normd_sw, normd_aln, and normd_aln1 are built but not installed.
+mkdir ${bindir}
 cp normd ${bindir}/
 """
+# NOTE: Only the normd executable is installed.
+# The programs normd_subaln, normd_range, normd_sw, normd_aln, and normd_aln1 are built but not installed.
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
