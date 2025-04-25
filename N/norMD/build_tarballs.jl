@@ -29,7 +29,7 @@ sed -i '/#include "score.h"/a#include <string.h>' init.c
 make
 # Only the normd executable is installed to the prefix.
 # The programs normd_subaln, normd_range, normd_sw, normd_aln, and normd_aln1 are built but not installed.
-cp normd $prefix/
+cp normd ${bindir}/
 """
 
 # These are the platforms we will build for by default, unless further
