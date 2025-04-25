@@ -29,7 +29,7 @@ cd normd_noexpat/
 sed -i '/#include "score.h"/a#include <string.h>' init.c
 make
 mkdir ${bindir}
-cp normd${exeext} ${bindir}/
+cp normd ${bindir}/
 """
 # NOTE: Only the normd executable is installed.
 # The programs normd_subaln, normd_range, normd_sw, normd_aln, and normd_aln1 are built but not installed.
@@ -47,9 +47,7 @@ platforms = [
     Platform("x86_64", "linux"; libc = "musl"),
     Platform("aarch64", "linux"; libc = "musl"),
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
+    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
 ]
 
 
