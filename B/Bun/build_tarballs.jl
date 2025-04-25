@@ -42,6 +42,17 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+cd ${WORKSPACE}/srcdir/bun
+export PATH=$PATH:/workspace/srcdir/x86_64-linux-gnu/bun-linux-x64
+cmake -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
+    -DCMAKE_HOST_LINUX=1 \
+    -DLINUX=1
+cmake --build build --parallel $nproc
+cmake --install build
+
 cd ${WORKSPACE}/srcdir/
 install_license bun/LICENSE.md
 mkdir "${bindir}"
@@ -59,8 +70,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    HostBuildDependency(PackageSpec("CMake_jll", v"3.24.3")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    compilers=[:c, :rust],
+    preferred_gcc_version=v"11", # Needed for C17, and CXX23
+    julia_compat="1.6"
+)
