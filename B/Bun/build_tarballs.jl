@@ -39,7 +39,7 @@ sources = map(data) do d
     ArchiveSource("$release_url/$(d.filename)", d.sha; unpack_target = d.target)
 end
 # We add the git repo
-push!(sources, GitSource("https://github.com/oven-sh/bun.git", repo_SHA1))
+push!(sources, GitSource("https://github.com/oven-sh/bun.git", String(repo_SHA1)))
 
 # Bash recipe for building across all platforms
 script = raw"""
