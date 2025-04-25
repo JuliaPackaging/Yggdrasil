@@ -23,12 +23,10 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/normd_noexpat
-
+cd $WORKSPACE/srcdir
+cd normd_noexpat
 sed -i '/#include "score.h"/a#include <string.h>' init.c
-
 make
-
 # Only the normd executable is installed to the prefix.
 # The programs normd_subaln, normd_range, normd_sw, normd_aln, and normd_aln1 are built but not installed.
 cp normd $prefix/
@@ -48,7 +46,6 @@ platforms = [
     Platform("aarch64", "linux"; libc = "musl"),
     Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
     Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("x86_64", "macos"; ),
     Platform("i686", "windows"; ),
     Platform("x86_64", "windows"; )
 ]
@@ -59,10 +56,9 @@ products = [
     ExecutableProduct("normd", :normd)
 ]
 
-
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_llvm_version = v"6.0.1")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
