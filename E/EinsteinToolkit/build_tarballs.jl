@@ -158,6 +158,9 @@ for util in ${utils}; do
     install -Dvm 755 "exe/sim/${util}" "${bindir}/cactus/${util}"
 done
 
+# TODO: `Warning: bin/cactus/RNS: Linked library libcrypt.so.1 could not be resolved and could not be auto-mapped`
+
+# TODO: collect all license files
 install_license COPYRIGHT
 """
 
@@ -173,6 +176,20 @@ platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
+# Disable unsupported platforms
+filter!(platforms) do p
+    # Internal compiler error
+    Sys.islinux(p) && arch(p) == "aarch64" && libgfortran_version(p) <= v"4" && return false
+    # SIMD vectorization not supported
+    Sys.islinux(p) && arch(p) == "powerpc64le" && libgfortran_version(p) <= v"4" && return false
+    Sys.isfreebsd(p) && arch(p) == "x86_64" && return false
+    Sys.isapple(p) && arch(p) == "x86_64" && return false
+    # <fpu_control.h> does not exist
+    libc(p) == "musl" && return false
+
+    return true
+end
+
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
@@ -183,8 +200,11 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems)
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e");
+               platforms=filter(Sys.isbsd, platforms)),
     Dependency("FFTW_jll"; compat="3.3.11"),
-    Dependency("GSL_jll"; compat="2.8"),
+    Dependency("GSL_jll"; compat="2.8.1"),
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("Hwloc_jll"; compat="2.12.0"),
     Dependency("JpegTurbo_jll"; compat="3.1.1"),
