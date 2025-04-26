@@ -8,6 +8,8 @@ version = v"6.8.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "316fd20508b4d0ec3b2264b5393149ba2993ba3577dce7cf86f062835b449687"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -18,6 +20,12 @@ sed -i 's/Windows/windows/' source/dev/Tickets/60.cpp
 sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
 # Do not add `-m32`/`-m64` flags
 sed -i 's/-m${BITNESS}//' source/CMakeLists.txt
+
+if [[ "${target}" == *apple-darwin* ]]; then
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+fi
 
 mkdir build
 cd build
@@ -43,4 +51,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.6")
