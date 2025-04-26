@@ -2,6 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
+using BinaryBuilderBase: march
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
@@ -73,6 +74,7 @@ cd ${WORKSPACE}/srcdir/cactus
 # Add "diagnostica data" files used by Formaline
 apk add perl-doc
 
+(cd ${WORKSPACE}/srcdir/ExternalLibraries-GSL && atomic_patch -p1 ${WORKSPACE}/srcdir/patches/gsl-detect.patch)
 (cd ${WORKSPACE}/srcdir/ExternalLibraries-MPI && atomic_patch -p1 ${WORKSPACE}/srcdir/patches/mpi-detect.patch)
 
 # Create source tree structure
@@ -173,8 +175,8 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
+platforms = expand_cxxstring_abis(platforms)
 platforms = expand_microarchitectures(platforms, ["x86_64", "avx2", "avx512"])
 
 # Disable unsupported platforms
@@ -183,11 +185,21 @@ filter!(platforms) do p
     Sys.islinux(p) && arch(p) == "aarch64" && libgfortran_version(p) <= v"4" && return false
     # SIMD vectorization not supported
     Sys.islinux(p) && arch(p) == "powerpc64le" && libgfortran_version(p) <= v"4" && return false
-    #TODO # SIMD vectorization broken: `_mm_castsi128_ps` not found. Maybe we detect or select the wrong architecture?
-    #TODO Sys.isfreebsd(p) && arch(p) == "x86_64" && return false
-    #TODO Sys.isapple(p) && arch(p) == "x86_64" && return false
+    # SIMD vectorization broken: `__m128i`, `_mm_castsi128_ps` are not found.
+    # Maybe we detect or select the wrong architecture in thorn CactusUtils/Vectors?
+    Sys.isbsd(p) && arch(p) == "x86_64" && march(p) == "x86_64" && return false
     # <fpu_control.h> does not exist
     libc(p) == "musl" && return false
+    # Impossible compiler constraints
+    Sys.islinux(p) && arch(p) == "x86_64" && libgfortran_version(p) == v"3" && march(p) == "avx512" && return false
+    # `ld: unknown option: -fopenmp`
+    # TODO: Fix this.
+    Sys.isapple(p) && return false
+    # `clang++: error: unable to find library -lg2c`
+    # TODO: Fix this.
+    Sys.isfreebsd(p) && return false
+    # MPI not found
+    Sys.iswindows(p) && return false
 
     return true
 end
