@@ -8,8 +8,8 @@ version = v"6.8.0"
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sourceforge.net/projects/coolprop/files/CoolProp/$version/source/CoolProp_sources.zip", "316fd20508b4d0ec3b2264b5393149ba2993ba3577dce7cf86f062835b449687"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz",
+                  "d3feee3ef9c6016b526e1901013f264467bb927865a03422a9cb925991cc9783"),
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +22,7 @@ sed -i 's/Windows/windows/' source/src/CPfilepaths.cpp
 sed -i 's/-m${BITNESS}//' source/CMakeLists.txt
 
 if [[ "${target}" == *apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX11.0.sdk
     sed -i "s!/opt/$target/$target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
     export MACOSX_DEPLOYMENT_TARGET=10.14
 fi
