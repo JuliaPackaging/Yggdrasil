@@ -44,14 +44,14 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/bun
 export PATH=$PATH:/workspace/srcdir/x86_64-linux-gnu/bun-linux-x64
-cmake -B build \
+$host_bindir/cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN \
     -DCMAKE_HOST_LINUX=1 \
     -DLINUX=1
-cmake --build build --parallel $nproc
-cmake --install build
+$host_bindir/cmake --build build --parallel $nproc
+$host_bindir/cmake --install build
 
 cd ${WORKSPACE}/srcdir/
 install_license bun/LICENSE.md
