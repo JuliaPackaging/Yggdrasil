@@ -12,9 +12,9 @@ script = raw"""
 # Enter the funzone
 export JAVA_HOME="`pwd`/jdk-21.0.7+6"
 
-env JAVA_HOME=$JAVA_HOME EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk" ./compile.sh
-fdas
+env JAVA_HOME=$JAVA_HOME EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --output_user_root=$WORKSPACE/bazel_root --jobs ${nproc}" ./compile.sh
 
+install -Dvm 755 bazel-bin/src/bazel-dev "${bindir}/bazel"
 """
 
 # We enable experimental platforms as this is a core Julia dependency
