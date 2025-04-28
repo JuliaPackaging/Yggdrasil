@@ -12,6 +12,10 @@ script = raw"""
 # Enter the funzone
 export JAVA_HOME="`pwd`/jdk-21.0.7+6"
 
+mkdir .tmp
+export TMPDIR=`pwd`/.tmp
+export TMP=$TMPDIR
+export TEMP=$TMPDIR
 
 # Set the default verbose mode in buildenv.sh so that we do not display command
 # output unless there is a failure.  We do this conditionally to offer the user
@@ -40,7 +44,7 @@ if [ "${EMBED_LABEL-x}" = "x" ]; then
   EMBED_LABEL="$(get_last_version) (@${git_sha1:-non-git})"
 fi
 
-export EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --jobs ${nproc} --output_user_root=$WORKSPACE/bazel_root" 
+export EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --jobs ${nproc}" 
 set -o xtrace
 
 source scripts/bootstrap/bootstrap.sh
