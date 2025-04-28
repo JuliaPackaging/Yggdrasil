@@ -47,10 +47,10 @@ export EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --jobs ${nproc} -
 bazel_build "src:bazel_nojdk${EXE_EXT}" \
   --action_env=PATH \
   --host_platform=@platforms//host \
-  --platforms=@platforms//host \
+  --platforms=@platforms//host
 
 bazel_bin_path="$(get_bazel_bin_path)/src/bazel_nojdk${EXE_EXT}"
-cp -f "$bazel_bin_path" "output/bazel${EXE_EXT}" \
+cp -f "$bazel_bin_path" "output/bazel${EXE_EXT}"
 chmod 0755 "output/bazel${EXE_EXT}"
 BAZEL="$(pwd)/output/bazel${EXE_EXT}"
 
