@@ -12,9 +12,49 @@ script = raw"""
 # Enter the funzone
 export JAVA_HOME="`pwd`/jdk-21.0.7+6"
 
-env JAVA_HOME=$JAVA_HOME EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --jobs ${nproc}" ./compile.sh
 
-install -Dvm 755 bazel-bin/src/bazel-dev "${bindir}/bazel"
+# Set the default verbose mode in buildenv.sh so that we do not display command
+# output unless there is a failure.  We do this conditionally to offer the user
+# a chance of overriding this in case they want to do so.
+: ${VERBOSE:=no}
+
+source scripts/bootstrap/buildenv.sh
+
+mkdir -p output
+: ${BAZEL:=}
+
+#
+# Create an initial binary so we can host ourself
+#
+if [ ! -x "${BAZEL}" ]; then
+  new_step 'Building Bazel from scratch'
+  source scripts/bootstrap/compile.sh
+fi
+
+#
+# Bootstrap bazel using the previous bazel binary = release binary
+#
+if [ "${EMBED_LABEL-x}" = "x" ]; then
+  # Add a default label when unspecified
+  git_sha1=$(git_sha1)
+  EMBED_LABEL="$(get_last_version) (@${git_sha1:-non-git})"
+fi
+
+source scripts/bootstrap/bootstrap.sh
+
+export EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --jobs ${nproc} --output_user_root=$WORKSPACE/bazel_root" 
+
+bazel_build "src:bazel_nojdk${EXE_EXT}" \
+  --action_env=PATH \
+  --host_platform=@platforms//host \
+  --platforms=@platforms//host \
+
+bazel_bin_path="$(get_bazel_bin_path)/src/bazel_nojdk${EXE_EXT}"
+cp -f "$bazel_bin_path" "output/bazel${EXE_EXT}" \
+chmod 0755 "output/bazel${EXE_EXT}"
+BAZEL="$(pwd)/output/bazel${EXE_EXT}"
+
+install -Dvm 755 ${BAZEL} "${bindir}/bazel"
 """
 
 # We enable experimental platforms as this is a core Julia dependency
