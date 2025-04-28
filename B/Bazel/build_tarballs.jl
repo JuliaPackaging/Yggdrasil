@@ -40,9 +40,10 @@ if [ "${EMBED_LABEL-x}" = "x" ]; then
   EMBED_LABEL="$(get_last_version) (@${git_sha1:-non-git})"
 fi
 
-source scripts/bootstrap/bootstrap.sh
-
 export EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk --jobs ${nproc} --output_user_root=$WORKSPACE/bazel_root" 
+set -o xtrace
+
+source scripts/bootstrap/bootstrap.sh
 
 bazel_build "src:bazel_nojdk${EXE_EXT}" \
   --action_env=PATH \
