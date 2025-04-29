@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.156"
 
 sources = [
-   GitSource(repo, "8a4d53cb0fb55d5e01b44595f181605f40397526"),
+   GitSource(repo, "33c79a1862d0b9f2ee9071efc576c93a7619081d"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -263,9 +263,9 @@ if [[ "${target}" == *-darwin* ]]; then
 
     # Manually remove `whole-archive` directive for the linker
     sed -i.bak1 -e "/whole-archive/d" \
-                -e "/lrt/d" \
+                -e "/gc-sections/d" \
                 bazel-bin/libReactantExtra.so-2.params
-
+    
     # # Show the params file for debugging, but convert newlines to spaces
     # cat bazel-bin/libReactantExtra.so-2.params | tr '\n' ' '
     # echo ""
