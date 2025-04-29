@@ -9,13 +9,16 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.156"
 
 sources = [
-  GitSource(repo, "be608139b8276e95f8e00441602e80f39dcdfb82"),
-  FileSource("https://github.com/wsmoses/binaries/releases/download/v0.0.1/bazel-dev",
-             "8b43ffdf519848d89d1c0574d38339dcb326b0a1f4015fceaa43d25107c3aade")
+   GitSource(repo, "9900463fd56a5e22ac4e5cb0cc2d3cff9c12cab2"),
+   ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
+   ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+export JAVA_HOME="`pwd`/jdk-21.0.7+6"
+export BAZEL="`pwd`/bin/bazel"
+
 cd Reactant.jl/deps/ReactantExtra
 
 echo Clang version: $(clang --version)
@@ -36,15 +39,9 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     popd
 fi
 
-apk add openjdk11-jdk
-export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
-
 mkdir -p .local/bin
 export LOCAL="`pwd`/.local/bin"
 export PATH="$LOCAL:$PATH"
-
-export BAZEL=$WORKSPACE/srcdir/bazel-dev
-chmod +x $BAZEL
 
 ln -s `which ar` /usr/bin/ar
 
