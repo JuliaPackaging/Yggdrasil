@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1cd5892d..18ad9b90 100644
+index 672b9810..d84cc4c9 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -216,20 +216,7 @@ endif()
+@@ -214,20 +214,7 @@ endif()
  
  find_package(MPI)
  if(MPI_FOUND)
@@ -23,4 +23,4 @@ index 1cd5892d..18ad9b90 100644
 +  target_include_directories(mlx PRIVATE ${MPI_INCLUDE_PATH})
  endif()
  
- add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/mlx)
+ message(STATUS "Downloading json")
