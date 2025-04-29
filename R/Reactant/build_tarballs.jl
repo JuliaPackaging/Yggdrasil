@@ -249,7 +249,7 @@ if [[ "${target}" == *-darwin* ]]; then
 
     sed -i.bak3 "s/DCHECK_EQ(in_edges_it->kind, out_edges_it->kind)/DCHECK_EQ((int)in_edges_it->kind, (int)out_edges_it->kind)/g" /workspace/bazel_root/*/external/xla/xla/runtime/execution_graph.cc
 
-    cat /workspace/bazel_root/*/external/local_config_cc/BUILD
+    cat /workspace/bazel_root/*/external/local_config_cc_toolchains/BUILD
 
     # We expect the following bazel build command to fail to link at the end, because the
     # build system insists on linking with `-whole_archive` also on macOS.  Until we figure
