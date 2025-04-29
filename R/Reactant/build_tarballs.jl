@@ -95,7 +95,7 @@ BAZEL_BUILD_FLAGS+=(--verbose_failures)
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
 BAZEL_BUILD_FLAGS+=(--host_platform=//:linux_x86_64)
-BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
+BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:cc_toolchain_for_ygg_host)
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
@@ -132,7 +132,7 @@ if [[ "${target}" == *-darwin* ]]; then
 	echo "register_toolchains(\\"//:cc_toolchain_for_ygg_darwin_arm64\\")" >> WORKSPACE
     fi
     BAZEL_BUILD_FLAGS+=(--linkopt=-twolevel_namespace)
-    BAZEL_BUILD_FLAGS+=(--crosstool_top=@xla//tools/toolchains/cross_compile/cc:cross_compile_toolchain_suite)
+    BAZEL_BUILD_FLAGS+=(--crosstool_top=@//:ygg_cross_compile_toolchain_suite)
     BAZEL_BUILD_FLAGS+=(--define=clang_macos_x86_64=true)
     # `using_clang` comes from Enzyme-JAX, to handle clang-specific options.
     BAZEL_BUILD_FLAGS+=(--define=using_clang=true)
