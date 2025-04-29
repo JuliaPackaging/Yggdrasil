@@ -242,7 +242,7 @@ if [[ "${target}" == *-darwin* ]]; then
 
     sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
                 -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
-                /workspace/bazel_root/*/external/local_config_cc/BUILD
+                /workspace/bazel_root/*/external/local_config_cc_toolchains/BUILD
     
     sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
                 /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
