@@ -2,6 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
+
 name = "MLX"
 version = v"0.25.1"
 
@@ -79,6 +81,7 @@ fi
 """
 
 platforms = supported_platforms()
+platforms = expand_microarchitectures(platforms, ["x86_64", "avx"])
 platforms = expand_cxxstring_abis(platforms)
 
 accelerate_platforms = filter(Sys.isapple, platforms)
@@ -101,7 +104,21 @@ dependencies = [
     HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
+augment_platform_block = """
+    $(MicroArchitectures.augment)
+
+    function augment_platform!(platform::Platform)
+        # We augment only x86_64
+        @static if Sys.ARCH === :x86_64
+            augment_microarchitecture!(platform)
+        else
+            platform
+        end
+    end
+"""
+
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    augment_platform_block,
     julia_compat="1.9",
     preferred_gcc_version = v"10", # v10: C++-17, with std::reduce, required
 )
