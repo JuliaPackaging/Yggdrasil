@@ -12,6 +12,7 @@ script = raw"""
 # Enter the funzone
 export JAVA_HOME="`pwd`/jdk-21.0.7+6"
 
+export BAZEL_CXXOPTS="-std=c++17"
 mkdir .tmp
 export TMPDIR=`pwd`/.tmp
 export TMP=$TMPDIR
