@@ -76,6 +76,7 @@ BAZEL_BUILD_FLAGS+=(--cxxopt=-DTCP_USER_TIMEOUT=0)
 BAZEL_BUILD_FLAGS+=(--check_visibility=false)
 BAZEL_BUILD_FLAGS+=(--build_tag_filters=-jlrule)
 BAZEL_BUILD_FLAGS+=(--experimental_cc_shared_library)
+BAZEL_BUILD_FLAGS+=(--toolchain_resolution_debug='@bazel_tools//tools/cpp:toolchain_type')
 
 # Always link with lld
 BAZEL_BUILD_FLAGS+=(--linkopt=-fuse-ld=lld)
