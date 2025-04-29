@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.24.2"
+version = v"0.25.1"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "86389bf9707f46101af45d90510e8e97c8a90b93"),
+    GitSource("https://github.com/ml-explore/mlx.git", "eaf709b83e559079e212699bfc9dd2f939d25c9a"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/20/21/6676f287859b18e794a3db262a7c2e71b3bf06d7a067408cbc5e93eee0aa/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "1359bae501e4afd378e921d99db1f8307de9084b34eefb1ade2dfef27b92755a"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    FileSource("https://files.pythonhosted.org/packages/02/1b/7da8f1d224a4287cdd5eda77d878a73ff13c22e2c89097bc6effcc5c318a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "f2ca5c2f60804bbb3968ee3e087ce4cf5789065f4c927f76b025b3f5f122a63a"; filename = "mlx-aarch64-apple-darwin20.whl"),
 ]
 
 script = raw"""
