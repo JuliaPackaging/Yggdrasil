@@ -103,5 +103,5 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.9",
-    preferred_gcc_version = v"11", # v10: C++-17, with std::reduce, required, v11: ICE on v10 for mlx/3rdparty/pocketfft.h:1253:37: internal compiler error
+    preferred_gcc_version = v"10", # v10: C++-17, with std::reduce, required
 )
