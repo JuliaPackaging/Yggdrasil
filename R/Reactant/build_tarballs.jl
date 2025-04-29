@@ -242,14 +242,10 @@ if [[ "${target}" == *-darwin* ]]; then
 
     sed -i.bak1 -e "s/\\"k8|/\\"${BAZEL_CPU}\\": \\":cc-compiler-k8\\", \\"k8|/g" \
                 -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
-                /workspace/bazel_root/*/external/local_config_cc_toolchains/BUILD
-    
+                /workspace/bazel_root/*/external/bazel_tools~cc_configure_extension~local_config_cc/BUILD
+   
     sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
                 /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
-
-    sed -i.bak3 "s/DCHECK_EQ(in_edges_it->kind, out_edges_it->kind)/DCHECK_EQ((int)in_edges_it->kind, (int)out_edges_it->kind)/g" /workspace/bazel_root/*/external/xla/xla/runtime/execution_graph.cc
-
-    cat /workspace/bazel_root/*/external/local_config_cc_toolchains/BUILD
 
     # We expect the following bazel build command to fail to link at the end, because the
     # build system insists on linking with `-whole_archive` also on macOS.  Until we figure
