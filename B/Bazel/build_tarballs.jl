@@ -61,6 +61,7 @@ chmod 0755 "output/bazel${EXE_EXT}"
 BAZEL="$(pwd)/output/bazel${EXE_EXT}"
 
 install -Dvm 755 ${BAZEL} "${bindir}/bazel"
+install_license ../../LICENSE
 """
 
 # We enable experimental platforms as this is a core Julia dependency
