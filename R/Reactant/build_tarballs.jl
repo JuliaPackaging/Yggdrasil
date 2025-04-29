@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.156"
 
 sources = [
-   GitSource(repo, "a09d47fa0c6ccc616ab3be193d575fb65f8d1fbc"),
+   GitSource(repo, "985eab59a37826181cfcfb9fbfc26b06b8ea0e31"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -94,6 +94,7 @@ BAZEL_BUILD_FLAGS+=(--verbose_failures)
 
 BAZEL_BUILD_FLAGS+=(--action_env=TMP=$TMPDIR --action_env=TEMP=$TMPDIR --action_env=TMPDIR=$TMPDIR --sandbox_tmpfs_path=$TMPDIR)
 BAZEL_BUILD_FLAGS+=(--host_cpu=k8)
+BAZEL_BUILD_FLAGS+=(--host_platform=//:linux_x86_64)
 BAZEL_BUILD_FLAGS+=(--host_crosstool_top=@//:ygg_cross_compile_toolchain_suite)
 # BAZEL_BUILD_FLAGS+=(--extra_execution_platforms=@xla//tools/toolchains/cross_compile/config:linux_x86_64)
 
@@ -106,6 +107,8 @@ elif [[ "${target}" == x86_64-linux-* ]]; then
 elif [[ "${target}" == aarch64-linux-* ]]; then
    BAZEL_CPU=aarch64
 fi
+
+echo "register_toolchains(\\"//:cc_toolchain_for_ygg_host\\")" >> WORKSPACE
 
 if [[ "${target}" == *-darwin* ]]; then
     BAZEL_BUILD_FLAGS+=(--define=gcc_linux_x86_32_1=false)
