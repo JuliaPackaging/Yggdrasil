@@ -3,8 +3,6 @@ using BinaryBuilder, Pkg
 name = "oneAPI_Support"
 version = v"0.8.0"
 
-non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-
 generic_sources = [
     GitSource("https://github.com/JuliaGPU/oneAPI.jl",
               "1c4121c8f9fea661c5c7fc2aa8a64ae04bf03ce7")
@@ -158,14 +156,20 @@ platform_sources = Dict(
 )
 
 script = raw"""
-install_license "info/licenses/license.txt"
-
 for package in compiler_shared dpcpp-cpp-rt dpcpp_impl_linux-64 dpcpp_linux-64 intel-cmplr-lib-rt \
                intel-cmplr-lib-ur intel-cmplr-lic-rt intel-opencl-rt intel-openmp intel-sycl-rt mkl \
                mkl-devel mkl-devel-dpcpp mkl-dpcpp mkl-include onemkl-sycl-blas onemkl-sycl-datafitting \
                onemkl-sycl-dft onemkl-sycl-lapack onemkl-sycl-rng onemkl-sycl-sparse onemkl-sycl-stats \
                onemkl-sycl-vm tbb tbb-devel tcm umf; do
-    tar -xvf ${package}.conda
+    unzip -o ${package} -d "${WORKSPACE}/srcdir"
+done
+
+# Install zstd
+apk add zstd
+
+find "${WORKSPACE}/srcdir" -name '*.tar.zst' | while read -r archive; do
+    echo "Extracting $archive..."
+    tar --use-compress-program=unzstd -xf "$archive" -C "${WORKSPACE}/srcdir"
 done
 
 # install dependencies in the prefix
@@ -178,6 +182,8 @@ for lib in sycl svml irng imf intlc ur_loader ur_adapter \
            mkl_avx mkl_def umf tcm; do
     cp -a lib/lib${lib}*.so* ${libdir}
 done
+
+install_license "info/licenses/license.txt"
 
 cd oneAPI.jl/deps
 
