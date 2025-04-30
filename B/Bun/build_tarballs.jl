@@ -30,10 +30,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/
+cd $WORKSPACE/srcdir
 install_license bun/LICENSE.md
-mkdir "${bindir}"
-install -m 755 $target/*/bun$exeext $bindir
+install -D -m 755 -v $target/*/bun$exeext $bindir/bun$exeext
 """
 
 # These are the platforms we will build for by default, unless further
