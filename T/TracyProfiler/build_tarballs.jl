@@ -42,24 +42,29 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
 fi
 
 # Build / install the profiler GUI
-make -e -j${nproc} -C profiler/build/unix LEGACY=1 IMAGE=tracy release
-cp -v ./profiler/build/unix/tracy* $bindir
+cmake -B profiler/build -S profiler -DLEGACY=1 -DCMAKE_BUILD_TYPE=Release
+cmake --build profiler/build --config Release --parallel
+cp -v ./profiler/build/tracy* $bindir
 
 # Build / install the update utility
-make -e -j${nproc} -C update/build/unix IMAGE=tracy-update release
-cp -v ./update/build/unix/tracy* $bindir
+cmake -B update/build -S update -DCMAKE_BUILD_TYPE=Release
+cmake --build update/build --config Release --parallel
+cp -v ./update/build/tracy* $bindir
 
 # Build / install the capture utility
-make -e -j${nproc} -C capture/build/unix IMAGE=tracy-capture release
-cp -v ./capture/build/unix/tracy* $bindir
+cmake -B capture/build -S capture -DCMAKE_BUILD_TYPE=Release
+cmake --build capture/build --config Release --parallel
+cp -v ./capture/build/tracy* $bindir
 
 # Build / install the csvexport utility
-make -e -j${nproc} -C csvexport/build/unix IMAGE=tracy-csvexport release
-cp -v ./csvexport/build/unix/tracy* $bindir
+cmake -B csvexport/build -S csvexport -DCMAKE_BUILD_TYPE=Release
+cmake --build csvexport/build --config Release --parallel
+cp -v ./csvexport/build/tracy* $bindir
 
 # Build / install the import-chrome utility
-make -e -j${nproc} -C import-chrome/build/unix IMAGE=tracy-import-chrome release
-cp -v ./import-chrome/build/unix/tracy* $bindir
+cmake -B import-chrome/build -S import-chrome -DCMAKE_BUILD_TYPE=Release
+cmake --build import-chrome/build --config Release --parallel
+cp -v ./import-chrome/build/tracy* $bindir
 
 install_license LICENSE
 """
