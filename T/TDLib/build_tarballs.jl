@@ -19,17 +19,24 @@ cd ${WORKSPACE}/srcdir/td/
 
 install_license LICENSE_1_0.txt
 
-find /usr/share/cmake -name "._*" -delete
-
 mkdir build_native && cd build_native
-cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-    -DZLIB_LIBRARY="${host_libdir}/libz.a" \
-    -DZLIB_INCLUDE_DIR="${host_includedir}" \
-    ..
-cmake --build . --target prepare_cross_compiling -j4
+if [[ "${target}" == *-linux-* ]]; then
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=$prefix \
+        -DZLIB_LIBRARY="${host_libdir}/libz.a" \
+        -DZLIB_INCLUDE_DIR="${host_includedir}" \
+        ..
+else
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=$prefix \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+        -DZLIB_LIBRARY="${host_libdir}/libz.a" \
+        -DZLIB_INCLUDE_DIR="${host_includedir}" \
+        ..
+fi
+cmake --build . --target prepare_cross_compiling -j${nproc}
 
 cd ${WORKSPACE}/srcdir/td/
 mkdir build-cross && cd build-cross
@@ -39,8 +46,8 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DNATIVE_BUILD_DIR=${WORKSPACE}/srcdir/td/build_native \
     ..
-cmake --build . --target tdjson -j4
-cmake --build . --target tdjson_static -j4
+cmake --build . --target tdjson -j${nproc}
+cmake --build . --target tdjson_static -j${nproc}
 cmake --install .
 """
 
