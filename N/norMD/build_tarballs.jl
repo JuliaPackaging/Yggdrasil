@@ -2,7 +2,7 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "AQUAnorMD"
+name = "norMD"
 version = v"1.3.0"
 
 # This script installs norMD (normalized Mean Distance) version 1.3, provided by the AQUA suite.
