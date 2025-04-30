@@ -26,11 +26,14 @@ cd $WORKSPACE/srcdir/mlx
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
-    CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
+    CMAKE_EXTRA_OPTIONS+=(
+        -DCMAKE_CXX_FLAGS=-Wno-psabi # Disabled psabi warnings, due to a lot being produced for mlx/backend/cpu/simd/accelerate_simd.h
+        -DMLX_ENABLE_X64_MAC=ON
+    )
     export MACOSX_DEPLOYMENT_TARGET=13.3
 elif [[ "$target" == *-w64-mingw32* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
-        "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
+        -DMLX_BUILD_GGUF=OFF # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
     )
 fi
 
@@ -42,9 +45,9 @@ if [[ "$target" != *-apple-darwin* &&
         libblastrampoline_target=$rust_target
     fi
     CMAKE_EXTRA_OPTIONS+=(
-        "-DBLA_VENDOR=libblastrampoline"
-        "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
-        "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
+        -DBLA_VENDOR=libblastrampoline
+        -DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
+        -DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
     )
 fi
 
