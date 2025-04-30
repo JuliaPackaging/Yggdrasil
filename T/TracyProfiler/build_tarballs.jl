@@ -41,6 +41,9 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+# Help CMake find `ar`
+ln -sf /opt/bin/ar /usr/bin/ar
+
 # Build / install the profiler GUI
 cmake -B profiler/build -S profiler -DLEGACY=1 -DCMAKE_BUILD_TYPE=Release
 cmake --build profiler/build --config Release --parallel
