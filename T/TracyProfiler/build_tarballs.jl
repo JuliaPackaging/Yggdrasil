@@ -41,6 +41,8 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+whereis ar
+ls /usr/bin/ar
 ls /opt/bin/ar
 
 # Build / install the profiler GUI
