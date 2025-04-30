@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "Bun"
-version = v"1.2.10"
+version = v"1.2.11"
 
 release_url = "https://github.com/oven-sh/bun/releases/download/bun-v$version"
 
