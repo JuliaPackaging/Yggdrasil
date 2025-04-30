@@ -288,12 +288,14 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
+    cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
 
     if [[ "${target}" == x86_64-linux-gnu ]]; then
         NVCC_DIR=(bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc)
     else
         NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
     fi
+
     install -Dvm 644 "${NVCC_DIR[@]}/nvvm/libdevice/libdevice.10.bc" -t "${libdir}/cuda/nvvm/libdevice"
     install -Dvm 755 "${NVCC_DIR[@]}/bin/ptxas" -t "${libdir}/cuda/bin"
     install -Dvm 755 "${NVCC_DIR[@]}/bin/fatbinary" -t "${libdir}/cuda/bin"
@@ -301,6 +303,7 @@ if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     # Simplify ridiculously long rpath of `libReactantExtra.so`,
     # we moved all deps in `${libdir}` anyway.
     patchelf --set-rpath '$ORIGIN' bazel-bin/libReactantExtra.so
+
 fi
 
 install -Dvm 755 bazel-bin/libReactantExtra.so "${libdir}/libReactantExtra.${dlext}"
