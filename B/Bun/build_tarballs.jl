@@ -11,13 +11,13 @@ release_url = "https://github.com/oven-sh/bun/releases/download/bun-v$version"
 
 # This will store filename, arch and platform for each supported platform
 data = [
-    (; filename = "bun-linux-x64.zip", sha = "68a154ff1be96851b4d1a87cc5197f027ef80ab79afa3d4587150fae5c34c36e", target = "x86_64-linux-gnu", platform = Platform("x86_64", "linux"; libc = "glibc")),
-    (; filename = "bun-linux-aarch64.zip", sha = "54592fd0237e3ec91a2933dff015e15a78989d97234042e7d5334a4c0ad50603", target = "aarch64-linux-gnu", platform = Platform("aarch64", "linux"; libc = "glibc")),
-    (; filename = "bun-linux-x64-musl.zip", sha = "353e3a3d6fc4576592bf14a6fc3ea783a8a2811ff68e8d22f6f92fa6141c52a5", target = "x86_64-linux-musl", platform = Platform("x86_64", "linux"; libc = "musl")),
-    (; filename = "bun-linux-aarch64-musl.zip", sha = "3201318206827a993e84d45d5b523a2aecd607057a623a5c12fc11e4a9b231fe", target = "aarch64-linux-musl", platform = Platform("aarch64", "linux"; libc = "musl")),
-    (; filename = "bun-darwin-x64.zip", sha = "3443df70c763665db70267c6e883d312c922ccb54a085a40645e7d5603ba9b59", target = "x86_64-apple-darwin14", platform = Platform("x86_64", "macos")),
-    (; filename = "bun-darwin-aarch64.zip", sha = "07895ef0fb661249b86b0b723b65b1cc4790c7f3685b63cda90122b00299972c", target = "aarch64-apple-darwin20", platform = Platform("aarch64", "macos")),
-    (; filename = "bun-windows-x64.zip", sha = "e936fcfacb3cdd823f4fd60402920f52219cfe1dd970eb5650656f67a5ee9109", target = "x86_64-w64-mingw32", platform = Platform("x86_64", "windows")),
+    (; filename = "bun-linux-x64.zip", sha = "e481258190f8930a915ff52b5a0717b83d8f29dbd188294c9d45e37464dcf9e0", target = "x86_64-linux-gnu", platform = Platform("x86_64", "linux"; libc = "glibc")),
+    (; filename = "bun-linux-aarch64.zip", sha = "ac863aad053ef69d1d0f60d89ab313c61dccaaa962b2c4d7436c3efdba9595bb", target = "aarch64-linux-gnu", platform = Platform("aarch64", "linux"; libc = "glibc")),
+    (; filename = "bun-linux-x64-musl.zip", sha = "7ae5f9e8444f8376bb6e5b868ed7293a896db67a527d1945142d171eed3c8c13", target = "x86_64-linux-musl", platform = Platform("x86_64", "linux"; libc = "musl")),
+    (; filename = "bun-linux-aarch64-musl.zip", sha = "4e3d15070234b254b457918dcdf534e691643d5de570c2a1eb8c0fb9f4942329", target = "aarch64-linux-musl", platform = Platform("aarch64", "linux"; libc = "musl")),
+    (; filename = "bun-darwin-x64.zip", sha = "281199c0f979ed3cdd4a543ef2afd10db03e4325c0f29f0e13e755dc011e306a", target = "x86_64-apple-darwin14", platform = Platform("x86_64", "macos")),
+    (; filename = "bun-darwin-aarch64.zip", sha = "7d54c55c59274f2f2706481b38e6f7d90999c979f2ea522e7611bf051c5b19f4", target = "aarch64-apple-darwin20", platform = Platform("aarch64", "macos")),
+    (; filename = "bun-windows-x64.zip", sha = "4877e62df190fd85cfd045b7b026ccc255ad692d56ee966890cf829276b54a2a", target = "x86_64-w64-mingw32", platform = Platform("x86_64", "windows")),
 ]
 
 
@@ -25,7 +25,7 @@ data = [
 # We start by putting the per-arch archive with the executable
 sources = [
     [ArchiveSource("$release_url/$(d.filename)", d.sha; unpack_target = d.target) for d in data]...,
-    GitSource("https://github.com/oven-sh/bun.git", "db2e7d7f748dd3951ac0c983de73e75df51bb735")
+    GitSource("https://github.com/oven-sh/bun.git", "d4b02dcdc2543cb65c4743aeac7904f380d68a8c")
 ]
 
 # Bash recipe for building across all platforms
