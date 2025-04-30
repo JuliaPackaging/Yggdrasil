@@ -30,7 +30,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 unpack_target=$target
-if [[ $target =~ *-apple-darwin* ]]; then
+if [[ $target == *-apple-darwin* ]]; then
     # Remove whatever is after the `apple-darwin` part
     unpack_target=${target%-darwin*}-darwin
 fi
