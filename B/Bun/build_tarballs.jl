@@ -31,7 +31,8 @@ sources = [
 script = raw"""
 unpack_target=$target
 if [[ $target =~ *-apple-darwin* ]]; then
-  unpack_target=$rust_target
+    # Remove whatever is after the `apple-darwin` part
+    unpack_target=${target%-darwin*}-darwin
 fi
 cd $WORKSPACE/srcdir
 install_license bun/LICENSE.md
