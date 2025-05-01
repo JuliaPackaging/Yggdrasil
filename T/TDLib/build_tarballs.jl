@@ -10,9 +10,6 @@ sources = [
     GitSource("https://github.com/tdlib/td.git", "971684a3dcc7bdf99eec024e1c4f57ae729d6d53")
 ]
 
-include("../../L/libjulia/common.jl")
-julia_versions = [v"1.8", v"1.9", v"1.10", v"1.11"]
-
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/td/
@@ -46,7 +43,7 @@ cmake --install .
 """
 
 # These are the platforms we will build for by default, unless further
-platforms = supported_platforms()
+platforms = filter!(p -> !(arch(p) == "riscv64"), supported_platforms())
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
