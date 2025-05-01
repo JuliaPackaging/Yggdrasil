@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "OpenSourceRoutingMachine"
-version = v"5.28.0" # UNTAGGED / ASK FOR NEW RELEASE TAG
+version = v"6.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "c59ad69d6a081fb0c8fca9fe7bf798d4150ea8d2"),
+    GitSource("https://github.com/Project-OSRM/osrm-backend.git", "054b0a6395f689a47a908b26b12e32ed7704c533"),
     DirectorySource("./bundled"),
     # OSRM requires C++20, which needs a newer SDK
     ArchiveSource("https://github.com/realjf/MacOSX-SDKs/releases/download/v0.0.1/MacOSX12.3.sdk.tar.xz",
