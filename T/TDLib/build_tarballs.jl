@@ -20,22 +20,16 @@ cd ${WORKSPACE}/srcdir/td/
 install_license LICENSE_1_0.txt
 
 mkdir build_native && cd build_native
-if [[ "${target}" == *-linux-* ]]; then
-    cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=$prefix \
-        -DZLIB_LIBRARY="${host_libdir}/libz.a" \
-        -DZLIB_INCLUDE_DIR="${host_includedir}" \
-        ..
-else
-    cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=$prefix \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
-        -DZLIB_LIBRARY="${host_libdir}/libz.a" \
-        -DZLIB_INCLUDE_DIR="${host_includedir}" \
-        ..
-fi
+cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=$host_prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+    -DZLIB_LIBRARY="${host_libdir}/libz.a" \
+    -DZLIB_INCLUDE_DIR="${host_includedir}" \
+    -DOPENSSL_CRYPTO_LIBRARY="${host_libdir}/libcrypto.so" \
+    -DOPENSSL_SSL_LIBRARY="${host_libdir}/libssl.so" \
+    -DOPENSSL_INCLUDE_DIR="${host_includedir}" \
+    ..
 cmake --build . --target prepare_cross_compiling -j${nproc}
 
 cd ${WORKSPACE}/srcdir/td/
