@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.157"
+version = v"0.0.158"
 
 sources = [
-   GitSource(repo, "5263119cb5770596dd6eed8198b662420a139e60"),
+   GitSource(repo, "31b1644994b6b9342d2caf430942fc5565fb36ca"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -258,8 +258,8 @@ if [[ "${target}" == *-darwin* ]]; then
     #             -e "s/cpu = \\"k8\\"/cpu = \\"${BAZEL_CPU}\\"/g" \
     #             /workspace/bazel_root/*/external/bazel_tools~cc_configure_extension~local_config_cc/BUILD
    
-    sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
-                /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
+    # sed -i.bak2 -e "s/\\":cpu_aarch64\\":/\\"@platforms\/\/cpu:aarch64\\":/g" \
+    #             /workspace/bazel_root/*/external/xla/third_party/highwayhash/highwayhash.BUILD
 
     # We expect the following bazel build command to fail to link at the end, because the
     # build system insists on linking with `-whole_archive` also on macOS.  Until we figure
@@ -288,7 +288,9 @@ mkdir -p ${libdir}
 if [[ "${bb_full_target}" == *gpu+cuda* ]]; then
     rm -rf bazel-bin/_solib_local/*stub*/*so*
     cp -v bazel-bin/_solib_local/*/*so* ${libdir}
-    cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
+    find bazel-bin
+    find ${libdir}
+    # cp -v /workspace/bazel_root/*/external/cuda_nccl/lib/libnccl.so.2 ${libdir}
 
     if [[ "${target}" == x86_64-linux-gnu ]]; then
         NVCC_DIR=(bazel-bin/libReactantExtra.so.runfiles/cuda_nvcc)
