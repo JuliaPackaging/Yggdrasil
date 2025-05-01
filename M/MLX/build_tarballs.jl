@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.24.2"
+version = v"0.25.1"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "86389bf9707f46101af45d90510e8e97c8a90b93"),
+    GitSource("https://github.com/ml-explore/mlx.git", "eaf709b83e559079e212699bfc9dd2f939d25c9a"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/20/21/6676f287859b18e794a3db262a7c2e71b3bf06d7a067408cbc5e93eee0aa/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "1359bae501e4afd378e921d99db1f8307de9084b34eefb1ade2dfef27b92755a"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    FileSource("https://files.pythonhosted.org/packages/02/1b/7da8f1d224a4287cdd5eda77d878a73ff13c22e2c89097bc6effcc5c318a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "f2ca5c2f60804bbb3968ee3e087ce4cf5789065f4c927f76b025b3f5f122a63a"; filename = "mlx-aarch64-apple-darwin20.whl"),
 ]
 
 script = raw"""
@@ -26,11 +26,14 @@ cd $WORKSPACE/srcdir/mlx
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
-    CMAKE_EXTRA_OPTIONS+=("-DMLX_ENABLE_X64_MAC=ON")
+    CMAKE_EXTRA_OPTIONS+=(
+        -DCMAKE_CXX_FLAGS=-Wno-psabi # Disabled psabi warnings, due to a lot being produced for mlx/backend/cpu/simd/accelerate_simd.h
+        -DMLX_ENABLE_X64_MAC=ON
+    )
     export MACOSX_DEPLOYMENT_TARGET=13.3
 elif [[ "$target" == *-w64-mingw32* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
-        "-DMLX_BUILD_GGUF=OFF" # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
+        -DMLX_BUILD_GGUF=OFF # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
     )
 fi
 
@@ -42,9 +45,9 @@ if [[ "$target" != *-apple-darwin* &&
         libblastrampoline_target=$rust_target
     fi
     CMAKE_EXTRA_OPTIONS+=(
-        "-DBLA_VENDOR=libblastrampoline"
-        "-DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
-        "-DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target"
+        -DBLA_VENDOR=libblastrampoline
+        -DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
+        -DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
     )
 fi
 
@@ -103,5 +106,5 @@ dependencies = [
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.9",
-    preferred_gcc_version = v"11", # v10: C++-17, with std::reduce, required, v11: ICE on v10 for mlx/3rdparty/pocketfft.h:1253:37: internal compiler error
+    preferred_gcc_version = v"10", # v10: C++-17, with std::reduce, required
 )
