@@ -26,7 +26,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/normd_noexpat/
 sed -i '/#include "score.h"/a#include <string.h>' init.c
-make -j${nproc}
+make -j${nproc} CFLAGS="-c -O2 -std=c99"
 install -Dvm 755 normd -t "${bindir}"
 """
 # NOTE: Only the normd executable is installed.
@@ -34,19 +34,7 @@ install -Dvm 755 normd -t "${bindir}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("i686", "linux"; libc = "musl"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl")
-] # norMD uses an old C standard and cannot be compiled for all the supported platforms
+platforms = supported_platforms(; exclude=!Sys.islinux)
 
 
 # The products that we will ensure are always built
