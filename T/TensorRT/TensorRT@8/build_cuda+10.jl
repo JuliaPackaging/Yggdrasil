@@ -3,7 +3,7 @@ platforms_and_sources = Dict(
         ArchiveSource("https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.1/tars/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-10.2.cudnn8.2.tar.gz",
                       "96160493b88526f4eb136b29399c3c8bb2ef5e2dd4f8325a44104add10edd35b")],
     Platform("aarch64", "linux") => [
-        FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/t/tensorrt/libnvinfer-bin_8.2.1-1+cuda10.2_arm64.deb", "738904f63c16498da9e9789dd4c99a9be926a2809c30cb45c2a97877b6e3c3d7"),
+        FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/t/tensorrt/libnvinfer-bin_8.2.1-1+cuda10.2_arm64.deb", "b03b5ca8e9b0df42d97255cea501cab44e982f9eb5e795e8bd8cab70a1debd85"),
         FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/t/tensorrt/libnvinfer-dev_8.2.1-1+cuda10.2_arm64.deb", "54c79348f364731d90aa857597185d73067864e208fb24a8fb7675405661c6d6"),
         FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/t/tensorrt/libnvinfer-plugin-dev_8.2.1-1+cuda10.2_arm64.deb", "e357606f5884608cbb07a0dfe64c48490746e90e6eaf91bbed2324623e368b7c"),
         FileSource("https://repo.download.nvidia.com/jetson/common/pool/main/t/tensorrt/libnvinfer-plugin8_8.2.1-1+cuda10.2_arm64.deb", "ea0bcf03218d1c22fdb563f3db45e00829234712f05ce71866c9486bc1dcadaf"),
