@@ -7,7 +7,7 @@ version = v"3.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/fuentes/n2qn1.git", "7c74437b3439ea32e88df2f7e69e166a070e8568")
+    GitSource("https://gitlab.inria.fr/fuentes/n2qn1.git", "a3b6c2cf8d429591976f5e33c0c9766b1e8fea05")
 ]
 
 # Bash recipe for building across all platforms
@@ -26,7 +26,8 @@ platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libn2qn1", :libn2qn1)
+    LibraryProduct("libn2qn1", :libn2qn1),
+    LibraryProduct("libn2qn1r", :libn2qn1r)
 ]
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
