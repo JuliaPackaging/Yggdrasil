@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_mqtt"
-version = v"0.12.3"
+version = v"0.13.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "fb651a4a59f28384fdb4938524192433492dead0"),
+    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "9fc2f573c0fb608c052230d4f2495725d7252285"),
 ]
 
 # Bash recipe for building across all platforms
