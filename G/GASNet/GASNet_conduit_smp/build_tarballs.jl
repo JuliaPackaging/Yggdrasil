@@ -56,6 +56,8 @@ for file in libgasnet-smp-*.a; do
 done
 popd
 
+make install-includeHEADERS
+
 install_license license.txt
 """
 
@@ -72,6 +74,7 @@ products = Product[
     LibraryProduct("libgasnet-smp-seq", :libgasnet_smp_seq),
     LibraryProduct("libgasnet-smp-par", :libgasnet_smp_par),
     LibraryProduct("libgasnet-smp-parsync", :libgasnet_smp_parsync),
+    FileProduct("include/gasnet.h", :gasnet_h),
 ]
 
 # Dependencies that must be installed before this package can be built
