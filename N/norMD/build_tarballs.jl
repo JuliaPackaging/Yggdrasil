@@ -26,16 +26,15 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/normd_noexpat/
 sed -i '/#include "score.h"/a#include <string.h>' init.c
-make -j${nproc} CFLAGS="-c -O2 -std=c99"
-install -Dvm 755 normd -t "${bindir}"
+make -j${nproc} CFLAGS="-c -O2 -std=c99 -Wno-implicit-function-declaration"
+install -Dvm 755 normd "${bindir}/normd${exeext}"
 """
 # NOTE: Only the normd executable is installed.
 # The programs normd_subaln, normd_range, normd_sw, normd_aln, and normd_aln1 are built but not installed.
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=!Sys.islinux)
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
