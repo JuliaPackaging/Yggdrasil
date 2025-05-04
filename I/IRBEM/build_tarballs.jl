@@ -24,13 +24,17 @@ else
     make OS=linux64 ENV=gfortran64 install
 fi
 mkdir -p ${libdir}
-cp -L ./libirbem.* ${libdir}/
+if [[ ${target} == *apple* ]]; then
+    cp -L ./libirbem.so ${libdir}/libirbem.dylib
+else
+    cp -L ./libirbem.* ${libdir}/
+fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; )
-platforms = expand_gfortran_versions(platforms)
+platforms = expand_gfortran_versions(supported_platforms())
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
 products = [
