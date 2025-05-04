@@ -9,11 +9,20 @@ version = v"2024.5.0"
 script = raw"""
 cd ${WORKSPACE}/srcdir/GASNet-2024.5.0/
 
-# TODO this needs platform-dependent optimization!
+# TODO this needs platform-dependent optimization! should be automatically detected on target platforms
+## Whether the system has a working version of anonymous mmap
 export CROSS_HAVE_MMAP='1'
+
+## The system VM page size (ie mmap granularity, even if swapping is not supported)
 export CROSS_PAGESIZE=4096
+
+## Does the system stack grow up?
 export CROSS_STACK_GROWS_UP='0'
+
+## MIC doesn't have cmpxchg16b instruction!
 export CROSS_HAVE_X86_CMPXCHG16B='0'
+
+## Enable Posix shared memory
 export CROSS_HAVE_SHM_OPEN='1'
 
 # if target contains apple-darwin, set RANLIB to ar (llvm-ranlib fails)
