@@ -23,12 +23,7 @@ else
     make -j${nproc} OS=linux64 ENV=gfortran64 all
     make OS=linux64 ENV=gfortran64 install
 fi
-mkdir -p ${libdir}
-if [[ ${target} == *apple* ]]; then
-    cp -L ./libirbem.so ${libdir}/libirbem.dylib
-else
-    cp -L ./libirbem.* ${libdir}/
-fi
+install -Dvm 755 libirbem.so ${libdir}/libirbem.dylib
 """
 
 # These are the platforms we will build for by default, unless further
