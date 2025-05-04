@@ -1,6 +1,6 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "IRBEM"
 version = v"5.0.0"
@@ -12,12 +12,19 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
-cd IRBEM/
-make -j${nproc} all
-make install
+cd $WORKSPACE/srcdir/IRBEM
+if [[ ${target} == *mingw* ]]; then
+    make -j${nproc} OS=win64 ENV=gfortran64 all
+    make OS=win64 ENV=gfortran64 install
+elif [[ ${target} == *apple* ]]; then
+    make -j${nproc} OS=osx64 ENV=gfortran64 all
+    make OS=osx64 ENV=gfortran64 install
+else
+    make -j${nproc} OS=linux64 ENV=gfortran64 all
+    make OS=linux64 ENV=gfortran64 install
+fi
 mkdir -p ${libdir}
-cp -L ./libirbem.so ${libdir}/
+cp -L ./libirbem.* ${libdir}/
 """
 
 # These are the platforms we will build for by default, unless further
@@ -32,6 +39,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
