@@ -16,6 +16,11 @@ export CROSS_STACK_GROWS_UP='0'
 export CROSS_HAVE_X86_CMPXCHG16B='0'
 export CROSS_HAVE_SHM_OPEN='1'
 
+# if target contains apple-darwin, set RANLIB to ar (llvm-ranlib fails)
+if [[ ${target} == *apple-darwin* ]]; then
+    export RANLIB=ar
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} --target=${target} \
     --enable-cross-compile \
     --with-cflags=-fPIC --with-cxxflags=-fPIC --with-mpi-cflags=-fPIC \
