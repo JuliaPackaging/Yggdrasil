@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "N2QN1"
-version = v"3.0"
+version = v"4.0"
 
 # Collection of sources required to complete build
 sources = [
