@@ -4,7 +4,6 @@ using BinaryBuilder, Pkg
 
 name = "IRBEM"
 version = v"5.0.0"
-
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/PRBEM/IRBEM.git", "e7cecb00caf97bb6357f063d2ba1aa76d71a3705")
@@ -13,23 +12,14 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/IRBEM
-if [[ ${target} == *mingw* ]]; then
-    make -j${nproc} OS=win64 ENV=gfortran64 all
-    make OS=win64 ENV=gfortran64 install
-elif [[ ${target} == *apple* ]]; then
-    make -j${nproc} OS=osx64 ENV=gfortran64 all
-    make OS=osx64 ENV=gfortran64 install
-else
-    make -j${nproc} OS=linux64 ENV=gfortran64 all
-    make OS=linux64 ENV=gfortran64 install
-fi
-install -Dvm 755 libirbem.* "${libdir}/libirbem.${dlext}"
+make OS=linux64 ENV=gfortran64 CC=cc COMPILE_LIB_NAME="libirbem.${dlext}" INSTALL_LIB_NAME="libirbem.${dlext}" all -j${nproc}
+make OS=linux64 ENV=gfortran64 COMPILE_LIB_NAME="libirbem.${dlext}" INSTALL_LIB_NAME="libirbem.${dlext}" install
+install -Dvm 755 "libirbem.${dlext}" "${libdir}/libirbem.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
-filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
 products = [
