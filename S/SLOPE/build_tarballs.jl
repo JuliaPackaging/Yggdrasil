@@ -66,7 +66,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms)),
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.1"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
