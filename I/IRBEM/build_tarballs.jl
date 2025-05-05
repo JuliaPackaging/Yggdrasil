@@ -13,8 +13,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/IRBEM
 make OS=linux64 ENV=gfortran64 CC=cc COMPILE_LIB_NAME="libirbem.${dlext}" INSTALL_LIB_NAME="libirbem.${dlext}" all -j${nproc}
-make OS=linux64 ENV=gfortran64 COMPILE_LIB_NAME="libirbem.${dlext}" INSTALL_LIB_NAME="libirbem.${dlext}" install
-install -Dvm 755 "libirbem.${dlext}" "${libdir}/libirbem.${dlext}"
+make OS=linux64 ENV=gfortran64 COMPILE_LIB_NAME="libirbem.${dlext}" INSTALL_LIB_NAME="libirbem.${dlext}" INSTALLDIR="${libdir}" install
 """
 
 # These are the platforms we will build for by default, unless further
