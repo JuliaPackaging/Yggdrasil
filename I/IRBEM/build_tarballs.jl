@@ -23,7 +23,7 @@ else
     make -j${nproc} OS=linux64 ENV=gfortran64 all
     make OS=linux64 ENV=gfortran64 install
 fi
-install -Dvm 755 libirbem.so "${libdir}/libirbem.${dlext}"
+install -Dvm 755 libirbem.* "${libdir}/libirbem.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
