@@ -39,25 +39,25 @@ public:
     void beginorder(const Gecko::Graph* graph, Gecko::Float cost) const {
         if (this->fbeginorder != nullptr) {
             jlcxx::JuliaFunction f(this->fbeginorder);
-            f(this->data, graph, cost);
+            f(this->data, graph, static_cast<Gecko::Float>(cost));
         }
     }
     void endorder(const Gecko::Graph* graph, Gecko::Float cost) const {
         if (this->fendorder != nullptr) {
             jlcxx::JuliaFunction f(this->fendorder);
-            f(this->data, graph, cost);
+            f(this->data, graph, static_cast<Gecko::Float>(cost));
         }
     }
     void beginiter(const Gecko::Graph* graph, Gecko::uint iter, Gecko::uint maxiter, Gecko::uint window) const {
         if (this->fbeginiter != nullptr) {
             jlcxx::JuliaFunction f(this->fbeginiter);
-            f(this->data, graph, iter, maxiter, window);
+            f(this->data, graph, static_cast<Gecko::uint>(iter),  static_cast<Gecko::uint>(maxiter),  static_cast<Gecko::uint>(window));
         }
     }
     void enditer(const Gecko::Graph* graph, Gecko::Float mincost, Gecko::Float cost) const {
         if (this->fenditer != nullptr) {
             jlcxx::JuliaFunction f(this->fenditer);
-            f(this->data, graph, mincost, cost);
+            f(this->data, graph, static_cast<Gecko::Float>(mincost), static_cast<Gecko::Float>(cost));
         }
     }
     void beginphase(const Gecko::Graph* graph, std::string name) const {
@@ -69,7 +69,7 @@ public:
     void endphase(const Gecko::Graph* graph, bool show) const {
         if (this->fendphase != nullptr) {
             jlcxx::JuliaFunction f(this->fendphase);
-            f(this->data, graph, show);
+            f(this->data, graph, static_cast<bool>(show));
         }
     };
     bool quit() const {
