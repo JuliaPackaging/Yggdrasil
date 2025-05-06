@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "SLOPE"
+name = "slope"
 version = v"1.0.0"
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
