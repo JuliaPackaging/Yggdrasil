@@ -1,0 +1,35 @@
+diff --git a/src/cqasm/CMakeLists.txt b/src/cqasm/CMakeLists.txt
+index 940716d..567c371 100644
+--- a/src/cqasm/CMakeLists.txt
++++ b/src/cqasm/CMakeLists.txt
+@@ -43,11 +43,7 @@ endif()
+ set(FLEX_VERSION_REQUIRED 2.6.1)
+ set(BISON_VERSION_REQUIRED 3.0)
+ include(cmake/flex-bison.cmake)
+-if(WIN32)
+-    set(flex_win_compat --wincompat)
+-else()
+-    set(flex_win_compat)
+-endif()
++set(flex_win_compat)
+ 
+ # Include tree-gen, a custom utility to generate classes for typed tree-like
+ # structures and enums with variants containing data. This exposes the
+Submodule src/cqasm/tree-gen contains modified content
+diff --git a/src/cqasm/tree-gen/CMakeLists.txt b/src/cqasm/tree-gen/CMakeLists.txt
+index b41d68d..5e3a7c7 100644
+--- a/src/cqasm/tree-gen/CMakeLists.txt
++++ b/src/cqasm/tree-gen/CMakeLists.txt
+@@ -128,11 +128,7 @@ set(BISON_VERSION_REQUIRED 3.0)
+ include(cmake/flex-bison.cmake)
+ 
+ # Generate the lexer.
+-if(WIN32)
+-    set(flex_win_compat --wincompat)
+-else()
+-    set(flex_win_compat)
+-endif()
++set(flex_win_compat)
+ flex_target(
+     tree-gen-lexer
+     "${CMAKE_CURRENT_SOURCE_DIR}/generator/lexer.l"
