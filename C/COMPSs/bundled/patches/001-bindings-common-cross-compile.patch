@@ -1,0 +1,13 @@
+diff --git a/Bindings/bindings-common/install_common b/Bindings/bindings-common/install_common
+index 76a52f7..8a407ad 100755
+--- a/Bindings/bindings-common/install_common
++++ b/Bindings/bindings-common/install_common
+@@ -25,7 +25,7 @@
+       echo "${ERROR_AUTORECONF}"
+       exit $ev
+     fi
+-    ./configure --host=${TARGET_HOST} --prefix="${installationDir}" --libdir="${installationDir}"/lib
++    ./configure --host=${target} --build=${MACHTYPE} --prefix="${installationDir}" --libdir="${installationDir}"/lib CXXFLAGS="-I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux"
+     ev=$?
+     if [ $ev -ne 0 ]; then
+       echo "${ERROR_CONFIGURE}"
