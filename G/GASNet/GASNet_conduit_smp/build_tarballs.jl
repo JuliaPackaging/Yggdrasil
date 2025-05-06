@@ -2,8 +2,7 @@ using BinaryBuilder, Pkg
 
 include(joinpath(@__DIR__, "../common.jl"))
 
-name = gasnet_name("smp")
-version = v"2024.5.0"
+name = gasnet_conduit_name("smp")
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -60,15 +59,6 @@ make install-includeHEADERS
 
 install_license license.txt
 """
-
-platforms = [
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("aarch64", "linux"; libc="gnu"),
-    Platform("aarch64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-]
 
 # The products that we will ensure are always built
 products = Product[

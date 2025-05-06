@@ -1,4 +1,4 @@
-gasnet_name(x) = "GASNet_conduit_$x"
+gasnet_conduit_name(x) = "GASNet_conduit_$x"
 
 version = v"2024.5.0"
 
@@ -11,6 +11,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("aarch64", "linux"; libc="gnu"),
     Platform("aarch64", "linux"; libc="musl"),
+    Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
 ]
 
