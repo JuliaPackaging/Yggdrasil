@@ -1,0 +1,14 @@
+diff --git a/onnx/checker.cc b/onnx/checker.cc
+index 6e83a58e..2e7c66f1 100644
+--- a/onnx/checker.cc
++++ b/onnx/checker.cc
+@@ -16,6 +16,9 @@
+ 
+ #ifdef _WIN32
+ #include <direct.h>
++#ifndef _MSC_VER
++#include <sys/stat.h>
++#endif
+ #else // POSIX
+ #include <sys/stat.h>
+ #endif
