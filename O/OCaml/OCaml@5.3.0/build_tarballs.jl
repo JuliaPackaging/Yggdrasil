@@ -41,10 +41,11 @@ else
     make install
 fi
 
-for bin in $(file ${bindir}/* | grep "a ${bindir}/ocamlrun script" | cut -d: -f1); do
+for bin in $(file ${bindir}/* | grep "a \S*/ocamlrun script" | cut -d: -f1); do
     # Fix shebang of ocamlrun scripts to not hardcode
     # a path of the build environment
-    sed -i "s?${bindir}/ocamlrun?/usr/bin/env ocamlrun?" "${bin}"
+    abspath=$(file ${bin} | grep -oh "a \S*/ocamlrun script" | cut -d' ' -f2)
+    sed -i "s?${abspath}?/usr/bin/env ocamlrun?" "${bin}"
 done
 """
 
