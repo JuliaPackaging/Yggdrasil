@@ -113,7 +113,10 @@ make -j${nproc} allshared "${make_args_64[@]}"
 cp lib/*.${dlext} ${libdir}
 """
 
-platforms = expand_gfortran_versions(supported_platforms())
+platforms = supported_platforms()
+filter!(p -> arch(p) != "riscv64", platforms)
+platforms = expand_gfortran_versions(platforms)
+filter!(p -> !(arch(p) != "musl" && libgfortran_version(p) != v"4" && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
