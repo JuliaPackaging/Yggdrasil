@@ -16,14 +16,11 @@ cd ${WORKSPACE}/srcdir/td/
 
 install_license LICENSE_1_0.txt
 
-CC=clang
-CXX=clang++
-
 mkdir build_native && cd build_native
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$host_prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN%.*}_clang.cmake \
     -DZLIB_LIBRARY="${host_libdir}/libz.a" \
     -DZLIB_INCLUDE_DIR="${host_includedir}" \
     -DOPENSSL_CRYPTO_LIBRARY="${host_libdir}/libcrypto.so" \
@@ -37,7 +34,7 @@ mkdir build-cross && cd build-cross
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$prefix \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake \
     -DNATIVE_BUILD_DIR=${WORKSPACE}/srcdir/td/build_native \
     ..
 cmake --build . --target tdjson -j${nproc}
