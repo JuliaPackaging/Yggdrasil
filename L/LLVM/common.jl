@@ -162,6 +162,10 @@ CMAKE_C_FLAGS=()
 
 CMAKE_FLAGS=()
 
+if [[ "${target}" != *-apple-darwin* ]]; then
+CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,--build-id)
+fi
+
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 if [[ "${ASSERTS}" == "1" ]]; then
@@ -201,6 +205,10 @@ CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
 
 # Turn on ZLIB
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=FORCE_ON)
+# Turn on ZSTD
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=FORCE_ON)
+fi
 # Turn off XML2
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
@@ -677,9 +685,12 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     # Dependencies that must be installed before this package can be built
     # TODO: LibXML2
     dependencies = [
-        Dependency("Zlib_jll"), # for LLD&LTO
+        Dependency("Zlib_jll"), # for LLD&LTO&debuginfo
         BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
     ]
+    if version >= v"20"
+        push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
+    end
     if update_sdk
         config *= "LLVM_UPDATE_MAC_SDK=1\n"
         push!(sources,
@@ -793,8 +804,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     end
 
     dependencies = BinaryBuilder.AbstractDependency[
-        Dependency("Zlib_jll"), # for LLD&LTO
+        Dependency("Zlib_jll"), # for LLD&LTO&debuginfo
     ]
+    if version >= v"20"
+        push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
+    end
 
     # Parse out some args
     if "--assert" in ARGS
