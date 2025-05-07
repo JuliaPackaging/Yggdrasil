@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "TDLib"
-version = v"1.8.47"
+version = v"1.8.48"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tdlib/td.git", "971684a3dcc7bdf99eec024e1c4f57ae729d6d53")
+    GitSource("https://github.com/tdlib/td.git", "34c390f9afe074071e01c623e42adfbd17e350ab")
 ]
 
 # Bash recipe for building across all platforms
@@ -16,9 +16,16 @@ cd ${WORKSPACE}/srcdir/td/
 
 install_license LICENSE_1_0.txt
 
+export CC=clang
+export CXX=clang++
+export HOSTCC=clang
+export HOSTCXX=clang++
+
 mkdir build_native && cd build_native
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_INSTALL_PREFIX=$host_prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN} \
     -DZLIB_LIBRARY="${host_libdir}/libz.a" \
@@ -29,17 +36,19 @@ cmake \
     ..
 cmake --build . --target prepare_cross_compiling -j${nproc}
 
-cd ${WORKSPACE}/srcdir/td/
+cd ../
 mkdir build-cross && cd build-cross
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DNATIVE_BUILD_DIR=${WORKSPACE}/srcdir/td/build_native \
     ..
 cmake --build . --target tdjson -j${nproc}
 cmake --build . --target tdjson_static -j${nproc}
 cmake --install .
+cp libtdjson.${dlext} $libdir/libtdjson.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -62,4 +71,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", julia_compat="1.8")
