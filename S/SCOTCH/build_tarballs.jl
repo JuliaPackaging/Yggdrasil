@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/scotch*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/scotch.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fortify-source.patch"
 
 mkdir -p src/dummysizes/build-host
 cd src/dummysizes/build-host
