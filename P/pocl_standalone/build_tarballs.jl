@@ -3,18 +3,20 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-name = "pocl"
+name = "pocl_standalone"
 version = v"7.0"
 
 # Collection of sources required to complete build
 sources = [
-    DirectorySource("./bundled"),
+    DirectorySource("../pocl/bundled"),
     GitSource("https://github.com/pocl/pocl",
               "33518641e79bf9e693db8638176d1b194b6ea0da")
 ]
 
-include("common.jl")
-script = script_common
+include("../pocl/common.jl")
+script = """
+STANDALONE=1
+""" * script_common
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -32,27 +34,8 @@ products = [
     ExecutableProduct("poclcc", :poclcc),
 ]
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
 
 init_block = raw"""
-    # Register this driver with OpenCL_jll
-    if OpenCL_jll.is_available()
-        push!(OpenCL_jll.drivers, libpocl)
-
-        # XXX: Clang_jll does not have a functional clang binary on macOS,
-        #      as it's configured without a default sdkroot (see #9221)
-        if Sys.isapple()
-            ENV["SDKROOT"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
-        end
-    end
-
     # expose JLL binaries to the library
     # XXX: Scratch.jl is unusably slow with JLLWrapper-emitted @compiler_options
     #bindir = @get_scratch!("bin")
@@ -136,11 +119,11 @@ init_block = raw"""
 
 # determine exactly which tarballs we should build
 builds = []
+
 dependencies = [
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19")),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19")),
-    Dependency("OpenCL_jll"),
-    Dependency("Hwloc_jll"),
+    # BuildDependency("OpenCL_jll"),
     Dependency("SPIRV_LLVM_Translator_jll"),
     Dependency("SPIRV_Tools_jll"),
     Dependency("Clang_unified_jll"),
@@ -149,6 +132,7 @@ dependencies = [
 
 for platform in platforms
     augmented_platform = deepcopy(platform)
+
     should_build_platform(triplet(augmented_platform)) || continue
     push!(builds, (;
         dependencies,
@@ -156,6 +140,7 @@ for platform in platforms
         preferred_llvm_version=v"19",
     ))
 end
+
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
 # we handle that ourselves by calling `should_build_platform`
@@ -169,5 +154,5 @@ for (i,build) in enumerate(builds)
                    name, version, sources, script,
                    build.platforms, products, build.dependencies;
                    preferred_gcc_version=v"10", build.preferred_llvm_version,
-                   julia_compat="1.6", augment_platform_block, init_block)
+                   julia_compat="1.6", init_block)
 end
