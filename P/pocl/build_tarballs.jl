@@ -32,15 +32,6 @@ products = [
     ExecutableProduct("poclcc", :poclcc),
 ]
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
-
 init_block = raw"""
     # Register this driver with OpenCL_jll
     if OpenCL_jll.is_available()
@@ -169,5 +160,5 @@ for (i,build) in enumerate(builds)
                    name, version, sources, script,
                    build.platforms, products, build.dependencies;
                    preferred_gcc_version=v"10", build.preferred_llvm_version,
-                   julia_compat="1.6", augment_platform_block, init_block)
+                   julia_compat="1.6", init_block)
 end
