@@ -1,4 +1,4 @@
-function build_script(standalone=false)
+function build_script(;standalone=false)
     preheader = """
     STANDALONE=$(standalone)
     """
@@ -38,6 +38,9 @@ function build_script(standalone=false)
 
     # our version of MinGW is ancient (?) and lacks `_aligned_malloc`
     sed -i 's/_aligned_malloc/__mingw_aligned_malloc/g' include/vccompat.hpp
+
+    # https://github.com/pocl/pocl/pull/1928
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-Allow-for-DENABLE_ICD-OFF-DRENAME_POCL-ON.patch
 
     CMAKE_FLAGS=()
 
@@ -83,6 +86,11 @@ function build_script(standalone=false)
 
     if [[ "${STANDALONE}" == "true" ]]; then
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=OFF)
+        # prefix 
+        CMAKE_FLAGS+=(-DRENAME_POCL:BOOL=ON)
+        # CMAKE_FLAGS+=(-DENABLE_LOADABLE_DRIVERS:BOOL=OFF)
+        # Change the library name
+        sed -i 's/set(POCL_LIBRARY_NAME "OpenCL")/set(POCL_LIBRARY_NAME "pocl_standalone")/' CMakeLists.txt
     else
         # Build POCL as an dynamic library loaded by the OpenCL runtime
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
@@ -175,7 +183,7 @@ function build_script(standalone=false)
     """
 end
 
-function init_block(standalone=false)
+function init_block(;standalone=false)
 
     opencl = raw"""
     # Register this driver with OpenCL_jll

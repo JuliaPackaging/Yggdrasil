@@ -6,10 +6,8 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
-name = "pocl"
+name = "pocl_standalone"
 version = v"7.0.0"
-
-# Build
 
 # Collection of sources required to complete build
 sources = [
@@ -46,8 +44,9 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 include("../common.jl")
 
 # The products that we will ensure are always built
+# XXX: Rename this library to pocl_standalone?
 products = [
-    LibraryProduct(["libpocl", "pocl"], :libpocl),
+    LibraryProduct(["libpocl_standalone", "pocl_standalone"], :libpocl),
     ExecutableProduct("poclcc", :poclcc),
 ]
 
@@ -55,10 +54,6 @@ products = [
 dependencies = [
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
-    Dependency("OpenCL_jll"),
-    Dependency("OpenCL_Headers_jll"),
-    Dependency("Hwloc_jll"),
-    Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
     # only used at run time, but also detected by the build
     Dependency("SPIRV_LLVM_Translator_jll", compat="20.1"),
     Dependency("SPIRV_Tools_jll"),
@@ -102,10 +97,8 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, build_script(),
+                   name, version, build.sources, build_script(;standalone=true),
                    [build.platform], products, dependencies;
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
-                   julia_compat="1.6", init_block=init_block())
+                   julia_compat="1.6", init_block=init_block(;standalone=true))
 end
-
-# bump

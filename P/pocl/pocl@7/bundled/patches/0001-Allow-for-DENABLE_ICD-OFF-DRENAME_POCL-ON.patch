@@ -1,0 +1,31 @@
+From 02103927ba899b4bcb60ef02d3eedb4a6644cd50 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Sun, 25 May 2025 18:03:53 +0200
+Subject: [PATCH] Allow for -DENABLE_ICD=OFF -DRENAME_POCL=ON
+
+---
+ lib/CL/pocl_cl.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
+index 00af05a15..b72f9c2e9 100644
+--- a/lib/CL/pocl_cl.h
++++ b/lib/CL/pocl_cl.h
+@@ -279,8 +279,14 @@ extern pocl_obj_id_t last_object_id;
+ 
+ #  define POname(name) PO##name
+ 
++#if defined(RENAME_POCL) && !defined(BUILD_ICD)
++#define POdeclsym(name) POCL_EXPORT __typeof__ (name) PO##name;
++#define POdeclsymExport(name) POdeclsym(name)
++#else
+ #define POdeclsym(name) __typeof__ (name) PO##name;
+ #define POdeclsymExport(name) POCL_EXPORT POdeclsym(name)
++#endif
++
+ #  define POCL_ALIAS_OPENCL_SYMBOL(name)                                \
+   __typeof__(name) name __attribute__((alias ("PO" #name), visibility("default")));
+ 
+-- 
+2.49.0
+
