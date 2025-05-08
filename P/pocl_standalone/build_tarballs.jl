@@ -121,8 +121,8 @@ init_block = raw"""
 builds = []
 
 dependencies = [
-    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19")),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19")),
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19.1.7")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19.1.7")),
     # BuildDependency("OpenCL_jll"),
     Dependency("SPIRV_LLVM_Translator_jll"),
     Dependency("SPIRV_Tools_jll"),

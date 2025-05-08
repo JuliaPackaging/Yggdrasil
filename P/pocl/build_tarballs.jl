@@ -137,8 +137,8 @@ init_block = raw"""
 # determine exactly which tarballs we should build
 builds = []
 dependencies = [
-    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19")),
-    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19")),
+    HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19.1.7")),
+    BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"19.1.7")),
     Dependency("OpenCL_jll"),
     Dependency("Hwloc_jll"),
     Dependency("SPIRV_LLVM_Translator_jll"),
