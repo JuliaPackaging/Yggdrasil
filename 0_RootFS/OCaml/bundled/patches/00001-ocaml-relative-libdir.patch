@@ -1,0 +1,395 @@
+commit 06fe917b0104b55dc80ac0abe8a1e0915446394f
+Author: Cody Tapscott <topolarity@tapscott.me>
+Date:   Thu May 8 19:08:26 2025 -0400
+
+    Add relative path fallback for libdir / bindir
+    
+    The existing `OCAMLLIB` environment variable already allows you to use
+    a standard library installed elsewhere, but it doesn't let you re-locate
+    an existing installation. As one might expect, the problem is that the
+    stdlib itself contains absolute references to its own paths.
+    
+    This patch tries to hook into both places where that happens and do an
+    on-the-fly replacement of the standard library path, if it turns out
+    this is the standard library that OCaml that was built with (just
+    moved).
+    
+    This kicks in if the default hard-coded `%%LIBDIR%%`/`%%BINDIR%%` cannot
+    be found.
+
+diff --git a/bytecomp/bytelink.ml b/bytecomp/bytelink.ml
+index c55224fab8..1b5b0aa99f 100644
+--- a/bytecomp/bytelink.ml
++++ b/bytecomp/bytelink.ml
+@@ -344,7 +344,10 @@ let read_runtime_launch_info file =
+   try
+     let bindir_start = String.index buffer '\n' + 1 in
+     let bindir_end = String.index_from buffer bindir_start '\000' in
+-    let bindir = String.sub buffer bindir_start (bindir_end - bindir_start) in
++    let bindir =
++      let relocate_bindir = Misc.replace_substring ~before:Config.bindir_default ~after:Config.bindir
++      and raw_bindir = String.sub buffer bindir_start (bindir_end - bindir_start) in
++        relocate_bindir raw_bindir in
+     let executable_offset = bindir_end + 2 in
+     let launcher =
+       let kind = String.sub buffer 0 (bindir_start - 1) in
+diff --git a/runtime/caml/misc.h b/runtime/caml/misc.h
+index 1182b72808..1c16cf48f8 100644
+--- a/runtime/caml/misc.h
++++ b/runtime/caml/misc.h
+@@ -26,6 +26,7 @@
+ #include <stdlib.h>
+ #include <stdarg.h>
+ #include <limits.h>
++#include <libgen.h>
+ 
+ /* Detection of available C attributes and compiler extensions */
+ 
+@@ -491,6 +492,141 @@ extern double caml_log1p(double);
+ #define main_os wmain
+ #endif
+ 
++static wchar_t * __cdecl _wdirname(wchar_t *path);
++
++// Adapted to wchar_t from
++// https://github.com/Alexpux/mingw-w64/blob/master/mingw-w64-crt/misc/dirname.c
++
++#include <string.h>
++#include <stdlib.h>
++#include <wchar.h>
++
++static wchar_t * __cdecl
++_wdirname(wchar_t *path)
++{
++  static wchar_t *retfail = NULL;
++  size_t len = wcslen(path);
++
++  if (path && *path)
++    {
++       wchar_t *refpath = path;
++
++      /* SUSv3 identifies a special case, where path is exactly equal to "//";
++       * (we will also accept "\\" in the Win32 context, but not "/\" or "\/",
++       *  and neither will we consider paths with an initial drive designator).
++       * For this special case, SUSv3 allows the implementation to choose to
++       * return "/" or "//", (or "\" or "\\", since this is Win32); we will
++       * simply return the path unchanged, (i.e. "//" or "\\").  */
++      if (len > 1 && (refpath[0] == L'/' || refpath[0] == L'\\'))
++        {
++         if (refpath[1] == refpath[0] && refpath[2] == L'\0')
++           {
++             return path;
++           }
++        }
++      /* For all other cases ...
++       * step over the drive designator, if present ...  */
++      else if (len > 1 && refpath[1] == L':')
++        {
++         /* FIXME: maybe should confirm *refpath is a valid drive designator.  */
++         refpath += 2;
++        }
++      /* check again, just to ensure we still have a non-empty path name ... */
++      if (*refpath)
++        {
++#      undef  basename
++#      define basename __the_basename          /* avoid shadowing. */
++         /* reproduce the scanning logic of the "basename" function
++          * to locate the basename component of the current path string,
++          * (but also remember where the dirname component starts).  */
++         wchar_t *refname, *basename;
++         for (refname = basename = refpath; *refpath; ++refpath)
++           {
++             if (*refpath == L'/' || *refpath == L'\\')
++               {
++                 /* we found a dir separator ...
++                  * step over it, and any others which immediately follow it.  */
++                 while (*refpath == L'/' || *refpath == L'\\')
++                   ++refpath;
++                 /* if we didn't reach the end of the path string ... */
++                 if (*refpath)
++                   /* then we have a new candidate for the base name.  */
++                   basename = refpath;
++                 else
++                   /* we struck an early termination of the path string,
++                    * with trailing dir separators following the base name,
++                    * so break out of the for loop, to avoid overrun.  */
++                   break;
++               }
++           }
++         /* now check,
++          * to confirm that we have distinct dirname and basename components.  */
++         if (basename > refname)
++           {
++             /* and, when we do ...
++              * backtrack over all trailing separators on the dirname component,
++              * (but preserve exactly two initial dirname separators, if identical),
++              * and add a NUL terminator in their place.  */
++             do --basename;
++             while (basename > refname && (*basename == L'/' || *basename == L'\\'));
++             if (basename == refname && (refname[0] == L'/' || refname[0] == L'\\')
++                 && refname[1] == refname[0] && refname[2] != L'/' && refname[2] != L'\\')
++               ++basename;
++             *++basename = L'\0';
++             /* if the resultant dirname begins with EXACTLY two dir separators,
++              * AND both are identical, then we preserve them.  */
++             refpath = path;
++             while ((*refpath == L'/' || *refpath == L'\\'))
++               ++refpath;
++             if ((refpath - path) > 2 || path[1] != path[0])
++               refpath = path;
++             /* and finally ...
++              * we remove any residual, redundantly duplicated separators from the dirname,
++              * reterminate, and return it.  */
++             refname = refpath;
++             while (*refpath)
++               {
++                 if ((*refname++ = *refpath) == L'/' || *refpath++ == L'\\')
++                   {
++                     while (*refpath == L'/' || *refpath == L'\\')
++                       ++refpath;
++                   }
++               }
++             *refname = L'\0';
++           }
++         else
++           {
++             /* either there were no dirname separators in the path name,
++              * or there was nothing else ...  */
++             if (*refname == L'/' || *refname == L'\\')
++               {
++                 /* it was all separators, so return one.  */
++                 ++refname;
++               }
++             else
++               {
++                 /* there were no separators, so return '.'.  */
++                 *refname++ = L'.';
++               }
++             /* add a NUL terminator, in either case,
++              * then transform to the multibyte char domain,
++              * using our own buffer.  */
++             *refname = L'\0';
++           }
++         return path;
++        }
++#      undef  basename
++    }
++  /* path is NULL, or an empty string; default return value is "." ...
++   * return this in our own buffer, regenerated by wide char transform,
++   * in case the caller trashed it after a previous call.
++   */
++  retfail = realloc(retfail, 2 * sizeof(wchar_t));
++  retfail[0] = L'.';
++  retfail[1] = L'\0';
++  return retfail;
++}
++
+ #define access_os _waccess
+ #define open_os _wopen
+ #define stat_os _wstati64
+@@ -508,11 +644,13 @@ extern double caml_log1p(double);
+ #define execvp_os _wexecvp
+ #define execvpe_os _wexecvpe
+ #define strcmp_os wcscmp
++#define strncmp_os wcsncmp
+ #define strlen_os wcslen
+ #define sscanf_os swscanf
+ #define strcpy_os wcscpy
+ #define mktemp_os _wmktemp
+ #define fopen_os _wfopen
++#define dirname_os _wdirname
+ 
+ #define clock_os caml_win32_clock
+ 
+@@ -553,11 +691,13 @@ extern double caml_log1p(double);
+ #define execvp_os execvp
+ #define execvpe_os execvpe
+ #define strcmp_os strcmp
++#define strncmp_os strncmp
+ #define strlen_os strlen
+ #define sscanf_os sscanf
+ #define strcpy_os strcpy
+ #define mktemp_os mktemp
+ #define fopen_os fopen
++#define dirname_os dirname
+ 
+ #define clock_os clock
+ 
+diff --git a/runtime/dynlink.c b/runtime/dynlink.c
+index d3e6b1b534..105c699589 100644
+--- a/runtime/dynlink.c
++++ b/runtime/dynlink.c
+@@ -83,19 +83,62 @@ static c_primitive lookup_primitive(const char * name)
+ 
+ #define LD_CONF_NAME T("ld.conf")
+ 
++static int is_directory(char_os * p)
++{
++#ifdef _WIN32
++  struct _stati64 st;
++#else
++  struct stat st;
++#endif
++  int ret;
++
++  ret = stat_os(p, &st);
++  if (ret == -1) return -1;
++  if (st.st_mode == -1) return -1;
++
++#ifdef S_ISDIR
++  return S_ISDIR(st.st_mode) ? 1 : 0;
++#else
++  return st.st_mode & S_IFDIR ? 1 : 0;
++#endif
++}
++
+ CAMLexport const char_os * caml_get_stdlib_location(void)
+ {
+-  const char_os * stdlib;
++  const char_os * bindir;
++  char_os * exe;
++
++  static const char_os * stdlib = NULL;
++  if (stdlib != NULL)
++    return stdlib;
++
+   stdlib = caml_secure_getenv(T("OCAMLLIB"));
+   if (stdlib == NULL) stdlib = caml_secure_getenv(T("CAMLLIB"));
+-  if (stdlib == NULL) stdlib = OCAML_STDLIB_DIR;
++  if (stdlib == NULL && is_directory(OCAML_STDLIB_DIR) == 1)
++    stdlib = OCAML_STDLIB_DIR;
++
++  if (stdlib == NULL) {
++    exe = caml_executable_name();
++    bindir = dirname_os(exe);
++
++    stdlib = caml_stat_strconcat_os(7,
++      bindir, T("/"), "..", T("/"), "lib", T("/"), "ocaml");
++
++    caml_stat_free(exe);
++  }
++
+   return stdlib;
+ }
+ 
++int starts_with(const char_os *str, const char_os * pre)
++{
++    return strncmp_os(pre, str, strlen_os(pre)) == 0;
++}
++
+ CAMLexport char_os * caml_parse_ld_conf(void)
+ {
+   const char_os * stdlib;
+-  char_os * ldconfname, * wconfig, * p, * q;
++  char_os * ldconfname, * wconfig, * tail, * replaced, * p, * q;
+   char * config;
+ #ifdef _WIN32
+   struct _stati64 st;
+@@ -127,7 +170,14 @@ CAMLexport char_os * caml_parse_ld_conf(void)
+   for (p = wconfig; *p != 0; p++) {
+     if (*p == '\n') {
+       *p = 0;
+-      caml_ext_table_add(&caml_shared_libs_path, q);
++      if (starts_with(q, OCAML_STDLIB_DIR)) {
++        // replace 'OCAML_STDLIB_DIR' with 'stdlib'
++        tail = q + strlen_os(OCAML_STDLIB_DIR);
++        replaced = caml_stat_strconcat_os(2, stdlib, tail);
++        caml_ext_table_add(&caml_shared_libs_path, replaced);
++      } else {
++        caml_ext_table_add(&caml_shared_libs_path, q);
++      }
+       q = p + 1;
+     }
+   }
+diff --git a/utils/config.common.ml.in b/utils/config.common.ml.in
+index 0f956d2fbc..d21f9becc1 100644
+--- a/utils/config.common.ml.in
++++ b/utils/config.common.ml.in
+@@ -20,6 +20,20 @@
+ (* The main OCaml version string has moved to ../build-aux/ocaml_version.m4 *)
+ let version = Sys.ocaml_version
+ 
++let bindir =
++  let relative_path = Filename.dirname Sys.executable_name in
++    try
++      if Sys.is_directory bindir_default then
++        bindir_default
++      else
++        relative_path
++    with Sys_error(_) ->
++      relative_path
++
++let standard_library_relative =
++  let dir_sep = Filename.dir_sep in
++    ".." ^ dir_sep ^ "lib" ^ dir_sep ^ "ocaml"
++
+ let standard_library =
+   try
+     Sys.getenv "OCAMLLIB"
+@@ -27,7 +41,17 @@ let standard_library =
+   try
+     Sys.getenv "CAMLLIB"
+   with Not_found ->
+-    standard_library_default
++    let dirname = Filename.dirname
++    and dir_sep = Filename.dir_sep
++    and executable_name = Sys.executable_name in
++      let relative_path = (dirname executable_name) ^ dir_sep ^ standard_library_relative in
++        try
++          if Sys.is_directory standard_library_default then
++            standard_library_default
++          else
++            relative_path
++        with Sys_error(_) ->
++          relative_path
+ 
+ let exec_magic_number = {magic|@EXEC_MAGIC_NUMBER@|magic}
+     (* exec_magic_number is duplicated in runtime/caml/exec.h *)
+@@ -74,6 +98,7 @@ let configuration_variables () =
+ [
+   p "version" version;
+   p "standard_library_default" standard_library_default;
++  p "standard_library_relative" standard_library_relative;
+   p "standard_library" standard_library;
+   p "ccomp_type" ccomp_type;
+   p "c_compiler" c_compiler;
+diff --git a/utils/config.fixed.ml b/utils/config.fixed.ml
+index a334b1d76f..5e42ce990d 100644
+--- a/utils/config.fixed.ml
++++ b/utils/config.fixed.ml
+@@ -20,7 +20,7 @@
+ 
+ let boot_cannot_call s = "/ The boot compiler should not call " ^ s
+ 
+-let bindir = "/tmp"
++let bindir_default = "/tmp"
+ let standard_library_default = "/tmp"
+ let ccomp_type = "n/a"
+ let c_compiler = boot_cannot_call "the C compiler"
+diff --git a/utils/config.generated.ml.in b/utils/config.generated.ml.in
+index e5e1b15d31..ff8a9a4513 100644
+--- a/utils/config.generated.ml.in
++++ b/utils/config.generated.ml.in
+@@ -18,7 +18,7 @@
+ (* This file is included in config_main.ml during the build rather
+    than compiled on its own *)
+ 
+-let bindir = {@QS@|@ocaml_bindir@|@QS@}
++let bindir_default = {@QS@|@ocaml_bindir@|@QS@}
+ 
+ let standard_library_default = {@QS@|@ocaml_libdir@|@QS@}
+ 
+diff --git a/utils/config.mli b/utils/config.mli
+index 3e61d6e66b..c1a90bd8f3 100644
+--- a/utils/config.mli
++++ b/utils/config.mli
+@@ -26,6 +26,9 @@ val version: string
+ val bindir: string
+ (** The directory containing the binary programs *)
+ 
++val bindir_default: string
++(** The directory containing the binary programs (at build-time) *)
++
+ val standard_library: string
+ (** The directory containing the standard libraries *)
+ 
