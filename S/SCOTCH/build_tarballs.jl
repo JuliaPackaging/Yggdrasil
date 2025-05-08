@@ -25,6 +25,7 @@ CC=${CC_BUILD} cmake .. \
     -DSCOTCH_RELEASE=0 \
     -DSCOTCH_PATCHLEVEL=7 \
     -DBUILD_PTSCOTCH=OFF \
+    -DINTSIZE="32" \
     -DCMAKE_BUILD_TYPE=Release
 
 make -j${nproc}
