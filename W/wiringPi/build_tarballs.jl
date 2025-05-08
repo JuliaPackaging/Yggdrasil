@@ -2,8 +2,8 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "wiringPi"
-version = v"0.1.0"
+name = "WiringPi"
+version = v"3.14"
 
 # Collection of sources required to complete build
 sources = [
@@ -17,13 +17,25 @@ cd $WORKSPACE/srcdir
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
+
 cd WiringPi/
+
 cd wiringPi
+
+cp COPYING.LESSER LICENSE
+
 make
-make install || true
-cp libwiringPi.so.3.14 ../../../destdir
+make V=1 install||true
+
+install -Dvm 755 "libwiringPi.so.3.14" "${libdir}/libwiringPi.$dlext"
+
+mkdir -p ${prefix}/share/licenses/WiringPi/
+
+cp LICENSE ${prefix}/share/licenses/WiringPi/
+
 exit
 """
+
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -34,7 +46,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libwiringPi", :libwiringPi)
+    LibraryProduct("libwiringPi", :wiringPi)
 ]
 
 # Dependencies that must be installed before this package can be built
