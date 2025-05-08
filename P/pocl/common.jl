@@ -81,7 +81,7 @@ function build_script(standalone=false)
     # Generate a portable build
     CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
 
-    if [[ ${STANDALONE} ]]; then
+    if [[ "${STANDALONE}" == "true" ]]; then
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=OFF)
     else
         # Build POCL as an dynamic library loaded by the OpenCL runtime
