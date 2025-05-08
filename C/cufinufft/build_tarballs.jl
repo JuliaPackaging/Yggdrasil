@@ -55,6 +55,9 @@ filter!(p -> arch(p)=="x86_64", platforms)
 # NOTE: Works in v2.3.1 but will break in v2.4
 filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
 
+# CUDA 12.9 doesn't seem to build yet
+filter!(p -> VersionNumber(p["cuda"]) != v"12.9", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcufinufft", :libcufinufft)
