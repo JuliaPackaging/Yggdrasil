@@ -13,7 +13,7 @@ version = v"7.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "6accdd750d8ff66dbcc60c499b5aca5004e61c0e")
+              "33518641e79bf9e693db8638176d1b194b6ea0da")
 ]
 
 #=
