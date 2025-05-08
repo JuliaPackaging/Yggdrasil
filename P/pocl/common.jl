@@ -1,5 +1,7 @@
 function build_script(standalone=false)
-    preheader = "STANDALONE=$(standalone)" 
+    preheader = """
+    STANDALONE=$(standalone)
+    """
 
     # Bash recipe for building across all platforms
     script = preheader * raw"""
