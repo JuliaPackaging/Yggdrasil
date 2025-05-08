@@ -109,7 +109,7 @@ fi
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
 
-# Build llvm-tblgen, clang-tblgen, and llvm-config
+# Build host-native llvm-tblgen, clang-tblgen, and llvm-config
 mkdir ${WORKSPACE}/bootstrap
 pushd ${WORKSPACE}/bootstrap
 CMAKE_FLAGS=()
@@ -127,9 +127,17 @@ if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+# Turn off random crap the host tools do not need to configure
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=OFF)
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
+fi
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
+if [[ "${LLVM_MAJ_VER}" -ge "17" ]]; then
+    ninja -j${nproc} llvm-tblgen llvm-min-tblgen clang-tblgen mlir-tblgen llvm-config
+elif [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
@@ -274,6 +282,9 @@ fi
 
 # Tell LLVM where our pre-built tblgen tools are
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
+if [[ "${LLVM_MAJ_VER}" -ge "17" ]]; then
+CMAKE_FLAGS+=(-DLLVM_HEADERS_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-min-tblgen)
+fi
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 if [[ ( "${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0" ) || "${LLVM_MAJ_VER}" -gt "12" ]]; then
