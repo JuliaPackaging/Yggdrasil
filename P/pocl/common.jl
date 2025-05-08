@@ -1,4 +1,4 @@
-function build_script(standalone=false)
+function build_script(;standalone=false)
     preheader = """
     STANDALONE=$(standalone)
     """
@@ -83,6 +83,10 @@ function build_script(standalone=false)
 
     if [[ "${STANDALONE}" == "true" ]]; then
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=OFF)
+        # prefix 
+        CMAKE_FLAGS+=(-DRENAME_POCL:BOOL=ON)
+        # Change the library name
+        sed -i 's/set(POCL_LIBRARY_NAME "OpenCL")/set(POCL_LIBRARY_NAME "pocl_standalone")/' CMakeLists.txt
     else
         # Build POCL as an dynamic library loaded by the OpenCL runtime
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
@@ -164,7 +168,7 @@ function build_script(standalone=false)
     """
 end
 
-function init_block(standalone=false)
+function init_block(;standalone=false)
 
     opencl = raw"""
     # Register this driver with OpenCL_jll
