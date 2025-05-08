@@ -1,26 +1,5 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-using Base.BinaryPlatforms
-
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
-include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
-
-name = "pocl"
-version = v"6.0"
-
-# POCL supports LLVM 14 to 18
-# XXX: link statically to a single version of LLVM instead, and don't use augmentations?
-#      this causes issue with the compile-time link, so I haven't explored this yet
-llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
-
-# Collection of sources required to complete build
-sources = [
-    DirectorySource("./bundled"),
-    GitSource("https://github.com/pocl/pocl",
-              "952bc559f790e5deb5ae48692c4a19619b53fcdc")
-]
 
 #=
 
@@ -40,7 +19,7 @@ builds of LLVM we need:
 =#
 
 # Bash recipe for building across all platforms
-script = raw"""
+script_common = raw"""
 cd $WORKSPACE/srcdir/pocl/
 install_license LICENSE
 
@@ -62,6 +41,7 @@ if [[ "${target}" == *apple* ]]; then
 fi
 sed -i "s|COMMENT \\"Building C to LLVM bitcode \${BC_FILE}\\"|\\"-I$sysroot/usr/include\\"|" \
        cmake/bitcode_rules.cmake
+
 
 CMAKE_FLAGS=()
 # Release build for best performance
@@ -85,6 +65,8 @@ CMAKE_FLAGS+=(-DLLC_TRIPLE=$triple)
 # Override the auto-detected target CPU (which POCL takes from `llc --version`)
 CPU=$(clang --print-supported-cpus 2>&1 | grep -P '\t' | head -n 1 | sed 's/\s//g')
 CMAKE_FLAGS+=(-DLLC_HOST_CPU_AUTO=$CPU)
+# Statically link against LLVM
+CMAKE_FLAGS+=(-DSTATIC_LLVM:Bool=On)
 # Generate a portable build
 CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=distro)
 # Build POCL as an dynamic library loaded by the OpenCL runtime
@@ -92,6 +74,9 @@ CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=ON)
 # XXX: work around pocl#1528, disabling FP16 support in i686
 if [[ ${target} == i686-* ]]; then
     CMAKE_FLAGS+=(-DHOST_CPU_SUPPORTS_FLOAT16:BOOL=OFF)
+fi
+if [[ ${STANDALONE} ]]; then
+    CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=OFF)
 fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
@@ -120,166 +105,3 @@ elif [[ ${target} == *-linux-musl ]]; then
     cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
 fi
 """
-
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = expand_cxxstring_abis(supported_platforms())
-## i686-musl doesn't have LLVM
-filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
-## Windows support is unmaintained
-filter!(!Sys.iswindows, platforms)
-## freebsd-aarch64 doesn't have an LLVM_full_jll build yet
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
-# The products that we will ensure are always built
-products = [
-    LibraryProduct("libpocl", :libpocl),
-    ExecutableProduct("poclcc", :poclcc),
-]
-
-augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    $(LLVM.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_llvm!(platform)
-    end"""
-
-init_block = raw"""
-    # Register this driver with OpenCL_jll
-    if OpenCL_jll.is_available()
-        push!(OpenCL_jll.drivers, libpocl)
-
-        # XXX: Clang_jll does not have a functional clang binary on macOS,
-        #      as it's configured without a default sdkroot (see #9221)
-        if Sys.isapple()
-            ENV["SDKROOT"] = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
-        end
-    end
-
-    # expose JLL binaries to the library
-    # XXX: Scratch.jl is unusably slow with JLLWrapper-emitted @compiler_options
-    #bindir = @get_scratch!("bin")
-    bindir = abspath(first(Base.DEPOT_PATH), "scratchspaces", string(Base.PkgId(@__MODULE__).uuid), "bin")
-    mkpath(bindir)
-    function generate_wrapper_script(name, path, LIBPATH, PATH)
-        if Sys.iswindows()
-            LIBPATH_env = "PATH"
-            LIBPATH_default = ""
-            pathsep = ';'
-        elseif Sys.isapple()
-            LIBPATH_env = "DYLD_FALLBACK_LIBRARY_PATH"
-            LIBPATH_default = "~/lib:/usr/local/lib:/lib:/usr/lib"
-            pathsep = ':'
-        else
-            LIBPATH_env = "LD_LIBRARY_PATH"
-            LIBPATH_default = ""
-            pathsep = ':'
-        end
-
-        # XXX: cache, but invalidate when deps change
-        script = joinpath(bindir, name)
-        if Sys.isunix()
-            open(script, "w") do io
-                println(io, "#!/bin/bash")
-
-                LIBPATH_base = get(ENV, LIBPATH_env, expanduser(LIBPATH_default))
-                LIBPATH_value = if !isempty(LIBPATH_base)
-                    string(LIBPATH, pathsep, LIBPATH_base)
-                else
-                    LIBPATH
-                end
-                println(io, "export $LIBPATH_env=\\"$LIBPATH_value\\"")
-
-                if LIBPATH_env != "PATH"
-                    PATH_base = get(ENV, "PATH", "")
-                    PATH_value = if !isempty(PATH_base)
-                        string(PATH, pathsep, ENV["PATH"])
-                    else
-                        PATH
-                    end
-                    println(io, "export PATH=\\"$PATH_value\\"")
-                end
-
-                println(io, "exec \\"$path\\" \\"\$@\\"")
-            end
-            chmod(script, 0o755)
-        else
-            error("Unsupported platform")
-        end
-        return script
-    end
-    ENV["POCL_PATH_SPIRV_LINK"] =
-        generate_wrapper_script("spirv_link", SPIRV_Tools_jll.spirv_link_path,
-                                SPIRV_Tools_jll.LIBPATH[], SPIRV_Tools_jll.PATH[])
-    ENV["POCL_PATH_CLANG"] =
-        generate_wrapper_script("clang", Clang_unified_jll.clang_path,
-                                Clang_unified_jll.LIBPATH[], Clang_unified_jll.PATH[])
-    ENV["POCL_PATH_LLVM_SPIRV"] =
-        generate_wrapper_script("llvm-spirv",
-                                SPIRV_LLVM_Translator_unified_jll.llvm_spirv_path,
-                                SPIRV_LLVM_Translator_unified_jll.LIBPATH[],
-                                SPIRV_LLVM_Translator_unified_jll.PATH[])
-    ld_path = if Sys.islinux()
-            LLD_unified_jll.ld_lld_path
-        elseif Sys.isapple()
-            LLD_unified_jll.ld64_lld_path
-        elseif Sys.iswindows()
-            LLD_unified_jll.lld_link_path
-        else
-            error("Unsupported platform")
-        end
-    ld_wrapper = generate_wrapper_script("lld", ld_path,
-                                         LLD_unified_jll.LIBPATH[],
-                                         LLD_unified_jll.PATH[])
-    ENV["POCL_ARGS_CLANG"] = join([
-            "-fuse-ld=lld", "--ld-path=$ld_wrapper",
-            "-L" * joinpath(artifact_dir, "share", "lib")
-        ], ";")
-"""
-
-# determine exactly which tarballs we should build
-builds = []
-for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    # Dependencies that must be installed before this package can be built
-    llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
-    dependencies = [
-        HostBuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        BuildDependency(PackageSpec(name=llvm_name, version=llvm_version)),
-        Dependency("OpenCL_jll"),
-        Dependency("Hwloc_jll"),
-        Dependency("SPIRV_LLVM_Translator_unified_jll"),
-        Dependency("SPIRV_Tools_jll"),
-        Dependency("Clang_unified_jll"),
-        Dependency("LLD_unified_jll"),
-    ]
-
-    for platform in platforms
-        augmented_platform = deepcopy(platform)
-        augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
-
-        should_build_platform(triplet(augmented_platform)) || continue
-        push!(builds, (;
-            dependencies,
-            platforms=[augmented_platform],
-            preferred_llvm_version=Base.thismajor(llvm_version),
-        ))
-    end
-end
-
-# don't allow `build_tarballs` to override platform selection based on ARGS.
-# we handle that ourselves by calling `should_build_platform`
-non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
-
-# `--register` should only be passed to the latest `build_tarballs` invocation
-non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
-
-for (i,build) in enumerate(builds)
-    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, sources, script,
-                   build.platforms, products, build.dependencies;
-                   preferred_gcc_version=v"10", build.preferred_llvm_version,
-                   julia_compat="1.6", augment_platform_block, init_block)
-end
-
