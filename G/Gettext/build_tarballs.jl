@@ -23,19 +23,12 @@ export CFLAGS="-O2"
 export CPPFLAGS="-I${includedir}"
 export LDFLAGS="-L${libdir}"
 
-if [[ "${target}" == *-mingw* ]]; then
-    # Correct Windows build error:
-    #    .libs/libgettextsrc_la-write-catalog.o:write-catalog.c:(.text+0x7bf):
-    #    undefined reference to `close_used_without_requesting_gnulib_module_close':
-    # See <https://github.com/NixOS/nixpkgs/pull/280197>
-    sed -i "s/@GNULIB_CLOSE@/1/" */*/unistd.in.h
-fi
-
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=${target} \
     --disable-static \
     --enable-relocatable \
+    --with-included-gettext \
     --with-libiconv-prefix=${prefix} \
     am_cv_lib_iconv=yes \
     am_cv_func_iconv=yes
@@ -54,7 +47,8 @@ platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["libgettextlib", "libgettextlib-$(version.major)"], :libgettext)
+    LibraryProduct(["libgettextlib", "libgettextlib-0"], :libgettext),
+    LibraryProduct(["libintl", "libintl-8"], :libintl),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -66,4 +60,4 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"6")
+               julia_compat="1.6", preferred_gcc_version=v"10")
