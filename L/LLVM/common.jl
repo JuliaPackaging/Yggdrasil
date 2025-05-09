@@ -171,7 +171,7 @@ CMAKE_C_FLAGS=()
 CMAKE_FLAGS=()
 
 if [[ "${target}" != *-apple-darwin* ]]; then
-CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-z,--build-id)
+CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id)
 fi
 
 # Release build for best performance
