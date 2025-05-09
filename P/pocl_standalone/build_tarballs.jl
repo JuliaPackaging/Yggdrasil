@@ -6,12 +6,12 @@ using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
-name = "pocl"
+name = "pocl_standalone"
 version = v"7.0"
 
 # Collection of sources required to complete build
 sources = [
-    DirectorySource("./bundled"),
+    DirectorySource("../pocl/bundled"),
     GitSource("https://github.com/pocl/pocl",
               "33518641e79bf9e693db8638176d1b194b6ea0da")
 ]
@@ -41,11 +41,12 @@ filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 ## PoCL doesn't support 32-bit Windows
 filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
-include("common.jl")
+include("../pocl/common.jl")
 
 # The products that we will ensure are always built
+# XXX: Rename this library to pocl_standalone?
 products = [
-    LibraryProduct(["libpocl", "pocl"], :libpocl),
+    LibraryProduct(["libopencl", "opencl"], :libpocl),
     ExecutableProduct("poclcc", :poclcc),
 ]
 
@@ -53,9 +54,9 @@ products = [
 dependencies = [
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=v"20.1.2")),
-    Dependency("OpenCL_jll"),
+    # Dependency("OpenCL_jll"),
     BuildDependency("OpenCL_Headers_jll"),
-    Dependency("Hwloc_jll"),
+    # Dependency("Hwloc_jll"),
     # only used at run time, but also detected by the build
     Dependency("SPIRV_LLVM_Translator_jll", compat="20.1"),
     Dependency("SPIRV_Tools_jll"),
