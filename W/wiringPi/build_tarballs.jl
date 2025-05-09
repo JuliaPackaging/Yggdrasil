@@ -26,7 +26,7 @@ cd wiringPi
 cp COPYING.LESSER LICENSE
 
 make
-make V=1 install||true
+make install||true
 
 install -Dvm 755 "libwiringPi.so.3.14" "${libdir}/libwiringPi.$dlext"
 
