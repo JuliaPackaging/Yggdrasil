@@ -8,7 +8,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Geant4_julia"
-version = v"0.2.1"
+version = v"0.2.2"
 
 # Collection of sources required to build Geant4_julia
 sources = [
@@ -57,7 +57,7 @@ products = [
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
-    Dependency("Geant4_jll"; compat = "~11.2.1"),
+    Dependency("Geant4_jll"; compat = "~11.3"),
     Dependency("Expat_jll"),
     Dependency("Xerces_jll"),
 ]
