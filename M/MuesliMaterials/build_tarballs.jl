@@ -23,8 +23,8 @@ cmake --build builddir --parallel ${nprocs}
 cmake --install builddir
 
 if [[ "${target}" == *-mingw* ]]; then
-#cmake install only grabs the .dll.a and leaves the actual .dll behind, manually move it 
-mv builddir/libmuesli.dll ${libdir}
+    # cmake install only grabs the .dll.a and leaves the actual .dll behind, manually move it 
+    install -Dvm 755 builddir/libmuesli.dll -t "${libdir}"
 fi
 """
 
