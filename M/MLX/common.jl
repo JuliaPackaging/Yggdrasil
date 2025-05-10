@@ -50,6 +50,24 @@ if [[ $bb_full_target == *cuda* ]]; then
     )
 fi
 
+if $USE_CCACHE; then
+    export CMAKE_CUDA_COMPILER_LAUNCHER=ccache
+fi
+
+if [[ $bb_full_target == *cuda* && $target != x86_64-linux-gnu* ]]; then
+    # Add /usr/lib/csl-glibc-x86_64 to LD_LIBRARY_PATH to be able to run host `nvcc`/`ptxas`/`fatbinary`
+    # while keeping the default /usr/lib/csl-musl-x86_64,
+    export LD_LIBRARY_PATH=/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:$LD_LIBRARY_PATH
+
+    # Make sure the host CUDA executables are used by copying from the host (x86_64) nvcc redist
+    NVCC_DIR=(/workspace/srcdir/cuda_nvcc-linux-$(arch)-${cuda_version}*-archive)
+    rm -rfv $prefix/cuda/bin
+    cp -av ${NVCC_DIR}/bin $prefix/cuda/bin
+    
+    rm -rfv $prefix/cuda/nvvm/bin
+    cp -av ${NVCC_DIR}/nvvm/bin $prefix/cuda/nvvm/bin
+fi
+
 install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
