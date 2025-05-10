@@ -45,8 +45,21 @@ if [[ "$target" != *-apple-darwin* &&
 fi
 
 if [[ $bb_full_target == *cuda* ]]; then
+    cuda_version=${bb_full_target##*-cuda+}
+    if [[ $cuda_version == "11.8" ]]; then
+        cuda_archs="60-real;61-real;62-real;70-real;72-real;75-real;80;86-real;87-real;89-real;90"
+    elif [[ $cuda_version == "12.1" ]]; then
+        cuda_archs="70-real;72-real;75-real;80;86-real;87-real;89-real;90"
+    else
+        false # Fail for unexpected CUDA version
+    fi
+
+    export CUDA_PATH=$prefix/cuda
+    ln -s $prefix/cuda/lib $prefix/cuda/lib64
+
     CMAKE_EXTRA_OPTIONS+=(
         -DMLX_BUILD_CUDA=ON
+        -DCMAKE_CUDA_ARCHITECTURES=$cuda_archs
     )
 fi
 
