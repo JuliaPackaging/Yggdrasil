@@ -1,16 +1,9 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-name = "MLX"
-version = v"0.25.1"
-
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "eaf709b83e559079e212699bfc9dd2f939d25c9a"),
+    GitSource("https://github.com/ml-explore/mlx.git", "659a51919fd3d70798e91e9e112075680b95556e"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
     # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/02/1b/7da8f1d224a4287cdd5eda77d878a73ff13c22e2c89097bc6effcc5c318a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "f2ca5c2f60804bbb3968ee3e087ce4cf5789065f4c927f76b025b3f5f122a63a"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    FileSource("https://files.pythonhosted.org/packages/d5/3f/5a3d036be09c32e76178eef7e51f4a9d1aef212f967927b62a9e49e2e4b0/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "836e224efabbcdd55340c59148a6f36c69bd80e08b2e73fe6f6a6b02a00888b1"; filename = "mlx-aarch64-apple-darwin20.whl"),
 ]
 
 script = raw"""
@@ -48,6 +41,12 @@ if [[ "$target" != *-apple-darwin* &&
         -DBLA_VENDOR=libblastrampoline
         -DBLAS_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
         -DLAPACK_INCLUDE_DIRS=$includedir/libblastrampoline/LP64/$libblastrampoline_target
+    )
+fi
+
+if [[ $bb_full_target == *cuda* ]]; then
+    CMAKE_EXTRA_OPTIONS+=(
+        -DMLX_BUILD_CUDA=ON
     )
 fi
 
@@ -104,7 +103,6 @@ dependencies = [
     HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.9",
-    preferred_gcc_version = v"10", # v10: C++-17, with std::reduce, required
-)
+julia_compat="1.9"
+
+preferred_gcc_version = v"10" # v10: C++-17, with std::reduce, required
