@@ -21,7 +21,7 @@ done
 cd WiringPi/wiringPi
 
 
-make
+make -j${nproc}
 make V=1 install||true
 
 install -Dvm 755 "libwiringPi.so.3.14" "${libdir}/libwiringPi.$dlext"
