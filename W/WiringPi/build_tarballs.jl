@@ -29,9 +29,7 @@ make V=1 install||true
 
 install -Dvm 755 "libwiringPi.so.3.14" "${libdir}/libwiringPi.$dlext"
 
-mkdir -p ${prefix}/share/licenses/WiringPi/
-
-cp LICENSE ${prefix}/share/licenses/WiringPi/
+install_license COPYING.LESSER
 
 exit
 """
