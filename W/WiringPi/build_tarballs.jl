@@ -22,7 +22,6 @@ cd WiringPi/
 
 cd wiringPi
 
-cp COPYING.LESSER LICENSE
 
 make
 make V=1 install||true
