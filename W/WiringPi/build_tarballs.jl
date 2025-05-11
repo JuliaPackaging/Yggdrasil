@@ -30,7 +30,6 @@ install -Dvm 755 "libwiringPi.so.3.14" "${libdir}/libwiringPi.$dlext"
 
 install_license COPYING.LESSER
 
-exit
 """
 
 
