@@ -25,7 +25,6 @@ make -j${nproc}
 # Override the installation location, and don't let it run ldconfig (it doesn't work for us)
 make DESTDIR=${prefix} PREFIX="" LDCONFIG="" V=1 install
 
-install -Dvm 755 "libwiringPi.so.3.14" "${libdir}/libwiringPi.$dlext"
 
 install_license COPYING.LESSER
 
