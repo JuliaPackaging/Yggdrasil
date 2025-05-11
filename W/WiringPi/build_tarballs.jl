@@ -18,9 +18,7 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-cd WiringPi/
-
-cd wiringPi
+cd WiringPi/wiringPi
 
 
 make
