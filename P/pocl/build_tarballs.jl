@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "pocl"
-version = v"6.0"
+version = v"6.0.1"
 
 # POCL supports LLVM 14 to 18
 # XXX: link statically to a single version of LLVM instead, and don't use augmentations?
@@ -130,6 +130,8 @@ filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 filter!(!Sys.iswindows, platforms)
 ## freebsd-aarch64 doesn't have an LLVM_full_jll build yet
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+## riscv64 doesn't have an LLVM_full_jll build yet
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -233,9 +235,20 @@ init_block = raw"""
     ld_wrapper = generate_wrapper_script("lld", ld_path,
                                          LLD_unified_jll.LIBPATH[],
                                          LLD_unified_jll.PATH[])
+
+    # expose libc to Clang, even if the system doesn't have development symlinks
+    libdir = abspath(first(Base.DEPOT_PATH), "scratchspaces", string(Base.PkgId(@__MODULE__).uuid), "lib")
+    mkpath(libdir)
+    for lib in Libdl.dllist()
+        startswith(basename(lib), "libc.so.6") || continue
+        link = joinpath(libdir, "libc.so")
+        rm(link, force=true)
+        symlink(lib, link)
+    end
     ENV["POCL_ARGS_CLANG"] = join([
             "-fuse-ld=lld", "--ld-path=$ld_wrapper",
-            "-L" * joinpath(artifact_dir, "share", "lib")
+            "-L" * joinpath(artifact_dir, "share", "lib"),
+            "-L" * libdir
         ], ";")
 """
 
