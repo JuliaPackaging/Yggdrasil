@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_event_stream"
-version = v"0.5.4"
+version = v"0.5.4+1"
 
 # Collection of sources required to complete build
 sources = [

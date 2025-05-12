@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_compression"
-version = v"0.3.1"
+version = v"0.3.1+1"
 
 # Collection of sources required to complete build
 sources = [

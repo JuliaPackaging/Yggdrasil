@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http"
-version = v"0.10.1"
+version = v"0.10.1+1"
 
 # Collection of sources required to complete build
 sources = [
