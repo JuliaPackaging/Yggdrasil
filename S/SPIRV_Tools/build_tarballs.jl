@@ -46,6 +46,10 @@ CMAKE_FLAGS=()
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
+# Build all shared libraries (downstream projects seem to depend on it)
+CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+CMAKE_FLAGS+=(-DSPIRV_TOOLS_BUILD_STATIC=OFF)
+
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 
@@ -62,7 +66,7 @@ cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
 
 # Remove unwanted static libraries
-rm $prefix/lib/libSPIRV-Tools*.a
+rm -f $prefix/lib/*.a
 """
 
 # These are the platforms we will build for by default, unless further
@@ -80,7 +84,7 @@ products = [
     ExecutableProduct("spirv-lint", :spirv_lint),
     ExecutableProduct("spirv-objdump", :spirv_objdump),
     ExecutableProduct("spirv-reduce", :spirv_reduce),
-    LibraryProduct("libSPIRV-Tools-shared", :libSPIRV_Tools),
+    LibraryProduct("libSPIRV-Tools", :libSPIRV_Tools),
 ]
 
 # Dependencies that must be installed before this package can be built

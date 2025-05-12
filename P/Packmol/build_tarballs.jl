@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Packmol"
-version = v"21.0.1"
+version = v"21.0.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/m3g/packmol", "95859e99583af27687e41bd009feff060baa22bd"),
+    GitSource("https://github.com/m3g/packmol", "ff977a230dff22bde3186fb0a2116fa5ab0550f8"),
 ]
 
 # Bash recipe for building across all platforms

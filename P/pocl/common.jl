@@ -246,9 +246,20 @@ function init_block(standalone=false)
     ld_wrapper = generate_wrapper_script("lld", ld_path,
                                          LLD_unified_jll.LIBPATH[],
                                          LLD_unified_jll.PATH[])
+
+    # expose libc to Clang, even if the system doesn't have development symlinks
+    libdir = abspath(first(Base.DEPOT_PATH), "scratchspaces", string(Base.PkgId(@__MODULE__).uuid), "lib")
+    mkpath(libdir)
+    for lib in Libdl.dllist()
+        startswith(basename(lib), "libc.so.6") || continue
+        link = joinpath(libdir, "libc.so")
+        rm(link, force=true)
+        symlink(lib, link)
+    end
     ENV["POCL_ARGS_CLANG"] = join([
             "-fuse-ld=lld", "--ld-path=$ld_wrapper",
-            "-L" * joinpath(artifact_dir, "share", "lib")
+            "-L" * joinpath(artifact_dir, "share", "lib"),
+            "-L" * libdir
         ], ";")
     """
 

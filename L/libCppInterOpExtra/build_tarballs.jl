@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOpExtra"
 repo = "https://github.com/Gnimuc/CppInterOp.jl.git"
-version = v"0.0.3"
+version = v"0.0.4"
 
 llvm_versions = [v"18.1.7"]
 
 sources = [
-    GitSource(repo, "bfa766c0feec093db95a3edaf26a0744853397c1")
+    GitSource(repo, "f5c30f9bcb4846e72d8a3a1e0366dcd11e4b9066")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,9 +31,6 @@ fi
 
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-     -DCMAKE_CROSSCOMPILING:BOOL=ON \
-     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-     -DBUILD_SHARED_LIBS=ON \
      -DLLVM_DIR=${prefix}/lib/cmake/llvm \
      -DClang_DIR=${prefix}/lib/cmake/clang \
      -DCppInterOp_DIR=${prefix}/lib/cmake/CppInterOp \
