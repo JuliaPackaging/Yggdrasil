@@ -13,7 +13,7 @@ version = v"0.2.2"
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "9105e15ead1749d4b111f10f8ae1110036b8bdb9"),
+              "b82c50a861c5957b2b2d83d4d7674b40ba829209"),
 ]
 
 # Bash recipe for building across all platforms
@@ -56,14 +56,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
+    BuildDependency("Xorg_xorgproto_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
-    Dependency("Geant4_jll"; compat = "~11.3"),
-    Dependency("Expat_jll"),
-    Dependency("Xerces_jll"),
+    Dependency("Geant4_jll"; compat="~11.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
                preferred_gcc_version=v"9", 
                julia_compat="1.6")
-          
