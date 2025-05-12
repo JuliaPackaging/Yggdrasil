@@ -26,14 +26,7 @@ elif [[ "${target}" == *-mingw* ]]; then
    export LDFLAGS=-L${libdir}
 fi
 
-if [[ "${target}" == *w64* ]]; then
-    export CFLAGS="-O0"
-fi
-
 cd scipoptsuite*
-
-# for soplex threadlocal
-export CXXFLAGS="-DTHREADLOCAL=''"
 
 mkdir build
 cd build/
@@ -87,4 +80,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"6", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"12", julia_compat="1.6")
