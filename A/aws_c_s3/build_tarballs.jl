@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_s3"
-version = v"0.7.17+1"
+version = v"0.7.18"
 
 # Collection of sources required to complete build
 sources = [
@@ -37,8 +37,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("aws_checksums_jll"; compat="0.2.7"),
-    Dependency("aws_c_http_jll"; compat="0.9"),
-    Dependency("aws_c_auth_jll"; compat="0.9"),
+    Dependency("aws_c_http_jll"; compat="0.10.1"),
+    Dependency("aws_c_auth_jll"; compat="0.9.0"),
     BuildDependency("aws_lc_jll"),
 ]
 
