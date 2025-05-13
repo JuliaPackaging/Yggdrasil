@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "slope"
-version = v"1.0.0"
+version = v"1.0.1"
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
