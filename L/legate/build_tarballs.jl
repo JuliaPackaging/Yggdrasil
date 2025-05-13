@@ -7,29 +7,24 @@ using Base.BinaryPlatforms: arch, os, tags
 const YGGDRASIL_DIR = "../../"
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "legate"
 version = v"25.03"
 sources = [
     GitSource("https://github.com/nv-legate/legate.git","8a619fa468a73f9766f59ac9a614c0ee084ecbdd")
-    # GitSource("https://github.com/nv-legate/legate.git", "1478fa09e7e3cb6b177bef0aae74cd04c3a43417"),
 ]
 
-MIN_CUDA_VERSION = v"12.0" #CUDA.full_version(v"12.0")
+MIN_CUDA_VERSION = v"12.2" #CUDA.full_version(v"12.0")
 TEST_CUDA_VERSION = v"12.8" # REMOVE LATER
-
-# --build-march="${MARCH_FLAG}" \
-
-# HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
-#     rm /usr/lib/libcurl.*
-
-# --build-type="debug" \
 
 
 script = raw"""
 
 if [[ ${target} == x86_64-linux-musl ]]; then
+    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
     # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
+    rm /usr/lib/libcurl.*
     rm /usr/lib/libevent*
     rm /usr/lib/libnghttp2.*
 fi
@@ -66,32 +61,13 @@ ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
 ### Parse march flag
 
-MARCH_FLAG=""
-
-case "${target%%-*}" in
-  x86_64)
-  MARCH_FLAG="x86-64"
-  ;;
-  aarch64)
-  MARCH_FLAG="armv8-a"
-  ;;
-  *)
-    echo "Error: Unknown architecture, '${target%%-*}'"
-    exit 1
-esac
-
-#--with-nccl-dir=${prefix} \
-# --with-cxx=${CXX} \
-# --with-cc=${CC} \
-# --with-cxx=clang++ \
-# --with-cc=clang \
-#--with-hdf5-vfd-gds=0 \
-
-
 export CC="clang"
 export CXX="clang++"
 export BUILD_CXX=$(which clang++)
 export BUILD_CC=$(which clang)
+
+# -- "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)"
+
 
 ./configure \
     --prefix=${prefix} \
@@ -102,7 +78,7 @@ export BUILD_CC=$(which clang)
     --with-mpi-dir=${prefix} \
     --with-zlib-dir=${prefix} \
     --with-hdf5-vfd-gds=0 \
-    --with-hdf5=0 \
+    --with-hdf5-dir=${prefix} \
     --num-threads=${nproc} \
     --with-cxx=${CXX} \
     --with-cc=${CC} \
@@ -114,53 +90,70 @@ export BUILD_CC=$(which clang)
 
 
 make install -j ${nproc} PREFIX=${prefix}
+install_license ${WORKSPACE}/srcdir/legate/LICENSE
+"""
+
+augment_platform_block = 
+"""
+using Base.BinaryPlatforms
+module __CUDA
+    $(CUDA.augment)
+end
+
+$(MPI.augment)
+
+function augment_platform!(platform::Platform)
+    augment_mpi!(platform)
+    __CUDA.augment_platform!(platform)
+end
 """
 
 platforms = CUDA.supported_platforms()
 platforms = filter(p -> os(p) == "linux", platforms)
-platforms = filter!(p -> arch(p) == "x86_64", platforms) #* could also support aarch64??
+platforms = filter!(p -> arch(p) == "x86_64", platforms) #* SHOULD also support aarch64
 # platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) >= MIN_CUDA_VERSION, platforms)
 
 #* REMOVE LATER
 platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == TEST_CUDA_VERSION, platforms)
 
-print(platforms)
+platforms = expand_cxxstring_abis(platforms)
 
-#* TODO expand c-abi
-#* TODO expand MPI abi
+# platforms, mpi_dependencies = MPI.augment_platforms(platforms)
+# filter!(p -> p["mpi"] ∉ ["mpitrampoline", "microsoftmpi"], platforms)
+
+print(platforms)
 
 products = [
     LibraryProduct("liblegate", :liblegate),
     LibraryProduct("liblegion-legate", :liblegionlegate),
     LibraryProduct("librealm-legate", :librealmlegate),
-    LibraryProduct("libcpptrace", :libcpptrace),
-]
+    # LibraryProduct("liblegate_mpi_wrapper", :liblegate_mpi_wrapper),
+] 
+# libhdf5_vfd_gds
 
-# CUDA SDK added later, see cuda_deps
 dependencies = [
-    Dependency("MPICH_jll"),
     Dependency("HDF5_jll"),
+    Dependency("MPICH_jll"),
     # Dependency("NCCL_jll"),
-    Dependency("UCX_jll"),
+    # Dependency("UCX_jll"),
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    BuildDependency(PackageSpec(; name = "Clang_jll", version = v"v20.1.2")),
+    # HostBuildDependency(PackageSpec(; name = "Clang_jll", version = v"20.1.2")),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
 ]
+
+# append!(dependencies, mpi_dependencies)
 
 for platform in platforms
 
     should_build_platform(triplet(platform)) || continue
 
-    # Suite Sparse has static_sdk = true
-    # do we need that too? seems so
     cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                     products, [dependencies; cuda_deps];
-                    julia_compat = "1.10", preferred_gcc_version = v"13",
-                    augment_platform_block=CUDA.augment
+                    julia_compat = "1.10", augment_platform_block=CUDA.augment
                 )
-
+    #augment_platform_block=augment_platform_block
 end
