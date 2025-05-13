@@ -7,7 +7,9 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "pocl"
-version = v"7.0"
+version = v"7.0.0"
+
+# Build
 
 # Collection of sources required to complete build
 sources = [
