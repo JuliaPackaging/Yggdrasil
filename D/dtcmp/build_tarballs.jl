@@ -11,6 +11,7 @@ version = v"1.1.5"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/LLNL/dtcmp", "bbd720f6db41106380b11610ebb893f3edd47c47"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -20,6 +21,9 @@ cd ${WORKSPACE}/srcdir/dtcmp
 export MPITRAMPOLINE_CC="${CC}"
 export MPITRAMPOLINE_CXX="${CXX}"
 export MPITRAMPOLINE_FC="${FC}"
+
+atomic_patch -p1 ../patches/libtoolize.patch
+atomic_patch -p1 ../patches/mpi.patch
 
 ./autogen.sh
 if [[ "${target}" != *-mingw* ]]; then
@@ -41,6 +45,15 @@ augment_platform_block = """
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+# Dependency lwgrp has not been built for Windows
+filter!(!Sys.iswindows, platforms)
+
+# Dependency lwgrp has not been built for this platform (fix this!)
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p) && p["mpi"] == "openmpi"), platforms)
+
+# Dependency lwgrp has not been built for this platform (fix this!)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
