@@ -1,0 +1,53 @@
+commit e66a1726069764b0ee2b022206ab4356450b2eba
+Author: Tim Besard <tim.besard@gmail.com>
+Date:   Sat Jul 27 13:20:52 2024 +0200
+
+    kernellib: when building distro variants, provide a fallback generic version.
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b02dab9c1..26a79fa86 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1427,8 +1427,10 @@ if(KERNELLIB_HOST_CPU_VARIANTS STREQUAL "distro")
+   elseif(POWERPC64LE)
+     set(KERNELLIB_HOST_CPU_VARIANTS pwr8 pwr9 pwr10)
+   else()
+-    message(FATAL_ERROR "Don't know what CPU variants to use for kernel library on this platform.")
++    message(WARNING "Don't know what CPU variants to use for kernel library on this platform, will only provide a generic build.")
++    set(KERNELLIB_HOST_CPU_VARIANTS "")
+   endif()
++  list(APPEND KERNELLIB_HOST_CPU_VARIANTS generic)
+   set(KERNELLIB_HOST_DISTRO_VARIANTS 1)
+ endif()
+
+diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
+index 5928f3115..effd68710 100644
+--- a/lib/CL/devices/common.c
++++ b/lib/CL/devices/common.c
+@@ -1719,6 +1719,10 @@ pocl_init_default_device_infos (cl_device_id dev,
+
+   strcat(kernellib, "-");
+ #ifdef KERNELLIB_HOST_DISTRO_VARIANTS
++  strcpy(kernellib_fallback, kernellib);
++  strcat(kernellib_fallback, "generic");
++  dev->kernellib_fallback_name = strdup(kernellib_fallback);
++
+   const char* kernellib_variant = pocl_get_distro_kernellib_variant ();
+   dev->llvm_cpu = pocl_get_distro_cpu_name (kernellib_variant);
+   strcat(kernellib, kernellib_variant);
+diff --git a/lib/kernel/host/CMakeLists.txt b/lib/kernel/host/CMakeLists.txt
+index 871fa77e0..b0445f09a 100644
+--- a/lib/kernel/host/CMakeLists.txt
++++ b/lib/kernel/host/CMakeLists.txt
+@@ -588,6 +588,11 @@ else()
+   set(LLC_CPUFLAGS "-mcpu=${VARIANT}")
+ endif()
+
++if("${VARIANT}" STREQUAL "generic")
++  set(CLANG_CPUFLAGS "")
++  set(LLC_CPUFLAGS "")
++endif()
++
+ separate_arguments(CLANG_CPUFLAGS)
+ separate_arguments(LLC_CPUFLAGS)
+ set(CLANG_FLAGS ${HOST_CLANG_FLAGS} ${CLANG_CPUFLAGS}
