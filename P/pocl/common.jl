@@ -257,8 +257,12 @@ function init_block(standalone=false)
     for lib in Libdl.dllist()
         startswith(basename(lib), "libc.so.6") || continue
         link = joinpath(libdir, "libc.so")
-        rm(link, force=true)
-        symlink(lib, link)
+        try
+            symlink(lib, link)
+        catch
+            # can't safely check first, because multiple processes may be running
+            islink(link) || rethrow()
+        end
     end
     ENV["POCL_ARGS_CLANG"] = join([
             "-fuse-ld=lld", "--ld-path=$ld_wrapper",
