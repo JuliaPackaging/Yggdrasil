@@ -63,5 +63,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               #TODO augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
