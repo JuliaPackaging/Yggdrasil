@@ -111,10 +111,10 @@ end
 platforms = CUDA.supported_platforms()
 platforms = filter(p -> os(p) == "linux", platforms)
 platforms = filter!(p -> arch(p) == "x86_64", platforms) #* SHOULD also support aarch64
-# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) >= MIN_CUDA_VERSION, platforms)
+platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) >= MIN_CUDA_VERSION, platforms)
 
 #* REMOVE LATER
-platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == TEST_CUDA_VERSION, platforms)
+# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == TEST_CUDA_VERSION, platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 
@@ -153,7 +153,9 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                     products, [dependencies; cuda_deps];
-                    julia_compat = "1.10", augment_platform_block=CUDA.augment
+                    julia_compat = "1.10", preferred_gcc_version = v"12",
+                     augment_platform_block=CUDA.augment
                 )
     #augment_platform_block=augment_platform_block
 end
+
