@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "legate"
 version = v"25.03"
 sources = [
-    GitSource("https://github.com/nv-legate/legate.git","98e78b221f02bf3d04dbe22518e1bf3033bf1f8b")
+    GitSource("https://github.com/nv-legate/legate.git","8a619fa468a73f9766f59ac9a614c0ee084ecbdd")
     # GitSource("https://github.com/nv-legate/legate.git", "1478fa09e7e3cb6b177bef0aae74cd04c3a43417"),
 ]
 
@@ -37,26 +37,17 @@ fi
 # Put new CMake first on path
 export PATH=${host_bindir}:$PATH
 
-### Install Python Dependencies in a Really Stupid Way
+# Install Python 3.11
+wget https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh -O miniconda.sh
+bash miniconda.sh -b -p ${host_bindir}/miniconda
 
-cd ${WORKSPACE}/srcdir
-mkdir config_deps && cd config_deps
-pip3 download --no-deps rich
-pip3 download --no-deps typing_extensions
-pip3 download --no-deps packaging
-RICH_WHEEL=$(ls rich-*-py3-none-any.whl)
-TYPE_EXT_WHEEL=$(ls typing_extensions-*-py3-none-any.whl)
-PACKAGING_WHEEL=$(ls packaging-*-py3-none-any.whl)
-unzip -q "$RICH_WHEEL" -d config_deps
-unzip -q "$TYPE_EXT_WHEEL" -d config_deps
-unzip -q "$PACKAGING_WHEEL" -d config_deps
+# Create venv and install configure script dependencies
+${host_bindir}/miniconda/bin/python -m venv ./venv
+source ./venv/bin/activate
+pip install --upgrade pip
+pip install rich typing_extensions packaging
 
-pip3 download --no-deps git+https://github.com/nv-legate/aedifix@1.2.0
-unzip aedifix-*
-
-export PY_DEPS_DIR=$(pwd)/config_deps:$(pwd)/config_deps/aedifix/src/aedifix
-
-PYTHONPATH="${PY_DEPS_DIR}" python3.10 -c "import rich, typing_extensions, packaging, aedifix; print('Python deps installed and working!')"
+python -c "import rich, typing_extensions, packaging; print('Python deps installed and working!')"
 
 cd ${WORKSPACE}/srcdir/legate
 
@@ -89,16 +80,18 @@ case "${target%%-*}" in
     exit 1
 esac
 
-export PYTHONPATH="${PY_DEPS_DIR}"
-
-sed -i "1s|#\!/usr/bin/env python3|#\!${host_bindir}/python3.10|" configure
-
-
 #--with-nccl-dir=${prefix} \
 # --with-cxx=${CXX} \
 # --with-cc=${CC} \
 # --with-cxx=clang++ \
 # --with-cc=clang \
+#--with-hdf5-vfd-gds=0 \
+
+
+export CC="clang"
+export CXX="clang++"
+export BUILD_CXX=$(which clang++)
+export BUILD_CC=$(which clang)
 
 ./configure \
     --prefix=${prefix} \
@@ -108,16 +101,17 @@ sed -i "1s|#\!/usr/bin/env python3|#\!${host_bindir}/python3.10|" configure
     --with-mpiexec-executable=${bindir}/mpiexec \
     --with-mpi-dir=${prefix} \
     --with-zlib-dir=${prefix} \
-    --with-hdf5=0 \
     --with-hdf5-vfd-gds=0 \
-    --num-threads=1 \
+    --with-hdf5=0 \
+    --num-threads=${nproc} \
     --with-cxx=${CXX} \
     --with-cc=${CC} \
     --CXXFLAGS="${CPPFLAGS}" \
     --CFLAGS="${CFLAGS}" \
     --with-clean \
     --cmake-executable=${host_bindir}/cmake \
-    -- "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}"
+    -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake"
+
 
 make install -j ${nproc} PREFIX=${prefix}
 """
@@ -153,7 +147,6 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     BuildDependency(PackageSpec(; name = "Clang_jll", version = v"v20.1.2")),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
-    HostBuildDependency(PackageSpec(; name = "Python_jll", version = v"3.10.16"))
 ]
 
 for platform in platforms
