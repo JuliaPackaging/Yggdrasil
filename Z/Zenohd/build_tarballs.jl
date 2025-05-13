@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/zenoh
-install_license LICENSE
+install_license LICENSE 
 # set up the host compiler for use by the ring native compilation path
 export CC_$(echo $rust_host | sed "s/-/_/g")=$CC_BUILD
 # needed to build dylibs on musl
