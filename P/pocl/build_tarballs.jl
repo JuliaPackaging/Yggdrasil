@@ -12,8 +12,8 @@ version = v"7.0"
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
-    GitSource("https://github.com/pocl/pocl",
-              "8804b65372e83f5c6bba0e09157e0dcf5432c498")
+    GitSource("https://github.com/maleadt/pocl",
+              "0d4baa74067db1f986fb7d70f40561c453be7b73")   # v7.0-RC2 + #1918
 ]
 
 #=

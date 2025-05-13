@@ -107,6 +107,10 @@ function build_script(standalone=false)
         CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDEDIR="${prefix}/include/LLVMSPIRVLib")
         CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB="${prefix}/bin/libLLVMSPIRVLib.dll")
     fi
+    ## spoof the output of the try_run test (which fails in cross-compilation mode)
+    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_COMPILE_RESULT=TRUE)
+    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT=0)
+    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT__TRYRUN_OUTPUT=66048)
 
     # PoCL's CPU autodetection doesn't work on RISC-V
     if [[ ${target} == riscv64-* ]]; then
