@@ -49,13 +49,13 @@ platforms = supported_platforms()
 # Dependency lwgrp has not been built for Windows
 filter!(!Sys.iswindows, platforms)
 
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
 # Dependency lwgrp has not been built for this platform (fix this!)
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p) && p["mpi"] == "openmpi"), platforms)
 
 # Dependency lwgrp has not been built for this platform (fix this!)
 filter!(p -> arch(p) != "riscv64", platforms)
-
-platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
