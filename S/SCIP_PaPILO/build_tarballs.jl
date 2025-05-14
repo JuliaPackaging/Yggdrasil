@@ -79,14 +79,16 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; experimental=true)))
+platforms = supported_platforms(; experimental=true)
+platforms = expand_cxxstring_abis()
+platforms = expand_gfortran_versions(platforms)
 
 # Filter out the aarch64 FreeBSD and RISC-V architectures because oneTBB isn't available there yet.
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms)
 
 filter!(platforms) do p
-    libgfortran_version(p) >= v"4"
+    libgfortran_version(p) >= v"5"
 end
 
 
