@@ -79,14 +79,16 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_gfortran_versions(expand_cxxstring_abis(supported_platforms(; experimental=true)))
+platforms = supported_platforms(; experimental=true)
+platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
 
 # Filter out the aarch64 FreeBSD and RISC-V architectures because oneTBB isn't available there yet.
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms)
 
 filter!(platforms) do p
-    libgfortran_version(p) >= v"4"
+    libgfortran_version(p) >= v"5"
 end
 
 
@@ -99,7 +101,7 @@ products = [
 
 dependencies = [
     Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), compat="=0.77.0"),
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0"),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.87.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.1"),
@@ -120,7 +122,7 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version=v"10",
+    preferred_gcc_version=v"12",
     julia_compat="1.6",
     clang_use_lld=false,
 )
