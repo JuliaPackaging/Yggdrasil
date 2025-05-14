@@ -80,7 +80,7 @@ cp $WORKSPACE/srcdir/scipoptsuite*/papilo/COPYING ${prefix}/share/licenses/SCIP_
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(; experimental=true)
-platforms = expand_cxxstring_abis()
+platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 # Filter out the aarch64 FreeBSD and RISC-V architectures because oneTBB isn't available there yet.
