@@ -106,5 +106,3 @@ for (i,build) in enumerate(builds)
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
                    julia_compat="1.6", init_block=init_block())
 end
-
-# bump
