@@ -213,7 +213,7 @@ function init_block(standalone=false)
             else
                 LIBPATH
             end
-            println(io, "export $LIBPATH_env=\"$LIBPATH_value\"")
+            println(io, "export $LIBPATH_env=\\"$LIBPATH_value\\"")
 
             if LIBPATH_env != "PATH"
                 PATH_base = get(ENV, "PATH", "")
@@ -222,10 +222,10 @@ function init_block(standalone=false)
                 else
                     PATH
                 end
-                println(io, "export PATH=\"$PATH_value\"")
+                println(io, "export PATH=\\"$PATH_value\\"")
             end
 
-            println(io, "exec \"$path\" \"\$@\"")
+            println(io, "exec \\"$path\\" \\"\$@\\"")
             close(io)
             chmod(temp_script, 0o755)
         else

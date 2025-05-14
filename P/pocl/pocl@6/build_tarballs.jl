@@ -13,7 +13,7 @@ version = v"6.0.1"
 # POCL supports LLVM 14 to 18
 # XXX: link statically to a single version of LLVM instead, and don't use augmentations?
 #      this causes issue with the compile-time link, so I haven't explored this yet
-llvm_versions = [v"14.0.6", v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7"]
 
 # Collection of sources required to complete build
 sources = [
@@ -181,35 +181,45 @@ init_block = raw"""
         end
 
         # XXX: cache, but invalidate when deps change
-        script = joinpath(bindir, name)
+
+        # write to temporary script
+        temp_script, io = mktemp(bindir; cleanup=false)
         if Sys.isunix()
-            open(script, "w") do io
-                println(io, "#!/bin/bash")
+            println(io, "#!/bin/bash")
 
-                LIBPATH_base = get(ENV, LIBPATH_env, expanduser(LIBPATH_default))
-                LIBPATH_value = if !isempty(LIBPATH_base)
-                    string(LIBPATH, pathsep, LIBPATH_base)
-                else
-                    LIBPATH
-                end
-                println(io, "export $LIBPATH_env=\\"$LIBPATH_value\\"")
-
-                if LIBPATH_env != "PATH"
-                    PATH_base = get(ENV, "PATH", "")
-                    PATH_value = if !isempty(PATH_base)
-                        string(PATH, pathsep, ENV["PATH"])
-                    else
-                        PATH
-                    end
-                    println(io, "export PATH=\\"$PATH_value\\"")
-                end
-
-                println(io, "exec \\"$path\\" \\"\$@\\"")
+            LIBPATH_base = get(ENV, LIBPATH_env, expanduser(LIBPATH_default))
+            LIBPATH_value = if !isempty(LIBPATH_base)
+                string(LIBPATH, pathsep, LIBPATH_base)
+            else
+                LIBPATH
             end
-            chmod(script, 0o755)
+            println(io, "export $LIBPATH_env=\\"$LIBPATH_value\\"")
+
+            if LIBPATH_env != "PATH"
+                PATH_base = get(ENV, "PATH", "")
+                PATH_value = if !isempty(PATH_base)
+                    string(PATH, pathsep, ENV["PATH"])
+                else
+                    PATH
+                end
+                println(io, "export PATH=\\"$PATH_value\\"")
+            end
+
+            println(io, "exec \\"$path\\" \\"\$@\\"")
+            close(io)
+            chmod(temp_script, 0o755)
         else
             error("Unsupported platform")
         end
+
+        # atomically move to the final location
+        script = joinpath(bindir, name)
+        @static if VERSION >= v"1.12.0-DEV.1023"
+            mv(temp_script, script; force=true)
+        else
+            Base.rename(temp_script, script, force=true)
+        end
+
         return script
     end
     ENV["POCL_PATH_SPIRV_LINK"] =
@@ -251,8 +261,8 @@ init_block = raw"""
     end
     ENV["POCL_ARGS_CLANG"] = join([
             "-fuse-ld=lld", "--ld-path=$ld_wrapper",
-            "-L" * joinpath(artifact_dir, "share", "lib"),
-            "-L" * libdir
+            "-L", joinpath(artifact_dir, "share", "lib"),
+            "-L", libdir
         ], ";")
 """
 
