@@ -1,0 +1,37 @@
+commit 71b45f471ba5fecbd094a18a86b79672267c04a0
+Author: Tim Besard <tim.besard@gmail.com>
+Date:   Wed Oct 16 07:59:42 2024 +0200
+
+    Make it possible to configure the linker path used by Clang.
+
+diff --git a/doc/sphinx/source/using.rst b/doc/sphinx/source/using.rst
+index d71e34c6b..63bdeb8fa 100644
+--- a/doc/sphinx/source/using.rst
++++ b/doc/sphinx/source/using.rst
+@@ -311,6 +311,7 @@ pocl.
+  The following variables are available:
+ 
+   * **POCL_PATH_CLANG** -- Path to the clang executable.
++  * **POCL_PATH_LD** -- Path to the ld executable used by clang.
+   * **POCL_PATH_LLVM_LINK** -- Path to the llvm-link executable.
+   * **POCL_PATH_LLVM_OPT** -- Path to the llvm-opt executable.
+   * **POCL_PATH_LLVM_LLC** -- Path to the llc executable.
+diff --git a/lib/CL/pocl_llvm_build.cc b/lib/CL/pocl_llvm_build.cc
+index 782ac0642..492d977db 100644
+--- a/lib/CL/pocl_llvm_build.cc
++++ b/lib/CL/pocl_llvm_build.cc
+@@ -1048,8 +1048,13 @@ int pocl_invoke_clang(cl_device_id Device, const char** Args) {
+ 
+   const char **ArgsEnd = Args;
+   while (*ArgsEnd++ != nullptr) {}
++  llvm::SmallVector<const char*, 0> ArgsArray(Args, ArgsEnd);
+ 
+-  llvm::ArrayRef<const char*> ArgsArray(Args, ArgsEnd);
++  std::string LDPath;
++  if (const char* LDOverride = pocl_get_path("LD", nullptr)) {
++    LDPath = "--ld-path=" + std::string(LDOverride);
++    ArgsArray.push_back(LDPath.c_str());
++  }
+ 
+   std::unique_ptr<clang::driver::Compilation> C(
+       TheDriver.BuildCompilation(ArgsArray));
