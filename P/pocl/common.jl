@@ -85,6 +85,7 @@ function build_script(;standalone=false)
         CMAKE_FLAGS+=(-DENABLE_ICD:BOOL=OFF)
         # prefix 
         CMAKE_FLAGS+=(-DRENAME_POCL:BOOL=ON)
+        CMAKE_FLAGS+=(-DENABLE_EXAMPLES:BOOL=OFF)
         # Change the library name
         sed -i 's/set(POCL_LIBRARY_NAME "OpenCL")/set(POCL_LIBRARY_NAME "pocl_standalone")/' CMakeLists.txt
     else
