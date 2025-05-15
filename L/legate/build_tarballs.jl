@@ -12,10 +12,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "legate"
 version = v"25.03"
 sources = [
-    GitSource("https://github.com/nv-legate/legate.git","8a619fa468a73f9766f59ac9a614c0ee084ecbdd")
+    GitSource("https://github.com/nv-legate/legate.git","8a619fa468a73f9766f59ac9a614c0ee084ecbdd"),
+    FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
+                "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
 
 MIN_CUDA_VERSION = v"12.2" #CUDA.full_version(v"12.0")
+MAX_CUDA_VERSION = v"12.8"
 TEST_CUDA_VERSION = v"12.8" # REMOVE LATER
 
 
@@ -32,8 +35,8 @@ fi
 # Put new CMake first on path
 export PATH=${host_bindir}:$PATH
 
-# Install Python 3.11
-wget https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh -O miniconda.sh
+# Install Python 3.11 (via miniconda)
+cd ${WORKSPACE}/srcdir
 bash miniconda.sh -b -p ${host_bindir}/miniconda
 
 # Create venv and install configure script dependencies
@@ -111,12 +114,14 @@ end
 platforms = CUDA.supported_platforms()
 platforms = filter(p -> os(p) == "linux", platforms)
 platforms = filter!(p -> arch(p) == "x86_64", platforms) #* SHOULD also support aarch64
-platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) >= MIN_CUDA_VERSION, platforms)
+platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) >= MIN_CUDA_VERSION &&
+                         VersionNumber(tags(p)["cuda"]) <= MAX_CUDA_VERSION, platforms)
 
 #* REMOVE LATER
 # platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == TEST_CUDA_VERSION, platforms)
 
 platforms = expand_cxxstring_abis(platforms)
+platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 # platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 # filter!(p -> p["mpi"] ∉ ["mpitrampoline", "microsoftmpi"], platforms)
@@ -125,11 +130,7 @@ print(platforms)
 
 products = [
     LibraryProduct("liblegate", :liblegate),
-    LibraryProduct("liblegion-legate", :liblegionlegate),
-    LibraryProduct("librealm-legate", :librealmlegate),
-    # LibraryProduct("liblegate_mpi_wrapper", :liblegate_mpi_wrapper),
 ] 
-# libhdf5_vfd_gds
 
 dependencies = [
     Dependency("HDF5_jll"),
@@ -139,7 +140,7 @@ dependencies = [
     Dependency("Zlib_jll"),
     Dependency("OpenSSL_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    # HostBuildDependency(PackageSpec(; name = "Clang_jll", version = v"20.1.2")),
+    Dependency(PackageSpec(; name="CUDA_Driver_jll")),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
 ]
 
@@ -150,6 +151,8 @@ for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
     cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
+
+    print(cuda_deps)
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                     products, [dependencies; cuda_deps];
