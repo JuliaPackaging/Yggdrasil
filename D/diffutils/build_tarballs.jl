@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "diffutils"
-version_string = "3.10"
+version_string = "3.12"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://ftp.gnu.org/gnu/diffutils/diffutils-$(version_string).tar.xz",
-        "90e5e93cc724e4ebe12ede80df1634063c7a855692685919bfe60b556c9bd09e",
+        "7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd",
     ),
     DirectorySource("./bundled"),
 ]
@@ -24,7 +24,7 @@ if [[ "${target}" == *-mingw* ]]; then
     atomic_patch -p1 ../patches/win_signal_handling.patch
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-dependency-tracking
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-dependency-tracking gl_cv_func_strcasecmp_works=yes
 
 # skip gnulib-tests on mingw
 if [[ "${target}" == *-mingw* ]]; then
