@@ -21,7 +21,7 @@ export MPITRAMPOLINE_CXX="${CXX}"
 export MPITRAMPOLINE_FC="${FC}"
 
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes 
 make -j${nproc}
 make install
 """
