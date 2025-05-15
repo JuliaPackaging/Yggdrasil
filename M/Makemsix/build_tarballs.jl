@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Makemsix"
-version = v"1.7.133"
+version = v"1.7.241"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/mozilla/msix-packaging.git",
-              "be7e5b303ca51e22f74d539b0b62cd361e33e4de"),
+    GitSource("https://github.com/microsoft/msix-packaging.git",
+              "efeb9dad695a200c2beaddcba54a52c8320bd135"),
 ]
 
 
@@ -20,6 +20,10 @@ script = raw"""
 
     # Update C++ standard to 17 for all platforms
     sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' CMakeLists.txt
+
+    find $WORKSPACE/tmp/msix-packaging -name "CMakeLists.txt" -type f -exec sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' {} \;
+
+    find $WORKSPACE/tmp/msix-packaging -name "CMakeLists.txt" -type f -exec sed -i 's/cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)/cmake_minimum_required(VERSION 3.21.7)/' {} \;
 
     mkdir .vs
     cd .vs
@@ -97,18 +101,23 @@ script = raw"""
         # Handle musl vs glibc
         if [[ "${target}" == *"-linux-musl"* ]]; then
             # Additional options for musl libc if needed
-
-            
-
             echo "Building for musl libc"
         else
             echo "Building for glibc"
         fi
 
-        cmake ${CMAKE_OPTIONS} ..
+        cmake ${CMAKE_OPTIONS} .. 
     fi
 
-    make
+    if [[ "${target}" == *"apple-darwin"* ]]; then
+        ZLIB_CMAKEFILE="$WORKSPACE/tmp/msix-packaging/.vs/lib/zlib/CMakeFiles/zlib.dir/link.txt"
+        if [ -f "$ZLIB_CMAKEFILE" ]; then
+            echo "Patching zlib link.txt to remove --version-script for macOS..."
+            sed -i.bak 's/--version-script,[^ ]*//' "$ZLIB_CMAKEFILE"
+        fi
+    fi
+
+    make -j${nproc}
 
     cd $WORKSPACE/tmp/msix-packaging
     install_license LICENSE 
