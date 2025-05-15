@@ -5,7 +5,8 @@ using BinaryBuilder, Pkg
 name = "SCIP_PaPILO"
 
 upstream_version = v"9.2.1"
-version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
+# TODO(odow): remove patch +1 when updating upstream
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100 + 1)
 
 # Collection of sources required to complete build
 sources = [
