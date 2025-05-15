@@ -4,7 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "SCIP"
 upstream_version = v"9.2.1"
-version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
+# TODO(odow): remove +1 when updating upstream
+version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100 + 1)
 
 # Collection of sources required to complete build
 sources = [
@@ -70,7 +71,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0"),
+    Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.87.0"),
     Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"), v"6.2.1"),
