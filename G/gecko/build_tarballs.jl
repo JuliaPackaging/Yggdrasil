@@ -64,7 +64,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"; compat="~0.13.4"),
+    Dependency("libcxxwrap_julia_jll"; compat=">=0.13.4"),
     Dependency("CompilerSupportLibraries_jll"),
     BuildDependency("libjulia_jll"),
 ]
