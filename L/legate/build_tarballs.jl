@@ -17,7 +17,7 @@ sources = [
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
 
-MIN_CUDA_VERSION = v"12.2" #* Try down to 12.0
+MIN_CUDA_VERSION = v"12.0" #* Try down to 12.0
 MAX_CUDA_VERSION = v"12.8.999"
 
 
@@ -33,17 +33,6 @@ fi
 
 # Put new CMake first on path
 export PATH=${host_bindir}:$PATH
-
-# Put Clang 13 first on path
-# export PATH=${WORKSPACE}/destdir/tools:$PATH
-
-# Update Toolchain file to use Clang13
-# sed -i -E '
-# # Update C compiler path
-# s|^(set\(CMAKE_C_COMPILER\s+).+(\))$|\1$ENV{WORKSPACE}/destdir/tools/clang\2|;
-# # Update CXX compiler path  
-# s|^(set\(CMAKE_CXX_COMPILER\s+).+(\))$|\1$ENV{WORKSPACE}/destdir/tools/clang++\2|;
-# ' /opt/toolchains/${bb_full_target}/target_${target}_clang.cmake
 
 # Install Python 3.11 (via miniconda)
 cd ${WORKSPACE}/srcdir
@@ -77,9 +66,6 @@ export CXX="clang++"
 export BUILD_CXX=$(which clang++)
 export BUILD_CC=$(which clang)
 
-# -- "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)"
-
-
 ./configure \
     --prefix=${prefix} \
     --with-cudac=${CUDACXX} \
@@ -98,7 +84,7 @@ export BUILD_CC=$(which clang)
     --with-clean \
     --cmake-executable=${host_bindir}/cmake \
     -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
-        "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)"
+        "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
 
 
 make install -j ${nproc} PREFIX=${prefix}
@@ -122,12 +108,15 @@ end
 
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 platforms = filter(p -> os(p) == "linux", platforms)
-platforms = filter!(p -> arch(p) == "x86_64", platforms) #* SHOULD also support aarch64
+# platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+platforms = filter!(p -> arch(p) == "86_64", platforms)
+
+# platforms = filter!(p -> tags(p)["cuda_platform"] != "jetson", platforms) # build for jetson??
 
 #* REMOVE LATER
 # platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
 
-platforms = expand_cxxstring_abis(platforms) # -D_GLIBCXX_USE_CXX11_ABI=0
+platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 # platforms, mpi_dependencies = MPI.augment_platforms(platforms)
@@ -138,20 +127,19 @@ platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 # platforms = [platforms[1]]
 
 # also some warnings about avx2 instruction set vs x86_64
+# dont_dlopen avoids version `GLIBCXX_3.4.30' not found
 products = [
-    LibraryProduct("liblegate", :liblegate, dont_dlopen = true) # dont_dlopen avoids version `GLIBCXX_3.4.30' not found
+    LibraryProduct("liblegate", :liblegate, dont_dlopen = true)
 ] 
 
 dependencies = [
-    Dependency("HDF5_jll"),
-    Dependency("MPICH_jll"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("MPICH_jll"; compat="~4.3.0"),
     # Dependency("NCCL_jll"),
     # Dependency("UCX_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("OpenSSL_jll"),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("Zlib_jll"; compat="~1.3.1"),
     Dependency(PackageSpec(; name="CUDA_Driver_jll"); compat = "~0.13.0"), # compat to prevent use of CUDA 13.x drivers in the future
-    # BuildDependency(PackageSpec(; name = "Clang_jll", version = v"13.0.1")), # supported by CUDA 12.0 - 12.9
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
 ]
 
@@ -163,11 +151,16 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
 
+
+    cuda_ver = VersionNumber(tags(platform)["cuda"])
+
+    clang_ver = cuda_ver >= v"12.6" ? v"17" : v"13"
+
     build_tarballs(ARGS, name, version, sources, script, [platform],
                     products, [dependencies; cuda_deps];
                     julia_compat = "1.10", preferred_gcc_version = v"12",
-                    preferred_llvm_version = v"13",
-                     augment_platform_block=CUDA.augment
+                    preferred_llvm_version = clang_ver, # clang 13 works for all CUDA 12.x
+                    augment_platform_block=CUDA.augment, lazy_artifacts = true
                 )
     #augment_platform_block=augment_platform_block
 end
