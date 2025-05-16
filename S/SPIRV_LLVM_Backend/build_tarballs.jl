@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SPIRV_LLVM_Backend"
-version = v"20"
+version = v"20.1.5"
 
 # Collection of sources required to build SPIRV_LLVM_Backend
 sources = [
-    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-20.1.0-rc1/llvm-project-20.1.0-rc1.src.tar.xz",
-                  "5f8653a2ffb59febd07d816778efe0dfc7a3d55f65b4213399608535d7bdc9a2"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-$(version).src.tar.xz",
+                  "9a9a80ca4c0d902531f2b43e9e4d6c36b57cdd5702430e0b54567bf273bd32c1"),
     DirectorySource("./bundled")
 ]
 
