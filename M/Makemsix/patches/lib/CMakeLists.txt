@@ -43,25 +43,45 @@ if(XML_PARSER MATCHES xerces)
     message(STATUS "XercesC_LIBRARY: ${XercesC_LIBRARY}")
 endif()
 
-# OpenSSL (use vendored version)
+
+
+# OpenSSL configuration
 if(CRYPTO_LIB MATCHES openssl)
     message(STATUS "-----------------------------")
-    message(STATUS "OpenSLL configuration summary")
+    message(STATUS "OpenSSL configuration summary")
     message(STATUS "-----------------------------")
 
-    set(OpenSSL_SOURCE_PATH  "${CMAKE_CURRENT_SOURCE_DIR}/openssl" )
-    set(OpenSLL_BINARY_PATH  "${CMAKE_CURRENT_BINARY_DIR}" )
-    set(OpenSLL_INCLUDE_PATH "${CMAKE_CURRENT_BINARY_DIR}" )
-
-    set(OpenSLL_VERSION "1.1.1")
-
-    set(OpenSSL_COMPILER_DEFINES OPENSSL_NO_ASM)
-    # we include which means you need to use "OpenSSL_X_PATH" for your paths.
-    include( crypto )
-    set(OpenSSL_FOUND ON CACHE BOOL "OpenSSL ready for use" FORCE)
-
-    message(STATUS "OpenSLL_VERSION      '${OpenSLL_VERSION}'" )
-    message(STATUS "OpenSSL_SOURCE_PATH  '${OpenSSL_SOURCE_PATH}'" )
-    message(STATUS "OpenSLL_BINARY_PATH  '${OpenSLL_BINARY_PATH}'" )
-    message(STATUS "OpenSLL_INCLUDE_PATH '${OpenSLL_INCLUDE_PATH}'" )
+    # Use environment variables for OpenSSL
+    set(OPENSSL_CRYPTO_LIBRARY $ENV{OPENSSL_CRYPTO_LIBRARY})
+    set(OPENSSL_SSL_LIBRARY $ENV{OPENSSL_SSL_LIBRARY})
+    set(OPENSSL_INCLUDE_DIR $ENV{OPENSSL_INCLUDE_DIR})
+    
+    # Set found flags as cache variables
+    set(OPENSSL_FOUND TRUE CACHE BOOL "OpenSSL found" FORCE)
+    set(OpenSSL_FOUND TRUE CACHE BOOL "OpenSSL found" FORCE)
+    
+    # Create imported targets
+    add_library(OpenSSL::Crypto UNKNOWN IMPORTED)
+    set_target_properties(OpenSSL::Crypto PROPERTIES
+        IMPORTED_LOCATION "${OPENSSL_CRYPTO_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
+    
+    add_library(OpenSSL::SSL UNKNOWN IMPORTED)
+    set_target_properties(OpenSSL::SSL PROPERTIES
+        IMPORTED_LOCATION "${OPENSSL_SSL_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES OpenSSL::Crypto)
+    
+    # Set compatibility variables
+    set(OPENSSL_LIBRARIES "${OPENSSL_SSL_LIBRARY};${OPENSSL_CRYPTO_LIBRARY}" CACHE STRING "OpenSSL libraries" FORCE)
+    
+    # Add include directory
+    include_directories(${OPENSSL_INCLUDE_DIR})
+    
+    # Display configuration
+    message(STATUS "OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+    message(STATUS "OpenSSL SSL library: ${OPENSSL_SSL_LIBRARY}")
+    message(STATUS "OpenSSL Crypto library: ${OPENSSL_CRYPTO_LIBRARY}")
+    message(STATUS "-----------------------------")
 endif()
+

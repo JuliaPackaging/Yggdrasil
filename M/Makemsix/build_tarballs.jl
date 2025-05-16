@@ -23,6 +23,7 @@ script = raw"""
     find . -name "CMakeLists.txt" -type f -exec sed -i 's/cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)/cmake_minimum_required(VERSION 3.21.7)/' {} \;
 
     cp ../lib/CMakeLists.txt lib/CMakeLists.txt
+    cp ../src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp 
 
     mkdir .vs
     cd .vs
@@ -33,6 +34,10 @@ script = raw"""
     
     # Ensure pkg-config can find our dependencies
     export PKG_CONFIG_PATH="${libdir}/pkgconfig:${prefix}/share/pkgconfig"
+
+    export OPENSSL_ROOT_DIR="${prefix}"
+    export OPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext}
+    export OPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext}
 
     # Platform-specific configuration
     if [[ "${target}" == *"-apple-darwin"* ]]; then
@@ -147,7 +152,7 @@ dependencies = [
     Dependency("fts_jll", compat="1.2.7"),
     Dependency("Zlib_jll", compat="1.2.13"),
     Dependency("Xerces_jll", compat="3.2.4"),
-#    Dependency("OpenSSL_jll", compat="1.1.1"),
+    Dependency("OpenSSL_jll", compat="3.0.16"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
