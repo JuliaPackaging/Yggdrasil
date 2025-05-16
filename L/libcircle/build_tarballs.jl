@@ -21,7 +21,7 @@ export MPITRAMPOLINE_CXX="${CXX}"
 export MPITRAMPOLINE_FC="${FC}"
 
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes 
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
 make -j${nproc}
 make install
 """
@@ -34,8 +34,10 @@ augment_platform_block = """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
-# Only Linux is supported.
 platforms = supported_platforms()
+
+# MPI is not detected on Windows
+filter!(!Sys.iswindows, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
