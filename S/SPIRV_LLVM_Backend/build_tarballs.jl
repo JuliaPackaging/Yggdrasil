@@ -9,12 +9,20 @@ version = v"20.1.5"
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/llvm-$(version).src.tar.xz",
                   "9a9a80ca4c0d902531f2b43e9e4d6c36b57cdd5702430e0b54567bf273bd32c1"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/cmake-$(version).src.tar.xz",
+                  "1b5abaa2686c6c0e1f394113d0b2e026ff3cb9e11b6a2294c4f3883f1b02c89c"),
+    ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(version)/third-party-$(version).src.tar.xz",
+                  "8667f47185bee07f7c7988ead7161b0d9e41a1a01d5d7afd8f325c607641470c"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd llvm-project-*/llvm
+mv llvm-* llvm
+mv cmake-* cmake
+mv third-party-* third-party
+
+cd llvm
 LLVM_SRCDIR=$(pwd)
 
 atomic_patch -p1 $WORKSPACE/srcdir/patches/avoid_builtin_available.patch
