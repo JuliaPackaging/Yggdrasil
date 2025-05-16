@@ -9,30 +9,33 @@ version = v"1.7.241"
 sources = [
     GitSource("https://github.com/microsoft/msix-packaging.git",
               "efeb9dad695a200c2beaddcba54a52c8320bd135"),
+    DirectorySource(joinpath(@__DIR__, "patches"))
 ]
 
 
 # Script that will adapt to each platform
 script = raw"""
-    mkdir $WORKSPACE/tmp
-    cp -r $WORKSPACE/srcdir/msix-packaging $WORKSPACE/tmp/msix-packaging
-    cd $WORKSPACE/tmp/msix-packaging
+    cd $WORKSPACE/srcdir/msix-packaging
 
-    # Update C++ standard to 17 for all platforms
+    # Update C++ standard to 17
     sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' CMakeLists.txt
+    find . -name "CMakeLists.txt" -type f -exec sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' {} \;
+    find . -name "CMakeLists.txt" -type f -exec sed -i 's/cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)/cmake_minimum_required(VERSION 3.21.7)/' {} \;
 
-    find $WORKSPACE/tmp/msix-packaging -name "CMakeLists.txt" -type f -exec sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' {} \;
-
-    find $WORKSPACE/tmp/msix-packaging -name "CMakeLists.txt" -type f -exec sed -i 's/cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)/cmake_minimum_required(VERSION 3.21.7)/' {} \;
+    cp ../lib/CMakeLists.txt lib/CMakeLists.txt
 
     mkdir .vs
     cd .vs
 
+    # Set up linker and include paths
+    export LDFLAGS="-L${libdir}"
+    export CPPFLAGS="-I${includedir}"
+    
+    # Ensure pkg-config can find our dependencies
+    export PKG_CONFIG_PATH="${libdir}/pkgconfig:${prefix}/share/pkgconfig"
+
     # Platform-specific configuration
     if [[ "${target}" == *"-apple-darwin"* ]]; then
-        # macOS specific configuration (x86_64-apple-darwin or aarch64-apple-darwin)
-        sed -i.bak '/define fdopen.*NULL.*No fdopen/d' /workspace/tmp/msix-packaging/lib/zlib/zutil.h
-        sed -i.bak '/define fdopen.*_fdopen/d' /workspace/tmp/msix-packaging/lib/zlib/zutil.h
 
         # Set architecture-specific paths based on target
         if [[ "${target}" == *"aarch64-apple-darwin"* ]]; then
@@ -56,7 +59,6 @@ script = raw"""
           -DUSE_MSIX_SDK_ZLIB=on \
           -DCMAKE_OSX_ARCHITECTURES=${OSX_ARCH} \
           -DMSIX_PACK=on \
-          -DICU_ROOT=/workspace/destdir \
           -DMSIX_SAMPLES=on \
           -DMSIX_TESTS=off \
           -DMACOS=on \
@@ -65,9 +67,13 @@ script = raw"""
           -DFOUNDATION_LIBRARY=${FOUNDATION_FRAMEWORK} \
           -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-install_name,@rpath/libmsix.dylib" \
           -DCMAKE_SHARED_LIBRARY_SUFFIX=".dylib" \
+          -DXML_PARSER=xerces \
+          -DCRYPTO_LIB=openssl \
+          -DCMAKE_PREFIX_PATH=${prefix} \
+          -DBUILD_SHARED_LIBS=ON \
           ..
 
-        sed -i 's/-Wl,-soname,[^ ]*//g' $(find /workspace/tmp/msix-packaging/.vs -name "link.txt")
+          sed -i 's/-Wl,-soname,[^ ]*//g' $(find /workspace/srcdir/msix-packaging/.vs -name "link.txt")
     elif [[ "${target}" == *"-linux-"* ]]; then
         # Linux specific configuration (both glibc and musl)
         
@@ -88,7 +94,11 @@ script = raw"""
           -DICU_ROOT=/workspace/destdir \
           -DMSIX_SAMPLES=on \
           -DMSIX_TESTS=off \
-          -DLINUX=on"
+          -DLINUX=on \
+          -DXML_PARSER=xerces \
+          -DCRYPTO_LIB=openssl \
+          -DCMAKE_PREFIX_PATH=${prefix} \
+          -DBUILD_SHARED_LIBS=ON"
 
         # Add aarch64 specific flags
         if [[ "${target}" == *"aarch64-"* ]]; then
@@ -109,30 +119,12 @@ script = raw"""
         cmake ${CMAKE_OPTIONS} .. 
     fi
 
-    if [[ "${target}" == *"apple-darwin"* ]]; then
-        ZLIB_CMAKEFILE="$WORKSPACE/tmp/msix-packaging/.vs/lib/zlib/CMakeFiles/zlib.dir/link.txt"
-        if [ -f "$ZLIB_CMAKEFILE" ]; then
-            echo "Patching zlib link.txt to remove --version-script for macOS..."
-            sed -i.bak 's/--version-script,[^ ]*//' "$ZLIB_CMAKEFILE"
-        fi
-    fi
-
     make -j${nproc}
 
-    cd $WORKSPACE/tmp/msix-packaging
+    cd $WORKSPACE/srcdir/msix-packaging
     install_license LICENSE 
+    install -Dvm 755 .vs/lib/libmsix.* "${libdir}/libmsix.${dlext}"
     install -Dvm 755 .vs/bin/makemsix "${bindir}/makemsix${exeext}"
-    
-    # Handle library installation based on platform
-    if [[ "${target}" == *"-apple-darwin"* ]]; then
-        install -Dvm 755 .vs/lib/libmsix.so "${libdir}/libmsix.dylib"
-    elif [[ "${target}" == *"-linux-"* ]]; then
-        # Both glibc and musl use .so extension
-        install -Dvm 755 .vs/lib/libmsix.so "${libdir}/libmsix.so"
-    else
-        echo "Unsupported platform for library installation: ${target}"
-        exit 1
-    fi
 """
 
 platforms = [
@@ -153,9 +145,9 @@ products = [
 dependencies = [
     Dependency("ICU_jll", compat="76.1.0"),
     Dependency("fts_jll", compat="1.2.7"),
+    Dependency("Zlib_jll", compat="1.2.13"),
+    Dependency("Xerces_jll", compat="3.2.4"),
 #    Dependency("OpenSSL_jll", compat="1.1.1"),
-#    Dependency("Zlib_jll", compat="1.2.11"),
-#    Dependency("Xerces_jll", compat="3.2.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
