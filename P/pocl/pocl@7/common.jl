@@ -108,9 +108,20 @@ function build_script(standalone=false)
         CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB="${prefix}/bin/libLLVMSPIRVLib.dll")
     fi
     ## spoof the output of the try_run test (which fails in cross-compilation mode)
+    MAX_SPIRV_VERSION=67072
+    if [[ "${target}" == x86_64-linux-gnu ]]; then
+        # if the target matches the host, we can use the toolchain _and_ execute the result
+        clang++ cmake/MaxSPIRVversion.cc -o MaxSPIRVversion -I $prefix/include/LLVMSPIRVLib -lLLVM -L $host_prefix/lib
+        ACTUAL_MAX_SPIRV_VERSION=$(./MaxSPIRVversion)
+        if [[ $ACTUAL_MAX_SPIRV_VERSION != $MAX_SPIRV_VERSION ]]; then
+            echo "MaxSPIRVVersion is $ACTUAL_MAX_SPIRV_VERSION, while the build uses $MAX_SPIRV_VERSION"
+            echo "Please update the build script to use the correct version."
+            exit 1
+        fi
+    fi
     CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_COMPILE_RESULT=TRUE)
     CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT=0)
-    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT__TRYRUN_OUTPUT=66048)
+    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT__TRYRUN_OUTPUT=$MAX_SPIRV_VERSION)
 
     # PoCL's CPU autodetection doesn't work on RISC-V
     if [[ ${target} == riscv64-* ]]; then
