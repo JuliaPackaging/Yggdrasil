@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "slope"
-version = v"1.0.0"
+version = v"2.6.0"
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
@@ -9,8 +9,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 sources = [
-    GitSource("https://github.com/jolars/libslope.git", "cc63d51013bfc1aabe6c1c777e7205f0765b359c"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/jolars/libslope.git", "f489854a9a778ba5e8efaf566d3c6e8b9cdcca8b"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz", "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
 
@@ -31,19 +30,10 @@ cd $WORKSPACE/srcdir/libslope
 # Build main library
 cmake -B build \
     -DBUILD_TESTING=OFF \
+    -DBUILD_JULIA_BINDINGS=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
-
-cmake --build build --parallel ${nproc}
-cmake --install build
-
-# Build the julia wrapper
-cd $WORKSPACE/srcdir/wrapper
-
-cmake -B build \
-    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix} \
 
@@ -66,7 +56,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms)),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.1"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.2"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
