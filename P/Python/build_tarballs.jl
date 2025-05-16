@@ -89,7 +89,7 @@ conf_args+=(ac_cv_have_chflags=no)
 make -j${nproc}
 make install
 
-install_license LICENSE
+install_license ${WORKSPACE}/srcdir/Python-*/LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
