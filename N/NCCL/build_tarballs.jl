@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "NCCL"
 version = v"2.26.5"
 
-MIN_CUDA_VERSION = v"12.0" # should be able to do most of 11.x too
+MIN_CUDA_VERSION = v"11.4" # previous min was 11.4
 
 # Collection of sources required to complete build
 sources = [
@@ -45,8 +45,8 @@ install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = CUDA.supported_platforms(min_version = MIN_CUDA_VERSION)
-filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
-# filter!(p -> arch(p) == "x86_64", platforms)
+# filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+filter!(p -> arch(p) == "x86_64", platforms)
 
 
 products = [
