@@ -45,10 +45,9 @@ install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = CUDA.supported_platforms(min_version = MIN_CUDA_VERSION)
-# filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
-filter!(p -> arch(p) == "x86_64", platforms)
+filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+# filter!(p -> arch(p) == "x86_64", platforms)
 
-platforms = [platforms[1]]
 
 products = [
     LibraryProduct("libnccl", :libnccl),
@@ -57,7 +56,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("coreutils_jll"), # requires fmt
-    # Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
 # Build for all supported CUDA toolkits
