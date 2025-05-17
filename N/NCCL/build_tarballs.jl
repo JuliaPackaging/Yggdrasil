@@ -9,28 +9,56 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "NCCL"
 version = v"2.26.5"
 
+
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/NVIDIA/nccl.git", "3000e3c797b4b236221188c07aa09c1f3a0170d4"),
 ]
 
 # Bash recipe for building across all platforms
+# old_script = raw"""
+# cd $WORKSPACE/srcdir
+
+# export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
+# export CUDA_HOME=${WORKSPACE}/destdir/cuda
+# export CUDA_LIB=${CUDA_HOME}/lib
+# export CXXFLAGS='-D__STDC_FORMAT_MACROS'
+# export CUDARTLIB=cudart # link against dynamic library
+
+# mkdir -p ${TMPDIR}
+
+# cd nccl
+
+# make -j pkg.txz.build
+# tar -xJf build/pkg/txz/*.txz -C ${WORKSPACE}/destdir --strip-components=1
+# rm ${WORKSPACE}/destdir/LICENSE.txt
+# rm ${WORKSPACE}/destdir/lib/libnccl_static.a  # remove static library: saves 230 MB
+
+# install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
+# """
+
+
 script = raw"""
 cd $WORKSPACE/srcdir
 
 export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
-export CUDA_HOME=${WORKSPACE}/destdir/cuda
-export CUDA_LIB=${CUDA_HOME}/lib
+mkdir -p ${TMPDIR}
+
 export CXXFLAGS='-D__STDC_FORMAT_MACROS'
 export CUDARTLIB=cudart # link against dynamic library
 
-mkdir -p ${TMPDIR}
+export CUDA_HOME=${prefix}/cuda;
+export CUDA_LIB=${CUDA_HOME}/lib
+export PATH=$PATH:$CUDA_HOME/bin
+export CUDACXX=$CUDA_HOME/bin/nvcc
+
+# nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
+ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
 cd nccl
 
-make -j pkg.txz.build
-tar -xJf build/pkg/txz/*.txz -C ${WORKSPACE}/destdir --strip-components=1
-rm ${WORKSPACE}/destdir/LICENSE.txt
+make -C src -j lib CUDA_HOME=${CUDA_HOME}
+
 rm ${WORKSPACE}/destdir/lib/libnccl_static.a  # remove static library: saves 230 MB
 
 install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
@@ -38,8 +66,11 @@ install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = CUDA.supported_platforms()
-filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+platforms = CUDA.supported_platforms() # min_version kwarg is 11 by default, nccl supports down to 10 but julia does not
+# filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+filter!(p -> arch(p) == "x86_64", platforms)
+
+platforms = [platforms[1]]
 
 products = [
     LibraryProduct("libnccl", :libnccl),
