@@ -65,9 +65,13 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform)
 
+    cuda_ver = VersionNumber(tags(platform)["cuda"])
+
+    gcc_ver = cuda_ver >= v"11.6" ? v"10" : v"8"
+
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; 
                    lazy_artifacts=true, julia_compat="1.6", 
-                   preferred_gcc_version = v"10",
+                   preferred_gcc_version = gcc_ver,
                    augment_platform_block = CUDA.augment)
 end
