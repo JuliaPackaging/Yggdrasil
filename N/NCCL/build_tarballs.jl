@@ -7,12 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.19.4"
+version = v"2.26.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "88d44d777f6970bdbf6610badcbd7e25a05380f0"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "3000e3c797b4b236221188c07aa09c1f3a0170d4"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,8 +28,6 @@ mkdir -p ${TMPDIR}
 
 cd nccl
 
-atomic_patch -p1 ../patches/busid.patch
-
 make -j pkg.txz.build
 tar -xJf build/pkg/txz/*.txz -C ${WORKSPACE}/destdir --strip-components=1
 rm ${WORKSPACE}/destdir/LICENSE.txt
@@ -42,7 +39,7 @@ install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = CUDA.supported_platforms()
-filter!(p -> arch(p) == "x86_64", platforms)
+filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
 products = [
     LibraryProduct("libnccl", :libnccl),
