@@ -40,7 +40,7 @@ install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = CUDA.supported_platforms(min_version=v"12.2")
+platforms = CUDA.supported_platforms(min_version=v"12.9")
 
 products = [
     LibraryProduct("libnccl", :libnccl),
@@ -58,7 +58,7 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform)
     release = VersionNumber(tags(platform)["cuda"])
-    cuda_deps[1] = HostBuildDependency(PackageSpec(name="CUDA_SDK_jll", version=CUDA.full_version(release)))
+    push!(cuda_deps, HostBuildDependency(PackageSpec(name="CUDA_SDK_jll", version=CUDA.full_version(release))))
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; 
