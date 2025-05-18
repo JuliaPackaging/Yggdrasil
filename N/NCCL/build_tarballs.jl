@@ -23,6 +23,7 @@ export CUDA_HOME=${WORKSPACE}/destdir/cuda
 export CUDA_LIB=${CUDA_HOME}/lib
 export CXXFLAGS='-D__STDC_FORMAT_MACROS'
 export CUDARTLIB=cudart # link against dynamic library
+export NVCC_CCBIN=${CC}
 
 mkdir -p ${TMPDIR}
 
