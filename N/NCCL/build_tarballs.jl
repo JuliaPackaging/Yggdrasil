@@ -10,7 +10,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "NCCL"
 version = v"2.26.5"
 
-MIN_CUDA_VERSION = v"11.8" # doesnt quite match NCCL actual support
+MIN_CUDA_VERSION = v"12.9" # doesnt quite match NCCL actual support
 
 # Collection of sources required to complete build
 sources = [
@@ -40,7 +40,7 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    rm -rf ${prefix}/cuda/nvvm/bin
    cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
 
-   export NVCC_PREPEND_FLAGS="-ccbin=${CXX} -target-cpu-arch=arm64"
+   export NVCC_PREPEND_FLAGS="-ccbin='${CXX}' -cpu-arch=arm64"
 fi
 
 export CXXFLAGS='-D__STDC_FORMAT_MACROS'
