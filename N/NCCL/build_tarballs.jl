@@ -56,6 +56,8 @@ for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
     cuda_deps = CUDA.required_dependencies(platform)
+    release = VersionNumber(tags(platform)["cuda"])
+    cuda_deps[1] = HostBuildDependency(PackageSpec(name="CUDA_SDK_jll", version=CUDA.full_version(release)))
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; 
