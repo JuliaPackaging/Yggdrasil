@@ -40,7 +40,8 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    rm -rf ${prefix}/cuda/nvvm/bin
    cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
 
-   export NVCC_PREPEND_FLAGS="-ccbin='${CXX}' -cpu-arch=arm64"
+   export NVCC_APPEND_FLAGS="-ccbin='${CXX}'"
+   export NVCC_APPEND_FLAGS="-target-cpu-arch=arm64"
 fi
 
 export CXXFLAGS='-D__STDC_FORMAT_MACROS'
