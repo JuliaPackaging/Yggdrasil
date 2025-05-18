@@ -7,12 +7,11 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "NCCL"
-version = v"2.19.4"
+version = v"2.26.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/NVIDIA/nccl.git", "88d44d777f6970bdbf6610badcbd7e25a05380f0"),
-    DirectorySource("./bundled"),
+    GitSource("https://github.com/NVIDIA/nccl.git", "88d44d777f6970bdbf6610badcbd7e25a05380f0")
 ]
 
 # Bash recipe for building across all platforms
@@ -28,8 +27,6 @@ export CUDARTLIB=cudart # link against dynamic library
 mkdir -p ${TMPDIR}
 
 cd nccl
-
-atomic_patch -p1 ../patches/busid.patch
 
 make -j pkg.txz.build
 tar -xJf build/pkg/txz/*.txz -C ${WORKSPACE}/destdir --strip-components=1
@@ -63,6 +60,6 @@ for platform in platforms
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; 
                    lazy_artifacts=true,
-                   julia_compat="1.6", 
+                   julia_compat="1.10", 
                    augment_platform_block = CUDA.augment)
 end
