@@ -11,11 +11,20 @@ version = v"0.12.0"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/hpc/mpifileutils", "db315cf72cb52fb48b688fcef9fbeac1121f6ee4"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/mpifileutils
+
+atomic_patch -p1 ../patches/mpi.patch
+
+xattrs=ON
+if [[ $target = *apple* || $target = *freebsd* ]]; then
+   # libattr is not available
+   xattrs=OFF
+fi
 
 cmake_options=(
     -Bbuild
@@ -31,7 +40,7 @@ cmake_options=(
     -DENABLE_HDF5=OFF           # requires HDF5
     -DENABLE_HPFS=OFF
     -DENABLE_LIBARCHIVE=ON
-    -DENABLE_XATTRS=ON
+    -DENABLE_XATTRS=${xattrs}   # requires libattr
 )
 export MPITRAMPOLINE_CC="${CC}"
 export MPITRAMPOLINE_CXX="${CXX}"
@@ -53,6 +62,9 @@ augment_platform_block = """
 platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
+
+# Dependency lwgrp has not been built for this platform (fix this!)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -81,6 +93,7 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("LibArchive_jll"; compat="3.7.4"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
+    #TODO Dependency("dtcmp_jll"; compat="1.1.6"),
     Dependency("dtcmp_jll"; compat="1.1.5"),
     Dependency("libcap_jll"; compat="2.70"),
     Dependency("libcircle_jll"; compat="0.3"),
@@ -93,4 +106,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6")
+               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
