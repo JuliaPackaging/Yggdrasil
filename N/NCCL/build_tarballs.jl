@@ -17,6 +17,9 @@ sources = [
     GitSource("https://github.com/NVIDIA/nccl.git", "3000e3c797b4b236221188c07aa09c1f3a0170d4"),
 ]
 
+# export NVCC_CCBIN="${CXX}"
+
+
 script = raw"""
 cd $WORKSPACE/srcdir
 
@@ -37,8 +40,7 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    rm -rf ${prefix}/cuda/nvvm/bin
    cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
 
-   export NVCC_CCBIN="${CXX}"
-   export NVCC_APPEND_FLAG="-target-cpu-arch=arm64"
+   export NVCC_PREPEND_FLAGS="-ccbin=${CXX} -target-cpu-arch=arm64"
 fi
 
 export CXXFLAGS='-D__STDC_FORMAT_MACROS'
