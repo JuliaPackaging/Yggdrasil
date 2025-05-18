@@ -10,7 +10,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "NCCL"
 version = v"2.26.5"
 
-MIN_CUDA_VERSION = v"111.8" # doesnt quite match NCCL actual support
+MIN_CUDA_VERSION = v"11.8" # doesnt quite match NCCL actual support
 
 sources = [
     GitSource("https://github.com/NVIDIA/nccl.git", "3000e3c797b4b236221188c07aa09c1f3a0170d4"),
