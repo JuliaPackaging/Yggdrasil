@@ -10,8 +10,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "NCCL"
 version = v"2.26.5"
 
-# MIN_CUDA_VERSION = v"11.6" # doesnt quite match NCCL actual support
-MIN_CUDA_VERSION = v"12.9" # test
+MIN_CUDA_VERSION = v"11.8" # doesnt quite match NCCL actual support
 
 # Collection of sources required to complete build
 sources = [
@@ -69,9 +68,7 @@ fi
 
 
 platforms = CUDA.supported_platforms(min_version = MIN_CUDA_VERSION)
-# filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
-# filter!(p -> arch(p) == "x86_64", platforms)
-filter!(p -> arch(p) == "aarch64", platforms)
+filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
 
 products = [
@@ -91,8 +88,8 @@ for platform in platforms
 
     cuda_ver = platform["cuda"]
 
-    # Download the CUDA redist for the host x64_64 architecture
     platform_sources = BinaryBuilder.AbstractSource[sources...]
+
     if arch(platform) == "aarch64"
         push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
     end
