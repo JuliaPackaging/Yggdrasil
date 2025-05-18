@@ -38,8 +38,7 @@ install_license ${WORKSPACE}/srcdir/nccl/LICENSE.txt
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = CUDA.supported_platforms()
-filter!(p -> arch(p) == "x86_64", platforms)
+platforms = CUDA.supported_platforms(min_version=v"12.2")
 
 products = [
     LibraryProduct("libnccl", :libnccl),
