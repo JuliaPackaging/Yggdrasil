@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: arch, os, tags
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
@@ -71,7 +72,7 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, sources, script, [platform],
                    products, [dependencies; cuda_deps]; 
-                   lazy_artifacts=true, julia_compat="1.6", 
+                   lazy_artifacts=true, julia_compat="1.10", 
                    preferred_gcc_version = gcc_ver,
                    augment_platform_block = CUDA.augment)
 end
