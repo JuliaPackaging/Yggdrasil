@@ -122,14 +122,72 @@ script = raw"""
         fi
 
         cmake ${CMAKE_OPTIONS} .. 
+    
+    elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
+
+        cd ..
+
+        # Windows build fixes
+        cp ../src/msix/CMakeLists.txt src/msix/CMakeLists.txt
+        cp ../src/msix/msix.cpp src/msix/msix.cpp
+        cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp
+        cp ../src/inc/public/AppxPackaging.hpp src/inc/public/AppxPackaging.hpp
+        cp ../src/msix/common/Exceptions.cpp src/msix/common/Exceptions.cpp
+        cp ../src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
+        cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
+
+        cd .vs
+
+        # Force include our fixes header before any other files
+        export CXXFLAGS="$CXXFLAGS -include $WORKSPACE/srcdir/src/inc/compat/msix_win_api_fixes.h"
+
+        # Disable LTO to avoid symbol conflicts
+        export CXXFLAGS="$CXXFLAGS -fno-lto"
+        export CFLAGS="$CFLAGS -fno-lto"
+        export LDFLAGS="$LDFLAGS -fno-lto"
+
+
+        # Windows specific configuration
+        CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=MinSizeRel \
+          -DSKIP_BUNDLES=on \
+          -DUSE_VALIDATION_PARSER=on \
+          -DUSE_MSIX_SDK_ZLIB=on \
+          -DMSIX_PACK=on \
+          -DMSIX_SAMPLES=on \
+          -DMSIX_TESTS=off \
+          -DWIN32=on \
+          -DXML_PARSER=xerces \
+          -DCMAKE_SYSTEM_PROCESSOR=x86_64 \
+          -DCRYPTO_LIB=openssl \
+          -DCMAKE_PREFIX_PATH=${prefix} \
+          -DBUILD_SHARED_LIBS=ON"
+
+
+        cmake ${CMAKE_OPTIONS} \
+          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+          -DCMAKE_SHARED_LIBRARY_SUFFIX=".dll" \
+          -DCMAKE_STATIC_LIBRARY_SUFFIX=".lib" \
+          -DCMAKE_SHARED_LIBRARY_PREFIX="" \
+          -DCMAKE_IMPORT_LIBRARY_SUFFIX=".dll.a" \
+          ..
+
     fi
 
-    make -j${nproc}
+    #make -j${nproc}
+    make -j${nproc} -C src
 
     cd $WORKSPACE/srcdir/msix-packaging
     install_license LICENSE 
-    install -Dvm 755 .vs/lib/libmsix.* "${libdir}/libmsix.${dlext}"
-    install -Dvm 755 .vs/bin/makemsix "${bindir}/makemsix${exeext}"
+
+    install -Dvm 755 ".vs/bin/makemsix${exeext}" "${bindir}/makemsix${exeext}"
+
+    if [[ "${target}" == "x86_64-w64-mingw32" ]]; then
+        install -Dvm 755 .vs/lib/libmsix.* "${libdir}/"
+        install -Dvm 755 .vs/bin/libmsix.* "${libdir}/"
+        install -Dvm 755 .vs/bin/libmsix.* "${bindir}/"
+    else
+        install -Dvm 755 .vs/lib/libmsix.* "${libdir}/libmsix.${dlext}"
+    fi
 """
 
 platforms = [
@@ -139,12 +197,13 @@ platforms = [
     Platform("aarch64", "linux"; libc = "musl"),
     Platform("x86_64", "macos"),
     Platform("aarch64", "macos"),
-    #Platform("x86_64", "windows"),
+    Platform("x86_64", "windows"),
 ]
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("makemsix", :makemsix),
+    LibraryProduct("libmsix", :libmsix),  # Windows DLLs typically don't have 'lib' prefix
 ]
 
 dependencies = [
