@@ -449,7 +449,7 @@ mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/include/llvm* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/llvm-config* ${prefix}/tools/
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*LLVM*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/lib/*LLVM*.a ${prefix}/lib
+mv -v `ls ${LLVM_ARTIFACT_DIR}/lib/*LLVM*.a | grep -v 'MLIR|clang'` ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/llvm ${prefix}/lib/cmake/llvm
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
@@ -581,14 +581,12 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
-rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/include/{clang,llvm,mlir}*
+rm -vrf ${prefix}/bin/{clang,llvm-config,mlir}*
+rm -vrf ${prefix}/tools/{clang,llvm-config,mlir}*
 rm -vrf ${libdir}/libclang*.${dlext}*
-rm -vrf ${libdir}/*LLVM*.${dlext}*
-rm -vrf ${libdir}/*MLIR*.${dlext}*
-rm -vrf ${prefix}/lib/*LLVM*.a
-rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${libdir}/*{LLVM,MLIR,clang}*.${dlext}*
+rm -vrf ${prefix}/lib/*{LLVM,MLIR,clang}*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 # Move lld to tools/
@@ -605,14 +603,11 @@ rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
 rm -vrf ${prefix}/include/{*lld*,clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/bin/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir}*
+rm -vrf ${prefix}/tools/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir}*
 rm -vrf ${libdir}/libclang*.${dlext}*
-rm -vrf ${libdir}/*LLD*.${dlext}*
-rm -vrf ${libdir}/*LLVM*.${dlext}*
-rm -vrf ${libdir}/*MLIR*.${dlext}*
-rm -vrf ${prefix}/lib/*LLVM*.a
-rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${libdir}/*{LLVM,MLIR,lld,clang}*.${dlext}*
+rm -vrf ${prefix}/lib/*{LLVM,MLIR,lld,clang}*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 rm -vrf ${prefix}/lib/lld
