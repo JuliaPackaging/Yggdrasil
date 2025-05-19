@@ -12,8 +12,8 @@ sources = [
     GitSource("https://github.com/sciapp/gr.git", "273777a77bea6d9f43397e2524016bf48e2636cd"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
                "ee4f62e71891be05cc11de1c6857e17fe2ec4040b19569cdf748841e0a15e2fe", "gr.js"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
+    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
+                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49")
 ]
 
 # Bash recipe for building across all platforms
