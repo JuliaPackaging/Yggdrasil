@@ -137,6 +137,7 @@ script = raw"""
         cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
 
         find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "UnKnwn.h"/#include "unknwn.h"/g' {} \;
+        find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Unknwn.h"/#include "unknwn.h"/g' {} \;
 
         find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Objidl.h"/#include "objidl.h"/g' {} \;
 
