@@ -3,13 +3,13 @@
 using BinaryBuilder
 
 name = "GR"
-version = v"0.73.14"
+version = v"0.73.15"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/sciapp/gr.git", "9a62289c2e4e36c28e045c3a34f02d0d01c4231c"),
+    GitSource("https://github.com/sciapp/gr.git", "273777a77bea6d9f43397e2524016bf48e2636cd"),
     FileSource("https://github.com/sciapp/gr/releases/download/v$version/gr-$version.js",
-               "7f94982b410c686d67be956f1e0317b6e2644702b3f3d69328ee8217e7be5217", "gr.js"),
+               "ee4f62e71891be05cc11de1c6857e17fe2ec4040b19569cdf748841e0a15e2fe", "gr.js"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                   "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
@@ -30,9 +30,9 @@ else
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX10.14.sdk
+    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
     sed -i "s!/opt/x86_64-apple-darwin14/x86_64-apple-darwin14/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    export MACOSX_DEPLOYMENT_TARGET=10.14
+    export MACOSX_DEPLOYMENT_TARGET=12
 fi
 
 if [[ "${target}" == *apple* ]]; then
@@ -78,34 +78,34 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libGR", :libGR, dont_dlopen=true),
-    LibraryProduct("libGR3", :libGR3, dont_dlopen=true),
-    LibraryProduct("libGRM", :libGRM, dont_dlopen=true),
-    LibraryProduct("libGKS", :libGKS, dont_dlopen=true),
+    LibraryProduct("libGR", :libGR; dont_dlopen=true),
+    LibraryProduct("libGR3", :libGR3; dont_dlopen=true),
+    LibraryProduct("libGRM", :libGRM; dont_dlopen=true),
+    LibraryProduct("libGKS", :libGKS; dont_dlopen=true),
     ExecutableProduct("gksqt", :gksqt),
     ExecutableProduct("grplot", :grplot),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"; compat="1.0.8"),
-    Dependency("Cairo_jll"; compat="1.16.1"),
+    Dependency("Bzip2_jll"),
+    Dependency("Cairo_jll"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
-    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLFW_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("Libtiff_jll"),
     Dependency("Pixman_jll"),
     HostBuildDependency("Qt6Base_jll"),
-    Dependency("Qt6Base_jll"; compat="~6.7.1"), # Never allow upgrading more than the minor version without recompilation
+    Dependency("Qt6Base_jll"; compat="~6.8.2"), # Never allow upgrading more than the minor version without recompilation
     BuildDependency("Xorg_libX11_jll"),
     BuildDependency("Xorg_xproto_jll"),
     Dependency("Zlib_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# GCC version 10 because of Qt6.7
+# GCC version 13 because of Qt6.8
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version = v"10", julia_compat="1.6")
+               preferred_gcc_version = v"13", julia_compat="1.6")
