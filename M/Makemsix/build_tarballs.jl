@@ -136,6 +136,11 @@ script = raw"""
         cp ../src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
         cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
 
+        find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "UnKnwn.h"/#include "unknwn.h"/g' {} \;
+
+        find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Objidl.h"/#include "objidl.h"/g' {} \;
+
+
         cd .vs
 
         # Force include our fixes header before any other files
@@ -191,12 +196,12 @@ script = raw"""
 """
 
 platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
+    # Platform("x86_64", "linux"; libc = "glibc"),
+    # Platform("aarch64", "linux"; libc = "glibc"),
+    # Platform("x86_64", "linux"; libc = "musl"),
+    # Platform("aarch64", "linux"; libc = "musl"),
+    # Platform("x86_64", "macos"),
+    # Platform("aarch64", "macos"),
     Platform("x86_64", "windows"),
 ]
 
