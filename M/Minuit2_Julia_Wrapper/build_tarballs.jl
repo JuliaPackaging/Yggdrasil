@@ -8,11 +8,11 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Minuit2_Julia_Wrapper"
-version = v"0.3.0"
+version = v"0.3.1"
 
 sources = [
 	GitSource("https://github.com/JuliaHEP/Minuit2_Julia_Wrapper.git",
-              "075d1140a428c15d4eef8c3d24c9227e4f337feb")
+              "223b72ea4f01b9f2beb24d66d7c3458bd50ba98e")
 ]
 
 # Bash recipe for building across all platforms
