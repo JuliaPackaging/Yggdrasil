@@ -18,7 +18,7 @@ sources = [
 ]
 
 MIN_CUDA_VERSION = v"12.2"
-MAX_CUDA_VERSION = v"12.9.999"
+MAX_CUDA_VERSION = v"12.8.999" #12.9?
 
 
 script = raw"""
