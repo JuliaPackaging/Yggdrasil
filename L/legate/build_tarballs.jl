@@ -17,11 +17,17 @@ sources = [
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
 
-MIN_CUDA_VERSION = v"12.0" #* Try down to 12.0
-MAX_CUDA_VERSION = v"12.8.999"
+MIN_CUDA_VERSION = v"12.2"
+MAX_CUDA_VERSION = v"12.9.999"
 
 
 script = raw"""
+
+# We will build with clang
+export CC="clang"
+export CXX="clang++"
+export BUILD_CXX=$(which clang++)
+export BUILD_CC=$(which clang)
 
 if [[ ${target} == x86_64-linux-musl ]]; then
     # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
@@ -29,6 +35,23 @@ if [[ ${target} == x86_64-linux-musl ]]; then
     rm /usr/lib/libcurl.*
     rm /usr/lib/libevent*
     rm /usr/lib/libnghttp2.*
+fi
+
+# Necessary operations to cross compile CUDA from x86_64 to aarch64
+if [[ "${target}" == aarch64-linux-* ]]; then
+
+   # Add /usr/lib/csl-musl-x86_64 to LD_LIBRARY_PATH to be able to use host nvcc
+   export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
+   
+   # Make sure we use host CUDA executable by copying from the x86_64 CUDA redist
+   NVCC_DIR=(/workspace/srcdir/cuda_nvcc-*-archive)
+   rm -rf ${prefix}/cuda/bin
+   cp -r ${NVCC_DIR}/bin ${prefix}/cuda/bin
+   
+   rm -rf ${prefix}/cuda/nvvm/bin
+   cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+
+   export NVCC_PREPEND_FLAGS="-ccbin='${CXX}'"
 fi
 
 # Put new CMake first on path
@@ -61,11 +84,6 @@ export CUDACXX=$CUDA_HOME/bin/nvcc
 # nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
 ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
-export CC="clang"
-export CXX="clang++"
-export BUILD_CXX=$(which clang++)
-export BUILD_CC=$(which clang)
-
 ./configure \
     --prefix=${prefix} \
     --with-cudac=${CUDACXX} \
@@ -89,6 +107,11 @@ export BUILD_CC=$(which clang)
 
 make install -j ${nproc} PREFIX=${prefix}
 install_license ${WORKSPACE}/srcdir/legate/LICENSE
+
+if [[ "${target}" == aarch64-linux-* ]]; then
+   # ensure products directory is clean
+   rm -rf ${prefix}/cuda
+fi
 """
 
 augment_platform_block = 
@@ -109,12 +132,13 @@ end
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 platforms = filter(p -> os(p) == "linux", platforms)
 # platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
-platforms = filter!(p -> arch(p) == "x86_64", platforms)
+# platforms = filter!(p -> arch(p) == "x86_64", platforms)
+platforms = filter!(p -> arch(p) == "aarch64", platforms)
 
 # platforms = filter!(p -> tags(p)["cuda_platform"] != "jetson", platforms) # build for jetson??
 
 #* REMOVE LATER
-# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
+platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
@@ -152,11 +176,18 @@ for platform in platforms
     cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
 
 
-    cuda_ver = VersionNumber(tags(platform)["cuda"])
+    cuda_ver = platform["cuda"]
+
+    platform_sources = BinaryBuilder.AbstractSource[sources...]
+
+    # Add x86_64 CUDA_SDK to cross compile for aarch64
+    if arch(platform) == "aarch64"
+        push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
+    end
 
     clang_ver = cuda_ver >= v"12.6" ? v"17" : v"13"
 
-    build_tarballs(ARGS, name, version, sources, script, [platform],
+    build_tarballs(ARGS, name, version, platform_sources, script, [platform],
                     products, [dependencies; cuda_deps];
                     julia_compat = "1.10", preferred_gcc_version = v"12",
                     preferred_llvm_version = clang_ver, # clang 13 works for all CUDA 12.x
