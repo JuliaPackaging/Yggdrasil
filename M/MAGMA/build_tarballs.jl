@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "MAGMA"
-version = v"2.7.0"
+version = v"2.9.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("http://icl.utk.edu/projectsfiles/magma/downloads/magma-$(version).tar.gz",
-                  "fda1cbc4607e77cacd8feb1c0f633c5826ba200a018f647f1c5436975b39fd18"),
+                  "ff77fd3726b3dfec3bfb55790b06480aa5cc384396c2db35c56fdae4a82c641c"),
     DirectorySource("./bundled")
 ]
 
@@ -34,8 +34,9 @@ install_license COPYRIGHT
 
 augment_platform_block = CUDA.augment
 
-platforms = CUDA.supported_platforms()
-filter!(p -> arch(p) == "x86_64", platforms)
+# Note: Hopper should still build with CUDA v11.8
+# on x86_64, but aarch64 requires CUDA v12.0
+platforms = CUDA.supported_platforms(min_version=v"12")
 platforms = expand_cxxstring_abis(platforms)
 
 
