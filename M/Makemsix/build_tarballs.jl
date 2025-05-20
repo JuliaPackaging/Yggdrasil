@@ -12,122 +12,32 @@ sources = [
     DirectorySource(joinpath(@__DIR__, "patches"))
 ]
 
-
 # Script that will adapt to each platform
 script = raw"""
     cd $WORKSPACE/srcdir/msix-packaging
 
-    # Update C++ standard to 17
-    sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' CMakeLists.txt
-    find . -name "CMakeLists.txt" -type f -exec sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' {} \;
-    find . -name "CMakeLists.txt" -type f -exec sed -i 's/cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)/cmake_minimum_required(VERSION 3.21.7)/' {} \;
+    apk del cmake
 
+    # Overriding vendored dependencies
     cp ../lib/CMakeLists.txt lib/CMakeLists.txt
     cp ../src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp 
 
-    mkdir .vs
-    cd .vs
-
-    # Set up linker and include paths
-    export LDFLAGS="-L${libdir}"
-    export CPPFLAGS="-I${includedir}"
+    # Platform-specific options
+    PLATFORM_OPTIONS=""
     
-    # Ensure pkg-config can find our dependencies
-    export PKG_CONFIG_PATH="${libdir}/pkgconfig:${prefix}/share/pkgconfig"
-
-    export OPENSSL_ROOT_DIR="${prefix}"
-    export OPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext}
-    export OPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext}
-
-    # Platform-specific configuration
     if [[ "${target}" == *"-apple-darwin"* ]]; then
+        # macOS-specific options
+        PLATFORM_OPTIONS="-DMACOS=on"
 
-        # Set architecture-specific paths based on target
-        if [[ "${target}" == *"aarch64-apple-darwin"* ]]; then
-            ARCH="aarch64"
-            DARWIN_VER="20"
-            OSX_ARCH="arm64"
-        else
-            ARCH="x86_64"
-            DARWIN_VER="14"
-            OSX_ARCH="x86_64"
-        fi
-
-        SYSROOT="/opt/${ARCH}-apple-darwin${DARWIN_VER}/${ARCH}-apple-darwin${DARWIN_VER}/sys-root"
-        CF_FRAMEWORK="${SYSROOT}/System/Library/Frameworks/CoreFoundation.framework"
-        FOUNDATION_FRAMEWORK="${SYSROOT}/System/Library/Frameworks/Foundation.framework"
-
-        cmake \
-          -DCMAKE_BUILD_TYPE=MinSizeRel \
-          -DSKIP_BUNDLES=on \
-          -DUSE_VALIDATION_PARSER=on \
-          -DUSE_MSIX_SDK_ZLIB=on \
-          -DCMAKE_OSX_ARCHITECTURES=${OSX_ARCH} \
-          -DMSIX_PACK=on \
-          -DMSIX_SAMPLES=on \
-          -DMSIX_TESTS=off \
-          -DMACOS=on \
-          -DCMAKE_OSX_SYSROOT=${SYSROOT} \
-          -DCOREFOUNDATION_LIBRARY=${CF_FRAMEWORK} \
-          -DFOUNDATION_LIBRARY=${FOUNDATION_FRAMEWORK} \
-          -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-install_name,@rpath/libmsix.dylib" \
-          -DCMAKE_SHARED_LIBRARY_SUFFIX=".dylib" \
-          -DXML_PARSER=xerces \
-          -DCRYPTO_LIB=openssl \
-          -DCMAKE_PREFIX_PATH=${prefix} \
-          -DBUILD_SHARED_LIBS=ON \
-          ..
-
-          sed -i 's/-Wl,-soname,[^ ]*//g' $(find /workspace/srcdir/msix-packaging/.vs -name "link.txt")
     elif [[ "${target}" == *"-linux-"* ]]; then
-        # Linux specific configuration (both glibc and musl)
-        
-        if [[ "${target}" == *"linux-musl"* ]]; then
-            export CFLAGS="${CFLAGS} -I/workspace/destdir/include"
-            export CXXFLAGS="${CXXFLAGS} -I/workspace/destdir/include"
-            export LDFLAGS="${LDFLAGS} -L/workspace/destdir/lib -lfts"
-        fi
+        # Linux-specific options
+        PLATFORM_OPTIONS="-DLINUX=on"
 
-
-        CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=MinSizeRel \
-          -DSKIP_BUNDLES=on \
-          -DUSE_VALIDATION_PARSER=on \
-          -DCMAKE_SYSTEM_NAME=Linux \
-          -DCMAKE_C_COMPILER=clang \
-          -DCMAKE_CXX_COMPILER=clang++ \
-          -DMSIX_PACK=on \
-          -DICU_ROOT=/workspace/destdir \
-          -DMSIX_SAMPLES=on \
-          -DMSIX_TESTS=off \
-          -DLINUX=on \
-          -DXML_PARSER=xerces \
-          -DCRYPTO_LIB=openssl \
-          -DCMAKE_PREFIX_PATH=${prefix} \
-          -DBUILD_SHARED_LIBS=ON"
-
-        # Add aarch64 specific flags
-        if [[ "${target}" == *"aarch64-"* ]]; then
-            CMAKE_OPTIONS="${CMAKE_OPTIONS} -DCMAKE_SYSTEM_PROCESSOR=aarch64"
-            CMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS} -latomic"
-        else
-            CMAKE_OPTIONS="${CMAKE_OPTIONS} -DCMAKE_SYSTEM_PROCESSOR=x86_64"
-        fi
-
-        # Handle musl vs glibc
-        if [[ "${target}" == *"-linux-musl"* ]]; then
-            # Additional options for musl libc if needed
-            echo "Building for musl libc"
-        else
-            echo "Building for glibc"
-        fi
-
-        cmake ${CMAKE_OPTIONS} .. 
-    
     elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
+        # Windows-specific options
+        find . -name "CMakeLists.txt" -type f -exec sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' {} \;
 
-        cd ..
-
-        # Windows build fixes
+        # Apply Windows-specific patches
         cp ../src/msix/CMakeLists.txt src/msix/CMakeLists.txt
         cp ../src/msix/msix.cpp src/msix/msix.cpp
         cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp
@@ -136,63 +46,52 @@ script = raw"""
         cp ../src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
         cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
 
-        find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "UnKnwn.h"/#include "unknwn.h"/g' {} \;
-        find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Unknwn.h"/#include "unknwn.h"/g' {} \;
+        # Fix case-sensitive includes for Windows
+        find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "UnKnwn.h"/#include "unknwn.h"/g' {} \;
+        find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Unknwn.h"/#include "unknwn.h"/g' {} \;
+        find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Objidl.h"/#include "objidl.h"/g' {} \;
 
-        find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Objidl.h"/#include "objidl.h"/g' {} \;
-
-
-        cd .vs
-
-        # Force include our fixes header before any other files
+        # Windows-specific compiler flags
+        export LDFLAGS="-L${libdir}"
         export CXXFLAGS="$CXXFLAGS -include $WORKSPACE/srcdir/src/inc/compat/msix_win_api_fixes.h"
 
-        # Disable LTO to avoid symbol conflicts
-        export CXXFLAGS="$CXXFLAGS -fno-lto"
-        export CFLAGS="$CFLAGS -fno-lto"
-        export LDFLAGS="$LDFLAGS -fno-lto"
-
-
-        # Windows specific configuration
-        CMAKE_OPTIONS="-DCMAKE_BUILD_TYPE=MinSizeRel \
-          -DSKIP_BUNDLES=on \
-          -DUSE_VALIDATION_PARSER=on \
-          -DUSE_MSIX_SDK_ZLIB=on \
-          -DMSIX_PACK=on \
-          -DMSIX_SAMPLES=on \
-          -DMSIX_TESTS=off \
-          -DWIN32=on \
-          -DXML_PARSER=xerces \
-          -DCMAKE_SYSTEM_PROCESSOR=x86_64 \
-          -DCRYPTO_LIB=openssl \
-          -DCMAKE_PREFIX_PATH=${prefix} \
-          -DBUILD_SHARED_LIBS=ON"
-
-
-        cmake ${CMAKE_OPTIONS} \
-          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-          -DCMAKE_SHARED_LIBRARY_SUFFIX=".dll" \
-          -DCMAKE_STATIC_LIBRARY_SUFFIX=".lib" \
-          -DCMAKE_SHARED_LIBRARY_PREFIX="" \
-          -DCMAKE_IMPORT_LIBRARY_SUFFIX=".dll.a" \
-          ..
-
+        PLATFORM_OPTIONS="-DWIN32=on"
     fi
 
-    #make -j${nproc}
-    make -j${nproc} -C src
+    # Run cmake with common options + platform-specific options
+    cmake -B build \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -DCMAKE_BUILD_TYPE=MinSizeRel \
+        -DSKIP_BUNDLES=on \
+        -DUSE_VALIDATION_PARSER=on \
+        -DMSIX_PACK=on \
+        -DMSIX_SAMPLES=on \
+        -DMSIX_TESTS=off \
+        -DXML_PARSER=xerces \
+        -DCRYPTO_LIB=openssl \
+        -DCMAKE_PREFIX_PATH=${prefix} \
+        -DBUILD_SHARED_LIBS=ON \
+        -DUSE_MSIX_SDK_ZLIB=on \
+        -DOPENSSL_ROOT_DIR="${prefix}" \
+        -DOPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext} \
+        -DOPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext} \
+        ${PLATFORM_OPTIONS} \
+        .
+    
+    # Build only what we need
+    make -j${nproc} -C build/src
 
-    cd $WORKSPACE/srcdir/msix-packaging
+    # Install license and binary
     install_license LICENSE 
+    install -Dvm 755 "build/bin/makemsix${exeext}" "${bindir}/makemsix${exeext}"
 
-    install -Dvm 755 ".vs/bin/makemsix${exeext}" "${bindir}/makemsix${exeext}"
-
+    # Platform-specific library installation
     if [[ "${target}" == "x86_64-w64-mingw32" ]]; then
-        install -Dvm 755 .vs/lib/libmsix.* "${libdir}/"
-        install -Dvm 755 .vs/bin/libmsix.* "${libdir}/"
-        install -Dvm 755 .vs/bin/libmsix.* "${bindir}/"
+        install -Dvm 755 build/lib/libmsix.* "${libdir}/"
+        install -Dvm 755 build/bin/libmsix.* "${libdir}/"
+        install -Dvm 755 build/bin/libmsix.* "${bindir}/"
     else
-        install -Dvm 755 .vs/lib/libmsix.* "${libdir}/libmsix.${dlext}"
+        install -Dvm 755 build/lib/libmsix.* "${libdir}/libmsix.${dlext}"
     fi
 """
 
@@ -209,15 +108,15 @@ platforms = [
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("makemsix", :makemsix),
-    LibraryProduct("libmsix", :libmsix),  # Windows DLLs typically don't have 'lib' prefix
+    LibraryProduct("libmsix", :libmsix),
 ]
 
 dependencies = [
-    Dependency("ICU_jll", compat="76.1.0"),
     Dependency("fts_jll", compat="1.2.7"),
     Dependency("Zlib_jll", compat="1.2.13"),
     Dependency("Xerces_jll", compat="3.2.4"),
     Dependency("OpenSSL_jll", compat="3.0.16"),
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version=v"3.31.6")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
