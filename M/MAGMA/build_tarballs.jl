@@ -40,6 +40,9 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    
    rm -rf ${prefix}/cuda/nvvm/bin
    cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
+
+   # Workaround failed execution of sizeptr in cross-compile builds
+   alias make='make PTRSIZE=8'
 fi
 
 export CUDADIR=${prefix}/cuda
