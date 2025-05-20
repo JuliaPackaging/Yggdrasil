@@ -27,6 +27,8 @@ cd $WORKSPACE/srcdir
 export TMPDIR=${WORKSPACE}/tmpdir # we need a lot of tmp space
 mkdir -p ${TMPDIR}
 
+PTROPT=""
+
 # Necessary operations to cross compile CUDA from x86_64 to aarch64
 if [[ "${target}" == aarch64-linux-* ]]; then
 
@@ -42,7 +44,7 @@ if [[ "${target}" == aarch64-linux-* ]]; then
    cp -r ${NVCC_DIR}/nvvm/bin ${prefix}/cuda/nvvm/bin
 
    # Workaround failed execution of sizeptr in cross-compile builds
-   alias make='make PTRSIZE=8'
+   PTROPT="PTRSIZE=8"
 fi
 
 export CUDADIR=${prefix}/cuda
@@ -58,8 +60,8 @@ atomic_patch -p1 ../0001-mangle-to-ILP64.patch
 # reduce parallelism since otherwise the builder may OOM.
 (( nproc=1+nproc/3 ))
 
-make -j${nproc} sparse-shared
-make install prefix=${prefix}
+make ${PTROPT} -j${nproc} sparse-shared
+make ${PTROPT} install prefix=${prefix}
 
 install_license COPYRIGHT
 
