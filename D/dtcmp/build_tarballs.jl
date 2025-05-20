@@ -7,6 +7,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "dtcmp"
 version = v"1.1.5"
+# We bumped the version number because we updated the compat entries for MPI to build for new architectures
+ygg_version = v"1.1.6"
 
 # Collection of sources required to complete build
 sources = [
@@ -51,12 +53,6 @@ filter!(!Sys.iswindows, platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Dependency lwgrp has not been built for this platform (fix this!)
-filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p) && p["mpi"] == "openmpi"), platforms)
-
-# Dependency lwgrp has not been built for this platform (fix this!)
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libdtcmp", :libdtcmp),
@@ -66,7 +62,7 @@ products = [
 dependencies = [
     # To ensure that the correct version of libgfortran is found at runtime
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("lwgrp_jll"; compat="1.0.6"),
+    Dependency("lwgrp_jll"; compat="1.0.7"),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -75,5 +71,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"5")
