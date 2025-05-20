@@ -131,14 +131,14 @@ end
 
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 platforms = filter(p -> os(p) == "linux", platforms)
-# platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 # platforms = filter!(p -> arch(p) == "x86_64", platforms)
-platforms = filter!(p -> arch(p) == "aarch64", platforms)
+# platforms = filter!(p -> arch(p) == "aarch64", platforms)
 
 # platforms = filter!(p -> tags(p)["cuda_platform"] != "jetson", platforms) # build for jetson??
 
 #* REMOVE LATER
-platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
+# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
