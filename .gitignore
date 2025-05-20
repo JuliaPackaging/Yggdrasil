@@ -8,5 +8,4 @@ build/
 
 # Ignore meta.json files
 meta.json
-L/legate/Manifest.toml
-L/legate/Project.toml
+

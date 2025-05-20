@@ -185,7 +185,7 @@ for platform in platforms
         push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
     end
 
-    clang_ver = cuda_ver >= v"12.6" ? v"17" : v"13"
+    clang_ver = VersionNumber(cuda_ver) >= v"12.6" ? v"17" : v"13"
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform],
                     products, [dependencies; cuda_deps];
