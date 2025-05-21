@@ -86,4 +86,4 @@ products = [
 
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"11", lock_microarchitecture=false, julia_compat="1.6")
+               preferred_gcc_version=v"11", clang_use_lld=false, lock_microarchitecture=false, julia_compat="1.6")
