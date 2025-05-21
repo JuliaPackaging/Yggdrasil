@@ -51,6 +51,12 @@ export CUDADIR=${prefix}/cuda
 export PATH=${PATH}:${CUDADIR}/bin
 export CUDACXX=${CUDADIR}/bin/nvcc
 
+# This flag reduces the size of the compiled binaries; if
+# they become over 2GB (e.g. due to targeting too many
+# compute_XX), linking fails.
+# See: https://github.com/NixOS/nixpkgs/pull/220402
+export NVCC_PREPEND_FLAGS+=' -Xfatbin=-compress-all'
+
 cd magma*
 cp ../make.inc .
 
