@@ -65,10 +65,8 @@ make ${PTROPT} install prefix=${prefix}
 
 install_license COPYRIGHT
 
-if [[ "${target}" == aarch64-linux-* ]]; then
-   # ensure products directory is clean
-   rm -rf ${CUDADIR}
-fi
+# ensure products directory is clean
+rm -rf ${CUDADIR}
 """
 
 platforms = CUDA.supported_platforms(min_version = MIN_CUDA_VERSION)
