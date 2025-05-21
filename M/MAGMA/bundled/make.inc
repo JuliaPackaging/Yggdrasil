@@ -52,7 +52,7 @@ RANLIB    = ranlib
 
 # set our GPU targets
 ifeq ($(BACKEND),cuda)
-    GPU_TARGET = Pascal Volta Turing Ampere Hopper
+    GPU_TARGET = Pascal sm_61 Volta Turing Ampere sm_86 Ada Hopper
 else ifeq ($(BACKEND),hip)
     GPU_TARGET = gfx900 gfx902 gfx904 gfx906 gfx908 gfx909 gfx90a gfx940 gfx941 gfx942 gfx90c gfx1010 gfx1011 gfx1012 gfx1030 gfx1031 gfx1032 gfx1033
 endif
