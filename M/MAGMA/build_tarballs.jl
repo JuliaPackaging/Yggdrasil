@@ -57,9 +57,6 @@ cp ../make.inc .
 # Patch to _64_ suffixes
 atomic_patch -p1 ../0001-mangle-to-ILP64.patch
 
-# reduce parallelism since otherwise the builder may OOM.
-(( nproc=1+nproc/3 ))
-
 make ${PTROPT} -j${nproc} sparse-shared
 make ${PTROPT} install prefix=${prefix}
 
