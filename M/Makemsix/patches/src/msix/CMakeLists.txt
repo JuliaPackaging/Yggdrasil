@@ -262,9 +262,12 @@ configure_file(../inc/public/MsixErrors.hpp    ${CMAKE_CURRENT_BINARY_DIR}/MsixE
 # Include MSIX headers
 target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/inc/public ${MSIX_PROJECT_ROOT}/src/inc/shared ${MSIX_PROJECT_ROOT}/src/inc/internal)
 
+
+# In the Windows section, modify the compiler flags and linking section:
 if(WIN32)
     # For MinGW/GCC, use appropriate flags, not MSVC style
     if(MSVC)
+        # Original MSVC-specific code
         string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
         if(CMAKE_BUILD_TYPE MATCHES Debug)
             set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -275,11 +278,7 @@ if(WIN32)
                 COMPILE_FLAGS "/source-charset:utf-8 /Gw /GL /GR-"
                 )
         endif()
-        # Using /DELAYLOAD as linker option will use a helper funtion provided by
-        # Visual C++ that will load the dll at runtime by calling LoadLibrary and GetProcAddress.
-        # This dlls are NOT supposed to be loaded ever on Win7. See Exceptions.cpp
-        # on how we handle failure of delayloading these.
-        # https://docs.microsoft.com/en-us/cpp/build/reference/error-handling-and-notification
+        # MSVC-specific delay load logic
         set(DELAYFLAGS)
         list(APPEND DELAYFLAGS
                 "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll"
@@ -294,37 +293,23 @@ if(WIN32)
                 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRT")
             endif()
         endif()
-    else()
 
+        target_link_libraries(${PROJECT_NAME} PRIVATE runtimeobject.lib delayimp.lib)
+    else() # Non-MSVC Windows compiler (MinGW)
         # MinGW specific flags
         string(REPLACE "-fexceptions" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
         
-        # Set WINDOWS_EXPORT_ALL_SYMBOLS for MinGW to ensure all symbols are exported
-        set_target_properties(${PROJECT_NAME} PROPERTIES 
-            WINDOWS_EXPORT_ALL_SYMBOLS TRUE
-        )
-        
-        if(CMAKE_BUILD_TYPE MATCHES Debug)
-            set_target_properties(${PROJECT_NAME} PROPERTIES
-                COMPILE_FLAGS "-finput-charset=utf-8"
-                )
-        else()
-            set_target_properties(${PROJECT_NAME} PROPERTIES
+        set_target_properties(${PROJECT_NAME} PROPERTIES
                 COMPILE_FLAGS "-finput-charset=utf-8 -fdata-sections"
                 )
-        endif()
         
         # Explicitly disable LTO and use output-def
         set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "-fno-lto")
-        set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,--output-def,${CMAKE_CURRENT_BINARY_DIR}/windowsexports.def")
+    endif()
 
-    endif()
     target_link_libraries(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust)
-    # For MinGW, runtimeobject.lib and delayimp.lib are not needed
-    if(MSVC)
-        target_link_libraries(${PROJECT_NAME} PRIVATE runtimeobject.lib delayimp.lib)
-    endif()
 endif()
+
 
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created.

@@ -64,8 +64,8 @@
     #define STDMETHODCALLTYPE
     #endif
 
-    //#undef MSIX_API
-    //#define MSIX_API extern "C"
+    #undef MSIX_API
+    #define MSIX_API extern "C"
 
     #undef DECLSPEC_SELECTANY
     #define DECLSPEC_SELECTANY

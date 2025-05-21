@@ -39,12 +39,13 @@ script = raw"""
 
         # Apply Windows-specific patches
         cp ../src/msix/CMakeLists.txt src/msix/CMakeLists.txt
-        cp ../src/msix/msix.cpp src/msix/msix.cpp
-        cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp
-        cp ../src/inc/public/AppxPackaging.hpp src/inc/public/AppxPackaging.hpp
-        cp ../src/msix/common/Exceptions.cpp src/msix/common/Exceptions.cpp
         cp ../src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
         cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
+        cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp # optional, eliminates warnings
+
+        sed -i 's/static constexpr const IID IID_##name/inline constexpr const IID IID_##name/' src/inc/public/AppxPackaging.hpp
+        sed -i 's/#ifdef WIN32/#if defined(WIN32) \&\& !defined(__MINGW32__)/' src/inc/public/AppxPackaging.hpp
+        sed -i 's/const PfnDliHook __pfnDliFailureHook2 = MsixDelayLoadFailureHandler;//' src/msix/common/Exceptions.cpp
 
         # Fix case-sensitive includes for Windows
         find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "UnKnwn.h"/#include "unknwn.h"/g' {} \;
