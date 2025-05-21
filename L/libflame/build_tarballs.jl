@@ -67,6 +67,8 @@ filter!(p -> arch(p) != "i686", platforms)
 filter!(p -> arch(p) != "armv7l", platforms)
 filter!(p -> arch(p) != "armv6l", platforms)
 filter!(p -> arch(p) != "powerpc64le", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
+filter!(p -> os(p)   != "macos", platforms)
 
 # Enable the following line if trying to link against Fortran code:
 # platforms = expand_gfortran_versions(platforms)
