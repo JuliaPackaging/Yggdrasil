@@ -58,6 +58,7 @@ dependencies = [
     Dependency("OpenCL_jll"),
     Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),
+    Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
     # only used at run time, but also detected by the build
     Dependency("SPIRV_LLVM_Translator_jll", compat="20.1"),
     Dependency("SPIRV_Tools_jll"),
