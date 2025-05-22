@@ -22,6 +22,12 @@ script = raw"""
     cp ../lib/CMakeLists.txt lib/CMakeLists.txt
     cp ../src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp 
 
+    # Fix case-sensitive includes for Windows (upstream bug)
+    find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) \
+        -exec sed -i -e 's/#include "UnKnwn.h"/#include "unknwn.h"/g' \
+                     -e 's/#include "Unknwn.h"/#include "unknwn.h"/g' \
+                     -e 's/#include "Objidl.h"/#include "objidl.h"/g' {} \;
+
     # Platform-specific options
     PLATFORM_OPTIONS=""
     
@@ -29,15 +35,14 @@ script = raw"""
         # macOS-specific options
         PLATFORM_OPTIONS="-DMACOS=on"
 
-    elif [[ "${target}" == *"-linux-"* ]]; then
+    elif [[ "${target}" == *"-linux-"* ]] || [[ "${target}" == *"-freebsd"* ]]; then
         # Linux-specific options
         PLATFORM_OPTIONS="-DLINUX=on"
 
-    elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
-        # Windows-specific options
+    elif [[ "${target}" == *"-mingw32" ]]; then
+        # MinGW-specific patches
         find . -name "CMakeLists.txt" -type f -exec sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' {} \;
 
-        # Apply Windows-specific patches
         cp ../src/msix/CMakeLists.txt src/msix/CMakeLists.txt
         cp ../src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
         cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
@@ -46,11 +51,6 @@ script = raw"""
         sed -i 's/static constexpr const IID IID_##name/inline constexpr const IID IID_##name/' src/inc/public/AppxPackaging.hpp
         sed -i 's/#ifdef WIN32/#if defined(WIN32) \&\& !defined(__MINGW32__)/' src/inc/public/AppxPackaging.hpp
         sed -i 's/const PfnDliHook __pfnDliFailureHook2 = MsixDelayLoadFailureHandler;//' src/msix/common/Exceptions.cpp
-
-        # Fix case-sensitive includes for Windows
-        find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "UnKnwn.h"/#include "unknwn.h"/g' {} \;
-        find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Unknwn.h"/#include "unknwn.h"/g' {} \;
-        find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -exec sed -i 's/#include "Objidl.h"/#include "objidl.h"/g' {} \;
 
         # Windows-specific compiler flags
         export LDFLAGS="-L${libdir}"
@@ -86,25 +86,19 @@ script = raw"""
     install_license LICENSE 
     install -Dvm 755 "build/bin/makemsix${exeext}" "${bindir}/makemsix${exeext}"
 
-    # Platform-specific library installation
-    if [[ "${target}" == "x86_64-w64-mingw32" ]]; then
-        install -Dvm 755 build/lib/libmsix.* "${libdir}/"
-        install -Dvm 755 build/bin/libmsix.* "${libdir}/"
-        install -Dvm 755 build/bin/libmsix.* "${bindir}/"
+    # Shared library installation
+    if [[ "${target}" == *"-mingw32" ]]; then
+        install -Dvm 755 "build/bin/libmsix.${dlext}" "${libdir}/libmsix.${dlext}"
     else
-        install -Dvm 755 build/lib/libmsix.* "${libdir}/libmsix.${dlext}"
+        install -Dvm 755 "build/lib/libmsix.${dlext}" "${libdir}/libmsix.${dlext}"
     fi
 """
 
-platforms = [
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("x86_64", "macos"),
-    Platform("aarch64", "macos"),
-    Platform("x86_64", "windows"),
-]
+platforms = supported_platforms()
+filter!(p -> !(Sys.islinux(p) && arch(p) == "armv6l" && libc(p) == "musl"), platforms) # fts not available
+filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms) # Zlib and Xerces not available
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # Zlib and Xerces not available
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -113,7 +107,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("fts_jll", compat="1.2.7"),
+    Dependency("fts_jll", compat="1.2.7", platforms=filter(p -> libc(p) == "musl", platforms)),
     Dependency("Zlib_jll", compat="1.2.13"),
     Dependency("Xerces_jll", compat="3.2.4"),
     Dependency("OpenSSL_jll", compat="3.0.16"),
