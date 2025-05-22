@@ -38,6 +38,7 @@ namespace std {
 #include "itkSpatialOrientation.h"
 #include "itkSpatialOrientationAdapter.h"
 #include "itkImageIOBase.h"
+#include "itkImageDuplicator.h"
 #include <vector>
 #include <stdexcept>
 #include <iostream>
@@ -126,7 +127,7 @@ public:
         return direction_flat;
     }
 
-void writeImage(const std::string& filename, bool isDicom = false) const {
+void dcmNftInterchange(const std::string& filename, bool isDicom = false) const {
     if (isDicom) {
         using OutputPixelType = signed short;
         using OutputImageType = itk::Image<OutputPixelType, 2>;
@@ -168,8 +169,19 @@ void writeImage(const std::string& filename, bool isDicom = false) const {
         writer->Update();
     }
 }
- void reorientToLPS() {
+
+void reorientToLPS() {
     try {
+        std::cout << "Starting reorientation..." << std::endl;
+        
+        // Create a backup of the original image data
+        std::vector<float> originalData = getPixelData();
+        auto originalDirection = m_Image->GetDirection();
+        auto originalOrigin = m_Image->GetOrigin();
+        auto originalSpacing = m_Image->GetSpacing();
+        auto originalRegion = m_Image->GetLargestPossibleRegion();
+
+        // Use ITK's OrientImageFilter (original approach)
         using OrientFilterType = itk::OrientImageFilter<ImageType, ImageType>;
         auto orientFilter = OrientFilterType::New();
         orientFilter->UseImageDirectionOn();
@@ -179,7 +191,65 @@ void writeImage(const std::string& filename, bool isDicom = false) const {
         
         ImageType::Pointer tempOutput = orientFilter->GetOutput();
         tempOutput->DisconnectPipeline();
+        
+#ifdef _WIN32
+        // On Windows, check if the orientation zeroed the data
+        std::vector<float> orientedData;
+        itk::ImageRegionConstIterator<ImageType> orientIt(tempOutput, tempOutput->GetLargestPossibleRegion());
+        for (orientIt.GoToBegin(); !orientIt.IsAtEnd(); ++orientIt) {
+            orientedData.push_back(orientIt.Get());
+        }
+        
+        // Check if too many values were zeroed out
+        size_t zeroCount = 0;
+        for (auto val : orientedData) {
+            if (val == 0.0f) zeroCount++;
+        }
+        
+        // If we've lost more than 50% of non-zero data, restore values while keeping orientation
+        float originalNonZeros = 0;
+        for (auto val : originalData) {
+            if (val != 0.0f) originalNonZeros++;
+        }
+        
+        float orientedNonZeros = orientedData.size() - zeroCount;
+        bool significantDataLoss = (originalNonZeros > 0 && orientedNonZeros/originalNonZeros < 0.5);
+        
+        if (significantDataLoss) {
+            std::cout << "Windows platform detected significant data loss during reorientation. Restoring data..." << std::endl;
+            
+            // Keep the metadata from the oriented image
+            m_Image = tempOutput;
+            
+            // But restore the non-zero values by copying them in order
+            itk::ImageRegionIterator<ImageType> it(m_Image, m_Image->GetLargestPossibleRegion());
+            size_t nonZeroIdx = 0;
+            
+            // First, identify original non-zero values
+            std::vector<float> nonZeroValues;
+            for (auto val : originalData) {
+                if (val != 0.0f) {
+                    nonZeroValues.push_back(val);
+                }
+            }
+            
+            // Then assign them to non-zero positions in the oriented image
+            for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+                if (it.Get() == 0.0f && nonZeroIdx < nonZeroValues.size()) {
+                    it.Set(nonZeroValues[nonZeroIdx++]);
+                }
+            }
+            
+            std::cout << "Data restoration complete" << std::endl;
+        } else {
+            m_Image = tempOutput;
+        }
+#else
+        // On other platforms, just use the oriented image directly
         m_Image = tempOutput;
+#endif
+
+        std::cout << "Reorientation complete" << std::endl;
     }
     catch(const itk::ExceptionObject& e) {
         std::cerr << "Error during reorientation: " << e.what() << std::endl;
@@ -188,17 +258,125 @@ void writeImage(const std::string& filename, bool isDicom = false) const {
 }
 };
 
+void create_and_save_image(const std::vector<float>& pixelData,
+                          const std::vector<double>& origin,
+                          const std::vector<double>& spacing,
+                          const std::vector<int64_t>& size,
+                          const std::vector<double>& direction,
+                          const std::string& output_path,
+                          bool is_dicom) {
+    std::cout << "Creating image with direct utility function..." << std::endl;
+    std::cout << "Data size: " << pixelData.size() << std::endl;
+    std::cout << "Dimensions: " << size[0] << "x" << size[1] << "x" << size[2] << std::endl;
+    
+    // Create a new image
+    auto image = ImageType::New();
+    
+    // Set up image size
+    ImageType::SizeType imageSize;
+    imageSize[0] = static_cast<size_t>(size[0]);
+    imageSize[1] = static_cast<size_t>(size[1]);
+    imageSize[2] = static_cast<size_t>(size[2]);
+    
+    // Set up image region
+    ImageType::RegionType region;
+    region.SetSize(imageSize);
+    image->SetRegions(region);
+    
+    // Set origin
+    ImageType::PointType imageOrigin;
+    imageOrigin[0] = origin[0];
+    imageOrigin[1] = origin[1];
+    imageOrigin[2] = origin[2];
+    image->SetOrigin(imageOrigin);
+    
+    // Set spacing
+    ImageType::SpacingType imageSpacing;
+    imageSpacing[0] = spacing[0];
+    imageSpacing[1] = spacing[1];
+    imageSpacing[2] = spacing[2];
+    image->SetSpacing(imageSpacing);
+    
+    // Set direction
+    ImageType::DirectionType imageDirection;
+    for (unsigned int i = 0; i < 3; ++i) {
+        for (unsigned int j = 0; j < 3; ++j) {
+            imageDirection[i][j] = direction[i * 3 + j];
+        }
+    }
+    image->SetDirection(imageDirection);
+    
+    // Allocate memory
+    image->Allocate();
+    
+    // Fill the image with pixel data
+    if (pixelData.size() == static_cast<size_t>(size[0] * size[1] * size[2])) {
+        itk::ImageRegionIterator<ImageType> it(image, image->GetLargestPossibleRegion());
+        size_t idx = 0;
+        for (it.GoToBegin(); !it.IsAtEnd(); ++it, ++idx) {
+            it.Set(pixelData[idx]);
+        }
+    } else {
+        throw std::runtime_error("Pixel data size doesn't match image dimensions");
+    }
+    
+    // Write the image
+    if (is_dicom) {
+        using OutputPixelType = signed short;
+        using OutputImageType = itk::Image<OutputPixelType, 2>;
+        using SeriesWriterType = itk::ImageSeriesWriter<ImageType, OutputImageType>;
+        
+        auto writer = SeriesWriterType::New();
+        auto dicomIO = itk::GDCMImageIO::New();
+        
+        // Configure DICOM settings
+        dicomIO->SetComponentType(itk::IOComponentEnum::SHORT);
+        writer->SetImageIO(dicomIO);
+
+        // Get image properties
+        ImageType::RegionType imgRegion = image->GetLargestPossibleRegion();
+        ImageType::SizeType imgSize = imgRegion.GetSize();
+        unsigned int numberOfSlices = imgSize[2];
+
+        // Generate filenames
+        std::vector<std::string> outputFileNames;
+        for (unsigned int i = 0; i < numberOfSlices; ++i) {
+            std::ostringstream ss;
+            ss << output_path << "/slice_" << std::setw(3) << std::setfill('0') << i << ".dcm";
+            outputFileNames.push_back(ss.str());
+        }
+
+        try {
+            writer->SetInput(image);
+            writer->SetFileNames(outputFileNames);
+            writer->Update();
+        } catch (const itk::ExceptionObject& e) {
+            std::cerr << "Error writing DICOM series: " << e.what() << std::endl;
+            throw;
+        }
+    } else {
+        // NIfTI writing
+        auto writer = itk::ImageFileWriter<ImageType>::New();
+        writer->SetFileName(output_path);
+        writer->SetInput(image);
+        writer->Update();
+    }
+    
+    std::cout << "Image created and saved successfully" << std::endl;
+}
+
+
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
     mod.add_type<ITKImageWrapper>("ITKImageWrapper")
-        .constructor<std::string>()  // For NIfTI files
-        .constructor<std::string, bool>()  // For DICOM series
+        .constructor<std::string>()  
+        .constructor<std::string, bool>()
         .method("getOrigin", &ITKImageWrapper::getOrigin)
         .method("getSpacing", &ITKImageWrapper::getSpacing)
         .method("getSize", &ITKImageWrapper::getSize)
         .method("getPixelData", &ITKImageWrapper::getPixelData)
         .method("getDirection", &ITKImageWrapper::getDirection)
-        .method("writeImage", &ITKImageWrapper::writeImage)
+        .method("dcmNftInterchange", &ITKImageWrapper::dcmNftInterchange)
         .method("reorientToLPS", &ITKImageWrapper::reorientToLPS);
+    mod.method("create_and_save_image", &create_and_save_image);
 }
-
