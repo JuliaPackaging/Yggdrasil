@@ -91,10 +91,9 @@ dependencies = [
     #TODO Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency("Attr_jll"; compat="2.5.3"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("LibArchive_jll"; compat="3.7.4"),
+    Dependency("LibArchive_jll"; compat="3.7.9"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
-    #TODO Dependency("dtcmp_jll"; compat="1.1.6"),
-    Dependency("dtcmp_jll"; compat="1.1.5"),
+    Dependency("dtcmp_jll"; compat="1.1.6"),
     Dependency("libcap_jll"; compat="2.70"),
     Dependency("libcircle_jll"; compat="0.3"),
 ]
