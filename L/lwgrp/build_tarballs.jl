@@ -7,6 +7,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "lwgrp"
 version = v"1.0.6"
+# We bumped the version number because we updated the compat entries for MPI to build for new architectures
+ygg_version = v"1.0.7"
 
 # Collection of sources required to complete build
 sources = [
@@ -46,28 +48,10 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Our riscv64 work-arounds are broken for MPI:
-# `riscv64-linux-gnu-libgfortran5-cxx11-mpi+mpitrampoline` is not an officially supported platform
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The makefile builds only a static library on Windows. (I guess this could be fixed.)
 filter!(!Sys.iswindows, platforms)
 
-platforms, platform_dependencies = MPI.augment_platforms(platforms; MPItrampoline_compat="5.5.1", OpenMPI_compat="4.1.6, 5")
-
-# Avoid platforms where the MPI implementation isn't supported
-filter!(platforms) do p
-    if p["mpi"] == "mpich"
-        arch(p) == "riscv64" && return false
-    elseif p["mpi"] == "mpitrampoline"
-        libc(p) == "musl" && return false
-    elseif p["mpi"] == "openmpi"
-        arch(p) == "armv6l" && libc(p) == "glibc" && return false
-        Sys.isfreebsd(p) && arch(p) == "aarch64" && return false # we should build this
-        arch(p) == "riscv64" && return false                     # we should build this at some time
-    end
-    return true
-end
+platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -83,5 +67,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
