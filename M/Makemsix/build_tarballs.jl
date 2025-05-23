@@ -53,8 +53,10 @@ script = raw"""
     elif [[ "${target}" == *"-mingw32" ]]; then
         # MinGW-specific patches
         find . -name "CMakeLists.txt" -type f -exec sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' {} \;
+      
+        awk -i inplace '/if\(WIN32\)/ {count++; if(count==3) { print "if(FALSE) # Original: if(WIN32) - disabled for MinGW compatibility" } else { print $0 } next } {print}' src/msix/CMakeLists.txt 
+        cat ../src/msix/CMakeLists.txt >> src/msix/CMakeLists.txt
 
-        cp ../src/msix/CMakeLists.txt src/msix/CMakeLists.txt
         cp ../src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
         cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
         cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp # optional, eliminates warnings
