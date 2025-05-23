@@ -20,7 +20,18 @@ script = raw"""
 
     # Overriding vendored dependencies
     cp ../lib/CMakeLists.txt lib/CMakeLists.txt
-    cp ../src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp 
+
+    # Fix the use of internal OpenSSL APIs
+    sed -i \
+        -e '/^#include <crypto\/x509\.h>$/d' \
+        -e '/^#include <openssl\/x509\.h>$/ a\
+    // Remove internal header include - use only public headers\
+    // #include <crypto/x509.h>' \
+        -e 's/STACK_OF(X509_EXTENSION) \*exts = cert->cert_info\.extensions;/const STACK_OF(X509_EXTENSION) *exts = X509_get0_extensions(cert);/g' \
+        -e 's/STACK_OF(X509_EXTENSION) \*exts = signingCert->cert_info\.extensions;/const STACK_OF(X509_EXTENSION) *exts = X509_get0_extensions(signingCert);/g' \
+        -e 's/ctx->error == X509_V_ERR_CERT_HAS_EXPIRED/X509_STORE_CTX_get_error(ctx) == X509_V_ERR_CERT_HAS_EXPIRED/g' \
+        -e 's/ctx->error == X509_V_ERR_UNHANDLED_CRITICAL_EXTENSION/X509_STORE_CTX_get_error(ctx) == X509_V_ERR_UNHANDLED_CRITICAL_EXTENSION/g' \
+        src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp
 
     # Fix case-sensitive includes for Windows (upstream bug)
     find src -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) \
@@ -73,7 +84,7 @@ script = raw"""
         -DCMAKE_PREFIX_PATH=${prefix} \
         -DBUILD_SHARED_LIBS=ON \
         -DUSE_MSIX_SDK_ZLIB=on \
-        -DOPENSSL_ROOT_DIR="${prefix}" \
+        -DOPENSSL_INCLUDE_DIR="${prefix}" \
         -DOPENSSL_CRYPTO_LIBRARY=${libdir}/libcrypto.${dlext} \
         -DOPENSSL_SSL_LIBRARY=${libdir}/libssl.${dlext} \
         ${PLATFORM_OPTIONS} \
@@ -99,6 +110,8 @@ filter!(p -> !(Sys.islinux(p) && arch(p) == "armv6l" && libc(p) == "musl"), plat
 filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms) # Zlib and Xerces not available
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # Zlib and Xerces not available
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+
+platforms = [Platform("x86_64", "windows")]
 
 # The products that we will ensure are always built
 products = [
