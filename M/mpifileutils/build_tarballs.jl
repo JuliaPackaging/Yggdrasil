@@ -63,8 +63,12 @@ platforms = supported_platforms()
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
-# Dependency lwgrp has not been built for this platform (fix this!)
-filter!(p -> arch(p) != "riscv64", platforms)
+# <byteswap.h> is required
+filter!(!Sys.isapple, platforms)
+# <sys/sysinfo.h> is required
+filter!(!Sys.isfreebsd, platforms)
+# MPI isn't working well on Windows
+filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -94,7 +98,7 @@ dependencies = [
     Dependency("LibArchive_jll"; compat="3.7.9"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("dtcmp_jll"; compat="1.1.6"),
-    Dependency("libcap_jll"; compat="2.70"),
+    Dependency("libcap_jll"; compat="2.76"),
     Dependency("libcircle_jll"; compat="0.3"),
 ]
 append!(dependencies, platform_dependencies)
