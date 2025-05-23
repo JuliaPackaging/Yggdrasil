@@ -90,8 +90,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Bzip2_jll"),
-    Dependency("Cairo_jll"),
+    Dependency("Bzip2_jll"; compat="1.0.9"),
+    Dependency("Cairo_jll", compat="1.16.1"),
     Dependency("FFMPEG_jll"),
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
