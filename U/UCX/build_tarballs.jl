@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "UCX"
 version = v"1.18.1"
