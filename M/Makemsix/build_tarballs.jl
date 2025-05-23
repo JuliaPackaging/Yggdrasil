@@ -111,8 +111,6 @@ filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms) # Zlib and Xe
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # Zlib and Xerces not available
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
-platforms = [Platform("x86_64", "windows")]
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("makemsix", :makemsix),
