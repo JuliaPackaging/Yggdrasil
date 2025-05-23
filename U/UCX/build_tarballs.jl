@@ -10,7 +10,7 @@ name = "UCX"
 version = v"1.18.1"
 
 MIN_CUDA_VERSION = v"11.8"
-MAX_CUDA_VERSION = v"12.9.999"
+MAX_CUDA_VERSION = v"12.8.999"
 ROCM_VERSION = v"5.4.4"
 
 
