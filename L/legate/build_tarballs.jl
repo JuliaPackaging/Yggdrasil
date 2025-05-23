@@ -84,6 +84,8 @@ export CUDACXX=$CUDA_HOME/bin/nvcc
 # nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
 ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
+#    --with-nccl-dir=${prefix} \
+
 ./configure \
     --prefix=${prefix} \
     --with-cudac=${CUDACXX} \
@@ -131,10 +133,11 @@ end
 
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 platforms = filter(p -> os(p) == "linux", platforms)
-platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+# platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
 #* REMOVE LATER
-# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
+platforms = filter!(p -> arch(p) == "x86_64", platforms)
+platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
@@ -144,7 +147,7 @@ platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 # print(platforms)
 
-# platforms = [platforms[1]]
+platforms = [platforms[1]]
 
 # also some warnings about avx2 instruction set vs x86_64
 # dont_dlopen avoids version `GLIBCXX_3.4.30' not found
@@ -155,9 +158,9 @@ products = [
 dependencies = [
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("MPICH_jll"; compat="~4.3.0"),
-    # Dependency("NCCL_jll"),
+    # Dependency("NCCL_jll"; compat="~2.26.5"), # supports all of 12.x
     # Dependency("UCX_jll"),
-    Dependency("Zlib_jll"; compat="~1.3.1"),
+    Dependency("Zlib_jll"; compat="~1.2.12"),
     Dependency(PackageSpec(; name="CUDA_Driver_jll"); compat = "~0.13.0"), # compat to prevent use of CUDA 13.x drivers in the future
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
@@ -186,7 +189,7 @@ for platform in platforms
     build_tarballs(ARGS, name, version, platform_sources, script, [platform],
                     products, [dependencies; cuda_deps];
                     julia_compat = "1.10", preferred_gcc_version = v"12",
-                    preferred_llvm_version = clang_ver, # clang 13 works for all CUDA 12.x
+                    preferred_llvm_version = clang_ver,
                     augment_platform_block=CUDA.augment, lazy_artifacts = true
                 )
     #augment_platform_block=augment_platform_block
