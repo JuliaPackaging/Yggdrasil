@@ -282,11 +282,11 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
         elseif cuda_ver == "12.9"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.9.0.json
             ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-12.9.41-archive.tar.xz",
-                         "b3a0e115840e04c0cfa559263cbbe8b78a2455788e12605732aff68abc50dd34")
+                            "b3a0e115840e04c0cfa559263cbbe8b78a2455788e12605732aff68abc50dd34")
         else
             error("No CUDA redist available for CUDA version $cuda_ver on arch $arch")
         end
-    else
+    else 
         error("No CUDA redist available for arch $arch")
     end
 end
