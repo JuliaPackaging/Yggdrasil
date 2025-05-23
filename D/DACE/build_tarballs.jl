@@ -12,7 +12,7 @@ version = v"0.7.1"
 
 # Collection of sources required to build DACE
 sources = [
-    GitSource("https://github.com/a-ev/dace.git", "b92c7396a582b26b8f15407e74685fff63a07195"),
+    GitSource("https://github.com/a-ev/dace.git", "bc26842ae5c6936f9e008a2dc0d9227a8d982acc"),
 ]
 
 # Bash recipe for building across all platforms
