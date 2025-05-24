@@ -9,7 +9,7 @@ version = v"1.7.241"
 sources = [
     GitSource("https://github.com/microsoft/msix-packaging.git",
               "efeb9dad695a200c2beaddcba54a52c8320bd135"),
-    DirectorySource(joinpath(@__DIR__, "patches"))
+    DirectorySource(joinpath(@__DIR__, "bundled"))
 ]
 
 # Script that will adapt to each platform
@@ -19,7 +19,7 @@ script = raw"""
     apk del cmake
 
     # Overriding vendored dependencies
-    cp ../lib/CMakeLists.txt lib/CMakeLists.txt
+    cp ../patches/lib/CMakeLists.txt lib/CMakeLists.txt
 
     # Fix the use of internal OpenSSL APIs
     sed -i \
@@ -55,10 +55,10 @@ script = raw"""
         find . -name "CMakeLists.txt" -type f -exec sed -i 's/set(CMAKE_CXX_STANDARD 14)/set(CMAKE_CXX_STANDARD 17)/' {} \;
       
         awk -i inplace '/if\(WIN32\)/ {count++; if(count==3) { print "if(FALSE) # Original: if(WIN32) - disabled for MinGW compatibility" } else { print $0 } next } {print}' src/msix/CMakeLists.txt 
-        cat ../src/msix/CMakeLists.txt >> src/msix/CMakeLists.txt
+        cat ../patches/src/msix/CMakeLists.txt >> src/msix/CMakeLists.txt
 
-        cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
-        cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp 
+        cp ../patches/src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
+        cp ../patches/src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp 
 
         sed -i 's/static constexpr const IID IID_##name/inline constexpr const IID IID_##name/' src/inc/public/AppxPackaging.hpp
         sed -i 's/#ifdef WIN32/#if defined(WIN32) \&\& !defined(__MINGW32__)/' src/inc/public/AppxPackaging.hpp
