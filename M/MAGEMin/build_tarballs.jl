@@ -8,7 +8,7 @@ version = v"1.7.8"
 
 # Collection of sources required to complete build
 sources = [GitSource("https://github.com/ComputationalThermodynamics/MAGEMin", 
-                    "aa1379d4b3d8af53617e0308127fc52b59d6266e")                 ]
+                    "0b01f3a1b4a4dd3ae01658f0b8b93f8044b541d8")                 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
