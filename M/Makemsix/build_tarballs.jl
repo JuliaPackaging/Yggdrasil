@@ -59,7 +59,7 @@ script = raw"""
 
         cp ../src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
         cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
-        cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp # optional, eliminates warnings
+        cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp 
 
         sed -i 's/static constexpr const IID IID_##name/inline constexpr const IID IID_##name/' src/inc/public/AppxPackaging.hpp
         sed -i 's/#ifdef WIN32/#if defined(WIN32) \&\& !defined(__MINGW32__)/' src/inc/public/AppxPackaging.hpp
@@ -67,7 +67,6 @@ script = raw"""
 
         # Windows-specific compiler flags
         export LDFLAGS="-L${libdir}"
-        export CXXFLAGS="$CXXFLAGS -include $WORKSPACE/srcdir/src/inc/compat/msix_win_api_fixes.h"
 
         PLATFORM_OPTIONS="-DWIN32=on"
     fi
