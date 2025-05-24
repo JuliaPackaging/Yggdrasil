@@ -24,7 +24,7 @@ endif()
 
 find_library(SLOPE_LIBRARY slope REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED slopejll.cpp)
+add_library(${PROJECT_NAME} SHARED slopejll.cpp cv.cpp fit.cpp helpers.cpp)
 
 target_link_libraries(
     ${PROJECT_NAME}

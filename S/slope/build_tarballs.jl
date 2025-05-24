@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "slope"
-version = v"1.0.0"
+version = v"2.5.1"
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
@@ -9,7 +9,7 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 sources = [
-    GitSource("https://github.com/jolars/libslope.git", "cc63d51013bfc1aabe6c1c777e7205f0765b359c"),
+    GitSource("https://github.com/jolars/libslope.git", "c06556de3dfd4b13c0fefbc2fcea7ce3b7ec4775"),
     DirectorySource("./bundled"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz", "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
@@ -66,7 +66,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("LLVMOpenMP_jll", platforms=filter(Sys.isapple, platforms)),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.1"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.2"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
