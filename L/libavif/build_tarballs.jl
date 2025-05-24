@@ -38,7 +38,10 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("JpegTurbo_jll"),
-    Dependency("XML2_jll"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="2.0.0 - 2.13"),
     Dependency("Zlib_jll"),
     Dependency("dav1d_jll"),
     Dependency("libaom_jll"),
