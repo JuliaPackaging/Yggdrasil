@@ -61,7 +61,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("s2n_tls_jll"; compat="1.5.18"),
+    Dependency("s2n_tls_jll"; compat="1.5.19"),
     Dependency("aws_c_cal_jll"; compat="0.9.1"),
     Dependency("aws_c_common_jll"; compat="0.12.3"),
     BuildDependency("aws_lc_jll"),
