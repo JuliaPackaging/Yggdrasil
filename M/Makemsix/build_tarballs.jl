@@ -57,13 +57,20 @@ script = raw"""
         awk -i inplace '/if\(WIN32\)/ {count++; if(count==3) { print "if(FALSE) # Original: if(WIN32) - disabled for MinGW compatibility" } else { print $0 } next } {print}' src/msix/CMakeLists.txt 
         cat ../src/msix/CMakeLists.txt >> src/msix/CMakeLists.txt
 
-        cp ../src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
         cp ../src/inc/internal/UnicodeConversion.hpp src/inc/internal/UnicodeConversion.hpp
         cp ../src/inc/public/MSIXWindows.hpp src/inc/public/MSIXWindows.hpp 
 
         sed -i 's/static constexpr const IID IID_##name/inline constexpr const IID IID_##name/' src/inc/public/AppxPackaging.hpp
         sed -i 's/#ifdef WIN32/#if defined(WIN32) \&\& !defined(__MINGW32__)/' src/inc/public/AppxPackaging.hpp
         sed -i 's/const PfnDliHook __pfnDliFailureHook2 = MsixDelayLoadFailureHandler;//' src/msix/common/Exceptions.cpp
+
+        sed -i \
+            -e 's/void WalkDirectory(const std::string& root, WalkOptions options, Lambda& visitor)/void WalkDirectory(const std::string\& root, WalkOptions options, Lambda visitor)/' \
+            -e 's/WIN32_FIND_DATA findFileData = {};/WIN32_FIND_DATAW findFileData = {};/' \
+            -e 's/FindFirstFile(reinterpret_cast<LPCWSTR>(utf16Name\.c_str()), \&findFileData)/FindFirstFileW(utf16Name.c_str(), \&findFileData)/' \
+            -e 's/while (FindNextFile(find\.get(), \&findFileData));/while (FindNextFileW(find.get(), \&findFileData));/' \
+            -e 's/if (!CreateDirectory(utf16Name\.c_str(), nullptr))/if (!CreateDirectoryW(utf16Name.c_str(), nullptr))/' \
+        src/msix/PAL/FileSystem/Win32/DirectoryObject.cpp
 
         # Windows-specific compiler flags
         export LDFLAGS="-L${libdir}"
