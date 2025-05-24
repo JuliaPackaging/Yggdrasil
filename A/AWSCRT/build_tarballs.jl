@@ -41,7 +41,7 @@ dependencies = [
     Dependency("aws_c_event_stream_jll"; compat="0.3.2"),
     Dependency("aws_c_http_jll"; compat="0.7.12"),
     Dependency("aws_c_iot_jll"; compat="0.1.17"),
-    Dependency("aws_c_mqtt_jll"; compat="0.8.12"),
+    Dependency("aws_c_mqtt_jll"; compat="0.13.1"),
     Dependency("aws_c_s3_jll"; compat="0.3.17"),
     Dependency("aws_checksums_jll"; compat="0.1.17"),
     BuildDependency("aws_lc_jll"),
