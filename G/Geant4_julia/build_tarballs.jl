@@ -24,7 +24,8 @@ cmake ${WORKSPACE}/srcdir/Geant4_cxxwrap -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD=17
+    -DCMAKE_CXX_STANDARD=17 \
+    -DZLIB_ROOT="${prefix}"
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
