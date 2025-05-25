@@ -90,7 +90,7 @@ ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
     --prefix=${prefix} \
     --with-cudac=${CUDACXX} \
     --with-cuda-dir=${CUDA_HOME} \
-    --with-nccl=0 \
+    --with-nccl-dir=${prefix} \
     --with-mpiexec-executable=${bindir}/mpiexec \
     --with-mpi-dir=${prefix} \
     --with-zlib-dir=${prefix} \
@@ -158,7 +158,7 @@ products = [
 dependencies = [
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("MPICH_jll"; compat="~4.3.0"),
-    # Dependency("NCCL_jll"; compat="~2.26.5"), # supports all of 12.x
+    Dependency("NCCL_jll"; compat="~2.26.5"), # supports all of 12.x
     # Dependency("UCX_jll"),
     Dependency("Zlib_jll"; compat="~1.2.12"),
     Dependency(PackageSpec(; name="CUDA_Driver_jll"); compat = "~0.13.0"), # compat to prevent use of CUDA 13.x drivers in the future
