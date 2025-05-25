@@ -102,6 +102,9 @@ for platform in platforms
 
     cuda_deps = CUDA.required_dependencies(platform, static_sdk=true)
 
+    # Remvoe CUDA_Runtime_JLL dependency
+    cuda_deps = filter!(d -> typeof(d) != RuntimeDependency, cuda_deps)
+
     build_tarballs(ARGS, name, version, sources, script, [platform],
                     products, [dependencies; cuda_deps];
                     julia_compat = "1.10", preferred_gcc_version = v"5",
