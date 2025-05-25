@@ -74,6 +74,7 @@ script = raw"""
 
         # Windows-specific compiler flags
         export LDFLAGS="-L${libdir}"
+        export CXXFLAGS="$CXXFLAGS -include windows.h"
 
         PLATFORM_OPTIONS="-DWIN32=on"
     fi
