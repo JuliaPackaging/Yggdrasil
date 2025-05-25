@@ -35,7 +35,7 @@ cp $WORKSPACE/srcdir/tsl/* tsl/
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
 
 make -C build satsuma
-install build/satsuma $bindir
+install -Dvm 755 build/satsuma -t "${bindir}"
 install_license LICENSE
 """
 
