@@ -36,6 +36,10 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 export CFLAGS="-DPI -fPIC"
+if [[ "${target}" == aarch64-linux-* ]]; then
+    # Define macro introduced in later Linux kernel than what we have in the RootFS.
+    CFLAGS="${CFLAGS} -DNT_ARM_PAC_MASK=0x406"
+fi
 ./configure \
     --prefix=${prefix} \
     --build=${MACHTYPE} \
