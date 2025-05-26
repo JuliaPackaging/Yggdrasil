@@ -31,8 +31,7 @@ cmake --install build
 
 # These are the platforms we will build for by default, unless f3urther
 # platforms are passed in on the command line
-#TODO platforms = expand_cxxstring_abis(supported_platforms())
-platforms = supported_platforms()
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
