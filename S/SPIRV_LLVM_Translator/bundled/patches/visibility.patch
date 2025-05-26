@@ -1,0 +1,93 @@
+Author: Andreas Beckmann <anbe@debian.org>
+Description: reduce the amount of symbols exposed by the library
+Forwarded: https://github.com/KhronosGroup/SPIRV-LLVM-Translator/issues/1963
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -117,6 +117,9 @@ if(NOT SPIRV_TOOLS_FOUND)
+           "--spirv-tools-dis support.")
+ endif(NOT SPIRV_TOOLS_FOUND)
+ 
++add_compile_options(-fvisibility=hidden)
++add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>)
++
+ add_subdirectory(lib/SPIRV)
+ add_subdirectory(tools/llvm-spirv)
+ if(LLVM_SPIRV_INCLUDE_TESTS)
+--- a/include/LLVMSPIRVLib.h
++++ b/include/LLVMSPIRVLib.h
+@@ -46,6 +46,8 @@
+ #include <iostream>
+ #include <string>
+ 
++#pragma GCC visibility push(default)
++
+ namespace llvm {
+ // Pass initialization functions need to be declared before inclusion of
+ // PassSupport.h.
+@@ -68,8 +70,12 @@ class ModulePass;
+ class FunctionPass;
+ } // namespace llvm
+ 
++#pragma GCC visibility pop
++
+ #include "llvm/IR/Module.h"
+ 
++#pragma GCC visibility push(default)
++
+ namespace SPIRV {
+ 
+ class SPIRVModule;
+@@ -258,4 +264,6 @@ FunctionPass *createSPIRVLowerBitCastToN
+ 
+ } // namespace llvm
+ 
++#pragma GCC visibility pop
++
+ #endif // SPIRV_H
+--- a/include/LLVMSPIRVOpts.h
++++ b/include/LLVMSPIRVOpts.h
+@@ -48,6 +48,8 @@
+ #include <map>
+ #include <unordered_map>
+ 
++#pragma GCC visibility push(default)
++
+ namespace llvm {
+ class IntrinsicInst;
+ } // namespace llvm
+@@ -279,4 +281,6 @@ private:
+ 
+ } // namespace SPIRV
+ 
++#pragma GCC visibility pop
++
+ #endif // SPIRV_LLVMSPIRVOPTS_H
+--- a/lib/SPIRV/libSPIRV/SPIRVStream.cpp
++++ b/lib/SPIRV/libSPIRV/SPIRVStream.cpp
+@@ -82,6 +82,7 @@ static void readQuotedString(std::istrea
+ }
+ 
+ #ifdef _SPIRV_SUPPORT_TEXT_FMT
++__attribute__ ((visibility ("default")))
+ bool SPIRVUseTextFormat = false;
+ #endif
+ 
+--- a/lib/SPIRV/libSPIRV/SPIRVModule.cpp
++++ b/lib/SPIRV/libSPIRV/SPIRVModule.cpp
+@@ -2295,6 +2295,7 @@ bool isSpirvBinary(const std::string &Im
+ 
+ #ifdef _SPIRV_SUPPORT_TEXT_FMT
+ 
++__attribute__ ((visibility ("default")))
+ bool convertSpirv(std::istream &IS, std::ostream &OS, std::string &ErrMsg,
+                   bool FromText, bool ToText) {
+   auto SaveOpt = SPIRVUseTextFormat;
+@@ -2331,6 +2332,7 @@ bool isSpirvText(const std::string &Img)
+   return Magic == MagicNumber;
+ }
+ 
++__attribute__ ((visibility ("default")))
+ bool convertSpirv(std::string &Input, std::string &Out, std::string &ErrMsg,
+                   bool ToText) {
+   auto FromText = isSpirvText(Input);
