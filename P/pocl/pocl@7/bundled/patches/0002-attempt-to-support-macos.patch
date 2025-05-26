@@ -1,0 +1,53 @@
+From 1c607579cf3bbd34863c0b879699e2741dded274 Mon Sep 17 00:00:00 2001
+From: Valentin Churavy <v.churavy@gmail.com>
+Date: Mon, 26 May 2025 22:05:43 +0200
+Subject: [PATCH] attempt to support macos
+
+---
+ lib/CL/pocl_cl.h | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/lib/CL/pocl_cl.h b/lib/CL/pocl_cl.h
+index b72f9c2e9..45973f9f4 100644
+--- a/lib/CL/pocl_cl.h
++++ b/lib/CL/pocl_cl.h
+@@ -257,18 +257,24 @@ extern pocl_obj_id_t last_object_id;
+   int pocl_refcount
+ #endif
+ 
++#  define POname(name) PO##name
++
+ #ifdef __APPLE__
+ /* Note: OSX doesn't support aliases because it doesn't use ELF */
+ 
+-#  define POname(name) name
+-#  define POdeclsym(name)
+-#  define POdeclsymExport(name)
++#if defined(RENAME_POCL) && !defined(BUILD_ICD)
++#define POdeclsym(name) PO##name;
++#define POdeclsymExport(name) POdeclsym(name)
++#else
++#define POdeclsym(name)
++#define POdeclsymExport(name)
++#endif
++
+ #  define POsym(name)
+ #  define POsymAlways(name)
+ 
+ #elif defined(_WIN32) && !defined(__MINGW32__)
+ /* Visual Studio does not support this magic either */
+-#  define POname(name) name
+ #  define POdeclsym(name)
+ #  define POdeclsymExport(name)
+ #  define POsym(name)
+@@ -277,7 +283,6 @@ extern pocl_obj_id_t last_object_id;
+ #else
+ /* Symbol aliases are supported */
+ 
+-#  define POname(name) PO##name
+ 
+ #if defined(RENAME_POCL) && !defined(BUILD_ICD)
+ #define POdeclsym(name) POCL_EXPORT __typeof__ (name) PO##name;
+-- 
+2.49.0
+

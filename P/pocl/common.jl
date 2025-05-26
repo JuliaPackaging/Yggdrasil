@@ -41,6 +41,7 @@ function build_script(;standalone=false)
 
     # https://github.com/pocl/pocl/pull/1928
     atomic_patch -p1 $WORKSPACE/srcdir/patches/0001-Allow-for-DENABLE_ICD-OFF-DRENAME_POCL-ON.patch
+    atomic_patch -p1 $WORKSPACE/srcdir/patches/0002-attempt-to-support-macos.patch
 
     CMAKE_FLAGS=()
 
