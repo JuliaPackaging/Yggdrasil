@@ -77,4 +77,4 @@ dependencies = [
 # When using lld for AArch64 macOS, linking fails with
 #     ld64.lld: error: -dylib_current_version 10.4.3.1: malformed version
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
