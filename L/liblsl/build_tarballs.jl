@@ -8,16 +8,35 @@ version = v"1.16.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sccn/liblsl", "6ca188c266c21f7228dc67077303fa6abaf2e8be"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.12.sdk.tar.xz",
+               "b314704d85934481c9927a0450db1768baf9af9efe649562fcb1a503bb44512f"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/liblsl
 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # We need at least MacOS 10.12 for `shared_mutex`
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    rm -rf /opt/${target}/${target}/sys-root/System
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.12.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.12.sdk/System MacOSX10.12.sdk/usr
+fi
+
 # Add license file
 install_license LICENSE
 
-cmake -Bbuild -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+options=(
+    -DCMAKE_BUILD_TYPE=Release 
+    -DCMAKE_INSTALL_PREFIX=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
+)
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+   # LTO doesn't work
+   options+=(-DLSL_OPTIMIZATIONS=OFF)
+fi
+
+cmake -Bbuild ${options[@]}
 cmake --build build --parallel ${nproc}
 cmake --install build
 """
