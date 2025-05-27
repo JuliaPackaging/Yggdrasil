@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"2.1.4"
+version = v"2.2.0"
 
 PETSc_COMPAT_VERSION = "~3.19.6"    
 MPItrampoline_compat_version="5.2.1"
@@ -16,7 +16,7 @@ MPICH_compat_version="~4.1.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/UniMainzGeo/LaMEM", 
-    "12f9849d2af894476cccccd4e9c4f13c5d8639b3")
+    "0f6a5a82f32a3db59871d6e254ae570a3100edad")
 ]
 
 # Bash recipe for building across all platforms
