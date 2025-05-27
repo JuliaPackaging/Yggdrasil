@@ -55,6 +55,7 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 # More hacks for Windows
 if [[ "${target}" == *mingw* ]]; then
     CMAKE_FLAGS+=(-DCMAKE_SHARED_LIBRARY_CXX_FLAGS=\"-pthread\")
+    CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS=\"-pthread\")
 fi
 
 # Tell CMake where LLVM is
