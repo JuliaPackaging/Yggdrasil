@@ -29,7 +29,7 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 """
 
-# These are the platforms we will build for by default, unless f3urther
+# These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
 
