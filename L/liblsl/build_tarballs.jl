@@ -9,7 +9,7 @@ version = v"1.16.2"
 sources = [
     GitSource("https://github.com/sccn/liblsl", "6ca188c266c21f7228dc67077303fa6abaf2e8be"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.12.sdk.tar.xz",
-               "b314704d85934481c9927a0450db1768baf9af9efe649562fcb1a503bb44512f"),
+               "0628a563de14020c2600beb1d991547c6b492eb82e0cac4b11104d33faaa00e6"),
 ]
 
 # Bash recipe for building across all platforms
