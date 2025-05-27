@@ -17,6 +17,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/apache-arrow-*
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/boost.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/parquet.patch
 if [[ $target == *mingw32* ]]; then
     # This hard-codes the name and location of the zstd library and
     # must not be applied on other architectures
