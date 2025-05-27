@@ -207,6 +207,19 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We use GCC 12 to get support for float16; earlier versions don't work
+#
+# NOTE: Building with GCC 12 fails on x86_64. GCC 12 enables compiler
+# support for float16, but would (apparently? hopefully?) use the
+# respective soft-fp emulation routines. These are only available in
+# `libcc` of GCC 12 and later, and thus this file isn't guaranteed to
+# be available. Therefore we need to disable compiler support for
+# float16 (on x86_64), e.g. by using GCC 11 or earlier.
+#
+# GDAL will then still support float16, but only via emulation, i.e.
+# converting from/to float32.
+#
+# We could enable compiler support for float16 if we can guarantee
+# that the CPU supports respective hardware instructions so that we
+# don't need soft-fp from libgcc.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"12")
+               julia_compat="1.6", preferred_gcc_version=v"11")
