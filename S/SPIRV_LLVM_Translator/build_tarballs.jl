@@ -117,6 +117,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
+    Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
 ]
 
 # Determine the builds
