@@ -30,8 +30,10 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-revert_prelink_unwind.pat
 
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-disable-initial-exec-tls.patch
 
-# https://github.com/libunwind/libunwind/issues/873#issuecomment-2912205211
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-freebsd-aarch64.patch
+if [[ "${target}" == aarch64-*-freebsd* ]]; then
+    # https://github.com/libunwind/libunwind/issues/873#issuecomment-2912205211
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-freebsd-aarch64.patch
+fi
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
