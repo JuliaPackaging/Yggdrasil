@@ -8,20 +8,11 @@ version = v"1.16.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/sccn/liblsl", "6ca188c266c21f7228dc67077303fa6abaf2e8be"),
-    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.12.sdk.tar.xz",
-               "0628a563de14020c2600beb1d991547c6b492eb82e0cac4b11104d33faaa00e6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/liblsl
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # We need at least MacOS 10.12 for `shared_mutex`
-    export MACOSX_DEPLOYMENT_TARGET=10.15
-    rm -rf /opt/${target}/${target}/sys-root/System
-    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.12.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.12.sdk/System MacOSX10.12.sdk/usr
-fi
 
 # Add license file
 install_license LICENSE
@@ -32,7 +23,9 @@ options=(
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 )
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-   # LTO doesn't work
+    # We need at least MacOS 10.12 for `shared_mutex`
+    export MACOSX_DEPLOYMENT_TARGET=10.12
+   # LTO doesn't work. Somehow we're compiling with LLVM 18, and libLTO is from LLVM 8, and that mismatch causes a linker error.
    options+=(-DLSL_OPTIMIZATIONS=OFF)
 fi
 
