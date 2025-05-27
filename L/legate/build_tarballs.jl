@@ -132,12 +132,12 @@ end
 """
 
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
-platforms = filter(p -> os(p) == "linux", platforms)
-# platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
+# platforms = filter(p -> os(p) == "linux", platforms)
+platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
 #* REMOVE LATER
-platforms = filter!(p -> arch(p) == "x86_64", platforms)
-platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
+# platforms = filter!(p -> arch(p) == "x86_64", platforms)
+# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
@@ -147,7 +147,7 @@ platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 # print(platforms)
 
-platforms = [platforms[1]]
+# platforms = [platforms[1]]
 
 # also some warnings about avx2 instruction set vs x86_64
 # dont_dlopen avoids version `GLIBCXX_3.4.30' not found
