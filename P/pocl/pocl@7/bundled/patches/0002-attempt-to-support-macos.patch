@@ -24,7 +24,7 @@ index b72f9c2e9..45973f9f4 100644
 -#  define POdeclsym(name)
 -#  define POdeclsymExport(name)
 +#if defined(RENAME_POCL) && !defined(BUILD_ICD)
-+#define POdeclsym(name) PO##name;
++#define POdeclsym(name) POCL_EXPORT __typeof__ (name) PO##name;
 +#define POdeclsymExport(name) POdeclsym(name)
 +#else
 +#define POdeclsym(name)
