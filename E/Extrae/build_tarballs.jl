@@ -9,9 +9,9 @@ include(joinpath(dirname(dirname(@__DIR__)), "platforms", "mpi.jl"))
 
 
 name = "Extrae"
-version = v"4.2.0"
+version = v"4.2.15"
 sources = [
-    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "7b83a1ed008440bbc1bda88297d2d0e9256780db1cf8401b3c12718451f8919a"),
+    ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "49f42ed3fe026a5faabb6838d26c62b6d14144a50549374c8b25d90675927132"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
