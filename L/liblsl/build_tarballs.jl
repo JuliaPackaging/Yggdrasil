@@ -27,6 +27,9 @@ cmake --install build
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+# Our musl (1.1.19) does not support `pthread_getname_np`. (musl 1.2.0 would introduce it.)
+filter!(p -> libc(p) != "musl", platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("liblsl", :liblsl),
