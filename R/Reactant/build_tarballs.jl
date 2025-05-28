@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.191"
 
 sources = [
-   GitSource(repo, "9e89974f8559123573624287fee07d63f18ff473"),
+   GitSource(repo, "329a08098ab4b8cc615455669d6fd62d73114782"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -364,7 +364,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6", "12.8"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -396,13 +396,14 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     hermetic_cuda_version_map = Dict(
         # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
         # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in
-        # <https://github.com/openxla/xla/blob/main/third_party/tsl/third_party/gpus/cuda/hermetic/cuda_redist_versions.bzl>.
+        # <https://github.com/openxla/xla/blob/main/third_party/gpus/cuda/hermetic/cuda_redist_versions.bzl>.
         "none" => "none",
         "11.8" => "11.8",
         "12.1" => "12.1.1",
         "12.3" => "12.3.1",
         "12.4" => "12.4.1",
         "12.6" => "12.6.3",
+        "12.8" => "12.8.1",
     )
 
     prefix="""
