@@ -101,29 +101,13 @@ function build_script(standalone=false)
     #      (as that is not reflected by llvm-config)
     CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 
-    # Force use of the SPIRV LLVM translator library by nuking the executable variant
-    CMAKE_FLAGS+=(-DLLVM_SPIRV="")
-    if [[ "${target}" == *-mingw* ]]; then
-        # PoCL looks for LLVMSPIRVLib in the LLVM libdir, which on Windows contains static libs.
-        # XXX: fix this upstream
-        CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDEDIR="${prefix}/include/LLVMSPIRVLib")
-        CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB="${prefix}/bin/libLLVMSPIRVLib.dll")
-    fi
-    ## spoof the output of the try_run test (which fails in cross-compilation mode)
-    MAX_SPIRV_VERSION=67072
-    if [[ "${target}" == x86_64-linux-gnu ]]; then
-        # if the target matches the host, we can use the toolchain _and_ execute the result
-        clang++ cmake/MaxSPIRVversion.cc -o MaxSPIRVversion -I $prefix/include/LLVMSPIRVLib -lLLVM -L $host_prefix/lib
-        ACTUAL_MAX_SPIRV_VERSION=$(./MaxSPIRVversion)
-        if [[ $ACTUAL_MAX_SPIRV_VERSION != $MAX_SPIRV_VERSION ]]; then
-            echo "MaxSPIRVVersion is $ACTUAL_MAX_SPIRV_VERSION, while the build uses $MAX_SPIRV_VERSION"
-            echo "Please update the build script to use the correct version."
-            exit 1
-        fi
-    fi
-    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_COMPILE_RESULT=TRUE)
-    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT=0)
-    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT__TRYRUN_OUTPUT=$MAX_SPIRV_VERSION)
+    # Enable SPIR-V support
+    ## disable use of the translator library, because the API is not ODR safe on macOS
+    ## when statically linking LLVM
+    CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB="")
+    ## force use of the translator binary even if not executable during the build
+    ## XXX: add and use a HostBuildDependency?
+    sed -i '/unset(LLVM_SPIRV CACHE)/d' -i cmake/LLVM.cmake
 
     # PoCL's CPU autodetection doesn't work on RISC-V
     if [[ ${target} == riscv64-* ]]; then
@@ -261,6 +245,11 @@ function init_block(standalone=false)
     ENV["POCL_PATH_CLANG"] =
         generate_wrapper_script("clang", Clang_unified_jll.clang_path,
                                 Clang_unified_jll.LIBPATH[], Clang_unified_jll.PATH[])
+    ENV["POCL_PATH_LLVM_SPIRV"] =
+        generate_wrapper_script("llvm-spirv",
+                                SPIRV_LLVM_Translator_unified_jll.llvm_spirv_path,
+                                SPIRV_LLVM_Translator_unified_jll.LIBPATH[],
+                                SPIRV_LLVM_Translator_unified_jll.PATH[])
     ld_path = if Sys.islinux()
             LLD_unified_jll.ld_lld_path
         elseif Sys.isapple()
