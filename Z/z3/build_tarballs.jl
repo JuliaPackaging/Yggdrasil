@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.14.1"
+version = v"4.15.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "ddc6981d83205cbe6000b8fa71f78da496bbaa635fadaf776b6d129b80e7b113"),
+                  "31012fdbaceb92667fd7e338de8b06b41d60c99bf6a3b8ec197de352372f05f1"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -71,9 +71,6 @@ install_license LICENSE.txt
 include("../../L/libjulia/common.jl")
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
-
-# libjulia_jll is not yet available for Julia 1.13
-filter!(p -> VersionNumber(p["julia_version"]) < v"1.13", platforms)
 
 # The products that we will ensure are always built
 products = [
