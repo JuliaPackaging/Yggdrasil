@@ -3,7 +3,7 @@ Description: don't expose all symbols from linked libraries
 
 --- AddLLVM.cmake  2025-05-26 19:07:44.899946198 +0200
 +++ AddLLVM.cmake  2025-05-26 19:07:10.042745235 +0200
-@@ -797,6 +797,14 @@
+@@ -797,6 +797,15 @@
 
 +
 +  set(llvm_original_libs ${llvm_libs})
@@ -11,6 +11,7 @@ Description: don't expose all symbols from linked libraries
 +  set(llvm_libs "")
 +  foreach(component_name_item ${llvm_original_libs})
 +    list(APPEND llvm_libs "-Wl,-hidden-l${component_name_item}")
++    target_link_directories(${name} PRIVATE "$<TARGET_FILE_DIR:${component_name_item}>")
 +  endforeach()
 +
    target_link_libraries(${name} ${libtype}
