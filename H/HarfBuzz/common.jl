@@ -28,10 +28,13 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/coretext-check-bypass.patch
 fi
 
+# We need C++20 for the `auto` in template parameters.
+# This is required when building the ICU bindings.
 mkdir build && cd build
 meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
+    -Dcpp_std=c++20 \
     -Dcairo=enabled \
     -Dfreetype=enabled \
     -Dglib=enabled \
@@ -88,12 +91,13 @@ fi
 
     if icu
         append!(dependencies, [
-            Dependency("HarfBuzz_jll"; compat="$(version)"),
+            Dependency("HarfBuzz_jll"; compat="$(ygg_version)"),
             Dependency("ICU_jll"; compat="76.2"),
         ])
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
+    # We need at lest GCC 8 to support C++ 20
     build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-                   clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
+                   clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
 end
