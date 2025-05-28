@@ -82,11 +82,17 @@ elif [[ ("${target}" == *-apple-darwin*) ]]; then
     atomic_patch --follow-symlinks -d $prefix/lib/cmake/llvm /workspace/srcdir/patches/addllvm_hidden_l.patch
 
     # this is more strict than --exclude-libs, so we need to depend on more components.
-    # I can't be arsed to figure out which ones are actually needed, so just add them all.
     # (this is based on the output of `llvm-config --link-static --libs` on macOS)
-    for component in WindowsManifest XRay LibDriver DlltoolDriver Telemetry TextAPIBinaryReader Coverage LineEditor OrcDebugging OrcJIT WindowsDriver MCJIT JITLink Interpreter ExecutionEngine RuntimeDyld OrcTargetProcess OrcShared DWP DebugInfoLogicalView DebugInfoGSYM Option ObjectYAML ObjCopy MCA MCDisassembler LTO Passes HipStdPar CFGuard Coroutines ipo Vectorize SandboxIR Linker Instrumentation FrontendOpenMP FrontendOffloading FrontendOpenACC FrontendHLSL FrontendDriver FrontendAtomic Extensions DWARFLinkerParallel DWARFLinkerClassic DWARFLinker GlobalISel MIRParser AsmPrinter SelectionDAG CodeGen Target ObjCARCOpts CodeGenTypes CGData IRPrinter InterfaceStub FileCheck FuzzMutate ScalarOpts InstCombine AggressiveInstCombine TransformUtils BitWriter Analysis ProfileData Symbolize DebugInfoBTF DebugInfoPDB DebugInfoMSF DebugInfoCodeView DebugInfoDWARF Object TextAPI MCParser IRReader AsmParser MC BitReader FuzzerCLI Core Remarks BitstreamReader BinaryFormat TargetParser TableGen Support Demangle; do
+    sed -i '/LINK_COMPONENTS/,/DEPENDS/{ /LINK_COMPONENTS/!{ /DEPENDS/!d; } }' lib/SPIRV/CMakeLists.txt
+    sed -i '/SPIRVLib/,/)/{ /SPIRVLib/!{ /)/!d; } }' tools/llvm-spirv/CMakeLists.txt
+    for component in Passes HipStdPar CFGuard Coroutines ipo Vectorize SandboxIR Linker Instrumentation FrontendOpenMP FrontendOffloading FrontendAtomic CodeGen Target ObjCARCOpts CodeGenTypes CGData IRPrinter ScalarOpts InstCombine AggressiveInstCombine TransformUtils BitWriter Analysis ProfileData DebugInfoDWARF Object TextAPI MCParser IRReader AsmParser MC BitReader Core Remarks BitstreamReader BinaryFormat TargetParser Support Demangle; do
         sed -i "/LINK_COMPONENTS/a $component" lib/SPIRV/CMakeLists.txt
+        sed -i "/set(LLVM_LINK_COMPONENTS/a $component" tools/llvm-spirv/CMakeLists.txt
     done
+    sed -i '/set(LLVM_LINK_COMPONENTS "")/d' tools/llvm-spirv/CMakeLists.txt
+
+    # for some reason it doesn't link against zstd?
+    echo 'target_link_libraries(LLVMSPIRVLib PRIVATE z zstd)' >> lib/SPIRV/CMakeLists.txt
 fi
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
