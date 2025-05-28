@@ -18,7 +18,8 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/ssht
 
 # Add missing declarations for certain complex long double functions.
-# These declarations seem to be missing from our system header files.
+# These declarations seem to be missing from our system header files
+# on aarch64-unknown-freebsd.
 # They should be in `<complex.h>` but they aren't.
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/complex_long_double.patch
 
