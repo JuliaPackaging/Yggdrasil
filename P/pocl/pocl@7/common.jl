@@ -8,6 +8,8 @@ function build_script(standalone=false)
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
 
+    atomic_patch -p1 ../patches/hidden_link.patch
+
     if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
         # LLVM 15+ requires macOS SDK 10.14
         pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
