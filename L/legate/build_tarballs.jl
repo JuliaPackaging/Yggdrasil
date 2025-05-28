@@ -136,8 +136,8 @@ platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_versi
 platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
 #* REMOVE LATER
-# platforms = filter!(p -> arch(p) == "x86_64", platforms)
-# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.8", platforms)
+platforms = filter!(p -> arch(p) == "x86_64", platforms)
+platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.3", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
@@ -145,9 +145,10 @@ platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 # platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 # filter!(p -> p["mpi"] ∉ ["mpitrampoline", "microsoftmpi"], platforms)
 
-# print(platforms)
 
-# platforms = [platforms[1]]
+platforms = [platforms[1]]
+print(platforms)
+
 
 # also some warnings about avx2 instruction set vs x86_64
 # dont_dlopen avoids version `GLIBCXX_3.4.30' not found
@@ -155,10 +156,15 @@ products = [
     LibraryProduct("liblegate", :liblegate, dont_dlopen = true)
 ] 
 
+ps = PackageSpec(; name="NCCL_JLL", uuid = "4d6d38e4-5b87-5e63-912a-873ff2d649b7",
+                     path = "/trace/group/mcgaughey/emeitz/.julia/dev/NCCL_jll")
+Pkg.API.handle_package_input!(ps)
+
 dependencies = [
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("MPICH_jll"; compat="~4.3.0"),
-    Dependency("NCCL_jll"; compat="~2.26.5"), # supports all of 12.x
+    # Dependency("NCCL_jll"; compat="~2.26.5"), # supports all of 12.x
+    Dependency(ps),
     # Dependency("UCX_jll"),
     Dependency("Zlib_jll"; compat="~1.2.12"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
