@@ -14,16 +14,13 @@ llvm_version = v"20.1.2"
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "dee371987a59ed8654083c09c5f1d5c54f5db318"),
-    DirectorySource("bundled")
+        "dee371987a59ed8654083c09c5f1d5c54f5db318")
 ]
 
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""
 cd SPIRV-LLVM-Translator
 install_license LICENSE.TXT
-
-atomic_patch -p1 ../patches/visibility.patch
 
 if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
     # LLVM 15+ requires macOS SDK 10.14
@@ -54,15 +51,11 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 
 # More hacks for Windows
 if [[ "${target}" == *mingw* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_SHARED_LIBRARY_CXX_FLAGS=\"-pthread\")
     CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS=\"-pthread\")
 fi
 
 # Tell CMake where LLVM is
 CMAKE_FLAGS+=(-DLLVM_DIR="${prefix}/lib/cmake/llvm")
-
-# Build the library
-CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
 
 # Don't link dynamically against libLLVM, but statically against each component
 #CMAKE_FLAGS+=(-DLLVM_LINK_LLVM_DYLIB=OFF)
@@ -73,31 +66,8 @@ sed -i '/add_llvm_tool(/a DISABLE_LLVM_LINK_LLVM_DYLIB' tools/llvm-spirv/CMakeLi
 # Use our LLVM version
 CMAKE_FLAGS+=(-DBASE_LLVM_VERSION=""" * string(Base.thisminor(llvm_version)) * raw""")
 
-# Make sure libLLVMSPIRV doesn't re-export all of libLLVM. This matters on Unix-style
-# dynamic linkers, wheter otherwise LLVM symbols could be resolved to the wrong library.
-if [[ "${target}" == *-linux-* ]]; then
-    CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--exclude-libs,ALL")
-elif [[ ("${target}" == *-apple-darwin*) ]]; then
-    # macOS' linker doesn't support --exclude-libs; we have to use -hidden-l instead
-    atomic_patch --follow-symlinks -d $prefix/lib/cmake/llvm /workspace/srcdir/patches/addllvm_hidden_l.patch
-
-    # this is more strict than --exclude-libs, so we need to depend on more components.
-    # (this is based on the output of `llvm-config --link-static --libs` on macOS)
-    sed -i '/LINK_COMPONENTS/,/DEPENDS/{ /LINK_COMPONENTS/!{ /DEPENDS/!d; } }' lib/SPIRV/CMakeLists.txt
-    sed -i '/SPIRVLib/,/)/{ /SPIRVLib/!{ /)/!d; } }' tools/llvm-spirv/CMakeLists.txt
-    for component in Passes HipStdPar CFGuard Coroutines ipo Vectorize SandboxIR Linker Instrumentation FrontendOpenMP FrontendOffloading FrontendAtomic CodeGen Target ObjCARCOpts CodeGenTypes CGData IRPrinter ScalarOpts InstCombine AggressiveInstCombine TransformUtils BitWriter Analysis ProfileData DebugInfoDWARF Object TextAPI MCParser IRReader AsmParser MC BitReader Core Remarks BitstreamReader BinaryFormat TargetParser Support Demangle; do
-        sed -i "/LINK_COMPONENTS/a $component" lib/SPIRV/CMakeLists.txt
-        sed -i "/set(LLVM_LINK_COMPONENTS/a $component" tools/llvm-spirv/CMakeLists.txt
-    done
-    sed -i '/set(LLVM_LINK_COMPONENTS "")/d' tools/llvm-spirv/CMakeLists.txt
-
-    # for some reason it doesn't link against zstd?
-    echo 'target_link_libraries(LLVMSPIRVLib PRIVATE z zstd)' >> lib/SPIRV/CMakeLists.txt
-fi
-
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} llvm-spirv install
-install -Dm755 build/tools/llvm-spirv/llvm-spirv${exeext} -t ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
@@ -116,8 +86,7 @@ filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct(["libLLVMSPIRVLib", "LLVMSPIRVLib"], :libLLVMSPIRV),
-    ExecutableProduct("llvm-spirv", :llvm_spirv),
+    ExecutableProduct("llvm-spirv", :llvm_spirv)
 ]
 
 # Dependencies that must be installed before this package can be built
