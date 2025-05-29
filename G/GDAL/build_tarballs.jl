@@ -22,7 +22,10 @@ sources = [
         "447eb5238bb6ef2837e68bf2ec742c64007b680b"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-    DirectorySource("./bundled")
+    DirectorySource("./bundled"),
+    FileSource("https://github.com/OSGeo/gdal/commit/7d28a4091c54e456ff13f6713f8769da3d1fae54.patch",
+               "35603ceb28b5476225b7d7e9ded8273164cdf12735d576db373f8af1f004a944";
+               filename="inttypes.patch"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,8 +33,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
 atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
-# See <https://github.com/OSGeo/gdal/issues/12464>
-atomic_patch -p1 ../patches/tiff-inttypes.patch
+atomic_patch -p1 ../inttypes.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
