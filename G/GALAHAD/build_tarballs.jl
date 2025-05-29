@@ -30,6 +30,15 @@ if [[ "${target}" == *arm* ]] || [[ "${target}" == *aarch64-linux* ]] || [[ "${t
     QUADRUPLE="false"
 fi
 
+CUTEST_SINGLE="cutest_single"
+CUTEST_DOUBLE="cutest_double"
+CUTEST_QUADRUPLE="cutest_quadruple"
+if [[ "${target}" == *i686-w64-mingw32* ]]; then
+    CUTEST_SINGLE=""
+    CUTEST_DOUBLE=""
+    CUTEST_QUADRUPLE=""
+fi
+
 meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
                            -Dint64=false \
@@ -38,9 +47,9 @@ meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dliblapack=$LBT \
                            -Dlibsmumps=smumps \
                            -Dlibdmumps=dmumps \
-                           -Dlibcutest_single=cutest_single \
-                           -Dlibcutest_double=cutest_double \
-                           -Dlibcutest_quadruple=cutest_quadruple \
+                           -Dlibcutest_single=${CUTEST_SINGLE} \
+                           -Dlibcutest_double=${CUTEST_DOUBLE} \
+                           -Dlibcutest_quadruple=${CUTEST_QUADRUPLE} \
                            -Dlibcutest_modules=$prefix/modules \
                            -Dsingle=true \
                            -Ddouble=true \
@@ -51,7 +60,6 @@ meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dlibhsl_modules=$prefix/modules
 
 meson compile -C builddir_int32
-meson install -C builddir_int32
 
 meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
@@ -74,7 +82,6 @@ meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dlibhsl_modules=$prefix/modules
 
 meson compile -C builddir_int64
-meson install -C builddir_int64
 
 if [[ "$QUADRUPLE" == "true" ]]; then
     meson setup builddir_quad_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
@@ -85,9 +92,9 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dliblapack= \
                                     -Dlibsmumps= \
                                     -Dlibdmumps= \
-                                    -Dlibcutest_single=cutest_single \
-                                    -Dlibcutest_double=cutest_double \
-                                    -Dlibcutest_quadruple=cutest_quadruple \
+                                    -Dlibcutest_single=${CUTEST_SINGLE} \
+                                    -Dlibcutest_double=${CUTEST_DOUBLE} \
+                                    -Dlibcutest_quadruple=${CUTEST_QUADRUPLE} \
                                     -Dlibcutest_modules=$prefix/modules \
                                     -Dsingle=false \
                                     -Ddouble=false \
@@ -98,7 +105,6 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dlibhsl_modules=$prefix/modules
 
     meson compile -C builddir_quad_int32
-    meson install -C builddir_quad_int32
 
     meson setup builddir_quad_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                                     --prefix=$prefix \
@@ -121,6 +127,12 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dlibhsl_modules=$prefix/modules
 
     meson compile -C builddir_quad_int64
+fi
+
+meson install -C builddir_int32
+meson install -C builddir_int64
+if [[ "$QUADRUPLE" == "true" ]]; then
+    meson install -C builddir_quad_int32
     meson install -C builddir_quad_int64
 fi
 """
