@@ -156,8 +156,8 @@ products = [
     LibraryProduct("liblegate", :liblegate, dont_dlopen = true)
 ] 
 
-ps = PackageSpec(; name="NCCL_JLL", uuid = "4d6d38e4-5b87-5e63-912a-873ff2d649b7",
-                     path = "/trace/group/mcgaughey/emeitz/.julia/dev/NCCL_jll")
+ps = PackageSpec(; name="NCCL_jll", uuid = "4d6d38e4-5b87-5e63-912a-873ff2d649b7",
+                     path = "https://github.com/ejmeitz/NCCL_jll.jl.git")
 Pkg.API.handle_package_input!(ps)
 
 dependencies = [
