@@ -21,6 +21,14 @@ atomic_patch -p1 ../patches/0001-Replace-run-checks-with-compile-checks.patch
 
 #see https://github.com/PointCloudLibrary/pcl/pull/4695 for -DPCL_WARNINGS_ARE_ERRORS flag
 
+cmake_extra_args=()
+
+if [[ "${target}" == *-mingw* ]]; then
+    cmake_extra_args+=(
+        -DPCL_BUILD_WITH_BOOST_DYNAMIC_LINKING_WIN32=ON
+        -DBoost_DIR=${libdir}/cmake/Boost-1.87.0/)
+fi
+
 cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DWITH_VTK=OFF \
@@ -31,7 +39,8 @@ cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_OPENGL=OFF \
     -DWITH_PCAP=OFF \
     -DPCL_WARNINGS_ARE_ERRORS=OFF \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    "${cmake_extra_args[@]}"
 
 cmake --build build -j${nproc}
 cmake --install build
@@ -126,10 +135,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms))
+    Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms))
     Dependency(PackageSpec(name="FLANN_jll", uuid="48b6455b-4cf5-590d-a543-2d733c79e793"))
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.87.0")
-    Dependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
+    BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
