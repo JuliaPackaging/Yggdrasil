@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.192"
+version = v"0.0.191"
 
 sources = [
    GitSource(repo, "a1e114b4c1ec997dc1c4c982cadc1975ee8db108"),
@@ -364,7 +364,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6", "12.8"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -375,7 +375,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_gcc_version = v"13"
     preferred_llvm_version = v"18.1.7"
 
-    if mode == "dbg" # && !Sys.isapple(platform)
+    if mode == "dbg" && !Sys.isapple(platform)
         continue
     end
 
@@ -396,14 +396,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     hermetic_cuda_version_map = Dict(
         # Our platform tags use X.Y version scheme, but for some CUDA versions we need to
         # pass Bazel a full version number X.Y.Z.  See `CUDA_REDIST_JSON_DICT` in
-        # <https://github.com/openxla/xla/blob/main/third_party/gpus/cuda/hermetic/cuda_redist_versions.bzl>.
+        # <https://github.com/openxla/xla/blob/main/third_party/tsl/third_party/gpus/cuda/hermetic/cuda_redist_versions.bzl>.
         "none" => "none",
         "11.8" => "11.8",
         "12.1" => "12.1.1",
         "12.3" => "12.3.1",
         "12.4" => "12.4.1",
         "12.6" => "12.6.3",
-        "12.8" => "12.8.1",
     )
 
     prefix="""
@@ -422,13 +421,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
-        if hermetic_cuda_version_map[cuda_version] == "12.8.1"
-	    # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.8.1.json
-	    push!(platform_sources,
-                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.8.93-archive.tar.xz",
-				"dc0b713ce69fd921aa53ac68610717d126fc273a3c554b0465cf44d7e379f467"),
-		  )
-	elseif hermetic_cuda_version_map[cuda_version] == "12.6.3"
+        if hermetic_cuda_version_map[cuda_version] == "12.6.3"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.6.3.json
 	    push!(platform_sources,
                   ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.85-archive.tar.xz",
