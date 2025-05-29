@@ -29,10 +29,14 @@ install_license LICENSE-*
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-#TODO # PowerPC and 32-bit ARM not supported by sha1-asm
-#TODO filter!(p -> arch(p) ∉ ("powerpc64le", "armv6l", "armv7l"), platforms)
-#TODO # Rust toolchain for i686 Windows is unusable
-#TODO filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# riscv64 does not support Rust
+filter!(p -> !(arch(p) == "riscv64"), platforms)
+# aarch64-unknown-freebsd does not support Rust
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# Rust toolchain for i686 Windows is unusable
+filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
+# OpenSSL is not found on musl architectures
+filter!(p -> !(libc(p) == "musl"), platforms)
 
 # The products that we will ensure are always built
 products = [
