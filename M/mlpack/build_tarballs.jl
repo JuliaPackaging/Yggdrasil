@@ -6,14 +6,13 @@ using BinaryBuilder
 
 # Set sources and other environment variables.
 name = "mlpack"
-source_version = v"4.6.0"
+source_version = v"4.6.2"
 version = source_version
 sources = [
     ArchiveSource("https://www.mlpack.org/files/mlpack-$(source_version).tar.gz",
-                  "8b90c18b25f94319c5969796e63fea96f3f85d9eff41323f12e9964706935632"),
+                  "2fe772da383a935645ced07a07b51942ca178d38129df3bf685890bc3c1752cf"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
-    DirectorySource("./bundled")
+                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
 ]
 
 script = raw"""
@@ -29,10 +28,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.14
     popd
 fi
-
-# Temporary patch until 4.6.1:
-# https://github.com/mlpack/mlpack/pull/3919
-patch -p1 < ${WORKSPACE}/srcdir/patches/cmake_stb_available.patch
 
 mkdir build && cd build
 
