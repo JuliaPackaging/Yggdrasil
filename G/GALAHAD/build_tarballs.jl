@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.2.0"
+version = v"5.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "49a63f9ad78ce41843df0387bae82792ed5db223")
+    GitSource("https://github.com/ralna/GALAHAD.git", "63fc635be9a1d75e3bfb4914e881b0292a563fb7")
 ]
 
 # Bash recipe for building across all platforms
@@ -38,9 +38,15 @@ meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dliblapack=$LBT \
                            -Dlibsmumps=smumps \
                            -Dlibdmumps=dmumps \
+                           -Dlibcutest_single=cutest_single \
+                           -Dlibcutest_double=cutest_double \
+                           -Dlibcutest_quadruple=cutest_quadruple \
+                           -Dlibcutest_modules=$prefix/modules \
                            -Dsingle=true \
                            -Ddouble=true \
                            -Dquadruple=false \
+                           -Dbinaries=true \
+                           -Dtests=false \
                            -Dlibhsl=hsl_subset \
                            -Dlibhsl_modules=$prefix/modules
 
@@ -55,9 +61,15 @@ meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dliblapack=$LBT \
                            -Dlibsmumps= \
                            -Dlibdmumps= \
+                           -Dlibcutest_single= \
+                           -Dlibcutest_double= \
+                           -Dlibcutest_quadruple= \
+                           -Dlibcutest_modules=$prefix/modules \
                            -Dsingle=true \
                            -Ddouble=true \
                            -Dquadruple=false \
+                           -Dbinaries=false \
+                           -Dtests=false \
                            -Dlibhsl=hsl_subset_64 \
                            -Dlibhsl_modules=$prefix/modules
 
@@ -73,9 +85,15 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dliblapack= \
                                     -Dlibsmumps= \
                                     -Dlibdmumps= \
+                                    -Dlibcutest_single=cutest_single \
+                                    -Dlibcutest_double=cutest_double \
+                                    -Dlibcutest_quadruple=cutest_quadruple \
+                                    -Dlibcutest_modules=$prefix/modules \
                                     -Dsingle=false \
                                     -Ddouble=false \
                                     -Dquadruple=true \
+                                    -Dbinaries=true \
+                                    -Dtests=false \
                                     -Dlibhsl= \
                                     -Dlibhsl_modules=$prefix/modules
 
@@ -90,9 +108,15 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dliblapack= \
                                     -Dlibsmumps= \
                                     -Dlibdmumps= \
+                                    -Dlibcutest_single= \
+                                    -Dlibcutest_double= \
+                                    -Dlibcutest_quadruple= \
+                                    -Dlibcutest_modules=$prefix/modules \
                                     -Dsingle=false \
                                     -Ddouble=false \
                                     -Dquadruple=true \
+                                    -Dbinaries=false \
+                                    -Dtests=false \
                                     -Dlibhsl= \
                                     -Dlibhsl_modules=$prefix/modules
 
@@ -125,6 +149,7 @@ dependencies = [
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d")),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
+    Dependency(PackageSpec(name="CUTEst_jll", uuid="bb5f6f25-f23d-57fd-8f90-3ef7bad1d825"), compat="2.5.2"),
     # Dependency(PackageSpec(name="PaStiX_jll", uuid="46e5285b-ff06-5712-adf2-cc145d39f096")),
 ]
 
