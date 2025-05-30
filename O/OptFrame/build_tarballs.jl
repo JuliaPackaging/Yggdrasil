@@ -16,12 +16,12 @@ cd ${WORKSPACE}/srcdir/OptFrame/
 
 make optframe_lib
 
-cp ${WORKSPACE}/srcdir/OptFrame/build/optframe_lib.so ${bindir}
+cp ${WORKSPACE}/srcdir/OptFrame/build/optframe_lib.so ${libdir}/optframe_lib.${dlext}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
+platforms = expand_cxxstring_abis([
     Platform("x86_64", "linux"; libc = "glibc"),
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("powerpc64le", "linux"; libc = "glibc"),
@@ -32,17 +32,15 @@ platforms = [
     Platform("aarch64", "freebsd"; ),
     Platform("i686", "windows"; ),
     Platform("x86_64", "windows"; )
-]
-
+])
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("bin", :binary)
+    LibraryProduct("optframe_lib", :optframe)
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
