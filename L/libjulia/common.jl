@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec and should_build_platform
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-DEV", v"1.13.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-beta3", v"1.13.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -60,14 +60,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.11.1" => "895549f40b21dee66b6380e30811f40d2d938c2baba0750de69c9a183cccd756",
     )
 
-    if version == v"1.12.0-DEV"
+    if version == v"1.12.0-beta3"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "0c1e800dbdcf76b24cf3ab2bc9861a587e7c1fb5"),
+            GitSource("https://github.com/JuliaLang/julia.git", "faca79b503ae4fb47483e3e8d9acb2f3eb151a5b"),
             DirectorySource("./bundled"),
         ]
     elseif version == v"1.13.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "79ce1685e94a19edadd21544bce973cfd06cb168"),
+            GitSource("https://github.com/JuliaLang/julia.git", "bc30cf23de79eee8e5cbe68813890cf145df1e47"),
             DirectorySource("./bundled"),
         ]
     else
@@ -158,6 +158,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # a HostDependency, now that we have those
     LLVM_CXXFLAGS="-I${prefix}/include -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -std=c++14"
 
+    # so far this holds for most versions:
+    LLVMVERMINOR=0
     if [[ "${version}" == 1.6.* ]]; then
         LLVMVERMAJOR=11
     elif [[ "${version}" == 1.7.* ]]; then
@@ -172,14 +174,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMVERMAJOR=16
     elif [[ "${version}" == 1.12.* ]]; then
         LLVMVERMAJOR=18
+        LLVMVERMINOR=1
     elif [[ "${version}" == 1.13.* ]]; then
-        LLVMVERMAJOR=18
+        LLVMVERMAJOR=20
+        LLVMVERMINOR=1
     else
         echo "Error, LLVM version not specified"
         exit 1
     fi
-    # so far this holds for all versions:
-    LLVMVERMINOR=0
 
     # needed for the julia.expmap symbol versioning file
     # starting from julia 1.10
@@ -465,11 +467,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
     elseif version.major == 1 && version.minor == 13
         push!(dependencies, BuildDependency("OpenSSL_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.3+2")))
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.10.1+0")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.2+1")))
     else
         error("Unsupported Julia version")
     end
