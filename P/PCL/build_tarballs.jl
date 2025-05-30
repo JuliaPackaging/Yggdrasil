@@ -40,6 +40,7 @@ cmake -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DWITH_PCAP=OFF \
     -DPCL_WARNINGS_ARE_ERRORS=OFF \
     -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_STANDARD=14 \
     "${cmake_extra_args[@]}"
 
 cmake --build build -j${nproc}
@@ -143,5 +144,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; 
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
     julia_compat="1.10", preferred_gcc_version = v"11.1")
