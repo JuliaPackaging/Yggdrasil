@@ -16,6 +16,8 @@ cd ${WORKSPACE}/srcdir/OptFrame/
 
 make optframe_lib
 
+mkdir -p ${libdir}
+
 cp ${WORKSPACE}/srcdir/OptFrame/build/optframe_lib.so ${libdir}/optframe_lib.${dlext}
 """
 
