@@ -30,15 +30,6 @@ if [[ "${target}" == *arm* ]] || [[ "${target}" == *aarch64-linux* ]] || [[ "${t
     QUADRUPLE="false"
 fi
 
-CUTEST_SINGLE="cutest_single"
-CUTEST_DOUBLE="cutest_double"
-CUTEST_QUADRUPLE="cutest_quadruple"
-if [[ "${target}" == *i686-w64-mingw32* ]]; then
-    CUTEST_SINGLE=""
-    CUTEST_DOUBLE=""
-    CUTEST_QUADRUPLE=""
-fi
-
 meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
                            -Dint64=false \
@@ -47,9 +38,9 @@ meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dliblapack=$LBT \
                            -Dlibsmumps=smumps \
                            -Dlibdmumps=dmumps \
-                           -Dlibcutest_single=${CUTEST_SINGLE} \
-                           -Dlibcutest_double=${CUTEST_DOUBLE} \
-                           -Dlibcutest_quadruple=${CUTEST_QUADRUPLE} \
+                           -Dlibcutest_single=cutest_single \
+                           -Dlibcutest_double=cutest_double \
+                           -Dlibcutest_quadruple=cutest_quadruple \
                            -Dlibcutest_modules=$prefix/modules \
                            -Dsingle=true \
                            -Ddouble=true \
@@ -92,9 +83,9 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dliblapack= \
                                     -Dlibsmumps= \
                                     -Dlibdmumps= \
-                                    -Dlibcutest_single=${CUTEST_SINGLE} \
-                                    -Dlibcutest_double=${CUTEST_DOUBLE} \
-                                    -Dlibcutest_quadruple=${CUTEST_QUADRUPLE} \
+                                    -Dlibcutest_single=cutest_single \
+                                    -Dlibcutest_double=cutest_double \
+                                    -Dlibcutest_quadruple=cutest_quadruple \
                                     -Dlibcutest_modules=$prefix/modules \
                                     -Dsingle=false \
                                     -Ddouble=false \
