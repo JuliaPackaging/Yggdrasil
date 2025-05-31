@@ -122,7 +122,7 @@ script2= """
 bin/gn gen out/Static --args='target_cpu="$(target_cpu)" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
 """
 script = script1 * script2 * script3
-build_tarballs(ARGS, name, version, sources, script, platforms3, products, dependencies; julia_compat="1.10", preferred_gcc_version = v"11.1.0", preferred_llvm_version = v"15.0.7")
+#build_tarballs(ARGS, name, version, sources, script, platforms3, products, dependencies; julia_compat="1.10", preferred_gcc_version = v"11.1.0", preferred_llvm_version = v"15.0.7")
 
 
 
