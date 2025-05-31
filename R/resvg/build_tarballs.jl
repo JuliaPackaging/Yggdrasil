@@ -14,8 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/resvg*
 cargo build --release
-mkdir -p "${bindir}"
-cp "target/${rust_target}/release/resvg${exeext}" "${bindir}/."
+install -Dvm 755 "target/${rust_target}/release/resvg${exeext}" -t "${bindir}"
 install_license LICENSE-MIT LICENSE-APACHE
 """
 
