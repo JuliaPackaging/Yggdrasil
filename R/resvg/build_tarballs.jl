@@ -24,7 +24,7 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("resvg", :resvg)
+    ExecutableProduct("resvg", :resvg)
 ]
 
 # Dependencies that must be installed before this package can be built
