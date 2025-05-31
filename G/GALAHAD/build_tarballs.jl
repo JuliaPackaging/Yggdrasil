@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.2.1"
+version = v"5.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "dad1ece307bff5cc09da535d14417869e8eb9a56")
+    GitSource("https://github.com/ralna/GALAHAD.git", "d88eec219f4dbde2efeb32bda27b1c32a82655c0")
 ]
 
 # Bash recipe for building across all platforms
@@ -40,7 +40,7 @@ meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dlibdmumps=dmumps \
                            -Dlibcutest_single=cutest_single \
                            -Dlibcutest_double=cutest_double \
-                           -Dlibcutest_quadruple=cutest_quadruple \
+                           -Dlibcutest_quadruple= \
                            -Dlibcutest_modules=$prefix/modules \
                            -Dsingle=true \
                            -Ddouble=true \
@@ -85,7 +85,7 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dlibdmumps= \
                                     -Dlibcutest_single=cutest_single \
                                     -Dlibcutest_double=cutest_double \
-                                    -Dlibcutest_quadruple=cutest_quadruple \
+                                    -Dlibcutest_quadruple= \
                                     -Dlibcutest_modules=$prefix/modules \
                                     -Dsingle=false \
                                     -Ddouble=false \
@@ -155,7 +155,7 @@ dependencies = [
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d")),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
-    Dependency(PackageSpec(name="CUTEst_jll", uuid="bb5f6f25-f23d-57fd-8f90-3ef7bad1d825"), compat="2.5.2"),
+    Dependency(PackageSpec(name="CUTEst_jll", uuid="bb5f6f25-f23d-57fd-8f90-3ef7bad1d825"), compat="2.5.3"),
     # Dependency(PackageSpec(name="PaStiX_jll", uuid="46e5285b-ff06-5712-adf2-cc145d39f096")),
 ]
 
