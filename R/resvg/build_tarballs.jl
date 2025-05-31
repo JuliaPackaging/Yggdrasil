@@ -22,6 +22,7 @@ install_license LICENSE-MIT LICENSE-APACHE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> !Sys.isfreebsd(p), platforms)
 filter!(p -> !(nbits(p) == 32 && Sys.iswindows(p)), platforms)
 
 # The products that we will ensure are always built
