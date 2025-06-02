@@ -155,6 +155,8 @@ function build_script(standalone=false)
         cp -va $sysroot/lib/libm.a $prefix/share/lib
         cp -va $sysroot/lib/lib{kernel,user,shell}32.a $prefix/share/lib
         cp -va $sysroot/lib/libmingw*.a $prefix/share/lib
+        cp -va $sysroot/lib/libmoldname.a $prefix/share/lib
+        cp -va $sysroot/lib/libadvapi32.a $prefix/share/lib
         cp -va /opt/${target}/${target}/lib/libgcc* $prefix/share/lib
         cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     fi
