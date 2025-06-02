@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Spot_julia"
-version = v"2.13.1"
+version_string = "2.13.1"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.13.1.tar.gz","b9d1de4abcd069f923e1a3263f58ccafcc54896aa818b455928ca2b1a4466dc9"),
+    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-$(version_string).tar.gz","b9d1de4abcd069f923e1a3263f58ccafcc54896aa818b455928ca2b1a4466dc9"),
     GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
         "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
