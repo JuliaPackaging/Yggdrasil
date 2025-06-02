@@ -46,6 +46,9 @@ function build_script(standalone=false)
     # Release build for best performance
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
+    # Disable build mode
+    CMAKE_FLAGS+=(-DENABLE_POCL_BUILDING:Bool=OFF)
+
     # Don't build tests
     CMAKE_FLAGS+=(-DENABLE_TESTS:Bool=OFF)
 
@@ -155,6 +158,8 @@ function build_script(standalone=false)
         cp -va $sysroot/lib/libm.a $prefix/share/lib
         cp -va $sysroot/lib/lib{kernel,user,shell}32.a $prefix/share/lib
         cp -va $sysroot/lib/libmingw*.a $prefix/share/lib
+        cp -va $sysroot/lib/libmoldname.a $prefix/share/lib
+        cp -va $sysroot/lib/libadvapi32.a $prefix/share/lib
         cp -va /opt/${target}/${target}/lib/libgcc* $prefix/share/lib
         cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     fi
@@ -201,7 +206,7 @@ function init_block(standalone=false)
 
         # write to temporary script
         temp_script, io = mktemp(bindir; cleanup=false)
-        if Sys.isunix()
+        script = if Sys.isunix()
             println(io, "#!/bin/bash")
 
             LIBPATH_base = get(ENV, LIBPATH_env, expanduser(LIBPATH_default))
@@ -225,12 +230,27 @@ function init_block(standalone=false)
             println(io, "exec \\"$path\\" \\"\$@\\"")
             close(io)
             chmod(temp_script, 0o755)
+            joinpath(bindir, name)
+        elseif Sys.iswindows()
+            println(io, "@echo off")
+
+            LIBPATH_base = get(ENV, LIBPATH_env, expanduser(LIBPATH_default))
+            LIBPATH_value = if !isempty(LIBPATH_base)
+                string(LIBPATH, pathsep, LIBPATH_base)
+            else
+                LIBPATH
+            end
+            println(io, "set \\"$LIBPATH_env=$LIBPATH_value\\"")
+
+            println(io, "call \\"$path\\" %*")
+
+            joinpath(bindir, name * ".bat")
         else
             error("Unsupported platform")
         end
+        close(io)
 
         # atomically move to the final location
-        script = joinpath(bindir, name)
         @static if VERSION >= v"1.12.0-DEV.1023"
             mv(temp_script, script; force=true)
         else
@@ -255,7 +275,8 @@ function init_block(standalone=false)
         elseif Sys.isapple()
             LLD_unified_jll.ld64_lld_path
         elseif Sys.iswindows()
-            LLD_unified_jll.lld_link_path
+            # PoCL doesn't use MSVC-style linker arguments, so still use the GNU ld wrapper.
+            LLD_unified_jll.ld_lld_path
         else
             error("Unsupported platform")
         end
@@ -275,6 +296,10 @@ function init_block(standalone=false)
             # can't safely check first, because multiple processes may be running
             islink(link) || rethrow()
         end
+    end
+    if Sys.iswindows()
+        # BUG: using native (backwards) slashes breaks Clang's --ld-path
+        ld_wrapper = replace(ld_wrapper, '\\' => '/')
     end
     ENV["POCL_ARGS_CLANG"] = join([
             "-fuse-ld=lld", "--ld-path=$ld_wrapper",
