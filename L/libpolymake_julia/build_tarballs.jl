@@ -16,7 +16,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
-version = v"0.13.2"
+version = v"0.14.0"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl
@@ -65,14 +65,14 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.15")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.16")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FLINT_jll", compat = "~300.200.0"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.13.4"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
     Dependency("polymake_jll"; compat = "~400.1300.3"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
