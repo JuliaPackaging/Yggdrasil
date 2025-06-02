@@ -16,9 +16,7 @@ cd ${WORKSPACE}/srcdir/OptFrame/
 
 make optframe_lib
 
-mkdir -p ${libdir}
-
-cp ${WORKSPACE}/srcdir/OptFrame/build/optframe_lib.so ${libdir}/optframe_lib.${dlext}
+install -Dvm755 build/optframe_lib.so "${libdir}/optframe_lib.${dlext}"
 """
 
 # These are the platforms we will build for by default, unless further
