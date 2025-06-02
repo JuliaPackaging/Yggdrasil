@@ -60,7 +60,9 @@ products = [
 dependencies = [
     Dependency("Ghostscript_jll"),
     Dependency("JpegTurbo_jll"),
+    Dependency("LERC_jll"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("LittleCMS_jll"),
     Dependency("OpenJpeg_jll"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
