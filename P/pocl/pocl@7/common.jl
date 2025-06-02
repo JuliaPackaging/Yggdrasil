@@ -46,6 +46,9 @@ function build_script(standalone=false)
     # Release build for best performance
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
+    # Disable build mode
+    CMAKE_FLAGS+=(-DENABLE_POCL_BUILDING:Bool=OFF)
+
     # Don't build tests
     CMAKE_FLAGS+=(-DENABLE_TESTS:Bool=OFF)
 
