@@ -46,9 +46,7 @@ export CUDARTLIB=cudart # link against dynamic library
 export CUDA_HOME=${prefix}/cuda;
 export PATH=$PATH:$CUDA_HOME/bin
 export CUDACXX=$CUDA_HOME/bin/nvcc
-
-# nvcc/nccl thinks the libraries are located inside lib64, but the SDK actually has them in lib
-ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
+export CUDA_LIB=${CUDA_HOME}/lib
 
 cd nccl
 make -j ${nproc} src.build CUDA_HOME=${CUDA_HOME} PREFIX=${prefix}
