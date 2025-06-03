@@ -2,12 +2,15 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "OptFrame"
-version = v"5.1.0"
+name    = "OptFrame"
+version = v"6.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/OptFrame/OptFrame.git", "d30011695eac4532f9592a17f91b39e9d44f0069")
+    GitSource(
+        "https://github.com/OptFrame/OptFrame.git",
+        "3b57dcd24bc4dff2abf0ef28010bf736509eefa5",
+    )
 ]
 
 # Bash recipe for building across all platforms
@@ -21,18 +24,12 @@ install -Dvm755 build/optframe_lib.so "${libdir}/optframe_lib.${dlext}"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = expand_cxxstring_abis([
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("aarch64", "linux"; libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("riscv64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("aarch64", "linux"; libc = "musl"),
-    Platform("x86_64", "freebsd"; ),
-    Platform("aarch64", "freebsd"; ),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-])
+platforms = expand_cxxstring_abis(
+    filter(
+        p -> p != Platform("x86_64", "macos"),
+        supported_platforms(),
+    )
+)
 
 # The products that we will ensure are always built
 products = [
@@ -43,4 +40,4 @@ products = [
 dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"10.2.0", debug = true)
