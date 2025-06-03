@@ -3,10 +3,10 @@ using Pkg
 using BinaryBuilderBase: sanitize
 
 name = "OpenLibm"
-version = v"0.8.6"
+version = v"0.8.7"
 sources = [
     GitSource("https://github.com/JuliaMath/openlibm.git",
-              "1eeb1395b4014884608b1f37d9653c1efe4dffce"),
+              "9fbeafcd4f1b6ef6aa3946c1c8faead50f38a94d"),
 ]
 
 script = raw"""
@@ -59,6 +59,6 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
                lock_microarchitecture=false,
                julia_compat="1.6",
                preferred_llvm_version=llvm_version,
-               preferred_gcc_version=v"9")
+               preferred_gcc_version=v"8")
 
 # Build trigger: 1
