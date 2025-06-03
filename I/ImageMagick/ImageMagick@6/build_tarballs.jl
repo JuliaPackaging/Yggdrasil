@@ -2,13 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"6.9.13-16"
+upstream_version = v"6.9.13-25"
 version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
 
 # Collection of sources required to build imagemagick
 sources = [
     GitSource("https://github.com/ImageMagick/ImageMagick6",
-              "d2fdaa61f1acf130a58381ffa09171b514db69ad"),
+              "10f84a86515a7d9ec4c7a11d2249def100266846"),
     DirectorySource("./bundled"),
 ]
 
@@ -58,12 +58,12 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    Dependency("Ghostscript_jll"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("OpenJpeg_jll"),
     Dependency("Zlib_jll"),
     Dependency("libpng_jll"),
-    Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
-    Dependency("Ghostscript_jll"),
-    Dependency("OpenJpeg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
