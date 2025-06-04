@@ -83,7 +83,9 @@ for platform in platforms
 
     # for fp16, we need a vectorization library
     if arch(platform) in ["armv6l", "aarch64"]
-        push!(platform_dependencies, Dependency("SLEEF_jll"))
+        #push!(platform_dependencies, Dependency("SLEEF_jll"))
+        # XXX: PoCL hard-codes the path to libsleef
+        # `no such file or directory: '/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/usr/local/lib/libsleef.so'`
     end
     # TODO: libsvml for x86 (part of mkl)
     # TODO: libmvec as fallback (part of glibc 2.22+)
