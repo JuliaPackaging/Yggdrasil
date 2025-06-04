@@ -33,6 +33,11 @@ cp bin/*/*.so ${prefix}/lib/gap/
 # copy the sources, too, so that we can later compare them
 cp -r src ${prefix}/
 
+# build the manual
+./configure --with-gaproot=${host_prefix}/lib/gap
+make GAP="${host_bindir}/gap" GAC="${host_bindir}/gac" V=1 doc
+# TODO: move the compiled manual to a suitable place
+
 install_license ../../LICENSE
 """
 
