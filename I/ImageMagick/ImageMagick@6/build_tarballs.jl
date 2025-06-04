@@ -3,7 +3,11 @@
 using BinaryBuilder
 name = "ImageMagick"
 upstream_version = v"6.9.13-25"
-version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
+version = VersionNumber(
+    upstream_version.major,
+    upstream_version.minor,
+    upstream_version.patch * 1000 + upstream_version.prerelease[1]
+)
 
 # Collection of sources required to build imagemagick
 sources = [
@@ -62,7 +66,7 @@ dependencies = [
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("OpenJpeg_jll"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("libpng_jll"),
 ]
 
