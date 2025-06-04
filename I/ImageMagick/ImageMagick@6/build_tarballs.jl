@@ -3,7 +3,11 @@
 using BinaryBuilder
 name = "ImageMagick"
 upstream_version = v"6.9.13-25"
-version = VersionNumber(upstream_version.major, upstream_version.minor, upstream_version.patch)
+version = VersionNumber(
+    upstream_version.major,
+    upstream_version.minor,
+    upstream_version.patch * 1000 + upstream_version.prerelease[1]
+)
 
 # Collection of sources required to build imagemagick
 sources = [
