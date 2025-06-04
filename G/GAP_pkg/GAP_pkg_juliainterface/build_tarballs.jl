@@ -12,7 +12,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 gap_version = v"400.1400.004"
 name = "JuliaInterface"
 upstream_version = "0.13.1" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.3" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.4" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
@@ -32,6 +32,11 @@ cp bin/*/*.so ${prefix}/lib/gap/
 
 # copy the sources, too, so that we can later compare them
 cp -r src ${prefix}/
+
+# build the manual
+./configure --with-gaproot=${host_prefix}/lib/gap
+make GAP="${host_bindir}/gap" GAC="${host_bindir}/gac" V=1 doc
+# TODO: move the compiled manual to a suitable place
 
 install_license ../../LICENSE
 """
@@ -68,6 +73,7 @@ end
 dependencies = [
     Dependency("GAP_jll", gap_version),
     BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.16")),
+    HostBuildDependency(PackageSpec(;name="GAP_jll", version=gap_version)), # needed to build the manual
 ]
 
 # The products that we will ensure are always built
