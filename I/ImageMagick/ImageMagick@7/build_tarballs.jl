@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "ImageMagick"
-upstream_version = v"7.1.1-47"
+upstream_version = v"7.1.1-47" # TODO: re-sync with upstream next release (+ 1 below was to update compat)
 version = VersionNumber(
     upstream_version.major,
     upstream_version.minor,
-    upstream_version.patch * 1000 + upstream_version.prerelease[1]
+    upstream_version.patch * 1000 + upstream_version.prerelease[1] + 1
 )
 
 # Collection of sources required to build imagemagick
@@ -54,7 +54,7 @@ products = [
 dependencies = [
     Dependency("Ghostscript_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("Libtiff_jll"; compat="~4.5.1"),
     Dependency("OpenJpeg_jll"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("libpng_jll"),
