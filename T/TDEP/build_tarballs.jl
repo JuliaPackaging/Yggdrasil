@@ -68,6 +68,8 @@ platforms = filter(p -> libgfortran_version(p) >= v"5.0.0", platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 platforms = filter(p -> (p["mpi"] != "microsoftmpi"), platforms)
 
+p = platforms[1]
+
 products = [
     LibraryProduct("libolle", :libolle),
     ExecutableProduct("generate_structure", :generate_structure),
@@ -88,7 +90,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="~1.12.0"),
+    Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("FFTW_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
