@@ -7,11 +7,9 @@ version = v"0.0.1"
 
 # Collection of sources required to complete build
 sources = [
-
-   GitSource("https://github.com/google/skia.git", "482de011c920d85fdbe21a81c45852655df6a809"),
+    GitSource("https://github.com/google/skia.git", "482de011c920d85fdbe21a81c45852655df6a809"),
     GitSource("https://github.com/stensmo/cskia.git", "500cdca61e2105555f339fa363f55e30696b009f"),
     DirectorySource("./bundled")
-
 ]
 
 
