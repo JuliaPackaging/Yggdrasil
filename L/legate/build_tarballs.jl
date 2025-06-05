@@ -10,7 +10,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "legate"
-version = v"25.03"
+version = v"25.05"
 sources = [
     GitSource("https://github.com/nv-legate/legate.git","8a619fa468a73f9766f59ac9a614c0ee084ecbdd"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
@@ -80,11 +80,9 @@ export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 export CUDA_HOME=${prefix}/cuda;
 export PATH=$PATH:$CUDA_HOME/bin
 export CUDACXX=$CUDA_HOME/bin/nvcc
+export CUDA_LIB=${CUDA_HOME}/lib
 
-# nvcc thinks the libraries are located inside lib64, but the SDK actually has them in lib
 ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
-
-#    --with-nccl-dir=${prefix} \
 
 ./configure \
     --prefix=${prefix} \
@@ -132,12 +130,11 @@ end
 """
 
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
-# platforms = filter(p -> os(p) == "linux", platforms)
 platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
 #* REMOVE LATER
 platforms = filter!(p -> arch(p) == "x86_64", platforms)
-platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.3", platforms)
+platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.2" || VersionNumber(tags(p)["cuda"]) == v"12.4", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
@@ -156,15 +153,11 @@ products = [
     LibraryProduct("liblegate", :liblegate, dont_dlopen = true)
 ] 
 
-ps = PackageSpec(; name="NCCL_jll", uuid = "4d6d38e4-5b87-5e63-912a-873ff2d649b7",
-                     path = "https://github.com/ejmeitz/NCCL_jll.jl.git")
-Pkg.API.handle_package_input!(ps)
 
 dependencies = [
     Dependency("HDF5_jll"; compat="~1.14.6"),
     Dependency("MPICH_jll"; compat="~4.3.0"),
-    # Dependency("NCCL_jll"; compat="~2.26.5"), # supports all of 12.x
-    Dependency(ps),
+    Dependency("NCCL_jll"; compat="~2.26.5"), # supports all of 12.x
     # Dependency("UCX_jll"),
     Dependency("Zlib_jll"; compat="~1.2.12"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
@@ -193,7 +186,7 @@ for platform in platforms
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform],
                     products, [dependencies; cuda_deps];
-                    julia_compat = "1.10", preferred_gcc_version = v"12",
+                    julia_compat = "1.10", preferred_gcc_version = v"11",
                     preferred_llvm_version = clang_ver,
                     augment_platform_block=CUDA.augment, lazy_artifacts = true
                 )
