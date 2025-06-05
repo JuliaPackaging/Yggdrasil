@@ -19,10 +19,10 @@ case ${bb_full_target} in
         export MPI_LIBS="-lmpifort -lmpi"
         ;;
     *mpitrampoline*)
-        export MPI_LIBS="-lmpitrampoline -ldl";;
+        export MPI_LIBS="-lmpitrampoline -ldl"
+        ;;
     *openmpi*)
         export MPI_LIBS="-lmpi_mpifh -lmpi"
-        # TDEP expcets MPI mod files in the include dir
         ;;
 esac
 
@@ -68,8 +68,6 @@ platforms = filter(p -> libgfortran_version(p) >= v"5.0.0", platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 platforms = filter(p -> (p["mpi"] != "microsoftmpi"), platforms)
 
-p = platforms[1]
-
 products = [
     LibraryProduct("libolle", :libolle),
     ExecutableProduct("generate_structure", :generate_structure),
@@ -86,7 +84,6 @@ products = [
     ExecutableProduct("dump_dynamical_matrices", :dump_dynamical_matrices),
     ExecutableProduct("crystal_structure_info", :crystal_structure_info),
     ExecutableProduct("refine_structure", :refine_structure),
-    # ExecutableProduct("phasespace_surface", :phasespace_surface)
 ]
 
 dependencies = [
