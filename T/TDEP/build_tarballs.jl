@@ -24,7 +24,6 @@ case ${bb_full_target} in
         export MPI_LIBS="-lmpi_mpifh -lmpi"
         # TDEP expcets MPI mod files in the include dir
         cd ${libdir}
-        cp ./*.mod ../include/
         ;;
 esac
 
@@ -90,7 +89,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="~1.14.6"),
+    Dependency("HDF5_jll"; compat="~1.13.0"),
     Dependency("FFTW_jll"),
     Dependency("OpenBLAS32_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),

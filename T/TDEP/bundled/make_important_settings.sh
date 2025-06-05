@@ -43,7 +43,7 @@ echo "USECGAL=\"$USECGAL\"" >> "$output_file"
 for LIB_NAME in "${!REQUIRED_LIBS[@]}"; do
     LIBS=${REQUIRED_LIBS[$LIB_NAME]}
     echo "PATH_TO_${LIB_NAME}_LIB=\"-L${libdir}\"" >> "$output_file"
-    echo "PATH_TO_${LIB_NAME}_INC=\"-I${includedir}\"" >> "$output_file"
+    echo "PATH_TO_${LIB_NAME}_INC=\"-I${includedir} -I${libdir}\"" >> "$output_file"
     echo "${LIB_NAME}_LIBS=\"${LIBS}\"" >> "$output_file"
 done
 
