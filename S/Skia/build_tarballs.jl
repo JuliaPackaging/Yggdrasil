@@ -20,12 +20,12 @@ sources = [
 
 
 platforms = [
-    
-
+     Platform("aarch64", "macOS";),
      Platform("x86_64", "linux"; libc = "glibc"),
      Platform("aarch64", "linux"; libc = "glibc"),
      Platform("riscv64", "linux"; libc = "glibc"), 
      Platform("powerpc64le", "linux"; libc = "glibc"), 
+     Platform("i686", "linux"; libc = "glibc"),
 ]
 
 
@@ -51,6 +51,7 @@ dependencies = [
 # Bash recipe for building across all platforms
 script = raw"""
 
+echo $target
 
 cd $WORKSPACE/srcdir/
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
@@ -66,21 +67,30 @@ python3 tools/git-sync-deps || true
 cp ../cskia/capi/sk_capi.cpp src/base/
 cp ../cskia/capi/sk_capi.h src/base/
 
-if [[ "${target}" == x86_64-* ]]; then
+if [[ "${target}" == aarch64-apple-* ]]; then
+bin/gn gen out/Static --args='target_cpu="arm64" target_os="mac" skia_use_metal=true skia_use_x11=false skia_enable_fontmgr_fontconfig=false  skia_use_fonthost_mac=true cc="clang" cxx="clang++" is_official_build=true  skia_use_freetype=false  skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_fontconfig=false skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
+fi
+
+
+if [[ "${target}" == x86_64-linux-* ]]; then
 bin/gn gen out/Static --args='target_cpu="x64" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
 fi
 
-if [[ "${target}" == aarch64-* ]]; then
+if [[ "${target}" == aarch64-linux-* ]]; then
 bin/gn gen out/Static --args='target_cpu="arm64" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
 
 fi
 
-if [[ "${target}" == riscv64-* ]]; then
+if [[ "${target}" == riscv64-linux-* ]]; then
 bin/gn gen out/Static --args='target_cpu="riscv" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
 fi
 
-if [[ "${target}" == powerpc64le-* ]]; then
+if [[ "${target}" == powerpc64le-linux-* ]]; then
 bin/gn gen out/Static --args='target_cpu="powerpc64le" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
+fi
+
+if [[ "${target}" == i686-linux-* ]]; then
+bin/gn gen out/Static --args='target_cpu="x86" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
 fi
 
 
@@ -88,14 +98,18 @@ ninja -j${nproc} -C out/Static
 
 cd out/Static/
 
-clang++ -shared -o libskia.so   -Wl,--whole-archive libskia.a -Wl,--no-whole-archive libfreetype2.a libjpeg.a libbentleyottmann.a libcompression_utils_portable.a libdng_sdk.a libjsonreader.a libpathkit.a  libpiex.a libpng.a libskcms.a libsksg.a libskshaper.a libskunicode_core.a libskunicode_icu.a libsvg.a -fpic -fvisibility=default -lstdc++ -dl -lfontconfig -lGL 
+
+if [[ "${target}" == aarch64-apple-* ]]; then
+    clang++ -shared -o libskia.$dlext  libjpeg.a libbentleyottmann.a libcompression_utils_portable.a libdng_sdk.a libjsonreader.a libpathkit.a  libpiex.a libpng.a libskcms.a libsksg.a libskshaper.a libskunicode_core.a libskunicode_icu.a libsvg.a -fpic -fvisibility=default -lstdc++ -dl
+else
+    clang++ -shared -o libskia.$dlext   -Wl,--whole-archive libskia.a -Wl,--no-whole-archive libfreetype2.a libjpeg.a libbentleyottmann.a libcompression_utils_portable.a libdng_sdk.a libjsonreader.a libpathkit.a  libpiex.a libpng.a libskcms.a libsksg.a libskshaper.a libskunicode_core.a libskunicode_icu.a libsvg.a -fpic -fvisibility=default -lstdc++ -dl -lfontconfig -lGL 
+fi
 
 mkdir -p ${prefix}/lib/
-cp libskia.so ${prefix}/lib/
+cp libskia.$dlext  ${prefix}/lib/
 
 """
 
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version = v"11.1.0", preferred_llvm_version = v"15.0.7")
-
 
