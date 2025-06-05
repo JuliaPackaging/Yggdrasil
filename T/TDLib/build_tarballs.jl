@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "TDLib"
-version = v"1.8.47"
+version = v"1.8.48"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tdlib/td.git", "971684a3dcc7bdf99eec024e1c4f57ae729d6d53")
+    GitSource("https://github.com/tdlib/td.git", "34c390f9afe074071e01c623e42adfbd17e350ab")
 ]
 
 # Bash recipe for building across all platforms
@@ -29,7 +29,7 @@ cmake \
     ..
 cmake --build . --target prepare_cross_compiling -j${nproc}
 
-cd ${WORKSPACE}/srcdir/td/
+cd ../
 mkdir build-cross && cd build-cross
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
@@ -62,4 +62,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"9", julia_compat="1.8")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", julia_compat="1.8")

@@ -1,0 +1,14 @@
+diff --git before/WiringPi/wiringPi/wiringPi.c after/WiringPi/wiringPi/wiringPi.c
+index 7887633..1470c0c 100644
+--- before/WiringPi/wiringPi/wiringPi.c
++++ after/WiringPi/wiringPi/wiringPi.c
+@@ -1,3 +1,9 @@
++// Built on old linux
++#define GPIOHANDLE_REQUEST_BIAS_PULL_UP	(1UL << 5)
++#define GPIOHANDLE_REQUEST_BIAS_PULL_DOWN	(1UL << 6)
++#define GPIOHANDLE_REQUEST_BIAS_DISABLE	(1UL << 7)
++
++
+ /*
+  * wiringPi:
+  *	Arduino look-a-like Wiring library for the Raspberry Pi
