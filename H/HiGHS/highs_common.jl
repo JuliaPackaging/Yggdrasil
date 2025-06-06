@@ -9,7 +9,7 @@ version = v"1.11.0"
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "6eca8325a43b06942107e3fa88a826051c679912",
+        "364c83a51e44ba6c27def9c8fc1a49b1daf5ad5c",
     ),
 ]
 
