@@ -161,9 +161,10 @@ function build_script(standalone=false)
         cp -va /opt/${target}/${target}/lib/libgcc* $prefix/share/lib
         cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     elif [[ "${target}" == *-apple-darwin* ]]; then
-        cp -va "$sysroot/usr/lib/crt1.o" "$prefix/share/lib/"
-        cp -va "$sysroot/usr/lib/libSystem.tbd" "$prefix/share/lib/"
-        cp -va "$sysroot/usr/lib/libm.tbd" "$prefix/share/lib/"
+        cp -va $sysroot/usr/lib/crt1.o $prefix/share/lib
+        cp -va $sysroot/usr/lib/libSystem.*tbd $prefix/share/lib
+        cp -va $sysroot/usr/lib/libm.*tbd $prefix/share/lib
+        cp -va $sysroot/usr/lib/libgcc_s.*tbd $prefix/share/lib
     fi
     """
 end
