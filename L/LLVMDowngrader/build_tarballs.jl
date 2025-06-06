@@ -44,6 +44,7 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm')
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
 ninja -j${nproc} llvm-tblgen llvm-config
 popd
@@ -68,7 +69,8 @@ CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 
 # Turn on ZLIB
 CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
-# Turn off XML2
+# Turn off XML2 and ZSTD to avoid unnecessary dependencies
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 # Disable useless things like docs, terminfo, etc....
