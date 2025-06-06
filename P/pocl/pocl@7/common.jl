@@ -8,9 +8,6 @@ function build_script(standalone=false)
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
 
-    atomic_patch -p1 ../patches/hidden_link.patch
-    atomic_patch -p1 -R ../patches/spirv_windows_disable.patch
-
     if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
         # LLVM 15+ requires macOS SDK 10.14
         pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
@@ -130,28 +127,28 @@ function build_script(standalone=false)
     mkdir -p $prefix/share/lib
     if [[ ${target} == *-linux-gnu ]]; then
         if [[ ${target} == riscv64-* ]]; then
-            cp -a $sysroot/lib64/lp64d/libc.* $prefix/share/lib
-            cp -a $sysroot/usr/lib64/lp64d/libm.* $prefix/share/lib
-            ln -sf libm.so.6 $prefix/share/lib/libm.so
-            cp -a $sysroot/lib64/lp64d/libm.* $prefix/share/lib
-            cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
+            cp -va $sysroot/lib64/lp64d/libc.* $prefix/share/lib
+            cp -va $sysroot/usr/lib64/lp64d/libm.* $prefix/share/lib
+            ln -vsf libm.so.6 $prefix/share/lib/libm.so
+            cp -va $sysroot/lib64/lp64d/libm.* $prefix/share/lib
+            cp -va /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
         elif [[ "${nbits}" == 64 ]]; then
-            cp -a $sysroot/lib64/libc{.,-}* $prefix/share/lib
-            cp -a $sysroot/usr/lib64/libm.* $prefix/share/lib
-            ln -sf libm.so.6 $prefix/share/lib/libm.so
-            cp -a $sysroot/lib64/libm{.,-}* $prefix/share/lib
-            cp -a /opt/${target}/${target}/lib64/libgcc_s.* $prefix/share/lib
+            cp -va $sysroot/lib64/libc{.,-}* $prefix/share/lib
+            cp -va $sysroot/usr/lib64/libm.* $prefix/share/lib
+            ln -vsf libm.so.6 $prefix/share/lib/libm.so
+            cp -va $sysroot/lib64/libm{.,-}* $prefix/share/lib
+            cp -va /opt/${target}/${target}/lib64/libgcc_s.* $prefix/share/lib
         else
-            cp -a $sysroot/lib/libc{.,-}* $prefix/share/lib
-            cp -a $sysroot/usr/lib/libm.* $prefix/share/lib
-            ln -sf libm.so.6 $prefix/share/lib/libm.so
-            cp -a $sysroot/lib/libm{.,-}* $prefix/share/lib
-            cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
+            cp -va $sysroot/lib/libc{.,-}* $prefix/share/lib
+            cp -va $sysroot/usr/lib/libm.* $prefix/share/lib
+            ln -vsf libm.so.6 $prefix/share/lib/libm.so
+            cp -va $sysroot/lib/libm{.,-}* $prefix/share/lib
+            cp -va /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
         fi
-        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+        cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     elif [[ ${target} == *-linux-musl ]]; then
-        cp -a $sysroot/usr/lib/*.{o,a} $prefix/share/lib
-        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+        cp -va $sysroot/usr/lib/*.{o,a} $prefix/share/lib
+        cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     elif [[ "${target}" == *-mingw* ]]; then
         cp -va $sysroot/lib/*.o $prefix/share/lib
         cp -va $sysroot/lib/libmsvcrt*.a $prefix/share/lib
@@ -163,6 +160,10 @@ function build_script(standalone=false)
         cp -va $sysroot/lib/libadvapi32.a $prefix/share/lib
         cp -va /opt/${target}/${target}/lib/libgcc* $prefix/share/lib
         cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+    elif [[ "${target}" == *-apple-darwin* ]]; then
+        cp -va "$sysroot/usr/lib/crt1.o" "$prefix/share/lib/"
+        cp -va "$sysroot/usr/lib/libSystem.tbd" "$prefix/share/lib/"
+        cp -va "$sysroot/usr/lib/libm.tbd" "$prefix/share/lib/"
     fi
     """
 end
