@@ -88,6 +88,19 @@ This is not specific to contributing to Yggdrasil, but as a general remark worki
 You should always keep the target branch (e.g. `main`, `master`) in your fork in-sync with the branch with the same name in the upstream repository, and then create a new branch out of the target branch for each pull request you want to open.
 This is particularly important to keep history of your pull requests simple and readable and avoid creating noise which unnecessarily complicates the review process.
 
+### Changing compat bounds of a package
+
+If after release of a package you realise compat bounds of some of the dependencies, or julia itself via the `julia_compat` keyword argument to `build_tarballs()`, are incorrect and cause problems to users, you have to fix them.
+There are two situations:
+
+* the problematic dependendency _**does not have**_ a dependency yet: in this case you may open a new PR to Yggdrasil to _add_ an appropriate compat bound for the package in question;
+* the problematic dependency _**already has**_ a compat bound, which turned out to be incorrect (perhaps too loose or too restrictive): in this case, you first _**must correct the problem in the [General registry](https://github.com/JuliaRegistries/General)**_.
+  This is due to a limitation of Pkg which can't handle different compat bounds for the same package within releases which only differ by the build number.
+  Opening a PR to Yggdrasil to cut a new release of the package with the same X.Y.Z version number but different compat bounds will not achieve anything apart from being rejected by the General registry.
+  What you can do, _**after**_ the PR in General has been accepted and merged, is to open a PR to Yggdrasil and update the compat bounds accordingly to ensure that future releases will be consistent with the compat bound now in the registry, but _**without releasing a new useless and wasteful version**_.
+  Use the `[skip build]` keyword in the commit message, as described above.
+  A maintainer must then merge this PR with `[skip ci]`, as described below.
+
 ## Information for maintainers
 
 Here are some recommendations for Yggdrasil maintainers:
