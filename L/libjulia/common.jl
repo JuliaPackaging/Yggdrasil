@@ -36,7 +36,7 @@ function libjulia_platforms(julia_version)
     end
 
     # RISC-V is not supported for older Julia versions
-    if julia_version < v"1.12"
+    if julia_version < v"1.13"
         filter!(p -> arch(p) != "riscv64", platforms)
     end
 
