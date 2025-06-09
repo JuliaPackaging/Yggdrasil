@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Librsvg"
-version = v"2.54.5"
+version = v"2.60.0"
 
 # Collection of sources required to build librsvg
 sources = [
