@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "eudev"
-version = v"3.2.9"
+version = v"3.2.10" # upstream is 3.2.9, but we needed a version bump
 
 # Collection of sources required to complete build
 sources = [
