@@ -14,17 +14,18 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/libepoxy
 
-mkdir build && cd build
-
-# Set platform-specific compiler args
-MESON_C_ARGS=""
+# For Apple platforms, add compiler flags to the cross-compilation file
 if [[ "${target}" == *apple* ]]; then
-    MESON_C_ARGS="-Dc_args='-Wno-int-conversion -Wno-incompatible-pointer-types -Wno-error=int-conversion'"
+    # Append Apple-specific compiler flags to the cross file
+    cat >> "${MESON_TARGET_TOOLCHAIN}" << 'EOF'
+
+[built-in options]
+c_args = ['-Wno-int-conversion', '-Wno-incompatible-pointer-types', '-Wno-error=int-conversion']
+EOF
 fi
 
-# Single meson command for all platforms
-meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}" ${MESON_C_ARGS}
-
+mkdir build && cd build
+meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
