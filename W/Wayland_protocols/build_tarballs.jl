@@ -16,11 +16,24 @@ script = raw"""
 cd $WORKSPACE/srcdir/wayland-protocols*/
 mkdir build && cd build
 
-# Make sure wayland-scanner is in PATH
-export PATH="$prefix/bin:$PATH"
+# Find and use the actual wayland-scanner binary
+WAYLAND_SCANNER=$(find $prefix -name "wayland-scanner" -type f 2>/dev/null | head -1)
+if [ -z "$WAYLAND_SCANNER" ]; then
+    # If not found in prefix, try the host system
+    WAYLAND_SCANNER=$(which wayland-scanner 2>/dev/null)
+fi
 
-# Use meson setup (the modern way)
-meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+if [ -n "$WAYLAND_SCANNER" ]; then
+    echo "Found wayland-scanner at: $WAYLAND_SCANNER"
+    export PATH="$(dirname $WAYLAND_SCANNER):$PATH"
+    # Override the meson detection by setting the program directly
+    meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dwayland_scanner="$WAYLAND_SCANNER"
+else
+    echo "wayland-scanner not found, trying default setup..."
+    export PATH="$prefix/bin:$PATH"
+    meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+fi
+
 ninja -j${nproc}
 ninja install
 """
