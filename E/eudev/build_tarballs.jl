@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "eudev"
-version = v"3.2.10" # upstream is 3.2.9, but we needed a version bump
+version = v"3.2.14"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://dev.gentoo.org/~blueness/eudev/eudev-3.2.9.tar.gz", "89618619084a19e1451d373c43f141b469c9fd09767973d73dd268b92074d4fc")
+    GitSource("https://github.com/eudev-project/eudev", "9e7c4e744b9e7813af9acee64b5e8549ea1fbaa3")
 ]
 
 # Bash recipe for building across all platforms
