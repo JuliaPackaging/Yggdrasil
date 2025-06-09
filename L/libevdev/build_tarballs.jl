@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libevdev"
-version = v"1.11.0"
+version = v"1.13.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.freedesktop.org/libevdev/libevdev", "8855f1ac59a69d5bdff51e3f8980697f0127c270"),
+    GitSource("https://gitlab.freedesktop.org/libevdev/libevdev", "ac0056961c3332a260db063ab4fccc7747638a1d"),
     DirectorySource("./bundled"),
 ]
 
