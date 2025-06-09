@@ -2,7 +2,7 @@ using BinaryBuilder
 
 # Collection of sources required to build Gettext
 name = "Gettext"
-version = v"0.21.0"
+version = v"0.25.0"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
