@@ -18,9 +18,6 @@ cd $WORKSPACE/srcdir/librsvg-*/
 # Delete misleading libtool files
 rm -vf ${prefix}/lib/*.la
 
-# Install compatible version of cargo-c for Rust 1.83
-cargo install cargo-c --version "0.10.11+cargo-0.86.0"
-
 # Set up Meson build directory
 mkdir build
 cd build
@@ -38,7 +35,9 @@ MESON_OPTIONS=(
 
 # Handle Windows-specific configuration
 if [[ "${target}" == *-mingw* ]]; then
+    # On Windows, we may need to set specific environment variables
     export LIBS="-luserenv -lbcrypt"
+    # Set Rust target if needed
     if [[ "${rust_target}" != "${target}" ]]; then
         export RUST_TARGET="${rust_target}"
     fi
