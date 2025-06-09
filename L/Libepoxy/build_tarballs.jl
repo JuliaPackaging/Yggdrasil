@@ -14,6 +14,11 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/libepoxy
 
+# For Apple platforms, disable the problematic warnings that are treated as errors
+if [[ "${target}" == *apple* ]]; then
+    export CFLAGS="${CFLAGS} -Wno-int-conversion -Wno-incompatible-pointer-types"
+fi
+
 mkdir build && cd build
 meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
