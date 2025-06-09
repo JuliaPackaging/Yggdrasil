@@ -8,7 +8,7 @@ version = v"0.4.2"
 # Collection of sources required to build libxcb
 sources = [
     ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-wm-$(version).tar.xz",
-                  "28bf8179640eaa89276d2b0f1ce4285103d136be6c98262b6151aaee1d3c2a3f"),
+                  "62c34e21d06264687faea7edbf63632c9f04d55e72114aa4a57bb95e4f888a0b"),
 ]
 
 # Bash recipe for building across all platforms
