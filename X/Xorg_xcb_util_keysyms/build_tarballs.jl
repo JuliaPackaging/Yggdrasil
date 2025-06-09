@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_util_keysyms"
-version = v"0.4.0"
+version = v"0.4.1"
 
 # Collection of sources required to build libxcb
 sources = [
