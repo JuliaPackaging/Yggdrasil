@@ -26,8 +26,14 @@ fi
 if [ -n "$WAYLAND_SCANNER" ]; then
     echo "Found wayland-scanner at: $WAYLAND_SCANNER"
     export PATH="$(dirname $WAYLAND_SCANNER):$PATH"
-    # Override the meson detection by setting the program directly
-    meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}" -Dwayland_scanner="$WAYLAND_SCANNER"
+    
+    # Create a native file that specifies the wayland-scanner binary
+    cat > native.ini <<EOF
+[binaries]
+wayland-scanner = '$WAYLAND_SCANNER'
+EOF
+    
+    meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}" --native-file=native.ini
 else
     echo "wayland-scanner not found, trying default setup..."
     export PATH="$prefix/bin:$PATH"
