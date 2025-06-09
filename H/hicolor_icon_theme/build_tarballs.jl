@@ -8,7 +8,7 @@ version = v"0.18"
 # Collection of sources required to build hicolor_icon_theme
 sources = [
     ArchiveSource("https://icon-theme.freedesktop.org/releases/hicolor-icon-theme-$(version.major).$(version.minor).tar.xz",
-                  "317484352271d18cbbcfac3868eab798d67fff1b8402e740baa6ff41d588a9d8"),
+                  "db0e50a80aa3bf64bb45cbca5cf9f75efd9348cf2ac690b907435238c3cf81d7"),
 ]
 
 # Bash recipe for building across all platforms
