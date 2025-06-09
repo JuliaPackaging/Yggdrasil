@@ -7,15 +7,15 @@ version = v"1.5.11" # upstream is 1.5.10, but we needed a version bump
 
 # Collection of sources required to build Libepoxy
 sources = [
-    GitSource("https://github.com/anholt/libepoxy.git",
-                  "c84bc9459357a40e46e2fec0408d04fbdde2c973")
+    GitSource("https://github.com/anholt/libepoxy.git", "c84bc9459357a40e46e2fec0408d04fbdde2c973")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libepoxy-*/
+cd ${WORKSPACE}/srcdir/libepoxy
+
 mkdir build && cd build
-meson .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
