@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "mtdev"
-version = v"1.1.6"
+version = v"1.1.7"
 
 # Collection of sources required to complete build
 sources = [
