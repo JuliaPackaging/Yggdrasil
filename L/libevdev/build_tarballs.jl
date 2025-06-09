@@ -13,7 +13,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libevdev/
-# atomic_patch ../patches/link_rt.patch
 mkdir build
 cd build
 
