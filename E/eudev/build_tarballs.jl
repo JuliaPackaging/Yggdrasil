@@ -13,7 +13,8 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/eudev*
-apk add gperf
+apk add gperf autoconf automake libtool
+./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
