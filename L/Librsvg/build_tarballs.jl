@@ -15,36 +15,45 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
 
-autoreconf -fiv
-
 # Delete misleading libtool files
 rm -vf ${prefix}/lib/*.la
 
-# On most platforms we have to use `${rust_target}` as `host`
-FLAGS=(--host=${rust_target})
+# Set up Meson build directory
+mkdir build
+cd build
+
+# Configure meson build options
+MESON_OPTIONS=(
+    --prefix=${prefix}
+    --buildtype=release
+    --default-library=shared
+    -Dpixbuf-loader=true
+    -Dintrospection=disabled
+    -Ddocs=disabled
+    -Dvala=disabled
+)
+
+# Handle Windows-specific configuration
 if [[ "${target}" == *-mingw* ]]; then
-    # On Windows using `${rust_target}` wouldn't work:
-    #
-    #     Invalid configuration `x86_64-pc-windows-gnu': Kernel `windows' not known to work with OS `gnu'.
-    #
-    # Then we have to use `RUST_TARGET` to set the Rust target.  I haven't found
-    # a combination host and RUST_TARGET that would work on all platforms.  If
-    # you do, let me know!
-    FLAGS=(--host=${target} RUST_TARGET="${rust_target}" LIBS="-luserenv -lbcrypt")
+    # On Windows, we may need to set specific environment variables
+    export LIBS="-luserenv -lbcrypt"
+    # Set Rust target if needed
+    if [[ "${rust_target}" != "${target}" ]]; then
+        export RUST_TARGET="${rust_target}"
+    fi
 fi
 
-./configure \
-    --build=${MACHTYPE} \
-    --prefix=${prefix} \
-    --disable-static \
-    --enable-pixbuf-loader \
-    --disable-introspection \
-    --disable-gtk-doc-html \
-    --enable-shared \
-    "${FLAGS[@]}"
-make
-make install
-install_license COPYING.LIB
+# Configure with meson
+meson setup "${MESON_OPTIONS[@]}" ..
+
+# Build
+ninja
+
+# Install
+ninja install
+
+# Install license
+install_license ../COPYING.LIB
 """
 
 # These are the platforms we will build for by default, unless further
