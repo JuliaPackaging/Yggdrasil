@@ -8,10 +8,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "LaMEM"
 version = v"2.2.0"
 
-PETSc_COMPAT_VERSION = "~3.19.6"    
+PETSc_COMPAT_VERSION = "~3.22.0"    
 MPItrampoline_compat_version="5.2.1"
 MicrosoftMPI_compat_version="~10.1.4" 
-MPICH_compat_version="~4.1.2"    
+MPICH_compat_version="~4.2.3"    
+OpenMPI_compat_version="~5.0.5"
 
 # Collection of sources required to complete build
 sources = [
@@ -76,7 +77,8 @@ platforms = expand_gfortran_versions(supported_platforms(exclude=[Platform("i686
 platforms, platform_dependencies = MPI.augment_platforms(platforms; 
                                         MPItrampoline_compat = MPItrampoline_compat_version,
                                         MPICH_compat         = MPICH_compat_version,
-                                        MicrosoftMPI_compat  = MicrosoftMPI_compat_version )
+                                        MicrosoftMPI_compat  = MicrosoftMPI_compat_version,
+                                        OpenMPI_compat       = OpenMPI_compat_version)
 
 # mpitrampoline and libgfortran 3 don't seem to work
 platforms = filter(p -> !(libgfortran_version(p) == v"3" && p.tags["mpi"]=="mpitrampoline"), platforms)
