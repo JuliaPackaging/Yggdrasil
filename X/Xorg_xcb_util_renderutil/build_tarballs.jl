@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_util_renderutil"
-version = v"0.3.9"
+version = v"0.3.10"
 
 # Collection of sources required to build libxcb
 sources = [
