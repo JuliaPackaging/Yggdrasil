@@ -19,7 +19,7 @@ apk add gperf autoconf automake libtool libxslt-dev docbook-xsl
 # Only apply the patch for musl targets
 if [[ "${target}" == *"musl"* ]]; then
     echo "Applying musl-specific thread_local fix"
-    sed -i 's/thread_local/__thread/g' src/shared/util.c
+    find . -name "*.c" -exec grep -l "thread_local" {} \; | xargs -r sed -i 's/thread_local/__thread/g'
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
