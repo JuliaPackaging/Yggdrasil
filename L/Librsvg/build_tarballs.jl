@@ -18,6 +18,9 @@ cd $WORKSPACE/srcdir/librsvg-*/
 # Delete misleading libtool files
 rm -vf ${prefix}/lib/*.la
 
+# Install compatible version of cargo-c for Rust 1.83
+cargo install cargo-c --version "0.10.7+cargo-0.83.0"
+
 # Set up Meson build directory
 mkdir build
 cd build
