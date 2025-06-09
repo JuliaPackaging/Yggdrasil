@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/eudev*
-apk add gperf autoconf automake libtool libxslt-dev
+apk add gperf autoconf automake libtool libxslt-dev docbook-xsl
 ./autogen.sh
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
