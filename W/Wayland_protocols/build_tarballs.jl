@@ -25,9 +25,23 @@ fi
 
 if [ -n "$WAYLAND_SCANNER" ]; then
     echo "Found wayland-scanner at: $WAYLAND_SCANNER"
-    export PATH="$(dirname $WAYLAND_SCANNER):$PATH"
     
-    # Create a native file that specifies the wayland-scanner binary
+    # Create a custom pkg-config wrapper that returns the correct path
+    mkdir -p custom-pkgconfig
+    cat > custom-pkgconfig/pkg-config <<'EOF'
+#!/bin/bash
+if [[ "$*" == *"wayland-scanner"* && "$*" == *"--variable=wayland_scanner"* ]]; then
+    echo "$WAYLAND_SCANNER"
+else
+    exec /usr/bin/pkg-config "$@"
+fi
+EOF
+    chmod +x custom-pkgconfig/pkg-config
+    
+    # Put our custom pkg-config first in PATH
+    export PATH="$(pwd)/custom-pkgconfig:$PATH"
+    
+    # Also create native file as backup
     cat > native.ini <<EOF
 [binaries]
 wayland-scanner = '$WAYLAND_SCANNER'
