@@ -3,7 +3,7 @@
 using BinaryBuilder
 
 name = "Wayland_protocols"
-version = v"1.36"
+version = v"1.44"
 
 # Collection of sources required to build Wayland-protocols
 sources = [
@@ -35,4 +35,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
