@@ -15,6 +15,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wayland-protocols*/
 mkdir build && cd build
+
+# Make sure wayland-scanner is in PATH
+export PATH="$prefix/bin:$PATH"
+
+# Use meson setup (the modern way)
 meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
