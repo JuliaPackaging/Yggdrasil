@@ -18,6 +18,9 @@ cd $WORKSPACE/srcdir/librsvg-*/
 # Delete misleading libtool files
 rm -vf ${prefix}/lib/*.la
 
+# Install required Rust tool for C bindings
+cargo install cargo-c
+
 # Set up Meson build directory
 mkdir build
 cd build
@@ -35,9 +38,7 @@ MESON_OPTIONS=(
 
 # Handle Windows-specific configuration
 if [[ "${target}" == *-mingw* ]]; then
-    # On Windows, we may need to set specific environment variables
     export LIBS="-luserenv -lbcrypt"
-    # Set Rust target if needed
     if [[ "${rust_target}" != "${target}" ]]; then
         export RUST_TARGET="${rust_target}"
     fi
