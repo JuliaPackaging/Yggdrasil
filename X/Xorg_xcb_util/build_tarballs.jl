@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_util"
-version = v"0.4.0"
+version = v"0.4.1"
 
 # Collection of sources required to build xcb-util
 sources = [
-    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-$(version).tar.bz2",
+    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-$(version).tar.xz",
                   "46e49469cb3b594af1d33176cd7565def2be3fa8be4371d62271fabb5eae50e9"),
 ]
 
@@ -37,4 +37,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
