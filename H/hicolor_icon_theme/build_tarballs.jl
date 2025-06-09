@@ -14,7 +14,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/hicolor-icon-theme-*/
-meson setup build --prefix=${prefix} --cross-file=${target}
+meson setup build --prefix=${prefix}
 meson install -C build
 """
 
