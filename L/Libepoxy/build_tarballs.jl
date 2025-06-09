@@ -14,20 +14,24 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/libepoxy
 
-# For Apple platforms, disable the problematic warnings that are treated as errors
+mkdir build && cd build
+
+# Set platform-specific compiler args
+MESON_C_ARGS=""
 if [[ "${target}" == *apple* ]]; then
-    export CFLAGS="${CFLAGS} -Wno-int-conversion -Wno-incompatible-pointer-types"
+    MESON_C_ARGS="-Dc_args='-Wno-int-conversion -Wno-incompatible-pointer-types -Wno-error=int-conversion'"
 fi
 
-mkdir build && cd build
-meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
+# Single meson command for all platforms
+meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}" ${MESON_C_ARGS}
+
 ninja -j${nproc}
 ninja install
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(; experimental=true))
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
