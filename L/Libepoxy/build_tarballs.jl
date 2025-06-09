@@ -7,7 +7,7 @@ version = v"1.5.11" # upstream is 1.5.10, but we needed a version bump
 
 # Collection of sources required to build Libepoxy
 sources = [
-    GitSource("https://github.com/anholt/libepoxy",
+    GitSource("https://github.com/anholt/libepoxy.git",
                   "c84bc9459357a40e46e2fec0408d04fbdde2c973")
 ]
 
