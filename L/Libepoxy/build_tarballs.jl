@@ -7,8 +7,8 @@ version = v"1.5.11" # upstream is 1.5.10, but we needed a version bump
 
 # Collection of sources required to build Libepoxy
 sources = [
-    ArchiveSource("https://github.com/anholt/libepoxy/archive/refs/tags/1.5.10.tar.gz",
-                  "a7ced37f4102b745ac86d6a70a9da399cc139ff168ba6b8002b4d8d43c900c15")
+    GitSource("https://github.com/anholt/libepoxy/archive/refs/tags/1.5.10.tar.gz",
+                  "c84bc9459357a40e46e2fec0408d04fbdde2c973")
 ]
 
 # Bash recipe for building across all platforms
