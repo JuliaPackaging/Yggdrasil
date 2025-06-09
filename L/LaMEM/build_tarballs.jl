@@ -94,6 +94,13 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
+# powerpc64le only with libgfortran 5 or higher (as openblas is not defined for other cases)
+platforms = filter(p -> !(p["arch"] == "powerpc64le" && (libgfortran_version(p) == v"3" || libgfortran_version(p) == v"4")), platforms)
+
+# riscv64 is not supported
+platforms = filter(p -> !(p["arch"] == "riscv64"), platforms)
+
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("LaMEM", :LaMEM)
