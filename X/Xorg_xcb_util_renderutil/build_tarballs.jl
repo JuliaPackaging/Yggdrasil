@@ -14,7 +14,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xcb-util-renderutil-*/
-CPPFLAGS="-I${prefix}/include"
 
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
@@ -26,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     LibraryProduct("libxcb-render-util", :libxcb_render_util),
