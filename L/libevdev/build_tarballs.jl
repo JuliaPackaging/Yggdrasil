@@ -8,7 +8,6 @@ version = v"1.13.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://gitlab.freedesktop.org/libevdev/libevdev", "ac0056961c3332a260db063ab4fccc7747638a1d"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
