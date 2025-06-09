@@ -15,6 +15,13 @@ script = raw"""
 cd $WORKSPACE/srcdir/eudev*
 apk add gperf autoconf automake libtool libxslt-dev docbook-xsl
 ./autogen.sh
+
+# Only apply the patch for musl targets
+if [[ "${target}" == *"musl"* ]]; then
+    echo "Applying musl-specific thread_local fix"
+    sed -i 's/thread_local/__thread/g' src/shared/util.c
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
