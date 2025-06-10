@@ -13,17 +13,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libepoxy
-
-# For Apple platforms, add compiler flags to the cross-compilation file
-if [[ "${target}" == *apple* ]]; then
-    # Append Apple-specific compiler flags to the cross file
-    cat >> "${MESON_TARGET_TOOLCHAIN}" << 'EOF'
-
-[built-in options]
-c_args = ['-Wno-int-conversion', '-Wno-incompatible-pointer-types', '-Wno-error=int-conversion']
-EOF
-fi
-
 mkdir build && cd build
 meson .. -Dtests=false --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
@@ -49,4 +38,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; clang_use_lld=false, julia_compat="1.6")
