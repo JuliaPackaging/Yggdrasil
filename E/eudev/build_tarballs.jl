@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/eudev*
-apk add gperf autoconf automake libtool libxslt-dev docbook-xsl
+apk add gperf libxslt-dev docbook-xsl
 ./autogen.sh
 
 # Only apply the patch for musl targets
