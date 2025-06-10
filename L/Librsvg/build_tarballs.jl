@@ -3,60 +3,48 @@
 using BinaryBuilder
 
 name = "Librsvg"
-version = v"2.60.0"
+version = v"2.58.94"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3"),
+                  "05adf6dc58b3cfb319c2efb02b2bbdff5c75ca47cc941d48098839f20496abed"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/librsvg-*/
 
+autoreconf -fiv
+
 # Delete misleading libtool files
 rm -vf ${prefix}/lib/*.la
 
-# Install compatible version of cargo-c for Rust 1.83
-cargo install cargo-c --version "0.10.7+cargo-0.83.0"
-
-# Set up Meson build directory
-mkdir build
-cd build
-
-# Configure meson build options
-MESON_OPTIONS=(
-    --prefix=${prefix}
-    --buildtype=release
-    --default-library=shared
-    -Dpixbuf-loader=enabled
-    -Dintrospection=disabled
-    -Ddocs=disabled
-    -Dvala=disabled
-)
-
-# Handle Windows-specific configuration
+# On most platforms we have to use `${rust_target}` as `host`
+FLAGS=(--host=${rust_target})
 if [[ "${target}" == *-mingw* ]]; then
-    # On Windows, we may need to set specific environment variables
-    export LIBS="-luserenv -lbcrypt"
-    # Set Rust target if needed
-    if [[ "${rust_target}" != "${target}" ]]; then
-        export RUST_TARGET="${rust_target}"
-    fi
+    # On Windows using `${rust_target}` wouldn't work:
+    #
+    #     Invalid configuration `x86_64-pc-windows-gnu': Kernel `windows' not known to work with OS `gnu'.
+    #
+    # Then we have to use `RUST_TARGET` to set the Rust target.  I haven't found
+    # a combination host and RUST_TARGET that would work on all platforms.  If
+    # you do, let me know!
+    FLAGS=(--host=${target} RUST_TARGET="${rust_target}" LIBS="-luserenv -lbcrypt")
 fi
 
-# Configure with meson
-meson setup "${MESON_OPTIONS[@]}" ..
-
-# Build
-ninja
-
-# Install
-ninja install
-
-# Install license
-install_license ../COPYING.LIB
+./configure \
+    --build=${MACHTYPE} \
+    --prefix=${prefix} \
+    --disable-static \
+    --enable-pixbuf-loader \
+    --disable-introspection \
+    --disable-gtk-doc-html \
+    --enable-shared \
+    "${FLAGS[@]}"
+make
+make install
+install_license COPYING.LIB
 """
 
 # These are the platforms we will build for by default, unless further
