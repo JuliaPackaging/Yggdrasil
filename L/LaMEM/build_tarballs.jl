@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "LaMEM"
 version = v"2.2.0"
 
-PETSc_COMPAT_VERSION = "~3.20.5"    
-MPItrampoline_compat_version="~5.2.1"
+PETSc_COMPAT_VERSION = "~3.22.0"    
+MPItrampoline_compat_version="~5.5.3"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
 OpenMPI_compat_version="~5.0.5"
@@ -22,6 +22,11 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
+
+export MPITRAMPOLINE_CC=${CC}
+export MPITRAMPOLINE_CXX=${CXX}
+export MPITRAMPOLINE_FC=${FC}
+
 # Create required directories
 mkdir $WORKSPACE/srcdir/LaMEM/bin
 mkdir $WORKSPACE/srcdir/LaMEM/bin/opt
