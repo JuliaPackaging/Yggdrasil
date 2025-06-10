@@ -14,46 +14,20 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wayland-protocols*/
-mkdir build && cd build
 
-# Find and use the actual wayland-scanner binary
-WAYLAND_SCANNER=$(find $prefix -name "wayland-scanner" -type f 2>/dev/null | head -1)
-if [ -z "$WAYLAND_SCANNER" ]; then
-    # If not found in prefix, try the host system
-    WAYLAND_SCANNER=$(which wayland-scanner 2>/dev/null)
-fi
-
+# Find wayland-scanner and create symlink where Meson expects it
+WAYLAND_SCANNER=$(which wayland-scanner)
 if [ -n "$WAYLAND_SCANNER" ]; then
     echo "Found wayland-scanner at: $WAYLAND_SCANNER"
     
-    # Create a custom pkg-config wrapper that returns the correct path
-    mkdir -p custom-pkgconfig
-    cat > custom-pkgconfig/pkg-config <<'EOF'
-#!/bin/bash
-if [[ "$*" == *"wayland-scanner"* && "$*" == *"--variable=wayland_scanner"* ]]; then
-    echo "$WAYLAND_SCANNER"
-else
-    exec /usr/bin/pkg-config "$@"
-fi
-EOF
-    chmod +x custom-pkgconfig/pkg-config
-    
-    # Put our custom pkg-config first in PATH
-    export PATH="$(pwd)/custom-pkgconfig:$PATH"
-    
-    # Also create native file as backup
-    cat > native.ini <<EOF
-[binaries]
-wayland-scanner = '$WAYLAND_SCANNER'
-EOF
-    
-    meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}" --native-file=native.ini
-else
-    echo "wayland-scanner not found, trying default setup..."
-    export PATH="$prefix/bin:$PATH"
-    meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+    # Create the exact directory structure that Meson expects
+    EXPECTED_PATH="/workspace/destdir/workspace/x86_64-linux-musl-cxx11/destdir/lib/pkgconfig/../../bin"
+    mkdir -p "$EXPECTED_PATH"
+    ln -sf "$WAYLAND_SCANNER" "$EXPECTED_PATH/wayland-scanner"
 fi
 
+mkdir build && cd build
+meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
