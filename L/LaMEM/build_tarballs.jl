@@ -99,6 +99,8 @@ platforms = filter(p -> !(p["arch"] == "powerpc64le" && (libgfortran_version(p) 
 
 # riscv64 is not supported
 platforms = filter(p -> !(p["arch"] == "riscv64"), platforms)
+platforms = filter(p -> !(p["arch"] == "aarch64" && libgfortran_version(p) == v"3" && os(p)=="linux"), platforms)
+platforms = filter(p -> !(p["arch"] == "aarch64" && os(p)=="freebsd"), platforms)
 
 
 # The products that we will ensure are always built
