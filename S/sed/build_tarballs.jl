@@ -28,6 +28,7 @@ if [[ "${target}" == *-mingw* ]]; then
     #     /workspace/srcdir/sed-4.9/lib/getrandom.c:128: undefined reference to `BCryptGenRandom@16'
     # with https://github.com/msys2/MINGW-packages/blob/b400fdecc8e7234ddb1fd45604595d181664b15e/mingw-w64-sed/001-link-to-bcrypt.patch
     atomic_patch -p1 ../patches/001-link-to-bcrypt.patch
+    autoreconf -fiv
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
