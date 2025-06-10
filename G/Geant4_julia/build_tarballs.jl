@@ -24,8 +24,7 @@ cmake ${WORKSPACE}/srcdir/Geant4_cxxwrap -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD=17 \
-    -DZLIB_ROOT="${prefix}"
+    -DCMAKE_CXX_STANDARD=17 
 
 VERBOSE=ON cmake --build build --config Release --target install -- -j${nproc}
 
@@ -35,6 +34,9 @@ install_license Geant4_cxxwrap/LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
+
+# The Julia versions we will support (1.13 is not supported by libcxxwrap_julia_jll v0.13)
+filter!(x -> x != v"1.13", julia_versions)
 
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
