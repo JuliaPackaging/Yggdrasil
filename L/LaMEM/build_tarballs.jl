@@ -93,9 +93,9 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
 
-# MPItrampoline does not currently seem to work (I'll leave some lines commented out here, as it may work again with PETSc 3.23.x)
-#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+# MPItrampoline does not seem to work with PETSc 3.22.0
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # powerpc64le only with libgfortran 5 or higher (as openblas is not defined for other cases)
 platforms = filter(p -> !(p["arch"] == "powerpc64le" && (libgfortran_version(p) == v"3" || libgfortran_version(p) == v"4")), platforms)
