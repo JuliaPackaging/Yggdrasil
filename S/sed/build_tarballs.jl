@@ -3,11 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "sed"
-version = v"4.8.1"
+version_string = "4.9"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://ftp.gnu.org/gnu/sed/sed-4.8.tar.xz", "f79b0cfea71b37a8eeec8490db6c5f7ae7719c35587f21edb0617f370eeff633")
+    ArchiveSource("https://ftp.gnu.org/gnu/sed/sed-$(version_string).tar.xz",
+                  "6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,7 +30,7 @@ make install SUBDIRS="po ."
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -36,7 +38,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
     Dependency("Libiconv_jll"),
 ]
 
