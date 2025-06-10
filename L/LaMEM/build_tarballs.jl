@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 name = "LaMEM"
 version = v"2.2.0"
 
-PETSc_COMPAT_VERSION = "~3.19.6"    
+PETSc_COMPAT_VERSION = "~3.20.5"    
 MPItrampoline_compat_version="~5.2.1"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.1.2"    
