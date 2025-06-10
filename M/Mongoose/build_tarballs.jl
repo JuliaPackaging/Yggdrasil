@@ -22,6 +22,8 @@ install(TARGETS mongoose
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin)
+
+install(FILES mongoose/LICENSE DESTINATION share/licenses/Mongoose)
 EOF
 
 cmake -B build  \
