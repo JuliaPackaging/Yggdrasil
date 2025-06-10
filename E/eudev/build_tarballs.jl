@@ -40,8 +40,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = [
-    Dependency(PackageSpec(name="gperf_jll", uuid="1a1c6b14-54f6-533d-8383-74cd7377aa70"))
+dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
