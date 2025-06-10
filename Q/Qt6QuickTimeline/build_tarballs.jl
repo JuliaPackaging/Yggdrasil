@@ -61,8 +61,8 @@ include("../Qt6Base/common.jl")
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["Qt6QuickTimeline", "libQt6QuickTimeline", "QtQuickTimeline"], :libqt6charts),
-    LibraryProduct(["Qt6QuickTimelineBlendTrees", "libQt6QuickTimelineBlendTrees", "QtQuickTimelineBlendTrees"], :libqt6chartsqml),
+    LibraryProduct(["Qt6QuickTimeline", "libQt6QuickTimeline", "QtQuickTimeline"], :libqt6timeline),
+    LibraryProduct(["Qt6QuickTimelineBlendTrees", "libQt6QuickTimelineBlendTrees", "QtQuickTimelineBlendTrees"], :libqt6timelineblendtrees),
 ]
 
 # Dependencies that must be installed before this package can be built
