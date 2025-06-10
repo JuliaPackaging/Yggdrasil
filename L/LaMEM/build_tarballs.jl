@@ -9,9 +9,9 @@ name = "LaMEM"
 version = v"2.2.0"
 
 PETSc_COMPAT_VERSION = "~3.22.0"    
-MPItrampoline_compat_version="~5.5.3"
+MPItrampoline_compat_version="~5.5.0"
 MicrosoftMPI_compat_version="~10.1.4" 
-MPICH_compat_version="~4.3.0"    
+MPICH_compat_version="~4.2.3"    
 OpenMPI_compat_version="~5.0.5"
 
 # Collection of sources required to complete build
