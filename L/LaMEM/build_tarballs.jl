@@ -9,7 +9,7 @@ name = "LaMEM"
 version = v"2.2.0"
 
 PETSc_COMPAT_VERSION = "~3.22.0"    
-MPItrampoline_compat_version="5.5.0"
+MPItrampoline_compat_version="~5.5.0"
 MicrosoftMPI_compat_version="~10.1.4" 
 MPICH_compat_version="~4.2.3"    
 OpenMPI_compat_version="~5.0.5"
@@ -32,10 +32,13 @@ mkdir $WORKSPACE/srcdir/LaMEM/lib/opt
 
 cd $WORKSPACE/srcdir/LaMEM/src
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
+make mode=opt clean_all 
 make mode=opt all -j${nproc}
+#make mode=opt all
 
 # compile dynamic library
 make mode=opt dylib -j${nproc}
+#make mode=opt dylib
 
 cd $WORKSPACE/srcdir/LaMEM/bin/opt
 
@@ -90,9 +93,10 @@ platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv7l" && libc(p
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 platforms = filter(p -> !(p["mpi"] == "openmpi" && arch(p) == "i686"), platforms)
 
-# MPItrampoline
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
-platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
+# MPItrampoline does not currently seem to work (I'll leave some lines commented out here, as it may work again with PETSc 3.23.x)
+platforms = filter(p -> !(p["mpi"] == "mpitrampoline"), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
+#platforms = filter(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
 
 # powerpc64le only with libgfortran 5 or higher (as openblas is not defined for other cases)
 platforms = filter(p -> !(p["arch"] == "powerpc64le" && (libgfortran_version(p) == v"3" || libgfortran_version(p) == v"4")), platforms)
