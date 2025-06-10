@@ -75,7 +75,7 @@ dependencies = [
     HostBuildDependency("gdk_pixbuf_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("gdk_pixbuf_jll"),
-    Dependency("Pango_jll"; compat="1.47.0"),
+    Dependency("Pango_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
