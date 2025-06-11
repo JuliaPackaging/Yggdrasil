@@ -18,6 +18,8 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     GitSource("https://github.com/oscar-system/GAP.jl", "c33287b416ca30fcc386a6b192d67c1955fdae8f"),
+    ArchiveSource("https://julialang-s3.julialang.org/bin/musl/x64/1.10/julia-1.10.9-musl-x86_64.tar.gz",
+                  "db7454a7acf677598c23216eb4798d0b0ebc6be7c7d03ea2e7ee10f7a5985a64"), # some julia supported by GAP.jl for the host system
 ]
 
 # Bash recipe for building across all platforms
@@ -33,9 +35,15 @@ cp bin/*/*.so ${prefix}/lib/gap/
 # copy the sources, too, so that we can later compare them
 cp -r src ${prefix}/
 
+# setup julia with GAP.jl for the host system (needed for building the manual)
+mv ${WORKSPACE}/srcdir/julia-* ${WORKSPACE}/srcdir/julia
+export PATH="${PATH}:${WORKSPACE}/srcdir/julia/bin"
+cd ../..
+julia --project=@. -e 'using GAP; GAP.create_gap_sh("${WORKSPACE}/gap_sh")'
+
 # build the manual
-./configure --with-gaproot=${host_prefix}/lib/gap
-make GAP="${host_bindir}/gap" GAC="${host_bindir}/gac" V=1 doc
+cd pkg/JuliaInterface
+make GAP="${WORKSPACE}/gap_sh/gap.sh" V=1 doc
 # TODO: move the compiled manual to a suitable place
 
 install_license ../../LICENSE
