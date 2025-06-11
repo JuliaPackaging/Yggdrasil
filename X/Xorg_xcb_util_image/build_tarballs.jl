@@ -20,8 +20,7 @@ update_configure_scripts
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-malloc0returnsnull=no \
-    --with-pic \
-    PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${prefix}/share/pkgconfig"
+    --with-pic
 make -j${nproc}
 make install
 """
