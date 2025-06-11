@@ -8,7 +8,7 @@ upstream_version = "0.16" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-# Collection of sources required to build libsingular-julia
+# Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/ZeroMQInterface/releases/download/v$(upstream_version)/ZeroMQInterface-$(upstream_version).tar.gz",
                   "da9fc9ee04ba701b224d0809fdf4fc5b9782d9399326982273f77419fb3bd400"),
