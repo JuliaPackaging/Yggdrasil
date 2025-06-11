@@ -29,7 +29,8 @@ install_license LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
+dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms()
 
 append!(dependencies, [
     Dependency("LibCURL_jll"; compat="7.73,8"),
