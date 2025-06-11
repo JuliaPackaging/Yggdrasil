@@ -6,8 +6,7 @@ version = v"0.25.0"
 
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
-                  "05240b29f5b0f422e5a4ef8e9b5f76d8fa059cc057693d2723cdb76f36a88ab0"),
-    DirectorySource("./bundled"),
+                  "05240b29f5b0f422e5a4ef8e9b5f76d8fa059cc057693d2723cdb76f36a88ab0")
 ]
 
 # Bash recipe for building across all platforms
