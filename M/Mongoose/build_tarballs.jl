@@ -18,12 +18,15 @@ cmake_minimum_required(VERSION 3.10)
 project(mongoose C)
 
 add_library(mongoose SHARED mongoose/mongoose.c)
-install(TARGETS mongoose
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin)
 
-install(FILES mongoose/LICENSE DESTINATION share/licenses/Mongoose)
+if(WIN32)
+    target_link_libraries(mongoose PRIVATE ws2_32)
+endif()
+
+install(TARGETS mongoose
+        LIBRARY DESTINATION $libdir
+        ARCHIVE DESTINATION $libdir
+        RUNTIME DESTINATION $bindir)
 EOF
 
 cmake -B build  \
@@ -38,8 +41,7 @@ install_license mongoose/LICENSE
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=Sys.iswindows)
-
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
