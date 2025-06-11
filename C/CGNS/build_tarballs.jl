@@ -1,12 +1,11 @@
 using BinaryBuilder
 
 name = "CGNS"
-cgns_version = v"4.3.0"
-version = v"4.3.1"
+version = v"4.4.0"
 
 sources = [
     GitSource("https://github.com/CGNS/CGNS.git",
-              "ec538ac11dbaff510464a831ef094b0d6bf7216c"),
+              "394de1cb2dee9cc44f7bc3a761c70733ac15bcd1"),
 ]
 
 script = raw"""
