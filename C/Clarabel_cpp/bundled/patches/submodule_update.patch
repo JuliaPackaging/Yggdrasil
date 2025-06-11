@@ -1,0 +1,11 @@
+diff --git before/Clarabel.cpp/.git/config after/Clarabel.cpp/.git/config
+index c13a0d5..01e6818 100644
+--- before/Clarabel.cpp/.git/config
++++ after/Clarabel.cpp/.git/config
+@@ -9,3 +9,6 @@
+ [branch "main"]
+ 	remote = origin
+ 	merge = refs/heads/main
++[submodule "Clarabel.rs"]
++	active = true
++	url = https://github.com/oxfordcontrol/Clarabel.rs.git
