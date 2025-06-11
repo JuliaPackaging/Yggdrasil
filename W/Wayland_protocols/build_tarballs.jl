@@ -15,16 +15,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/wayland-protocols*/
 
-# Find wayland-scanner and create symlink where Meson expects it
-WAYLAND_SCANNER=$(which wayland-scanner)
-if [ -n "$WAYLAND_SCANNER" ]; then
-    echo "Found wayland-scanner at: $WAYLAND_SCANNER"
-    
-    # Create the exact directory structure that Meson expects
-    EXPECTED_PATH="/workspace/${bb_full_target}/destdir${host_prefix}/lib/pkgconfig/../../bin"
-    mkdir -p "$EXPECTED_PATH"
-    ln -sf "$WAYLAND_SCANNER" "$EXPECTED_PATH/wayland-scanner"
-fi
+# Clear PKG_CONFIG_SYSROOT_DIR to fix wayland-scanner path resolution
+# (prevents prepending /workspace/destdir to pkg-config paths)
+export PKG_CONFIG_SYSROOT_DIR=""
 
 mkdir build && cd build
 meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
