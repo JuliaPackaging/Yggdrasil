@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "Qt6Quick3D"
 version = v"6.8.2"
 
-host_build=true
+host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -90,5 +90,9 @@ dependencies = [
     Dependency("Qt6QuickTimeline_jll"; compat="="*string(version)),
     BuildDependency("Vulkan_Headers_jll"),
 ]
+
+if !host_build
+    push!(dependencies, HostBuildDependency("Qt6Quick3D_jll"))
+end
 
 build_qt(name, version, sources, script, products, dependencies)
