@@ -125,8 +125,8 @@ platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_versi
 platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
 #* REMOVE LATER
-platforms = filter!(p -> arch(p) == "x86_64", platforms)
-platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.2" || VersionNumber(tags(p)["cuda"]) == v"12.4", platforms)
+# platforms = filter!(p -> arch(p) == "x86_64", platforms)
+# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.2" || VersionNumber(tags(p)["cuda"]) == v"12.4", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
