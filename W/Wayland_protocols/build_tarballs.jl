@@ -21,7 +21,7 @@ if [ -n "$WAYLAND_SCANNER" ]; then
     echo "Found wayland-scanner at: $WAYLAND_SCANNER"
     
     # Create the exact directory structure that Meson expects
-    EXPECTED_PATH="/workspace/${bb_full_target}/destdir${host_prefix}/bin"
+    EXPECTED_PATH="/workspace/${bb_full_target}/destdir${host_prefix}/lib/pkgconfig/../../bin"
     mkdir -p "$EXPECTED_PATH"
     ln -sf "$WAYLAND_SCANNER" "$EXPECTED_PATH/wayland-scanner"
 fi
