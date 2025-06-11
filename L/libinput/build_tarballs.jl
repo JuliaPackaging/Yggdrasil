@@ -15,6 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libinput/
 mkdir build
 cd build
+
 meson setup -D libwacom=false -D tests=false -D documentation=false -D debug-gui=false ../ --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
