@@ -146,10 +146,10 @@ products = [
 
 dependencies = [
     Dependency("HDF5_jll"; compat="~1.14.6"),
-    Dependency("MPICH_jll"; compat="~4.3.0"),
-    Dependency("NCCL_jll"; compat="~2.26.5"), # supports all of 12.x
+    Dependency("MPICH_jll"; compat="4.3.0"),
+    Dependency("NCCL_jll"; compat="2.26.5"), # supports all of 12.x
     # Dependency("UCX_jll"),
-    Dependency("Zlib_jll"; compat="~1.2.12"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     RuntimeDependency(PackageSpec(; name="CUDA_Driver_jll")), # compat to prevent use of CUDA 13.x drivers in the future
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
