@@ -29,14 +29,6 @@ export CXX="clang++"
 export BUILD_CXX=$(which clang++)
 export BUILD_CC=$(which clang)
 
-if [[ ${target} == x86_64-linux-musl ]]; then
-    # HDF5 needs libcurl, and it needs to be the BinaryBuilder libcurl, not the system libcurl.
-    # MPI needs libevent, and it needs to be the BinaryBuilder libevent, not the system libevent.
-    rm /usr/lib/libcurl.*
-    rm /usr/lib/libevent*
-    rm /usr/lib/libnghttp2.*
-fi
-
 # Necessary operations to cross compile CUDA from x86_64 to aarch64
 if [[ "${target}" == aarch64-linux-* ]]; then
 
@@ -147,10 +139,8 @@ platforms = [platforms[1]]
 print(platforms)
 
 
-# also some warnings about avx2 instruction set vs x86_64
-# dont_dlopen avoids version `GLIBCXX_3.4.30' not found
 products = [
-    LibraryProduct("liblegate", :liblegate, dont_dlopen = true)
+    LibraryProduct("liblegate", :liblegate)
 ] 
 
 
@@ -161,7 +151,7 @@ dependencies = [
     # Dependency("UCX_jll"),
     Dependency("Zlib_jll"; compat="~1.2.12"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    RuntimeDependency(PackageSpec(; name="CUDA_Driver_jll"); compat = "~0.13.0"), # compat to prevent use of CUDA 13.x drivers in the future
+    RuntimeDependency(PackageSpec(; name="CUDA_Driver_jll")), # compat to prevent use of CUDA 13.x drivers in the future
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
 ]
 
@@ -188,7 +178,8 @@ for platform in platforms
                     products, [dependencies; cuda_deps];
                     julia_compat = "1.10", preferred_gcc_version = v"11",
                     preferred_llvm_version = clang_ver,
-                    augment_platform_block=CUDA.augment, lazy_artifacts = true
+                    augment_platform_block=CUDA.augment,
+                    lazy_artifacts = true, dont_dlopen = true
                 )
     #augment_platform_block=augment_platform_block
 end
