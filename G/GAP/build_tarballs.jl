@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.14.0"
-version = v"400.1400.004"
+version = v"400.1400.005"
 
 # Collection of sources required to complete build
 sources = [
@@ -120,12 +120,6 @@ filter!(p -> nbits(p) == 64, platforms)
 # Windows is not supported
 filter!(!Sys.iswindows, platforms)
 
-# Exclude aarch64 FreeBSD for the time being
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
-# Can't build for riscv64 as long as there is no libjulia_jll for it
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gap", :gap),
@@ -139,9 +133,9 @@ dependencies = [
     HostBuildDependency("Zlib_jll"),
 
     Dependency("GMP_jll"),
-    Dependency("Readline_jll"; compat="8.2.1"),
+    Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.16")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.17")),
 ]
 
 # Build the tarballs.
