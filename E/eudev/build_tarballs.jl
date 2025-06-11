@@ -7,7 +7,8 @@ version = v"3.2.14"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/eudev-project/eudev", "9e7c4e744b9e7813af9acee64b5e8549ea1fbaa3")
+    GitSource("https://github.com/eudev-project/eudev", "9e7c4e744b9e7813af9acee64b5e8549ea1fbaa3"),
+    DirectorySource(joinpath(@__DIR__, "patches"))
 ]
 
 # Bash recipe for building across all platforms
@@ -19,18 +20,19 @@ apk add libxslt-dev docbook-xsl
 # Only apply the patch for musl targets
 if [[ "${target}" == *"musl"* ]]; then
     echo "Applying musl-specific thread_local fix"
-    find . -name "*.c" -exec grep -l "thread_local" {} \; | xargs -r sed -i 's/thread_local/__thread/g'
+    # find . -name "*.c" -exec grep -l "thread_local" {} \; | xargs -r sed -i 's/thread_local/__thread/g'
+    atomic_patch -p0 ../musl.patch
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make
 make install
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter!(Sys.islinux, supported_platforms())
-
 
 # The products that we will ensure are always built
 products = [
