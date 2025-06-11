@@ -135,10 +135,6 @@ platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 # filter!(p -> p["mpi"] ∉ ["mpitrampoline", "microsoftmpi"], platforms)
 
 
-platforms = [platforms[1]]
-print(platforms)
-
-
 products = [
     LibraryProduct("liblegate", :liblegate)
 ] 
