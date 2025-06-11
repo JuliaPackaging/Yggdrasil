@@ -14,7 +14,6 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xcb-util-image-*/
-LDFLAGS="-L${prefix}/lib"
 
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
