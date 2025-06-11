@@ -20,7 +20,6 @@ apk add libxslt-dev docbook-xsl
 # Only apply the patch for musl targets
 if [[ "${target}" == *"musl"* ]]; then
     echo "Applying musl-specific thread_local fix"
-    # find . -name "*.c" -exec grep -l "thread_local" {} \; | xargs -r sed -i 's/thread_local/__thread/g'
     atomic_patch -p0 ../musl.patch
 fi
 
