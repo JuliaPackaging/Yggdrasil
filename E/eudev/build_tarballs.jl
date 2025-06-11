@@ -19,7 +19,6 @@ apk add libxslt-dev docbook-xsl
 
 # Only apply the patch for musl targets
 if [[ "${target}" == *"musl"* ]]; then
-    echo "Applying musl-specific thread_local fix"
     atomic_patch -p0 ../musl.patch
 fi
 
