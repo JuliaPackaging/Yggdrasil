@@ -63,6 +63,7 @@ fi
 
 # Override the default platforms
 platforms = CUDA.supported_platforms(; min_version=v"11.8")
+platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
 products = [
