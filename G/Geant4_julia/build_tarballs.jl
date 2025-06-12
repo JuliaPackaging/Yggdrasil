@@ -61,7 +61,7 @@ dependencies = [
     BuildDependency("libjulia_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("libcxxwrap_julia_jll"; compat="0.13.2"),
-    Dependency("Geant4_jll"; compat="~11.3")
+    Dependency("Geant4_jll"; compat="11.3.2")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
