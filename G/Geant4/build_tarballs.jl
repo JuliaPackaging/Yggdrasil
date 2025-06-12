@@ -110,7 +110,7 @@ dependencies = [
     Dependency("Xorg_libXmu_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Xerces_jll"),
-    Dependency("Zlib_jll"; platforms=filter(Sys.isapple, platforms))
+    Dependency("Zlib_jll"; platforms=filter(Sys.isapple, platforms)),
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 
