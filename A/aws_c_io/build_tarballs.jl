@@ -32,6 +32,7 @@ find . -type f -exec sed -i -e 's/Windows.h/windows.h/g' \
      -e 's/WinSock2.h/winsock2.h/g' \
      -e 's/MSWSock.h/mswsock.h/g' \
      -e 's/Mstcpip.h/mstcpip.h/g' \
+     -e 's/SubAuth.h/subauth.h' \
      '{}' \;
 # Lowercase names for MinGW
 sed -i -e 's/Secur32/secur32/g' -e 's/Crypt32/crypt32/g' CMakeLists.txt
