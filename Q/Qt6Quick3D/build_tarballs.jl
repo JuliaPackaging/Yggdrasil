@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 name = "Qt6Quick3D"
 version = v"6.8.2"
 
-host_build=true
+host_build = false
 
 # Collection of sources required to build qt6
 sources = [
@@ -22,10 +22,14 @@ mkdir build
 cd build/
 qtsrcdir=`ls -d ../qtquick3d-*`
 
+if [[ $bb_full_target == *"musl"* ]]; then
+    # secure_getenv is undefined on the musl platforms
+    sed -i "s/HAVE_SECURE_GETENV//" $qtsrcdir/src/3rdparty/openxr/CMakeLists.txt
+fi
+
 case "$bb_full_target" in
 
     x86_64-linux-musl-libgfortran5-cxx11)
-        sed -i "s/HAVE_SECURE_GETENV//" ../qt*src*/src/3rdparty/openxr/CMakeLists.txt
         cmake -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_FIND_ROOT_PATH=$prefix -DCMAKE_BUILD_TYPE=Release $qtsrcdir
     ;;
 
@@ -91,4 +95,12 @@ dependencies = [
     BuildDependency("Vulkan_Headers_jll"),
 ]
 
+if !host_build
+    push!(dependencies, HostBuildDependency("Qt6Quick3D_jll"))
+end
+
+if should_build_platform(Platform("x86_64", "FreeBSD"))
+    # OpenXR (even the builtin one) can't be built on FreeBSD apparently, so remove it from the product list there.
+    pop!(products)
+end
 build_qt(name, version, sources, script, products, dependencies)
