@@ -102,6 +102,5 @@ end
 if should_build_platform(Platform("x86_64", "FreeBSD"))
     # OpenXR (even the builtin one) can't be built on FreeBSD apparently, so remove it from the product list there.
     pop!(products)
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", llvm_version, julia_compat="1.6")
 end
 build_qt(name, version, sources, script, products, dependencies)
