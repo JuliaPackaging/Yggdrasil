@@ -22,7 +22,7 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.1000.500"
+version = v"300.1001.500"
 upstream_version = v"3.10.5"
 
 # Collection of sources required to complete build
