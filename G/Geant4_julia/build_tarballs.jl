@@ -35,8 +35,10 @@ install_license Geant4_cxxwrap/LICENSE
 # platforms are passed in on the command line
 include("../../L/libjulia/common.jl")
 
-# The Julia versions we will support (1.13 is not supported by libcxxwrap_julia_jll v0.13)
-filter!(x -> x != v"1.13", julia_versions)
+# Filter Julia versions:
+# - 1.13 is not supported by libcxxwrap_julia_jll v0.13 (to be changed in the future!)
+# - Remove versions below current LTS (1.10)
+filter!(x -> x < v"1.13" && x >= v"1.10", julia_versions)
 
 # platforms supported by libjulia
 platforms = vcat(libjulia_platforms.(julia_versions)...)
