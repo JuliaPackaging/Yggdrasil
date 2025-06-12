@@ -18,7 +18,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON \
       -DENABLE_XHOST=OFF \
-      -DENABLE_FORTRAN=OFF \
+      -DENABLE_FORTRAN=ON \
       -DDISABLE_KXC=ON ..
 
 make -j${nproc}

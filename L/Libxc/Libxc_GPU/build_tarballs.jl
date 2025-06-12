@@ -45,7 +45,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBUILD_TESTING=OFF \
       -DENABLE_CUDA=ON \
       -DENABLE_XHOST=OFF \
-      -DENABLE_FORTRAN=OFF \
+      -DENABLE_FORTRAN=ON \
       -DDISABLE_KXC=ON ..
 
 cmake --build . --parallel $nproc
