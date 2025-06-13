@@ -1,26 +1,26 @@
-From 2e0203168dcaf52b443949db4725da638f93c9c5 Mon Sep 17 00:00:00 2001
+From d83f17d31e1cf0c6d6453f754d19c4e8956a8fbb Mon Sep 17 00:00:00 2001
 From: Gnimuc <qiyupei@gmail.com>
 Date: Tue, 25 Mar 2025 12:21:31 +0900
 Subject: [PATCH] Rewrite CMake build scripts
 
 ---
- CMakeLists.txt                           | 578 +++--------------------
+ CMakeLists.txt                           | 577 +++--------------------
  include/CMakeLists.txt                   |   1 +
  include/clang-c/CMakeLists.txt           |   1 +
  include/clang/CMakeLists.txt             |   1 +
  include/clang/Interpreter/CMakeLists.txt |   1 +
  lib/Interpreter/CMakeLists.txt           | 157 +-----
- 6 files changed, 79 insertions(+), 660 deletions(-)
+ 6 files changed, 76 insertions(+), 662 deletions(-)
  create mode 100644 include/CMakeLists.txt
  create mode 100644 include/clang-c/CMakeLists.txt
  create mode 100644 include/clang/CMakeLists.txt
  create mode 100644 include/clang/Interpreter/CMakeLists.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index cb0c588..c4571d8 100644
+index 5cf3707..61e01b0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,523 +1,77 @@
+@@ -1,523 +1,72 @@
 -cmake_minimum_required(VERSION 3.13)
 +cmake_minimum_required(VERSION 3.21)
  
@@ -274,9 +274,9 @@ index cb0c588..c4571d8 100644
 -      message(fatal "LLVM/CppInterOp requires c++14 or later")
 -    endif()
 -  endif()
--  
+-
 -  ## Find supported Cling
--  
+-
 -  if (CPPINTEROP_USE_CLING)
 -    if (NOT Cling_FOUND AND DEFINED Cling_DIR)
 -      find_package(Cling REQUIRED CONFIG ${cling_extra_hints} NO_DEFAULT_PATH)
@@ -310,7 +310,10 @@ index cb0c588..c4571d8 100644
  
 -  # In case this was a path to a build folder of llvm still try to find AddLLVM
 -  list(APPEND CMAKE_MODULE_PATH "${LLVM_DIR}")
--
++find_package(Clang REQUIRED CONFIG)
++message(STATUS "Found Clang ${Clang_PACKAGE_VERSION}")
++message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
+ 
 -  # Fix bug in some AddLLVM.cmake implementation (-rpath "" problem)
 -  set(LLVM_LIBRARY_OUTPUT_INTDIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib${LLVM_LIBDIR_SUFFIX})
 -
@@ -530,7 +533,7 @@ index cb0c588..c4571d8 100644
 -    set(MSVC_EXPORTLIST ${MSVC_EXPORTLIST} ??3@YAXPAX0@Z ??_V@YAXPAX0@Z)
 -  endif()
 -
--  if(MSVC_VERSION GREATER_EQUAL 1936)
+-  if(MSVC_VERSION GREATER_EQUAL 1936 AND NOT (CMAKE_C_COMPILER MATCHES "aarch64|arm"))
 -    set(MSVC_EXPORTLIST ${MSVC_EXPORTLIST}
 -        __std_find_trivial_1
 -        __std_find_trivial_2
@@ -542,10 +545,11 @@ index cb0c588..c4571d8 100644
 -foreach(sym ${MSVC_EXPORTLIST})
 -  set(MSVC_EXPORTS "${MSVC_EXPORTS} /EXPORT:${sym}")
 -endforeach(sym ${MSVC_EXPORTLIST})
-+find_package(Clang REQUIRED CONFIG)
-+message(STATUS "Found Clang ${Clang_PACKAGE_VERSION}")
-+message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
- 
+-
+-endif()
+-
+-if (CPPINTEROP_INCLUDE_DOCS)
+-  add_subdirectory(docs)
 +add_library(CppInterOp SHARED)
 +add_subdirectory(lib)
 +add_subdirectory(include)
@@ -575,13 +579,6 @@ index cb0c588..c4571d8 100644
 +
 +target_link_libraries(CppInterOp PUBLIC LLVM clang-cpp)
 +
-+if(UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-+    target_link_options(CppInterOp PUBLIC -Wl,--export=__clang_Interpreter_SetValueNoAlloc)
-+    target_link_options(CppInterOp PUBLIC -Wl,--export=__clang_Interpreter_SetValueWithAlloc)
- endif()
- 
--if (CPPINTEROP_INCLUDE_DOCS)
--  add_subdirectory(docs)
 +# Install CompilationDatabase
 +set_target_properties(CppInterOp PROPERTIES EXPORT_COMPILE_COMMANDS true)
 +set(ccmds_json ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json)
@@ -643,7 +640,7 @@ index 0000000..c6c9939
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/CppInterOp.h)
 \ No newline at end of file
 diff --git a/lib/Interpreter/CMakeLists.txt b/lib/Interpreter/CMakeLists.txt
-index 7568f7f..4205ada 100644
+index eccfc39..4205ada 100644
 --- a/lib/Interpreter/CMakeLists.txt
 +++ b/lib/Interpreter/CMakeLists.txt
 @@ -1,148 +1,9 @@
@@ -763,12 +760,12 @@ index 7568f7f..4205ada 100644
 -
 -
 -if(EMSCRIPTEN)
--  # FIXME: When dynamically linking the Emscripten shared library to the 
+-  # FIXME: When dynamically linking the Emscripten shared library to the
 -  # unit tests main_module you get errors due to undefined symbols. The reading of the file
 -  # below into a SYMBOLS_LIST variable is a temporary workaround that exports the undefined
 -  # symbols from the shared library, until it can be determined why they are not being exported already.
 -  file(READ "${CMAKE_SOURCE_DIR}/lib/Interpreter/exports.ld" SYMBOLS_LIST)
--  
+-
 -  # Replace newlines with spaces
 -  string(REPLACE "\n" " " SYMBOLS_LIST "${SYMBOLS_LIST}")
 -
