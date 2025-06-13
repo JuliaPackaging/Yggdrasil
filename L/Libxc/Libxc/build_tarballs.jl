@@ -4,19 +4,12 @@ name = "Libxc"
 version = v"7.0.0"
 include("../sources.jl")
 
-sources = [
-    sources;
-    DirectorySource("./bundled")
-]
 
 # Bash recipe for building across all platforms
 # Notes:
 #   - 3rd and 4th derivatives (KXC, LXC) not built since gives a binary size of ~200MB
 script = raw"""
 cd $WORKSPACE/srcdir/libxc-*/
-
-# Needed for the aarch64-linux-gnu-libgfortran3 target
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/work_mgga_inc-ice-fix.patch
 
 mkdir libxc_build
 cd libxc_build
