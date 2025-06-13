@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_http"
-version = v"0.9.5"
+version = v"0.10.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-http.git", "e3a9cabc664630120df25c28ec710199b8e8b15b"),
+    GitSource("https://github.com/awslabs/aws-c-http.git", "3eedf1ef8c6874cd941dbde794a6ab3bd979e181"),
 ]
 
 # Bash recipe for building across all platforms
@@ -25,8 +25,6 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
 cmake --build . -j${nproc} --target install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !(Sys.iswindows(p) && arch(p) == "i686"), platforms)
 
@@ -37,8 +35,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_compression_jll"; compat="0.3.1"),
-    Dependency("aws_c_io_jll"; compat="0.17.0"),
+    Dependency("aws_c_compression_jll"; compat="0.3.2"),
+    Dependency("aws_c_io_jll"; compat="0.19.1"),
     BuildDependency("aws_lc_jll"),
 ]
 

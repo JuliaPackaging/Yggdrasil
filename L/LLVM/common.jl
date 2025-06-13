@@ -19,8 +19,9 @@ const llvm_tags = Dict(
     v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
     v"16.0.6" => "4a5c1da0d268d2858def6c1aa206ac4b31956208", # julia-16.0.6-4
     v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
-    v"18.1.7" => "ed30d043a240d06bb6e010a41086e75713156f4f", # julia-18.1.7-2
-    v"19.1.7" => "a9df916357c2fd0851df026a84f83d87efd6e212", # julia-19.1.7-1
+    v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
+    v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
+    v"20.1.2" => "6fe525631430a9cca35e564f90752ac6b7d9d951", # julia-20.1.2-1
 )
 
 const buildscript = raw"""
@@ -108,7 +109,7 @@ fi
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
 
-# Build llvm-tblgen, clang-tblgen, and llvm-config
+# Build host-native llvm-tblgen, clang-tblgen, and llvm-config
 mkdir ${WORKSPACE}/bootstrap
 pushd ${WORKSPACE}/bootstrap
 CMAKE_FLAGS=()
@@ -122,12 +123,21 @@ else
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+# Turn off random crap the host tools do not need to configure
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=OFF)
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
+fi
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
+if [[ "${LLVM_MAJ_VER}" -ge "17" ]]; then
+    ninja -j${nproc} llvm-tblgen llvm-min-tblgen clang-tblgen mlir-tblgen llvm-config
+elif [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
@@ -139,7 +149,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} mlir-linalg-ods-yaml-gen
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
-    ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
+    ninja -j${nproc} clang-tidy-confusable-chars-gen mlir-pdll
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
+    ninja -j${nproc} clang-pseudo-gen
 fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
     ninja -j${nproc} mlir-src-sharder
@@ -156,6 +169,10 @@ CMAKE_CXX_FLAGS=()
 CMAKE_C_FLAGS=()
 
 CMAKE_FLAGS=()
+
+if [[ "${target}" != *-apple-darwin* ]]; then
+CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id)
+fi
 
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
@@ -188,13 +205,18 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
 if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
 fi
 
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
 
 # Turn on ZLIB
-CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=FORCE_ON)
+# Turn on ZSTD
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=FORCE_ON)
+fi
 # Turn off XML2
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
@@ -260,6 +282,9 @@ fi
 
 # Tell LLVM where our pre-built tblgen tools are
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
+if [[ "${LLVM_MAJ_VER}" -ge "17" ]]; then
+CMAKE_FLAGS+=(-DLLVM_HEADERS_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-min-tblgen)
+fi
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 if [[ ( "${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0" ) || "${LLVM_MAJ_VER}" -gt "12" ]]; then
@@ -273,8 +298,10 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
-    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
+    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
 fi
 if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
     CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
@@ -669,9 +696,12 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     # Dependencies that must be installed before this package can be built
     # TODO: LibXML2
     dependencies = [
-        Dependency("Zlib_jll"), # for LLD&LTO
+        Dependency("Zlib_jll"), # for LLD&LTO&debuginfo
         BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
     ]
+    if version >= v"20"
+        push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
+    end
     if update_sdk
         config *= "LLVM_UPDATE_MAC_SDK=1\n"
         push!(sources,
@@ -785,8 +815,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     end
 
     dependencies = BinaryBuilder.AbstractDependency[
-        Dependency("Zlib_jll"), # for LLD&LTO
+        Dependency("Zlib_jll"), # for LLD&LTO&debuginfo
     ]
+    if version >= v"20"
+        push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
+    end
 
     # Parse out some args
     if "--assert" in ARGS

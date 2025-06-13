@@ -10,8 +10,8 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "cuda.jl"))
 # Builds for all compatible CUDA platforms, but without microarchitecture expansion (not
 # needed for CUDA cuda, and would produce a giant amount of artifacts)
 name = "cufinufft"
-version = v"2.3.1"
-commit_hash = "1fea25405c174e34d2ddb793666060c3d79a43d1" # v2.3.1
+version = v"2.4.0"
+commit_hash = "30adfd3939ce0c804e304dd38e9955e761a17410" # v2.4.0-rc1
 
 preferred_gcc_version=v"11"
 
@@ -38,7 +38,7 @@ cmake .. \
     -DFINUFFT_FFTW_SUFFIX="" \
     -DFINUFFT_USE_CPU=OFF \
     -DFINUFFT_USE_CUDA=ON \
-    -DFINUFFT_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
+    -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
     -DFINUFFT_STATIC_LINKING="OFF"
 cmake --build . --parallel $nproc
 cmake --install .
@@ -53,7 +53,10 @@ filter!(p -> arch(p)=="x86_64", platforms)
 
 # Latest version of cuFINUFFT does not compile with CUDA 12.5, so exclude
 # NOTE: Works in v2.3.1 but will break in v2.4
-#filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
+filter!(p -> VersionNumber(p["cuda"]) != v"12.5", platforms)
+
+# CUDA 12.9 doesn't seem to build yet
+filter!(p -> VersionNumber(p["cuda"]) != v"12.9", platforms)
 
 # The products that we will ensure are always built
 products = [

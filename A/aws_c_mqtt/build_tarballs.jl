@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_mqtt"
-version = v"0.12.2"
+version = v"0.13.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "f0cc34cb6f54e050275e3c859594c62776d46d83"),
+    GitSource("https://github.com/awslabs/aws-c-mqtt.git", "3ac506507679a86677f8875dcc07589b63907863"),
 ]
 
 # Bash recipe for building across all platforms
@@ -36,11 +36,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_http_jll"; compat="0.9.3"),
-    Dependency("aws_c_io_jll"; compat="0.17.0"),
+    Dependency("aws_c_http_jll"; compat="0.10.2"),
+    Dependency("aws_c_io_jll"; compat="0.19.1"),
     BuildDependency("aws_lc_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"5")
+    julia_compat="1.6", preferred_gcc_version = v"5")
+
+# build trigger: 1

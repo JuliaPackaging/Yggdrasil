@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "Spot_julia"
-version = v"2.12"
+version_string = "2.13.1"
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-2.12.tar.gz","26ba076ad57ec73d2fae5482d53e16da95c47822707647e784d8c7cec0d10455"),
+    ArchiveSource("http://www.lrde.epita.fr/dload/spot/spot-$(version_string).tar.gz","b9d1de4abcd069f923e1a3263f58ccafcc54896aa818b455928ca2b1a4466dc9"),
     GitSource("https://github.com/MaximeBouton/spot_julia.git", "6ffcf4b64f64fc9e3363db22f4cc57a957d28128"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
         "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")
@@ -99,8 +100,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.9")),
-    Dependency("libcxxwrap_julia_jll"; compat="0.12.3")
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.16")),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.3")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
