@@ -1,7 +1,7 @@
 # Note: this script will require BinaryBuilder.jl v0.3.0 or greater
 using BinaryBuilder, Pkg
 name = "ITKIOWrapper"
-version = v"2.0.0"
+version = v"3.0.1"
 # Collection of sources required to build ITKWrapper
 sources = [
     DirectorySource("./src"),
@@ -18,15 +18,19 @@ julia_versions = filter(v-> v >= v"1.10", julia_versions)
 
 # Bash recipe for building across all platforms
 script = raw"""
-export CXXFLAGS="-I${includedir}/julia $CXXFLAGS"
-export CFLAGS="-I${includedir}/julia $CFLAGS"
+export CXXFLAGS="-I${includedir}/julia -DITK_LEGACY_REMOVE=OFF ${CXXFLAGS}"
+export CFLAGS="-I${includedir}/julia ${CFLAGS}"
 mkdir -p build/
 cmake -B build -S . \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DBUILD_SHARED_LIBS:BOOL=ON \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DITK_LEGACY_REMOVE=OFF \
+    -DITK_BUILD_TESTING=OFF \
+    -DBUILD_TESTING=OFF \
+    -DITK_SKIP_PATH_LENGTH_CHECKS=ON
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -40,7 +44,6 @@ filter!(p -> !(arch(p) == "i686"), platforms)
 filter!(!Sys.isfreebsd, platforms)
 filter!(p -> !(arch(p) == "x86_64" && libc(p) == "musl"), platforms)
 filter!(p -> !(arch(p) == "riscv64"), platforms)
-filter!(!Sys.iswindows, platforms)
 
 # Expand C++ string ABI platforms
 platforms = expand_cxxstring_abis(platforms)
@@ -52,7 +55,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
-    Dependency(PackageSpec(name="ITK_jll", uuid="3324d3a8-621a-5aaa-97fa-c3bc8dfc0481"); compat="5.3.1"),
+    Dependency(PackageSpec(name="ITK_jll", uuid="3324d3a8-621a-5aaa-97fa-c3bc8dfc0481"); compat="5.3.3"),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat = "0.13.4"),
     BuildDependency(PackageSpec(name="libjulia_jll", uuid="5ad3ddd2-0711-543a-b040-befd59781bbf"))
 ]

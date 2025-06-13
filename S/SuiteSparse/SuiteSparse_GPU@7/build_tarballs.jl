@@ -3,7 +3,7 @@ include("../common.jl")
 using Base.BinaryPlatforms: arch, os
 
 name = "SuiteSparse_GPU"
-version_str = "7.8.3"
+version_str = "7.10.1"
 version = VersionNumber(version_str)
 
 sources = suitesparse_sources(version)
@@ -35,7 +35,7 @@ CMAKE_OPTIONS+=(
         -DSUITESPARSE_USE_SYSTEM_CCOLAMD=ON
         -DCMAKE_RELEASE_POSTFIX="_cuda"
     )
-""" * build_script(use_omp = false, use_cuda = true)
+""" * build_script(use_omp = true, use_cuda = true)
 
 # Products for the GPU builds of SuiteSparse
 gpu_products = [

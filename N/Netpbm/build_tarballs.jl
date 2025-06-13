@@ -4,13 +4,13 @@ using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
 name = "Netpbm"
-version_string = "10.86.43"
+version_string = "10.86.44"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://sourceforge.net/projects/netpbm/files/super_stable/$(version_string)/netpbm-$(version_string).tgz",
-                  "ac7d30dc1bcfc754931d247fcad475503c121c16cc6470e68c4313128a221ddd"),
+                  "e7b62782e675d262c69b9f8f6920c9e5e141f7890d13ae87fef8f5c86b6b6cd6"),
     GitSource("https://github.com/win32ports/sys_wait_h", "229dee8de9cb4c29a3a31115112a4175df84a8eb"),
     DirectorySource("bundled"),
 ]
@@ -444,20 +444,14 @@ products = [
 dependencies = [
     BuildDependency("Xorg_kbproto_jll"), # compat="1.0.7"
     BuildDependency("Xorg_xproto_jll"),  # compat="7.0.31"
-    # Need at least JpegTurbo v3.0.4 for aarch64-freebsd support
-    Dependency("JpegTurbo_jll"; compat="3.0.4"),
-    # Need at least Libtiff v4.7.0 for aarch64-freebsd support
-    Dependency("Libtiff_jll"; compat="4.7.0"),
-    # Need at least XML2 v2.13.5 for aarch64-freebsd support
-    Dependency("XML2_jll"; compat="2.13.5"),
+    Dependency("JpegTurbo_jll"; compat="3.1.1"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
+    Dependency("XML2_jll"; compat="2.13.6"),
     # Need at least Xorg_libX11 v1.8.6 for armv6l support
     Dependency("Xorg_libX11_jll"; compat="1.8.6"),
-    # Need at least Zlib v1.2.12; older versions don't work with libpng
-    # We can't declare a Zlib compat entry because this is a stdlib
-    Dependency("Zlib_jll"),
-    # Need at least libpng v1.6.44 for aarch64-freebsd support
-    Dependency("libpng_jll"; compat="1.6.44"),
-    RuntimeDependency("Ghostscript_jll"; compat="9.53.3"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("libpng_jll"; compat="1.6.47"),
+    RuntimeDependency("Ghostscript_jll"; compat="9.55.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

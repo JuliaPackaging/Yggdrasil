@@ -2,6 +2,7 @@ using BinaryBuilder
 
 name = "Blosc"
 version = v"1.21.6"
+ygg_version = v"1.21.7"
 
 # Collection of sources required to build Blosc
 sources = [
@@ -46,12 +47,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Lz4_jll"; compat="1.10.0"),
-    Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"; compat="1.5.6"),
+    Dependency("Lz4_jll"; compat="1.10.1"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
-
-# Build trigger: 1
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

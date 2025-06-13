@@ -4,14 +4,14 @@ using BinaryBuilder, Pkg
 
 name = "SCIP_PaPILO"
 
-upstream_version = v"9.2.0"
+upstream_version = v"9.2.1"
 version = VersionNumber(upstream_version.major * 100, upstream_version.minor * 100, upstream_version.patch * 100)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource(
         "https://scipopt.org/download/release/scipoptsuite-$(upstream_version).tgz",
-        "a174cc58592d245c74c9c95c1d4819750d7ba2d467b4baae616a5aa336aac8d0"
+        "41b71a57af773403e9a6724f78c37d8396ac4b6b270a9bbf3716d67f1af12edf"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
@@ -62,6 +62,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix\
   -DIPOPT_LIBRARIES=${libdir} \
   -DBLISS_INCLUDE_DIR=${includedir} \
   -DBLISS_LIBRARY=bliss \
+  -DBUILD_TESTING=OFF \
   ..
 make -j${nproc} scip
 make papilo-executable
@@ -99,12 +100,12 @@ products = [
 dependencies = [
     Dependency(PackageSpec(name="bliss_jll", uuid="508c9074-7a14-5c94-9582-3d4bc1871065"), compat="=0.77.0"),
     Dependency(PackageSpec(name="boost_jll", uuid="28df3c45-c428-5900-9ff8-a3135698ca75"); compat="=1.79.0"),
-    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.8"),
+    Dependency(PackageSpec(name="Bzip2_jll", uuid="6e34b625-4abd-537c-b88f-471c36dfa7a0"); compat="1.0.9"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     Dependency(PackageSpec(name="GMP_jll", uuid="781609d7-10c4-51f6-84f2-b8444358ff6d"); compat="6.2.1"),
     Dependency(PackageSpec(name="Ipopt_jll", uuid="9cc047cb-c261-5740-88fc-0cf96f7bdcc7"); compat="=300.1400.1400"),
     Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.10"),
-    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"); compat="2021.9.0"),
+    Dependency(PackageSpec(name="oneTBB_jll", uuid="1317d2d5-d96f-522e-a858-c73665f53c3e"); compat="2022.0.0"),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
     Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
 ]
@@ -119,7 +120,7 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version=v"7",
+    preferred_gcc_version=v"10",
     julia_compat="1.6",
     clang_use_lld=false,
 )

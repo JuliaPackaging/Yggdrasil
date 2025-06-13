@@ -1,18 +1,21 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "ORTools"
-version = v"9.11.1"
+version = v"9.12.0"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/google/or-tools.git",
-              "f99e8e981e13035bb7ef074776525ad275182ef6")
+              "b8e881fbde473a9e33e0dac475e498559eb0459d")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# OR-Tools 9.12 starts requiring CMake 3.24+. Thus, uninstall the previous version to use the one from CMake_jll.
+apk del cmake
+
 # Prepare the source directory.
 cd $WORKSPACE/srcdir/or-tools*
 mkdir build
@@ -161,7 +164,15 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[]
+dependencies = [
+    # OR-Tools 9.12 starts depending on CMake 3.28.
+    # OR-Tools 9.12 starts depending on CMake 3.28.
+    HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
+]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+#
+# Add `lock_microarchitecture=false` to bypass checks for `-march`, but
+# Abseil's compilation scripts are still broken (trying to build the
+# host tools with a target toolchain...).
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"11", julia_compat="1.9")

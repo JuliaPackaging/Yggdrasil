@@ -68,8 +68,10 @@ dependencies = [
     Dependency("FreeType2_jll", v"2.13.1"; compat="2.10.4"), # TODO: `compat="2.10.4"` is a LIE, in order to be able to rebuild the package without changing the compat bound.  In practice the compat bounds of Cairo_jll shouldn't allow having incompatible versions/.  Next version, change this compat to `"2.13.1"` and remove the build version.
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    # Updating to a newer HDF5 version requires rebuilding this package
-    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="~1.14.3"),
+    # We had to restrict compat with HDF5 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10347#issuecomment-2662923973
+    # Updating to a newer HDF5 version is likely possible without problems but requires rebuilding this package
+    Dependency("HDF5_jll"; platforms=hdf5_platforms, compat="=1.14.3"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),

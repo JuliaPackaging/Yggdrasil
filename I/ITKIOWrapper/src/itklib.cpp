@@ -24,7 +24,6 @@ namespace std {
 
 #endif // !__cpp_lib_make_unique_for_overwrite
 
-
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/array.hpp"
 #include "jlcxx/tuple.hpp"
@@ -36,10 +35,16 @@ namespace std {
 #include "itkGDCMSeriesFileNames.h"
 #include "itkOrientImageFilter.h"
 #include "itkMetaDataObject.h"
+#include "itkSpatialOrientation.h"
+#include "itkSpatialOrientationAdapter.h"
+#include "itkImageIOBase.h"
 #include <vector>
-#include <memory>
 #include <stdexcept>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
+#include "itkImage.h"
+
 
 using ImageType = itk::Image<float, 3>;
 
@@ -121,41 +126,66 @@ public:
         return direction_flat;
     }
 
-    // Write image (NIfTI or DICOM)
-    void writeImage(const std::string& filename, bool isDicom = false) const {
-        if (isDicom) {
-            // Save as DICOM series
-            auto writer = itk::ImageSeriesWriter<ImageType, ImageType>::New();
-            auto dicomIO = itk::GDCMImageIO::New();
-            writer->SetImageIO(dicomIO);
+void writeImage(const std::string& filename, bool isDicom = false) const {
+    if (isDicom) {
+        using OutputPixelType = signed short;
+        using OutputImageType = itk::Image<OutputPixelType, 2>;
+        using SeriesWriterType = itk::ImageSeriesWriter<ImageType, OutputImageType>;
+        
+        auto writer = SeriesWriterType::New();
+        auto dicomIO = itk::GDCMImageIO::New();
+        
+        // Configure DICOM settings
+        dicomIO->SetComponentType(itk::IOComponentEnum::SHORT);
+        writer->SetImageIO(dicomIO);
 
-            // Generate output file names
-            std::vector<std::string> outputFileNames;
-            for (int i = 0; i < m_Image->GetLargestPossibleRegion().GetSize()[2]; ++i) {
-                outputFileNames.push_back(filename + "_" + std::to_string(i) + ".dcm");
-            }
+        // Get image properties
+        ImageType::RegionType region = m_Image->GetLargestPossibleRegion();
+        ImageType::SizeType size = region.GetSize();
+        unsigned int numberOfSlices = size[2];
 
-            writer->SetFileNames(outputFileNames);
-            writer->SetInput(m_Image);
-            writer->Update();
-        } else {
-            // Save as NIfTI
-            auto writer = itk::ImageFileWriter<ImageType>::New();
-            writer->SetFileName(filename);
-            writer->SetInput(m_Image);
-            writer->Update();
+        // Generate filenames
+        std::vector<std::string> outputFileNames;
+        for (unsigned int i = 0; i < numberOfSlices; ++i) {
+            std::ostringstream ss;
+            ss << filename << "/slice_" << std::setw(3) << std::setfill('0') << i << ".dcm";
+            outputFileNames.push_back(ss.str());
         }
-    }
 
-    // Reorient image to LPS
-    void reorientToLPS() {
+        try {
+            writer->SetInput(m_Image);
+            writer->SetFileNames(outputFileNames);
+            writer->Update();
+        } catch (const itk::ExceptionObject& e) {
+            std::cerr << "Error writing DICOM series: " << e.what() << std::endl;
+            throw;
+        }
+    } else {
+        // NIfTI writing remains unchanged
+        auto writer = itk::ImageFileWriter<ImageType>::New();
+        writer->SetFileName(filename);
+        writer->SetInput(m_Image);
+        writer->Update();
+    }
+}
+ void reorientToLPS() {
+    try {
         using OrientFilterType = itk::OrientImageFilter<ImageType, ImageType>;
         auto orientFilter = OrientFilterType::New();
+        orientFilter->UseImageDirectionOn();
         orientFilter->SetInput(m_Image);
-        orientFilter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS);
+        orientFilter->SetDesiredCoordinateOrientation(itk::SpatialOrientationEnums::ValidCoordinateOrientations::ITK_COORDINATE_ORIENTATION_LPS);
         orientFilter->Update();
-        m_Image = orientFilter->GetOutput();
+        
+        ImageType::Pointer tempOutput = orientFilter->GetOutput();
+        tempOutput->DisconnectPipeline();
+        m_Image = tempOutput;
     }
+    catch(const itk::ExceptionObject& e) {
+        std::cerr << "Error during reorientation: " << e.what() << std::endl;
+        throw;
+    }
+}
 };
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
@@ -171,3 +201,4 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .method("writeImage", &ITKImageWrapper::writeImage)
         .method("reorientToLPS", &ITKImageWrapper::reorientToLPS);
 }
+

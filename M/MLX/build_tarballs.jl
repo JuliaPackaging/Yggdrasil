@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "MLX"
-version = v"0.22.0"
+version = v"0.23.1"
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "1ce0c0fcb0f58cb9322981a65d267abc41cc2785"),
+    GitSource("https://github.com/ml-explore/mlx.git", "71de73a668df50f0638e74e77849d9232ddeb50e"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which requires the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/62/2b/427896261bc8d940eff561e6199d1aee9dbdc7caa117486654a44d7d793c/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "50d0d76826cfe939025791ce2c014e743ec7aff7aa67194ffaef40c40e574ef4"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
+    FileSource("https://files.pythonhosted.org/packages/28/e4/26be6c113b903156176710d09e0ec0543b28d2aecb64a83647f213ce6e1a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "8138c079957c4942553e1a242a58c4990e317680909e364e024fb7b8d8a14ac7"; filename = "mlx-aarch64-apple-darwin20.whl"),
     DirectorySource("./bundled"),
 ]
 
@@ -18,15 +18,17 @@ script = raw"""
 apk del cmake # Need CMake >= 3.30
 
 if [[ "$target" == *-apple-darwin* ]]; then
-    apple_sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
-    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s!/opt/$bb_target/$bb_target/sys-root!$apple_sdk_root!" /opt/bin/$bb_full_target/$target-clang++
+    sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
+    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
+    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
 fi
 
 cd $WORKSPACE/srcdir/mlx
 
-atomic_patch -p1 ../patches/nbits32-ops.patch
-atomic_patch -p1 ../patches/win32_freebsd-jit_compiler.patch
+atomic_patch -p1 ../patches/mpi-crosscompile.patch
+if [[ "$target" == *-freebsd* ]]; then
+    atomic_patch -p1 ../patches/freebsd-backend-cpu-quantized.patch
+fi
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
@@ -56,6 +58,7 @@ install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
     cmake \
+        --compile-no-warning-as-error \
         -B build \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -100,6 +103,7 @@ products = Product[
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
     Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
+    Dependency("OpenMPI_jll"),
     HostBuildDependency(PackageSpec(name="CMake_jll")),  # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.1.1"
+version = v"5.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "5c29ddffe5bfedf1f4637e5f9fea148692853265")
+    GitSource("https://github.com/ralna/GALAHAD.git", "49a63f9ad78ce41843df0387bae82792ed5db223")
 ]
 
 # Bash recipe for building across all platforms

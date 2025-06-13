@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "ZlibNG"
-version = v"2.2.3"
+version = v"2.2.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/zlib-ng/zlib-ng.git", "cbb6ec1d74e8061efdf7251f8c2dae778bed14fd"),
+    GitSource("https://github.com/zlib-ng/zlib-ng.git", "860e4cff7917d93f54f5d7f0bc1d0e8b1a3cb988"),
     DirectorySource("bundled"),
 ]
 
@@ -29,7 +29,6 @@ cmake --install build
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
 
 # The products that we will ensure are always built
 products = [

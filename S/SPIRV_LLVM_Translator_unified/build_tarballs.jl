@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "SPIRV_LLVM_Translator_unified"
 repo = "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git"
-version = v"0.7"
+version = v"0.7.1"
 
 llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.1"]
 
@@ -25,6 +25,7 @@ sources = Dict(
 platforms = expand_cxxstring_abis(supported_platforms(; experimental=true))
 filter!(p -> libc(p) != "musl", platforms) # missing LLVM_full+asserts
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms) # missing LLVM_full
+filter!(p -> arch(p) != "riscv64", platforms) # missing LLVM_full
 
 # Bash recipe for building across all platforms
 get_script(llvm_version) = raw"""
@@ -62,7 +63,7 @@ install -Dm755 build/tools/llvm-spirv/llvm-spirv${exeext} -t ${bindir}
 
 # The products that we will ensure are always built
 products = Product[
-    LibraryProduct(["libLLVMSPIRVLib", "LLVMSPIRVLib"], :libLLVMSPIRV, dont_dlopen = true),
+    LibraryProduct(["libLLVMSPIRVLib", "LLVMSPIRVLib"], :libLLVMSPIRV),
     ExecutableProduct("llvm-spirv", :llvm_spirv),
 ]
 
