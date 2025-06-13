@@ -38,7 +38,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
         DirectorySource("../patches"),
     ]
-    if version >= v"8.13"
+    if version == v"8.13"
         append!(sources, [
             ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
                           "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4")
