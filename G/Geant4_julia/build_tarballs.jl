@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "Geant4_julia"
-version = v"0.2.2"
+version = v"0.2.3"
 
 # Collection of sources required to build Geant4_julia
 sources = [
     GitSource("https://github.com/peremato/Geant4_cxxwrap.git",
-              "b82c50a861c5957b2b2d83d4d7674b40ba829209"),
+              "f011260477bb13463b0bf87eac78bedb447dd3e6"),
 ]
 
 # Bash recipe for building across all platforms
