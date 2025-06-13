@@ -37,6 +37,14 @@ make install
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
+# Disable unsupported platforms
+filter!(platforms) do p
+    # Internal compiler error in work_gga_inc.c/work_mgga_inc.c
+    Sys.islinux(p) && arch(p) == "aarch64" && libgfortran_version(p) <= v"4" && return false
+
+    true
+end
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libxc", :libxc)
