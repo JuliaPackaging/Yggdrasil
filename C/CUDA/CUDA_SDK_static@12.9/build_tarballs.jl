@@ -15,5 +15,3 @@ platforms = [Platform("x86_64", "linux"),
              Platform("x86_64", "windows")]
 
 build_sdk(name, version, platforms; static=true)
-
-# bump
