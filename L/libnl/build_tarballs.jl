@@ -7,7 +7,7 @@ version = v"3.11.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/thom311/libnl/releases/download/libnl3_11_0/libnl-3.11.0.tar.gz",
+    ArchiveSource("https://github.com/thom311/libnl/releases/download/libnl$(version.major)_$(version.minor)_$(version.patch)/libnl-$(version).tar.gz",
                   "2a56e1edefa3e68a7c00879496736fdbf62fc94ed3232c0baba127ecfa76874d"),
 ]
 
