@@ -9,13 +9,13 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 
 name = "XDiag"
-version = v"0.3.2"
+version = v"0.3.3"
 
 include("../../L/libjulia/common.jl")
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awietek/xdiag.git", "a92014fbd0f8aab455d0a1595812a9818785d243")
+    GitSource("https://github.com/awietek/xdiag.git", "a5f50e367e60c739360ad4f81d47ae1759d2e045")
 ]
 
 
@@ -75,8 +75,8 @@ filter!(p -> (
     (os(p) == "macos" && arch(p) == "aarch64") ||
     (os(p) == "windows" && arch(p) == "x86_64")) &&
     p.tags["julia_version"] !="1.6.3" &&
-    p.tags["julia_version"] !="1.12.0" &&
-    p.tags["julia_version"] !="1.13.0", platforms)
+    p.tags["julia_version"] !="1.13.0" &&
+    p.tags["julia_version"] !="1.14.0", platforms)
 
 
 # The products that we will ensure are always built
