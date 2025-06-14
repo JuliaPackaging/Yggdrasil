@@ -8,14 +8,14 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.15.0"
+version = v"4.15.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "31012fdbaceb92667fd7e338de8b06b41d60c99bf6a3b8ec197de352372f05f1"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
-                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+                  "a2671e2f0e4d61cfd9eced7d6369b54ea4014026cf2ffff5247dc2f490c90966"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 macfix = raw"""
@@ -26,11 +26,10 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     #         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
     #         introduced in macOS 10.14
     export MACOSX_DEPLOYMENT_TARGET=10.15
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    # ...and install a newer SDK
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
-    popd
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
 fi
 """
 
