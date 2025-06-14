@@ -37,21 +37,12 @@ install_license ../../LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
+# dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms(expand_julia_versions=true)
 
-# expand julia platforms
-include("../../../L/libjulia/common.jl")
-julia_platforms = []
-for p in platforms
-    for jv in julia_versions
-        if jv == v"1.6.3" && Sys.isapple(p) && arch(p) == "aarch64"
-            continue
-        end
-        p = deepcopy(p)
-        BinaryPlatforms.add_tag!(p.tags, "julia_version", string(jv))
-        push!(julia_platforms, p)
-    end
-end
+# TODO: remove me in a PR that actually builds things
+filter!(p -> arch(p) != "riscv64", platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # Unlike other GAP_pkg_* JLLs, we do *not* set a compat bound for GAP_jll and
 # GAP_lib_jll here. Instead GAP.jl is expected to make sure that it uses right
@@ -76,7 +67,7 @@ products = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, julia_platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
 
 # rebuild trigger: 0

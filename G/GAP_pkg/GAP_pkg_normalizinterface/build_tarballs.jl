@@ -28,7 +28,8 @@ install_license LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
+dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 push!(dependencies, Dependency("normaliz_jll", compat = "~300.1000.200"))
