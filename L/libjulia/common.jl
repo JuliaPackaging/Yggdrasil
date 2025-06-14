@@ -11,7 +11,7 @@ if ! @isdefined julia_versions
 end
 
 # return the platforms supported by libjulia
-function libjulia_platforms(julia_version)
+function julia_supported_platforms(julia_version)
     platforms = supported_platforms()
 
     # skip 32bit musl builds; they fail with this error:
@@ -39,6 +39,12 @@ function libjulia_platforms(julia_version)
     if julia_version < v"1.13"
         filter!(p -> arch(p) != "riscv64", platforms)
     end
+
+    return platforms
+end
+
+function libjulia_platforms(julia_version)
+    platforms = julia_supported_platforms(julia_version)
 
     for p in platforms
         p["julia_version"] = string(julia_version)
