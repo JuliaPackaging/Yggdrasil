@@ -313,8 +313,9 @@ function lapack_script(;lapack32::Bool=false)
         SSYSV_AA_2STAGE SSYTRF_AA_2STAGE SSYTRS_AA_2STAGE
         ZHESV_AA_2STAGE ZHETRF_AA_2STAGE ZHETRS_AA_2STAGE
         ZSYSV_AA_2STAGE ZSYTRF_AA_2STAGE ZSYTRS_AA_2STAGE
-        DLARF1F
-        CGEMMTR DGEMMTR SGEMMTR ZGEMMTR
+        SLARF1L DLARF1L CLARF1L ZLARF1L
+        SLARF1F DLARF1F CLARF1F ZLARF1F
+        SGEMMTR DGEMMTR CGEMMTR ZGEMMTR
       )
 
       for sym in ${syms[@]}; do
@@ -380,6 +381,9 @@ end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
+
+# Require LBT ≥ 5.12.0
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
