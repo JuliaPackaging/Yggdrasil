@@ -72,9 +72,7 @@ if [[ "${target}" == x86_64-* ]]; then
     target_cpu=x64
 elif [[ "${target}" == aarch64-* ]]; then
     target_cpu=arm64
-fi
-
-if [[ "${target}" == riscv64-* ]]; then
+elif [[ "${target}" == riscv64-* ]]; then
     target_cpu=riscv
 fi
 
