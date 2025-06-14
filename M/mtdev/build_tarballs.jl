@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "mtdev"
-version = v"1.1.6"
+version = v"1.1.7"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://bitmath.org/code/mtdev/mtdev-$version.tar.gz", "1325f389a2f25cd5f5a8ea4d29aad24aa7c3ec30401d679400dd79eb9c0a8dbb"),
+    ArchiveSource("http://bitmath.org/code/mtdev/mtdev-$version.tar.gz", "a55bd02a9af4dd266c0042ec608744fff3a017577614c057da09f1f4566ea32c"),
 ]
 
 # Bash recipe for building across all platforms

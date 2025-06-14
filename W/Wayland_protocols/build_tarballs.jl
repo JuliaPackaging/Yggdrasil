@@ -3,19 +3,24 @@
 using BinaryBuilder
 
 name = "Wayland_protocols"
-version = v"1.36"
+version = v"1.44"
 
 # Collection of sources required to build Wayland-protocols
 sources = [
     ArchiveSource("https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/$(version.major).$(version.minor)/downloads/wayland-protocols-$(version.major).$(version.minor).tar.xz",
-                  "71fd4de05e79f9a1ca559fac30c1f8365fa10346422f9fe795f74d77b9ef7e92"),
+                  "3df1107ecf8bfd6ee878aeca5d3b7afd81248a48031e14caf6ae01f14eebb50e"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/wayland-protocols*/
+
+# Clear PKG_CONFIG_SYSROOT_DIR to fix wayland-scanner path resolution
+# (prevents prepending /workspace/destdir to pkg-config paths)
+export PKG_CONFIG_SYSROOT_DIR=""
+
 mkdir build && cd build
-meson .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
+meson setup .. -Dtests=false --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
 """
@@ -35,4 +40,4 @@ dependencies = [
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

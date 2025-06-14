@@ -1,12 +1,12 @@
 using BinaryBuilder, Pkg
 
 name = "NVTX"
-version = v"3.1.1"
+version = v"3.2.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/NVIDIA/NVTX",
-              "6230bdf710bc94f44d433acceba735aaa9090ba5"), # v3.1.1 tag
+              "2942f167cc30c5e3a44a2aecd5b0d9c07ff61a07"),
     DirectorySource("./bundled"),
 ]
 

@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "GALAHAD"
-version = v"5.1.1"
+version = v"5.2.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/ralna/GALAHAD.git", "5c29ddffe5bfedf1f4637e5f9fea148692853265")
+    GitSource("https://github.com/ralna/GALAHAD.git", "d88eec219f4dbde2efeb32bda27b1c32a82655c0")
 ]
 
 # Bash recipe for building across all platforms
@@ -38,14 +38,19 @@ meson setup builddir_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dliblapack=$LBT \
                            -Dlibsmumps=smumps \
                            -Dlibdmumps=dmumps \
+                           -Dlibcutest_single=cutest_single \
+                           -Dlibcutest_double=cutest_double \
+                           -Dlibcutest_quadruple= \
+                           -Dlibcutest_modules=$prefix/modules \
                            -Dsingle=true \
                            -Ddouble=true \
                            -Dquadruple=false \
+                           -Dbinaries=true \
+                           -Dtests=false \
                            -Dlibhsl=hsl_subset \
                            -Dlibhsl_modules=$prefix/modules
 
 meson compile -C builddir_int32
-meson install -C builddir_int32
 
 meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            --prefix=$prefix \
@@ -55,14 +60,19 @@ meson setup builddir_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                            -Dliblapack=$LBT \
                            -Dlibsmumps= \
                            -Dlibdmumps= \
+                           -Dlibcutest_single= \
+                           -Dlibcutest_double= \
+                           -Dlibcutest_quadruple= \
+                           -Dlibcutest_modules=$prefix/modules \
                            -Dsingle=true \
                            -Ddouble=true \
                            -Dquadruple=false \
+                           -Dbinaries=false \
+                           -Dtests=false \
                            -Dlibhsl=hsl_subset_64 \
                            -Dlibhsl_modules=$prefix/modules
 
 meson compile -C builddir_int64
-meson install -C builddir_int64
 
 if [[ "$QUADRUPLE" == "true" ]]; then
     meson setup builddir_quad_int32 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
@@ -73,14 +83,19 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dliblapack= \
                                     -Dlibsmumps= \
                                     -Dlibdmumps= \
+                                    -Dlibcutest_single=cutest_single \
+                                    -Dlibcutest_double=cutest_double \
+                                    -Dlibcutest_quadruple= \
+                                    -Dlibcutest_modules=$prefix/modules \
                                     -Dsingle=false \
                                     -Ddouble=false \
                                     -Dquadruple=true \
+                                    -Dbinaries=true \
+                                    -Dtests=false \
                                     -Dlibhsl= \
                                     -Dlibhsl_modules=$prefix/modules
 
     meson compile -C builddir_quad_int32
-    meson install -C builddir_quad_int32
 
     meson setup builddir_quad_int64 --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
                                     --prefix=$prefix \
@@ -90,13 +105,25 @@ if [[ "$QUADRUPLE" == "true" ]]; then
                                     -Dliblapack= \
                                     -Dlibsmumps= \
                                     -Dlibdmumps= \
+                                    -Dlibcutest_single= \
+                                    -Dlibcutest_double= \
+                                    -Dlibcutest_quadruple= \
+                                    -Dlibcutest_modules=$prefix/modules \
                                     -Dsingle=false \
                                     -Ddouble=false \
                                     -Dquadruple=true \
+                                    -Dbinaries=false \
+                                    -Dtests=false \
                                     -Dlibhsl= \
                                     -Dlibhsl_modules=$prefix/modules
 
     meson compile -C builddir_quad_int64
+fi
+
+meson install -C builddir_int32
+meson install -C builddir_int64
+if [[ "$QUADRUPLE" == "true" ]]; then
+    meson install -C builddir_quad_int32
     meson install -C builddir_quad_int64
 fi
 """
@@ -106,6 +133,9 @@ fi
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
+platforms = filter(p -> libgfortran_version(p) != v"4", platforms)
+platforms = filter(p -> libc(p) != "musl", platforms)
+platforms = filter(p -> nbits(p) != 32, platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -125,8 +155,9 @@ dependencies = [
     Dependency(PackageSpec(name="Hwloc_jll", uuid="e33a78d0-f292-5ffc-b300-72abe9b543c8")),
     Dependency(PackageSpec(name="MUMPS_seq_jll", uuid="d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d")),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
+    Dependency(PackageSpec(name="CUTEst_jll", uuid="bb5f6f25-f23d-57fd-8f90-3ef7bad1d825"), compat="2.5.3"),
     # Dependency(PackageSpec(name="PaStiX_jll", uuid="46e5285b-ff06-5712-adf2-cc145d39f096")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"9.1.0", julia_compat="1.9")

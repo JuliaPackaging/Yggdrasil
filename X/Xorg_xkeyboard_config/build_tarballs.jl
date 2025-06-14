@@ -3,18 +3,19 @@
 using BinaryBuilder
 
 name = "Xorg_xkeyboard_config"
-version = v"2.39"
+version = v"2.44"
 
 # Collection of sources required to build xkeyboard_config
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/data/xkeyboard-config/xkeyboard-config-$(version.major).$(version.minor).tar.xz",
-                  "5ac5f533eff7b0c116805fe254fd79b2c9882700a4f9f2c070f8c4eae5aaa682"),
+                  "54d2c33eeebb031d48fa590c543e54c9bcbd0f00386ebc6489b2f47a0da4342a"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xkeyboard-config-*
 apk update && apk add libxslt
+pip install strenum
 mkdir build && cd build
 meson .. --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}

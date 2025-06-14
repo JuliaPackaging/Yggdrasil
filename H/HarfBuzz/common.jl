@@ -7,6 +7,8 @@ function build_harfbuzz(ARGS, name::String)
     icu = name == "HarfBuzz_ICU"
 
     version = v"8.5.0"
+    # Bump Yggdrasil version because we updated libffi_jll
+    ygg_version = v"8.5.1"
 
     # Collection of sources required to build Harfbuzz
     sources = [
@@ -26,10 +28,13 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     atomic_patch -p1 ../patches/coretext-check-bypass.patch
 fi
 
+# We need C++20 for the `auto` in template parameters.
+# This is required when building the ICU bindings.
 mkdir build && cd build
 meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     --buildtype=release \
+    -Dcpp_std=c++20 \
     -Dcairo=enabled \
     -Dfreetype=enabled \
     -Dglib=enabled \
@@ -60,11 +65,6 @@ fi
     # platforms are passed in on the command line
     platforms = supported_platforms()
 
-    if icu
-        # Temporarily disable aarch64-*-freebsd until ICU has been built for this platform
-        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-    end
-
     # The products that we will ensure are always built
     products = if icu
         [
@@ -80,23 +80,24 @@ fi
 
     # Dependencies that must be installed before this package can be built
     dependencies = [
-        Dependency("Cairo_jll"),
-        Dependency("Fontconfig_jll"),
-        Dependency("FreeType2_jll"; compat="2.13.3"),
-        Dependency("Glib_jll"; compat="2.82.2"),
-        Dependency("Graphite2_jll"),
-        Dependency("Libffi_jll"; compat="~3.2.2"),
+        Dependency("Cairo_jll"; compat="1.18.5"),
+        Dependency("Fontconfig_jll"; compat="2.16.0"),
+        Dependency("FreeType2_jll"; compat="2.13.4"),
+        Dependency("Glib_jll"; compat="2.84.0"),
+        Dependency("Graphite2_jll"; compat="1.3.15"),
+        Dependency("Libffi_jll"; compat="~3.4.7"),
         BuildDependency("Xorg_xorgproto_jll"),
     ]
 
     if icu
         append!(dependencies, [
-            Dependency("HarfBuzz_jll"; compat="$(version)"),
-            Dependency("ICU_jll"; compat="69.1.0"),
+            Dependency("HarfBuzz_jll"; compat="$(ygg_version)"),
+            Dependency("ICU_jll"; compat="76.2"),
         ])
     end
 
     # Build the tarballs, and possibly a `build.jl` as well.
-    build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-                   clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"5")
+    # We need at lest GCC 8 to support C++ 20
+    build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+                   clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
 end

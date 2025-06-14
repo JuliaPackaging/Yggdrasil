@@ -3,15 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "SoapyLoopback"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaTelecom/SoapyLoopback.git", "da9930830f6e7a97360fc959665c513a2d7aa4ea")
+    GitSource("https://github.com/JuliaTelecom/SoapyLoopback.git", "2531a7647d2ba1e01c96586eb43b0afc2b946bd6")
 ]
 
 dependencies = [
-    Dependency("soapysdr_jll"; compat="0.8.0")
+    Dependency("soapysdr_jll", v"0.8.1"; compat="0.8")
 ]
 
 # Bash recipe for building across all platforms
@@ -33,8 +33,7 @@ fi
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms(;experimental=true))
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = Product[

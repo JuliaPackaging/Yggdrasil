@@ -1,0 +1,28 @@
+From be1f55816ccebe1b295ab14f27cc6455de2d0950 Mon Sep 17 00:00:00 2001
+From: Min RK <benjaminrk@gmail.com>
+Date: Fri, 14 Mar 2025 13:56:25 +0100
+Subject: [PATCH] add missing quotes in _FORTIFY_SOURCE detection
+
+without these, the command fails if CMAKE_C_FLAGS contains spaces and/or gcc_macros is empty
+---
+ src/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 6c84b7b..f4133a2 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -129,8 +129,8 @@ endif()
+ 
+ # Detect and remove GCC _FORTIFY_SOURCE
+ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+-  execute_process(COMMAND ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS} -E -Og -dM -x c ${dev_null} OUTPUT_VARIABLE gcc_macros)
+-  string(FIND ${gcc_macros} "_FORTIFY_SOURCE" fortify)
++  execute_process(COMMAND "${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS} -E -Og -dM -x c ${dev_null}" OUTPUT_VARIABLE gcc_macros)
++  string(FIND "${gcc_macros}" "_FORTIFY_SOURCE" fortify)
+   if(fortify GREATER -1)
+     message(WARNING "GCC _FORTIFY_SOURCE is known to cause problem with Scotch and has been disabled")
+     set(CMAKE_C_FLAGS "-U_FORTIFY_SOURCE ${CMAKE_C_FLAGS}")
+-- 
+2.47.0
+

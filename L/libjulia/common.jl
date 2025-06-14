@@ -5,13 +5,13 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec and should_build_platform
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-DEV", v"1.13.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-beta3", v"1.13.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
 
 # return the platforms supported by libjulia
-function libjulia_platforms(julia_version)
+function julia_supported_platforms(julia_version)
     platforms = supported_platforms()
 
     # skip 32bit musl builds; they fail with this error:
@@ -35,8 +35,16 @@ function libjulia_platforms(julia_version)
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
 
-    # RISC-V currently not supported
-    filter!(p -> arch(p) != "riscv64", platforms)
+    # RISC-V is not supported for older Julia versions
+    if julia_version < v"1.13"
+        filter!(p -> arch(p) != "riscv64", platforms)
+    end
+
+    return platforms
+end
+
+function libjulia_platforms(julia_version)
+    platforms = julia_supported_platforms(julia_version)
 
     for p in platforms
         p["julia_version"] = string(julia_version)
@@ -60,14 +68,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.11.1" => "895549f40b21dee66b6380e30811f40d2d938c2baba0750de69c9a183cccd756",
     )
 
-    if version == v"1.12.0-DEV"
+    if version == v"1.12.0-beta3"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "0c1e800dbdcf76b24cf3ab2bc9861a587e7c1fb5"),
+            GitSource("https://github.com/JuliaLang/julia.git", "faca79b503ae4fb47483e3e8d9acb2f3eb151a5b"),
             DirectorySource("./bundled"),
         ]
     elseif version == v"1.13.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "79ce1685e94a19edadd21544bce973cfd06cb168"),
+            GitSource("https://github.com/JuliaLang/julia.git", "3e9f486430a254dd766bcd7f185fc21147d44345"),
             DirectorySource("./bundled"),
         ]
     else
@@ -158,6 +166,8 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     # a HostDependency, now that we have those
     LLVM_CXXFLAGS="-I${prefix}/include -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -std=c++14"
 
+    # so far this holds for most versions:
+    LLVMVERMINOR=0
     if [[ "${version}" == 1.6.* ]]; then
         LLVMVERMAJOR=11
     elif [[ "${version}" == 1.7.* ]]; then
@@ -172,14 +182,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         LLVMVERMAJOR=16
     elif [[ "${version}" == 1.12.* ]]; then
         LLVMVERMAJOR=18
+        LLVMVERMINOR=1
     elif [[ "${version}" == 1.13.* ]]; then
-        LLVMVERMAJOR=18
+        LLVMVERMAJOR=20
+        LLVMVERMINOR=1
     else
         echo "Error, LLVM version not specified"
         exit 1
     fi
-    # so far this holds for all versions:
-    LLVMVERMINOR=0
 
     # needed for the julia.expmap symbol versioning file
     # starting from julia 1.10
@@ -193,6 +203,11 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
             LLVMLINK="-L${prefix}/bin -lLLVM"
         else
             LLVMLINK="-L${prefix}/bin -lLLVM-${LLVMVERMAJOR}jl"
+        fi
+        if [[ $LLVMVERMAJOR -ge 20 ]] && [[ "$nbits" == "32" ]]; then
+            # this seems to be needed for https://github.com/JuliaLang/julia/pull/58344
+            # since we are overriding RT_LLVMLINK
+            LLVMLINK="${LLVMLINK} -lz"
         fi
         LLVM_LDFLAGS="-L${prefix}/bin"
         LDFLAGS="-L${prefix}/bin"
@@ -234,6 +249,9 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
     USE_SYSTEM_PATCHELF=1
     USE_SYSTEM_ZLIB=1
     USE_SYSTEM_P7ZIP=1
+
+    # this is only for llvm 20 and newer but setting it should not affect older versions
+    USE_SYSTEM_ZSTD=1
 
     override XC_HOST=${target}
     override OS=${OS}
@@ -465,11 +483,12 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
     elseif version.major == 1 && version.minor == 13
         push!(dependencies, BuildDependency("OpenSSL_jll")),
-        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.8.3+2")))
+        push!(dependencies, BuildDependency("Zstd_jll")),
+        push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.10.1+0")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.2+0"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.2+1")))
     else
         error("Unsupported Julia version")
     end

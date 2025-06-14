@@ -1,11 +1,13 @@
 using BinaryBuilder
 
 name = "FFTW"
-version = v"3.3.10"
+# We bumped the version number because we rebuilt for new architectures
+fftw_version = v"3.3.10"
+version = v"3.3.11"
 
 # Collection of sources required to build FFTW
 sources = [
-   ArchiveSource("http://fftw.org/fftw-$(version).tar.gz",	
+   ArchiveSource("http://fftw.org/fftw-$(fftw_version).tar.gz",	
                   "56c932549852cddcfafdab3820b0200c7742675be92179e59e6215b340e26467"),
 ]
 
@@ -85,5 +87,3 @@ dependencies = Dependency[
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"8")
-
-# Build trigger: 1

@@ -4,6 +4,7 @@ using BinaryBuilder
 
 name = "ICU"
 version = v"76.1"
+ygg_version = v"76.2"
 
 # Collection of sources required to build ICU
 sources = [
@@ -22,17 +23,17 @@ cd $WORKSPACE/srcdir/icu
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=653457
 atomic_patch -p1 $WORKSPACE/srcdir/patches/yes_stdlibs.patch
 
-cd icu4c/
+cd icu4c
 
 # Do the native build
 (
     cp -r source/ native_build/
     cd native_build
-    CC="${CC_BUILD}"
-    CXX="${CXX_BUILD}"
-    AR="${AR_BUILD}"
-    LD="${LD_BUILD}"
-    RANLIB="${RANLIB_BUILD}"
+    export CC="${CC_BUILD}"
+    export CXX="${CXX_BUILD}"
+    export AR="${AR_BUILD}"
+    export LD="${LD_BUILD}"
+    export RANLIB="${RANLIB_BUILD}"
 
     # See https://git.alpinelinux.org/aports/tree/main/icu/APKBUILD?id=334ebffde9dec34becdd628ad56007699e98ea81
     update_configure_scripts
@@ -42,14 +43,14 @@ cd icu4c/
         sed -i -e "/^${x} =.*/s:@${x}@::" "config/Makefile.inc.in"
     done
 
-    ./configure --prefix=$prefix --build=${MACHTYPE} \
+    ./configure --prefix=${prefix} --build=${MACHTYPE} \
         ac_cv_prog_ac_ct_AR=${AR} \
         ac_cv_prog_ac_ct_RANLIB=${RANLIB}
     make -j${nproc}
 )
 
 # Do the cross build
-cd source/
+cd source
 
 if [[ "${target}" == *-apple-* ]]; then
     # Do not append `-c` flag to ar, which isn't supported by LLVM's ar
@@ -58,7 +59,7 @@ if [[ "${target}" == *-apple-* ]]; then
 fi
 
 update_configure_scripts
-./configure --prefix=$prefix --host=${target} --target=${target} \
+./configure --prefix=${prefix} --host=${target} --target=${target} \
     --with-cross-build="/workspace/srcdir/icu/icu4c/native_build"
 make -j${nproc}
 make install
@@ -83,4 +84,5 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"7")

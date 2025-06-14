@@ -6,7 +6,7 @@ This document details some of the journey we have embarked upon to create a Linu
 * glibc Linux: `i686-linux-gnu`, `x86_64-linux-gnu`, `aarch64-linux-gnu`, `armv7l-linux-gnueabihf`, `armv6l-linux-gnueabihf`, `powerpc64le-linux-gnu`, `riscv64-linux-gnu`
 * musl Linux: `i686-linux-musl`, `x86_64-linux-musl`, `aarch64-linux-musl`, `armv7l-linux-musleabihf`, `armv6l-linux-musleabihf`
 * MacOS: `x86_64-apple-darwin`, `aarch64-apple-darwin`
-* FreeBSD: `x86_64-unknown-freebsd13.2`, `aarch64-unknown-freebsd13.2`
+* FreeBSD: `x86_64-unknown-freebsd13.4`, `aarch64-unknown-freebsd14.1`
 * Windows: `i686-w64-mingw32`, `x86_64-w64-mingw32`
 
 These target platforms are compiled for by building a suite a cross-compilers (`gcc`, `gfortran`, `clang`, `binutils`, etc...) that run on `x86-64-linux-musl`, but target the specific platform.  Unfortunately, it is not sufficient to simply build these compilers once per target, because of incompatibilities between the generated code and the user's system where this code may eventually be running.

@@ -3,15 +3,26 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_cal"
-version = v"0.7.4"
+version = v"0.9.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-cal.git", "2cb1d2eac925e2dbc45025eb89af82bd790c23a0"),
+    GitSource("https://github.com/awslabs/aws-c-cal.git", "8703b3e5930c9fd508025b268ab837fc9df3c4fd"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                  "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    popd
+fi
+
 cd $WORKSPACE/srcdir/aws-c-cal
 # Lowercase names for MinGW
 sed -i -e 's/BCrypt/bcrypt/g' -e 's/NCrypt/ncrypt/g' CMakeLists.txt
@@ -38,7 +49,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_common_jll"; compat="0.9.3"),
+    Dependency("aws_c_common_jll"; compat="0.12.3"),
     BuildDependency("aws_lc_jll"),
 ]
 

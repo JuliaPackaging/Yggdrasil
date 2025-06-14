@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Objconv"
-version = v"2.53.0"
+version = v"2.54.0"
 
 # Collection of sources required to build objconv
 sources = [
     GitSource("https://github.com/staticfloat/objconv",
-              "ae54df67e0c4ac2c78f3a7ece486ed4e92d098af")
+              "c68e441d2b93074b01ea193cb17e944ed751750f")
 ]
 
 # Bash recipe for building across all platforms

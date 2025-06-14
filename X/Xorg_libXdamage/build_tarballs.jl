@@ -3,21 +3,18 @@
 using BinaryBuilder
 
 name = "Xorg_libXdamage"
-version = v"1.1.5"
+version = v"1.1.6"
 
 # Collection of sources required to build libXdamage
 sources = [
-    ArchiveSource("https://www.x.org/archive/individual/lib/libXdamage-$(version).tar.bz2",
-                  "b734068643cac3b5f3d2c8279dd366b5bf28c7219d9e9d8717e1383995e0ea45"),
+    ArchiveSource("https://www.x.org/archive/individual/lib/libXdamage-$(version).tar.xz",
+                  "52733c1f5262fca35f64e7d5060c6fcd81a880ba8e1e65c9621cf0727afb5d11"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libXdamage-*/
-CPPFLAGS="-I${prefix}/include"
-# When compiling for things like ppc64le, we need newer `config.sub` files
-update_configure_scripts
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --enable-malloc0returnsnull=no
+cd $WORKSPACE/srcdir/libXdamage-*
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 make -j${nproc}
 make install
 """
@@ -37,4 +34,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6")

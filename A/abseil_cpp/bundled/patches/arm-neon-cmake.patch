@@ -1,0 +1,12 @@
+diff --git a/absl/copts/GENERATED_AbseilCopts.cmake b/absl/copts/GENERATED_AbseilCopts.cmake
+index 430916f7..4623228a 100644
+--- a/absl/copts/GENERATED_AbseilCopts.cmake
++++ b/absl/copts/GENERATED_AbseilCopts.cmake
+@@ -213,7 +213,6 @@ list(APPEND ABSL_MSVC_TEST_FLAGS
+ )
+ 
+ list(APPEND ABSL_RANDOM_HWAES_ARM32_FLAGS
+-    "-mfpu=neon"
+ )
+ 
+ list(APPEND ABSL_RANDOM_HWAES_ARM64_FLAGS

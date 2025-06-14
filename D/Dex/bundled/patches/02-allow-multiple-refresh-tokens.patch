@@ -1,5 +1,5 @@
 diff --git a/cmd/dex/config.go b/cmd/dex/config.go
-index dd6d2e2a..1d5bbab1 100644
+index aa49a181..f4e2f6fd 100644
 --- a/cmd/dex/config.go
 +++ b/cmd/dex/config.go
 @@ -51,6 +51,8 @@ type Config struct {
@@ -12,7 +12,7 @@ index dd6d2e2a..1d5bbab1 100644
  
  // Validate the configuration
 diff --git a/cmd/dex/serve.go b/cmd/dex/serve.go
-index 6fcca04d..998dc5fe 100644
+index 8a69c7ee..f0fcce8d 100644
 --- a/cmd/dex/serve.go
 +++ b/cmd/dex/serve.go
 @@ -287,21 +287,22 @@ func runServe(options serveOptions) error {
@@ -57,29 +57,31 @@ index 6fcca04d..998dc5fe 100644
  		}
  
  		grpcSrv := grpc.NewServer(grpcOptions...)
--		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger, version))
-+		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger, c.EnableMultiRefreshTokens, version))
+-		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger, version, serv))
++		api.RegisterDexServer(grpcSrv, server.NewAPI(serverConfig.Storage, logger, c.EnableMultiRefreshTokens, version, serv))
  
  		grpcMetrics.InitializeMetrics(grpcSrv)
  		if c.GRPC.Reflection {
 diff --git a/server/api.go b/server/api.go
-index f53bc60b..86486169 100644
+index 5b0abb0b..3c516e9b 100644
 --- a/server/api.go
 +++ b/server/api.go
-@@ -31,20 +31,22 @@ const (
+@@ -32,22 +32,24 @@ const (
  )
  
  // NewAPI returns a server which implements the gRPC API interface.
--func NewAPI(s storage.Storage, logger *slog.Logger, version string) api.DexServer {
-+func NewAPI(s storage.Storage, logger *slog.Logger, enableMultiRefreshTokens bool, version string) api.DexServer {
+-func NewAPI(s storage.Storage, logger *slog.Logger, version string, server *Server) api.DexServer {
++func NewAPI(s storage.Storage, logger *slog.Logger, enableMultiRefreshTokens bool, version string, server *Server) api.DexServer {
  	return dexAPI{
 -		s:       s,
 -		logger:  logger.With("component", "api"),
 -		version: version,
+-		server:  server,
 +		s:                        s,
 +		logger:                   logger.With("component", "api"),
 +		enableMultiRefreshTokens: enableMultiRefreshTokens,
 +		version:                  version,
++		server:                   server,
  	}
  }
  
@@ -89,14 +91,16 @@ index f53bc60b..86486169 100644
 -	s       storage.Storage
 -	logger  *slog.Logger
 -	version string
+-	server  *Server
 +	s                        storage.Storage
 +	logger                   *slog.Logger
 +	enableMultiRefreshTokens bool
 +	version                  string
++	server                   *Server
  }
  
  func (d dexAPI) GetClient(ctx context.Context, req *api.GetClientReq) (*api.GetClientResp, error) {
-@@ -304,6 +306,13 @@ func (d dexAPI) VerifyPassword(ctx context.Context, req *api.VerifyPasswordReq)
+@@ -321,6 +323,13 @@ func (d dexAPI) VerifyPassword(ctx context.Context, req *api.VerifyPasswordReq)
  }
  
  func (d dexAPI) ListRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.ListRefreshResp, error) {
@@ -110,7 +114,7 @@ index f53bc60b..86486169 100644
  	id := new(internal.IDTokenSubject)
  	if err := internal.Unmarshal(req.UserId, id); err != nil {
  		d.logger.Error("failed to unmarshal ID Token subject", "err", err)
-@@ -337,7 +346,45 @@ func (d dexAPI) ListRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.
+@@ -354,7 +363,45 @@ func (d dexAPI) ListRefresh(ctx context.Context, req *api.ListRefreshReq) (*api.
  	}, nil
  }
  
@@ -124,7 +128,7 @@ index f53bc60b..86486169 100644
 +	var refreshTokenRefs []*api.RefreshTokenRef
 +
 +	// FIXME: listing all tokens can be slow
-+	refreshTokens, err := d.s.ListRefreshTokens()
++	refreshTokens, err := d.s.ListRefreshTokens(ctx)
 +	if err != nil {
 +		return nil, err
 +	}
@@ -156,7 +160,7 @@ index f53bc60b..86486169 100644
  	id := new(internal.IDTokenSubject)
  	if err := internal.Unmarshal(req.UserId, id); err != nil {
  		d.logger.Error("failed to unmarshal ID Token subject", "err", err)
-@@ -388,6 +435,45 @@ func (d dexAPI) RevokeRefresh(ctx context.Context, req *api.RevokeRefreshReq) (*
+@@ -405,6 +452,45 @@ func (d dexAPI) RevokeRefresh(ctx context.Context, req *api.RevokeRefreshReq) (*
  	return &api.RevokeRefreshResp{}, nil
  }
  
@@ -168,7 +172,7 @@ index f53bc60b..86486169 100644
 +	}
 +
 +	// FIXME: listing all tokens can be slow
-+	refreshTokens, err := d.s.ListRefreshTokens()
++	refreshTokens, err := d.s.ListRefreshTokens(ctx)
 +	if err != nil {
 +		return nil, err
 +	}
@@ -178,7 +182,7 @@ index f53bc60b..86486169 100644
 +
 +	for _, t := range refreshTokens {
 +		if t.Claims.UserID == id.UserId && t.ConnectorID == id.ConnId && t.ClientID == req.ClientId {
-+			if err := d.s.DeleteRefresh(t.ID); err != nil {
++			if err := d.s.DeleteRefresh(ctx, t.ID); err != nil {
 +				d.logger.Error(fmt.Sprintf("failed to delete refresh token: %v", err))
 +				return nil, err
 +			}
@@ -191,7 +195,7 @@ index f53bc60b..86486169 100644
 +		return old, nil
 +	}
 +
-+	if err := d.s.UpdateOfflineSessions(id.UserId, id.ConnId, updater); err != nil {
++	if err := d.s.UpdateOfflineSessions(ctx, id.UserId, id.ConnId, updater); err != nil {
 +		d.logger.Error(fmt.Sprintf("api: failed to update offline session object: %v", err))
 +		return nil, err
 +	}
@@ -203,29 +207,29 @@ index f53bc60b..86486169 100644
  	if !featureflags.APIConnectorsCRUD.Enabled() {
  		return nil, fmt.Errorf("%s feature flag is not enabled", featureflags.APIConnectorsCRUD.Name)
 diff --git a/server/api_test.go b/server/api_test.go
-index bcf240c1..10ffe69f 100644
+index 10242155..e071984c 100644
 --- a/server/api_test.go
 +++ b/server/api_test.go
-@@ -38,7 +38,7 @@ func newAPI(s storage.Storage, logger *slog.Logger, t *testing.T) *apiClient {
+@@ -37,7 +37,7 @@ func newAPI(s storage.Storage, logger *slog.Logger, t *testing.T) *apiClient {
  	}
  
  	serv := grpc.NewServer()
--	api.RegisterDexServer(serv, NewAPI(s, logger, "test"))
-+	api.RegisterDexServer(serv, NewAPI(s, logger, false, "test"))
+-	api.RegisterDexServer(serv, NewAPI(s, logger, "test", nil))
++	api.RegisterDexServer(serv, NewAPI(s, logger, false, "test", nil))
  	go serv.Serve(l)
  
  	// NewClient will retry automatically if the serv.Serve() goroutine
 diff --git a/server/handlers.go b/server/handlers.go
-index 63cb6122..0d14eb2a 100644
+index c87038cc..ea5b3fc0 100644
 --- a/server/handlers.go
 +++ b/server/handlers.go
-@@ -1057,13 +1057,15 @@ func (s *Server) exchangeAuthCode(ctx context.Context, w http.ResponseWriter, au
+@@ -1062,13 +1062,15 @@ func (s *Server) exchangeAuthCode(ctx context.Context, w http.ResponseWriter, au
  				return nil, err
  			}
  		} else {
 -			if oldTokenRef, ok := session.Refresh[tokenRef.ClientID]; ok {
 -				// Delete old refresh token from storage.
--				if err := s.storage.DeleteRefresh(oldTokenRef.ID); err != nil && err != storage.ErrNotFound {
+-				if err := s.storage.DeleteRefresh(ctx, oldTokenRef.ID); err != nil && err != storage.ErrNotFound {
 -					s.logger.ErrorContext(ctx, "failed to delete refresh token", "err", err)
 -					s.tokenErrHelper(w, errServerError, "", http.StatusInternalServerError)
 -					deleteToken = true
@@ -233,8 +237,8 @@ index 63cb6122..0d14eb2a 100644
 +			if !s.enableMultiRefreshTokens {
 +				if oldTokenRef, ok := session.Refresh[tokenRef.ClientID]; ok {
 +					// Delete old refresh token from storage.
-+					if err := s.storage.DeleteRefresh(oldTokenRef.ID); err != nil && err != storage.ErrNotFound {
-+						s.logger.Error("failed to delete refresh token", "err", err)
++					if err := s.storage.DeleteRefresh(ctx, oldTokenRef.ID); err != nil && err != storage.ErrNotFound {
++						s.logger.ErrorContext(ctx, "failed to delete refresh token", "err", err)
 +						s.tokenErrHelper(w, errServerError, "", http.StatusInternalServerError)
 +						deleteToken = true
 +						return nil, err
@@ -242,13 +246,13 @@ index 63cb6122..0d14eb2a 100644
  				}
  			}
  
-@@ -1310,16 +1312,18 @@ func (s *Server) handlePasswordGrant(w http.ResponseWriter, r *http.Request, cli
+@@ -1315,16 +1317,18 @@ func (s *Server) handlePasswordGrant(w http.ResponseWriter, r *http.Request, cli
  				return
  			}
  		} else {
 -			if oldTokenRef, ok := session.Refresh[tokenRef.ClientID]; ok {
 -				// Delete old refresh token from storage.
--				if err := s.storage.DeleteRefresh(oldTokenRef.ID); err != nil {
+-				if err := s.storage.DeleteRefresh(ctx, oldTokenRef.ID); err != nil {
 -					if err == storage.ErrNotFound {
 -						s.logger.Warn("database inconsistent, refresh token missing", "token_id", oldTokenRef.ID)
 -					} else {
@@ -259,11 +263,11 @@ index 63cb6122..0d14eb2a 100644
 +			if !s.enableMultiRefreshTokens {
 +				if oldTokenRef, ok := session.Refresh[tokenRef.ClientID]; ok {
 +					// Delete old refresh token from storage.
-+					if err := s.storage.DeleteRefresh(oldTokenRef.ID); err != nil {
++					if err := s.storage.DeleteRefresh(ctx, oldTokenRef.ID); err != nil {
 +						if err == storage.ErrNotFound {
 +							s.logger.Warn("database inconsistent, refresh token missing", "token_id", oldTokenRef.ID)
 +						} else {
-+							s.logger.Error("failed to delete refresh token", "err", err)
++							s.logger.ErrorContext(r.Context(), "failed to delete refresh token", "err", err)
 +							s.tokenErrHelper(w, errServerError, "", http.StatusInternalServerError)
 +							deleteToken = true
 +							return
@@ -272,7 +276,7 @@ index 63cb6122..0d14eb2a 100644
  				}
  			}
 diff --git a/server/refreshhandlers.go b/server/refreshhandlers.go
-index 391d5522..4ce8b584 100644
+index de8d9b7b..6d41cea1 100644
 --- a/server/refreshhandlers.go
 +++ b/server/refreshhandlers.go
 @@ -208,7 +208,11 @@ func (s *Server) refreshWithConnector(ctx context.Context, rCtx *refreshContext,
@@ -289,10 +293,10 @@ index 391d5522..4ce8b584 100644
  
  		old.Refresh[refresh.ClientID].LastUsed = lastUsed
 diff --git a/server/server.go b/server/server.go
-index 1cf71c50..31e6c472 100644
+index 8c046296..9f84c788 100644
 --- a/server/server.go
 +++ b/server/server.go
-@@ -120,6 +120,8 @@ type Config struct {
+@@ -119,6 +119,8 @@ type Config struct {
  	PrometheusRegistry *prometheus.Registry
  
  	HealthChecker gosundheit.Health
@@ -301,7 +305,7 @@ index 1cf71c50..31e6c472 100644
  }
  
  // WebConfig holds the server's frontend templates and asset configuration.
-@@ -197,6 +199,8 @@ type Server struct {
+@@ -196,6 +198,8 @@ type Server struct {
  	refreshTokenPolicy *RefreshTokenPolicy
  
  	logger *slog.Logger
@@ -310,7 +314,7 @@ index 1cf71c50..31e6c472 100644
  }
  
  // NewServer constructs a server from the provided config.
-@@ -298,21 +302,22 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
+@@ -297,21 +301,22 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
  	}
  
  	s := &Server{
@@ -348,7 +352,7 @@ index 1cf71c50..31e6c472 100644
  	}
  
  	// Retrieves connector objects in backend storage. This list includes the static connectors
-@@ -478,7 +483,7 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
+@@ -501,7 +506,7 @@ func newServer(ctx context.Context, c Config, rotationStrategy rotationStrategy)
  	s.mux = r
  
  	s.startKeyRotation(ctx, rotationStrategy, now)
@@ -357,7 +361,7 @@ index 1cf71c50..31e6c472 100644
  
  	return s, nil
  }
-@@ -596,19 +601,19 @@ func (k *keyCacher) GetKeys() (storage.Keys, error) {
+@@ -619,19 +624,19 @@ func (k *keyCacher) GetKeys(ctx context.Context) (storage.Keys, error) {
  	return storageKeys, nil
  }
  
@@ -369,8 +373,8 @@ index 1cf71c50..31e6c472 100644
  			case <-ctx.Done():
  				return
  			case <-time.After(frequency):
--				if r, err := s.storage.GarbageCollect(now()); err != nil {
-+				if r, err := s.storage.GarbageCollect(now(), unusedRefreshTokensValidFor); err != nil {
+-				if r, err := s.storage.GarbageCollect(ctx, now()); err != nil {
++				if r, err := s.storage.GarbageCollect(ctx, now(), unusedRefreshTokensValidFor); err != nil {
  					s.logger.ErrorContext(ctx, "garbage collection failed", "err", err)
  				} else if !r.IsEmpty() {
  					s.logger.InfoContext(ctx, "garbage collection run, delete auth",
@@ -381,125 +385,125 @@ index 1cf71c50..31e6c472 100644
  			}
  		}
 diff --git a/storage/conformance/conformance.go b/storage/conformance/conformance.go
-index 84ad1cba..5fb8278d 100644
+index 58ae3d95..1806f08c 100644
 --- a/storage/conformance/conformance.go
 +++ b/storage/conformance/conformance.go
-@@ -785,8 +785,10 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -787,8 +787,10 @@ func testGC(t *testing.T, s storage.Storage) {
  		t.Fatalf("failed creating auth code: %v", err)
  	}
  
 +	refreshTokensValidFor, err := time.ParseDuration("720h")
 +
  	for _, tz := range []*time.Location{time.UTC, est, pst} {
--		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz))
-+		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
+-		result, err := s.GarbageCollect(ctx, expiry.Add(-time.Hour).In(tz))
++		result, err := s.GarbageCollect(ctx, expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
  		if err != nil {
  			t.Errorf("garbage collection failed: %v", err)
  		} else if result.AuthCodes != 0 || result.AuthRequests != 0 {
-@@ -797,7 +799,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -799,7 +801,7 @@ func testGC(t *testing.T, s storage.Storage) {
  		}
  	}
  
--	if r, err := s.GarbageCollect(expiry.Add(time.Hour)); err != nil {
-+	if r, err := s.GarbageCollect(expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
+-	if r, err := s.GarbageCollect(ctx, expiry.Add(time.Hour)); err != nil {
++	if r, err := s.GarbageCollect(ctx, expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
  		t.Errorf("garbage collection failed: %v", err)
  	} else if r.AuthCodes != 1 {
  		t.Errorf("expected to garbage collect 1 objects, got %d", r.AuthCodes)
-@@ -837,7 +839,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -839,7 +841,7 @@ func testGC(t *testing.T, s storage.Storage) {
  	}
  
  	for _, tz := range []*time.Location{time.UTC, est, pst} {
--		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz))
-+		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
+-		result, err := s.GarbageCollect(ctx, expiry.Add(-time.Hour).In(tz))
++		result, err := s.GarbageCollect(ctx, expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
  		if err != nil {
  			t.Errorf("garbage collection failed: %v", err)
  		} else if result.AuthCodes != 0 || result.AuthRequests != 0 {
-@@ -848,7 +850,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -850,7 +852,7 @@ func testGC(t *testing.T, s storage.Storage) {
  		}
  	}
  
--	if r, err := s.GarbageCollect(expiry.Add(time.Hour)); err != nil {
-+	if r, err := s.GarbageCollect(expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
+-	if r, err := s.GarbageCollect(ctx, expiry.Add(time.Hour)); err != nil {
++	if r, err := s.GarbageCollect(ctx, expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
  		t.Errorf("garbage collection failed: %v", err)
  	} else if r.AuthRequests != 1 {
  		t.Errorf("expected to garbage collect 1 objects, got %d", r.AuthRequests)
-@@ -874,7 +876,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -876,7 +878,7 @@ func testGC(t *testing.T, s storage.Storage) {
  	}
  
  	for _, tz := range []*time.Location{time.UTC, est, pst} {
--		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz))
-+		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
+-		result, err := s.GarbageCollect(ctx, expiry.Add(-time.Hour).In(tz))
++		result, err := s.GarbageCollect(ctx, expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
  		if err != nil {
  			t.Errorf("garbage collection failed: %v", err)
  		} else if result.DeviceRequests != 0 {
-@@ -884,7 +886,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -886,7 +888,7 @@ func testGC(t *testing.T, s storage.Storage) {
  			t.Errorf("expected to be able to get auth request after GC: %v", err)
  		}
  	}
--	if r, err := s.GarbageCollect(expiry.Add(time.Hour)); err != nil {
-+	if r, err := s.GarbageCollect(expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
+-	if r, err := s.GarbageCollect(ctx, expiry.Add(time.Hour)); err != nil {
++	if r, err := s.GarbageCollect(ctx, expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
  		t.Errorf("garbage collection failed: %v", err)
  	} else if r.DeviceRequests != 1 {
  		t.Errorf("expected to garbage collect 1 device request, got %d", r.DeviceRequests)
-@@ -914,7 +916,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -916,7 +918,7 @@ func testGC(t *testing.T, s storage.Storage) {
  	}
  
  	for _, tz := range []*time.Location{time.UTC, est, pst} {
--		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz))
-+		result, err := s.GarbageCollect(expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
+-		result, err := s.GarbageCollect(ctx, expiry.Add(-time.Hour).In(tz))
++		result, err := s.GarbageCollect(ctx, expiry.Add(-time.Hour).In(tz), refreshTokensValidFor)
  		if err != nil {
  			t.Errorf("garbage collection failed: %v", err)
  		} else if result.DeviceTokens != 0 {
-@@ -924,7 +926,7 @@ func testGC(t *testing.T, s storage.Storage) {
+@@ -926,7 +928,7 @@ func testGC(t *testing.T, s storage.Storage) {
  			t.Errorf("expected to be able to get device token after GC: %v", err)
  		}
  	}
--	if r, err := s.GarbageCollect(expiry.Add(time.Hour)); err != nil {
-+	if r, err := s.GarbageCollect(expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
+-	if r, err := s.GarbageCollect(ctx, expiry.Add(time.Hour)); err != nil {
++	if r, err := s.GarbageCollect(ctx, expiry.Add(time.Hour), refreshTokensValidFor); err != nil {
  		t.Errorf("garbage collection failed: %v", err)
  	} else if r.DeviceTokens != 1 {
  		t.Errorf("expected to garbage collect 1 device token, got %d", r.DeviceTokens)
 diff --git a/storage/ent/client/main.go b/storage/ent/client/main.go
-index bc4c1600..6830123e 100644
+index a78830fc..0e913d67 100644
 --- a/storage/ent/client/main.go
 +++ b/storage/ent/client/main.go
 @@ -70,7 +70,7 @@ func (d *Database) BeginTx(ctx context.Context) (*db.Tx, error) {
  }
  
  // GarbageCollect removes expired entities from the database.
--func (d *Database) GarbageCollect(now time.Time) (storage.GCResult, error) {
-+func (d *Database) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (storage.GCResult, error) {
+-func (d *Database) GarbageCollect(ctx context.Context, now time.Time) (storage.GCResult, error) {
++func (d *Database) GarbageCollect(ctx context.Context, now time.Time, unusedRefreshTokensValidFor time.Duration) (storage.GCResult, error) {
  	result := storage.GCResult{}
  	utcNow := now.UTC()
  
 diff --git a/storage/etcd/etcd.go b/storage/etcd/etcd.go
-index f65701ff..f3363ce2 100644
+index 8ccf502f..35704604 100644
 --- a/storage/etcd/etcd.go
 +++ b/storage/etcd/etcd.go
 @@ -40,7 +40,7 @@ func (c *conn) Close() error {
  	return c.db.Close()
  }
  
--func (c *conn) GarbageCollect(now time.Time) (result storage.GCResult, err error) {
-+func (c *conn) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
- 	ctx, cancel := context.WithTimeout(context.Background(), defaultStorageTimeout)
+-func (c *conn) GarbageCollect(ctx context.Context, now time.Time) (result storage.GCResult, err error) {
++func (c *conn) GarbageCollect(ctx context.Context, now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
+ 	ctx, cancel := context.WithTimeout(ctx, defaultStorageTimeout)
  	defer cancel()
  	authRequests, err := c.listAuthRequests(ctx)
 diff --git a/storage/kubernetes/storage.go b/storage/kubernetes/storage.go
-index 8b6d5c9c..49e6503c 100644
+index eae5b7a6..4a2e295d 100644
 --- a/storage/kubernetes/storage.go
 +++ b/storage/kubernetes/storage.go
-@@ -612,7 +612,7 @@ func (cli *client) UpdateConnector(id string, updater func(a storage.Connector)
+@@ -612,7 +612,7 @@ func (cli *client) UpdateConnector(ctx context.Context, id string, updater func(
  	})
  }
  
--func (cli *client) GarbageCollect(now time.Time) (result storage.GCResult, err error) {
-+func (cli *client) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
+-func (cli *client) GarbageCollect(ctx context.Context, now time.Time) (result storage.GCResult, err error) {
++func (cli *client) GarbageCollect(ctx context.Context, now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
  	var authRequests AuthRequestList
  	if err := cli.listN(resourceAuthRequest, &authRequests, gcResultLimit); err != nil {
  		return result, fmt.Errorf("failed to list auth requests: %v", err)
 diff --git a/storage/memory/memory.go b/storage/memory/memory.go
-index 4399c61d..69271952 100644
+index eff75e71..71568a47 100644
 --- a/storage/memory/memory.go
 +++ b/storage/memory/memory.go
 @@ -3,6 +3,7 @@ package memory
@@ -514,12 +518,12 @@ index 4399c61d..69271952 100644
  
  func (s *memStorage) Close() error { return nil }
  
--func (s *memStorage) GarbageCollect(now time.Time) (result storage.GCResult, err error) {
-+func (s *memStorage) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
+-func (s *memStorage) GarbageCollect(ctx context.Context, now time.Time) (result storage.GCResult, err error) {
++func (s *memStorage) GarbageCollect(ctx context.Context, now time.Time, unusedRefreshTokensValidFor time.Duration) (result storage.GCResult, err error) {
  	s.tx(func() {
  		for id, a := range s.authCodes {
  			if now.After(a.Expiry) {
-@@ -98,6 +99,24 @@ func (s *memStorage) GarbageCollect(now time.Time) (result storage.GCResult, err
+@@ -98,6 +99,24 @@ func (s *memStorage) GarbageCollect(ctx context.Context, now time.Time) (result
  			}
  		}
  	})
@@ -527,7 +531,7 @@ index 4399c61d..69271952 100644
 +	for id, a := range s.refreshTokens {
 +		if staleRefreshTokenCutoff.After(a.LastUsed) {
 +			// do not delete if this is the primary refresh token linked to offline session
-+			o, err := s.GetOfflineSessions(a.Claims.UserID, a.ConnectorID)
++			o, err := s.GetOfflineSessions(ctx, a.Claims.UserID, a.ConnectorID)
 +
 +			if err != nil {
 +				s.logger.Error(fmt.Sprintf("failed to fetch offline session for user_id %v, connector_id %v: %v", a.Claims.UserID, a.ConnectorID, err))
@@ -545,19 +549,19 @@ index 4399c61d..69271952 100644
  }
  
 diff --git a/storage/sql/crud.go b/storage/sql/crud.go
-index 1249243c..ca49388d 100644
+index a9ca3816..216ca080 100644
 --- a/storage/sql/crud.go
 +++ b/storage/sql/crud.go
 @@ -86,7 +86,7 @@ type scanner interface {
  
  var _ storage.Storage = (*conn)(nil)
  
--func (c *conn) GarbageCollect(now time.Time) (storage.GCResult, error) {
-+func (c *conn) GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (storage.GCResult, error) {
+-func (c *conn) GarbageCollect(ctc context.Context, now time.Time) (storage.GCResult, error) {
++func (c *conn) GarbageCollect(ctc context.Context, now time.Time, unusedRefreshTokensValidFor time.Duration) (storage.GCResult, error) {
  	result := storage.GCResult{}
  
  	r, err := c.Exec(`delete from auth_request where expiry < $1`, now)
-@@ -121,6 +121,25 @@ func (c *conn) GarbageCollect(now time.Time) (storage.GCResult, error) {
+@@ -121,6 +121,25 @@ func (c *conn) GarbageCollect(ctc context.Context, now time.Time) (storage.GCRes
  		result.DeviceTokens = n
  	}
  
@@ -568,14 +572,14 @@ index 1249243c..ca49388d 100644
 +	}
 +	for _, t := range staleRefreshTokens {
 +		// do not delete if this is the primary refresh token linked to offline session
-+		o, err := c.GetOfflineSessions(t.Claims.UserID, t.ConnectorID)
++		o, err := c.GetOfflineSessions(ctc, t.Claims.UserID, t.ConnectorID)
 +		if err != nil {
 +			c.logger.Error(fmt.Sprintf("failed to fetch offline session for user_id %v, connector_id %v: %v", t.Claims.UserID, t.ConnectorID, err))
 +		} else {
 +			if o.Refresh[t.ClientID].ID == t.ID {
 +				c.logger.Debug(fmt.Sprintf("not deleting expired primary refresh token"))
 +			} else {
-+				c.DeleteRefresh(t.ID)
++				c.DeleteRefresh(ctc, t.ID)
 +				result.RefreshTokens++
 +			}
 +		}
@@ -583,7 +587,7 @@ index 1249243c..ca49388d 100644
  	return result, err
  }
  
-@@ -371,6 +390,35 @@ func getRefresh(q querier, id string) (storage.RefreshToken, error) {
+@@ -371,6 +390,35 @@ func getRefresh(ctx context.Context, q querier, id string) (storage.RefreshToken
  	`, id))
  }
  
@@ -616,11 +620,11 @@ index 1249243c..ca49388d 100644
 +	return tokens, nil
 +}
 +
- func (c *conn) ListRefreshTokens() ([]storage.RefreshToken, error) {
+ func (c *conn) ListRefreshTokens(ctx context.Context) ([]storage.RefreshToken, error) {
  	rows, err := c.Query(`
  		select
 diff --git a/storage/storage.go b/storage/storage.go
-index 03883ef5..b179309c 100644
+index 574b0a5a..54c54b0e 100644
 --- a/storage/storage.go
 +++ b/storage/storage.go
 @@ -60,6 +60,7 @@ type GCResult struct {
@@ -641,14 +645,12 @@ index 03883ef5..b179309c 100644
  }
  
  // Storage is the storage interface used by the server. Implementations are
-@@ -138,8 +140,8 @@ type Storage interface {
- 	UpdateDeviceToken(deviceCode string, updater func(t DeviceToken) (DeviceToken, error)) error
+@@ -139,7 +141,7 @@ type Storage interface {
  
  	// GarbageCollect deletes all expired AuthCodes,
--	// AuthRequests, DeviceRequests, and DeviceTokens.
--	GarbageCollect(now time.Time) (GCResult, error)
-+	// AuthRequests, DeviceRequests, DeviceTokens, and RefreshTokens
-+	GarbageCollect(now time.Time, unusedRefreshTokensValidFor time.Duration) (GCResult, error)
+ 	// AuthRequests, DeviceRequests, and DeviceTokens.
+-	GarbageCollect(ctx context.Context, now time.Time) (GCResult, error)
++	GarbageCollect(ctx context.Context, now time.Time, unusedRefreshTokensValidFor time.Duration) (GCResult, error)
  }
  
  // Client represents an OAuth2 client.

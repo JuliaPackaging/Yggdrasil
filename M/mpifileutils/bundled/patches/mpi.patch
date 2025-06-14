@@ -1,0 +1,14 @@
+diff --git a/src/dbcast/dbcast.c b/src/dbcast/dbcast.c
+index 52d0553..38a8f2a 100644
+--- a/src/dbcast/dbcast.c
++++ b/src/dbcast/dbcast.c
+@@ -34,7 +34,8 @@
+ 
+ #define GCS_SUCCESS (0)
+ 
+-static int gcs_shm_file_key = MPI_KEYVAL_INVALID;
++static int gcs_shm_file_key;
++__attribute__((__constructor__)) static void init_gcs_shm_file_key() { gcs_shm_file_key = MPI_KEYVAL_INVALID; }
+ 
+ static strmap* gcs_shm_ptr_tree = NULL;
+ 

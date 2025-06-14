@@ -45,7 +45,149 @@ index 8325cd8cfb..d0c4f8bc87 100644
  
  #include "camlatomic.h"
  
-@@ -435,11 +436,13 @@ extern double caml_log1p(double);
+@@ -418,6 +419,141 @@ extern double caml_log1p(double);
+ #define main_os wmain
+ #endif
+
++static wchar_t * __cdecl _wdirname(wchar_t *path);
++
++// Adapted to wchar_t from
++// https://github.com/Alexpux/mingw-w64/blob/master/mingw-w64-crt/misc/dirname.c
++
++#include <string.h>
++#include <stdlib.h>
++#include <wchar.h>
++
++static wchar_t * __cdecl
++_wdirname(wchar_t *path)
++{
++  static wchar_t *retfail = NULL;
++  size_t len = wcslen(path);
++
++  if (path && *path)
++    {
++       wchar_t *refpath = path;
++
++      /* SUSv3 identifies a special case, where path is exactly equal to "//";
++       * (we will also accept "\\" in the Win32 context, but not "/\" or "\/",
++       *  and neither will we consider paths with an initial drive designator).
++       * For this special case, SUSv3 allows the implementation to choose to
++       * return "/" or "//", (or "\" or "\\", since this is Win32); we will
++       * simply return the path unchanged, (i.e. "//" or "\\").  */
++      if (len > 1 && (refpath[0] == L'/' || refpath[0] == L'\\'))
++        {
++         if (refpath[1] == refpath[0] && refpath[2] == L'\0')
++           {
++             return path;
++           }
++        }
++      /* For all other cases ...
++       * step over the drive designator, if present ...  */
++      else if (len > 1 && refpath[1] == L':')
++        {
++         /* FIXME: maybe should confirm *refpath is a valid drive designator.  */
++         refpath += 2;
++        }
++      /* check again, just to ensure we still have a non-empty path name ... */
++      if (*refpath)
++        {
++#      undef  basename
++#      define basename __the_basename          /* avoid shadowing. */
++         /* reproduce the scanning logic of the "basename" function
++          * to locate the basename component of the current path string,
++          * (but also remember where the dirname component starts).  */
++         wchar_t *refname, *basename;
++         for (refname = basename = refpath; *refpath; ++refpath)
++           {
++             if (*refpath == L'/' || *refpath == L'\\')
++               {
++                 /* we found a dir separator ...
++                  * step over it, and any others which immediately follow it.  */
++                 while (*refpath == L'/' || *refpath == L'\\')
++                   ++refpath;
++                 /* if we didn't reach the end of the path string ... */
++                 if (*refpath)
++                   /* then we have a new candidate for the base name.  */
++                   basename = refpath;
++                 else
++                   /* we struck an early termination of the path string,
++                    * with trailing dir separators following the base name,
++                    * so break out of the for loop, to avoid overrun.  */
++                   break;
++               }
++           }
++         /* now check,
++          * to confirm that we have distinct dirname and basename components.  */
++         if (basename > refname)
++           {
++             /* and, when we do ...
++              * backtrack over all trailing separators on the dirname component,
++              * (but preserve exactly two initial dirname separators, if identical),
++              * and add a NUL terminator in their place.  */
++             do --basename;
++             while (basename > refname && (*basename == L'/' || *basename == L'\\'));
++             if (basename == refname && (refname[0] == L'/' || refname[0] == L'\\')
++                 && refname[1] == refname[0] && refname[2] != L'/' && refname[2] != L'\\')
++               ++basename;
++             *++basename = L'\0';
++             /* if the resultant dirname begins with EXACTLY two dir separators,
++              * AND both are identical, then we preserve them.  */
++             refpath = path;
++             while ((*refpath == L'/' || *refpath == L'\\'))
++               ++refpath;
++             if ((refpath - path) > 2 || path[1] != path[0])
++               refpath = path;
++             /* and finally ...
++              * we remove any residual, redundantly duplicated separators from the dirname,
++              * reterminate, and return it.  */
++             refname = refpath;
++             while (*refpath)
++               {
++                 if ((*refname++ = *refpath) == L'/' || *refpath++ == L'\\')
++                   {
++                     while (*refpath == L'/' || *refpath == L'\\')
++                       ++refpath;
++                   }
++               }
++             *refname = L'\0';
++           }
++         else
++           {
++             /* either there were no dirname separators in the path name,
++              * or there was nothing else ...  */
++             if (*refname == L'/' || *refname == L'\\')
++               {
++                 /* it was all separators, so return one.  */
++                 ++refname;
++               }
++             else
++               {
++                 /* there were no separators, so return '.'.  */
++                 *refname++ = L'.';
++               }
++             /* add a NUL terminator, in either case,
++              * then transform to the multibyte char domain,
++              * using our own buffer.  */
++             *refname = L'\0';
++           }
++         return path;
++        }
++#      undef  basename
++    }
++  /* path is NULL, or an empty string; default return value is "." ...
++   * return this in our own buffer, regenerated by wide char transform,
++   * in case the caller trashed it after a previous call.
++   */
++  retfail = realloc(retfail, 2 * sizeof(wchar_t));
++  retfail[0] = L'.';
++  retfail[1] = L'\0';
++  return retfail;
++}
++
+ #define access_os _waccess
+ #define open_os _wopen
+ #define stat_os _wstati64
+@@ -435,11 +571,13 @@ extern double caml_log1p(double);
  #define execvp_os _wexecvp
  #define execvpe_os _wexecvpe
  #define strcmp_os wcscmp
@@ -59,7 +201,7 @@ index 8325cd8cfb..d0c4f8bc87 100644
  
  #define clock_os caml_win32_clock
  
-@@ -477,11 +480,13 @@ extern double caml_log1p(double);
+@@ -477,11 +615,13 @@ extern double caml_log1p(double);
  #define execvp_os execvp
  #define execvpe_os execvpe
  #define strcmp_os strcmp

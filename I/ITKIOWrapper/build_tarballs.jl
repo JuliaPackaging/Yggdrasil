@@ -1,7 +1,7 @@
 # Note: this script will require BinaryBuilder.jl v0.3.0 or greater
 using BinaryBuilder, Pkg
 name = "ITKIOWrapper"
-version = v"3.0.0"
+version = v"3.0.1"
 # Collection of sources required to build ITKWrapper
 sources = [
     DirectorySource("./src"),
@@ -55,7 +55,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="Eigen_jll", uuid="bc6bbf8a-a594-5541-9c57-10b0d0312c70")),
-    Dependency(PackageSpec(name="ITK_jll", uuid="3324d3a8-621a-5aaa-97fa-c3bc8dfc0481"); compat="5.3.2"),
+    Dependency(PackageSpec(name="ITK_jll", uuid="3324d3a8-621a-5aaa-97fa-c3bc8dfc0481"); compat="5.3.3"),
     Dependency(PackageSpec(name="libcxxwrap_julia_jll", uuid="3eaa8342-bff7-56a5-9981-c04077f7cee7"); compat = "0.13.4"),
     BuildDependency(PackageSpec(name="libjulia_jll", uuid="5ad3ddd2-0711-543a-b040-befd59781bbf"))
 ]

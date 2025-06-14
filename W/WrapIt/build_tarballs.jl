@@ -2,21 +2,24 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 name = "WrapIt"
-version = v"1.4.0"
+version = v"1.5.0"
 
 #Clang_jll version used for the build. Required clang libraries will be shipped with the package.
-clang_vers=v"16.0.6+3"
+clang_vers=v"19.1.7+0"
 clang_vers_maj=string(clang_vers.major)
+clang_vers_min=string(clang_vers.minor)
+clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "5168a24862f6cc8a74cdd0c9427dee1baab4fa81")
+    GitSource("https://github.com/grasph/wrapit.git", "930ecdc8fd5d595b504c42d938bcc2f7fa3a97d4")
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+set -x
 # Default binarybuilder darwin chaintools miss support for filesytem
 # Install a newer SDK which supports following the recipee from
 # https://github.com/JuliaPackaging/Yggdrasil/pull/2741
@@ -27,6 +30,16 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     cp -rp System "/opt/${target}/${target}/sys-root/."
     export MACOSX_DEPLOYMENT_TARGET=10.15
     popd
+fi
+
+# Search for libcrypto.$dlext which can be in /workspace/destdir/lib ($libdir) or /workspace/destdir/lib64
+if [ -f "$libdir/libcrypto.$dlext" ]; then
+  libcrypto_path="$libdir/libcrypto.$dlext"
+elif [ -f "${libdir}/../lib64/libcrypto.$dlext" ]; then
+  libcrypto_path="${libdir}/../lib64/libcrypto.$dlext"
+else
+  echo "libcrypto.$dlext not found"
+  exit 1
 fi
 
 ######################################################################
@@ -42,6 +55,7 @@ cmake -GNinja \
 -DCLANG_JLL=True \
 -DOPENSSL_USE_STATIC_LIBS=True \
 -DCLANG_RESOURCE_DIR="$clang_resource_dir" \
+-DOPENSSL_ROOT_DIR="$prefix" -DOPENSSL_CRYPTO_LIBRARY="${libcrypto_path}" \
 ../wrapit/
 cmake --build .
 cmake --install .
@@ -54,39 +68,51 @@ cmake --install .
 [ "$dlext" = dll ] && (cd $prefix/lib && ln -s libLLVM-*.dll.a libLLVM.dll.a )
 
 cd "$(readlink -f "$prefix")"
- if [ "${dlext}" = dylib ]; then
-   clangversiontag=
-   llvmversiontag=
- else
-   clangversiontag=".""" * clang_vers_maj * raw"""jl"
-   llvmversiontag=`echo $clangversiontag | sed 's/^\./-/'` #.NNjl -> -NNjl
- fi
- clanglib=libclang.$dlext$clangversiontag
- clangcpplib=libclang-cpp.$dlext$clangversiontag
- llvmlib=libLLVM$llvmversiontag.${dlext}
+if [ "${dlext}" = dylib ]; then
+  clangversiontag=
+  llvmversiontag=
+else
+  clangversiontag=".""" * clang_vers_maj * raw"""jl"
+  llvmversiontag=`echo $clangversiontag | sed 's/^\./-/'` #.NNjl -> -NNjl
+fi
+clanglib=libclang.$dlext$clangversiontag
+if  [ $clanglib = libclang.so.13jl ] && ! [ -f $libdir/libclang.so.13jl ] && [ -f $libdir/libclang.so.13 ]; then
+   clanglib=libclang.so.13
+fi
+if ! [ -f lib/$clanglib ]; then
+   clangversiontag=".""" *  clang_vers_maj * "." * clang_vers_min * raw"""jl"
+   llvmversiontag=$clangversiontag
+   clanglib=libclang.$dlext$clangversiontag
+   test -f lib/$clanglib
+fi
+clangcpplib=libclang-cpp.$dlext$clangversiontag
+test -f lib/$clangcpplib
+llvmlib=libLLVM$llvmversiontag.${dlext}
+[ -f lib/$llvmlib ] || llvmlib=libLLVM.${dlext}$llvmversiontag
+test -f lib/$llvmlib
 
- echo "Looking for ../artifacts/*/lib/$clanglib and ../artifacts/*/lib/$llvmlib" 1>&2
+echo "Looking for ../artifacts/*/lib/$clanglib and ../artifacts/*/lib/$llvmlib" 1>&2
 
- clang_search="../artifacts/*/lib/$clanglib"
- llvm_search="../artifacts/*/lib/$llvmlib"
- clang_uuid="`echo $clang_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
- llvm_uuid="`echo $llvm_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
+clang_search="../artifacts/*/lib/$clanglib"
+llvm_search="../artifacts/*/lib/$llvmlib"
+clang_uuid="`echo $clang_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
+llvm_uuid="`echo $llvm_search | head -n 1 | sed 's|^../artifacts/\([^/[:space:]]*\).*|\1|'`"
 
- ret=0
- if echo "$clang_uuid" | grep -q '*'; then
-    echo "Failed to find clang library under path $clang_search" 1>&2
-    ret=1
- fi
+ret=0
+if echo "$clang_uuid" | grep -q '*'; then
+   echo "Failed to find clang library under path $clang_search" 1>&2
+   ret=1
+fi
 
- if echo "$llvm_uuid" | grep -q '*'; then
-    echo "Failed to find llvm library under path $llvm_search" 1>&2
-    ret=1
- fi
+if echo "$llvm_uuid" | grep -q '*'; then
+   echo "Failed to find llvm library under path $llvm_search" 1>&2
+   ret=1
+fi
 
- #trigger exit if at least one of the two library was not found
- [ $ret = 0 ] || false
+#trigger exit if at least one of the two library was not found
+[ $ret = 0 ] || false
 
- cat <<EOF 1>&2
+cat <<EOF 1>&2
 Clang artifact uuid: $clang_uuid
 LLVM artifact uuid: $llvm_uuid
 EOF
@@ -94,7 +120,11 @@ EOF
 # Add a link to the clang resource directory
 ln -sf artifacts/$clang_uuid ..
 mkdir -p lib/$clang_resource_dir
-cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw"""/include lib/"$clang_resource_dir"
+if [ -d ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw""" ]; then
+    cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_vers_maj * raw"""/include lib/"$clang_resource_dir"
+else
+    cp -rp ../artifacts/$clang_uuid/lib/clang/""" * clang_patch * raw"""/include lib/"$clang_resource_dir"
+fi
 
 # Add libraries used by wrapit. Make copy as we haven't found how
 # To get symlinks to regular files included in the genrated tarball.
@@ -110,15 +140,16 @@ cp -p "../artifacts/$llvm_uuid/lib/$llvmlib" lib/
 install_license "${WORKSPACE}/srcdir/wrapit/LICENSE"
 """
 
-# LLVM_jll not available for i686+musl (see https://github.com/JuliaPackaging/Yggdrasil/blob/f756bd9eb500ad68a8b8bb4413d6692c8e766a47/L/LLVM/common.jl)
-# Windows not supported:
-platform_veto(p) = Sys.iswindows(p) || (arch(p) == "i686" && libc(p) == "musl")
+# Windows is not supported.
+# 2025-03-03: following arch vetoed because of validation failure:
+#  - i686-linux-musl: missing Clang_jll and libLLVM_jll artifacts
+platform_veto(p) = Sys.iswindows(p) || triplet(p) ∈ [ "i686-linux-musl" ]
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms(exclude = platform_veto)
-platforms = expand_cxxstring_abis(platforms)
 
+# platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -129,7 +160,7 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(name="XML2_jll", uuid="02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"))
     BuildDependency(PackageSpec(name="Clang_jll", uuid="0ee61d77-7f21-5576-8119-9fcc46b10100", version=clang_vers))
-    BuildDependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95", version=v"1.1.23+0"))
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"), compat="3.0.16")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

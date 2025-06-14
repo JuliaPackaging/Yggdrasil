@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Pango"
-version = v"1.56.1"
+version = v"1.56.3"
 
 # Collection of sources required to build Pango: https://download.gnome.org/sources/pango/
 sources = [
     ArchiveSource("http://ftp.gnome.org/pub/GNOME/sources/pango/$(version.major).$(version.minor)/pango-$(version).tar.xz",
-                  "426be66460c98b8378573e7f6b0b2ab450f6bb6d2ec7cecc33ae81178f246480"),
+                  "2606252bc25cd8d24e1b7f7e92c3a272b37acd6734347b73b47a482834ba2491"),
     ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.0.tar.bz2",
                   "bd0ea1633bd830204cc23a696889335e9d4a32b8619439ee17f22188695fcc5f"),
 ]
@@ -69,12 +69,12 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("gperf_jll"),
-    Dependency("Cairo_jll"; compat="1.18.2"),
-    Dependency("Fontconfig_jll"; compat="2.15.0"),
-    Dependency("FreeType2_jll"; compat="2.13.3"),
-    Dependency("FriBidi_jll"; compat="1.0.16"),
-    Dependency("Glib_jll"; compat="2.82.2"),
-    Dependency("HarfBuzz_jll"; compat="8.5.0"),
+    Dependency("Cairo_jll"; compat="1.18.5"),
+    Dependency("Fontconfig_jll"; compat="2.16.0"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("FriBidi_jll"; compat="1.0.17"),
+    Dependency("Glib_jll"; compat="2.84.0"),
+    Dependency("HarfBuzz_jll"; compat="8.5.1"),
     BuildDependency("Xorg_xorgproto_jll"; platforms=filter(p -> Sys.isfreebsd(p) || Sys.islinux(p), platforms)),
 ]
 

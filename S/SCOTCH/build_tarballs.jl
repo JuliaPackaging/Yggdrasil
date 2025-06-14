@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "SCOTCH"
-version = v"7.0.6"
+version = v"7.0.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://gitlab.inria.fr/scotch/scotch", "e231061e53f3ad63d6cce19d983be2c6c4301749"),
+    GitSource("https://gitlab.inria.fr/scotch/scotch", "d736fce170ab3dfab7ec368b4d2a9be31d6ccd34"),
     DirectorySource("./bundled"),
 ]
 
@@ -15,6 +15,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/scotch*
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/scotch.patch"
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/fortify-source.patch"
 
 mkdir -p src/dummysizes/build-host
 cd src/dummysizes/build-host
@@ -23,8 +24,9 @@ cp ${WORKSPACE}/srcdir/patches/CMakeLists-dummysizes.txt ../CMakeLists.txt
 CC=${CC_BUILD} cmake .. \
     -DSCOTCH_VERSION=7 \
     -DSCOTCH_RELEASE=0 \
-    -DSCOTCH_PATCHLEVEL=6 \
+    -DSCOTCH_PATCHLEVEL=7 \
     -DBUILD_PTSCOTCH=OFF \
+    -DINTSIZE="32" \
     -DCMAKE_BUILD_TYPE=Release
 
 make -j${nproc}

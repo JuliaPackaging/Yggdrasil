@@ -60,7 +60,9 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = expand_gfortran_versions(platforms)
 
 # Disable aarch64-freebsd until we recompile the dependencies.
-platforms = filter(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
+filter!(p -> !(os(p) == "freebsd" && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.islinux(p) && libc(p) == "musl" && libgfortran_version(p) == v"4" && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [

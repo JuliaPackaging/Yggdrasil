@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 function build_libxcrypt(ARGS; legacy::Bool)
-   version = v"4.4.28"
+   version = v"4.4.38"
    name = "libxcrypt"
 
    # Collection of sources required to build libxcrypt
    sources = [
        ArchiveSource("https://github.com/besser82/libxcrypt/releases/download/v$(version)/libxcrypt-$(version).tar.xz",
-                     "9e936811f9fad11dbca33ca19bd97c55c52eb3ca15901f27ade046cc79e69e87")
+                     "80304b9c306ea799327f01d9a7549bdb28317789182631f1b54f4511b4206dd6")
    ]
 
    # Bash recipe for building across all platforms
@@ -17,6 +17,8 @@ function build_libxcrypt(ARGS; legacy::Bool)
    cd $WORKSPACE/srcdir/libxcrypt-*/
    if [[ ${target} == *freebsd* ]]; then
       extraflags="${extraflags} ax_cv_check_vscript_flag=--version-script"
+      # See <https://github.com/NixOS/nixpkgs/pull/309884>:
+      export LDFLAGS=-Wl,--undefined-version
    fi
    ./configure \
                --prefix=${prefix} \

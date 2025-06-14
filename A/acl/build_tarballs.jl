@@ -4,6 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "acl"
 version = v"2.3.2"
+# We bumped the version number to support new architectures
+ygg_version = v"2.3.3"
 
 # Collection of sources required to complete build
 sources = [
@@ -40,4 +42,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")

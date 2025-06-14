@@ -3,18 +3,17 @@
 using BinaryBuilder
 
 name = "Xorg_xcb_util_renderutil"
-version = v"0.3.9"
+version = v"0.3.10"
 
 # Collection of sources required to build libxcb
 sources = [
-    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-renderutil-$(version).tar.bz2",
-                  "c6e97e48fb1286d6394dddb1c1732f00227c70bd1bedb7d1acabefdd340bea5b"),
+    ArchiveSource("https://xcb.freedesktop.org/dist/xcb-util-renderutil-$(version).tar.xz",
+                  "3e15d4f0e22d8ddbfbb9f5d77db43eacd7a304029bf25a6166cc63caa96d04ba"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/xcb-util-renderutil-*/
-CPPFLAGS="-I${prefix}/include"
 
 # When compiling for things like ppc64le, we need newer `config.sub` files
 update_configure_scripts
@@ -26,7 +25,7 @@ make install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [p for p in supported_platforms() if Sys.islinux(p) || Sys.isfreebsd(p)]
+platforms = supported_platforms(; exclude=p->!(Sys.islinux(p) || Sys.isfreebsd(p)))
 
 products = [
     LibraryProduct("libxcb-render-util", :libxcb_render_util),
@@ -39,4 +38,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

@@ -1,0 +1,34 @@
+diff --git a/src/dtcmp.c b/src/dtcmp.c
+index ef9d70b..390598e 100644
+--- a/src/dtcmp.c
++++ b/src/dtcmp.c
+@@ -29,19 +29,24 @@ static int DTCMP_IN_PLACE_LOCATION;
+ const void* DTCMP_IN_PLACE = (const void*) &DTCMP_IN_PLACE_LOCATION;
+ 
+ /* we'll dup comm_self during init, which we need for our memcpy */
+-MPI_Comm dtcmp_comm_self = MPI_COMM_NULL;
++MPI_Comm dtcmp_comm_self;
++__attribute__((__constructor__)) static void init_dtcmp_comm_self() { dtcmp_comm_self = MPI_COMM_NULL; }
+ 
+ /* we create a type of 3 consecutive uint64_t for computing min/max/sum reduction */
+-MPI_Datatype dtcmp_type_3uint64t = MPI_DATATYPE_NULL;
++MPI_Datatype dtcmp_type_3uint64t;
++__attribute__((__constructor__)) static void init_dtcmp_type_3uint64t() { dtcmp_type_3uint64t = MPI_DATATYPE_NULL; }
+ 
+ /* op for computing min/max/sum reduction */
+-MPI_Op dtcmp_reduceop_mms_3uint64t = MPI_OP_NULL;
++MPI_Op dtcmp_reduceop_mms_3uint64t;
++__attribute__((__constructor__)) static void init_dtcmp_reduceop_mms_3uint64t() { dtcmp_reduceop_mms_3uint64t = MPI_OP_NULL; }
+ 
+ /* we create a type of 3 consecutive int for computing max rand/count/rank reduction */
+-MPI_Datatype dtcmp_type_3int = MPI_DATATYPE_NULL;
++MPI_Datatype dtcmp_type_3int;
++__attribute__((__constructor__)) static void init_dtcmp_type_3int() { dtcmp_type_3int = MPI_DATATYPE_NULL; }
+ 
+ /* op for computing max rand/count/rank reduction */
+-MPI_Op dtcmp_reduceop_randroot = MPI_OP_NULL;
++MPI_Op dtcmp_reduceop_randroot;
++__attribute__((__constructor__)) static void init_dtcmp_reduceop_randroot() { dtcmp_reduceop_randroot = MPI_OP_NULL; }
+ 
+ /* we call rand_r() to acquire random numbers,
+  * and this keeps track of the seed between calls */

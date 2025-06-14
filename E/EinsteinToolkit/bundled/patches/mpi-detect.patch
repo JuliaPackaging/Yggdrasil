@@ -1,0 +1,14 @@
+--- a/src/detect.pl
++++ b/src/detect.pl
+@@ -292,6 +292,11 @@
+         $info = <$fd>;
+         close($fd);
+     }
++    if ($info eq "") {
++        open($fd,"$mpi_cmd -showme 2>/dev/null|");
++        $info = <$fd>;
++        close($fd);
++    }
+     if ($info eq "") {
+         # The command, mpicc, is quite often a shell script.
+         # Run it with -x to trace, and find the compile command.

@@ -1,0 +1,12 @@
+This is already fixed on the master branch.
+
+--- a/cpp/src/parquet/size_statistics.cc
++++ b/cpp/src/parquet/size_statistics.cc
+@@ -18,6 +18,7 @@
+ #include "parquet/size_statistics.h"
+ 
+ #include <algorithm>
++#include <array>
+ #include <numeric>
+ #include <ostream>
+ #include <string_view>

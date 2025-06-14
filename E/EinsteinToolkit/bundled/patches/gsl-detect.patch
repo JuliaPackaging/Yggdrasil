@@ -1,0 +1,15 @@
+--- a/src/detect.sh
++++ b/src/detect.sh
+@@ -82,9 +82,9 @@
+     # - for INC_DIRS, remove -I prefix from flags
+     # - for LIB_DIRS, remove all -l flags, and remove -L prefix from flags
+     # - for LIBS, keep only -l flags, and remove -l prefix from flags
+-    GSL_INC_DIRS="$(echo '' $(for flag in $inc_dirs; do echo '' $flag; done | sed -e 's/^ -I//'))"
+-    GSL_LIB_DIRS="$(echo '' $(for flag in $lib_dirs; do echo '' $flag; done | grep -v '^ -l' | sed -e 's/^ -L//'))"
+-    GSL_LIBS="$(echo '' $(for flag in $libs; do echo '' $flag; done | grep '^ -l' | sed -e 's/^ -l//'))"
++    : ${GSL_INC_DIRS="$(echo '' $(for flag in $inc_dirs; do echo '' $flag; done | sed -e 's/^ -I//'))"}
++    : ${GSL_LIB_DIRS="$(echo '' $(for flag in $lib_dirs; do echo '' $flag; done | grep -v '^ -l' | sed -e 's/^ -L//'))"}
++    : ${GSL_LIBS="$(echo '' $(for flag in $libs; do echo '' $flag; done | grep '^ -l' | sed -e 's/^ -l//'))"}
+ fi
+ 
+ set_make_vars "GSL" "$GSL_LIBS" "$GSL_LIB_DIRS" "$GSL_INC_DIRS"
