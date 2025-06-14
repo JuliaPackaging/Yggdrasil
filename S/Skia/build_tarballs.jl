@@ -70,9 +70,7 @@ cp ../cskia/capi/sk_capi.h src/base/
 
 if [[ "${target}" == x86_64-* ]]; then
     target_cpu=x64
-fi
-
-if [[ "${target}" == aarch64-* ]]; then
+elif [[ "${target}" == aarch64-* ]]; then
     target_cpu=arm64
 fi
 
