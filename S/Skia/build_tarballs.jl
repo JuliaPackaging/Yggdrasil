@@ -20,7 +20,6 @@ sources = [
 
 
 platforms = [
-     Platform("aarch64", "macOS";),
      Platform("x86_64", "linux"; libc = "glibc"),
      Platform("aarch64", "linux"; libc = "glibc"),
      Platform("riscv64", "linux"; libc = "glibc"), 
@@ -62,6 +61,8 @@ cd skia
 install_license LICENSE 
 
 bin/fetch-gn 
+
+# The || true is necessary, since the script fails for some Android deps
 python3 tools/git-sync-deps || true
 
 cp ../cskia/capi/sk_capi.cpp src/base/
@@ -86,13 +87,8 @@ fi
 
 
 
-if [[ "${target}" == aarch64-apple-* ]]; then
-    bin/gn gen out/Static --args='target_cpu="arm64" target_os="mac" skia_use_metal=true skia_use_x11=false skia_enable_fontmgr_fontconfig=false  skia_use_fonthost_mac=true cc="clang" cxx="clang++" is_official_build=true  skia_use_freetype=false  skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_fontconfig=false skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
-fi
+bin/gn gen out/Static --args='target_cpu="'$target_cpu'" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
 
-if [[ "${target}" == *-linux-* ]]; then
-    bin/gn gen out/Static --args='target_cpu="'$target_cpu'" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_vulkan=true skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true  skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
-fi
 
 ninja -j${nproc} -C out/Static
 
@@ -107,4 +103,3 @@ install -Dvm 755 "libskia.${dlext}" "${libdir}/libskia.${dlext}"
 
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version = v"11.1.0", preferred_llvm_version = v"15.0.7")
-
