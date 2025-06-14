@@ -102,4 +102,4 @@ install -Dvm 755 "libskia.${dlext}" "${libdir}/libskia.${dlext}"
 """
 
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version= v"11.1.0", julia_compat="1.10")
