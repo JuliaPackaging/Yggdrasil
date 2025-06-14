@@ -23,6 +23,8 @@ if [[ "${target}" == *-mingw* ]]; then
     # See https://github.com/msys2/MINGW-packages/issues/5868#issuecomment-544107564
     export LIBS="-lssp"
 
+    # install `autopoint`, needed by `autoreconf`
+    apk update && apk add gettext-dev
     # Fix error
     #     lib/libsed.a(libsed_a-getrandom.o): In function `getrandom':
     #     /workspace/srcdir/sed-4.9/lib/getrandom.c:128: undefined reference to `BCryptGenRandom@16'
