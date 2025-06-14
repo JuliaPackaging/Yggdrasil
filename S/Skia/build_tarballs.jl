@@ -99,11 +99,7 @@ ninja -j${nproc} -C out/Static
 cd out/Static/
 
 
-if [[ "${target}" == *-apple-* ]]; then
-    clang++ -shared -o libskia.$dlext  libjpeg.a libbentleyottmann.a libcompression_utils_portable.a libdng_sdk.a libjsonreader.a libpathkit.a  libpiex.a libpng.a libskcms.a libsksg.a libskshaper.a libskunicode_core.a libskunicode_icu.a libsvg.a -fpic -fvisibility=default -lstdc++ -dl 
-else
-    clang++ -shared -o libskia.$dlext   -Wl,--whole-archive libskia.a -Wl,--no-whole-archive libfreetype2.a libjpeg.a libbentleyottmann.a libcompression_utils_portable.a libdng_sdk.a libjsonreader.a libpathkit.a  libpiex.a libpng.a libskcms.a libsksg.a libskshaper.a libskunicode_core.a libskunicode_icu.a libsvg.a -fpic -fvisibility=default -lstdc++ -dl -lfontconfig -lGL
-fi
+clang++ -shared -o libskia.${dlext} $(flagon -Wl,--whole-archive) libskia.a $(flagon -Wl,--no-whole-archive) libfreetype2.a libjpeg.a libbentleyottmann.a libcompression_utils_portable.a libdng_sdk.a libjsonreader.a libpathkit.a  libpiex.a libpng.a libskcms.a libsksg.a libskshaper.a libskunicode_core.a libskunicode_icu.a libsvg.a -fpic -dl -lfontconfig -lGL
 
 
 install -Dvm 755 "libskia.${dlext}" "${libdir}/libskia.${dlext}"
