@@ -2,15 +2,13 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-name = "Qt6Quick3D"
+name = "Qt6Graphs"
 version = v"6.8.2"
-
-host_build = false
 
 # Collection of sources required to build qt6
 sources = [
-    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtquick3d-everywhere-src-$version.tar.xz",
-                  "084cebccb8c5b1c6bafb7756ab89b08ced23c20cd2e996ed54909a154a9f0b6d"),
+    ArchiveSource("https://download.qt.io/official_releases/qt/$(version.major).$(version.minor)/$version/submodules/qtgraphs-everywhere-src-$version.tar.xz",
+                  "05c7a4a3482f6ffd7e9005964bb5ab634062a6d023ccd96f5447db6eae3c46d4"),
     ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
                   "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
 ]
@@ -20,12 +18,7 @@ cd $WORKSPACE/srcdir
 
 mkdir build
 cd build/
-qtsrcdir=`ls -d ../qtquick3d-*`
-
-if [[ $bb_full_target == *"musl"* ]]; then
-    # secure_getenv is undefined on the musl platforms
-    sed -i "s/HAVE_SECURE_GETENV//" $qtsrcdir/src/3rdparty/openxr/CMakeLists.txt
-fi
+qtsrcdir=`ls -d ../qtgraphs-*`
 
 case "$bb_full_target" in
 
@@ -68,39 +61,18 @@ include("../Qt6Base/common.jl")
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct(["Qt6Quick3D", "libQt6Quick3D", "QtQuick3D"], :libqt6quick3d),
-    LibraryProduct(["Qt6Quick3DAssetImport", "libQt6Quick3DAssetImport", "QtQuick3DAssetImport"], :libqt6quick3dassetimport),
-    LibraryProduct(["Qt6Quick3DAssetUtils", "libQt6Quick3DAssetUtils", "QtQuick3DAssetUtils"], :libqt6quick3dassetutils),
-    LibraryProduct(["Qt6Quick3DEffects", "libQt6Quick3DEffects", "QtQuick3DEffects"], :libqt6quick3deffects),
-    LibraryProduct(["Qt6Quick3DGlslParser", "libQt6Quick3DGlslParser", "QtQuick3DGlslParser"], :libqt6quick3dglslparser),
-    LibraryProduct(["Qt6Quick3DHelpers", "libQt6Quick3DHelpers", "QtQuick3DHelpers"], :libqt6quick3dhelpers),
-    LibraryProduct(["Qt6Quick3DHelpersImpl", "libQt6Quick3DHelpersImpl", "QtQuick3DHelpersImpl"], :libqt6quick3dhelpersimpl),
-    LibraryProduct(["Qt6Quick3DIblBaker", "libQt6Quick3DIblBaker", "QtQuick3DIblBaker"], :libqt6quick3diblbaker),
-    LibraryProduct(["Qt6Quick3DParticleEffects", "libQt6Quick3DParticleEffects", "QtQuick3DParticleEffects"], :libqt6quick3dparticleeffects),
-    LibraryProduct(["Qt6Quick3DParticles", "libQt6Quick3DParticles", "QtQuick3DParticles"], :libqt6quick3dparticles),
-    LibraryProduct(["Qt6Quick3DRuntimeRender", "libQt6Quick3DRuntimeRender", "QtQuick3DRuntimeRender"], :libqt6quick3druntimerender),
-    LibraryProduct(["Qt6Quick3DUtils", "libQt6Quick3DUtils", "QtQuick3DUtils"], :libqt6quick3dutils),
-    LibraryProduct(["Qt6Quick3DXr", "libQt6Quick3DXr", "QtQuick3DXr"], :libqt6quick3dxr),
+    LibraryProduct(["Qt6Graphs", "libQt6Graphs", "QtGraphs"], :libqt6graphs),
+    LibraryProduct(["Qt6GraphsWidgets", "libQt6GraphsWidgets", "QtGraphsWidgets"], :libqt6graphswidgets),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     HostBuildDependency("Qt6Base_jll"),
     HostBuildDependency("Qt6Declarative_jll"),
-    HostBuildDependency("Qt6ShaderTools_jll"),
+    HostBuildDependency("Qt6Quick3D_jll"),
     Dependency("Qt6Base_jll"; compat="="*string(version)),
     Dependency("Qt6Declarative_jll"; compat="="*string(version)),
-    Dependency("Qt6ShaderTools_jll"; compat="="*string(version)),
-    Dependency("Qt6QuickTimeline_jll"; compat="="*string(version)),
-    BuildDependency("Vulkan_Headers_jll"),
+    Dependency("Qt6Quick3D_jll"; compat="="*string(version)),
 ]
 
-if !host_build
-    push!(dependencies, HostBuildDependency("Qt6Quick3D_jll"))
-end
-
-if should_build_platform(Platform("x86_64", "FreeBSD"))
-    # OpenXR (even the builtin one) can't be built on FreeBSD apparently, so remove it from the product list there.
-    pop!(products)
-end
 build_qt(name, version, sources, script, products, dependencies)
