@@ -1,3 +1,4 @@
+ompi_cv_fortran_common_alignment='16'
 ompi_cv_fortran_alignment_CHARACTER='1'
 ompi_cv_fortran_alignment_COMPLEX='4'
 ompi_cv_fortran_alignment_COMPLEXp16='8'
