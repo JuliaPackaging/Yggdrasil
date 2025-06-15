@@ -8,7 +8,7 @@ upstream_version = "2.4.0" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
-# Collection of sources required to build libsingular-julia
+# Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/curlInterface/releases/download/v$(upstream_version)/curlInterface-$(upstream_version).tar.gz",
                   "6f758ad512edf033ba8892875c3216cf111feb5b856909b84889cad89c78a4ff"),
@@ -29,7 +29,8 @@ install_license LICENSE
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
+dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms()
 
 append!(dependencies, [
     Dependency("LibCURL_jll"; compat="7.73,8"),

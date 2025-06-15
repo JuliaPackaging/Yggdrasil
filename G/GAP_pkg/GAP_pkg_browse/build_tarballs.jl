@@ -37,7 +37,8 @@ install_license /usr/share/licenses/GPL-3.0+
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version)
+dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms()
 
 # The products that we will ensure are always built
 products = [

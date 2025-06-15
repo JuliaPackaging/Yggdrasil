@@ -111,14 +111,8 @@ install_license LICENSE
 # independent artifact to ship them to the user.
 """
 
-include("../../L/libjulia/common.jl")
-platforms = vcat(libjulia_platforms.(julia_versions)...)
-
-# we only care about 64bit builds
-filter!(p -> nbits(p) == 64, platforms)
-
-# Windows is not supported
-filter!(!Sys.iswindows, platforms)
+include("common.jl")
+platforms = gap_platforms(expand_julia_versions=true)
 
 # The products that we will ensure are always built
 products = [
