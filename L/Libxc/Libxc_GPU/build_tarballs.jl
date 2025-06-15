@@ -45,7 +45,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DBUILD_TESTING=OFF \
       -DENABLE_CUDA=ON \
       -DENABLE_XHOST=OFF \
-      -DENABLE_FORTRAN=OFF \
+      -DENABLE_FORTRAN=ON \
       -DDISABLE_KXC=ON ..
 
 cmake --build . --parallel $nproc
@@ -63,6 +63,8 @@ fi
 
 # Override the default platforms
 platforms = CUDA.supported_platforms(; min_version=v"11.8")
+platforms = expand_gfortran_versions(platforms)
+platforms = remove_unsupported_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
