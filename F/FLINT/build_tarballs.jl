@@ -25,8 +25,8 @@ using BinaryBuilder, Pkg
 # coordinated with corresponding changes to Singular_jll.jl, Nemo.jl and polymake_jll.jl
 # and possibly other packages.
 name = "FLINT"
-upstream_version = v"3.2.2"
-version_offset = v"0.0.1"
+upstream_version = v"3.3.0"
+version_offset = v"1.0.0"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -34,18 +34,12 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build FLINT
 sources = [
    ArchiveSource("https://github.com/flintlib/flint/releases/download/v$(upstream_version)/flint-$(upstream_version).tar.gz",
-                 "577d7729e4c2e79ca1e894ad2ce34bc73516a92f623d42562694817f888a17eb"),
-   DirectorySource("./bundled"),
+                 "d9ae0f1318253727068270dbfa3c4b55155e3f4b7be6ca9c056e58f2838f15b3"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/flint*
-
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
-
 
 if [[ ${target} == *musl* ]]; then
    # because of some ordering issue with pthread.h and sched.h includes
