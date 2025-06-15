@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Remove the meson option we don't like
+args=()
+for arg in "${@}"; do
+    if [[ "${arg}" != "-Werror=unused-command-line-argument" ]]; then
+        args+=("${arg}")
+    fi
+done
+exec cc "${args[@]}"
