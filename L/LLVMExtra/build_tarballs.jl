@@ -12,7 +12,7 @@ version = v"0.0.37"
 llvm_versions = [v"15.0.7", v"16.0.6", v"17.0.6", v"18.1.7", v"19.1.7", v"20.1.2"]
 
 sources = [
-    GitSource(repo, "c447e5aca00310032b016cd0b01b9615b6ab5b62"),
+    GitSource(repo, "097443855afa339ae6c1939e2ccb889653630069"),
 ]
 
 # Bash recipe for building across all platforms
