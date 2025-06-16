@@ -17,7 +17,6 @@ function lbt_sources(version::VersionNumber; kwargs...)
     return [
         GitSource("https://github.com/JuliaLinearAlgebra/libblastrampoline.git",
                   lbt_version_commit[version]),
-        DirectorySource("./bundled/")
     ]
 end
 
@@ -32,7 +31,6 @@ fi
 
 make -j${nproc} prefix=${prefix} install
 
-install -Dvm644 ../../cmake/yggdrasilenv.cmake ${libdir}/cmake/blastrampoline/yggdrasilenv.cmake
 install_license ../LICENSE
 """
 
