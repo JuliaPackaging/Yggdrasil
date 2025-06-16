@@ -22,15 +22,13 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.1000.201"
-upstream_version = v"3.10.2"
+version = v"300.1001.500"
+upstream_version = v"3.10.5"
 
 # Collection of sources required to complete build
 sources = [
-    #ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
-    #              "365e1d1e2a338dc4df1947a440e606bb66dd261307e617905e8eca64eaafcf6e"),
-    GitSource("https://github.com/Normaliz/Normaliz.git",
-              "3bc242209e82488886eada17006e372fd89aa032"),
+    ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
+                  "58492cfbfebb2ee5702969a03c3c73a2cebcbca2262823416ca36e7b77356a44"),
 ]
 
 # Bash recipe for building across all platforms
