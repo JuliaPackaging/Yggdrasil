@@ -65,8 +65,8 @@ cd ${WORKSPACE}/srcdir/legate
 
 ### Set Up CUDA ENV Vars
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -DCYTHON_HEX_VERSION=1"
-export CFLAGS="${CFLAGS} -I${prefix}/include -DCYTHON_HEX_VERSION=1"
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
+export CFLAGS="${CFLAGS} -I${prefix}/include"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 
 export CUDA_HOME=${prefix}/cuda;
@@ -94,7 +94,6 @@ ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
     --with-clean \
     --cmake-executable=${host_bindir}/cmake \
     -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
-        "-DCYTHON_HEX_VERSION=1" \
         "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
 
 
@@ -125,16 +124,11 @@ end
 platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
-#* REMOVE LATER
-platforms = filter!(p -> arch(p) == "x86_64", platforms)
-platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.2" || VersionNumber(tags(p)["cuda"]) == v"12.4", platforms)
-
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 # platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 # filter!(p -> p["mpi"] ∉ ["mpitrampoline", "microsoftmpi"], platforms)
-
 
 products = [
     LibraryProduct("liblegate", :liblegate)
