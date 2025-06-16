@@ -1,4 +1,6 @@
 # Update the GAP_pkg_* recipes to match GAP / GAP_lib
+# Execute from the G/GAP_pkg/ directory, e.g.:
+# julia --project=. update.jl
 
 using JSON
 import Downloads
