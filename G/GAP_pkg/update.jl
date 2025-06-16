@@ -93,7 +93,15 @@ function update_gap_pkg_recipe(dir)
         @info "skipping $pkgname"
         return
     elseif old_upstream_version != upstream_version
-        offset = v"0.0.0"
+        _old_upstream_version = VersionNumber(replace(old_upstream_version, "-" => "."))
+        _upstream_version = VersionNumber(replace(upstream_version, "-" => "."))
+        if old_upstream_version.major != upstream_version.major
+            offset = v"0.0.0"
+        elseif old_upstream_version.minor != upstream_version.minor
+            offset = VersionNumber(offset.major, 0, 0)
+        else
+            offset = VersionNumber(offset.major, offset.minor, 0)
+        end
     else
         offset = VersionNumber(offset.major, offset.minor, offset.patch + 1)
     end
