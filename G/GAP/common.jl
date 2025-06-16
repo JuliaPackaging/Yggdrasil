@@ -5,11 +5,6 @@ function gap_platforms(; expand_julia_versions::Bool=false)
         platforms = vcat(libjulia_platforms.(julia_versions)...)
     else
         platforms = union(julia_supported_platforms.(julia_versions)...)
-        
-        filter!(p -> arch(p) != "riscv64", platforms) # riscv64 is not supported atm
-
-        # TODO: re-enable FreeBSD aarch64 support once GAP_jll supports it
-        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
 
     # we only care about 64bit builds

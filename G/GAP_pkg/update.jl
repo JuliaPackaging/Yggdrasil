@@ -6,7 +6,7 @@ using SHA
 using GZip
 
 upstream_version = v"4.14.0"
-gap_version = v"400.1400.000"
+gap_version = v"400.1400.005"
 gap_lib_version = v"400.1400.000"
 
 function download_with_sha256(url)
