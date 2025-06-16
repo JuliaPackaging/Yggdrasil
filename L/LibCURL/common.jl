@@ -18,6 +18,7 @@ const curl_hashes = Dict(
     v"8.12.0" => "b72ec874e403c90462dc3019c5b24cc3cdd895247402bf23893b3b59419353bc",
     v"8.12.1" => "7b40ea64947e0b440716a4d7f0b7aa56230a5341c8377d7b609649d4aea8dbcf",
     v"8.13.0" => "c261a4db579b289a7501565497658bbd52d3138fdbaccf1490fa918129ab45bc",
+    v"8.14.1" => "6766ada7101d292b42b8b15681120acd68effa4a9660935853cf6d61f0d984d4",
 )
 
 function build_libcurl(ARGS, name::String, version::VersionNumber)
@@ -37,7 +38,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         ArchiveSource("https://curl.se/download/curl-$(version).tar.gz", hash),
         DirectorySource("../patches"),
     ]
-    if version >= v"8.13"
+    if version == v"8.13"
         append!(sources, [
             ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
                           "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4")
@@ -81,7 +82,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     )
 
     if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
-    # Install msan runtime (for clang)
+        # Install msan runtime (for clang)
         cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
     fi
 

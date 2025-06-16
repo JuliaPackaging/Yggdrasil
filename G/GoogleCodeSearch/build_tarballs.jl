@@ -3,11 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "GoogleCodeSearch"
-version = v"1.2.0"
+# This version is different than the source version as we need to rebuild this with an updated Go version
+# and update compat bounds
+# The original version is v1.2.0 which hasn't been updated since 2020
+version = v"1.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/google/codesearch.git", "8ba29bd255b740aee4eb4e4ddb5d7ec0b4d9f23e")
+    GitSource("https://github.com/google/codesearch.git", "8ba29bd255b740aee4eb4e4ddb5d7ec0b4d9f23e") # v1.2.0
 ]
 
 # Bash recipe for building across all platforms
@@ -38,4 +41,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; compilers = [:go, :c])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compilers = [:go, :c], preferred_go_version = v"1.23")

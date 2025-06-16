@@ -11,7 +11,7 @@ if ! @isdefined julia_versions
 end
 
 # return the platforms supported by libjulia
-function libjulia_platforms(julia_version)
+function julia_supported_platforms(julia_version)
     platforms = supported_platforms()
 
     # skip 32bit musl builds; they fail with this error:
@@ -35,8 +35,16 @@ function libjulia_platforms(julia_version)
         filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
     end
 
-    # RISC-V currently not supported
-    filter!(p -> arch(p) != "riscv64", platforms)
+    # RISC-V is not supported for older Julia versions
+    if julia_version < v"1.13"
+        filter!(p -> arch(p) != "riscv64", platforms)
+    end
+
+    return platforms
+end
+
+function libjulia_platforms(julia_version)
+    platforms = julia_supported_platforms(julia_version)
 
     for p in platforms
         p["julia_version"] = string(julia_version)
@@ -67,7 +75,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         ]
     elseif version == v"1.13.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "bc30cf23de79eee8e5cbe68813890cf145df1e47"),
+            GitSource("https://github.com/JuliaLang/julia.git", "3e9f486430a254dd766bcd7f185fc21147d44345"),
             DirectorySource("./bundled"),
         ]
     else
@@ -478,7 +486,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, BuildDependency("Zstd_jll")),
         push!(dependencies, BuildDependency(get_addable_spec("SuiteSparse_jll", v"7.10.1+0")))
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
-        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
+        push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.2+0"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
         push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"20.1.2+1")))
     else
