@@ -7,7 +7,7 @@ include(joinpath(@__DIR__, "..", "..", "platforms", "microarchitectures.jl"))
 
 name = "finufft"
 version = v"2.4.0"
-commit_hash = "30adfd3939ce0c804e304dd38e9955e761a17410" # v2.4.0-rc1
+commit_hash = "cbda17905ce0b52590b7fa2fbd73eb7f1845217e" # v2.4.0
 
 # Collection of sources required to complete build
 sources = [
