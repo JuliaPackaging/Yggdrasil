@@ -12,10 +12,8 @@ function gap_platforms(; expand_julia_versions::Bool=false)
 
         return platforms
     else
-        # TODO: create the platforms from the above list coming from libjulia
-        # by removing the julia_version tag
+        platforms = union(julia_supported_platforms.(julia_versions)...)
         
-        platforms = supported_platforms()
         filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
         filter!(!Sys.iswindows, platforms)      # Windows is not supported
 
