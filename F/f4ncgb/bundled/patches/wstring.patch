@@ -1,0 +1,13 @@
+diff --git a/src/zip_utils.cpp b/src/zip_utils.cpp
+index 4e3a322..127d594 100644
+--- a/src/zip_utils.cpp
++++ b/src/zip_utils.cpp
+@@ -95,7 +95,7 @@ open_compressed_or_direct(std::filesystem::path p) {
+   else if(p.extension() == ".7z" && file_matches_signature(p, sig7z))
+     f_ptr = popen_with_found_bin("7z", "x -so", p);
+   else
+-    f_ptr = std::fopen(p.c_str(), "r");
++    f_ptr = std::fopen(p.string().c_str(), "r");
+ 
+   return f_ptr;
+ }
