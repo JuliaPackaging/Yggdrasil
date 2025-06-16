@@ -10,7 +10,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "legate"
-version = v"25.05"
+version = v"25.5" # Year.Month
 sources = [
     GitSource("https://github.com/nv-legate/legate.git","8a619fa468a73f9766f59ac9a614c0ee084ecbdd"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
@@ -65,8 +65,8 @@ cd ${WORKSPACE}/srcdir/legate
 
 ### Set Up CUDA ENV Vars
 
-export CPPFLAGS="${CPPFLAGS} -I${prefix}/include"
-export CFLAGS="${CFLAGS} -I${prefix}/include"
+export CPPFLAGS="${CPPFLAGS} -I${prefix}/include -DCYTHON_HEX_VERSION=1"
+export CFLAGS="${CFLAGS} -I${prefix}/include -DCYTHON_HEX_VERSION=1"
 export LDFLAGS="${LDFLAGS} -L${prefix}/lib -L${prefix}/lib64"
 
 export CUDA_HOME=${prefix}/cuda;
@@ -94,6 +94,7 @@ ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
     --with-clean \
     --cmake-executable=${host_bindir}/cmake \
     -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
+        "-DCYTHON_HEX_VERSION=1" \
         "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
 
 
@@ -125,8 +126,8 @@ platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_versi
 platforms = filter!(p -> arch(p) == "x86_64" || arch(p) == "aarch64", platforms)
 
 #* REMOVE LATER
-# platforms = filter!(p -> arch(p) == "x86_64", platforms)
-# platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.2" || VersionNumber(tags(p)["cuda"]) == v"12.4", platforms)
+platforms = filter!(p -> arch(p) == "x86_64", platforms)
+platforms = filter!(p -> VersionNumber(tags(p)["cuda"]) == v"12.2" || VersionNumber(tags(p)["cuda"]) == v"12.4", platforms)
 
 platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
@@ -147,7 +148,6 @@ dependencies = [
     # Dependency("UCX_jll"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    RuntimeDependency(PackageSpec(; name="CUDA_Driver_jll")), # compat to prevent use of CUDA 13.x drivers in the future
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = v"3.30.2")),
 ]
 
