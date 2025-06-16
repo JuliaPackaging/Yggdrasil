@@ -61,6 +61,9 @@ platforms = supported_platforms()
 
 # filter riscv64 until supported by all dependencies
 filter!(p -> arch(p) != "riscv64", platforms)
+# 32bit architectures are not supported
+filter!(p -> nbits(p) != 32, platforms)
+
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
