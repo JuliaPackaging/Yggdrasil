@@ -13,6 +13,8 @@ sources = [
 ]
 
 script = raw"""
+apk del cmake
+
 cd $WORKSPACE/srcdir
 mkdir -p build
 cd build
@@ -36,13 +38,13 @@ products = [
 
 platforms = [
     Platform("x86_64", "linux"), Platform("aarch64", "linux"),
-    Platform("x86_64", "macos"),
+    Platform("x86_64", "macos"), Platform("aarch64", "macos"),
 ]
 
 platforms = expand_cxxstring_abis(platforms)
 
 
-dependencies = []
+dependencies = [HostBuildDependency(PackageSpec(; name="CMake_jll", version = v"3.28.1"))
 
 build_tarballs(ARGS, "IGLWrap", version,
     sources,
