@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "CUTEst"
-version = v"2.5.2"
+version = v"2.5.3"
 
 # Collection of sources required to build CUTEst
 sources = [
-    GitSource("https://github.com/ralna/CUTEst.git", "a10519a9705a0b54594352ce7fbe33d4c5ef6f43"),
+    GitSource("https://github.com/ralna/CUTEst.git", "9fe696355fa50bfa7add79fce8a402d06dd40310"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,15 +30,13 @@ meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
 meson compile -C builddir
 meson install -C builddir
 
-if [[ "${target}" != *i686-w64-mingw32* ]]; then
-    meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
-                                --prefix=$prefix \
-                                -Dquadruple=${QUADRUPLE} \
-                                -Ddefault_library=shared
+meson setup builddir_shared --cross-file=${MESON_TARGET_TOOLCHAIN%.*}_gcc.meson \
+                            --prefix=$prefix \
+                            -Dquadruple=${QUADRUPLE} \
+                            -Ddefault_library=shared
 
-    meson compile -C builddir_shared
-    meson install -C builddir_shared
-fi
+meson compile -C builddir_shared
+meson install -C builddir_shared
 
 install_license lgpl-3.0.txt
 """
@@ -47,14 +45,16 @@ install_license lgpl-3.0.txt
 platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 platforms = filter(p -> libgfortran_version(p) != v"3", platforms)
+platforms = filter(p -> libgfortran_version(p) != v"4", platforms)
+platforms = filter(p -> nbits(p) != 32, platforms)
 
 # The products that we will ensure are always built
 products = [
     FileProduct("lib/libcutest_single.a", :libcutest_single_a),
     FileProduct("lib/libcutest_double.a", :libcutest_double_a),
     # FileProduct("lib/libcutest_quadruple.a", :libcutest_quadruple_a), <-- not available on all platforms
-    # LibraryProduct("libcutest_single", :libcutest_single),
-    # LibraryProduct("libcutest_double", :libcutest_double),
+    LibraryProduct("libcutest_single", :libcutest_single),
+    LibraryProduct("libcutest_double", :libcutest_double),
     # LibraryProduct("libcutest_quadruple", :libcutest_quadruple), <-- not available on all platforms
 ]
 

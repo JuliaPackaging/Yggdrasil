@@ -8,8 +8,6 @@ function build_script(standalone=false)
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
 
-    atomic_patch -p1 ../patches/hidden_link.patch
-
     if [[ ("${target}" == x86_64-apple-darwin*) ]]; then
         # LLVM 15+ requires macOS SDK 10.14
         pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
@@ -45,6 +43,9 @@ function build_script(standalone=false)
 
     # Release build for best performance
     CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+
+    # Disable build mode
+    CMAKE_FLAGS+=(-DENABLE_POCL_BUILDING:Bool=OFF)
 
     # Don't build tests
     CMAKE_FLAGS+=(-DENABLE_TESTS:Bool=OFF)
@@ -101,29 +102,13 @@ function build_script(standalone=false)
     #      (as that is not reflected by llvm-config)
     CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS="-pthread")
 
-    # Force use of the SPIRV LLVM translator library by nuking the executable variant
-    CMAKE_FLAGS+=(-DLLVM_SPIRV="")
-    if [[ "${target}" == *-mingw* ]]; then
-        # PoCL looks for LLVMSPIRVLib in the LLVM libdir, which on Windows contains static libs.
-        # XXX: fix this upstream
-        CMAKE_FLAGS+=(-DLLVM_SPIRV_INCLUDEDIR="${prefix}/include/LLVMSPIRVLib")
-        CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB="${prefix}/bin/libLLVMSPIRVLib.dll")
-    fi
-    ## spoof the output of the try_run test (which fails in cross-compilation mode)
-    MAX_SPIRV_VERSION=67072
-    if [[ "${target}" == x86_64-linux-gnu ]]; then
-        # if the target matches the host, we can use the toolchain _and_ execute the result
-        clang++ cmake/MaxSPIRVversion.cc -o MaxSPIRVversion -I $prefix/include/LLVMSPIRVLib -lLLVM -L $host_prefix/lib
-        ACTUAL_MAX_SPIRV_VERSION=$(./MaxSPIRVversion)
-        if [[ $ACTUAL_MAX_SPIRV_VERSION != $MAX_SPIRV_VERSION ]]; then
-            echo "MaxSPIRVVersion is $ACTUAL_MAX_SPIRV_VERSION, while the build uses $MAX_SPIRV_VERSION"
-            echo "Please update the build script to use the correct version."
-            exit 1
-        fi
-    fi
-    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_COMPILE_RESULT=TRUE)
-    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT=0)
-    CMAKE_FLAGS+=(-DLIBLLVMSPIRV_MAXVER_RUN_RESULT__TRYRUN_OUTPUT=$MAX_SPIRV_VERSION)
+    # Enable SPIR-V support
+    ## disable use of the translator library, because the API is not ODR safe on macOS
+    ## when statically linking LLVM
+    CMAKE_FLAGS+=(-DLLVM_SPIRV_LIB="")
+    ## force use of the translator binary even if not executable during the build
+    ## XXX: add and use a HostBuildDependency?
+    sed -i '/unset(LLVM_SPIRV CACHE)/d' -i cmake/LLVM.cmake
 
     # PoCL's CPU autodetection doesn't work on RISC-V
     if [[ ${target} == riscv64-* ]]; then
@@ -142,28 +127,28 @@ function build_script(standalone=false)
     mkdir -p $prefix/share/lib
     if [[ ${target} == *-linux-gnu ]]; then
         if [[ ${target} == riscv64-* ]]; then
-            cp -a $sysroot/lib64/lp64d/libc.* $prefix/share/lib
-            cp -a $sysroot/usr/lib64/lp64d/libm.* $prefix/share/lib
-            ln -sf libm.so.6 $prefix/share/lib/libm.so
-            cp -a $sysroot/lib64/lp64d/libm.* $prefix/share/lib
-            cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
+            cp -va $sysroot/lib64/lp64d/libc.* $prefix/share/lib
+            cp -va $sysroot/usr/lib64/lp64d/libm.* $prefix/share/lib
+            ln -vsf libm.so.6 $prefix/share/lib/libm.so
+            cp -va $sysroot/lib64/lp64d/libm.* $prefix/share/lib
+            cp -va /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
         elif [[ "${nbits}" == 64 ]]; then
-            cp -a $sysroot/lib64/libc{.,-}* $prefix/share/lib
-            cp -a $sysroot/usr/lib64/libm.* $prefix/share/lib
-            ln -sf libm.so.6 $prefix/share/lib/libm.so
-            cp -a $sysroot/lib64/libm{.,-}* $prefix/share/lib
-            cp -a /opt/${target}/${target}/lib64/libgcc_s.* $prefix/share/lib
+            cp -va $sysroot/lib64/libc{.,-}* $prefix/share/lib
+            cp -va $sysroot/usr/lib64/libm.* $prefix/share/lib
+            ln -vsf libm.so.6 $prefix/share/lib/libm.so
+            cp -va $sysroot/lib64/libm{.,-}* $prefix/share/lib
+            cp -va /opt/${target}/${target}/lib64/libgcc_s.* $prefix/share/lib
         else
-            cp -a $sysroot/lib/libc{.,-}* $prefix/share/lib
-            cp -a $sysroot/usr/lib/libm.* $prefix/share/lib
-            ln -sf libm.so.6 $prefix/share/lib/libm.so
-            cp -a $sysroot/lib/libm{.,-}* $prefix/share/lib
-            cp -a /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
+            cp -va $sysroot/lib/libc{.,-}* $prefix/share/lib
+            cp -va $sysroot/usr/lib/libm.* $prefix/share/lib
+            ln -vsf libm.so.6 $prefix/share/lib/libm.so
+            cp -va $sysroot/lib/libm{.,-}* $prefix/share/lib
+            cp -va /opt/${target}/${target}/lib/libgcc_s.* $prefix/share/lib
         fi
-        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+        cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     elif [[ ${target} == *-linux-musl ]]; then
-        cp -a $sysroot/usr/lib/*.{o,a} $prefix/share/lib
-        cp -a /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+        cp -va $sysroot/usr/lib/*.{o,a} $prefix/share/lib
+        cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
     elif [[ "${target}" == *-mingw* ]]; then
         cp -va $sysroot/lib/*.o $prefix/share/lib
         cp -va $sysroot/lib/libmsvcrt*.a $prefix/share/lib
@@ -171,8 +156,15 @@ function build_script(standalone=false)
         cp -va $sysroot/lib/libm.a $prefix/share/lib
         cp -va $sysroot/lib/lib{kernel,user,shell}32.a $prefix/share/lib
         cp -va $sysroot/lib/libmingw*.a $prefix/share/lib
+        cp -va $sysroot/lib/libmoldname.a $prefix/share/lib
+        cp -va $sysroot/lib/libadvapi32.a $prefix/share/lib
         cp -va /opt/${target}/${target}/lib/libgcc* $prefix/share/lib
         cp -va /opt/$target/lib/gcc/$target/*/*.{o,a} $prefix/share/lib
+    elif [[ "${target}" == *-apple-darwin* ]]; then
+        cp -va $sysroot/usr/lib/crt1.o $prefix/share/lib
+        cp -va $sysroot/usr/lib/libSystem.*tbd $prefix/share/lib
+        cp -va $sysroot/usr/lib/libm.*tbd $prefix/share/lib
+        cp -va $sysroot/usr/lib/libgcc_s.*tbd $prefix/share/lib
     fi
     """
 end
@@ -217,7 +209,7 @@ function init_block(standalone=false)
 
         # write to temporary script
         temp_script, io = mktemp(bindir; cleanup=false)
-        if Sys.isunix()
+        script = if Sys.isunix()
             println(io, "#!/bin/bash")
 
             LIBPATH_base = get(ENV, LIBPATH_env, expanduser(LIBPATH_default))
@@ -241,12 +233,27 @@ function init_block(standalone=false)
             println(io, "exec \\"$path\\" \\"\$@\\"")
             close(io)
             chmod(temp_script, 0o755)
+            joinpath(bindir, name)
+        elseif Sys.iswindows()
+            println(io, "@echo off")
+
+            LIBPATH_base = get(ENV, LIBPATH_env, expanduser(LIBPATH_default))
+            LIBPATH_value = if !isempty(LIBPATH_base)
+                string(LIBPATH, pathsep, LIBPATH_base)
+            else
+                LIBPATH
+            end
+            println(io, "set \\"$LIBPATH_env=$LIBPATH_value\\"")
+
+            println(io, "call \\"$path\\" %*")
+
+            joinpath(bindir, name * ".bat")
         else
             error("Unsupported platform")
         end
+        close(io)
 
         # atomically move to the final location
-        script = joinpath(bindir, name)
         @static if VERSION >= v"1.12.0-DEV.1023"
             mv(temp_script, script; force=true)
         else
@@ -261,12 +268,18 @@ function init_block(standalone=false)
     ENV["POCL_PATH_CLANG"] =
         generate_wrapper_script("clang", Clang_unified_jll.clang_path,
                                 Clang_unified_jll.LIBPATH[], Clang_unified_jll.PATH[])
+    ENV["POCL_PATH_LLVM_SPIRV"] =
+        generate_wrapper_script("llvm-spirv",
+                                SPIRV_LLVM_Translator_jll.llvm_spirv_path,
+                                SPIRV_LLVM_Translator_jll.LIBPATH[],
+                                SPIRV_LLVM_Translator_jll.PATH[])
     ld_path = if Sys.islinux()
             LLD_unified_jll.ld_lld_path
         elseif Sys.isapple()
             LLD_unified_jll.ld64_lld_path
         elseif Sys.iswindows()
-            LLD_unified_jll.lld_link_path
+            # PoCL doesn't use MSVC-style linker arguments, so still use the GNU ld wrapper.
+            LLD_unified_jll.ld_lld_path
         else
             error("Unsupported platform")
         end
@@ -286,6 +299,10 @@ function init_block(standalone=false)
             # can't safely check first, because multiple processes may be running
             islink(link) || rethrow()
         end
+    end
+    if Sys.iswindows()
+        # BUG: using native (backwards) slashes breaks Clang's --ld-path
+        ld_wrapper = replace(ld_wrapper, '\\' => '/')
     end
     ENV["POCL_ARGS_CLANG"] = join([
             "-fuse-ld=lld", "--ld-path=$ld_wrapper",

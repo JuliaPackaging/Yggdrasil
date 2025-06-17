@@ -14,8 +14,8 @@ version = v"7.0.0"
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
-    GitSource("https://github.com/pocl/pocl",
-              "85654efe89894af6d0fbc701d597b2f9be5441fe")   # v7.0
+    GitSource("https://github.com/juliagpu/pocl",
+              "ebd70398005f9e2fd93b0627ad467e006f5ddacd")
 ]
 
 #=
@@ -71,14 +71,24 @@ builds = []
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
+    platform_sources = deepcopy(sources)
+    platform_dependencies = deepcopy(dependencies)
+
     # On macOS, we need to use a newer SDK to match the one LLVM was built with
-    platform_sources = if Sys.isapple(platform)
-        [sources;
-         ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                       "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f")]
-    else
-        sources
+    if Sys.isapple(platform) && arch(platform) == "x86_64"
+        push!(platform_sources,
+              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                            "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
     end
+
+    # for fp16, we need a vectorization library
+    if arch(platform) in ["armv6l", "aarch64"]
+        #push!(platform_dependencies, Dependency("SLEEF_jll"))
+        # XXX: PoCL hard-codes the path to libsleef
+        # `no such file or directory: '/opt/aarch64-linux-gnu/aarch64-linux-gnu/sys-root/usr/local/lib/libsleef.so'`
+    end
+    # TODO: libsvml for x86 (part of mkl)
+    # TODO: libmvec as fallback (part of glibc 2.22+)
 
     # on Windows, we need to use a version of GCC that supports `.drectve -exclude-symbols`
     # or we run into export ordinal limits
@@ -88,7 +98,10 @@ for platform in platforms
         v"10"
     end
 
-    push!(builds, (; platform, sources=platform_sources, preferred_gcc_version))
+    push!(builds, (; platform,
+                     preferred_gcc_version,
+                     sources=platform_sources,
+                     dependencies=platform_dependencies))
 end
 
 # don't allow `build_tarballs` to override platform selection based on ARGS.
@@ -103,7 +116,7 @@ end
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build_script(),
-                   [build.platform], products, dependencies;
+                   [build.platform], products, build.dependencies;
                    build.preferred_gcc_version, preferred_llvm_version=v"20",
                    julia_compat="1.6", init_block=init_block())
 end
