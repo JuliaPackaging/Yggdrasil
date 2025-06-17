@@ -9,10 +9,10 @@ using Pkg
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
-gap_version = v"400.1400.004"
+gap_version = v"400.1400.005"
 name = "JuliaInterface"
 upstream_version = "0.13.1" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.3" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.4" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
@@ -40,10 +40,6 @@ name = gap_pkg_name(name)
 # dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms(expand_julia_versions=true)
 
-# TODO: remove me in a PR that actually builds things
-filter!(p -> arch(p) != "riscv64", platforms)
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-
 # Unlike other GAP_pkg_* JLLs, we do *not* set a compat bound for GAP_jll and
 # GAP_lib_jll here. Instead GAP.jl is expected to make sure that it uses right
 # combination of those JLLs with GAP_pkg_juliainterface. This decoupling is
@@ -58,7 +54,7 @@ filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 # is easy as it only requires a change to GAP.jl, not to any JLLs.
 dependencies = [
     Dependency("GAP_jll", gap_version),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.16")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.17")),
 ]
 
 # The products that we will ensure are always built
