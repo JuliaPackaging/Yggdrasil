@@ -15,7 +15,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "5fcd6fbf9ffcf613fabdb1eb3a90eeb12f7c04fe"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "1c2f8bb0c914c43e23b751fbcf6642cd7aec09db"),
     DirectorySource("bundled"),
 ]
 
