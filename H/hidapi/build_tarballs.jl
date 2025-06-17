@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "hidapi"
-version = v"0.14.0"
+version = v"0.15.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/libusb/hidapi.git", "d3013f0af3f4029d82872c1a9487ea461a56dee4"),
+    GitSource("https://github.com/libusb/hidapi.git", "d6b2a974608dec3b76fb1e36c189f22b9cf3650c"),
 ]
 
 # Script template (structure is the same for all platforms, directory for make differs)
@@ -34,11 +34,16 @@ cmake  \
     ${linuxflags} \
     ..
 
-cmake --build . --target install
+cmake --build . --parallel ${nproc} --target install
 install_license ../hidapi/LICENSE*.txt
 """
 
-platforms = supported_platforms()
+broken_platforms = Set([
+    "aarch64-unknown-freebsd" # Error message: Package 'libusb-1.0', required by 'virtual:world', not found
+    "riscv64-linux-gnu" # Error message: Package 'libusb-1.0', required by 'virtual:world', not found
+])
+
+platforms = [p for p in supported_platforms() if triplet(p) ∉ broken_platforms]
 
 products = [
     LibraryProduct(["libhidapi", "libhidapi-libusb"], :hidapi)
