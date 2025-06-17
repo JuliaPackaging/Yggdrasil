@@ -19,7 +19,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 include("../../L/libjulia/common.jl")
 
 #build for releases (excluding DEV and RC) only:
-supported_julia_versions = filter(v -> match(r"^\d+\.\d+\.\d+$", string(v)) !=nothing, julia_full_versions)
+supported_julia_versions = filter(v -> isempty(v.prerelease), julia_full_versions)
 
 # Bash recipe for building across all platforms
 script = raw"""
