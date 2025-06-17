@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDSS"
-version = v"0.5.0"
-full_version = "0.5.0.16"
+version = v"0.6.0"
+full_version = "0.6.0.5"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -39,7 +39,7 @@ augment_platform_block = CUDA.augment
 
 products = [
     LibraryProduct(["libcudss", "cudss64_$(version.major)"], :libcudss),
-    LibraryProduct(["libcudss_mtlayer_gomp", "cudss_mtlayer_vcomp140"], :libcudss_mtlayer),
+    # LibraryProduct("libcudss_mtlayer_gomp", :libcudss_mtlayer),
 ]
 
 dependencies = [
