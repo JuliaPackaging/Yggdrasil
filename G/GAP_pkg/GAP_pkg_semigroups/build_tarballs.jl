@@ -50,6 +50,9 @@ dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+# TODO: re-enable the below platforms
+filter!(p -> arch(p) != "riscv64", platforms)
+
 # The products that we will ensure are always built
 products = [
     FileProduct("lib/gap/semigroups.so", :semigroups),

@@ -32,6 +32,10 @@ dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+# TODO: re-enable the below platforms once normaliz_jll supports them
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
+
 push!(dependencies, Dependency("normaliz_jll", compat = "~300.1000.200"))
 
 # The products that we will ensure are always built
