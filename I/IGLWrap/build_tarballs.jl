@@ -5,11 +5,11 @@ BINARYBUILDER_RUNNER=privileged julia build_tarballs.jl --verbose --debug
 using BinaryBuilder
 using Pkg
 
-version = v"2.4.0" # libIGL version, see below:
+version = v"2.6.0" # libIGL version, see below:
 
 sources = [
 	DirectorySource("./iglwrap"),
-	# 2.4.0 stable release as indicated in ./iglwrap/cmake/libigl.cmake file
+	# 2.6.0 stable release as indicated in ./iglwrap/cmake/libigl.cmake file
 ]
 
 script = raw"""
@@ -42,10 +42,7 @@ platforms = [
 platforms = expand_cxxstring_abis(platforms)
 
 
-dependencies = [
-    Dependency("GMP_jll"; compat="6.2.0"),
-    Dependency("MPFR_jll"; compat="4.1.0"),
-]
+dependencies = []
 
 build_tarballs(ARGS, "IGLWrap", version,
     sources,
