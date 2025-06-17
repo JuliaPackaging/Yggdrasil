@@ -18,8 +18,8 @@ version = offset_version(upstream_version, offset)
 # Collection of sources required to build this JLL
 sources = [
     GitSource("https://github.com/oscar-system/GAP.jl", "c33287b416ca30fcc386a6b192d67c1955fdae8f"),
-    ArchiveSource("https://julialang-s3.julialang.org/bin/musl/x64/1.10/julia-1.10.9-musl-x86_64.tar.gz",
-                  "db7454a7acf677598c23216eb4798d0b0ebc6be7c7d03ea2e7ee10f7a5985a64"), # some julia supported by GAP.jl for the host system
+    ArchiveSource("https://julialang-s3.julialang.org/bin/musl/x64/1.6/julia-1.6.7-musl-x86_64.tar.gz",
+                  "d71ccc5aa36cf691616a40bf6fb960fac5620ce53d2f90a95947b90dec509433"), # some julia supported by GAP.jl for the host system
 ]
 
 # Bash recipe for building across all platforms
@@ -39,7 +39,7 @@ cp -r src ${prefix}/
 mv ${WORKSPACE}/srcdir/julia-* ${WORKSPACE}/srcdir/julia
 export PATH="${PATH}:${WORKSPACE}/srcdir/julia/bin"
 cd ../..
-julia --project=@. -e 'using GAP; GAP.create_gap_sh("${WORKSPACE}/gap_sh")'
+LD_LIBRARY_PATH= julia --project=@. -e 'using GAP; GAP.create_gap_sh("${WORKSPACE}/gap_sh")'
 
 # build the manual
 cd pkg/JuliaInterface
