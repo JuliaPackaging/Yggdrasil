@@ -33,6 +33,9 @@ dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+# TODO: re-enable the below platforms once the deps supports them
+filter!(p -> arch(p) != "riscv64", platforms)
+
 append!(dependencies, [
     Dependency("GMP_jll", v"6.2.0"),
     Dependency("MPFR_jll", v"4.1.1"),
