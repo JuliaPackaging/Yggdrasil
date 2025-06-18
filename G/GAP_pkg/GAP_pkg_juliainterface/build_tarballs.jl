@@ -39,7 +39,7 @@ cp -r src ${prefix}/
 mv ${WORKSPACE}/srcdir/julia-* ${WORKSPACE}/srcdir/julia
 export PATH="${PATH}:${WORKSPACE}/srcdir/julia/bin"
 cd ../..
-LD_LIBRARY_PATH= julia --project=@. -e 'using GAP; GAP.create_gap_sh("${WORKSPACE}/gap_sh")'
+LD_LIBRARY_PATH= julia --project=@. -e "using GAP; GAP.create_gap_sh(\"${WORKSPACE}/gap_sh\")"
 
 # build the manual
 cd pkg/JuliaInterface
