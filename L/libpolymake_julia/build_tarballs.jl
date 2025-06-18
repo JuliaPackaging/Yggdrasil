@@ -53,6 +53,7 @@ $host_bindir/perl $host_bindir/polymake --iscript libpolymake-j*/src/polymake/ap
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 filter!(p -> !Sys.iswindows(p) && arch(p) != "armv6l", platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms) # filter riscv64 until supported by all dependencies
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
