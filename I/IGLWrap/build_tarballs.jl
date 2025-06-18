@@ -38,7 +38,7 @@ products = [
 
 platforms = [
     Platform("x86_64", "linux"), Platform("aarch64", "linux"),
-    Platform("x86_64", "macos"), Platform("aarch64", "macos"),
+                                 Platform("aarch64", "macos"),
 ]
 
 platforms = expand_cxxstring_abis(platforms)
