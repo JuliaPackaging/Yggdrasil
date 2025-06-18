@@ -25,7 +25,7 @@ if [[ -f "${prefix}/usr/include/bits/mman-linux.h" ]]; then
 fi
 
 # Work around https://github.com/bsc-performance-tools/extrae/issues/103
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-missing-XML2_CFLAGS.patch
+# atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0001-Add-missing-XML2_CFLAGS.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/0002-Add-missing-lxml2.patch
 
 if [[ $bb_target = aarch64* ]]; then
