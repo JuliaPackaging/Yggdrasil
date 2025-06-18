@@ -18,9 +18,6 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 # needed for julia_versions
 include("../../L/libjulia/common.jl")
 
-#build for releases (excluding DEV and RC) only:
-supported_julia_versions = filter(v -> isempty(v.prerelease), julia_full_versions)
-
 # Bash recipe for building across all platforms
 script = raw"""
 
@@ -47,7 +44,7 @@ $script
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [ Platform("x86_64", "linux"; libc = "glibc", julia_version = julia_version) for julia_version in supported_julia_versions ]
+platforms = [ Platform("x86_64", "linux"; libc = "glibc", julia_version = julia_version) for julia_version in julia_versions ]
 
 # The products that we will ensure are always built
 products = [
