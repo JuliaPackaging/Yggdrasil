@@ -14,6 +14,9 @@ sources = [
 # Once this Pkg issue is resolved, this must be removed
 uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
+uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
+delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
+delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 
 # needed for julia_versions
 include("../../L/libjulia/common.jl")
