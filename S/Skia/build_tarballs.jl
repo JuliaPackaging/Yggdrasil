@@ -33,7 +33,6 @@ dependencies = [
     Dependency(PackageSpec(name="xkbcommon_jll", uuid="d8fb68d0-12a3-5cfd-a85a-d49703b185fd"); )
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"); )
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid="c4d99508-4286-5418-9131-c86396af500b");)
-
 ]
 
 
@@ -73,33 +72,13 @@ elif [[ "${target}" == i686-* ]]; then
 fi
 
 
-
-bin/gn gen out/Static --args='target_cpu="'$target_cpu'" \
-  cc="clang" cxx="clang++" \
-  is_official_build=true \
-  skia_use_system_libjpeg_turbo=false \
-  skia_use_system_libpng=false \
-  skia_use_system_libwebp=false \
-  skia_use_system_zlib=false \
-  skia_use_vulkan=true \
-  skia_use_system_freetype2=false \
-  skia_use_fontconfig=true \
-  skia_enable_pdf=true \
-  skia_use_system_icu=false \
-  skia_use_system_expat=false \
-  skia_use_harfbuzz=false \
-  skia_use_vulkan=true \
-  skia_use_gl=true \
-  extra_cflags=["-fpic", "-fvisibility=default"]'
-
+bin/gn gen out/Static --args='target_cpu="'$target_cpu'" cc="clang" cxx="clang++" is_official_build=true skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_system_freetype2=false skia_use_fontconfig=true skia_enable_pdf=true skia_use_system_icu=false skia_use_system_expat=false skia_use_harfbuzz=false skia_use_vulkan=true skia_use_gl=true extra_cflags=["-fpic", "-fvisibility=default"]'
 
 ninja -j${nproc} -C out/Static
 
 cd out/Static/
 
-
 clang++ -shared -o libskia.${dlext} $(flagon -Wl,--whole-archive) libskia.a $(flagon -Wl,--no-whole-archive) libfreetype2.a libjpeg.a libbentleyottmann.a libcompression_utils_portable.a libdng_sdk.a libjsonreader.a libpathkit.a  libpiex.a libpng.a libskcms.a libsksg.a libskshaper.a libskunicode_core.a libskunicode_icu.a libsvg.a -fpic -dl -lfontconfig -lGL
-
 
 install -Dvm 755 "libskia.${dlext}" "${libdir}/libskia.${dlext}"
 """
