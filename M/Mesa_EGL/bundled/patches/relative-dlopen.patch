@@ -1,0 +1,29 @@
+From 325378ed94fb4637cc057ac35f7a88a21b9eb021 Mon Sep 17 00:00:00 2001
+From: Julian P Samaroo <jpsamaroo@jpsamaroo.me>
+Date: Fri, 25 Feb 2022 10:22:32 -0600
+Subject: [PATCH] loader: Try relative dlopen
+
+---
+ src/loader/loader.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/loader/loader.c b/src/loader/loader.c
+index c9a499c6fc2..02c13376471 100644
+--- a/src/loader/loader.c
++++ b/src/loader/loader.c
+@@ -618,6 +618,12 @@ loader_open_driver_lib(const char *driver_name,
+       search_paths = default_search_path;
+ 
+    void *driver = NULL;
++   snprintf(path, sizeof(path), "%s%s.so", driver_name, lib_suffix);
++   driver = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
++   if (driver) {
++      log_(_LOADER_DEBUG, "MESA-LOADER: dlopen(%s)\n", path);
++      return driver;
++   }
+    const char *dl_error = NULL;
+    end = search_paths + strlen(search_paths);
+    for (const char *p = search_paths; p < end; p = next + 1) {
+-- 
+2.35.1
+
