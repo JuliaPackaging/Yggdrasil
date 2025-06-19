@@ -11,7 +11,7 @@ function lbt_sources(version::VersionNumber; kwargs...)
         v"5.4.0"  => "d00e6ca235bb747faae4c9f3a297016cae6959ed",
         v"5.11.2" => "c48da8a1225c2537ff311c28ef395152fb879eae",
         v"5.12.0" => "b127bc8dd4758ffc064340fff2aef4ead552f386",
-        v"5.13.0" => "67cec8e74358a4ac140c2d17517279e73c17e2f7",
+        v"5.13.1" => "f26278e83ddc9035ae7695da597f1a5b26a4c62b",
     )
 
     return [
