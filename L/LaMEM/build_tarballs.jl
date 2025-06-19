@@ -23,6 +23,10 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 
+# When MPItrampoline is built, it remembers the compilers that were used to build it, and it then puts 
+# these paths into the mpicc scripts. this doesn't work in BinaryBuilder, so you need to manually override this by 
+# specifying MPITRAMPOLINE_CC etc. (From Erik Schnetter)
+# These options were also used when building PETSc_jll, which is a key dependency of LaMEM.
 export MPITRAMPOLINE_CC=${CC}
 export MPITRAMPOLINE_CXX=${CXX}
 export MPITRAMPOLINE_FC=${FC}
