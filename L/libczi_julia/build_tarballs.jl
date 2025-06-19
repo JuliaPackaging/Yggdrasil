@@ -7,13 +7,26 @@ version = v"0.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Agapanthus/libczi_julia.git", "57780a32d1ed31bacad37d643211f988ec4c42fc")
+    GitSource("https://github.com/Agapanthus/libczi_julia.git", 
+        "95bde92f18428e89a0e1542ff8257fd71710dc6a")
 ]
 
 # Bash recipe for building across all platforms
+# disable NEON for now, as it causes issues on aarch64 platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cmake -S $WORKSPACE/srcdir/libczi_julia/src 	-B build 	-DJulia_PREFIX="$prefix" 	-DCMAKE_INSTALL_PREFIX="$prefix" 	-DCMAKE_FIND_ROOT_PATH="$prefix" 	-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}"     -D_UNALIGNED_ACCESS_RESULT=1     -DCMAKE_CXX_STANDARD=17 	-DCMAKE_BUILD_TYPE=Release
+cmake -S $WORKSPACE/srcdir/libczi_julia/src \
+	-B build \
+	-DJulia_PREFIX="$prefix" \
+	-DCMAKE_INSTALL_PREFIX="$prefix" \
+	-DCMAKE_FIND_ROOT_PATH="$prefix" \
+	-DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+	-D_UNALIGNED_ACCESS_RESULT=1 \
+	-DCMAKE_CXX_STANDARD=17 \
+	-DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_NEON=OFF \
+    -D_NEON_INTRINSICS_RESULT_EXITCODE=0 \
+    -D_NEON_INTRINSICS_RESULT_EXITCODE__TRYRUN_OUTPUT=""
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license $WORKSPACE/srcdir/libczi_julia/COPYING
@@ -22,20 +35,7 @@ exit
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("i686", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "glibc"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "glibc"),
-    Platform("powerpc64le", "linux"; libc = "glibc"),
-    Platform("riscv64", "linux"; libc = "glibc"),
-    Platform("x86_64", "linux"; libc = "musl"),
-    Platform("armv6l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("armv7l", "linux"; call_abi = "eabihf", libc = "musl"),
-    Platform("i686", "windows"; ),
-    Platform("x86_64", "windows"; )
-]
-
+platforms = supported_platforms(; exclude=(p -> (arch(p) == "i686" && libc(p) == "musl") || !(os(p) in ["linux", "windows"])))
 
 # The products that we will ensure are always built
 products = [
