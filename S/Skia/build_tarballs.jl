@@ -69,9 +69,7 @@ elif [[ "${target}" == riscv64-* ]]; then
     target_cpu=riscv
 elif [[ "${target}" == powerpc64le-* ]]; then
     target_cpu=powerpc64le
-fi
-
-if [[ "${target}" == i686-* ]]; then
+elif [[ "${target}" == i686-* ]]; then
     target_cpu=x86
 fi
 
