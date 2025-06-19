@@ -74,7 +74,7 @@ fi
 ARGS="
 target_cpu=$target_cpu
 cc=clang
-cxx=clang++
+cxx=\"clang++\"
 is_official_build=true
 skia_enable_pdf=true
 skia_use_fontconfig=true
