@@ -30,8 +30,6 @@ if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
 fi
 
 make -j${nproc} prefix=${prefix} install
-
-install_license ../LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
