@@ -19,13 +19,8 @@ sources = [
 # platforms are passed in on the command line
 
 
-platforms = [
-     Platform("x86_64", "linux"; libc = "glibc"),
-     Platform("aarch64", "linux"; libc = "glibc"),
-     Platform("riscv64", "linux"; libc = "glibc"), 
-     Platform("powerpc64le", "linux"; libc = "glibc"), 
-     Platform("i686", "linux"; libc = "glibc"),
-]
+platforms = supported_platforms()
+filter!(p -> Sys.islinux(p) && libc(p) == "glibc", platforms)
 
 
 
