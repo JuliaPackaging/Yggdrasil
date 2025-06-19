@@ -79,4 +79,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"8", compilers=[:c, :rust])
+               julia_compat="1.6", preferred_gcc_version = v"11", compilers=[:c, :rust])
