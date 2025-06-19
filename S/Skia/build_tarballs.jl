@@ -17,7 +17,7 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> Sys.islinux(p) && libc(p) == "glibc" && call_abi(p) != "eabihf", platforms)
-platforms = expand_cxxstring_abis(platforms)
+
 
 
 # The products that we will ensure are always built
