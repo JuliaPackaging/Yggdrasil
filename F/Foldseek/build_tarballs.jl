@@ -1,14 +1,14 @@
 using BinaryBuilder, Pkg
 
 name = "Foldseek"
-version = v"8"
+version = v"10"
 
 # url = "https://github.com/steineggerlab/foldseek"
 # description = "Fast and sensitive comparisons of large protein structure sets"
 
 sources = [
     GitSource("https://github.com/steineggerlab/foldseek",
-              "946841ff3b15531349a9883358b3a3052b368da9"),
+              "941cd33ff0771cd2e3f144e3293e22a2b87e9fda"),
     DirectorySource("./bundled"),
 ]
 
@@ -60,7 +60,7 @@ make install
 install_license ../LICENSE.md
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32 || arch(p) == "powerpc64le")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32 || arch(p) == "powerpc64le" || libc(p) == "musl" || arch(p) == "riscv64")
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -79,4 +79,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"8", compilers=[:c, :rust])
+               julia_compat="1.6", preferred_gcc_version = v"11", compilers=[:c, :cxx, :rust])
