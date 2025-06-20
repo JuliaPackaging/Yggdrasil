@@ -2,11 +2,11 @@ using BinaryBuilder
 
 # Collection of sources required to build GettextRuntime
 name = "GettextRuntime"
-version = v"0.25.0"
+version = v"0.22.4"
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).tar.xz",
-                  "05240b29f5b0f422e5a4ef8e9b5f76d8fa059cc057693d2723cdb76f36a88ab0"),
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).$(version.patch).tar.xz",
+                  "29217f1816ee2e777fa9a01f9956a14139c0c23cc1b20368f06b2888e8a34116"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,8 @@ cd gettext-runtime
     --enable-relocatable \
     --with-libiconv-prefix=${prefix} \
     --with-included-gettext
-
+    am_cv_lib_iconv=yes \
+    am_cv_func_iconv=yes
 make -j${nproc}
 make install
 
