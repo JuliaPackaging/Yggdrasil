@@ -60,7 +60,7 @@ make install
 install_license ../LICENSE.md
 """
 
-platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32 || arch(p) == "powerpc64le")
+platforms = supported_platforms(; exclude = p -> Sys.iswindows(p) || Sys.isfreebsd(p) || nbits(p) == 32 || arch(p) == "powerpc64le" || libc(p) == "musl" || arch(p) == "riscv64")
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
