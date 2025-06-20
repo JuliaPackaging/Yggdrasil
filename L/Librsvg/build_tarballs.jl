@@ -33,6 +33,60 @@ if [[ "${target}" == *-mingw* ]]; then
     FLAGS=(--host=${target} RUST_TARGET="${rust_target}" LIBS="-luserenv -lbcrypt")
 fi
 
+# MUSL-specific Rust linking fix - force dynamic linking instead of static
+if [[ "${target}" == *-musl ]]; then
+    echo "========== MUSL DYNAMIC LINKING FIX =========="
+    
+    # Remove potentially conflicting libgcc_s.so.1 from destdir
+    if [ -f "${prefix}/lib/libgcc_s.so.1" ]; then
+        echo "Removing conflicting libgcc_s.so.1 from ${prefix}/lib"
+        rm -f "${prefix}/lib/libgcc_s.so"* 
+    fi
+    
+    # Create .cargo/config.toml to force dynamic linking for musl
+    mkdir -p .cargo
+    cat > .cargo/config.toml << 'EOF'
+[target.aarch64-unknown-linux-musl]
+rustflags = [
+    "-C", "target-feature=-crt-static",
+    "-C", "link-arg=-Wl,--as-needed"
+]
+
+[target.x86_64-unknown-linux-musl]
+rustflags = [
+    "-C", "target-feature=-crt-static", 
+    "-C", "link-arg=-Wl,--as-needed"
+]
+
+[target.i686-unknown-linux-musl]
+rustflags = [
+    "-C", "target-feature=-crt-static",
+    "-C", "link-arg=-Wl,--as-needed"
+]
+EOF
+
+    # Set environment variables for Rust with dynamic linking flags
+    export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-Wl,--as-needed"
+    export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-Wl,--as-needed"
+    export CARGO_TARGET_I686_UNKNOWN_LINUX_MUSL_RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-Wl,--as-needed"
+    
+    # Set RUSTFLAGS for final linking with runtime library path
+    export RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-Wl,--as-needed -C link-arg=-Wl,--enable-new-dtags -C link-arg=-Wl,--rpath=${prefix}/lib"
+    
+    # Filter LD_LIBRARY_PATH to avoid ABI conflicts during build
+    FILTERED_LD_LIBRARY_PATH=""
+    IFS=':' read -ra PATHS <<< "${LD_LIBRARY_PATH}"
+    for path in "${PATHS[@]}"; do
+        if [[ "$path" != *"/workspace/destdir/"* ]] && [[ "$path" != "" ]]; then
+            if [[ -z "$FILTERED_LD_LIBRARY_PATH" ]]; then
+                FILTERED_LD_LIBRARY_PATH="$path"
+            else
+                FILTERED_LD_LIBRARY_PATH="$FILTERED_LD_LIBRARY_PATH:$path"
+            fi
+        fi
+    done
+fi
+
 ./configure \
     --build=${MACHTYPE} \
     --prefix=${prefix} \
