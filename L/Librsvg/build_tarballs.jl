@@ -35,32 +35,7 @@ fi
 
 # MUSL-specific Rust linking fix - force dynamic linking instead of static
 if [[ "${target}" == *-musl ]]; then
-    # Force dynamic linking and add system call compatibility
     export RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-Wl,--as-needed"
-    
-    # Alternative: If still having issues, try forcing static linking for the problematic parts
-    # export RUSTFLAGS="-C target-feature=+crt-static -C link-args=-static-libgcc"
-    
-    # Add additional linker flags for missing system calls
-    export LDFLAGS="${LDFLAGS} -Wl,--no-as-needed"
-    
-    # For getrandom and memfd_create system calls - try to use syscall fallbacks
-    # This helps with older musl versions that don't have these symbols
-    export CFLAGS="${CFLAGS} -D_GNU_SOURCE"
-    export CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
-    
-    # Fix Rust cross-compilation - ensure correct target and linker
-    if [[ "${target}" == "x86_64-linux-musl" ]]; then
-        export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER="x86_64-linux-musl-gcc"
-        export CC_x86_64_unknown_linux_musl="x86_64-linux-musl-gcc"
-        export CXX_x86_64_unknown_linux_musl="x86_64-linux-musl-g++"
-    fi
-    
-    # Ensure we use the correct compiler for the build process
-    # Don't override the main CC/CXX as they're set correctly by BinaryBuilder
-    
-    # Ensure we link against the correct musl libc
-    FLAGS+=(LIBS="-static-libgcc")
 fi
 
 ./configure \
@@ -105,7 +80,7 @@ dependencies = [
     HostBuildDependency("gdk_pixbuf_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("gdk_pixbuf_jll"),
-    Dependency("Pango_jll"),
+    Dependency("Pango_jll"; compat="1.50.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
