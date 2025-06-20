@@ -71,9 +71,9 @@ elif [[ "${target}" == i686-* ]]; then
 fi
 
 ARGS="
-target_cpu=\"$target_cpu\"
-cc=\"clang\"
-cxx=\"clang++\"
+target_cpu=\\"$target_cpu\\"
+cc=\\"clang\\"
+cxx=\\"clang++\\"
 is_official_build=true
 skia_enable_pdf=true
 skia_use_fontconfig=true
@@ -87,7 +87,7 @@ skia_use_system_libpng=false
 skia_use_system_libwebp=false
 skia_use_system_zlib=false
 skia_use_vulkan=true
-extra_cflags=[\"-fpic\", \"-fvisibility=default\"]
+extra_cflags=[\\"-fpic\\", \\"-fvisibility=default\\"]
 "
 bin/gn gen out/Static --args="$ARGS"
 
