@@ -1,7 +1,5 @@
 # Yggdrasil
 
-Build Status: [![Build status](https://badge.buildkite.com/20f068d74db24be50d79ac4710defa74e19d5d912e31f9bda2.svg)](https://buildkite.com/julialang/yggdrasil)
-
 ![Yggdrasil](https://user-images.githubusercontent.com/1282691/177174254-aa90664e-5c20-4ea3-9938-34de961dc198.png)
 
 This repository contains recipes for building binaries for Julia packages using [BinaryBuilder.jl](https://github.com/JuliaPackaging/BinaryBuilder.jl).
