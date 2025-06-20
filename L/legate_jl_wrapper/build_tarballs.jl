@@ -97,7 +97,7 @@ platforms = expand_cxxstring_abis(platforms)
 platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 
 products = [
-    LibraryProduct("legate_jl_wrapper", :legate_jl_wrapper)
+    LibraryProduct("liblegate_jl_wrapper", :liblegate_jl_wrapper)
 ] 
 
 platforms = [platforms[1]]
