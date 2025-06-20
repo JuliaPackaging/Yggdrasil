@@ -8,7 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 name = "legate_jl_wrapper"
 version = v"25.5" # legate has 05, but Julia doesn't like that
 sources = [
-    GitSource("https://github.com/JuliaLegate/legate_jl_wrapper.git","80b8b5949f5322d6fd1bcdf768fe6e62b7f0e00e"),
+    GitSource("https://github.com/JuliaLegate/legate_jl_wrapper.git","f00bd063be66b735fc6040b40027669337399a06"),
     DirectorySource("./bundled")
 ]
 
@@ -99,8 +99,6 @@ platforms = filter!(p -> cxxstring_abi(p) == "cxx11", platforms)
 products = [
     LibraryProduct("liblegate_jl_wrapper", :liblegate_jl_wrapper)
 ] 
-
-platforms = [platforms[1]]
 
 
 dependencies = [
