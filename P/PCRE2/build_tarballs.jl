@@ -8,10 +8,11 @@ name = "PCRE2"
 # We are temporarily switching back to building version 10.42. This
 # allows us to build this version for newer architectures, which in
 # turn allows us to use `compat="10.42.1"` when PCRE2 is a dependency.
-# Otherwise we either need to use `compate="10.42"`, which prevents
-# building new architectures, or `compat="10.45"`, which leads to
-# problems because building against 10.45 and then loading 10.42
-# (which is forced by Julia 1.10) doesn't always work.
+# Otherwise we would either need to use `compat="10.42"`, which
+# prevents building for new architectures, or `compat="10.45"`, which
+# doesn't work with Julia 1.10, or without a compat declaration, which
+# leads to problems because this builds against 10.45 and then loads
+# 10.42 (on Julia 1.10), and this doesn't always work.
 version_string = "10.42"
 version = v"10.42.1"
 # version_string = "10.45"
