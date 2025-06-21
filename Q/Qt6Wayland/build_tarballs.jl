@@ -37,7 +37,7 @@ case "$bb_full_target" in
 
 esac
 
-cmake --build . --parallel 1
+cmake --build . --parallel ${nproc}
 cmake --install .
 install_license $WORKSPACE/srcdir/qt*-src-*/LICENSES/LGPL-3.0-only.txt
 """
@@ -73,4 +73,4 @@ ENV["QT_PLUGIN_PATH"] = qt6plugins_dir
 ENV["__EGL_VENDOR_LIBRARY_DIRS"] = get(ENV, "__EGL_VENDOR_LIBRARY_DIRS", "/usr/share/glvnd/egl_vendor.d")
 """
 
-build_qt(name, version, sources, script, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"10", preferred_llvm_version=llvm_version, julia_compat="1.6", init_block)
