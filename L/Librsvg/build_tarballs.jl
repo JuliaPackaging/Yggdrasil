@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Librsvg"
-version = v"2.54.5"
+version = v"2.58.5"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "4f03190f45324d1fa1f52a79dfcded1f64eaf49b3ae2f88eedab0c07617cae6e"),
+                  "224233a0e347d38c415f15a49f0e0885313e3ecc18f3192055f9304dd2f3a27a"),
 ]
 
 # Bash recipe for building across all platforms
@@ -31,6 +31,11 @@ if [[ "${target}" == *-mingw* ]]; then
     # a combination host and RUST_TARGET that would work on all platforms.  If
     # you do, let me know!
     FLAGS=(--host=${target} RUST_TARGET="${rust_target}" LIBS="-luserenv -lbcrypt")
+fi
+
+# MUSL-specific Rust linking fix - force dynamic linking instead of static
+if [[ "${target}" == *-musl ]]; then
+    export RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-Wl,--as-needed"
 fi
 
 ./configure \
@@ -75,7 +80,7 @@ dependencies = [
     HostBuildDependency("gdk_pixbuf_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("gdk_pixbuf_jll"),
-    Dependency("Pango_jll"; compat="1.47.0"),
+    Dependency("Pango_jll"; compat="1.50.14"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
