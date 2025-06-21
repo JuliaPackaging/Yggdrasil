@@ -4,15 +4,25 @@ using BinaryBuilder, Pkg
 using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
-version_string = "10.45"
-version = VersionNumber(version_string)
+
+# We are temporarily switching back to building version 10.42. This
+# allows us to build this version for newer architectures, which in
+# turn allows us to use `compat="10.42.1"` when PCRE2 is a dependency.
+# Otherwise we either need to use `compate="10.42"`, which prevents
+# building new architectures, or `compat="10.45"`, which leads to
+# problems because building against 10.45 and then loading 10.42
+# (which is forced by Julia 1.10) doesn't always work.
+version_string = "10.42"
+version = v"10.42.1"
+# version_string = "10.45"
+# version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     # We use an archive because (a) the archives are signed, hence
     # presumably immutable, and (b) the git source uses submodules.
     ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
-                  "21547f3516120c75597e5b30a992e27a592a31950b5140e7b8bfde3f192033c4"),
+                  "8d36cd8cb6ea2a4c2bb358ff6411b0c788633a2a45dabbf1aeb4b701d1b5e840"),
 ]
 
 # Bash recipe for building across all platforms
