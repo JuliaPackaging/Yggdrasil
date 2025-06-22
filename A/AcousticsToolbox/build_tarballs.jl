@@ -4,12 +4,12 @@
 using BinaryBuilder, Pkg
 
 name = "AcousticsToolbox"
-version_string = "2024_12_25"
-version = VersionNumber(replace(version_string, "_" => "."))
+version = VersionNumber("2025.06.18")
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_$(version_string).zip", "7b57e80bded7f71ea9536e541029615f3f430e390651d697a2212569cbafd85c")
+    ArchiveSource("http://oalib.hlsresearch.com/AcousticsToolbox/at_2024_12_25.zip", "7b57e80bded7f71ea9536e541029615f3f430e390651d697a2212569cbafd85c")
+    ArchiveSource("https://oalib-acoustics.org/website_resources/Modes/orca/mac_linux/ORCA_Mode_modelling_gfortran.zip", "4ac15c1374e08bedd0dd03fd5f79612a8f84899ebf529237e662d7efb1dfb10a")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,6 +21,10 @@ make clean
 make
 mkdir -p $bindir
 find . -name *.exe -exec cp {} $bindir \;
+cd $WORKSPACE/srcdir/ORCA_Mode_modelling_gfortran/src
+rm -f *.o *.mod ../bin/*
+make
+cp ../bin/orca90* $bindir/orca90.exe
 """
 
 # These are the platforms we will build for by default, unless further
@@ -38,7 +42,8 @@ products = [
     ExecutableProduct("sparc.exe", :sparc),
     ExecutableProduct("scooter.exe", :scooter),
     ExecutableProduct("bounce.exe", :bounce),
-    ExecutableProduct("bellhop.exe", :bellhop)
+    ExecutableProduct("bellhop.exe", :bellhop),
+    ExecutableProduct("orca90.exe", :orca)
 ]
 
 # Dependencies that must be installed before this package can be built

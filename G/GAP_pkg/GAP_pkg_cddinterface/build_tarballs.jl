@@ -5,7 +5,7 @@ include("../common.jl")
 gap_version = v"400.1400.5"
 name = "cddinterface"
 upstream_version = "2024.09.02" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.1" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
@@ -32,13 +32,9 @@ name = gap_pkg_name(name)
 dependencies = gap_pkg_dependencies(gap_version)
 platforms = gap_platforms()
 
-# TODO: re-enable the below platforms once cddlib_jll supports them
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-filter!(p -> arch(p) != "riscv64", platforms)
-
 append!(dependencies, [
-    Dependency("GMP_jll", v"6.2.0"),
-    Dependency("cddlib_jll"),
+    Dependency("GMP_jll", v"6.2.1"),
+    Dependency("cddlib_jll", v"0.94.15"),
 ])
 
 # The products that we will ensure are always built
