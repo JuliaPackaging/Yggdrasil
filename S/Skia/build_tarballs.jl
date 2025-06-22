@@ -90,7 +90,7 @@ skia_use_system_zlib=false
 skia_use_vulkan=true
 extra_cflags=[\\"-fpic\\", \\"-fvisibility=default\\"]
 "
-bin/gn gen out/Static --args="$ARGS"
+bin/gn gen out/Dynamic --args="$ARGS"
 
 ninja -j${nproc} -C out/Dynamic
 
