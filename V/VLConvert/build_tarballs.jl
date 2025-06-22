@@ -14,8 +14,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd ${WORKSPACE}/srcdir/
-cp -r ${target}/* ${prefix}/.
+cd ${WORKSPACE}/srcdir/${target}
+unzip *.zip
+cp -r bin ${prefix}/.
 chmod +x ${bindir}/vl-convert
 LIC_DIR="${prefix}/share/licenses/${SRC_NAME}"
 mkdir -p "${LIC_DIR}"
