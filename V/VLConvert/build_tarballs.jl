@@ -17,7 +17,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/${target}
 unzip *.zip
 cp -r bin ${prefix}/.
-chmod +x ${bindir}/vl-convert
+chmod +x ${bindir}/vl-convert${exeext}
 LIC_DIR="${prefix}/share/licenses/${SRC_NAME}"
 mkdir -p "${LIC_DIR}"
 mv "${bindir}/LICENSE" "${LIC_DIR}/LICENSE.txt"
@@ -35,7 +35,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("vl-convert", :vlconvert),
+    ExecutableProduct("vl-convert${exeext}", :vlconvert),
 ]
 
 # Dependencies that must be installed before this package can be built
