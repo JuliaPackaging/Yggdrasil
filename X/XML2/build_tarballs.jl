@@ -3,36 +3,23 @@
 using BinaryBuilder
 
 name = "XML2"
-version = v"2.12.0"
+version = v"2.14.1"
 
 # Collection of sources required to build XML2
 sources = [
     ArchiveSource("https://download.gnome.org/sources/libxml2/$(version.major).$(version.minor)/libxml2-$(version).tar.xz",
-                  "431521c8e19ca396af4fa97743b5a6bfcccddbba90e16426a15e5374cd64fe0d"),
-    DirectorySource("./bundled"),
+                  "310df85878b65fa717e5e28e0d9e8f6205fd29d883929303a70a4f2fc4f6f1f2"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/libxml2-*
 
-# Remove patches for next version.
-atomic_patch -p1 ../patches/0001-fix-pthread-weak-references-in-globals.c.patch
-atomic_patch -p1 ../patches/0002-fix-more-pthread-weak-references-in-globals.c.patch
-
-# Work around https://gitlab.gnome.org/GNOME/libxml2/-/issues/625
-if [[ "${target}" == i686-*-mingw* ]]; then
-   # Testing for `snprintf` and `vsnprintf` fails on this platform, but the
-   # functions are actually available, inform configure that we can use them.
-   EXTRA_ARGS=( ac_cv_func_snprintf=yes ac_cv_func_vsnprintf=yes )
-fi
-
 ./autogen.sh --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --without-python \
     --disable-static \
     --with-zlib=${prefix} \
-    --with-iconv=${prefix} \
-    "${EXTRA_ARGS[@]}"
+    --with-iconv=${prefix}
 make -j${nproc}
 make install
 

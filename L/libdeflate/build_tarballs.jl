@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version = v"1.18"
+version = v"1.23"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/ebiggers/libdeflate",
-        "495fee110ebb48a5eb63b75fd67e42b2955871e2"
+        "78051988f96dc8d8916310d8b24021f01bd9e102"
     ),
     ArchiveSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
@@ -31,7 +31,7 @@ fi
 
 cd $WORKSPACE/srcdir/libdeflate
 cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
-make
+make -j${nproc}
 make install
 install_license ${WORKSPACE}/srcdir/libdeflate/COPYING
 """
@@ -51,4 +51,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"7", julia_compat="1.6")

@@ -1,0 +1,29 @@
+From 9e4740467d9597bde827aa93b50fa1a52d80513f Mon Sep 17 00:00:00 2001
+From: Max Horn <max@quendi.de>
+Date: Tue, 3 Sep 2024 09:55:42 +0200
+Subject: [PATCH] Workaround linker error on macOS about missing __truncsfbf2
+
+Since for libjulia_jll we only care about the kernel API/ABI,
+and this does not seem to affect it, just turn off the user of
+the __bf16 type.
+
+For details see Julia issue #52067
+---
+ src/runtime_intrinsics.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/runtime_intrinsics.c b/src/runtime_intrinsics.c
+index db4007d320..e3448e2e2f 100644
+--- a/src/runtime_intrinsics.c
++++ b/src/runtime_intrinsics.c
+@@ -355,6 +355,7 @@ float julia_bfloat_to_float(uint16_t param) {
+ #if ((defined(__GNUC__) && __GNUC__ > 12) || \
+      (defined(__clang__) && __clang_major__ > 16)) && \
+     !defined(_CPU_PPC64_) && !defined(_CPU_PPC_) && \
++    !(defined(_CPU_X86_64_) && defined(_OS_DARWIN_)) && \
+     !defined(_OS_WINDOWS_)
+     #define BFLOAT16_TYPE __bf16
+     #define BFLOAT16_TO_UINT16(x) (*(uint16_t*)&(x))
+-- 
+2.46.0
+

@@ -9,7 +9,7 @@
  #  define NANOSECONDS_PER_SECOND 1000000000.0
  #  if defined(CLOCK_HIGHRES) /* Solaris */
  #    define CLOCK_ID CLOCK_HIGHRES
-@@ -124,7 +124,7 @@
+@@ -124,7 +124,7 @@ MagickExport unsigned int ContinueTimer(TimerInfo *time_info)
  */
  static double ElapsedTime(void)
  {
@@ -17,8 +17,8 @@
 +#if defined(HAVE_CLOCK_GETTIME) && defined(HAVE_CLOCK_REALTIME)
    struct timespec timer;
    (void) clock_gettime(CLOCK_ID, &timer);
- 
-@@ -236,7 +236,7 @@
+
+@@ -236,7 +236,7 @@ MagickExport void GetTimerInfo(TimerInfo *time_info)
  */
  MagickExport double GetTimerResolution(void)
  {
@@ -26,4 +26,3 @@
 +#if defined(HAVE_CLOCK_GETRES) && defined(HAVE_CLOCK_REALTIME)
    struct timespec timer;
    (void) clock_getres(CLOCK_ID, &timer);
- 

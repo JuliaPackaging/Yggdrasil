@@ -22,18 +22,21 @@ import Pkg.Types: VersionSpec
 # to all components.
 
 name = "normaliz"
-version = v"300.900.301"
-upstream_version = v"3.9.3"
+version = v"300.1001.501"
+upstream_version = v"3.10.5"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Normaliz/Normaliz/releases/download/v$(upstream_version)/normaliz-$(upstream_version).tar.gz",
-                  "0288f410428a0eebe10d2ed6795c8906712848c7ae5966442ce164adc2429657")
+                  "58492cfbfebb2ee5702969a03c3c73a2cebcbca2262823416ca36e7b77356a44"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd normaliz-*
+cd ?ormaliz*
+
+[ -e configure ] || ./bootstrap.sh
+
 ./configure --prefix=$prefix \
             --host=$target \
             --build=${MACHTYPE} \
@@ -52,6 +55,7 @@ make install
 # windows build would require MPIR instead of GMP for 'long long'
 platforms = supported_platforms()
 filter!(!Sys.iswindows, platforms)
+filter!(p -> arch(p) != "riscv64", platforms)  # missing FLINT
 platforms = expand_cxxstring_abis(platforms)
 
 
@@ -63,15 +67,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("GMP_jll", v"6.2.0"),
+    Dependency("GMP_jll", v"6.2.1"),
     Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll"; compat = "~200.900.000"),
-    Dependency("nauty_jll"; compat = "~2.6.13"),
-    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
-    # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else.
+    Dependency("OpenBLAS32_jll", v"0.3.28"),
+    Dependency("FLINT_jll"; compat = "~301.300.0"),
+    Dependency("nauty_jll"; compat = "~2.8.10"),
+    # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD systems),
+    # and libgomp from `CompilerSupportLibraries_jll` everywhere else.
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); platforms=filter(!Sys.isbsd, platforms)),
     Dependency(PackageSpec(name="LLVMOpenMP_jll", uuid="1d63c593-3942-5779-bab2-d838dc0a180e"); platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"6", clang_use_lld=false)

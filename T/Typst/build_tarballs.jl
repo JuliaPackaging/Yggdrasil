@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "Typst"
-version = v"0.8.0"
+version = v"0.13.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/typst/typst.git", "360cc9b9570f263d52530b98d0c93523e7bdb100")
+    GitSource("https://github.com/typst/typst.git", "8dce676dcd691f75696719e0480cd619829846a9")
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,7 @@ install_license LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = filter(supported_platforms()) do p
-    !((Sys.iswindows(p) && arch(p) == "i686") || (arch(p) == "powerpc64le"))
+    !((Sys.iswindows(p) && arch(p) == "i686") || (arch(p) == "powerpc64le") || (Sys.isfreebsd(p) && arch(p) == "aarch64") || (arch(p) == "riscv64"))
 end
 
 # The products that we will ensure are always built
@@ -30,9 +30,11 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+dependencies = [
+    Dependency("OpenSSL_jll"; compat="3.0.8"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", compilers=[:rust, :c], lock_microarchitecture=false)
+               julia_compat="1.6", compilers=[:rust, :c], lock_microarchitecture=false,
+               preferred_gcc_version = v"5")

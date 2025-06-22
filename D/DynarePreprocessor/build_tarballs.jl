@@ -1,9 +1,9 @@
 using BinaryBuilder
 
 name = "DynarePreprocessor"
-version = v"6.3.0"
+version = v"6.4.0"
 sources = [
-    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "07f5de36795bf62807e63f0f66f1841a70172d4a"),
+    GitSource("https://git.dynare.org/Dynare/preprocessor.git", "8d72527518523620050e819e9cd59afc76862ab9"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz",
                   "cd4f08a75577145b8f05245a2975f7c81401d75e9535dcffbb879ee1deefcbf4"),
 ]

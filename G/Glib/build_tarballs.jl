@@ -1,17 +1,46 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.76.5"
+version = v"2.84.0"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "ed3a9953a90b20da8e5578a79f7d1c8a532eacbe2adac82aa3881208db8a3abe"),
+                  "f8823600cb85425e2815cfad82ea20fdaa538482ab74e7293d58b3f64a5aff6a"),
+    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+                  "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
+    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
+                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.13
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
+    cp -a System "/opt/${target}/${target}/sys-root/"
+    popd
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
+    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
+    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
+    make install
+
+    cd ../mingw-w64-crt/
+    if [ ${target} == "i686-w64-mingw32" ]; then
+        _crt_configure_args="--disable-lib64 --enable-lib32"
+    elif [ ${target} == "x86_64-w64-mingw32" ]; then
+        _crt_configure_args="--disable-lib32 --enable-lib64"
+    fi
+    ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target --enable-wildcard ${_crt_configure_args}
+    make -j${nproc}
+    make install
+fi
+
 cd $WORKSPACE/srcdir/glib-*/
 install_license COPYING
 
@@ -60,7 +89,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -69,6 +98,7 @@ products = [
     LibraryProduct(["libgmodule-2", "libgmodule-2.0"], :libgmodule),
     LibraryProduct(["libgobject-2", "libgobject-2.0"], :libgobject),
     LibraryProduct(["libgthread-2", "libgthread-2.0"], :libgthread),
+    LibraryProduct(["libgirepository-2", "libgirepository-2.0"], :libgirepository),
 ]
 
 # Dependencies that must be installed before this package can be built
@@ -76,13 +106,15 @@ dependencies = [
     # Host gettext needed for "msgfmt"
     HostBuildDependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
-    Dependency("Libffi_jll", v"3.2.2"; compat="~3.2.2"),
+    Dependency("Libffi_jll"; compat="~3.4.7"),
     # Gettext is only needed on macOS, as far as I could see
     Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
-    Dependency("PCRE2_jll"; compat="10.35"),
-    Dependency("Zlib_jll"),
+    # no compat entry for PCRE2 to make riscv64 work
+    Dependency("PCRE2_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

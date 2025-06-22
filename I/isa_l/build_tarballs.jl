@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "isa_l"
-version = v"2.30.0"
+version = v"2.31"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/intel/isa-l.git", "2bbce31943289d5696bcf2a433124c50928226a2")
+    GitSource("https://github.com/intel/isa-l.git", "bd226375027899087bd48f3e59b910430615cc0a")
 ]
 
 # Bash recipe for building across all platforms
@@ -31,7 +31,10 @@ platforms = supported_platforms()
 filter!(p -> arch(p) != "i686", platforms)
 # YASM v1.3.0 (latest stable version as of 2023-05-22) doesn't seem to
 # understand AVX512 opcodes.
+# See https://github.com/intel/isa-l/issues/285
 filter!(!Sys.iswindows, platforms)
+# Apple Aarch64 build fails - this should be fixed in the next release
+# https://github.com/intel/isa-l/issues/276
 # Compilation for aarch64 Darwin fails with error
 #     /tmp/crc16_t10dif_pmull-69b5ed.s:209:9: error: unknown AArch64 fixup kind!
 #             ldr q_fold_const, fold_constant

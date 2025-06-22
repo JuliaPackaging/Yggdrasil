@@ -3,17 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "oxigraph_server"
-version = v"0.3.20"
+version = v"0.4.7"
 
-url_prefix = "https://github.com/oxigraph/oxigraph/releases/download/v$version/oxigraph_server_v$version"
+url_prefix = "https://github.com/oxigraph/oxigraph/releases/download/v$version/oxigraph_v$version"
 
 # Collection of sources required to complete build
 sources = [
-    FileSource("$(url_prefix)_aarch64_apple", "cc9e47f43cf546eb16a0300972de37ddc699565340c2ee5fa82c96bb57c8b19e"; filename = "oxigraph_server-aarch64-apple-darwin20"),
-    FileSource("$(url_prefix)_x86_64_apple", "fa3d2dae62063d68c00dd2b0787ac5514ac2d914c9fd31fa9fd3f8246363dc8a"; filename = "oxigraph_server-x86_64-apple-darwin14"),
-    FileSource("$(url_prefix)_aarch64_linux_gnu", "67021a33618af8a4418186cd3ee9d2be1e3de7b2a26f7e0a1a4e4bbd4f4cfefc"; filename = "oxigraph_server-aarch64-linux-gnu"),
-    FileSource("$(url_prefix)_x86_64_linux_gnu", "bd1905a38014fde4b2983c9a6c13992c64797b1c4cd7e272c1217876d077f2a9"; filename = "oxigraph_server-x86_64-linux-gnu"),
-    FileSource("$(url_prefix)_x86_64_windows_msvc.exe", "d8e836562f3b0d762a6410b06c736f0ccb2c9a0da95a2921487b7b63f62f8c9d"; filename = "oxigraph_server-x86_64-w64-mingw32"),
+    FileSource("$(url_prefix)_aarch64_apple", "9051a821f1f7d1bafeb622b44293369fd68c70425141ef56bddd69f4b3ea1a67"; filename = "oxigraph_server-aarch64-apple-darwin20"),
+    FileSource("$(url_prefix)_x86_64_apple", "3bc3c89d2ea1d3ad45e4e9d4c5c86ffc8be8266a930be767db98db0b5838ffc5"; filename = "oxigraph_server-x86_64-apple-darwin14"),
+    FileSource("$(url_prefix)_aarch64_linux_gnu", "998ca76d3c2c25d02404fe8e808f8cab6119ee894653d48958fd8a01e8cfb5e7"; filename = "oxigraph_server-aarch64-linux-gnu"),
+    FileSource("$(url_prefix)_x86_64_linux_gnu", "d34c1011339ad9337225f64943dbca8f439b495041ba38a1d40f440dd1d28a4b"; filename = "oxigraph_server-x86_64-linux-gnu"),
+    FileSource("$(url_prefix)_x86_64_windows_msvc.exe", "000d2aa6b11092d068edf2586542073f92584eb65e0018f59b611da4470f454b"; filename = "oxigraph_server-x86_64-w64-mingw32"),
     FileSource("https://raw.githubusercontent.com/oxigraph/oxigraph/v$version/LICENSE-MIT", "1f4f6736adc52ebfda18bb84947e0ef492bd86a408c0e83872efb75ed5e02838"; filename = "LICENSE.txt")
 ]
 
@@ -34,6 +34,8 @@ platforms = filter(x -> cxxstring_abi(x) != "cxx03", platforms)
 
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+
+filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = Product[

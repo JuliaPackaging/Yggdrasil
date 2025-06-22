@@ -1,5 +1,3 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
 """
@@ -29,16 +27,10 @@ function gap_pkg_name(name::String)
     return "GAP_pkg_$(lowercase(name))"
 end
 
-function setup_gap_package(gap_version::VersionNumber, gap_lib_version::VersionNumber = gap_version)
+include("../GAP/common.jl") # make gap_platforms available
 
-    platforms = supported_platforms()
-    filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
-    filter!(!Sys.iswindows, platforms)      # Windows is not supported
-
-    dependencies = BinaryBuilder.AbstractDependency[
+function gap_pkg_dependencies(gap_version::VersionNumber)
+    return BinaryBuilder.AbstractDependency[
         Dependency("GAP_jll", gap_version; compat="~$(gap_version)"),
-        Dependency("GAP_lib_jll", gap_lib_version; compat="~$(gap_lib_version)"),
     ]
-
-    return platforms, dependencies
 end

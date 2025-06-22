@@ -3,12 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_lc"
-version = v"1.15.0"
+version = v"1.53.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-lc.git",
-              "aa90e509f2e940916fbe9fdd469a4c90c51824f6"),
+    GitSource("https://github.com/awslabs/aws-lc.git", "8b4e504c71fb129047e1b1e85fb5639154196884"),
     DirectorySource("./bundled"),
 ]
 
@@ -40,6 +39,7 @@ ninja install
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
+# Disable 32-bit because it's too much for the time being
 platforms = expand_cxxstring_abis(supported_platforms(; exclude=p->Sys.iswindows(p) || Sys.isapple(p)))
 
 # The products that we will ensure are always built
@@ -57,4 +57,4 @@ dependencies = Dependency[
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"7")
+               julia_compat="1.6", preferred_gcc_version=v"8")

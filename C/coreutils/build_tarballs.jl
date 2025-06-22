@@ -3,31 +3,54 @@
 using BinaryBuilder, Pkg
 
 name = "coreutils"
-version = v"9.1"
+version = v"9.7"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftp.gnu.org/gnu/coreutils/coreutils-$(version.major).$(version.minor).tar.xz",
-                  "61a1f410d78ba7e7f37a5a4f50e6d1320aca33375484a3255eddf17a38580423")
+                  "e8bb26ad0293f9b5a1fc43fb42ba970e312c66ce92c1b0b16713d7500db251bf")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/coreutils-9.*
+cd $WORKSPACE/srcdir/coreutils*
 
 # Fix `configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)`
 if [[ ${target} == x86_64-linux-musl* ]]; then
     export FORCE_UNSAFE_CONFIGURE=1
 fi
 
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
-make
+args=()
+
+# Fix ```
+# configure: error: could not enable timestamps after mid-January 2038.
+# This package recommends support for these later
+# timestamps. However, to proceed with signed 32-bit
+# time_t even though it will fail then, configure with
+# '--disable-year2038'.
+# ```
+if [[ ${nbits} == 32 ]]; then
+    args+=(--disable-year2038)
+fi
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
+make -j${nproc}
 make install
+
+if [[ "${dlext}" != "so" ]]; then
+    # Rename shared libraries on Darwin
+    mv ${prefix}/libexec/coreutils/libstdbuf.so ${prefix}/libexec/coreutils/libstdbuf.${dlext}
+fi
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; exclude=p -> !(Sys.islinux(p) | Sys.isfreebsd(p)))
+
+# The coreutils `configure` stage cannot determine how to get file
+# system stats, possily because it calls `AC_RUN` which doesn't work
+# when cross-compiling. This fails outright for Windows. For Apple,
+# everything works except that the `df` executable is not built.
+platforms = supported_platforms(; exclude=p->Sys.iswindows(p) || Sys.isapple(p))
 
 # The products that we will ensure are always built
 products = [

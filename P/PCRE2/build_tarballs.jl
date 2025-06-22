@@ -1,30 +1,28 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
+using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
-version_string = "10.42"
+version_string = "10.45"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/PCRE2Project/pcre2",
-              "52c08847921a324c804cabf2814549f50bce1265"),
+    # We use an archive because (a) the archives are signed, hence
+    # presumably immutable, and (b) the git source uses submodules.
+    ArchiveSource("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$(version.major).$(version.minor)/pcre2-$(version.major).$(version.minor).tar.bz2",
+                  "21547f3516120c75597e5b30a992e27a592a31950b5140e7b8bfde3f192033c4"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/pcre2*/
+cd $WORKSPACE/srcdir/pcre2*
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
     # Install msan runtime (for clang)
     cp -rL ${libdir}/linux/* /opt/x86_64-linux-musl/lib/clang/*/lib/linux/
 fi
-
-./autogen.sh
-
-# Update configure scripts
-update_configure_scripts
 
 # Force optimization
 export CFLAGS="${CFLAGS} -O3"
@@ -57,9 +55,18 @@ products = [
     LibraryProduct("libpcre2-32", :libpcre2_32)
 ]
 
+llvm_version = v"13.0.1"
+
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency("LLVMCompilerRT_jll",platforms=[Platform("x86_64", "linux"; sanitize="memory")]),
+    BuildDependency(PackageSpec(name="LLVMCompilerRT_jll",
+                                uuid="4e17d02c-6bf5-513e-be62-445f41c75a11",
+                                version=llvm_version);
+                    platforms=filter(p -> sanitize(p)=="memory", platforms)),
+
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.9")
+# Need at least GCC XXX for asm instructions on i686
+# (We could instead patch the asm instructions.)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.9", preferred_gcc_version=v"5", preferred_llvm_version=llvm_version)

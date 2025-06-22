@@ -1,10 +1,10 @@
 using BinaryBuilder, Pkg
 
-version = v"3.11.0"
+version = v"3.12.0"
 
 sources = [
     ArchiveSource("http://www.netlib.org/blas/blas-$version.tgz",
-                  "2d9fdee7d361954fee532100a50e602826c9cc1153f8cd057baa65ed57e90283"),
+                  "ccc41b5d088e50db0030317ae9b0c9af375710c1392acad1fe209602da5a5aad"),
     DirectorySource("../bundled"),
 ]
 
@@ -215,7 +215,7 @@ function blas_script(;blas32::Bool=false)
       STPLQT STPMLQT STPMQRT STPMV STPQRT2 STPQRT STPRFB STPRFS STPSV
       STPTRI STPTRS STPTTF STPTTR STRCON STREVC3 STREVC STREXC STRMM
       STRMV STRRFS STRSEN STRSM STRSNA STRSV STRSYL STRTI2 STRTRI
-      STRTRS STRTTF STRTTP STZRZF XERBLA XERBLAARRAY ZAXPBY ZAXPY
+      STRTRS STRTTF STRTTP STZRZF XERBLA XERBLA_ARRAY ZAXPBY ZAXPY
       ZBBCSD ZBDSQR ZCGESV ZCOPY ZCPOSV ZDOTC ZDOTU ZDROT ZDRSCL
       ZDSCAL ZGBBRD ZGBCON ZGBEQU ZGBEQUB ZGBMV ZGBRFS ZGBSV ZGBSVX
       ZGBTF2 ZGBTRF ZGBTRS ZGEADD ZGEBAK ZGEBAL ZGEBD2 ZGEBRD ZGECON
@@ -336,5 +336,5 @@ filter!(p -> !(arch(p) == "aarch64" && Sys.islinux(p) && libgfortran_version(p) 
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CompilerSupportLibraries_jll")
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]

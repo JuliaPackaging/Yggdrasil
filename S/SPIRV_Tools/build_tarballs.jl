@@ -2,26 +2,41 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+
 name = "SPIRV_Tools"
-version = v"2023.2"
+version = v"2025.1"
 
 # Collection of sources required to build SPIRV-Tools
 sources = [
-    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "44d72a9b36702f093dd20815561a56778b2d181e"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git", "f289d047f49fb60488301ec62bafab85573668cc"),
     # vendored dependencies, see the DEPS file
-    GitSource("https://github.com/google/effcee.git", "66edefd2bb641de8a2f46b476de21f227fc03a28"),
-    GitSource("https://github.com/google/googletest", "a3580180d16923d6d5f488e20b3814608a892f17"),
-    GitSource("https://github.com/google/re2.git", "c9cba76063cf4235c1a15dd14a24a4ef8d623761"),
-    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "268a061764ee69f09a477a695bf6a11ffe311b8d"),
+    GitSource("https://github.com/google/effcee.git", "12241cbc30f20730b656db7fd5a3fa36cd420843"),
+    GitSource("https://github.com/google/googletest", "c00fd25b71a17e645e4567fcb465c3fa532827d2"),
+    GitSource("https://github.com/google/re2.git", "6dcd83d60f7944926bfd308cc13979fc53dd69ca"),
+    GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git", "09913f088a1197aba4aefd300a876b2ebbaa3391")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# use CMake from JLLs
+apk del cmake
+
 # put vendored dependencies in places they will be picked up by the build system
 mv effcee SPIRV-Tools/external/effcee
 mv re2 SPIRV-Tools/external/re2
 mv googletest SPIRV-Tools/external/googletest
 mv SPIRV-Headers SPIRV-Tools/external/spirv-headers
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    popd
+fi
 
 cd SPIRV-Tools
 install_license LICENSE
@@ -30,6 +45,10 @@ CMAKE_FLAGS=()
 
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
+
+# Build all shared libraries (downstream projects seem to depend on it)
+CMAKE_FLAGS+=(-DBUILD_SHARED_LIBS=ON)
+CMAKE_FLAGS+=(-DSPIRV_TOOLS_BUILD_STATIC=OFF)
 
 # Install things into $prefix
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
@@ -45,27 +64,62 @@ CMAKE_FLAGS+=(-DSPIRV_WERROR=OFF)
 
 cmake -B build -S . -GNinja ${CMAKE_FLAGS[@]}
 ninja -C build -j ${nproc} install
+
+# Remove unwanted static libraries
+rm -f $prefix/lib/*.a
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
-platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(supported_platforms())
 
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("spirv-as", :spirv_as),
-    ExecutableProduct("spirv-cfg", :spirv_cfg),
     ExecutableProduct("spirv-dis", :spirv_dis),
-    ExecutableProduct("spirv-link", :spirv_link),
-    ExecutableProduct("spirv-opt", :spirv_opt),
-    ExecutableProduct("spirv-reduce", :spirv_reduce),
     ExecutableProduct("spirv-val", :spirv_val),
-    LibraryProduct("libSPIRV-Tools-shared", :libSPIRV_Tools),
+    ExecutableProduct("spirv-opt", :spirv_opt),
+    ExecutableProduct("spirv-cfg", :spirv_cfg),
+    ExecutableProduct("spirv-link", :spirv_link),
+    ExecutableProduct("spirv-lint", :spirv_lint),
+    ExecutableProduct("spirv-objdump", :spirv_objdump),
+    ExecutableProduct("spirv-reduce", :spirv_reduce),
+    LibraryProduct("libSPIRV-Tools", :libSPIRV_Tools),
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = []
+dependencies = [
+    # CMake 3.22.1 or higher is required
+    HostBuildDependency("CMake_jll")
+]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7") # requires C++17
+builds = []
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+
+    # On macOS, we need to use a newer SDK which supports `std::filesystem`
+    platform_sources = if Sys.isapple(platform)
+        [sources;
+         ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+                       "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62")]
+    else
+        sources
+    end
+
+    push!(builds, (; platform, sources=platform_sources))
+end
+
+# don't allow `build_tarballs` to override platform selection based on ARGS.
+# we handle that ourselves by calling `should_build_platform`
+non_platform_ARGS = filter(arg -> startswith(arg, "--"), ARGS)
+
+# `--register` should only be passed to the latest `build_tarballs` invocation
+non_reg_ARGS = filter(arg -> arg != "--register", non_platform_ARGS)
+
+for (i,build) in enumerate(builds)
+    build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
+                   name, version, build.sources, script,
+                   [build.platform], products, dependencies;
+                   preferred_gcc_version=v"10", # requires C++17 + filesystem
+                   julia_compat="1.6")
+end

@@ -2,12 +2,12 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "libass"
-version = v"0.15.1"
+version = v"0.15.2"
 
 # Collection of sources required to build libass
 sources = [
     ArchiveSource("https://github.com/libass/libass/releases/download/$(version)/libass-$(version).tar.xz",
-                  "1cdd39c9d007b06e737e7738004d7f38cf9b1e92843f37307b24e7ff63ab8e53"),
+                  "1be2df9c4485a57d78bb18c0a8ed157bc87a5a8dd48c661961c625cb112832fd"),
 ]
 
 # Bash recipe for building across all platforms
@@ -32,7 +32,7 @@ products = [
 dependencies = [
     Dependency("FreeType2_jll"; compat="2.10.4"),
     Dependency("FriBidi_jll"),
-    Dependency("HarfBuzz_jll"; compat="2.8.1"),
+    Dependency("HarfBuzz_jll"; compat="8.3.1"),
     Dependency("Bzip2_jll"; compat="1.0.8"),
     Dependency("Zlib_jll"),
 ]

@@ -1,31 +1,33 @@
 using BinaryBuilder
 
 name = "IntelOpenMP"
-version = v"2023.2.0"
+version = v"2025.0.4"
 
 sources = [
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2023.2.0/download/win-32/intel-openmp-2023.2.0-intel_49496.tar.bz2",
-                  "8268bb806b8e8b66865599e03fba4075e4bc4d8a377a9143abed04184163c814"; unpack_target="i686-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2023.2.0/download/win-64/intel-openmp-2023.2.0-intel_49496.tar.bz2",
-                  "e4d26c9e62e8ad62c5c67a0c09a79f102d577215a058f447c296bb104e3bd46d"; unpack_target="x86_64-w64-mingw32"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2023.2.0/download/linux-32/intel-openmp-2023.2.0-intel_49495.tar.bz2",
-                  "6ea678c6e07f044c01809212f24bf8e0bd153ef86fde1a2650b2af9cfc128886"; unpack_target="i686-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2023.2.0/download/linux-64/intel-openmp-2023.2.0-intel_49495.tar.bz2",
-                  "003843e7af21ffa0e872c1227749e92c736e0e5e0c5c32ae0b15aa2a13dc0386"; unpack_target="x86_64-linux-gnu"),
-    ArchiveSource("https://anaconda.org/intel/intel-openmp/2023.2.0/download/osx-64/intel-openmp-2023.2.0-intel_49499.tar.bz2",
-                  "37a86c020df8d5a349d9b5076c1783ab08f8c7f28b40e7a0fba9e4f8dec0fc10"; unpack_target="x86_64-apple-darwin14"),
+    # Main OpenMP files
+    FileSource("https://files.pythonhosted.org/packages/51/36/1074001dc5a5add3f445dc1d44aecbb239e60fef8269b9c420d731d002d2/intel_openmp-2025.0.4-py2.py3-none-win_amd64.whl",
+               "9dd9c2918158bd19395f28ee2e4b91c00bd86fe45b627e765f611478c7c2c173"; filename="intel_openmp-x86_64-w64-mingw32.whl"),
+    FileSource("https://files.pythonhosted.org/packages/a2/f9/d35767b6ae062e841c20beee56151c914c733dba1a0ba5996c2fc6792a90/intel_openmp-2025.0.4-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "bf31d1cbf3f857b90a7e3c1caab75a546445845e14fd24439e81a70bcbc8d783"; filename="intel_openmp-x86_64-linux-gnu.whl"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-mkdir -p "${libdir}"
-if [[ ${target} == *mingw* ]]; then
-    mv ${target}/Library/bin/* "${libdir}/."
-else
-    mv ${target}/lib/* "${libdir}/."
+unzip -d intel_openmp-$target intel_openmp-$target.whl
+
+if [[ ${target} == *x86_64-w64-mingw* ]]; then
+    install -Dvm 755 intel_openmp-${target}/intel_openmp-*.data/data/Library/bin/* -t "${libdir}"
+
+    # These import libraries go inside the actual lib folder, not the bin folder with the DLLs
+    install -Dv intel_openmp-${target}/intel_openmp-*.data/data/Library/lib/libiomp5md.lib -t "${prefix}/lib/"
+    install -Dv intel_openmp-${target}/intel_openmp-*.data/data/Library/lib/libiompstubs5md.lib -t "${prefix}/lib/"
 fi
-install_license ${target}/info/licenses/*.txt
+if [[ ${target} == *x86_64-linux-gnu* ]]; then
+    install -Dvm 755 intel_openmp-${target}/intel_openmp-*.data/data/lib/*.${dlext} -t "${libdir}"
+fi
+install_license intel_openmp-${target}/intel_openmp-*.dist-info/LICENSE.txt
+install_license intel_openmp-${target}/intel_openmp-*.data/data/share/doc/compiler/licensing/openmp/third-party-programs.txt
 """
 
 # The products that we will ensure are always built
@@ -33,22 +35,13 @@ products = [
     LibraryProduct(["libiomp5", "libiomp5md"], :libiomp),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = Dependency[
+platforms = [
+    Platform("x86_64", "linux"; libc="glibc"),
+    Platform("x86_64", "windows"),
 ]
 
-non_reg_ARGS = filter(arg -> arg != "--register", ARGS)
-include("../../fancy_toys.jl")
+# Dependencies that must be installed before this package can be built
+dependencies = Dependency[]
 
-no_autofix_platforms = [Platform("x86_64", "macos")]
-autofix_platforms = [Platform("i686", "windows"), Platform("x86_64", "windows"), Platform("x86_64", "linux"), Platform("i686", "linux")]
-
-if any(should_build_platform.(triplet.(no_autofix_platforms)))
-    # Need to disable autofix: setting the soname on libiomp breaks it:
-    # https://github.com/JuliaMath/FFTW.jl/pull/178#issuecomment-761904389
-    build_tarballs(non_reg_ARGS, name, version, sources, script, no_autofix_platforms, products, dependencies; autofix = false)
-end
-if any(should_build_platform.(triplet.(autofix_platforms)))
-    # Let's try to run autofix on the other platforms
-    build_tarballs(ARGS, name, version, sources, script, autofix_platforms, products, dependencies)
-end
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; lazy_artifacts=true, julia_compat="1.6")

@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "FMM2D"
-version = v"1.0.0"
+version = v"1.1.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/flatironinstitute/fmm2d.git", "a01cb178c0ad459e316ab56f125af3b64fb6fd4a")
+    GitSource("https://github.com/flatironinstitute/fmm2d.git", "887907742394467587358a81a22b537edb58acf7")
 ]
 
 # Bash recipe for building across all platforms

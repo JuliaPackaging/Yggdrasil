@@ -3,17 +3,18 @@
 using BinaryBuilder
 
 name = "Ncurses"
-version = v"6.4.1" # <-- This version is a lie, to add the TERMINFO_DIRS override
+version = v"6.5.0"
+ygg_version = v"6.5.1" # Bump to build riscv, and will pull in new version of JLLWrappers
 
 # Collection of sources required to build Ncurses
 sources = [
     ArchiveSource("https://ftp.gnu.org/pub/gnu/ncurses/ncurses-$(version.major).$(version.minor).tar.gz",
-                  "6931283d9ac87c5073f30b6290c4c75f21632bb4fc3603ac8100812bed248159"),
+                  "136d91bc269a9a5785e5f9e980bc76ab57428f604ce3e5a5a90cebc767971cc6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/ncurses-*/
+cd $WORKSPACE/srcdir/ncurses-*
 
 CONFIG_FLAGS=""
 if [[ ${target} == *-darwin* ]]; then
@@ -72,7 +73,7 @@ ln -s ncursesw ${includedir}/ncurses
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
@@ -101,4 +102,4 @@ end
 """
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)

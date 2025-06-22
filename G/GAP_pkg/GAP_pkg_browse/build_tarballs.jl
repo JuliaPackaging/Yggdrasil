@@ -2,17 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 include("../common.jl")
 
-gap_version = v"400.1200.200"
-gap_lib_version = v"400.1201.200"
+gap_version = v"400.1400.5"
 name = "Browse"
-upstream_version = "1.8.19" # when you increment this, reset offset to v"0.0.0"
-offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
+upstream_version = "1.8.21" # when you increment this, reset offset to v"0.0.0"
+offset = v"0.0.2" # increment this when rebuilding with unchanged upstream_version, e.g. gap_version changes
 version = offset_version(upstream_version, offset)
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://www.math.rwth-aachen.de/~Browse/Browse-$(upstream_version).tar.bz2",
-                  "5eb792caca5a7ef4e0c04e272963c956bb23743defc573d49ede2f169662ccdb"),
+                  "3305f92e78598b1ffeef373c707921c32f8250858108c248caeef4b8fc874960"),
 ]
 
 # Bash recipe for building across all platforms
@@ -38,7 +37,8 @@ install_license /usr/share/licenses/GPL-3.0+
 """
 
 name = gap_pkg_name(name)
-platforms, dependencies = setup_gap_package(gap_version, gap_lib_version)
+dependencies = gap_pkg_dependencies(gap_version)
+platforms = gap_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -49,3 +49,4 @@ products = [
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version=v"7")
 
+# rebuild trigger: 1

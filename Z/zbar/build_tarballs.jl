@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 name = "zbar"
-version = v"0.23.92"
+version = v"0.23.93"
 
 # Collection of sources required to build imagemagick
 sources = [
-    GitSource("https://github.com/mchehab/zbar.git","aac86d5f08d64ab4c3da78188eb622fa3cb07182"),
+    GitSource("https://github.com/mchehab/zbar.git", "bb05ec54eec57f8397cb13fb9161372a281a1219"),
 ]
 
 # Bash recipe for building across all platforms

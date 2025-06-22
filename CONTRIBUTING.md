@@ -18,11 +18,22 @@ If you are submitting a recipe for a new package, follow the suggestions in the 
 If you want to build a new version of an existing package, you can open a pull request which updates the sources and the version number of the package as appropriate.
 In most cases it is sufficient to change only these two properties of the recipe, but sometimes more work will be required if there are any changes in the build system (e.g. changed dependencies, or options for the build system) or bugs in the source code to deal with.
 
+### Update version of an existing recipe
+
+If you want to build a newer version of an existing recipe, in the first instance you only need to update in the `build_tarballs.jl` script of the package of your interest the version number and the source (you will likely need to update URL and checksum, for an `ArchiveSource`, or the Git revision for a `GitSource`).
+Other things you may need to change include:
+
+* the build script, in case the build system changed in the newer version;
+* the list of dependencies, in case the newer version requires more or fewer dependencies;
+* the compatibility bounds with some of the dependencies, in case the package bumped their required versions.
+
+Other changes may be required on a case-by-case basis, depending on the success to build the newer version.
+
 ### Compatibility tips
 
 When building binary packages we have to deal with [several incompatibilities](https://docs.binarybuilder.org/stable/tricksy_gotchas/).
 As a general remark, when using GCC as compiler (which is default when targeting Linux and Windows platforms) try to use the ***oldest*** versions that is able to compile your code, which can be selected with the `preferred_gcc_version` keyword argument to the [`build_tarballs`](https://docs.binarybuilder.org/stable/reference/#BinaryBuilder.build_tarballs) function, especially for [C++ code](https://gcc.gnu.org/onlinedocs/libstdc++/manual/abi.html), this is the only way to get maximum compatibility.
-In any case, avoid using GCC 11+ when building C++, as that would be incompatible with Julia v1.6, the current Long Term Support version.
+In any case, avoid using GCC 11+ when building C++, as that would be incompatible with Julia v1.6.
 There are currently no such problems with LLVM (the default compiler framework used when targeting macOS and FreeBSD), so that you can generally use the latest version of LLVM available, which is already the default.
 
 ### Recommendations and tips about commit messages
@@ -70,6 +81,25 @@ To minimise build times, we have a complex building infrastructure to cache as m
 This means that if you trigger a build which changes neither of them after a successful run, then a build will not actually happen.
 For this reason, please ***refrain from running builds which only rebase/merge your branch on the default branch*** after a fully successful build: there will be no build log, and reviewers will have a much harder time than necessary to find the audit logs.
 These rebuilds are also completely useless, as the build artifacts will in most cases be [bit-by-bit identical](https://docs.binarybuilder.org/stable/#Reproducibility) to the previous ones, only causing waste of time, resources, and energy.
+
+### Branch naming
+
+This is not specific to contributing to Yggdrasil, but as a general remark working with Git and GitHub, opening a PR from a branch with the same name as the target branch is an [anti-pattern](https://blog.jasonmeridth.com/posts/do-not-issue-pull-requests-from-your-master-branch/).
+You should always keep the target branch (e.g. `main`, `master`) in your fork in-sync with the branch with the same name in the upstream repository, and then create a new branch out of the target branch for each pull request you want to open.
+This is particularly important to keep history of your pull requests simple and readable and avoid creating noise which unnecessarily complicates the review process.
+
+### Changing compat bounds of a package
+
+If after release of a package you realise compat bounds of some of the dependencies, or julia itself via the `julia_compat` keyword argument to `build_tarballs()`, are incorrect and cause problems to users, you have to fix them.
+There are two situations:
+
+* the problematic dependendency _**does not have**_ a dependency yet: in this case you may open a new PR to Yggdrasil to _add_ an appropriate compat bound for the package in question;
+* the problematic dependency _**already has**_ a compat bound, which turned out to be incorrect (perhaps too loose or too restrictive): in this case, you first _**must correct the problem in the [General registry](https://github.com/JuliaRegistries/General)**_.
+  This is due to a limitation of Pkg which can't handle different compat bounds for the same package within releases which only differ by the build number.
+  Opening a PR to Yggdrasil to cut a new release of the package with the same X.Y.Z version number but different compat bounds will not achieve anything apart from being rejected by the General registry.
+  What you can do, _**after**_ the PR in General has been accepted and merged, is to open a PR to Yggdrasil and update the compat bounds accordingly to ensure that future releases will be consistent with the compat bound now in the registry, but _**without releasing a new useless and wasteful version**_.
+  Use the `[skip build]` keyword in the commit message, as described above.
+  A maintainer must then merge this PR with `[skip ci]`, as described below.
 
 ## Information for maintainers
 

@@ -1,0 +1,13 @@
+diff --git a/src/runtime_src/core/tools/xbutil2/CMakeLists.txt b/src/runtime_src/core/tools/xbutil2/CMakeLists.txt
+index 0e7f34439..965e2aa18 100644
+--- a/src/runtime_src/core/tools/xbutil2/CMakeLists.txt
++++ b/src/runtime_src/core/tools/xbutil2/CMakeLists.txt
+@@ -101,6 +101,8 @@ target_link_libraries(${XBUTIL2_NAME}
+ 
+ if (NOT WIN32)
+   target_link_libraries(${XBUTIL2_NAME} PRIVATE pthread uuid dl)
++else()
++  target_link_libraries(${XBUTIL2_NAME} PRIVATE ws2_32)
+ endif()
+ 
+ # Package xrt sub commands json file for embedded builds

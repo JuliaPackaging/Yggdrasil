@@ -12,15 +12,20 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools/
-make XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1 -j${nproc}
+cd $WORKSPACE/srcdir/squashfs-tools/squashfs-tools
+
+env CONFIG=1 make XZ_SUPPORT=1 LZO_SUPPORT=1 LZ4_SUPPORT=1 ZSTD_SUPPORT=1 -j${nproc}
 cp mksquashfs unsquashfs ${bindir}
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> Sys.islinux(p) && libc(p) == "glibc", supported_platforms())
-
+platforms = supported_platforms()
+# FreeBSD and Windows don't support extended attributes.
+# (The master branch of squashfs-tools already supports disabling host
+# support for them, version 4.6.1 does not yet.  See
+# `XATTR_OS_SUPPORT`.)
+filter!(p -> !Sys.isfreebsd(p) && !Sys.iswindows(p), platforms)
 
 # The products that we will ensure are always built
 products = [

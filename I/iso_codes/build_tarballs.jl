@@ -3,28 +3,17 @@
 using BinaryBuilder
 
 name = "iso_codes"
-version = v"4.11.0"
-
-# the git tag used for versioning has changed format
-if version < v"4.8"
-    if version < v"4.5" && version.patch == 0
-        tag = "iso-codes-$(version.major).$(version.minor)"
-    else
-        tag = "iso-codes-$version"
-    end
-else
-    tag = "v$version"
-end
+version = v"4.17.0"
 
 # Collection of sources required to build iso-codes
 sources = [
-    ArchiveSource("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/$tag/iso-codes-$tag.tar.bz2",
-                  "5aed05f5053080fe55c3fb47f46677691efb59dfb215bd41484a391a7c4df9c5"),
+    ArchiveSource("https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v$(version)/iso-codes-v$(version).tar.bz2",
+                  "6d178ef4cea44e55f02eb546b29dcf68d88e9f7a68e0dd7913f5465dbaf8fc14"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/iso-codes-*/
+cd $WORKSPACE/srcdir/iso-codes-*
 apk update
 apk add gettext
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
@@ -32,9 +21,12 @@ make -j${nproc}
 make install
 """
 
-# These are the platforms we will build for by default, unless further
-# platforms are passed in on the command line
-platforms = [AnyPlatform()]
+# The files are identical for all platforms, and in principle we could
+# use `AnyPlatform()` instead. However this artifact contains symlinks
+# which have to be replaced with copies on Windows, and for that to
+# happen we need to build it for Windows specifically (and hence for
+# all other platforms as well)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = Product[
@@ -46,4 +38,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

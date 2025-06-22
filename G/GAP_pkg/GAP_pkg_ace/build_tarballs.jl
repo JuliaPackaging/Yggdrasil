@@ -3,17 +3,16 @@
 include("../common.jl")
 
 name = "ace"
-upstream_version = "5.6.1" # when you increment this, reset offset to v"0.0.0"
+upstream_version = "5.6.2" # when you increment this, reset offset to v"0.0.0"
 offset = v"0.0.0" # increment this when rebuilding with unchanged upstream_version
 version = offset_version(upstream_version, offset)
 
-# This package only produces an executable and does not need GAP for this at all,
-# hence we don't include common.jl
+# This package only produces an executable and does not need GAP for this at all.
 
 # Collection of sources required to build this JLL
 sources = [
     ArchiveSource("https://github.com/gap-packages/ace/releases/download/v$(upstream_version)/ace-$(upstream_version).tar.gz",
-                  "17b8e969a20a1c1bb0dae75ead60dd463b41a59e688d913e30999b2f2248b7f7"),
+                  "9cc94cd6327147b8b538341ba7594e4252a80ca7c960ac6749224efa437c9b66"),
 ]
 
 # Bash recipe for building across all platforms
@@ -39,9 +38,7 @@ rm $prefix/lib/gap/sysinfo.gap
 
 name = gap_pkg_name(name)
 
-platforms = supported_platforms()
-filter!(p -> nbits(p) == 64, platforms) # we only care about 64bit builds
-filter!(!Sys.iswindows, platforms)      # Windows is not supported
+platforms = gap_platforms()
 
 dependencies = Dependency[
 ]

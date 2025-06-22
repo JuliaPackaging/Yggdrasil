@@ -1,0 +1,42 @@
+commit 359e3d46094892519b821ee43671f8a2bff5bb28
+Author: Giles Atkinson <“gatk555@gmail.com”>
+Date:   Thu Nov 9 12:09:05 2023 +0000
+
+    Fix Bug #467 - ".OPTION INTERP has accuracy issue".
+
+diff --git a/src/frontend/outitf.c b/src/frontend/outitf.c
+index d557bf5a3..b4d6955ac 100644
+--- a/src/frontend/outitf.c
++++ b/src/frontend/outitf.c
+@@ -1542,6 +1542,7 @@ InterpFileAdd(runDesc *run, IFvalue *refValue, IFvalue *valuePtr)
+                 newval = (timestep -  run->circuit->CKTstep - timeold)/(timenew - timeold) * (valuenew[i] - valueold[i]) + valueold[i];
+                 fileAddRealValue(run->fp, run->binary, newval);
+                 valueold[i] = valuenew[i];
++                timeold = refValue->rValue;
+             }
+             else if (nodata)
+                 /* Just keep the transient output value corresponding to timeold, 
+@@ -1573,6 +1574,7 @@ InterpFileAdd(runDesc *run, IFvalue *refValue, IFvalue *valuePtr)
+                 newval = (timestep -  run->circuit->CKTstep - timeold)/(timenew - timeold) * (valuenew[i] - valueold[i]) + valueold[i];
+                 fileAddRealValue(run->fp, run->binary, newval);
+                 valueold[i] = valuenew[i];
++                timeold = refValue->rValue;
+             }
+             else if (nodata)
+                 /* Just keep the transient output value corresponding to timeold, 
+@@ -1705,6 +1707,7 @@ InterpPlotAdd(runDesc *run, IFvalue *refValue, IFvalue *valuePtr)
+                 newval = (timestep -  run->circuit->CKTstep - timeold)/(timenew - timeold) * (valuenew[i] - valueold[i]) + valueold[i];
+                 plotAddRealValue(&run->data[i], newval);
+                 valueold[i] = valuenew[i];
++                timeold = refValue->rValue;
+             }
+             else if (nodata)
+                 /* Just keep the transient output value corresponding to timeold, 
+@@ -1727,6 +1730,7 @@ InterpPlotAdd(runDesc *run, IFvalue *refValue, IFvalue *valuePtr)
+                 newval = (timestep -  run->circuit->CKTstep - timeold)/(timenew - timeold) * (valuenew[i] - valueold[i]) + valueold[i];
+                 plotAddRealValue(&run->data[i], newval);
+                 valueold[i] = valuenew[i];
++                timeold = refValue->rValue;
+             }
+             else if (nodata)
+                 /* Just keep the transient output value corresponding to timeold, 

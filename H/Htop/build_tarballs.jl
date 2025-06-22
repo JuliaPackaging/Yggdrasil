@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Htop"
-version = v"3.1.2"
+version = v"3.3.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/htop-dev/htop/releases/download/$(version)/htop-$(version).tar.xz",
-                  "884bce5b58cb113127860b9e368609019e92416a81550fdf0752052f3a64b388"),
+                  "a69acf9b42ff592c4861010fce7d8006805f0d6ef0e8ee647a6ee6e59b743d5c"),
 ]
 
 # Bash recipe for building across all platforms
@@ -30,9 +30,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Ncurses_jll"),
+    Dependency("Ncurses_jll"; compat="6.4.1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               # Only with GCC 6+ ${includedir} by default in header search path for musl.
+               julia_compat = "1.6", preferred_gcc_version=v"6")
 

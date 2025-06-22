@@ -1,0 +1,13 @@
+Remove unknown linker option: -no_fixup_chains
+
+--- a/configure   2024-05-25 21:26:49.000000000 +0800
++++ b/configure   2024-11-30 23:33:16.848212900 +0800
+@@ -8764,7 +8764,7 @@
+         10.[012],*|,*powerpc*-darwin[5-8]*)
+           _lt_dar_allow_undefined='$wl-flat_namespace $wl-undefined ${wl}suppress' ;;
+         *)
+-          _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup $wl-no_fixup_chains' ;;
++          _lt_dar_allow_undefined='$wl-undefined ${wl}dynamic_lookup' ;;
+       esac
+     ;;
+   esac

@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "HiGHS"
 
-version = v"1.6.0"
+version = v"1.11.0"
 
 sources = [
     GitSource(
         "https://github.com/ERGO-Code/HiGHS.git",
-        "21da9b90e0dceeb22ef9e35e5ff2c3ab17dc5232",
+        "364c83a51e44ba6c27def9c8fc1a49b1daf5ad5c",
     ),
 ]
 
@@ -17,9 +17,16 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# Disable riscv for now
+platforms = filter!(p -> arch(p) != "riscv64", platforms)
+
 function build_script(; shared_libs::String)
-    return "BUILD_SHARED=$(shared_libs)\n" * raw"""
+    build_static = shared_libs == "OFF" ? "ON" : "OFF"
+    return "BUILD_SHARED=$(shared_libs)\nBUILD_STATIC=$(build_static)\n" * raw"""
 cd $WORKSPACE/srcdir/HiGHS
+
+# Remove system CMake to use the jll version
+apk del cmake
 
 mkdir -p build
 cd build
@@ -33,8 +40,8 @@ cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=${BUILD_SHARED} \
-    -DFAST_BUILD=ON \
-    -DJULIA=ON ..
+    -DZLIB_USE_STATIC_LIBS=${BUILD_STATIC} \
+    -DFAST_BUILD=ON ..
 
 if [[ "${target}" == *-linux-* ]]; then
         make -j ${nproc}
@@ -47,7 +54,7 @@ else
 fi
 make install
 
-install_license ../LICENSE
+install_license ../LICENSE.txt
 
 if [[ "${BUILD_SHARED}" == "OFF" ]]; then
     # Delete the static library to save space

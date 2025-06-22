@@ -3,18 +3,25 @@
 using BinaryBuilder, Pkg
 
 name = "Libtool"
-version = v"2.4.7"
+version = v"2.5.4"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://ftpmirror.gnu.org/libtool/libtool-$(version).tar.gz",
-                  "04e96c2404ea70c590c546eba4202a4e12722c640016c12b9b2f1ce3d481e9a8")
+                  "da8ebb2ce4dcf46b90098daf962cffa68f4b4f62ea60f798d0ef12929ede6adf"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libtool-*
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+cd ${WORKSPACE}/srcdir/libtool-*
+for patch in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${patch}
+done
+# Prevent `help2man` needing to be run because we patched `libtoolize`
+touch doc/libtoolize.1
+
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} SHELL=/bin/bash
 make
 make install
 """

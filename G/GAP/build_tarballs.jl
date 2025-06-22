@@ -26,15 +26,13 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
-upstream_version = v"4.12.2"
-version = v"400.1200.200"
-
-julia_versions = [v"1.6.3", v"1.7", v"1.8", v"1.9", v"1.10", v"1.11"]
+upstream_version = v"4.14.0"
+version = v"400.1400.005"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/gap-system/gap/releases/download/v$(upstream_version)/gap-$(upstream_version)-core.tar.gz",
-                  "5d73e77f0b2bbe8dd0233dfad48666aeb1fcbffd84c5dbb58c8ea2a8dd9687b5"),
+                  "81ecfc6f6df044739ba34ec306cc25e847967d94f1c645b093cc21749ccc1e49"),
     DirectorySource("./bundled"),
 ]
 
@@ -66,6 +64,10 @@ julia_version=$(./julia_version)
 # configure GAP
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     JULIA_VERSION="$julia_version" \
+    JULIA_CFLAGS="-I/workspace/destdir/include/julia -fPIC" \
+    JULIA_LDFLAGS="-L/workspace/destdir/lib -L/workspace/destdir/lib/julia" \
+    JULIA_LIBS="-Wl,-rpath,/workspace/destdir/lib -Wl,-rpath,/workspace/destdir/lib/julia -ljulia" \
+    CPPFLAGS="$CPPFLAGS -DUSE_GAP_INSIDE_JULIA=1" \
     --with-gmp=${prefix} \
     --with-readline=${prefix} \
     --with-zlib=${prefix} \
@@ -109,15 +111,8 @@ install_license LICENSE
 # independent artifact to ship them to the user.
 """
 
-include("../../L/libjulia/common.jl")
-platforms = vcat(libjulia_platforms.(julia_versions)...)
-filter!(!Sys.iswindows, platforms)
-
-# we only care about 64bit builds
-filter!(p -> nbits(p) == 64, platforms)
-
-# Windows is not supported
-filter!(!Sys.iswindows, platforms)
+include("common.jl")
+platforms = gap_platforms(expand_julia_versions=true)
 
 # The products that we will ensure are always built
 products = [
@@ -132,9 +127,9 @@ dependencies = [
     HostBuildDependency("Zlib_jll"),
 
     Dependency("GMP_jll"),
-    Dependency("Readline_jll", v"8.1.1"),
+    Dependency("Readline_jll"; compat="8.2.13"),
     Dependency("Zlib_jll"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.6")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.17")),
 ]
 
 # Build the tarballs.
@@ -150,4 +145,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     end
 """)
 
-# rebuild trigger: 2
+# rebuild trigger: 1

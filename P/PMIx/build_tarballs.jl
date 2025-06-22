@@ -3,12 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "PMIx"
-version = v"4.2.7"
+version = v"6.0.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/openpmix/openpmix/releases/download/v$(version)/pmix-$(version).tar.bz2",
-                  "ac9cf58a0bf01bfacd51d342100234f04c740ec14257e4492d1dd0207ff2a917")
+                  "bfe969966d0ce82e032739cac286239bd5ad74a831d7adae013284919f125318"),
+    DirectorySource("bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -17,6 +18,9 @@ cd $WORKSPACE/srcdir/pmix-*
 if [[ ${target} == *-musl* ]]; then
    # Help configure find installed packages
    export CPPFLAGS=-I${includedir}
+elif [[ ${target} == *bsd* ]]; then
+    # nonstandard pthread extensions live in a different header on some BSDs.
+    atomic_patch -p1 ${WORKSPACE}/srcdir/nonstandard_pthreads.patch
 fi
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --enable-shared \
@@ -27,14 +31,15 @@ fi
     --disable-man-pages
 make -j${nproc}
 make install
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# FreeBSD does not provide `pthread_setaffinity_np` which is a GNU extension
-filter!(!Sys.isfreebsd, platforms)
+# PMIx does not support 32-bit builds <https://docs.openpmix.org/en/latest/release-notes/platform.html>
+filter!(p -> nbits(p) != 32, platforms)
 
 # Configure fails on Windows with:
 # ```
@@ -46,6 +51,7 @@ filter!(!Sys.isfreebsd, platforms)
 # configure: WARNING: to where we can find one or the other library
 # configure: error: Cannot continue
 # ```
+# Believe this to be because libevent_pthreads is not available on Windows.
 filter!(!Sys.iswindows, platforms)
 
 # The products that we will ensure are always built

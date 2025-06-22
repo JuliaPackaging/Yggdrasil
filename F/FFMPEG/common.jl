@@ -3,13 +3,20 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version_string = "4.4.4"   # when patch number is zero, they use X.Y format
+version_string = "7.1"   # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
 sources = [
-    ArchiveSource("https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-                  "e80b380d595c809060f66f96a5d849511ef4a76a26b76eacf5778b94c3570309"),
+    ArchiveSource(
+        "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
+        "40973d44970dbc83ef302b0609f2e74982be2d85916dd2ee7472d30678a7abe6",
+    ),
+    ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
+    ArchiveSource(
+        "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+        "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4",
+    ),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,15 +55,16 @@ else
     export ccARCH="x86_64"
 fi
 
-if [[ "${target}" == arm-* ]]; then
-    export CUDA_ARGS=""
-elif [[ "${target}" == *-apple-* ]]; then
-    export CUDA_ARGS=""
-elif [[ "${target}" == *-unknown-freebsd* ]]; then
-    export CUDA_ARGS=""
-else
-    export CUDA_ARGS="--enable-nvenc --enable-cuda-llvm"
-fi
+if [[ "${target}" == x86_64-apple-darwin* ]]; then 
+    export MACOSX_DEPLOYMENT_TARGET=10.13 
+    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk 
+    rm -rf /opt/${target}/${target}/sys-root/System 
+    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/" 
+    cp -a System "/opt/${target}/${target}/sys-root/" 
+    popd
+fi 
+
+export CUDA_ARGS=""
 
 EXTRA_FLAGS=()
 if [[ "${target}" == *-darwin* ]]; then
@@ -93,7 +101,6 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
   --enable-pic         \
   --disable-debug      \
   --disable-doc        \
-  --enable-avresample  \
   --enable-libaom      \
   --enable-libass      \
   --enable-libfdk-aac  \
@@ -117,7 +124,7 @@ sed -i 's/cpuflags="-march=$cpu"/cpuflags=""/g' configure
 make -j${nproc}
 if [[ "${FFPLAY}" == "true" ]]; then
     # Manually install only the FFplay binary
-    mv "ffplay${exeext}" "${bindir}/ffplay${exeext}"
+    install -Dvm 755 "ffplay${exeext}" "${bindir}/ffplay${exeext}"
 else
     # Install all FFMPEG stuff: libraries, executables, header files, etc...
     make install
@@ -128,6 +135,12 @@ end
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter!(p -> arch(p) != "armv6l", supported_platforms())
+platforms = supported_platforms()
+# `libass_jll` is missing
+filter!(p -> arch(p) != "armv6l", platforms)
+# `libass_jll` is missing
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+# `OpenSSL_jll` is missing
+filter!(p -> arch(p) != "riscv64", platforms)
 
 preferred_gcc_version = v"8"

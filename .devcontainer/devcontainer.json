@@ -1,8 +1,15 @@
 {
-    "extensions": [
-      "julialang.language-julia"
-    ],
-    "runArgs": ["--privileged"],
-    "dockerFile": "Dockerfile",
-    "onCreateCommand": "julia --project=.ci -e 'using Pkg; Pkg.instantiate(); Pkg.precompile();'"
+  "features": {
+    "ghcr.io/julialang/devcontainer-features/julia:1": {
+      "channel": "1.7"
+    },
+  },
+  "containerEnv": {
+    "JULIA_PROJECT": "${containerWorkspaceFolder}/.ci"
+  },
+  "hostRequirements": {
+    "gpu": "optional"
+  },
+  "privileged": true,
+  "onCreateCommand": "julia -e 'using Pkg; Pkg.precompile();'"
 }

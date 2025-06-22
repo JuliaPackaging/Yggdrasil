@@ -1,0 +1,26 @@
+diff --git a/openvaf/target/build.rs b/openvaf/target/build.rs
+index 743bd52..862021c 100644
+--- a/openvaf/target/build.rs
++++ b/openvaf/target/build.rs
+@@ -9,7 +9,10 @@ fn main() {
+     println!("cargo:rustc-env=CFG_COMPILER_HOST_TRIPLE={}", std::env::var("TARGET").unwrap());
+     // If we're just running `check`, there's no need to actually compute the stdlib just
+     // popualte dummys
+-    let check = tracked_env_var_os("RUST_CHECK").is_some();
++    let mut check = tracked_env_var_os("RUST_CHECK").is_some();
++    if !std::env::var("TARGET").unwrap().contains("windows") {
++        check = true; // skip generation for non-Windows platforms
++    }
+     let sh = Shell::new().unwrap();
+     gen_msvcrt_importlib(&sh, "x64", "x86_64", check);
+     gen_msvcrt_importlib(&sh, "arm64", "aarch64", check);
+@@ -36,7 +39,7 @@ fn gen_msvcrt_importlib(sh: &Shell, arch: &str, target: &str, check: bool) {
+     let ucrt_obj = out_dir.join(format!("ucrt_{arch}.obj"));
+     cmd!(
+         sh,
+-        "clang-cl /c /Zl /GS- /clang:--target={target}-pc-windows-msvc /clang:-o{ucrt_obj} {ucrt_src}"
++        "clang-cl /c /Zl /GS- /clang:--target={target}-pc-windows-msvc /clang:-o{ucrt_obj} /clang:{ucrt_src}"
+     )
+     .run()
+     .expect("ucrt compilation succeeds");
+

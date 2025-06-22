@@ -14,9 +14,14 @@
 #     (https://github.com/JuliaBinaryWrappers/Musl_jll.jl/releases and
 #     https://github.com/JuliaBinaryWrappers/Glibc_jll.jl/releases)
 #   * etc...
-# * to build and deploy the new image, run
+# * to build and deploy the new image:
 #
-#     julia build_tarballs.jl --debug --verbose --deploy
+#     - Ensure you are using the development version of `BinaryBuilderBase`:
+#         `]develop BinaryBuilderBase`
+#       Also ensure you are at the tip of the `master` branch.
+#     - Run: `julia build_tarballs.jl --debug --verbose --deploy`
+#     - This will update the file `Artifacts.toml` in `BinaryBuilderBase`.
+#       Create a pull request for these changes.
 
 using Pkg, BinaryBuilder, SHA, Dates
 if !isdefined(Pkg, :Artifacts)
@@ -116,11 +121,14 @@ sources = [
     GitSource("https://github.com/staticfloat/objconv.git",
               "c68e441d2b93074b01ea193cb17e944ed751750f"), # v2.54
     # As is patchelf
+    # We don't want to upgrade patchelf unless there's a compelling and proved reason
+    # to do it because of previous problems we experienced with v0.18.0.
+    # We encountered the error "ELF load command address/offset not properly aligned" in #7728 and #7729.
     GitSource("https://github.com/NixOS/patchelf.git",
-              "99c24238981b7b1084313aca8f5c493bb46f302c"), # v0.18.0
+              "bf3f37ec29edcdb3e2a163edaf84aeece39f8c9d"), # v0.14.3
     # We need a very recent version of meson to build gtk stuffs, so let's just grab the latest
     GitSource("https://github.com/mesonbuild/meson.git",
-              "7368795d13081d4928a9ba04d48498ca2442624b"), # v1.3.0
+              "eaefe29463a61a311a6b1de6cd539f39500399ff"), # v1.4.0
     # We're going to bundle a version of `ldid` into the rootfs for now.  When we split this up,
     # we'll do this in a nicer way by using JLLs directly, but until then, this is what we've got.
     ArchiveSource("https://github.com/JuliaBinaryWrappers/ldid_jll.jl/releases/download/ldid-v2.1.3%2B0/ldid.v2.1.3.x86_64-linux-musl-cxx11.tar.gz",
@@ -163,7 +171,7 @@ NET_TOOLS="curl wget git openssl ca-certificates"
 MISC_TOOLS="python2 python3 py3-pip sudo file libintl patchutils grep zlib"
 FILE_TOOLS="tar zip unzip xz findutils squashfs-tools rsync" # TODO: restore `unrar` when it comes back to Alpine Linux
 INTERACTIVE_TOOLS="bash gdb vim nano tmux strace"
-BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache ninja"
+BUILD_TOOLS="make patch gawk autoconf automake libtool bison flex pkgconfig cmake samurai ccache"
 apk add --update --root $prefix ${NET_TOOLS} ${MISC_TOOLS} ${FILE_TOOLS} ${INTERACTIVE_TOOLS} ${BUILD_TOOLS}
 
 # chgrp and chown should be no-ops since we run in a single-user mode
@@ -243,7 +251,7 @@ for arch in x86_64 i686; do
 done
 
 # Build/install meson
-cd ${WORKSPACE}/srcdir/meson/
+cd ${WORKSPACE}/srcdir/meson
 python3 setup.py build
 python3 setup.py install --prefix=/usr --root="${prefix}"
 

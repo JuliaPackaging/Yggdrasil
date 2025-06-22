@@ -1,0 +1,72 @@
+From ac4a49d50823ad9fff8d6865d25dc6e88b71dbd7 Mon Sep 17 00:00:00 2001
+From: IKat <basisenginedev@gmail.com>
+Date: Fri, 1 Dec 2023 16:13:00 -0500
+Subject: [PATCH] build system now supports more build environments
+
+Before if you were compiling with Clang on Windows using MSYS2 or any environment that wasn't Windows native it would try and use MSVC build flags no matter what compiler was selected. Now that isn't a problem.
+(I changed the styling of the CMake file to add more whitespace, sorry if that annoys anyone, you can edit it to your liking.)
+---
+ CMakeLists.txt | 29 +++++++++++++++++++----------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1f9f49d..1b4f2d5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,24 +1,30 @@
+ cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
++
+ project(demumble CXX)
+ 
+ if (UNIX)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-exceptions -fno-rtti")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
++
+   if (${CMAKE_GENERATOR} STREQUAL "Ninja")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color")
+-  endif()
+-
+-  # 10.9 chosen somewhat arbitrary; it's the first target where clang defaults
+-  # to libc++ and ld64 defaults to stripping __TEXT,__eh_frame.
+-  if (APPLE)
++  elseif(APPLE)
++    # 10.9 chosen somewhat arbitrary; it's the first target where clang defaults
++    # to libc++ and ld64 defaults to stripping __TEXT,__eh_frame.
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.9")
+-  else()
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-PIC")
+-    set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
++    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
+   endif()
+-endif()
++# Folks may want to use MSYS2, MINGW, or any 
++# such build environment while using Clang on Windows:
++elseif(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
++  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-exceptions -fno-rtti")
++  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+ 
+-if (WIN32)
++  if (${CMAKE_GENERATOR} STREQUAL "Ninja")
++    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color")
++  endif()
++elseif(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+   # https://gitlab.kitware.com/cmake/cmake/-/issues/20610
+   string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+   string(REGEX REPLACE "/EHsc" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+@@ -33,9 +39,12 @@ if (WIN32)
+   # This is apparently the simplest way to statically link the CRT in CMake:
+   string(TOUPPER "${CMAKE_BUILD_TYPE}" build)
+   set(flag_var "CMAKE_CXX_FLAGS_${build}")
+-  if(${flag_var} MATCHES "/MD")
++
++  if (${flag_var} MATCHES "/MD")
+     string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+   endif()
++else()
++  message(FATAL_ERROR "unknown compiler, cannot continue build")
+ endif()
+ 
+ include_directories(third_party/llvm/include)
+-- 
+2.46.2
+

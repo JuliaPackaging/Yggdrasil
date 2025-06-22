@@ -3,12 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.43.0"
+# NOTE: This version has been yanked (disabled) in the Julia registry.
+#
+# SQLite 3.49.0 uses a new build system (autosetup instead of
+# autoconf), and this leads to different names for all shared
+# libraries, in particular on Windows. This makes this version
+# incompatible with earlier versions.
+#
+# We will either need to rename the shared libraries (if possible) or
+# increase the major version number of this package.
+version = v"3.49.0"
+# Read carefully message above.
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://www.sqlite.org/2023/sqlite-autoconf-3430000.tar.gz",
-                  "49008dbf3afc04d4edc8ecfc34e4ead196973034293c997adad2f63f01762ae1"),
+    ArchiveSource("https://sqlite.org/2025/sqlite-autoconf-3490000.tar.gz",
+                  "4d8bfa0b55e36951f6e5a9fb8c99f3b58990ab785c57b4f84f37d163a0672759"),
     FileSource("https://raw.githubusercontent.com/archlinux/svntogit-community/cf0a3337bd854104252dc1ff711e95cc8bc7ffb3/trunk/license.txt",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d";
                filename="LICENSE"),
@@ -16,7 +26,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/sqlite-autoconf-*/
+cd $WORKSPACE/srcdir/sqlite-autoconf-*
 
 # Use same flags as
 # https://github.com/archlinux/svntogit-packages/blob/packages/sqlite/trunk/PKGBUILD
@@ -47,7 +57,7 @@ install_license "${WORKSPACE}/srcdir/LICENSE"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -58,6 +68,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Zlib_jll"),
+    Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

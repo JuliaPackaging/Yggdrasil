@@ -3,13 +3,13 @@
 using BinaryBuilder, BinaryBuilderBase
 
 name = "CoverM"
-version = v"0.6.1"
+version = v"0.7.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/wwood/CoverM",
-        "0056336d4b245064a23e5b40197b29607fb1fe56"),
+        "5edadabe744b3b92911179614468c43630450699"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,8 +28,7 @@ platforms = filter!(supported_platforms()) do platform
     (Sys.isapple(platform) || Sys.islinux(platform)) &&
     in(arch(platform), ("x86_64", "aarch64")) &&
 
-    # aarch64 linux errors, see https://github.com/rust-bio/rust-htslib/issues/352
-    # will be fixed in an upcoming release
+    # aarch64 linux errors, https://github.com/rust-bio/rust-htslib/issues/425
     !(arch(platform) == "aarch64" && Sys.islinux(platform))
 end
 

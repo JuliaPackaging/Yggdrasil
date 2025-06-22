@@ -3,14 +3,15 @@
 using BinaryBuilder
 
 name = "Geant4"
-version = v"11.1.1"
+version = v"11.3.2"
 
 # Collection of sources required to build
 sources = [
     ArchiveSource("https://gitlab.cern.ch/geant4/geant4/-/archive/v$(version)/geant4-v$(version).tar.gz",
-                  "c5878634da9ba6765ce35a469b2893044f4a6598aa948733da8436cdbfeef7d2"),
+                  "077edca6aa3b3940f351cf9a948457cad3fb117f215b88c52cce315e1a07fd7a"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
@@ -27,10 +28,20 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     popd
 fi
 
+if [[ "${target}" == *-mingw* ]]; then
+    atomic_patch -p1 ../patches/windows.patch
+fi
+
 mkdir build && cd build
 FLAGS=()
-if [[ "${target}" != *-apple-* ]]; then
-    FLAGS=(-DGEANT4_USE_OPENGL_X11=ON)
+if [[ "${target}" != *-w64-* && "${target}" != *-apple-* ]]; then
+    FLAGS+=(-DGEANT4_USE_OPENGL_X11=ON)
+fi
+if [[ "${target}" == *-apple-* ]]; then
+    FLAGS+=(-DGEANT4_USE_SYSTEM_ZLIB=ON)
+fi
+if [[ "${target}" == *-w64-* ]]; then
+    FLAGS+=(-DGEANT4_BUILD_MULTITHREADED=OFF)
 fi
 cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -50,8 +61,11 @@ install_license ../LICENSE
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = expand_cxxstring_abis(supported_platforms())
-platforms = filter(p -> libc(p) != "musl" && os(p) != "windows" && os(p) != "freebsd" && arch(p) != "armv6l", platforms)
-
+platforms = filter(p -> libc(p) != "musl" && 
+                        os(p) != "freebsd" && 
+                        arch(p) != "armv6l" && 
+                        arch(p) != "i686" &&
+                        arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -65,11 +79,12 @@ products = [
     LibraryProduct("libG4GMocren", :libG4Mocren),
     LibraryProduct("libG4particles", :libG4Particles),
     LibraryProduct("libG4graphics_reps", :libG4Graphics),
-    LibraryProduct("libG4zlib", :libG4Zlib),
     LibraryProduct("libG4geometry", :libG4Geometry),
     LibraryProduct("libG4modeling", :libG4Modeling),
     LibraryProduct("libG4interfaces", :libG4Interfaces),
-    LibraryProduct("libG4persistency", :libG4Persistency),
+    LibraryProduct("libG4mctruth", :libG4MCTruth),
+    LibraryProduct("libG4geomtext", :libG4GeomText),
+    LibraryProduct("libG4gdml", :libG4GDML),
     LibraryProduct("libG4track", :libG4Track),
     LibraryProduct("libG4error_propagation", :libG4ErrorPropagation),
     LibraryProduct("libG4parmodels", :libG4ParModels),
@@ -91,12 +106,13 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Expat_jll"; compat="2.4.8"),
+    Dependency("Expat_jll"; compat="2.6.4"),
     Dependency("Xorg_libXmu_jll"),
     Dependency("Libglvnd_jll"),
     Dependency("Xerces_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12", platforms=filter(Sys.isapple, platforms)),
     BuildDependency("Xorg_xorgproto_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"10", julia_compat="1.6")

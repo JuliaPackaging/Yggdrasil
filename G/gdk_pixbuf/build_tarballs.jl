@@ -1,49 +1,34 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "gdk_pixbuf"
-version = v"2.42.8"
+version = v"2.42.12"
+# We bumped the version because we updated the dependencies to build for riscv64
+ygg_version = v"2.42.13"
 
 # Collection of sources required to build gdk-pixbuf
 sources = [
     ArchiveSource("https://gitlab.gnome.org/GNOME/gdk-pixbuf/-/archive/$(version)/gdk-pixbuf-$(version).tar.bz2",
-                  "d122cb5d0ef32349c52c37f1dfd936c734886643b49a37706acccfe3af6aba77"),
+                  "c608eb59eb3a697de108961c7d64303e5bcd645c2a95da9a9fe60419dfaa56f6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gdk-pixbuf-*/
+cd $WORKSPACE/srcdir/gdk-pixbuf-*
 mkdir build && cd build
 
-# As seen in the GTK4 build, llvm-ar seems to generate corrupted static archives:
-#
-#   [119/165] Linking target gdk-pixbuf/pixops/timescale
-#   ninja: job failed: [...]
-#   ld: warning: ignoring file gdk-pixbuf/pixops/libpixops.a, building for macOS-arm64 but attempting to link with file built for unknown-unsupported file format ( 0x21 0x3C 0x74 0x68 0x69 0x6E 0x3E 0x0A 0x2F 0x20 0x20 0x20 0x20 0x20 0x20 0x20 )
-#   Undefined symbols for architecture arm64:
-#     "__pixops_composite", referenced from:
-#         _main in timescale.c.o
-#     "__pixops_composite_color", referenced from:
-#         _main in timescale.c.o
-#     "__pixops_scale", referenced from:
-#         _main in timescale.c.o
-#   ld: symbol(s) not found for architecture arm64
-
-if [[ "${target}" == *apple* ]]; then
-    sed -i "s?^ar = .*?ar = '/opt/${target}/bin/${target}-ar'?g" "${MESON_TARGET_TOOLCHAIN}"
-fi
-
-FLAGS=()
-if [[ "${target}" == x86_64-linux-gnu ]]; then
-    FLAGS+=(-Dintrospection=enabled)
-fi
+# Correct pkgconfig entries for host build dependencies, i.e. for
+# scripts that need to run at build time. These pkgconfig entries
+# would otherwise point to non-existing files, making meson fail.
+sed -i 's+glib_genmarshal=${bindir}+'"glib_genmarshal=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
+sed -i 's+gobject_query=${bindir}+'"gobject_query=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
+sed -i 's+glib_mkenums=${bindir}+'"glib_mkenums=${host_bindir}"'+' ${host_libdir}/pkgconfig/glib-2.0.pc
 
 meson .. \
     -Dman=false \
     -Dinstalled_tests=false \
     -Dgio_sniffing=false \
-    "${FLAGS[@]}" \
     --cross-file="${MESON_TARGET_TOOLCHAIN}"
 ninja -j${nproc}
 ninja install
@@ -54,7 +39,7 @@ find ${prefix}/lib -name loaders.cache -delete
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
+platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
@@ -66,24 +51,21 @@ products = [
 # Some dependencies are needed only on Linux and FreeBSD
 linux_freebsd = filter(p->Sys.islinux(p)||Sys.isfreebsd(p), platforms)
 
-# gobject_introspection is needed only on x86_64-linux-gnu
-introspect_platform = filter(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) == "x86_64", platforms)
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     # Need a host glib for glib-compile-resources
-    HostBuildDependency("Glib_jll"),
-    Dependency("Glib_jll"; compat="2.68.3"),
-    Dependency("JpegTurbo_jll"),
-    Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="4.3.0"),
+    HostBuildDependency(PackageSpec(; name="Glib_jll", version=v"2.84.0")),
+    Dependency("Glib_jll"; compat="2.84.0"),
+    Dependency("JpegTurbo_jll"; compat="3.1.1"),
+    Dependency("libpng_jll"; compat="1.6.47"),
+    Dependency("Libtiff_jll"; compat="4.7.1"),
     Dependency("Xorg_libX11_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_xproto_jll"; platforms=linux_freebsd),
     BuildDependency("Xorg_kbproto_jll"; platforms=linux_freebsd),
-    BuildDependency("gobject_introspection_jll"; platforms=introspect_platform)
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")

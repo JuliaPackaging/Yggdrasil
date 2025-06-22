@@ -14,9 +14,14 @@ const llvm_tags = Dict(
     v"12.0.0" => "d28af7c654d8db0b68c175db5ce212d74fb5e9bc",
     v"12.0.1" => "980d2f60a8524c5546397db9e8bbb7d6ea56c1b7", # julia-12.0.1-4
     v"13.0.1" => "8a2ae8c8064a0544814c6fac7dd0c4a9aa29a7e6", # julia-13.0.1-3
+    v"14.0.5" => "73db33ead13c3596f53408ad6d1de4d0f2270adb", # julia-14.0.5-3
     v"14.0.6" => "5c82f5309b10fab0adf6a94969e0dddffdb3dbce", # julia-14.0.6-3
-    v"15.0.7" => "084cd0fc414425be2d22f23552b79432dcbb01f0", # julia-15.0.7-9
-    v"16.0.6" => "3c83f175925974ae6b68aa96715d8f04a1a9aae4", # julia-16.0.6-1
+    v"15.0.7" => "2593167b92dd2d27849e8bc331db2072a9b4bd7f", # julia-15.0.7-10
+    v"16.0.6" => "4a5c1da0d268d2858def6c1aa206ac4b31956208", # julia-16.0.6-4
+    v"17.0.6" => "0007e48608221f440dce2ea0d3e4f561fc10d3c6", # julia-17.0.6-5
+    v"18.1.7" => "32719222d3ea71ed0b19c2cb75fa6f76713fda20", # julia-18.1.7-4
+    v"19.1.7" => "ccda9ec62497d9de88ca7090a749e52a89f62132", # julia-19.1.7-2
+    v"20.1.2" => "6fe525631430a9cca35e564f90752ac6b7d9d951", # julia-20.1.2-1
 )
 
 const buildscript = raw"""
@@ -104,7 +109,7 @@ fi
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
 
-# Build llvm-tblgen, clang-tblgen, and llvm-config
+# Build host-native llvm-tblgen, clang-tblgen, and llvm-config
 mkdir ${WORKSPACE}/bootstrap
 pushd ${WORKSPACE}/bootstrap
 CMAKE_FLAGS=()
@@ -118,12 +123,21 @@ else
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
 fi
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+# Turn off random crap the host tools do not need to configure
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=OFF)
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
+fi
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-if [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
+if [[ "${LLVM_MAJ_VER}" -ge "17" ]]; then
+    ninja -j${nproc} llvm-tblgen llvm-min-tblgen clang-tblgen mlir-tblgen llvm-config
+elif [[ ("${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0") || "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} llvm-tblgen clang-tblgen mlir-tblgen llvm-config
 else
     ninja -j${nproc} llvm-tblgen clang-tblgen llvm-config
@@ -135,7 +149,13 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
     ninja -j${nproc} mlir-linalg-ods-yaml-gen
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
-    ninja -j${nproc} clang-tidy-confusable-chars-gen clang-pseudo-gen mlir-pdll
+    ninja -j${nproc} clang-tidy-confusable-chars-gen mlir-pdll
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
+    ninja -j${nproc} clang-pseudo-gen
+fi
+if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+    ninja -j${nproc} mlir-src-sharder
 fi
 popd
 
@@ -149,6 +169,10 @@ CMAKE_CXX_FLAGS=()
 CMAKE_C_FLAGS=()
 
 CMAKE_FLAGS=()
+
+if [[ "${target}" != *-apple-darwin* ]]; then
+CMAKE_FLAGS+=(-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id)
+fi
 
 # Release build for best performance
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
@@ -181,13 +205,18 @@ CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS:STRING=$LLVM_PROJECTS)
 
 if [[ "${LLVM_MAJ_VER}" -gt "13" ]]; then
     CMAKE_FLAGS+=(-DMLIR_BUILD_MLIR_C_DYLIB:BOOL=ON)
+    CMAKE_FLAGS+=(-DMLIR_LINK_MLIR_DYLIB:BOOL=OFF)
 fi
 
 # We want a build with no bindings
 CMAKE_FLAGS+=(-DLLVM_BINDINGS_LIST="" )
 
 # Turn on ZLIB
-CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=ON)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=FORCE_ON)
+# Turn on ZSTD
+if [[ "${LLVM_MAJ_VER}" -ge "20" ]]; then
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=FORCE_ON)
+fi
 # Turn off XML2
 CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
 
@@ -224,7 +253,12 @@ CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=True)
 
 # Julia expects the produced LLVM tools to be installed into tools and not bin
 # We can't simply move bin to tools since on MingW64 it will also contain the shlib.
-CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    CMAKE_FLAGS+=(-DCMAKE_INSTALL_BINDIR="tools")
+else
+    CMAKE_FLAGS+=(-DLLVM_TOOLS_INSTALL_DIR="tools")
+    CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="tools")
+fi
 
 # Also build and install utils, since we want FileCheck, and lit
 CMAKE_FLAGS+=(-DLLVM_UTILS_INSTALL_DIR="tools")
@@ -236,7 +270,8 @@ if [[ ${target} == *linux* ]]; then
 #     CMAKE_FLAGS+=(-DLLVM_USE_OPROFILE=1)
 fi
 # if [[ ${target} == *linux* ]] || [[ ${target} == *mingw32* ]]; then
-if [[ ${target} == *linux* ]]; then # TODO only LLVM12
+if [[ "${LLVM_MAJ_VER}" -ge "12" && ${target} == x86_64-linux* ]]; then
+    # Intel VTune is available only on x86_64 architectures
     CMAKE_FLAGS+=(-DLLVM_USE_INTEL_JITEVENTS=1)
 fi
 
@@ -247,6 +282,9 @@ fi
 
 # Tell LLVM where our pre-built tblgen tools are
 CMAKE_FLAGS+=(-DLLVM_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-tblgen)
+if [[ "${LLVM_MAJ_VER}" -ge "17" ]]; then
+CMAKE_FLAGS+=(-DLLVM_HEADERS_TABLEGEN=${WORKSPACE}/bootstrap/bin/llvm-min-tblgen)
+fi
 CMAKE_FLAGS+=(-DCLANG_TABLEGEN=${WORKSPACE}/bootstrap/bin/clang-tblgen)
 CMAKE_FLAGS+=(-DLLVM_CONFIG_PATH=${WORKSPACE}/bootstrap/bin/llvm-config)
 if [[ ( "${LLVM_MAJ_VER}" -eq "12" && "${LLVM_PATCH_VER}" -gt "0" ) || "${LLVM_MAJ_VER}" -gt "12" ]]; then
@@ -260,8 +298,13 @@ if [[ "${LLVM_MAJ_VER}" -gt "12" ]]; then
 fi
 if [[ "${LLVM_MAJ_VER}" -gt "14" ]]; then
     CMAKE_FLAGS+=(-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=${WORKSPACE}/bootstrap/bin/clang-tidy-confusable-chars-gen)
-    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
     CMAKE_FLAGS+=(-DMLIR_PDLL_TABLEGEN=${WORKSPACE}/bootstrap/bin/mlir-pdll)
+fi
+if [[ "${LLVM_MAJ_VER}" -gt "14" ]] && [[ "${LLVM_MAJ_VER}" -le "19" ]]; then
+    CMAKE_FLAGS+=(-DCLANG_PSEUDO_GEN=${WORKSPACE}/bootstrap/bin/clang-pseudo-gen)
+fi
+if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
+    CMAKE_FLAGS+=(-DLLVM_NATIVE_TOOL_DIR=${WORKSPACE}/bootstrap/bin)
 fi
 
 # Explicitly use our cmake toolchain file
@@ -312,10 +355,12 @@ if [[ "${target}" == *apple* ]]; then
     fi
 fi
 
-GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
-if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
-    CMAKE_C_FLAGS+=(-mno-outline-atomics)
-    CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }' | cut -d. -f1)
+    if [[ $version -le 10 && "${target}" == aarch64-linux* ]]; then
+        CMAKE_C_FLAGS+=(-mno-outline-atomics)
+        CMAKE_CPP_FLAGS+=(-mno-outline-atomics)
+    fi
 fi
 
 if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
@@ -327,7 +372,7 @@ if [[ "${target}" == *apple* ]] || [[ "${target}" == *freebsd* ]]; then
 fi
 
 if [[ "${target}" == *mingw* ]]; then
-    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
+    CMAKE_CPP_FLAGS+=(-remap -D__USING_SJLJ_EXCEPTIONS__ -D__CRT__NO_INLINE -pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC -Dmlir_arm_sme_abi_stubs_EXPORTS)
     CMAKE_C_FLAGS+=(-pthread -DMLIR_CAPI_ENABLE_WINDOWS_DLL_DECLSPEC)
     CMAKE_FLAGS+=(-DCOMPILER_RT_BUILD_SANITIZERS=OFF)
     # Windows is case-insensitive and some dependencies take full advantage of that
@@ -349,13 +394,14 @@ fi
 
 #This breaks things on LLVM15 and above, but probably should be off everywhere because we only build one runtime per run
 CMAKE_FLAGS+=(-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF)
-#For some reason clang doesn't install it's symlinks without this
-CMAKE_FLAGS+=(-DCLANG_TOOLS_INSTALL_DIR="${prefix}/tools")
 
 # Tell LLVM which compiler target to use, because it loses track for some reason
 CMAKE_FLAGS+=(-DCMAKE_C_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_CXX_COMPILER_TARGET=${CMAKE_TARGET})
 CMAKE_FLAGS+=(-DCMAKE_ASM_COMPILER_TARGET=${CMAKE_TARGET})
+
+# Set the bug report URL to the Julia issue tracker
+CMAKE_FLAGS+=(-DBUG_REPORT_URL="https://github.com/julialang/julia")
 
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]} -DCMAKE_CXX_FLAGS=\"${CMAKE_CPP_FLAGS[*]} ${CMAKE_CXX_FLAGS[*]}\" -DCMAKE_C_FLAGS=\"${CMAKE_C_FLAGS[*]}\"
 ninja -j${nproc} -vv
@@ -363,11 +409,18 @@ ninja -j${nproc} -vv
 # Install!
 ninja install
 
-# Life is harsh on Windows and dynamic libraries are
-# expected to live alongside the binaries. So we have
-# to copy the *.dll from bin/ to tools/ as well...
-if [[ "${target}" == *mingw* ]]; then
-    cp ${prefix}/bin/*.dll ${prefix}/tools/
+if [[ "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    # We can now tell cmake to put the dlls in the right place, and the verifier doesn't find them
+    if [[ "${target}" == *mingw* ]]; then
+        cp -v ${prefix}/tools/*.dll ${libdir}/.
+    fi
+else
+    # Life is harsh on Windows and dynamic libraries are
+    # expected to live alongside the binaries. So we have
+    # to copy the *.dll from bin/ to tools/ as well...
+    if [[ "${target}" == *mingw* ]]; then
+        cp -v ${libdir}/*.dll ${prefix}/tools/.
+    fi
 fi
 
 # Work around llvm-config bug by creating versioned symlink to libLLVM
@@ -412,11 +465,12 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/clang* ${prefix}/include/
 
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/clang* ) = "${LLVM_ARTIFACT_DIR}/bin/clang*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/*clang* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/*clang* ${prefix}/tools/
-fi
+# LLVM isn't very reliable in choosing tools over bin even if we tell it to
+# mv -v ${LLVM_ARTIFACT_DIR}/tools/clang* ${prefix}/tools/ ; true
+# mv -v ${LLVM_ARTIFACT_DIR}/bin/clang* ${prefix}/tools/ ; true
+find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "clang*" -print0 -o -type l -name "clang*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "clang*" -print0 -o -type l -name "clang*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+
 mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libclang*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/libclang*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/clang ${prefix}/lib/clang
@@ -475,6 +529,25 @@ mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
 
+const mlirscript_v16 = raw"""
+# First, find (true) LLVM library directory in ~/.artifacts somewhere
+LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
+
+# Clear out our `${prefix}`
+rm -rf ${prefix}/*
+
+# Copy over `libMLIR` and `include`, specifically.
+mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib/cmake
+mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
+find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "mlir*" -print0 -o -type l -name "mlir*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "mlir*" -print0 -o -type l -name "mlir*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
+install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
+"""
+
 const lldscript = raw"""
 # First, find (true) LLVM library directory in ~/.artifacts somewhere
 LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
@@ -485,17 +558,16 @@ rm -rf ${prefix}/*
 # Copy over `lld`, `libclang` and `include`, specifically.
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/tools ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/lld* ${prefix}/include/
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/lld*) = "${LLVM_ARTIFACT_DIR}/bin/lld*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/*lld* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/*lld* ${prefix}/tools/
-fi
 
-if [[ $(echo ${LLVM_ARTIFACT_DIR}/bin/dsymutil*) = "${LLVM_ARTIFACT_DIR}/bin/dsymutil*" ]]; then
-    mv -v ${LLVM_ARTIFACT_DIR}/tools/dsymutil* ${prefix}/tools/
-else
-    mv -v ${LLVM_ARTIFACT_DIR}/bin/dsymutil* ${prefix}/tools/
-fi
+# LLVM isn't very reliable in choosing tools over bin even if we tell it to
+file_patterns=("*lld*" "wasm-ld*" "dsymutil*")
+for pattern in "${file_patterns[@]}"; do
+    find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "$pattern" -print0 -o -type l -name "$pattern" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+done
+for pattern in "${file_patterns[@]}"; do
+    find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "$pattern" -print0 -o -type l -name "$pattern" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
+done
+
 # mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/liblld*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/liblld*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/lld ${prefix}/lib/cmake/lld
@@ -548,10 +620,10 @@ rm -vrf {prefix}/lib/objects-Release
 """
 
 function configure_build(ARGS, version; experimental_platforms=false, assert=false,
-                         git_path="https://github.com/JuliaLang/llvm-project.git",
-                         git_ver=llvm_tags[version], custom_name=nothing,
-                         custom_version=version, static=false, platform_filter=nothing,
-                         eh_rtti=false, update_sdk=version >= v"15")
+    git_path="https://github.com/JuliaLang/llvm-project.git",
+    git_ver=llvm_tags[version], custom_name=nothing,
+    custom_version=version, static=false, platform_filter=nothing,
+    eh_rtti=false, update_sdk=version >= v"15")
     # Parse out some args
     if "--assert" in ARGS
         assert = true
@@ -562,7 +634,7 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
         DirectorySource("./bundled"),
     ]
 
-    platforms = expand_cxxstring_abis(supported_platforms(;experimental=experimental_platforms))
+    platforms = expand_cxxstring_abis(supported_platforms(; experimental=experimental_platforms))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl, see
         # <https://github.com/JuliaPackaging/Yggdrasil/pull/5592#issuecomment-1430063957>:
@@ -624,20 +696,25 @@ function configure_build(ARGS, version; experimental_platforms=false, assert=fal
     # Dependencies that must be installed before this package can be built
     # TODO: LibXML2
     dependencies = [
-        Dependency("Zlib_jll"), # for LLD&LTO
-        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p)=="memory", platforms)),
+        Dependency("Zlib_jll"), # for LLD&LTO&debuginfo
+        BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> sanitize(p) == "memory", platforms)),
     ]
+    if version >= v"20"
+        push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
+    end
     if update_sdk
         config *= "LLVM_UPDATE_MAC_SDK=1\n"
         push!(sources,
-              ArchiveSource(
-                  "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
-                  "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+            ArchiveSource(
+                "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
     end
     return name, custom_version, sources, config * buildscript, platforms, products, dependencies
 end
 
-function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing; experimental_platforms=false, assert=false, augmentation=false)
+function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=nothing;
+                              experimental_platforms=false, assert=false,
+                              augmentation=false, dont_dlopen=true)
     if isempty(LLVM_full_version.build)
         error("You must lock an extracted LLVM build to a particular LLVM_full build number!")
     end
@@ -649,14 +726,14 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     if name == "libLLVM"
         script = libllvmscript
         products = [
-            LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm, dont_dlopen=true),
+            LibraryProduct(["LLVM", "libLLVM", "libLLVM-$(version.major)jl"], :libllvm; dont_dlopen),
             ExecutableProduct("llvm-config", :llvm_config, "tools"),
         ]
     elseif name == "Clang"
         script = clangscript
         products = [
-            LibraryProduct("libclang", :libclang, dont_dlopen=true),
-            LibraryProduct("libclang-cpp", :libclang_cpp, dont_dlopen=true),
+            LibraryProduct("libclang", :libclang; dont_dlopen),
+            LibraryProduct("libclang-cpp", :libclang_cpp; dont_dlopen),
             ExecutableProduct(["clang", "clang-$(version.major)"], :clang, "tools"),
         ]
     elseif name == "MLIR"
@@ -664,29 +741,36 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
             mlirscript_v13
         elseif version < v"15"
             mlirscript_v14
-        else
+        elseif version < v"16"
             mlirscript_v15
+        else
+            mlirscript_v16
         end
         products = [
-            LibraryProduct("libMLIR", :libMLIR, dont_dlopen=true),
+            LibraryProduct("libMLIR", :libMLIR; dont_dlopen),
         ]
         if v"12" <= version < v"13"
-            push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI, dont_dlopen=true))
+            push!(products, LibraryProduct("libMLIRPublicAPI", :libMLIRPublicAPI; dont_dlopen))
         end
         if version >= v"14"
-            push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c, dont_dlopen=true))
+            push!(products, LibraryProduct(["MLIR-C", "libMLIR-C"], :mlir_c; dont_dlopen))
         end
     elseif name == "LLD"
         script = lldscript
         products = [
             ExecutableProduct("lld", :lld, "tools"),
+            ExecutableProduct("ld.lld", :ld_lld, "tools"),      # Unix
+            ExecutableProduct("ld64.lld", :ld64_lld, "tools"),  # macOS
+            ExecutableProduct("lld-link", :lld_link, "tools"),  # Windows
+            ExecutableProduct("wasm-ld", :wasm_ld, "tools"),    # WebAssembly
+
             ExecutableProduct("dsymutil", :dsymutil, "tools"),
         ]
 
     elseif name == "LLVM"
         script = version < v"14" ? llvmscript_v13 : llvmscript_v14
         products = [
-            LibraryProduct(["LTO", "libLTO"], :liblto, dont_dlopen=true),
+            LibraryProduct(["LTO", "libLTO"], :liblto; dont_dlopen),
             ExecutableProduct("opt", :opt, "tools"),
             ExecutableProduct("llc", :llc, "tools"),
         ]
@@ -702,11 +786,19 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
         end
     end
 
-    platforms = supported_platforms(;experimental=experimental_platforms)
+    platforms = supported_platforms(; experimental=experimental_platforms)
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     if version >= v"15"
         # We don't build LLVM 15 for i686-linux-musl.
         filter!(p -> !(arch(p) == "i686" && libc(p) == "musl"), platforms)
+    end
+    if version < v"18"
+        # We only have LLVM builds for AArch64 BSD starting from LLVM 18
+        filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+    end
+    if version < v"19.1.7"
+        # We only have LLVM builds for riscv starting from LLVM 19.1.7
+        filter!(p -> arch(p) != "riscv64", platforms)
     end
     platforms = expand_cxxstring_abis(platforms)
 
@@ -723,8 +815,11 @@ function configure_extraction(ARGS, LLVM_full_version, name, libLLVM_version=not
     end
 
     dependencies = BinaryBuilder.AbstractDependency[
-        Dependency("Zlib_jll"), # for LLD&LTO
+        Dependency("Zlib_jll"), # for LLD&LTO&debuginfo
     ]
+    if version >= v"20"
+        push!(dependencies, Dependency("Zstd_jll")) # for debuginfo
+    end
 
     # Parse out some args
     if "--assert" in ARGS

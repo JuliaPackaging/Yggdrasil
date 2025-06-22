@@ -3,17 +3,30 @@
 using BinaryBuilder, Pkg
 
 name = "difmap"
-# difmap version is 2.5k, mapped here to numerical value of 2.5.11
-version = v"2.5.11"
+# difmap version is 2.5q, mapped here to numerical value of 2.5.17
+version = v"2.5.17"
 
-sources = [ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5k.tar.gz", "d754dcc094a758a817677fe493bde13408cc270910f6bb7bbc3487e002cc184e")]
+sources = [
+    ArchiveSource("ftp://ftp.astro.caltech.edu/pub/difmap/difmap2.5q.tar.gz", "18f61641a56d41624e603bf64794c9f1b072eea320a0c1e0a22ac0ca4d3cef95"),
+    DirectorySource("./bundled"),
+]
 
 script = raw"""
 cd $WORKSPACE/srcdir/uvf_difmap*
-sed -i 's|^USE_TECLA="1"|USE_TECLA="0"|' configure  # required only for platforms with musl
-./configure linux-i486-gcc
+
+for f in ../patch*; do
+    atomic_patch -p0 "${f}"
+done
+
+if [[ ${target} == *apple* ]]; then
+    # disable GUI support: X11 jlls not available for this platform
+    sed -i 's|^PGPLOT_LIB="-lpgplot -lX11"$|PGPLOT_LIB="-lpgplot"|' configure
+    CC=gcc CXX=g++ CCOMPL=gcc ./configure arm-osx-gcc
+else
+    ./configure linux-i486-gcc
+fi
 ./makeall
-cp ./difmap $bindir
+install difmap "${bindir}/difmap"
 install_license ./README
 """
 
@@ -21,6 +34,7 @@ platforms = [
     Platform("x86_64", "linux"; libc="musl"),
     Platform("x86_64", "linux"; libc="glibc"),
     Platform("i686", "linux"; libc="glibc"),
+    Platform("aarch64", "macos"),
 ]
 platforms = expand_gfortran_versions(platforms)
 
@@ -33,4 +47,4 @@ dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, julia_compat="1.6")

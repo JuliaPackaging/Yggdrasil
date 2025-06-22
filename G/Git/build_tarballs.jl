@@ -3,29 +3,37 @@
 using BinaryBuilder
 
 name = "Git"
-version = v"2.42.0"
+version = v"2.49.0"
+
+# <https://github.com/git-for-windows/git/releases> says:
+# "Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive."
+last_windows_32_bit_version = v"2.48.1"
 
 # Collection of sources required to build Git
 sources = [
     ArchiveSource("https://mirrors.edge.kernel.org/pub/software/scm/git/git-$(version).tar.xz",
-                  "3278210e9fd2994b8484dd7e3ddd9ea8b940ef52170cdb606daa94d887c93b0d"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.2/Git-$(version).2-32-bit.tar.bz2",
-                  "64cd27bebd457592a83c2aa8bf0555ef6501675769f330b7558041d17cbb52fa"; unpack_target = "i686-w64-mingw32"),
-    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.2/Git-$(version).2-64-bit.tar.bz2",
-                  "c192e56f8ed3d364acc87ad04d1f5aa6ae03c23b32b67bf65fcc6f9b8f032e65"; unpack_target = "x86_64-w64-mingw32"),
+                  "618190cf590b7e9f6c11f91f23b1d267cd98c3ab33b850416d8758f8b5a85628"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(last_windows_32_bit_version).windows.1/Git-$(last_windows_32_bit_version)-32-bit.tar.bz2",
+                  "41af3c80fd618855ad20b441f5f47763cece1ed07f6849ecbdb43066d0aa1dfd"; unpack_target = "i686-w64-mingw32"),
+    ArchiveSource("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/Git-$(version)-64-bit.tar.bz2",
+                  "6c5d66e3dd6cd44e50ba7892e9e24ace57934f277a3424c9702a400b3fedc1eb"; unpack_target = "x86_64-w64-mingw32"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 install_license ${WORKSPACE}/srcdir/git-*/COPYING
 
-if [[ "${target}" == *-ming* ]]; then
+if [[ "${target}" == *-mingw* ]]; then
+    cd ${WORKSPACE}/srcdir/${target}
+    # Delete symbolic links, which can't be created on Windows
+    echo "Deleting symbolic links..."
+    find . -type l -print -delete
     # Fast path for Windows: just copy the content of the tarball to the prefix
-    cp -r ${WORKSPACE}/srcdir/${target}/mingw${nbits}/* ${prefix}
+    cp -r * ${prefix}
     exit
 fi
 
-cd $WORKSPACE/srcdir/git-*/
+cd $WORKSPACE/srcdir/git-*
 
 # We need a native "tclsh" to cross-compile
 apk update
@@ -113,11 +121,11 @@ dependencies = [
     # Need a host gettext for msgfmt
     HostBuildDependency("Gettext_jll"),
     Dependency("LibCURL_jll"; compat="7.73.0,8"),
-    Dependency("Expat_jll"; compat="2.2.10"),
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("Expat_jll"; compat="2.6.5"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Libiconv_jll"),
-    Dependency("PCRE2_jll"; compat="10.35.0"),
-    Dependency("Zlib_jll"),
+    Dependency("PCRE2_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")

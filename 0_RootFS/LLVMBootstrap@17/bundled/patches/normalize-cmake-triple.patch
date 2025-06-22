@@ -1,0 +1,102 @@
+diff --git a/cmake/Modules/HandleOutOfTreeLLVM.cmake b/cmake/Modules/HandleOutOfTreeLLVM.cmake
+index edffe572e091..ea7f3aab7e8a 100644
+--- a/cmake/Modules/HandleOutOfTreeLLVM.cmake
++++ b/cmake/Modules/HandleOutOfTreeLLVM.cmake
+@@ -32,6 +32,21 @@ message(STATUS "Configuring for standalone build.")
+ include(GetHostTriple)
+ get_host_triple(LLVM_INFERRED_HOST_TRIPLE)
+ set(LLVM_HOST_TRIPLE "${LLVM_INFERRED_HOST_TRIPLE}" CACHE STRING "Host on which LLVM binaries will run")
++#NOTE: we must normalize specified target triple to a fully specified triple,
++# including the vendor part. It is necessary to synchronize the runtime library
++# installation path and operable target triple by Clang to get a correct runtime
++# path through `-print-runtime-dir` Clang option.
++string(REPLACE "-" ";" LLVM_HOST_TRIPLE "${LLVM_HOST_TRIPLE}")
++list(LENGTH LLVM_HOST_TRIPLE LLVM_HOST_TRIPLE_LEN)
++if (LLVM_HOST_TRIPLE_LEN LESS 3)
++  message(FATAL_ERROR "invalid target triple")
++endif()
++# We suppose missed vendor's part.
++if (LLVM_HOST_TRIPLE_LEN LESS 4)
++  list(INSERT LLVM_HOST_TRIPLE 1 "unknown")
++endif()
++string(REPLACE ";" "-" LLVM_HOST_TRIPLE "${LLVM_HOST_TRIPLE}")
++
+ set(LLVM_DEFAULT_TARGET_TRIPLE "${LLVM_HOST_TRIPLE}" CACHE STRING "Target triple used by default.")
+
+ # Add LLVM Functions --------------------------------------------------------
+diff --git a/llvm/cmake/config-ix.cmake b/llvm/cmake/config-ix.cmake
+index b78c1b34ab8b..d3786c3ea611 100644
+--- a/llvm/cmake/config-ix.cmake
++++ b/llvm/cmake/config-ix.cmake
+@@ -446,6 +446,21 @@ get_host_triple(LLVM_INFERRED_HOST_TRIPLE)
+ set(LLVM_HOST_TRIPLE "${LLVM_INFERRED_HOST_TRIPLE}" CACHE STRING
+     "Host on which LLVM binaries will run")
+
++  #NOTE: we must normalize specified target triple to a fully specified triple,
++  # including the vendor part. It is necessary to synchronize the runtime library
++  # installation path and operable target triple by Clang to get a correct runtime
++  # path through `-print-runtime-dir` Clang option.
++string(REPLACE "-" ";" LLVM_HOST_TRIPLE "${LLVM_HOST_TRIPLE}")
++list(LENGTH LLVM_HOST_TRIPLE LLVM_HOST_TRIPLE_LEN)
++if (LLVM_HOST_TRIPLE_LEN LESS 3)
++  message(FATAL_ERROR "invalid target triple")
++endif()
++# We suppose missed vendor's part.
++if (LLVM_HOST_TRIPLE_LEN LESS 4)
++  list(INSERT LLVM_HOST_TRIPLE 1 "unknown")
++endif()
++string(REPLACE ";" "-" LLVM_HOST_TRIPLE "${LLVM_HOST_TRIPLE}")
++
+ # Determine the native architecture.
+ string(TOLOWER "${LLVM_TARGET_ARCH}" LLVM_NATIVE_ARCH)
+ if( LLVM_NATIVE_ARCH STREQUAL "host" )
+diff --git a/llvm/cmake/modules/SetTargetTriple.cmake b/llvm/cmake/modules/SetTargetTriple.cmake
+index ed0a53ca3ec9..8485c5f1c354 100644
+--- a/llvm/cmake/modules/SetTargetTriple.cmake
++++ b/llvm/cmake/modules/SetTargetTriple.cmake
+@@ -8,6 +8,20 @@ macro(set_llvm_target_triple)
+   else()
+     set(LLVM_TARGET_TRIPLE "${LLVM_DEFAULT_TARGET_TRIPLE}")
+   endif()
++  #NOTE: we must normalize specified target triple to a fully specified triple,
++# including the vendor part. It is necessary to synchronize the runtime library
++# installation path and operable target triple by Clang to get a correct runtime
++# path through `-print-runtime-dir` Clang option.
++string(REPLACE "-" ";" LLVM_TARGET_TRIPLE "${LLVM_TARGET_TRIPLE}")
++list(LENGTH LLVM_TARGET_TRIPLE LLVM_TARGET_TRIPLE_LEN)
++if (LLVM_TARGET_TRIPLE_LEN LESS 3)
++  message(FATAL_ERROR "invalid target triple")
++endif()
++# We suppose missed vendor's part.
++if (LLVM_TARGET_TRIPLE_LEN LESS 4)
++  list(INSERT LLVM_TARGET_TRIPLE 1 "unknown")
++endif()
++string(REPLACE ";" "-" LLVM_TARGET_TRIPLE "${LLVM_TARGET_TRIPLE}")
+   message(STATUS "LLVM host triple: ${LLVM_HOST_TRIPLE}")
+   message(STATUS "LLVM default target triple: ${LLVM_DEFAULT_TARGET_TRIPLE}")
+ endmacro()
+diff --git a/runtimes/CMakeLists.txt b/runtimes/CMakeLists.txt
+index 50f782205ab4..7c6006d7946a 100644
+--- a/runtimes/CMakeLists.txt
++++ b/runtimes/CMakeLists.txt
+@@ -161,6 +161,21 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
+ # Host triple is used by tests to check if they are running natively.
+ include(GetHostTriple)
+ get_host_triple(LLVM_HOST_TRIPLE)
++#NOTE: we must normalize specified target triple to a fully specified triple,
++# including the vendor part. It is necessary to synchronize the runtime library
++# installation path and operable target triple by Clang to get a correct runtime
++# path through `-print-runtime-dir` Clang option.
++string(REPLACE "-" ";" LLVM_HOST_TRIPLE "${LLVM_HOST_TRIPLE}")
++list(LENGTH LLVM_HOST_TRIPLE LLVM_HOST_TRIPLE_LEN)
++if (LLVM_HOST_TRIPLE_LEN LESS 3)
++  message(FATAL_ERROR "invalid target triple")
++endif()
++# We suppose missed vendor's part.
++if (LLVM_HOST_TRIPLE_LEN LESS 4)
++  list(INSERT LLVM_HOST_TRIPLE 1 "unknown")
++endif()
++string(REPLACE ";" "-" LLVM_HOST_TRIPLE "${LLVM_HOST_TRIPLE}")
++
+ set(LLVM_DEFAULT_TARGET_TRIPLE "${LLVM_HOST_TRIPLE}" CACHE STRING
+   "Default target for which the runtimes will be built.")
