@@ -35,7 +35,7 @@ platforms = [
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("vl-convert${exeext}", :vlconvert),
+    ExecutableProduct("vl-convert", :vlconvert),
 ]
 
 # Dependencies that must be installed before this package can be built
