@@ -51,7 +51,7 @@ install_license LICENSE
 
 bin/fetch-gn 
 
-# The || true is necessary, since the script fails for some Android deps
+# The || true is necessary, since the script fails for some Android deps. || true should be removed for future versions
 python3 tools/git-sync-deps || true
 
 cp ../cskia/capi/sk_capi.cpp src/base/
