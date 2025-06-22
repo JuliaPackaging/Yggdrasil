@@ -97,6 +97,9 @@ cd out/Static/
 
 clang++ -shared -o libskia.${dlext} $(flagon -Wl,--whole-archive) libskia.a $(flagon -Wl,--no-whole-archive) libfreetype2.a libjpeg.a libbentleyottmann.a libcompression_utils_portable.a libdng_sdk.a libjsonreader.a libpathkit.a  libpiex.a libpng.a libskcms.a libsksg.a libskshaper.a libskunicode_core.a libskunicode_icu.a libsvg.a -fpic -dl -lfontconfig -lGL
 
+# Checks that one of the required symbols for the Julia API are included in libskia.so. The --whole-archive above are one possible solution for this
+nm -D libskia.so | grep -q "sk_string_new_empty" && true || false
+
 install -Dvm 755 "libskia.${dlext}" "${libdir}/libskia.${dlext}"
 """
 
