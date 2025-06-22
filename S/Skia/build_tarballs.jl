@@ -88,7 +88,6 @@ skia_use_system_libpng=false
 skia_use_system_libwebp=false
 skia_use_system_zlib=false
 skia_use_vulkan=true
-extra_cflags=[\\"-fpic\\", \\"-fvisibility=default\\"]
 "
 bin/gn gen out/Dynamic --args="$ARGS"
 
