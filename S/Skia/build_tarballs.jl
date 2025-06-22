@@ -71,6 +71,7 @@ elif [[ "${target}" == i686-* ]]; then
 fi
 
 ARGS="
+is_component_build=true \
 target_cpu=\\"$target_cpu\\"
 cc=\\"clang\\"
 cxx=\\"clang++\\"
