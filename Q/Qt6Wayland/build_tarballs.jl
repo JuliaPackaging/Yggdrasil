@@ -49,6 +49,10 @@ include("../Qt6Base/common.jl")
 empty!(platforms_macos)
 empty!(platforms_win)
 
+# It seems Qt 6.8 Wayland doesn't compile out of the box on freeBSD and when forced requires
+# proper support in Qt6Base. To be investigated on version upgrade.
+filter!(!Sys.isfreebsd, platforms)
+
 # The products that we will ensure are always built
 products = [
     FileProduct("plugins", :qt6plugins_dir),
