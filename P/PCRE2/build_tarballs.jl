@@ -5,18 +5,11 @@ using BinaryBuilderBase: sanitize
 
 name = "PCRE2"
 
-# We are temporarily switching back to building version 10.42. This
-# allows us to build this version for newer architectures, which in
-# turn allows us to use `compat="10.42.1"` when PCRE2 is a dependency.
-# Otherwise we would either need to use `compat="10.42"`, which
-# prevents building for new architectures, or `compat="10.45"`, which
-# doesn't work with Julia 1.10, or without a compat declaration, which
-# leads to problems because this builds against 10.45 and then loads
-# 10.42 (on Julia 1.10), and this doesn't always work.
+# We are temporarily switching back to building version 10.42 to build
+# this version for newer architectures.
 version_string = "10.42"
-version = v"10.42.1"
 # version_string = "10.45"
-# version = VersionNumber(version_string)
+version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
