@@ -52,6 +52,15 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
+# On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `getrandom`
+# The file `sys/random.h` does not exist on older versions of Linux. Create a symlink if necessary.
+MAKE_VARIABLES=()
+if [[ "${target}" == *-linux-* ]]; then
+    if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
+        MAKE_VARIABLES+=(CSPRNG_METHOD=/dev/urandom)
+    fi
+fi
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} \
     --with-curl \
     --with-expat \
@@ -61,8 +70,8 @@ fi
     --with-zlib=${prefix} \
     --with-tcltk=no \
     "${CACHE_VALUES[@]}"
-make -j${nproc}
-make install INSTALL_SYMLINKS="yes, please"
+make -j${nproc} "${MAKE_VARIABLES[@]}"
+make install INSTALL_SYMLINKS="yes, please" "${MAKE_VARIABLES[@]}"
 
 # Because of the System Integrity Protection (SIP), when running shell or Perl scripts, the
 # environment variable `DYLD_FALLBACK_LIBRARY_PATH` is reset.  We work around this
