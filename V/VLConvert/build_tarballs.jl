@@ -16,8 +16,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/${target}
 unzip *.zip
-cp -r bin ${prefix}/.
-chmod +x ${bindir}/vl-convert${exeext}
+install -Dvm 755 "bin/vl-convert${exeext}" -t "${bindir}"
 install_license LICENSE
 """
 
