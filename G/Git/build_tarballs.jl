@@ -52,8 +52,8 @@ else
     sed -i 's/cross_compiling=yes/cross_compiling=no/' configure
 fi
 
-# On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `getrandom`
-# The file `sys/random.h` does not exist on older versions of Linux. Create a symlink if necessary.
+# On Linux, we need at least glibc 2.25 or musl 1.1.20 to get `sys/random.h`.
+# Git does not check whether this file exists. Explicitly disable `getrandom` if this file doesn't exist.
 MAKE_VARIABLES=()
 if [[ "${target}" == *-linux-* ]]; then
     if [ ! -e /opt/${target}/${target}/sys-root/usr/include/sys/random.h ]; then
