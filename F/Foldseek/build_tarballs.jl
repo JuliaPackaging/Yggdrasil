@@ -23,6 +23,9 @@ sources = [
 #   and usage in freebsd headers, e.g. at line 190 of
 #   /opt/x86_64-unknown-freebsd12.2/x86_64-unknown-freebsd12.2/sys-root//usr/include/sys/time.h
 #   see: https://github.com/JuliaPackaging/Yggdrasil/pull/6195#issuecomment-1416227398
+# - musl, riscv64: Rust fails to compile with error: undefined reference to 
+#   `posix_spawn_file_actions_addchdir_np'. This is possibly an upstream issue:
+#   https://github.com/rust-lang/rust/issues/141795
 
 script = raw"""
 cd $WORKSPACE/srcdir/foldseek*/
@@ -79,4 +82,4 @@ dependencies = Dependency[
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version = v"11", compilers=[:c, :cxx, :rust])
+               julia_compat="1.6", preferred_gcc_version = v"11", compilers=[:c, :rust])
