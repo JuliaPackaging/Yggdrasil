@@ -12,8 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gettext-*/
-cd gettext-runtime
+cd $WORKSPACE/srcdir/gettext-*/gettext-runtime
 
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
