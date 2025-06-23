@@ -2,10 +2,11 @@ using BinaryBuilder
 
 # Collection of sources required to build GettextRuntime
 name = "GettextRuntime"
-version = v"0.22.4"
+version_string = "0.22.4"
+version = VersionNumber(version_string)
 
 sources = [
-    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version.major).$(version.minor).$(version.patch).tar.xz",
+    ArchiveSource("https://ftp.gnu.org/pub/gnu/gettext/gettext-$(version_string).tar.xz",
                   "29217f1816ee2e777fa9a01f9956a14139c0c23cc1b20368f06b2888e8a34116"),
 ]
 
