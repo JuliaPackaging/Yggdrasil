@@ -68,7 +68,7 @@ MESON_FLAGS+=(-Dtests=false)
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
     # complain if this symbol is used in the built library, even if this won't
-    # be a problem at runtim.  This flag allows having undefined symbols.
+    # be a problem at runtime. This flag allows having undefined symbols.
     MESON_FLAGS+=(-Db_lundef=false)
 fi
 
@@ -107,11 +107,12 @@ products = [
 dependencies = [
     # Host gettext needed for "msgfmt"
     HostBuildDependency("Gettext_jll"),
-    Dependency("Libiconv_jll"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
+    Dependency("Libiconv_jll"),
+    Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
+    RuntimeDependency("GettextRuntime_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
