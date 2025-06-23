@@ -2,6 +2,8 @@ using BinaryBuilder
 
 name = "Glib"
 version = v"2.84.0"
+# We bumped the Yggdrasil version number to add a compat bound for PCRE2
+ygg_version = v"2.84.1"
 
 # Collection of sources required to build Glib
 sources = [
@@ -107,14 +109,11 @@ dependencies = [
     HostBuildDependency("Gettext_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
-    # Gettext is only needed on macOS, as far as I could see
-    Dependency("Gettext_jll", v"0.21.0"; compat="=0.21.0"),
-    # no compat entry for PCRE2 to make riscv64 work
-    Dependency("PCRE2_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
