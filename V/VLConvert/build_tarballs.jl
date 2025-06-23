@@ -18,9 +18,7 @@ cd ${WORKSPACE}/srcdir/${target}
 unzip *.zip
 cp -r bin ${prefix}/.
 chmod +x ${bindir}/vl-convert${exeext}
-LIC_DIR="${prefix}/share/licenses/${SRC_NAME}"
-mkdir -p "${LIC_DIR}"
-mv "${bindir}/LICENSE" "${LIC_DIR}/LICENSE.txt"
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
