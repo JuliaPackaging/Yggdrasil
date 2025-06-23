@@ -17,7 +17,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/${target}
 unzip *.zip
 install -Dvm 755 "bin/vl-convert${exeext}" -t "${bindir}"
-install_license LICENSE
+install_license "${bindir}/LICENSE"
 """
 
 # These are the platforms we will build for by default, unless further
