@@ -9,30 +9,29 @@ ygg_version = v"2.84.1"
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
                   "f8823600cb85425e2815cfad82ea20fdaa538482ab74e7293d58b3f64a5aff6a"),
-    ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
-                  "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
-    ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
-                  "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
+               "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
+    FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
+               "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.13
-    pushd ${WORKSPACE}/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -a usr/* "/opt/${target}/${target}/sys-root/usr/"
-    cp -a System "/opt/${target}/${target}/sys-root/"
-    popd
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
+    export MACOSX_DEPLOYMENT_TARGET=10.13
 fi
 
 if [[ "${target}" == *-mingw* ]]; then
-    cd $WORKSPACE/srcdir/mingw*/mingw-w64-headers
+    cd $WORKSPACE/srcdir
+    tar xjf ${WORKSPACE}/srcdir/mingw-w64-v10.0.0.tar.bz2
+    cd mingw*/mingw-w64-headers
     ./configure --prefix=/opt/$target/$target/sys-root --enable-sdk=all --host=$target
     make install
 
-    cd ../mingw-w64-crt/
+    cd ../mingw-w64-crt
     if [ ${target} == "i686-w64-mingw32" ]; then
         _crt_configure_args="--disable-lib64 --enable-lib32"
     elif [ ${target} == "x86_64-w64-mingw32" ]; then
@@ -43,7 +42,7 @@ if [[ "${target}" == *-mingw* ]]; then
     make install
 fi
 
-cd $WORKSPACE/srcdir/glib-*/
+cd $WORKSPACE/srcdir/glib-*
 install_license COPYING
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
@@ -107,12 +106,12 @@ products = [
 dependencies = [
     # Host gettext needed for "msgfmt"
     HostBuildDependency("Gettext_jll"),
+    Dependency("GettextRuntime_jll"; compat="0.22.4"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
     Dependency("Libiconv_jll"),
     Dependency("Libmount_jll"; platforms=filter(Sys.islinux, platforms)),
     Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    RuntimeDependency("GettextRuntime_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
