@@ -29,7 +29,7 @@ elif [[ "${target}" == "aarch64-apple-darwin" ]]; then
     export DUCKDB_TARGET="osx_arm64"
 fi
 
-if [[ "${CMAKE_TARGET_TOOLCHAIN}" == *-cxx03* ]]; then
+if [[ "${bb_full_target}" == *-cxx03* ]]; then
     export DUCKDB_TARGET="${DUCKDB_TARGET}_gcc4"
 fi
 
