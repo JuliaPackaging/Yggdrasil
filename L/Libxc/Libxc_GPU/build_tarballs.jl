@@ -41,6 +41,7 @@ cmake -DCMAKE_INSTALL_PREFIX=$prefix \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc \
+      -DCMAKE_CUDA_FLAGS="--cudart shared" `#Use shared CUDA runtime` \
       -DBUILD_SHARED_LIBS=ON \
       -DBUILD_TESTING=OFF \
       -DENABLE_CUDA=ON \
@@ -80,7 +81,7 @@ dependencies = [
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    cuda_deps = CUDA.required_dependencies(platform; static_sdk=true)
+    cuda_deps = CUDA.required_dependencies(platform)
     cuda_ver = platform["cuda"]
 
     # Download the CUDA redist for the host x64_64 architecture
