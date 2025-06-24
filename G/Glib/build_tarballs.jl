@@ -1,19 +1,17 @@
 using BinaryBuilder
 
 name = "Glib"
-version = v"2.84.0"
-# We bumped the Yggdrasil version number to add a compat bound for PCRE2
-ygg_version = v"2.84.1"
+version = v"2.84.3"
 
 # Collection of sources required to build Glib
 sources = [
     ArchiveSource("https://ftp.gnome.org/pub/gnome/sources/glib/$(version.major).$(version.minor)/glib-$(version).tar.xz",
-                  "f8823600cb85425e2815cfad82ea20fdaa538482ab74e7293d58b3f64a5aff6a"),
+                  "aa4f87c3225bf57ca85f320888f7484901a17934ca37023c3bd8435a72db863e"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
                "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"),
     FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
-    DirectorySource("./bundled"),
+    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -115,5 +113,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
