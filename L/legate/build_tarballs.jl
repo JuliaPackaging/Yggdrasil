@@ -13,6 +13,7 @@ name = "legate"
 version = v"25.5" # Year.Month
 sources = [
     GitSource("https://github.com/nv-legate/legate.git","8a619fa468a73f9766f59ac9a614c0ee084ecbdd"),
+    DirectorySource("./bundled"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
@@ -96,6 +97,13 @@ ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
     -- "-DCMAKE_TOOLCHAIN_FILE=/opt/toolchains/${bb_full_target}/target_${target}_clang.cmake" \
         "-DCMAKE_CUDA_HOST_COMPILER=$(which clang++)" \
 
+
+# Patch redop header that is installed by configure script
+cd ${WORKSPACE}/srcdir
+atomic_patch -p1 ./legion_redop.patch
+
+# Go back to main dir
+cd ${WORKSPACE}/srcdir/legate
 
 make install -j ${nproc} PREFIX=${prefix}
 install_license ${WORKSPACE}/srcdir/legate/LICENSE
