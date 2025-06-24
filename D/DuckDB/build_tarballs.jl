@@ -15,11 +15,11 @@ script = raw"""
 cd $WORKSPACE/srcdir/duckdb/
 
 export DUCKDB_TARGET="${target}"
-if [[ "${target}" == *86*-linux-gnu ]]; then
+if [[ "${target}" == "x86_64-linux-gnu" ]]; then
     export DUCKDB_TARGET="linux_amd64"
 elif [[ "${target}" == aarch64-linux-gnu ]]; then
     export DUCKDB_TARGET="linux_arm64"
-elif [[ "${target}" == *86*-linux-musl* ]]; then
+elif [[ "${target}" == "x86_64-linux-musl" ]]; then
     export DUCKDB_TARGET="linux_amd64_musl"
 elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
     export DUCKDB_TARGET="windows_amd64_mingw"
@@ -29,7 +29,18 @@ elif [[ "${target}" == "aarch64-apple-darwin" ]]; then
     export DUCKDB_TARGET="osx_arm64"
 fi
 
+if [[ "${COMPILER_TARGET}" == *-cxx03 ]]; then
+    export DUCKDB_TARGET="${DUCKDB_TARGET}_gcc4"
+fi
+
 echo "Compiling for DuckDB Target - $DUCKDB_TARGET"
+echo "COMPILER_TARGET ${COMPILER_TARGET}"
+echo "CMAKE_TARGET_TOOLCHAIN ${CMAKE_TARGET_TOOLCHAIN}"
+echo "prefix ${prefix}"
+echo "libdir ${libdir}"
+echo "WORKSPACE ${WORKSPACE}"
+echo "MACHTYPE ${MACHTYPE}"
+echo "HOST_TARGET ${HOST_TARGET}"
 
 cmake -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
