@@ -14,6 +14,23 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/duckdb/
 
+export DUCKDB_TARGET="${target}"
+if [[ "${target}" == *86*-linux-gnu ]]; then
+    export DUCKDB_TARGET="linux_amd64"
+elif [[ "${target}" == aarch64-linux-gnu ]]; then
+    export DUCKDB_TARGET="linux_arm64"
+elif [[ "${target}" == *86*-linux-musl* ]]; then
+    export DUCKDB_TARGET="linux_amd64_musl"
+elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
+    export DUCKDB_TARGET="windows_amd64_mingw"
+elif [[ "${target}" == "x86_64-apple-darwin" ]]; then
+    export DUCKDB_TARGET="osx_amd64"
+elif [[ "${target}" == "aarch64-apple-darwin" ]]; then
+    export DUCKDB_TARGET="osx_arm64"
+fi
+
+echo "Compiling for DuckDB Target - $DUCKDB_TARGET"
+
 cmake -B build \
       -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -24,7 +41,8 @@ cmake -B build \
       -DENABLE_EXTENSION_AUTOLOADING=1 \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
       -DBUILD_UNITTESTS=FALSE \
-      -DBUILD_SHELL=TRUE
+      -DBUILD_SHELL=TRUE \
+      -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
 cmake --build build --parallel ${nproc}
 cmake --install build
 
