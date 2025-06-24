@@ -24,8 +24,7 @@ cmake -B build \
       -DENABLE_EXTENSION_AUTOLOADING=1 \
       -DENABLE_EXTENSION_AUTOINSTALL=1 \
       -DBUILD_UNITTESTS=FALSE \
-      -DBUILD_SHELL=TRUE \
-      -DDUCKDB_EXPLICIT_PLATFORM="${target}"
+      -DBUILD_SHELL=TRUE
 cmake --build build --parallel ${nproc}
 cmake --install build
 
