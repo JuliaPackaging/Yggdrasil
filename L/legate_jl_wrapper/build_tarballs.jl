@@ -9,7 +9,6 @@ name = "legate_jl_wrapper"
 version = v"25.5" # legate has 05, but Julia doesn't like that
 sources = [
     GitSource("https://github.com/JuliaLegate/legate_jl_wrapper.git","f00bd063be66b735fc6040b40027669337399a06"),
-    DirectorySource("./bundled")
 ]
 
 MIN_JULIA_VERSION = v"1.10"
@@ -50,7 +49,6 @@ script = raw"""
 
     ln -s ${CUDA_HOME}/lib ${CUDA_HOME}/lib64
 
-
     mkdir build
     cd build
     cmake \
@@ -59,7 +57,6 @@ script = raw"""
         -DCMAKE_INSTALL_PREFIX=${prefix} \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         -DJulia_PREFIX=${prefix} \
-        -DLEGATE_PREFIX=${prefix} \
         ../legate_jl_wrapper/
 
     VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
