@@ -3,11 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "rdma_core"
-version = v"57.0.0"
+version = v"58.0.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/linux-rdma/rdma-core/releases/download/v$(version.major).$(version.minor)/rdma-core-$(version.major).$(version.minor).tar.gz", "5f94c463c931e4a9273f366ca7cb446b54d8bd4732288ade04679886be06862d")
+    ArchiveSource("https://github.com/linux-rdma/rdma-core/releases/download/v$(version.major).$(version.minor)/rdma-core-$(version.major).$(version.minor).tar.gz", "88d67897b793f42d2004eec2629ab8464e425e058f22afabd29faac0a2f54ce4"),
+	DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
