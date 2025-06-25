@@ -34,6 +34,7 @@ platforms = remove_unsupported_platforms(platforms)
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libxc", :libxc)
+    LibraryProduct("libxcf03", :libxcf03)
 ]
 
 # Dependencies that must be installed before this package can be built
