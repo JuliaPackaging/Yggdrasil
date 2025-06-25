@@ -25,13 +25,6 @@ script = raw"""
     export PATH=${host_bindir}:$PATH
 
     cd ${WORKSPACE}/srcdir/
-    
-    # Apply patch for complex half types...
-    current_header=${prefix}/include/legate/deps/legion/legion_redop.inl 
-    if [ -e "$current_header" ]; then
-        rm $current_header 
-    fi 
-    cp ./legion_redop_patch.inl ${current_header}
 
     # Necessary operations to cross compile CUDA from x86_64 to aarch64
     if [[ "${target}" == aarch64-linux-* ]]; then
