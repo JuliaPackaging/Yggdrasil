@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Runtime"
-version = v"0.17.1"
+version = v"0.18.0"
 
 augment_platform_block = """
     $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
@@ -31,22 +31,16 @@ install_license cuda_cudart/LICENSE
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
 if [[ ${target} == *-linux-gnu ]]; then
-    mv cuda_cudart/lib/libcudart.so* cuda_cudart/lib/libcudadevrt.a ${libdir}
+    mv cuda_cudart/lib/libcudart.so* ${libdir}
 
     mv cuda_cupti/lib/libcupti.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_host.so* ${libdir}
     mv cuda_cupti/lib/libnvperf_target.so* ${libdir}
 
-    mkdir ${prefix}/share/libdevice
     mv cuda_nvcc/nvvm/lib64/libnvvm.so* ${libdir}
-    mv cuda_nvcc/bin/ptxas ${bindir}
-    mv cuda_nvcc/bin/nvlink ${bindir}
-    mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
 
     mv cuda_nvrtc/lib/libnvrtc.so* ${libdir}
     mv cuda_nvrtc/lib/libnvrtc-builtins.so* ${libdir}
-
-    mv cuda_nvdisasm/bin/nvdisasm ${bindir}
 
     if [[ -d libnvjitlink ]]; then
         mv libnvjitlink/lib/libnvJitLink.so* ${libdir}
@@ -69,26 +63,15 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     done
 
     mv cuda_cudart/bin/cudart64_*.dll ${bindir}
-    if [[ -d cuda_cudart/lib/x64 ]]; then
-        mv cuda_cudart/lib/x64/cudadevrt.lib ${prefix}/lib
-    else
-        mv cuda_cudart/lib/cudadevrt.lib ${prefix}/lib
-    fi
 
     mv cuda_cupti/bin/cupti64_*.dll ${bindir}
     mv cuda_cupti/bin/nvperf_host.dll* ${libdir}
     mv cuda_cupti/bin/nvperf_target.dll* ${libdir}
 
-    mkdir ${prefix}/share/libdevice
     mv cuda_nvcc/nvvm/bin/nvvm64_*.dll ${bindir}
-    mv cuda_nvcc/bin/ptxas.exe ${bindir}
-    mv cuda_nvcc/bin/nvlink.exe ${bindir}
-    mv cuda_nvcc/nvvm/libdevice/libdevice.10.bc ${prefix}/share/libdevice
 
     mv cuda_nvrtc/bin/nvrtc64_* ${bindir}
     mv cuda_nvrtc/bin/nvrtc-builtins64_* ${bindir}
-
-    mv cuda_nvdisasm/bin/nvdisasm.exe ${bindir}
 
     if [[ -d libnvjitlink ]]; then
         mv libnvjitlink/bin/nvJitLink_*.dll ${bindir}
@@ -105,7 +88,7 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     mv libcurand/bin/curand64_*.dll ${bindir}
 
     # Fix permissions
-    chmod +x ${bindir}/*.{exe,dll}
+    chmod +x ${bindir}/*.dll
 fi
 """
 
@@ -121,7 +104,6 @@ for version in CUDA.cuda_full_versions
         "cuda_cupti",
         "cuda_nvcc",
         "cuda_nvrtc",
-        "cuda_nvdisasm",
 
         "libcublas",
         "libcufft",
@@ -158,14 +140,14 @@ for version in CUDA.cuda_full_versions
 
         if Base.thisminor(version) == v"10.2"
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll"; compat="0.13"),
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"12.9"; compat="12"),
                                  BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=v"10.2.89"))],
                    script=get_script(), platforms=[augmented_platform], products=get_products(platform),
                    sources=[]
             ))
         else
             push!(builds,
-                (; dependencies=[Dependency("CUDA_Driver_jll"; compat="0.13")],
+                (; dependencies=[Dependency("CUDA_Driver_jll", v"12.9"; compat="12")],
                    script, platforms=[augmented_platform], products=get_products(platform),
                    sources=get_sources("cuda", components; version, platform)
             ))

@@ -14,10 +14,5 @@ function get_products(platform)
         LibraryProduct(["libnvrtc", "nvrtc64_120_0"], :libnvrtc),
         LibraryProduct(["libnvrtc-builtins", "nvrtc-builtins64_125"], :libnvrtc_builtins),
         LibraryProduct(["libnvJitLink", "nvJitLink_120_0"], :libnvJitLink),
-        FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
-        FileProduct("share/libdevice/libdevice.10.bc", :libdevice),
-        ExecutableProduct("ptxas", :ptxas),
-        ExecutableProduct("nvdisasm", :nvdisasm),
-        ExecutableProduct("nvlink", :nvlink),
     ]
 end
