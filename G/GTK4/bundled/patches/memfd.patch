@@ -1,0 +1,23 @@
+--- a/meson.build
++++ b/meson.build
+@@ -691,7 +691,19 @@
+   cdata.set('HAVE_DRM_DRM_FOURCC_H', have_drm_fourcc)
+ endif
+ 
+-cdata.set('HAVE_DMABUF', cc.has_header('linux/dma-buf.h'))
++cdata.set('HAVE_DMABUF',
++          cc.has_header('linux/dma-buf.h') and
++          cc.has_function('memfd_create',
++                          args: '-D_GNU_SOURCE',
++                          prefix:
++                            '#include <stdlib.h>\n' +
++                            '#include <string.h>\n' +
++                            '#include <unistd.h>\n' +
++                            '#include <sys/mman.h>\n' +
++                            '#include <fcntl.h>\n' +
++                            '#include <math.h>',
++                          dependencies: libm)
++)
+ 
+ cloudproviders_dep = dependency('cloudproviders',
+   required: get_option('cloudproviders'),
