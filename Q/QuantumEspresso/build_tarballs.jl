@@ -4,7 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "QuantumEspresso"
-version = v"7.4.0"
+version = v"7.4.1"
 quantumespresso_version = v"7.4.1"
 
 sources = [
