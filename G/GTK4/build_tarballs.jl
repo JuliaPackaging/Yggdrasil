@@ -3,13 +3,12 @@
 using BinaryBuilder
 
 name = "GTK4"
-version = v"4.19.1"
+version = v"4.18.6"
 
 # Collection of sources required to build GTK
 sources = [
-    # https://download.gnome.org/sources/gtk/
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
-                  "7e793899bc2a47fdf52b149b9262f5398a2dd1252cfe58536e3dbfb78848d4eb"),
+                  "e1817c650ddc3261f9a8345b3b22a26a5d80af154630dedc03cc7becefffd0fa"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
