@@ -10,7 +10,9 @@ sources = [
     # https://download.gnome.org/sources/gtk/
     ArchiveSource("https://download.gnome.org/sources/gtk/$(version.major).$(version.minor)/gtk-$(version).tar.xz",
                   "7e793899bc2a47fdf52b149b9262f5398a2dd1252cfe58536e3dbfb78848d4eb"),
-    FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
+    FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
+               "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
+   FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("bundled"),
 ]
@@ -26,6 +28,11 @@ apk add glib-dev py3-pip
 # we need a newer meson (>= 1.5.0)
 pip3 install -U meson
 
+# Some of our older glib versions do not support `memfd_create`. Meson
+# checks whether this functino is available, but not all uses of
+# `memfd_create` are protected by `#ifdef`, so disable some features
+# manually if not supported. Reported as
+# <https://gitlab.gnome.org/GNOME/gtk/-/issues/7620>.
 atomic_patch -p1 ../patches/memfd.patch
 
 # This is awful, I know
@@ -33,12 +40,50 @@ ln -sf /usr/bin/glib-compile-resources ${bindir}/glib-compile-resources
 ln -sf /usr/bin/glib-compile-schemas ${bindir}/glib-compile-schemas
 ln -sf /usr/bin/gdk-pixbuf-pixdata ${bindir}/gdk-pixbuf-pixdata
 
-FLAGS=()
-if [[ "${target}" == *-apple-* ]]; then
-    FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
-elif [[ "${target}" == *-freebsd* ]]; then
-    FLAGS+=(-Dwayland-backend=false)
-elif [[ "${target}" == *-mingw* ]]; then
+if [[ "${target}" == x86_64-linux-musl* ]]; then
+    # For some reason, all sorts of standard library paths are in `LD_LIBRARY_PATH`.
+    # On x86_64-linux-musl, this confuses the linker, and it really likes to link in libraries from these standard paths.
+    # It mustn't. So we fix `LD_LIBRARY_PATH`.
+    LD_LIBRARY_PATH=$(
+        echo "$LD_LIBRARY_PATH" |
+        sed -e 's+:/usr/local/lib64:+:+' |
+        sed -e 's+:/usr/local/lib:+:+' |
+        sed -e 's+:/usr/lib64:+:+' |
+        sed -e 's+:/usr/lib:+:+' |
+        sed -e 's+:/lib64:+:+' |
+        sed -e 's+:/lib:+:+')
+
+    # On x86_64-linux-musl, there are still some libraries that are pulled in from the standard paths instead of from `$libdir`.
+    # This fixes that.
+    rm /lib/libmount.so*
+    rm /lib/libblkid.so*
+    rm /usr/lib/libexpat.so*
+    rm /usr/lib/libffi.so*
+fi
+
+# `${bindir}/wayland_scanner` is a symbolic link that contains `..` path elements.
+# These are not properly normalized: They are normalized before expanding the symbolic link `/workspace/destdir`,
+# and this leads to a broken reference. We resolve the path manually.
+#
+# Since this symbolic link is working in the shell, and since `pkg-config` outputs the expected values,
+# I think this may be a bug in `meson`.
+#
+# The file `wayland-scanner.pc` is mounted multiple times (and is also available via symbolic links). Fix all mount points.
+for destdir in /workspace/*/destdir; do
+    prefix_path=$(echo $destdir | sed -e 's+/destdir$++')/$(readlink ${bindir}/wayland-scanner | sed -e 's+^[.][.]/[.][.]/++' | sed -e 's+/bin/wayland-scanner$++')
+    if [ -e ${prefix_path}/lib/pkgconfig/wayland-scanner.pc ]; then
+        sed -i -e "s+prefix=.*+prefix=${prefix_path}+" ${prefix_path}/lib/pkgconfig/wayland-scanner.pc
+    fi
+done
+
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # macOS SDK 10.15 or newer is required to build GTK
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    rm -rf /opt/${target}/${target}/sys-root/System
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
+fi
+
+if [[ "${target}" == *-mingw* ]]; then
     cd $WORKSPACE/srcdir
     tar xjf mingw-w64-v10.0.0.tar.bz2
     cd mingw*/mingw-w64-headers
@@ -56,10 +101,18 @@ elif [[ "${target}" == *-mingw* ]]; then
     make install
 fi
 
+FLAGS=()
+if [[ "${target}" == *-apple-* ]]; then
+    FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
+elif [[ "${target}" == *-freebsd* ]]; then
+    FLAGS+=(-Dwayland-backend=false)
+fi
+
 cd $WORKSPACE/srcdir/gtk*
 
-PKG_CONFIG_SYSROOT_DIR='' meson setup builddir \
+meson setup builddir \
     --buildtype=release \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
     -Dmedia-gstreamer=disabled \
     -Dintrospection=disabled \
     -Dvulkan=disabled \
@@ -67,8 +120,7 @@ PKG_CONFIG_SYSROOT_DIR='' meson setup builddir \
     -Dbuild-examples=false \
     -Dbuild-tests=false \
     -Dbuild-testsuite=false \
-    "${FLAGS[@]}" \
-    --cross-file="${MESON_TARGET_TOOLCHAIN}"
+    "${FLAGS[@]}"
 meson compile -C builddir
 meson install -C builddir
 
@@ -84,6 +136,15 @@ rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
+
+# Many X11 dependencies have not yet been built for armv6l
+filter!(p -> arch(p) != "armv6l", platforms)
+
+# There is a linker error:
+# The symbol `g_libintl_bindtextdomain`, required by `gdk_pixbuf_jll`, is not defined.
+# This should probably be defined by `Glib_jll`. I don't know exactly what is going on.
+# In particular, I don't understand where the `g_` prefix is coming from.
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) != "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -102,33 +163,36 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     # Build needs a header from but does not link to libdrm
     BuildDependency("libdrm_jll"; platforms=x11_platforms),
+    Dependency("Cairo_jll"; compat="1.18.5"),
+    Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"; compat="2.13.4"),
+    Dependency("FriBidi_jll"),
+    Dependency("GettextRuntime_jll"; compat="0.22.4"),
     Dependency("Glib_jll"; compat="2.84.3"),
     Dependency("Graphene_jll"; compat="1.10.8"),
-    Dependency("Cairo_jll"; compat="1.18.5"),
-    Dependency("Pango_jll"; compat="1.56.3"),
-    Dependency("FriBidi_jll"),
-    Dependency("FreeType2_jll"; compat="2.13.4"),
-    Dependency("gdk_pixbuf_jll"),
+    Dependency("HarfBuzz_jll"),
     Dependency("Libepoxy_jll"; compat="1.5.11"),
     Dependency("Libtiff_jll"; compat="4.7.1"),
-    Dependency("HarfBuzz_jll"),
-    Dependency("xkbcommon_jll"; platforms=x11_platforms),
-    Dependency("iso_codes_jll"),
+    Dependency("PCRE2_jll"; compat="10.42"),
+    Dependency("Pango_jll"; compat="1.56.3"),
     Dependency("Wayland_jll"; platforms=x11_platforms),
     Dependency("Wayland_protocols_jll"; compat="1.44", platforms=x11_platforms),
-    Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
-    Dependency("Xorg_libXrender_jll"; platforms=x11_platforms),
-    Dependency("Xorg_libXi_jll"; platforms=x11_platforms),
-    Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXcursor_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXdamage_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXext_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXfixes_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXi_jll"; platforms=x11_platforms),
     Dependency("Xorg_libXinerama_jll"; platforms=x11_platforms),
-    Dependency("Fontconfig_jll"),
+    Dependency("Xorg_libXrandr_jll"; platforms=x11_platforms),
+    Dependency("Xorg_libXrender_jll"; platforms=x11_platforms),
+    Dependency("gdk_pixbuf_jll"),
+    Dependency("iso_codes_jll"),
+    Dependency("xkbcommon_jll"; platforms=x11_platforms),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # We need at least GCC 8 to support `__VA_OPT__`
+# We need at least GCC 9 to avoid linker problems on x86_64-linux-musl
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"9")
