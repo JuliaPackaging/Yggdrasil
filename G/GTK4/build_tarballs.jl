@@ -12,7 +12,7 @@ sources = [
                   "7e793899bc2a47fdf52b149b9262f5398a2dd1252cfe58536e3dbfb78848d4eb"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
-   FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
+    FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
     DirectorySource("bundled"),
 ]
@@ -68,9 +68,10 @@ fi
 # Since this symbolic link is working in the shell, and since `pkg-config` outputs the expected values,
 # I think this may be a bug in `meson`.
 #
-# The file `wayland-scanner.pc` is mounted multiple times (and is also available via symbolic links). Fix all mount points.
-for destdir in /workspace/*/destdir; do
-    prefix_path=$(echo $destdir | sed -e 's+/destdir$++')/$(readlink ${bindir}/wayland-scanner | sed -e 's+^[.][.]/[.][.]/++' | sed -e 's+/bin/wayland-scanner$++')
+# The file `wayland-scanner.pc` is mounted multiple times (and is also available via symbolic links).
+# Fix it for all relevant mount points.
+for destdir in /workspace/x86_64-linux-musl*/destdir; do
+    prefix_path=$(echo $destdir | sed -e 's+/destdir$++')/$(readlink ${host_bindir}/wayland-scanner | sed -e 's+^[.][.]/[.][.]/++' | sed -e 's+/bin/wayland-scanner$++')
     if [ -e ${prefix_path}/lib/pkgconfig/wayland-scanner.pc ]; then
         sed -i -e "s+prefix=.*+prefix=${prefix_path}+" ${prefix_path}/lib/pkgconfig/wayland-scanner.pc
     fi
