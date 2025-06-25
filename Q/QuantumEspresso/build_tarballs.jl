@@ -64,6 +64,8 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 filter!(!Sys.iswindows, platforms)
+# Not supported by Libxc JLL
+filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libgfortran_version(p) <= v"4"), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
