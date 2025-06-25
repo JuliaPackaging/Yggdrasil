@@ -28,6 +28,9 @@ apk add glib-dev py3-pip
 # we need a newer meson (>= 1.5.0)
 pip3 install -U meson
 
+# meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
+sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
+
 # Some of our older glib versions do not support `memfd_create`. Meson
 # checks whether this functino is available, but not all uses of
 # `memfd_create` are protected by `#ifdef`, so disable some features
@@ -105,6 +108,12 @@ fi
 FLAGS=()
 if [[ "${target}" == *-apple-* ]]; then
     FLAGS+=(-Dx11-backend=false -Dwayland-backend=false)
+    if [[ "${target}" == x86_64-* ]]; then
+        # There is a linker error, the symbol `___cpu_features2` is not found.
+        # We might be able fix this by telling meson about a library that's missing,
+        # if that library exists on macOS.
+        FLAGS+=(-Df16c=disabled)
+    fi
 elif [[ "${target}" == *-freebsd* ]]; then
     FLAGS+=(-Dwayland-backend=false)
 fi
@@ -145,7 +154,7 @@ filter!(p -> arch(p) != "armv6l", platforms)
 # The symbol `g_libintl_bindtextdomain`, required by `gdk_pixbuf_jll`, is not defined.
 # This should probably be defined by `Glib_jll`. I don't know exactly what is going on.
 # In particular, I don't understand where the `g_` prefix is coming from.
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) != "aarch64"), platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 # The products that we will ensure are always built
 products = [
