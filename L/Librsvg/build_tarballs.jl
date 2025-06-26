@@ -3,57 +3,29 @@
 using BinaryBuilder
 
 name = "Librsvg"
-version = v"2.54.5"
+version = v"2.59.2"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "4f03190f45324d1fa1f52a79dfcded1f64eaf49b3ae2f88eedab0c07617cae6e"),
+                  "ecd293fb0cc338c170171bbc7bcfbea6725d041c95f31385dc935409933e4597"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/librsvg-*/
+cd $WORKSPACE/srcdir/librsvg-*
 
-autoreconf -fiv
-
-# Delete misleading libtool files
-rm -vf ${prefix}/lib/*.la
-
-# On most platforms we have to use `${rust_target}` as `host`
-FLAGS=(--host=${rust_target})
-if [[ "${target}" == *-mingw* ]]; then
-    # On Windows using `${rust_target}` wouldn't work:
-    #
-    #     Invalid configuration `x86_64-pc-windows-gnu': Kernel `windows' not known to work with OS `gnu'.
-    #
-    # Then we have to use `RUST_TARGET` to set the Rust target.  I haven't found
-    # a combination host and RUST_TARGET that would work on all platforms.  If
-    # you do, let me know!
-    FLAGS=(--host=${target} RUST_TARGET="${rust_target}" LIBS="-luserenv -lbcrypt")
-fi
-
-./configure \
-    --build=${MACHTYPE} \
-    --prefix=${prefix} \
-    --disable-static \
-    --enable-pixbuf-loader \
-    --disable-introspection \
-    --disable-gtk-doc-html \
-    --enable-shared \
-    "${FLAGS[@]}"
-make
-make install
-install_license COPYING.LIB
+meson setup builddir --cross-file=${MESON_TARGET_TOOLCHAIN} --prefix=${prefix}
+meson compile -C builddir
+meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(; experimental=true)
-# We dont have all dependencies for armv6l
-filter!(p -> arch(p) != "armv6l", platforms)
-# Rust toolchain for i686 Windows is unusable
-filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+platforms = supported_platforms()
+# Rust is not supported on aarch64-*-freebsd nor on riscv64-linux-*
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !(Sys.islinux(p) && arch(p) == "riscv64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -75,7 +47,7 @@ dependencies = [
     HostBuildDependency("gdk_pixbuf_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("gdk_pixbuf_jll"),
-    Dependency("Pango_jll"; compat="1.47.0"),
+    Dependency("Pango_jll"; compat="1.55.5"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
