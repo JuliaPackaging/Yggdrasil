@@ -43,18 +43,6 @@ ln -sf /usr/bin/glib-compile-schemas ${bindir}/glib-compile-schemas
 ln -sf /usr/bin/gdk-pixbuf-pixdata ${bindir}/gdk-pixbuf-pixdata
 
 if [[ "${target}" == x86_64-linux-musl* ]]; then
-    # For some reason, all sorts of standard library paths are in `LD_LIBRARY_PATH`.
-    # On x86_64-linux-musl, this confuses the linker, and it really likes to link in libraries from these standard paths.
-    # It mustn't. So we fix `LD_LIBRARY_PATH`.
-    LD_LIBRARY_PATH=$(
-        echo "$LD_LIBRARY_PATH" |
-        sed -e 's+:/usr/local/lib64:+:+' |
-        sed -e 's+:/usr/local/lib:+:+' |
-        sed -e 's+:/usr/lib64:+:+' |
-        sed -e 's+:/usr/lib:+:+' |
-        sed -e 's+:/lib64:+:+' |
-        sed -e 's+:/lib:+:+')
-
     # On x86_64-linux-musl, there are still some libraries that are pulled in from the standard paths instead of from `$libdir`.
     # This fixes that.
     rm /lib/libmount.so*
