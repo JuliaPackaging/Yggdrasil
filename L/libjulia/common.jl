@@ -5,7 +5,7 @@ using BinaryBuilder, Pkg
 include("../../fancy_toys.jl") # for get_addable_spec and should_build_platform
 
 # list of supported Julia versions
-julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-beta3", v"1.13.0-DEV"]
+julia_full_versions = [v"1.6.3", v"1.7.0", v"1.8.2", v"1.9.0", v"1.10.0", v"1.11.1", v"1.12.0-beta4", v"1.13.0-DEV"]
 if ! @isdefined julia_versions
     julia_versions = Base.thispatch.(julia_full_versions)
 end
@@ -68,14 +68,14 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.11.1" => "895549f40b21dee66b6380e30811f40d2d938c2baba0750de69c9a183cccd756",
     )
 
-    if version == v"1.12.0-beta3"
+    if version == v"1.12.0-beta4"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "faca79b503ae4fb47483e3e8d9acb2f3eb151a5b"),
+            GitSource("https://github.com/JuliaLang/julia.git", "55b5435d6fb1ba63b52d389a675f7a84a1dece855f7e2c19662f21606a124157"),
             DirectorySource("./bundled"),
         ]
     elseif version == v"1.13.0-DEV"
         sources = [
-            GitSource("https://github.com/JuliaLang/julia.git", "3e9f486430a254dd766bcd7f185fc21147d44345"),
+            GitSource("https://github.com/JuliaLang/julia.git", "b4a6288a38a39296feb712abc83ae7beefcdff37"),
             DirectorySource("./bundled"),
         ]
     else
@@ -480,7 +480,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         push!(dependencies, Dependency(get_addable_spec("LibUV_jll", v"2.0.1+20")))
         push!(dependencies, Dependency(get_addable_spec("LibUnwind_jll", v"1.8.1+2"); platforms=filter(!Sys.isapple, platforms)))
         push!(dependencies, Dependency(get_addable_spec("LLVMLibUnwind_jll", v"19.1.4+0"); platforms=filter(Sys.isapple, platforms)))
-        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+3")))
+        push!(dependencies, BuildDependency(get_addable_spec("LLVM_full_jll", v"18.1.7+4")))
     elseif version.major == 1 && version.minor == 13
         push!(dependencies, BuildDependency("OpenSSL_jll")),
         push!(dependencies, BuildDependency("Zstd_jll")),
