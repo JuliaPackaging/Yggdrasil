@@ -13,8 +13,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-export CXXFLAGS="-Wno-register" # cland C++17 expects the `register` storage class to be written as `REGISTER`
+export CXXFLAGS="${CXXFLAGS} -Wno-register" # cland C++17 expects the `register` storage class to be written as `REGISTER`
 
+# build LEMON
 cd $WORKSPACE/srcdir
 cd lemon-1.3.1/
 cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
@@ -23,7 +24,15 @@ cmake --install build
 install_license LICENSE
 
 cd ..
-$CXX -shared -std=c++17 -O3 -fPIC -o ${libdir}/liblemoncxxwrap.${dlext} cxxwrap/lemoncxxwrap.cpp -I$includedir/julia -lemon -ljulia -lcxxwrap_julia
+
+# build the CxxWrap.jl wrapper that we bundle
+# I guess the LEMON devs were funny and decided to call some of their build products emon so that the gcc flag is -lemon instead of -llemon (but not on windows)
+if [[ "${target}" == *mingw* ]]; then
+    LIBLEMON=lemon
+else
+    LIBLEMON=emon
+fi
+$CXX -shared -std=c++17 -O3 -fPIC -o ${libdir}/liblemoncxxwrap.${dlext} cxxwrap/lemoncxxwrap.cpp -I$includedir/julia -L${libdir} -l${LIBLEMON} -ljulia -lcxxwrap_julia
 """
 
 # These are the platforms we will build for by default, unless further
