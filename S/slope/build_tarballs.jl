@@ -44,6 +44,7 @@ install_license $WORKSPACE/srcdir/libslope/LICENSE
 """
 
 include("../../L/libjulia/common.jl")
+julia_versions = filter(v -> v >= v"1.10", julia_versions)
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -60,4 +61,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"11", julia_compat="1.6")
+    preferred_gcc_version=v"11", julia_compat="1.10")
