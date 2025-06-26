@@ -86,7 +86,7 @@ dependencies = [
     # We had to restrict compat with XML2 because of ABI breakage:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
     # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
-    Dependency("XML2_jll"; compat="~2.9.14, ~2.10, ~2.11, ~2.12, ~2.13"),
+    Dependency("XML2_jll"; compat="2.9.14 - 2.13"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
