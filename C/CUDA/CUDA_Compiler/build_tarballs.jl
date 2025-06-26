@@ -8,8 +8,6 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 name = "CUDA_Compiler"
 version = v"0.1"
 
-augment_platform_block = read(joinpath(@__DIR__, "platform_augmentation.jl"), String)
-
 platforms = [Platform("x86_64", "linux"),
              Platform("aarch64", "linux"; cuda_platform="jetson"),
              Platform("aarch64", "linux"; cuda_platform="sbsa"),
@@ -71,14 +69,19 @@ for version in [ v"11.8", v"12.9"]
         "cuda_nvdisasm"
     ]
 
+    augment_platform_block = """
+        $(read(joinpath(@__DIR__, "platform_augmentation.jl"), String))
+        const cuda_version = v"$(version.major).$(version.minor)"
+    """
+
     for platform in platforms
         augmented_platform = deepcopy(platform)
         augmented_platform["cuda"] = "$(version.major)"
         should_build_platform(triplet(augmented_platform)) || continue
 
         push!(builds,
-            (; script, platforms=[augmented_platform], products,
-               sources=get_sources("cuda", components; version, platform)
+            (; script, platforms=[augmented_platform], products, augment_platform_block,
+               sources=get_sources("cuda", components; version, platform),
         ))
     end
 end
@@ -96,5 +99,5 @@ for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
                    name, version, build.sources, build.script,
                    build.platforms, build.products, dependencies;
-                   julia_compat="1.6", lazy_artifacts=true, augment_platform_block)
+                   julia_compat="1.6", lazy_artifacts=true, build.augment_platform_block)
 end
