@@ -375,7 +375,8 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_gcc_version = v"13"
     preferred_llvm_version = v"18.1.7"
 
-    if mode == "dbg" && !Sys.isapple(platform)
+    # Temporarily disable debug builds also for macOS
+    if mode == "dbg" # && !Sys.isapple(platform)
         continue
     end
 
@@ -388,7 +389,9 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         continue
     end
 
-    if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
+    # if gpu == "cuda" && arch(platform) == "aarch64" && VersionNumber(cuda_version) < v"12.4"
+    # Temporarily disable all CUDA builds up to v12.4
+    if gpu == "cuda" && VersionNumber(cuda_version) <= v"12.4"
         # At the moment we can't build for CUDA 12.1 on aarch64, let's skip it
         continue
     end
