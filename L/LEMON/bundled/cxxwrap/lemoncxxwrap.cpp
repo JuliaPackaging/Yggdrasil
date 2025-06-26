@@ -74,3 +74,4 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     .method("matchingWeight", &MaxWeightedPerfectMatching<ListGraph, ListGraph::EdgeMap<int>>::matchingWeight);
 
 }
+
