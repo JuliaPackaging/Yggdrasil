@@ -1,14 +1,15 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+using Pkg
 
 name = "Librsvg"
-version = v"2.54.5"
+version = v"2.54.7"
 
 # Collection of sources required to build librsvg
 sources = [
     ArchiveSource("https://download.gnome.org/sources/librsvg/$(version.major).$(version.minor)/librsvg-$(version).tar.xz",
-                  "4f03190f45324d1fa1f52a79dfcded1f64eaf49b3ae2f88eedab0c07617cae6e"),
+                  "29a183cc855544d8a90de50720d5358a488c22118fffcb541aa0e790005d0966"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,6 +55,9 @@ platforms = supported_platforms(; experimental=true)
 filter!(p -> arch(p) != "armv6l", platforms)
 # Rust toolchain for i686 Windows is unusable
 filter!(p -> !Sys.iswindows(p) || arch(p) != "i686", platforms)
+# Rust toolchain 1.65.0 not available on platform aarch64-unknown-freebsd or riscv64-linux-gnu
+filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
+filter!(p -> !(arch(p) == "riscv64"), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -72,11 +76,22 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # We need to run `gdk-pixbuf-query-loaders`
-    HostBuildDependency("gdk_pixbuf_jll"),
-    BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("gdk_pixbuf_jll"),
+    HostBuildDependency(PackageSpec(; name="gdk_pixbuf_jll", version=v"2.42.8")),
+    BuildDependency(PackageSpec(; name="Xorg_xorgproto_jll", version=v"2019.2.0+2")),
+    Dependency("gdk_pixbuf_jll"; compat="2.42.8"),
     Dependency("Pango_jll"; compat="1.47.0"),
+    Dependency("Cairo_jll"; compat="1.16.1"),
+    Dependency("FreeType2_jll"; compat="2.10.4"),
+    Dependency("Glib_jll"; compat="2.74.0"), # For GIO
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to a newer XML2 version is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="2.9.14 - 2.13"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", compilers=[:c, :rust])
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6",
+    compilers=[:c, :rust],
+    preferred_rust_version=v"1.65.0",
+)
