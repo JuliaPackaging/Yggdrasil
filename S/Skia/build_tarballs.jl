@@ -16,7 +16,7 @@ sources = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> Sys.islinux(p) && libc(p) == "glibc" && call_abi(p) != "eabihf", platforms)
+filter!(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) ∉ ("armv6l", "armv7l"), platforms)
 
 
 
