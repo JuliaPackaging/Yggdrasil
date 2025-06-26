@@ -8,12 +8,12 @@ uuid = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
 delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "z3"
-version = v"4.15.1"
+version = v"4.15.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "a2671e2f0e4d61cfd9eced7d6369b54ea4014026cf2ffff5247dc2f490c90966"),
+                  "6c304512105714c4235cbb8589bf0e1f44f7cb88f689534bc2389c4cb7463510"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
@@ -25,7 +25,6 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
     #     /workspace/srcdir/z3/src/ast/ast.h:: 189error:: 47:'get<unsigned int, int, ast *,
     #         symbol, zstring *, rational *, double, unsigned int>' is unavailable:
     #         introduced in macOS 10.14
-    export MACOSX_DEPLOYMENT_TARGET=10.15
     export MACOSX_DEPLOYMENT_TARGET=10.15
     # ...and install a newer SDK
     rm -rf /opt/${target}/${target}/sys-root/System
