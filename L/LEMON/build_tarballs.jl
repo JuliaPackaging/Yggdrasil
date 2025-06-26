@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "LEMON"
 version = v"1.3.1"
+min_jl_version = v"1.9"
 
 # Collection of sources required to complete build
 sources = [
@@ -41,7 +42,8 @@ $CXX -shared -std=c++17 -O3 -fPIC -o ${libdir}/liblemoncxxwrap.${dlext} cxxwrap/
 # Because we bundle the Julia-targetting cxxwrapper,
 # we need a build for each supported julia version.
 include("../../L/libjulia/common.jl")
-platforms = vcat(libjulia_platforms.(julia_versions)...)
+supported_julia_versions = filter(>=(min_jl_version), julia_versions)
+platforms = vcat(libjulia_platforms.(supported_julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
@@ -59,4 +61,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7.0", preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat=min_jl_version, preferred_gcc_version = v"7.1.0")
