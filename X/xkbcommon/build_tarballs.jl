@@ -14,34 +14,9 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libxkbcommon
 
-#TODO mv $bindir/wayland-scanner $bindir/wayland-scanner_
-#TODO ln -s `which wayland-scanner` $bindir
-#TODO mkdir build && cd build
-#TODO cp $prefix/libdata/pkgconfig/* $prefix/lib/pkgconfig || true
-
-# Need to disable PKG_CONFIG_SYSROOT_DIR because this behaviour shows up in meson:
-#
-#   # Basically what happens in meson when it resolves the /workspace/destdir symlink
-#   $ PKG_CONFIG_PATH=/workspace/destdir/lib/pkgconfig PKG_CONFIG_SYSROOT_DIR=/foo pkg-config --variable=wayland_scanner wayland-scanner
-#   /foo/workspace/destdir/lib/pkgconfig/../../bin/wayland-scanner
-#
-#   # What we want to happen
-#   $ PKG_CONFIG_PATH=/workspace/destdir/lib/pkgconfig PKG_CONFIG_SYSROOT_DIR='' pkg-config --variable=wayland_scanner wayland-scanner
-#   /workspace/destdir/lib/pkgconfig/../../bin/wayland-scanner
-#
-# See:
-# - https://github.com/JuliaPackaging/Yggdrasil/pull/3193#discussion_r654942322
-# - https://github.com/JuliaPackaging/Yggdrasil/pull/3193#discussion_r654943148
-# - https://github.com/pkgconf/pkgconf/issues/213
-
-#TODO PKG_CONFIG_SYSROOT_DIR='' 
 meson setup builddir --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}" -Denable-tools=false -Denable-bash-completion=false 
 meson compile -C builddir
 meson install -C builddir
-
-#TODO rm $bindir/wayland-scanner
-#TODO mv $bindir/wayland-scanner_ $bindir/wayland-scanner
-#TODO rm -f $prefix/lib/pkgconfig/epoll-shim*.pc
 """
 
 # These are the platforms we will build for by default, unless further
