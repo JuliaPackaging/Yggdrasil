@@ -1,0 +1,47 @@
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
+using BinaryBuilder, Pkg
+
+name = "quickfixc"
+version = v"0.1.0"
+
+# Collection of sources required to build CMake
+sources = [
+    GitSource("https://github.com/AlexKlo/quickfixc.git", "e3fb26940b4a5291dd1cb8da4c7329b38b1c97d6"),
+    DirectorySource("./bundled")
+]
+
+# Bash recipe for building across all platforms
+script = raw"""
+cd ${WORKSPACE}/srcdir/quickfixc
+
+for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 ${f}
+done
+
+mkdir build && cd build
+
+cmake \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+
+make -j${nproc} install
+"""
+
+platforms = [Platform("x86_64", "linux"; libc="glibc"), Platform("aarch64", "macos")]
+
+# The products that we will ensure are always built
+products = [
+    LibraryProduct("libquickfixc", :libquickfixc),
+]
+
+# Dependencies that must be installed before this package can be built
+dependencies = [
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
+    Dependency("quickfix_jll"),
+]
+
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.8", preferred_gcc_version=v"9")
