@@ -30,7 +30,13 @@ cmake \
 make -j${nproc} install
 """
 
-platforms = supported_platforms()
+platforms = supported_platforms(;
+    exclude = p -> 
+    arch(p) == "riscv64" ||
+    (Sys.islinux(p) && arch(p) == "i686" && libc(p) == "musl") || 
+    (Sys.isfreebsd(p) && arch(p) == "aarch64") || 
+    Sys.iswindows(p),
+)
 platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
