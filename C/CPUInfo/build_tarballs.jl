@@ -42,6 +42,12 @@ fi
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+# PPC is not supported
+filter!(p -> arch(p) != "ppc64le", platforms)
+
+# ARM on FreeBSD is not supported
+filter!(p -> arch(p) != "aarch64" && Sys.isfreebsd(p), platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libcpuinfo", :libcpuinfo),
