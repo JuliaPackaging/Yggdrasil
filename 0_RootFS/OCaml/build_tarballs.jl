@@ -72,18 +72,28 @@ else
     git clean -fxd
 
     # Build a cross-compiler in $prefix
-    # XXX: we use the target compilers, even though the cross compiler will run on the host,
-    #      to work around issues with the configure script incorrectly detecting support for
-    #      certain important features (like shared libraries). this has disadvantages, though,
-    #      like using exe suffixes for executables on Windows (which isn't too bad since we
-    #      automatically create symlinks for them).
     ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} --target=${target}
     make crossopt -j${nproc}
     make installcross
     if [[ "${target}" == *-mingw* ]]; then
-        # Create a symlink for the Windows executables
+        # the OCaml configure script detects the executable extension by looking at the
+        # target compiler. for host utilities, we don't want this symlink, so remove it.
         for bin in ${bindir}/*.exe; do
-            ln -s $(basename ${bin}) ${bindir}/$(basename ${bin} .exe)
+            # (links to) target binaries should retain their extension
+            if file -L $bin | grep 'PE32' >/dev/null; then
+                continue
+            fi
+
+            # if this is a symlink, update both the name of the link and the target
+            if [[ -L $bin ]]; then
+                target=$(readlink $bin)
+                rm $bin
+                ln -s $(basename ${target} .exe) ${bindir}/$(basename ${bin} .exe)
+
+            # if this is a file, simply rename it
+            elif [[ -f $bin ]]; then
+                mv $bin ${bindir}/$(basename ${bin} .exe)
+            fi
         done
     fi
 fi
