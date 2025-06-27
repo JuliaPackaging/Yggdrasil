@@ -71,6 +71,12 @@ git clean -fxd
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} --target=${target}
 make crossopt -j${nproc}
 make installcross
+if [[ "${target}" == *-mingw* ]]; then
+    # Create a symlink for the Windows executables
+    for bin in ${bindir}/*.exe; do
+        ln -s $(basename ${bin}) ${bindir}/$(basename ${bin} .exe)
+    done
+fi
 
 # Fix shebang of ocamlrun scripts to not hardcode a path of the build environment
 for bin in $(file ${bindir}/* | grep "a \S*/ocamlrun script" | cut -d: -f1); do
