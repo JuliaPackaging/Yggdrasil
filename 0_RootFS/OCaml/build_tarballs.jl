@@ -56,6 +56,9 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
+# unset compiler env vars so that configure can detect them properly
+unset CC CXX LD STRIP AS
+
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Build a native compiler in $prefix
     ./configure --prefix=${prefix}
@@ -63,8 +66,7 @@ if [[ "${target}" == "${MACHTYPE}" ]]; then
     make install
 else
     # Build a native compiler in $host_prefix (which takes PATH preference over $prefix)
-    ./configure --prefix=${host_prefix} --build=${MACHTYPE} --host=${MACHTYPE} \
-                CC="$HOSTCC" CXX="$HOSTCXX" LD="$HOSTLD" STRIP="$HOSTSTRIP" AS="$HOSTAS"
+    ./configure --prefix=${host_prefix} --build=${MACHTYPE} --host=${MACHTYPE}
     make -j${nproc}
     make install
     git clean -fxd
