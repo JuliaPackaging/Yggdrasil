@@ -32,8 +32,8 @@ deploy = "--deploy" in ARGS
 
 # These are the targets we support right now:
 #   x86_64-w64-mingw32
-#   x86_64-apple-darwin
-#   aarch64-apple-darwin
+#   x86_64-apple-darwin14
+#   aarch64-apple-darwin20
 #   x86_64-linux-gnu
 #   x86_64-linux-musl
 #   aarch64-linux-gnu
