@@ -49,15 +49,20 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-# Do a native build of OCaml
-./configure --build=${MACHTYPE} --host=${MACHTYPE} CC="$HOSTCC" CXX="$HOSTCXX" LD="$HOSTLD" STRIP="$HOSTSTRIP" AS="$HOSTAS"
+# Do a native build of OCaml in $host_prefix (which takes PATH preference over $prefix)
+./configure --prefix=${host_prefix} --build=${MACHTYPE} --host=${MACHTYPE} \
+            CC="$HOSTCC" CXX="$HOSTCXX" LD="$HOSTLD" STRIP="$HOSTSTRIP" AS="$HOSTAS"
 make -j${nproc}
 make install
 git clean -fxd
 
-# Build the cross-compiler
-unset CC
-./configure --prefix=${prefix} --host=${MACHTYPE} --build=${MACHTYPE} --target=${target}
+# Build the cross-compiler in $prefix
+# XXX: we use the target compilers, even though the cross compiler will run on the host,
+#      to work around issues with the configure script incorrectly detecting support for
+#      certain important features (like shared libraries). this has disadvantages, though,
+#      like using exe suffixes for executables on Windows (which isn't too bad since we
+#      automatically create symlinks for them).
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} --target=${target}
 make crossopt -j${nproc}
 make installcross
 
