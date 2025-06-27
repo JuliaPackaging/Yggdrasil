@@ -5,7 +5,7 @@
 #   `Artifacts.toml`, use the `--deploy` flag to the `build_tarballs.jl` script.
 #   You can build & deploy by running:
 #
-#      julia build_tarballs.jl --debug --verbose --deploy
+#      julia build_tarballs.jl --debug --verbose --deploy TARGET
 #
 
 using BinaryBuilderBase, BinaryBuilder, Pkg.Artifacts
@@ -34,6 +34,12 @@ deploy = "--deploy" in ARGS
 #   x86_64-linux-musl
 #   aarch64-linux-gnu
 #   aarch64-linux-musl
+#   riscv64-linux-gnu
+#   riscv64-linux-musl
+#
+# Not supported:
+#  i686: OCaml 5.0 dropped support for 32-bit platforms
+#  freebsd: `POSIX threads are required but not supported on this platform`
 
 # The first thing we're going to do is to install Rust for all targets into a single prefix
 script = "version=$(version)\n" * raw"""
