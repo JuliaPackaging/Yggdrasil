@@ -40,7 +40,7 @@ deploy = "--deploy" in ARGS
 #  freebsd: `POSIX threads are required but not supported on this platform`
 
 # The first thing we're going to do is to install Rust for all targets into a single prefix
-script = "version=$(version)\n" * raw"""
+script = raw"""
 cd ${WORKSPACE}/srcdir/ocaml
 git submodule update --init
 
@@ -68,7 +68,6 @@ for bin in $(file ${bindir}/* | grep "a \S*/ocamlrun script" | cut -d: -f1); do
 done
 """
 
-# We assemble this giant tarball, then will split it up immediately after this:
 platforms = Platform[ host_platform ]
 products = Product[
     # build with no products since all of our products are for the host, not the target
@@ -79,7 +78,7 @@ products = Product[
 ]
 dependencies = Dependency[]
 
-name = "OCamlBase"
+name = "OCaml"
 compiler_target = try
     parse(Platform, ARGS[end])
 catch
