@@ -41,7 +41,6 @@ deploy = "--deploy" in ARGS
 #   riscv64-linux-gnu
 #   riscv64-linux-musl
 #   powerpc64le-linux-gnu
-#   powerpc64le-linux-musl
 #
 # Not supported:
 #  i686: OCaml 5.0 dropped support for 32-bit platforms
