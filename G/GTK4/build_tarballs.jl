@@ -1,6 +1,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
+using BinaryBuilderBase: get_addable_spec
 
 name = "GTK4"
 version = v"4.18.6"
@@ -13,7 +14,6 @@ sources = [
                "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     FileSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v10.0.0.tar.bz2",
                "ba6b430aed72c63a3768531f6a3ffc2b0fde2c57a3b251450dcf489a894f0894"),
-    DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -29,13 +29,6 @@ pip3 install -U meson
 
 # meson shouldn't be so opinionated (mesonbuild/meson#4542 is incomplete)
 sed -i '/Werror=unused-command-line-argument/d' /usr/lib/python3.9/site-packages/mesonbuild/compilers/mixins/clang.py
-
-# Some of our older glib versions do not support `memfd_create`. Meson
-# checks whether this functino is available, but not all uses of
-# `memfd_create` are protected by `#ifdef`, so disable some features
-# manually if not supported. Reported as
-# <https://gitlab.gnome.org/GNOME/gtk/-/issues/7620>.
-atomic_patch -p1 ../patches/memfd.patch
 
 # This is awful, I know
 ln -sf /usr/bin/glib-compile-resources ${bindir}/glib-compile-resources
@@ -134,9 +127,6 @@ rm ${bindir}/gdk-pixbuf-pixdata ${bindir}/glib-compile-{resources,schemas}
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Many X11 dependencies have not yet been built for armv6l
-filter!(p -> arch(p) != "armv6l", platforms)
-
 # There is a linker error:
 # The symbol `g_libintl_bindtextdomain`, required by `gdk_pixbuf_jll`, is not defined.
 # This should probably be defined by `Glib_jll`. I don't know exactly what is going on.
@@ -156,7 +146,8 @@ dependencies = [
     # Need a native `sassc`
     HostBuildDependency("SassC_jll"),
     # Need a host Wayland for wayland-scanner
-    HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
+    #TODO HostBuildDependency("Wayland_jll"; platforms=x11_platforms),
+    HostBuildDependency(get_addable_spec("Wayland_jll", v"1.23.1+0"); platforms=x11_platforms),
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
     # Build needs a header from but does not link to libdrm
     BuildDependency("libdrm_jll"; platforms=x11_platforms),
