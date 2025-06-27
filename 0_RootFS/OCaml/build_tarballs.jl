@@ -18,6 +18,12 @@ version = v"5.4.0"
 sources = [
     GitSource("https://github.com/ocaml/ocaml.git",
               "ff1ab416a5503c8bde9fa3fae5f2bb21c7ddc81e"),  # 5.4.0~alpha1
+    GitSource("https://github.com/ocaml/dune",
+              "76c0c3941798f81dcc13a305d7abb120c191f5fa"),  # 3.19.1
+    GitSource("https://github.com/ocaml/ocamlbuild",
+              "131ba63a1b96d00f3986c8187677c8af61d20a08"),  # 0.16.1
+    GitSource("https://github.com/ocaml/opam",
+              "e13109411952d4f723a165c2a24b8c03c4945041"),  # 2.3.0
     DirectorySource("./bundled"),
 ]
 
@@ -71,6 +77,26 @@ for bin in $(file ${bindir}/* | grep "a \S*/ocamlrun script" | cut -d: -f1); do
     abspath=$(file ${bin} | grep -oh "a \S*/ocamlrun script" | cut -d' ' -f2)
     sed -i "s?${abspath}?/usr/bin/env ocamlrun?" "${bin}"
 done
+
+# Dune
+cd ${WORKSPACE}/srcdir/dune
+./configure --prefix $prefix
+make release
+make install
+
+# OCamlbuild
+cd ${WORKSPACE}/srcdir/ocamlbuild
+make configure OCAMLBUILD_PREFIX=$prefix OCAMLBUILD_BINDIR=$bindir OCAMLBUILD_LIBDIR=$prefix/lib
+# XXX: can't use $libdir because on Windows it aliases with $bindir
+#      while ocamlbuild wants to put files in $libdir/ocamlbuild
+make -j${nproc}
+make install
+
+# Opam
+cd ${WORKSPACE}/srcdir/opam
+./configure --prefix $prefix --host=${MACHTYPE} --with-vendored-deps
+make -j${nproc}
+make install
 """
 
 platforms = Platform[ host_platform ]
@@ -94,7 +120,7 @@ deleteat!(ARGS, length(ARGS))
 # Build the tarballs
 ndARGS, deploy_target = find_deploy_arg(ARGS)
 build_info = build_tarballs(ndARGS, name, version, sources, script, Platform[compiler_target], products, dependencies;
-                            skip_audit=true, julia_compat="1.6", preferred_gcc_version=v"5")
+                            skip_audit=true, julia_compat="1.6", preferred_gcc_version=v"6")
 
 build_info = Dict(host_platform => first(values(build_info)))
 
