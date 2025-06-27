@@ -13,15 +13,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libxkbcommon
-
-meson setup builddir --buildtype=release --cross-file="${MESON_TARGET_TOOLCHAIN}" -Denable-tools=false -Denable-bash-completion=false 
+meson setup builddir \
+    --buildtype=release \
+    --cross-file="${MESON_TARGET_TOOLCHAIN}" \
+    -Denable-bash-completion=false  \
+    -Denable-docs=false \
+    -Denable-tools=false \
+    -Denable-xkbregistry=false
 meson compile -C builddir
 meson install -C builddir
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), supported_platforms())
+platforms = supported_platforms()
+filter!(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -31,17 +37,11 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    HostBuildDependency("EpollShim_jll"),
-    HostBuildDependency("Wayland_jll"),
-    HostBuildDependency("Wayland_protocols_jll"),
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Wayland_jll"),
-    Dependency("Wayland_protocols_jll"),
     Dependency("Xorg_libxcb_jll"),
     Dependency("Xorg_xkeyboard_config_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We need GCC 8 because this links to XML2, which requires GCC 8
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6")
