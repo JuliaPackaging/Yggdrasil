@@ -57,27 +57,34 @@ for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
 done
 
-# Do a native build of OCaml in $host_prefix (which takes PATH preference over $prefix)
-./configure --prefix=${host_prefix} --build=${MACHTYPE} --host=${MACHTYPE} \
-            CC="$HOSTCC" CXX="$HOSTCXX" LD="$HOSTLD" STRIP="$HOSTSTRIP" AS="$HOSTAS"
-make -j${nproc}
-make install
-git clean -fxd
+if [[ "${target}" == "${MACHTYPE}" ]]; then
+    # Build a native compiler in $prefix
+    ./configure --prefix=${prefix}
+    make -j${nproc}
+    make install
+else
+    # Build a native compiler in $host_prefix (which takes PATH preference over $prefix)
+    ./configure --prefix=${host_prefix} --build=${MACHTYPE} --host=${MACHTYPE} \
+                CC="$HOSTCC" CXX="$HOSTCXX" LD="$HOSTLD" STRIP="$HOSTSTRIP" AS="$HOSTAS"
+    make -j${nproc}
+    make install
+    git clean -fxd
 
-# Build the cross-compiler in $prefix
-# XXX: we use the target compilers, even though the cross compiler will run on the host,
-#      to work around issues with the configure script incorrectly detecting support for
-#      certain important features (like shared libraries). this has disadvantages, though,
-#      like using exe suffixes for executables on Windows (which isn't too bad since we
-#      automatically create symlinks for them).
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} --target=${target}
-make crossopt -j${nproc}
-make installcross
-if [[ "${target}" == *-mingw* ]]; then
-    # Create a symlink for the Windows executables
-    for bin in ${bindir}/*.exe; do
-        ln -s $(basename ${bin}) ${bindir}/$(basename ${bin} .exe)
-    done
+    # Build a cross-compiler in $prefix
+    # XXX: we use the target compilers, even though the cross compiler will run on the host,
+    #      to work around issues with the configure script incorrectly detecting support for
+    #      certain important features (like shared libraries). this has disadvantages, though,
+    #      like using exe suffixes for executables on Windows (which isn't too bad since we
+    #      automatically create symlinks for them).
+    ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${MACHTYPE} --target=${target}
+    make crossopt -j${nproc}
+    make installcross
+    if [[ "${target}" == *-mingw* ]]; then
+        # Create a symlink for the Windows executables
+        for bin in ${bindir}/*.exe; do
+            ln -s $(basename ${bin}) ${bindir}/$(basename ${bin} .exe)
+        done
+    fi
 fi
 
 # Fix shebang of ocamlrun scripts to not hardcode a path of the build environment
