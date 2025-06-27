@@ -43,7 +43,7 @@ fi
 platforms = supported_platforms()
 
 # PPC is not supported
-filter!(p -> arch(p) != "ppc64le", platforms)
+filter!(p -> arch(p) != "powerpc64le", platforms)
 
 # ARM on FreeBSD is not supported
 filter!(p -> !(arch(p) == "aarch64" && Sys.isfreebsd(p)), platforms)
