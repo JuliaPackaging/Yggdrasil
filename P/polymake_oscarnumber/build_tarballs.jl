@@ -88,7 +88,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
     Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isbsd, platforms)),
 
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.17")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.18")),
 
     Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
     Dependency("libpolymake_julia_jll", compat = "=0.13.4"),
