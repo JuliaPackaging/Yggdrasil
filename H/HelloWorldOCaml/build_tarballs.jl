@@ -25,8 +25,6 @@ filter!(p -> !(arch(p) == "armv6l"), platforms)
 filter!(p -> !(arch(p) == "armv7l"), platforms)
 
 # Not yet supported by our OCaml toolchain
-filter!(p -> !(arch(p) == "powerpc64le"), platforms)
-filter!(p -> !(arch(p) == "riscv64"), platforms)
 filter!(p -> !(Sys.isfreebsd(p)), platforms)
 
 # The products that we will ensure are always built
