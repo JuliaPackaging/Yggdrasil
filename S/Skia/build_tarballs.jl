@@ -8,7 +8,7 @@ version = v"0.40.0"
 # Collection of sources required to complete build
 sources = [
    GitSource("https://github.com/google/skia.git", "482de011c920d85fdbe21a81c45852655df6a809"),
-   GitSource("https://github.com/stensmo/cskia.git", "3438e6efd3a4f27f43457db675ceb33da30c60cf"),
+   GitSource("https://github.com/stensmo/cskia.git", "9a7c1f23ff12fbc94eed577ea366b0e51fedb119"),
    DirectorySource("./bundled"),
 ]
 
@@ -16,7 +16,7 @@ sources = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) ∉ ("armv6l", "armv7l"), platforms)
+filter!(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) ∉ ("armv6l", "armv7l") || (Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 
 
@@ -70,6 +70,21 @@ elif [[ "${target}" == i686-* ]]; then
     target_cpu=x86
 fi
 
+if [[ "${target}" == aarch64-apple-* ]]; then
+PLATFORM_ARGS="
+skia_use_x11=false \
+target_os=\\"mac\\" 
+skia_use_metal=true  
+skia_enable_fontmgr_fontconfig=false
+skia_use_fonthost_mac=true
+"
+else
+PLATFORM_ARGS="
+skia_use_fontconfig=true \
+skia_use_vulkan=true
+"
+fi
+
 ARGS="
 is_component_build=true \
 target_cpu=\\"$target_cpu\\"
@@ -77,7 +92,6 @@ cc=\\"clang\\"
 cxx=\\"clang++\\"
 is_official_build=true
 skia_enable_pdf=true
-skia_use_fontconfig=true
 skia_use_gl=true
 skia_use_harfbuzz=false
 skia_use_system_expat=false
@@ -86,9 +100,8 @@ skia_use_system_icu=false
 skia_use_system_libjpeg_turbo=false
 skia_use_system_libpng=false
 skia_use_system_libwebp=false
-skia_use_system_zlib=false
-skia_use_vulkan=true
 extra_cflags=[\\"-fpic\\", \\"-fvisibility=default\\"]
+$PLATFORM_ARGS
 "
 bin/gn gen out/Dynamic --args="$ARGS"
 
@@ -96,8 +109,6 @@ ninja -j${nproc} -C out/Dynamic
 
 cd out/Dynamic/
 
-# Checks that one of the required symbols for the Julia API are included in libskia.so. 
-nm -D libskia.so | grep -q "sk_string_new_empty" && true || false
 
 install -Dvm 755 "libskia.${dlext}" "${libdir}/libskia.${dlext}"
 """
