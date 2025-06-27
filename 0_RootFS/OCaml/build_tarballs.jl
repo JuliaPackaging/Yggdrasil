@@ -16,10 +16,8 @@ name = "OCamlBase"
 version = v"5.4.0"
 
 sources = [
-    # This is a pre-release version of OCaml 5.4.0, because the latest
-    # release (5.3.0) does not have cross-compilation support.
     GitSource("https://github.com/ocaml/ocaml.git",
-              "411679d2e21e44f148deb1b3ff12355266fe26a0"),
+              "ff1ab416a5503c8bde9fa3fae5f2bb21c7ddc81e"),  # 5.4.0~alpha1
     DirectorySource("./bundled"),
 ]
 
