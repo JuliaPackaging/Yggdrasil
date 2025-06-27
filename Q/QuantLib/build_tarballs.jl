@@ -3,16 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "QuantLib"
-version = v"1.31"
+version = v"1.38"
 
 sources = [
-    GitSource("https://github.com/lballabio/QuantLib.git", "38551644cb8b9b6b794f443225e522296ce08331"),
+    GitSource("https://github.com/lballabio/QuantLib.git", "0eef52ee6f33c83d3bb92ffea093f94895aa5826"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/QuantLib
-install_license LICENSE.TXT
 mkdir build
 cd build
 if [[ "${target}" == *86*-linux-gnu ]]; then
