@@ -48,7 +48,7 @@ fi
 echo ${args[@]}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
-ldd -r /workspace/destdir/bin/lrelease
+file /workspace/destdir/bin/lrelease
 
 cd src
 make -j${nproc} binonly
