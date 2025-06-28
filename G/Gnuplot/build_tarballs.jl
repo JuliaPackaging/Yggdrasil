@@ -43,7 +43,7 @@ echo ${args[@]}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
 cd src
-make -j${nproc}
+make -j${nproc} binonly
 make install
 """
 
