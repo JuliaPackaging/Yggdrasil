@@ -48,10 +48,8 @@ fi
 echo ${args[@]}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
-
-cd src
-make -j${nproc}
-make install
+make -C src -j${nproc}
+make -C src install
 """
 
 # These are the platforms we will build for by default, unless further
