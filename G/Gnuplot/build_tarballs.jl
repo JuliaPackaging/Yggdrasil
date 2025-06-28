@@ -34,17 +34,21 @@ export LIBS="-liconv"
 unset args
 args+=(--disable-wxwidgets)
 
-if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd ]]; then
+# FIXME: no Qt artifacts available for these platforms
+if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd ]] || [[ "${target}" == riscv64-linux-gnu ]]; then
     args+=(--with-qt=no)
 fi
-if [[ "${target}" == riscv64-linux-gnu ]]; then  # FIXME: failure 
-    export CXXFLAGS='-std=c++11 -I/workspace/destdir/include/QtCore'
-fi
+
+# if [[ "${target}" == riscv64-linux-gnu ]]; then  # FIXME: failure, see maybe https://sourceforge.net/p/gnuplot/bugs/2591
+#     export CXXFLAGS='-std=c++11 -I/workspace/destdir/include/QtCore'
+# fi
 
 ./configure --help
 
 echo ${args[@]}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
+
+ldd -r /workspace/destdir/bin/lrelease
 
 cd src
 make -j${nproc} binonly
