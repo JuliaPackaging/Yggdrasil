@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 
 echo target=${target}
-set
+# set
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
@@ -29,7 +29,6 @@ elif [[ "${target}" == *-mingw* ]]; then
 fi
 
 # export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
-export CXXFLAGS='-std=c++11 -I/workspace/destdir/include/QtCore'
 export LIBS="-liconv"
 
 unset args
@@ -38,6 +37,9 @@ args+=(--disable-wxwidgets)
 if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd ]]; then
     args+=(--with-qt=no)
 fi
+if [[ "${target}" == riscv64-linux-gnu ]]; then  # FIXME: failure 
+    export CXXFLAGS='-std=c++11 -I/workspace/destdir/include/QtCore'
+fi
 
 ./configure --help
 
@@ -45,7 +47,7 @@ echo ${args[@]}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
 cd src
-make -j${nproc}
+make -j${nproc} binonly
 make install
 """
 
