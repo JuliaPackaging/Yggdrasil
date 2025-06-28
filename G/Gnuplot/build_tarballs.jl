@@ -35,7 +35,7 @@ export LIBS="-liconv"
 unset args
 args+=(--disable-wxwidgets)
 
-if [[ "${target}" == *-musl ]] || [[ "${target}" == *-freebsd ]]; then
+if [[ "${target}" == *-musl* -o "${target}" == *-freebsd ]]; then
     args+=(--with-qt=no)
 fi
 
@@ -64,8 +64,10 @@ dependencies = [
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
     Dependency(PackageSpec(name="Libcerf_jll", uuid="af83a40a-c4c4-57a0-81df-2309fbd279e3")),
     Dependency(PackageSpec(name="LibGD_jll", uuid="16339573-6216-525a-b38f-30b6f6b71b5f")),
-    BuildDependency(PackageSpec(name="Qt5Tools_jll", uuid="a9c6e4b1-b2fb-56d5-96a9-25f276f13840")),
-    Dependency(PackageSpec(name="Qt5Svg_jll", uuid="3af4ccab-a251-578e-a514-ea85a0ba79ee")),
+    # BuildDependency(PackageSpec(name="Qt5Tools_jll", uuid="a9c6e4b1-b2fb-56d5-96a9-25f276f13840")),
+    # Dependency(PackageSpec(name="Qt5Svg_jll", uuid="3af4ccab-a251-578e-a514-ea85a0ba79ee")),
+    BuildDependency(PackageSpec(name="Qt6Base_jll", uuid="c0090381-4147-56d7-9ebc-da0b1113ec56")),
+    Dependency(PackageSpec(name="Qt6Svg_jll", uuid="6de9746b-f93d-5813-b365-ba18ad4a9cf3")),
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
     Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
