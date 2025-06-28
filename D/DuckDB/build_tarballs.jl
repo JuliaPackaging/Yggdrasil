@@ -23,9 +23,9 @@ elif [[ "${target}" == "x86_64-linux-musl" ]]; then
     export DUCKDB_TARGET="linux_amd64_musl"
 elif [[ "${target}" == "x86_64-w64-mingw32" ]]; then
     export DUCKDB_TARGET="windows_amd64_mingw"
-elif [[ "${target}" == "x86_64-apple-darwin" ]]; then
+elif [[ "${target}" == x86_64-apple-* ]]; then
     export DUCKDB_TARGET="osx_amd64"
-elif [[ "${target}" == "aarch64-apple-darwin" ]]; then
+elif [[ "${target}" == aarch64-apple-* ]]; then
     export DUCKDB_TARGET="osx_arm64"
 fi
 
