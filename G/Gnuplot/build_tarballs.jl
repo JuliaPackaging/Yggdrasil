@@ -68,7 +68,8 @@ dependencies = [
     Dependency("Cairo_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Readline_jll"),
-    BuildDependency("Qt5Tools_jll"),
+    # BuildDependency("Qt5Tools_jll"),
+    Dependency("Qt6Base_jll"),
     Dependency("Qt5Svg_jll"),
     # FIXME: qt6 fails (missing uic)
     # Dependency("Qt6Base_jll"),
