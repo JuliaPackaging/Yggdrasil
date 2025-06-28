@@ -57,6 +57,7 @@ products = [ExecutableProduct("gnuplot", :gnuplot)]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    # libclang_rt.osx.a is required on aarch64-macos to provide `__divdc3`.
     BuildDependency("LLVMCompilerRT_jll"; platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms)),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("libwebp_jll"),
