@@ -29,7 +29,7 @@ elif [[ "${target}" == *-mingw* ]]; then
 fi
 
 # export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
-export CXXFLAGS='-std=c++11'
+export CXXFLAGS='-std=c++11 -I/workspace/destdir/include/QtCore'
 export LIBS="-liconv"
 
 unset args
@@ -45,7 +45,7 @@ echo ${args[@]}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
 cd src
-make -j${nproc} binonly
+make -j${nproc}
 make install
 """
 
