@@ -34,18 +34,15 @@ export LIBS='-liconv'
 unset args
 args+=(--disable-wxwidgets)
 
-# FIXME: no Qt artifacts available for these platforms
-if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd ]] || [[ "${target}" == riscv64-linux-gnu ]]; then
-    args+=(--with-qt=no)
-fi
-
-# if [[ "${target}" == riscv64-linux-gnu ]]; then  # FIXME: failure, see maybe https://sourceforge.net/p/gnuplot/bugs/2591
-#     export CXXFLAGS='-std=c++11 -I/workspace/destdir/include/QtCore'
-# fi
+# FIXME: no Qt Tools artifacts available for these platforms
+# -> missing either uic or lrelease
+case "$target" in
+    *-musl*|*-freebsd*|riscv64-linux-gnu|aarch64-apple-darwin) args+=(--with-qt=no);;
+esac
 
 ./configure --help
-
 echo ${args[@]}
+
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
 make -C src -j${nproc}
