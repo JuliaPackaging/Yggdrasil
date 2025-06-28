@@ -29,8 +29,7 @@ elif [[ "${target}" == *-mingw* ]]; then
 fi
 
 # export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
-export LIBS="-liconv"
-export LRELEASE=no
+export LIBS='-liconv'
 
 unset args
 args+=(--disable-wxwidgets)
@@ -51,7 +50,7 @@ echo ${args[@]}
 
 
 cd src
-make -j${nproc} binonly
+make -j${nproc}
 make install
 """
 
@@ -74,8 +73,8 @@ dependencies = [
     Dependency("Cairo_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Readline_jll"),
-    # BuildDependency("Qt5Tools_jll"),
-    Dependency("Qt5Base_jll"),
+    BuildDependency("Qt5Tools_jll"),
+    # Dependency("Qt5Base_jll"),
     Dependency("Qt5Svg_jll"),
     # FIXME: qt6 fails (missing uic)
     # Dependency("Qt6Base_jll"),
