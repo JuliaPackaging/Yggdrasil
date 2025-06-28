@@ -23,8 +23,6 @@ if [[ "${target}" == "${MACHTYPE}" ]]; then
     rm /usr/lib/libexpat.so*
 elif [[ "${target}" == *-mingw* ]]; then
     # This is needed because otherwise we get unusable binaries (error "The specified executable is not a valid application for this OS platform").
-    # These come from CompilerSupportLibraries_jll:
-    rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
     # Apply patch from https://github.com/msys2/MINGW-packages/blob/5dcff9fd637714972b113c6d3fbf6db17e9b707a/mingw-w64-gnuplot/01-gnuplot.patch
     atomic_patch -p1 ../patches/01-gnuplot.patch
     autoreconf -fiv
