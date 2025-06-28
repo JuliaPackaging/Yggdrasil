@@ -2,12 +2,12 @@
 using BinaryBuilder, Pkg
 
 name = "Gnuplot"
-version = v"5.4.5"
+version = v"6.0.3"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/gnuplot/gnuplot/$(version)/gnuplot-$(version).tar.gz",
-                  "66f679115dd30559e110498fc94d926949d4d370b4999a042e724b8e910ee478"),
+                  "ec52e3af8c4083d4538152b3f13db47f6d29929a3f6ecec5365c834e77f251ab"),
     DirectorySource("./bundled"),
 ]
 
@@ -20,16 +20,19 @@ if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
 elif [[ "${target}" == *-mingw* ]]; then
-    # This is needed because otherwise we get unusable binaries (error "The specified executable is not a valid application for this OS platform"). These come from CompilerSupportLibraries_jll:
+    # This is needed because otherwise we get unusable binaries (error "The specified executable is not a valid application for this OS platform").
+    # These come from CompilerSupportLibraries_jll:
     rm $prefix/lib/libgcc* $prefix/lib/libmsvcrt*
     # Apply patch from https://github.com/msys2/MINGW-packages/blob/5dcff9fd637714972b113c6d3fbf6db17e9b707a/mingw-w64-gnuplot/01-gnuplot.patch
     atomic_patch -p1 ../patches/01-gnuplot.patch
     autoreconf -fiv
 fi
 
-export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
-export LDFLAGS="-liconv"
+export LIBS="-liconv"
+
+./configure --help
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+
 cd src
 make -j${nproc}
 make install
@@ -42,7 +45,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    #ExecutableProduct("gnuplot_qt", :gnuplot_qt, "$libexecdir")
+    # ExecutableProduct("gnuplot_qt", :gnuplot_qt, "$libexecdir")
 ]
 
 # Dependencies that must be installed before this package can be built
