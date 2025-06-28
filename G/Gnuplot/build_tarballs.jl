@@ -33,7 +33,7 @@ export LIBS="-liconv"
 unset args
 args+=(--disable-wxwidgets)
 
-if [[ "${target}" == *-musl* -o "${target}" == *-freebsd ]]; then
+if [[ "${target}" == *-musl* ]] || [[ "${target}" == *-freebsd ]]; then
     args+=(--with-qt=no)
 fi
 
