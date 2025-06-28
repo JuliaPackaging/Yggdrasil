@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 
+echo target=${target}
+
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
@@ -30,8 +32,13 @@ fi
 
 export LIBS="-liconv"
 
+args=()
+# if ; then
+#     args+=()
+# fi
+
 # ./configure --help
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
 cd src
 make -j${nproc}
