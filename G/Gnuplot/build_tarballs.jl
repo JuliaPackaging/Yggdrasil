@@ -40,7 +40,6 @@ args=()
 ./configure --help
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
-cd src
 make -j${nproc}
 make install
 """
