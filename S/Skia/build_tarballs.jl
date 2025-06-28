@@ -16,7 +16,7 @@ sources = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> Sys.islinux(p) && libc(p) == "glibc" && arch(p) ∉ ("armv6l", "armv7l") || (Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> Sys.islinux(p) && libc(p) == "glibc" || (Sys.isapple(p) && arch(p) == "aarch64"), platforms)
 
 
 
@@ -68,6 +68,10 @@ elif [[ "${target}" == powerpc64le-* ]]; then
     target_cpu=powerpc64le
 elif [[ "${target}" == i686-* ]]; then
     target_cpu=x86
+elif [[ "${target}" == armv7l-* ]]; then
+    target_cpu=armv7-a
+elif [[ "${target}" == armv6l-* ]]; then
+    target_cpu=arm
 fi
 
 if [[ "${target}" == aarch64-apple-* ]]; then
