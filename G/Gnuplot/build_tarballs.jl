@@ -30,7 +30,7 @@ fi
 
 export LIBS="-liconv"
 
-./configure --help
+# ./configure --help
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
 
 cd src
