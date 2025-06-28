@@ -15,9 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 
-echo target=${target}
-# set
-
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
@@ -28,19 +25,19 @@ elif [[ "${target}" == *-mingw* ]]; then
     autoreconf -fiv
 fi
 
-# export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
 export LIBS='-liconv'
 
+unset args
 args+=(--disable-wxwidgets)
 
-# FIXME: no Qt Tools artifacts available for these platforms
-# -> missing either uic or lrelease
+# FIXME: no Qt Tools artifacts available for these platforms (missing either uic or lrelease)
 case "$target" in
-    *-musl*|*-freebsd*|riscv64-linux-gnu|aarch64-apple-darwin|armv6l-linux-gnueabihf) args+=(--with-qt=no);;
+    *-musl*|*-freebsd*|riscv64-linux-gnu*|aarch64-apple-darwin*|armv6l-linux-gnueabihf*)
+    args+=(--with-qt=no);;
 esac
 
-./configure --help
-echo ${args[@]}
+# ./configure --help
+# echo ${args[@]}
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
