@@ -30,6 +30,7 @@ fi
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
 export LDFLAGS="-liconv"
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+
 cd src
 make -j${nproc}
 make install
