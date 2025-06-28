@@ -25,7 +25,7 @@ elif [[ "${target}" == *-mingw* ]]; then
 fi
 
 export LIBS='-liconv -lffi'
-if [[ ${target} == aarch64-apple-* ]]; then
+if [[ ${target} == aarch64-apple-* ]]; then  # FIXES the undefined symbol: __divdc3 error
     export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
 fi
 
@@ -37,9 +37,6 @@ case "$target" in
     *-musl*|*-freebsd*|riscv64-linux-gnu*|aarch64-apple-darwin*|arm-linux-gnueabihf*)
     args+=(--with-qt=no);;
 esac
-
-ls /workspace/destdir
-ls /workspace/destdir/lib
 
 ./configure --help
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
