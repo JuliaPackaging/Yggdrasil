@@ -16,7 +16,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 
 echo target=${target}
-
+set
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
@@ -32,9 +32,11 @@ fi
 
 export LIBS="-liconv"
 
-args=()
+unset args
+args+=(--disable-wxwidgets)
+
 # if ; then
-#     args+=(--without-qt)
+#     args+=(--with-qt=no)
 # fi
 
 ./configure --help
