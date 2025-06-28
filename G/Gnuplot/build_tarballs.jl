@@ -28,6 +28,7 @@ elif [[ "${target}" == *-mingw* ]]; then
     autoreconf -fiv
 fi
 
+export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
 export LIBS="-liconv"
 
 unset args
@@ -60,18 +61,17 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("libwebp_jll"),
     Dependency("Libcerf_jll"),
     Dependency("LibGD_jll"),
-    BuildDependency("Qt5Tools_jll"),
-    Dependency("Qt5Svg_jll"),
-    # FIXME: qt6 fails (missing uic)
-    # BuildDependency("Qt6Base_jll"),
-    # Dependency("Qt6Svg_jll"),
     Dependency("Cairo_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Readline_jll"),
-    Dependency("libwebp_jll"),
-    # Dependency("Xorg_libX11"),
+    BuildDependency("Qt5Tools_jll"),
+    Dependency("Qt5Svg_jll"),
+    # FIXME: qt6 fails (missing uic)
+    # Dependency("Qt6Base_jll"),
+    # Dependency("Qt6Svg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
