@@ -28,7 +28,8 @@ elif [[ "${target}" == *-mingw* ]]; then
     autoreconf -fiv
 fi
 
-export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
+# export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
+export CXXFLAGS='-std=c++11'
 export LIBS="-liconv"
 
 unset args
