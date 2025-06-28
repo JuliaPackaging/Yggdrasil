@@ -15,8 +15,6 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 
-echo "target=${target}"
-
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
@@ -34,7 +32,7 @@ args+=(--disable-wxwidgets)
 
 # FIXME: no Qt Tools artifacts available for these platforms (missing either uic or lrelease)
 case "$target" in
-    *-musl*|*-freebsd*|riscv64-linux-gnu*|aarch64-apple-darwin*|armv6l-linux-gnueabihf*)
+    *-musl*|*-freebsd*|riscv64-linux-gnu*|aarch64-apple-darwin*|arm-linux-gnueabihf*)
     args+=(--with-qt=no);;
 esac
 
