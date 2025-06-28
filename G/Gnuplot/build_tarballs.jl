@@ -15,6 +15,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*/
 
+echo "target=${target}"
+
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
     rm /usr/lib/libexpat.so*
