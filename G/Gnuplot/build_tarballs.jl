@@ -24,8 +24,10 @@ elif [[ "${target}" == *-mingw* ]]; then
     autoreconf -fiv
 fi
 
-export CXXFLAGS='-std=c++11'
-export LIBS='-liconv'
+export LIBS='-liconv -lffi'
+if [[ ${target} == aarch64-apple-* ]]; then
+    export LDFLAGS="-L${libdir}/darwin -lclang_rt.osx"
+fi
 
 unset args
 args+=(--disable-wxwidgets)
@@ -36,6 +38,10 @@ case "$target" in
     args+=(--with-qt=no);;
 esac
 
+ls /workspace/destdir
+ls /workspace/destdir/lib
+
+./configure --help
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
 make -C src -j${nproc}
@@ -51,12 +57,15 @@ products = [ExecutableProduct("gnuplot", :gnuplot)]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    BuildDependency("LLVMCompilerRT_jll"; platforms = filter(p -> Sys.isapple(p) && arch(p) == "aarch64", platforms)),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("libwebp_jll"),
     Dependency("Libcerf_jll"),
     Dependency("LibGD_jll"),
     Dependency("Cairo_jll"),
-    # Dependency("Pango_jll"),
+    Dependency("Pango_jll"),
+    Dependency("Libffi_jll"),
+    # Dependency("PCRE2_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Readline_jll"),
     BuildDependency("Qt5Tools_jll"),
