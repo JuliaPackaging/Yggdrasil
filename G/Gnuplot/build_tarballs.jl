@@ -59,19 +59,19 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
-    Dependency(PackageSpec(name="Libcerf_jll", uuid="af83a40a-c4c4-57a0-81df-2309fbd279e3")),
-    Dependency(PackageSpec(name="LibGD_jll", uuid="16339573-6216-525a-b38f-30b6f6b71b5f")),
-    BuildDependency(PackageSpec(name="Qt5Tools_jll", uuid="a9c6e4b1-b2fb-56d5-96a9-25f276f13840")),
-    Dependency(PackageSpec(name="Qt5Svg_jll", uuid="3af4ccab-a251-578e-a514-ea85a0ba79ee")),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Libcerf_jll"),
+    Dependency("LibGD_jll"),
+    BuildDependency("Qt5Tools_jll"),
+    Dependency("Qt5Svg_jll"),
     # FIXME: qt6 fails (missing uic)
-    # BuildDependency(PackageSpec(name="Qt6Base_jll", uuid="c0090381-4147-56d7-9ebc-da0b1113ec56")),
-    # Dependency(PackageSpec(name="Qt6Svg_jll", uuid="6de9746b-f93d-5813-b365-ba18ad4a9cf3")),
-    Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
-    Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
-    Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
-    Dependency(PackageSpec(name="libwebp_jll", uuid="c5f90fcd-3b7e-5836-afba-fc50a0988cb2")),
-    # Dependency(PackageSpec(name="Xorg_libX11", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc")),
+    # BuildDependency("Qt6Base_jll"),
+    # Dependency("Qt6Svg_jll"),
+    Dependency("Cairo_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("Readline_jll"),
+    Dependency("libwebp_jll"),
+    # Dependency("Xorg_libX11"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
