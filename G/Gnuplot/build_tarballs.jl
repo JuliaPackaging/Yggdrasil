@@ -40,9 +40,12 @@ if [[ "${target}" == *-musl ]] || [[ "${target}" == *-freebsd ]]; then
 fi
 
 ./configure --help
+
+echo ${args[@]}
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
-make -j${nproc} src
+cd src
+make -j${nproc}
 make install
 """
 
