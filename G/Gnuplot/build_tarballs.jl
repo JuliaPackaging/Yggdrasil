@@ -42,7 +42,7 @@ fi
 ./configure --help
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
-make -j${nproc}
+make -j${nproc} src
 make install
 """
 
