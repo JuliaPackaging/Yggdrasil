@@ -34,7 +34,7 @@ export LIBS="-liconv"
 
 args=()
 # if ; then
-#     args+=()
+#     args+=(--without-qt)
 # fi
 
 ./configure --help
@@ -65,7 +65,7 @@ dependencies = [
     Dependency(PackageSpec(name="Cairo_jll", uuid="83423d85-b0ee-5818-9007-b63ccbeb887a")),
     Dependency(PackageSpec(name="Libiconv_jll", uuid="94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
     Dependency(PackageSpec(name="Readline_jll", uuid="05236dd9-4125-5232-aa7c-9ec0c9b2c25a")),
-    Dependency(PackageSpec(name="Xorg_libX11", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc")),
+    # Dependency(PackageSpec(name="Xorg_libX11", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
