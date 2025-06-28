@@ -25,10 +25,9 @@ elif [[ "${target}" == *-mingw* ]]; then
     autoreconf -fiv
 fi
 
-# FIXME: no Qt Tools artifacts available for these platforms
-# -> missing either uic or lrelease
+# FIXME: no Qt Tools artifacts available for these platforms (missing either uic or lrelease)
 case "$target" in
-    aarch64-apple-darwin) args+=(--with-qt=no);;
+    aarch64-apple-darwin*) args+=(--with-qt=no);;
 esac
 
 export CPPFLAGS="$(pkg-config --cflags glib-2.0) $(pkg-config --cflags cairo) $(pkg-config --cflags pango) -I$(realpath term)"
