@@ -1,4 +1,3 @@
-
 using BinaryBuilder, Pkg
 
 name = "Gnuplot"
@@ -25,6 +24,7 @@ elif [[ "${target}" == *-mingw* ]]; then
     autoreconf -fiv
 fi
 
+export CXXFLAGS='-std=c++11'
 export LIBS='-liconv'
 
 unset args
@@ -35,9 +35,6 @@ case "$target" in
     *-musl*|*-freebsd*|riscv64-linux-gnu*|aarch64-apple-darwin*|arm-linux-gnueabihf*)
     args+=(--with-qt=no);;
 esac
-
-# ./configure --help
-# echo ${args[@]}
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
 
@@ -50,10 +47,7 @@ make -C src install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [
-    ExecutableProduct("gnuplot", :gnuplot),
-    # ExecutableProduct("gnuplot_qt", :gnuplot_qt, "$libexecdir")
-]
+products = [ExecutableProduct("gnuplot", :gnuplot)]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
@@ -65,12 +59,14 @@ dependencies = [
     Dependency("Libiconv_jll"),
     Dependency("Readline_jll"),
     BuildDependency("Qt5Tools_jll"),
-    # Dependency("Qt5Base_jll"),
     Dependency("Qt5Svg_jll"),
-    # FIXME: qt6 fails (missing uic)
+    # FIXME: build with Qt6 fails, must probably add a `Qt6Tools_jll` recipe
     # Dependency("Qt6Base_jll"),
     # Dependency("Qt6Svg_jll"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version = v"8")
+build_tarballs(
+    ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", preferred_gcc_version = v"8"
+)
