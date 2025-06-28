@@ -35,9 +35,9 @@ export LIBS="-liconv"
 unset args
 args+=(--disable-wxwidgets)
 
-# if ; then
-#     args+=(--with-qt=no)
-# fi
+if [[ "${target}" == *-musl ]] || [[ "${target}" == *-freebsd ]]; then
+    args+=(--with-qt=no)
+fi
 
 ./configure --help
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${args[@]}
