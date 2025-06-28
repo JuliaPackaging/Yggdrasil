@@ -63,7 +63,6 @@ dependencies = [
     Dependency("Cairo_jll"),
     Dependency("Pango_jll"),
     Dependency("Libffi_jll"),
-    # Dependency("PCRE2_jll"),
     Dependency("Libiconv_jll"),
     Dependency("Readline_jll"),
     BuildDependency("Qt5Tools_jll"),
