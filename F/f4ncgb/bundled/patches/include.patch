@@ -1,0 +1,24 @@
+diff --git a/src/linear_algebra.cpp b/src/linear_algebra.cpp
+index 44c9884..d4d3116 100644
+--- a/src/linear_algebra.cpp
++++ b/src/linear_algebra.cpp
+@@ -4,7 +4,6 @@
+ #include <cstdint>
+ #include <map>
+ #include <set>
+-#include <sys/errno.h>
+ #include <utility>
+ #include <vector>
+ 
+diff --git a/src/signal_statistics.hpp b/src/signal_statistics.hpp
+index 87d86bc..693adc2 100644
+--- a/src/signal_statistics.hpp
++++ b/src/signal_statistics.hpp
+@@ -5,7 +5,6 @@
+ #include <cstddef>
+ #include <csignal>
+ #include <sys/time.h>
+-#include <sys/resource.h>
+ 
+ extern void(*original_SIGINT_handler)(int);
+ extern void(*original_SIGSEGV_handler)(int);
