@@ -7,7 +7,7 @@ index 33f3208..b7efcf6 100644
      cflags = [ "/arch:AVX2" ]
    } else {
 -    cflags = [ "-march=haswell" ]
-+    cflags = [ "-mavx2" ]
++    cflags = [ "" ]
    }
  }
  
@@ -16,7 +16,7 @@ index 33f3208..b7efcf6 100644
      cflags = [ "/arch:AVX512" ]
    } else {
 -    cflags = [ "-march=skylake-avx512" ]
-+    cflags = [ "-mavx512" ]
++    cflags = [ "" ]
    }
  }
  
