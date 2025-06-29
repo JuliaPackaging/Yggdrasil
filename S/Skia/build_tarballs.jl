@@ -35,7 +35,7 @@ sources = [
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> Sys.islinux(p) || (Sys.isapple(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> !Sys.iswindows(p)  && !(Sys.isapple(p)  && arch(p) ∈ ("x86_64",)), platforms)
 
 
 
@@ -108,19 +108,24 @@ fi
 
 
 
-
-if [[ "${target}" == aarch64-apple-* ]]; then
+if [[ "${target}" == *-apple-* ]]; then
 PLATFORM_ARGS="
 skia_use_x11=false \
 target_os=\\"mac\\" 
 skia_use_metal=true  
 skia_enable_fontmgr_fontconfig=false
 skia_use_fonthost_mac=true
+skia_use_dng_sdk=true
+"
+elif [[ "${target}" == *-unknown-* ]]; then
+PLATFORM_ARGS="
+target_os=\\"FreeBSD\\" \
+skia_use_dng_sdk=false
 "
 else
 PLATFORM_ARGS="
 skia_use_fontconfig=true \
-skia_use_vulkan=false
+skia_use_dng_sdk=true
 "
 fi
 
@@ -133,7 +138,6 @@ is_official_build=true
 skia_enable_pdf=true
 skia_use_gl=true
 skia_use_harfbuzz=false
-skia_use_dng_sdk=true
 skia_use_system_expat=false
 skia_use_system_freetype2=false
 skia_use_system_icu=false
