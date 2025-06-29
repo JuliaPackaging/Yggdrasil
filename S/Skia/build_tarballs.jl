@@ -31,13 +31,14 @@ sources = [
 
 
 
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !Sys.iswindows(p)  && !(Sys.isapple(p)  && arch(p) ∈ ("x86_64",)), platforms)
-expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms)
 
+# Remove musl && cxx03, since there is a bug preventing Skia to build
+filter!(p -> !(cxxstring_abi(p) == "cxx03" && libc(p) == "musl"), platforms)
 
 
 # The products that we will ensure are always built
