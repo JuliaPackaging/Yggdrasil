@@ -4,20 +4,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "QuantumEspresso"
-version = v"7.0.1"
-quantumespresso_version = v"7.0.0"
-
-# ES 2022-08-01: I tried updating to 7.1, but I encountered build problems:
-# - v7.1 encounters ICEs in gfortran; requires at least GCC 10
-# - the build fails because the directory "../W90" is not found at some point
-# version = v"7.1"
-# quantumespresso_version = v"7.1"
+version = v"7.4.1"
+quantumespresso_version = v"7.4.1"
 
 sources = [
-    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.0/q-e-qe-7.0.tar.gz",
-                  "85beceb1aaa1678a49e774c085866d4612d9d64108e0ac49b23152c8622880ee"),
-    # ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.1/q-e-qe-7.1.tar.gz",
-    #               "d56dea096635808843bd5a9be2dee3d1f60407c01dbeeda03f8256a3bcfc4eb6"),
+    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.4.1/q-e-qe-7.4.1.tar.gz",
+                  "6ef9c53dbf0add2a5bf5ad2a372c0bff935ad56c4472baa001003e4f932cab97"),
     DirectorySource("bundled"),
 ]
 
@@ -25,7 +17,6 @@ sources = [
 script = raw"""
 cd q-e-qe-*
 atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
-# atomic_patch -p1 ../patches/0000-pass-host-to-configure-7.1.patch
 
 export BLAS_LIBS="-L${libdir} -lopenblas"
 export LAPACK_LIBS="-L${libdir} -lopenblas"
@@ -73,6 +64,10 @@ augment_platform_block = """
 # platforms are passed in on the command line
 platforms = expand_gfortran_versions(supported_platforms())
 filter!(!Sys.iswindows, platforms)
+# Not supported by Libxc JLL
+filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libgfortran_version(p) <= v"4"), platforms)
+# "Old-style type declaration REAL*16 not supported" in merge_wann.f90
+filter!(p -> !(Sys.islinux(p) && (arch(p) == "armv6l" || arch(p) == "armv7l")), platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
@@ -82,6 +77,7 @@ filter!(p -> p["mpi"] ≠ "mpitrampoline", platforms)
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
+filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
 # MPItrampoline
 filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
