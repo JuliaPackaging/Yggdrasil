@@ -56,7 +56,9 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+julia_build = 0  # NOTE: increment on rebuild
 build_tarballs(
-    ARGS, name, version, sources, script, platforms, products, dependencies;
+    ARGS, name, VersionNumber(version.major, version.minor, 100 * version.patch + julia_build),
+    sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version = v"8"
 )
