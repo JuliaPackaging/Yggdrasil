@@ -1,26 +1,26 @@
-From d83f17d31e1cf0c6d6453f754d19c4e8956a8fbb Mon Sep 17 00:00:00 2001
+From 864d7e939546d08eb63818627fca65fe074fb12a Mon Sep 17 00:00:00 2001
 From: Gnimuc <qiyupei@gmail.com>
 Date: Tue, 25 Mar 2025 12:21:31 +0900
 Subject: [PATCH] Rewrite CMake build scripts
 
 ---
- CMakeLists.txt                           | 577 +++--------------------
+ CMakeLists.txt                           | 581 +++--------------------
  include/CMakeLists.txt                   |   1 +
  include/clang-c/CMakeLists.txt           |   1 +
  include/clang/CMakeLists.txt             |   1 +
  include/clang/Interpreter/CMakeLists.txt |   1 +
- lib/Interpreter/CMakeLists.txt           | 157 +-----
- 6 files changed, 76 insertions(+), 662 deletions(-)
+ lib/CppInterOp/CMakeLists.txt            | 163 +------
+ 6 files changed, 79 insertions(+), 669 deletions(-)
  create mode 100644 include/CMakeLists.txt
  create mode 100644 include/clang-c/CMakeLists.txt
  create mode 100644 include/clang/CMakeLists.txt
  create mode 100644 include/clang/Interpreter/CMakeLists.txt
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 5cf3707..61e01b0 100644
+index 8b2df5b..c4571d8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1,523 +1,72 @@
+@@ -1,526 +1,77 @@
 -cmake_minimum_required(VERSION 3.13)
 +cmake_minimum_required(VERSION 3.21)
  
@@ -95,15 +95,27 @@ index 5cf3707..61e01b0 100644
 -include(GNUInstallDirs)
 -  ## Define supported version of clang and llvm
 -
--  set(CLANG_MIN_SUPPORTED 13.0)
--  set(CLANG_MAX_SUPPORTED "19.1.x")
--  set(CLANG_VERSION_UPPER_BOUND 20.0.0)
--  set(LLD_MIN_SUPPORTED 13.0)
--  set(LLD_MAX_SUPPORTED "19.1.x")
--  set(LLD_VERSION_UPPER_BOUND 20.0.0)
--  set(LLVM_MIN_SUPPORTED 13.0)
--  set(LLVM_MAX_SUPPORTED "19.1.x")
--  set(LLVM_VERSION_UPPER_BOUND 20.0.0)
+-if (CPPINTEROP_USE_CLING)
+-  set(CLANG_MIN_SUPPORTED 18.0)
+-else()
+-  set(CLANG_MIN_SUPPORTED 16.0)
+-endif(CPPINTEROP_USE_CLING)
+-  set(CLANG_MAX_SUPPORTED "20.1.x")
+-  set(CLANG_VERSION_UPPER_BOUND 21.0.0)
+-if (CPPINTEROP_USE_CLING)
+-  set(LLD_MIN_SUPPORTED 18.0)
+-else()
+-  set(LLD_MIN_SUPPORTED 16.0)
+-endif(CPPINTEROP_USE_CLING)
+-  set(LLD_MAX_SUPPORTED "20.1.x")
+-  set(LLD_VERSION_UPPER_BOUND 21.0.0)
+-if (CPPINTEROP_USE_CLING)
+-  set(LLVM_MIN_SUPPORTED 18.0)
+-else()
+-  set(LLVM_MIN_SUPPORTED 16.0)
+-endif(CPPINTEROP_USE_CLING)
+-  set(LLVM_MAX_SUPPORTED "20.1.x")
+-  set(LLVM_VERSION_UPPER_BOUND 21.0.0)
 -
 -  ## Set Cmake packages search order
 -
@@ -258,21 +270,12 @@ index 5cf3707..61e01b0 100644
 -  message(STATUS "Found supported version: Clang ${CLANG_PACKAGE_VERSION}")
 -  message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
 -
--  ## Clang 13 require c++14 or later, Clang 16 require c++17 or later.
--  if (CLANG_VERSION_MAJOR GREATER_EQUAL 16)
--    if (NOT CMAKE_CXX_STANDARD)
--      set (CMAKE_CXX_STANDARD 17)
--    endif()
--    if (CMAKE_CXX_STANDARD LESS 17)
--      message(fatal "LLVM/CppInterOp requires c++17 or later")
--    endif()
--  elseif (CLANG_VERSION_MAJOR GREATER_EQUAL 13)
--    if (NOT CMAKE_CXX_STANDARD)
--      set (CMAKE_CXX_STANDARD 14)
--    endif()
--    if (CMAKE_CXX_STANDARD LESS 14)
--      message(fatal "LLVM/CppInterOp requires c++14 or later")
--    endif()
+-  ## Clang 16 require c++17 or later.
+-  if (NOT CMAKE_CXX_STANDARD)
+-    set (CMAKE_CXX_STANDARD 17)
+-  endif()
+-  if (CMAKE_CXX_STANDARD LESS 17)
+-    message(fatal "LLVM/CppInterOp requires c++17 or later")
 -  endif()
 -
 -  ## Find supported Cling
@@ -297,23 +300,20 @@ index 5cf3707..61e01b0 100644
 -
 -  #Replace \ with / in LLVM_DIR (attempt to fix path parsing issue Windows)
 -  string(REPLACE "\\" "/" LLVM_DIR "${LLVM_DIR}")
--
++# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+ 
 -  # When in debug mode the llvm package thinks it is built with -frtti.
 -  # For consistency we should set it to the correct value.
 -  set(LLVM_CONFIG_HAS_RTTI NO CACHE BOOL "" FORCE)
-+# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
- 
--  ## Init
 +find_package(LLVM REQUIRED CONFIG)
 +message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 +message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
  
+-  ## Init
+-
 -  # In case this was a path to a build folder of llvm still try to find AddLLVM
 -  list(APPEND CMAKE_MODULE_PATH "${LLVM_DIR}")
-+find_package(Clang REQUIRED CONFIG)
-+message(STATUS "Found Clang ${Clang_PACKAGE_VERSION}")
-+message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
- 
+-
 -  # Fix bug in some AddLLVM.cmake implementation (-rpath "" problem)
 -  set(LLVM_LIBRARY_OUTPUT_INTDIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib${LLVM_LIBDIR_SUFFIX})
 -
@@ -475,8 +475,8 @@ index 5cf3707..61e01b0 100644
 -
 -# Generate docs for CppInterOp
 -option(CPPINTEROP_INCLUDE_DOCS "Generate build targets for the CppInterOp docs.")
--option(CPPINTEROP_ENABLE_DOXYGEN "Use doxygen to generate CppInterOp interal API documentation.")
--option(CPPINTEROP_ENABLE_SPHINX "Use sphinx to generage CppInterOp user documentation")
+-option(CPPINTEROP_ENABLE_DOXYGEN "Use doxygen to generate CppInterOp internal API documentation.")
+-option(CPPINTEROP_ENABLE_SPHINX "Use sphinx to generate CppInterOp user documentation")
 -
 -
 -if(MSVC)
@@ -545,11 +545,10 @@ index 5cf3707..61e01b0 100644
 -foreach(sym ${MSVC_EXPORTLIST})
 -  set(MSVC_EXPORTS "${MSVC_EXPORTS} /EXPORT:${sym}")
 -endforeach(sym ${MSVC_EXPORTLIST})
--
--endif()
--
--if (CPPINTEROP_INCLUDE_DOCS)
--  add_subdirectory(docs)
++find_package(Clang REQUIRED CONFIG)
++message(STATUS "Found Clang ${Clang_PACKAGE_VERSION}")
++message(STATUS "Using ClangConfig.cmake in: ${Clang_DIR}")
+ 
 +add_library(CppInterOp SHARED)
 +add_subdirectory(lib)
 +add_subdirectory(include)
@@ -579,6 +578,13 @@ index 5cf3707..61e01b0 100644
 +
 +target_link_libraries(CppInterOp PUBLIC LLVM clang-cpp)
 +
++if(UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
++    target_link_options(CppInterOp PUBLIC -Wl,--export=__clang_Interpreter_SetValueNoAlloc)
++    target_link_options(CppInterOp PUBLIC -Wl,--export=__clang_Interpreter_SetValueWithAlloc)
+ endif()
+ 
+-if (CPPINTEROP_INCLUDE_DOCS)
+-  add_subdirectory(docs)
 +# Install CompilationDatabase
 +set_target_properties(CppInterOp PROPERTIES EXPORT_COMPILE_COMMANDS true)
 +set(ccmds_json ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json)
@@ -639,11 +645,11 @@ index 0000000..c6c9939
 @@ -0,0 +1 @@
 +target_sources(CppInterOp PRIVATE ${CMAKE_CURRENT_LIST_DIR}/CppInterOp.h)
 \ No newline at end of file
-diff --git a/lib/Interpreter/CMakeLists.txt b/lib/Interpreter/CMakeLists.txt
-index eccfc39..4205ada 100644
---- a/lib/Interpreter/CMakeLists.txt
-+++ b/lib/Interpreter/CMakeLists.txt
-@@ -1,148 +1,9 @@
+diff --git a/lib/CppInterOp/CMakeLists.txt b/lib/CppInterOp/CMakeLists.txt
+index 142d4d5..4205ada 100644
+--- a/lib/CppInterOp/CMakeLists.txt
++++ b/lib/CppInterOp/CMakeLists.txt
+@@ -1,154 +1,9 @@
 -if(EMSCRIPTEN)
 -  set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
 -  set(LLVM_LINK_COMPONENTS "")
@@ -760,11 +766,12 @@ index eccfc39..4205ada 100644
 -
 -
 -if(EMSCRIPTEN)
+-  if(BUILD_SHARED_LIBS)
 -  # FIXME: When dynamically linking the Emscripten shared library to the
 -  # unit tests main_module you get errors due to undefined symbols. The reading of the file
 -  # below into a SYMBOLS_LIST variable is a temporary workaround that exports the undefined
 -  # symbols from the shared library, until it can be determined why they are not being exported already.
--  file(READ "${CMAKE_SOURCE_DIR}/lib/Interpreter/exports.ld" SYMBOLS_LIST)
+-  file(READ "${CMAKE_CURRENT_SOURCE_DIR}/exports.ld" SYMBOLS_LIST)
 -
 -  # Replace newlines with spaces
 -  string(REPLACE "\n" " " SYMBOLS_LIST "${SYMBOLS_LIST}")
@@ -777,8 +784,13 @@ index eccfc39..4205ada 100644
 -    PRIVATE "SHELL: -s SIDE_MODULE=1"
 -    PRIVATE "SHELL: ${SYMBOLS_LIST}"
 -  )
+-else()
+-  target_link_options(clangCppInterOp
+-    PRIVATE "SHELL: -s WASM_BIGINT"
+-  )
+-endif()
 -  if (CPPINTEROP_ENABLE_TESTING)
--    # When compiling Emscripten tests the shared library it links to is expected to be in the same folder as the compiled Javascript
+-    # When compiling Emscripten tests the CppInterOp library it links to is expected to be in the same folder as the compiled Javascript
 -    add_custom_command(TARGET clangCppInterOp POST_BUILD
 -      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:clangCppInterOp> ${CMAKE_BINARY_DIR}/unittests/CppInterOp/
 -    )

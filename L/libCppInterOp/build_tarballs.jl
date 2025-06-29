@@ -8,13 +8,13 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "llvm.jl"))
 
 name = "libCppInterOp"
-version = v"0.1.7"
+version = v"0.1.8"
 
 llvm_versions = [v"18.1.7"]
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/compiler-research/CppInterOp.git", "da58066ca29649145b25b5fc0e22d8aee57e356a"),
+    GitSource("https://github.com/compiler-research/CppInterOp.git", "9c9423069529caea5aee79b61580fe9a7b1eb73b"),
     DirectorySource("./bundled")
 ]
 
