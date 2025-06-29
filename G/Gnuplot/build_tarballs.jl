@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/gnuplot-*/
+cd $WORKSPACE/srcdir/gnuplot-*
 
 if [[ "${target}" == "${MACHTYPE}" ]]; then
     # Delete system libexpat to avoid confusion
@@ -35,7 +35,7 @@ args+=(--disable-wxwidgets)
 # FIXME: no Qt Tools artifacts available for these platforms (missing either uic or lrelease)
 case "$target" in
     *-musl*|*-freebsd*|riscv64-linux-gnu*|aarch64-apple-darwin*|arm-linux-gnueabihf*)
-    args+=(--with-qt=no);;
+        args+=(--with-qt=no);;
 esac
 
 ./configure --help
