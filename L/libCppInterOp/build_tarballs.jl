@@ -21,6 +21,16 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/CppInterOp/
+
+if [[ "${bb_full_target}" == x86_64-apple-darwin* ]]; then
+    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
+    rm -rf /opt/${target}/${target}/sys-root/System
+    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
+    cp -ra System "/opt/${target}/${target}/sys-root/."
+    export MACOSX_DEPLOYMENT_TARGET=10.14
+    popd
+fi
+
 atomic_patch -p1 ../patches/cmake.patch
 mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -76,9 +86,16 @@ for llvm_version in llvm_versions, llvm_assertions in (false, true)
         augmented_platform = deepcopy(platform)
         augmented_platform[LLVM.platform_name] = LLVM.platform(llvm_version, llvm_assertions)
 
+        platform_sources = BinaryBuilder.AbstractSource[sources...]
+        if Sys.isapple(platform)
+            push!(platform_sources,
+                  ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
+                                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"))
+        end
+
         should_build_platform(triplet(augmented_platform)) || continue
         push!(builds, (;
-            dependencies, products,
+            dependencies, products, sources=platform_sources,
             platforms=[augmented_platform],
             script=script,
         ))
