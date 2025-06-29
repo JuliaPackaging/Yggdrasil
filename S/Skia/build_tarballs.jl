@@ -36,7 +36,7 @@ sources = [
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> !Sys.iswindows(p)  && !(Sys.isapple(p)  && arch(p) ∈ ("x86_64",)), platforms)
-
+expand_cxxstring_abis(platforms)
 
 
 
