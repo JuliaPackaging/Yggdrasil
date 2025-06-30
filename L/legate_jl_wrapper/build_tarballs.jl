@@ -61,12 +61,6 @@ script = raw"""
 
     VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
     install_license $WORKSPACE/srcdir/legate_jl_wrapper*/LICENSE
-
-    if [[ "${target}" == aarch64-linux-* ]]; then
-        # ensure products directory is clean
-        rm -rf ${prefix}/cuda
-    fi
-
 """
 
 julia_versions = filter!(v -> v >= MIN_JULIA_VERSION && v <= MAX_JULIA_VERSION , julia_versions)
