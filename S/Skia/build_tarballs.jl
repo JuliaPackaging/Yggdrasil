@@ -15,7 +15,6 @@ sources = [
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/freetype2.git","5d4e649f740c675426fbe4cdaffc53ee2a4cb954"),
    GitSource("https://chromium.googlesource.com/libyuv/libyuv.git","d248929c059ff7629a85333699717d7a677d8d96"),
    GitSource("https://android.googlesource.com/platform/external/piex.git","bb217acdca1cc0c16b704669dd6f91a1b509c406"),
-   GitSource("https://chromium.googlesource.com/external/github.com/unicode-org/unicodetools","66a3fa9dbdca3b67053a483d130564eabc5fe095"),
    # These two have some kind of source dependency. 
    GitSource("https://skia.googlesource.com/external/github.com/google/wuffs-mirror-release-c.git","e3f919ccfe3ef542cfc983a82146070258fb57f8"),
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/zlib","646b7f569718921d7d4b5b8e22572ff6c76f2596"),
