@@ -17,9 +17,11 @@ script = raw"""
 export CXXFLAGS="${CXXFLAGS} -Wno-register" # cland C++17 expects the `register` storage class to be written as `REGISTER`
 
 # build LEMON
-cd $WORKSPACE/srcdir
-cd lemon-1.3.1/
-cmake -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+cd $WORKSPACE/srcdir/lemon-*/
+cmake -B build \
+    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
 cmake --install build
 install_license LICENSE
@@ -56,7 +58,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("libcxxwrap_julia_jll"),
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
     BuildDependency("libjulia_jll")
 ]
 
