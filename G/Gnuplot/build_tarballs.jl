@@ -1,7 +1,7 @@
 using BinaryBuilder, Pkg
 
 name = "Gnuplot"
-version = v"5.4.6"
+version = v"5.4.5"
 julia_build = 0  # NOTE: increment on rebuild
 
 # Collection of sources required to complete build
