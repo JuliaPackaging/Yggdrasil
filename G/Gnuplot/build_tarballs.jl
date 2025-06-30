@@ -2,7 +2,8 @@ using BinaryBuilder, Pkg
 
 name = "Gnuplot"
 version = v"5.4.5"
-julia_build = 0  # NOTE: increment on rebuild
+build_number_jll = 0  # NOTE: increment on rebuild of the same version, reset on new gnuplot version
+version_jll = VersionNumber(version.major, version.minor, 1_000 * version.patch + build_number_jll)
 
 # Collection of sources required to complete build
 sources = [
@@ -58,7 +59,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
-    ARGS, name, VersionNumber(version.major, version.minor, 1_000 * version.patch + julia_build),
-    sources, script, platforms, products, dependencies;
+    ARGS, name, version_jll, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version = v"8"
 )
