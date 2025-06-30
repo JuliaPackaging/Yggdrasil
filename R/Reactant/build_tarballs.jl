@@ -40,7 +40,7 @@ if [[ "${target}" == *-apple-darwin* ]]; then
 fi
 
 if [[ "${bb_full_target}" == *cuda_version+12.1* ]] || [[ "${bb_full_target}" == *cuda_version+12.4* ]]; then
-   sed -i.bz "s/CUPTI_NEW \+/CUPTI_OLD \+/g" WORKSPACE
+   sed -i.bz "s/CUPTI_NEW \\+/CUPTI_OLD \\+/g" WORKSPACE
 fi
 
 mkdir -p .local/bin
