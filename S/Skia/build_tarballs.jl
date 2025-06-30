@@ -10,23 +10,15 @@ sources = [
    GitSource("https://github.com/google/skia.git", "482de011c920d85fdbe21a81c45852655df6a809"),
    GitSource("https://github.com/stensmo/cskia.git", "3438e6efd3a4f27f43457db675ceb33da30c60cf"),
    DirectorySource("./bundled"),
-   GitSource("https://chromium.googlesource.com/chromium/src/buildtools.git","1760ff6d7267dd97ae1968c7bee9ce04a2a8489d"),
    GitSource("https://android.googlesource.com/platform/external/dng_sdk.git","dbe0a676450d9b8c71bf00688bb306409b779e90"),
-   GitSource("https://chromium.googlesource.com/external/github.com/libexpat/libexpat.git","624da0f593bb8d7e146b9f42b06d8e6c80d032a3"),
+   #Missing headers for freetype2
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/freetype2.git","5d4e649f740c675426fbe4cdaffc53ee2a4cb954"),
-   GitSource("https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz.git","ca3cd48fa3e06fa81d7c8a3f716cca44ed2de26a"),
-   GitSource("https://chromium.googlesource.com/chromium/deps/icu.git","364118a1d9da24bb5b770ac3d762ac144d6da5a4"),
-   GitSource("https://chromium.googlesource.com/codecs/libgav1.git","5cf722e659014ebaf2f573a6dd935116d36eadf1"),
-   GitSource("https://chromium.googlesource.com/chromium/deps/libjpeg_turbo.git","e14cbfaa85529d47f9f55b0f104a579c1061f9ad"),
-   GitSource("https://chromium.googlesource.com/external/gitlab.com/wg1/jpeg-xl.git","a205468bc5d3a353fb15dae2398a101dff52f2d3"),
-   GitSource("https://skia.googlesource.com/third_party/libpng.git","ed217e3e601d8e462f7fd1e04bed43ac42212429"),
-   GitSource("https://chromium.googlesource.com/webm/libwebp.git","845d5476a866141ba35ac133f856fa62f0b7445f"),
    GitSource("https://chromium.googlesource.com/libyuv/libyuv.git","d248929c059ff7629a85333699717d7a677d8d96"),
    GitSource("https://android.googlesource.com/platform/external/piex.git","bb217acdca1cc0c16b704669dd6f91a1b509c406"),
    GitSource("https://chromium.googlesource.com/external/github.com/unicode-org/unicodetools","66a3fa9dbdca3b67053a483d130564eabc5fe095"),
+   # These two have some kind of source dependency. 
    GitSource("https://skia.googlesource.com/external/github.com/google/wuffs-mirror-release-c.git","e3f919ccfe3ef542cfc983a82146070258fb57f8"),
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/zlib","646b7f569718921d7d4b5b8e22572ff6c76f2596"),
-
 ]
 
 
@@ -49,6 +41,14 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("Fontconfig_jll"; compat="2.16.0")
+    Dependency("JpegTurbo_jll"; compat="3.1.1")
+    Dependency("libpng_jll"; compat="1.6.49")
+    Dependency("libwebp_jll"; compat="1.5.0")
+    Dependency("ICU_jll"; compat="76.1")
+    Dependency("Zlib_jll"; compat="1.3.1")
+    #Dependency("FreeType2_jll"; compat="2.13.4")
+    Dependency("Expat_jll"; compat="2.6.5")
+    Dependency("wuffs_jll"; compat="0.3.4")
     Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc");)
     Dependency(PackageSpec(name="xkbcommon_jll", uuid="d8fb68d0-12a3-5cfd-a85a-d49703b185fd"); )
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"); )
@@ -71,13 +71,12 @@ shopt -s extglob
 # Rename libraries to the names used in Skia
 mv wuffs-mirror-release-c wuffs
 mv freetype2 freetype
-mv libexpat expat
-mv libjpeg_turbo libjpeg-turbo
+
 
 # Move dependencies to the correct location
 mv !(cskia|buildtools|skia|patches) skia/third_party/externals/
 
-mv buildtools/ skia/
+
 
 
 cd skia
@@ -139,12 +138,12 @@ is_official_build=true
 skia_enable_pdf=true
 skia_use_gl=true
 skia_use_harfbuzz=false
-skia_use_system_expat=false
+skia_use_system_expat=true
 skia_use_system_freetype2=false
-skia_use_system_icu=false
-skia_use_system_libjpeg_turbo=false
-skia_use_system_libpng=false
-skia_use_system_libwebp=false
+skia_use_system_icu=true
+skia_use_system_libjpeg_turbo=true
+skia_use_system_libpng=true
+skia_use_system_libwebp=true
 extra_cflags=[\\"-fpic\\", \\"-fvisibility=default\\"]
 $PLATFORM_ARGS
 "
