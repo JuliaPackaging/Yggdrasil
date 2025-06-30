@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.214"
 
 sources = [
-   GitSource(repo, "a1a343d50f15875f934d7fad6eb891856bc0241d"),
+   GitSource(repo, "06caa2d616fc97ccc48ed8415c901200605265f4"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -40,7 +40,7 @@ if [[ "${target}" == *-apple-darwin* ]]; then
 fi
 
 if [[ "${bb_full_target}" == *cuda_version+12.1* ]] || [[ "${bb_full_target}" == *cuda_version+12.4* ]]; then
-   sed -i.bz "s/CUPTI_NEW \\+/CUPTI_OLD \\+/g" WORKSPACE
+   sed -i.bz "s/CUPTI_NEW +/CUPTI_OLD +/g" WORKSPACE
 fi
 
 mkdir -p .local/bin
