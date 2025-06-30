@@ -48,8 +48,8 @@ function mpfr_script(; kwargs...)
     return script
 end
 
-function mpfr_platforms(; experimental::Bool=true, kwargs...)
-    platforms = supported_platforms(; experimental)
+function mpfr_platforms(; kwargs...)
+    platforms = supported_platforms()
     push!(platforms, Platform("x86_64", "linux"; sanitize="memory"))
     return platforms
 end
