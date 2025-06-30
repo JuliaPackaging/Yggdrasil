@@ -7,7 +7,7 @@ julia_build = 0  # NOTE: increment on rebuild
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://downloads.sourceforge.net/project/gnuplot/gnuplot/$(version)/gnuplot-$(version).tar.gz",
-              "66f679115dd30559e110498fc94d926949d4d370b4999a042e724b8e910ee478"),
+                  "66f679115dd30559e110498fc94d926949d4d370b4999a042e724b8e910ee478"),
     DirectorySource("./bundled"),
 ]
 
