@@ -9,7 +9,7 @@ sources = [
 ]
 
 script = raw"""
-cd $WORKSPACE/srcdir/dist-m4ri/
+cd $WORKSPACE/srcdir/dist-m4ri/src/
 make -j${nproc} CC=$CC CXX=$CXX
 install -Dvm 755 "dist-m4ri${exeext}"  -t "${bindir}"
 """
