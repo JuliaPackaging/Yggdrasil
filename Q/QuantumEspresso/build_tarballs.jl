@@ -48,7 +48,7 @@ else
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
-make all "${make_args[@]}" -j $nproc
+make all "${make_args[@]}"
 make install
 # Manually make all binary executables...executable.  Sigh
 chmod +x "${bindir}"/*
