@@ -20,6 +20,6 @@ products = [
     ExecutableProduct("dist-m4ri", :dist_m4ri)
 ]
 
-dependencies = []
+dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
