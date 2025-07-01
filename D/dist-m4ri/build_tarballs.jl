@@ -15,7 +15,7 @@ mkdir -p ${bindir}
 cp dist-m4ri ${bindir}/
 """
 
-platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p), supported_platforms())
+platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p) || Sys.isfreebsd(p), supported_platforms())
 
 products = [
     ExecutableProduct("dist-m4ri", :dist_m4ri)
