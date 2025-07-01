@@ -10,16 +10,13 @@ sources = [
    GitSource("https://github.com/google/skia.git", "482de011c920d85fdbe21a81c45852655df6a809"),
    GitSource("https://github.com/stensmo/cskia.git", "3438e6efd3a4f27f43457db675ceb33da30c60cf"),
    DirectorySource("./bundled"),
-   GitSource("https://android.googlesource.com/platform/external/dng_sdk.git","dbe0a676450d9b8c71bf00688bb306409b779e90"),
    #Missing headers for freetype2
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/freetype2.git","5d4e649f740c675426fbe4cdaffc53ee2a4cb954"),
    GitSource("https://chromium.googlesource.com/libyuv/libyuv.git","d248929c059ff7629a85333699717d7a677d8d96"),
-   GitSource("https://android.googlesource.com/platform/external/piex.git","bb217acdca1cc0c16b704669dd6f91a1b509c406"),
    # These two have some kind of source dependency. 
    GitSource("https://skia.googlesource.com/external/github.com/google/wuffs-mirror-release-c.git","e3f919ccfe3ef542cfc983a82146070258fb57f8"),
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/zlib","646b7f569718921d7d4b5b8e22572ff6c76f2596"),
 ]
-
 
 
 # These are the platforms we will build for by default, unless further
@@ -71,11 +68,8 @@ shopt -s extglob
 mv wuffs-mirror-release-c wuffs
 mv freetype2 freetype
 
-
 # Move dependencies to the correct location
 mv !(cskia|buildtools|skia|patches) skia/third_party/externals/
-
-
 
 
 cd skia
@@ -143,6 +137,10 @@ skia_use_system_icu=true
 skia_use_system_libjpeg_turbo=true
 skia_use_system_libpng=true
 skia_use_system_libwebp=true
+skia_use_system_zlib=true
+skia_use_lua=false
+skia_use_piex=false
+skia_use_dng_sdk=false
 extra_cflags=[\\"-fpic\\", \\"-fvisibility=default\\"]
 $PLATFORM_ARGS
 "
