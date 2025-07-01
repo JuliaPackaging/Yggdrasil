@@ -11,8 +11,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/dist-m4ri/
 make -j${nproc} CC=$CC CXX=$CXX
-mkdir -p ${bindir}
-cp dist-m4ri ${bindir}/
+install -Dvm 755 "dist-m4ri${exeext}"  -t "${bindir}"
 """
 
 platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p) || Sys.isfreebsd(p), supported_platforms())
@@ -21,6 +20,6 @@ products = [
     ExecutableProduct("dist-m4ri", :dist_m4ri)
 ]
 
-dependencies = []
+dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
