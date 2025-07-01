@@ -11,8 +11,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/dist-m4ri/
 make -j${nproc} CC=$CC CXX=$CXX
-mkdir -p ${bindir}
-cp dist-m4ri ${bindir}/
+install -Dvm 755 "dist-m4ri${exeext}"  -t "${bindir}"
 """
 
 platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p), supported_platforms())
