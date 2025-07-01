@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.11.0"
+upstream_version = v"3.11.1"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -19,13 +19,10 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "447eb5238bb6ef2837e68bf2ec742c64007b680b"),
+        "226b7732b4672deaf35d6a16a39216047358f7d8"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
-    FileSource("https://github.com/OSGeo/gdal/commit/7d28a4091c54e456ff13f6713f8769da3d1fae54.patch",
-               "35603ceb28b5476225b7d7e9ded8273164cdf12735d576db373f8af1f004a944";
-               filename="inttypes.patch"),
 ]
 
 # Bash recipe for building across all platforms
@@ -33,7 +30,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/gdal
 
 atomic_patch -p1 ../patches/bsd-environ-undefined-fix.patch
-atomic_patch -p1 ../inttypes.patch
 
 if [[ "${target}" == *-freebsd* ]]; then
     # Our FreeBSD libc has `environ` as undefined symbol, so the linker will
@@ -191,9 +187,7 @@ dependencies = [
     Dependency("Lz4_jll"; compat="1.10.1"),
     Dependency("NetCDF_jll"; compat="401.900.300"),
     Dependency("OpenJpeg_jll"; compat="2.5.4"),
-    # No compat bound so that things work for riscv64
-    # Dependency("PCRE2_jll"; compat="10.35.0"),
-    Dependency("PCRE2_jll"),
+    Dependency("PCRE2_jll"; compat="10.42.0"),
     Dependency("PROJ_jll"; compat="902.500.100"),
     Dependency("Qhull_jll"; compat="10008.0.1004"),
     Dependency("SQLite_jll"; compat="3.48.0"),
