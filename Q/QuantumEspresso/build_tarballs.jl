@@ -68,6 +68,10 @@ filter!(!Sys.iswindows, platforms)
 filter!(p -> !(Sys.islinux(p) && arch(p) == "aarch64" && libgfortran_version(p) <= v"4"), platforms)
 # "Old-style type declaration REAL*16 not supported" in merge_wann.f90
 filter!(p -> !(Sys.islinux(p) && (arch(p) == "armv6l" || arch(p) == "armv7l")), platforms)
+# Not supported by OpenBLAS32 JLL
+filter!(p -> !(arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
+# Not supported by SCALAPACK32 JLL
+filter!(p -> arch(p) != "riscv64", platforms)
 
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
@@ -77,7 +81,6 @@ filter!(p -> p["mpi"] ≠ "mpitrampoline", platforms)
 # Avoid platforms where the MPI implementation isn't supported
 # OpenMPI
 filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "armv6l" && libc(p) == "glibc"), platforms)
-filter!(p -> !(p["mpi"] == "openmpi" && arch(p) == "powerpc64le" && libgfortran_version(p) < v"5"), platforms)
 # MPItrampoline
 filter!(p -> !(p["mpi"] == "mpitrampoline" && libc(p) == "musl"), platforms)
 filter!(p -> !(p["mpi"] == "mpitrampoline" && Sys.isfreebsd(p)), platforms)
