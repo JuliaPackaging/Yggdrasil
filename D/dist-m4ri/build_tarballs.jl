@@ -18,7 +18,7 @@ cp dist-m4ri ${bindir}/
 platforms = filter(p -> Sys.islinux(p) || Sys.isapple(p), supported_platforms())
 
 products = [
-    ExecutableProduct("dist-m4ri", :dist-m4ri)
+    ExecutableProduct("dist-m4ri", :dist_m4ri)
 ]
 
 dependencies = []
