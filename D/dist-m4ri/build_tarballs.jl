@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "dist-m4ri"
+name = "dist_m4ri"
 version = v"0.0.1"
 
 sources = [
