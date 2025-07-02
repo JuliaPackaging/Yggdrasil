@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/spectra-*
+cd $WORKSPACE/srcdir/spectra
 mkdir build && cd build/
 
 cmake .. \
