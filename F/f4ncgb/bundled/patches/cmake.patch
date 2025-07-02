@@ -1,0 +1,39 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 04ca4e8..edc4bdc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -13,6 +13,7 @@ option(ENABLE_FAST_MERSENNE_PRIME_MODULO "Enable fast mersenne prime modulo oper
+ option(ENABLE_MONOMIAL_PRODUCTS_MAP "Track and cache monomial products in map (usually slower)" OFF)
+ option(ENABLE_COMPACT_MONOMIAL_MAP "Use a more compact map for lookups in the monomial store (usually slower)" OFF)
+ option(ENABLE_STORE_TRACE "Enable a (very expensive) trace of each access (operator[]) into a store." OFF)
++option(ENABLE_NATIVE "Enable -march=native to target the host CPU (creates non-portable binaries)" ON)
+ 
+ set(MAX_BLOCKS 16 CACHE STRING "Maximum number of blocks to compile for. Must be integral. Changes compilation time (duplicates implementation for each block).")
+ 
+@@ -62,8 +63,15 @@ endif()
+ 
+ find_package(mimalloc QUIET)
+ 
++set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
++find_package( Threads QUIET)
++
+ # Do more optimizations in release mode. Also disable assertions.
+-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -g -DNDEBUG")
++set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -DNDEBUG")
++
++if(ENABLE_NATIVE)
++  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
++endif()
+ 
+ set(CMAKE_CXX_STANDARD 20)
+ 
+@@ -83,6 +91,9 @@ target_link_libraries(f4ncgb_test PUBLIC f4ncgb)
+ target_link_libraries(f4ncgb_bin PUBLIC f4ncgb)
+ set_target_properties(f4ncgb_bin PROPERTIES OUTPUT_NAME "f4ncgb")
+ 
++# needed for pthread flag
++target_link_libraries(f4ncgb_bin PUBLIC ${CMAKE_THREAD_LIBS_INIT} )
++
+ set_property(TARGET f4ncgb PROPERTY CXX_STANDARD 20)
+ set_property(TARGET f4ncgb_test PROPERTY CXX_STANDARD 20)
+ set_property(TARGET f4ncgb_bin PROPERTY CXX_STANDARD 20)

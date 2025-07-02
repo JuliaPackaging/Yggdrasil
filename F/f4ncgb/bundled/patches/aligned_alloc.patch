@@ -1,0 +1,31 @@
+diff --git a/src/store.hpp b/src/store.hpp
+index 6848f28..d859a48 100644
+--- a/src/store.hpp
++++ b/src/store.hpp
+@@ -18,6 +18,8 @@
+ #include <boost/align/align_down.hpp>
+ #include <boost/align/align_up.hpp>
+ 
++#include <boost/align/aligned_alloc.hpp>
++
+ #include <boost/container/small_vector.hpp>
+ #include <boost/multiprecision/gmp.hpp>
+ 
+@@ -295,7 +297,7 @@ class store {
+ 
+   store()
+     : pool_(reinterpret_cast<std::byte*>(
+-        std::aligned_alloc(2097152 /* 2^21, 2MB */,
++        boost::alignment::aligned_alloc(2097152 /* 2^21, 2MB */,
+                            2097152 * (capacity() / 2097152)))) {
+     if(pool_.get() == nullptr) {
+       pool_.reset(reinterpret_cast<std::byte*>(
+@@ -785,7 +787,7 @@ class polynomial_store
+     : base::store()
+     , store_(store)
+     , cpool_(reinterpret_cast<std::byte*>(
+-        std::aligned_alloc(2097152 /* 2^21, 2MB */,
++        boost::alignment::aligned_alloc(2097152 /* 2^21, 2MB */,
+                            2097152 * (capacity() / 2097152)))) {
+     cpool_capacity_ = 2097152 * (capacity() / 2097152);
+     if(cpool_.get() == nullptr) {
