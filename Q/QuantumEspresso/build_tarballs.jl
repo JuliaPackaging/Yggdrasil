@@ -17,6 +17,7 @@ sources = [
 script = raw"""
 cd q-e-qe-*
 atomic_patch -p1 ../patches/0000-pass-host-to-configure.patch
+atomic_patch ../patches/0002-kcw-parallel-make.patch
 
 export BLAS_LIBS="-L${libdir} -lopenblas"
 export LAPACK_LIBS="-L${libdir} -lopenblas"
@@ -48,7 +49,7 @@ else
 fi
 
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} ${flags[@]}
-make all "${make_args[@]}"
+make all "${make_args[@]}" -j $nproc
 make install
 # Manually make all binary executables...executable.  Sigh
 chmod +x "${bindir}"/*
