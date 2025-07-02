@@ -30,7 +30,8 @@ platforms = [
     Platform("aarch64", "macos"; ),
     Platform("aarch64", "linux"; libc = "glibc"),
     Platform("x86_64", "macos"; ),
-    Platform("x86_64", "linux"; libc = "glibc")
+    Platform("x86_64", "linux"; libc = "glibc"),
+    Platform("x86_64", "windows")
 ]
 
 # The products that we will ensure are always built
