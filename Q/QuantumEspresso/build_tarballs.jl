@@ -4,8 +4,9 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "QuantumEspresso"
+# When updating to 7.5+ (as of 2nd of July 2025 not yet released),
+# it should be possible to remove 0002-kcw-parallel-make.patch.
 version = v"7.4.1"
-quantumespresso_version = v"7.4.1"
 
 sources = [
     ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-$(version)/q-e-qe-$(version).tar.gz",
