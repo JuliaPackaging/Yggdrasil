@@ -6,13 +6,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "AMReX"
-version_string = "25.06"
+version_string = "25.07"
 version = VersionNumber(version_string)
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/AMReX-Codes/amrex/releases/download/$(version_string)/amrex-$(version_string).tar.gz",
-                  "2f69c708ddeaba6d4be3a12ab6951f171952f6f7948e628c5148d667c4197838"),
+                  "19b9e5271451c202610f9c6569189c28fc05bcd655d53525df9169efeb5ee66f"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz",
                "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f"),
 ]
