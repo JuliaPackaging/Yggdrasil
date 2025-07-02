@@ -8,7 +8,7 @@ version = v"7.4.1"
 quantumespresso_version = v"7.4.1"
 
 sources = [
-    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-7.4.1/q-e-qe-7.4.1.tar.gz",
+    ArchiveSource("https://gitlab.com/QEF/q-e/-/archive/qe-$(version)/q-e-qe-$(version).tar.gz",
                   "6ef9c53dbf0add2a5bf5ad2a372c0bff935ad56c4472baa001003e4f932cab97"),
     DirectorySource("bundled"),
 ]
