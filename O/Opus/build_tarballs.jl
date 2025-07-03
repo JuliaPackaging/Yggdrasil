@@ -7,13 +7,12 @@ version = v"1.5.2"
 
 # Collection of sources required to build Opus
 sources = [
-    ArchiveSource("https://gitlab.xiph.org/xiph/opus/-/archive/v$(version)/opus-v$(version).tar.bz2",
-                  "260ad22bce4d285ffd6d00662576e49424734b29e06897957322b5015c68b133"),
+    GitSource("https://gitlab.xiph.org/xiph/opus", "ddbe48383984d56acd9e1ab6a090c54ca6b735a6"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/opus-*/
+cd $WORKSPACE/srcdir/opus
 
 if [[ ${target} == *musl* ]]; then
     # On musl, disable stack protection (https://www.openwall.com/lists/musl/2018/09/11/2)
