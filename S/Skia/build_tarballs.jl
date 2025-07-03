@@ -68,7 +68,7 @@ mv wuffs-mirror-release-c wuffs
 mv freetype2 freetype
 
 # Move dependencies to the correct location
-mv !(cskia|buildtools|skia|patches) skia/third_party/externals/
+mv !(cskia|skia|patches|MacOSX10.15.sdk.tar.xz) skia/third_party/externals/
 
 
 cd skia
