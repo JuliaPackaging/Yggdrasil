@@ -12,6 +12,8 @@ sources = [
     DirectorySource("./bundled"),
 ]
 
+libexec_path = joinpath("libexec", "gnuplot", "$(version.major).$(version.minor)")
+
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/gnuplot-*
@@ -43,6 +45,10 @@ esac
 
 make -C src -j${nproc}
 make -C src install
+""" * """
+mkdir -p \$prefix/$libexec_path
+touch \$prefix/$libexec_path/gnuplot_fake
+chmod +x \$prefix/$libexec_path/gnuplot_fake
 """
 
 # These are the platforms we will build for by default, unless further
@@ -50,11 +56,11 @@ make -C src install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-libexec_path = joinpath("libexec", "gnuplot", "$(version.major).$(version.minor)")
 # @show libexec_path
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    ExecutableProduct("gnuplot_x11", :gnuplot_x11, libexec_path),
+    ExecutableProduct("gnuplot_fake", :gnuplot_fake, libexec_path),
+    # ExecutableProduct("gnuplot_x11", :gnuplot_x11, libexec_path),
     # ExecutableProduct("gnuplot_qt", :gnuplot_qt, libexec_path),
 ]
 
