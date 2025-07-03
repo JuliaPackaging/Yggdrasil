@@ -54,8 +54,8 @@ libexec_path = joinpath("libexec", "gnuplot", "$(version.major).$(version.minor)
 # @show libexec_path
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
-    ExecutableProduct("gnuplot_qt", :gnuplot_qt, libexec_path),
     ExecutableProduct("gnuplot_x11", :gnuplot_x11, libexec_path),
+    # ExecutableProduct("gnuplot_qt", :gnuplot_qt, libexec_path),
 ]
 
 # Dependencies that must be installed before this package can be built
