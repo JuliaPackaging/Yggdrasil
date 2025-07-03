@@ -38,25 +38,3 @@ index 06a7bb1..0323fe9 100644
  
  skia_core_public += skia_pathops_public
 +
-
-diff --git a/src/ports/SkTypeface_mac_ct.cpp b/src/ports/SkTypeface_mac_ct.cpp
-index 81e11e4..93f57d9 100644
---- a/src/ports/SkTypeface_mac_ct.cpp
-+++ b/src/ports/SkTypeface_mac_ct.cpp
-@@ -729,16 +729,6 @@ bool SkTypeface_Mac::onGlyphMaskNeedsCurrentColor() const {
-
- CFArrayRef SkTypeface_Mac::getVariationAxes() const {
-     fInitVariationAxes([this]{
--        // Prefer kCTFontVariationAxesAttribute, faster since it doesn't localize axis names.
--        SkUniqueCFRef<CTFontDescriptorRef> desc(CTFontCopyFontDescriptor(fFontRef.get()));
--        SkUniqueCFRef<CFTypeRef> cf(
--                CTFontDescriptorCopyAttribute(desc.get(), kCTFontVariationAxesAttribute));
--        CFArrayRef array;
--        if (cf && SkCFDynamicCast(cf.get(), &array, "Axes")) {
--            fVariationAxes.reset(array);
--            cf.release();
--            return;
--        }
-         fVariationAxes.reset(CTFontCopyVariationAxes(fFontRef.get()));
-     });
-     return fVariationAxes.get();
