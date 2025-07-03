@@ -47,7 +47,7 @@ make -C src -j${nproc}
 make -C src install
 
 if [[ "${target}" == *-mingw* ]]; then
-    suffix='.exe"
+    suffix='.exe'
 else
     suffix=''
 fi
