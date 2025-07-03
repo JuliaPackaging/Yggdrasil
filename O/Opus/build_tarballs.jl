@@ -3,15 +3,13 @@
 using BinaryBuilder
 
 name = "Opus"
-version = v"1.3.1"
+version = v"1.5.2"
 
 # Collection of sources required to build Opus
 sources = [
-    ArchiveSource("https://archive.mozilla.org/pub/opus/opus-$(version).tar.gz",
-                  "65b58e1e25b2a114157014736a3d9dfeaad8d41be1c8179866f144a2fb44ff9d"),
+    ArchiveSource("https://gitlab.xiph.org/xiph/opus/-/archive/v$(version)/opus-v$(version).tar.bz2",
+                  "260ad22bce4d285ffd6d00662576e49424734b29e06897957322b5015c68b133"),
 ]
-
-version = v"1.3.3" # <--- This version number is a lie to build for experimental platforms
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -28,6 +26,7 @@ elif [[ "${target}" == *-mingw* ]]; then
     export LDFLAGS="-lssp"
 fi
 
+./autogen.sh
 ./configure --prefix=$prefix --host=$target --build=${MACHTYPE} \
             --disable-static \
             --enable-custom-modes \
