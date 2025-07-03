@@ -112,10 +112,11 @@ target_os=\\"mac\\"
 skia_use_metal=false  
 skia_enable_fontmgr_fontconfig=false
 skia_use_fontconfig=false
-skia_use_fonthost_mac=true
-skia_use_dng_sdk=true
+skia_use_fonthost_mac=false
+skia_use_dng_sdk=false
 skia_use_fontconfig=false
 skia_use_freetype=false
+skia_enable_fontmgr_empty=true
 "   
 elif [[ "${target}" == *-apple-* ]]; then
 PLATFORM_ARGS="
