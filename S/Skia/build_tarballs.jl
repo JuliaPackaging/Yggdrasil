@@ -109,7 +109,7 @@ if [[ "${target}" == x86_64-apple-darwin* ]]; then
 PLATFORM_ARGS="
 skia_use_x11=false \
 target_os=\\"mac\\" 
-skia_use_metal=true  
+skia_use_metal=false  
 skia_enable_fontmgr_fontconfig=false
 skia_use_fontconfig=false
 skia_use_fonthost_mac=true
