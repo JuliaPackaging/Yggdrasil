@@ -10,19 +10,21 @@ sources = [
    GitSource("https://github.com/google/skia.git", "482de011c920d85fdbe21a81c45852655df6a809"),
    GitSource("https://github.com/stensmo/cskia.git", "3438e6efd3a4f27f43457db675ceb33da30c60cf"),
    DirectorySource("./bundled"),
-   #Missing headers for freetype2
+   # Missing header ft2build.h for freetype2
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/freetype2.git","5d4e649f740c675426fbe4cdaffc53ee2a4cb954"),
    GitSource("https://chromium.googlesource.com/libyuv/libyuv.git","d248929c059ff7629a85333699717d7a677d8d96"),
    # These two have some kind of source dependency. 
    GitSource("https://skia.googlesource.com/external/github.com/google/wuffs-mirror-release-c.git","e3f919ccfe3ef542cfc983a82146070258fb57f8"),
    GitSource("https://chromium.googlesource.com/chromium/src/third_party/zlib","646b7f569718921d7d4b5b8e22572ff6c76f2596"),
+   # Need 10.15 SDK for Mac
+   FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz","2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
 ]
 
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-filter!(p -> !Sys.iswindows(p)  && !(Sys.isapple(p)  && arch(p) ∈ ("x86_64",)), platforms)
+filter!(p -> !Sys.iswindows(p), platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 # Remove musl && cxx03, since there is a bug preventing Skia to build
@@ -41,10 +43,7 @@ dependencies = [
     Dependency("libpng_jll"; compat="1.6.49")
     Dependency("libwebp_jll"; compat="1.5.0")
     Dependency("ICU_jll"; compat="76.1")
-    Dependency("Zlib_jll"; compat="1.3.1")
-    #Dependency("FreeType2_jll"; compat="2.13.4")
     Dependency("Expat_jll"; compat="2.6.5")
-    Dependency("wuffs_jll"; compat="0.3.4")
     Dependency(PackageSpec(name="Xorg_libX11_jll", uuid="4f6342f7-b3d2-589e-9d20-edeb45f2b2bc");)
     Dependency(PackageSpec(name="xkbcommon_jll", uuid="d8fb68d0-12a3-5cfd-a85a-d49703b185fd"); )
     Dependency(PackageSpec(name="Libglvnd_jll", uuid="7e76a0d4-f3c7-5321-8279-8d96eeed0f29"); )
@@ -100,8 +99,22 @@ elif [[ "${target}" == armv6l-* ]]; then
 fi
 
 
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # Work around the issue
+    export MACOSX_DEPLOYMENT_TARGET=10.15
+    # ...and install a newer SDK
+    rm -rf /opt/${target}/${target}/sys-root/System
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.15.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.15.sdk/System MacOSX10.15.sdk/usr
 
-if [[ "${target}" == *-apple-* ]]; then
+PLATFORM_ARGS="
+skia_use_x11=false \
+target_os=\\"mac\\" 
+skia_use_metal=true  
+skia_enable_fontmgr_fontconfig=false
+skia_use_fonthost_mac=true
+skia_use_dng_sdk=true
+"   
+elif [[ "${target}" == *-apple-* ]]; then
 PLATFORM_ARGS="
 skia_use_x11=false \
 target_os=\\"mac\\" 
@@ -118,7 +131,6 @@ skia_use_dng_sdk=false
 else
 PLATFORM_ARGS="
 skia_use_fontconfig=true \
-skia_use_dng_sdk=true
 "
 fi
 
