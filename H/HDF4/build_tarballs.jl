@@ -6,13 +6,13 @@ name = "HDF4"
 # We bumped the version number to build without NetCDF support. This
 # is necessary to avoid a name clash when using HDF4_jll and
 # NetCDF_jll together.
-hdf4_version = v"4.3.0"
-version = v"4.3.1"
+hdf4_version = v"4.3.1"
+version = v"4.3.2"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf4/releases/download/hdf$(hdf4_version)/hdf$(hdf4_version).tar.gz",
-                  "282b244a819790590950f772095abcaeef405b0f17d2ee1eb5039da698cf938b"),
+                  "a2c69eb752aee385b73d4255e4387134dd5e182780d64da0a5cb0d6e1d3dea3b"),
 ]
 
 # Bash recipe for building across all platforms
