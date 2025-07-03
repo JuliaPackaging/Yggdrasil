@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "Gnuplot"
 version = v"6.0.3"
-build_number_jll = 0  # NOTE: increment on rebuild of the same version, reset on new gnuplot version
+build_number_jll = 1  # NOTE: increment on rebuild of the same version, reset on new gnuplot version
 version_jll = VersionNumber(version.major, version.minor, 1_000 * version.patch + build_number_jll)
 
 # Collection of sources required to complete build
@@ -50,7 +50,13 @@ make -C src install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [ExecutableProduct("gnuplot", :gnuplot)]
+libexec_path = joinpath("libexec", "gnuplot", "$(version.major).$(version.minor)")
+# @show libexec_path
+products = [
+    ExecutableProduct("gnuplot", :gnuplot),
+    ExecutableProduct("gnuplot_qt", :gnuplot_qt, libexec_path),
+    ExecutableProduct("gnuplot_x11", :gnuplot_x11, libexec_path),
+]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
