@@ -31,7 +31,6 @@ platforms = expand_cxxstring_abis(platforms)
 # Remove musl && cxx03, since there is a bug preventing Skia to build
 filter!(p -> !(cxxstring_abi(p) == "cxx03" && libc(p) == "musl"), platforms)
 
-filter!(p -> Sys.isapple(p), platforms)
 
 
 # The products that we will ensure are always built
