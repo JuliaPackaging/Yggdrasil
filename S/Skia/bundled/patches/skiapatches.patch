@@ -39,10 +39,10 @@ index 06a7bb1..0323fe9 100644
  skia_core_public += skia_pathops_public
 +
 
-diff --git before/src/ports/SkTypeface_mac_ct.cpp after/src/ports/SkTypeface_mac_ct.cpp
+diff --git a/src/ports/SkTypeface_mac_ct.cpp b/src/ports/SkTypeface_mac_ct.cpp
 index 81e11e4..93f57d9 100644
---- before/src/ports/SkTypeface_mac_ct.cpp
-+++ after/src/ports/SkTypeface_mac_ct.cpp
+--- a/src/ports/SkTypeface_mac_ct.cpp
++++ b/src/ports/SkTypeface_mac_ct.cpp
 @@ -729,16 +729,6 @@ bool SkTypeface_Mac::onGlyphMaskNeedsCurrentColor() const {
 
  CFArrayRef SkTypeface_Mac::getVariationAxes() const {
@@ -57,6 +57,6 @@ index 81e11e4..93f57d9 100644
 -            cf.release();
 -            return;
 -        }
-+         fVariationAxes.reset(CTFontCopyVariationAxes(fFontRef.get()));
-+     });
-+     return fVariationAxes.get();
+         fVariationAxes.reset(CTFontCopyVariationAxes(fFontRef.get()));
+     });
+     return fVariationAxes.get();
