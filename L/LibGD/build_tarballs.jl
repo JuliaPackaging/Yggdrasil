@@ -52,6 +52,7 @@ dependencies = [
     BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
     Dependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
     Dependency("libwebp_jll"; compat="1.2.4"),
+    Dependency("Fontconfig_jll"; compat="2.16"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
