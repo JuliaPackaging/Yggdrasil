@@ -62,7 +62,6 @@ chmod +x \$prefix/$libexec_path/gnuplot_fake\$suffix
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-# @show libexec_path
 products = [
     ExecutableProduct("gnuplot", :gnuplot),
     ExecutableProduct("gnuplot_fake", :gnuplot_fake, libexec_path),
