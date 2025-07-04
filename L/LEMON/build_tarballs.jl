@@ -8,8 +8,7 @@ min_jl_version = v"1.9"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/tpet/lemon", "c4284157265976120e57771693a9be7c45d1b617"),
-    # ArchiveSource("http://lemon.cs.elte.hu/pub/sources/lemon-$(version).tar.gz", "71b7c725f4c0b4a8ccb92eb87b208701586cf7a96156ebd821ca3ed855bad3c8")
+    ArchiveSource("http://lemon.cs.elte.hu/pub/sources/lemon-$(version).tar.gz", "71b7c725f4c0b4a8ccb92eb87b208701586cf7a96156ebd821ca3ed855bad3c8"),
     DirectorySource("./bundled") # for the Julia wrapper
 ]
 
