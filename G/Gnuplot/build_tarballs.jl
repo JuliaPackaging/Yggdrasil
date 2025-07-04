@@ -46,6 +46,7 @@ esac
 make -C src -j${nproc}
 make -C src install
 """ * """
+# add a fake `gnuplot_fake` executable, in order to determine `GNUPLOT_DRIVER_DIR` in `Gaston.jl`
 mkdir -p \$prefix/$libexec_path
 touch \$prefix/$libexec_path/gnuplot_fake\$exeext
 chmod +x \$prefix/$libexec_path/gnuplot_fake\$exeext
