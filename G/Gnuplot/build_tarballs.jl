@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "Gnuplot"
 version = v"6.0.3"
-build_number_jll = 0  # NOTE: increment on rebuild of the same version, reset on new gnuplot version
+build_number_jll = 1  # NOTE: increment on rebuild of the same version, reset on new gnuplot version
 version_jll = VersionNumber(version.major, version.minor, 1_000 * version.patch + build_number_jll)
 
 # Collection of sources required to complete build
@@ -11,6 +11,8 @@ sources = [
                   "ec52e3af8c4083d4538152b3f13db47f6d29929a3f6ecec5365c834e77f251ab"),
     DirectorySource("./bundled"),
 ]
+
+libexec_path = joinpath("libexec", "gnuplot", "$(version.major).$(version.minor)")
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -43,6 +45,11 @@ esac
 
 make -C src -j${nproc}
 make -C src install
+""" * """
+# add a fake `gnuplot_fake` executable, in order to determine `GNUPLOT_DRIVER_DIR` in `Gaston.jl`
+mkdir -p \$prefix/$libexec_path
+touch \$prefix/$libexec_path/gnuplot_fake\$exeext
+chmod +x \$prefix/$libexec_path/gnuplot_fake\$exeext
 """
 
 # These are the platforms we will build for by default, unless further
@@ -50,7 +57,12 @@ make -C src install
 platforms = supported_platforms()
 
 # The products that we will ensure are always built
-products = [ExecutableProduct("gnuplot", :gnuplot)]
+products = [
+    ExecutableProduct("gnuplot", :gnuplot),
+    ExecutableProduct("gnuplot_fake", :gnuplot_fake, libexec_path),
+    # ExecutableProduct("gnuplot_x11", :gnuplot_x11, libexec_path),
+    # ExecutableProduct("gnuplot_qt", :gnuplot_qt, libexec_path),
+]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
