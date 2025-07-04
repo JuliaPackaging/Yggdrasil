@@ -26,7 +26,8 @@ mv $prefix/lib $prefix/lib_
 meson .. \
     --native-file="${MESON_HOST_TOOLCHAIN}" \
     --prefix ${host_prefix} --pkg-config-path ${host_prefix}/lib/pkgconfig \
-    -Ddocumentation=false
+    -Ddocumentation=false \
+    -Ddtd_validation=false
 ninja -j${nproc}
 ninja install
 rm /workspace/destdir/workspace
@@ -37,9 +38,11 @@ mv $prefix/lib_ $prefix/lib
 mkdir build-wayland
 
 cd build-wayland
+# setting dtd_validation=false to avoid requiring libxml2
 CMAKE=/usr/bin/cmake meson .. \
     --cross-file="${MESON_TARGET_TOOLCHAIN}" \
-    -Ddocumentation=false
+    -Ddocumentation=false \
+    -Ddtd_validation=false
 ninja -j${nproc}
 ninja install
 """
@@ -61,15 +64,11 @@ products = [
 dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
-    Dependency("XML2_jll"),
-    Dependency("EpollShim_jll"),
+    Dependency("EpollShim_jll"; platforms=filter(Sys.isfreebsd, platforms)),
     HostBuildDependency(PackageSpec("Expat_jll", v"2.6.5")),
     HostBuildDependency(PackageSpec("Libffi_jll", v"3.4.7")),
-    HostBuildDependency("XML2_jll"),
-    HostBuildDependency("EpollShim_jll"),
-
+    HostBuildDependency("EpollShim_jll"; platforms=filter(Sys.isfreebsd, platforms)),
 ]
 
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"8", julia_compat="1.6")
-# Build trigger: 1
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"5", julia_compat="1.6")
