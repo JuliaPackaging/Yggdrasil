@@ -17,11 +17,6 @@ sed -i 's/cp -p/cp/' build/make/Makefile
 
 apk add diffutils yasm
 
-if [[ "${bb_full_target}" == armv7l-* ]]; then
-    # Rein in the optimization settings
-    sed -i 's/-march=armv7-a//g' build/make/configure.sh
-fi
-
 if [[ "${bb_full_target}" == i686-linux-* ]]; then
     export TARGET=x86-linux-gcc
 elif [[ "${bb_full_target}" == x86_64-linux-* ]]; then
