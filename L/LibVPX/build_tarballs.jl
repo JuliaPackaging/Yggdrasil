@@ -15,8 +15,12 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/libvpx
 sed -i 's/cp -p/cp/' build/make/Makefile
 
-mkdir vpx_build && cd vpx_build
 apk add diffutils yasm
+
+if [[ "${bb_full_target}" == armv7l-* ]]; then
+    # Rein in the optimization settings
+    sed -i 's/-march=armv7-a//g' build/make/configure.sh
+fi
 
 if [[ "${bb_full_target}" == i686-linux-* ]]; then
     export TARGET=x86-linux-gcc
@@ -49,6 +53,7 @@ if [[ "${target}" == *-freebsd* ]]; then
     CONFIG_OPTS+=(--disable-multithread)
 fi
 
+mkdir vpx_build && cd vpx_build
 ../configure --prefix=$prefix --target=${TARGET} \
     --as=yasm \
     --enable-postproc \
@@ -73,10 +78,6 @@ fi
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-
-# # armv6l and riscv64 are not supported for cross-builds
-# filter!(p -> arch(p) != "armv6l", platforms)
-# filter!(p -> arch(p) != "riscv64", platforms)
 
 # The products that we will ensure are always built
 products = [
