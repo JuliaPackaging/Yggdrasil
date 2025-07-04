@@ -25,7 +25,9 @@ install -Dvm 644 "include/daec.h" "${includedir}/daec.h"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms()
+platforms = supported_platforms(;
+    exclude=[Platform("riscv64", "linux"; libc="glibc")]
+)
 
 
 # The products that we will ensure are always built
