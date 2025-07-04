@@ -45,16 +45,10 @@ esac
 
 make -C src -j${nproc}
 make -C src install
-
-if [[ "${target}" == *-mingw* ]]; then
-    suffix='.exe'
-else
-    suffix=''
-fi
 """ * """
 mkdir -p \$prefix/$libexec_path
-touch \$prefix/$libexec_path/gnuplot_fake\$suffix
-chmod +x \$prefix/$libexec_path/gnuplot_fake\$suffix
+touch \$prefix/$libexec_path/gnuplot_fake\$exeext
+chmod +x \$prefix/$libexec_path/gnuplot_fake\$exeext
 """
 
 # These are the platforms we will build for by default, unless further
