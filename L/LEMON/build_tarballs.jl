@@ -18,7 +18,7 @@ script = raw"""
 export CXXFLAGS="${CXXFLAGS} -Wno-register" # cland C++17 expects the `register` storage class to be written as `REGISTER`
 
 # build LEMON
-cd $WORKSPACE/srcdir/lemon-*/
+cd $WORKSPACE/srcdir/lemon*/
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
