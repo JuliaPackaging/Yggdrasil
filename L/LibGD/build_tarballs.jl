@@ -66,10 +66,9 @@ dependencies = [
     Dependency("JpegTurbo_jll"),
     Dependency("Libiconv_jll"),
     # Dependency("libavif_jll"),  # FIXME: fails
+    Dependency("libheif_jll"),
     Dependency("libpng_jll"),
     Dependency("Zlib_jll"),
-    Dependency(PackageSpec(; name="libde265_jll", uuid="0a7f2b4d-d03c-5694-960e-196e69ee64e2", path="$JULIA_HOME/dev/libde265_jll")),
-    Dependency(PackageSpec(; name="libheif_jll", uuid="a13778fd-9a17-58b4-b5a0-4b4a242815a9", path="$JULIA_HOME/dev/libheif_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
