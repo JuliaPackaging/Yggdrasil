@@ -17,13 +17,14 @@ cd $WORKSPACE/srcdir/libheif-*
 
 mkdir build
 
+args+=(-DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN)
 args+=(-DCMAKE_INSTALL_PREFIX=$prefix)
-args+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
 args+=(-DCMAKE_BUILD_TYPE=RELEASE)
+
 args+=(-DWITH_HEADER_COMPRESSION=1)
 args+=(-DWITH_EXAMPLES=0)
 
-cmake -B build -S . ${args[@]}
+cmake -B build -S . "${args[@]}"
 
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -38,11 +39,11 @@ products = [LibraryProduct("libheif", :libheif)]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Dependency("OpenJpeg_jll"),
-    # Dependency("Libtiff_jll"),
+    # Dependency("OpenJpeg_jll"),  # examples
+    # Dependency("Libtiff_jll"),  # examples
     Dependency("libavif_jll"),
     Dependency("libde265_jll"),
-    # Dependency("libpng_jll"),
+    # Dependency("libpng_jll"),  # examples
     Dependency("brotli_jll"),
     Dependency("LERC_jll"),
     Dependency("Zlib_jll"),
