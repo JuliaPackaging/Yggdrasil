@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "Gnuplot"
 version = v"6.0.3"
 ygg_build = 1  # NOTE: increment on rebuild of the same version, reset on new gnuplot version
-ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
+ygg_version = VersionNumber(version.major, version.minor, version.patch * 1_000 + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
