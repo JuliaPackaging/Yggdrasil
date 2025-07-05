@@ -23,6 +23,7 @@ args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 
 args+=(-DWITH_HEADER_COMPRESSION=1)
 args+=(-DWITH_EXAMPLES=0)
+args+=(-DBUILD_TESTING=0)  # error: 'uncaught_exceptions' is unavailable: introduced in macOS 10.12
 
 cmake -B build -S . "${args[@]}"
 
@@ -41,8 +42,8 @@ products = [LibraryProduct("libheif", :libheif)]
 dependencies = [
     # Dependency("OpenJpeg_jll"),  # examples
     # Dependency("Libtiff_jll"),  # examples
-    Dependency("libavif_jll"),
     Dependency("libde265_jll"),
+    Dependency("libavif_jll"),
     # Dependency("libpng_jll"),  # examples
     Dependency("brotli_jll"),
     Dependency("LERC_jll"),
