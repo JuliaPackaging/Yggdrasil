@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgd-*
+cd $WORKSPACE/srcdir/libgd*
 
 mkdir build
 
@@ -22,6 +22,7 @@ args+=(-DCMAKE_INSTALL_PREFIX=$prefix)
 args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 
 args+=(-DENABLE_FONTCONFIG=1)
+args+=(-DENABLE_GD_FORMATS=1)
 args+=(-DENABLE_FREETYPE=1)
 args+=(-DENABLE_ICONV=1)
 args+=(-DENABLE_JPEG=1)
@@ -44,7 +45,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("pngtogd2", :pngtogd2),
-    ExecutableProduct("webpng", :webpng),
+    # ExecutableProduct("webpng", :webpng),  # not on MSVC !
     ExecutableProduct("pngtogd", :pngtogd),
     ExecutableProduct("gdtopng", :gdtopng),
     ExecutableProduct("gdcmpgif", :gdcmpgif),
@@ -64,11 +65,10 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="~4.7.1"),
     Dependency("libwebp_jll"; compat="~1.5.0"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libiconv_jll"),
-    Dependency("libheif_jll"),
-    Dependency("libde265_jll"),
+    Dependency("Libiconv_jll"; compat="~1.18.0"),
+    Dependency("libheif_jll"; compat="~1.20.1"),
     # Dependency("libavif_jll"),  # FIXME: fails
-    Dependency("libpng_jll"),
+    Dependency("libpng_jll"; compat="~1.6.50"),
     Dependency("Zlib_jll"),
 ]
 
