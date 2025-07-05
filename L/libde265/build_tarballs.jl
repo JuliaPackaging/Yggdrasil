@@ -23,7 +23,7 @@ args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 
 cmake -B build -S . "${args[@]}"
 
-cmake --build build
+cmake --build build --parallel $nproc
 cmake --install build
 """
 
@@ -40,5 +40,5 @@ dependencies = []
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
     ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version = v"10"
+    julia_compat="1.6",
 )
