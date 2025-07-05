@@ -26,7 +26,7 @@ args+=(-DWITH_EXAMPLES=0)
 
 cmake -B build -S . "${args[@]}"
 
-cmake --build build --parallel ${nproc}
+cmake --build build
 cmake --install build
 """
 
