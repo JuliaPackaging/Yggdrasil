@@ -41,7 +41,7 @@ dependencies = [
     # Dependency("OpenJpeg_jll"),
     # Dependency("Libtiff_jll"),
     Dependency("libavif_jll"),
-    Dependency(PackageSpec(; name="libde265_jll", uuid="0a7f2b4d-d03c-5694-960e-196e69ee64e2", path="$JULIA_HOME/dev/libde265_jll")),
+    Dependency("libde265_jll"),
     # Dependency("libpng_jll"),
     Dependency("brotli_jll"),
     Dependency("LERC_jll"),
