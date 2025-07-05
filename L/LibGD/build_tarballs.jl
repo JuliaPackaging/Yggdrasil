@@ -33,7 +33,7 @@ args+=(-DENABLE_PNG=1)
 
 cmake -B build -S . "${args[@]}"
 
-cmake --build build --parallel $nproc
+cmake --B build -j $nproc
 cmake --install build
 """
 
