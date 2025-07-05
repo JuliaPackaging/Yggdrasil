@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgd*
+cd $WORKSPACE/srcdir/libgd-*
 
 mkdir build
 
@@ -60,15 +60,15 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Fontconfig_jll"; compat="~2.16.0"),
-    Dependency("FreeType2_jll"; compat="~2.13.4"),
-    Dependency("Libtiff_jll"; compat="~4.7.1"),
-    Dependency("libwebp_jll"; compat="~1.5.0"),
+    Dependency("Fontconfig_jll"),
+    Dependency("FreeType2_jll"),
+    Dependency("Libtiff_jll"),
+    Dependency("libwebp_jll"),
     Dependency("JpegTurbo_jll"),
-    Dependency("Libiconv_jll"; compat="~1.18.0"),
-    Dependency("libheif_jll"; compat="~1.20.1000"),
+    Dependency("Libiconv_jll"),
+    Dependency("libheif_jll"),
     # Dependency("libavif_jll"),  # FIXME: fails
-    Dependency("libpng_jll"; compat="~1.6.50"),
+    Dependency("libpng_jll"),
     Dependency("Zlib_jll"),
 ]
 
