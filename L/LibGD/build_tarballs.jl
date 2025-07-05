@@ -6,7 +6,10 @@ ygg_build = 0  # NOTE: increase on new build, reset on new upstream version
 ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
-sources = [GitSource("https://github.com/libgd/libgd.git", "b5319a41286107b53daa0e08e402aa1819764bdc")]
+sources = [
+    ArchiveSource("https://github.com/libgd/libgd/releases/download/gd-$version/libgd-$version.tar.gz",
+                  "dd3f1f0bb016edcc0b2d082e8229c822ad1d02223511997c80461481759b1ed2")
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
