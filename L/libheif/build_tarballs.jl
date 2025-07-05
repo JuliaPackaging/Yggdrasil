@@ -26,7 +26,7 @@ args+=(-DWITH_EXAMPLES=0)
 
 cmake -B build -S . "${args[@]}"
 
-cmake --build build
+cmake --build build --parallel $nproc
 cmake --install build
 """
 
@@ -52,5 +52,5 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
     ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version = v"9"  # needs CXX20
+    julia_compat="1.6", preferred_gcc_version = v"9"  # needs CXX20 - build errors on gcc8
 )
