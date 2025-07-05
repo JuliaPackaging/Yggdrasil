@@ -15,28 +15,26 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libgd
 
-./bootstrap.sh
-./configure --help
+mkdir build
 
-args+=(--prefix=${prefix})
-args+=(--build=${MACHTYPE})
-args+=(--host=${target})
-args+=(--with-fontconfig)
-args+=(--with-freetype)
-args+=(--with-heif)
-args+=(--with-jpeg)
-args+=(--with-tiff)
-args+=(--with-webp)
-args+=(--with-zlib)
-args+=(--with-png)
+args+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+args+=(-DCMAKE_INSTALL_PREFIX=$prefix)
+args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 
-./configure "${args[@]}"
+args+=(-DENABLE_FONTCONFIG=1)
+args+=(-DENABLE_FREETYPE=1)
+args+=(-DENABLE_ICONV=1)
+args+=(-DENABLE_JPEG=1)
+args+=(-DENABLE_TIFF=1)
+args+=(-DENABLE_HEIF=1)
+args+=(-DENABLE_AVIF=0)  # FIXME: fails
+args+=(-DENABLE_WEBP=1)
+args+=(-DENABLE_PNG=1)
 
-# For some reasons (something must be off in the configure script), on some
-# platforms the build system tries to use iconv but without adding the `-liconv`
-# flag.  Give a hint to make to use the right flag everywhere
-make -j${nproc} LIBICONV="-liconv" LTLIBICONV="-liconv"
-make install
+cmake -B build -S . "${args[@]}"
+
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -60,17 +58,22 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("JpegTurbo_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("libpng_jll"),
-    Dependency("Libtiff_jll"; compat="~4.7.1"),
     BuildDependency("Xorg_xorgproto_jll"),
-    Dependency("Libiconv_jll"),
-    Dependency(PackageSpec(; name="libheif_jll", uuid="a13778fd-9a17-58b4-b5a0-4b4a242815a9", path="$JULIA_HOME/dev/libheif_jll")),
-    Dependency("libwebp_jll"; compat="~1.5.0"),
     Dependency("Fontconfig_jll"; compat="~2.16.0"),
     Dependency("FreeType2_jll"; compat="~2.13.4"),
+    Dependency("Libtiff_jll"; compat="~4.7.1"),
+    Dependency("libwebp_jll"; compat="~1.5.0"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Libiconv_jll"),
+    # Dependency("libavif_jll"),  # FIXME: fails
+    Dependency("libpng_jll"),
+    Dependency("Zlib_jll"),
+    Dependency(PackageSpec(; name="libde265_jll", uuid="0a7f2b4d-d03c-5694-960e-196e69ee64e2", path="$JULIA_HOME/dev/libde265_jll")),
+    Dependency(PackageSpec(; name="libheif_jll", uuid="a13778fd-9a17-58b4-b5a0-4b4a242815a9", path="$JULIA_HOME/dev/libheif_jll")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(
+    ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+    julia_compat="1.6", preferred_gcc_version = v"10"
+)
