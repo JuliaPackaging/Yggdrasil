@@ -2,6 +2,8 @@ using BinaryBuilder, Pkg
 
 name = "LibGD"
 version = v"2.3.3"
+ygg_build = 0  # NOTE: increase on new build, reset on new upstream version
+ygg_version = VersionNumber(version.major, version.minor, version.patch * 1_000 + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
@@ -14,7 +16,20 @@ script = raw"""
 cd $WORKSPACE/srcdir/libgd
 
 ./bootstrap.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-png --with-jpeg --with-tiff --with-webp --with-zlib
+./configure --help
+
+args+=(--prefix=${prefix})
+args+=(--build=${MACHTYPE})
+args+=(--host=${target})
+args+=(--with-fontconfig)
+args+=(--with-freetype)
+args+=(--with-jpeg)
+args+=(--with-tiff)
+args+=(--with-webp)
+args+=(--with-zlib)
+args+=(--with-png)
+
+./configure "${args[@]}"
 
 # For some reasons (something must be off in the configure script), on some
 # platforms the build system tries to use iconv but without adding the `-liconv`
@@ -44,15 +59,16 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="JpegTurbo_jll", uuid="aacddb02-875f-59d6-b918-886e6ef4fbf8")),
-    Dependency(PackageSpec(name="Zlib_jll", uuid="83775a58-1f1d-513f-b197-d71354ab007a")),
-    Dependency(PackageSpec(name="libpng_jll", uuid="b53b4c65-9356-5827-b1ea-8c7a1a84506f")),
-    # TODO: v4.3.0 is available, use that next time
-    Dependency("Libtiff_jll"; compat="~4.5.1"),
-    BuildDependency(PackageSpec(name="Xorg_xorgproto_jll", uuid = "c4d99508-4286-5418-9131-c86396af500b")),
-    Dependency(PackageSpec(name="Libiconv_jll", uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531")),
-    Dependency("libwebp_jll"; compat="1.2.4"),
+    Dependency("JpegTurbo_jll"),
+    Dependency("Zlib_jll"),
+    Dependency("libpng_jll"),
+    Dependency("Libtiff_jll"; compat="~4.7.1"),
+    BuildDependency("Xorg_xorgproto_jll"),
+    Dependency("Libiconv_jll"),
+    Dependency("libwebp_jll"; compat="~1.5.0"),
+    Dependency("Fontconfig_jll"; compat="~2.16.0"),
+    Dependency("FreeType2_jll"; compat="~2.13.4"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
