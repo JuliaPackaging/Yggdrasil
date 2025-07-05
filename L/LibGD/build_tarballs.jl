@@ -13,7 +13,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libgd
+cd $WORKSPACE/srcdir/libgd-*
 
 mkdir build
 
@@ -65,10 +65,9 @@ dependencies = [
     Dependency("libwebp_jll"; compat="~1.5.0"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libiconv_jll"),
-    # Dependency("libde265_jll"),
-    # Dependency("libheif_jll"),
-    Dependency("libavif_jll"),  # FIXME: fails
     Dependency("libheif_jll"),
+    Dependency("libde265_jll"),
+    # Dependency("libavif_jll"),  # FIXME: fails
     Dependency("libpng_jll"),
     Dependency("Zlib_jll"),
 ]
