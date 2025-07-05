@@ -23,6 +23,7 @@ args+=(--build=${MACHTYPE})
 args+=(--host=${target})
 args+=(--with-fontconfig)
 args+=(--with-freetype)
+args+=(--with-heif)
 args+=(--with-jpeg)
 args+=(--with-tiff)
 args+=(--with-webp)
@@ -65,6 +66,7 @@ dependencies = [
     Dependency("Libtiff_jll"; compat="~4.7.1"),
     BuildDependency("Xorg_xorgproto_jll"),
     Dependency("Libiconv_jll"),
+    Dependency(PackageSpec(; name="libheif_jll", uuid="a13778fd-9a17-58b4-b5a0-4b4a242815a9", path="$JULIA_HOME/dev/libheif_jll")),
     Dependency("libwebp_jll"; compat="~1.5.0"),
     Dependency("Fontconfig_jll"; compat="~2.16.0"),
     Dependency("FreeType2_jll"; compat="~2.13.4"),
