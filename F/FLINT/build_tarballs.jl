@@ -26,7 +26,7 @@ using BinaryBuilder, Pkg
 # and possibly other packages.
 name = "FLINT"
 upstream_version = v"3.3.1"
-version_offset = v"1.0.0"
+version_offset = v"1.0.1"
 version = VersionNumber(upstream_version.major * 100 + version_offset.major,
                         upstream_version.minor * 100 + version_offset.minor,
                         upstream_version.patch * 100 + version_offset.patch)
@@ -58,9 +58,6 @@ make install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# Currently skipped due to the following error: `configure: error: Could not find mpfr.h`
-filter!(p -> arch(p) != "riscv64", platforms)
-
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libflint", :libflint)
@@ -69,8 +66,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("OpenBLAS32_jll", v"0.3.28"),
+    Dependency("MPFR_jll", v"4.2.1"),
+    Dependency("OpenBLAS32_jll", v"0.3.29"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
