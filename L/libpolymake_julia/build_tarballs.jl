@@ -3,22 +3,25 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+# needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
+# we only support julia >=1.10
+filter!(>=(v"1.10"), julia_versions)
+
 # copied from libsingular_julia:
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
 uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
+uuidblastramp = Base.UUID("8e850b90-86db-534c-a0d3-1478176c7d93")
+delete!.(Pkg.Types.get_last_stdlibs.(julia_versions), uuidblastramp)
 delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
 delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
-
-# needed for libjulia_platforms and julia_versions
-include("../../L/libjulia/common.jl")
 
 name = "libpolymake_julia"
 version = v"0.14.0"
 
 # reminder: change the above version when changing the supported julia versions
 # julia_versions is now taken from libjulia/common.jl and filtered
-filter!(>=(v"1.10"), julia_versions)
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libpolymake_julia
