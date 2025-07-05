@@ -23,7 +23,7 @@ args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 
 cmake -B build -S . "${args[@]}"
 
-cmake -B build --parallel $nproc
+cmake --build build --parallel $nproc
 cmake --install build
 """
 
