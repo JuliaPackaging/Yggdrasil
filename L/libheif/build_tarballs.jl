@@ -2,7 +2,7 @@ using BinaryBuilder, Pkg
 
 name = "libheif"
 version = v"1.20.1"
-ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new  libheifversion
+ygg_build = 0  # NOTE: increment on rebuild of the same upstream version, reset on new libheifversion
 ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
