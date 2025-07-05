@@ -3,7 +3,7 @@ using BinaryBuilder, Pkg
 name = "LibGD"
 version = v"2.3.3"
 ygg_build = 0  # NOTE: increase on new build, reset on new upstream version
-ygg_version = VersionNumber(version.major, version.minor, version.patch * 1_000 + ygg_build)
+ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
 
 # Collection of sources required to complete build
 sources = [
