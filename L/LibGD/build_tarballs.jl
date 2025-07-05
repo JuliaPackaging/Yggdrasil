@@ -17,7 +17,7 @@ cd $WORKSPACE/srcdir/libgd
 
 mkdir build
 
-args+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})
+args+=(-DCMAKE_TOOLCHAIN_FILE=$CMAKE_TARGET_TOOLCHAIN)
 args+=(-DCMAKE_INSTALL_PREFIX=$prefix)
 args+=(-DCMAKE_BUILD_TYPE=RELEASE)
 
@@ -33,7 +33,7 @@ args+=(-DENABLE_PNG=1)
 
 cmake -B build -S . "${args[@]}"
 
-cmake --build build --parallel ${nproc}
+cmake --build build
 cmake --install build
 """
 
