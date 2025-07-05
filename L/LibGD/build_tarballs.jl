@@ -66,7 +66,7 @@ dependencies = [
     Dependency("libwebp_jll"; compat="~1.5.0"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libiconv_jll"; compat="~1.18.0"),
-    Dependency("libheif_jll"; compat="~1.20.1"),
+    Dependency("libheif_jll"; compat="~1.20.1000"),
     # Dependency("libavif_jll"),  # FIXME: fails
     Dependency("libpng_jll"; compat="~1.6.50"),
     Dependency("Zlib_jll"),
