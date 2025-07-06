@@ -1,9 +1,19 @@
 using BinaryBuilder, Pkg
 
+function yggdrasil_version(version::VersionNumber, offset::VersionNumber)
+    max_offset = v"10.100.1000"
+    @assert offset < max_offset
+    VersionNumber(
+        max_offset.major * version.major + offset.major,
+        max_offset.minor * version.minor + offset.minor,
+        max_offset.patch * version.patch + offset.patch
+    )
+end
+
 name = "Gnuplot"
 version = v"6.0.3"
-build_number_jll = 1  # NOTE: increment on rebuild of the same version, reset on new gnuplot version
-version_jll = VersionNumber(version.major, version.minor, 1_000 * version.patch + build_number_jll)
+ygg_offset = v"0.0.2"  # NOTE: increase on new build, reset on new upstream version
+ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
 sources = [
@@ -33,6 +43,7 @@ if [[ ${target} == aarch64-apple-* ]]; then  # FIXES the undefined symbol: __div
 fi
 
 unset args
+args+=(--with-bitmap-terminals)
 args+=(--disable-wxwidgets)
 
 # FIXME: no Qt Tools artifacts available for these platforms (missing either uic or lrelease)
@@ -47,9 +58,11 @@ make -C src -j${nproc}
 make -C src install
 """ * """
 # add a fake `gnuplot_fake` executable, in order to determine `GNUPLOT_DRIVER_DIR` in `Gaston.jl`
-mkdir -p \$prefix/$libexec_path
-touch \$prefix/$libexec_path/gnuplot_fake\$exeext
-chmod +x \$prefix/$libexec_path/gnuplot_fake\$exeext
+dn="\$prefix/$libexec_path"
+""" * raw"""
+mkdir -p $dn
+touch $dn/gnuplot_fake$exeext
+chmod +x $dn/gnuplot_fake$exeext
 """
 
 # These are the platforms we will build for by default, unless further
@@ -86,6 +99,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
-    ARGS, name, version_jll, sources, script, platforms, products, dependencies;
+    ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version = v"8"
 )
