@@ -4,12 +4,12 @@ using BinaryBuilder, Pkg
 
 name = "Uno"
 
-version = v"1.3.0"
+version = v"2.0.0"
 
 sources = [
     GitSource(
         "https://github.com/cvanaret/Uno.git",
-        "79611a3c5d6196f59b3accc8e21a774b5670164c",
+        "216bc6d0926fbddc85bdad3bc36fb5f2f7a09dfc",
     ),
 ]
 
@@ -42,6 +42,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DAMPLSOLVER=${libdir}/libasl.${dlext} \
     -DHIGHS=${LIBHIGHS} \
+    -DBQPD=${prefix}/lib/libbqpd.a \
     -DHSL=${libdir}/libhsl.${dlext} \
     -DBLA_VENDOR="libblastrampoline" \
     -DMUMPS_INCLUDE_DIR=${includedir} \
@@ -61,8 +62,15 @@ install -v -m 755 "uno_ampl${exeext}" -t "${bindir}"
 
 # Currently, Uno does not provide a shared library. This may be useful in the future once it has a C API.
 # We just check that we can generate it, but we don't include it in the tarballs.
-${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o libuno.${dlext} -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis -lhsl -lhighs
+${CXX} -shared $(flagon -Wl,--whole-archive) libuno.a $(flagon -Wl,--no-whole-archive) -o libuno.${dlext} -L${prefix}/lib -lbqpd -L${libdir} -l${OMP} -l${LBT} -ldmumps -lmetis -lhsl -lhighs -lgfortran
 # cp libuno.${dlext} ${libdir}/libuno.${dlext}
+
+# Uno
+install_license ${WORKSPACE}/srcdir/Uno/LICENSE
+
+# BQPD
+cp ${prefix}/share/licenses/BQPD/LICENSE ${WORKSPACE}/srcdir/Uno/LICENSE_BQPD
+install_license ${WORKSPACE}/srcdir/Uno/LICENSE_BQPD
 """
 
 platforms = supported_platforms()
@@ -77,7 +85,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea")),
+    BuildDependency(PackageSpec(name="BQPD_jll", uuid="1325ac01-0a49-589f-8355-43321054aaab")),
+    Dependency(PackageSpec(name="HiGHS_jll", uuid="8fd58aa0-07eb-5a78-9b36-339c94fd15ea"), compat="1.11.0"),
     Dependency(PackageSpec(name="HSL_jll", uuid="017b0a0e-03f4-516a-9b91-836bbd1904dd")),
     Dependency(PackageSpec(name="METIS_jll", uuid="d00139f3-1899-568f-a2f0-47f597d42d70")),
     Dependency(PackageSpec(name="ASL_jll", uuid="ae81ac8f-d209-56e5-92de-9978fef736f9"), compat="0.1.3"),
@@ -104,4 +113,5 @@ build_tarballs(
     dependencies;
     julia_compat = "1.9",
     preferred_gcc_version = v"10.2.0",
+    clang_use_lld=false,
 )
