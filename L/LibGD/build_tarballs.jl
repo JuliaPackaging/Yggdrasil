@@ -18,12 +18,17 @@ ygg_version = yggdrasil_version(version, ygg_offset)
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/libgd/libgd/releases/download/gd-$version/libgd-$version.tar.gz",
-                  "dd3f1f0bb016edcc0b2d082e8229c822ad1d02223511997c80461481759b1ed2")
+                  "dd3f1f0bb016edcc0b2d082e8229c822ad1d02223511997c80461481759b1ed2"),
+    DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libgd-*
+
+# for release 2.3.3, remove in 2.3.4 (adapted from https://github.com/libgd/libgd/pull/828)
+cat ${WORKSPACE}/srcdir/patches/allow-mingw-for-webpng.patch
+atomic_patch -p1 -l ${WORKSPACE}/srcdir/patches/allow-mingw-for-webpng.patch
 
 mkdir build
 
@@ -46,6 +51,8 @@ cmake -B build -S . "${args[@]}"
 
 cmake --build build --parallel $nproc
 cmake --install build
+
+install_license COPYING
 """
 
 # These are the platforms we will build for by default, unless further
@@ -55,7 +62,7 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("pngtogd2", :pngtogd2),
-    # ExecutableProduct("webpng", :webpng),  # not on MSVC !
+    ExecutableProduct("webpng", :webpng),
     ExecutableProduct("pngtogd", :pngtogd),
     ExecutableProduct("gdtopng", :gdtopng),
     ExecutableProduct("gdcmpgif", :gdcmpgif),
