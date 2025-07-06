@@ -1,9 +1,20 @@
 using BinaryBuilder, Pkg
 
+function yggrasil_version(version::VersionNumber, offset::VersionNumber)
+    @assert offset.major < 10
+    @assert offset.minor < 100
+    @assert offset.patch < 1000
+    VersionNumber(
+        10 * version.major + offset.major,
+        100 * version.minor + offset.minor,
+        1000 * version.patch + offset.patch
+    )
+end
+
 name = "Gnuplot"
 version = v"6.0.3"
-build_number_jll = 1  # NOTE: increment on rebuild of the same version, reset on new gnuplot version
-version_jll = VersionNumber(version.major, version.minor, 1_000 * version.patch + build_number_jll)
+ygg_offset = v"0.0.2"  # NOTE: increase on new build, reset on new upstream version
+ygg_version = yggrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
 sources = [
@@ -33,6 +44,7 @@ if [[ ${target} == aarch64-apple-* ]]; then  # FIXES the undefined symbol: __div
 fi
 
 unset args
+args+=(--with-bitmap-terminals)
 args+=(--disable-wxwidgets)
 
 # FIXME: no Qt Tools artifacts available for these platforms (missing either uic or lrelease)
@@ -86,6 +98,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
-    ARGS, name, version_jll, sources, script, platforms, products, dependencies;
+    ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version = v"8"
 )
