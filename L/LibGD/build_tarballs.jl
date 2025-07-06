@@ -1,9 +1,20 @@
 using BinaryBuilder, Pkg
 
+function yggrasil_version(version::VersionNumber, offset::VersionNumber)
+    @assert offset.major < 10
+    @assert offset.minor < 100
+    @assert offset.patch < 1000
+    VersionNumber(
+        10 * version.major + offset.major,
+        100 * version.minor + offset.minor,
+        1000 * version.patch + offset.patch
+    )
+end
+
 name = "LibGD"
 version = v"2.3.3"
-ygg_build = 0  # NOTE: increase on new build, reset on new upstream version
-ygg_version = VersionNumber(version.major, version.minor, 1_000 * version.patch + ygg_build)
+ygg_offset = v"0.0.0"  # NOTE: increase on new build, reset on new upstream version
+ygg_version = yggrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
 sources = [
