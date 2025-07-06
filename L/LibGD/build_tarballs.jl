@@ -1,20 +1,19 @@
 using BinaryBuilder, Pkg
 
-function yggrasil_version(version::VersionNumber, offset::VersionNumber)
-    @assert offset.major < 10
-    @assert offset.minor < 100
-    @assert offset.patch < 1000
+function yggdrasil_version(version::VersionNumber, offset::VersionNumber)
+    max_offset = v"10.100.1000"
+    @assert offset < max_offset
     VersionNumber(
-        10 * version.major + offset.major,
-        100 * version.minor + offset.minor,
-        1000 * version.patch + offset.patch
+        max_offset.major * version.major + offset.major,
+        max_offset.minor * version.minor + offset.minor,
+        max_offset.patch * version.patch + offset.patch
     )
 end
 
 name = "LibGD"
 version = v"2.3.3"
 ygg_offset = v"0.0.0"  # NOTE: increase on new build, reset on new upstream version
-ygg_version = yggrasil_version(version, ygg_offset)
+ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
 sources = [
@@ -74,7 +73,7 @@ dependencies = [
     Dependency("Fontconfig_jll"),
     Dependency("FreeType2_jll"),
     Dependency("Libtiff_jll"; compat="~4.7.1"),
-    Dependency("libwebp_jll"; compat="~1.5.0"),
+    Dependency("libwebp_jll"; compat="1.5.0"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libiconv_jll"),
     Dependency("libheif_jll"),
