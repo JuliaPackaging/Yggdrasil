@@ -27,7 +27,6 @@ script = raw"""
 cd $WORKSPACE/srcdir/libgd-*
 
 # for release 2.3.3, remove in 2.3.4 (adapted from https://github.com/libgd/libgd/pull/828)
-cat ${WORKSPACE}/srcdir/patches/allow-mingw-for-webpng.patch
 atomic_patch -p1 -l ${WORKSPACE}/srcdir/patches/allow-mingw-for-webpng.patch
 
 mkdir build
