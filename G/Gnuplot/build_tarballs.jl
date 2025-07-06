@@ -1,13 +1,12 @@
 using BinaryBuilder, Pkg
 
-function yggrasil_version(version::VersionNumber, offset::VersionNumber)
-    @assert offset.major < 10
-    @assert offset.minor < 100
-    @assert offset.patch < 1000
+function ygg_version(version::VersionNumber, offset::VersionNumber)
+    max_offset = v"10.100.1000"
+    @assert offset < max_offset
     VersionNumber(
-        10 * version.major + offset.major,
-        100 * version.minor + offset.minor,
-        1000 * version.patch + offset.patch
+        max_offset.major * version.major + offset.major,
+        max_offset.minor * version.minor + offset.minor,
+        max_offset.patch * version.patch + offset.patch
     )
 end
 
