@@ -21,3 +21,5 @@ dependencies = mpfr_dependencies(platforms; llvm_compilerrt_version=preferred_ll
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"5", preferred_llvm_version=preferred_llvm_version,
                julia_compat="1.6")
+
+# Build trigger: 1
