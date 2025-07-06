@@ -2,6 +2,12 @@ using BinaryBuilder
 using BinaryBuilderBase: sanitize
 using Pkg
 
+# Version overview:
+# - 4.1.1: Bundled with Julia 1.6, 1.7, 1.8, 1.9
+# - 4.2.0: Bundled with Julia 1.10
+# - 4.2.1: Bundled with Julia 1.11
+# - 4.2.2: Bundled with Julia 1.12-beta4
+
 # Collection of sources required to build MPFR
 function mpfr_sources(version::VersionNumber; kwargs...)
     mpfr_version_sources = Dict(
