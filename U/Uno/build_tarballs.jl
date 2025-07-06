@@ -75,6 +75,7 @@ install_license ${WORKSPACE}/srcdir/Uno/LICENSE_BQPD
 
 platforms = supported_platforms()
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
+filter!(p -> arch(p) != "riscv64", platforms)
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
