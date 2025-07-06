@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-function ygg_version(version::VersionNumber, offset::VersionNumber)
+function yggdrasil_version(version::VersionNumber, offset::VersionNumber)
     max_offset = v"10.100.1000"
     @assert offset < max_offset
     VersionNumber(
@@ -13,7 +13,7 @@ end
 name = "Gnuplot"
 version = v"6.0.3"
 ygg_offset = v"0.0.2"  # NOTE: increase on new build, reset on new upstream version
-ygg_version = ygg_version(version, ygg_offset)
+ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
 sources = [
@@ -58,9 +58,11 @@ make -C src -j${nproc}
 make -C src install
 """ * """
 # add a fake `gnuplot_fake` executable, in order to determine `GNUPLOT_DRIVER_DIR` in `Gaston.jl`
-mkdir -p \$prefix/$libexec_path
-touch \$prefix/$libexec_path/gnuplot_fake\$exeext
-chmod +x \$prefix/$libexec_path/gnuplot_fake\$exeext
+dn="\$prefix/$libexec_path"
+""" * raw"""
+mkdir -p $dn
+touch $dn/gnuplot_fake$exeext
+chmod +x $dn/gnuplot_fake$exeext
 """
 
 # These are the platforms we will build for by default, unless further
