@@ -30,7 +30,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
   mod.add_type<ListGraph::Node>("ListGraphNode");
   mod.add_type<ListDigraph::Node>("ListDigraphNode");
   mod.add_type<ListGraph::Edge>("ListGraphEdge");
-  mod.add_type<ListDigraph::Arc>("ListDigraphArc");
+  // mod.add_type<ListDigraph::Arc>("ListDigraphArc");
 
   mod.method("id", static_cast<int(*)(ListGraph::Node)>(&ListGraph::id));
   mod.method("id", static_cast<int(*)(ListGraph::Edge)>(&ListGraph::id));
