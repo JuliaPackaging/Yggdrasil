@@ -8,7 +8,7 @@ version = v"0.3.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/bankofcanada/DataEcon.git",
-        "53d25414825fcdca64325591ea64e8a86b2bb945")
+        "cdd5b471c189a0ab1d8b1c813a599fd5d3ff4430")
 ]
 
 # Bash recipe for building across all platforms
