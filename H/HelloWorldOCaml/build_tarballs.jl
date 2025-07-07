@@ -9,9 +9,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir -p ${prefix}/bin
+mkdir -p ${bindir}
 echo 'let () = print_endline "hello world"' > hello.ml
-ocamlopt -o ${prefix}/bin/hello_world${exeext} hello.ml
+ocamlopt -o ${bindir}/hello_world${exeext} hello.ml
 install_license /usr/share/licenses/MIT
 """
 
@@ -20,9 +20,7 @@ install_license /usr/share/licenses/MIT
 platforms = supported_platforms()
 
 # OCaml 5.0 dropped support for 32-bit targets
-filter!(p -> !(arch(p) == "i686"), platforms)
-filter!(p -> !(arch(p) == "armv6l"), platforms)
-filter!(p -> !(arch(p) == "armv7l"), platforms)
+filter!(p -> nbits(p) != 32, platforms)
 
 # Not yet supported by our OCaml toolchain
 filter!(p -> !(Sys.isfreebsd(p)), platforms)
