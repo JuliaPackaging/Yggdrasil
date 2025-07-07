@@ -1,3 +1,31 @@
+From 514607f84d09d85c203f9074528ab2d3fc06c293 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 7 Jul 2025 15:09:20 +0200
+Subject: [PATCH] Remove the camlp4 dependency.
+
+It is only used for some very simple source preprocessing to define two variables, so simply inline their definitions.
+This simplifies cross-compilation, which camlp4 does not support (heavily relying on executing its own binaries during the build).
+
+In addition, the run-time expansion of the `STDLIB` variable now looks relative to the
+path of the `heptagon` binary, instead of the current working directory.
+---
+ README.md                                     |  1 -
+ compiler/_tags.in                             |  4 +-
+ compiler/main/mls2seq.ml                      |  5 --
+ compiler/minils/main/mls_compiler.ml          | 35 +-------
+ compiler/myocamlbuild.ml                      | 57 ------------
+ compiler/myocamlbuild_config.ml               | 72 ---------------
+ compiler/preproc.ml                           | 89 -------------------
+ compiler/utilities/global/_tags               |  1 -
+ compiler/utilities/global/compiler_options.ml | 27 +++++-
+ configure.in                                  | 12 ---
+ heptagon.opam                                 |  1 -
+ 11 files changed, 25 insertions(+), 279 deletions(-)
+ delete mode 100644 compiler/myocamlbuild.ml
+ delete mode 100644 compiler/myocamlbuild_config.ml
+ delete mode 100644 compiler/preproc.ml
+ delete mode 100644 compiler/utilities/global/_tags
+
 diff --git a/README.md b/README.md
 index 6b13fee9..396c4451 100644
 --- a/README.md
@@ -434,3 +462,6 @@ index 3e0911f4..cc052be8 100644
    "ocamlbuild" {build}
  ]
  depopts: [
+-- 
+2.50.0
+
