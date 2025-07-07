@@ -8,7 +8,7 @@ version = v"0.3.2"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/bankofcanada/DataEcon.git",
-        "66d16e0b8150d021d9522c4a9fc903eded133e30")
+        "e29d04c9f72320f92c4c5492b57d6990e1a5ea57")
 ]
 
 # Bash recipe for building across all platforms
@@ -25,9 +25,7 @@ install -Dvm 644 "include/daec.h" "${includedir}/daec.h"
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = supported_platforms(;
-    exclude=[Platform("riscv64", "linux"; libc="glibc")]
-)
+platforms = supported_platforms()
 
 
 # The products that we will ensure are always built
