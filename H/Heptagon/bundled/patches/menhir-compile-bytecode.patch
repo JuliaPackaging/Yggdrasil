@@ -1,0 +1,74 @@
+diff --git a/lib/pack/dune b/lib/pack/dune
+index 06e53983..d38e2615 100644
+--- a/lib/pack/dune
++++ b/lib/pack/dune
+@@ -6,2 +6,3 @@
+   (modules pack)
++  (modes byte)
+ )
+@@ -11,3 +12,3 @@
+   (deps (glob_files ../*.{ml,mli}) menhirLib.mlpack)
+-  (action (run ./pack.exe))
++  (action (run ocamlrun %{dep:./pack.bc}))
+ )
+diff --git a/src/stage1/dune b/src/stage1/dune
+index 3a733d31..bd871103 100644
+--- a/src/stage1/dune
++++ b/src/stage1/dune
+@@ -15,2 +15,3 @@
+   (name main)
++  (modes byte)
+   (libraries
+diff --git a/src/stage2/dune b/src/stage2/dune
+index 49dc0ec0..2776b4f9 100644
+--- a/src/stage2/dune
++++ b/src/stage2/dune
+@@ -31,3 +31,3 @@
+ (env
+-  (_ (binaries ../stage1/main.exe (../stage1/main.exe as menhir)))
++  (_ (binaries ../stage1/main.bc (../stage1/main.bc as menhir)))
+ )
+@@ -64,2 +64,3 @@
+   (name main)
++  (modes byte)
+   (libraries
+@@ -86,3 +87,3 @@
+   (package menhir)
+-  (files (./main.exe as menhir))
++  (files (./main.bc as menhir))
+ )
+diff --git a/src/stage3/anonymize/dune b/src/stage3/anonymize/dune
+index e50578fe..e78fd4e7 100644
+--- a/src/stage3/anonymize/dune
++++ b/src/stage3/anonymize/dune
+@@ -2,2 +2,3 @@
+   (name anonymize)
++  (modes byte)
+   (libraries str)
+diff --git a/src/stage3/dune b/src/stage3/dune
+index 51df40e6..f6e79953 100644
+--- a/src/stage3/dune
++++ b/src/stage3/dune
+@@ -25,6 +25,6 @@
+
+-;; Bind the name "menhir" to "../stage2/main.exe" within the present scope.
++;; Bind the name "menhir" to "../stage2/main.bc" within the present scope.
+
+ (env
+-  (_ (binaries ../stage2/main.exe (../stage2/main.exe as menhir)))
++  (_ (binaries ../stage2/main.bc (../stage2/main.bc as menhir)))
+ )
+@@ -52,2 +52,3 @@
+   (name main)
++  (modes byte)
+   (libraries
+@@ -81,3 +82,3 @@
+   (with-stdout-to parser.stage2.ml
+-    (run anonymize/anonymize.exe %{dep:../stage2/parser.ml})
++    (run ocamlrun anonymize/anonymize.bc %{dep:../stage2/parser.ml})
+   )
+@@ -87,3 +88,3 @@
+   (with-stdout-to parser.stage3.ml
+-    (run anonymize/anonymize.exe %{dep:parser.ml})
++    (run ocamlrun anonymize/anonymize.bc %{dep:parser.ml})
+   )
