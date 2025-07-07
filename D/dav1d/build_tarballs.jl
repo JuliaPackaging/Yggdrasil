@@ -20,8 +20,14 @@ cd ${WORKSPACE}/srcdir/dav1d-*
 sed -i -e 's!/opt/bin/.*-clang!'${WORKSPACE}/srcdir/files/cc'!' ${MESON_TARGET_TOOLCHAIN}
 sed -i -e 's!/opt/bin/.*-clang[+][+]!'${WORKSPACE}/srcdir/files/c++'!' ${MESON_TARGET_TOOLCHAIN}
 
+flags=
+if [[ ${target} == powerpc64le-* ]]; then
+    # These macros are defined in glibc, but our glibc is too old
+    flags='-DAT_HWCAP2=26 -DPPC_FEATURE2_ARCH_3_00=0x00800000'
+fi
+
 mkdir build && cd build
-meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release -Denable_tests=false ..
+meson setup --cross-file="${MESON_TARGET_TOOLCHAIN}" --buildtype=release -Denable_tests=false -Dc_args="${flags}" -Dcpp_args="${flags}" ..
 ninja -j${nproc}
 ninja install
 install_license ../COPYING
@@ -44,5 +50,6 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # Need at least GCC 6 for Atomics and to avoid ICEs
+# Need at least GCC 8 for PowerPC intrinsics
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"6")
+               clang_use_lld=false, julia_compat="1.6", preferred_gcc_version=v"8")
