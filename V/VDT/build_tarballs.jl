@@ -20,7 +20,7 @@ install_license Licence.txt
 
 CMAKE_OPTS=(-DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release)
 
-if echo "$target" | grep -q aarch64; then
+if [[ "$target" != x86_64-* ]]; then
   CMAKE_OPTS+=(-DSSE=OFF)
 fi
 
