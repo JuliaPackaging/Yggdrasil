@@ -72,7 +72,7 @@ dependencies = [
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat = "1.6", preferred_gcc_version=v"6",
+               julia_compat = "1.6", preferred_gcc_version=v"8",
                init_block = """
   if !Sys.iswindows() && !(get(ENV, "NEMO_THREADED", "") == "1")
     #to match the global gmp ones
