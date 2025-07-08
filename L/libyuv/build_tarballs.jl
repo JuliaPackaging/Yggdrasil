@@ -19,9 +19,21 @@ cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 cmake --build build --parallel ${nproc}
-cmake --install build
-# Remove the static library (we don't want it)
-rm ${libdir}/libyuv.a
+
+if [[ ${target} == *-w64-* ]]; then
+    # The install process on Windows is broken; it doesn't know about the `.exe` suffix
+    install -Dvm 755 build/yuvconvert.exe ${bindir}
+    install -Dvm 755 build/libyuv.dll ${libdir}
+    install -Dvm 755 build/libyuv.dll.a ${prefix}/lib
+    install -Dvm 644 include/libyuv.h ${includedir}
+    for file in $(cd include/libyuv && ls *.h); do
+        install -Dvm 644 include/libyuv/${file} ${includedir}/libyuv/${file}
+    done
+else
+    cmake --install build
+    # Remove the static library (we don't need it)
+    rm ${libdir}/libyuv.a
+fi
 """
 
 # These are the platforms we will build for by default, unless further
