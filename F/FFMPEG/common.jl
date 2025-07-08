@@ -3,14 +3,19 @@
 using BinaryBuilder, Pkg
 
 name = "FFMPEG"
-version_string = "7.1"   # when patch number is zero, they use X.Y format
-version = VersionNumber(version_string)
+# We temporarily switch back to version 6.1.2 to build for new architectures.
+# All builds after that should probably go back to building 7.x.
+# version_string = "7.1"   # when patch number is zero, they use X.Y format
+# version = VersionNumber(version_string)
+version_string = "6.1.2"        # the version we download
+version = v"6.1.3"              # the Yggdrasil version
 
 # Collection of sources required to build FFMPEG
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "40973d44970dbc83ef302b0609f2e74982be2d85916dd2ee7472d30678a7abe6",
+        # "40973d44970dbc83ef302b0609f2e74982be2d85916dd2ee7472d30678a7abe6",   # 7.1
+        "3b624649725ecdc565c903ca6643d41f33bd49239922e45c9b1442c63dca4e38",
     ),
     ## FFmpeg 6.1.1 does not work with macos 10.13 or earlier.
     ArchiveSource(
@@ -51,6 +56,8 @@ elif [[ "${target}" == aarch64-* ]]; then
     export ccARCH="aarch64"
 elif [[ "${target}" == powerpc64le-* ]]; then
     export ccARCH="powerpc64le"
+elif [[ "${target}" == riscv64-* ]]; then
+    export ccARCH="riscv64"
 else
     export ccARCH="x86_64"
 fi
@@ -136,11 +143,5 @@ end
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
-# `libass_jll` is missing
-filter!(p -> arch(p) != "armv6l", platforms)
-# `libass_jll` is missing
-filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
-# `OpenSSL_jll` is missing
-filter!(p -> arch(p) != "riscv64", platforms)
 
 preferred_gcc_version = v"8"
