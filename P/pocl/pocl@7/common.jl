@@ -247,7 +247,8 @@ function init_block(standalone=false)
 
             println(io, "call \\"$path\\" %*")
 
-            joinpath(bindir, name * ".bat")
+            # XXX: on Windows, the Base.rename below often throws EBUSY, so include the PID
+            joinpath(bindir, "$(name).$(getpid()).bat")
         else
             error("Unsupported platform")
         end
