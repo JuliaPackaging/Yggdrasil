@@ -66,7 +66,7 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("MPFR_jll", v"4.2.1"),
+    Dependency("MPFR_jll", v"4.1.1"),
     Dependency("OpenBLAS32_jll", v"0.3.29"),
 ]
 
