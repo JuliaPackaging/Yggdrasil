@@ -12,13 +12,9 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-mkdir -p ${WORKSPACE}/builddir
-cd ${WORKSPACE}/builddir/
-cp -r ${WORKSPACE}/srcdir/booster/* .
-cd src/
-make;
-install -D booster ${prefix}/bin/booster
-exit
+cd ${WORKSPACE}/srcdir/booster/src/
+make -j${nproc} CC=${CC}
+install -Dvm 755 booster "${bindir}/booster${exeext}"
 """
 
 # These are the platforms we will build for by default, unless further
