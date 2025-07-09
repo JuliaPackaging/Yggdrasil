@@ -70,13 +70,6 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-error("""
-    We had to restrict compat with XML2 because of ABI breakage:
-    https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-    Updating to a newer XML2 version is likely possible without problems
-    but requires rebuilding this package with
-    Dependency("XML2_jll"; compat="~2.14.1"),
-""")
 dependencies = [
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM
     # as compiler (BSD systems), and libgomp from
@@ -90,7 +83,10 @@ dependencies = [
     Dependency("JasPer_jll"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libtiff_jll"; compat="~4.5.1"),
-    Dependency("XML2_jll"),
+    # We had to restrict compat with XML2 because of ABI breakage:
+    # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
+    Dependency("XML2_jll"; compat="~2.13.6"),
     Dependency("XZ_jll"),
     Dependency("Zlib_jll"),
     Dependency("Zstd_jll"),

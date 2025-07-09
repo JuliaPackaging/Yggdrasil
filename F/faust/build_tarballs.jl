@@ -200,13 +200,6 @@ sources = Dict(
     v"13.0.1" => [sources; ],
 )
 
-error("""
-    We had to restrict compat with XML2 because of ABI breakage:
-    https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-    Updating to a newer XML2 version is likely possible without problems
-    but requires rebuilding this package with
-    Dependency("XML2_jll"; compat="~2.14.1"),
-""")
 base_dependencies = [
     Dependency("libmicrohttpd_jll"),
     Dependency("libsndfile_jll"),
