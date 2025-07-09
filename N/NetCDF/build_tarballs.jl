@@ -123,6 +123,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+error("""
+    We had to restrict compat with XML2 because of ABI breakage:
+    https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    Updating to a newer XML2 version is likely possible without problems
+    but requires rebuilding this package with
+    Dependency("XML2_jll"; compat="~2.14.1"),
+""")
 dependencies = [
     Dependency("Blosc_jll"; compat="1.21.6"),
     Dependency("Bzip2_jll"; compat="1.0.9"),

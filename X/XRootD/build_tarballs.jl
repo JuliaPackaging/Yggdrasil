@@ -93,6 +93,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+error("""
+    We had to restrict compat with XML2 because of ABI breakage:
+    https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    Updating to a newer XML2 version is likely possible without problems
+    but requires rebuilding this package with
+    Dependency("XML2_jll"; compat="~2.14.1"),
+""")
 dependencies = [
     Dependency(PackageSpec(name="Libuuid_jll", uuid="38a345b3-de98-5d2b-a5d3-14cd9215e700"))
     Dependency(PackageSpec(name="libxcrypt_legacy_jll", uuid="5ef642bb-a58b-5208-ae37-583168b2c491"))

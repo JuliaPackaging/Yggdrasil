@@ -201,6 +201,13 @@ end
 
 # Dependencies that must be installed before this package can be built
 function llvm_dependencies(; kwargs...)
+    error("""
+        We had to restrict compat with XML2 because of ABI breakage:
+        https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+        Updating to a newer XML2 version is likely possible without problems
+        but requires rebuilding this package with
+        Dependency("XML2_jll"; compat="~2.14.1"),
+    """)
     return [
         Dependency("Zlib_jll"),
         Dependency("XML2_jll"),

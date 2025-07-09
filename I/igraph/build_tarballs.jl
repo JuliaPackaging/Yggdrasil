@@ -57,6 +57,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+error("""
+    We had to restrict compat with XML2 because of ABI breakage:
+    https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    Updating to a newer XML2 version is likely possible without problems
+    but requires rebuilding this package with
+    Dependency("XML2_jll"; compat="~2.14.1"),
+""")
 dependencies = [
     Dependency(PackageSpec(name="Arpack_jll", uuid="68821587-b530-5797-8361-c406ea357684"))
     Dependency(PackageSpec(name="GLPK_jll", uuid="e8aa6df9-e6ca-548a-97ff-1f85fc5b8b98"))

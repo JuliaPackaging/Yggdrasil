@@ -36,6 +36,13 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
+error("""
+    We had to restrict compat with XML2 because of ABI breakage:
+    https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    Updating to a newer XML2 version is likely possible without problems
+    but requires rebuilding this package with
+    Dependency("XML2_jll"; compat="~2.14.1"),
+""")
 dependencies = [
     Dependency(PackageSpec(name="URCU_jll", uuid="aa747835-a391-587f-982f-064ff03f7d29"))
     Dependency(PackageSpec(name="Popt_jll", uuid="e80236cf-ab1d-5f5d-8534-1d1285fe49e8"))

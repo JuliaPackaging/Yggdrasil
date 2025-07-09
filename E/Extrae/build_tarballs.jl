@@ -128,6 +128,13 @@ cudampi_products = [
     LibraryProduct("libptcudampitrace", :libptcudampitrace, dont_dlopen=true),
 ]
 
+error("""
+    We had to restrict compat with XML2 because of ABI breakage:
+    https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
+    Updating to a newer XML2 version is likely possible without problems
+    but requires rebuilding this package with
+    Dependency("XML2_jll"; compat="~2.14.1"),
+""")
 dependencies = [
     # `MADV_HUGEPAGE` and `MAP_HUGE_SHIFT` require glibc 2.19, but we only
     # package glibc 2.17 on some architectures.
