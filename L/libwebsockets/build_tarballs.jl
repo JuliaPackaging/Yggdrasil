@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "libwebsockets"
-version = v"4.3.3"
+version = v"4.3.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/warmcat/libwebsockets.git", "4415e84c095857629863804e941b9e1c2e9347ef"),
+    GitSource("https://github.com/warmcat/libwebsockets.git", "e7fbdac39154c7bdfd42dd73c5cf25e4fd2e190d"),
 ]
 
 # Bash recipe for building across all platforms
@@ -21,7 +21,8 @@ cmake -B build \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DLWS_WITH_ACCESS_LOG=ON \
     -DLWS_WITHOUT_EXTENSIONS=OFF \
-    -DLWS_WITHOUT_TESTAPPS=ON
+    -DLWS_WITHOUT_TESTAPPS=ON \
+    -DLWS_WITH_SOCKS5=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 """ 
@@ -37,7 +38,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("OpenSSL_jll"; compat="3.0.8"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll")
 ]
 
