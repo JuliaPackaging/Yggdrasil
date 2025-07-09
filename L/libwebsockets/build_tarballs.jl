@@ -21,7 +21,8 @@ cmake -B build \
     -DZLIB_INCLUDE_DIR=${includedir} \
     -DLWS_WITH_ACCESS_LOG=ON \
     -DLWS_WITHOUT_EXTENSIONS=OFF \
-    -DLWS_WITHOUT_TESTAPPS=ON
+    -DLWS_WITHOUT_TESTAPPS=ON \
+    -DLWS_WITH_SOCKS5=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 """ 
