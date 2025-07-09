@@ -7,7 +7,7 @@ version = v"4.3.4"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/warmcat/libwebsockets.git", "4415e84c095857629863804e941b9e1c2e9347ef"),
+    GitSource("https://github.com/warmcat/libwebsockets.git", "e7fbdac39154c7bdfd42dd73c5cf25e4fd2e190d"),
 ]
 
 # Bash recipe for building across all platforms
