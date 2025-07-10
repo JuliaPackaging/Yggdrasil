@@ -3,11 +3,11 @@
 using BinaryBuilder
 
 name = "f4ncgb"
-version = v"0.1.0"
+version = v"0.2.1"
 
 sources = [
     GitSource("https://gitlab.sai.jku.at/f4ncgb/f4ncgb.git",
-              "15d687f9766b4e074907ed7eaf8c4732bbce1da3"),
+              "6f54884eaad3bfe52d8c7e5bc9b0d7ec52f95fc7"),
     DirectorySource("bundled"),
     ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                   "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
@@ -24,34 +24,28 @@ if [[ "${target}" == *-apple-darwin* ]]; then
     export MACOSX_DEPLOYMENT_TARGET=15.0
 fi
 
-# no march=native
-extraflags="-DENABLE_NATIVE=OFF"
+cd ${WORKSPACE}/srcdir/f4ncgb
+
+# no march=native no test binary
+extraflags="-DENABLE_NATIVE=OFF -DENABLE_TEST=OFF"
 
 if [[ "${target}" == *-mingw* ]]; then
    # profiling needs sys/resource.h
-   extraflags="$extraflags -DENABLE_PROFILING=OFF"
+   extraflags="$extraflags -DENABLE_PROFILING=OFF -DENABLE_SIGNAL=OFF"
 fi
 
-cd ${WORKSPACE}/srcdir/f4ncgb
-
-atomic_patch -p1 ../patches/aligned_alloc.patch
-atomic_patch -p1 ../patches/bsd_major.patch
-atomic_patch -p1 ../patches/cmake.patch
-atomic_patch -p1 ../patches/include.patch
-atomic_patch -p1 ../patches/wstring.patch
-atomic_patch -p1 ../patches/uint.patch
+atomic_patch -p1 ../patches/signaltest.patch
+atomic_patch -p1 ../patches/gmpinc.patch
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DSHARED_LIB=ON \
     $extraflags \
     -DCMAKE_BUILD_TYPE=Release
 
-# we just need the main binary, building the test binary fails on some platforms
-cmake --build build --parallel ${nproc} -t f4ncgb_bin
+cmake --build build --parallel ${nproc} -t install
 
-# there is no install target
-install -Dvm 755 "build/f4ncgb${exeext}" "${bindir}/f4ncgb${exeext}"
 install_license LICENSE
 """
 
@@ -59,8 +53,6 @@ install_license LICENSE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-# filter riscv64 until supported by all dependencies
-filter!(p -> arch(p) != "riscv64", platforms)
 # 32bit architectures are not supported
 filter!(p -> nbits(p) != 32, platforms)
 
@@ -69,6 +61,7 @@ platforms = expand_cxxstring_abis(platforms)
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("f4ncgb", :f4ncgb)
+    LibraryProduct("libf4ncgb", :libf4ncgb)
 ]
 
 
@@ -76,12 +69,14 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("GMP_jll", v"6.2.1"),
-    Dependency("MPFR_jll", v"4.1.1"),
-    Dependency("FLINT_jll", compat = "~301.300.0"),
+    Dependency("MPFR_jll", v"4.2.0"),
+    Dependency("FLINT_jll", compat = "~301.300.101"),
     Dependency("boost_jll", compat = "=1.87.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# gcc 13 is needed for std::format and this we cannot dlopen during audit
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
-               preferred_gcc_version=v"13")
+               julia_compat="1.10",
+               preferred_gcc_version=v"13",
+               dont_dlopen=true)
