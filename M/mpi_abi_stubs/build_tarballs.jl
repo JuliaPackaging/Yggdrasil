@@ -20,7 +20,7 @@ cd ${WORKSPACE}/srcdir/mpi-abi-stubs
 cmake_args=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_PREFIX_PATH=${prefix}
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
 )
 cmake -Bbuild ${cmake_args[@]}
 cmake --build build --parallel ${nproc}
