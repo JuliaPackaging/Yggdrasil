@@ -9,7 +9,6 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-# echo $GOPATH # /workspace/.gopath
 cd $WORKSPACE/srcdir/git-lfs/
 mkdir -p ${bindir}
 
