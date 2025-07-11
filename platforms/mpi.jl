@@ -46,8 +46,9 @@ const augment = raw"""
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
+# When building for `MPIABI`, build against `mpi_abi_stubs_jll`
 mpi_abis = (
-    ("MPIABI", PackageSpec(name="MPICH_MPIABI_jll"), "4.3.1 - 4", p -> !Sys.iswindows(p)),
+    ("MPIABI", PackageSpec(name="mpi_abi_stubs_jll"), "5.0.0"),
     ("MPICH", PackageSpec(name="MPICH_jll"), "4.3.0 - 4", p -> !Sys.iswindows(p)),
     ("MPItrampoline", PackageSpec(name="MPItrampoline_jll"), "5.5.3 - 5", p -> !Sys.iswindows(p) && !(libc(p) == "musl")),
     ("MicrosoftMPI", PackageSpec(name="MicrosoftMPI_jll"), "", Sys.iswindows),
@@ -55,13 +56,13 @@ mpi_abis = (
 )
 
 """
-    augment_platforms(platforms; MPICH_compat = nothing, MPICH_MPIABI_compat = nothing, OpenMPI_compat = nothing, MicrosoftMPI_compat=nothing, MPItrampoline_compat=nothing)
+    augment_platforms(platforms; MPICH_compat = nothing, MPIABI_compat = nothing, OpenMPI_compat = nothing, MicrosoftMPI_compat=nothing, MPItrampoline_compat=nothing)
 
 This augments the platforms with different MPI versions. Compatibilities with different versions can be specified
 """
 function augment_platforms(platforms;
+                MPIABI_compat = nothing,
                 MPICH_compat = nothing,
-                MPICH_MPIABI_compat = nothing,
                 MPItrampoline_compat=nothing)
                 MicrosoftMPI_compat=nothing,
                 OpenMPI_compat = nothing,
@@ -70,7 +71,7 @@ function augment_platforms(platforms;
     for (abi, pkg, compat, f) in mpi_abis
 
         # set specific versions of MPI packages
-        if (abi=="MPIABI" && !isnothing(MPICH_MPIABI_compat)) compat = MPICH_MPIABI_compat; end
+        if (abi=="MPIABI" && !isnothing(MPIABI_compat)) compat = MPIABI_compat; end
         if (abi=="MPICH" && !isnothing(MPICH_compat)) compat = MPICH_compat; end
         if (abi=="MPItrampoline" && !isnothing(MPItrampoline_compat)) compat = MPItrampoline_compat; end
         if (abi=="MicrosoftMPI" && !isnothing(MicrosoftMPI_compat)) compat = MicrosoftMPI_compat; end
