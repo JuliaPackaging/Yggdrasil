@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name    = "GitLFS"
+name    = "Git_LFS"
 version = v"3.7.0"
 
 sources = [
