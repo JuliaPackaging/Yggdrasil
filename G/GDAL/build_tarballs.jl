@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.11.1"
+upstream_version = v"3.11.2"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -19,7 +19,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "226b7732b4672deaf35d6a16a39216047358f7d8"),
+        "52af46e10f20ea8e70d7394c9a3b18852954435f"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
@@ -217,5 +217,8 @@ dependencies = [
 # We could enable compiler support for float16 if we can guarantee
 # that the CPU supports respective hardware instructions so that we
 # don't need soft-fp from libgcc.
+#
+# NOTE: Require at least Julia 1.9 because we use a PCRE2_jll that is
+# not available on earlier versions.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"11")
+               julia_compat="1.9", preferred_gcc_version=v"11")
