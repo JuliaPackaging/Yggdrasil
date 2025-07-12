@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "GDAL"
-upstream_version = v"3.11.2"
+upstream_version = v"3.11.3"
 # The version offset is used for two purposes:
 # - If we need to release multiple jll packages for the same GDAL
 #   library (usually for weird packaging reasons) then we increase the
@@ -19,7 +19,7 @@ version = VersionNumber(upstream_version.major * 100 + version_offset.major,
 # Collection of sources required to build GDAL
 sources = [
     GitSource("https://github.com/OSGeo/gdal.git",
-        "52af46e10f20ea8e70d7394c9a3b18852954435f"),
+        "20be66345f7dd2d8e368684abb22b0f6355e8cf0"),
     FileSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
         "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
     DirectorySource("./bundled"),
