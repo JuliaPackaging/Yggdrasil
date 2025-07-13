@@ -9,7 +9,7 @@ repo = "https://github.com/EnzymeAD/Reactant.jl.git"
 version = v"0.0.217"
 
 sources = [
-   GitSource(repo, "d6a7e7ee3794fb668b63dfae0c83d7bfdac90656"),
+   GitSource(repo, "9400332547108d8f9536debd2751b0a667ce281d"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -380,7 +380,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_llvm_version = v"18.1.7"
 
     # Temporarily disable debug builds also for macOS
-    if mode == "dbg" # && !Sys.isapple(platform)
+    if mode == "dbg" && !Sys.isapple(platform)
         continue
     end
 
