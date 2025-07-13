@@ -368,7 +368,7 @@ augment_platform_block="""
     """
 
 # for gpu in ("none", "cuda", "rocm"), mode in ("opt", "dbg"), platform in platforms
-for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6"), platform in platforms
+for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "12.1", "12.4", "12.6", "12.8"), platform in platforms
 
     augmented_platform = deepcopy(platform)
     augmented_platform["mode"] = mode
@@ -410,6 +410,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
         "12.3" => "12.3.1",
         "12.4" => "12.4.1",
         "12.6" => "12.6.3",
+        "12.8" => "12.8.1"
     )
 
     prefix="""
@@ -428,7 +429,13 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     end
 
     if arch(platform) == "aarch64" && gpu == "cuda"
-        if hermetic_cuda_version_map[cuda_version] == "12.6.3"
+        if hermetic_cuda_version_map[cuda_version] == "12.8.1"
+            # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.8.1.json
+        push!(platform_sources,
+                  ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.8.90-archive.tar.xz",
+                                "d2c88dd447a7dcbc8eb1d416c34d88e9df03745dc471b6cfaf93f5ef161d5dbd"),
+                  )
+        elseif hermetic_cuda_version_map[cuda_version] == "12.6.3"
             # See https://developer.download.nvidia.com/compute/cuda/redist/redistrib_12.6.3.json
 	    push!(platform_sources,
                   ArchiveSource("https://developer.download.nvidia.com/compute/cuda/redist/cuda_nvcc/linux-sbsa/cuda_nvcc-linux-sbsa-12.6.85-archive.tar.xz",
