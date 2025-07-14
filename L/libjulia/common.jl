@@ -66,7 +66,7 @@ function build_julia(ARGS, version::VersionNumber; jllversion=version)
         v"1.9.0" => "48f4c8a7d5f33d0bc6ce24226df20ab49e385c2d0c3767ec8dfdb449602095b2",
         v"1.10.0" => "a4136608265c5d9186ae4767e94ddc948b19b43f760aba3501a161290852054d",
         v"1.11.1" => "895549f40b21dee66b6380e30811f40d2d938c2baba0750de69c9a183cccd756",
-        v"1.12.0-rc1" => "waiting for release tag",
+        v"1.12.0-rc1" => "3837a6a2a81764f26d0785f0a370049d36370a67f55934585695f226f4546480",
     )
 
     if version == v"1.13.0-DEV"
