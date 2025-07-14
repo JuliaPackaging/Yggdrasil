@@ -308,8 +308,12 @@ if [[ "${LLVM_MAJ_VER}" -ge "19" ]]; then
 fi
 
 # Explicitly use our cmake toolchain file
-# Windows runs out of symbols so use clang which can do some fancy things
 if [[ "${target}" == *mingw* && "${LLVM_MAJ_VER}" -ge "16" ]]; then
+    # Windows has a 2^16 limit to the number of exported symbols.
+    # libLLVM.dll exceeds this in several configurations by default.
+    # Switch to Clang/LLD, which have the ability to drop hidden symbols
+    # from the export directory, putting us back under the limit.
+    # See https://reviews.llvm.org/D130121.
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake)
 else
     CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN})

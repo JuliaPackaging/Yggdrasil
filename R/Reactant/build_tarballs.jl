@@ -6,10 +6,10 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "Reactant"
 repo = "https://github.com/EnzymeAD/Reactant.jl.git"
-version = v"0.0.216"
+version = v"0.0.217"
 
 sources = [
-   GitSource(repo, "526174b4e2b66a4c0957fb34e121b92ffd109f71"),
+   GitSource(repo, "93158607ee984866a4cee7c8e5e5a870939cc4a1"),
    ArchiveSource("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.7%2B6/OpenJDK21U-jdk_x64_alpine-linux_hotspot_21.0.7_6.tar.gz", "79ecc4b213d21ae5c389bea13c6ed23ca4804a45b7b076983356c28105580013"),
    ArchiveSource("https://github.com/JuliaBinaryWrappers/Bazel_jll.jl/releases/download/Bazel-v7.6.1+0/Bazel.v7.6.1.x86_64-linux-musl-cxx03.tar.gz", "01ac6c083551796f1f070b0dc9c46248e6c49e01e21040b0c158f6e613733345")
 ]
@@ -380,7 +380,7 @@ for gpu in ("none", "cuda"), mode in ("opt", "dbg"), cuda_version in ("none", "1
     preferred_llvm_version = v"18.1.7"
 
     # Temporarily disable debug builds also for macOS
-    if mode == "dbg" # && !Sys.isapple(platform)
+    if mode == "dbg" && !Sys.isapple(platform)
         continue
     end
 

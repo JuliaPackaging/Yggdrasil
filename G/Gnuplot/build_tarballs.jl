@@ -12,7 +12,7 @@ end
 
 name = "Gnuplot"
 version = v"6.0.3"
-ygg_offset = v"0.0.2"  # NOTE: increase on new build, reset on new upstream version
+ygg_offset = v"0.0.3"  # NOTE: increase on new build, reset on new upstream version
 ygg_version = yggdrasil_version(version, ygg_offset)
 
 # Collection of sources required to complete build
