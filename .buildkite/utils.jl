@@ -99,7 +99,7 @@ function build_step(NAME, PLATFORM, PROJECT)
         :commands => [script],
         :env => build_env,
         :artifacts => [
-            "**/products/$NAME*.tar.gz"
+            "**/products/$NAME*.tar.*"
         ]
     )
 end
