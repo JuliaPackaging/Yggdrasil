@@ -236,6 +236,9 @@ if [ -z "${LLVM_WANT_STATIC}" ]; then
     CMAKE_FLAGS+=(-DLLVM_SHLIB_SYMBOL_VERSION:STRING="JL_LLVM_${LLVM_MAJ_VER}.${LLVM_MIN_VER}")
 fi
 
+# We want to build the Clang monolithic static library (for Rust's bindgen)
+CMAKE_FLAGS+=(-DLIBCLANG_BUILD_STATIC:BOOL=ON)
+
 # We want to build LLVM with EH and RTTI
 if [ ! -z "${LLVM_WANT_EH_RTTI}" ]; then
     CMAKE_FLAGS+=(-DLLVM_ENABLE_RTTI=ON)
