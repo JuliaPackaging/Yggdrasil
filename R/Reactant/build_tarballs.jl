@@ -534,6 +534,7 @@ for (i,build) in enumerate(builds)
                    name, version, build.sources, build.script,
                    build.platforms, build.products, build.dependencies;
                    preferred_gcc_version=build.preferred_gcc_version, build.preferred_llvm_version, julia_compat="1.10",
+		   compression_format="xz",
                    # We use GCC 13, so we can't dlopen the library during audit
                    augment_platform_block, lazy_artifacts=true, lock_microarchitecture=false, dont_dlopen=true)
 end
