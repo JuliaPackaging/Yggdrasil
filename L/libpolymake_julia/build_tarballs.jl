@@ -3,29 +3,32 @@
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-# copied from libsingular_julia:
+# needed for libjulia_platforms and julia_versions
+include("../../L/libjulia/common.jl")
+# we only support julia >=1.10
+filter!(>=(v"1.10"), julia_versions)
+
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
-uuidosxunw = Base.UUID("a83860b7-747b-57cf-bf1f-3e79990d037f")
+# without this binarybuilder tries to install libblastrampoline 3.0.4 for all julia targets
+uuidblastramp = Base.UUID("8e850b90-86db-534c-a0d3-1478176c7d93")
+delete!.(Pkg.Types.get_last_stdlibs.(julia_versions), uuidblastramp)
+
 uuidopenssl = Base.UUID("458c3c95-2e84-50aa-8efc-19380b2a3a95")
-delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuidosxunw)
 delete!(Pkg.Types.get_last_stdlibs(v"1.12.0"), uuidopenssl)
 delete!(Pkg.Types.get_last_stdlibs(v"1.13.0"), uuidopenssl)
 
-# needed for libjulia_platforms and julia_versions
-include("../../L/libjulia/common.jl")
-
 name = "libpolymake_julia"
-version = v"0.13.5"
+version = v"0.14.0"
 
 # reminder: change the above version when changing the supported julia versions
-# julia_versions is now taken from libjulia/common.jl
+# julia_versions is now taken from libjulia/common.jl and filtered
 julia_compat = join("~" .* string.(getfield.(julia_versions, :major)) .* "." .* string.(getfield.(julia_versions, :minor)), ", ")
 
 # Collection of sources required to build libpolymake_julia
 sources = [
     GitSource("https://github.com/oscar-system/libpolymake-julia.git",
-              "86391622a702d7dec1932dc8bd3f0733a59074ff"),
+              "ab7ba5a059a7cb08ce2875fc291219b5b20ac08e"),
 ]
 
 # Bash recipe for building across all platforms
@@ -69,15 +72,17 @@ dependencies = [
     BuildDependency(PackageSpec(;name="libjulia_jll", version=v"1.10.19")),
     BuildDependency("GMP_jll"),
     BuildDependency("MPFR_jll"),
+    # this version matches the one in Ipopt_jll (needed by polymake -> SCIP)
+    BuildDependency(PackageSpec(;name="libblastrampoline_jll", version = v"5.4.0")),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("FLINT_jll", compat = "~301.300.0"),
     Dependency("TOPCOM_jll"; compat = "~0.17.8"),
     Dependency("lib4ti2_jll"; compat = "^1.6.10"),
     Dependency("libcxxwrap_julia_jll"; compat = "~0.14.3"),
-    Dependency("polymake_jll"; compat = "~400.1300.4"),
+    Dependency("polymake_jll"; compat = "~400.1400.0"),
 
     HostBuildDependency(PackageSpec(name="Perl_jll", version=v"5.34.1")),
-    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1300.4")),
+    HostBuildDependency(PackageSpec(name="polymake_jll", version=v"400.1400.0")),
     HostBuildDependency(PackageSpec(name="lib4ti2_jll", version=v"1.6.10")),
     HostBuildDependency(PackageSpec(name="TOPCOM_jll", version=v"0.17.8")),
 ]
