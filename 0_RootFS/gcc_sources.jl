@@ -312,8 +312,8 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
         end
     elseif Sys.iswindows(compiler_target)
         libc_sources = [
-            ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",
-                          "3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10"),
+            ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v13.0.0.tar.bz2",
+                          "5afe822af5c4edbf67daaf45eec61d538f49eef6b19524de64897c6b95828caf"),
         ]
     else
         error("Unknown libc mapping for platform $(compiler_target)")
