@@ -7,7 +7,7 @@ version = v"25.2.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://gitlab.freedesktop.org/mesa/mesa",
-              "f78222dc29cdfc84135ef107e11de9b0bdd81ac5"),  # HEAD
+              "bac51d2931199a1e9048c7acdae155865732ad01"),  # HEAD, before Rusticl required VK_EXT_robustness2
 ]
 
 # Bash recipe for building across all platforms
