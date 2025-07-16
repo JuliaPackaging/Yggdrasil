@@ -455,8 +455,8 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/llvm* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/llvm-config* ${prefix}/tools/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*LLVM*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/lib/*LLVM*.a ${prefix}/lib
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libLLVM*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/lib/libLLVM*.a ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/llvm ${prefix}/lib/cmake/llvm
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
@@ -494,8 +494,8 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libMLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libmlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
 """
@@ -511,8 +511,8 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/tools/mlir* ${prefix}/tools/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libMLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libmlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
@@ -529,8 +529,8 @@ rm -rf ${prefix}/*
 mkdir -p ${prefix}/include ${prefix}/bin ${libdir} ${prefix}/lib ${prefix}/lib/cmake
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 mv -v ${LLVM_ARTIFACT_DIR}/bin/mlir* ${prefix}/bin/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libMLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libmlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
@@ -548,8 +548,8 @@ mkdir -p ${prefix}/include ${prefix}/tools ${libdir} ${prefix}/lib ${prefix}/lib
 mv -v ${LLVM_ARTIFACT_DIR}/include/mlir* ${prefix}/include/
 find ${LLVM_ARTIFACT_DIR}/tools/ -maxdepth 1 -type f -name "mlir*" -print0 -o -type l -name "mlir*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
 find ${LLVM_ARTIFACT_DIR}/bin/ -maxdepth 1 -type f -name "mlir*" -print0 -o -type l -name "mlir*" -print0 | xargs -0r mv -v -t "${prefix}/tools/"
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*MLIR*.${dlext}* ${libdir}/
-mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/*mlir*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libMLIR*.${dlext}* ${libdir}/
+mv -v ${LLVM_ARTIFACT_DIR}/$(basename ${libdir})/libmlir*.${dlext}* ${libdir}/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/objects-Release ${prefix}/lib/
 mv -v ${LLVM_ARTIFACT_DIR}/lib/cmake/mlir ${prefix}/lib/cmake/mlir
 install_license ${LLVM_ARTIFACT_DIR}/share/licenses/LLVM_full*/*
@@ -588,14 +588,12 @@ LLVM_ARTIFACT_DIR=$(dirname $(dirname $(realpath ${prefix}/tools/opt${exeext})))
 rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
-rm -vrf ${prefix}/include/{clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/include/{clang,llvm,mlir}*
+rm -vrf ${prefix}/bin/{clang,llvm-config,mlir}*
+rm -vrf ${prefix}/tools/{clang,llvm-config,mlir}*
 rm -vrf ${libdir}/libclang*.${dlext}*
-rm -vrf ${libdir}/*LLVM*.${dlext}*
-rm -vrf ${libdir}/*MLIR*.${dlext}*
-rm -vrf ${prefix}/lib/*LLVM*.a
-rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${libdir}/lib{LLVM,MLIR,clang}*.${dlext}*
+rm -vrf ${prefix}/lib/lib{LLVM,MLIR,clang}*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 # Move lld to tools/
@@ -612,14 +610,11 @@ rm -rf ${prefix}/*
 # Copy over everything, but eliminate things already put inside `Clang_jll` or `libLLVM_jll`:
 mv -v ${LLVM_ARTIFACT_DIR}/* ${prefix}/
 rm -vrf ${prefix}/include/{*lld*,clang*,llvm*,mlir*}
-rm -vrf ${prefix}/bin/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
-rm -vrf ${prefix}/tools/{*lld*,wasm-ld*,dsymutil*,clang*,llvm-config,mlir*}
+rm -vrf ${prefix}/bin/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir}*
+rm -vrf ${prefix}/tools/{*lld,wasm-ld,dsymutil,clang,llvm-config,mlir}*
 rm -vrf ${libdir}/libclang*.${dlext}*
-rm -vrf ${libdir}/*LLD*.${dlext}*
-rm -vrf ${libdir}/*LLVM*.${dlext}*
-rm -vrf ${libdir}/*MLIR*.${dlext}*
-rm -vrf ${prefix}/lib/*LLVM*.a
-rm -vrf ${prefix}/lib/libclang*.a
+rm -vrf ${libdir}/lib{LLVM,MLIR,lld,clang}*.${dlext}*
+rm -vrf ${prefix}/lib/lib{LLVM,MLIR,lld,clang}*.a
 rm -vrf ${prefix}/lib/clang
 rm -vrf ${prefix}/lib/mlir
 rm -vrf ${prefix}/lib/lld
