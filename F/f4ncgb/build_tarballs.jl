@@ -3,12 +3,11 @@
 using BinaryBuilder
 
 name = "f4ncgb"
-version = v"0.2.1"
+version = v"0.3.0"
 
 sources = [
     GitSource("https://gitlab.sai.jku.at/f4ncgb/f4ncgb.git",
-              "6f54884eaad3bfe52d8c7e5bc9b0d7ec52f95fc7"),
-    DirectorySource("bundled"),
+              "0a3942dd2403ee682d2c0bf82099a230fafd8ec2"),
     ArchiveSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                   "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
 ]
@@ -26,16 +25,14 @@ fi
 
 cd ${WORKSPACE}/srcdir/f4ncgb
 
-# no march=native no test binary
+# no march=native, no test binary
 extraflags="-DENABLE_NATIVE=OFF -DENABLE_TEST=OFF"
 
 if [[ "${target}" == *-mingw* ]]; then
    # profiling needs sys/resource.h
+   # no proper signal handling for windows
    extraflags="$extraflags -DENABLE_PROFILING=OFF -DENABLE_SIGNAL=OFF"
 fi
-
-atomic_patch -p1 ../patches/signaltest.patch
-atomic_patch -p1 ../patches/gmpinc.patch
 
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
@@ -75,7 +72,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# gcc 13 is needed for std::format and this we cannot dlopen during audit
+# gcc 13 is needed for std::format and thus we cannot dlopen during audit
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.10",
                preferred_gcc_version=v"13",
