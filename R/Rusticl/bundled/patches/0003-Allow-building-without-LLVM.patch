@@ -1,6 +1,6 @@
-From 1285ef54bf7aa0144215dfe1767c80f716d7d4e0 Mon Sep 17 00:00:00 2001
+From e2add29897f1fd7fe05273b343926513f0a4c48e Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
-Date: Mon, 14 Jul 2025 15:56:24 +0200
+Date: Wed, 16 Jul 2025 20:01:51 +0200
 Subject: [PATCH 3/3] Allow building without LLVM.
 
 ---
@@ -15,10 +15,10 @@ Subject: [PATCH 3/3] Allow building without LLVM.
  8 files changed, 169 insertions(+), 61 deletions(-)
 
 diff --git a/meson.build b/meson.build
-index 393f3ac1b93..e19a5bfb425 100644
+index 622406a7747..0e40c4e0110 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -815,8 +815,12 @@ else
+@@ -802,6 +802,10 @@ else
               with_drivers_clc or with_driver_using_cl
  endif
  
@@ -26,22 +26,28 @@ index 393f3ac1b93..e19a5bfb425 100644
 +rusticl_needs_opencl_c = with_gallium_rusticl and get_option('rusticl-enable-opencl-c')
 +clc_needs_llvm = with_clc and not (with_gallium_rusticl and not rusticl_needs_opencl_c)
 +
- with_llvm = with_llvm \
--  .enable_if(with_clc, error_message : 'CLC requires LLVM')
-+  .enable_if(clc_needs_llvm, error_message : 'CLC requires LLVM')
- 
  dep_clc = null_dep
  if with_clc
-@@ -1797,7 +1801,7 @@ pre_args += '-DDRAW_LLVM_AVAILABLE=@0@'.format((dep_llvm.found() and draw_with_l
+   dep_clc = dependency('libclc')
+@@ -1796,7 +1800,7 @@ elif with_swrast_vk
+   error('lavapipe requires LLVM and is enabled, but LLVM is disabled.')
+ elif with_any_llvmpipe
+   error('llvmpipe requires LLVM and is enabled, but LLVM is disabled.')
+-elif with_clc
++elif with_clc and clc_needs_llvm
+   error('The CLC compiler requires LLVM, but LLVM is disabled.')
+ else
+   draw_with_llvm = false
+@@ -1807,7 +1811,7 @@ pre_args += '-DDRAW_LLVM_AVAILABLE=@0@'.format((with_llvm and draw_with_llvm).to
  pre_args += '-DAMD_LLVM_AVAILABLE=@0@'.format(amd_with_llvm.to_int())
- pre_args += '-DGALLIVM_USE_ORCJIT=@0@'.format((dep_llvm.found() and llvm_with_orcjit).to_int())
+ pre_args += '-DGALLIVM_USE_ORCJIT=@0@'.format((with_llvm and llvm_with_orcjit).to_int())
  
 -if with_clc
 +if with_clc and clc_needs_llvm and dep_llvm.found()
    chosen_llvm_version_array = dep_llvm.version().split('.')
    chosen_llvm_version_major = chosen_llvm_version_array[0].to_int()
    chosen_llvm_version_minor = chosen_llvm_version_array[1].to_int()
-@@ -1835,7 +1839,7 @@ if dep_spirv_tools.found()
+@@ -1845,7 +1849,7 @@ if dep_spirv_tools.found()
  endif
  
  dep_clang = null_dep
@@ -51,7 +57,7 @@ index 393f3ac1b93..e19a5bfb425 100644
  
    dep_clang = cpp.find_library('clang-cpp', dirs : llvm_libdir, required : false)
 diff --git a/meson.options b/meson.options
-index b1cdb06fcc9..15a2bda4586 100644
+index 3f9fd67704c..cd4a5b3d748 100644
 --- a/meson.options
 +++ b/meson.options
 @@ -152,6 +152,13 @@ option(
@@ -69,7 +75,7 @@ index b1cdb06fcc9..15a2bda4586 100644
    'gallium-rusticl-enable-drivers',
    type : 'array',
 diff --git a/src/compiler/clc/clc_helpers.cpp b/src/compiler/clc/clc_helpers.cpp
-index 0bfc929b5b9..9cd29e5f586 100644
+index 8bc2dedc55b..ea3de570363 100644
 --- a/src/compiler/clc/clc_helpers.cpp
 +++ b/src/compiler/clc/clc_helpers.cpp
 @@ -27,9 +27,13 @@
@@ -118,7 +124,7 @@ index 0bfc929b5b9..9cd29e5f586 100644
  static std::unique_ptr<::llvm::Module>
  clc_compile_to_llvm_module(LLVMContext &llvm_ctx,
                             const struct clc_compile_args *args,
-@@ -1213,7 +1221,9 @@ llvm_mod_to_spirv(std::unique_ptr<::llvm::Module> mod,
+@@ -1204,7 +1212,9 @@ llvm_mod_to_spirv(std::unique_ptr<::llvm::Module> mod,
  
     return 0;
  }
@@ -128,7 +134,7 @@ index 0bfc929b5b9..9cd29e5f586 100644
  int
  clc_c_to_spir(const struct clc_compile_args *args,
                const struct clc_logger *logger,
-@@ -1240,7 +1250,19 @@ clc_c_to_spir(const struct clc_compile_args *args,
+@@ -1231,7 +1241,19 @@ clc_c_to_spir(const struct clc_compile_args *args,
  
     return 0;
  }
@@ -148,7 +154,7 @@ index 0bfc929b5b9..9cd29e5f586 100644
  int
  clc_c_to_spirv(const struct clc_compile_args *args,
                 const struct clc_logger *logger,
-@@ -1259,7 +1281,19 @@ clc_c_to_spirv(const struct clc_compile_args *args,
+@@ -1250,7 +1272,19 @@ clc_c_to_spirv(const struct clc_compile_args *args,
  
     return llvm_mod_to_spirv(std::move(mod), llvm_ctx, args, logger, out_spirv);
  }
@@ -168,7 +174,7 @@ index 0bfc929b5b9..9cd29e5f586 100644
  int
  clc_spir_to_spirv(const struct clc_binary *in_spir,
                    const struct clc_logger *logger,
-@@ -1278,6 +1312,16 @@ clc_spir_to_spirv(const struct clc_binary *in_spir,
+@@ -1269,6 +1303,16 @@ clc_spir_to_spirv(const struct clc_binary *in_spir,
  
     return llvm_mod_to_spirv(std::move(mod.get()), llvm_ctx, NULL, logger, out_spirv);
  }
@@ -185,7 +191,7 @@ index 0bfc929b5b9..9cd29e5f586 100644
  
  class SPIRVMessageConsumer {
  public:
-@@ -1435,6 +1479,7 @@ clc_spirv_specialize(const struct clc_binary *in_spirv,
+@@ -1426,6 +1470,7 @@ clc_spirv_specialize(const struct clc_binary *in_spirv,
     return true;
  }
  
@@ -193,7 +199,7 @@ index 0bfc929b5b9..9cd29e5f586 100644
  static void
  clc_dump_llvm(const llvm::Module *mod, FILE *f)
  {
-@@ -1446,6 +1491,7 @@ clc_dump_llvm(const llvm::Module *mod, FILE *f)
+@@ -1437,6 +1482,7 @@ clc_dump_llvm(const llvm::Module *mod, FILE *f)
  
     fwrite(out.c_str(), out.size(), 1, f);
  }
@@ -201,7 +207,7 @@ index 0bfc929b5b9..9cd29e5f586 100644
  
  void
  clc_dump_spirv(const struct clc_binary *spvbin, FILE *f)
-@@ -1475,11 +1521,13 @@ clc_free_spirv_binary(struct clc_binary *spvbin)
+@@ -1466,11 +1512,13 @@ clc_free_spirv_binary(struct clc_binary *spvbin)
  void
  initialize_llvm_once(void)
  {
@@ -257,7 +263,7 @@ index 9ff61440f0d..bf45a253c52 100644
  
  _idep_mesaclc_link_args = []
 diff --git a/src/gallium/frontends/rusticl/core/device.rs b/src/gallium/frontends/rusticl/core/device.rs
-index ba639af89f1..5c9e01a643e 100644
+index 6d4831a70b7..8c69bd59efc 100644
 --- a/src/gallium/frontends/rusticl/core/device.rs
 +++ b/src/gallium/frontends/rusticl/core/device.rs
 @@ -17,6 +17,7 @@ use mesa_rust::pipe::transfer::PipeTransfer;
@@ -268,7 +274,7 @@ index ba639af89f1..5c9e01a643e 100644
  use rusticl_llvm_gen::*;
  use rusticl_opencl_gen::*;
  
-@@ -830,29 +831,37 @@ impl DeviceBase {
+@@ -814,29 +815,37 @@ impl DeviceBase {
      }
  
      pub fn linkonce_supported(&self) -> bool {
@@ -324,7 +330,7 @@ index ba639af89f1..5c9e01a643e 100644
      }
  
      pub fn fp16_supported(&self) -> bool {
-@@ -1153,7 +1162,15 @@ impl DeviceBase {
+@@ -1137,7 +1146,15 @@ impl DeviceBase {
      }
  
      pub fn kernel_clock_supported(&self) -> bool {
