@@ -85,6 +85,10 @@ products = [
     ExecutableProduct("spirv-objdump", :spirv_objdump),
     ExecutableProduct("spirv-reduce", :spirv_reduce),
     LibraryProduct("libSPIRV-Tools", :libSPIRV_Tools),
+    LibraryProduct("libSPIRV-Tools-opt", :libSPIRV_Tools_opt),
+    LibraryProduct("libSPIRV-Tools-diff", :libSPIRV_Tools_diff),
+    LibraryProduct("libSPIRV-Tools-link", :libSPIRV_Tools_link),
+    LibraryProduct("libSPIRV-Tools-lint", :libSPIRV_Tools_lint),
 ]
 
 # Dependencies that must be installed before this package can be built
