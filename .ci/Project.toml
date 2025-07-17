@@ -11,9 +11,9 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 ghr_jll = "07c12ed4-43bc-5495-8a2a-d5838ef8d533"
 squashfs_tools_jll = "eed32e3e-a7c5-5bf9-9121-5cf3ab653887"
 
+[sources]
+BinaryBuilder = {rev = "ib/fixes", url = "https://github.com/JuliaPackaging/BinaryBuilder.jl"}
+BinaryBuilderBase = {rev = "ib/no_ctx", url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git"}
+
 [compat]
 ghr_jll = "0.14.0"
-
-[sources]
-BinaryBuilder = {url = "https://github.com/JuliaPackaging/BinaryBuilder.jl", rev = "mg/free-julia"}
-BinaryBuilderBase = {url = "https://github.com/JuliaPackaging/BinaryBuilderBase.jl.git", rev = "ib/no_ctx"}
