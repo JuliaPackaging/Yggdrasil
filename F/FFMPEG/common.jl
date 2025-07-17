@@ -58,6 +58,7 @@ else
 fi
 
 if [[ "${target}" == x86_64-apple-darwin* ]]; then 
+    rm -rf /opt/${target}/${target}/sys-root/System
     tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=10.13
 fi 
