@@ -5,7 +5,7 @@ version = v"4.5.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/bbopt/nomad.git", "b214ab9a268ebde013056655e01f40dccc55ca7c"),
+    GitSource("https://github.com/bbopt/nomad.git", "d6e2c8c9dbfa275485f5c134198c372adb54f2ad"),
 ]
 
 # Bash recipe for building across all platforms
