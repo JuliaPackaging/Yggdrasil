@@ -3,15 +3,15 @@
 using BinaryBuilder, Pkg
 
 name = "libdeflate"
-version = v"1.23"
+version = v"1.24"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/ebiggers/libdeflate",
-        "78051988f96dc8d8916310d8b24021f01bd9e102"
+        "96836d7d9d10e3e0d53e6edb54eb908514e336c4"
     ),
-    ArchiveSource(
+    FileSource(
         "https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.13.sdk.tar.xz",
         "a3a077385205039a7c6f9e2c98ecdf2a720b2a819da715e03e0630c75782c1e4"
     ),
@@ -21,12 +21,9 @@ sources = [
 script = raw"""
 # This requires macOS 10.13
 if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    pushd $WORKSPACE/srcdir/MacOSX10.*.sdk
     rm -rf /opt/${target}/${target}/sys-root/System
-    cp -ra usr/* "/opt/${target}/${target}/sys-root/usr/."
-    cp -ra System "/opt/${target}/${target}/sys-root/."
+    tar --extract --file=${WORKSPACE}/srcdir/MacOSX10.13.sdk.tar.xz --directory="/opt/${target}/${target}/sys-root/." --strip-components=1 MacOSX10.13.sdk/System MacOSX10.13.sdk/usr
     export MACOSX_DEPLOYMENT_TARGET=10.13
-    popd
 fi
 
 cd $WORKSPACE/srcdir/libdeflate
