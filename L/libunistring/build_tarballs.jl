@@ -4,6 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "libunistring"
 version = v"1.3"
+ygg_version = v"1.3.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -40,4 +41,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6")
