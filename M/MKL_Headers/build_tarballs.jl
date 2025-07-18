@@ -35,7 +35,7 @@ install_license mkl_include-${target}/mkl_include-*.dist-info/LICENSE.txt
 mkdir -p ${libdir}
 if [[ $target == *-mingw* ]]; then
     # These toolchain files must still go inside the lib folder, not the ${libdir} folder
-    rsync -av mkl_devel-${target}/mkl_devel-*.data/data/Library/lib/ $WORKSPACE/destdir/lib
+    rsync -av mkl_devel-${target}/mkl_devel-*.data/data/Library/lib/ ${prefix}/lib
 else
     rsync -av mkl_devel-${target}/mkl_devel-*.data/data/lib/ ${libdir}
 fi
