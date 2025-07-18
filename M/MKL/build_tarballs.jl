@@ -5,6 +5,7 @@ version = v"2025.2.0"
 version_intel_openmp = v"2025.2.0"
 
 sources = [
+    # Files from the PyPi package https://pypi.org/project/mkl/#files
     FileSource("https://files.pythonhosted.org/packages/91/ae/025174ee141432b974f97ecd2aea529a3bdb547392bde3dd55ce48fe7827/mkl-2025.2.0-py2.py3-none-win_amd64.whl",
                "b6ec153e4a073421dbb52ef99c7be97e66cde0272e4a1e3569b090b6f0130253"; filename="mkl-x86_64-w64-mingw32.whl"),
     FileSource("https://files.pythonhosted.org/packages/46/7b/f5b1b84eb0a2a6e145fc31b4e6b1c59690dcb088734197da8f299caf7c67/mkl-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
