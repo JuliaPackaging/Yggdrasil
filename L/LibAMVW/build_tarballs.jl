@@ -62,14 +62,7 @@ $FC $FFLAGS \
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc"),
-    Platform("powerpc64le", "linux"; libc="glibc"),
-    Platform("x86_64", "linux"; libc="musl"),
-    Platform("x86_64", "macos"),
-    Platform("x86_64", "freebsd"),
-    Platform("x86_64", "windows")
-]
+platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 # The products that we will ensure are always built
@@ -85,4 +78,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies)
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
