@@ -27,7 +27,7 @@ delete!(Pkg.Types.get_last_stdlibs(v"1.6.3"), uuid)
 
 name = "GAP"
 upstream_version = v"4.14.0"
-version = v"400.1400.005"
+version = v"400.1401.005"
 
 # Collection of sources required to complete build
 sources = [
@@ -134,15 +134,6 @@ dependencies = [
 
 # Build the tarballs.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"7", julia_compat="1.6", init_block="""
-
-    try
-        cglobal(:jl_reinit_foreign_type)
-    catch
-        # no jl_reinit_foreign_type -> fall back to old behavior
-        sym = dlsym(libgap_handle, :GAP_InitJuliaMemoryInterface)
-        ccall(sym, Nothing, (Any, Ptr{Nothing}), @__MODULE__, C_NULL)
-    end
-""")
+               preferred_gcc_version=v"7", julia_compat="1.10")
 
 # rebuild trigger: 1
