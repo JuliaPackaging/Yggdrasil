@@ -7,7 +7,7 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://github.com/eiscor/eiscor/archive/refs/tags/v$(version).tar.gz", "b82e725d8062db1eb5de70fc270acace48ca740d3f76715444d773fd6dbcc1f9")
+    GitSource("https://github.com/eiscor/eiscor.git", "696b90afcd8d637d080fe29de5c3c799bf5eb8dd")
 ]
 
 # Bash recipe for building across all platforms
