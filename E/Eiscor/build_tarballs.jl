@@ -12,7 +12,7 @@ sources = [
 
 # Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir
+cd $WORKSPACE/srcdir/eiscor*/
 cd eiscor*/
 make -j${nproc} SLIB="${dlext}"
 make INSTALLDIR="${libdir}" SLIB="${dlext}" install
