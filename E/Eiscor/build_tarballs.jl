@@ -14,8 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd eiscor*/
-export HOME=$libdir
-make "-j$nproc"
+make INSTALLDIR="$libdir" "-j$nproc"
 make install
 """
 
