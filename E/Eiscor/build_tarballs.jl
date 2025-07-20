@@ -15,7 +15,7 @@ script = raw"""
 cd $WORKSPACE/srcdir
 cd eiscor*/
 make -j${nproc} SLIB="${dlext}"
-make INSTALLDIR="$libdir" install
+make INSTALLDIR="${libdir}" SLIB="${dlext}" install
 """
 
 # These are the platforms we will build for by default, unless further
