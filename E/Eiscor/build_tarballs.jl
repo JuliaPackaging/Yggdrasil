@@ -7,14 +7,14 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/andreasnoack/eiscor.git", "0e774a3b60e3dfd45c53ef78b0cfec278c9e2473")
+    GitSource("https://github.com/andreasnoack/eiscor.git", "357095e5fdc34bccfdec043b029e22613986a532")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/eiscor*/
 make -j${nproc} SLIB="${dlext}"
-make PREFIX="${libdir}" install
+make LIBDIR="${libdir}" install
 """
 
 # These are the platforms we will build for by default, unless further
