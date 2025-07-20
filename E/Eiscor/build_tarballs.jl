@@ -13,7 +13,7 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
-cd eiscor-0.2.0/
+cd eiscor*/
 export HOME=$libdir
 make "-j$nproc"
 make install
