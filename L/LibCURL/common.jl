@@ -93,15 +93,6 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
 
         # We also need to tell it to link against schannel (native TLS library)
         FLAGS+=(--with-schannel)
-    elif [[ ${target} == *darwin* ]]; then
-        # On Darwin, we need to use SecureTransport (native TLS library)
-        FLAGS+=(--with-secure-transport)
-
-        # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
-        # complain about: `Symbol not found: ___isOSVersionAtLeast`
-        if [[ "${target}" == *x86_64* ]]; then
-            export CFLAGS=-mmacosx-version-min=10.11
-        fi
     else
         # On all other systems, we use OpenSSL
         FLAGS+=(--with-openssl)
@@ -157,7 +148,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
         Dependency("LibSSH2_jll"),
         Dependency("Zlib_jll"),
         Dependency("nghttp2_jll"),
-        Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)),
+        Dependency("OpenSSL_jll"; compat="3.0.16", platforms=filter(p->!Sys.iswindows(p), platforms)),
         BuildDependency(PackageSpec(name="LLVMCompilerRT_jll", uuid="4e17d02c-6bf5-513e-be62-445f41c75a11", version=llvm_version);
                         platforms=filter(p -> sanitize(p)=="memory", platforms)),
     ]
