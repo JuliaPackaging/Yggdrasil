@@ -97,7 +97,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     elif [[ ${MACOS_USE_OPENSSL} == true && ${target} == *darwin* ]]; then
         # On Darwin, we need to use SecureTransport (native TLS library) for pre-8.15 versions of CURL
         FLAGS+=(--with-secure-transport)
-    
+
         # We need to explicitly request a higher `-mmacosx-version-min` here, so that it doesn't
         # complain about: `Symbol not found: ___isOSVersionAtLeast`
         if [[ "${target}" == *x86_64* ]]; then
