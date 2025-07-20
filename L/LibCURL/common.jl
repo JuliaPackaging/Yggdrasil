@@ -153,10 +153,10 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
 
     llvm_version = v"13.0.1+1"
 
-    openssl_platforms = if version < v"8.15.0"
+    openssl_platforms = if macos_use_openssl
         filter(p->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
     else
-        filter(p->!windows(p), platforms)
+        filter(p->!Sys.iswindows(p), platforms)
     end
 
     # Dependencies that must be installed before this package can be built
