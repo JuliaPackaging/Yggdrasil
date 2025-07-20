@@ -14,8 +14,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd eiscor*/
-make INSTALLDIR="$libdir" "-j$nproc"
-make install
+make "-j$nproc"
+make INSTALLDIR="$libdir" install
 """
 
 # These are the platforms we will build for by default, unless further
