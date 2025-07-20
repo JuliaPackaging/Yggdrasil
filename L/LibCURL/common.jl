@@ -57,7 +57,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
     else
         unpack_macosx_sdk = ""
     end
-    macos_use_openssl = version < v"8.15"
+    macos_use_openssl = version >= v"8.15"
 
 
     # Bash recipe for building across all platforms
