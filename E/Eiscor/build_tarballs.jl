@@ -22,6 +22,8 @@ make INSTALLDIR="$libdir" install
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
+platforms = expand_gfortran_versions(platforms)
+
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libeiscor", :libeiscor, "lib/eiscor/lib")
