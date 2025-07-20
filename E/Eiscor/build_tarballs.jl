@@ -14,7 +14,7 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir
 cd eiscor*/
-make "-j$nproc"
+make -j${nproc} SLIB="${dlext}"
 make INSTALLDIR="$libdir" install
 """
 
