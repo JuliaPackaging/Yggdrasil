@@ -28,7 +28,7 @@ filter!(Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("libeiscor", :libeiscor, "lib/eiscor/lib")
+    LibraryProduct(["libeiscor", "eiscor"], :libeiscor)
 ]
 
 # Dependencies that must be installed before this package can be built
