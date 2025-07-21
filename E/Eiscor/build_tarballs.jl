@@ -24,7 +24,7 @@ platforms = supported_platforms()
 platforms = expand_gfortran_versions(platforms)
 
 # Filter out platforms that we don't care about
-filter!(!Sys.isbsd, platforms)
+filter!(t -> !Sys.isbsd(t) || Sys.isapple(t), platforms)
 
 # The products that we will ensure are always built
 products = [
