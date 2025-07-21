@@ -8,6 +8,11 @@ index 7887633..1470c0c 100644
 +#define GPIOHANDLE_REQUEST_BIAS_PULL_DOWN	(1UL << 6)
 +#define GPIOHANDLE_REQUEST_BIAS_DISABLE	(1UL << 7)
 +
++enum gpio_v2_line_event_id {
++	GPIO_V2_LINE_EVENT_RISING_EDGE	= 1,
++	GPIO_V2_LINE_EVENT_FALLING_EDGE	= 2,
++};
++
 +
  /*
   * wiringPi:
