@@ -8,8 +8,8 @@ version = v"2025.2.0"
 # Collection of sources required to complete build
 sources = [
     # https://pypi.org/project/mkl-devel-dpcpp
-    FileSource("https://files.pythonhosted.org/packages/2d/f2/ef6e3d305a5b987f0638d4de1ada1e4cd00925acb0f6dc55f67ef8c420e1/mkl_devel_dpcpp-2025.2.0-py2.py3-none-win_amd64.whl",
-               "78d4c3a746e15594c3e54db10843f4a81a494aba4ec3bb8f002a0ae19f63b933"; filename="oneapi-headers.whl"),
+    FileSource("https://files.pythonhosted.org/packages/08/30/a28cfc8f9a982a5998940b808288f58f4ba2607e50a18f97207b7428f602/mkl_devel_dpcpp-2025.2.0-py2.py3-none-manylinux_2_28_x86_64.whl",
+               "44ceb849a99f9bbe3ad89dac9dcdedb540b3996c69e699a40047d62d51934a0c"; filename="oneapi-headers.whl"),
 ]
 
 # Bash recipe for building across all platforms
