@@ -94,7 +94,7 @@ function build_libcurl(ARGS, name::String, version::VersionNumber)
 
         # We also need to tell it to link against schannel (native TLS library)
         FLAGS+=(--with-schannel)
-    elif [[ ${MACOS_USE_OPENSSL} == true && ${target} == *darwin* ]]; then
+    elif [[ ${MACOS_USE_OPENSSL} == false && ${target} == *darwin* ]]; then
         # On Darwin, we need to use SecureTransport (native TLS library) for pre-8.15 versions of CURL
         FLAGS+=(--with-secure-transport)
 
