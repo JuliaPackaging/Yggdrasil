@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_io"
-version = v"0.21.1"
+version = v"0.21.2"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-io.git", "12cb9f9c2702a5c864d6cefe19aa12e89924a3ac"),
+    GitSource("https://github.com/awslabs/aws-c-io.git", "9c7f98dcb083bd705eeb323e77868b1e2c9d4e73"),
     DirectorySource("./bundled"),
     ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.15.sdk.tar.xz",
                   "2408d07df7f324d3beea818585a6d990ba99587c218a3969f924dfcc4de93b62"),
