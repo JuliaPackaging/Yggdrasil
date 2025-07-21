@@ -7,7 +7,7 @@ version = v"0.2.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/andreasnoack/eiscor.git", "e04540d72e96d9bc66ce2dea115741a85f645c4f")
+    GitSource("https://github.com/andreasnoack/eiscor.git", "fd9af47b7faba53aa340d71855b635dc76db2759")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,6 +22,9 @@ make LIBDIR="${libdir}" install
 platforms = supported_platforms()
 
 platforms = expand_gfortran_versions(platforms)
+
+# Filter out platforms that we don't care about
+filter!(Sys.iswindows, platforms)
 
 # The products that we will ensure are always built
 products = [
